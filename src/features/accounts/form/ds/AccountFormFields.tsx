@@ -113,6 +113,8 @@ export function AccountFormFields({
   const isBroker = type === AccountType.BROKER;
   const syncs = isBank || isCard;
   const pooled = values.limitPoolChoice !== LIMIT_POOL_NONE;
+  // A pooled card shows its own limit only when it already has one.
+  const showOwnLimit = !pooled || values.creditLimit.trim() !== '';
   const noun = isCard ? 'card' : 'account';
 
   const poolOptions: SelectOption[] = [
@@ -286,15 +288,17 @@ export function AccountFormFields({
               ) : null}
             </div>
           ) : null}
-          <AmountField
-            label={pooled ? 'Own limit' : 'Credit limit'}
-            optional={pooled}
-            placeholder="50,000"
-            helper={pooled ? 'Leave empty to let this card use the whole shared limit.' : undefined}
-            value={values.creditLimit}
-            error={errors.creditLimit}
-            onValueChange={(v) => onChange({ creditLimit: v })}
-          />
+          {showOwnLimit ? (
+            <AmountField
+              label={pooled ? 'Own limit' : 'Credit limit'}
+              optional={pooled}
+              placeholder="50,000"
+              helper={pooled ? 'Leave empty to let this card use the whole shared limit.' : undefined}
+              value={values.creditLimit}
+              error={errors.creditLimit}
+              onValueChange={(v) => onChange({ creditLimit: v })}
+            />
+          ) : null}
         </Section>
       ) : null}
 
@@ -325,7 +329,8 @@ export function AccountFormFields({
         ) : null}
         {syncs ? (
           <Select
-            label={`Email identifiers · how Gmail alerts find this ${noun}`}
+            label="Account identifiers"
+            helper="Used to match emails to this account, along with the last 4 digits above."
             placeholder="e.g. 1234 or CRN"
             multiple
             searchable

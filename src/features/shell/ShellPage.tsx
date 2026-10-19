@@ -16,13 +16,6 @@ export const shellTopBarActions: TopBarAction[] = [
     asChild: true,
     children: <Link href="/chat" />,
   },
-  {
-    id: 'notifications',
-    icon: 'notifications',
-    label: 'Notifications',
-    asChild: true,
-    children: <Link href="/settings/activity" />,
-  },
 ];
 
 export interface ShellPageProps {

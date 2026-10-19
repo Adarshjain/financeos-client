@@ -25,7 +25,6 @@ export interface HeaderModel {
   /** "Closed 30 Jun 2026" for a closed account. */
   closedLabel?: string;
   markPaid: MarkPaidTarget | null;
-  showImport: boolean;
 }
 
 const MARKABLE = new Set(['OPEN', 'PARTIAL', 'OVERDUE']);
@@ -90,7 +89,7 @@ export function buildHeaderModel(
   account: Account,
   bill: CardBillResponse | null | undefined,
   today: string,
-  /** Newest entry date; wallets only. */
+  /** Newest entry date: a wallet's "last entry", and for an anchored account the date its balance is current to. */
   lastEntry?: string | null
 ): HeaderModel {
   const closed = isAccountClosed(account, today);
@@ -103,13 +102,14 @@ export function buildHeaderModel(
     return {
       ...cardHeader(account, bill, today, closed),
       closedLabel,
-      showImport: !closed,
     };
   }
 
   const caption: string[] = [];
   if (account.type !== AccountType.GENERIC && account.balanceAnchored && account.anchorDate) {
-    caption.push(`as of statement ${formatDayMonth(account.anchorDate)}`);
+    // Later transactions are added on top of the statement balance, so the balance is current to the newest one.
+    const current = lastEntry && lastEntry > account.anchorDate && lastEntry <= today ? lastEntry : null;
+    caption.push(current ? `as of ${formatDayMonth(current)}` : `as of statement ${formatDayMonth(account.anchorDate)}`);
   }
   if (account.type === AccountType.BROKER) {
     if (account.cashBalance !== undefined) caption.push(`cash ${formatRupees(account.cashBalance)}`);
@@ -119,7 +119,6 @@ export function buildHeaderModel(
       caption,
       closedLabel,
       markPaid: null,
-      showImport: false,
     };
   }
   if (account.type === AccountType.BANK_ACCOUNT) {
@@ -130,7 +129,6 @@ export function buildHeaderModel(
       caption,
       closedLabel,
       markPaid: null,
-      showImport: !closed,
     };
   }
   caption.push('Manual balance');
@@ -141,7 +139,6 @@ export function buildHeaderModel(
     caption,
     closedLabel,
     markPaid: null,
-    showImport: false,
   };
 }
 

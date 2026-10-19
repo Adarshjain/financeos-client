@@ -24,8 +24,8 @@ export function SharedLimitCard({
         </Button>
       }
     >
-      <ListField label="This card" value={model.thisCard} />
-      <ListField label="Shared limit" value={model.shared} />
+      {model.thisCard ? <ListField label="This card" value={model.thisCard} /> : null}
+      {model.shared ? <ListField label="Shared limit" value={model.shared} /> : null}
     </Card>
   );
 }

@@ -11,8 +11,6 @@ import {
   buildGmailCard,
   buildLatestStatement,
   buildLinked,
-  buildWalletDetails,
-  countsToward,
   formatMonthYear,
   lastEntryDate,
   ordinal,
@@ -170,27 +168,6 @@ describe('buildLinked', () => {
 
   it('is empty when nothing pays from the account', () => {
     expect(buildLinked({ emis: [], cardBills: [] })).toEqual([]);
-  });
-});
-
-describe('wallet details', () => {
-  const wallet: GenericAccount = { id: 'w1', type: AccountType.GENERIC, name: 'Paytm', description: 'Paytm UPI wallet' };
-
-  it('names what the account counts toward', () => {
-    expect(countsToward({})).toBe('Net worth · asset');
-    expect(countsToward({ financialPosition: 'liability' })).toBe('Net worth · liability');
-    expect(countsToward({ financialPosition: 'liability', excludeFromNetAsset: true })).toBe(
-      'Excluded from net worth',
-    );
-  });
-
-  it('lists type, net-worth treatment and the description when there is one', () => {
-    expect(buildWalletDetails(wallet)).toEqual([
-      { label: 'Type', value: 'Wallet / cash' },
-      { label: 'Counts toward', value: 'Net worth · asset' },
-      { label: 'Description', value: 'Paytm UPI wallet' },
-    ]);
-    expect(buildWalletDetails({ ...wallet, description: '' })).toHaveLength(2);
   });
 });
 

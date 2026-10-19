@@ -15,7 +15,6 @@ import {
 
 import type {
   BrokerCashModel,
-  DetailLine,
   GmailCardModel,
   KpiModel,
   LinkedLine,
@@ -97,7 +96,7 @@ export function GmailAlertsCard({ model }: { model: GmailCardModel }) {
           value={
             <Text variant="body" tone="warning" as="span">
               {model.unmatched} unmatched ·{' '}
-              <Text variant="caption" as="span">
+              <Text variant="label" as="span">
                 <Button asChild variant="link" size="sm">
                   <Link href="/inbox">assign</Link>
                 </Button>
@@ -115,16 +114,6 @@ export function LinkedCard({ lines }: { lines: LinkedLine[] }) {
     <Card title="Linked" subtitle="What pays from this account">
       {lines.map((line) => (
         <ListField key={line.key} label={line.label} value={line.value} />
-      ))}
-    </Card>
-  );
-}
-
-export function WalletDetailsCard({ lines }: { lines: DetailLine[] }) {
-  return (
-    <Card title="Details" subtitle="Wallets and cash have no statements or cards">
-      {lines.map((line) => (
-        <ListField key={line.label} label={line.label} value={line.value} />
       ))}
     </Card>
   );

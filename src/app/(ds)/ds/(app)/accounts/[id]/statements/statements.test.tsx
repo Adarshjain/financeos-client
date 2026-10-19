@@ -230,8 +230,24 @@ describe('/ds/accounts/[id]/statements', () => {
     expect(screen.getAllByText('+45.00').length).toBeGreaterThan(0);
     expect(screen.getByText('Closing balance ₹44,319 · matches ledger')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Set due date' }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('button', { name: 'Delete statement' }).length).toBeGreaterThan(0);
+    // The actions live in the detail card's menu only, not as buttons at the bottom.
+    expect(screen.queryByRole('button', { name: 'Set due date' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete statement' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    expect(screen.getByRole('menuitem', { name: 'Set due date' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Delete statement' })).toBeInTheDocument();
+  });
+
+  it('hides the Balance after column when no line has a balance, shows it when one does', async () => {
+    const { unmount } = await renderPage();
+    expect(screen.queryByText('Balance after')).toBeNull();
+    unmount();
+
+    const withBalance = { ...detail, lines: detail.lines.map((l, i) => (i === 0 ? { ...l, balanceAfter: 12500 } : l)) };
+    loadData.mockResolvedValue(data({ detail: withBalance }));
+    await renderPage();
+    expect(screen.getByText('Balance after')).toBeInTheDocument();
+    expect(screen.getByText('₹12,500')).toBeInTheDocument();
   });
 
   it('passes the url params to the loader', async () => {
@@ -345,7 +361,8 @@ describe('/ds/accounts/[id]/statements', () => {
   it('sets the due date through the bill details', async () => {
     api.PATCH.mockResolvedValue({ data: bill({ paymentDueDate: '2026-10-30' }) });
     await renderPage();
-    await user.click(screen.getAllByRole('button', { name: 'Set due date' })[0]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
     const dialog = await screen.findByRole('dialog');
     const field = within(dialog).getByLabelText('Due date');
     expect(field).toHaveValue('25/10/2026');
@@ -372,7 +389,8 @@ describe('/ds/accounts/[id]/statements', () => {
       }),
     );
     await renderPage();
-    await user.click(screen.getAllByRole('button', { name: 'Set due date' })[0]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByLabelText('Due date')).toHaveValue('');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
@@ -382,7 +400,8 @@ describe('/ds/accounts/[id]/statements', () => {
 
   it('does not save an unchanged due date', async () => {
     await renderPage();
-    await user.click(screen.getAllByRole('button', { name: 'Set due date' })[0]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(await within(dialog).findByText('Change at least one of the fields')).toBeInTheDocument();
@@ -399,7 +418,8 @@ describe('/ds/accounts/[id]/statements', () => {
       data: { transactionsDeleted: 6, transactionsKept: 2, alertsReopened: 2, duplicateFlagsCleared: 0 },
     });
     await renderPage();
-    await user.click(screen.getAllByRole('button', { name: 'Delete statement' })[0]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete statement' }));
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Removes the 5 Oct 2026 statement and what it added to this account.')).toBeInTheDocument();
@@ -422,7 +442,8 @@ describe('/ds/accounts/[id]/statements', () => {
   it('cannot delete until the preview has loaded', async () => {
     api.GET.mockImplementation(() => new Promise(() => {}));
     await renderPage();
-    await user.click(screen.getAllByRole('button', { name: 'Delete statement' })[0]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete statement' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Checking what this statement added…')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Delete statement' })).toBeDisabled();

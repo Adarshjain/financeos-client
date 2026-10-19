@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 import {
   Badge,
@@ -17,12 +17,12 @@ import {
   StatusWord,
   Text,
 } from '@/components/ds';
+import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
 
 import type {
   BankRow,
   BrokerRow,
   CardBaseRow,
-  ClosedSection,
   WalletRow,
 } from './accountsList';
 
@@ -78,51 +78,94 @@ function OpenButton({ row }: { row: { id: string; name: string } }) {
   );
 }
 
-function IconLink({
-  href,
-  label,
-  icon,
+/** Keeps a click on a control inside a row from also selecting the row (which would open the account). */
+function RowControls({ children }: { children: React.ReactNode }) {
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  return (
+    <div
+      className="flex items-center justify-end gap-space-4"
+      onPointerDown={stop}
+      onPointerUp={stop}
+      onClick={stop}
+      onKeyDown={stop}
+    >
+      {children}
+    </div>
+  );
+}
+
+function EditButton({ onEdit }: { onEdit: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      iconOnly
+      aria-label="Edit"
+      onClick={onEdit}
+      icon={<Icon name="pencil-simple" size="sm" />}
+    />
+  );
+}
+
+/** Show or hide a section's closed accounts in place; the rows are already on the page. */
+function useClosedToggle() {
+  const [showing, setShowing] = useState(false);
+  return { showing, toggle: () => setShowing((v) => !v) };
+}
+
+function ClosedToggleButton({
+  showing,
+  onToggle,
 }: {
-  href: string;
-  label: string;
-  icon: 'file-text' | 'pencil-simple';
+  showing: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <Button asChild variant="ghost" size="sm" iconOnly aria-label={label}>
-      <Link href={href}>
-        <Icon name={icon} size="sm" />
-      </Link>
+    <Button variant="link" size="sm" onClick={onToggle}>
+      {showing ? 'Hide' : 'Show'}
+      <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
     </Button>
   );
 }
 
-function uploadHref(row: { id: string }): string {
-  return `/transactions/import?account=${row.id}`;
+/** Closed rows read muted but stay clickable, so their details still open. */
+const mutedWhenClosed = (row: { closed: boolean }) => (row.closed ? { muted: true } : undefined);
+
+/** The closed line as a band above the closed rows, so they sit below it. */
+function closedBand<Row extends { closed: boolean }>(
+  line: string | null,
+  onToggle: () => void,
+) {
+  return (row: Row) =>
+    row.closed
+      ? {
+          key: 'closed',
+          label: (
+            <div className="flex items-center justify-between gap-space-12 w-full">
+              <span>{line}</span>
+              <ClosedToggleButton showing onToggle={onToggle} />
+            </div>
+          ),
+        }
+      : null;
 }
 
 function ClosedFooter({
   line,
-  section,
   showing,
+  onToggle,
 }: {
   line: string | null;
-  section: ClosedSection;
   showing: boolean;
+  onToggle: () => void;
 }) {
-  if (!line) return null;
+  if (!line || showing) return null;
   return (
     <CardFooter>
       <Text variant="label" tone="ink-3">
         {line}
       </Text>
-      <Button asChild variant="link" size="sm">
-        <Link
-          href={showing ? ACCOUNTS_HREF : `${ACCOUNTS_HREF}?closed=${section}`}
-        >
-          {showing ? 'Hide' : 'Show'}
-          <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
-        </Link>
-      </Button>
+      <ClosedToggleButton showing={false} onToggle={onToggle} />
     </CardFooter>
   );
 }
@@ -135,9 +178,12 @@ function AddLink({
   children: React.ReactNode;
 }) {
   return (
-    <Text variant="caption" as="span">
+    <Text variant="label" as="span">
       <Button asChild variant="link" size="sm">
-        <Link href={href}>{children}</Link>
+        <Link href={href}>
+          <Icon name="add" size="sm" />
+          {children}
+        </Link>
       </Button>
     </Text>
   );
@@ -151,7 +197,7 @@ function NavLink({
   children: React.ReactNode;
 }) {
   return (
-    <Text variant="caption" as="span" className="hidden desk:inline">
+    <Text variant="label" as="span" className="hidden desk:inline">
       <Button asChild variant="link" size="sm">
         <Link href={href}>
           {children}
@@ -162,29 +208,23 @@ function NavLink({
   );
 }
 
-function closedState(row: { closed: boolean }) {
-  return row.closed ? { disabled: true } : undefined;
-}
-
 interface SectionProps<Row> {
   rows: Row[];
   closedRows: Row[];
   closedLine: string | null;
-  showClosed: boolean;
 }
 
-function withClosed<Row>({
-  rows,
-  closedRows,
-  showClosed,
-}: SectionProps<Row>): Row[] {
-  return showClosed ? [...rows, ...closedRows] : rows;
+function withClosed<Row>(
+  { rows, closedRows }: SectionProps<Row>,
+  showing: boolean,
+): Row[] {
+  return showing ? [...rows, ...closedRows] : rows;
 }
 
 // ---- Bank accounts ---------------------------------------------------------
 
 const bankCh = createDataTableColumnHelper<BankRow>();
-const bankColumns = [
+const bankBaseColumns = [
   bankCh.display({
     id: 'account',
     header: 'Account',
@@ -227,30 +267,31 @@ const bankColumns = [
         </Text>
       ) : null,
   }),
-  bankCh.display({
-    id: 'actions',
-    header: '',
-    meta: { size: 'md', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-space-4">
-        <IconLink
-          href={`${rowHref(row.original)}/statements`}
-          label="Statements"
-          icon="file-text"
-        />
-        <IconLink
-          href={`${rowHref(row.original)}?edit=1`}
-          label="Edit"
-          icon="pencil-simple"
-        />
-        <OpenButton row={row.original} />
-      </div>
-    ),
-  }),
 ];
+
+function makeBankColumns(onEdit: (row: BankRow) => void) {
+  return [
+    ...bankBaseColumns,
+    bankCh.display({
+      id: 'actions',
+      header: '',
+      meta: { size: 'md', align: 'end', phone: 'hidden' },
+      cell: ({ row }) => (
+        <RowControls>
+          <EditButton onEdit={() => onEdit(row.original)} />
+          <OpenButton row={row.original} />
+        </RowControls>
+      ),
+    }),
+  ];
+}
+const bankColumns = makeBankColumns(() => undefined);
 
 export function BankSection(props: SectionProps<BankRow>) {
   const router = useRouter();
+  const closed = useClosedToggle();
+  const [editing, setEditing] = useState<BankRow | null>(null);
+  const columns = useMemo(() => makeBankColumns(setEditing), []);
   return (
     <Card
       title="Bank accounts"
@@ -262,19 +303,26 @@ export function BankSection(props: SectionProps<BankRow>) {
       }
     >
       <DataTable
-        columns={bankColumns}
-        data={withClosed(props)}
+        columns={columns}
+        data={withClosed(props, closed.showing)}
+        band={closedBand<BankRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
+        rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={(row) => row.phoneSub}
-        rowState={closedState}
         empty={<EmptyState compact description="No bank accounts added." />}
       />
       <ClosedFooter
         line={props.closedLine}
-        section="banks"
-        showing={props.showClosed}
+        showing={closed.showing}
+        onToggle={closed.toggle}
       />
+      {editing ? (
+        <AccountFormDialog
+          account={editing.account}
+          onClose={() => setEditing(null)}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -285,29 +333,10 @@ export function BankSection(props: SectionProps<BankRow>) {
 export interface CardListRow extends CardBaseRow {
   /** The next-bill badge, if the bills have a state to show. */
   billSlot: React.ReactNode;
-  /** The Upload button on desktop, shown when the statement is missing. */
-  uploadSlot: React.ReactNode;
-  /** The Upload statement button on phone. */
-  uploadPhoneSlot: React.ReactNode;
   /** The Rewards cell. */
   rewardsSlot: React.ReactNode;
   /** The rewards text at the end of the phone sub line, with its own separator. */
   phoneRewardsSlot: React.ReactNode;
-}
-
-/** The Upload button for a card whose statement is missing; rendered by the streamed bill check. */
-export function UploadStatementButton({
-  id,
-  label,
-}: {
-  id: string;
-  label: string;
-}) {
-  return (
-    <Button asChild variant="secondary" size="sm">
-      <Link href={uploadHref({ id })}>{label}</Link>
-    </Button>
-  );
 }
 
 function CardBadges({ row }: { row: CardListRow }) {
@@ -392,15 +421,9 @@ const cardColumns = [
     header: '',
     meta: { size: 'lg', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-space-4">
-        {row.original.uploadSlot}
-        <IconLink
-          href={`${rowHref(row.original)}/statements`}
-          label="Statements"
-          icon="file-text"
-        />
+      <RowControls>
         <OpenButton row={row.original} />
-      </div>
+      </RowControls>
     ),
   }),
 ];
@@ -436,33 +459,31 @@ export function CardsSection(
   props: SectionProps<CardListRow> & { subtitle: string }
 ) {
   const router = useRouter();
+  const closed = useClosedToggle();
   return (
     <Card
       title="Credit cards"
       subtitle={props.subtitle}
       action={
-        <div className="flex items-center gap-space-12">
-          <AddLink href={`${ACCOUNTS_HREF}?add=credit_card`}>
-            Add credit card
-          </AddLink>
-          <NavLink href="/rewards">Rewards</NavLink>
-        </div>
+        <AddLink href={`${ACCOUNTS_HREF}?add=credit_card`}>
+          Add credit card
+        </AddLink>
       }
     >
       <DataTable
         columns={cardColumns}
-        data={withClosed(props)}
+        data={withClosed(props, closed.showing)}
+        band={closedBand<CardListRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
+        rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={cardPhoneSub}
-        phoneActions={(row) => row.uploadPhoneSlot}
-        rowState={closedState}
         empty={<EmptyState compact description="No credit cards added." />}
       />
       <ClosedFooter
         line={props.closedLine}
-        section="cards"
-        showing={props.showClosed}
+        showing={closed.showing}
+        onToggle={closed.toggle}
       />
     </Card>
   );
@@ -500,6 +521,7 @@ export function BrokersSection(
   props: SectionProps<BrokerRow> & { title: string }
 ) {
   const router = useRouter();
+  const closed = useClosedToggle();
   return (
     <Card
       title={props.title}
@@ -515,17 +537,18 @@ export function BrokersSection(
     >
       <DataTable
         columns={brokerColumns}
-        data={withClosed(props)}
+        data={withClosed(props, closed.showing)}
+        band={closedBand<BrokerRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
+        rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={(row) => row.phoneSub}
-        rowState={closedState}
         empty={<EmptyState compact description="No broker accounts added." />}
       />
       <ClosedFooter
         line={props.closedLine}
-        section="brokers"
-        showing={props.showClosed}
+        showing={closed.showing}
+        onToggle={closed.toggle}
       />
     </Card>
   );
@@ -565,6 +588,7 @@ const walletColumns = [
 
 export function WalletsSection(props: SectionProps<WalletRow>) {
   const router = useRouter();
+  const closed = useClosedToggle();
   return (
     <Card
       title="Wallets & cash"
@@ -575,16 +599,17 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
     >
       <DataTable
         columns={walletColumns}
-        data={withClosed(props)}
+        data={withClosed(props, closed.showing)}
+        band={closedBand<WalletRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
+        rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
-        rowState={closedState}
         empty={<EmptyState compact description="No other accounts added." />}
       />
       <ClosedFooter
         line={props.closedLine}
-        section="wallets"
-        showing={props.showClosed}
+        showing={closed.showing}
+        onToggle={closed.toggle}
       />
     </Card>
   );

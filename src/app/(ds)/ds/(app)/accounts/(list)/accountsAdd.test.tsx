@@ -27,7 +27,7 @@ const accounts: Account[] = [
 const base: PlainListData = { accounts, bills: [], rewards: [], netWorth: 1000, dayChangePct: 0 };
 
 async function renderPage() {
-  const ui = await DsAccountsPage({ searchParams: Promise.resolve({}) });
+  const ui = await DsAccountsPage();
   return render((await resolveDeep(ui)) as React.ReactElement);
 }
 

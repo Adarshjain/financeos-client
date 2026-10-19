@@ -9,9 +9,7 @@ import {
   cardsKpi,
   cardsSubtitle,
   cashKpi,
-  CLOSED_SECTIONS,
   closedLineFor,
-  type ClosedSection,
   formatRupees,
   groupAccounts,
   walletRow,
@@ -37,15 +35,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import { sumBalances } from '@/lib/accountTotals';
 import { todayInAppZone } from '@/lib/date-range';
 
-export default async function DsAccountsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ closed?: string }>;
-}) {
-  const params = searchParams ? await searchParams : undefined;
-  const closedParam = CLOSED_SECTIONS.find((s) => s === params?.closed) as
-    | ClosedSection
-    | undefined;
+export default async function DsAccountsPage() {
   const today = todayInAppZone();
   // All five requests start now; only the accounts are awaited, the rest stream in below.
   const streams = loadAccountsListData();
@@ -91,7 +81,6 @@ export default async function DsAccountsPage({
           rows={sections.banks.open.map((a) => bankRow(a, today))}
           closedRows={sections.banks.closed.map((a) => bankRow(a, today))}
           closedLine={closedLineFor(sections.banks.closed)}
-          showClosed={closedParam === 'banks'}
         />
 
         <CardsSection
@@ -99,7 +88,6 @@ export default async function DsAccountsPage({
           rows={cardRows(sections.cards.open)}
           closedRows={cardRows(sections.cards.closed)}
           closedLine={closedLineFor(sections.cards.closed)}
-          showClosed={closedParam === 'cards'}
         />
 
         <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
@@ -108,13 +96,11 @@ export default async function DsAccountsPage({
             rows={sections.brokers.open.map((a) => brokerRow(a, today))}
             closedRows={sections.brokers.closed.map((a) => brokerRow(a, today))}
             closedLine={closedLineFor(sections.brokers.closed)}
-            showClosed={closedParam === 'brokers'}
           />
           <WalletsSection
             rows={sections.wallets.open.map((a) => walletRow(a, today))}
             closedRows={sections.wallets.closed.map((a) => walletRow(a, today))}
             closedLine={closedLineFor(sections.wallets.closed)}
-            showClosed={closedParam === 'wallets'}
           />
         </div>
       </div>

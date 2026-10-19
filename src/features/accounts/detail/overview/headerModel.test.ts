@@ -41,7 +41,6 @@ describe('buildHeaderModel for a card', () => {
     expect(m.caption).toEqual(['due 25 Oct', 'unbilled ₹0']);
     expect(m.badge).toBeUndefined();
     expect(m.markPaid).toEqual({ statementId: 's1', remaining: 44319 });
-    expect(m.showImport).toBe(true);
   });
 
   it.each(['OPEN', 'PARTIAL', 'OVERDUE'] as const)('allows Mark paid when %s', (status) => {
@@ -93,10 +92,9 @@ describe('buildHeaderModel for a card', () => {
     expect(m).toMatchObject({ label: 'You owe', figure: '₹44,319', caption: [], markPaid: null });
   });
 
-  it('hides Mark paid and Import and says when it closed', () => {
+  it('hides Mark paid and says when it closed', () => {
     const m = buildHeaderModel({ ...card, closedOn: '2026-06-30' }, bill(), TODAY);
     expect(m.markPaid).toBeNull();
-    expect(m.showImport).toBe(false);
     expect(m.closedLabel).toBe('Closed 30 Jun 2026');
   });
 
@@ -110,15 +108,23 @@ describe('buildHeaderModel for a card', () => {
 describe('buildHeaderModel for other types', () => {
   const bank: BankAccount = { id: 'b1', type: AccountType.BANK_ACCOUNT, name: 'HDFC', balance: 120000 };
 
-  it('shows a bank balance, anchored to its statement, with Import', () => {
+  it('shows a bank balance, anchored to its statement', () => {
     const m = buildHeaderModel({ ...bank, balanceAnchored: true, anchorDate: '2026-10-05' }, null, TODAY);
     expect(m).toMatchObject({
       label: 'Balance',
       figure: '₹1,20,000',
       caption: ['as of statement 5 Oct'],
-      showImport: true,
       markPaid: null,
     });
+  });
+
+  it('says the balance is current to the newest later transaction, else to the statement', () => {
+    const anchored = { ...bank, balanceAnchored: true, anchorDate: '2026-10-05' };
+    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-12').caption).toEqual(['as of 12 Oct']);
+    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-03').caption).toEqual(['as of statement 5 Oct']);
+    expect(buildHeaderModel(anchored, null, TODAY, null).caption).toEqual(['as of statement 5 Oct']);
+    // A transaction dated after today is not in the balance yet.
+    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-20').caption).toEqual(['as of statement 5 Oct']);
   });
 
   it('falls back to the opening balance and leaves the caption out when not anchored', () => {
@@ -131,22 +137,16 @@ describe('buildHeaderModel for other types', () => {
     expect(m.caption).toEqual([]);
   });
 
-  it('hides Import for a closed bank account', () => {
-    expect(buildHeaderModel({ ...bank, closedOn: '2026-01-01' }, null, TODAY).showImport).toBe(false);
-  });
-
-  it('labels a broker Portfolio value and a wallet Balance, neither with Import', () => {
+  it('labels a broker Portfolio value and a wallet Balance', () => {
     const broker: Broker = { id: 'k1', type: AccountType.BROKER, name: 'Zerodha', balance: 50000 };
     const wallet: GenericAccount = { id: 'w1', type: AccountType.GENERIC, name: 'Cash', balance: 200 };
     expect(buildHeaderModel(broker, null, TODAY)).toMatchObject({
       label: 'Portfolio value',
       figure: '₹50,000',
-      showImport: false,
     });
     expect(buildHeaderModel(wallet, null, TODAY)).toMatchObject({
       label: 'Balance',
       figure: '₹200',
-      showImport: false,
     });
   });
 });

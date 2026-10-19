@@ -192,6 +192,52 @@ describe('milestones', () => {
     expect(done.status).toEqual({ label: 'Achieved', tone: 'success' });
     expect(done.caption).toBe('100%');
   });
+  it('titles the card with the milestone name', () => {
+    expect(buildMilestone(m, today).title).toBe('Annual spend');
+    expect(buildMilestone({ ...m, name: '' }, today).title).toBe('Milestone');
+  });
+  describe.each([
+    {
+      type: 'cash payout (rupees)',
+      over: { rewardType: 'CASH', payoutValue: 2500 },
+      subtitle: 'Spend ₹4L in the year → ₹2,500 bonus',
+    },
+    {
+      type: 'points payout',
+      over: { rewardType: 'POINTS', payoutValue: 10000 },
+      subtitle: 'Spend ₹4L in the year → 10,000 bonus pts',
+    },
+    {
+      type: 'info tracker (no payout)',
+      over: { payoutType: 'INFO_TRACKER', payoutValue: null },
+      subtitle: 'Spend ₹4L in the year',
+    },
+    {
+      type: 'transaction count with a minimum amount',
+      over: { basis: 'TXN_COUNT', threshold: 50, progress: 10, minTxnAmount: 500, payoutValue: null },
+      subtitle: '50 transactions of ₹500+ each in the year',
+    },
+    {
+      type: 'one-time window',
+      over: { windowType: 'ONE_TIME', payoutValue: null },
+      subtitle: 'Spend ₹4L in the period',
+    },
+    {
+      type: 'statement cycle window',
+      over: { windowType: 'STATEMENT_CYCLE', payoutValue: null },
+      subtitle: 'Spend ₹4L in the statement cycle',
+    },
+  ] as const)('$type', ({ over, subtitle }) => {
+    it('shows the milestone with its name and target', () => {
+      const model = buildMilestone({ ...m, ...over } as MilestoneStatus, today);
+      expect(model.title).toBe('Annual spend');
+      expect(model.subtitle).toBe(subtitle);
+    });
+  });
+  it('says when an achieved payout was credited', () => {
+    const done = buildMilestone({ ...m, progress: 400000, achieved: true, payoutDate: '2026-09-30' }, today);
+    expect(done.caption).toBe('100% · credited 30 Sep');
+  });
   it('has no status or pace for a transaction-count milestone', () => {
     const c = buildMilestone({ ...m, basis: 'TXN_COUNT', threshold: 50, progress: 10, payoutValue: null }, today);
     expect(c.status).toBeNull();

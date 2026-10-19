@@ -49,7 +49,7 @@ export interface LimitCycleModel {
   };
   cycle: { value: string; caption: string };
   bill: { value: string; caption: string };
-  /** Null when a pooled card has no limit of its own. */
+  /** Null for a card on a shared pool: the pool row replaces it. */
   ownLimit: string | null;
   pool: { label: string; value: string; sub: string } | null;
 }
@@ -125,12 +125,7 @@ export function buildLimitCycle(
       caption: lastStatement ? `Unbilled since ${formatDayMonth(lastStatement)}` : 'Unbilled',
     },
     bill: { value: billValue, caption: billCaption },
-    ownLimit:
-      account.creditLimit != null
-        ? formatRupees(account.creditLimit)
-        : pool
-          ? null
-          : 'Not set',
+    ownLimit: pool ? null : account.creditLimit != null ? formatRupees(account.creditLimit) : 'Not set',
     pool: pool
       ? {
           label: `Shared limit · ${pool.name}`,
@@ -159,13 +154,13 @@ function pts(n: number): string {
   return `${formatAmount(n, 0)} pts`;
 }
 
-/** Null when the report has no rules: the Rewards tab carries the empty state. */
+/** Null when the report has neither rules nor milestones: the Rewards tab carries the empty state. */
 export function buildRewards(
   report: RewardReport | null | undefined,
   window: { from: string; to: string; calendarYear: boolean } | null | undefined,
   today: string
 ): RewardsModel | null {
-  if (!report || report.rules.length === 0 || !window) return null;
+  if (!report || (report.rules.length === 0 && report.milestones.length === 0) || !window) return null;
   const { summary } = report;
   const totalPts = summary.points + summary.milestonesPts;
   const earnedParts: string[] = [];
@@ -209,7 +204,8 @@ export function buildRewards(
       const count = spend
         ? `${formatRupees(m.progress)} of ${formatRupees(m.threshold)}`
         : `${m.progress} of ${m.threshold} txns`;
-      const target = payout ? `${count} → ${payout}` : count;
+      const each = !spend && m.minTxnAmount ? ` (${formatRupees(m.minTxnAmount)}+ each)` : '';
+      const target = `${count}${each}${payout ? ` → ${payout}` : ''}${m.achieved ? ' · achieved' : ''}`;
       return {
         id: m.milestoneId,
         label: m.name,

@@ -29,11 +29,12 @@ export function RewardsTab({
 }) {
   const { report, rules, lines, window, query } = data;
   if (!report) return <RewardsLoadError what="rewards" />;
-  if (report.rules.length === 0 && (rules?.length ?? 0) === 0) {
+  if (report.rules.length === 0 && (rules?.length ?? 0) === 0 && report.milestones.length === 0) {
     return <RewardsEmpty accountId={account.id} accountName={account.name} />;
   }
 
   const kpis = buildKpis(report, window);
+  const ruleRows = ruleLines(rules, report);
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
@@ -60,7 +61,9 @@ export function RewardsTab({
           {currentMilestones(report.milestones, today).map((m) => (
             <MilestoneCard key={`${m.milestoneId}:${m.windowStart}`} model={buildMilestone(m, today)} />
           ))}
-          <RulesCard accountId={account.id} rules={ruleLines(rules, report)} />
+          {ruleRows.length > 0 ? (
+            <RulesCard accountId={account.id} rules={ruleRows} />
+          ) : null}
         </div>
       </div>
     </div>
