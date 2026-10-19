@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { AccountsListData } from '@/features/accounts/list/accountsListData';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
 import DsAccountsPage from './page';
+import { type PlainListData, resolveDeep, toStreams } from './streamedTestUtils';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -13,9 +14,9 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-const loadMock = vi.fn<() => Promise<AccountsListData>>();
+const loadMock = vi.fn<() => PlainListData>();
 vi.mock('@/features/accounts/list/accountsListData', () => ({
-  loadAccountsListData: () => loadMock(),
+  loadAccountsListData: () => toStreams(loadMock()),
 }));
 
 const accounts: Account[] = [
@@ -26,7 +27,7 @@ const accounts: Account[] = [
   { id: 'w1', type: AccountType.GENERIC, name: 'Wallet', financialPosition: 'asset', balance: 200 },
 ];
 
-function data(over: Partial<AccountsListData> = {}): AccountsListData {
+function data(over: Partial<PlainListData> = {}): PlainListData {
   return {
     accounts,
     bills: [],
@@ -39,7 +40,7 @@ function data(over: Partial<AccountsListData> = {}): AccountsListData {
 
 async function renderPage(closed?: string) {
   const ui = await DsAccountsPage({ searchParams: Promise.resolve({ closed }) });
-  return render(ui);
+  return render((await resolveDeep(ui)) as React.ReactElement);
 }
 
 describe('/ds/accounts', () => {
@@ -48,7 +49,7 @@ describe('/ds/accounts', () => {
   });
 
   it('renders the KPI row and every section from the data', async () => {
-    loadMock.mockResolvedValue(data());
+    loadMock.mockReturnValue(data());
     await renderPage();
 
     expect(screen.getByText('Cash & wallets')).toBeDefined();
@@ -65,7 +66,7 @@ describe('/ds/accounts', () => {
   });
 
   it('keeps closed accounts out of the rows and shows the closed line with a Show link', async () => {
-    loadMock.mockResolvedValue(data());
+    loadMock.mockReturnValue(data());
     await renderPage();
 
     expect(screen.queryByText('Old Card')).toBeNull();
@@ -75,7 +76,7 @@ describe('/ds/accounts', () => {
   });
 
   it('shows the closed rows after the open ones for ?closed=cards, with a Hide link', async () => {
-    loadMock.mockResolvedValue(data());
+    loadMock.mockReturnValue(data());
     await renderPage('cards');
 
     expect(screen.getAllByText('Old Card').length).toBeGreaterThan(0);
@@ -84,7 +85,7 @@ describe('/ds/accounts', () => {
   });
 
   it('degrades only the net worth tile when the dashboard summary fails', async () => {
-    loadMock.mockResolvedValue(data({ netWorth: null, dayChangePct: null }));
+    loadMock.mockReturnValue(data({ netWorth: null, dayChangePct: null }));
     await renderPage();
 
     expect(screen.getByText('Could not load net worth')).toBeDefined();
@@ -93,7 +94,7 @@ describe('/ds/accounts', () => {
   });
 
   it('renders only the ErrorState when accounts fail', async () => {
-    loadMock.mockResolvedValue(data({ accounts: null, errorReference: 'req-123' }));
+    loadMock.mockReturnValue(data({ accounts: null, errorReference: 'req-123' }));
     await renderPage();
 
     expect(screen.getByText('Could not load accounts')).toBeDefined();
@@ -104,7 +105,7 @@ describe('/ds/accounts', () => {
   });
 
   it('renders only the EmptyState when there are no accounts', async () => {
-    loadMock.mockResolvedValue(data({ accounts: [] }));
+    loadMock.mockReturnValue(data({ accounts: [] }));
     await renderPage();
 
     expect(screen.getByText('No accounts connected yet')).toBeDefined();
@@ -113,7 +114,7 @@ describe('/ds/accounts', () => {
   });
 
   it('gives bank rows Statements and Edit links and card rows only Statements', async () => {
-    loadMock.mockResolvedValue(data());
+    loadMock.mockReturnValue(data());
     await renderPage();
 
     const hrefs = (name: string) =>

@@ -23,35 +23,43 @@ async function dayChangePct(): Promise<number | null> {
   return pct == null ? null : Number(pct);
 }
 
-export interface AccountsListData {
+/** Resolves to null instead of rejecting, so an optional piece degrades on its own. */
+function orNull<T>(request: Promise<T>): Promise<T | null> {
+  return request.catch(() => null);
+}
+
+export interface AccountsResult {
   /** Null when the accounts request failed; `errorReference` then carries the request id. */
   accounts: Account[] | null;
   errorReference?: string;
-  /** Null when its request failed. */
-  bills: CardBillResponse[] | null;
-  rewards: RewardTotal[] | null;
-  netWorth: number | null;
-  dayChangePct: number | null;
 }
 
-/** Everything the accounts list needs, fetched in parallel; only the accounts request is required. */
-export async function loadAccountsListData(): Promise<AccountsListData> {
-  const [accounts, bills, rewards, worth, day] = await Promise.allSettled([
-    accountsApi.list(),
-    billsApi.list(),
-    rewardTotals(),
-    netWorth(),
-    dayChangePct(),
-  ]);
+/** Every request the accounts list makes, already in flight; none of the promises rejects. */
+export interface AccountsListData {
+  accounts: Promise<AccountsResult>;
+  /** The optional pieces resolve to null when their request failed. */
+  bills: Promise<CardBillResponse[] | null>;
+  rewards: Promise<RewardTotal[] | null>;
+  netWorth: Promise<number | null>;
+  dayChangePct: Promise<number | null>;
+}
+
+/**
+ * Starts all five requests at once and returns their promises without awaiting the optional
+ * ones, so the page can render as soon as the accounts arrive and stream the rest in.
+ */
+export function loadAccountsListData(): AccountsListData {
   return {
-    accounts: accounts.status === 'fulfilled' ? accounts.value : null,
-    errorReference:
-      accounts.status === 'rejected' && accounts.reason instanceof ApiError
-        ? accounts.reason.requestId
-        : undefined,
-    bills: bills.status === 'fulfilled' ? bills.value : null,
-    rewards: rewards.status === 'fulfilled' ? rewards.value : null,
-    netWorth: worth.status === 'fulfilled' ? worth.value : null,
-    dayChangePct: day.status === 'fulfilled' ? day.value : null,
+    accounts: accountsApi.list().then(
+      (accounts): AccountsResult => ({ accounts }),
+      (error: unknown): AccountsResult => ({
+        accounts: null,
+        errorReference: error instanceof ApiError ? error.requestId : undefined,
+      })
+    ),
+    bills: orNull(billsApi.list()),
+    rewards: orNull(rewardTotals()),
+    netWorth: orNull(netWorth()),
+    dayChangePct: orNull(dayChangePct()),
   };
 }
