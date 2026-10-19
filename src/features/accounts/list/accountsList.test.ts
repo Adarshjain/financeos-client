@@ -139,6 +139,25 @@ describe('bank rows', () => {
     expect(row.phoneSub).toBe('Statement 30 Sep');
   });
 
+  it('shows the last transaction date when it is after the statement', () => {
+    const row = bankRow(bank({ lastStatementDate: '2026-09-30', lastTransactionDate: '2026-10-16' }), TODAY);
+    expect(row.asOf).toBe('16 Oct');
+    expect(row.phoneSub).toBe('As of 16 Oct');
+  });
+
+  it('keeps the statement copy when it is the same day or later, or the transaction is in the future', () => {
+    const same = bankRow(bank({ lastStatementDate: '2026-09-30', lastTransactionDate: '2026-09-30' }), TODAY);
+    expect(same.asOf).toBe('Stmt 30 Sep');
+    expect(same.phoneSub).toBe('Statement 30 Sep');
+    expect(bankRow(bank({ lastStatementDate: '2026-09-30', lastTransactionDate: '2026-09-01' }), TODAY).asOf).toBe('Stmt 30 Sep');
+    expect(bankRow(bank({ lastStatementDate: '2026-09-30', lastTransactionDate: '2026-10-25' }), TODAY).asOf).toBe('Stmt 30 Sep');
+  });
+
+  it('uses the last transaction when there is no statement, and nothing when neither', () => {
+    expect(bankRow(bank({ lastStatementDate: null, lastTransactionDate: '2026-10-16' }), TODAY).asOf).toBe('16 Oct');
+    expect(bankRow(bank({ lastStatementDate: null, lastTransactionDate: null }), TODAY).asOf).toBeNull();
+  });
+
   it('has no as-of text without a statement date', () => {
     const row = bankRow(bank({ lastStatementDate: null }), TODAY);
     expect(row.asOf).toBeNull();

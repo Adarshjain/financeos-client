@@ -245,10 +245,21 @@ export function gapLabel(gap: number | null | undefined): string | null {
   return `Gap ${formatCompactRupees(Math.abs(gap))}`;
 }
 
+/** The date a balance is current to: the later of the last transaction (ignored when in the future) and the last statement. */
+export function balanceCurrency(
+  lastTransactionDate: string | null | undefined,
+  lastStatementDate: string | null | undefined,
+  today: string
+): { kind: 'statement' | 'transaction'; date: string } | null {
+  const tx = lastTransactionDate && lastTransactionDate <= today ? lastTransactionDate : null;
+  if (tx && (!lastStatementDate || tx > lastStatementDate)) return { kind: 'transaction', date: tx };
+  return lastStatementDate ? { kind: 'statement', date: lastStatementDate } : null;
+}
+
 export function bankRow(account: BankAccount, today: string): BankRow {
-  const stmt = account.lastStatementDate
-    ? formatDayMonth(account.lastStatementDate)
-    : '';
+  const current = balanceCurrency(account.lastTransactionDate, account.lastStatementDate, today);
+  const day = current ? formatDayMonth(current.date) : '';
+  const isTx = current?.kind === 'transaction';
   return {
     id: account.id,
     name: account.name,
@@ -256,8 +267,8 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     synced: Boolean(account.ingestFromDate),
     gapLabel: gapLabel(account.reconciliationGap),
     balance: formatAmount(sumBalances([account])),
-    asOf: stmt ? `Stmt ${stmt}` : null,
-    phoneSub: stmt ? `Statement ${stmt}` : null,
+    asOf: current ? (isTx ? day : `Stmt ${day}`) : null,
+    phoneSub: current ? (isTx ? `As of ${day}` : `Statement ${day}`) : null,
     closed: isAccountClosed(account, today),
     account,
   };

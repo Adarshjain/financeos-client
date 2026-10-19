@@ -313,6 +313,7 @@ const bank: BankAccount = {
   balance: 295030.5,
   balanceAnchored: true,
   anchorDate: '2026-09-30',
+  lastTransactionDate: '2026-10-12',
   ingestFromDate: '2026-06-15',
 };
 

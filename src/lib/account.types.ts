@@ -102,6 +102,8 @@ export interface AccountBase {
   balanceAnchored?: boolean | null;
   reconciliationGap?: number | null;
   anchorDate?: string | null;
+  /** Newest transaction date (yyyy-mm-dd); null when none or for brokers. Set by the account list and detail endpoints only. */
+  lastTransactionDate?: string | null;
 }
 
 export type AccountStatus = 'ACTIVE' | 'CLOSING' | 'CLOSED';

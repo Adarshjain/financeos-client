@@ -89,7 +89,7 @@ export function buildHeaderModel(
   account: Account,
   bill: CardBillResponse | null | undefined,
   today: string,
-  /** Newest entry date: a wallet's "last entry", and for an anchored account the date its balance is current to. */
+  /** Newest entry date, for a wallet's "last entry". */
   lastEntry?: string | null
 ): HeaderModel {
   const closed = isAccountClosed(account, today);
@@ -108,7 +108,8 @@ export function buildHeaderModel(
   const caption: string[] = [];
   if (account.type !== AccountType.GENERIC && account.balanceAnchored && account.anchorDate) {
     // Later transactions are added on top of the statement balance, so the balance is current to the newest one.
-    const current = lastEntry && lastEntry > account.anchorDate && lastEntry <= today ? lastEntry : null;
+    const latest = account.lastTransactionDate;
+    const current = latest && latest > account.anchorDate && latest <= today ? latest : null;
     caption.push(current ? `as of ${formatDayMonth(current)}` : `as of statement ${formatDayMonth(account.anchorDate)}`);
   }
   if (account.type === AccountType.BROKER) {
