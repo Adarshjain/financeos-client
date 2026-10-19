@@ -134,15 +134,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
 
               const content = (
                 <>
-                  {hasLabel ? (
-                    <Icon
-                      name={action.icon}
-                      size="xs"
-                      className="max-desk:w-icon-md max-desk:h-icon-md"
-                    />
-                  ) : (
-                    <Icon name={action.icon} size="md" />
-                  )}
+                  <Icon name={action.icon} size="md" />
                   {hasLabel && (
                     <span className="hidden desk:inline">{action.label}</span>
                   )}
@@ -155,7 +147,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               const buttonClasses = cn(
                 'shrink-0',
                 hasLabel
-                  ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
+                  ? 'max-desk:[&_svg]:w-icon-md max-desk:[&_svg]:h-icon-md w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,
               );
 

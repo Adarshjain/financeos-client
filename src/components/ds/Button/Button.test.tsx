@@ -290,20 +290,39 @@ describe('Button type size (UAT)', () => {
   });
   describe('icon size beside text', () => {
     it('draws the icon at xs when the button shows text', () => {
-      const { container } = render(
+      render(
         <Button icon={<Icon name="add" size="md" />}>Add account</Button>
       );
-      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-xs');
+      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
     });
 
     it('draws an Icon child at xs beside text', () => {
-      const { container } = render(
+      render(
         <Button>
           <Icon name="add" size="lg" />
           Add
         </Button>
       );
-      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-xs');
+      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
+    });
+
+    it('treats a raw svg (server-rendered Icon) beside text as an icon', () => {
+      render(
+        <Button>
+          <svg data-testid="raw" />
+          All
+        </Button>
+      );
+      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
+    });
+
+    it('does not apply xs to an svg-only child', () => {
+      render(
+        <Button aria-label="Go">
+          <svg />
+        </Button>
+      );
+      expect(screen.getByRole('button').className).not.toContain('[&_svg]:w-icon-xs');
     });
 
     it('keeps the icon size on an icon-only button', () => {
