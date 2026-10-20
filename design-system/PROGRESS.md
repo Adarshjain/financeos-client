@@ -330,6 +330,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-20 · Link buttons underline in `line-heavy`, not the text colour (owner).
 - 2026-10-20 · Card gets an `inset` variant (job boxes, email groups, counter tiles); icons `sun`, `moon`, `monitor` join the registry for the theme control (owner).
 - 2026-10-20 · Legacy Settings gets a "Dinero" row opening `/ds`; `/ds` index links Settings; Card gets `tone="danger"` (Delete account); ListRow gets `wrap` (owner).
+- 2026-10-20 · **Inbox & Upcoming gap review** (owner; boards redrawn, awaiting look): one page, route tabs Inbox · Upcoming · Calendar; no summary lines; range Select at the end of the filter row (chevron icon); calendar month, total and prev · Today · next arrows in the calendar card header; Inbox squares carry words only (2d, EMI, counts, cap), none otherwise; no Inbox row for finished manual statement imports, failed ones stay (server); Settle on lending rows opens the Settle up sheet; totals follow the filter, empty tiles hide; no Pager on either list; calendar chips = name cut to fit + short amount; review row gets × and returns when its count changes (server).
 
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
   - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
