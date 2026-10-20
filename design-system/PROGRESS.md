@@ -321,6 +321,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-19 · **UAT round 2** (owner): Tooltip approved (dark theme inverts, as built). All controls 32px (`control-md`), replacing 36. New token `icon-xs` 10px: every icon beside button text; link icon gap `space-2`. RULES §5.5 phone footer = `control-md`. `/bills?accountId` computes only that card. Write decisions tersely.
 - 2026-10-19 · **UAT round 4** (owner): SectionHeader + DataTable band take `action` (right end); closed toggle uses it. Brokers card: no total, no Investments link. Card table Next bill/Outstanding/Rewards `sm`. Button sizes svgs xs by CSS (RSC-safe).
 - 2026-10-19 · **UAT round 5** (owner): closed toggle `ghost`. Card header text actions `link`. Pager `compact` by default. Dialogs open from state, never the URL; cross-page opening = ask owner. Statement bills in one request.
+- 2026-10-20 · **Bank display** (owner): Option A on Accounts pages: BankLogo before the name (list rows, page title). `short_name` in banks.ts: owner's, use only where told. Other pages decided when we reach them.
 
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
   - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
@@ -336,7 +337,6 @@ Only the owner adds to this list. Each entry has a date and the decision.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
-- 2026-10-19 · Accounts · bank shown nowhere outside the form. Owner wants designs from Claude (next session).
 
 
 
@@ -350,6 +350,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-20 · Phase 3 (Accounts) · Claude · Bank display A: DataTable `leading` slot; BankLogo takes null bank (letter tile); logo before names + page title; Axis/CSB logos redone from Wikimedia SVGs. Forced tests: none. Checks: tests, lint, check-ui, storybook. Deviations: none.
 - 2026-10-19 · Phase 3 (Accounts) · Claude · UAT r5 (decision above). SectionHeader centres items when it has an action. Forced tests: dialog-param tests rewritten to state (accountsAdd, ShellPage, AccountFormDialog, accountFormModel, account, cards; AccountFormHosts deleted). Checks: typecheck, tests, lint, check-ui, storybook, ds-shell e2e, api e2e. Deviations: none.
 - 2026-10-19 · Phase 3 (Accounts) · Claude · UAT r4 (decision above). Forced tests: 2 Button xs tests assert the class; accounts.test Brokers title. Checks: typecheck, tests, lint, check-ui, storybook. Deviations: none.
 

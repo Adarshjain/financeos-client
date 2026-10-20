@@ -84,6 +84,7 @@ export interface DataTableProps<Row extends RowData>
   defaultExpanded?: string[];
   onExpandedChange?: (expanded: string[]) => void;
 
+  leading?: (row: Row) => React.ReactNode;
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
 

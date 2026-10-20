@@ -523,6 +523,30 @@ describe('DataTable', () => {
       expect(actionContainer).toHaveClass('desk:hidden');
     });
 
+    it('leading renders in the main cell on desktop and left of the text on phone; null draws nothing', () => {
+      render(
+        <DataTable
+          columns={testColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          leading={(r) => (r.id === '1' ? <i data-testid="lead" /> : null)}
+          phoneSub={(r) => `Sub info ${r.id}`}
+        />,
+      );
+
+      const leads = screen.getAllByTestId('lead');
+      expect(leads).toHaveLength(2);
+      const desk = leads.find((el) => el.closest('[role="cell"]'));
+      const phone = leads.find((el) => !el.closest('[role="cell"]'));
+      expect(desk?.parentElement).toHaveClass('hidden', 'desk:block');
+      expect(phone?.parentElement).toHaveClass('desk:hidden', 'row-span-2');
+      const rows = screen.getAllByRole('row');
+      expect(rows[1]).toHaveClass('grid-cols-lead-fill-auto');
+      expect(rows[2]).not.toHaveClass('grid-cols-lead-fill-auto');
+      expect(screen.getByText('Sub info 1')).toHaveClass('col-start-2');
+      expect(screen.getByText('Sub info 2')).toHaveClass('col-start-1');
+    });
+
     it('status cells pin right on phone and follow meta.align on desktop', () => {
       const make = (align?: 'start' | 'end') =>
         helper.columns([

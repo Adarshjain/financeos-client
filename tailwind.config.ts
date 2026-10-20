@@ -361,6 +361,12 @@ const config: Config = {
         '.grid-cols-fill-auto-auto': {
           'grid-template-columns': 'minmax(0, 1fr) auto auto',
         },
+        '.grid-cols-lead-fill-auto': {
+          'grid-template-columns': 'auto minmax(0, 1fr) auto',
+        },
+        '.grid-cols-lead-fill-auto-auto': {
+          'grid-template-columns': 'auto minmax(0, 1fr) auto auto',
+        },
       });
       addVariant(
         'active-self',

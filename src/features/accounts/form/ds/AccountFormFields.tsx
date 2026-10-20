@@ -41,7 +41,7 @@ const BANK_OPTIONS: SelectOption[] = BANKS.map((b) => ({
   value: b.id,
   label: b.name,
   searchText: b.aliases.join(' '),
-  icon: <BankLogo bankId={b.id} />,
+  icon: <BankLogo bankId={b.id} name={b.name} />,
 }));
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

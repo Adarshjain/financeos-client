@@ -120,6 +120,12 @@ describe('compact rupees', () => {
 });
 
 describe('bank rows', () => {
+  it('carries the bank id, null when absent', () => {
+    expect(bankRow(bank({ bank: 'hdfc' }), TODAY).bank).toBe('hdfc');
+    expect(bankRow(bank({ bank: null }), TODAY).bank).toBeNull();
+    expect(bankRow(bank(), TODAY).bank).toBeNull();
+  });
+
   it('shows Gmail synced when an ingest date is set, Manual otherwise', () => {
     expect(bankRow(bank({ ingestFromDate: '2026-01-01' }), TODAY).synced).toBe(true);
     expect(bankRow(bank({ ingestFromDate: null }), TODAY).synced).toBe(false);
@@ -295,6 +301,10 @@ describe('card rows', () => {
   });
   it('has no shared limit line without a pool', () => {
     expect(cardRow(card(), undefined, undefined, TODAY).sharedLimit).toBeNull();
+  });
+  it('carries the bank id, null when absent', () => {
+    expect(cardRow(card({ bank: 'axis' }), undefined, undefined, TODAY).bank).toBe('axis');
+    expect(cardRow(card({ bank: null }), undefined, undefined, TODAY).bank).toBeNull();
   });
   it('flags a card with no last4 as No active card', () => {
     const row = cardRow(card({ last4: '' }), undefined, undefined, TODAY);

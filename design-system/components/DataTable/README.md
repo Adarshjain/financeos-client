@@ -57,6 +57,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `allSelected?: boolean`, `onAllSelectedChange?`.
 - `onRowSelect?: (row) => void`.
 - `renderExpanded?: (row) => ReactNode`, `getRowCanExpand?: (row) => boolean`, `expanded?: string[]`, `defaultExpanded`, `onExpandedChange`.
+- `leading?: (row) => ReactNode`: a mark (bank logo) at the start of the `main` cell on desktop; on phone it sits left of the `main` and `phoneSub` lines, so the sub-line starts under the name. `null` draws nothing.
 - `phoneSub?: (row) => ReactNode`, `phoneActions?: (row) => ReactNode`.
 - `band?: (row) => { key: string; label: ReactNode; action?: ReactNode } | null`, `dayHeader?: (row) => { key: string; label: ReactNode; sublabel?: ReactNode } | null`.
 - `rowState?: (row) => { tone?: 'warning'; disabled?: boolean; muted?: boolean }`, `highlightedRowId?: string`.

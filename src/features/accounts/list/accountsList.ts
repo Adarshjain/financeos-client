@@ -245,6 +245,7 @@ export interface BankRow {
   id: string;
   name: string;
   last4: string | null;
+  bank: string | null;
   synced: boolean;
   gapLabel: string | null;
   balance: string;
@@ -281,6 +282,7 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     id: account.id,
     name: account.name,
     last4: account.last4 || null,
+    bank: account.bank || null,
     synced: Boolean(account.ingestFromDate),
     gapLabel: gapLabel(account.reconciliationGap),
     balance: formatAmount(sumBalances([account])),
@@ -361,6 +363,7 @@ export interface CardRow {
   id: string;
   name: string;
   last4: string | null;
+  bank: string | null;
   sharedLimit: string | null;
   badges: BadgeModel[];
   closing: string | null;
@@ -388,6 +391,7 @@ export function cardBaseRow(card: CreditCard, today: string): CardBaseRow {
     id: card.id,
     name: card.name,
     last4: card.last4 || null,
+    bank: card.bank || null,
     sharedLimit: card.limitPool
       ? `Shared limit · ${card.limitPool.name} ${formatCompactRupees(card.limitPool.creditLimit)}`
       : null,
