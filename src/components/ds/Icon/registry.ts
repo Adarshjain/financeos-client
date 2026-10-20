@@ -24,9 +24,12 @@ import {
   ListBullets,
   MagnifyingGlass,
   Minus,
+  Monitor,
+  Moon,
   PencilSimple,
   Plus,
   SquaresFour,
+  Sun,
   Trash,
   Tray,
   UploadSimple,
@@ -69,6 +72,9 @@ export const iconRegistry = {
   'file-text': FileText,
   'pencil-simple': PencilSimple,
   warning: WarningCircle,
+  sun: Sun,
+  moon: Moon,
+  monitor: Monitor,
 } as const satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof iconRegistry;

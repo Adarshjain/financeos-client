@@ -36,6 +36,7 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   family?: TextFamily;
   align?: TextAlign;
   truncate?: boolean;
+  mono?: boolean;
 }
 
 const variantStyles: Record<TextVariant, string> = {
@@ -88,6 +89,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
       family,
       align,
       truncate = false,
+      mono = false,
       className,
       children,
       ...props
@@ -101,6 +103,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
           variantStyles[variant],
           toneStyles[tone],
           family && familyStyles[family],
+          mono && 'font-mono',
           align && alignStyles[align],
           truncate && 'truncate',
           className,

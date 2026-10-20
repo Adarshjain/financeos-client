@@ -1,11 +1,16 @@
 'use client';
 
 import { Slot } from '@radix-ui/react-slot';
-import React, { forwardRef } from 'react';
+import React, { createContext, forwardRef, useContext } from 'react';
 
 import { cn } from '../cn';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Text } from '../Text/Text';
+
+export type CardVariant = 'default' | 'inset';
+
+// Compound parts read the variant from the Card they sit in, so an inset gets tighter padding.
+const CardVariantContext = createContext<CardVariant>('default');
 
 export interface CardHeaderProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -16,11 +21,15 @@ export interface CardHeaderProps
 
 export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ title, subtitle, action, className, children, ...props }, ref) => {
+    const inset = useContext(CardVariantContext) === 'inset';
     return (
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between gap-space-10 px-space-16 pt-space-14 pb-space-10',
+          'flex items-center justify-between gap-space-10',
+          inset
+            ? 'px-space-10 pt-space-8 pb-space-8'
+            : 'px-space-16 pt-space-14 pb-space-10',
           className,
         )}
         {...props}
@@ -106,11 +115,15 @@ export interface CardRowProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardRow = forwardRef<HTMLDivElement, CardRowProps>(
   ({ className, children, ...props }, ref) => {
+    const inset = useContext(CardVariantContext) === 'inset';
     return (
       <div
         ref={ref}
         className={cn(
-          'flex items-center gap-space-12 py-space-10 px-space-16 border-t border-line-soft font-text text-body text-ink',
+          'flex items-center border-t border-line-soft font-text text-body text-ink',
+          inset
+            ? 'gap-space-8 py-space-8 px-space-10'
+            : 'gap-space-12 py-space-10 px-space-16',
           className,
         )}
         {...props}
@@ -149,11 +162,13 @@ export interface CardEmptyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardEmpty = forwardRef<HTMLDivElement, CardEmptyProps>(
   ({ className, children, ...props }, ref) => {
+    const inset = useContext(CardVariantContext) === 'inset';
     return (
       <div
         ref={ref}
         className={cn(
-          'flex flex-col items-center justify-center text-center gap-space-8 py-space-16 px-space-16 font-text text-body text-ink-3',
+          'flex flex-col items-center justify-center text-center gap-space-8 font-text text-body text-ink-3',
+          inset ? 'py-space-10 px-space-10' : 'py-space-16 px-space-16',
           className,
         )}
         {...props}
@@ -170,11 +185,13 @@ export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, children, ...props }, ref) => {
+    const inset = useContext(CardVariantContext) === 'inset';
     return (
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between gap-space-8 flex-wrap font-text font-medium text-body text-ink-3 py-space-10 px-space-16 border-t border-line-soft',
+          'flex items-center justify-between gap-space-8 flex-wrap font-text font-medium text-body text-ink-3 border-t border-line-soft',
+          inset ? 'py-space-8 px-space-10' : 'py-space-10 px-space-16',
           className,
         )}
         {...props}
@@ -193,7 +210,13 @@ export interface CardProps
   subtitle?: React.ReactNode;
   action?: React.ReactNode;
   asChild?: boolean;
+  variant?: CardVariant;
 }
+
+const variantStyles: Record<CardVariant, string> = {
+  default: 'rounded-ds-lg',
+  inset: 'rounded-ds-md',
+};
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   (
@@ -202,6 +225,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       subtitle,
       action,
       asChild = false,
+      variant = 'default',
       className,
       children,
       ...props
@@ -212,25 +236,28 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const Comp = asChild ? Slot : 'div';
 
     return (
-      <Comp
-        ref={ref}
-        className={cn(
-          'bg-surface border border-line rounded-ds-lg overflow-clip min-w-0',
-          className,
-        )}
-        {...props}
-      >
-        {asChild ? (
-          children
-        ) : (
-          <>
-            {hasHeader ? (
-              <CardHeader title={title} subtitle={subtitle} action={action} />
-            ) : null}
-            {children}
-          </>
-        )}
-      </Comp>
+      <CardVariantContext.Provider value={variant}>
+        <Comp
+          ref={ref}
+          className={cn(
+            'bg-surface border border-line overflow-clip min-w-0',
+            variantStyles[variant],
+            className,
+          )}
+          {...props}
+        >
+          {asChild ? (
+            children
+          ) : (
+            <>
+              {hasHeader ? (
+                <CardHeader title={title} subtitle={subtitle} action={action} />
+              ) : null}
+              {children}
+            </>
+          )}
+        </Comp>
+      </CardVariantContext.Provider>
     );
   },
 );

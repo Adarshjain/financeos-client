@@ -104,6 +104,7 @@
   --ds-dur-base: 200ms;
   --ds-dur-slow: 280ms;
   --ds-dur-loop: 1600ms;
+  --ds-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .dark {
   --ds-bg-canvas: #0e1114;

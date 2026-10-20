@@ -174,3 +174,12 @@ export const Truncated: Story = {
     ),
   ],
 };
+
+export const Mono: Story = {
+  args: {
+    variant: 'caption',
+    tone: 'ink-3',
+    mono: true,
+    children: 'GMAIL_AUTH_EXPIRED · gemini-2.5-flash · sk-ant-…a91f',
+  },
+};

@@ -26,7 +26,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`.
    - Chart tokens use the name `series` (`chart-*` is already taken by the old theme): `series-1` … `series-5`, `series-rest`.
    - `fontSize`: one key per type style carrying its size, line height, weight and letter-spacing: `text-hero-figure`, `text-page-title`, `text-screen-title`, `text-figure`, `text-title`, `text-heading`, `text-body`, `text-body-strong`, `text-label`, `text-caption`, `text-overline`, `text-tab-label`. For `overline`, uppercase comes from the component.
-   - `fontFamily`: `font-text` (Figtree) and `font-display` (Bricolage Grotesque).
+   - `fontFamily`: `font-text` (Figtree), `font-display` (Bricolage Grotesque) and `font-mono` (system monospace, Text `mono`).
    - `spacing`: `space-2` … `space-48`, by pixel value. Plus `safe-12` (12px above the safe area, for the floating TabBar: `bottom-safe-12`) and `tab-bar-clearance` (bottom padding pages keep under the TabBar: `pb-tab-bar-clearance`).
    - `ringColor`: `surface` (`ring-surface`, the ring around count badges on the TabBar).
    - `borderRadius`: `rounded-ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).

@@ -9,6 +9,7 @@ Every piece of plain text on a page: titles, subtitles, body copy, helper lines,
 - `family`: optional, `text` or `display`. When omitted, inherits from parent. `display` is allowed only where RULES §4.5 allows the display face: the hero figure, desktop page titles, and empty, offline and auth headlines.
 - `align`: optional, `start`, `center`, `end`. When omitted, inherits from parent.
 - `truncate`: one line with an ellipsis.
+- `mono`: optional boolean, switches the family to the system monospace stack (`font-mono`) and keeps the style's size, line height, weight and tabular figures.
 - Numbers are always tabular (inherited from the type styles).
 
 ## Rules
@@ -19,4 +20,4 @@ Every piece of plain text on a page: titles, subtitles, body copy, helper lines,
 Nothing else; the type styles and ink tokens.
 
 ## Variants
-- Every type style, each tone, the display family on page-title, centred, truncated.
+- Every type style, each tone, the display family on page-title, centred, truncated, mono (owner item 41, 2026-10-20) for error codes, log lines, masked keys, model ids.

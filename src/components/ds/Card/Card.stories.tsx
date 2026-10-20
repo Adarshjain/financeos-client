@@ -149,3 +149,40 @@ export const Empty: Story = {
     children: <CardEmpty>Every transaction has a category.</CardEmpty>,
   },
 };
+
+export const Inset: Story = {
+  args: {
+    title: 'Recent sync jobs',
+    subtitle: 'Last 7 days',
+    children: (
+      <div className="px-space-16 pb-space-16">
+        <Card variant="inset" title="Gmail sync" subtitle="Today, 06:00 · 2m 14s">
+          <div className="grid grid-cols-3 gap-space-8 px-space-10 pb-space-10">
+            {[
+              ['Parsed', '42'],
+              ['Skipped', '7'],
+              ['Failed', '1'],
+            ].map(([label, count]) => (
+              <Card key={label} variant="inset" className="px-space-10 py-space-8">
+                <Text variant="figure" as="div">{count}</Text>
+                <Text variant="overline" tone="ink-3" as="div">{label}</Text>
+              </Card>
+            ))}
+          </div>
+          <div className="px-space-10 pb-space-10">
+            <Card variant="inset">
+              <CardRow>
+                <Text variant="label" className="flex-1">Skipped · not a transaction</Text>
+                <Text variant="label" tone="ink-3">7 emails</Text>
+              </CardRow>
+              <CardRow>
+                <Text variant="label" className="flex-1">HDFC Bank alerts</Text>
+                <Text variant="label" tone="ink-3">3 emails</Text>
+              </CardRow>
+            </Card>
+          </div>
+        </Card>
+      </div>
+    ),
+  },
+};
