@@ -105,6 +105,13 @@ describe('Text component', () => {
     expect(screen.getByText('Not truncated')).not.toHaveClass('truncate');
   });
 
+  it('switches to the mono family and keeps the type style', () => {
+    const { rerender } = render(<Text variant="caption">Plain</Text>);
+    expect(screen.getByText('Plain')).not.toHaveClass('font-mono');
+    rerender(<Text variant="caption" mono>GMAIL_AUTH_EXPIRED</Text>);
+    expect(screen.getByText('GMAIL_AUTH_EXPIRED')).toHaveClass('font-mono', 'text-caption', 'text-ink');
+  });
+
   it('forwards refs correctly', () => {
     const ref = React.createRef<HTMLHeadingElement>();
     render(<Text as="h2" ref={ref}>Heading with ref</Text>);

@@ -163,5 +163,20 @@
   "name": "warning",
   "phosphor": "warning-circle",
   "use": "Needs-attention mark, e.g. account with no bank (fill)"
+ },
+ {
+  "name": "sun",
+  "phosphor": "sun",
+  "use": "Theme control (Light/Dark/System)"
+ },
+ {
+  "name": "moon",
+  "phosphor": "moon",
+  "use": "Theme control (Light/Dark/System)"
+ },
+ {
+  "name": "monitor",
+  "phosphor": "monitor",
+  "use": "Theme control (Light/Dark/System)"
  }
 ]

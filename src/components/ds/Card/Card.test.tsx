@@ -130,3 +130,55 @@ describe('Card', () => {
     expect(container.firstChild).toHaveClass('overflow-clip', 'min-w-0');
   });
 });
+
+describe('Card inset variant', () => {
+  it('keeps the default variant unchanged', () => {
+    render(<Card data-testid="c" title="Default" />);
+    const c = screen.getByTestId('c');
+    expect(c).toHaveClass('rounded-ds-lg', 'border-line', 'bg-surface');
+    expect(c).not.toHaveClass('rounded-ds-md');
+  });
+
+  it('draws an inset with surface, hairline border, md radius and no shadow', () => {
+    render(<Card variant="inset" data-testid="c" />);
+    const c = screen.getByTestId('c');
+    expect(c).toHaveClass('bg-surface', 'border', 'border-line', 'rounded-ds-md');
+    expect(c).not.toHaveClass('rounded-ds-lg');
+    expect(c.className).not.toMatch(/shadow/);
+  });
+
+  it('tightens header and row padding inside an inset', () => {
+    render(
+      <Card variant="inset" title="Job" data-testid="c">
+        <CardRow>Row</CardRow>
+      </Card>,
+    );
+    expect(screen.getByText('Job').closest('div.flex')).toHaveClass('px-space-10');
+    expect(screen.getByText('Row')).toHaveClass('px-space-10', 'py-space-8');
+  });
+
+  it('keeps normal padding for a default card', () => {
+    render(<Card><CardRow>Row</CardRow></Card>);
+    expect(screen.getByText('Row')).toHaveClass('px-space-16');
+  });
+
+  it('nests an inset inside an inset', () => {
+    render(
+      <Card variant="inset" data-testid="outer">
+        <Card variant="inset" data-testid="inner">
+          <CardRow>Deep</CardRow>
+        </Card>
+      </Card>,
+    );
+    expect(screen.getByTestId('outer')).toContainElement(screen.getByTestId('inner'));
+    expect(screen.getByTestId('inner')).toHaveClass('rounded-ds-md', 'border-line');
+    expect(screen.getByText('Deep')).toHaveClass('px-space-10');
+  });
+
+  it('forwards ref and className on an inset', () => {
+    const ref = React.createRef<HTMLDivElement>();
+    render(<Card variant="inset" ref={ref} className="mt-space-8" data-testid="c" />);
+    expect(ref.current).toBe(screen.getByTestId('c'));
+    expect(ref.current).toHaveClass('mt-space-8');
+  });
+});

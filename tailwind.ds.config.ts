@@ -88,6 +88,7 @@ const config: Config = {
       fontFamily: {
         text: ['var(--ds-font-text)', 'system-ui', 'sans-serif'],
         display: ['var(--ds-font-display)', 'system-ui', 'sans-serif'],
+        mono: ['var(--ds-font-mono)', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         'hero-figure': [
