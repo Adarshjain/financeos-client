@@ -104,6 +104,7 @@ function stmt(id: string, periodEnd: string, over: Partial<StatementSummary> = {
 
 function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
   return {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'HDFC Regalia',
     muted: false,
@@ -119,6 +120,7 @@ function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
 }
 
 const detail: StatementDetailData = {
+  missingDetails: [],
   id: 's3',
   createdAt: '2026-10-13T08:00:00Z',
   source: 'file_upload',
@@ -231,10 +233,10 @@ describe('/ds/accounts/[id]/statements', () => {
     expect(screen.getByText('Closing balance ₹44,319 · matches ledger')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
     // The actions live in the detail card's menu only, not as buttons at the bottom.
-    expect(screen.queryByRole('button', { name: 'Set due date' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Edit details' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Delete statement' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
-    expect(screen.getByRole('menuitem', { name: 'Set due date' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Edit details' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Delete statement' })).toBeInTheDocument();
   });
 
@@ -255,7 +257,7 @@ describe('/ds/accounts/[id]/statements', () => {
     expect(loadData).toHaveBeenCalledWith(card, { fy: '26-27', statement: 's2' }, '2026-10-13');
   });
 
-  it('renders the bank variant without bills, Mark paid or Set due date', async () => {
+  it('renders the bank variant without bills, Mark paid or Edit details', async () => {
     loadAccount.mockResolvedValue(bank);
     loadData.mockResolvedValue(
       data({
@@ -271,7 +273,7 @@ describe('/ds/accounts/[id]/statements', () => {
     expect(screen.getByText('Opening')).toBeInTheDocument();
     expect(screen.getByText('Lines')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Mark paid' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Set due date' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Edit details' })).toBeNull();
     expect(screen.getByText('Closing balance ₹44,319 · ledger ₹43,000')).toBeInTheDocument();
   });
 
@@ -358,11 +360,11 @@ describe('/ds/accounts/[id]/statements', () => {
     expect(screen.getAllByRole('button', { name: 'Undo' })).toHaveLength(1);
   });
 
-  it('sets the due date through the bill details', async () => {
+  it('changes the due date through the bill details, sending only that field', async () => {
     api.PATCH.mockResolvedValue({ data: bill({ paymentDueDate: '2026-10-30' }) });
     await renderPage();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     const field = within(dialog).getByLabelText('Due date');
     expect(field).toHaveValue('25/10/2026');
@@ -381,7 +383,7 @@ describe('/ds/accounts/[id]/statements', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled());
   });
 
-  it('asks for a due date when the statement has none, and does not save', async () => {
+  it('does not save when the statement has no due date and nothing is changed', async () => {
     loadData.mockResolvedValue(
       data({
         detail: { ...detail, cardDetails: { totalAmountDue: 44319, minimumAmountDue: 2500 } },
@@ -390,18 +392,95 @@ describe('/ds/accounts/[id]/statements', () => {
     );
     await renderPage();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByLabelText('Due date')).toHaveValue('');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(await within(dialog).findByText('Enter the due date')).toBeInTheDocument();
+    expect(await within(dialog).findByText('Change at least one of the fields')).toBeInTheDocument();
     expect(api.PATCH).not.toHaveBeenCalled();
+  });
+
+  it('prefills every field, shows the statement as the description and sends only changed fields', async () => {
+    api.PATCH.mockResolvedValue({ data: bill() });
+    await renderPage();
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Edit details')).toBeInTheDocument();
+    expect(within(dialog).getByText('Statement · 5 Oct 2026')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Period start')).toHaveValue('06/09/2026');
+    expect(within(dialog).getByLabelText('Period end')).toHaveValue('05/10/2026');
+    expect(within(dialog).getByLabelText('Due date')).toHaveValue('25/10/2026');
+    expect(within(dialog).getByLabelText('Total due')).toHaveValue('44319');
+    expect(within(dialog).getByLabelText('Minimum due')).toHaveValue('2500');
+
+    const min = within(dialog).getByLabelText('Minimum due');
+    await user.clear(min);
+    await user.type(min, '3000');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(api.PATCH).toHaveBeenCalledWith('/api/v1/bills/{statementId}/details', {
+        params: { path: { statementId: 's3' } },
+        body: { minimumAmountDue: 3000 },
+      }),
+    );
+  });
+
+  it('blocks a minimum above the total, with the server wording', async () => {
+    await renderPage();
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
+    const dialog = await screen.findByRole('dialog');
+    const min = within(dialog).getByLabelText('Minimum due');
+    await user.clear(min);
+    await user.type(min, '50000');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await within(dialog).findByText('Minimum due cannot exceed total due')).toBeInTheDocument();
+    expect(api.PATCH).not.toHaveBeenCalled();
+  });
+
+  it('blocks clearing a field that had a value', async () => {
+    await renderPage();
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.clear(within(dialog).getByLabelText('Total due'));
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await within(dialog).findByText('Enter the total due')).toBeInTheDocument();
+    expect(api.PATCH).not.toHaveBeenCalled();
+  });
+
+  it('shows the missing-details banner and the row word, and Fill in opens the dialog', async () => {
+    const statements = [
+      stmt('s1', '2026-08-05', { source: 'gmail', transactionCount: 11 }),
+      stmt('s3', '2026-10-05', { missingDetails: ['DUE_DATE', 'TOTAL_DUE'] }),
+    ];
+    loadData.mockResolvedValue(
+      data({
+        statements,
+        view: buildStatementsView(statements, undefined, undefined, '2026-10-13'),
+        detail: { ...detail, missingDetails: ['DUE_DATE', 'TOTAL_DUE'] },
+      }),
+    );
+    await renderPage();
+    expect(screen.getByText('Details missing')).toBeInTheDocument();
+    expect(screen.getByText(/Missing from this statement: due date, total due\./)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Re-upload to retry' }));
+    expect(push).toHaveBeenCalledWith('/transactions/import?account=c1');
+    await user.click(screen.getByRole('button', { name: 'Fill in' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('shows no missing-details banner when nothing is missing', async () => {
+    await renderPage();
+    expect(screen.queryByText(/Missing from this statement/)).toBeNull();
+    expect(screen.queryByText('Details missing')).toBeNull();
   });
 
   it('does not save an unchanged due date', async () => {
     await renderPage();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set due date' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(await within(dialog).findByText('Change at least one of the fields')).toBeInTheDocument();

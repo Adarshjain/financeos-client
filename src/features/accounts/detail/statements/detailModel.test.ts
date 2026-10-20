@@ -6,8 +6,10 @@ import {
   buildDetailModel,
   buildDetails,
   buildLineRow,
+  checkDetails,
   deletionImpact,
   deletionNote,
+  detailsFormFrom,
   ledgerLine,
   type StatementDetailData,
 } from './detailModel';
@@ -26,6 +28,7 @@ const line = (over: Partial<Line> = {}): Line => ({
 
 function detail(over: Partial<StatementDetailData> = {}): StatementDetailData {
   return {
+    missingDetails: [],
     id: 's1',
     createdAt: '2026-10-13T08:00:00Z',
     source: 'file_upload',
@@ -169,6 +172,7 @@ describe('buildLineRow', () => {
 
 describe('buildDetailModel', () => {
   const bill: CardBillResponse = {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'Card',
     muted: false,
@@ -194,6 +198,40 @@ describe('buildDetailModel', () => {
     expect(m.dueDate).toBe('2026-10-26');
     expect(m.ledgerLine).toBe('Closing balance ₹44,319 · matches ledger');
     expect(m.lines).toHaveLength(2);
+  });
+
+  it('carries the dialog values and the missing-details sentence for a card', () => {
+    const m = buildDetailModel(
+      detail({
+        missingDetails: ['PERIOD_END', 'DUE_DATE', 'TOTAL_DUE', 'MINIMUM_DUE'],
+      }),
+      bill,
+      true
+    );
+    expect(m.periodStart).toBe('2026-09-06');
+    expect(m.periodEnd).toBe('2026-10-05');
+    expect(m.totalDue).toBe(44319);
+    expect(m.minimumDue).toBe(2500);
+    expect(m.missing).toEqual([
+      'PERIOD_END',
+      'DUE_DATE',
+      'TOTAL_DUE',
+      'MINIMUM_DUE',
+    ]);
+    expect(m.missingBanner).toBe(
+      'Missing from this statement: period end, due date, total due, minimum due.'
+    );
+  });
+
+  it('has no missing-details sentence when complete or for a bank statement', () => {
+    expect(buildDetailModel(detail(), bill, true).missingBanner).toBeNull();
+    const bank = buildDetailModel(
+      detail({ cardDetails: undefined, missingDetails: ['DUE_DATE'] }),
+      null,
+      false
+    );
+    expect(bank.missing).toEqual([]);
+    expect(bank.missingBanner).toBeNull();
   });
 
   it('shows Paid so far as a dash without a bill, and falls back to the statement due date', () => {
@@ -265,5 +303,134 @@ describe('deletionNote', () => {
   it('differs for an emailed statement', () => {
     expect(deletionNote('file_upload')).toBe('You can upload the same file again afterwards.');
     expect(deletionNote('gmail')).toMatch(/Gmail won't fetch/);
+  });
+});
+
+describe('checkDetails', () => {
+  const initial = {
+    periodStart: '2026-09-06',
+    periodEnd: '2026-10-05',
+    dueDate: '2026-10-25',
+    totalDue: 44319,
+    minimumDue: 2500,
+  };
+  const form = (over: Partial<Record<keyof typeof initial, string>> = {}) => ({
+    ...detailsFormFrom(initial),
+    ...over,
+  });
+
+  it('prefills from the statement', () => {
+    expect(detailsFormFrom(initial)).toEqual({
+      periodStart: '2026-09-06',
+      periodEnd: '2026-10-05',
+      dueDate: '2026-10-25',
+      totalDue: '44319',
+      minimumDue: '2500',
+    });
+  });
+
+  it('sends only the changed fields', () => {
+    const r = checkDetails(
+      form({ dueDate: '2026-10-30', minimumDue: '3000' }),
+      initial
+    );
+    expect(r.errors).toEqual({});
+    expect(r.body).toEqual({
+      paymentDueDate: '2026-10-30',
+      minimumAmountDue: 3000,
+    });
+  });
+
+  it('asks for a change when nothing differs', () => {
+    expect(checkDetails(form(), initial).errors.form).toBe(
+      'Change at least one of the fields'
+    );
+  });
+
+  it('rejects a start after the end', () => {
+    expect(
+      checkDetails(form({ periodStart: '2026-10-06' }), initial).errors
+        .periodStart
+    ).toBe('Period start must be on or before period end');
+  });
+
+  it('rejects a period longer than 400 days', () => {
+    expect(
+      checkDetails(form({ periodStart: '2025-01-01' }), initial).errors
+        .periodStart
+    ).toBe('Statement period cannot be longer than 400 days');
+    expect(
+      checkDetails(form({ periodStart: '2025-09-01' }), initial).errors
+        .periodStart
+    ).toBeUndefined();
+  });
+
+  it('rejects a due date before the period end or more than 60 days after', () => {
+    const msg = 'Due date must be 0 to 60 days after the period end';
+    expect(
+      checkDetails(form({ dueDate: '2026-10-04' }), initial).errors.dueDate
+    ).toBe(msg);
+    expect(
+      checkDetails(form({ dueDate: '2026-12-05' }), initial).errors.dueDate
+    ).toBe(msg);
+    expect(
+      checkDetails(form({ dueDate: '2026-12-04' }), initial).errors.dueDate
+    ).toBeUndefined();
+  });
+
+  it('checks the due window when only the period end moves', () => {
+    expect(
+      checkDetails(form({ periodEnd: '2026-10-26' }), initial).errors.dueDate
+    ).toBe('Due date must be 0 to 60 days after the period end');
+  });
+
+  it('does not block a due date because an old total and minimum are odd', () => {
+    const odd = { ...initial, minimumDue: 99999 };
+    const r = checkDetails(
+      { ...detailsFormFrom(odd), dueDate: '2026-10-30' },
+      odd
+    );
+    expect(r.errors).toEqual({});
+    expect(r.body).toEqual({ paymentDueDate: '2026-10-30' });
+  });
+
+  it('rejects a minimum above the total', () => {
+    expect(
+      checkDetails(form({ minimumDue: '50000' }), initial).errors.minimumDue
+    ).toBe('Minimum due cannot exceed total due');
+    expect(
+      checkDetails(form({ totalDue: '1000' }), initial).errors.minimumDue
+    ).toBe('Minimum due cannot exceed total due');
+  });
+
+  it('rejects negative amounts', () => {
+    expect(
+      checkDetails(form({ totalDue: '-1' }), initial).errors.totalDue
+    ).toBe('Total due cannot be negative');
+    expect(
+      checkDetails(form({ minimumDue: '-1' }), initial).errors.minimumDue
+    ).toBe('Minimum due cannot be negative');
+  });
+
+  it('does not let a set field be cleared, but leaves a missing one empty', () => {
+    expect(checkDetails(form({ dueDate: '' }), initial).errors.dueDate).toBe(
+      'Enter the due date'
+    );
+    const missing = { ...initial, dueDate: null };
+    const r = checkDetails(
+      { ...detailsFormFrom(missing), totalDue: '45000' },
+      missing
+    );
+    expect(r.errors).toEqual({});
+    expect(r.body).toEqual({ totalAmountDue: 45000 });
+  });
+
+  it('fills a missing due date', () => {
+    const missing = { ...initial, dueDate: null };
+    const r = checkDetails(
+      { ...detailsFormFrom(missing), dueDate: '2026-10-20' },
+      missing
+    );
+    expect(r.body).toEqual({ paymentDueDate: '2026-10-20' });
   });
 });

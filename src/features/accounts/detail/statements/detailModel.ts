@@ -49,8 +49,16 @@ export interface StatementDetailModel {
   /** "Closing balance ₹44,319 · matches ledger"; null when the statement has no closing balance. */
   ledgerLine: string | null;
   isCard: boolean;
-  /** The statement's current due date, to start the Set due date dialog from. */
+  /** The statement's current values, to start the Edit details dialog from. */
+  periodStart: string | null;
+  periodEnd: string | null;
   dueDate: string | null;
+  totalDue: number | null;
+  minimumDue: number | null;
+  /** Codes of the details the statement lacks (cards only): PERIOD_END, DUE_DATE, TOTAL_DUE, MINIMUM_DUE. */
+  missing: string[];
+  /** "Missing from this statement: due date, total due."; null when nothing is missing. */
+  missingBanner: string | null;
   source: 'gmail' | 'file_upload';
 }
 
@@ -164,6 +172,7 @@ export function buildDetailModel(
       ];
 
   const skipped = detail.linesSkipped ?? 0;
+  const missing = isCard ? (detail.missingDetails ?? []) : [];
   return {
     statementId: detail.id,
     periodEndLabel: formatDayMonthYear(end),
@@ -176,9 +185,28 @@ export function buildDetailModel(
     lines: detail.lines.map(buildLineRow),
     ledgerLine: ledgerLine(detail.closingBalance, detail.matchesLedger, detail.ledgerBalanceAtClose),
     isCard,
+    periodStart: detail.periodStart ?? null,
+    periodEnd: detail.periodEnd ?? null,
     dueDate: bill?.paymentDueDate ?? card?.paymentDueDate ?? null,
+    totalDue: card?.totalAmountDue ?? bill?.totalAmountDue ?? null,
+    minimumDue: card?.minimumAmountDue ?? bill?.minimumAmountDue ?? null,
+    missing,
+    missingBanner: missingBanner(missing),
     source: detail.source,
   };
+}
+
+const MISSING_WORDS: Record<string, string> = {
+  PERIOD_END: 'period end',
+  DUE_DATE: 'due date',
+  TOTAL_DUE: 'total due',
+  MINIMUM_DUE: 'minimum due',
+};
+
+/** "Missing from this statement: due date, total due."; null for an empty list. */
+export function missingBanner(missing: readonly string[]): string | null {
+  if (missing.length === 0) return null;
+  return `Missing from this statement: ${missing.map((m) => MISSING_WORDS[m] ?? m.toLowerCase()).join(', ')}.`;
 }
 
 /** The deletion preview's impact as plain bullet strings (shared wording). */
@@ -187,3 +215,114 @@ export function deletionImpact(preview: DeletionPreview): string[] {
 }
 
 export { deletionNote };
+
+export type DetailsField =
+  | 'periodStart'
+  | 'periodEnd'
+  | 'dueDate'
+  | 'totalDue'
+  | 'minimumDue';
+
+/** The Edit details form: dates as yyyy-mm-dd, amounts as typed; '' is empty. */
+export type DetailsForm = Record<DetailsField, string>;
+
+export interface DetailsValues {
+  periodStart: string | null;
+  periodEnd: string | null;
+  dueDate: string | null;
+  totalDue: number | null;
+  minimumDue: number | null;
+}
+
+export type DetailsErrors = Partial<Record<DetailsField | 'form', string>>;
+
+const FIELD_NAMES: Record<DetailsField, string> = {
+  periodStart: 'period start',
+  periodEnd: 'period end',
+  dueDate: 'due date',
+  totalDue: 'total due',
+  minimumDue: 'minimum due',
+};
+
+export function detailsFormFrom(v: DetailsValues): DetailsForm {
+  return {
+    periodStart: v.periodStart ?? '',
+    periodEnd: v.periodEnd ?? '',
+    dueDate: v.dueDate ?? '',
+    totalDue: v.totalDue == null ? '' : String(v.totalDue),
+    minimumDue: v.minimumDue == null ? '' : String(v.minimumDue),
+  };
+}
+
+const DAY_MS = 86_400_000;
+function dayNumber(iso: string): number {
+  return Math.round(Date.parse(`${iso}T00:00:00Z`) / DAY_MS);
+}
+
+/**
+ * The fields that differ from the statement, as the PATCH body (only these are sent), plus the
+ * errors blocking the save. Mirrors the server: a rule is checked only when a field it involves
+ * changed, on the merged values; a field that had a value cannot be cleared.
+ */
+export function checkDetails(
+  form: DetailsForm,
+  initial: DetailsValues
+): { body: Record<string, string | number>; errors: DetailsErrors } {
+  const errors: DetailsErrors = {};
+  const body: Record<string, string | number> = {};
+  const was = detailsFormFrom(initial);
+  const changed = (f: DetailsField) =>
+    form[f] !== was[f] && !(form[f] === '' && was[f] === '');
+
+  (Object.keys(FIELD_NAMES) as DetailsField[]).forEach((f) => {
+    if (!changed(f)) return;
+    if (form[f] === '') {
+      errors[f] = `Enter the ${FIELD_NAMES[f]}`;
+      return;
+    }
+    if (f === 'totalDue' || f === 'minimumDue') {
+      const n = Number(form[f]);
+      if (!Number.isFinite(n)) errors[f] = `Enter the ${FIELD_NAMES[f]}`;
+      else if (n < 0)
+        errors[f] =
+          f === 'totalDue'
+            ? 'Total due cannot be negative'
+            : 'Minimum due cannot be negative';
+      else body[f === 'totalDue' ? 'totalAmountDue' : 'minimumAmountDue'] = n;
+    } else {
+      body[f === 'dueDate' ? 'paymentDueDate' : f] = form[f];
+    }
+  });
+
+  const start = form.periodStart;
+  const end = form.periodEnd;
+  const startOrEndChanged = changed('periodStart') || changed('periodEnd');
+  if (startOrEndChanged && start && end) {
+    const field: DetailsField = changed('periodEnd')
+      ? 'periodEnd'
+      : 'periodStart';
+    const days = dayNumber(end) - dayNumber(start);
+    if (days < 0)
+      errors[field] ??= 'Period start must be on or before period end';
+    else if (days > 400)
+      errors[field] ??= 'Statement period cannot be longer than 400 days';
+  }
+  if ((changed('dueDate') || changed('periodEnd')) && form.dueDate && end) {
+    const days = dayNumber(form.dueDate) - dayNumber(end);
+    if (days < 0 || days > 60)
+      errors.dueDate ??= 'Due date must be 0 to 60 days after the period end';
+  }
+  if (
+    (changed('totalDue') || changed('minimumDue')) &&
+    form.totalDue !== '' &&
+    form.minimumDue !== ''
+  ) {
+    if (Number(form.minimumDue) > Number(form.totalDue))
+      errors.minimumDue ??= 'Minimum due cannot exceed total due';
+  }
+
+  if (Object.keys(errors).length === 0 && Object.keys(body).length === 0) {
+    errors.form = 'Change at least one of the fields';
+  }
+  return { body, errors };
+}

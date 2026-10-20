@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
@@ -20,7 +21,7 @@ import {
 
 import { DeleteStatementDialog } from './DeleteStatementDialog';
 import type { LineRowModel, StatementDetailModel } from './detailModel';
-import { SetDueDateDialog } from './SetDueDateDialog';
+import { EditDetailsDialog } from './EditDetailsDialog';
 
 const helper = createDataTableColumnHelper<LineRowModel>();
 
@@ -92,7 +93,8 @@ export interface StatementDetailCardProps {
 
 /** The right pane: the selected statement with its totals, its lines and its actions. */
 export function StatementDetailCard({ accountId, fy, model }: StatementDetailCardProps) {
-  const [dueOpen, setDueOpen] = React.useState(false);
+  const router = useRouter();
+  const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   return (
@@ -120,7 +122,7 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
             </Button>
           }
         >
-          {model.isCard ? <MenuItem onSelect={() => setDueOpen(true)}>Set due date</MenuItem> : null}
+          {model.isCard ? <MenuItem onSelect={() => setEditOpen(true)}>Edit details</MenuItem> : null}
           <MenuItem destructive onSelect={() => setDeleteOpen(true)}>
             Delete statement
           </MenuItem>
@@ -151,6 +153,16 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
           </div>
         ))}
       </div>
+      {model.missingBanner ? (
+        <div className="px-space-16 pb-space-10">
+          <Banner tone="warning" action={{ label: 'Fill in', onSelect: () => setEditOpen(true) }}>
+            {model.missingBanner}{' '}
+            <Button variant="link" size="sm" onClick={() => router.push(`/transactions/import?account=${accountId}`)}>
+              Re-upload to retry
+            </Button>
+          </Banner>
+        </div>
+      ) : null}
       {model.skippedBanner ? (
         <div className="px-space-16 pb-space-10">
           <Banner tone="info">{model.skippedBanner}</Banner>
@@ -172,12 +184,18 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
         </CardFooter>
       ) : null}
       {model.isCard ? (
-        <SetDueDateDialog
-          open={dueOpen}
-          onOpenChange={setDueOpen}
+        <EditDetailsDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
           statementId={model.statementId}
           statementLabel={model.title}
-          dueDate={model.dueDate}
+          initial={{
+            periodStart: model.periodStart,
+            periodEnd: model.periodEnd,
+            dueDate: model.dueDate,
+            totalDue: model.totalDue,
+            minimumDue: model.minimumDue,
+          }}
         />
       ) : null}
       <DeleteStatementDialog

@@ -31,6 +31,7 @@ const card: CreditCard = {
 
 function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
   return {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'HDFC Regalia',
     muted: false,

@@ -42,6 +42,7 @@ function stmt(id: string, periodEnd: string, over: Partial<StatementSummary> = {
 
 function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
   return {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'Card',
     muted: false,
@@ -199,6 +200,43 @@ describe('buildStatementRow', () => {
     expect(row.caption).toBe('Upload · 8 lines · closing ₹1,25,000');
     expect(row.badge).toBeNull();
     expect(row.undo).toBe(false);
+  });
+});
+
+describe('buildStatementRow missing details', () => {
+  it('shows Details missing in place of the verdict on a card row', () => {
+    const row = buildStatementRow(
+      stmt('a', '2026-10-05', { missingDetails: ['DUE_DATE'] }),
+      bill(),
+      true,
+      'a'
+    );
+    expect(row.verdict).toEqual({ label: 'Details missing', tone: 'warning' });
+  });
+
+  it('drops the due-unknown badge beside Details missing, keeps other bill badges', () => {
+    const gappy = stmt('a', '2026-10-05', { missingDetails: ['DUE_DATE'] });
+    expect(buildStatementRow(gappy, bill({ status: 'DUE_UNKNOWN' }), true, 'a').badge).toBeNull();
+    expect(buildStatementRow(gappy, bill({ status: 'PAID' }), true, 'a').badge?.label).toBe('Paid');
+  });
+
+  it('keeps the verdict when nothing is missing, and on a bank row', () => {
+    expect(
+      buildStatementRow(
+        stmt('a', '2026-10-05', { missingDetails: [] }),
+        bill(),
+        true,
+        'a'
+      ).verdict?.label
+    ).toBe('Auto ingested');
+    expect(
+      buildStatementRow(
+        stmt('a', '2026-10-05', { missingDetails: ['DUE_DATE'] }),
+        null,
+        false,
+        'a'
+      ).verdict?.label
+    ).toBe('Auto ingested');
   });
 });
 

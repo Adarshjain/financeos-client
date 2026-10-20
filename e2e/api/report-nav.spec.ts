@@ -51,7 +51,7 @@ test.describe('Report catalog additions (@api)', () => {
     expect(fields('attention')).toEqual(['id', 'kind', 'label', 'severity', 'section', 'count', 'href']);
 
     const kindField = data.datasources.find((d) => d.name === 'attention')!.fields.find((f) => f.name === 'kind')!;
-    expect(kindField.values).toEqual(['bill', 'emi', 'lending', 'statement_expected', 'gmail_reconnect', 'gmail_attention', 'review', 'job', 'reward_milestone', 'reward_cap']);
+    expect(kindField.values).toEqual(['bill', 'emi', 'lending', 'statement_expected', 'statement_details_missing', 'gmail_reconnect', 'gmail_attention', 'review', 'job', 'reward_milestone', 'reward_cap']);
     const obKind = data.datasources.find((d) => d.name === 'obligations')!.fields.find((f) => f.name === 'kind')!;
     expect(obKind.values).toEqual(['card_bill', 'emi', 'lending_return', 'statement_expected']);
   });

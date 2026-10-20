@@ -39,6 +39,10 @@ export interface CardSpec {
   creditLimit: number;
   rows: Row[];
   password?: string;
+  /** Leave the printed Payment Due Date out of the PDF. */
+  omitDueDate?: boolean;
+  /** Leave the printed Minimum Amount Due out of the PDF. */
+  omitMinimumDue?: boolean;
 }
 
 const MONTHS = [
@@ -368,10 +372,10 @@ export async function genCardPdf(spec: CardSpec): Promise<Buffer> {
   doc.text(`Total Amount Due: ${formatAmount(totalAmountDue)}`, 300, sy);
   sy += 15;
   doc.text(`Previous Balance: ${formatAmount(spec.previousBalance)}`, 50, sy);
-  doc.text(`Minimum Amount Due: ${formatAmount(minAmountDue)}`, 300, sy);
+  if (!spec.omitMinimumDue) doc.text(`Minimum Amount Due: ${formatAmount(minAmountDue)}`, 300, sy);
   sy += 15;
   doc.text(`Payments Received: ${formatAmount(spec.paymentsReceived || totalCredits)}`, 50, sy);
-  doc.text(`Payment Due Date: ${dueDateStr}`, 300, sy);
+  if (!spec.omitDueDate) doc.text(`Payment Due Date: ${dueDateStr}`, 300, sy);
   sy += 15;
   doc.text(`Total Purchases: ${formatAmount(totalPurchases)}`, 50, sy);
   doc.text(`Finance Charges: ${formatAmount(spec.financeCharges)}`, 300, sy);
