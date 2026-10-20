@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards and Dinero changes approved, server changes done; `/ds/accounts` list, account pages and Add/Edit dialogs approved 2026-10-20, swap pending; Settings: boards approved 2026-10-20, `/ds/settings` build in progress) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards and Dinero changes approved, server changes done; `/ds/accounts` list, account pages and Add/Edit dialogs approved 2026-10-20, swap pending; Settings: boards approved 2026-10-20, `/ds/settings` built 2026-10-20, Ready for review) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -179,6 +179,7 @@ Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in
 | `/ds` review index & shell | `src/app/(ds)/layout.tsx`, `src/app/(ds)/ds/(app)/layout.tsx`, `src/app/(ds)/ds/(app)/page.tsx`, `src/features/shell/navigation.ts` | _(live layouts untouched)_ | Built under /ds, Ready for review |
 | `/ds/accounts` (Accounts list) | `src/app/(ds)/ds/(app)/accounts/(list)/page.tsx`, `loading.tsx`; `src/features/accounts/list/*`; `src/features/shell/ShellPage.tsx` (per-page top bar; layout no longer renders it) | _(live `/accounts` untouched until swap; will drop `AccountsView`, the tiles, `ClosedAccountsSection`, `AccountMetadataBadges`)_ | Approved 2026-10-20; swap pending |
 | `/ds/accounts/[id]` (account pages + Add/Edit dialogs) | `src/app/(ds)/ds/(app)/accounts/[id]/**` (layout with route tabs, Overview, `statements/`, `cards/`, `rewards/`, loading, error), `accounts/not-found.tsx`; `src/features/accounts/detail/**`, `src/features/accounts/form/ds/*`, `src/features/bills/MarkPaidDialog.tsx`, `src/features/accounts/statements/deletionImpact.ts` | _(live `/accounts/[id]` untouched until swap; will drop `StatementsDialog`, `CardsDialog`, `AccountForm`/`AccountFormWrapper` (except the transaction-form use, owner 32), the account header and detail sections)_ | Approved 2026-10-20; swap pending |
+| `/ds/settings/**` (Profile, Connections, AI, Notifications, Activity, Debug) | `src/app/(ds)/ds/(app)/settings/**` (layout with route tabs, six tabs, loading); `src/features/settings/{SettingsShell,settingsTabs}`, `src/features/settings/{profile,connections,ai,notifications,activity,debug}/**`, `src/features/jobs/**` (job hooks, `ds/` JobBox, Gmail sync and per-type results) | _(live `/settings`, `/settings/activity`, `/debug` untouched until swap; will drop `GmailConnect`, `settings/gmail/*`, `llm-keys/*`, `notifications/components/*`, `activity/components/*`, `DeleteAccountCard`, `ThemeSettingsCard`, `debug/*` UI, `src/components/jobs/**` UI)_ | Built 2026-10-20, Ready for review |
 
 ## Phase 4 · Cleanup
 When every page is migrated:
@@ -346,6 +347,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 
 
+- 2026-10-20 · Phase 3 · Settings · ListRow subtitle truncates (Notifications "Send at" hint, phone); board wraps it. Options: (A) ListRow `wrap` prop, (B) keep truncation. Meanwhile truncates.
+- 2026-10-20 · Phase 3 · Settings · Delete account card border · board draws it with a pink (danger) border; Card has no tone. Options: (A) add Card `tone="danger"` (border-danger), (B) plain card. Meanwhile plain card.
 - 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.
 - 2026-10-15 · Phase 2 · Checkbox · Indeterminate/mixed state icon · Checkbox mixed state (some rows selected) needs a minus/dash icon, which is not in icons.json. Options: (A) Add `minus` (Phosphor `minus`) to the icon registry, (B) Render an inline SVG dash stroke inside Checkbox, or (C) Use a CSS dash line. Meanwhile using `close` as the closest registry icon.
 - 2026-10-15 · Phase 2 · Button · Loading spinner icon · Button loading state needs a spinner icon (RULES §6.2 progress spinner), which is not in icons.json. Options: (A) Add `spinner` (Phosphor `spinner` or `circle-notch`) to the icon registry, or (B) Use a CSS rotating border spinner. Meanwhile using `settings` with `animate-spin` as the closest rotating registry icon.
@@ -355,6 +358,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
+
+- 2026-10-20 · Phase 3 · Claude · `/ds/settings` built: six route tabs (commits 2ea12fcd…38526ae2, fix 9d8337d4); Legacy logic moved to `src/features/{settings,jobs}`. Checks: vitest 4681/4681, typecheck, lint 0 errors, check-ui clean, build-storybook ok; Legacy UI E2E (7 settings specs, dev client) green except 2 env-only (headless push denied; OAuth redirect http vs dev https). Open: Delete account border, ListRow subtitle wrap. Deviations: none beyond those.
 
 - 2026-10-20 · Claude · Link underline `line-heavy` (Button.tsx, README, 2 forced Button test edits); Settings boards: Profile+Sign out merged, Storybook row, full sync-job detail, phone mailbox rows stack (canvas v184).
 - 2026-10-20 · Settings prep · Claude · No space above the account tabs: ShellPage `flushTop` (`src/features/shell/ShellPage.tsx`, its test, accounts `[id]/layout.tsx`). Settings boards redrawn on the canvas from the gap-review answers (+ Connections · states). Checks: vitest shell+accounts, typecheck, check-ui. Deviations: none.
