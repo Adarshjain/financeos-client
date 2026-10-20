@@ -8,3 +8,5 @@ src/features/shell/
 src/components/organisms/
 src/features/accounts/
 src/features/bills/
+src/features/settings/
+src/features/jobs/
