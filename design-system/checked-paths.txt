@@ -10,3 +10,5 @@ src/features/accounts/
 src/features/bills/
 src/features/settings/
 src/features/jobs/
+src/features/upcoming/
+src/features/lendings/

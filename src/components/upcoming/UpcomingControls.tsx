@@ -1,6 +1,5 @@
 'use client';
 
-import type { ObligationKindFilter } from '@/components/obligations/types';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -9,14 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-const KINDS: { value: ObligationKindFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'card_bill', label: 'Card bills' },
-  { value: 'emi', label: 'EMIs' },
-  { value: 'lending_due', label: 'Lending' },
-  { value: 'statement_expected', label: 'Statements' },
-];
+import {
+  OBLIGATION_KINDS as KINDS,
+  OBLIGATION_MONTH_OPTIONS,
+  type ObligationKindFilter,
+} from '@/features/upcoming/obligations';
 
 export function UpcomingControls({
   months,
@@ -36,7 +32,7 @@ export function UpcomingControls({
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="text-xs">
-          {[1, 3, 6, 12].map((m) => (
+          {OBLIGATION_MONTH_OPTIONS.map((m) => (
             <SelectItem key={m} value={String(m)}>
               {m} Month{m === 1 ? '' : 's'}
             </SelectItem>

@@ -4,10 +4,14 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  obligationHref,
+  type ObligationItem,
+  obligationTitle,
+} from '@/features/upcoming/obligations';
 import { formatDate, formatMoney } from '@/lib/utils';
 
-import { obligationHref, ObligationRow, obligationTitle } from '../ObligationRow';
-import type { ObligationItem } from '../types';
+import { ObligationRow } from '../ObligationRow';
 
 const item = (o: Partial<ObligationItem>): ObligationItem =>
   ({ type: 'emi', status: 'upcoming', date: '2026-10-20', amount: 1500, ...o }) as ObligationItem;

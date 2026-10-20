@@ -10,25 +10,15 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  daysText,
+  obligationHref,
+  type ObligationItem,
+  obligationTitle,
+} from '@/features/upcoming/obligations';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
-import type { ObligationItem } from './types';
 
-export function obligationTitle(item: ObligationItem): string {
-  if (item.title) return item.title;
-  if (item.type === 'emi') return `${item.loanName} · EMI #${item.installmentSeq}`;
-  return `${item.counterpartyName} (${item.direction === 'lent' ? 'Receivable' : 'Payable'})`;
-}
-
-export function obligationHref(item: ObligationItem): string | null {
-  if (item.type === 'emi' && item.loanId) {
-    return `/loans/${item.loanId}${item.installmentSeq != null ? `?installment=${item.installmentSeq}` : ''}`;
-  }
-  if (item.type === 'lending_due' && item.counterpartyId) {
-    return `/loans/lendings/${item.counterpartyId}`;
-  }
-  return item.href ?? null;
-}
 
 const TYPE_LABEL: Record<string, string> = {
   emi: 'Loan EMI',
@@ -47,13 +37,6 @@ function RowIcon({ item }: { item: ObligationItem }) {
   ) : (
     <ArrowDownLeft className={cn(cls, 'text-rose-600')} />
   );
-}
-
-function daysText(days: number): string {
-  if (days === 0) return 'today';
-  if (days > 0) return `in ${days} day${days === 1 ? '' : 's'}`;
-  const n = Math.abs(days);
-  return `${n} day${n === 1 ? '' : 's'} overdue`;
 }
 
 interface ObligationRowProps {

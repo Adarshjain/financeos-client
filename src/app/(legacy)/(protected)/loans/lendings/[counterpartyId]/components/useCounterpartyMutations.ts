@@ -3,12 +3,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useCreateLending } from '@/features/lendings/useCreateLending';
 import { api, ApiError } from '@/lib/api/client';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {
-  CreateLendingRequest,
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
 } from '@/lib/types';
@@ -50,12 +50,7 @@ export function useCounterpartyMutations(counterpartyId: string) {
     onError: onErrorToast('Failed to delete counterparty'),
   });
 
-  const createLending = useMutation({
-    mutationFn: (body: CreateLendingRequest) =>
-      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
-    onSuccess: invalidateLendingsAndTransactions,
-    onError: onErrorToast('Failed to create lending'),
-  });
+  const createLending = useCreateLending();
 
   const updateLending = useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateLendingRequest }) =>

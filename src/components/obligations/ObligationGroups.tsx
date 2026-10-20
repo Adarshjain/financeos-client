@@ -1,57 +1,13 @@
 import { AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 
-import { formatMoney, parseCalendarDate, toCalendarDate } from '@/lib/utils';
+import { bucketObligations, type ObligationItem, sumAmounts } from '@/features/upcoming/obligations';
+import { formatMoney } from '@/lib/utils';
 
 import { ObligationRow } from './ObligationRow';
-import type { ObligationItem } from './types';
 
 export interface RowActions {
   highlightStatementId?: string | null;
   onMarkPaid?: (statementId: string) => void;
-}
-
-export function sumAmounts(items: ObligationItem[]): number {
-  return items.reduce((s, i) => s + (i.amount ?? 0), 0);
-}
-
-function addDays(date: string, n: number): string {
-  const d = parseCalendarDate(date);
-  d.setDate(d.getDate() + n);
-  return toCalendarDate(d);
-}
-
-export interface ObligationBuckets {
-  overdue: ObligationItem[];
-  next7: ObligationItem[];
-  laterThisMonth: ObligationItem[];
-  months: { key: string; label: string; items: ObligationItem[] }[];
-  undated: ObligationItem[];
-}
-
-/** Splits items into the List view sections; `today` is a YYYY-MM-DD calendar date. */
-export function bucketObligations(items: ObligationItem[], today: string): ObligationBuckets {
-  const in7 = addDays(today, 7);
-  const monthPrefix = today.slice(0, 7);
-  const out: ObligationBuckets = { overdue: [], next7: [], laterThisMonth: [], months: [], undated: [] };
-  const byMonth = new Map<string, ObligationItem[]>();
-  for (const item of items) {
-    if (item.status === 'overdue') out.overdue.push(item);
-    else if (!item.date) out.undated.push(item);
-    else if (item.date <= in7) out.next7.push(item);
-    else if (item.date.startsWith(monthPrefix)) out.laterThisMonth.push(item);
-    else {
-      const k = item.date.slice(0, 7);
-      byMonth.set(k, [...(byMonth.get(k) ?? []), item]);
-    }
-  }
-  out.months = [...byMonth.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, list]) => ({
-      key,
-      label: parseCalendarDate(`${key}-01`).toLocaleString('en-IN', { month: 'long', year: 'numeric' }),
-      items: list,
-    }));
-  return out;
 }
 
 function Section({
