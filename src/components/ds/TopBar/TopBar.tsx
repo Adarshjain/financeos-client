@@ -4,7 +4,7 @@ import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
+import { Icon, type IconSize } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 import { Kbd } from '../Kbd/Kbd';
 
@@ -16,6 +16,8 @@ export interface TopBarAction {
   variant?: 'default' | 'primary';
   shortcut?: string;
   showLabel?: boolean;
+  /** Icon size while the label shows (desktop form); the icon-only phone form keeps md. */
+  labelIconSize?: IconSize;
   asChild?: boolean;
   children?: React.ReactNode;
 }
@@ -134,7 +136,14 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
 
               const content = (
                 <>
-                  <Icon name={action.icon} size="md" />
+                  {hasLabel && action.labelIconSize && action.labelIconSize !== 'md' ? (
+                    <>
+                      <Icon name={action.icon} size="md" className="desk:hidden" />
+                      <Icon name={action.icon} size={action.labelIconSize} className="hidden desk:inline-block" />
+                    </>
+                  ) : (
+                    <Icon name={action.icon} size="md" />
+                  )}
                   {hasLabel && (
                     <span className="hidden desk:inline">{action.label}</span>
                   )}
