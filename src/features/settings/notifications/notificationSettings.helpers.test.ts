@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 
-import { hourLabel, isKindEnabled, isThisDevice, offsetLabel, toggleOffset } from '../components/notificationSettings.helpers';
+import { addedOn, describeBrowser, hourLabel, isKindEnabled, isThisDevice, offsetLabel, offsetsSummary, toggleOffset } from './notificationSettings.helpers';
 
 describe('notificationSettings.helpers', () => {
   it('labels offsets and hours', () => {
@@ -37,7 +37,7 @@ describe('notificationSettings.helpers', () => {
 
 describe('notificationSettings.helpers kinds', () => {
   it('groups every switch by module in display order', async () => {
-    const { KIND_GROUPS, KIND_OPTIONS } = await import('../components/notificationSettings.helpers');
+    const { KIND_GROUPS, KIND_OPTIONS } = await import('./notificationSettings.helpers');
     expect(KIND_GROUPS.map((g) => g.title)).toEqual([
       'Credit cards',
       'Transactions',
@@ -65,5 +65,35 @@ describe('notificationSettings.helpers kinds', () => {
       expect(kind.label.length).toBeGreaterThan(0);
       expect(kind.description.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('this-browser naming', () => {
+  const chromeMac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
+
+  it('names the browser and OS from the user agent', () => {
+    expect(describeBrowser(chromeMac)).toBe('Chrome on macOS');
+    expect(describeBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit Safari/604.1')).toBe('Safari on iOS');
+  });
+
+  it('falls back to Browser', () => {
+    expect(describeBrowser('')).toBe('Browser');
+  });
+
+  it('formats the added date as 2 Sep and tolerates a missing one', () => {
+    expect(addedOn('2026-09-02T05:00:00Z')).toBe('2 Sep');
+    expect(addedOn(null)).toBe('');
+    expect(addedOn('nonsense')).toBe('');
+  });
+});
+
+describe('offsetsSummary', () => {
+  it('lists days before, largest first, then the day itself', () => {
+    expect(offsetsSummary([1, 7, 0, 3])).toBe('7, 3, 1 days · on the day');
+  });
+  it('reads singular for one day and capitalises a lone "on the day"', () => {
+    expect(offsetsSummary([1])).toBe('1 day');
+    expect(offsetsSummary([0])).toBe('On the day');
+    expect(offsetsSummary([14])).toBe('14 days');
   });
 });

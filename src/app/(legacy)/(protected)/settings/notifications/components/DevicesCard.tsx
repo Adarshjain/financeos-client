@@ -6,13 +6,12 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { isThisDevice } from '@/features/settings/notifications/notificationSettings.helpers';
+import { getCurrentPushSubscription, unsubscribeFromPush } from '@/features/settings/notifications/push';
+import { useNotificationSettingsMutations } from '@/features/settings/notifications/useNotificationSettings';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
-import { getCurrentPushSubscription, unsubscribeFromPush } from '@/lib/push';
-import { useNotificationSettingsMutations } from '@/lib/query/hooks/useNotificationSettings';
 import { formatDate } from '@/lib/utils';
-
-import { isThisDevice } from './notificationSettings.helpers';
 
 interface DevicesCardProps {
   settings: NotificationSettingsResponse;

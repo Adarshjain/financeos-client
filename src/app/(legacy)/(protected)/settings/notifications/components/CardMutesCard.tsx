@@ -5,10 +5,10 @@ import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useNotificationSettingsMutations } from '@/features/settings/notifications/useNotificationSettings';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';
-import { useNotificationSettingsMutations } from '@/lib/query/hooks/useNotificationSettings';
 
 interface CardMutesCardProps {
   settings: NotificationSettingsResponse;

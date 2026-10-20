@@ -8,7 +8,7 @@ import {
   toSubscriptionPayload,
   unsubscribeFromPush,
   urlBase64ToUint8Array,
-} from '@/lib/push';
+} from './push';
 
 function fakeSubscription(endpoint = 'https://push.example/abc') {
   return {
