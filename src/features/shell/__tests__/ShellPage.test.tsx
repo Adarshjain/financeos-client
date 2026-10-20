@@ -60,3 +60,19 @@ describe('ShellPage top-bar actions', () => {
     ).toEqual(['Ask the data']);
   });
 });
+
+describe('ShellPage content area', () => {
+  it('keeps the top padding by default', () => {
+    render(<ShellPage title="Accounts">content</ShellPage>);
+    expect(screen.getByRole('main').className).not.toContain('pt-0');
+  });
+
+  it('drops the top padding when the content starts with tabs', () => {
+    render(
+      <ShellPage title="Accounts" flushTop>
+        content
+      </ShellPage>,
+    );
+    expect(screen.getByRole('main').className).toContain('pt-0 desk:pt-0');
+  });
+});
