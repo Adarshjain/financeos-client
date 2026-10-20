@@ -101,3 +101,12 @@ describe('SettingsToggle alignment (UAT)', () => {
     expect(row.className).not.toContain('px-space-16');
   });
 });
+
+describe('SettingsToggle wrapping', () => {
+  it('wraps a long description instead of truncating it', () => {
+    render(<SettingsToggle label="Statement arrived" description="The bill digest when a new statement lands" />);
+    const d = screen.getByText('The bill digest when a new statement lands');
+    expect(d).toHaveClass('break-words');
+    expect(d).not.toHaveClass('truncate');
+  });
+});

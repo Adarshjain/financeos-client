@@ -16,6 +16,7 @@ export function HealthCard({ rows }: { rows: HealthRow[] }) {
       </CardHeader>
       {rows.map((row) => (
         <ListRow
+          wrap
           key={row.id}
           title={
             <Text variant="body" as="span">

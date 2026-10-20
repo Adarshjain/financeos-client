@@ -8,6 +8,7 @@ import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Text } from '../Text/Text';
 
 export type CardVariant = 'default' | 'inset';
+export type CardTone = 'neutral' | 'danger';
 
 // Compound parts read the variant from the Card they sit in, so an inset gets tighter padding.
 const CardVariantContext = createContext<CardVariant>('default');
@@ -211,7 +212,14 @@ export interface CardProps
   action?: React.ReactNode;
   asChild?: boolean;
   variant?: CardVariant;
+  /** `danger` swaps only the border colour to `danger-border`. */
+  tone?: CardTone;
 }
+
+const toneStyles: Record<CardTone, string> = {
+  neutral: 'border-line',
+  danger: 'border-danger-border',
+};
 
 const variantStyles: Record<CardVariant, string> = {
   default: 'rounded-ds-lg',
@@ -226,6 +234,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       action,
       asChild = false,
       variant = 'default',
+      tone = 'neutral',
       className,
       children,
       ...props
@@ -240,7 +249,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         <Comp
           ref={ref}
           className={cn(
-            'bg-surface border border-line overflow-clip min-w-0',
+            'bg-surface border overflow-clip min-w-0',
+            toneStyles[tone],
             variantStyles[variant],
             className,
           )}

@@ -59,6 +59,7 @@ export const SettingsToggle = forwardRef<HTMLDivElement, SettingsToggleProps>(
           />
         }
         borderTop={borderTop}
+        wrap
         disabled={disabled}
         className={cn('px-0 border-l-0', className)}
         {...props}

@@ -36,7 +36,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
 
   return (
     <>
-      <Card>
+      <Card tone="danger">
         <CardHeader>
           <div className="min-w-0">
             <CardTitle>Delete account</CardTitle>

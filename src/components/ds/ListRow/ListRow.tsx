@@ -41,6 +41,8 @@ export interface ListRowProps
   borderTop?: boolean;
   /** Interactive clickable row */
   clickable?: boolean;
+  /** If true, title and subtitle wrap instead of truncating */
+  wrap?: boolean;
 }
 
 export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
@@ -58,6 +60,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       disabled = false,
       borderTop = true,
       clickable = false,
+      wrap = false,
       asChild = false,
       onClick,
       onKeyDown,
@@ -146,9 +149,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
           {title !== undefined ? (
             <div className="flex-1 min-w-0">
-              <div className="text-body-strong font-bold text-ink truncate">{title}</div>
+              <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{title}</div>
               {subtitle && (
-                <div className="text-label font-medium text-ink-3 truncate mt-space-2">{subtitle}</div>
+                <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{subtitle}</div>
               )}
               {child.props.children}
             </div>
@@ -191,9 +194,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
         {title !== undefined ? (
           <div className="flex-1 min-w-0">
-            <div className="text-body-strong font-bold text-ink truncate">{title}</div>
+            <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{title}</div>
             {subtitle && (
-              <div className="text-label font-medium text-ink-3 truncate mt-space-2">{subtitle}</div>
+              <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{subtitle}</div>
             )}
             {children}
           </div>

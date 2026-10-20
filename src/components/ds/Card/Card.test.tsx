@@ -181,4 +181,29 @@ describe('Card inset variant', () => {
     expect(ref.current).toBe(screen.getByTestId('c'));
     expect(ref.current).toHaveClass('mt-space-8');
   });
+
+  describe('tone', () => {
+    it('is neutral by default', () => {
+      render(<Card data-testid="c" />);
+      expect(screen.getByTestId('c')).toHaveClass('border-line');
+      expect(screen.getByTestId('c')).not.toHaveClass('border-danger-border');
+    });
+
+    it('danger swaps only the border colour', () => {
+      render(<Card tone="danger" data-testid="c" />);
+      const el = screen.getByTestId('c');
+      expect(el).toHaveClass('border', 'border-danger-border', 'rounded-ds-lg', 'bg-surface');
+      expect(el).not.toHaveClass('border-line');
+    });
+
+    it('danger works with the inset variant and leaves rows unchanged', () => {
+      render(
+        <Card tone="danger" variant="inset" data-testid="c">
+          <CardRow>Row</CardRow>
+        </Card>,
+      );
+      expect(screen.getByTestId('c')).toHaveClass('border-danger-border', 'rounded-ds-md');
+      expect(screen.getByText('Row')).toHaveClass('border-line-soft', 'px-space-10');
+    });
+  });
 });

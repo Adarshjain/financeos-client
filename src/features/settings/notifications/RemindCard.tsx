@@ -60,6 +60,7 @@ export function RemindCard({ settings }: { settings: NotificationSettingsRespons
         }
       />
       <ListRow
+        wrap
         title={<Text variant="body">Send at</Text>}
         subtitle="IST · statement digests and mailbox alerts go out as soon as they happen"
         trailing={

@@ -53,10 +53,11 @@ export function RoutingCard({ groups, error }: RoutingCardProps) {
       ) : null}
       {groups.map((g) => (
         <ListRow
+          wrap
           key={g.group}
           title={
-            <span className="flex items-center gap-space-8 min-w-0">
-              <span className="truncate">{g.dto.displayName}</span>
+            <span className="flex flex-wrap items-center gap-x-space-8 min-w-0">
+              <span>{g.dto.displayName}</span>
               <Badge tone={g.dto.usingDefaults ? 'neutral' : 'info'}>{g.dto.usingDefaults ? 'Default' : 'Custom'}</Badge>
             </span>
           }

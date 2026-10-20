@@ -12,6 +12,7 @@ export function ProfileCard({ user }: { user: UserResponse }) {
   return (
     <Card title="Profile" subtitle="From your Google account">
       <ListRow
+        wrap
         leading={
           <Avatar
             variant="circle"

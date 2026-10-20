@@ -16,4 +16,4 @@ A settings row combining a label, optional description, optional error line, and
 Dinero components only: `ListRow`, `Switch`, `Text`.
 
 ## Variants
-Default, WithDescription, On, Disabled, WithError.
+Default, WithDescription, On, Disabled, WithError. The label and description always wrap (ListRow `wrap`), as on the notifications board.

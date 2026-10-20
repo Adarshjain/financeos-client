@@ -37,6 +37,8 @@ const meta = {
   argTypes: {
     title: { control: 'text' },
     subtitle: { control: 'text' },
+    variant: { control: 'inline-radio', options: ['default', 'inset'] },
+    tone: { control: 'inline-radio', options: ['neutral', 'danger'] },
     asChild: { control: 'boolean' },
     action: { control: false },
     children: { control: false },
@@ -182,6 +184,20 @@ export const Inset: Story = {
             </Card>
           </div>
         </Card>
+      </div>
+    ),
+  },
+};
+
+export const DangerTone: Story = {
+  name: 'Danger tone',
+  args: {
+    tone: 'danger',
+    title: 'Delete account',
+    subtitle: 'Removes every account, transaction, statement, rule and connection. Cannot be undone.',
+    children: (
+      <div className="px-space-16 pb-space-16">
+        <Button variant="danger">Delete my account</Button>
       </div>
     ),
   },
