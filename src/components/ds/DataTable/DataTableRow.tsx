@@ -26,6 +26,7 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   onRowSelect?: (row: Row) => void;
   renderExpanded?: (row: Row) => React.ReactNode;
   getRowCanExpand?: (row: Row) => boolean;
+  leading?: (row: Row) => React.ReactNode;
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
   rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean };
@@ -43,6 +44,7 @@ export function DataTableRow<Row extends RowData>({
   onRowSelect,
   renderExpanded,
   getRowCanExpand,
+  leading,
   phoneSub,
   phoneActions,
   rowState,
@@ -83,6 +85,8 @@ export function DataTableRow<Row extends RowData>({
     disabled: rowState?.disabled,
   });
 
+  const lead = leading?.(row.original) ?? null;
+  const hasLead = lead !== null && lead !== false;
   const sub = phoneSub?.(row.original);
   const actions = phoneActions?.(row.original);
 
@@ -98,7 +102,13 @@ export function DataTableRow<Row extends RowData>({
       className={cn(
         'border-t border-line-soft border-l-4 text-body font-text transition-colors',
         selectable && 'select-none touch-callout-none',
-        hasThirdCol ? 'grid-cols-fill-auto-auto' : 'grid-cols-fill-auto',
+        hasLead
+          ? hasThirdCol
+            ? 'grid-cols-lead-fill-auto-auto'
+            : 'grid-cols-lead-fill-auto'
+          : hasThirdCol
+            ? 'grid-cols-fill-auto-auto'
+            : 'grid-cols-fill-auto',
         'grid gap-x-space-10 px-space-14 py-space-10',
         'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
         isHighlighted
@@ -151,7 +161,10 @@ export function DataTableRow<Row extends RowData>({
               className={cn(
                 'items-center justify-center min-w-0',
                 canExpand && !showEye
-                  ? 'col-start-3 row-start-1 row-span-2 self-center flex desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1'
+                  ? cn(
+                      hasLead ? 'col-start-4' : 'col-start-3',
+                      'row-start-1 row-span-2 self-center flex desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1',
+                    )
                   : 'hidden desk:flex desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1',
               )}
             >
@@ -190,10 +203,18 @@ export function DataTableRow<Row extends RowData>({
               meta?.wrap ? 'whitespace-normal break-words' : 'truncate',
               meta?.align === 'end' &&
                 'text-end tabular-nums desk:text-end justify-self-end',
-              isMain && 'col-start-1 row-start-1 text-body-strong desk:text-body',
-              isAmount && 'col-start-2 row-start-1 text-end',
+              isMain &&
+                cn(
+                  hasLead ? 'col-start-2' : 'col-start-1',
+                  'row-start-1 text-body-strong desk:text-body',
+                ),
+              isAmount &&
+                cn(hasLead ? 'col-start-3' : 'col-start-2', 'row-start-1 text-end'),
               isStatus &&
-                'col-start-2 row-start-2 justify-self-end flex flex-wrap justify-end gap-space-4',
+                cn(
+                  hasLead ? 'col-start-3' : 'col-start-2',
+                  'row-start-2 justify-self-end flex flex-wrap justify-end gap-space-4',
+                ),
               isStatus &&
                 (meta?.align === 'end'
                   ? 'desk:justify-self-end desk:justify-end'
@@ -201,15 +222,33 @@ export function DataTableRow<Row extends RowData>({
               !isMain && !isAmount && !isStatus && 'hidden desk:block',
             )}
           >
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            {isMain && hasLead ? (
+              <div className="flex items-center gap-space-10 min-w-0">
+                <div className="hidden desk:block shrink-0">{lead}</div>
+                <div className="min-w-0 flex-1">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </div>
+              </div>
+            ) : (
+              flexRender(cell.column.columnDef.cell, cell.getContext())
+            )}
           </div>
         );
       })}
 
+      {hasLead && (
+        <div className="desk:hidden col-start-1 row-start-1 row-span-2 self-center flex items-center">
+          {lead}
+        </div>
+      )}
+
       {showEye && (
         <div
           {...nestedControlProps}
-          className="desk:hidden col-start-3 row-start-1 row-span-2 self-center flex items-center justify-center"
+          className={cn(
+            hasLead ? 'col-start-4' : 'col-start-3',
+            'desk:hidden row-start-1 row-span-2 self-center flex items-center justify-center',
+          )}
         >
           <Button
             variant="ghost"
@@ -223,7 +262,12 @@ export function DataTableRow<Row extends RowData>({
       )}
 
       {sub && (
-        <div className="desk:hidden col-start-1 row-start-2 text-caption text-ink-3">
+        <div
+          className={cn(
+            'desk:hidden row-start-2 text-caption text-ink-3',
+            hasLead ? 'col-start-2' : 'col-start-1',
+          )}
+        >
           {sub}
         </div>
       )}

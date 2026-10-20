@@ -39,6 +39,7 @@ function DataTableInner<Row extends RowData>(
     expanded: _expanded,
     defaultExpanded: _defaultExpanded,
     onExpandedChange: _onExpandedChange,
+    leading,
     phoneSub,
     phoneActions,
     band,
@@ -178,6 +179,7 @@ function DataTableInner<Row extends RowData>(
                 onRowSelect={onRowSelect}
                 renderExpanded={renderExpanded}
                 getRowCanExpand={getRowCanExpand}
+                leading={leading}
                 phoneSub={phoneSub}
                 phoneActions={phoneActions}
                 rowState={rowState ? rowState(row.original) : undefined}

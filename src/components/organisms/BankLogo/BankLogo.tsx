@@ -5,15 +5,17 @@ import { bankById } from '@/features/banks/banks';
 import { SPRITE_CELL, SPRITE_IDS } from '@/features/banks/bankSprite.generated';
 
 export interface BankLogoProps {
-  /** The server's bank id, such as `hdfc`. An unknown id shows its first letter instead. */
-  bankId: string;
+  /** The server's bank id, such as `hdfc`. An unknown or missing id shows the first letter of `name` instead. */
+  bankId: string | null;
+  /** The account or bank name; its first letter fills the tile when there is no known logo. */
+  name: string;
 }
 
 /** One bank's logo, cut from the shared sprite at public/banks/sprite.png, in the small square Avatar frame. */
-export function BankLogo({ bankId }: BankLogoProps) {
-  const bank = bankById(bankId);
+export function BankLogo({ bankId, name }: BankLogoProps) {
+  const bank = bankId ? bankById(bankId) : undefined;
   if (!bank) {
-    return <Avatar variant="square" size="sm" initials={(bankId.slice(0, 1) || '?').toUpperCase()} />;
+    return <Avatar variant="square" size="sm" initials={(name.trim().slice(0, 1) || '?').toUpperCase()} />;
   }
   const cells = SPRITE_IDS.length;
   return (

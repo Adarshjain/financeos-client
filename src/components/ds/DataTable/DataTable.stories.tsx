@@ -5,6 +5,7 @@ import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
 import {
+  Avatar,
   Badge,
   Button,
   Card,
@@ -518,6 +519,17 @@ const expandColumns = expandHelper.columns([
     meta: { size: 'sm', align: 'end', phone: 'amount' },
   }),
 ]);
+
+export const WithLeading: StoryObj<DataTableProps<FnoPosition>> = {
+  args: {
+    columns: fnoColumns,
+    data: fnoData,
+    getRowId: (r) => r.id,
+    leading: (r) => (r.id === '1' ? <Avatar size="sm" initials="N" /> : null),
+    phoneSub: (r) => `${r.lotSize} qty · Entry ${r.entryPrice}`,
+  },
+  render: interactiveRender(),
+};
 
 export const Expandable: StoryObj<DataTableProps<CategoryBreakdown>> = {
   args: {

@@ -17,6 +17,7 @@ import {
   StatusWord,
   Text,
 } from '@/components/ds';
+import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
 
@@ -33,7 +34,7 @@ function rowHref(row: { id: string }): string {
   return `${ACCOUNTS_HREF}/${row.id}`;
 }
 
-function NameCell({
+export function NameCell({
   name,
   last4,
   sub,
@@ -213,7 +214,10 @@ const bankBaseColumns = [
     header: 'Account',
     meta: { size: 'fill', grow: 2, phone: 'main' },
     cell: ({ row }) => (
-      <NameCell name={row.original.name} last4={row.original.last4} />
+      <NameCell
+        name={row.original.name}
+        last4={row.original.last4}
+      />
     ),
   }),
   bankCh.display({
@@ -292,6 +296,7 @@ export function BankSection(props: SectionProps<BankRow>) {
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
+        leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={(row) => row.phoneSub}
         empty={<EmptyState compact description="No bank accounts added." />}
       />
@@ -460,6 +465,7 @@ export function CardsSection(
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
+        leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={cardPhoneSub}
         empty={<EmptyState compact description="No credit cards added." />}
       />

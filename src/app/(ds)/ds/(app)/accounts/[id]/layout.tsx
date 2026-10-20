@@ -3,6 +3,7 @@ import React from 'react';
 
 import { loadAccount } from '@/features/accounts/detail/accountData';
 import { AccountTabs } from '@/features/accounts/detail/AccountTabs';
+import { AccountTitle } from '@/features/accounts/detail/AccountTitle';
 import { AccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { ShellPage } from '@/features/shell/ShellPage';
 
@@ -19,7 +20,7 @@ export default async function DsAccountLayout({
 
   return (
     <AccountDialogs account={account}>
-      <ShellPage crumb="Money / Accounts" title={account.name} backHref="/ds/accounts">
+      <ShellPage crumb="Money / Accounts" title={<AccountTitle account={account} />} backHref="/ds/accounts">
         <div className="flex flex-col gap-space-12 desk:gap-space-16">
           <AccountTabs accountId={account.id} type={account.type} />
           {children}

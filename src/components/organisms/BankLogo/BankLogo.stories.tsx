@@ -6,7 +6,7 @@ const meta: Meta<typeof BankLogo> = {
   title: 'Organisms/BankLogo',
   component: BankLogo,
   parameters: { layout: 'padded' },
-  args: { bankId: 'hdfc' },
+  args: { bankId: 'hdfc', name: 'Salary' },
   argTypes: { bankId: { control: 'text' } },
 };
 
@@ -15,4 +15,6 @@ type Story = StoryObj<typeof BankLogo>;
 
 export const Default: Story = {};
 
-export const UnknownBank: Story = { args: { bankId: 'nope' } };
+export const UnknownBank: Story = { args: { bankId: 'nope', name: 'Nova' } };
+
+export const NoBank: Story = { args: { bankId: null, name: 'Cash wallet' } };
