@@ -101,12 +101,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const classes = cn(
       isLink
-        ? 'inline font-text font-bold text-inherit underline underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
+        ? 'inline font-text font-bold text-inherit underline decoration-line-heavy underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
         : 'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer font-semibold',
       sizeClasses,
       variantStyles[variant],
       isIconLink &&
-        'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-current hover:after:hidden',
+        'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-line-heavy hover:after:hidden',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,
