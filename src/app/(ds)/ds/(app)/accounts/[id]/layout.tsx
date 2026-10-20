@@ -20,7 +20,7 @@ export default async function DsAccountLayout({
 
   return (
     <AccountDialogs account={account}>
-      <ShellPage crumb="Money / Accounts" title={<AccountTitle account={account} />} backHref="/ds/accounts">
+      <ShellPage crumb="Money / Accounts" title={<AccountTitle account={account} />} backHref="/ds/accounts" flushTop>
         <div className="flex flex-col gap-space-12 desk:gap-space-16">
           <AccountTabs accountId={account.id} type={account.type} />
           {children}

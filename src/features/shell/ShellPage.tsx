@@ -30,6 +30,8 @@ export interface ShellPageProps {
   addLabel?: string;
   /** Where the phone back button goes (detail pages). Replaces the leading logo on phone; without it the bar shows the logo. */
   backHref?: string;
+  /** The content starts with a tab strip: no space between the top bar and it. */
+  flushTop?: boolean;
   children: React.ReactNode;
 }
 
@@ -41,6 +43,7 @@ export function ShellPage({
   onAdd,
   addLabel,
   backHref,
+  flushTop,
   children,
 }: ShellPageProps) {
   return (
@@ -80,7 +83,9 @@ export function ShellPage({
             : []),
         ]}
       />
-      <main className="flex-1 p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24">
+      <main
+        className={`flex-1 p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
+      >
         {children}
       </main>
     </>
