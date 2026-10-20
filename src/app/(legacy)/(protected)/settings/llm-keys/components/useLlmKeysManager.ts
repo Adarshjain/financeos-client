@@ -3,13 +3,13 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
+import { type ProviderConfig, showTrainingWarning as shouldWarnAboutTraining } from '@/features/settings/ai/providers';
+import { useLlmKeyMutations } from '@/features/settings/ai/useLlmKeyMutations';
+import { useLlmKeysQueries } from '@/features/settings/ai/useLlmKeysQueries';
+import { useLlmRoutingEditor } from '@/features/settings/ai/useLlmRoutingEditor';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LlmKeyDto, TestKeyResponse } from '@/lib/api/types';
 
-import { ProviderConfig } from './ProviderKeysCard';
-import { useLlmKeyMutations } from './useLlmKeyMutations';
-import { useLlmKeysQueries } from './useLlmKeysQueries';
-import { useLlmRoutingEditor } from './useLlmRoutingEditor';
 
 /**
  * Composes the five reads (`useLlmKeysQueries`), the key CRUD/test/reorder
@@ -119,10 +119,7 @@ export function useLlmKeysManager() {
     setCustomizingProviders((prev) => ({ ...prev, [providerId]: !prev[providerId] }));
   };
 
-  const selectedProviderCatalog = catalog.find((c) => c.id.toLowerCase() === selectedProvider?.id.toLowerCase());
-  const showTrainingWarning = selectedProviderCatalog?.models.some(
-    (m) => m.free && (m.trainsOnData === 'yes' || m.trainsOnData === 'unknown')
-  );
+  const showTrainingWarning = shouldWarnAboutTraining(catalog, selectedProvider?.id);
 
   return {
     keys: keysList,

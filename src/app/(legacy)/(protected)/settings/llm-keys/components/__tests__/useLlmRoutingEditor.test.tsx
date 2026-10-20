@@ -8,10 +8,9 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import { CUSTOM_OPTION_ID, draftEntryKey, useLlmRoutingEditor } from '@/features/settings/ai/useLlmRoutingEditor';
 import { api } from '@/lib/api/client';
 import type { LlmRoutingGroupDto } from '@/lib/api/types';
-
-import { CUSTOM_OPTION_ID, draftEntryKey, useLlmRoutingEditor } from '../useLlmRoutingEditor';
 
 function createWrapper() {
   const queryClient = new QueryClient({

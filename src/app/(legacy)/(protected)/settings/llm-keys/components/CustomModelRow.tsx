@@ -12,15 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { ProviderOption } from '@/features/settings/ai/providers';
+import type { CustomModelInput } from '@/features/settings/ai/useLlmRoutingEditor';
 
-import type { CustomModelInput } from './useLlmRoutingEditor';
-
-export interface ProviderOption {
-  id: string;
-  name: string;
-  /** The user holds an active key for this provider, so a typed model can actually be probed. */
-  hasKey: boolean;
-}
 
 interface CustomModelRowProps {
   providers: ProviderOption[];

@@ -1,0 +1,121 @@
+'use client';
+
+import React, { useMemo } from 'react';
+
+import { Banner } from '@/components/ds';
+
+import { AddKeyDialog } from './AddKeyDialog';
+import { buildHealthRows } from './aiModel';
+import { DeleteKeyDialog } from './DeleteKeyDialog';
+import { HealthCard } from './HealthCard';
+import { buildProviderOptions } from './providers';
+import { RoutingCard } from './RoutingCard';
+import { RoutingEditorDialog } from './RoutingEditorDialog';
+import type { RoutingGroupEditor } from './routingGroups';
+import { useAiSettings } from './useAiSettings';
+import { YourKeysCard } from './YourKeysCard';
+
+/** The AI tab: your keys and routing on the left, model health on the right (phone: keys, routing, health). */
+export function AiSettings() {
+  const s = useAiSettings();
+
+  const providers = useMemo(() => buildProviderOptions(s.keysList), [s.keysList]);
+  const healthRows = useMemo(
+    () => buildHealthRows(s.health, s.routingOptions, s.routing),
+    [s.health, s.routingOptions, s.routing]
+  );
+
+  const groups: RoutingGroupEditor[] = s.routing
+    ? [
+        {
+          group: 'chat',
+          dto: s.routing.chat,
+          editing: s.chatEditing,
+          draft: s.chatDraft,
+          saving: s.savingChat,
+          resetting: s.resettingChat,
+          testing: s.testingChat,
+          addError: s.chatAddError,
+          onStart: () => s.startCustomizingGroup('chat', s.routing!.chat),
+          onCancel: () => s.setChatEditing(false),
+          onSave: () => void s.handleSaveRouting('chat'),
+          onReset: () => void s.handleResetRouting('chat'),
+          onMove: (i, d) => s.handleMoveDraftItem('chat', i, d),
+          onRemove: (i) => s.handleRemoveDraftItem('chat', i),
+          onAdd: (input) => s.handleAddCustomModel('chat', input),
+        },
+        {
+          group: 'default',
+          dto: s.routing.default,
+          editing: s.defaultEditing,
+          draft: s.defaultDraft,
+          saving: s.savingDefault,
+          resetting: s.resettingDefault,
+          testing: s.testingDefault,
+          addError: s.defaultAddError,
+          onStart: () => s.startCustomizingGroup('default', s.routing!.default),
+          onCancel: () => s.setDefaultEditing(false),
+          onSave: () => void s.handleSaveRouting('default'),
+          onReset: () => void s.handleResetRouting('default'),
+          onMove: (i, d) => s.handleMoveDraftItem('default', i, d),
+          onRemove: (i) => s.handleRemoveDraftItem('default', i),
+          onAdd: (input) => s.handleAddCustomModel('default', input),
+        },
+      ]
+    : [];
+  const editing = groups.find((g) => g.editing) ?? null;
+  const topError = s.error ?? s.actionError;
+
+  return (
+    <>
+      {topError ? <Banner tone="danger" className="mb-space-12 desk:mb-space-16">{topError}</Banner> : null}
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+        <div className="desk:col-span-7">
+          <YourKeysCard
+            keys={s.keysList}
+            testingKeyId={s.testingKeyId}
+            onAdd={s.openAdd}
+            onTest={(key) => void s.testKey(key)}
+            onMove={(row, delta) => void s.moveKey(row, delta)}
+            onDelete={s.setKeyToDelete}
+          />
+        </div>
+        {s.routing ? (
+          <div className="desk:col-span-7">
+            <RoutingCard groups={groups} error={editing ? null : s.routingError} />
+          </div>
+        ) : null}
+        <div className="desk:col-span-5 desk:col-start-8 desk:row-start-1 desk:row-span-2">
+          <HealthCard rows={healthRows} />
+        </div>
+      </div>
+
+      <AddKeyDialog
+        open={s.addOpen}
+        onOpenChange={s.setAddOpen}
+        providerId={s.addProviderId}
+        onProviderChange={s.setAddProviderId}
+        apiKey={s.newKey}
+        onApiKeyChange={s.setNewKey}
+        label={s.newLabel}
+        onLabelChange={s.setNewLabel}
+        submitting={s.submitting}
+        error={s.addError}
+        trainingWarning={s.trainingWarning}
+        onSubmit={() => void s.submitAdd()}
+      />
+      <DeleteKeyDialog
+        keyToDelete={s.keyToDelete}
+        deleting={s.deleting}
+        onCancel={() => s.setKeyToDelete(null)}
+        onConfirm={() => void s.confirmDelete()}
+      />
+      <RoutingEditorDialog
+        group={editing}
+        routingOptions={s.routingOptions}
+        providers={providers}
+        error={editing ? s.routingError : null}
+      />
+    </>
+  );
+}
