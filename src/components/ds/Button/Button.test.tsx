@@ -44,7 +44,7 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('bg-transparent', 'text-ink');
 
     rerender(<Button variant="link">Link</Button>);
-    expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold');
+    expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold', 'decoration-line-heavy');
   });
 
   it('handles link variant clicks and disabled state', () => {
@@ -260,7 +260,7 @@ describe('Button type size (UAT)', () => {
       const cls = screen.getByRole('button').className;
       expect(cls).toContain('after:absolute');
       expect(cls).toContain('after:inset-x-0');
-      expect(cls).toContain('after:bg-current');
+      expect(cls).toContain('after:bg-line-heavy');
       expect(cls).toContain('no-underline');
       expect(cls).toContain('relative');
     });
