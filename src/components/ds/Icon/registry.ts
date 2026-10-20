@@ -31,6 +31,7 @@ import {
   Tray,
   UploadSimple,
   Wallet,
+  WarningCircle,
   X,
 } from '@phosphor-icons/react/dist/ssr';
 
@@ -67,6 +68,7 @@ export const iconRegistry = {
   minus: Minus,
   'file-text': FileText,
   'pencil-simple': PencilSimple,
+  warning: WarningCircle,
 } as const satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof iconRegistry;

@@ -288,50 +288,7 @@ describe('Button type size (UAT)', () => {
       expect(screen.getByRole('button').className).not.toContain('after:absolute');
     });
   });
-  describe('icon size beside text', () => {
-    it('draws the icon at xs when the button shows text', () => {
-      render(
-        <Button icon={<Icon name="add" size="md" />}>Add account</Button>
-      );
-      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
-    });
-
-    it('draws an Icon child at xs beside text', () => {
-      render(
-        <Button>
-          <Icon name="add" size="lg" />
-          Add
-        </Button>
-      );
-      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
-    });
-
-    it('treats a raw svg (server-rendered Icon) beside text as an icon', () => {
-      render(
-        <Button>
-          <svg data-testid="raw" />
-          All
-        </Button>
-      );
-      expect(screen.getByRole('button').className).toContain('[&_svg]:w-icon-xs');
-    });
-
-    it('does not apply xs to an svg-only child', () => {
-      render(
-        <Button aria-label="Go">
-          <svg />
-        </Button>
-      );
-      expect(screen.getByRole('button').className).not.toContain('[&_svg]:w-icon-xs');
-    });
-
-    it('keeps the icon size on an icon-only button', () => {
-      const { container } = render(
-        <Button iconOnly aria-label="Close" icon={<Icon name="close" size="md" />} />
-      );
-      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-md');
-    });
-
+  describe('link icon gap', () => {
     it('puts a 2px gap between a link icon and its text', () => {
       render(
         <Button variant="link" icon={<Icon name="add" />}>

@@ -158,5 +158,10 @@
   "name": "pencil-simple",
   "phosphor": "pencil-simple",
   "use": "Edit"
+ },
+ {
+  "name": "warning",
+  "phosphor": "warning-circle",
+  "use": "Needs-attention mark, e.g. account with no bank (fill)"
  }
 ]

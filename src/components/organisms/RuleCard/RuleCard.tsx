@@ -183,7 +183,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
               size="sm"
               variant="secondary"
               onClick={effectiveApprove.onSelect}
-              icon={<Icon name="check" size="sm" />}
+              icon={<Icon name="check" size="xs" />}
             >
               {effectiveApprove.label ?? 'Approve'}
             </Button>

@@ -19,7 +19,7 @@ export function HeaderLink({
       <Button asChild variant="link" size="sm">
         <Link href={href}>
           {children}
-          {chevron ? <Icon name="chevron-right" size="sm" /> : null}
+          {chevron ? <Icon name="chevron-right" size="xs" /> : null}
         </Link>
       </Button>
     </Text>

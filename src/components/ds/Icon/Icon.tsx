@@ -6,10 +6,13 @@ import { type IconName, iconRegistry } from './registry';
 export { iconRegistry };
 export type { IconName };
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
+export type IconWeight = 'bold' | 'fill';
 
 export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, 'size'> {
   name: IconName;
   size?: IconSize;
+  /** `fill` draws the solid shape, for a status mark such as a warning badge. */
+  weight?: IconWeight;
   className?: string;
 }
 
@@ -21,7 +24,7 @@ const sizeClasses: Record<IconSize, string> = {
 };
 
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
-  ({ name, size = 'md', className, ...props }, ref) => {
+  ({ name, size = 'md', weight = 'bold', className, ...props }, ref) => {
     const Component = iconRegistry[name];
     if (!Component) {
       if (process.env.NODE_ENV !== 'production') {
@@ -33,7 +36,7 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(
     return (
       <Component
         ref={ref}
-        weight="bold"
+        weight={weight}
         color="currentColor"
         aria-hidden="true"
         className={cn('shrink-0 inline-block align-middle', sizeClasses[size], className)}

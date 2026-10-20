@@ -48,12 +48,6 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
 };
 
-// A button that shows text draws its svgs at `xs` (10px) by CSS, so it also
-// holds for an Icon rendered by a server component (plain <svg> by then).
-// Icon-only buttons keep the Icon's own size.
-const isIconEl = (n: React.ReactNode) =>
-  React.isValidElement(n) && (n.type === Icon || n.type === 'svg');
-
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -85,9 +79,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // A link with an icon draws one continuous underline (pseudo element)
     // under icon + gap + text; text-decoration would stop at the SVG.
     const isIconLink = isLink && !iconOnly && hasIconContent;
-    const hasText =
-      !iconOnly &&
-      React.Children.toArray(asChildContent).some((c) => !isIconEl(c));
     const isStacked = layout === 'stacked';
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
@@ -116,7 +107,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variantStyles[variant],
       isIconLink &&
         'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-current hover:after:hidden',
-      hasText && '[&_svg]:w-icon-xs [&_svg]:h-icon-xs',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,

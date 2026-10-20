@@ -24,11 +24,23 @@ describe('BankLogo', () => {
     render(<BankLogo bankId="nope" name="Nova" />);
     expect(screen.getByText('N')).toBeInTheDocument();
     expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByTestId('bank-missing')).toBeNull();
   });
 
   it('shows the first letter of the name with no bank id', () => {
     render(<BankLogo bankId={null} name="cash wallet" />);
     expect(screen.getByText('C')).toBeInTheDocument();
     expect(screen.queryByRole('img')).toBeNull();
+  });
+
+  it('marks an account with no bank with an amber warning at the top right', () => {
+    render(<BankLogo bankId={null} name="Cash" />);
+    const mark = screen.getByTestId('bank-missing');
+    expect(mark).toHaveClass('text-warning', 'absolute', '-top-space-4', '-right-space-4');
+  });
+
+  it('shows no warning mark for a bank with a logo', () => {
+    render(<BankLogo bankId="hdfc" name="Salary" />);
+    expect(screen.queryByTestId('bank-missing')).toBeNull();
   });
 });

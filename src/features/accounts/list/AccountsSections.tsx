@@ -131,7 +131,7 @@ function ClosedToggleButton({
     >
       {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
       <span className="inline-block min-w-space-40 text-right">{showing ? 'Hide' : 'Show'}</span>
-      <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
+      <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="xs" />
     </Button>
   );
 }
