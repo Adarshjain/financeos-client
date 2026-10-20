@@ -3,10 +3,14 @@ import '@/test/next-mocks';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import {
+  bucketObligations,
+  type ObligationItem,
+  sumAmounts,
+} from '@/features/upcoming/obligations';
 import { formatMoney } from '@/lib/utils';
 
-import { bucketObligations, ObligationGroups, sumAmounts } from '../ObligationGroups';
-import type { ObligationItem } from '../types';
+import { ObligationGroups } from '../ObligationGroups';
 
 const TODAY = '2026-10-08';
 let n = 0;

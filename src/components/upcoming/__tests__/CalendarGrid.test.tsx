@@ -4,7 +4,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-import type { ObligationItem } from '@/components/obligations/types';
+import type { ObligationItem } from '@/features/upcoming/obligations';
 import { formatDate } from '@/lib/utils';
 
 import { CalendarGrid } from '../CalendarGrid';

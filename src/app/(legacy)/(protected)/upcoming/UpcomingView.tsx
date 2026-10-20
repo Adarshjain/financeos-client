@@ -5,13 +5,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { ObligationGroups } from '@/components/obligations/ObligationGroups';
-import type { ObligationKindFilter } from '@/components/obligations/types';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarGrid } from '@/components/upcoming/CalendarGrid';
 import { MarkPaidHost } from '@/components/upcoming/MarkPaidHost';
 import { TotalsStrip } from '@/components/upcoming/TotalsStrip';
 import { UpcomingControls } from '@/components/upcoming/UpcomingControls';
+import type { ObligationKindFilter } from '@/features/upcoming/obligations';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
 

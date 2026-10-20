@@ -1,0 +1,27 @@
+'use client';
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { api } from '@/lib/api/client';
+import { invalidateLendingQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
+import type { CreateLendingRequest } from '@/lib/types';
+
+/**
+ * Records one lending ledger entry (POST /api/v1/lendings) and refreshes everything it moves:
+ * lendings, the loans summary, obligations and transactions. `onError` replaces the default
+ * Legacy error toast, for pages whose toasts come from another toaster.
+ */
+export function useCreateLending(options?: { onError?: (e: unknown) => void }) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateLendingRequest) =>
+      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
+    onSuccess: () => {
+      invalidateLendingQueries(qc);
+      qc.invalidateQueries({ queryKey: keys.transactions.all });
+    },
+    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to create lending')),
+  });
+}

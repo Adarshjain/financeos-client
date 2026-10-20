@@ -5,8 +5,8 @@ import { useState } from 'react';
 
 import { type RowActions } from '@/components/obligations/ObligationGroups';
 import { ObligationRow } from '@/components/obligations/ObligationRow';
-import type { ObligationItem } from '@/components/obligations/types';
 import { Button } from '@/components/ui/button';
+import type { ObligationItem } from '@/features/upcoming/obligations';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
 const DOT: Record<string, string> = {
