@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { MATCH_TYPE_META } from '@/components/rules/browser/RuleCard';
+import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';
 import type { RuleApplyResult } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
