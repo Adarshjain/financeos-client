@@ -163,4 +163,33 @@ describe('ListField', () => {
     expect(valueEl).toBeInTheDocument();
     expect(valueEl).toHaveClass('font-semibold');
   });
+
+  describe('wrap', () => {
+    it('truncates title and subtitle by default', () => {
+      render(<ListRow title="Send at" subtitle="A long line" />);
+      expect(screen.getByText('Send at')).toHaveClass('truncate');
+      expect(screen.getByText('A long line')).toHaveClass('truncate');
+    });
+
+    it('wraps title and subtitle when wrap is set', () => {
+      render(<ListRow wrap title="Send at" subtitle="A long line" />);
+      for (const el of [screen.getByText('Send at'), screen.getByText('A long line')]) {
+        expect(el).toHaveClass('break-words');
+        expect(el).not.toHaveClass('truncate');
+        expect(el.parentElement).toHaveClass('min-w-0');
+      }
+    });
+
+    it('wraps in the asChild branch too and keeps trailing centred', () => {
+      render(
+        <ListRow asChild wrap title="Profile" subtitle="Long text" trailing={<span data-testid="t">x</span>}>
+          <a href="#" data-testid="row" />
+        </ListRow>,
+      );
+      expect(screen.getByText('Profile')).toHaveClass('break-words');
+      expect(screen.getByText('Long text')).not.toHaveClass('truncate');
+      expect(screen.getByTestId('row')).toHaveClass('items-center');
+      expect(screen.getByTestId('t').parentElement).toHaveClass('shrink-0', 'items-center');
+    });
+  });
 });

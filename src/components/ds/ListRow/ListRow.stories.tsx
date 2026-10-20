@@ -38,6 +38,7 @@ const meta = {
     disabled: { control: 'boolean' },
     borderTop: { control: 'boolean' },
     clickable: { control: 'boolean' },
+    wrap: { control: 'boolean' },
     asChild: { control: 'boolean' },
     leading: { control: false },
     trailing: { control: false },
@@ -51,6 +52,7 @@ const meta = {
     disabled: false,
     borderTop: true,
     clickable: false,
+    wrap: false,
     asChild: false,
   },
 } satisfies Meta<typeof ListRow>;
@@ -137,6 +139,15 @@ export const Disabled: Story = {
     title: 'Archived account',
     subtitle: 'Closed on 31 Mar 2025',
     disabled: true,
+  },
+};
+
+export const Wrap: Story = {
+  args: {
+    title: 'Send at',
+    subtitle: 'IST · statement digests and mailbox alerts go out as soon as they happen',
+    wrap: true,
+    trailing: <Text variant="body-strong">09:00</Text>,
   },
 };
 

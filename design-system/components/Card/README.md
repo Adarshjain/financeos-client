@@ -7,6 +7,7 @@ The container for a group of related rows: a header with title, subtitle and an 
 - `subtitle?: ReactNode`
 - `action?: ReactNode` (node slot for link or small action)
 - `variant?: 'default' | 'inset'` (default `default`; `inset` is an inner box for use inside another Card)
+- `tone?: 'neutral' | 'danger'` (default `neutral`; `danger` swaps only the border to `danger-border`, works with both variants)
 - `asChild?: boolean` (delegates rendering to child element via Radix Slot, e.g. `<Card asChild><a href="…">…</a></Card>`)
 - Compound parts: `Card.Header`, `Card.Title` (`as?: ElementType`, `truncate?: boolean`), `Card.Subtitle` (`as?: ElementType`, `truncate?: boolean`), `Card.Row`, `Card.Section`, `Card.Empty`, `Card.Footer` (uses consistent `px-space-16` horizontal padding).
 
@@ -21,4 +22,4 @@ The container for a group of related rows: a header with title, subtitle and an 
 Text, SectionHeader, Slot, Pager, Button, Icon.
 
 ## Variants
-- Title with subtitle and link, with an action, with rows, with a pager footer, with section bands, empty, asChild, inset (owner, 2026-10-20): job box with counter tiles and a group box, nested.
+- Title with subtitle and link, with an action, with rows, with a pager footer, with section bands, empty, asChild, inset (owner, 2026-10-20): job box with counter tiles and a group box, nested, danger tone (owner, 2026-10-20): Delete account card, border `danger-border`, rest unchanged.
