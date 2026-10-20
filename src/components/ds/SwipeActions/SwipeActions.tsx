@@ -134,13 +134,13 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
           </div>
         )}
 
-        {/* Foreground Row */}
+        {/* Foreground Row: surface-filled so the reveal never shows through a row without a background */}
         <div
           style={{
             transform: `translateX(${offset}px)`,
           }}
           className={cn(
-            'relative',
+            'relative bg-surface',
             !isDragging && 'transition-transform duration-base ease-out',
           )}
         >

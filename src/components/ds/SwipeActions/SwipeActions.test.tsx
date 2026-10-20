@@ -217,4 +217,13 @@ describe('SwipeActions', () => {
     fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     expect(onPointerDown).toHaveBeenCalledTimes(1);
   });
+
+  it('fills the moving row with the surface so a row without a background hides the reveal', () => {
+    render(
+      <SwipeActions left={{ label: 'Snooze', tone: 'info', onTrigger: vi.fn() }}>
+        <div>Row content</div>
+      </SwipeActions>,
+    );
+    expect(screen.getByText('Row content').parentElement).toHaveClass('bg-surface');
+  });
 });

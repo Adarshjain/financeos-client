@@ -72,7 +72,7 @@ export function InboxSnoozeMenu({ title, onSnooze }: InboxSnoozeMenuProps) {
           size="sm"
           iconOnly
           aria-label={`Snooze ${title}`}
-          icon={<Icon name="calendar" size="sm" />}
+          icon={<Icon name="clock" size="sm" />}
         />
       }
     >

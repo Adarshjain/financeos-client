@@ -14,7 +14,7 @@ Adds swipe to any component. It wraps exactly one child (a TransactionRow, a Lis
 
 ## Composition
 - The page wraps whatever should swipe: `<SwipeActions left={…} right={…}><TransactionRow …/></SwipeActions>`. No component has `swipeable`, `swipeLeft`, `swipeRight` or similar props, and no component wraps itself in SwipeActions.
-- It adds nothing to the child's look: no background, padding, border or radius. The child keeps its own background (selected tint included) and the revealed side shows behind it. The child's corner radius is matched by the reveal layer (`className` on SwipeActions for layout, e.g. `rounded-ds-lg` when wrapping a card).
+- It adds nothing to the child's look except a `surface` fill under the moving row, so a row without its own background (ListRow) hides the reveal at rest and while dragging (owner, 2026-10-20). No padding, border or radius. The child keeps its own background (selected tint included) on top of that fill. The child's corner radius is matched by the reveal layer (`className` on SwipeActions for layout, e.g. `rounded-ds-lg` when wrapping a card).
 - The gesture itself is the shared `useSwipe` hook, exported, so a component with a layout SwipeActions can't wrap can use the same behaviour.
 - No domain props: no `variant` ('transactions' | 'inbox'), no `onApprove` / `onDelete` / `onSnooze` / `onDismiss` / `canApprove`, no aliases. Spring-back uses `duration-base`.
 
