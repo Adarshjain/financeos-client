@@ -1,13 +1,10 @@
 'use client';
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { PagedSection } from '@/components/reports/views/PagedSection';
-import { buildJobsFilterUrl, buildJobsQueryParams } from '@/features/jobs/jobUtils';
-import { api } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
-import type { JobResponse } from '@/lib/types';
+import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 
 import { JobsDesktopTable } from './JobsDesktopTable';
 import { JobsMobileList } from './JobsMobileList';
@@ -27,24 +24,7 @@ interface JobsHistoryTableProps {
  */
 export function JobsHistoryTable({ page, size, statusFilter, typeFilter }: JobsHistoryTableProps) {
   const router = useRouter();
-  const queryParams = buildJobsQueryParams({ page, size, statusFilter, typeFilter });
-
-  const { data } = useQuery({
-    queryKey: keys.jobs.list(queryParams),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/jobs', {
-        params: { query: { ...queryParams, sort: ['createdAt,desc'] } },
-      });
-      return data ?? { content: [], totalPages: 0, totalElements: 0 };
-    },
-    placeholderData: keepPreviousData,
-    refetchInterval: 5_000,
-    refetchIntervalInBackground: false,
-  });
-
-  const jobs: JobResponse[] = data?.content ?? [];
-  const totalPages = data?.totalPages ?? 0;
-  const totalElements = data?.totalElements ?? 0;
+  const { jobs, totalPages, totalElements } = useJobsHistory({ page, size, statusFilter, typeFilter });
 
   // The page lives in the URL (?page=), so paging navigates; the pager scrolls itself.
   const goToPage = (newPage: number) =>

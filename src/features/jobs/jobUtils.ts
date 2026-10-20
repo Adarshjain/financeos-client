@@ -33,6 +33,8 @@ export function getJobTypeLabel(type: JobType): string {
 export function buildJobsFilterUrl(
   current: { statusFilter: string; typeFilter: string; size: number },
   overrides: { newStatus?: string; newType?: string; newPage?: number } = {},
+  /** Another page showing the same list (the Dinero Activity tab) sets its own path and default size. */
+  target: { base?: string; defaultSize?: number } = {},
 ): string {
   const q = new URLSearchParams();
   const st = overrides.newStatus !== undefined ? overrides.newStatus : current.statusFilter;
@@ -41,9 +43,9 @@ export function buildJobsFilterUrl(
   if (st) q.set('status', st);
   if (tp) q.set('type', tp);
   if (page > 0) q.set('page', String(page));
-  if (current.size !== 20) q.set('size', String(current.size));
+  if (current.size !== (target.defaultSize ?? 20)) q.set('size', String(current.size));
   const str = q.toString();
-  return `/settings/activity${str ? `?${str}` : ''}`;
+  return `${target.base ?? '/settings/activity'}${str ? `?${str}` : ''}`;
 }
 
 /**

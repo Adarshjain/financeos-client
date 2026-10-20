@@ -11,10 +11,10 @@ export interface Counter {
 }
 
 /** Counter tiles: the number over its overline label. Parked reads warning, Failed danger, the rest neutral. */
-export function SyncCounters({ counters, desktopColumns }: { counters: Counter[]; desktopColumns: 5 | 6 }) {
+export function SyncCounters({ counters, desktopColumns }: { counters: Counter[]; desktopColumns: 3 | 5 | 6 }) {
   return (
     <div
-      className={`grid grid-cols-3 gap-space-6 ${desktopColumns === 6 ? 'desk:grid-cols-6' : 'desk:grid-cols-5'}`}
+      className={`grid grid-cols-3 gap-space-6 ${desktopColumns === 6 ? 'desk:grid-cols-6' : desktopColumns === 3 ? 'desk:grid-cols-3' : 'desk:grid-cols-5'}`}
     >
       {counters.map((c) => (
         <Card

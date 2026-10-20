@@ -8,11 +8,14 @@ import { Banner, Button, Icon, Text } from '@/components/ds';
 export function JobErrorBody({
   errorCode,
   errorMessage,
+  defaultOpen = false,
 }: {
   errorCode?: string | null;
   errorMessage?: string | null;
+  /** Start with the code and message showing (the job result card). */
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   if (!errorCode && !errorMessage) return null;
 
   return (
