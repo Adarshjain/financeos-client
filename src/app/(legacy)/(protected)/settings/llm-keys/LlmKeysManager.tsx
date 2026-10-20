@@ -4,33 +4,13 @@ import { Info, ShieldAlert } from 'lucide-react';
 import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { buildProviderOptions, PROVIDERS } from '@/features/settings/ai/providers';
 
 import { AddKeyDialog } from './components/AddKeyDialog';
 import { DeleteKeyDialog } from './components/DeleteKeyDialog';
-import {
-  ProviderConfig,
-  ProviderKeysCard,
-} from './components/ProviderKeysCard';
+import { ProviderKeysCard } from './components/ProviderKeysCard';
 import { RoutingGroupCard } from './components/RoutingGroupCard';
 import { useLlmKeysManager } from './components/useLlmKeysManager';
-
-const PROVIDERS: ProviderConfig[] = [
-  {
-    id: 'gemini',
-    name: 'Gemini',
-    getKeyUrl: 'https://aistudio.google.com/app/apikey',
-  },
-  {
-    id: 'groq',
-    name: 'Groq',
-    getKeyUrl: 'https://console.groq.com/keys',
-  },
-  {
-    id: 'openrouter',
-    name: 'OpenRouter',
-    getKeyUrl: 'https://openrouter.ai/keys',
-  },
-];
 
 export function LlmKeysManager() {
   const {
@@ -88,13 +68,7 @@ export function LlmKeysManager() {
   } = useLlmKeysManager();
 
   // Which providers a typed model can be probed with: the fixed provider list, keyed or not.
-  const providerOptions = PROVIDERS.map((p) => ({
-    id: p.id,
-    name: p.name,
-    hasKey: keys.some(
-      (k) => k.provider.toLowerCase() === p.id.toLowerCase() && k.status === 'ACTIVE'
-    ),
-  }));
+  const providerOptions = buildProviderOptions(keys);
 
   if (loading) {
     return (

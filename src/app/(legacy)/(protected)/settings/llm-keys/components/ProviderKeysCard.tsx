@@ -20,13 +20,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { ProviderConfig } from '@/features/settings/ai/providers';
 import type { LlmKeyDto, TestKeyResponse } from '@/lib/api/types';
 
-export interface ProviderConfig {
-  id: string;
-  name: string;
-  getKeyUrl: string;
-}
 
 interface ProviderKeysCardProps {
   provider: ProviderConfig;

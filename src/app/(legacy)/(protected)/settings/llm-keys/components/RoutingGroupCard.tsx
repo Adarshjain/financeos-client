@@ -19,11 +19,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { ProviderOption } from '@/features/settings/ai/providers';
+import { type CustomModelInput, draftEntryKey, isCustomEntry } from '@/features/settings/ai/useLlmRoutingEditor';
 import type { Schemas } from '@/lib/api/types';
 
-import { CustomModelRow, type ProviderOption } from './CustomModelRow';
+import { CustomModelRow } from './CustomModelRow';
 import { RoutingEntryList } from './RoutingEntryList';
-import { type CustomModelInput, draftEntryKey, isCustomEntry } from './useLlmRoutingEditor';
 
 // The spec marks a few RoutingEntryDto/RoutingOptionDto fields (`model`,
 // `notes`) optional+nullable, where the hand-written llmKey.types.ts versions
