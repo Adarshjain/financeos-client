@@ -1,9 +1,9 @@
 import React from 'react';
 
+import { breakdownLines } from '@/features/jobs/gmailSyncModel';
 import type { SyncSummary } from '@/lib/types';
 
 import { LegacyAttention } from './gmail-sync/LegacyAttention';
-import { describeCounts, PARKED_STATUSES, SKIPPED_STATUSES } from './gmail-sync/syncLabels';
 import { SyncMessageList } from './gmail-sync/SyncMessageList';
 import { SyncRunContext } from './gmail-sync/SyncRunContext';
 
@@ -24,39 +24,13 @@ const FAILED = 'text-rose-600 dark:text-rose-400';
 
 /** Why the run's skipped/parked/failed emails ended up there, and what is still queued. */
 function Breakdown({ result }: { result: SyncSummary }) {
-  const counts = result.statusCounts ?? {};
-  const skipped = describeCounts(counts, SKIPPED_STATUSES);
-  const parked = describeCounts(counts, PARKED_STATUSES);
-  const retryable = result.failedRetryable ?? 0;
-  const permanent = result.failedPermanent ?? 0;
-  const backlog = result.backlogRemaining ?? 0;
-  const hitBudget = result.budget !== undefined && result.budget > 0 && (result.processed ?? 0) >= result.budget;
-
   return (
     <div className="space-y-0.5 text-2xs text-slate-600 dark:text-slate-400">
-      {skipped && (
-        <div>
-          <span className="font-semibold">Skipped ({result.skipped}):</span> {skipped}
+      {breakdownLines(result).map((line) => (
+        <div key={line.key}>
+          {line.label && <span className="font-semibold">{line.label}</span>} {line.text}
         </div>
-      )}
-      {parked && (
-        <div>
-          <span className="font-semibold">Parked ({result.parked ?? 0}):</span> {parked}
-        </div>
-      )}
-      {retryable + permanent > 0 && (
-        <div>
-          <span className="font-semibold">Failed ({retryable + permanent}):</span> {retryable} will retry · {permanent}{' '}
-          permanent
-        </div>
-      )}
-      {backlog > 0 && (
-        <div>
-          {hitBudget
-            ? `Hit the ${result.budget}-email limit for this run; ${backlog} still queued, the next sync continues.`
-            : `${backlog} still queued (retries wait for their scheduled time).`}
-        </div>
-      )}
+      ))}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import {
   describeAttentionItem,
   formatDateTime,
   gmailMessageUrl,
-} from '../attentionItem.helpers';
+} from './attentionItem.helpers';
 
 function item(overrides: Partial<AttentionItem>): AttentionItem {
   return {

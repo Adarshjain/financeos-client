@@ -11,18 +11,18 @@ vi.mock('sonner', () => ({
 
 // Captures the settle callback so each test can drive the sync job to a terminal status.
 let onSettled: ((job: JobResponse) => void) | undefined;
-vi.mock('@/components/jobs/useJobStatusPolling', () => ({
+vi.mock('@/features/jobs/useJobStatusPolling', () => ({
   useJobStatusPolling: (_jobId: string | null, cb: (job: JobResponse) => void) => {
     onSettled = cb;
     return { isPolling: false };
   },
 }));
 
-vi.mock('../useGmailQueries', () => ({
+vi.mock('@/features/settings/connections/useGmailQueries', () => ({
   useGmailQueries: () => ({ connections: [], senders: [], attentionData: null, loading: false }),
 }));
 
-vi.mock('../useGmailMutations', () => {
+vi.mock('@/features/settings/connections/useGmailMutations', () => {
   const idle = { isPending: false, mutateAsync: vi.fn() };
   return {
     useGmailMutations: () => ({

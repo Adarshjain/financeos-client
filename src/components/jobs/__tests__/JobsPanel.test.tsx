@@ -2,14 +2,14 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { emitJobStarted } from '@/features/jobs/jobsBus';
+import { formatDuration } from '@/features/jobs/jobUtils';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { JobErrorDetails } from '../JobErrorDetails';
-import { emitJobStarted } from '../jobsBus';
 import { JobsPanel } from '../JobsPanel';
 import { JobStatusPill } from '../JobStatusPill';
-import { formatDuration } from '../jobUtils';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

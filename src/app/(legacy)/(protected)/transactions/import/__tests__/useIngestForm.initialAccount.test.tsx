@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createTestQueryClient } from '@/test/renderWithQuery';
 
-vi.mock('@/components/jobs/useJobStatusPolling', () => ({ useJobStatusPolling: () => ({ isPolling: false }) }));
-vi.mock('@/components/jobs/jobsBus', () => ({ emitJobStarted: vi.fn() }));
+vi.mock('@/features/jobs/useJobStatusPolling', () => ({ useJobStatusPolling: () => ({ isPolling: false }) }));
+vi.mock('@/features/jobs/jobsBus', () => ({ emitJobStarted: vi.fn() }));
 
 import { useIngestForm } from '../components/useIngestForm';
 

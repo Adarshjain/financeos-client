@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
 
+import { formatDateTime, STATUS_LABELS } from '@/features/jobs/syncLabels';
 import type { SyncMessageResult } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
-
-import { formatDateTime, STATUS_LABELS } from './syncLabels';
 
 function Action({ message }: { message: SyncMessageResult }) {
   const linkClass = 'underline font-bold text-2xs';

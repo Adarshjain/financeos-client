@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { AttentionItem } from '../attentionItem.helpers';
+import type { AttentionItem } from '@/features/settings/connections/attentionItem.helpers';
+
 import { AttentionItemRow } from '../AttentionItemRow';
 
 function item(overrides: Partial<AttentionItem> = {}): AttentionItem {

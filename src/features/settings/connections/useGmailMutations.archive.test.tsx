@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 
-import { useGmailMutations } from '../useGmailMutations';
+import { useGmailMutations } from './useGmailMutations';
 
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');

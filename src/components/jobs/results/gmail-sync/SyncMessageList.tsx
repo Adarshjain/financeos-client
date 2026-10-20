@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { MESSAGE_GROUPS, type MessageGroup } from '@/features/jobs/syncLabels';
 import type { SyncMessageResult } from '@/lib/types';
 
-import { MESSAGE_GROUPS, type MessageGroup } from './syncLabels';
 import { SyncMessageRow } from './SyncMessageRow';
 
 function Group({ group, messages }: { group: MessageGroup; messages: SyncMessageResult[] }) {

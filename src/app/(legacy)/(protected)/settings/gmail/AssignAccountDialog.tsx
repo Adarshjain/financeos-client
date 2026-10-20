@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { toast } from 'sonner';
+import React from 'react';
 
 import {
   Dialog,
@@ -19,10 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getErrorMessage } from '@/lib/api/errorMessage';
-import { useAccounts } from '@/lib/query/hooks/useAccounts';
-
-import { useGmailMutations } from './useGmailMutations';
+import { useAssignAccount } from '@/features/settings/connections/useAssignAccount';
 
 interface AssignAccountDialogProps {
   open: boolean;
@@ -35,42 +31,17 @@ export function AssignAccountDialog({
   onOpenChange,
   item,
 }: AssignAccountDialogProps) {
-  const { data: accounts, isLoading: loadingAccounts } = useAccounts();
-  const { assignAttentionMutation } = useGmailMutations();
-
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const effectiveAccountId = selectedAccountId || accounts?.[0]?.id || '';
+  const {
+    accounts,
+    loadingAccounts,
+    effectiveAccountId,
+    selectAccount,
+    errorMessage,
+    isPending,
+    submit: handleSubmit,
+  } = useAssignAccount(item, () => onOpenChange(false));
 
   if (!item) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!effectiveAccountId) {
-      setErrorMessage('Please select an account.');
-      return;
-    }
-
-    setErrorMessage(null);
-    try {
-      const res = await assignAttentionMutation.mutateAsync({
-        ledgerId: item.id,
-        body: { accountId: effectiveAccountId },
-      });
-
-      if (res?.reactivatedCount && res.reactivatedCount > 0) {
-        toast.success(`Re-processing ${res.reactivatedCount} parked emails`);
-      } else {
-        toast.success('Account identifier assigned');
-      }
-
-      onOpenChange(false);
-    } catch (err) {
-      const msg = getErrorMessage(err, 'Failed to assign identifier to account');
-      setErrorMessage(msg);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,17 +72,14 @@ export function AssignAccountDialog({
                 </Label>
                 <Select
                   value={effectiveAccountId || undefined}
-                  onValueChange={(val) => {
-                    setSelectedAccountId(val);
-                    setErrorMessage(null);
-                  }}
-                  disabled={loadingAccounts || assignAttentionMutation.isPending}
+                  onValueChange={selectAccount}
+                  disabled={loadingAccounts || isPending}
                 >
                   <SelectTrigger id="target-account" className="text-xs">
                     <SelectValue placeholder={loadingAccounts ? 'Loading accounts...' : 'Select an account'} />
                   </SelectTrigger>
                   <SelectContent>
-                    {accounts?.map((acc) => (
+                    {accounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id} className="text-xs">
                         {acc.name}
                       </SelectItem>
@@ -125,13 +93,13 @@ export function AssignAccountDialog({
 
           <DialogFooter
             primaryAction={{
-              label: assignAttentionMutation.isPending ? 'Assigning...' : 'Assign & Remember',
+              label: isPending ? 'Assigning...' : 'Assign & Remember',
               type: 'submit',
-              disabled: assignAttentionMutation.isPending || !effectiveAccountId,
+              disabled: isPending || !effectiveAccountId,
             }}
             secondaryAction={{
               label: 'Cancel',
-              disabled: assignAttentionMutation.isPending,
+              disabled: isPending,
             }}
           />
         </form>

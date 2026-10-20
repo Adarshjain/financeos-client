@@ -5,7 +5,6 @@ import React from 'react';
 
 import { JobErrorDetails } from '@/components/jobs/JobErrorDetails';
 import { JobRowActions } from '@/components/jobs/JobRowActions';
-import { buildJobsFilterUrl } from '@/components/jobs/jobUtils';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import {
   Select,
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
 
 export { JobErrorDetails, JobRowActions };
 

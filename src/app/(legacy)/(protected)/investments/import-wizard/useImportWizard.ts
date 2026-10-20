@@ -4,8 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
+import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';

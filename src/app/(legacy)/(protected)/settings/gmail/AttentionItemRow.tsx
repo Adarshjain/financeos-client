@@ -5,14 +5,13 @@ import React, { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { cn, formatDate } from '@/lib/utils';
-
 import {
   type AttentionItem,
   describeAttentionItem,
   formatDateTime,
   gmailMessageUrl,
-} from './attentionItem.helpers';
+} from '@/features/settings/connections/attentionItem.helpers';
+import { cn, formatDate } from '@/lib/utils';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
