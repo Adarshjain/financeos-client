@@ -1,10 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 
-import { deleteAccount } from '@/app/(legacy)/(protected)/settings/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,116 +15,35 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
-import { api } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
-import type { DeletionSummaryResponse, UserResponse } from '@/lib/types';
+import { useDeleteAccountFlow } from '@/features/settings/profile/useDeleteAccountFlow';
+import { formatDeletionSummary } from '@/features/settings/profile/useDeletionSummary';
+import type { UserResponse } from '@/lib/types';
 
 interface DeleteAccountCardProps {
   user: UserResponse;
 }
 
 export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
-  const [open, setOpen] = useState(false);
-
-  const { data: summary, isLoading: loadingSummary } = useQuery({
-    queryKey: keys.settings.deletionSummary(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/auth/me/deletion-summary');
-      return data ?? null;
-    },
-    enabled: open,
-    // A failed summary must not block the deletion flow — no retries needed.
-    retry: false,
-  });
-
-  const [password, setPassword] = useState('');
-  const [confirmEmail, setConfirmEmail] = useState('');
-  const [confirmPhrase, setConfirmPhrase] = useState('');
-
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
-
-  const hasPassword = !!user.hasPassword;
-
-  const handleOpen = () => {
-    setPassword('');
-    setConfirmEmail('');
-    setConfirmPhrase('');
-    setError(null);
-    setIsBusy(false);
-    setOpen(true);
-  };
-
-  const isAuthValid = hasPassword
-    ? password.trim().length > 0
-    : confirmEmail.trim().toLowerCase() === user.email.toLowerCase();
-
-  const isPhraseValid = confirmPhrase.trim() === 'DELETE';
-  const canSubmit = isAuthValid && isPhraseValid && !isDeleting;
-
-  const handleDelete = async () => {
-    if (!canSubmit) return;
-    setIsDeleting(true);
-    setError(null);
-    setIsBusy(false);
-
-    try {
-      const res = await deleteAccount({
-        password: hasPassword ? password : undefined,
-        confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
-      });
-
-      if (!res.success) {
-        setIsDeleting(false);
-        // Match on the code, not the message: the message is human copy that will be
-        // reworded, and matching it by substring silently stops working when it is.
-        setIsBusy(res.error.code === 'ACCOUNT_DELETE_BUSY');
-        setError(res.error.message || 'Failed to delete account');
-      }
-      // If success, Next.js action redirects to /login?deleted=1
-    } catch (e: unknown) {
-      // In Next.js, redirect throws a NEXT_REDIRECT digest which must not be caught as an error
-      const digest = e instanceof Error ? (e as Error & { digest?: string }).digest : undefined;
-      if (digest?.startsWith('NEXT_REDIRECT')) {
-        throw e;
-      }
-      setIsDeleting(false);
-      setError(e instanceof Error ? e.message : 'An unexpected error occurred');
-    }
-  };
-
-  const formatSummaryText = (summaryData: DeletionSummaryResponse) => {
-    const parts: string[] = [];
-    const counts = summaryData.counts;
-
-    if (counts.accounts) {
-      parts.push(`${counts.accounts.toLocaleString()} account${counts.accounts === 1 ? '' : 's'}`);
-    }
-    if (counts.transactions) {
-      parts.push(`${counts.transactions.toLocaleString()} transaction${counts.transactions === 1 ? '' : 's'}`);
-    }
-    if (counts.holdings || counts.investment_transactions) {
-      const invCount = (counts.holdings || 0) + (counts.investment_transactions || 0);
-      parts.push(`${invCount.toLocaleString()} investment record${invCount === 1 ? '' : 's'}`);
-    }
-    if (counts.loans || counts.lendings) {
-      const loanCount = (counts.loans || 0) + (counts.lendings || 0);
-      parts.push(`${loanCount.toLocaleString()} loan / lending record${loanCount === 1 ? '' : 's'}`);
-    }
-    if (counts.category_rules || counts.reward_rules) {
-      const ruleCount = (counts.category_rules || 0) + (counts.reward_rules || 0);
-      parts.push(`${ruleCount.toLocaleString()} rule${ruleCount === 1 ? '' : 's'}`);
-    }
-
-    if (parts.length === 0) {
-      return summaryData.total > 0
-        ? `${summaryData.total.toLocaleString()} total associated records`
-        : 'No financial records found';
-    }
-
-    return parts.join(' · ');
-  };
+  const {
+    open,
+    summary,
+    loadingSummary,
+    hasPassword,
+    password,
+    setPassword,
+    confirmEmail,
+    setConfirmEmail,
+    confirmPhrase,
+    setConfirmPhrase,
+    isDeleting,
+    isBusy,
+    error,
+    canSubmit,
+    handleOpen,
+    handleDelete,
+    handleOpenChange,
+    close,
+  } = useDeleteAccountFlow(user);
 
   return (
     <>
@@ -156,10 +72,7 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
 
       <Dialog
         open={open}
-        onOpenChange={(val) => {
-          if (isDeleting) return; // Prevent closing while in flight
-          setOpen(val);
-        }}
+        onOpenChange={handleOpenChange}
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -181,7 +94,7 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
             ) : summary ? (
               <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-rose-900 dark:text-rose-200">
                 <p className="font-semibold mb-0.5">Records to be deleted:</p>
-                <p className="text-xs text-rose-700 dark:text-rose-300">{formatSummaryText(summary)}</p>
+                <p className="text-xs text-rose-700 dark:text-rose-300">{formatDeletionSummary(summary)}</p>
               </div>
             ) : null}
 
@@ -244,7 +157,7 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
             secondaryAction={{
               label: 'Cancel',
               disabled: isDeleting,
-              onClick: () => setOpen(false),
+              onClick: close,
             }}
             primaryAction={{
               label: isDeleting ? 'Deleting Account...' : isBusy ? 'Retry Deletion' : 'Permanently Delete Account',

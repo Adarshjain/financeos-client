@@ -1,20 +1,12 @@
 'use client';
 
 import { Laptop, Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { useSyncExternalStore } from 'react';
 
+import { useThemeChoice } from '@/features/settings/profile/useThemeChoice';
 import { cn } from '@/lib/utils';
 
-const emptySubscribe = () => () => {};
-
 export function ThemeSwitcher({ className }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
-  const mounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
+  const { theme, setTheme } = useThemeChoice();
 
   const options = [
     { value: 'light', label: 'Light', icon: Sun },
@@ -31,7 +23,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     >
       {options.map((opt) => {
         const Icon = opt.icon;
-        const isSelected = mounted && theme === opt.value;
+        const isSelected = theme === opt.value;
 
         return (
           <button
