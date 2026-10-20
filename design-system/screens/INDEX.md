@@ -154,6 +154,7 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 
 - **Settings** — `P-settings-profile.dc.html` · `shots/P-settings-profile.webp`
 - **Connections** — `P-settings-connections.dc.html` · `shots/P-settings-connections.webp`
+- **Connections · states** — `P-settings-connections-states.dc.html` · `shots/P-settings-connections-states.webp`
 - **AI** — `P-settings-ai.dc.html` · `shots/P-settings-ai.webp`
 - **Notifications** — `P-settings-notifications.dc.html` · `shots/P-settings-notifications.webp`
 - **Activity** — `P-settings-activity.dc.html` · `shots/P-settings-activity.webp`
@@ -285,6 +286,7 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 
 - **Settings** — `D-settings-profile.dc.html` · `shots/D-settings-profile.webp`
 - **Connections** — `D-settings-connections.dc.html` · `shots/D-settings-connections.webp`
+- **Connections · states** — `D-settings-connections-states.dc.html` · `shots/D-settings-connections-states.webp`
 - **AI** — `D-settings-ai.dc.html` · `shots/D-settings-ai.webp`
 - **Notifications** — `D-settings-notifications.dc.html` · `shots/D-settings-notifications.webp`
 - **Activity** — `D-settings-activity.dc.html` · `shots/D-settings-activity.webp`
