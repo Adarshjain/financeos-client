@@ -12,7 +12,7 @@ The bar at the top of every screen: one component, two forms chosen by CSS at th
 - `leading`: optional `ReactNode` (phone leading slot, e.g. logo or custom button)
 - `backHref`: optional `string` (renders a link back button at every width)
 - `onBack`: optional `() => void` (renders a back button at every width)
-- `actions`: an ordered list the **app** passes in, each `{ id, icon, label, onSelect, asChild?, children?, variant?: 'default' | 'primary', shortcut?, showLabel? }`. The bar renders them; it decides nothing about which ones exist. FinanceOS passes Ask the data, Search and the + (`primary`) on phone, and Add (⌘N), Chat and Notifications on desktop.
+- `actions`: an ordered list the **app** passes in, each `{ id, icon, label, onSelect, asChild?, children?, variant?: 'default' | 'primary', shortcut?, showLabel?, labelIconSize? }`. `labelIconSize` sizes the icon beside the label (desktop form); the icon-only phone form keeps `md`. The app passes `xs` beside text. The bar renders them; it decides nothing about which ones exist. FinanceOS passes Ask the data, Search and the + (`primary`) on phone, and Add (⌘N), Chat and Notifications on desktop.
 
 ## Rules
 - The + (`primary`) opens the add form for the current screen; it is the only add button (RULES §7.1).

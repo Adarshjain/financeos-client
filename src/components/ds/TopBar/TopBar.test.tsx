@@ -102,6 +102,27 @@ describe('TopBar component', () => {
   });
 });
 
+describe('TopBar action icon size', () => {
+  it('uses labelIconSize beside the desktop label and md for the phone icon-only form', () => {
+    const { container } = render(
+      <TopBar title="Accounts" actions={[{ id: 'add', icon: 'add', label: 'Add', showLabel: true, labelIconSize: 'xs' }]} />
+    );
+    const icons = container.querySelectorAll('button svg');
+    expect(icons).toHaveLength(2);
+    expect(icons[0].getAttribute('class')).toContain('desk:hidden');
+    expect(icons[1].getAttribute('class')).toContain('hidden desk:inline-block');
+    expect(icons[0].getAttribute('class')).toContain('w-icon-md');
+    expect(icons[1].getAttribute('class')).toContain('w-icon-xs');
+  });
+
+  it('draws one md icon when no labelIconSize is given', () => {
+    const { container } = render(<TopBar title="Accounts" actions={[{ id: 'add', icon: 'add', label: 'Add', showLabel: true }]} />);
+    const icons = container.querySelectorAll('button svg');
+    expect(icons).toHaveLength(1);
+    expect(icons[0].getAttribute('class')).toContain('w-icon-md');
+  });
+});
+
 describe('TopBar back control (UAT)', () => {
   it('shows the back link at every width when backHref is set', () => {
     render(<TopBar title="HDFC Regalia Gold" backHref="/accounts" />);

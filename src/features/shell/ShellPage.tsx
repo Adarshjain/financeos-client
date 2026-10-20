@@ -60,6 +60,7 @@ export function ShellPage({
                   label: addLabel ?? 'Add',
                   variant: 'primary' as const,
                   showLabel: true,
+                  labelIconSize: 'xs' as const,
                   onSelect: onAdd,
                 },
               ]
@@ -71,6 +72,7 @@ export function ShellPage({
                   label: addLabel ?? 'Add',
                   variant: 'primary' as const,
                   showLabel: true,
+                  labelIconSize: 'xs' as const,
                   asChild: true,
                   children: <Link href={addHref} />,
                 },
