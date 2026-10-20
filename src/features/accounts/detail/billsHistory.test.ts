@@ -13,7 +13,12 @@ describe('loadBillsHistory', () => {
   it('makes one history request with the limit and builds each entry from its bill', async () => {
     const bills = [
       { statementId: 's2', periodEnd: '2026-10-10' },
-      { statementId: 's1', periodEnd: null },
+      {
+        statementId: 's1',
+        periodEnd: null,
+        statementCreatedAt: '2026-10-09T20:00:00Z',
+      },
+      { statementId: 's0', periodEnd: null, statementCreatedAt: null },
     ] as unknown as CardBillResponse[];
     get.mockResolvedValue({ data: bills });
     const entries = await loadBillsHistory('c1');
@@ -23,7 +28,9 @@ describe('loadBillsHistory', () => {
     });
     expect(entries).toEqual([
       { statementId: 's2', periodEnd: '2026-10-10', bill: bills[0] },
-      { statementId: 's1', periodEnd: '', bill: bills[1] },
+      // 20:00 UTC is 01:30 IST the next day.
+      { statementId: 's1', periodEnd: '2026-10-10', bill: bills[1] },
+      { statementId: 's0', periodEnd: '', bill: bills[2] },
     ]);
   });
 

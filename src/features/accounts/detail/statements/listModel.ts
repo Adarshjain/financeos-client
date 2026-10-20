@@ -1,15 +1,18 @@
 import { formatDayMonth, formatDayMonthYear, formatRupees } from '@/features/accounts/list/accountsList';
 import { billStatusLabel } from '@/features/bills/bills.helpers';
 import type { CardBillResponse } from '@/lib/api/types';
+import { todayInAppZone } from '@/lib/date-range';
 import type { StatementSummary, StatementVerdict } from '@/lib/statement.types';
 
 import type { BillBadgeTone } from '../billsHistoryModel';
 
 export type StatusWordTone = 'neutral' | 'info' | 'warning' | 'success';
 
-/** The date a statement files under: its period end, else the day it was added. */
+/** The date a statement files under: its period end, else the day it was added in the app zone (as the server files it). */
 export function statementDate(s: { periodEnd?: string | null; createdAt: string }): string {
-  return s.periodEnd || s.createdAt.slice(0, 10);
+  if (s.periodEnd) return s.periodEnd;
+  const at = new Date(s.createdAt);
+  return Number.isNaN(at.getTime()) ? s.createdAt.slice(0, 10) : todayInAppZone(at);
 }
 
 /** The financial year (April to March) of a calendar date as "26-27"; null when it is not a date. */

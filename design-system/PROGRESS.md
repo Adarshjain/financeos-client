@@ -352,6 +352,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-20 · Phase 3 (Accounts) · Claude · Undated statements keep their bill: server history files them by created date (app zone), client statementDate/Overview title same rule (server 3a4318e). Forced tests: CardBillHistoryTest ordering/range cases, billsHistory.test undated row. Checks: server tests, client tests, api e2e. Deviations: none.
 - 2026-10-20 · Phase 3 (Accounts) · Claude · Reverted Button/TopBar xs forcing; app call sites pass `xs` (HeaderLink, closed toggle, RuleCard Approve); More sheet back to 20px. BankLogo no-bank mark; Icon `weight`, registry `warning`. Forced tests: 5 Button "icon size beside text" tests removed. Checks: tests, lint, check-ui, storybook. Deviations: none.
 - 2026-10-20 · Phase 3 (Accounts) · Claude · Bank display A: DataTable `leading` slot; BankLogo takes null bank (letter tile); logo before names + page title; Axis/CSB logos redone from Wikimedia SVGs. Forced tests: none. Checks: tests, lint, check-ui, storybook. Deviations: none.
 - 2026-10-19 · Phase 3 (Accounts) · Claude · UAT r5 (decision above). SectionHeader centres items when it has an action. Forced tests: dialog-param tests rewritten to state (accountsAdd, ShellPage, AccountFormDialog, accountFormModel, account, cards; AccountFormHosts deleted). Checks: typecheck, tests, lint, check-ui, storybook, ds-shell e2e, api e2e. Deviations: none.
