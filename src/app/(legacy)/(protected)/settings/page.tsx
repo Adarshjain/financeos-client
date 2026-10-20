@@ -63,6 +63,8 @@ export default async function SettingsPage() {
           <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
           <SettingsRow href="/debug" label="Debug & diagnostics" />
           <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
+          <SettingsRow href="/ds" label="Dinero" staticPage />
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
           <SettingsRow href="/storybook" label="Design system (Storybook)" staticPage />
         </CardContent>
       </Card>

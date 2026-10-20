@@ -30,4 +30,13 @@ describe('DsIndexPage', () => {
     expect(screen.getByText('Accounts')).toBeDefined();
     expect(screen.getByText('/ds/accounts')).toBeDefined();
   });
+
+  it('links to /ds/settings from the Signed in section', () => {
+    render(<DsIndexPage />);
+
+    expect(screen.getByText('Settings')).toBeDefined();
+    expect(screen.getByText('/ds/settings')).toBeDefined();
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+    expect(hrefs).toContain('/ds/settings');
+  });
 });
