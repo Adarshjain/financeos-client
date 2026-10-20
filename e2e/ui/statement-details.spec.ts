@@ -2,6 +2,7 @@ import { makeApi } from '../fixtures/api';
 import { type CreatedUser, createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { E2E_CLIENT_URL } from '../fixtures/config';
+import { scriptLlm } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { genCardPdf } from '../fixtures/gen/statements';
 import { createCreditCard } from '../fixtures/seed/accounts';
@@ -39,6 +40,7 @@ test.describe('Statement details on the card statements page (@ui)', () => {
         { date: periodEnd, description: 'RESTAURANT DINING', debit: 1500 },
       ],
     });
+    await scriptLlm(api, 'statement-details', [{ json: {} }]);
     await uploadAndIngest(api, card.id, [{ filename: 'details-9201.pdf', buffer: pdf }]);
 
     // Reach the page the way the inbox does.
