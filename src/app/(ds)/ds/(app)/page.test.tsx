@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react';
+import fs from 'fs';
+import path from 'path';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
@@ -45,5 +47,19 @@ describe('DsIndexPage', () => {
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     expect(hrefs).toContain('/ds/inbox');
     expect(hrefs).toContain('/ds/upcoming');
+  });
+
+  it('links every top-level /ds page, so a new page is never left off the index', () => {
+    const groups = ['(app)', '(public)'].map((g) => path.resolve(process.cwd(), 'src/app/(ds)/ds', g));
+    const routes = groups.flatMap((dir) =>
+      fs
+        .readdirSync(dir, { withFileTypes: true })
+        .filter((e) => e.isDirectory() && fs.existsSync(path.join(dir, e.name, 'page.tsx')))
+        .map((e) => `/ds/${e.name}`),
+    );
+    render(<DsIndexPage />);
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(routes.length).toBeGreaterThan(0);
+    for (const route of routes) expect(hrefs, `${route} is missing from /ds`).toContain(route);
   });
 });
