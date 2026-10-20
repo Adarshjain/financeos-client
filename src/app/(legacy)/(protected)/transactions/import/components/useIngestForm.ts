@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
+import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';

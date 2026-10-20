@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { subscribeJobStarted } from '@/components/jobs/jobsBus';
+import { subscribeJobStarted } from '@/features/jobs/jobsBus';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';

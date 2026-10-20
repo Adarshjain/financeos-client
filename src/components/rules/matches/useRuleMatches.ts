@@ -4,8 +4,8 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
+import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type {

@@ -3,8 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
-import { buildJobsFilterUrl, buildJobsQueryParams } from '@/components/jobs/jobUtils';
 import { Button } from '@/components/ui/button';
+import { buildJobsFilterUrl, buildJobsQueryParams } from '@/features/jobs/jobUtils';
 import { jobsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 

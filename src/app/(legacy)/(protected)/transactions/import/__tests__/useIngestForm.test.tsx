@@ -18,11 +18,11 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/lib/toastError', () => ({ toastError: vi.fn() }));
 
-vi.mock('@/components/jobs/jobsBus', () => ({ emitJobStarted: vi.fn() }));
+vi.mock('@/features/jobs/jobsBus', () => ({ emitJobStarted: vi.fn() }));
 
 // Polls while a job id is set; the captured callback lets a test settle the job.
 let onSettled: ((job: JobResponse) => void) | undefined;
-vi.mock('@/components/jobs/useJobStatusPolling', () => ({
+vi.mock('@/features/jobs/useJobStatusPolling', () => ({
   useJobStatusPolling: (jobId: string | null, cb: (job: JobResponse) => void) => {
     onSettled = cb;
     return { isPolling: Boolean(jobId) };
@@ -33,7 +33,7 @@ vi.mock('@/lib/api/client', () => ({ api: { POST: vi.fn() } }));
 
 import { toast } from 'sonner';
 
-import { emitJobStarted } from '@/components/jobs/jobsBus';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';

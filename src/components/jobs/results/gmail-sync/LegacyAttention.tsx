@@ -10,14 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatFromHeader } from '@/features/jobs/gmailSyncModel';
 import type { SyncMessageOutcome, SyncSummary } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
-
-function formatFromHeader(from: string): string {
-  if (!from) return '—';
-  const match = from.match(/<([^>]+)>/);
-  return match ? match[1] : from;
-}
 
 /** "Needs attention" table of results stored before per-email run detail existed. */
 export function LegacyAttention({ result }: { result: SyncSummary }) {

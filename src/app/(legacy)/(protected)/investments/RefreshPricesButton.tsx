@@ -5,9 +5,9 @@ import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { Button } from '@/components/ui/button';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
+import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { api, ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';

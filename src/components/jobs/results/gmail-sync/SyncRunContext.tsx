@@ -1,10 +1,9 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { formatDateTime } from '@/features/jobs/syncLabels';
 import type { SyncSummary } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
-
-import { formatDateTime } from './syncLabels';
 
 /** Which mailbox, senders and date window a sync run searched, and how much of what Gmail returned was new. */
 export function SyncRunContext({ result }: { result: SyncSummary }) {

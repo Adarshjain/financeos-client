@@ -11,7 +11,7 @@ vi.mock('@/lib/api/client', async () => {
   };
 });
 
-import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { api } from '@/lib/api/client';
 import type { JobResponse } from '@/lib/types';
 

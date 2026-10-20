@@ -10,7 +10,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/lib/toastError', () => ({ toastError: vi.fn() }));
 
-vi.mock('@/components/jobs/useJobStatusPolling', () => ({
+vi.mock('@/features/jobs/useJobStatusPolling', () => ({
   useJobStatusPolling: () => ({ isPolling: false }),
 }));
 
@@ -18,13 +18,13 @@ const queries = vi.hoisted(() => ({
   attentionData: null as { totalPages: number } | null,
   archivedData: null as { totalPages: number } | null,
 }));
-vi.mock('../useGmailQueries', () => ({
+vi.mock('@/features/settings/connections/useGmailQueries', () => ({
   useGmailQueries: () => ({ connections: [], senders: [], loading: false, ...queries }),
 }));
 
 const archiveMutateAsync = vi.fn();
 const unarchiveMutateAsync = vi.fn();
-vi.mock('../useGmailMutations', () => {
+vi.mock('@/features/settings/connections/useGmailMutations', () => {
   const idle = { isPending: false, mutateAsync: vi.fn() };
   return {
     useGmailMutations: () => ({

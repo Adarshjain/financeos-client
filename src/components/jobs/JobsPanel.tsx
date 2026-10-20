@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { JobErrorDetails } from '@/components/jobs/JobErrorDetails';
 import { JobRowActions } from '@/components/jobs/JobRowActions';
 import { JobStatusPill } from '@/components/jobs/JobStatusPill';
-import { formatDuration, getJobTypeLabel } from '@/components/jobs/jobUtils';
 import { JobResultDetails } from '@/components/jobs/results';
-import { useJobsListPolling } from '@/components/jobs/useJobsListPolling';
 import { Button } from '@/components/ui/button';
+import { formatDuration, getJobTypeLabel } from '@/features/jobs/jobUtils';
+import { useJobsListPolling } from '@/features/jobs/useJobsListPolling';
 import type { JobType } from '@/lib/types';
 
 interface JobsPanelProps {

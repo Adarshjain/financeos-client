@@ -5,11 +5,11 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import type { AttentionItem } from '@/features/settings/connections/attentionItem.helpers';
 import type { Schemas } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 import { AssignAccountDialog } from './AssignAccountDialog';
-import type { AttentionItem } from './attentionItem.helpers';
 import { AttentionItemRow } from './AttentionItemRow';
 
 // The spec's status enum on GmailAttentionItemResponse is the ledger's full

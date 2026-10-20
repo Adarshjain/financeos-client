@@ -3,8 +3,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { buildJobsFilterUrl, buildJobsQueryParams } from '@/components/jobs/jobUtils';
 import { PagedSection } from '@/components/reports/views/PagedSection';
+import { buildJobsFilterUrl, buildJobsQueryParams } from '@/features/jobs/jobUtils';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse } from '@/lib/types';
