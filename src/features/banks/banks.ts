@@ -7,6 +7,8 @@ import { SPRITE_IDS } from './bankSprite.generated';
 export interface Bank {
   id: string;
   name: string;
+  /** The bank's short display name, such as "HDFC" or "BoB". */
+  short_name: string;
   /** Short names people type, such as "SBI" or "HDFC", so search finds the bank by them. */
   aliases: string[];
   /** Cell of the bank's logo in the one sprite, public/banks/sprite.png. */
