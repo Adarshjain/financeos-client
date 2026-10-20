@@ -1,8 +1,9 @@
-import { expectStatus } from '../fixtures/api';
+import { expectStatus, waitForJob } from '../fixtures/api';
 import { resetLlm, setLlmMode } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
+import { createCategory, createRule } from '../fixtures/seed/categories';
 import { addLending, createCounterparty, pay } from '../fixtures/seed/loans';
 import { getInbox, inboxRow, ingestCardStatement, loanWithFirstEmiIn, setBillDue, shiftDate } from '../fixtures/seed/nav';
 import { uploadAndIngest } from '../fixtures/seed/statements';
@@ -163,14 +164,21 @@ test.describe('Inbox API: reads (@api)', () => {
     expect(inboxRow(inbox, `lending:${far.id}`)).toBeUndefined();
   });
 
-  test('a finished ingest job is an info row that does not count towards the badge', async ({ request }) => {
+  test('a finished job is an info row that does not count towards the badge; a finished statement import is not', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-job');
     const card = await createCreditCard(api, { name: 'Job Card', last4: '8105' });
     await ingestCardStatement(api, card.id, '8105');
+    expect((await getInbox(api)).items.filter((i) => i.kind === 'job'), 'finished statement imports make no row').toHaveLength(0);
+
+    const cat = await createCategory(api, 'Inbox Job Cat');
+    const rule = await createRule(api, { merchantKey: 'INBOX_JOB_MERCHANT', categoryIds: [cat.id] });
+    const applied = await api.POST('/api/v1/rules/{id}/apply', { params: { path: { id: rule.id } }, body: { all: true } });
+    expectStatus(applied, 202);
+    expect((await waitForJob(api, (applied.data as { jobId: string }).jobId, { timeoutMs: 15000 })).status).toBe('SUCCEEDED');
 
     const inbox = await getInbox(api);
     const jobs = inbox.items.filter((i) => i.kind === 'job');
-    expect(jobs.length).toBeGreaterThanOrEqual(1);
+    expect(jobs.length).toBe(1);
     expect(jobs[0]).toMatchObject({ section: 'info', severity: 'info', rowType: 'item' });
     expect(jobs[0].key.startsWith('job:')).toBe(true);
     expect(jobs[0].actions.map((a) => a.type)).toEqual(['open', 'dismiss']);
@@ -245,7 +253,7 @@ test.describe('Inbox API: summary rows (@api)', () => {
     expect(row!.count).toBeGreaterThanOrEqual(1);
     expect(row!.amount ?? null).toBeNull();
     expect(row!.date ?? null).toBeNull();
-    expect(row!.actions.map((a) => a.type)).toEqual(['review']);
+    expect(row!.actions.map((a) => a.type)).toEqual(['review', 'dismiss']);
     expect(before.summary.needsLook).toBe(1);
     expect(before.summary.badge).toBe(before.summary.actNow + 1);
 
