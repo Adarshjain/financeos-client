@@ -1,14 +1,13 @@
 'use client';
 
 import { Check, Copy, History, Share2, Trash2 } from 'lucide-react';
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { toast } from 'sonner';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDiagnostics } from '@/lib/diagnostics/DiagnosticsProvider';
-import { type DiagnosticRecord, errorLog } from '@/lib/diagnostics/errorLog';
+import { useLocalFailures } from '@/features/settings/debug/useLocalFailures';
+import type { DiagnosticRecord } from '@/lib/diagnostics/errorLog';
 
 interface LocalErrorsSectionProps {
   highlightRef?: string;
@@ -19,13 +18,8 @@ export function LocalErrorsSection({
   highlightRef,
   onSelectRef,
 }: LocalErrorsSectionProps) {
-  const records = useSyncExternalStore(
-    errorLog.subscribe,
-    errorLog.getSnapshot,
-    () => [],
-  );
-
-  const { pageRequestId, sessionId } = useDiagnostics();
+  const { records, copyRef, copyAll: handleCopyAll, share: handleShare, clear: handleClear } =
+    useLocalFailures();
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
   const highlightedRowRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,60 +30,13 @@ export function LocalErrorsSection({
   }, [highlightRef, records]);
 
   const handleCopyRef = (rec: DiagnosticRecord) => {
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(rec.ref);
+    if (copyRef(rec)) {
       setCopiedRef(rec.ref);
-      toast.success(`Copied ref ${rec.ref}`);
       setTimeout(() => setCopiedRef(null), 2000);
     }
     if (onSelectRef) {
       onSelectRef(rec.ref);
     }
-  };
-
-  const generateReportText = (): string => {
-    const lines: string[] = [];
-    lines.push('=== FinanceOS Diagnostics Report ===');
-    lines.push(`Generated: ${new Date().toISOString()}`);
-    if (pageRequestId) lines.push(`Page Request ID: ${pageRequestId}`);
-    if (sessionId) lines.push(`Faro Session ID: ${sessionId}`);
-    lines.push(`Total Local Records: ${records.length}`);
-    lines.push('----------------------------------------');
-
-    for (const r of records) {
-      lines.push(`${r.at} | ${r.ref} | HTTP ${r.status} (${r.code}) | ${r.method ?? 'GET'} ${r.endpoint ?? r.route} | ${r.message}`);
-    }
-
-    return lines.join('\n');
-  };
-
-  const handleCopyAll = () => {
-    const text = generateReportText();
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(text);
-      toast.success('Diagnostics report copied to clipboard');
-    }
-  };
-
-  const handleShare = async () => {
-    const text = generateReportText();
-    if (typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function') {
-      try {
-        await navigator.share({
-          title: 'FinanceOS Diagnostics Report',
-          text,
-        });
-        return;
-      } catch {
-        // Fallback to clipboard if user dismissed or share failed
-      }
-    }
-    handleCopyAll();
-  };
-
-  const handleClear = () => {
-    errorLog.clear();
-    toast.info('Local error history cleared');
   };
 
   return (

@@ -8,7 +8,7 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn() } };
 });
 
-import { useDiagnosticsLookup } from '@/app/(legacy)/(protected)/debug/useDiagnosticsLookup';
+import { useDiagnosticsLookup } from '@/features/settings/debug/useDiagnosticsLookup';
 import { api } from '@/lib/api/client';
 
 function createWrapper() {

@@ -2,12 +2,11 @@
 
 import { ChevronDown, ChevronRight, Copy, ListOrdered, Loader2, Terminal } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { api } from '@/lib/api/client';
+import { useCopyRawLog } from '@/features/settings/debug/useCopyRawLog';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 
 interface TimelineListProps {
@@ -24,40 +23,13 @@ export function TimelineList({
   currentType = 'auto',
 }: TimelineListProps) {
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
-  const [copyingRaw, setCopyingRaw] = useState(false);
+  const { copyRaw: handleCopyRaw, copying: copyingRaw } = useCopyRawLog(currentRef, currentType);
 
   const toggleRow = (idx: number) => {
     setExpandedRows((prev) => ({
       ...prev,
       [idx]: !prev[idx],
     }));
-  };
-
-  const handleCopyRaw = async () => {
-    if (!currentRef) return;
-    setCopyingRaw(true);
-    try {
-      const { data, error } = await api.GET('/api/v1/diagnostics/lookup/raw', {
-        params: {
-          query: {
-            ref: currentRef,
-            type: currentType || 'auto',
-          },
-        },
-      });
-      if (error) {
-        throw error;
-      }
-      const rawText = JSON.stringify(data ?? [], null, 2);
-      if (navigator?.clipboard) {
-        await navigator.clipboard.writeText(rawText);
-        toast.success('Raw log entries copied to clipboard');
-      }
-    } catch {
-      toast.error('Failed to fetch raw log lines');
-    } finally {
-      setCopyingRaw(false);
-    }
   };
 
   const getLevelBadge = (level: string) => {

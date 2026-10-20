@@ -1,18 +1,18 @@
 'use client';
 
 import { Bug, Info, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useDebugRef } from '@/features/settings/debug/useDebugRef';
+import { useDiagnosticsLookup } from '@/features/settings/debug/useDiagnosticsLookup';
 
 import { LocalErrorsSection } from './LocalErrorsSection';
 import { RefLookupForm } from './RefLookupForm';
 import { RequestCard } from './RequestCard';
 import { RootCauseCard } from './RootCauseCard';
 import { TimelineList } from './TimelineList';
-import { useDiagnosticsLookup } from './useDiagnosticsLookup';
 
 interface DebugPageProps {
   initialRef?: string;
@@ -25,42 +25,16 @@ export function DebugPage({
   initialType = 'auto',
   admin,
 }: DebugPageProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const [currentRef, setCurrentRef] = useState(initialRef);
-  const [currentType, setCurrentType] = useState(initialType);
+  const { currentRef, currentType, search: handleSearch, select } = useDebugRef(
+    initialRef,
+    initialType,
+    admin,
+  );
 
   const { data, isLoading, isError, error } = useDiagnosticsLookup(
     currentRef,
     currentType,
     admin,
-  );
-
-  const handleSearch = useCallback(
-    (newRef: string, newType: string = 'auto') => {
-      setCurrentRef(newRef);
-      setCurrentType(newType);
-
-      const params = new URLSearchParams(searchParams?.toString() ?? '');
-      if (newRef) {
-        params.set('ref', newRef);
-      } else {
-        params.delete('ref');
-      }
-
-      if (newType && newType !== 'auto') {
-        params.set('type', newType);
-      } else {
-        params.delete('type');
-      }
-
-      const queryString = params.toString();
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-      router.replace(newUrl);
-    },
-    [pathname, router, searchParams],
   );
 
   return (
@@ -156,13 +130,7 @@ export function DebugPage({
       {/* Local Ring Buffer (Available for all users) */}
       <LocalErrorsSection
         highlightRef={currentRef}
-        onSelectRef={(selectedRef) => {
-          if (admin) {
-            handleSearch(selectedRef, 'auto');
-          } else {
-            setCurrentRef(selectedRef);
-          }
-        }}
+        onSelectRef={select}
       />
     </div>
   );
