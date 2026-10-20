@@ -20,9 +20,15 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+let mockInboxBadge = 0;
+vi.mock('@/lib/query/hooks/useInbox', () => ({
+  useInboxSummary: () => ({ data: { badge: mockInboxBadge } }),
+}));
+
 describe('shell navigation', () => {
   beforeEach(() => {
     mockPathname = '/dashboard';
+    mockInboxBadge = 0;
   });
 
   it('matches Rail board D-home structure', () => {
@@ -99,6 +105,21 @@ describe('shell navigation', () => {
     expect(screen.getByText('Accounts')).toBeDefined();
     expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/settings');
     expect(screen.getByText('AR')).toBeDefined();
+  });
+
+  it('Rail and TabBar show the Inbox count when there is one, capped at 99+', () => {
+    mockInboxBadge = 3;
+    const { unmount } = render(<ShellRail user={{ email: 'arjun@example.test' }} />);
+    expect(screen.getByRole('link', { name: /Inbox/ })).toHaveTextContent('3');
+    unmount();
+    mockInboxBadge = 120;
+    render(<ShellTabBar user={{ email: 'arjun@example.test' }} />);
+    expect(screen.getByRole('tab', { name: /Inbox/ })).toHaveTextContent('99+');
+  });
+
+  it('Rail shows no Inbox count when nothing needs the user', () => {
+    render(<ShellRail user={{ email: 'arjun@example.test' }} />);
+    expect(screen.getByRole('link', { name: /Inbox/ })).toHaveTextContent(/^Inbox$/);
   });
 
   it('matches quick add items and more groups configuration', () => {

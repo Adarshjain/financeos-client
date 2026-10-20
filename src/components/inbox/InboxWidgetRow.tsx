@@ -4,10 +4,11 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { actionHref, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { cn, formatMoney } from '@/lib/utils';
 
-import { actionHref, isBillAction, primaryActions, severityStripeClass } from './inbox.helpers';
+import { severityStripeClass } from './severityStripe';
 
 interface InboxWidgetRowProps {
   item: InboxItemResponse;

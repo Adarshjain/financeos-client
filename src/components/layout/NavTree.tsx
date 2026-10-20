@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
-import { formatBadge } from '@/components/inbox/inbox.helpers';
 import {
   INSIGHTS_MODULE,
   INVESTMENTS_MODULE,
@@ -17,6 +16,7 @@ import {
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from '@/components/layout/navigation';
+import { formatBadge } from '@/features/inbox/inbox.helpers';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 

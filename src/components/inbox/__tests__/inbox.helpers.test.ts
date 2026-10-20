@@ -10,10 +10,11 @@ import {
   INBOX_SECTIONS,
   isBillAction,
   primaryActions,
-  severityStripeClass,
   SNOOZE_PRESETS,
   summarise,
-} from '../inbox.helpers';
+} from '@/features/inbox/inbox.helpers';
+
+import { severityStripeClass } from '../severityStripe';
 import { action, DISMISS, item, SNOOZE } from './fixtures';
 
 describe('summarise', () => {

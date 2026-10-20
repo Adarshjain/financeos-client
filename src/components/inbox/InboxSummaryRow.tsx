@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-import { severityStripeClass } from './inbox.helpers';
 import { inboxRowId } from './InboxItemRow';
 import { InboxRowActions, InboxRowControls, type InboxRowHandlers } from './InboxRowActions';
+import { severityStripeClass } from './severityStripe';
 
 interface InboxSummaryRowProps extends InboxRowHandlers {
   item: InboxItemResponse;

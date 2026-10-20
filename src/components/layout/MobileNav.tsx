@@ -4,8 +4,8 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { formatBadge } from '@/components/inbox/inbox.helpers';
 import { getMobileNavContext, isNavItemActive, NAV_ITEMS } from '@/components/layout/navigation';
+import { formatBadge } from '@/features/inbox/inbox.helpers';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 

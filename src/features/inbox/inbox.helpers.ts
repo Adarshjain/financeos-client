@@ -10,18 +10,6 @@ export const INBOX_SECTIONS: { key: InboxSectionKey; title: string }[] = [
   { key: 'info', title: 'Info' },
 ];
 
-/** Severity stripe colour: critical rose, warning amber, info slate. */
-export function severityStripeClass(severity: string): string {
-  switch (severity) {
-    case 'critical':
-      return 'bg-rose-500';
-    case 'warning':
-      return 'bg-amber-500';
-    default:
-      return 'bg-slate-300 dark:bg-slate-600';
-  }
-}
-
 /** Actions the row renders as buttons; snooze and dismiss get their own controls. */
 export const BILL_ACTION_TYPES = ['mark_paid', 'set_details'] as const;
 export type BillActionType = (typeof BILL_ACTION_TYPES)[number];
@@ -89,3 +77,8 @@ export const SNOOZE_PRESETS: { label: string; days: number }[] = [
   { label: 'In 3 days', days: 3 },
   { label: 'Next week', days: 7 },
 ];
+
+/** DOM id for a row, so the ?item= deep link can scroll to it. */
+export function inboxRowId(key: string): string {
+  return `inbox-row-${key}`;
+}

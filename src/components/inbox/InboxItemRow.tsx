@@ -3,21 +3,19 @@
 import { Clock, X } from 'lucide-react';
 
 import { type SwipeAction, SwipeActionRow } from '@/components/ui/swipe-action-row';
+import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from '@/features/inbox/inbox.helpers';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
-import { appTodayPlus, canDismiss, canSnooze, severityStripeClass } from './inbox.helpers';
 import { InboxRowActions, InboxRowControls, type InboxRowHandlers } from './InboxRowActions';
+import { severityStripeClass } from './severityStripe';
 
 interface InboxItemRowProps extends InboxRowHandlers {
   item: InboxItemResponse;
   highlighted: boolean;
 }
 
-/** DOM id for a row, so the ?item= deep link can scroll to it. */
-export function inboxRowId(key: string): string {
-  return `inbox-row-${key}`;
-}
+export { inboxRowId };
 
 const HIGHLIGHT = 'bg-emerald-50/60 dark:bg-emerald-950/20 ring-1 ring-inset ring-emerald-500/40';
 

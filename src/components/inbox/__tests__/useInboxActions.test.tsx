@@ -10,11 +10,11 @@ vi.mock('@/lib/api/client', async () => {
 const toastMock = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('sonner', () => ({ toast: toastMock }));
 
+import { useInboxActions } from '@/features/inbox/useInboxActions';
 import { api } from '@/lib/api/client';
 import type { InboxResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
-import { useInboxActions } from '../useInboxActions';
 import { item } from './fixtures';
 
 const KEY = 'card_bill:abc-123:OVERDUE';

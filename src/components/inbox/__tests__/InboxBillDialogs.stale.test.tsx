@@ -15,10 +15,11 @@ vi.mock('@/components/bills/BillDetailsDialog', () => ({
     p.open ? <div data-testid="details" data-statement={p.bill?.statementId} /> : null,
 }));
 
+import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { InboxBillDialogs, type PendingBillAction } from '../InboxBillDialogs';
+import { InboxBillDialogs } from '../InboxBillDialogs';
 
 const billA = { statementId: 'A', status: 'OPEN', accountName: 'Card A' };
 const billB = { statementId: 'B', status: 'OPEN', accountName: 'Card B' };

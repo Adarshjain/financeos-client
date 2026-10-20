@@ -17,6 +17,7 @@ import {
   Text,
 } from '@/components/ds';
 import { Logo } from '@/components/organisms';
+import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
 import {
   getActiveNavItem,
@@ -25,6 +26,12 @@ import {
   shellRailGroups,
   shellTabBarItems,
 } from './navigation';
+
+/** The Inbox count (act now + needs a look) for the rail and tab bar; nothing while it loads or is zero. */
+function useNavCounts(): Record<string, { count: number; countTone: 'danger' }> {
+  const { data } = useInboxSummary();
+  return data?.badge ? { inbox: { count: data.badge, countTone: 'danger' } } : {};
+}
 
 export interface ShellUser {
   name?: string;
@@ -47,6 +54,7 @@ export function ShellTabBar({
 }) {
   const pathname = usePathname();
   const current = getActiveNavItem(pathname);
+  const counts = useNavCounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -173,6 +181,7 @@ export function ShellTabBar({
           item.href
             ? {
                 ...item,
+                ...counts[item.id],
                 asChild: true,
                 children: <Link href={item.href} prefetch={false} />,
               }
@@ -194,6 +203,7 @@ export function ShellRail({
 }) {
   const pathname = usePathname();
   const current = getActiveNavItem(pathname);
+  const counts = useNavCounts();
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
 
@@ -203,6 +213,7 @@ export function ShellRail({
         ...group,
         items: group.items.map((item) => ({
           ...item,
+          ...counts[item.id],
           asChild: true,
           children: <Link href={item.href} prefetch={false} />,
         })),

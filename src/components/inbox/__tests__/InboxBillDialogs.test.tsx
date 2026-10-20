@@ -36,12 +36,13 @@ vi.mock('@/components/bills/BillDetailsDialog', () => ({
     ) : null,
 }));
 
+import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
 import { api } from '@/lib/api/client';
 import type { CardBillResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { InboxBillDialogs, type PendingBillAction, toPendingBillAction } from '../InboxBillDialogs';
+import { InboxBillDialogs } from '../InboxBillDialogs';
 import { action, item } from './fixtures';
 
 describe('toPendingBillAction', () => {

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-import { makeApi } from '../fixtures/api';
+import { expectStatus, makeApi, waitForJob } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
@@ -8,6 +8,7 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
+import { createCategory, createRule } from '../fixtures/seed/categories';
 import { seedCardBill, seedDueSoonLoan } from '../fixtures/seed/obligations';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
@@ -58,11 +59,17 @@ test.describe('Inbox UI (@ui)', () => {
     await resetLlm(api);
     await setLlmMode(api, 'SCHEMA_DEFAULT');
 
-    // Seed: an EMI due in 3 days, a card bill due in 2 days, a review queue and a finished import job.
+    // Seed: an EMI due in 3 days, a card bill due in 2 days, a review queue and a finished rule-apply job
+    // (a finished statement import makes no inbox row).
     const loan = await seedDueSoonLoan(api, 'Inbox Home Loan');
     const bill = await seedCardBill(api, { name: 'Inbox Card', last4: '7101', dueInDays: 2 });
     const bank = await createBankAccount(api, { name: 'Inbox Bank', openingBalance: reviewSeedSpec.opening });
     await uploadAndIngest(api, bank.id, [{ filename: 'inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) }]);
+    const cat = await createCategory(api, 'Inbox UI Job Cat');
+    const rule = await createRule(api, { merchantKey: 'INBOX_UI_JOB_MERCHANT', categoryIds: [cat.id] });
+    const applied = await api.POST('/api/v1/rules/{id}/apply', { params: { path: { id: rule.id } }, body: { all: true } });
+    expectStatus(applied, 202);
+    await waitForJob(api, (applied.data as { jobId: string }).jobId, { timeoutMs: 15000 });
 
     const emiKey = `emi:${loan.id}:1`;
     const billKey = `bill:${bill.statementId}`;
@@ -95,7 +102,7 @@ test.describe('Inbox UI (@ui)', () => {
       await expect(row(page, billKey)).toContainText('Inbox Card ••7101 bill');
       await expect(row(page, billKey).getByRole('button', { name: 'Mark paid' })).toBeVisible();
 
-      // Summary row: a count behind one link; it can neither be snoozed nor (here) dismissed.
+      // Summary row: a count behind one link; it cannot be snoozed.
       const reviewRow = row(page, 'review');
       await expect(reviewRow).toHaveAttribute('data-testid', 'inbox-summary-row');
       await expect(reviewRow).toContainText('Transactions to review');

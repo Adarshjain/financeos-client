@@ -7,15 +7,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { headerCounts, INBOX_SECTIONS } from '@/features/inbox/inbox.helpers';
+import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
+import { useInboxActions } from '@/features/inbox/useInboxActions';
+import { useInboxDeepLink } from '@/features/inbox/useInboxDeepLink';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 
-import { headerCounts, INBOX_SECTIONS } from './inbox.helpers';
-import { InboxBillDialogs, type PendingBillAction, toPendingBillAction } from './InboxBillDialogs';
-import { inboxRowId } from './InboxItemRow';
+import { InboxBillDialogs } from './InboxBillDialogs';
 import { InboxSection } from './InboxSection';
-import { useInboxActions } from './useInboxActions';
 
 interface InboxViewProps {
   /** ?item=<key> from a push notification: highlight and scroll to that row. */
@@ -30,7 +31,7 @@ export function InboxView({ highlightKey = null }: InboxViewProps) {
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 
   const items = React.useMemo(() => data?.items ?? [], [data]);
-  const deepLink = useDeepLink(highlightKey, data ? items : null);
+  const deepLink = useInboxDeepLink(highlightKey, data ? items : null);
 
   const onBillAction = (item: InboxItemResponse, action: InboxActionResponse) => {
     const pending = toPendingBillAction(item, action);
@@ -112,28 +113,4 @@ export function InboxView({ highlightKey = null }: InboxViewProps) {
       <InboxBillDialogs pending={pendingBill} onClose={closeBill} />
     </div>
   );
-}
-
-/**
- * Resolve the ?item= deep link once, against the first loaded list: scroll to the row when it is
- * there, or flag it as already handled. Later refetches (after the user acts on the row) do not
- * flip it to "handled".
- */
-function useDeepLink(highlightKey: string | null, items: InboxItemResponse[] | null) {
-  const [state, setState] = React.useState<{ found: boolean; missing: boolean }>({ found: false, missing: false });
-  const resolved = React.useRef(false);
-
-  React.useEffect(() => {
-    if (!highlightKey || !items || resolved.current) return;
-    resolved.current = true;
-    const found = items.some((i) => i.key === highlightKey);
-    setState({ found, missing: !found });
-  }, [highlightKey, items]);
-
-  React.useEffect(() => {
-    if (!state.found || !highlightKey) return;
-    document.getElementById(inboxRowId(highlightKey))?.scrollIntoView({ block: 'center' });
-  }, [state.found, highlightKey]);
-
-  return state;
 }

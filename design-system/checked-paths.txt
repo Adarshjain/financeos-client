@@ -12,3 +12,4 @@ src/features/settings/
 src/features/jobs/
 src/features/upcoming/
 src/features/lendings/
+src/features/inbox/
