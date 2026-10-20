@@ -3,10 +3,10 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
+import { useNotificationSettings } from '@/features/settings/notifications/useNotificationSettings';
 import { api } from '@/lib/api/client';
 import type { LoanResponse } from '@/lib/api/types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useNotificationSettings } from '@/lib/query/hooks/useNotificationSettings';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 

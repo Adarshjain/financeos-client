@@ -24,7 +24,7 @@ const pushMocks = vi.hoisted(() => ({
   subscribeToPush: vi.fn(),
   unsubscribeFromPush: vi.fn(async () => null as string | null),
 }));
-vi.mock('@/lib/push', () => pushMocks);
+vi.mock('@/features/settings/notifications/push', () => pushMocks);
 
 function settings(overrides: Partial<NotificationSettingsResponse> = {}): NotificationSettingsResponse {
   return {

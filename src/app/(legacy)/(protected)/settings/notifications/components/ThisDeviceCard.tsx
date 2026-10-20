@@ -7,8 +7,6 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { NotificationSettingsResponse } from '@/lib/api/types';
 import {
   getCurrentPushSubscription,
   isIos,
@@ -17,8 +15,10 @@ import {
   notificationPermission,
   subscribeToPush,
   unsubscribeFromPush,
-} from '@/lib/push';
-import { useNotificationSettingsMutations, usePushPublicKey } from '@/lib/query/hooks/useNotificationSettings';
+} from '@/features/settings/notifications/push';
+import { useNotificationSettingsMutations, usePushPublicKey } from '@/features/settings/notifications/useNotificationSettings';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import type { NotificationSettingsResponse } from '@/lib/api/types';
 
 interface ThisDeviceCardProps {
   settings: NotificationSettingsResponse;

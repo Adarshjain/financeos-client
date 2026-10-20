@@ -1,5 +1,7 @@
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 
+import { describeDevice } from './push';
+
 export interface KindOption {
   key: string;
   label: string;
@@ -122,6 +124,15 @@ export function offsetLabel(offset: number): string {
   return `${offset} days before`;
 }
 
+/** Closed text for the reminder picker: "7, 3, 1 days · on the day", "1 day", "On the day". */
+export function offsetsSummary(offsets: number[]): string {
+  const days = [...new Set(offsets)].filter((o) => o > 0).sort((a, b) => b - a);
+  const parts: string[] = [];
+  if (days.length > 0) parts.push(`${days.join(', ')} ${days.length === 1 && days[0] === 1 ? 'day' : 'days'}`);
+  if (offsets.includes(0)) parts.push(parts.length > 0 ? 'on the day' : 'On the day');
+  return parts.join(' · ');
+}
+
 export function hourLabel(hour: number): string {
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
   return `${h12}:00 ${hour < 12 ? 'am' : 'pm'}`;
@@ -139,4 +150,23 @@ export function isKindEnabled(settings: NotificationSettingsResponse, key: strin
 
 export function isThisDevice(endpoint: string, currentEndpoint: string | null): boolean {
   return currentEndpoint != null && endpoint === currentEndpoint;
+}
+
+/** "Chrome on macOS" for the current browser, from its user agent; "Browser" when it cannot be told. */
+export function describeBrowser(ua: string = typeof navigator === 'undefined' ? '' : navigator.userAgent): string {
+  const label = describeDevice(ua);
+  return label.replace(' · ', ' on ');
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2 Sep": when a device was registered, in the app's zone. Empty when unknown. */
+export function addedOn(addedAt: string | null | undefined): string {
+  if (!addedAt) return '';
+  const d = new Date(addedAt);
+  if (Number.isNaN(d.getTime())) return '';
+  const parts = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'numeric', timeZone: 'Asia/Kolkata' }).formatToParts(d);
+  const day = Number(parts.find((p) => p.type === 'day')?.value);
+  const month = Number(parts.find((p) => p.type === 'month')?.value);
+  return `${day} ${MONTHS[month - 1]}`;
 }
