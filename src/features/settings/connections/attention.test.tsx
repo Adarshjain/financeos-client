@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -147,6 +147,27 @@ describe('AttentionCard', () => {
     expect(p.onUnarchive).toHaveBeenCalledWith('z');
     fireEvent.click(screen.getByRole('button', { name: 'Back to needs attention' }));
     expect(screen.getByText('Needs attention · 1')).toBeInTheDocument();
+  });
+
+  it('does not jump into the Archived view when something is archived after it was emptied', () => {
+    const arch = (n: number) => page([item({ id: 'z', archivedAt: '2026-10-03T10:00:00Z', subject: 'Old SBI alert' })], { totalElements: n });
+    const props = {
+      attentionData: page([item({})]),
+      attentionPage: 0,
+      onPageChange: vi.fn(),
+      archivedPage: 0,
+      onArchivedPageChange: vi.fn(),
+      onRetryItem: vi.fn(),
+      onArchive: vi.fn(),
+      onUnarchive: vi.fn(),
+    };
+    const { rerender } = renderWithQuery(<AttentionCard {...props} archivedData={arch(1)} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Archived · 1' }));
+    expect(screen.getByText('Old SBI alert')).toBeInTheDocument();
+    rerender(<AttentionCard {...props} archivedData={null} />);
+    rerender(<AttentionCard {...props} archivedData={arch(1)} />);
+    expect(screen.queryByText('Old SBI alert')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Archived · 1' })).toBeInTheDocument();
   });
 
   it('shows no Archived link when nothing is archived', () => {

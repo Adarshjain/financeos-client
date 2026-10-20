@@ -19,6 +19,15 @@ export function useAssignAccount(
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // A different item (or none) starts clean: no stale pick or error from the last one.
+  const itemId = item?.id ?? null;
+  const [shownItemId, setShownItemId] = useState(itemId);
+  if (shownItemId !== itemId) {
+    setShownItemId(itemId);
+    setSelectedAccountId('');
+    setErrorMessage(null);
+  }
+
   const effectiveAccountId = selectedAccountId || accounts?.[0]?.id || '';
 
   const selectAccount = (id: string) => {

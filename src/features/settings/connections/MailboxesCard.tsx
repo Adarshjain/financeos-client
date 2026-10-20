@@ -27,7 +27,7 @@ interface MailboxesCardProps {
   onConnect: () => void;
   onSync: () => void;
   /** Runs the disconnect after the dialog is confirmed. */
-  onDisconnect: (id: string) => Promise<void> | void;
+  onDisconnect: (id: string) => Promise<boolean | void> | boolean | void;
 }
 
 function MailboxRow({
@@ -97,10 +97,10 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
     if (!disconnecting) return;
     setRemoving(true);
     try {
-      await onDisconnect(disconnecting.id);
+      const ok = await onDisconnect(disconnecting.id);
+      if (ok !== false) setDisconnecting(null);
     } finally {
       setRemoving(false);
-      setDisconnecting(null);
     }
   };
 

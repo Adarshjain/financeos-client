@@ -72,6 +72,8 @@ export function AttentionCard({
 
   const activeCount = attentionData.totalElements;
   const archivedCount = archivedData?.totalElements ?? 0;
+  // An emptied archive resets the view, so a later archive does not open it unasked.
+  if (showArchived && archivedCount === 0) setShowArchived(false);
   // Unarchiving the last item empties the archive: fall back to the active list.
   const archivedView = showArchived && archivedCount > 0 && archivedData !== null;
 

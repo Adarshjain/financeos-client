@@ -157,6 +157,17 @@ describe('Notifications tab: this browser and devices', () => {
     expect(screen.getByRole('button', { name: 'Turn off here' })).toBeInTheDocument();
   });
 
+  it('shows the blocked banner and disables Turn on here after the prompt is denied', async () => {
+    pushMocks.subscribeToPush.mockImplementation(async () => {
+      pushMocks.notificationPermission.mockReturnValue('denied');
+      throw new Error('Permission denied');
+    });
+    render();
+    fireEvent.click(await screen.findByRole('button', { name: 'Turn on here' }));
+    expect(await screen.findByText('Notifications are blocked')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Turn on here' })).toBeDisabled();
+  });
+
   it('turns notifications off here, dropping the browser and server copies', async () => {
     pushMocks.getCurrentPushSubscription.mockResolvedValue({ endpoint: 'https://push/1' } as PushSubscription);
     pushMocks.unsubscribeFromPush.mockResolvedValue('https://push/1');
@@ -187,7 +198,7 @@ describe('Notifications tab: this browser and devices', () => {
     expect(await screen.findByText('No device is registered yet.')).toBeInTheDocument();
   });
 
-  it('shows Send a test only when a device exists, and sends it', async () => {
+  it('shows Send a test only when this browser is registered, and sends it', async () => {
     const { toast } = await import('sonner');
     vi.mocked(api.POST).mockResolvedValue({ data: { sent: 2 } } as never);
     const first = render();
@@ -195,7 +206,14 @@ describe('Notifications tab: this browser and devices', () => {
     expect(screen.queryByRole('button', { name: 'Send a test' })).toBeNull();
     first.unmount();
 
-    render(settings({ devices: [{ endpoint: 'https://push/other', userAgent: 'Safari · iOS', addedAt: null }] }));
+    // Another device exists but this browser is not registered: still no test button.
+    const second = render(settings({ devices: [{ endpoint: 'https://push/other', userAgent: 'Safari · iOS', addedAt: null }] }));
+    expect(await screen.findByText('Not receiving notifications')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send a test' })).toBeNull();
+    second.unmount();
+
+    pushMocks.getCurrentPushSubscription.mockResolvedValue({ endpoint: 'https://push/1' } as PushSubscription);
+    render(settings({ devices: [{ endpoint: 'https://push/1', userAgent: 'Chrome · macOS', addedAt: null }] }));
     fireEvent.click(await screen.findByRole('button', { name: 'Send a test' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalledWith('/api/v1/notifications/push/test'));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Test sent to 2 devices'));

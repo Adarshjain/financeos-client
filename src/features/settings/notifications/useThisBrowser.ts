@@ -73,6 +73,7 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
     } catch (e) {
       toast.error(getErrorMessage(e, 'Could not enable notifications'));
     } finally {
+      setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
     }
   };
@@ -89,6 +90,7 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
     } catch (e) {
       toast.error(getErrorMessage(e, 'Could not disable notifications'));
     } finally {
+      setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
     }
   };

@@ -98,6 +98,17 @@ describe('SenderDialog', () => {
     await waitFor(() => expect(p.onOpenChange).toHaveBeenCalledWith(false));
   });
 
+  it('keeps both dialogs open when the delete fails', async () => {
+    const p = dialog(senders[0], { onDelete: vi.fn().mockResolvedValue(false) });
+    fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)!);
+    await waitFor(() => expect(p.onDelete).toHaveBeenCalledWith('s1'));
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)).toBeEnabled());
+    expect(screen.getByText('Are you sure you want to delete this sender from the allowlist?')).toBeInTheDocument();
+    expect(screen.getByText('Edit allowed sender')).toBeInTheDocument();
+    expect(p.onOpenChange).not.toHaveBeenCalled();
+  });
+
   it('keeps the sender when the delete confirm is cancelled', () => {
     const p = dialog(senders[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));

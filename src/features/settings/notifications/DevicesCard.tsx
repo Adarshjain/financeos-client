@@ -61,7 +61,7 @@ export function DevicesCard({ settings, browser }: DevicesProps) {
   const others = devices.filter((d) => d.endpoint !== browser.endpoint);
   const thisDevice = devices.find((d) => d.endpoint === browser.endpoint);
   const canEnable = Boolean(env?.supported && settings.pushConfigured);
-  const showTest = browser.registered || devices.length > 0;
+  const showTest = browser.registered;
 
   const remove = async (endpoint: string) => {
     try {

@@ -104,12 +104,14 @@ export function useGmailConnect() {
     }
   };
 
-  const handleDisconnect = async (id: string) => {
+  const handleDisconnect = async (id: string): Promise<boolean> => {
     try {
       await disconnectMutation.mutateAsync(id);
       toast.success('Gmail account disconnected');
+      return true;
     } catch (err) {
       toastError(err, 'Failed to disconnect Gmail connection');
+      return false;
     }
   };
 
@@ -197,12 +199,14 @@ export function useGmailConnect() {
     }
   };
 
-  const handleSenderDelete = async (id: string) => {
+  const handleSenderDelete = async (id: string): Promise<boolean> => {
     try {
       await deleteSenderMutation.mutateAsync(id);
       toast.success('Sender deleted');
+      return true;
     } catch (err) {
       toastError(err, 'Failed to delete Gmail sender');
+      return false;
     }
   };
 
