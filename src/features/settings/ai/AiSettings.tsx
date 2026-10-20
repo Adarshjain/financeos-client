@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { Banner } from '@/components/ds';
+import type { LlmKeyDto } from '@/lib/api/types';
 
 import { AddKeyDialog } from './AddKeyDialog';
-import { buildHealthRows } from './aiModel';
+import { buildHealthRows, type KeyRow } from './aiModel';
 import { DeleteKeyDialog } from './DeleteKeyDialog';
 import { HealthCard } from './HealthCard';
 import { buildProviderOptions } from './providers';
@@ -18,6 +19,16 @@ import { YourKeysCard } from './YourKeysCard';
 /** The AI tab: your keys and routing on the left, model health on the right (phone: keys, routing, health). */
 export function AiSettings() {
   const s = useAiSettings();
+
+  // The hook's handlers are new every render; YourKeysCard memoises its columns on these, and a rebuilt
+  // column set would close an open key Menu. Keep the callbacks stable and call the latest handlers.
+  const latest = useRef(s);
+  useEffect(() => {
+    latest.current = s;
+  });
+  const onAdd = useCallback((providerId?: string) => latest.current.openAdd(providerId), []);
+  const onTest = useCallback((key: LlmKeyDto) => void latest.current.testKey(key), []);
+  const onMove = useCallback((row: KeyRow, delta: number) => void latest.current.moveKey(row, delta), []);
 
   const providers = useMemo(() => buildProviderOptions(s.keysList), [s.keysList]);
   const healthRows = useMemo(
@@ -74,9 +85,9 @@ export function AiSettings() {
           <YourKeysCard
             keys={s.keysList}
             testingKeyId={s.testingKeyId}
-            onAdd={s.openAdd}
-            onTest={(key) => void s.testKey(key)}
-            onMove={(row, delta) => void s.moveKey(row, delta)}
+            onAdd={onAdd}
+            onTest={onTest}
+            onMove={onMove}
             onDelete={s.setKeyToDelete}
           />
         </div>

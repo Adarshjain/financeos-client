@@ -20,8 +20,8 @@ interface SenderDialogProps {
   setSenderEnabled: (v: boolean) => void;
   submittingSender: boolean;
   onSubmit: (e: React.FormEvent) => void;
-  /** Runs the delete after the confirm dialog; the page closes this dialog when it is done. */
-  onDelete: (id: string) => Promise<void> | void;
+  /** Runs the delete after the confirm dialog; this dialog closes only when it did not return false. */
+  onDelete: (id: string) => Promise<boolean | void> | boolean | void;
 }
 
 /** Add or edit an allowed sender; Delete (edit only) confirms first. */
@@ -46,9 +46,11 @@ export function SenderDialog({
     if (!editingSender) return;
     setDeleting(true);
     try {
-      await onDelete(editingSender.id);
-      setConfirmingDelete(false);
-      onOpenChange(false);
+      const ok = await onDelete(editingSender.id);
+      if (ok !== false) {
+        setConfirmingDelete(false);
+        onOpenChange(false);
+      }
     } finally {
       setDeleting(false);
     }

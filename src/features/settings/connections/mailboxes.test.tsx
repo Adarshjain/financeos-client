@@ -90,6 +90,15 @@ describe('MailboxesCard', () => {
     await waitFor(() => expect(screen.queryByText(/All syncing for this email will stop/)).toBeNull());
   });
 
+  it('keeps the confirm open when the disconnect fails', async () => {
+    const p = setup([healthy], { onDisconnect: vi.fn().mockResolvedValue(false) });
+    fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Disconnect' }).at(-1)!);
+    await waitFor(() => expect(p.onDisconnect).toHaveBeenCalledWith('c1'));
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Disconnect' }).at(-1)).toBeEnabled());
+    expect(screen.getByText(/All syncing for this email will stop/)).toBeInTheDocument();
+  });
+
   it('cancelling the disconnect dialog keeps the mailbox', () => {
     const p = setup([healthy]);
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
