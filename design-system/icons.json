@@ -70,6 +70,11 @@
   "use": "DateField; Upcoming tab"
  },
  {
+  "name": "clock",
+  "phosphor": "clock",
+  "use": "Snooze (Inbox rows)"
+ },
+ {
   "name": "upload",
   "phosphor": "upload-simple",
   "use": "Import, Choose files"
