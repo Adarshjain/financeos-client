@@ -223,7 +223,7 @@ const bankBaseColumns = [
   bankCh.display({
     id: 'status',
     header: 'Status',
-    meta: { size: 'fill', grow: 1, align: 'start', phone: 'status', wrap: true },
+    meta: { size: 'md', align: 'start', phone: 'status', wrap: true },
     cell: ({ row }) => (
       <div className="flex flex-wrap items-center gap-space-4">
         <Badge tone={row.original.synced ? 'success' : 'neutral'}>
@@ -246,7 +246,7 @@ const bankBaseColumns = [
   bankCh.display({
     id: 'asOf',
     header: 'As of',
-    meta: { size: 'md', phone: 'hidden' },
+    meta: { size: 'sm', phone: 'hidden' },
     cell: ({ row }) =>
       row.original.asOf ? (
         <Text variant="body" tone="ink-3">
@@ -262,7 +262,7 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
     bankCh.display({
       id: 'actions',
       header: '',
-      meta: { size: 'md', align: 'end', phone: 'hidden' },
+      meta: { size: 'sm', align: 'end', phone: 'hidden' },
       cell: ({ row }) => (
         <RowControls>
           <EditButton onEdit={() => onEdit(row.original)} />
@@ -407,7 +407,7 @@ const cardColumns = [
   cardCh.display({
     id: 'actions',
     header: '',
-    meta: { size: 'lg', align: 'end', phone: 'hidden' },
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <RowControls>
         <OpenButton row={row.original} />
