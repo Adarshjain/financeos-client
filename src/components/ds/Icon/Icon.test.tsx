@@ -40,6 +40,12 @@ describe('Icon component', () => {
     expect(svg).toHaveAttribute('fill', 'currentColor');
   });
 
+  it('draws the solid shape with weight="fill"', () => {
+    const bold = render(<Icon name="warning" />).container.innerHTML;
+    const fill = render(<Icon name="warning" weight="fill" />).container.innerHTML;
+    expect(fill).not.toBe(bold);
+  });
+
   it('renders with size="xs"', () => {
     const { container } = render(<Icon name="add" size="xs" />);
     const svg = container.querySelector('svg');

@@ -20,7 +20,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `btn-d` danger: `danger` text and `danger-border`. Starts a destructive action; always followed by a confirm step.
 - `btn-dd` danger filled: `danger` fill. Only the final button of a ConfirmDialog ("Delete statement").
 - `btn-g` ghost: no border; icon actions in bars and cards.
-- A button that shows text draws its Icon at `xs` (10px; Button clones the Icon, callers pass none). Icon-only buttons keep their size. Link with icon: gap `space-2`.
+- Beside button text pass `size="xs"` (10px) on the Icon. Icon-only buttons keep their size. Link with icon: gap `space-2`.
 - `btn-i` square icon button; give it an `aria-label`.
 - `link`: inline text action with underline and no border. The underline shows at rest and disappears on hover. When the link holds an icon (via `icon` or an Icon child) the control becomes `inline-flex` and the underline is an `after:` element (`inset-x-0`, `h-px`, `bg-current`) running continuously under icon, gap and text; text-only links keep `text-decoration`; icon-only links have no underline.
 - Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px (`control-md`, the same as a form field), `btn-xl` 44px for auth.

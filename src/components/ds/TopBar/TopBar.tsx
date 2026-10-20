@@ -147,7 +147,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               const buttonClasses = cn(
                 'shrink-0',
                 hasLabel
-                  ? 'max-desk:[&_svg]:w-icon-md max-desk:[&_svg]:h-icon-md w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
+                  ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,
               );
 
