@@ -31,6 +31,8 @@ export interface StatementSummary {
   bankName: string | null;
   accountNumberMasked: string | null;
   createdAt: string;
+  /** Card statements: details the parser could not read (PERIOD_END, DUE_DATE, TOTAL_DUE, MINIMUM_DUE). */
+  missingDetails?: string[];
 }
 
 export interface StatementCardDetails {

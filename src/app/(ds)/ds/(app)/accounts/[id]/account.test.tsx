@@ -75,6 +75,7 @@ const card: CreditCard = {
 };
 
 const bill: CardBillResponse = {
+  missingDetails: [],
   accountId: 'c1',
   accountName: 'HDFC Regalia',
   muted: false,

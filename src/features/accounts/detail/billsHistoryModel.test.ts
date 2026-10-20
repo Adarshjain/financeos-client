@@ -6,6 +6,7 @@ import { buildBillRow, buildBillRows, paidTiming } from './billsHistoryModel';
 
 function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
   return {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'HDFC',
     muted: false,

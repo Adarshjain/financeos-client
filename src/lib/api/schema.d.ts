@@ -3574,6 +3574,7 @@ export interface components {
             /** Format: date */
             lastNotifiedOn?: string | null;
             minimumAmountDue?: number | null;
+            missingDetails: string[];
             muted: boolean;
             /** Format: date */
             nextStatementExpectedOn?: string | null;
@@ -6522,6 +6523,7 @@ export interface components {
             /** Format: int32 */
             linesSkipped?: number | null;
             matchesLedger?: boolean | null;
+            missingDetails: string[];
             openingBalance?: number | null;
             parseMode?: string | null;
             /** Format: date */
@@ -6568,6 +6570,7 @@ export interface components {
             id: string;
             /** Format: int32 */
             linesSkipped?: number | null;
+            missingDetails: string[];
             openingBalance?: number | null;
             parseMode?: string | null;
             /** Format: date */
@@ -6836,6 +6839,10 @@ export interface components {
             minimumAmountDue?: number | null;
             /** Format: date */
             paymentDueDate?: string | null;
+            /** Format: date */
+            periodEnd?: string | null;
+            /** Format: date */
+            periodStart?: string | null;
             totalAmountDue?: number | null;
         };
         UpdateCardholderRequest: {

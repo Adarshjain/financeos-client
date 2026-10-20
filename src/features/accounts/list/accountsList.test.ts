@@ -48,6 +48,7 @@ function card(over: Partial<CreditCard> = {}): CreditCard {
 }
 function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
   return {
+    missingDetails: [],
     accountId: 'c1',
     accountName: 'Axis Magnus',
     muted: false,

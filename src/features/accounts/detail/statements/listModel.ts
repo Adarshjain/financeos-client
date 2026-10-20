@@ -167,13 +167,15 @@ export function buildStatementRow(
     if (s.openingBalance != null) parts.push(`opening ${formatRupees(Math.abs(s.openingBalance))}`);
     if (bill?.totalAmountDue != null) parts.push(`due ${formatRupees(bill.totalAmountDue)}`);
   }
+  const detailsMissing = isCard && Boolean(s.missingDetails?.length);
   return {
     id: s.id,
     title: formatDayMonthYear(statementDate(s)),
     caption: parts.join(' · '),
     undo,
-    verdict: verdictWord(s.verdict),
-    badge: isCard ? billBadge(bill) : null,
+    verdict: detailsMissing ? { label: 'Details missing', tone: 'warning' } : verdictWord(s.verdict),
+    // "Details missing" already says the due date is unknown.
+    badge: !isCard || (detailsMissing && bill?.status === 'DUE_UNKNOWN') ? null : billBadge(bill),
     selected: s.id === selectedId,
   };
 }
