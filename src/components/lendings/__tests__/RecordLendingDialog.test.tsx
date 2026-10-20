@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 // The dialog markup is covered by its own tests; here only the wiring.
-vi.mock('@/app/(protected)/loans/lendings/browser/AddLendingDialog', () => ({
+vi.mock('@/app/(legacy)/(protected)/loans/lendings/browser/AddLendingDialog', () => ({
   AddLendingDialog: (p: {
     open: boolean;
     onOpenChange: (o: boolean) => void;

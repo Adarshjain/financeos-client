@@ -41,9 +41,9 @@ vi.mock(
   async () => (await import('@/test/mockSelect')).selectMock
 );
 
-import { LoansList } from '@/app/(protected)/loans/browser/LoansList';
-import { CounterpartiesList } from '@/app/(protected)/loans/lendings/browser/CounterpartiesList';
-import { JobsHistoryTable } from '@/app/(protected)/settings/activity/components/JobsHistoryTable';
+import { LoansList } from '@/app/(legacy)/(protected)/loans/browser/LoansList';
+import { CounterpartiesList } from '@/app/(legacy)/(protected)/loans/lendings/browser/CounterpartiesList';
+import { JobsHistoryTable } from '@/app/(legacy)/(protected)/settings/activity/components/JobsHistoryTable';
 import { RewardLinesTable } from '@/components/rewards/browser/RewardLinesTable';
 import { api } from '@/lib/api/client';
 import type { JobResponse } from '@/lib/jobs.types';

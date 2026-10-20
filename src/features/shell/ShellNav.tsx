@@ -106,7 +106,7 @@ export function ShellTabBar({
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
-                      <Link href={item.href!} onClick={() => setMoreOpen(false)}>
+                      <Link href={item.href!} prefetch={false} onClick={() => setMoreOpen(false)}>
                         {item.label}
                       </Link>
                     </Button>
@@ -133,7 +133,7 @@ export function ShellTabBar({
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
-                      <Link href={item.href} onClick={() => setMoreOpen(false)}>
+                      <Link href={item.href} prefetch={false} onClick={() => setMoreOpen(false)}>
                         {item.label}
                       </Link>
                     </Button>
@@ -161,7 +161,7 @@ export function ShellTabBar({
                 chevron
                 borderTop={false}
               >
-                <Link href="/settings" onClick={() => setMoreOpen(false)} />
+                <Link href="/settings" prefetch={false} onClick={() => setMoreOpen(false)} />
               </ListRow>
             </Card>
           </div>
@@ -174,7 +174,7 @@ export function ShellTabBar({
             ? {
                 ...item,
                 asChild: true,
-                children: <Link href={item.href} />,
+                children: <Link href={item.href} prefetch={false} />,
               }
             : item,
         )}
@@ -185,6 +185,8 @@ export function ShellTabBar({
   );
 }
 
+// Shell links lead to Legacy routes, a different root layout (full page load). They set
+// prefetch={false} so Dinero pages do not preload Legacy CSS and Inter.
 export function ShellRail({
   user,
 }: {
@@ -202,7 +204,7 @@ export function ShellRail({
         items: group.items.map((item) => ({
           ...item,
           asChild: true,
-          children: <Link href={item.href} />,
+          children: <Link href={item.href} prefetch={false} />,
         })),
       }))}
       value={current}
@@ -230,7 +232,7 @@ export function ShellRail({
           borderTop={false}
           className="px-space-8"
         >
-          <Link href="/settings" />
+          <Link href="/settings" prefetch={false} />
         </ListRow>
       }
     />

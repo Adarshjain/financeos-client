@@ -16,7 +16,7 @@ export const shellTopBarActions: TopBarAction[] = [
     icon: 'chat',
     label: 'Ask the data',
     asChild: true,
-    children: <Link href="/chat" />,
+    children: <Link href="/chat" prefetch={false} />,
   },
 ];
 

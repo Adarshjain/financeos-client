@@ -55,7 +55,7 @@ function pickNearestInstallment(
  *
  * The schedule endpoint returns a grouping map that's normalised into a flat
  * list; that normaliser is duplicated here (rather than imported) from
- * `src/app/(protected)/loans/[id]/components/useLoanQueries.ts`, which lives
+ * `src/app/(legacy)/(protected)/loans/[id]/components/useLoanQueries.ts`, which lives
  * outside this feature's ownership.
  */
 export function useLoanPaymentLink({

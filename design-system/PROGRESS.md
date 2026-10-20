@@ -166,7 +166,7 @@ Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in
   - Google sign-in from `/ds/login` returns through the existing `/auth/google/callback` page (Google's redirect URI is fixed server-side) and lands on the live app; a `/ds` callback would need a new redirect URI in Google Cloud and the server, so it isn't built.
   - `/ds/offline` is a viewable page; the service worker's real offline fallback stays `/offline` until a swap.
 
-**Open for the owner (later):** swapping signed-in pages one at a time means the app switches between the old and new shell as you move between migrated and unmigrated pages. Options:
+**Decided 2026-10-20 (one system per page, see Owner decisions):** swapping signed-in pages one at a time means the app switches between the old and new shell as you move between migrated and unmigrated pages. Options:
 - (a) accept the mixed shells during the migration;
 - (b) review page by page in `/ds`, then swap all signed-in pages together (or per area) once they are approved.
 
@@ -322,6 +322,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-19 · **UAT round 4** (owner): SectionHeader + DataTable band take `action` (right end); closed toggle uses it. Brokers card: no total, no Investments link. Card table Next bill/Outstanding/Rewards `sm`. ~~Button sizes svgs xs by CSS~~ (reverted 2026-10-20).
 - 2026-10-19 · **UAT round 5** (owner): closed toggle `ghost`. Card header text actions `link`. Pager `compact` by default. Dialogs open from state, never the URL; cross-page opening = ask owner. Statement bills in one request.
 - 2026-10-20 · **Bank display** (owner): Option A on Accounts pages: BankLogo before the name (list rows, page title). `short_name` in banks.ts: owner's, use only where told. Other pages decided when we reach them.
+- 2026-10-20 · **One system per page** (owner): two root layouts, `(legacy)` and `(ds)`, each with its own fonts, CSS build and toaster; crossing systems = full page load. Legacy shell re-skinned to match the Dinero shell (Legacy code only), temporary nav sub-items for unswapped areas. Overrides "never modify Legacy" for the root split and shell re-skin only. Answers the mixed-shell question.
 - 2026-10-20 · **Accounts approved** (owner). Cards page `?add=cardholder` link stays as is. `short_name` use: owner says when.
 - 2026-10-20 · **Icon size is the app's** (owner): app passes `size="xs"` beside button text; Dinero forces nothing (sheet icons were shrunk). No-bank account: filled amber `warning` mark at the tile's top right, like a count badge (new registry icon + Icon `weight`).
 
@@ -352,6 +353,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-20 · Phase 3 · Claude · Root split: `(legacy)` and `(ds)` root layouts, own fonts/CSS (tailwind.legacy/ds configs, shared preset)/toaster; providers + metadata shared; global-error and global-not-found self-contained; ds→legacy links prefetch off. Forced tests: none (imports `@/app/(protected)` → `(legacy)/(protected)`). Checks: tests, lint, check-ui, storybook, next build, ui e2e core+ds (35/35), cross-system nav. Deviations: ds border/scrollbar from ds tokens.
 - 2026-10-20 · Phase 3 (Accounts) · Claude · Undated statements keep their bill: server history files them by created date (app zone), client statementDate/Overview title same rule (server 3a4318e). Forced tests: CardBillHistoryTest ordering/range cases, billsHistory.test undated row. Checks: server tests, client tests, api e2e. Deviations: none.
 - 2026-10-20 · Phase 3 (Accounts) · Claude · Reverted Button/TopBar xs forcing; app call sites pass `xs` (HeaderLink, closed toggle, RuleCard Approve); More sheet back to 20px. BankLogo no-bank mark; Icon `weight`, registry `warning`. Forced tests: 5 Button "icon size beside text" tests removed. Checks: tests, lint, check-ui, storybook. Deviations: none.
 - 2026-10-20 · Phase 3 (Accounts) · Claude · Bank display A: DataTable `leading` slot; BankLogo takes null bank (letter tile); logo before names + page title; Axis/CSB logos redone from Wikimedia SVGs. Forced tests: none. Checks: tests, lint, check-ui, storybook. Deviations: none.

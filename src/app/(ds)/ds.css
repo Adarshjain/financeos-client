@@ -1,0 +1,59 @@
+@config "../../../tailwind.ds.config.ts";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dinero entry stylesheet: loaded only by the (ds) root layout (tokens.css is imported beside it).
+   The legacy theme, chart tokens and .bui-chat live in (legacy)/globals.css. */
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+
+  body {
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1,
+      'tnum' 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-line-strong rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-line-heavy;
+}
+
+/* Form elements */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
