@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards and Dinero changes approved, server changes done; `/ds/accounts` list, account pages (Overview, Statements, Cards, Rewards per type) and Add/Edit dialogs ready for review 2026-10-19) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards and Dinero changes approved, server changes done; `/ds/accounts` list, account pages and Add/Edit dialogs approved 2026-10-20, swap pending) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -177,8 +177,8 @@ Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in
 | `/ds/signup` (Sign up) | `src/app/(ds)/ds/(public)/signup/page.tsx`, `SignupForm.tsx` | _(live `/signup` and `SignupForm.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
 | `/ds/offline` (Offline) | `src/app/(ds)/ds/(public)/offline/page.tsx`, `OfflineContent.tsx` | _(live `/offline/page.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
 | `/ds` review index & shell | `src/app/(ds)/layout.tsx`, `src/app/(ds)/ds/(app)/layout.tsx`, `src/app/(ds)/ds/(app)/page.tsx`, `src/features/shell/navigation.ts` | _(live layouts untouched)_ | Built under /ds, Ready for review |
-| `/ds/accounts` (Accounts list) | `src/app/(ds)/ds/(app)/accounts/(list)/page.tsx`, `loading.tsx`; `src/features/accounts/list/*`; `src/features/shell/ShellPage.tsx` (per-page top bar; layout no longer renders it) | _(live `/accounts` untouched until swap; will drop `AccountsView`, the tiles, `ClosedAccountsSection`, `AccountMetadataBadges`)_ | Ready for review 2026-10-19 |
-| `/ds/accounts/[id]` (account pages + Add/Edit dialogs) | `src/app/(ds)/ds/(app)/accounts/[id]/**` (layout with route tabs, Overview, `statements/`, `cards/`, `rewards/`, loading, error), `accounts/not-found.tsx`; `src/features/accounts/detail/**`, `src/features/accounts/form/ds/*`, `src/features/bills/MarkPaidDialog.tsx`, `src/features/accounts/statements/deletionImpact.ts` | _(live `/accounts/[id]` untouched until swap; will drop `StatementsDialog`, `CardsDialog`, `AccountForm`/`AccountFormWrapper` (except the transaction-form use, owner 32), the account header and detail sections)_ | Ready for review 2026-10-19 |
+| `/ds/accounts` (Accounts list) | `src/app/(ds)/ds/(app)/accounts/(list)/page.tsx`, `loading.tsx`; `src/features/accounts/list/*`; `src/features/shell/ShellPage.tsx` (per-page top bar; layout no longer renders it) | _(live `/accounts` untouched until swap; will drop `AccountsView`, the tiles, `ClosedAccountsSection`, `AccountMetadataBadges`)_ | Approved 2026-10-20; swap pending |
+| `/ds/accounts/[id]` (account pages + Add/Edit dialogs) | `src/app/(ds)/ds/(app)/accounts/[id]/**` (layout with route tabs, Overview, `statements/`, `cards/`, `rewards/`, loading, error), `accounts/not-found.tsx`; `src/features/accounts/detail/**`, `src/features/accounts/form/ds/*`, `src/features/bills/MarkPaidDialog.tsx`, `src/features/accounts/statements/deletionImpact.ts` | _(live `/accounts/[id]` untouched until swap; will drop `StatementsDialog`, `CardsDialog`, `AccountForm`/`AccountFormWrapper` (except the transaction-form use, owner 32), the account header and detail sections)_ | Approved 2026-10-20; swap pending |
 
 ## Phase 4 · Cleanup
 When every page is migrated:
@@ -322,6 +322,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-19 · **UAT round 4** (owner): SectionHeader + DataTable band take `action` (right end); closed toggle uses it. Brokers card: no total, no Investments link. Card table Next bill/Outstanding/Rewards `sm`. ~~Button sizes svgs xs by CSS~~ (reverted 2026-10-20).
 - 2026-10-19 · **UAT round 5** (owner): closed toggle `ghost`. Card header text actions `link`. Pager `compact` by default. Dialogs open from state, never the URL; cross-page opening = ask owner. Statement bills in one request.
 - 2026-10-20 · **Bank display** (owner): Option A on Accounts pages: BankLogo before the name (list rows, page title). `short_name` in banks.ts: owner's, use only where told. Other pages decided when we reach them.
+- 2026-10-20 · **Accounts approved** (owner). Cards page `?add=cardholder` link stays as is. `short_name` use: owner says when.
 - 2026-10-20 · **Icon size is the app's** (owner): app passes `size="xs"` beside button text; Dinero forces nothing (sheet icons were shrunk). No-bank account: filled amber `warning` mark at the tile's top right, like a count badge (new registry icon + Icon `weight`).
 
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
