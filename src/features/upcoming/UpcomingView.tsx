@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Banner, Card, EmptyState } from '@/components/ds';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
+import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
@@ -21,6 +22,7 @@ import {
 } from './upcomingModel';
 import { UpcomingSkeleton } from './UpcomingSkeleton';
 import { UpcomingTotals } from './UpcomingTotals';
+import { useUrlState } from './useUrlState';
 
 /**
  * The Upcoming list tab of /ds/upcoming. Kind and range live in the URL (`?kind=`, `?months=`);
@@ -30,10 +32,13 @@ import { UpcomingTotals } from './UpcomingTotals';
 export function UpcomingView() {
   const searchParams = useSearchParams();
   const billParam = searchParams.get('bill');
-  const [kind, setKind] = React.useState<ObligationKindFilter>(() => parseKind(searchParams.get('kind')));
-  const [months, setMonths] = React.useState(() => parseMonths(searchParams.get('months')));
+  const [{ kind, months }, setState] = useUrlState(searchParams.toString(), (search) => {
+    const params = new URLSearchParams(search);
+    return { kind: parseKind(params.get('kind')), months: parseMonths(params.get('months')) };
+  });
   const [paying, setPaying] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
   const [settling, setSettling] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
+  const [detailsFor, setDetailsFor] = React.useState<string | null>(null);
   const today = todayInAppZone();
 
   const { data, error, isFetched, isPending, refetch } = useObligations(months);
@@ -54,11 +59,11 @@ export function UpcomingView() {
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${search}`);
   };
   const changeKind = (next: ObligationKindFilter) => {
-    setKind(next);
+    setState({ kind: next, months });
     syncUrl({ kind: next, months });
   };
   const changeMonths = (next: number) => {
-    setMonths(next);
+    setState({ kind, months: next });
     syncUrl({ kind, months: next });
   };
 
@@ -97,6 +102,7 @@ export function UpcomingView() {
             highlightStatementId={billParam}
             onMarkPaid={(item) => setPaying({ item, open: true })}
             onSettle={(item) => setSettling({ item, open: true })}
+            onSetDetails={(item) => setDetailsFor(item.statementId ?? null)}
           />
         )}
       </>
@@ -113,6 +119,12 @@ export function UpcomingView() {
           statementId={paying.item.statementId}
           cardName={paying.item.accountName ?? paying.item.title ?? 'Card'}
           remaining={paying.item.amount ?? null}
+        />
+      ) : null}
+      {detailsFor ? (
+        <InboxBillHost
+          pending={{ type: 'set_details', statementId: detailsFor }}
+          onClose={() => setDetailsFor(null)}
         />
       ) : null}
       {settling?.item.counterpartyId ? (

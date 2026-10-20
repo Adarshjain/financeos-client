@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { type RowActions } from '@/components/obligations/ObligationGroups';
 import { ObligationRow } from '@/components/obligations/ObligationRow';
 import { Button } from '@/components/ui/button';
+import { groupByDate } from '@/features/upcoming/calendarModel';
 import type { ObligationItem } from '@/features/upcoming/obligations';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
@@ -25,10 +26,7 @@ export function CalendarGrid({
   const [cursor, setCursor] = useState(() => ({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) - 1 }));
   const [selected, setSelected] = useState<string | null>(today);
 
-  const byDay = new Map<string, ObligationItem[]>();
-  for (const i of items) {
-    if (i.date) byDay.set(i.date, [...(byDay.get(i.date) ?? []), i]);
-  }
+  const byDay = groupByDate(items);
   const first = new Date(cursor.y, cursor.m, 1);
   const lead = (first.getDay() + 6) % 7; // Monday-first
   const daysInMonth = new Date(cursor.y, cursor.m + 1, 0).getDate();

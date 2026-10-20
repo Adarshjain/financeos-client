@@ -15,6 +15,8 @@ export interface UpcomingRowProps {
   highlighted?: boolean;
   onMarkPaid: (item: ObligationItem) => void;
   onSettle: (item: ObligationItem) => void;
+  /** Set details on an undated card bill; the link shows only when given. */
+  onSetDetails?: (item: ObligationItem) => void;
 }
 
 /** One obligation in the Upcoming list: date tile, title and context, amount, then its action. */
@@ -24,6 +26,7 @@ export function UpcomingRow({
   highlighted = false,
   onMarkPaid,
   onSettle,
+  onSetDetails,
 }: UpcomingRowProps) {
   const date = rowDate(item);
   const amount = rowAmount(item);
@@ -37,6 +40,8 @@ export function UpcomingRow({
       ? `/transactions/import?account=${item.accountId}`
       : null;
   const canMarkPaid = item.type === 'card_bill' && Boolean(item.statementId);
+  const canSetDetails =
+    Boolean(onSetDetails) && item.type === 'card_bill' && !item.date && Boolean(item.statementId);
   const canSettle = item.type === 'lending_due' && Boolean(item.counterpartyId);
 
   const subtitle = (
@@ -87,6 +92,11 @@ export function UpcomingRow({
           >
             {amount.text}
           </Text>
+          {canSetDetails ? (
+            <Button variant="link" size="sm" onClick={() => onSetDetails?.(item)}>
+              Set details
+            </Button>
+          ) : null}
           {canMarkPaid ? (
             <Button
               variant={primaryAction ? 'primary' : 'secondary'}
