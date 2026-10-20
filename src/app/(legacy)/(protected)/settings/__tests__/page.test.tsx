@@ -30,6 +30,11 @@ describe('Settings page', () => {
     expect(screen.getByRole('link', { name: label })).toHaveAttribute('href', href);
   });
 
+  it('has a Dinero row that opens /ds with a full page load', async () => {
+    await renderPage();
+    expect(screen.getByRole('link', { name: 'Dinero' })).toHaveAttribute('href', '/ds');
+  });
+
   it('no longer links to the old jobs or ingest routes', async () => {
     await renderPage();
     const all = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
