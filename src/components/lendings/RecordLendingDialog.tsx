@@ -5,7 +5,7 @@
 // its own form state, controlled by the caller. A preset seeds the person,
 // entry type and amount (Settle up = settleUpEntry(netPosition) + the person).
 
-import { AddLendingDialog } from '@/app/(protected)/loans/lendings/browser/AddLendingDialog';
+import { AddLendingDialog } from '@/app/(legacy)/(protected)/loans/lendings/browser/AddLendingDialog';
 
 import { type LendingFormPreset, useAddLendingForm } from './useAddLendingForm';
 

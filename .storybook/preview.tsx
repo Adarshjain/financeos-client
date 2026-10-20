@@ -1,6 +1,6 @@
 import './preview.css';
 import '../design-system/tokens.css';
-import '../src/app/globals.css';
+import '../src/app/(ds)/ds.css';
 
 import type { Decorator, Preview } from '@storybook/react';
 import React, { useEffect } from 'react';

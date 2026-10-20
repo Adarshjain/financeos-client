@@ -49,7 +49,7 @@ export default defineConfig({
         'src/components/transactions/TransactionLinkBadges.tsx': { lines: 95, branches: 95 },
         'src/components/transactions/TransactionSelectCheckbox.tsx': { lines: 95, branches: 95 },
         'src/components/transactions/TransactionSourceBadge.tsx': { lines: 95, branches: 95 },
-        'src/app/(protected)/transactions/page.tsx': { lines: 95, branches: 95 },
+        'src/app/(legacy)/(protected)/transactions/page.tsx': { lines: 95, branches: 95 },
         'src/components/reports/builderReducer.ts': { lines: 95, branches: 95 },
       },
     },

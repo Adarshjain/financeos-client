@@ -1,0 +1,112 @@
+import type { Config } from 'tailwindcss';
+
+import shared from './tailwind.shared';
+
+// Legacy UI (shadcn-style theme). Loaded only by the (legacy) root layout via
+// src/app/(legacy)/globals.css. Dinero tokens live in tailwind.ds.config.ts: do not add them here.
+const config: Config = {
+  presets: [shared as Config],
+  content: [
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    // Only the non-UI feature modules Legacy imports (hooks, helpers); the feature screens are Dinero.
+    './src/features/{banks,bills}/**/*.{js,ts,jsx,tsx}',
+    './src/features/accounts/{cards,statements,form}/*.{js,ts}',
+    '!./src/components/ds/**',
+    '!./src/components/organisms/**',
+    '!./src/app/(ds)/**',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Removed a 13-shade `finance` scale (a near-duplicate of Tailwind's
+        // default green) that had zero usages anywhere in src.
+        slate: {
+          // 350 was referenced in 13 places but never defined, so those classes
+          // emitted no CSS at all. Value is the midpoint of slate-300 (#cbd5e1)
+          // and slate-400 (#94a3b8), which is what the shade name implies.
+          '350': '#b0bccd',
+          '850': '#1a2332',
+          '950': '#0b1120',
+        },
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        chart: {
+          '1': 'hsl(var(--chart-1))',
+          '2': 'hsl(var(--chart-2))',
+          '3': 'hsl(var(--chart-3))',
+          '4': 'hsl(var(--chart-4))',
+          '5': 'hsl(var(--chart-5))',
+          '6': 'hsl(var(--chart-6))',
+          '7': 'hsl(var(--chart-7))',
+          '8': 'hsl(var(--chart-8))',
+          grid: 'hsl(var(--chart-grid))',
+          other: 'hsl(var(--chart-other))',
+        },
+      },
+      fontFamily: {
+        sans: [
+          'var(--font-sans)',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
+        // Was pointing at var(--font-sans) — i.e. Inter, a proportional face —
+        // so every `font-mono` rendered non-monospace. Matters for the error
+        // digests and tabular figures that use it.
+        mono: [
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'Liberation Mono',
+          'Courier New',
+          'monospace',
+        ],
+      },
+      fontSize: {
+        '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
+  },
+};
+
+export default config;
