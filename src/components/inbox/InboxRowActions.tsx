@@ -4,9 +4,9 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { actionHref, canDismiss, canSnooze, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
-import { actionHref, canDismiss, canSnooze, isBillAction, primaryActions } from './inbox.helpers';
 import { SnoozeMenu } from './SnoozeMenu';
 
 export interface InboxRowHandlers {

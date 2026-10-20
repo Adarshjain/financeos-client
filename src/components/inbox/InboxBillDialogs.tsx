@@ -6,35 +6,11 @@ import { toast } from 'sonner';
 
 import { BillDetailsDialog } from '@/components/bills/BillDetailsDialog';
 import { MarkPaidDialog } from '@/components/bills/MarkPaidDialog';
+import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type {
-  InboxActionResponse,
-  InboxItemResponse,
-  MarkBillPaidRequest,
-  UpdateBillDetailsRequest,
-} from '@/lib/api/types';
+import type { MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
 import { useBill, useBillMutations } from '@/lib/query/hooks/useBills';
 import { keys } from '@/lib/query/keys';
-
-import { type BillActionType, isBillAction } from './inbox.helpers';
-
-export interface PendingBillAction {
-  type: BillActionType;
-  statementId: string;
-}
-
-/**
- * The dialog a row's bill action opens (mark paid, set details), or null when the action is not a
- * bill action or names no statement.
- */
-export function toPendingBillAction(
-  item: InboxItemResponse,
-  action: InboxActionResponse,
-): PendingBillAction | null {
-  const statementId = action.payload?.statementId ?? item.refs.statementId;
-  if (!statementId || !isBillAction(action.type)) return null;
-  return { type: action.type, statementId };
-}
 
 interface InboxBillDialogsProps {
   pending: PendingBillAction | null;

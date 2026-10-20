@@ -11,6 +11,26 @@ import { formatDate } from '@/lib/utils';
 
 import { summarise } from './inbox.helpers';
 
+/** How snooze, dismiss and undo tell the user what happened. The default is today's Legacy toasts. */
+export interface InboxNotifier {
+  snoozed: (until: string, undo: () => void) => void;
+  dismissed: (undo: () => void) => void;
+  restored: () => void;
+  snoozeFailed: (error: unknown) => void;
+  dismissFailed: (error: unknown) => void;
+  undoFailed: (error: unknown) => void;
+}
+
+export const sonnerInboxNotifier: InboxNotifier = {
+  snoozed: (until, undo) =>
+    toast.success(`Snoozed until ${formatDate(until)}`, { action: { label: 'Undo', onClick: undo } }),
+  dismissed: (undo) => toast.success('Dismissed', { action: { label: 'Undo', onClick: undo } }),
+  restored: () => toast.success('Restored'),
+  snoozeFailed: (e) => toast.error(getErrorMessage(e, 'Could not snooze this item')),
+  dismissFailed: (e) => toast.error(getErrorMessage(e, 'Could not dismiss this item')),
+  undoFailed: (e) => toast.error(getErrorMessage(e, 'Could not undo')),
+};
+
 interface Snapshot {
   list?: InboxResponse;
   summary?: InboxSummaryResponse;
@@ -41,19 +61,19 @@ function restore(qc: QueryClient, snapshot: Snapshot | undefined) {
  * openapi-fetch percent-encodes path params itself, so the raw key is passed (encoding here too
  * would double-encode it).
  */
-export function useInboxActions() {
+export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   const qc = useQueryClient();
   const settle = () => qc.invalidateQueries({ queryKey: keys.inbox.all });
 
   const undo = useMutation({
     mutationFn: (key: string) =>
       api.DELETE('/api/v1/inbox/{key}/state', { params: { path: { key } } }).then(() => undefined),
-    onSuccess: () => toast.success('Restored'),
-    onError: (e) => toast.error(getErrorMessage(e, 'Could not undo')),
+    onSuccess: () => notifier.restored(),
+    onError: (e) => notifier.undoFailed(e),
     onSettled: settle,
   });
 
-  const undoAction = (key: string) => ({ label: 'Undo', onClick: () => undo.mutate(key) });
+  const undoFor = (key: string) => () => undo.mutate(key);
 
   const snooze = useMutation({
     mutationFn: ({ key, until }: { key: string; until: string }) =>
@@ -61,11 +81,10 @@ export function useInboxActions() {
         .POST('/api/v1/inbox/{key}/snooze', { params: { path: { key } }, body: { until } })
         .then(() => undefined),
     onMutate: ({ key }) => hideRow(qc, key),
-    onSuccess: (_data, { key, until }) =>
-      toast.success(`Snoozed until ${formatDate(until)}`, { action: undoAction(key) }),
+    onSuccess: (_data, { key, until }) => notifier.snoozed(until, undoFor(key)),
     onError: (e, _vars, snapshot) => {
       restore(qc, snapshot);
-      toast.error(getErrorMessage(e, 'Could not snooze this item'));
+      notifier.snoozeFailed(e);
     },
     onSettled: settle,
   });
@@ -74,10 +93,10 @@ export function useInboxActions() {
     mutationFn: (key: string) =>
       api.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key } } }).then(() => undefined),
     onMutate: (key) => hideRow(qc, key),
-    onSuccess: (_data, key) => toast.success('Dismissed', { action: undoAction(key) }),
+    onSuccess: (_data, key) => notifier.dismissed(undoFor(key)),
     onError: (e, _key, snapshot) => {
       restore(qc, snapshot);
-      toast.error(getErrorMessage(e, 'Could not dismiss this item'));
+      notifier.dismissFailed(e);
     },
     onSettled: settle,
   });

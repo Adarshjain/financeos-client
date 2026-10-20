@@ -5,12 +5,13 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 
-import { InboxBillDialogs, type PendingBillAction, toPendingBillAction } from './InboxBillDialogs';
+import { InboxBillDialogs } from './InboxBillDialogs';
 import { InboxWidgetRow } from './InboxWidgetRow';
 
 /** How many decisions the widget shows before pointing at the Inbox page. */
