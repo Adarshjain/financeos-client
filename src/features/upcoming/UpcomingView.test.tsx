@@ -30,6 +30,14 @@ vi.mock('@/features/bills/MarkPaidDialog', () => ({
       </div>
     ) : null,
 }));
+vi.mock('@/features/inbox/InboxBillHost', () => ({
+  InboxBillHost: (p: { pending: { type: string; statementId: string } | null }) =>
+    p.pending ? (
+      <div data-testid="bill-host">
+        {p.pending.type}|{p.pending.statementId}
+      </div>
+    ) : null,
+}));
 vi.mock('@/features/lendings/SettleDialog', () => ({
   SettleDialog: (p: { open: boolean; counterpartyId: string; name: string; direction: string; balance: number }) =>
     p.open ? (
@@ -284,5 +292,37 @@ describe('UpcomingView states', () => {
     render(<UpcomingView />);
     expect(screen.queryByRole('button', { name: 'All' })).toBeNull();
     expect(document.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(8);
+  });
+});
+
+describe('UpcomingView URL as the source of truth', () => {
+  it('drops the filter and range when the URL is cleared from outside (the active tab link)', () => {
+    search = new URLSearchParams('kind=emi&months=6');
+    const { rerender } = render(<UpcomingView />);
+    expect(screen.queryByText('HDFC Regalia Gold bill')).toBeNull();
+    search = new URLSearchParams();
+    rerender(<UpcomingView />);
+    expect(screen.getByText('HDFC Regalia Gold bill')).toBeInTheDocument();
+    expect(useObligations).toHaveBeenLastCalledWith(3);
+  });
+
+  it('keeps a filter the user just picked until the URL itself changes', () => {
+    const { rerender } = render(<UpcomingView />);
+    fireEvent.click(screen.getByRole('button', { name: 'EMIs' }));
+    rerender(<UpcomingView />);
+    expect(screen.queryByText('HDFC Regalia Gold bill')).toBeNull();
+  });
+});
+
+describe('UpcomingView Set details', () => {
+  it('an undated card bill has Set details, which opens the bill dialog host with its statement', () => {
+    render(<UpcomingView />);
+    fireEvent.click(screen.getByRole('button', { name: 'Set details' }));
+    expect(screen.getByTestId('bill-host')).toHaveTextContent('set_details|S3');
+  });
+
+  it('dated bills do not have it', () => {
+    render(<UpcomingView />);
+    expect(screen.getAllByRole('button', { name: 'Set details' })).toHaveLength(1);
   });
 });

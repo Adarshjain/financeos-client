@@ -27,6 +27,7 @@ export interface UpcomingListProps {
   highlightStatementId: string | null;
   onMarkPaid: (item: ObligationItem) => void;
   onSettle: (item: ObligationItem) => void;
+  onSetDetails?: (item: ObligationItem) => void;
 }
 
 function sections(items: ObligationItem[], today: string): Section[] {
@@ -53,6 +54,7 @@ export function UpcomingList({
   highlightStatementId,
   onMarkPaid,
   onSettle,
+  onSetDetails,
 }: UpcomingListProps) {
   const [shown, setShown] = React.useState<Set<string>>(() => new Set());
 
@@ -116,6 +118,7 @@ export function UpcomingList({
                 }
                 onMarkPaid={onMarkPaid}
                 onSettle={onSettle}
+                onSetDetails={onSetDetails}
               />
             ))}
           </React.Fragment>

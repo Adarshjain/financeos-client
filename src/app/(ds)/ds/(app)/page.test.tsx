@@ -39,4 +39,11 @@ describe('DsIndexPage', () => {
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
     expect(hrefs).toContain('/ds/settings');
   });
+
+  it('links to /ds/inbox and /ds/upcoming from the Signed in section', () => {
+    render(<DsIndexPage />);
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/ds/inbox');
+    expect(hrefs).toContain('/ds/upcoming');
+  });
 });
