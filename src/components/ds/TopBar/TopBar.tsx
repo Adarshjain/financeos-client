@@ -7,6 +7,7 @@ import { cn } from '../cn';
 import { Icon, type IconSize } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 import { Kbd } from '../Kbd/Kbd';
+import { Popover } from '../Popover/Popover';
 
 export interface TopBarAction {
   id: string;
@@ -20,6 +21,10 @@ export interface TopBarAction {
   labelIconSize?: IconSize;
   asChild?: boolean;
   children?: React.ReactNode;
+  /** Draws a danger dot on the button (something unread). */
+  dot?: boolean;
+  /** Opens a dropdown from the button; never asChild. */
+  popover?: { content: React.ReactNode; onOpenChange?: (open: boolean) => void };
 }
 
 export interface TopBarProps
@@ -160,6 +165,32 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   : undefined,
               );
 
+              if (action.popover) {
+                return (
+                  <Popover
+                    key={action.id}
+                    align="end"
+                    onOpenChange={action.popover.onOpenChange}
+                    trigger={
+                      <Button
+                        type="button"
+                        variant={btnVariant}
+                        size="md"
+                        iconOnly={!hasLabel}
+                        aria-label={action.label}
+                        onClick={action.onSelect}
+                        dot={action.dot}
+                        className={buttonClasses}
+                      >
+                        {content}
+                      </Button>
+                    }
+                  >
+                    {action.popover.content}
+                  </Popover>
+                );
+              }
+
               if (action.asChild && React.isValidElement(action.children)) {
                 return (
                   <Button
@@ -170,6 +201,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                     iconOnly={!hasLabel}
                     aria-label={action.label}
                     onClick={action.onSelect}
+                    dot={action.dot}
                     className={buttonClasses}
                   >
                     {React.cloneElement(
@@ -190,6 +222,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   iconOnly={!hasLabel}
                   aria-label={action.label}
                   onClick={action.onSelect}
+                  dot={action.dot}
                   className={buttonClasses}
                 >
                   {content}

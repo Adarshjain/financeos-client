@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -202,6 +202,19 @@ describe('Button component', () => {
       expect(screen.getByText('12')).toBeInTheDocument();
     });
 
+    it('draws the dot inside child in asChild mode', () => {
+      render(
+        <Button asChild iconOnly dot aria-label="Alerts">
+          <a href="#alerts">
+            <Icon name="notifications" size="md" />
+          </a>
+        </Button>,
+      );
+      const link = screen.getByRole('link', { name: 'Alerts' });
+      expect(link).toHaveClass('relative');
+      expect(within(link).getByTestId('button-dot')).toBeInTheDocument();
+    });
+
     it('applies loading state inside child in asChild mode', () => {
       render(
         <Button asChild loading loadingLabel="Loading…">
@@ -297,5 +310,20 @@ describe('Button type size (UAT)', () => {
       );
       expect(screen.getByRole('button').className).toContain('gap-space-2');
     });
+  });
+});
+
+describe('Button dot', () => {
+  it('draws a danger dot and keeps the button relative', () => {
+    render(<Button iconOnly dot aria-label="Alerts"><Icon name="notifications" size="md" /></Button>);
+    const btn = screen.getByRole('button', { name: 'Alerts' });
+    expect(btn).toHaveClass('relative');
+    expect(within(btn).getByTestId('button-dot')).toHaveClass('bg-danger', 'absolute');
+  });
+
+  it('draws no dot by default', () => {
+    render(<Button iconOnly aria-label="Alerts"><Icon name="notifications" size="md" /></Button>);
+    expect(screen.queryByTestId('button-dot')).not.toBeInTheDocument();
+    expect(screen.getByRole('button')).not.toHaveClass('relative');
   });
 });

@@ -11,6 +11,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `loading`: `boolean` (default `false`)
 - `loadingLabel`: `ReactNode`
 - `count`: `number | string`
+- `dot`: `boolean` (default `false`; for icon-only buttons, draws a danger Badge `dot` at the top-right corner, absolutely positioned, never changing the button's size)
 - `icon`: `ReactNode`
 - `asChild`: `boolean` (default `false`)
 
@@ -22,6 +23,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `btn-g` ghost: no border; icon actions in bars and cards.
 - Beside button text pass `size="xs"` (10px) on the Icon. Icon-only buttons keep their size. Link with icon: gap `space-2`.
 - `btn-i` square icon button; give it an `aria-label`.
+- Icon button with dot: `iconOnly` + `dot` marks something unread (the notifications bell).
 - `link`: inline text action with underline and no border. The underline is the light `line-heavy` colour (owner, 2026-10-20), shows at rest and disappears on hover. When the link holds an icon (via `icon` or an Icon child) the control becomes `inline-flex` and the underline is an `after:` element (`inset-x-0`, `h-px`, `bg-line-heavy`) running continuously under icon, gap and text; text-only links keep `text-decoration`; icon-only links have no underline.
 - Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px (`control-md`, the same as a form field), `btn-xl` 44px for auth.
 - Type: every size uses the `label` style (12px); `link` inherits the surrounding size.
@@ -44,4 +46,4 @@ Name the action with a verb and its object: "Mark paid", "Upload statement", "Ap
 - Phone tap targets are at least 44px tall in sheets; `sm` (26px) is for dense rows.
 
 ## Built from
-Icon, Badge (count), Radix Slot (`asChild` for links).
+Icon, Badge (count, dot), Radix Slot (`asChild` for links).

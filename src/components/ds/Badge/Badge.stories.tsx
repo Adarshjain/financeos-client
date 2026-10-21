@@ -96,3 +96,10 @@ export const Count: Story = {
     size: 'sm',
   },
 };
+
+export const Dot: Story = {
+  args: {
+    variant: 'dot',
+    tone: 'danger',
+  },
+};
