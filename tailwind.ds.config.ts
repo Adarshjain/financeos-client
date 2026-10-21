@@ -145,6 +145,7 @@ const config: Config = {
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       borderRadius: {
+        'ds-2xs': 'var(--ds-radius-2xs)',
         'ds-xs': 'var(--ds-radius-xs)',
         'ds-sm': 'var(--ds-radius-sm)',
         'ds-md': 'var(--ds-radius-md)',
