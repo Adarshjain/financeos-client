@@ -134,7 +134,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
 
     // Verify Section tiles in groups
     await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/ds/accounts');
-    await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
+    await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/ds/transactions');
     await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
     await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/ds/loans/lendings');
@@ -197,11 +197,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const tabBar = page.locator('nav.desk\\:hidden');
     const txTab = tabBar.getByRole('tab', { name: 'Transactions' });
     await expect(txTab).toBeVisible();
-    await expect(txTab).toHaveAttribute('href', '/transactions');
+    await expect(txTab).toHaveAttribute('href', '/ds/transactions');
 
     // Click Transactions tab and ensure it navigates directly as a link
     await txTab.click();
-    await page.waitForURL('**/transactions');
-    expect(page.url()).toContain('/transactions');
+    await page.waitForURL('**/ds/transactions');
+    expect(new URL(page.url()).pathname).toBe('/ds/transactions');
   });
 });
