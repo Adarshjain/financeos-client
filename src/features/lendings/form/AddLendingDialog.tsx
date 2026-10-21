@@ -28,17 +28,14 @@ import {
   type LendingEntryType,
   settlementWarning,
 } from '@/lib/lendingEntry';
-import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
 import type { Transaction } from '@/lib/transaction.types';
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
-import { buildCreateLendingRequest, entriesLabel, lendingEntryProblem, positionLabel } from '../lendingEntryForm';
+import { buildCreateLendingRequest, lendingEntryProblem } from '../lendingEntryForm';
 import { useCreateLending } from '../useCreateLending';
+import { PersonSelect } from './PersonSelect';
 
 const FORM_ID = 'add-lending-form';
-const NEW_PREFIX = 'new:';
-const SEARCH_DEBOUNCE_MS = 250;
 
 const entryOptions = (direction: 'lent' | 'borrowed'): SelectOption[] =>
   entryTypesForDirection(direction).map((t) => ({ value: t, label: ENTRY_TYPE_LABEL[t] }));
@@ -47,10 +44,6 @@ const ENTRY_TYPE_GROUPS: SelectGroup[] = [
   { name: 'Money out', options: entryOptions('lent') },
   { name: 'Money in', options: entryOptions('borrowed') },
 ];
-
-function personOption(cp: CounterpartyResponse): SelectOption {
-  return { value: cp.id, label: cp.name, hint: `${positionLabel(cp)} · ${entriesLabel(cp.entryCount)}` };
-}
 
 interface Errors {
   party?: string;
@@ -77,7 +70,6 @@ export function AddLendingDialog({
   const [party, setParty] = React.useState<CounterpartySelection | null>(
     initialPerson ? { kind: 'existing', counterparty: initialPerson } : null,
   );
-  const [search, setSearch] = React.useState('');
   const [entryType, setEntryType] = React.useState<LendingEntryType>('lent');
   const [amount, setAmount] = React.useState('');
   const [entryDate, setEntryDate] = React.useState(today);
@@ -86,29 +78,9 @@ export function AddLendingDialog({
   const [transaction, setTransaction] = React.useState<Transaction | null>(null);
   const [errors, setErrors] = React.useState<Errors>({});
 
-  const term = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
-  const { data: found } = useCounterpartySearch(term);
-  const people = React.useMemo(() => found?.content ?? [], [found]);
-
-  const partyOptions = React.useMemo(() => {
-    const list = people.map(personOption);
-    if (party?.kind === 'existing' && !people.some((p) => p.id === party.counterparty.id)) {
-      list.unshift(personOption(party.counterparty));
-    }
-    if (party?.kind === 'new') list.unshift({ value: NEW_PREFIX + party.name, label: party.name, hint: 'New person' });
-    return list;
-  }, [people, party]);
-
   const settlement = isSettlementType(entryType);
   const partyNet = party?.kind === 'existing' ? party.counterparty.netPosition : 0;
   const warning = party ? settlementWarning(entryType, Number(amount), partyNet, selectionName(party)) : null;
-
-  const pickParty = (value: string) => {
-    if (value.startsWith(NEW_PREFIX)) return;
-    const existing = people.find((p) => p.id === value);
-    if (existing) setParty({ kind: 'existing', counterparty: existing });
-    setErrors((e) => ({ ...e, party: undefined }));
-  };
 
   const submit = async () => {
     const problem = lendingEntryProblem(party, amount);
@@ -158,23 +130,12 @@ export function AddLendingDialog({
               void submit();
             }}
           >
-            <Select
-              label="Person"
-              placeholder="Pick or type a name"
-              searchable
-              searchPlaceholder="Type a name"
-              searchValue={search}
-              onSearchChange={setSearch}
-              filter="none"
-              options={partyOptions}
-              value={party ? (party.kind === 'new' ? NEW_PREFIX + party.name : party.counterparty.id) : undefined}
-              onValueChange={(v) => pickParty(v as string)}
-              onCreate={(name) => {
-                setParty({ kind: 'new', name });
+            <PersonSelect
+              value={party}
+              onChange={(next) => {
+                setParty(next);
                 setErrors((e) => ({ ...e, party: undefined }));
               }}
-              createLabel={(name) => `Add "${name}"`}
-              emptyText={() => 'No people yet. Type a name to add one.'}
               error={errors.party}
             />
             <Select

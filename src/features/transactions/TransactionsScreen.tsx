@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import type { Transaction } from '@/lib/transaction.types';
@@ -7,13 +8,12 @@ import type { Transaction } from '@/lib/transaction.types';
 import { TransactionDetailPanel } from './detail/TransactionDetailPanel';
 import { TransactionFormDialog } from './form/TransactionFormDialog';
 import { defaultAccountId } from './form/transactionFormModel';
+import { LinkTransactionsDialog } from './link/LinkTransactionsDialog';
 import { TransactionsView, type TransactionsViewProps } from './list/TransactionsView';
 
 export interface TransactionsScreenProps extends Omit<TransactionsViewProps, 'onAdd' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
-  /** "Link to…" on the detail (piece 4); the button is hidden until it is wired. */
-  onLink?: (transaction: Transaction) => void;
   /** "Review" on the detail (piece 6); the button is hidden until it is wired. */
   onReview?: (transaction: Transaction) => void;
 }
@@ -21,9 +21,11 @@ export interface TransactionsScreenProps extends Omit<TransactionsViewProps, 'on
 type FormState = { kind: 'add' } | { kind: 'edit'; transaction: Transaction; focus?: 'categories' } | null;
 
 /** /ds/transactions: the list with its detail panel and the Add / Edit dialog, all opened from state (the address never changes). */
-export function TransactionsScreen({ transactions, onLink, onReview, ...view }: TransactionsScreenProps) {
+export function TransactionsScreen({ transactions, onReview, ...view }: TransactionsScreenProps) {
   const [detailId, setDetailId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<FormState>(null);
+  const [linking, setLinking] = React.useState<Transaction | null>(null);
+  const router = useRouter();
 
   const editCategories = (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
@@ -48,9 +50,17 @@ export function TransactionsScreen({ transactions, onLink, onReview, ...view }: 
         onClose={() => setDetailId(null)}
         onEdit={(transaction) => setForm({ kind: 'edit', transaction })}
         onDeleted={() => setDetailId(null)}
-        onLink={onLink}
+        onLink={setLinking}
         onReview={onReview}
       />
+      {linking ? (
+        <LinkTransactionsDialog
+          key={linking.id}
+          transactions={[linking]}
+          onClose={() => setLinking(null)}
+          onLinked={() => router.refresh()}
+        />
+      ) : null}
       {form ? (
         <TransactionFormDialog
           key={form.kind === 'edit' ? form.transaction.id : 'add'}

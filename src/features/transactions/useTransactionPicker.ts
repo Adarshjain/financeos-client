@@ -35,6 +35,8 @@ interface UseTransactionPickerProps {
    *  interim + special payout paid together). Anything referenced by another
    *  family is off-limits. Ignored when `excludeAnyObligationRef` is set. */
   shareableKind?: 'LENDING' | 'DIVIDEND';
+  /** Extra rule a row must pass to be offered (keep the function stable, e.g. `useCallback`). */
+  accept?: (t: PickerTransaction) => boolean;
   /** Only fetch/debounce while the search UI is actually visible. */
   active: boolean;
 }
@@ -47,6 +49,7 @@ export function useTransactionPicker({
   excludeIds,
   excludeAnyObligationRef = false,
   shareableKind = 'LENDING',
+  accept,
   active,
 }: UseTransactionPickerProps) {
   const [search, setSearch] = React.useState('');
@@ -140,6 +143,7 @@ export function useTransactionPicker({
     const excludeSet = new Set(excludeIds ?? []);
     const filtered = results.filter((t) => {
       if (excludeSet.has(t.id)) return false;
+      if (accept && !accept(t)) return false;
       if (t.links && t.links.length > 0) return false;
       if (excludeAnyObligationRef) {
         // Loan links are exclusive — ANY obligation ref (loan or lending)
@@ -170,7 +174,7 @@ export function useTransactionPicker({
       }
       return b.date.localeCompare(a.date);
     });
-  }, [results, excludeIds, suggestAmount, suggestDate, excludeAnyObligationRef, shareableKind]);
+  }, [results, excludeIds, accept, suggestAmount, suggestDate, excludeAnyObligationRef, shareableKind]);
 
   // True from opening (or typing) until the answer for the current search and page is in.
   const pending = active && settled !== `${searchKey}|${page}`;

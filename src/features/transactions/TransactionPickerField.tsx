@@ -8,7 +8,7 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { pickerEmptyHint, pickerListItem, type PickerSummaryLike, sharedNote } from './pickerModel';
-import { useTransactionPicker } from './useTransactionPicker';
+import { type PickerTransaction, useTransactionPicker } from './useTransactionPicker';
 
 export interface TransactionPickerFieldProps {
   label?: string;
@@ -27,6 +27,8 @@ export interface TransactionPickerFieldProps {
   suggestAmount?: number | null;
   suggestDate?: string | null;
   excludeIds?: string[];
+  /** Extra rule a row must pass to be offered (keep the function stable, e.g. `useCallback`). */
+  accept?: (t: PickerTransaction) => boolean;
   disabled?: boolean;
   error?: string;
 }
@@ -50,6 +52,7 @@ export function TransactionPickerField({
   suggestAmount,
   suggestDate,
   excludeIds,
+  accept,
   disabled,
   error,
 }: TransactionPickerFieldProps) {
@@ -62,6 +65,7 @@ export function TransactionPickerField({
     excludeIds: value ? [...(excludeIds ?? []), value.id] : excludeIds,
     excludeAnyObligationRef,
     shareableKind,
+    accept,
     active: !disabled,
   });
 

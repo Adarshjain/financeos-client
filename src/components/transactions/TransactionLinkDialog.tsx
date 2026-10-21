@@ -13,15 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useDividendLink } from '@/features/transactions/link/useDividendLink';
+import { useLoanPaymentLink } from '@/features/transactions/link/useLoanPaymentLink';
+import { useRecordLending } from '@/features/transactions/link/useRecordLending';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { LinkDialogBody } from './link-dialog/LinkDialogBody';
 import { LinkTypeSelector } from './link-dialog/LinkTypeSelector';
-import { useDividendLink } from './link-dialog/useDividendLink';
-import { useLoanPaymentLink } from './link-dialog/useLoanPaymentLink';
 import { useTransactionLink } from './link-dialog/useTransactionLink';
-import { useRecordLending } from './record-lending/useRecordLending';
 
 const EMPTY_TXN_ARRAY: Transaction[] = [];
 

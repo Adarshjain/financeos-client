@@ -1,15 +1,15 @@
 'use client';
 
+import type { UseDividendLinkResult } from '@/features/transactions/link/useDividendLink';
+import type { UseLoanPaymentLinkResult } from '@/features/transactions/link/useLoanPaymentLink';
+import type { UseRecordLendingResult } from '@/features/transactions/link/useRecordLending';
 import type { Account } from '@/lib/account.types';
 
-import type { UseRecordLendingResult } from '../record-lending/useRecordLending';
 import { CandidateSearchList } from './CandidateSearchList';
 import { DividendLinkBody } from './DividendLinkBody';
 import { LendingLinkBody } from './LendingLinkBody';
 import { LoanPaymentLinkBody } from './LoanPaymentLinkBody';
 import { SelectedMembersList } from './SelectedMembersList';
-import type { UseDividendLinkResult } from './useDividendLink';
-import type { UseLoanPaymentLinkResult } from './useLoanPaymentLink';
 import type { UseTransactionLinkResult } from './useTransactionLink';
 
 interface LinkDialogBodyProps {
