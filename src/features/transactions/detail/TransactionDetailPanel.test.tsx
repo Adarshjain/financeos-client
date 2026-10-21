@@ -194,11 +194,16 @@ describe('TransactionDetailPanel', () => {
       expect(screen.queryByRole('button', { name: 'Review' })).not.toBeInTheDocument();
       reviewed.unmount();
 
-      renderWithQuery(<TransactionDetailPanel {...props({ onLink, onReview, pageTransactions: [txn({ reviewType: 'NEEDS_REVIEW' })] })} />);
+      renderWithQuery(<TransactionDetailPanel {...props({ onLink, onReview, pageTransactions: [txn({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] })] })} />);
       fireEvent.click(screen.getByRole('button', { name: 'Review' }));
       expect(onReview).toHaveBeenCalled();
       fireEvent.click(screen.getByRole('button', { name: 'Link to…' }));
       expect(onLink).toHaveBeenCalled();
+    });
+
+    it('hides Review on a Needs review transaction with no reason: nothing to clear', () => {
+      renderWithQuery(<TransactionDetailPanel {...props({ onReview: vi.fn(), pageTransactions: [txn({ reviewType: 'NEEDS_REVIEW' })] })} />);
+      expect(screen.queryByRole('button', { name: 'Review' })).not.toBeInTheDocument();
     });
   });
 

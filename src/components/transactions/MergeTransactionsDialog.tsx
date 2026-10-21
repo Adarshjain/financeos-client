@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {mergedMessage} from '@/features/transactions/bulk/bulkModel';
+import {computeDefaultKeepId, mergeChecks, mergeWarning} from '@/features/transactions/bulk/mergeModel';
 import {REVIEW_REASON_META, reviewReasonLabel} from '@/features/transactions/catalog';
 import type {Account} from '@/lib/account.types';
 import {api} from '@/lib/api/client';
@@ -34,21 +36,6 @@ interface MergeTransactionsDialogProps {
   onSuccess: () => void;
 }
 
-function getSourcePriorityScore(source: TransactionSource): number {
-  switch (source) {
-    case 'gmail_statement':
-      return 4;
-    case 'file_upload':
-      return 3;
-    case 'gmail_transaction_alert':
-      return 2;
-    case 'manual':
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 function getSourceLabel(source: TransactionSource): string {
   switch (source) {
     case 'gmail_statement':
@@ -62,18 +49,6 @@ function getSourceLabel(source: TransactionSource): string {
     default:
       return source;
   }
-}
-
-function computeDefaultKeepId(tx1: Transaction, tx2: Transaction): string {
-  const score1 = getSourcePriorityScore(tx1.source);
-  const score2 = getSourcePriorityScore(tx2.source);
-
-  if (score1 > score2) return tx1.id;
-  if (score2 > score1) return tx2.id;
-
-  const time1 = new Date(tx1.createdAt || tx1.date).getTime();
-  const time2 = new Date(tx2.createdAt || tx2.date).getTime();
-  return time1 <= time2 ? tx1.id : tx2.id;
 }
 
 export function MergeTransactionsDialog({
@@ -93,14 +68,7 @@ export function MergeTransactionsDialog({
       return data! as MergeTransactionsResponse;
     },
     onSuccess: (data) => {
-      const remaining = data?.remainingReasons ?? [];
-      if (remaining.length > 0) {
-        toast.success(
-          `Transactions merged. The kept transaction still needs review: ${remaining.map(reviewReasonLabel).join(', ')}`
-        );
-      } else {
-        toast.success('Transactions merged and resolved');
-      }
+      toast.success(mergedMessage((data?.remainingReasons ?? []).map(reviewReasonLabel)));
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       void invalidateMoneyQueries(queryClient);
       onSuccess();
@@ -115,15 +83,13 @@ export function MergeTransactionsDialog({
   if (!tx1 || !tx2) return null;
 
   const deleteId = keepId === tx1.id ? tx2.id : tx1.id;
-  const isDifferentAccount = tx1.accountId !== tx2.accountId;
-  // Amounts are signed (debit negative, credit positive), so opposite signs mean
-  // opposite directions — usually a payment/reversal pair, not a duplicate.
-  const isDirectionMismatch = Math.sign(tx1.amount) !== Math.sign(tx2.amount);
-  const isAmountMismatch = Math.abs(tx1.amount - tx2.amount) > 0.001;
+  const checks = mergeChecks(tx1, tx2);
+  const isDifferentAccount = checks.differentAccount;
 
   const getAccountName = (accountId: string) => {
     return accounts.find((a) => a.id === accountId)?.name || 'Unknown Account';
   };
+  const warning = mergeWarning(checks, [getAccountName(tx1.accountId), getAccountName(tx2.accountId)]);
 
   const handleMerge = () => {
     if (isDifferentAccount || !keepId || !deleteId) return;
@@ -237,28 +203,22 @@ export function MergeTransactionsDialog({
 
           <DialogBody className="space-y-4">
             {/* Warning Banners */}
-            {isDifferentAccount ? (
+            {warning ? (
                 <div
-                    className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl flex items-center gap-2.5 text-xs text-rose-800 dark:text-rose-300">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"/>
+                    className={cn(
+                        'p-3 border rounded-xl flex items-center gap-2.5 text-xs',
+                        warning.kind === 'blocked'
+                            ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300'
+                            : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-300'
+                    )}>
+                  {warning.kind === 'amount' ? (
+                      <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
+                  ) : (
+                      <AlertTriangle
+                          className={cn('h-4 w-4 shrink-0', warning.kind === 'blocked' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400')}/>
+                  )}
                   <span>
-                <strong>Cross-Account Merge Blocked:</strong> These transactions belong to different accounts ({getAccountName(tx1.accountId)} vs {getAccountName(tx2.accountId)}). Cross-account merging is not allowed.
-              </span>
-                </div>
-            ) : isDirectionMismatch ? (
-                <div
-                    className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
-                  <span>
-                <strong>Direction Mismatch:</strong> One transaction is a debit and the other a credit. These are usually a payment and its reversal, not duplicates — consider linking them instead of merging.
-              </span>
-                </div>
-            ) : isAmountMismatch ? (
-                <div
-                    className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
-                  <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
-                  <span>
-                <strong>Amount Mismatch:</strong> Amounts differ between these transactions. Please confirm they represent the same real-world event before merging.
+                <strong>{warning.title}:</strong> {warning.text}
               </span>
                 </div>
             ) : null}

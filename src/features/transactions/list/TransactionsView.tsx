@@ -53,6 +53,12 @@ export interface TransactionsViewProps {
   onEditCategories?: (id: string) => void;
   /** The detail side panel is open: on desktop the list leaves room for it instead of sitting underneath. */
   detailOpen?: boolean;
+  /** Selection (piece 5): the ticked ids, the change, and what sits above the filters while rows are selected. */
+  selection?: string[];
+  onSelectionChange?: (ids: string[]) => void;
+  selectionHeader?: React.ReactNode;
+  /** Wraps each row, for the phone swipe (piece 6). */
+  wrapRow?: (row: TransactionListRow, node: React.ReactNode) => React.ReactNode;
 }
 
 const noop = () => {};
@@ -73,6 +79,10 @@ export function TransactionsView({
   openId,
   onEditCategories,
   detailOpen = false,
+  selection,
+  onSelectionChange,
+  selectionHeader,
+  wrapRow,
 }: TransactionsViewProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -107,7 +117,7 @@ export function TransactionsView({
       <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
         <div className="flex">
         <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
-          <Tabs items={tabs} value="all" />
+          {selectionHeader ?? <Tabs items={tabs} value="all" />}
           <div className="flex flex-col gap-space-12 desk:flex-row desk:flex-wrap desk:items-center">
             <TextField
               type="search"
@@ -143,6 +153,9 @@ export function TransactionsView({
               onOpenDetail={onOpenDetail}
               openId={openId}
               onEditCategories={onEditCategories}
+              selection={selection}
+              onSelectionChange={onSelectionChange}
+              wrapRow={wrapRow}
             />
           ) : (
             <TransactionsLoadError reference={list.reference} />
