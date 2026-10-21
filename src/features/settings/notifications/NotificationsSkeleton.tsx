@@ -22,10 +22,12 @@ export function NotificationsSkeleton() {
   return (
     <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16" data-testid="notifications-skeleton">
       <div className="desk:col-span-7 flex flex-col gap-space-12 desk:gap-space-16">
-        <SkeletonCard rows={2} />
-        <SkeletonCard rows={6} />
+        <SkeletonCard rows={4} />
+        <SkeletonCard rows={7} />
+        <SkeletonCard rows={3} />
       </div>
       <div className="desk:col-span-5 flex flex-col gap-space-12 desk:gap-space-16">
+        <SkeletonCard rows={3} />
         <SkeletonCard rows={2} />
         <SkeletonCard rows={3} />
       </div>

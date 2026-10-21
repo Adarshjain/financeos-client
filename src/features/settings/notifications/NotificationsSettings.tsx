@@ -11,11 +11,12 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
-import { DevicesCard, PushWarning } from './DevicesCard';
+import { BillsCard } from './BillsCard';
 import { KindsCard } from './KindsCard';
 import { MutedCard } from './MutedCard';
+import { KIND_GROUPS } from './notificationKinds';
 import { NotificationsSkeleton } from './NotificationsSkeleton';
-import { RemindCard } from './RemindCard';
+import { PushCard } from './PushCard';
 import { useNotificationSettings } from './useNotificationSettings';
 import { useThisBrowser } from './useThisBrowser';
 
@@ -24,15 +25,18 @@ const LOANS_PAGE = { status: 'active' as const, page: 0, size: 50 };
 
 function Loaded({ settings, cards, loans }: { settings: NotificationSettingsResponse; cards: Account[]; loans: LoanResponse[] }) {
   const browser = useThisBrowser(settings);
+  const [statements, ...rest] = KIND_GROUPS;
   return (
     <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
       <div className="desk:col-span-7 flex flex-col gap-space-12 desk:gap-space-16">
-        <RemindCard settings={settings} />
-        <KindsCard settings={settings} />
+        <PushCard settings={settings} browser={browser} />
+        <BillsCard settings={settings} />
+        <KindsCard settings={settings} group={statements} />
       </div>
       <div className="desk:col-span-5 flex flex-col gap-space-12 desk:gap-space-16">
-        <PushWarning settings={settings} browser={browser} />
-        <DevicesCard settings={settings} browser={browser} />
+        {rest.map((group) => (
+          <KindsCard key={group.title} settings={settings} group={group} />
+        ))}
         <MutedCard settings={settings} cards={cards} loans={loans} />
       </div>
     </div>

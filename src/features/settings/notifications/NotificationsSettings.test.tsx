@@ -7,7 +7,7 @@ import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
-import { KIND_BANDS } from './notificationKinds';
+import { ALL_KIND_KEYS, BILLS_KINDS, KIND_GROUPS } from './notificationKinds';
 import { KIND_OPTIONS } from './notificationSettings.helpers';
 import { NotificationsSettings } from './NotificationsSettings';
 
@@ -220,7 +220,7 @@ describe('Notifications tab: this browser and devices', () => {
   });
 });
 
-describe('Notifications tab: remind me', () => {
+describe('Notifications tab: bills and EMIs', () => {
   it('shows stored offsets, including extra ones', async () => {
     render(settings({ reminderOffsets: [10, 0] }));
     fireEvent.click(await screen.findByRole('button', { name: 'Days before due' }));
@@ -256,7 +256,7 @@ describe('Notifications tab: remind me', () => {
   });
 });
 
-describe('Notifications tab: what to tell me about', () => {
+describe('Notifications tab: kinds and grouping', () => {
   it('saves the master switch', async () => {
     echoPut();
     render();
@@ -264,22 +264,44 @@ describe('Notifications tab: what to tell me about', () => {
     await waitFor(() => expect(api.PUT).toHaveBeenCalledWith('/api/v1/notifications/settings', { body: { pushEnabled: false } }));
   });
 
-  it('has exactly one switch row for every kind today, absent kinds on', async () => {
+  it('has exactly one switch row for every kind, absent kinds on', async () => {
     render();
     await screen.findByLabelText('Push notifications');
-    expect(KIND_BANDS.flatMap((b) => b.kinds.map((k) => k.key)).sort()).toEqual(KIND_OPTIONS.map((k) => k.key).sort());
-    for (const band of KIND_BANDS) {
-      expect(screen.getByText(band.title)).toBeInTheDocument();
-      for (const kind of band.kinds) {
-        expect(screen.getAllByLabelText(kind.label)).toHaveLength(1);
-      }
+    expect(ALL_KIND_KEYS.sort()).toEqual(KIND_OPTIONS.map((k) => k.key).sort());
+    for (const kind of [...BILLS_KINDS, ...KIND_GROUPS.flatMap((g) => g.kinds)]) {
+      expect(screen.getAllByLabelText(kind.label)).toHaveLength(1);
     }
     expect(screen.getByLabelText('Emails needing attention')).toHaveAttribute('aria-checked', 'true');
   });
 
+  /** The card root: title -> title block -> header -> card. */
+  const cardOf = (title: string) => screen.getByText(title).parentElement!.parentElement!.parentElement!;
+
+  it('groups each kind under its card title, with the master switch in Push', async () => {
+    render();
+    await screen.findByLabelText('Push notifications');
+    const groups: Record<string, string[]> = {
+      'Bills & EMIs': ['Bill due', 'Bill overdue', 'EMI due', 'EMI overdue', 'Money due back'],
+      Statements: ['Statement arrived', 'Statement missing', 'Unreviewed after a statement'],
+      'Gmail & jobs': ['Mailbox needs reconnecting', 'Emails needing attention', 'Jobs finished or failed'],
+      Rewards: ['Milestone close or reached', 'Cap reached'],
+    };
+    for (const [title, labels] of Object.entries(groups)) {
+      const card = cardOf(title);
+      for (const label of labels) expect(within(card).getByLabelText(label)).toBeInTheDocument();
+    }
+    const push = cardOf('Push');
+    expect(within(push).getByLabelText('Push notifications')).toBeInTheDocument();
+    expect(within(push).getByText('Pushes only. The bell always shows everything.')).toBeInTheDocument();
+    const bills = cardOf('Bills & EMIs');
+    expect(within(bills).getByRole('button', { name: 'Days before due' })).toBeInTheDocument();
+    expect(within(bills).getByRole('button', { name: 'Send at' })).toBeInTheDocument();
+    expect(screen.queryByText('What to tell me about')).not.toBeInTheDocument();
+  });
+
   it('shows a kind switched off as off', async () => {
     render(settings({ kinds: { STATEMENT_REVIEW_DIGEST: false } }));
-    expect(await screen.findByLabelText('Unreconciled after a statement')).toHaveAttribute('aria-checked', 'false');
+    expect(await screen.findByLabelText('Unreviewed after a statement')).toHaveAttribute('aria-checked', 'false');
   });
 
   it('saves a kind switch', async () => {
