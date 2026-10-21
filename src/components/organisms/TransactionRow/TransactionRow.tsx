@@ -68,6 +68,8 @@ export interface TransactionRowProps
   disabled?: boolean;
   /** Dimmed like disabled but still interactive (e.g. excluded: it still opens and selects) */
   muted?: boolean;
+  /** The row open in the detail pane: the `brand-tint` ground, like DataTable's highlighted row */
+  highlighted?: boolean;
   /** Whether row is selectable */
   selectable?: boolean;
   /** Default selected state (uncontrolled) */
@@ -116,6 +118,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       tone = 'default',
       disabled = false,
       muted = false,
+      highlighted = false,
       selectable,
       defaultSelected,
       selected: selectedProp,
@@ -313,7 +316,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           isWarning && 'bg-attention-tint desk:border-l-attention',
           disabled && 'opacity-60 pointer-events-none',
           muted && !disabled && 'opacity-60',
-          !selected && !isWarning && 'bg-surface hover:bg-hover active-self:bg-hover',
+          highlighted && !selected && !isWarning && 'bg-brand-tint',
+          !selected && !isWarning && !highlighted && 'bg-surface hover:bg-hover active-self:bg-hover',
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
           className,
         )}

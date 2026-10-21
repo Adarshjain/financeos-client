@@ -104,6 +104,11 @@ describe('TransactionsView', () => {
     expect(lastUrl()).toBe('/ds/transactions?period=all_time');
   });
 
+  it('offers no remove on the All time chip or an unset Amount chip', () => {
+    setup({ query: { ...DEFAULT_QUERY, period: { kind: 'preset', id: 'all_time' } } });
+    expect(screen.queryByRole('button', { name: 'Remove filter' })).not.toBeInTheDocument();
+  });
+
   it('writes a picked sort and a Type choice', () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: 'Newest' }));

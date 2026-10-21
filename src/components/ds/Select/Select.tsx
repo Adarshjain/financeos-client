@@ -752,7 +752,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         label={label}
         helper={helper}
         error={error}
-        className={cn(trigger ? 'inline-block' : 'w-full', className)}
+        className={cn(trigger ? 'inline-block w-auto' : 'w-full', className)}
       >
         {name ? (
           Array.isArray(currentValue) ? (

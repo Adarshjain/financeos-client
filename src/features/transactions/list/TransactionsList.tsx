@@ -156,6 +156,7 @@ export function TransactionsList({
               onMoreCategoriesClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
               tone={r.watching ? 'warning' : 'default'}
               muted={r.excluded}
+              highlighted={rowProps.highlighted}
               selectable={rowProps.selectable}
               selected={rowProps.selected}
               onSelectedChange={rowProps.onSelectedChange}
