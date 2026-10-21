@@ -1,0 +1,99 @@
+'use client';
+
+import React from 'react';
+
+import { DateField, ListRow, Radio, Select, Skeleton, Text, TextField } from '@/components/ds';
+import { formatDayMonth } from '@/features/accounts/list/accountsList';
+import { differenceWords } from '@/features/loans/detail/payModel';
+import { daysBetween, plainAmount } from '@/features/loans/loanFormat';
+import { todayInAppZone } from '@/lib/date-range';
+import type { InstallmentDto } from '@/lib/loan.types';
+import { sanitizeDecimalInput } from '@/lib/utils';
+
+import type { UseLoanPaymentLinkResult } from './useLoanPaymentLink';
+
+/** "due 5 Oct · 8 days overdue", or just the due date while it is not late. */
+export function installmentSubtitle(i: InstallmentDto, today: string): string {
+  const due = `due ${formatDayMonth(i.dueDate)}`;
+  if (i.status !== 'overdue') return due;
+  const late = daysBetween(i.dueDate, today);
+  return late && late > 0 ? `${due} · ${late} day${late === 1 ? '' : 's'} overdue` : due;
+}
+
+/** Loan payment: pick the loan and one of its unpaid installments, and say what was paid and when. */
+export function LoanPaymentLinkBody({ loanPayment }: { loanPayment: UseLoanPaymentLinkResult }) {
+  const today = todayInAppZone();
+  const { loans, loanId, installments, installmentSeq } = loanPayment;
+  const selected = installments.find((i) => i.seq === installmentSeq);
+  const difference =
+    selected && loanPayment.amount.trim() ? differenceWords(Number(loanPayment.amount.trim()), selected.emi) : null;
+
+  return (
+    <>
+      <Select
+        label="Loan"
+        placeholder="Select loan"
+        loading={loanPayment.loadingLoans}
+        value={loanId || ''}
+        onValueChange={(v) => loanPayment.setLoanId(v as string)}
+        options={loans.map((loan) => ({
+          value: loan.id,
+          label: loan.name,
+          hint: loan.lender || undefined,
+        }))}
+      />
+      {loanId ? (
+        loanPayment.loadingSchedule ? (
+          <Skeleton width="60%" height={14} />
+        ) : installments.length === 0 ? (
+          <Text variant="body" tone="ink-3" as="p">
+            No unpaid installments on this loan.
+          </Text>
+        ) : (
+          <div className="flex flex-col">
+            <Text variant="label" tone="ink-3" as="div">
+              Unpaid installments
+            </Text>
+            <div role="radiogroup" aria-label="Unpaid installments" className="flex flex-col">
+              {installments.map((i) => (
+                <ListRow
+                  key={i.seq}
+                  role="radio"
+                  aria-checked={installmentSeq === i.seq}
+                  aria-label={`EMI #${i.seq}`}
+                  className="px-0"
+                  wrap
+                  onClick={() => loanPayment.setInstallmentSeq(i.seq)}
+                  leading={<Radio checked={installmentSeq === i.seq} tabIndex={-1} aria-hidden="true" />}
+                  title={`EMI #${i.seq}`}
+                  subtitle={installmentSubtitle(i, today)}
+                  trailing={
+                    <Text variant="body-strong" as="span">
+                      {`₹${plainAmount(i.emi)}`}
+                    </Text>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        )
+      ) : null}
+      <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+        <TextField
+          label="Amount paid"
+          prefix="₹"
+          inputMode="decimal"
+          value={loanPayment.amount}
+          onValueChange={(v) => loanPayment.setAmount(sanitizeDecimalInput(v))}
+          helper={difference ?? undefined}
+        />
+        <DateField
+          label="Paid on"
+          today={today}
+          value={loanPayment.paymentDate}
+          onValueChange={(v) => loanPayment.setPaymentDate(typeof v === 'string' ? v : '')}
+        />
+      </div>
+    </>
+  );
+}

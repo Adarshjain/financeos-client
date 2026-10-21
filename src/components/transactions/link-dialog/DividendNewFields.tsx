@@ -10,9 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { UseDividendLinkResult } from '@/features/transactions/link/useDividendLink';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
-
-import type { UseDividendLinkResult } from './useDividendLink';
 
 const LABEL = 'text-xs font-semibold text-slate-700 dark:text-slate-300';
 

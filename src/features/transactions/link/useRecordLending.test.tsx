@@ -17,7 +17,7 @@ import type { CounterpartyResponse, LendingResponse } from '@/lib/lending.types'
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { useRecordLending } from '../useRecordLending';
+import { useRecordLending } from './useRecordLending';
 
 const debitTx: Transaction = {
   id: 'tx-1',

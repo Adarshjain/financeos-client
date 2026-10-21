@@ -3,14 +3,14 @@
 import { ReceiptStatusBadge } from '@/app/(legacy)/(protected)/investments/dividend-receipts/ReceiptStatusBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { expectedNet } from '@/features/transactions/link/dividendLinkHelpers';
+import type { UseDividendLinkResult } from '@/features/transactions/link/useDividendLink';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 import type { DividendReceiptStatus } from '@/lib/types';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
-import { expectedNet } from './dividendLinkHelpers';
 import { DividendNewFields } from './DividendNewFields';
-import type { UseDividendLinkResult } from './useDividendLink';
 
 interface DividendLinkBodyProps {
   transaction: Transaction;

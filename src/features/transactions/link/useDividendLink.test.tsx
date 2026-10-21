@@ -15,8 +15,8 @@ import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { type DividendRow } from '../dividendLinkHelpers';
-import { useDividendLink } from '../useDividendLink';
+import { type DividendRow } from './dividendLinkHelpers';
+import { useDividendLink } from './useDividendLink';
 
 type Mock = ReturnType<typeof vi.fn>;
 

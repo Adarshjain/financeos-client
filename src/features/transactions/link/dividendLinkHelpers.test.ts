@@ -7,7 +7,7 @@ import {
   impliedTds,
   mergeDividends,
   pickBestDividend,
-} from '../dividendLinkHelpers';
+} from './dividendLinkHelpers';
 
 const div = (o: Partial<DividendRow> & { id: string }): DividendRow =>
   ({

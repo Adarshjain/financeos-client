@@ -141,10 +141,9 @@ describe('TransactionsScreen', () => {
     expect(spacer()).not.toBeNull();
   });
 
-  it('shows no Link to… or Review on the detail until they are wired', () => {
+  it('shows no Review on the detail until it is wired', () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    expect(screen.queryByRole('button', { name: 'Link to…' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Review' })).toBeNull();
   });
 });

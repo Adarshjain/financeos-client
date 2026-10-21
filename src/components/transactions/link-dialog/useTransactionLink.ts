@@ -1,22 +1,12 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { createTransactionLink } from '@/features/transactions/detail/transactionDetailApi';
+import { buildLinkRequest, disabledLinkKinds } from '@/features/transactions/link/linkModel';
+import { useCreateTransactionLink } from '@/features/transactions/link/useCreateTransactionLink';
 import { Account } from '@/lib/account.types';
-import { invalidateMoneyQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-import { toastError } from '@/lib/toastError';
-import {
-  CreateTransactionLinkRequest,
-  isRecordKind,
-  LinkKind,
-  LinkType,
-  MemberRef,
-  Transaction,
-} from '@/lib/transaction.types';
+import { isRecordKind, LinkKind, LinkType, Transaction } from '@/lib/transaction.types';
 
 import { useLinkCandidates } from './useLinkCandidates';
 
@@ -75,32 +65,14 @@ export function useTransactionLink({
     initialTransaction ??
     (initialSelectedTransactions.length === 1 ? initialSelectedTransactions[0] : undefined);
 
-  const disabledKinds = React.useMemo<Partial<Record<LinkKind, string>>>(() => {
-    const isBulk = !initialTransaction && initialSelectedTransactions.length > 1;
-    if (isBulk) {
-      const reason = 'Select a single transaction to record a lending, loan payment or dividend';
-      return { LENDING: reason, LOAN_PAYMENT: reason, DIVIDEND: reason };
-    }
-    if (!subjectTransaction) return {};
-
-    const result: Partial<Record<LinkKind, string>> = {};
-    const refs = subjectTransaction.obligationRefs ?? [];
-
-    if (refs.some((r) => r.kind !== 'LENDING')) {
-      result.LENDING = 'Already linked to a loan or dividend record';
-    }
-    if (refs.length > 0) {
-      result.LOAN_PAYMENT = 'Already linked to a ledger/loan record';
-    } else if (subjectTransaction.amount >= 0) {
-      result.LOAN_PAYMENT = 'Loan payments must be money-out (debit) transactions';
-    }
-    if (refs.length > 0) {
-      result.DIVIDEND = 'Already linked to a ledger/loan/dividend record';
-    } else if (subjectTransaction.amount < 0) {
-      result.DIVIDEND = 'Dividends must be money-in (credit) transactions';
-    }
-    return result;
-  }, [initialTransaction, initialSelectedTransactions, subjectTransaction]);
+  const disabledKinds = React.useMemo<Partial<Record<LinkKind, string>>>(
+    () =>
+      disabledLinkKinds(
+        subjectTransaction,
+        initialTransaction ? 1 : initialSelectedTransactions.length,
+      ),
+    [initialTransaction, initialSelectedTransactions, subjectTransaction]
+  );
 
   const getAccount = React.useCallback(
     (accountId: string) => accounts.find((a) => a.id === accountId),
@@ -116,20 +88,9 @@ export function useTransactionLink({
     resetCandidateSearch,
   } = useLinkCandidates({ open, linkType, selectedTransactions, anchorId, getAccount });
 
-  const queryClient = useQueryClient();
-  const createLinkMutation = useMutation({
-    mutationFn: (body: CreateTransactionLinkRequest) => createTransactionLink(body),
-    onSuccess: () => {
-      toast.success('Transactions linked successfully');
-      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      // A TRANSFER/REVERSAL link moves the emergency fund's outflow and the spending calendar.
-      void invalidateMoneyQueries(queryClient);
-      onOpenChange(false);
-      onSuccess?.();
-    },
-    onError: (err: unknown) => {
-      toastError(err, 'An unexpected error occurred');
-    },
+  const createLinkMutation = useCreateTransactionLink(() => {
+    onOpenChange(false);
+    onSuccess?.();
   });
   const submitting = createLinkMutation.isPending;
 
@@ -188,21 +149,13 @@ export function useTransactionLink({
       return;
     }
 
-    const members: MemberRef[] = selectedTransactions.map((t) => ({
-      transactionId: t.id,
-      isAnchor: t.id === anchorId,
-    }));
-
-    const payload: CreateTransactionLinkRequest = {
+    const payload = buildLinkRequest({
       type: linkType,
-      members,
-    };
-    if (note.trim()) {
-      payload.note = note.trim();
-    }
-    if (linkType === 'REFUND') {
-      payload.alignRefundCategories = alignRefundCategories;
-    }
+      members: selectedTransactions,
+      anchorId,
+      note,
+      alignRefundCategories,
+    });
 
     createLinkMutation.mutate(payload);
   };
