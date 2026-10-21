@@ -7363,6 +7363,7 @@ export interface components {
             isTransactionUnderMonitoring?: boolean;
             mcc?: string;
             monitoringReason?: string;
+            reviewReasons?: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             rewardDetails?: components["schemas"]["RewardDetailsRequest"];
