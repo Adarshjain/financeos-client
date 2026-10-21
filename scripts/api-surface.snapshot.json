@@ -13,6 +13,7 @@
     "fnoApi",
     "gmailApi",
     "importsApi",
+    "inboxApi",
     "ingestionApi",
     "instrumentsApi",
     "investmentsApi",
@@ -21,6 +22,7 @@
     "llmKeysApi",
     "llmRoutingApi",
     "loansApi",
+    "notificationFeedApi",
     "notificationsApi",
     "obligationsApi",
     "reportsApi",
@@ -28,8 +30,7 @@
     "rulesApi",
     "statementsApi",
     "transactionLinksApi",
-    "transactionsApi",
-    "inboxApi"
+    "transactionsApi"
   ],
   "methods": {
     "authApi": [
@@ -99,11 +100,14 @@
       "update"
     ],
     "dashboardsApi": [
+      "builtinData",
+      "builtins",
       "create",
       "delete",
       "get",
       "getById",
       "list",
+      "restoreHome",
       "update"
     ],
     "investmentsApi": [
@@ -147,6 +151,7 @@
       "create",
       "deletePrice",
       "getPriceHistory",
+      "list",
       "resolveInstrument",
       "search",
       "setPrice",
@@ -185,6 +190,8 @@
     ],
     "counterpartiesApi": [
       "create",
+      "get",
+      "ledger",
       "list",
       "remove",
       "update"
@@ -321,6 +328,14 @@
     "billsApi": [
       "list"
     ],
+    "inboxApi": [
+      "list",
+      "summary"
+    ],
+    "notificationFeedApi": [
+      "feed",
+      "summary"
+    ],
     "notificationsApi": [
       "getSettings"
     ],
@@ -339,10 +354,6 @@
       "getTaskGroups",
       "resetRouting",
       "updateRouting"
-    ],
-    "inboxApi": [
-      "list",
-      "summary"
     ]
   }
 }
