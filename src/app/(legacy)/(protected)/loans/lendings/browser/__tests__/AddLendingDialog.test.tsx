@@ -145,7 +145,7 @@ describe('AddLendingDialog (browser)', () => {
       totalBorrowed: 0,
       repaidToYou: 0,
       repaidByYou: 0,
-      entryCount: 0,
+      entryCount: 0, linkedEntryCount: 0,
     };
     const { props, rerender } = renderDialog({
       party: { kind: 'existing', counterparty: rahul },

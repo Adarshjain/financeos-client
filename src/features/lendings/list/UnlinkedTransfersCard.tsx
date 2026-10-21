@@ -6,9 +6,9 @@ import React from 'react';
 import { Badge, Button, Card, ListRow, showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
-import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '../useLendingTransactionLink';
 import { useDeleteLending, useRecordSettlement } from '../useRecordSettlement';
 import type { TransferRow, UnrecordedRow } from './lendingsList';
+import { useTransferLink } from './useTransferLink';
 
 /**
  * Bank transfers that look like ledger entries. Each (entry, candidate) pair is a row with Link. Linking
@@ -19,8 +19,6 @@ import type { TransferRow, UnrecordedRow } from './lendingsList';
 export function UnlinkedTransfersCard({ rows, unrecorded = [] }: { rows: TransferRow[]; unrecorded?: UnrecordedRow[] }) {
   const router = useRouter();
   const onError = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
-  const link = useLinkLendingTransaction({ onError: onError('Failed to link transaction') });
-  const unlink = useUnlinkLendingTransaction({ onError: onError('Failed to unlink transaction') });
   const record = useRecordSettlement({ onError: onError('Failed to record settlement') });
   const deleteEntry = useDeleteLending({ onError: onError('Failed to undo settlement') });
   const [recordingKey, setRecordingKey] = React.useState<string | null>(null);
@@ -32,42 +30,7 @@ export function UnlinkedTransfersCard({ rows, unrecorded = [] }: { rows: Transfe
       else next.delete(key);
       return next;
     });
-  const [linkingKey, setLinkingKey] = React.useState<string | null>(null);
-  const [linked, setLinked] = React.useState<ReadonlySet<string>>(new Set());
-  const mark = (key: string, on: boolean) =>
-    setLinked((prev) => {
-      const next = new Set(prev);
-      if (on) next.add(key);
-      else next.delete(key);
-      return next;
-    });
-
-  // Rows that share an entry or a transaction with a linked row are hidden, so none can re-link it.
-  const hidden = (row: TransferRow) =>
-    !linked.has(row.key) &&
-    rows.some((other) => linked.has(other.key) && (other.lendingId === row.lendingId || other.transactionId === row.transactionId));
-
-  const undo = async (row: TransferRow) => {
-    try {
-      await unlink.mutateAsync(row.lendingId);
-      mark(row.key, false);
-    } catch {
-      // onError already surfaced the toast.
-    }
-  };
-
-  const onLink = async (row: TransferRow) => {
-    setLinkingKey(row.key);
-    try {
-      await link.mutateAsync({ id: row.lendingId, transactionId: row.transactionId });
-      mark(row.key, true);
-      showToast(`Linked to ${row.personName}`, { action: { label: 'Undo', onSelect: () => void undo(row) } });
-    } catch {
-      // onError already surfaced the toast.
-    } finally {
-      setLinkingKey(null);
-    }
-  };
+  const { linkingKey, linked, hidden, onLink } = useTransferLink(rows);
 
   const undoRecord = async (row: UnrecordedRow, entryId: string) => {
     try {

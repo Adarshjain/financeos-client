@@ -91,19 +91,167 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
     });
 
-    test('Lendings: a person row links to the Legacy person page', async ({ page }) => {
+    test('Lendings: a person row links to the Dinero person page', async ({ page }) => {
       const { rahul } = await seedPeople();
       await page.goto('/ds/loans/lendings');
       if (viewport.width >= 1024) {
         await expect(page.getByRole('link', { name: 'Open Rahul Sharma' })).toHaveAttribute(
           'href',
-          `/loans/lendings/${rahul.id}`,
+          `/ds/loans/lendings/${rahul.id}`,
         );
       } else {
         // On phone the whole row opens the person.
         await page.getByText('Rahul Sharma').first().click();
-        await page.waitForURL(`**/loans/lendings/${rahul.id}`);
+        await page.waitForURL(`**/ds/loans/lendings/${rahul.id}`);
       }
+    });
+
+    /** Rahul lent 25,000 and was repaid 10,000: he owes 15,000. */
+    async function seedLedger() {
+      const api = makeApi(currentUser.cookie);
+      const rahul = await createCounterparty(api, { name: 'Rahul Sharma', notes: 'College friend' });
+      await addLending(api, { counterpartyId: rahul.id, direction: 'lent', amount: 25000, entryDate: monthsAgo(3), notes: 'Laptop advance' });
+      await addLending(api, { counterpartyId: rahul.id, direction: 'borrowed', amount: 10000, entryDate: monthsAgo(1), notes: 'Part repayment' });
+      return { api, rahul };
+    }
+
+    const personPath = (id: string) => `/ds/loans/lendings/${id}`;
+
+    test('Person: opening a person from the list shows the ledger with the running balance, outside the tabs', async ({ page }) => {
+      const { rahul } = await seedPeople();
+      await page.goto('/ds/loans/lendings');
+      if (viewport.width >= 1024) await page.getByRole('link', { name: 'Open Rahul Sharma' }).click();
+      else await page.getByText('Rahul Sharma').first().click();
+      await page.waitForURL(`**${personPath(rahul.id)}`);
+
+      await expect(page.getByText('Owes you', { exact: true })).toBeVisible();
+      await expect(page.getByText('₹15,000').first()).toBeVisible();
+      await expect(page.getByText('Running balance · positive means Rahul owes you')).toBeVisible();
+      await expect(page.getByText('Opening ₹0 · lent ₹15,000 · received ₹0 · closing ₹15,000')).toBeVisible();
+      // The Lendings · Loans tabs belong to the two lists, not to a person's page.
+      await expect(page.getByRole('tab', { name: /^(Lendings|Loans)$/ })).toHaveCount(0);
+      await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/ds/loans/lendings');
+    });
+
+    test('Person: entries show Lent, Received and the balance after each', async ({ page }) => {
+      const { rahul } = await seedLedger();
+      await page.goto(personPath(rahul.id));
+
+      await expect(page.getByText('Laptop advance').first()).toBeVisible();
+      await expect(page.getByText('Part repayment').first()).toBeVisible();
+      await expect(page.getByText('Opening ₹0 · lent ₹25,000 · received ₹10,000 · closing ₹15,000')).toBeVisible();
+      if (viewport.width >= 1024) {
+        await expect(page.getByRole('columnheader', { name: 'Balance' })).toBeVisible();
+        const newest = page.getByRole('button').filter({ hasText: 'Part repayment' });
+        await expect(newest).toContainText('+10,000');
+        await expect(newest).toContainText('15,000');
+        const oldest = page.getByRole('button').filter({ hasText: 'Laptop advance' });
+        await expect(oldest).toContainText('25,000');
+      } else {
+        await expect(page.getByText(/^\d+ \w+ · borrowed ₹10,000/)).toBeVisible();
+        await expect(page.getByText(/^\d+ \w+ · lent ₹25,000/)).toBeVisible();
+      }
+    });
+
+    test('Person: the + opens Add ledger entry with this person already picked', async ({ page }) => {
+      const { rahul } = await seedLedger();
+      await page.goto(personPath(rahul.id));
+      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      const dialog = page.getByRole('dialog', { name: 'Add ledger entry' });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole('combobox', { name: /^Person/ })).toContainText('Rahul Sharma');
+      await dialog.getByRole('textbox', { name: /^Amount/ }).fill('700');
+      await dialog.getByRole('button', { name: 'Save entry' }).click();
+      await expect(dialog).not.toBeVisible();
+      await expect(page.getByText('Opening ₹0 · lent ₹25,700 · received ₹10,000 · closing ₹15,700')).toBeVisible();
+      expect(new URL(page.url()).pathname).toBe(personPath(rahul.id));
+    });
+
+    test('Person: Settle up with a picked transaction links it to the entry', async ({ page }) => {
+      const { api, rahul } = await seedLedger();
+      const bank = await createBankAccount(api, { name: 'Settle Bank' });
+      await createTransaction(api, bank.id, { amount: 15000, date: todayString(-1), description: 'UPI from Rahul Sharma' });
+
+      await page.goto(personPath(rahul.id));
+      await page.getByRole('button', { name: 'Settle up' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Settle up with Rahul' });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByText('Balance ₹15,000 in your favour')).toBeVisible();
+
+      await dialog.getByRole('combobox', { name: /^Transaction/ }).click();
+      await page.getByRole('option', { name: /UPI from Rahul Sharma/ }).click();
+      await dialog.getByRole('button', { name: 'Record settlement' }).click();
+
+      await expect(dialog).not.toBeVisible();
+      await expect(page.getByText('Settled', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('Linked', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('Opening ₹0 · lent ₹25,000 · received ₹25,000 · closing ₹0')).toBeVisible();
+
+      const res = await api.GET('/api/v1/counterparties/{id}/ledger', { params: { path: { id: rahul.id } } });
+      const newest = res.data!.entries.content[0];
+      expect(newest.kind).toBe('settlement');
+      expect(newest.transaction?.description).toBe('UPI from Rahul Sharma');
+    });
+
+    test('Person: Export ledger opens from the menu, the share row and ?export=1, and previews the entries', async ({ page }) => {
+      const { rahul } = await seedLedger();
+      const preview = page.getByTestId('ledger-export-preview');
+
+      await page.goto(personPath(rahul.id));
+      await page.getByRole('button', { name: 'More actions' }).click();
+      await page.getByRole('menuitem', { name: 'Export ledger' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Export ledger' });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByTestId('export-selected-count')).toHaveText('2 selected');
+      await expect(preview).toHaveValue(/Laptop advance/);
+      await expect(preview).toHaveValue(/Part repayment/);
+      await dialog.getByRole('button', { name: 'None' }).click();
+      await expect(preview).toHaveValue(/No entries selected/);
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+
+      await page.getByRole('button', { name: 'Export ledger' }).click();
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+
+      await page.goto(`${personPath(rahul.id)}?export=1`);
+      await expect(page.getByRole('dialog', { name: 'Export ledger' })).toBeVisible();
+      await expect(preview).toHaveValue(/Laptop advance/);
+    });
+
+    test('Person: an entry opens in a dialog to edit and deletes after a confirm', async ({ page }) => {
+      const { rahul } = await seedLedger();
+      await page.goto(personPath(rahul.id));
+      await page.getByText('Laptop advance').first().click();
+      const dialog = page.getByRole('dialog', { name: 'Edit ledger entry' });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('textbox', { name: /^Amount/ }).fill('26000');
+      await dialog.getByRole('button', { name: 'Save changes' }).click();
+      await expect(dialog).not.toBeVisible();
+      await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹10,000 · closing ₹16,000')).toBeVisible();
+
+      await page.getByText('Part repayment').first().click();
+      await dialog.getByRole('button', { name: 'Delete entry' }).click();
+      const confirm = page.getByRole('dialog', { name: 'Delete entry' });
+      await expect(confirm.getByText(/Delete this lent entry of ₹10,000\?|Delete this borrowed entry of ₹10,000\?|Delete this repayment entry of ₹10,000\?/)).toBeVisible();
+      await confirm.getByRole('button', { name: 'Delete entry' }).click();
+      await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹0 · closing ₹26,000')).toBeVisible();
+    });
+
+    test('Person: Delete person asks first, then returns to Lendings without them', async ({ page }) => {
+      const { rahul } = await seedLedger();
+      await page.goto(personPath(rahul.id));
+      await page.getByRole('button', { name: 'More actions' }).click();
+      await page.getByRole('menuitem', { name: 'Delete person' }).click();
+
+      const confirm = page.getByRole('dialog', { name: 'Delete person' });
+      await expect(confirm.getByText('Delete Rahul Sharma?')).toBeVisible();
+      await expect(confirm.getByText('Their whole ledger goes (2 entries).')).toBeVisible();
+      await confirm.getByRole('button', { name: 'Delete person' }).click();
+
+      await page.waitForURL((u) => u.pathname === '/ds/loans/lendings');
+      await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
     });
 
     test('the + opens Add ledger entry; saving a new person adds a row', async ({ page }) => {

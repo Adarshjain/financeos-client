@@ -27,7 +27,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { LENDING_BALANCES_TOP, LendingBalancesWidget } from '../LendingBalancesWidget';
 
 const person = (id: string, name: string, netPosition: number): CounterpartyResponse => ({
-  id, name, netPosition, entryCount: 2, totalLent: 0, totalBorrowed: 0, repaidByYou: 0, repaidToYou: 0,
+  id, name, netPosition, entryCount: 2, linkedEntryCount: 0, totalLent: 0, totalBorrowed: 0, repaidByYou: 0, repaidToYou: 0,
 });
 
 const respond = (content: CounterpartyResponse[], totalElements = content.length) =>

@@ -11,11 +11,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { useExportLedger } from '@/features/lendings/useExportLedger';
 import type { ExportableEntry } from '@/lib/lendingExport';
 
 import { ExportEntryChecklist } from './ExportEntryChecklist';
 import { ExportLedgerOptions } from './ExportLedgerOptions';
-import { useExportLedger } from './useExportLedger';
 
 interface ExportLedgerDialogProps {
   open: boolean;

@@ -61,9 +61,14 @@ interface UseExportLedgerArgs {
   theirName: string;
   /** The signed-in user's display name; prefills "Your name" unless a saved value exists. */
   defaultMyName: string | null;
+  /** Says what Copy did. Defaults to the Legacy toaster; Dinero pages pass their own. */
+  notify?: (message: string, tone: 'success' | 'danger') => void;
 }
 
-export function useExportLedger({ entries, theirName, defaultMyName }: UseExportLedgerArgs) {
+const legacyNotify = (message: string, tone: 'success' | 'danger') =>
+  tone === 'success' ? toast.success(message) : toast.error(message);
+
+export function useExportLedger({ entries, theirName, defaultMyName, notify = legacyNotify }: UseExportLedgerArgs) {
   const stored = useMemo(readStoredPrefs, []);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(entries.map((e) => e.id)));
@@ -159,11 +164,11 @@ export function useExportLedger({ entries, theirName, defaultMyName }: UseExport
     try {
       if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
       await navigator.clipboard.writeText(text);
-      toast.success('Ledger copied');
+      notify('Ledger copied', 'success');
     } catch {
-      toast.error('Could not copy — select the preview text and copy it manually');
+      notify('Could not copy — select the preview text and copy it manually', 'danger');
     }
-  }, [text]);
+  }, [text, notify]);
 
   const share = useCallback(async () => {
     try {

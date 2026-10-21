@@ -34,7 +34,7 @@ const cp = (over: Partial<CounterpartyResponse>): CounterpartyResponse => ({
   id: 'p1',
   name: 'Rahul Sharma',
   notes: null,
-  entryCount: 2,
+  entryCount: 2, linkedEntryCount: 0,
   netPosition: 1200,
   repaidByYou: 0,
   repaidToYou: 0,
@@ -48,6 +48,30 @@ vi.mock('@/lib/query/hooks/useCounterparties', () => ({
     searchTerms.push(q);
     return { data: { content: [cp({}), cp({ id: 'p2', name: 'Priya Nair', netPosition: -500 })] } };
   },
+}));
+
+// The picker is covered by its own tests; here it is a stand-in that can pick and clear a transaction.
+vi.mock('@/features/transactions/TransactionPickerField', () => ({
+  TransactionPickerField: (p: {
+    label?: string;
+    placeholder?: string;
+    value: { id: string } | null;
+    direction?: string;
+    onSelect: (t: unknown) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid="tx-picker" data-direction={p.direction}>
+      <span>{p.label ?? 'Transaction (optional)'}</span>
+      <span>{p.placeholder}</span>
+      <span>{p.value ? `picked ${p.value.id}` : 'no transaction'}</span>
+      <button type="button" onClick={() => p.onSelect({ id: 'tx1', amount: -500, date: '2026-10-12', accountId: 'a1' })}>
+        Pick tx1
+      </button>
+      <button type="button" onClick={p.onClear}>
+        Remove tx
+      </button>
+    </div>
+  ),
 }));
 
 const onClose = vi.fn();
@@ -172,5 +196,38 @@ describe('AddLendingDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onClose).toHaveBeenCalled();
     expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('has an optional Linked transaction field', () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    expect(screen.getByTestId('tx-picker')).toHaveTextContent('Linked transaction (optional)');
+  });
+
+  it('links the picked transaction when saving, and sends none when nothing was picked', async () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    await pickPerson(/Rahul Sharma/);
+    fireEvent.change(amount(), { target: { value: '800' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    expect(screen.getByText('picked tx1')).toBeInTheDocument();
+    save();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'tx1' })));
+  });
+
+  it('filters the picker by the money direction and forgets a pick when the direction flips', async () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'lent');
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    await user.click(screen.getByRole('combobox', { name: /^Entry type/ }));
+    await user.click(screen.getByRole('option', { name: 'They paid me back' }));
+    expect(screen.getByText('no transaction')).toBeInTheDocument();
+    expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'borrowed');
+  });
+
+  it('opens with the given person already picked', async () => {
+    render(<AddLendingDialog onClose={onClose} initialPerson={cp({ id: 'p9', name: 'Meera Rao' })} />);
+    expect(screen.getByRole('combobox', { name: /^Person/ })).toHaveTextContent('Meera Rao');
+    fireEvent.change(amount(), { target: { value: '100' } });
+    save();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ counterpartyId: 'p9' })));
   });
 });

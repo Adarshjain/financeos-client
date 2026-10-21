@@ -4113,6 +4113,8 @@ export interface components {
             entryCount: number;
             /** Format: date */
             expectedReturnDate?: string | null;
+            /** Format: date */
+            firstEntryDate?: string | null;
             /** Format: uuid */
             id: string;
             lastEntryAmount?: number | null;
@@ -4122,6 +4124,8 @@ export interface components {
             lastEntryKind?: "principal" | "settlement" | null;
             /** @enum {string|null} */
             lastEntryType?: "lent" | "borrowed" | null;
+            /** Format: int32 */
+            linkedEntryCount: number;
             name: string;
             netPosition: number;
             notes?: string | null;

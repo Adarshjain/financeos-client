@@ -4,11 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
-
-import { useCounterpartyMutations } from './useCounterpartyMutations';
 
 type LendingMatchSuggestion = Schemas['LendingMatchSuggestion'];
 type LendingMatchSuggestionsResponse = Schemas['LendingMatchSuggestionsResponse'];

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import { api } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
 import { keys } from '@/lib/query/keys';
@@ -12,7 +13,6 @@ import { CounterpartyResponse, LendingResponse } from '@/lib/types';
 
 import { LendingEntryWithBalance } from './CounterpartyLedgerTable';
 import { useAddLendingEntry } from './useAddLendingEntry';
-import { useCounterpartyMutations } from './useCounterpartyMutations';
 import { useEditLendingEntry } from './useEditLendingEntry';
 
 const COUNTERPARTIES_PAGE_SIZE = 100;

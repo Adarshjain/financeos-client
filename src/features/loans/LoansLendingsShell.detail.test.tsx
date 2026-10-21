@@ -56,4 +56,18 @@ describe('LoansLendingsShell on a loan page', () => {
     renderShell();
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
   });
+
+  it("shows a person's page alone too: no tabs, no counts requested", () => {
+    pathname = '/ds/loans/lendings/p1';
+    renderShell();
+    expect(screen.getByText('loan page')).toBeInTheDocument();
+    expect(screen.queryAllByRole('tab')).toHaveLength(0);
+    expect(loadTabCounts).not.toHaveBeenCalled();
+  });
+
+  it('still frames the Lendings tab', () => {
+    pathname = '/ds/loans/lendings';
+    renderShell();
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
+  });
 });

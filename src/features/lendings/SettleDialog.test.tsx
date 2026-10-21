@@ -21,6 +21,30 @@ vi.mock('./useCreateLending', () => ({
 
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-13' }));
 
+// The picker is covered by its own tests; here it is a stand-in that can pick and clear a transaction.
+vi.mock('@/features/transactions/TransactionPickerField', () => ({
+  TransactionPickerField: (p: {
+    label?: string;
+    placeholder?: string;
+    value: { id: string } | null;
+    direction?: string;
+    onSelect: (t: unknown) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid="tx-picker" data-direction={p.direction}>
+      <span>{p.label ?? 'Transaction (optional)'}</span>
+      <span>{p.placeholder}</span>
+      <span>{p.value ? `picked ${p.value.id}` : 'no transaction'}</span>
+      <button type="button" onClick={() => p.onSelect({ id: 'tx1', amount: -500, date: '2026-10-12', accountId: 'a1' })}>
+        Pick tx1
+      </button>
+      <button type="button" onClick={p.onClear}>
+        Remove tx
+      </button>
+    </div>
+  ),
+}));
+
 function renderDialog(direction: 'lent' | 'borrowed' = 'lent', balance = 12000, name = 'Priya Nair') {
   const onOpenChange = vi.fn();
   render(
@@ -165,5 +189,43 @@ describe('SettleDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('has an optional Transaction field and records without one', async () => {
+    renderDialog('lent');
+    expect(screen.getByTestId('tx-picker')).toHaveTextContent('Transaction (optional)');
+    expect(screen.getByText('Pick a transaction')).toBeInTheDocument();
+    record();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(mutateAsync.mock.calls[0][0].transactionId).toBeUndefined();
+  });
+
+  it('links the picked transaction to the entry, and Remove drops it again', async () => {
+    renderDialog('lent', 15000, 'Rahul Sharma');
+    expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'borrowed');
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    expect(screen.getByText('picked tx1')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove tx' }));
+    expect(screen.getByText('no transaction')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    record();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'tx1' })));
+  });
+
+  it('forgets the pick when the segment flips the money direction', () => {
+    renderDialog('lent');
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Lent more' }));
+    expect(screen.getByText('no transaction')).toBeInTheDocument();
+    expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'lent');
+  });
+
+  it('tells the page once the entry is recorded', async () => {
+    const onRecorded = vi.fn();
+    render(
+      <SettleDialog open onOpenChange={vi.fn()} counterpartyId="C1" name="Rahul Sharma" direction="lent" balance={100} onRecorded={onRecorded} />,
+    );
+    record();
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1));
   });
 });

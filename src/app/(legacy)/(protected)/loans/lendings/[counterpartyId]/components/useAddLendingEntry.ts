@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import {
   directionOf,
   fromEntryType,
@@ -10,8 +11,6 @@ import {
   settleUpEntry,
 } from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-
-import { useCounterpartyMutations } from './useCounterpartyMutations';
 
 type CreateLendingMutation = ReturnType<typeof useCounterpartyMutations>['createLending'];
 

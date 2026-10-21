@@ -20,9 +20,10 @@ describe('Loans & lendings routes', () => {
     expect(isBuiltRoute('/loans/l1/extra')).toBe(false);
   });
 
-  it('keeps the lending pages and unknown sub-paths on Legacy', () => {
-    expect(appHref('/loans/lendings/c1')).toBe('/loans/lendings/c1');
-    expect(appHref('/loans/lendings/c1?export=1')).toBe('/loans/lendings/c1?export=1');
+  it("maps a person's page to its Dinero page, keeps the query string, and leaves unknown sub-paths on Legacy", () => {
+    expect(appHref('/loans/lendings/c1')).toBe('/ds/loans/lendings/c1');
+    expect(appHref('/loans/lendings/c1?export=1')).toBe('/ds/loans/lendings/c1?export=1');
+    expect(isBuiltRoute('/loans/lendings/c1/extra')).toBe(false);
     expect(appHref('/loans/calendar')).toBe('/loans/calendar');
     expect(appHref('/loans/calendar/x/y')).toBe('/loans/calendar/x/y');
   });

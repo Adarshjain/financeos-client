@@ -17,7 +17,7 @@ import type { CounterpartyResponse } from '@/lib/lending.types';
 import { createTestQueryClient } from '@/test/renderWithQuery';
 
 const rahul: CounterpartyResponse = {
-  id: 'cp1', name: 'Rahul', netPosition: 1500, totalLent: 1500, totalBorrowed: 0, repaidToYou: 0, repaidByYou: 0, entryCount: 1,
+  id: 'cp1', name: 'Rahul', netPosition: 1500, totalLent: 1500, totalBorrowed: 0, repaidToYou: 0, repaidByYou: 0, entryCount: 1, linkedEntryCount: 0,
 };
 const submit = () => ({ preventDefault: vi.fn() }) as unknown as FormEvent;
 const wrapper = ({ children }: { children: ReactNode }) => (

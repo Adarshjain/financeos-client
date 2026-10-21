@@ -221,7 +221,7 @@ describe('UpcomingView row trailing', () => {
     render(<UpcomingView />);
     expect(screen.getAllByRole('button', { name: 'Settle' })).toHaveLength(2);
     expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toEqual(
-      expect.arrayContaining(['/loans/lendings/C1', '/loans/lendings/C2']),
+      expect.arrayContaining(['/ds/loans/lendings/C1', '/ds/loans/lendings/C2']),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'Settle' })[1]);
     expect(screen.getByTestId('settle')).toHaveTextContent('C1|Rahul Sharma|lent|15000');

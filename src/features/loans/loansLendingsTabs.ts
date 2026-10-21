@@ -31,3 +31,11 @@ export function isLoanDetailPath(pathname: string | null | undefined): boolean {
   const rest = path.slice(LOANS_HREF.length + 1);
   return rest !== '' && !rest.includes('/') && rest !== 'lendings';
 }
+
+/** A person's own page (`/ds/loans/lendings/<id>`): like a loan's page it carries its own top bar, outside the tab frame. */
+export function isPersonDetailPath(pathname: string | null | undefined): boolean {
+  const path = (pathname ?? '').replace(/\/+$/, '');
+  if (!path.startsWith(`${LENDINGS_HREF}/`)) return false;
+  const rest = path.slice(LENDINGS_HREF.length + 1);
+  return rest !== '' && !rest.includes('/');
+}

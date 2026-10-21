@@ -56,7 +56,7 @@ const rahulCp: CounterpartyResponse = {
   totalLent: 0,
   repaidToYou: 0,
   repaidByYou: 0,
-  entryCount: 0,
+  entryCount: 0, linkedEntryCount: 0,
 };
 
 function pagedOf<T>(content: T[]) {
