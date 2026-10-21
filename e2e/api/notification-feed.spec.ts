@@ -43,7 +43,7 @@ async function categoriseOne(api: ApiClient, key: string): Promise<string> {
   });
   const { job } = await uploadAndIngest(api, account.id, [{ filename: 'feed.pdf', buffer: pdf }]);
   expect(job.status).toBe('SUCCEEDED');
-  const rule = await createRule(api, { merchantKey: key, categoryIds: [cat.id], matchType: 'CONTAINS' });
+  const rule = await createRule(api, { merchantKey: key, displayName: 'Feed shop', categoryIds: [cat.id], matchType: 'CONTAINS' });
   return applyRule(api, rule.id);
 }
 
@@ -54,7 +54,7 @@ test.describe('Notification feed API (@api)', () => {
     expect(await unread(api)).toBe(0);
   });
 
-  test('a rule apply that categorises a transaction adds one unread "Rule applied" row', async ({ request }) => {
+  test('a rule apply that categorises a transaction adds one unread row naming the rule', async ({ request }) => {
     const { api } = await newUser(request, 'feed-rule');
     const jobId = await categoriseOne(api, 'FEEDSHOP');
 
@@ -62,7 +62,7 @@ test.describe('Notification feed API (@api)', () => {
     const [row] = await feed(api);
     expect(row).toMatchObject({
       kind: 'job_finished',
-      title: 'Rule applied',
+      title: "Rule 'Feed shop' applied",
       body: '1 transaction categorised',
       read: false,
     });

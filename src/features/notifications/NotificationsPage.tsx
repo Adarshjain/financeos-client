@@ -108,9 +108,11 @@ export function NotificationsPage() {
     body = (
       <Card
         action={
-          <Button variant="link" size="sm" onClick={() => setConfirmOpen(true)}>
-            Clear all
-          </Button>
+          <Text variant="label" as="span">
+            <Button variant="link" size="sm" onClick={() => setConfirmOpen(true)}>
+              Clear all
+            </Button>
+          </Text>
         }
       >
         {pager}
