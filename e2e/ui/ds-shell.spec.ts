@@ -125,7 +125,8 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
 
     // Verify Quick add items
     await expect(sheet.getByRole('button', { name: 'Transaction' })).toBeDisabled();
-    await expect(sheet.getByRole('button', { name: 'Lending' })).toBeDisabled();
+    // Lending is enabled and opens the Add ledger entry dialog from state (no URL change)
+    await expect(sheet.getByRole('button', { name: 'Lending' })).toBeEnabled();
     await expect(sheet.getByRole('button', { name: 'Trade' })).toBeDisabled();
     const importLink = sheet.getByRole('link', { name: 'Import' });
     await expect(importLink).toBeVisible();
@@ -136,7 +137,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
     await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
-    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/loans');
+    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/ds/loans/lendings');
     await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
     await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     await expect(sheet.getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
@@ -176,6 +177,17 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await sheet.getByRole('link', { name: 'Accounts' }).click();
     await page.waitForURL('**/accounts');
     expect(page.url()).toContain('/accounts');
+  });
+
+  test('phone 390px: Quick add Lending opens the Add ledger entry dialog without leaving the page', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
+    await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Lending' }).click();
+
+    await expect(page.getByRole('dialog', { name: 'Add ledger entry' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'More' })).not.toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/ds');
   });
 
   test('phone 390px: TabBar links navigate as plain links (Transactions)', async ({ page }) => {

@@ -1,19 +1,17 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
-import { toastError } from '@/lib/toastError';
-import type {
-  CreateLoanRequest,
-  LoanResponse,
-  LoanType,
-  RateType,
-  UpdateLoanRequest,
-} from '@/lib/types';
+import {
+  buildCreateLoanRequest,
+  buildUpdateLoanRequest,
+  type LoanFormValues,
+  loanProblems,
+} from '@/features/loans/loanFormModel';
+import { useCreateLoan } from '@/features/loans/useCreateLoan';
+import { useUpdateLoan } from '@/features/loans/useUpdateLoan';
+import type { LoanResponse, LoanType, RateType } from '@/lib/types';
 
 interface UseLoanFormProps {
   loanToEdit?: LoanResponse;
@@ -23,7 +21,6 @@ interface UseLoanFormProps {
 
 
 export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
-  const qc = useQueryClient();
   const isEdit = Boolean(loanToEdit);
 
   const [name, setName] = useState(loanToEdit?.name ?? '');
@@ -60,55 +57,38 @@ export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
   );
   const [notes, setNotes] = useState(loanToEdit?.notes ?? '');
 
-  const createMutation = useMutation({
-    mutationFn: (body: CreateLoanRequest) =>
-      api.POST('/api/v1/loans', { body }).then((r) => r.data! as LoanResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: (e) => toastError(e, 'Failed to create loan'),
-  });
+  const createMutation = useCreateLoan();
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateLoanRequest }) =>
-      api
-        .PUT('/api/v1/loans/{id}', { params: { path: { id } }, body })
-        .then((r) => r.data! as LoanResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: (e) => toastError(e, 'Failed to update loan'),
-  });
+  const updateMutation = useUpdateLoan();
 
   const loading = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Loan name is required');
-      return;
-    }
-    if (!lender.trim()) {
-      toast.error('Lender is required');
+    const values: LoanFormValues = {
+      name,
+      lender,
+      loanType,
+      rateType,
+      loanAccountNumber,
+      paymentAccountId,
+      principal,
+      annualRatePct,
+      tenureMonths,
+      startDate,
+      firstEmiDate,
+      emiAmount,
+      notes,
+    };
+    const [problem] = loanProblems(values, isEdit);
+    if (problem) {
+      toast.error(problem.message);
       return;
     }
 
     if (isEdit && loanToEdit) {
       try {
-        await updateMutation.mutateAsync({
-          id: loanToEdit.id,
-          body: {
-            name: name.trim(),
-            lender: lender.trim(),
-            loanType,
-            rateType,
-            loanAccountNumber: loanAccountNumber.trim() || undefined,
-            paymentAccountId: paymentAccountId || undefined,
-            principal: principal ? Number(principal) : undefined,
-            annualRatePct: annualRatePct ? Number(annualRatePct) : undefined,
-            tenureMonths: tenureMonths ? Number(tenureMonths) : undefined,
-            startDate,
-            firstEmiDate,
-            emiAmount: emiAmount ? Number(emiAmount) : undefined,
-            notes: notes.trim() || undefined,
-          },
-        });
+        await updateMutation.mutateAsync({ id: loanToEdit.id, body: buildUpdateLoanRequest(values) });
         toast.success('Loan updated successfully');
         onOpenChange(false);
       } catch {
@@ -117,35 +97,8 @@ export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
       return;
     }
 
-    if (!principal || Number(principal) <= 0) {
-      toast.error('Principal must be greater than zero');
-      return;
-    }
-    if (!annualRatePct || Number(annualRatePct) <= 0) {
-      toast.error('Annual rate % must be greater than zero');
-      return;
-    }
-    if (!tenureMonths || Number(tenureMonths) < 1) {
-      toast.error('Tenure must be at least 1 month');
-      return;
-    }
-
     try {
-      await createMutation.mutateAsync({
-        name: name.trim(),
-        lender: lender.trim(),
-        loanType,
-        rateType,
-        loanAccountNumber: loanAccountNumber.trim() || undefined,
-        paymentAccountId: paymentAccountId || undefined,
-        principal: Number(principal),
-        annualRatePct: Number(annualRatePct),
-        tenureMonths: Number(tenureMonths),
-        startDate,
-        firstEmiDate,
-        emiAmount: emiAmount ? Number(emiAmount) : undefined,
-        notes: notes.trim() || undefined,
-      });
+      await createMutation.mutateAsync(buildCreateLoanRequest(values));
       toast.success('Loan created successfully');
       onOpenChange(false);
     } catch {

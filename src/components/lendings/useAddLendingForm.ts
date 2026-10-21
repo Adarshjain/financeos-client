@@ -9,10 +9,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryForm';
 import { api } from '@/lib/api/client';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CounterpartyResponse, CounterpartySelection, CreateLendingRequest } from '@/lib/lending.types';
-import { directionOf, fromEntryType, type LendingEntryType } from '@/lib/lendingEntry';
+import { directionOf, type LendingEntryType } from '@/lib/lendingEntry';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -84,25 +85,24 @@ export function useAddLendingForm({ preset, onCreated }: UseAddLendingFormOption
 
   const handleCreateLending = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!party) {
-      toast.error('Pick a person');
-      return;
-    }
-    if (!amount || Number(amount) <= 0) {
-      toast.error('Amount must be greater than zero');
+    const problem = lendingEntryProblem(party, amount);
+    if (problem || !party) {
+      toast.error(problem?.message ?? 'Pick a person');
       return;
     }
 
     try {
-      await createLending.mutateAsync({
-        ...(party.kind === 'new' ? { newCounterpartyName: party.name } : { counterpartyId: party.counterparty.id }),
-        ...fromEntryType(entryType),
-        amount: Number(amount),
-        entryDate,
-        expectedReturnDate: expectedReturnDate || undefined,
-        transactionId: selectedTx?.id,
-        notes: notes.trim() || undefined,
-      });
+      await createLending.mutateAsync(
+        buildCreateLendingRequest({
+          party,
+          entryType,
+          amount,
+          entryDate,
+          expectedReturnDate,
+          notes,
+          transactionId: selectedTx?.id,
+        })
+      );
       toast.success('Lending recorded successfully');
       // The next entry starts blank rather than repeating this one's figures.
       setAmount('');

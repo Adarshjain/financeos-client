@@ -29,7 +29,7 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   leading?: (row: Row) => React.ReactNode;
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
-  rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean };
+  rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean };
   highlighted?: boolean;
   busy?: boolean;
 }
@@ -41,7 +41,7 @@ export function DataTableRow<Row extends RowData>({
   isSelected,
   isSelectionMode,
   onRowSelectionToggle,
-  onRowSelect,
+  onRowSelect: onRowSelectProp,
   renderExpanded,
   getRowCanExpand,
   leading,
@@ -59,6 +59,8 @@ export function DataTableRow<Row extends RowData>({
     }
   }, [highlighted]);
 
+  // A row that opts out of press keeps selection and expansion, but never calls onRowSelect.
+  const onRowSelect = rowState?.pressable === false ? undefined : onRowSelectProp;
   const isExpanded = row.getIsExpanded();
   const canExpand = Boolean(
     renderExpanded && (getRowCanExpand ? getRowCanExpand(row.original) : true),

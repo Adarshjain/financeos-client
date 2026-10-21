@@ -30,6 +30,9 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/accounts$/,
   /^\/accounts\/[^/]+(\/(cards|rewards|statements))?$/,
   /^\/settings(\/(activity|connections|ai|notifications|debug))?$/,
+  /^\/loans(\/lendings)?$/,
+  // A loan's page; /loans/calendar is its own Legacy page, not a loan id.
+  /^\/loans\/(?!calendar$)[^/]+$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */

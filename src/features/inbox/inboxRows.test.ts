@@ -30,7 +30,7 @@ describe('rowButtons', () => {
   it('emi and lending read Open as links', () => {
     for (const kind of ['emi', 'lending']) {
       const row = item({ key: kind, kind, actions: [nav('open', 'Open', '/loans/1')] });
-      expect(rowButtons(row)).toEqual([{ id: 'open-0', label: 'Open', variant: 'link', href: '/loans/1' }]);
+      expect(rowButtons(row)).toEqual([{ id: 'open-0', label: 'Open', variant: 'link', href: '/ds/loans/1' }]);
     }
   });
 

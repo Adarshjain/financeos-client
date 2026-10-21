@@ -116,7 +116,7 @@ function useClosedToggle() {
   return { showing, toggle: () => setShowing((v) => !v) };
 }
 
-function ClosedToggleButton({
+export function ClosedToggleButton({
   showing,
   onToggle,
 }: {
@@ -138,10 +138,10 @@ function ClosedToggleButton({
 }
 
 /** Closed rows read muted but stay clickable, so their details still open. */
-const mutedWhenClosed = (row: { closed: boolean }) => (row.closed ? { muted: true } : undefined);
+export const mutedWhenClosed = (row: { closed: boolean }) => (row.closed ? { muted: true } : undefined);
 
 /** The closed line as a band above the closed rows, so they sit below it. */
-function closedBand<Row extends { closed: boolean }>(
+export function closedBand<Row extends { closed: boolean }>(
   line: string | null,
   onToggle: () => void,
 ) {
@@ -155,7 +155,7 @@ function closedBand<Row extends { closed: boolean }>(
       : null;
 }
 
-function ClosedFooter({
+export function ClosedFooter({
   line,
   showing,
   onToggle,

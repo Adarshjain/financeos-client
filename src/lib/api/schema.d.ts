@@ -763,10 +763,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description People with ledger totals, paged. q narrows by name; outstanding=true keeps only nonzero net positions; sort=net orders by absolute net position, largest first (then name). */
+        /** @description People with ledger totals, paged. q narrows by name; outstanding=true keeps only nonzero net positions; direction=OWED_TO_YOU|YOU_OWE|SETTLED filters by net sign; sort=net orders by absolute net position, largest first (then name). */
         get: operations["getCounterparties"];
         put?: never;
         post: operations["createCounterparty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/counterparties/match-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Match suggestions for every person with at least one candidate. */
+        get: operations["getAllCounterpartyMatchSuggestions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -789,6 +806,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/counterparties/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lendings tiles over all people: owedToYou, youOwe (positive), and dueThisMonth / expectedBack buckets by expected return date up to the end of this month. */
+        get: operations["getCounterpartySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/counterparties/unrecorded-transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Recent bank transfers (last 90 days) that name a person but have no lending entry and would reduce that person's balance; direction is the settlement entry's direction. Newest first, at most 50. */
+        get: operations["getUnrecordedTransfers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/counterparties/{id}": {
         parameters: {
             query?: never;
@@ -796,10 +847,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getCounterparty"];
         put: operations["updateCounterparty"];
         post?: never;
         delete: operations["deleteCounterparty"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/counterparties/{id}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The person's entries newest first with a running balance, plus totals. */
+        get: operations["getCounterpartyLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -815,6 +883,23 @@ export interface paths {
         get: operations["getCounterpartyMatchSuggestions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/counterparties/{id}/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Records a settlement entry from an unrecorded bank transfer and links the transaction. 404 foreign/missing person or transaction; 409 transaction already referenced; 400 when it would not reduce the balance or exceeds it by more than the match tolerance. */
+        post: operations["recordCounterpartySettlement"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2197,6 +2282,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/loans/match-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllMatchSuggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/loans/summary": {
         parameters: {
             query?: never;
@@ -3570,6 +3671,14 @@ export interface components {
             totalCharges: number;
             unrealized: number;
         };
+        Bucket: {
+            amount: number;
+            /** Format: int64 */
+            count: number;
+            /** Format: date */
+            nextDate?: string | null;
+            nextName?: string | null;
+        };
         BuiltinDataRequest: {
             params?: unknown;
         };
@@ -3989,11 +4098,30 @@ export interface components {
             /** @enum {string} */
             type: "split" | "bonus" | "demerger" | "merger";
         };
+        CounterpartyLedgerResponse: {
+            entries: components["schemas"]["PageLedgerEntryResponse"];
+            totals: components["schemas"]["Totals"];
+        };
+        CounterpartyMatchSuggestionsResponse: {
+            /** Format: uuid */
+            counterpartyId: string;
+            counterpartyName: string;
+            suggestions: components["schemas"]["LendingMatchSuggestion"][];
+        };
         CounterpartyResponse: {
             /** Format: int64 */
             entryCount: number;
+            /** Format: date */
+            expectedReturnDate?: string | null;
             /** Format: uuid */
             id: string;
+            lastEntryAmount?: number | null;
+            /** Format: date */
+            lastEntryDate?: string | null;
+            /** @enum {string|null} */
+            lastEntryKind?: "principal" | "settlement" | null;
+            /** @enum {string|null} */
+            lastEntryType?: "lent" | "borrowed" | null;
             name: string;
             netPosition: number;
             notes?: string | null;
@@ -4004,6 +4132,16 @@ export interface components {
         };
         CounterpartySuggestionResponse: {
             counterparty?: components["schemas"]["CounterpartyResponse"];
+        };
+        CounterpartySummaryResponse: {
+            dueThisMonth: components["schemas"]["Bucket"];
+            expectedBack: components["schemas"]["Bucket"];
+            owedToYou: number;
+            /** Format: int64 */
+            owedToYouCount: number;
+            youOwe: number;
+            /** Format: int64 */
+            youOweCount: number;
         };
         CreateAccountIdentifierRequest: {
             /** @enum {string|null} */
@@ -4205,6 +4343,10 @@ export interface components {
             matchType?: string;
             mcc?: string | null;
             merchantKey: string;
+        };
+        CreateSettlementRequest: {
+            /** Format: uuid */
+            transactionId: string;
         };
         CreateSipRequest: {
             active?: boolean;
@@ -5151,6 +5293,32 @@ export interface components {
             /** @enum {string} */
             type: "DEBIT" | "CREDIT";
         };
+        LedgerEntryResponse: {
+            amount: number;
+            /** Format: uuid */
+            counterpartyId: string;
+            counterpartyName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            direction: "lent" | "borrowed";
+            /** Format: date */
+            entryDate: string;
+            /** Format: date */
+            expectedReturnDate?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "principal" | "settlement";
+            notes?: string | null;
+            returnNotifiedKind?: string | null;
+            /** Format: date */
+            returnNotifiedOn?: string | null;
+            runningBalance: number;
+            transaction?: components["schemas"]["LendingTransactionSummary"];
+            /** Format: uuid */
+            transactionId?: string | null;
+        };
         LendingMatchSuggestion: {
             amount: number;
             candidates: components["schemas"]["TransactionResponse"][];
@@ -5303,6 +5471,12 @@ export interface components {
             /** Format: uuid */
             transactionId?: string | null;
         };
+        LoanMatchSuggestionsResponse: {
+            /** Format: uuid */
+            loanId: string;
+            loanName: string;
+            suggestions: components["schemas"]["InstallmentMatchSuggestion"][];
+        };
         LoanPaymentResponse: {
             amount: number;
             /** Format: date-time */
@@ -5370,8 +5544,19 @@ export interface components {
             /** Format: int64 */
             activeLoanCount: number;
             borrowedOutstanding: number;
+            borrowedPrincipal: number;
+            /** Format: int64 */
+            closedLoanCount: number;
+            emiDueDays: number[];
+            /** Format: date */
+            fyStart: string;
+            interestPaidThisFy: number;
             lentOutstanding: number;
+            monthlyEmiTotal: number;
             netReceivable: number;
+            overdueAmount: number;
+            /** Format: int64 */
+            overdueCount: number;
             totalOutstanding: number;
         };
         LoginRequest: {
@@ -5644,6 +5829,24 @@ export interface components {
         };
         PageJobResponse: {
             content: components["schemas"]["JobResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageLedgerEntryResponse: {
+            content: components["schemas"]["LedgerEntryResponse"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -6867,6 +7070,11 @@ export interface components {
             source: string;
             stackTrace?: string | null;
         };
+        Totals: {
+            closing: number;
+            lent: number;
+            received: number;
+        };
         TradeSettlementClassificationDto: {
             intradayBuyValue: number;
             intradayQty: number;
@@ -6980,6 +7188,14 @@ export interface components {
             items: components["schemas"]["UnrecordedDividendCredit"][];
             /** Format: date */
             to: string;
+        };
+        UnrecordedTransferResponse: {
+            /** Format: uuid */
+            counterpartyId: string;
+            counterpartyName: string;
+            /** @enum {string} */
+            direction: "lent" | "borrowed";
+            transaction: components["schemas"]["TransactionResponse"];
         };
         UpdateBillDetailsRequest: {
             minimumAmountDue?: number | null;
@@ -9040,6 +9256,7 @@ export interface operations {
             query?: {
                 q?: string;
                 outstanding?: boolean;
+                direction?: "OWED_TO_YOU" | "YOU_OWE" | "SETTLED";
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -9106,6 +9323,35 @@ export interface operations {
             };
         };
     };
+    getAllCounterpartyMatchSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CounterpartyMatchSuggestionsResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     suggestCounterparty: {
         parameters: {
             query: {
@@ -9124,6 +9370,95 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CounterpartySuggestionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCounterpartySummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CounterpartySummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUnrecordedTransfers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UnrecordedTransferResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCounterparty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CounterpartyResponse"];
                 };
             };
             /** @description Error response */
@@ -9201,6 +9536,44 @@ export interface operations {
             };
         };
     };
+    getCounterpartyLedger: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CounterpartyLedgerResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getCounterpartyMatchSuggestions: {
         parameters: {
             query?: never;
@@ -9219,6 +9592,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LendingMatchSuggestionsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    recordCounterpartySettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSettlementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LendingResponse"];
                 };
             };
             /** @description Error response */
@@ -12837,6 +13245,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "active" | "closed" | "foreclosed";
+                q?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -12890,6 +13299,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LoanResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getAllMatchSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LoanMatchSuggestionsResponse"][];
                 };
             };
             /** @description Error response */

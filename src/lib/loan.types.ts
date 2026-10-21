@@ -203,3 +203,25 @@ export interface LoansSummaryResponse {
   borrowedOutstanding: number;
   netReceivable: number;
 }
+
+/** GET /loans/summary with the Loans tab tiles: the base totals plus what the Dinero tiles read. */
+export interface LoansSummaryDetail extends LoansSummaryResponse {
+  /** What was borrowed in total over active loans. */
+  borrowedPrincipal: number;
+  monthlyEmiTotal: number;
+  /** Day of month of each active loan's next EMI, ascending. */
+  emiDueDays: number[];
+  overdueAmount: number;
+  overdueCount: number;
+  interestPaidThisFy: number;
+  /** First day of the current financial year (YYYY-MM-DD). */
+  fyStart: string;
+  closedLoanCount: number;
+}
+
+/** One loan's installments that have bank-debit candidates (GET /loans/match-suggestions). */
+export interface LoanMatchSuggestions {
+  loanId: string;
+  loanName: string;
+  suggestions: InstallmentMatchSuggestion[];
+}

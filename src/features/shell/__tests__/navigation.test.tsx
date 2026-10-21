@@ -171,7 +171,8 @@ describe('shell navigation', () => {
       'Import',
     ]);
     expect(shellQuickAddItems.find((i) => i.id === 'transaction')?.disabled).toBe(true);
-    expect(shellQuickAddItems.find((i) => i.id === 'lending')?.disabled).toBe(true);
+    expect(shellQuickAddItems.find((i) => i.id === 'lending')?.disabled).toBeUndefined();
+    expect(shellQuickAddItems.find((i) => i.id === 'lending')?.dialog).toBe('lending');
     expect(shellQuickAddItems.find((i) => i.id === 'trade')?.disabled).toBe(true);
     expect(shellQuickAddItems.find((i) => i.id === 'import')?.href).toBe('/transactions/import');
 
@@ -197,7 +198,7 @@ describe('shell navigation', () => {
 
     // Verify Quick add items
     expect(screen.getByRole('button', { name: /Transaction/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /Lending/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Lending/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Trade/i })).toBeDisabled();
     expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/transactions/import');
 
@@ -206,7 +207,7 @@ describe('shell navigation', () => {
     expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
     expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
     expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
-    expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/loans');
+    expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/ds/loans/lendings');
     expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/dashboards');
     expect(screen.getByRole('link', { name: /Reports/i })).toHaveAttribute('href', '/reports');
     expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/chat');

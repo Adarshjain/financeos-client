@@ -9,19 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { LOAN_TYPES } from '@/features/loans/loanFormModel';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { LoanType, RateType } from '@/lib/types';
-
-export const LOAN_TYPES: { value: LoanType; label: string }[] = [
-  { value: 'home', label: 'Home Loan' },
-  { value: 'car', label: 'Car Loan' },
-  { value: 'personal', label: 'Personal Loan' },
-  { value: 'education', label: 'Education Loan' },
-  { value: 'gold', label: 'Gold Loan' },
-  { value: 'two_wheeler', label: 'Two Wheeler Loan' },
-  { value: 'consumer_durable', label: 'Consumer Durable Loan' },
-  { value: 'other', label: 'Other Loan' },
-];
 
 interface LoanBasicFieldsProps {
   name: string;
