@@ -20,6 +20,7 @@ import {
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
+import { appHref } from '@/features/shell/routes';
 
 import type {
   BankRow,
@@ -28,7 +29,7 @@ import type {
   WalletRow,
 } from './accountsList';
 
-const ACCOUNTS_HREF = '/ds/accounts';
+const ACCOUNTS_HREF = appHref('/accounts');
 
 function rowHref(row: { id: string }): string {
   return `${ACCOUNTS_HREF}/${row.id}`;

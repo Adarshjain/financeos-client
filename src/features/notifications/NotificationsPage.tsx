@@ -17,6 +17,7 @@ import {
   Text,
 } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
+import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useUrlState } from '@/features/upcoming/useUrlState';
 import type { AppNotification } from '@/lib/api/types';
@@ -60,7 +61,7 @@ export function NotificationsPage() {
   const goToPage = React.useCallback(
     (p: number, replace = false) => {
       setPage(p);
-      const url = p > 0 ? `/ds/notifications?page=${p}` : '/ds/notifications';
+      const url = appHref(p > 0 ? `/notifications?page=${p}` : '/notifications');
       if (replace) router.replace(url, { scroll: false });
       else router.push(url, { scroll: false });
     },

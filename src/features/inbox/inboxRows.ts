@@ -1,3 +1,4 @@
+import { appHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
 import {
@@ -29,20 +30,21 @@ export interface RowButton {
 const DOING = new Set(['mark_paid', 'upload', 'reconnect']);
 
 function destination(item: InboxItemResponse, action: InboxActionResponse): Pick<RowButton, 'label' | 'href'> {
-  const href = actionHref(action, item) ?? undefined;
+  const raw = actionHref(action, item);
+  const href = raw ? appHref(raw) : undefined;
   switch (item.kind) {
     case 'gmail_attention':
-      return { label: 'Assign', href: '/ds/settings/connections' };
+      return { label: 'Assign', href: appHref('/settings/connections') };
     case 'job':
       return {
         label: item.section === 'info' ? 'Details' : 'View',
-        href: item.refs.jobId ? `/ds/settings/activity?job=${item.refs.jobId}` : href,
+        href: item.refs.jobId ? appHref(`/settings/activity?job=${item.refs.jobId}`) : href,
       };
     case 'reward_milestone':
     case 'reward_cap':
       return {
         label: 'Rewards',
-        href: item.refs.accountId ? `/ds/accounts/${item.refs.accountId}/rewards` : href,
+        href: item.refs.accountId ? appHref(`/accounts/${item.refs.accountId}/rewards`) : href,
       };
     case 'emi':
     case 'lending':

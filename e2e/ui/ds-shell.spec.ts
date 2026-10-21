@@ -29,7 +29,8 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     // Group 1 (unlabeled): Home, Inbox, Upcoming
     await expect(rail.getByRole('link', { name: 'Home' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Inbox' })).toBeVisible();
-    await expect(rail.getByRole('link', { name: 'Upcoming' })).toBeVisible();
+    // Upcoming is a tab inside Inbox, not a rail item (owner 2026-10-21)
+    await expect(rail.getByRole('link', { name: 'Upcoming' })).toHaveCount(0);
 
     // Group 2: Money -> Accounts, Transactions
     await expect(rail.getByText('Money')).toBeVisible();
@@ -52,7 +53,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('link', { name: 'Ask the data' })).toBeVisible();
 
     // Footer: Settings
-    const settingsLink = rail.locator('a[href="/settings"]');
+    const settingsLink = rail.locator('a[href="/ds/settings"]');
     await expect(settingsLink).toBeVisible();
     await expect(settingsLink).toContainText(currentUser.email);
 
@@ -61,7 +62,6 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const orderedLabels = [
       'Home',
       'Inbox',
-      'Upcoming',
       'Accounts',
       'Transactions',
       'Investments',
@@ -100,11 +100,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const railContainer = page.locator('.hidden.desk\\:flex');
     await expect(railContainer).not.toBeVisible();
 
-    // Verify floating TabBar items: Home, Inbox, Upcoming, Transactions, More
+    // Verify floating TabBar items: Home, Inbox, Accounts, Transactions, More
     const tabBar = page.locator('nav.desk\\:hidden');
     await expect(tabBar).toBeVisible();
 
-    const expectedTabs = ['Home', 'Inbox', 'Upcoming', 'Transactions', 'More'];
+    const expectedTabs = ['Home', 'Inbox', 'Accounts', 'Transactions', 'More'];
     for (const tabName of expectedTabs) {
       await expect(tabBar.getByRole('tab', { name: tabName })).toBeVisible();
     }
@@ -132,7 +132,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(importLink).toHaveAttribute('href', '/transactions/import');
 
     // Verify Section tiles in groups
-    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/ds/accounts');
     await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
     await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
@@ -144,7 +144,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     // Verify Profile row
     const profileRow = sheet.getByRole('link', { name: /Settings · connections · notifications/i });
     await expect(profileRow).toBeVisible();
-    await expect(profileRow).toHaveAttribute('href', '/settings');
+    await expect(profileRow).toHaveAttribute('href', '/ds/settings');
 
     // Closing Way 1: Tapping the scrim above the sheet
     await page.mouse.click(200, 50);

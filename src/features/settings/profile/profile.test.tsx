@@ -136,7 +136,7 @@ describe('DeleteAccountCard', () => {
     expect(submit()).toBeEnabled();
     fireEvent.click(submit());
     await waitFor(() =>
-      expect(deleteAccount).toHaveBeenCalledWith({ password: undefined, confirmEmail: 'ARJUN@example.test' }),
+      expect(deleteAccount).toHaveBeenCalledWith({ password: undefined, confirmEmail: 'ARJUN@example.test' }, true),
     );
   });
 
@@ -149,7 +149,7 @@ describe('DeleteAccountCard', () => {
     type('Current password', 'hunter22');
     fireEvent.click(submit());
     await waitFor(() =>
-      expect(deleteAccount).toHaveBeenCalledWith({ password: 'hunter22', confirmEmail: undefined }),
+      expect(deleteAccount).toHaveBeenCalledWith({ password: 'hunter22', confirmEmail: undefined }, true),
     );
   });
 

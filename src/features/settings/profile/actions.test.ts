@@ -34,4 +34,9 @@ describe('deleteAccount', () => {
     await expect(deleteAccount({ password: 'x' })).rejects.toThrow('NEXT_REDIRECT /login?deleted=1');
     expect(clearSessionCookie).toHaveBeenCalledTimes(1);
   });
+
+  it('redirects to the Dinero login when the Dinero card asks for it', async () => {
+    run.mockResolvedValue({ success: true, data: undefined });
+    await expect(deleteAccount({ password: 'x' }, true)).rejects.toThrow('NEXT_REDIRECT /ds/login?deleted=1');
+  });
 });

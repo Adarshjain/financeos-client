@@ -26,6 +26,7 @@ import {
   shellRailGroups,
   shellTabBarItems,
 } from './navigation';
+import { appHref, DS_HOME_HREF } from './routes';
 
 /** The Inbox count (act now + needs a look) for the rail and tab bar; nothing while it loads or is zero. */
 function useNavCounts(): Record<string, { count: number; countTone: 'danger' }> {
@@ -114,7 +115,7 @@ export function ShellTabBar({
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
-                      <Link href={item.href!} prefetch={false} onClick={() => setMoreOpen(false)}>
+                      <Link href={appHref(item.href!)} prefetch={false} onClick={() => setMoreOpen(false)}>
                         {item.label}
                       </Link>
                     </Button>
@@ -141,7 +142,7 @@ export function ShellTabBar({
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
-                      <Link href={item.href} prefetch={false} onClick={() => setMoreOpen(false)}>
+                      <Link href={appHref(item.href)} prefetch={false} onClick={() => setMoreOpen(false)}>
                         {item.label}
                       </Link>
                     </Button>
@@ -169,7 +170,7 @@ export function ShellTabBar({
                 chevron
                 borderTop={false}
               >
-                <Link href="/settings" prefetch={false} onClick={() => setMoreOpen(false)} />
+                <Link href={appHref('/settings')} prefetch={false} onClick={() => setMoreOpen(false)} />
               </ListRow>
             </Card>
           </div>
@@ -183,7 +184,7 @@ export function ShellTabBar({
                 ...item,
                 ...counts[item.id],
                 asChild: true,
-                children: <Link href={item.href} prefetch={false} />,
+                children: <Link href={appHref(item.href)} prefetch={false} />,
               }
             : item,
         )}
@@ -194,8 +195,8 @@ export function ShellTabBar({
   );
 }
 
-// Shell links lead to Legacy routes, a different root layout (full page load). They set
-// prefetch={false} so Dinero pages do not preload Legacy CSS and Inter.
+// Shell links to a page not built in Dinero lead to Legacy routes, a different root layout (full page
+// load). They set prefetch={false} so Dinero pages do not preload Legacy CSS and Inter.
 export function ShellRail({
   user,
 }: {
@@ -215,12 +216,12 @@ export function ShellRail({
           ...item,
           ...counts[item.id],
           asChild: true,
-          children: <Link href={item.href} prefetch={false} />,
+          children: <Link href={appHref(item.href)} prefetch={false} />,
         })),
       }))}
       value={current}
       brand={
-        <Link href="/ds">
+        <Link href={DS_HOME_HREF}>
           <Logo variant="full" size="sm" />
         </Link>
       }
@@ -243,7 +244,7 @@ export function ShellRail({
           borderTop={false}
           className="px-space-8"
         >
-          <Link href="/settings" prefetch={false} />
+          <Link href={appHref('/settings')} prefetch={false} />
         </ListRow>
       }
     />

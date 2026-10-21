@@ -16,6 +16,7 @@ import {
 } from '@/components/ds';
 import { useAccountFormMutations } from '@/features/accounts/form/useAccountFormMutations';
 import { useAccountIdentifiers } from '@/features/accounts/form/useAccountIdentifiers';
+import { appHref } from '@/features/shell/routes';
 import type { Account, AccountRequest } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { distinctLimitPools } from '@/lib/creditLimitPools';
@@ -45,7 +46,7 @@ import {
 } from './accountFormModel';
 import { CloseAccountSection, DeleteAccountSection } from './AccountLifecycleSections';
 
-const ACCOUNTS_HREF = '/ds/accounts';
+const ACCOUNTS_HREF = appHref('/accounts');
 const FORM_ID = 'account-form';
 
 interface Cleanup {

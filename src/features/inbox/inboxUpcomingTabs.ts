@@ -1,4 +1,5 @@
 /** The three tabs shared by Inbox and Upcoming, in board order. `href` is the Dinero preview route. */
+import { appHref } from '@/features/shell/routes';
 export interface InboxUpcomingTab {
   id: 'inbox' | 'upcoming' | 'calendar';
   label: string;
@@ -7,8 +8,8 @@ export interface InboxUpcomingTab {
   href: string;
 }
 
-export const INBOX_HREF = '/ds/inbox';
-export const UPCOMING_HREF = '/ds/upcoming';
+export const INBOX_HREF = appHref('/inbox');
+export const UPCOMING_HREF = appHref('/upcoming');
 export const CALENDAR_HREF = `${UPCOMING_HREF}/calendar`;
 
 export const inboxUpcomingTabs: InboxUpcomingTab[] = [

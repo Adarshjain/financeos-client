@@ -1,3 +1,4 @@
+import { appHref } from '@/features/shell/routes';
 import type { AppNotification } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 
@@ -18,14 +19,14 @@ export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): str
     case 'job_failed':
     case 'job_finished':
     case 'gmail_sync':
-      return jobId ? `/ds/settings/activity?job=${jobId}` : '/ds/settings/activity';
+      return jobId ? appHref(`/settings/activity?job=${jobId}`) : appHref('/settings/activity');
     case 'statement_imported':
-      return accountId ? `/ds/accounts/${accountId}/statements` : null;
+      return accountId ? appHref(`/accounts/${accountId}/statements`) : null;
     case 'gmail_disconnected':
-      return '/ds/settings/connections';
+      return appHref('/settings/connections');
     case 'reward_milestone':
     case 'reward_cap':
-      return accountId ? `/ds/accounts/${accountId}/rewards` : null;
+      return accountId ? appHref(`/accounts/${accountId}/rewards`) : null;
     default:
       return null;
   }

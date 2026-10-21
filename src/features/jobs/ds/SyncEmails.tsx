@@ -6,11 +6,12 @@ import React, { useState } from 'react';
 import { Button, Card, CardRow, Icon, Text } from '@/components/ds';
 import { dayMonth, numericDateTime } from '@/features/jobs/format';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabels';
+import { appHref } from '@/features/shell/routes';
 import type { SyncMessageResult } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 
-const CONNECTIONS_HREF = '/ds/settings/connections';
-const ACCOUNTS_HREF = '/ds/accounts';
+const CONNECTIONS_HREF = appHref('/settings/connections');
+const ACCOUNTS_HREF = appHref('/accounts');
 const IMPORT_HREF = '/transactions/import';
 
 function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {

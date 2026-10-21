@@ -6,7 +6,7 @@ import { deleteAccount } from './actions';
 import { useDeletionSummary } from './useDeletionSummary';
 
 /** The delete-account dialog's state and submit: summary, fields, validation, busy/error handling. */
-export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPassword'>) {
+export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPassword'>, { toDinero = false } = {}) {
   const [open, setOpen] = useState(false);
   const { data: summary, isLoading: loadingSummary } = useDeletionSummary(open);
 
@@ -46,7 +46,7 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
       const res = await deleteAccount({
         password: hasPassword ? password : undefined,
         confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
-      });
+      }, toDinero);
 
       if (!res.success) {
         setIsDeleting(false);

@@ -1,4 +1,5 @@
 /** The six Settings tabs, in board order. `href` is the Dinero preview route. */
+import { appHref } from '@/features/shell/routes';
 export interface SettingsTab {
   id: 'profile' | 'connections' | 'ai' | 'notifications' | 'activity' | 'debug';
   label: string;
@@ -7,7 +8,7 @@ export interface SettingsTab {
   href: string;
 }
 
-export const SETTINGS_HREF = '/ds/settings';
+export const SETTINGS_HREF = appHref('/settings');
 
 export const settingsTabs: SettingsTab[] = [
   { id: 'profile', label: 'Profile & appearance', title: 'Settings', href: SETTINGS_HREF },

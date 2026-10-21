@@ -12,6 +12,7 @@ import {
   StatusWord,
   Text,
 } from '@/components/ds';
+import { appHref } from '@/features/shell/routes';
 
 import type {
   BrokerCashModel,
@@ -53,7 +54,7 @@ export function StatementsCard({
     >
       {row ? (
         <ListRow asChild chevron>
-          <Link href={`/ds/accounts/${accountId}/statements?statement=${row.id}`}>
+          <Link href={appHref(`/accounts/${accountId}/statements?statement=${row.id}`)}>
             <span className="flex-1 min-w-0">
               <Text variant="body-strong" as="div">
                 {row.title}
@@ -96,7 +97,7 @@ export function GmailAlertsCard({ model }: { model: GmailCardModel }) {
               {model.unmatched} unmatched ·{' '}
               <Text variant="label" as="span">
                 <Button asChild variant="link" size="sm">
-                  <Link href="/inbox">assign</Link>
+                  <Link href={appHref('/inbox')}>assign</Link>
                 </Button>
               </Text>
             </Text>

@@ -1,6 +1,7 @@
 import { clockTime, dayMonth } from '@/features/jobs/format';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { appHref } from '@/features/shell/routes';
 import { todayInAppZone } from '@/lib/date-range';
 import type {
   FileIngestionResult,
@@ -12,7 +13,7 @@ import type {
   SyncSummary,
 } from '@/lib/types';
 
-export const ACTIVITY_HREF = '/ds/settings/activity';
+export const ACTIVITY_HREF = appHref('/settings/activity');
 export const ACTIVITY_DEFAULT_SIZE = 25;
 export const ACTIVITY_SIZE_OPTIONS = [10, 25, 50, 100];
 
