@@ -4,11 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { deleteTransactionLink, fetchTransactionLinks } from '@/features/transactions/detail/transactionDetailApi';
+import { ApiError } from '@/lib/api/client';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
-import type { TransactionLinkResponse } from '@/lib/transaction.types';
 
 export function useTransactionLinks(
   transactionId: string,
@@ -26,12 +26,7 @@ export function useTransactionLinks(
     refetch,
   } = useQuery({
     queryKey: keys.transactions.links(transactionId),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/transaction-links', {
-        params: { query: { transactionId } },
-      });
-      return (data ?? []) as TransactionLinkResponse[];
-    },
+    queryFn: () => fetchTransactionLinks(transactionId),
     enabled: hasLinks,
   });
 
@@ -42,7 +37,7 @@ export function useTransactionLinks(
   }, [refetch]);
 
   const unlinkMutation = useMutation({
-    mutationFn: (linkId: string) => api.DELETE('/api/v1/transaction-links/{id}', { params: { path: { id: linkId } } }),
+    mutationFn: (linkId: string) => deleteTransactionLink(linkId),
     onMutate: (linkId: string) => setUnlinkingId(linkId),
     onSuccess: () => {
       toast.success('Link removed successfully');

@@ -4,6 +4,7 @@ import {
   isCardholderClosed,
 } from '@/lib/account.types';
 import {
+  ReviewReason,
   ReviewType,
   Transaction,
   TransactionChannel,
@@ -25,11 +26,13 @@ export const TRANSACTION_ACCOUNT_TYPES: AccountType[] = [
 
 export function getSelectableAccounts(
   accounts: Account[],
-  transaction?: Transaction
+  transaction?: Transaction,
+  /** Business today (YYYY-MM-DD); omitted, the device clock decides what is closed. */
+  asOf?: string
 ): Account[] {
   return accounts.filter(
     (a) =>
-      (TRANSACTION_ACCOUNT_TYPES.includes(a.type) && !isAccountClosed(a)) ||
+      (TRANSACTION_ACCOUNT_TYPES.includes(a.type) && !isAccountClosed(a, asOf)) ||
       a.id === transaction?.accountId
   );
 }
@@ -44,7 +47,8 @@ export function getSelectableAccounts(
 export function getCardOptions(
   selectedAccount: Account | undefined,
   isBank: boolean,
-  transaction?: Transaction
+  transaction?: Transaction,
+  asOf?: string
 ): { id: string; label: string }[] {
   const supportsCards =
     selectedAccount?.type === AccountType.CREDIT_CARD ||
@@ -54,7 +58,7 @@ export function getCardOptions(
     (ch.cards ?? [])
       .filter(
         (c) =>
-          (!c.closedOn && !isCardholderClosed(ch)) ||
+          (!c.closedOn && !isCardholderClosed(ch, asOf)) ||
           c.id === transaction?.cardId
       )
       .map((c) => ({
@@ -128,6 +132,8 @@ export interface BuildTransactionRequestParams {
   isEmi: boolean;
   isInternational: boolean;
   reviewType: ReviewType;
+  /** Sent with Needs review on an update, and only when there is at least one; the server keeps the stored reasons otherwise. */
+  reviewReasons?: ReviewReason[];
 }
 
 export function buildTransactionRequest(
@@ -158,6 +164,9 @@ export function buildTransactionRequest(
   if (p.isUpdateMode) {
     request.source = p.source ?? 'manual';
     request.reviewType = p.reviewType;
+    if (p.reviewType === 'NEEDS_REVIEW' && p.reviewReasons && p.reviewReasons.length > 0) {
+      request.reviewReasons = p.reviewReasons;
+    }
   }
   return request;
 }

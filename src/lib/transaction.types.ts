@@ -47,6 +47,8 @@ export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> 
   categoryIds: string[];
   source?: TransactionSource;
   reviewType?: ReviewType;
+  /** Update only, with reviewType NEEDS_REVIEW: exactly these reasons. Omitted keeps the stored ones. */
+  reviewReasons?: ReviewReason[];
   rewardDetails?: RewardDetails;
 }
 

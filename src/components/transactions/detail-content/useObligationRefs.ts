@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { deleteLoanPayment, unlinkDividendTransaction } from '@/features/transactions/detail/transactionDetailApi';
 import { api } from '@/lib/api/client';
 import { invalidateInvestmentQueries,invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -48,9 +49,7 @@ export function useObligationRefs(onCloseAndRefresh: () => void) {
 
   const unlinkLoanPaymentMutation = useMutation({
     mutationFn: ({ loanId, paymentId }: { loanId: string; paymentId: string }) =>
-      api.DELETE('/api/v1/loans/{id}/payments/{paymentId}', {
-        params: { path: { id: loanId, paymentId } },
-      }),
+      deleteLoanPayment(loanId, paymentId),
     onMutate: ({ paymentId }: { loanId: string; paymentId: string }) => setUnlinkingId(paymentId),
     onSuccess: () => {
       toast.success('Settlement removed');
@@ -71,10 +70,7 @@ export function useObligationRefs(onCloseAndRefresh: () => void) {
   };
 
   const unlinkDividendMutation = useMutation({
-    mutationFn: (dividendId: string) =>
-      api.DELETE('/api/v1/investments/dividends/{id}/transaction', {
-        params: { path: { id: dividendId } },
-      }),
+    mutationFn: (dividendId: string) => unlinkDividendTransaction(dividendId),
     onMutate: (dividendId: string) => setUnlinkingId(dividendId),
     onSuccess: () => {
       toast.success('Unlinked from dividend');

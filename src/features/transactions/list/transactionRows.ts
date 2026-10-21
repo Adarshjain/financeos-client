@@ -40,7 +40,7 @@ const MONTHS = [
 ];
 
 /** The amber word for each review reason, as the row board writes them. */
-const REASON_WORDS: Record<ReviewReason, string> = {
+export const REASON_WORDS: Record<ReviewReason, string> = {
   UNRECONCILED: 'Unreconciled',
   CATEGORY_UNVERIFIED: 'Category unverified',
   DUPLICATE_SUSPECT: 'Duplicate',

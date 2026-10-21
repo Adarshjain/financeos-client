@@ -4,9 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { createTransactionLink } from '@/features/transactions/detail/transactionDetailApi';
 import { Account } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
-import type { Schemas } from '@/lib/api/types';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -119,10 +118,7 @@ export function useTransactionLink({
 
   const queryClient = useQueryClient();
   const createLinkMutation = useMutation({
-    mutationFn: (body: CreateTransactionLinkRequest) =>
-      api
-        .POST('/api/v1/transaction-links', { body: body as Schemas['CreateTransactionLinkRequest'] })
-        .then((r) => r.data!),
+    mutationFn: (body: CreateTransactionLinkRequest) => createTransactionLink(body),
     onSuccess: () => {
       toast.success('Transactions linked successfully');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });

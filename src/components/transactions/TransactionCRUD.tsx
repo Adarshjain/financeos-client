@@ -5,6 +5,7 @@ import * as React from 'react';
 import { AccountForm } from '@/components/accounts/AccountForm';
 import DayPicker from '@/components/DayPicker';
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
+import { TRANSACTION_ACCOUNT_TYPES } from '@/features/transactions/form/transactionCRUD.helpers';
 import { Transaction } from '@/lib/transaction.types';
 
 import { AccountCategorySection } from './crud/AccountCategorySection';
@@ -12,7 +13,6 @@ import { AmountHeroSection } from './crud/AmountHeroSection';
 import { DescriptionSection } from './crud/DescriptionSection';
 import { RewardsDetailsSection } from './crud/RewardsDetailsSection';
 import { StatusFlagsSection } from './crud/StatusFlagsSection';
-import { TRANSACTION_ACCOUNT_TYPES } from './crud/transactionCRUD.helpers';
 import { useTransactionCRUD } from './crud/useTransactionCRUD';
 
 interface TransactionCRUDProps {

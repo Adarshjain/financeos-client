@@ -51,6 +51,8 @@ export interface TransactionsViewProps {
   openId?: string;
   /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
   onEditCategories?: (id: string) => void;
+  /** The detail side panel is open: on desktop the list leaves room for it instead of sitting underneath. */
+  detailOpen?: boolean;
 }
 
 const noop = () => {};
@@ -70,6 +72,7 @@ export function TransactionsView({
   onOpenDetail,
   openId,
   onEditCategories,
+  detailOpen = false,
 }: TransactionsViewProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -102,7 +105,8 @@ export function TransactionsView({
   return (
     <>
       <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
-        <div className="flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="flex">
+        <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
           <Tabs items={tabs} value="all" />
           <div className="flex flex-col gap-space-12 desk:flex-row desk:flex-wrap desk:items-center">
             <TextField
@@ -143,6 +147,8 @@ export function TransactionsView({
           ) : (
             <TransactionsLoadError reference={list.reference} />
           )}
+        </div>
+        {detailOpen ? <div aria-hidden="true" className="hidden w-full max-w-container-sm shrink-0 desk:block" /> : null}
         </div>
       </ShellPage>
       {filtersOpen ? (

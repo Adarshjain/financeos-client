@@ -1,28 +1,10 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { isValidMcc } from '@/components/forms/MccInput';
-import type { Account } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
-import type { Schemas } from '@/lib/api/types';
-import type { Category } from '@/lib/categories.types';
-import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
-import { invalidateMoneyQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-import { toastError } from '@/lib/toastError';
-import {
-  ReviewType,
-  Transaction,
-  TransactionChannel,
-  TransactionRequest,
-} from '@/lib/transaction.types';
-import { AccountType } from '@/lib/types';
-import { parseCalendarDate } from '@/lib/utils';
-
+import { isValidMcc } from '@/features/transactions/form/mcc';
 import {
   buildTransactionRequest,
   computeHasRewardDetails,
@@ -30,8 +12,23 @@ import {
   getDefaultCardIdForAccount,
   getSelectableAccounts,
   parseNonNegativeAmount,
-} from './transactionCRUD.helpers';
-import { useCategorySuggestions } from './useCategorySuggestions';
+} from '@/features/transactions/form/transactionCRUD.helpers';
+import { useCategorySuggestions } from '@/features/transactions/form/useCategorySuggestions';
+import { useTransactionMutations } from '@/features/transactions/form/useTransactionMutations';
+import type { Account } from '@/lib/account.types';
+import { ApiError } from '@/lib/api/client';
+import type { Category } from '@/lib/categories.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
+import {
+  ReviewType,
+  Transaction,
+  TransactionChannel,
+} from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
+import { parseCalendarDate } from '@/lib/utils';
 
 /** Stable fallback while categories load: a fresh `[]` per render re-fires the category sync effect forever. */
 const NO_CATEGORIES: Category[] = [];
@@ -148,32 +145,7 @@ export function useTransactionCRUD({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const createMutation = useMutation({
-    mutationFn: async (body: TransactionRequest) => {
-      const { data } = await api.POST('/api/v1/transactions', {
-        body: body as Schemas['CreateTransactionRequest'],
-      });
-      return data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      void invalidateMoneyQueries(queryClient);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, body }: { id: string; body: TransactionRequest }) => {
-      const { data } = await api.PUT('/api/v1/transactions/{id}', {
-        params: { path: { id } },
-        body: body as Schemas['UpdateTransactionRequest'],
-      });
-      return data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      void invalidateMoneyQueries(queryClient);
-    },
-  });
+  const { createMutation, updateMutation } = useTransactionMutations();
 
   const onSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();

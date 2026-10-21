@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
-import { api } from '@/lib/api/client';
+import { deleteTransaction } from '@/features/transactions/detail/transactionDetailApi';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -34,7 +34,7 @@ export const DeleteTransactionDialog = ({
   const deleteMutation = useMutation({
     mutationFn: () => {
       if (!transactionId) return Promise.resolve(undefined);
-      return api.DELETE('/api/v1/transactions/{id}', { params: { path: { id: transactionId } } });
+      return deleteTransaction(transactionId);
     },
     onSuccess: () => {
       toast.success('Transaction deleted!');

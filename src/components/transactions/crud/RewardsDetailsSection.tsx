@@ -12,10 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CHANNEL_LABELS } from '@/features/transactions/form/constants';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { cn, formatDate, sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
-
-import { CHANNEL_LABELS } from './constants';
 
 interface RewardsDetailsSectionProps {
   showRewardDetails: boolean;
