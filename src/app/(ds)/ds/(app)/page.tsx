@@ -37,6 +37,9 @@ export default function DsIndexPage() {
           <ListRow asChild title="Upcoming" subtitle="/ds/upcoming" chevron>
             <Link href="/ds/upcoming" />
           </ListRow>
+          <ListRow asChild title="Notifications" subtitle="/ds/notifications" chevron>
+            <Link href="/ds/notifications" />
+          </ListRow>
         </Card>
       </div>
     </ShellPage>

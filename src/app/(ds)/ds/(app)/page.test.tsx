@@ -2,9 +2,15 @@ import { render, screen } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import DsIndexPage from './page';
+
+vi.mock('@/lib/query/hooks/useNotifications', () => ({
+  useNotificationSummary: () => ({ data: { unread: 0 } }),
+  useNotificationFeed: () => ({ data: undefined, isLoading: false, error: null, refetch: vi.fn() }),
+  useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
+}));
 
 describe('DsIndexPage', () => {
   it('renders Signed out section with links to /ds/login, /ds/signup, /ds/offline', () => {
@@ -47,6 +53,12 @@ describe('DsIndexPage', () => {
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     expect(hrefs).toContain('/ds/inbox');
     expect(hrefs).toContain('/ds/upcoming');
+  });
+
+  it('links to /ds/notifications from the Signed in section', () => {
+    render(<DsIndexPage />);
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/ds/notifications');
   });
 
   it('links every top-level /ds page, so a new page is never left off the index', () => {

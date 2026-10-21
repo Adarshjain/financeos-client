@@ -26,7 +26,7 @@ export interface InboxPageProps {
   highlightKey?: string | null;
 }
 
-/** The Inbox tab: Act now, Needs a look and Updates in one card, plus the dialogs rows open. */
+/** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxPage({ highlightKey = null }: InboxPageProps) {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useInbox();
@@ -34,7 +34,8 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 
-  const items = React.useMemo(() => data?.items ?? [], [data]);
+  // Updates live in Notifications; the server still sends them for Legacy.
+  const items = React.useMemo(() => (data?.items ?? []).filter((i) => i.section !== 'info'), [data]);
   const deepLink = useInboxDeepLink(highlightKey, data ? items : null);
 
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
@@ -70,7 +71,7 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
     body = (
       <>
         <Card>
-          {INBOX_SECTIONS.map(({ key }) => (
+          {INBOX_SECTIONS.filter(({ key }) => key !== 'info').map(({ key }) => (
             <InboxSection
               key={key}
               sectionKey={key}

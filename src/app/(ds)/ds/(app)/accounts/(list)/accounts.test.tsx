@@ -9,6 +9,12 @@ import DsAccountsPage from './page';
 import { type PlainListData, resolveDeep, toStreams } from './streamedTestUtils';
 
 const push = vi.fn();
+vi.mock('@/lib/query/hooks/useNotifications', () => ({
+  useNotificationSummary: () => ({ data: { unread: 0 } }),
+  useNotificationFeed: () => ({ data: undefined, isLoading: false, error: null, refetch: vi.fn() }),
+  useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
+}));
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, refresh: vi.fn() }),
   usePathname: () => '/ds/accounts',

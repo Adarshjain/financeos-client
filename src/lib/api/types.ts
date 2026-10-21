@@ -207,3 +207,8 @@ export type ErrorResponse = Schemas['ErrorResponse'];
 export type DiagnosticsLookupResponse = Schemas['DiagnosticsLookupResponse'];
 export type RawLogEntry = Schemas['RawLogEntry'];
 
+
+// Notification feed (the bell and /ds/notifications)
+export type AppNotification = Schemas['AppNotificationResponse'];
+export type NotificationFeedPage = Schemas['PageAppNotificationResponse'];
+export type NotificationFeedSummary = Schemas['AppNotificationSummaryResponse'];
