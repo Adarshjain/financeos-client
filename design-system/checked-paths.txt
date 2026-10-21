@@ -13,3 +13,4 @@ src/features/jobs/
 src/features/upcoming/
 src/features/lendings/
 src/features/inbox/
+src/features/notifications/

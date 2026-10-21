@@ -4,6 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ShellPage } from '../ShellPage';
 
+vi.mock('@/lib/query/hooks/useNotifications', () => ({
+  useNotificationSummary: () => ({ data: { unread: 0 } }),
+  useNotificationFeed: () => ({ data: undefined, isLoading: false, error: null, refetch: vi.fn() }),
+  useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
+}));
+
 describe('ShellPage top-bar actions', () => {
   it('shows Ask the data linking to the live route and no Notifications', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);

@@ -2437,6 +2437,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/feed/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clearFeed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/feed/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markFeedRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/feed/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["feedSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/feed/{id}/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clearFeedItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/feed/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restoreFeedItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/loans/{loanId}/mute": {
         parameters: {
             query?: never;
@@ -3260,6 +3356,21 @@ export interface components {
             /** Format: int64 */
             transactions: number;
         };
+        AppNotificationResponse: {
+            body?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            read: boolean;
+            refs: components["schemas"]["Refs"];
+            title: string;
+        };
+        AppNotificationSummaryResponse: {
+            /** Format: int64 */
+            unread: number;
+        };
         ApplyRuleRequest: {
             all?: boolean;
             transactionIds?: string[];
@@ -3762,6 +3873,10 @@ export interface components {
         CleanupResultResponse: {
             /** Format: int64 */
             deletedCount: number;
+        };
+        ClearNotificationsResponse: {
+            /** Format: int32 */
+            cleared: number;
         };
         CloseAccountRequest: {
             /** Format: date */
@@ -5268,6 +5383,10 @@ export interface components {
             /** Format: date */
             paidOn?: string | null;
         };
+        MarkNotificationsReadRequest: {
+            /** Format: date-time */
+            before?: string;
+        };
         MatchSuggestionsResponse: {
             suggestions: components["schemas"]["InstallmentMatchSuggestion"][];
         };
@@ -5432,6 +5551,24 @@ export interface components {
         Option: {
             label: string;
             value: string;
+        };
+        PageAppNotificationResponse: {
+            content: components["schemas"]["AppNotificationResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
         };
         PageCounterpartyResponse: {
             content: components["schemas"]["CounterpartyResponse"][];
@@ -5841,6 +5978,15 @@ export interface components {
             tradeDate: string;
             /** @enum {string} */
             type: "buy" | "sell";
+        };
+        Refs: {
+            /** Format: uuid */
+            accountId?: string | null;
+            /** Format: uuid */
+            connectionId?: string | null;
+            /** Format: uuid */
+            jobId?: string | null;
+            jobType?: string | null;
         };
         RemovePushSubscriptionRequest: {
             endpoint: string;
@@ -13287,6 +13433,189 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["NotificationEvaluateResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listFeed: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageAppNotificationResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clearFeed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClearNotificationsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markFeedRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MarkNotificationsReadRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    feedSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AppNotificationSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clearFeedItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restoreFeedItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {

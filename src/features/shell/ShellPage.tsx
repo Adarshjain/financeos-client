@@ -5,6 +5,7 @@ import React from 'react';
 
 import { TopBar, type TopBarAction } from '@/components/ds';
 import { Logo } from '@/components/organisms';
+import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
 /**
  * Top-bar actions every /ds page gets (boards D-accounts, P-accounts), matching the live routes.
@@ -46,6 +47,7 @@ export function ShellPage({
   flushTop,
   children,
 }: ShellPageProps) {
+  const notifications = useNotificationsAction();
   return (
     <>
       <TopBar
@@ -54,6 +56,7 @@ export function ShellPage({
         leading={backHref ? undefined : <Logo variant="mark" />}
         backHref={backHref}
         actions={[
+          notifications,
           ...shellTopBarActions,
           ...(onAdd
             ? [

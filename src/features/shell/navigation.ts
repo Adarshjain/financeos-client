@@ -6,6 +6,8 @@ export interface ShellNavItem {
   icon: IconName;
   href: string;
   countSource?: string;
+  /** Other path prefixes that count as this item (Inbox also owns /upcoming). */
+  also?: string[];
 }
 
 export type ShellTabBarItem = Omit<ShellNavItem, 'href'> & {
@@ -19,20 +21,20 @@ export interface ShellNavGroup {
 
 /**
  * TabBar navigation items (phone bottom navigation, at most 5 items).
- * Items: Home, Inbox, Upcoming, Transactions, More.
+ * Items: Home, Inbox, Accounts, Transactions, More.
  * More uses the 'menu' icon and has no href (it triggers the More sheet).
  */
 export const shellTabBarItems: ShellTabBarItem[] = [
   { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
   { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
-  { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+  { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
   { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
   { id: 'more', label: 'More', icon: 'menu' },
 ];
 
 /**
  * Rail navigation groups (desktop left navigation matching D-home board):
- * - Home · Inbox · Upcoming
+ * - Home · Inbox (also /upcoming)
  * - Money: Accounts, Transactions
  * - Grow: Investments, Rewards
  * - Owe & lend: Loans & lendings
@@ -43,8 +45,7 @@ export const shellRailGroups: ShellNavGroup[] = [
   {
     items: [
       { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
-      { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', also: ['/upcoming'] },
     ],
   },
   {
@@ -151,7 +152,8 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
   // Check rail groups
   for (const group of shellRailGroups) {
     for (const item of group.items) {
-      if (pathname === item.href || pathname.startsWith(item.href + '/')) {
+      const prefixes = [item.href, ...(item.also ?? [])];
+      if (prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return item.id;
       }
     }

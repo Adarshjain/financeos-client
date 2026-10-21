@@ -53,6 +53,12 @@ export const keys = {
     summary: () => [...keys.inbox.all, 'summary'] as const,
   },
 
+  notifications: {
+    all: ['notifications'] as const,
+    feed: (page: number, size: number) => [...keys.notifications.all, 'feed', page, size] as const,
+    summary: () => [...keys.notifications.all, 'summary'] as const,
+  },
+
   jobs: {
     all: ['jobs'] as const,
     list: (params: Record<string, unknown> = {}) => [...keys.jobs.all, 'list', params] as const,

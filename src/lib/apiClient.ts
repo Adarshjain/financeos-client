@@ -21,6 +21,8 @@ import type {
   ErrorResponse,
   InboxResponse,
   InboxSummaryResponse,
+  NotificationFeedPage,
+  NotificationFeedSummary,
   NotificationSettingsResponse,
   Schemas,
 } from '@/lib/api/types';
@@ -1376,6 +1378,17 @@ export const inboxApi = {
   summary: async (): Promise<InboxSummaryResponse> => {
     const { data } = await serverApi.GET('/api/v1/inbox/summary');
     return data! as InboxSummaryResponse;
+  },
+};
+
+export const notificationFeedApi = {
+  feed: async (page: number, size: number): Promise<NotificationFeedPage> => {
+    const { data } = await serverApi.GET('/api/v1/notifications/feed', { params: { query: { page, size } } });
+    return data! as NotificationFeedPage;
+  },
+  summary: async (): Promise<NotificationFeedSummary> => {
+    const { data } = await serverApi.GET('/api/v1/notifications/feed/summary');
+    return data! as NotificationFeedSummary;
   },
 };
 

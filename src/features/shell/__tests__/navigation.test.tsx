@@ -32,10 +32,10 @@ describe('shell navigation', () => {
   });
 
   it('matches Rail board D-home structure', () => {
-    // 5 groups: Unlabeled (Home, Inbox, Upcoming), Money, Grow, Owe & lend, Insights
+    // 5 groups: Unlabeled (Home, Inbox), Money, Grow, Owe & lend, Insights
     expect(shellRailGroups).toHaveLength(5);
     expect(shellRailGroups[0].label).toBeUndefined();
-    expect(shellRailGroups[0].items.map((i) => i.id)).toEqual(['home', 'inbox', 'upcoming']);
+    expect(shellRailGroups[0].items.map((i) => i.id)).toEqual(['home', 'inbox']);
 
     expect(shellRailGroups[1].label).toBe('Money');
     expect(shellRailGroups[1].items.map((i) => i.id)).toEqual(['accounts', 'transactions']);
@@ -57,7 +57,7 @@ describe('shell navigation', () => {
     expect(shellTabBarItems.map((i) => i.id)).toEqual([
       'home',
       'inbox',
-      'upcoming',
+      'accounts',
       'transactions',
       'more',
     ]);
@@ -71,7 +71,9 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/ds/')).toBeUndefined();
     expect(getActiveNavItem('/dashboard')).toBe('home');
     expect(getActiveNavItem('/inbox')).toBe('inbox');
-    expect(getActiveNavItem('/upcoming')).toBe('upcoming');
+    expect(getActiveNavItem('/upcoming')).toBe('inbox');
+    expect(getActiveNavItem('/upcoming/calendar')).toBe('inbox');
+    expect(getActiveNavItem('/upcomingx')).toBeUndefined();
     expect(getActiveNavItem('/accounts')).toBe('accounts');
     expect(getActiveNavItem('/transactions')).toBe('transactions');
     expect(getActiveNavItem('/investments')).toBe('investments');
@@ -82,6 +84,23 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/chat')).toBe('chat');
     expect(getActiveNavItem('/settings')).toBe('settings');
     expect(getActiveNavItem('/unknown')).toBeUndefined();
+  });
+
+  it('has no Upcoming entry in the rail or the tab bar; Inbox owns /upcoming', () => {
+    const rail = shellRailGroups.flatMap((g) => g.items);
+    expect(rail.some((i) => i.id === 'upcoming')).toBe(false);
+    expect(shellTabBarItems.some((i) => i.id === 'upcoming')).toBe(false);
+    expect(rail.find((i) => i.id === 'inbox')?.also).toEqual(['/upcoming']);
+    expect(shellTabBarItems.find((i) => i.id === 'accounts')).toMatchObject({ icon: 'wallet', href: '/accounts' });
+  });
+
+  it('Rail and TabBar mark Inbox current on /upcoming', () => {
+    mockPathname = '/upcoming';
+    const { unmount } = render(<ShellRail user={{ email: 'a@example.test' }} />);
+    expect(screen.getByRole('link', { name: /Inbox/ }).getAttribute('aria-current')).toBe('page');
+    unmount();
+    render(<ShellTabBar user={{ email: 'a@example.test' }} />);
+    expect(screen.getByRole('tab', { name: /Inbox/ }).getAttribute('aria-current')).toBe('page');
   });
 
   it('ShellTabBar highlights current tab on /dashboard and none on /ds', () => {
