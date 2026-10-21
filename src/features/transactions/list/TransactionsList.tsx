@@ -56,6 +56,11 @@ export interface TransactionsListProps {
   openId?: string;
   /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
   onEditCategories?: (id: string) => void;
+  /** The ticked row ids; the table's checkbox column shows when `onSelectionChange` is given (piece 5). */
+  selection?: string[];
+  onSelectionChange?: (ids: string[]) => void;
+  /** Wraps each row, for the phone swipe (piece 6). */
+  wrapRow?: (row: TransactionListRow, node: React.ReactNode) => React.ReactNode;
 }
 
 /** The transactions in a card: table with month bands on desktop, rows under sticky day headers on phone. */
@@ -72,6 +77,9 @@ export function TransactionsList({
   onOpenDetail,
   openId,
   onEditCategories,
+  selection,
+  onSelectionChange,
+  wrapRow,
 }: TransactionsListProps) {
   const columns = React.useMemo(() => columnsFor(query.q), [query.q]);
   const byDate = query.sort === 'newest' || query.sort === 'oldest';
@@ -114,6 +122,10 @@ export function TransactionsList({
         getRowId={(row) => row.id}
         sort={sortStateOf(query.sort)}
         onSortChange={(sort) => onChange({ sort: sortIdOf(sort) })}
+        selectable={onSelectionChange !== undefined}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+        wrapRow={wrapRow ? (row, node) => wrapRow(asListRow(row), node) : undefined}
         onRowSelect={onOpenDetail ? (row) => onOpenDetail(row.id) : undefined}
         highlightedRowId={openId}
         band={(row) => monthBand(asListRow(row), byDate)}

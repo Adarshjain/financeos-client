@@ -29,6 +29,7 @@ import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
 
+import { isApprovable } from '../bulk/bulkModel';
 import {
   amountWords,
   balanceAfterWords,
@@ -60,7 +61,7 @@ export interface TransactionDetailPanelProps {
   onDeleted: () => void;
   /** "Link to…" (piece 4); the button is hidden while there is no handler. */
   onLink?: (transaction: Transaction) => void;
-  /** "Review" (piece 6); the button is hidden while there is no handler, and for a transaction that needs no review. */
+  /** "Review" (piece 6); the button is hidden while there is no handler, and for a transaction with nothing to clear (not in Needs review, or with no reason). */
   onReview?: (transaction: Transaction) => void;
 }
 
@@ -237,7 +238,7 @@ function DetailContent({
                   Link to…
                 </Button>
               ) : null}
-              {onReview && t.reviewType === 'NEEDS_REVIEW' ? (
+              {onReview && isApprovable(t) ? (
                 <Button size="sm" onClick={() => onReview(t)}>
                   Review
                 </Button>
