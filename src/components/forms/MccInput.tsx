@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { isValidMcc } from '@/features/transactions/form/mcc';
 
 export interface MccInputProps {
   id?: string;
@@ -17,10 +18,7 @@ export interface MccInputProps {
   className?: string;
 }
 
-export function isValidMcc(mcc?: string | null): boolean {
-  if (!mcc || mcc.trim() === '') return true;
-  return /^\d{4}$/.test(mcc.trim());
-}
+export { isValidMcc };
 
 export function MccInput({
   id = 'mcc',

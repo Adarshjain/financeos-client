@@ -9,7 +9,8 @@ import {
   fetchTransactionsPage,
 } from '@/features/transactions/list/transactionsServerApi';
 import { parseTransactionsUrl, type RawSearchParams } from '@/features/transactions/list/transactionsUrl';
-import { type TransactionsListResult,TransactionsView } from '@/features/transactions/list/TransactionsView';
+import type { TransactionsListResult } from '@/features/transactions/list/TransactionsView';
+import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
 import { todayInAppZone } from '@/lib/date-range';
 
 /**
@@ -36,10 +37,11 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
     : { ok: false, reference: page.reference };
 
   return (
-    <TransactionsView
+    <TransactionsScreen
       query={query}
       today={todayInAppZone()}
       list={list}
+      transactions={page.ok ? page.data.content : []}
       accounts={accounts}
       categories={categories}
       needsReviewCount={needsReviewCount}

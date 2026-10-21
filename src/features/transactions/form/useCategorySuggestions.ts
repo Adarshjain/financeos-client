@@ -71,7 +71,7 @@ export function useCategorySuggestions({
   };
 
   const handleDescriptionBlur = async (
-    e: React.FocusEvent<HTMLTextAreaElement>
+    e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
     if (isUpdateMode) return;
     const description = e.target.value.trim();
