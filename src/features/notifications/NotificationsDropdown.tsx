@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Button, ListRow, Popover, Skeleton, Text } from '@/components/ds';
+import { appHref } from '@/features/shell/routes';
 import { useNotificationFeed } from '@/lib/query/hooks/useNotifications';
 
 import { notificationHref, timeOrDateLabel } from './notificationsModel';
@@ -84,7 +85,7 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
         <Text variant="label" as="span">
           <Popover.Close asChild>
             <Button variant="link" size="sm" asChild>
-              <Link href="/ds/notifications">See all</Link>
+              <Link href={appHref('/notifications')}>See all</Link>
             </Button>
           </Popover.Close>
         </Text>

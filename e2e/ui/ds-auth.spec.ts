@@ -52,7 +52,7 @@ test.describe('/ds Auth UI (@ui)', () => {
     expect(page.url()).toContain('/ds/signup');
   });
 
-  test('login from= redirect: visit /ds/login?from=/accounts -> login -> lands on /accounts', async ({
+  test('login from= redirect: visit /ds/login?from=/accounts -> login -> lands on the Dinero /ds/accounts', async ({
     page,
     request,
   }) => {
@@ -69,9 +69,9 @@ test.describe('/ds Auth UI (@ui)', () => {
     await page.getByLabel('Password', { exact: true }).fill(u.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
-    // Lands on /accounts
-    await page.waitForURL((url) => url.pathname === '/accounts', { timeout: 15000 });
-    expect(new URL(page.url()).pathname).toBe('/accounts');
+    // Lands on the Dinero accounts page: Dinero links go to built Dinero pages (owner 2026-10-21)
+    await page.waitForURL((url) => url.pathname === '/ds/accounts', { timeout: 15000 });
+    expect(new URL(page.url()).pathname).toBe('/ds/accounts');
   });
 
   test('login empty submit shows danger banner without navigating', async ({ page }) => {

@@ -19,7 +19,7 @@ describe('rowButtons', () => {
       { id: 'mark_paid-0', label: 'Mark paid', variant: 'secondary', bill: 'mark_paid', disabled: false },
     ]);
     const reconnect = item({ key: 'c', kind: 'gmail_reconnect', actions: [nav('reconnect', 'Reconnect', '/settings/gmail')] });
-    expect(rowButtons(reconnect)[0]).toMatchObject({ label: 'Reconnect', variant: 'secondary', href: '/settings/gmail' });
+    expect(rowButtons(reconnect)[0]).toMatchObject({ label: 'Reconnect', variant: 'secondary', href: '/ds/settings/connections' });
   });
 
   it('mark paid with no statement is disabled', () => {

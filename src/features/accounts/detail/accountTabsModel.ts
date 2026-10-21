@@ -1,3 +1,4 @@
+import { appHref } from '@/features/shell/routes';
 import { AccountType } from '@/lib/types';
 
 export type AccountTabId = 'overview' | 'statements' | 'cards' | 'rewards';
@@ -28,7 +29,7 @@ export function accountTabsFor(type: AccountType): AccountTabDef[] {
 }
 
 export function accountHref(accountId: string): string {
-  return `/ds/accounts/${accountId}`;
+  return appHref(`/accounts/${accountId}`);
 }
 
 /** The tab a pathname belongs to; anything under the account URL that is not another tab is Overview. */

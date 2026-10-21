@@ -7,6 +7,8 @@ import { TopBar, type TopBarAction } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
+import { appHref } from './routes';
+
 /**
  * Top-bar actions every /ds page gets (boards D-accounts, P-accounts), matching the live routes.
  * Search is left out: the live app has no global search to match.
@@ -17,7 +19,7 @@ export const shellTopBarActions: TopBarAction[] = [
     icon: 'chat',
     label: 'Ask the data',
     asChild: true,
-    children: <Link href="/chat" prefetch={false} />,
+    children: <Link href={appHref('/chat')} prefetch={false} />,
   },
 ];
 

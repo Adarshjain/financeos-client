@@ -6,9 +6,10 @@ import React, { useMemo, useState } from 'react';
 import { Button, createDataTableColumnHelper, DataTable, Icon, Text } from '@/components/ds';
 import { dayMonth } from '@/features/jobs/format';
 import { formatFromHeader } from '@/features/jobs/gmailSyncModel';
+import { appHref } from '@/features/shell/routes';
 import type { SyncMessageOutcome, SyncSummary } from '@/lib/types';
 
-const ACCOUNTS_HREF = '/ds/accounts';
+const ACCOUNTS_HREF = appHref('/accounts');
 const IMPORT_HREF = '/transactions/import';
 
 function ActionCell({ outcome }: { outcome: SyncMessageOutcome }) {

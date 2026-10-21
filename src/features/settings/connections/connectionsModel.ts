@@ -1,12 +1,13 @@
 import { dayMonth, dayMonthYear } from '@/features/jobs/format';
+import { appHref } from '@/features/shell/routes';
 import type { Schemas } from '@/lib/api/types';
 import { formatRelativeTime } from '@/lib/utils';
 
 export type GmailConnection = Schemas['GmailConnectionResponse'];
 
 /** The Connections page's own URL (the Dinero preview route). */
-export const CONNECTIONS_HREF = '/ds/settings/connections';
-export const ACTIVITY_GMAIL_HREF = '/ds/settings/activity?type=GMAIL_SYNC';
+export const CONNECTIONS_HREF = appHref('/settings/connections');
+export const ACTIVITY_GMAIL_HREF = appHref('/settings/activity?type=GMAIL_SYNC');
 
 /** What the OAuth callback redirect says about the connection attempt (`?gmail=…`). */
 export interface OauthReturn {

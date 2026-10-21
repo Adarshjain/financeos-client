@@ -66,6 +66,27 @@ describe('shell navigation', () => {
     expect(moreItem.href).toBeUndefined();
   });
 
+  it('getActiveNavItem follows Dinero pages: /ds paths light the same item as their Legacy twin', () => {
+    expect(getActiveNavItem('/ds/inbox')).toBe('inbox');
+    expect(getActiveNavItem('/ds/upcoming')).toBe('inbox');
+    expect(getActiveNavItem('/ds/upcoming/calendar')).toBe('inbox');
+    expect(getActiveNavItem('/ds/accounts')).toBe('accounts');
+    expect(getActiveNavItem('/ds/accounts/a1')).toBe('accounts');
+    expect(getActiveNavItem('/ds/accounts/a1/rewards')).toBe('accounts');
+    expect(getActiveNavItem('/ds/settings')).toBe('settings');
+    expect(getActiveNavItem('/ds/settings/ai')).toBe('settings');
+    expect(getActiveNavItem('/ds/notifications')).toBeUndefined();
+    expect(getActiveNavItem('/dsx/inbox')).toBeUndefined();
+  });
+
+  it('shell links go to the Dinero page when built, Legacy otherwise', () => {
+    mockPathname = '/ds/inbox';
+    render(<ShellRail user={{ email: 'a@b.test' }} />);
+    expect(screen.getByRole('link', { name: /Inbox/i })).toHaveAttribute('href', '/ds/inbox');
+    expect(screen.getByRole('link', { name: /a@b.test/i })).toHaveAttribute('href', '/ds/settings');
+    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
+  });
+
   it('getActiveNavItem computes current item correctly and returns undefined for /ds', () => {
     expect(getActiveNavItem('/ds')).toBeUndefined();
     expect(getActiveNavItem('/ds/')).toBeUndefined();
@@ -122,7 +143,7 @@ describe('shell navigation', () => {
     mockPathname = '/accounts';
     render(<ShellRail user={{ email: 'arjun@example.test' }} />);
     expect(screen.getByText('Accounts')).toBeDefined();
-    expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/ds/settings');
     expect(screen.getByText('AR')).toBeDefined();
   });
 
@@ -181,7 +202,7 @@ describe('shell navigation', () => {
     expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/transactions/import');
 
     // Verify Section links
-    expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/ds/accounts');
     expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
     expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
     expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
@@ -192,7 +213,7 @@ describe('shell navigation', () => {
 
     // Verify Profile row
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });
-    expect(profileLink).toHaveAttribute('href', '/settings');
+    expect(profileLink).toHaveAttribute('href', '/ds/settings');
 
     // Tap an item to close the sheet
     const accountsLink = screen.getByRole('link', { name: /Accounts/i });

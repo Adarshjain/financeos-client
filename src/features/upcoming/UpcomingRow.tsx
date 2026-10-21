@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Button, DateTile, Icon, ListRow, StatusWord, Text } from '@/components/ds';
+import { appHref } from '@/features/shell/routes';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligations';
 import { rowAmount, rowDate, rowSubtitleParts } from './upcomingModel';
@@ -108,7 +109,7 @@ export function UpcomingRow({
           ) : null}
           {uploadHref ? (
             <Button variant="secondary" size="sm" asChild>
-              <Link href={uploadHref} prefetch={false}>
+              <Link href={appHref(uploadHref)} prefetch={false}>
                 Upload
               </Link>
             </Button>
@@ -126,7 +127,7 @@ export function UpcomingRow({
               asChild
               icon={<Icon name="chevron-right" size="xs" />}
             >
-              <Link href={pageHref} prefetch={false} aria-label="Open" />
+              <Link href={appHref(pageHref)} prefetch={false} aria-label="Open" />
             </Button>
           ) : null}
         </>

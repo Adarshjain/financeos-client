@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import React, { Suspense } from 'react';
 
+import { appHref } from '@/features/shell/routes';
 import { getOptionalSession } from '@/lib/auth';
 
 import { LoginForm } from './LoginForm';
@@ -18,7 +19,7 @@ export default async function DsLoginPage({
       from && from.startsWith('/') && !from.startsWith('//')
         ? from
         : '/dashboard';
-    redirect(dest);
+    redirect(appHref(dest));
   }
 
   return (

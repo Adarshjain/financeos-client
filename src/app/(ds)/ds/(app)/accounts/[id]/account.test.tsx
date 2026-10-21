@@ -385,7 +385,7 @@ describe('/ds/accounts/[id] bank Overview', () => {
     expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText('Since 15 Jun')).toBeInTheDocument();
     expect(screen.getByText('BigBasket ₹3,600 · today')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'assign' })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByRole('link', { name: 'assign' })).toHaveAttribute('href', '/ds/inbox');
     expect(screen.getByText('XX4521')).toBeInTheDocument();
     expect(screen.getByText('How Gmail alerts and statements find this account')).toBeInTheDocument();
     expect(screen.getByText('₹36,603 on the 5th')).toBeInTheDocument();

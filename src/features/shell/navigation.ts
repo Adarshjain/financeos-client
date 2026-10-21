@@ -1,5 +1,7 @@
 import type { IconName } from '@/components/ds/Icon/Icon';
 
+import { normalisePathname } from './routes';
+
 export interface ShellNavItem {
   id: string;
   label: string;
@@ -141,19 +143,19 @@ export const shellMoreGroups: ShellMoreGroup[] = [
 ];
 
 /**
- * Computes current active navigation item ID from pathname.
- * Returns undefined for '/ds' and unknown routes (no item selected).
+ * Computes current active navigation item ID from pathname. Item hrefs are Legacy-shaped, so a Dinero
+ * pathname is normalised first (/ds/accounts/1 matches Accounts). Returns undefined for the Dinero
+ * index, /ds/notifications and unknown routes (no item selected).
  */
 export function getActiveNavItem(pathname: string | null | undefined): string | undefined {
-  if (!pathname || pathname === '/ds' || pathname === '/ds/') {
-    return undefined;
-  }
+  if (!pathname) return undefined;
+  const path = normalisePathname(pathname);
 
   // Check rail groups
   for (const group of shellRailGroups) {
     for (const item of group.items) {
       const prefixes = [item.href, ...(item.also ?? [])];
-      if (prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+      if (prefixes.some((p) => path === p || path.startsWith(p + '/'))) {
         return item.id;
       }
     }
@@ -161,7 +163,7 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
 
   // Check footer
   for (const item of shellFooterItems) {
-    if (pathname === item.href || pathname.startsWith(item.href + '/')) {
+    if (path === item.href || path.startsWith(item.href + '/')) {
       return item.id;
     }
   }
