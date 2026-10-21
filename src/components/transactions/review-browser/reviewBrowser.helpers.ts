@@ -1,7 +1,6 @@
-import { batchFailureLabel } from '@/features/transactions/catalog';
 import { Account } from '@/lib/account.types';
 import { FilterClause } from '@/lib/reports.types';
-import { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
+import { PagedTransaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 
 export function getSelectableAccounts(accounts: Account[]): Account[] {
@@ -97,42 +96,6 @@ export function getObligationLinkedCount(
   return pagedData.content.filter(
     (t) => selectedIdSet.has(t.id) && (t.obligationRefs?.length ?? 0) > 0
   ).length;
-}
-
-export function getPresentReasons(
-  pagedData: PagedTransaction | null,
-  selectedIds: string[]
-): ReviewReason[] {
-  const txns = pagedData?.content.filter((t) => selectedIds.includes(t.id)) || [];
-  return Array.from(new Set(txns.flatMap((t) => t.reviewReasons || [])));
-}
-
-/** Shapes a batch-approve/-delete response's failed ids into the descriptions
- * the result-summary dialog displays, resolving each id against the still-
- * loaded page of transactions it came from. */
-export function mapBatchFailures(
-  failures: { id: string; reason?: string }[] | undefined,
-  pagedData: PagedTransaction | null
-): { description: string; reason: string }[] {
-  return (failures || []).map((f) => {
-    const txn = pagedData?.content.find((t) => t.id === f.id);
-    const desc = txn
-      ? txn.description || txn.sourcedDescription
-      : `Transaction ID: ${f.id}`;
-    return { description: desc || '', reason: batchFailureLabel(f.reason || '') };
-  });
-}
-
-export function mapBatchSkips(
-  skippedIds: string[] | undefined,
-  pagedData: PagedTransaction | null
-): string[] {
-  return (skippedIds || []).map((id) => {
-    const txn = pagedData?.content.find((t) => t.id === id);
-    return txn
-      ? txn.description || txn.sourcedDescription || ''
-      : `Transaction ID: ${id}`;
-  });
 }
 
 /** Next selected-ids set after toggling "select all" for the currently
