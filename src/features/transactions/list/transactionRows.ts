@@ -45,7 +45,6 @@ export const REASON_WORDS: Record<ReviewReason, string> = {
   CATEGORY_UNVERIFIED: 'Category unverified',
   DUPLICATE_SUSPECT: 'Duplicate',
   DATE_CORRECTED: 'Date corrected',
-  OTHER: 'Other',
 };
 
 const SOURCE_WORDS: Partial<Record<TransactionSource, string>> = {

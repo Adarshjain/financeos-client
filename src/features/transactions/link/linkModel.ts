@@ -18,6 +18,15 @@ export const LINK_TYPE_LABELS: Record<LinkType, string> = {
   EMI: 'EMI / installment',
 };
 
+/** Fees and installments are money-out, so a credit subject is not offered them. */
+const DEBIT_ONLY_TYPES: readonly LinkType[] = ['FEE', 'EMI'];
+
+/** The link types to offer between transactions: all of them, minus Fee and EMI when the subject is a credit. */
+export function linkTypesFor(subject: Pick<Transaction, 'amount'> | undefined): LinkType[] {
+  const all = Object.keys(LINK_TYPE_LABELS) as LinkType[];
+  return subject && subject.amount >= 0 ? all.filter((t) => !DEBIT_ONLY_TYPES.includes(t)) : all;
+}
+
 /** The three records a transaction can be attached to, instead of another transaction. */
 export const RECORD_KIND_LABELS = {
   LENDING: 'Lending entry',

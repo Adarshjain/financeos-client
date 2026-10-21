@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, Select, type SelectGroup, showToast } from '@/components/ds';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { isRecordKind, type LinkKind, type LinkType, type Transaction } from '@/lib/transaction.types';
+import { isRecordKind, type LinkKind, type Transaction } from '@/lib/transaction.types';
 
 import { DividendLinkBody } from './DividendLinkBody';
 import { LendingLinkBody, type LendingMode } from './LendingLinkBody';
@@ -15,6 +15,7 @@ import {
   linkDescription,
   linkProblem,
   linkTitle,
+  linkTypesFor,
   RECORD_KIND_LABELS,
 } from './linkModel';
 import { LoanPaymentLinkBody } from './LoanPaymentLinkBody';
@@ -32,8 +33,6 @@ export interface LinkTransactionsDialogProps {
   /** Something was linked: the page refreshes what it shows. The dialog closes itself. */
   onLinked: () => void;
 }
-
-const LINK_TYPES = Object.keys(LINK_TYPE_LABELS) as LinkType[];
 
 /**
  * The one Link dialog: tie transactions to each other (transfer, card bill payment, refund, reversal, fee,
@@ -78,7 +77,7 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
 
   const disabled = disabledLinkKinds(subject, transactions.length);
   const groups: SelectGroup[] = [
-    { name: 'Between transactions', options: LINK_TYPES.map((t) => ({ value: t, label: LINK_TYPE_LABELS[t] })) },
+    { name: 'Between transactions', options: linkTypesFor(subject).map((t) => ({ value: t, label: LINK_TYPE_LABELS[t] })) },
     {
       name: 'Record as',
       options: (Object.keys(RECORD_KIND_LABELS) as (keyof typeof RECORD_KIND_LABELS)[]).map((k) => ({

@@ -118,11 +118,11 @@ export function TransactionsView({
         <div className="flex">
         <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
           {selectionHeader ?? <Tabs items={tabs} value="all" />}
-          <div className="flex flex-col gap-space-12 desk:flex-row desk:flex-wrap desk:items-center">
+          <div className="flex flex-col gap-space-12 desk:flex-row desk:items-center">
             <TextField
               type="search"
               size="md"
-              className="desk:w-container-xs"
+              className="desk:w-container-xs desk:shrink-0"
               prefix={<Icon name="search" size="sm" />}
               clearable
               clearLabel="Clear search"

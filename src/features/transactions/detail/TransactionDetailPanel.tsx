@@ -47,6 +47,9 @@ import { deleteTransaction, fetchTransactionLinks } from './transactionDetailApi
 import { useDetailTransaction } from './useDetailTransaction';
 import { useTransactionUnlink } from './useTransactionUnlink';
 
+/** Below the top bar (space-56), then the page gutter (space-24, as a margin so the two add up). */
+const PANEL_OFFSET = 'desk:top-space-56 desk:mt-space-24';
+
 export interface TransactionDetailPanelProps {
   /** The transaction to show; null keeps the panel closed. */
   transactionId: string | null;
@@ -97,7 +100,7 @@ export function TransactionDetailPanel({
           {...rest}
         />
       ) : (
-        <DialogContent size="sm" srTitle="Transaction" onClose={onClose}>
+        <DialogContent size="sm" srTitle="Transaction" onClose={onClose} className={PANEL_OFFSET}>
           <DialogBody>
             {failed ? (
               <Banner tone="danger" action={{ label: 'Retry', onSelect: retry }}>
@@ -214,7 +217,7 @@ function DetailContent({
 
   return (
     <>
-      <DialogContent size="sm" title={title} description={raw} onClose={onClose}>
+      <DialogContent size="sm" title={title} description={raw} onClose={onClose} className={PANEL_OFFSET}>
         <DialogBody className="px-0 desk:px-0 py-0 gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">

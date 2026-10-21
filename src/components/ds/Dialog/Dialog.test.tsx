@@ -48,8 +48,8 @@ describe('DialogShell', () => {
     const { container } = render(
       <DialogShell variant="side-panel" title="Detail view" />,
     );
-    expect(container.firstChild).toHaveClass('desk:rounded-l-ds-xl');
-    expect(container.firstChild).toHaveClass('desk:h-full');
+    expect(container.firstChild).toHaveClass('desk:rounded-ds-lg', 'desk:border', 'desk:border-line', 'desk:shadow-none');
+    expect(container.firstChild).not.toHaveClass('desk:h-full');
   });
 
   it('applies bg-canvas when background="canvas" and bg-surface when background="surface" (default)', () => {
@@ -657,5 +657,28 @@ describe('Dialog side panel (non-modal on desktop)', () => {
     await settle();
     fireEvent.pointerDown(document.body);
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+});
+
+describe('side-panel placement', () => {
+  const place = (className?: string) => {
+    render(
+      <Dialog open variant="side-panel">
+        <DialogContent title="Detail" className={className}>
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    return screen.getByRole('dialog');
+  };
+
+  it('defaults to a card inset by the gutter on all sides', () => {
+    expect(place()).toHaveClass('desk:top-space-24', 'desk:right-space-24', 'desk:bottom-space-24');
+  });
+
+  it("puts the page's top offset on the positioned element, replacing the default top", () => {
+    const el = place('desk:top-space-56 desk:mt-space-24');
+    expect(el).toHaveClass('desk:top-space-56', 'desk:mt-space-24', 'desk:bottom-space-24');
+    expect(el).not.toHaveClass('desk:top-space-24');
   });
 });

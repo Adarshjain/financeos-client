@@ -21,7 +21,6 @@ describe('isApprovable', () => {
   it('needs Needs review and a reason that can be cleared', () => {
     expect(isApprovable(flagged(['DUPLICATE_SUSPECT']))).toBe(true);
     expect(isApprovable(flagged([]))).toBe(false);
-    expect(isApprovable(flagged(['OTHER']))).toBe(false);
     expect(isApprovable(txn({ reviewReasons: ['DUPLICATE_SUSPECT'] }))).toBe(false);
   });
 });
