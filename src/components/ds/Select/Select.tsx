@@ -433,20 +433,17 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         {action ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={action.onSelect}
-                className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors text-left"
-              >
+            {/* A link sized like the label style, as card header links are */}
+            <div className="flex justify-end px-space-10 py-space-8 text-label">
+              <Button type="button" variant="link" onClick={action.onSelect}>
                 {action.label}
-              </button>
+              </Button>
             </div>
           </>
         ) : null}
 
         {multiple ? (
-          <div className="flex justify-end gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4">
+          <div className="flex items-center justify-end gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4 text-label">
             <Button
               type="button"
               variant="link"
