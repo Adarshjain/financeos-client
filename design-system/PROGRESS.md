@@ -70,7 +70,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 10 | Menu | Approved |
 | 11 | SelectionBar | Approved (2026-10-21: count bubble, disabled action's hint on desktop, Ready for review) |
 | 12 | SwipeActions | Approved |
-| 13 | TextField | Approved |
+| 13 | TextField | Approved (2026-10-21: `size` xl, `align` left/right, Ready for review) |
 | 14 | TextArea | Approved |
 | 15 | DateField | Approved |
 | 16 | Select | Approved (2026-10-19: create clears the search and is not offered for an existing option; 2026-10-21: `size` sm, radio from Radio, Ready for review) |
@@ -360,7 +360,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-21 · **Open questions closed** (owner): count pill on primary Button inverts (surface on ink); Quick add Transaction and Trade stay disabled until their Dinero forms ship; person ledger keeps the Settled badge, no per-entry settled date. Checkbox `minus` and Button `spinner` icons already in the registry.
 - 2026-10-21 · **Transactions gap review 1–6** (owner; artifact WToDC8REhPFvTxLrH9rKCE, Part 2 items 16–54 accepted): all filters in the URL, read on the server before the first fetch (never two fetches on load); search also matches amounts when the text is a number (server decides); default period Last 14 days (new preset); Up to statement is a plain filter, nothing special; no Similar card; MCC code only; Edit can set review reasons (server); Needs review with no reason puts Review status in its error state until the user changes it (no auto-move); Auto reviewed is disabled on Edit; search matches are marked with a mint highlighter stroke (lower two thirds, rough ends, slight tilt, swipes in once per new search, none with reduced motion; new generic tokens `highlight` #8fdcb9 / dark #1d6649 and `highlight-soft` #b5ecd2 / dark #24805b; samples artifact 6QGYFdjYqCNPLTMzq2Go8M); no save-and-add-another; installments and Mark paid choices as radio rows (overrides §7.3 for these; needs a Radio component); link/settle amount and date fields with difference words, no prepayment line; no "Other" link type; dividend form on stored fields (Type, per share × shares, ex-date, pay date = txn date, notes); one open transaction list everywhere, replacing the dropdown picker in Mark paid, Settle up, Add lending, Edit entry; select all = rows on the current page only; swipe approve / Review: one reason clears with Undo, several open the approve dialog.
 - 2026-10-21 · **Detail pane and amount filter** (owner): Dialog side panel is non-modal on desktop (no backdrop, list stays usable, a row click swaps the detail; phone stays a sheet); Amount filter From and To are two TextFields.
-- 2026-10-21 · **Step 1 review** (owner): no `amount` TextField variant; amount uses existing TextField props (domain-named variants not wanted). One SelectionBar `hint` for both layouts, phone wording. Highlight stroke must not cover neighbouring letters.
+- 2026-10-21 · **Step 1 review** (owner): no `amount` TextField variant; TextField gets generic `size="xl"` and `align` (default left) instead. One SelectionBar `hint` for both layouts, phone wording. Highlight stroke must not cover neighbouring letters.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
