@@ -277,8 +277,6 @@ const config: Config = {
           'border-radius': '.9em .3em .8em .25em/.35em .6em .3em .6em',
           display: 'inline-block',
           transform: 'rotate(-1.2deg)',
-          padding: '0 2px',
-          margin: '0 -2px',
           'box-decoration-break': 'clone',
           'background-color': 'transparent',
           color: 'inherit',
