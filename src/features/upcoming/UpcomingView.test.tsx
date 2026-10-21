@@ -231,7 +231,7 @@ describe('UpcomingView row trailing', () => {
 
   it('EMI rows link to the loan with the installment; card bills have no chevron', () => {
     render(<UpcomingView />);
-    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toContain('/loans/L1?installment=14');
+    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toContain('/ds/loans/L1?installment=14');
     expect(screen.getAllByRole('link', { name: 'Open' })).toHaveLength(4);
   });
 

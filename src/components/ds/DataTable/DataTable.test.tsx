@@ -723,6 +723,32 @@ describe('DataTable', () => {
     });
   });
 
+  describe('Pressable row state', () => {
+    it('a non-pressable row has no button role and a click does not call onRowSelect; others still do', () => {
+      const onRowSelect = vi.fn();
+      render(
+        <DataTable
+          columns={testColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          onRowSelect={onRowSelect}
+          rowState={(r) => (r.id === '2' ? { pressable: false } : undefined)}
+        />,
+      );
+      expect(screen.getAllByRole('button', { name: /Alpha/i })).toHaveLength(1);
+      expect(screen.queryByRole('button', { name: /Beta/i })).toBeNull();
+      const beta = screen.getAllByRole('row').find((r) => r.textContent?.includes('Beta'))!;
+      expect(beta).not.toHaveAttribute('tabindex');
+      expect(beta.className).not.toContain('cursor-pointer');
+      expect(beta.className).not.toContain('opacity-60');
+      expect(beta.className).not.toContain('pointer-events-none');
+      fireEvent.click(beta);
+      expect(onRowSelect).not.toHaveBeenCalled();
+      fireEvent.click(screen.getAllByRole('button', { name: /Alpha/i })[0]);
+      expect(onRowSelect).toHaveBeenCalledWith(testData[0]);
+    });
+  });
+
   describe('Muted row state', () => {
     it('dims the row but keeps it clickable', () => {
       const onRowSelect = vi.fn();

@@ -166,7 +166,7 @@ describe('InboxPage', () => {
     renderWithQuery(<InboxPage />);
     await screen.findByText('Amex bill');
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/loans/l1');
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/ds/loans/l1');
     expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions/review');
     expect(screen.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/ds/accounts/acc-1/rewards');
   });

@@ -2,7 +2,9 @@
 
 import { toast } from 'sonner';
 
-import { useLoanMutations } from './useLoanMutations';
+import { paymentItemFor } from '@/features/loans/loanPaymentsBatch';
+import { useLoanMutations } from '@/features/loans/useLoanMutations';
+
 import { useLoanQueries } from './useLoanQueries';
 
 interface UseLoanMatchActionsProps {
@@ -54,15 +56,7 @@ export function useLoanMatchActions({
     if (!matchSuggestions) return;
     const itemsToConfirm = matchSuggestions.suggestions
       .filter((s) => s.candidates.length > 0)
-      .map((s) => ({
-        installmentSeq: s.installmentSeq,
-        paymentDate: s.candidates[0].date,
-        amount:
-          s.candidates[0].amount < 0
-            ? Math.abs(s.candidates[0].amount)
-            : s.candidates[0].amount,
-        transactionId: s.candidates[0].id,
-      }));
+      .map((s) => paymentItemFor(s.installmentSeq, s.candidates[0]));
 
     if (itemsToConfirm.length === 0) return;
 

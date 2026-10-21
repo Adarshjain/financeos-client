@@ -1,10 +1,9 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
+import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatch';
 import { api } from '@/lib/api/client';
-import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {
@@ -14,8 +13,9 @@ import type {
   CreateLoanPaymentRequest,
 } from '@/lib/types';
 
-function onErrorToast(fallback: string) {
-  return (e: unknown) => toastError(e, fallback);
+export interface LoanMutationOptions {
+  /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
+  onError?: (e: unknown, fallback: string) => void;
 }
 
 /**
@@ -26,8 +26,10 @@ function onErrorToast(fallback: string) {
  * several UI flows share the same endpoint with different copy (e.g. settling an
  * installment vs. confirming a match both call `addPayment`).
  */
-export function useLoanMutations(loanId: string) {
+export function useLoanMutations(loanId: string, options?: LoanMutationOptions) {
   const qc = useQueryClient();
+  const onErrorToast = (fallback: string) => (e: unknown) =>
+    options?.onError ? options.onError(e, fallback) : toastError(e, fallback);
 
   const invalidateLoan = () =>
     qc.invalidateQueries({ queryKey: keys.loans.all });
@@ -49,17 +51,7 @@ export function useLoanMutations(loanId: string) {
   });
 
   const addPaymentsBatch = useMutation({
-    mutationFn: (body: BatchLoanPaymentRequest) =>
-      api
-        .POST('/api/v1/loans/{id}/payments/batch', {
-          params: { path: { id: loanId } },
-          // The generated request type requires `transactionId` on every item; the
-          // match-confirmation flow always supplies one, but the hand-authored
-          // `BatchLoanPaymentItem` marks it optional to mirror the single-payment
-          // request shape. See "Spec follow-ups" in the migration report.
-          body: body as Schemas['BatchLoanPaymentRequest'],
-        })
-        .then(() => ({ created: body.items.length })),
+    mutationFn: (body: BatchLoanPaymentRequest) => postLoanPaymentsBatch(loanId, body),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast('Failed to record batch loan payments'),
   });

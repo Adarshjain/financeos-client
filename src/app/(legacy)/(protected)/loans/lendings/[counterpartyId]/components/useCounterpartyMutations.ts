@@ -4,6 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useCreateLending } from '@/features/lendings/useCreateLending';
+import {
+  useLinkLendingTransaction,
+  useUnlinkLendingTransaction,
+} from '@/features/lendings/useLendingTransactionLink';
 import { api, ApiError } from '@/lib/api/client';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -68,26 +72,9 @@ export function useCounterpartyMutations(counterpartyId: string) {
     onError: onErrorToast('Failed to delete lending'),
   });
 
-  const linkTransaction = useMutation({
-    mutationFn: ({ id, transactionId }: { id: string; transactionId: string }) =>
-      api
-        .PUT('/api/v1/lendings/{id}/transaction', {
-          params: { path: { id } },
-          body: { transactionId },
-        })
-        .then((r) => r.data!),
-    onSuccess: invalidateLendingsAndTransactions,
-    onError: onErrorToast('Failed to link transaction'),
-  });
+  const linkTransaction = useLinkLendingTransaction();
 
-  const unlinkTransaction = useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/lendings/{id}/transaction', {
-        params: { path: { id } },
-      }),
-    onSuccess: invalidateLendingsAndTransactions,
-    onError: onErrorToast('Failed to unlink transaction'),
-  });
+  const unlinkTransaction = useUnlinkLendingTransaction();
 
   return {
     updateCp,

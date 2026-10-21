@@ -65,7 +65,9 @@ test.describe('Bills API', () => {
     expect(bill!.remainingAmount).toBeCloseTo(6000, 2);
     expect(bill!.digest?.totalPurchases).toBeCloseTo(6000, 2);
     expect(bill!.digest?.creditLimit).toBeCloseTo(100000, 2);
-    expect(bill!.lastNotifiedKind, 'the digest marker is recorded even without push').toBe('RECEIVED');
+    // Catch-up records the most urgent kind that applies: RECEIVED, or DUE_n when the
+    // fixture's due date (period end + 15, capped at the 28th) falls inside a reminder window.
+    expect(bill!.lastNotifiedKind, 'the digest marker is recorded even without push').toMatch(/^(RECEIVED|DUE_\d+|OVERDUE)$/);
 
     const one = await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill!.statementId! } } });
     expectStatus(one, 200);

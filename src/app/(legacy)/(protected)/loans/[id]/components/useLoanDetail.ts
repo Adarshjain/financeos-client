@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
+  buildChargeRequest,
+  buildEventRequest,
+  buildPaymentRequest,
+} from '@/features/loans/detail/loanRequests';
+import { useLoanMutations } from '@/features/loans/useLoanMutations';
+import {
   AdjustmentMode,
   InstallmentDto,
   LoanChargeType,
@@ -11,7 +17,6 @@ import {
 } from '@/lib/types';
 
 import { useLoanMatchActions } from './useLoanMatchActions';
-import { useLoanMutations } from './useLoanMutations';
 import { useLoanQueries } from './useLoanQueries';
 import { useLoanTransactionLinks } from './useLoanTransactionLinks';
 
@@ -109,12 +114,14 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     e.preventDefault();
     if (!selectedInstallment) return;
     try {
-      await mutations.addPayment.mutateAsync({
-        installmentSeq: selectedInstallment.seq,
-        paymentDate,
-        amount: Number(paymentAmount),
-        transactionId: paymentTx?.id,
-      });
+      await mutations.addPayment.mutateAsync(
+        buildPaymentRequest({
+          installmentSeq: selectedInstallment.seq,
+          paymentDate,
+          amount: paymentAmount,
+          transactionId: paymentTx?.id,
+        }),
+      );
       toast.success(`Installment #${selectedInstallment.seq} marked as paid`);
       setMarkPaidOpen(false);
     } catch {
@@ -134,23 +141,17 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
   const handleAddEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mutations.addEvent.mutateAsync({
-        eventType,
-        effectiveDate,
-        newAnnualRatePct: newAnnualRatePct
-          ? Number(newAnnualRatePct)
-          : undefined,
-        amount: eventAmount ? Number(eventAmount) : undefined,
-        adjustmentMode:
-          eventType !== 'foreclosure' ? adjustmentMode : undefined,
-        newEmiOverride:
-          eventType !== 'foreclosure' &&
-          adjustmentMode === 'reduce_emi' &&
-          newEmiOverride
-            ? Number(newEmiOverride)
-            : undefined,
-        transactionId: eventTx?.id,
-      });
+      await mutations.addEvent.mutateAsync(
+        buildEventRequest({
+          eventType,
+          effectiveDate,
+          newAnnualRatePct,
+          amount: eventAmount,
+          adjustmentMode,
+          newEmiOverride,
+          transactionId: eventTx?.id,
+        }),
+      );
       toast.success('Event recorded');
       setAddEventOpen(false);
     } catch {
@@ -170,13 +171,15 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
   const handleAddCharge = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mutations.addCharge.mutateAsync({
-        chargeType,
-        amount: Number(chargeAmount),
-        chargeDate,
-        notes: chargeNotes.trim() || undefined,
-        transactionId: chargeTx?.id,
-      });
+      await mutations.addCharge.mutateAsync(
+        buildChargeRequest({
+          chargeType,
+          amount: chargeAmount,
+          chargeDate,
+          notes: chargeNotes,
+          transactionId: chargeTx?.id,
+        }),
+      );
       toast.success('Charge added');
       setAddChargeOpen(false);
     } catch {

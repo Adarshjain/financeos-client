@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { prefillAmount, prefillDate } from '@/features/loans/detail/loanRequests';
 import { Transaction } from '@/lib/transaction.types';
 import { LoanEventType } from '@/lib/types';
 
@@ -59,22 +60,22 @@ export function useLoanTransactionLinks({
 
   const onSelectPaymentTx = (t: Transaction) => {
     setPaymentTx(t);
-    if (!paymentAmount) setPaymentAmount(String(Math.abs(t.amount)));
-    if (!paymentDate) setPaymentDate(t.date);
+    setPaymentAmount(prefillAmount(paymentAmount, t));
+    setPaymentDate(prefillDate(paymentDate, t));
   };
   const onClearPaymentTx = () => setPaymentTx(null);
 
   const onSelectChargeTx = (t: Transaction) => {
     setChargeTx(t);
-    if (!chargeAmount) setChargeAmount(String(Math.abs(t.amount)));
-    if (!chargeDate) setChargeDate(t.date);
+    setChargeAmount(prefillAmount(chargeAmount, t));
+    setChargeDate(prefillDate(chargeDate, t));
   };
   const onClearChargeTx = () => setChargeTx(null);
 
   const onSelectEventTx = (t: Transaction) => {
     setEventTx(t);
-    if (!eventAmount) setEventAmount(String(Math.abs(t.amount)));
-    if (!effectiveDate) setEffectiveDate(t.date);
+    setEventAmount(prefillAmount(eventAmount, t));
+    setEffectiveDate(prefillDate(effectiveDate, t));
   };
   const onClearEventTx = () => setEventTx(null);
 

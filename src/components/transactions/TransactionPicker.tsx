@@ -5,11 +5,11 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { type PickerTransaction, useTransactionPicker } from '@/features/transactions/useTransactionPicker';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
-import { type PickerTransaction, useTransactionPicker } from './useTransactionPicker';
 
 /** Minimal shape both a `LendingTransactionSummary` and a full `Transaction`
  *  satisfy — enough to render the selected chip regardless of which one the

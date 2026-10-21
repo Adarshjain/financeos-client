@@ -17,6 +17,7 @@ import {
   Text,
 } from '@/components/ds';
 import { Logo } from '@/components/organisms';
+import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
 import {
@@ -56,6 +57,7 @@ export function ShellTabBar({
   const pathname = usePathname();
   const current = getActiveNavItem(pathname);
   const counts = useNavCounts();
+  const addLending = useAddLending();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -97,7 +99,20 @@ export function ShellTabBar({
               </div>
               <div className="grid grid-cols-4 gap-space-8">
                 {shellQuickAddItems.map((item) =>
-                  item.disabled ? (
+                  item.dialog === 'lending' ? (
+                    <Button
+                      key={item.id}
+                      variant="secondary"
+                      layout="stacked"
+                      icon={<Icon name={item.icon} size="lg" />}
+                      onClick={() => {
+                        setMoreOpen(false);
+                        addLending.open();
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  ) : item.disabled ? (
                     <Button
                       key={item.id}
                       variant="secondary"

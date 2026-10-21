@@ -14,3 +14,5 @@ src/features/upcoming/
 src/features/lendings/
 src/features/inbox/
 src/features/notifications/
+src/features/loans/
+src/features/transactions/

@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { entriesLabel, positionLabel } from '@/features/lendings/lendingEntryForm';
 import type { CounterpartyResponse, CounterpartySelection } from '@/lib/lending.types';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
-import { cn, formatMoney } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 export const SEARCH_DEBOUNCE_MS = 250;
 
@@ -27,17 +28,7 @@ interface CounterpartyPickerProps {
   disabled?: boolean;
 }
 
-/** "Owes you ₹1,200" / "You owe ₹500" / "Settled" / "No entries yet". */
-export function positionLabel(cp: CounterpartyResponse): string {
-  if (cp.entryCount === 0) return 'No entries yet';
-  if (cp.netPosition > 0) return `Owes you ${formatMoney(cp.netPosition)}`;
-  if (cp.netPosition < 0) return `You owe ${formatMoney(-cp.netPosition)}`;
-  return 'Settled';
-}
-
-function entriesLabel(count: number): string {
-  return `${count} ${count === 1 ? 'entry' : 'entries'}`;
-}
+export { positionLabel };
 
 function CounterpartyRow({ cp, suggested }: { cp: CounterpartyResponse; suggested: boolean }) {
   return (

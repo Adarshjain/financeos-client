@@ -560,6 +560,7 @@ export const RowStates: Story = {
       if (r.id === '2') return { tone: 'warning' };
       if (r.id === '3') return { disabled: true };
       if (r.id === '4') return { muted: true };
+      if (r.id === '5') return { pressable: false };
       return undefined;
     },
   },

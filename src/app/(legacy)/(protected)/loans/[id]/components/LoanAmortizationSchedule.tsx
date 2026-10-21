@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { fyGroupKey } from '@/features/loans/detail/financialYear';
 import { InstallmentDto } from '@/lib/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
@@ -28,16 +29,8 @@ export function LoanAmortizationSchedule({
   onUnlinkPayment,
   highlightSeq = null,
 }: LoanAmortizationScheduleProps) {
-  const getFYGroupKey = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const fyStart = month >= 3 ? year : year - 1;
-    return `FY ${fyStart}-${(fyStart + 1).toString().slice(-2)}`;
-  };
-
   const highlighted = highlightSeq == null ? null : schedule.find((i) => i.seq === highlightSeq) ?? null;
-  const highlightedFY = highlighted ? getFYGroupKey(highlighted.dueDate) : null;
+  const highlightedFY = highlighted ? fyGroupKey(highlighted.dueDate) : null;
 
   useEffect(() => {
     if (highlightSeq == null) return;
@@ -47,7 +40,7 @@ export function LoanAmortizationSchedule({
 
   const fyGroups = schedule.reduce(
     (acc, inst) => {
-      const fy = getFYGroupKey(inst.dueDate);
+      const fy = fyGroupKey(inst.dueDate);
       if (!acc[fy]) acc[fy] = [];
       acc[fy].push(inst);
       return acc;

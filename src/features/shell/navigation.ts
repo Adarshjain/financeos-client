@@ -67,7 +67,7 @@ export const shellRailGroups: ShellNavGroup[] = [
   {
     label: 'Owe & lend',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans' },
+      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
     ],
   },
   {
@@ -90,6 +90,8 @@ export interface ShellQuickAddItem {
   icon: IconName;
   href?: string;
   disabled?: boolean;
+  /** Opens a dialog from state instead of navigating (the app provides the dialog). */
+  dialog?: 'lending';
 }
 
 export interface ShellMoreGroup {
@@ -99,13 +101,13 @@ export interface ShellMoreGroup {
 
 /**
  * Quick add items for the phone More sheet (P-more).
- * Transaction, Lending, and Trade have no dedicated routes yet (Legacy dialogs),
- * so they are disabled until the owner decides on their routes.
+ * Transaction and Trade have no dedicated routes yet (Legacy dialogs), so they are disabled until
+ * the owner decides on their routes. Lending opens the Add lending dialog from state (no URL change).
  * Import links to /transactions/import.
  */
 export const shellQuickAddItems: ShellQuickAddItem[] = [
   { id: 'transaction', label: 'Transaction', icon: 'add', disabled: true },
-  { id: 'lending', label: 'Lending', icon: 'handshake', disabled: true },
+  { id: 'lending', label: 'Lending', icon: 'handshake', dialog: 'lending' },
   { id: 'trade', label: 'Trade', icon: 'chart-line-up', disabled: true },
   { id: 'import', label: 'Import', icon: 'upload', href: '/transactions/import' },
 ];
@@ -134,7 +136,7 @@ export const shellMoreGroups: ShellMoreGroup[] = [
   {
     label: 'Owe & lend · Insights',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans' },
+      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
       { id: 'dashboards', label: 'Dashboards', icon: 'squares-four', href: '/dashboards' },
       { id: 'reports', label: 'Reports', icon: 'chart-bar', href: '/reports' },
       { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
