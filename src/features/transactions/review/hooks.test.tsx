@@ -110,6 +110,53 @@ describe('useQuickApprove', () => {
     });
   });
 
+  describe('Undo with verified rules', () => {
+    const approveThenUndo = async (verifiedRules?: unknown) => {
+      vi.mocked(api.POST).mockImplementation((async (path: string) =>
+        path === '/api/v1/rules/{id}/unverify'
+          ? { data: { restoredTransactionIds: [] } }
+          : { data: { succeededIds: ['a'], skippedIds: [], failures: [], verifiedRules } }) as never);
+      const hook = setup(() => useQuickApprove());
+      await act(async () => {
+        await hook.result.current.quickApprove({ id: 'a', reviewReasons: ['CATEGORY_UNVERIFIED'] });
+      });
+      const options = showToast.mock.calls[0][1];
+      await act(async () => options.action.onSelect());
+      return hook;
+    };
+    const unverifies = () => vi.mocked(api.POST).mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify');
+
+    it('unverifies each verified rule with its cleared ids and refreshes rules', async () => {
+      const { invalidate } = await approveThenUndo([
+        { ruleId: 'r1', clearedTransactionIds: ['x', 'y'] },
+        { ruleId: 'r2', clearedTransactionIds: ['z'] },
+      ]);
+      expect(unverifies().map((c) => c[1])).toEqual([
+        { params: { path: { id: 'r1' } }, body: { transactionIds: ['x', 'y'] } },
+        { params: { path: { id: 'r2' } }, body: { transactionIds: ['z'] } },
+      ]);
+      expect(invalidate.mock.calls.map((c) => c[0]?.queryKey)).toContainEqual(keys.rules.all);
+    });
+
+    it.each([[[]], [undefined]])('makes no unverify call when verifiedRules is %j', async (v) => {
+      await approveThenUndo(v);
+      expect(unverifies()).toHaveLength(0);
+    });
+
+    it('shows the error toast when an unverify fails', async () => {
+      vi.mocked(api.POST).mockImplementation((async (path: string) => {
+        if (path === '/api/v1/rules/{id}/unverify') throw new Error('nope');
+        return { data: { succeededIds: ['a'], skippedIds: [], failures: [], verifiedRules: [{ ruleId: 'r1', clearedTransactionIds: ['x'] }] } };
+      }) as never);
+      const { result } = setup(() => useQuickApprove());
+      await act(async () => {
+        await result.current.quickApprove({ id: 'a', reviewReasons: ['CATEGORY_UNVERIFIED'] });
+      });
+      await act(async () => showToast.mock.calls[0][1].action.onSelect());
+      expect(showToast).toHaveBeenLastCalledWith('Could not undo', { tone: 'danger' });
+    });
+  });
+
   it('asks the caller for the dialog when the row has several reasons, without a request', async () => {
     const { result } = setup(() => useQuickApprove());
     let outcome;

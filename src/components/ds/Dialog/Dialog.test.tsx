@@ -661,10 +661,10 @@ describe('Dialog side panel (non-modal on desktop)', () => {
 });
 
 describe('side-panel placement', () => {
-  const place = (className?: string) => {
+  const place = (className?: string, size?: 'sm' | 'md') => {
     render(
       <Dialog open variant="side-panel">
-        <DialogContent title="Detail" className={className}>
+        <DialogContent title="Detail" className={className} size={size}>
           <DialogBody>Body</DialogBody>
         </DialogContent>
       </Dialog>,
@@ -680,5 +680,9 @@ describe('side-panel placement', () => {
     const el = place('desk:top-space-56 desk:mt-space-24');
     expect(el).toHaveClass('desk:top-space-56', 'desk:mt-space-24', 'desk:bottom-space-24');
     expect(el).not.toHaveClass('desk:top-space-24');
+  });
+
+  it('takes the width of its size, not the width of its content', () => {
+    expect(place(undefined, 'sm')).toHaveClass('desk:w-full', 'desk:max-w-container-sm');
   });
 });

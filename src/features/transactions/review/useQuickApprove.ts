@@ -1,12 +1,19 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+
 import { showToast } from '@/components/ds';
 import { batchFailureLabel } from '@/features/transactions/catalog';
+import { api } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { approvedMessage, type ClearableReason } from './reviewHelpers';
 import { useBatchReview } from './useBatchReview';
+
+type VerifiedRule = { ruleId: string; clearedTransactionIds: string[] };
 
 export type QuickApproveOutcome = 'approved' | 'needs-dialog' | 'nothing-to-approve' | 'failed';
 
@@ -18,10 +25,28 @@ export type QuickApproveOutcome = 'approved' | 'needs-dialog' | 'nothing-to-appr
  */
 export function useQuickApprove() {
   const batch = useBatchReview();
+  const qc = useQueryClient();
+  const router = useRouter();
 
-  const undo = async (id: string, reason: ClearableReason) => {
+  const undo = async (id: string, reason: ClearableReason, verifiedRules: VerifiedRule[]) => {
     try {
       await batch.mutateAsync({ ids: [id], reviewType: 'NEEDS_REVIEW', reasons: [reason] });
+      if (verifiedRules.length > 0) {
+        // The approve verified these rules and cleared other rows' flags; roll that back too.
+        await Promise.all(
+          verifiedRules.map(async (rule) => {
+            const { data, error } = await api.POST('/api/v1/rules/{id}/unverify', {
+              params: { path: { id: rule.ruleId } },
+              body: { transactionIds: rule.clearedTransactionIds },
+            });
+            if (error || !data) throw error ?? new Error('Could not undo');
+          }),
+        );
+        qc.invalidateQueries({ queryKey: keys.rules.all });
+        qc.invalidateQueries({ queryKey: keys.transactions.all });
+        qc.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
+        router.refresh();
+      }
     } catch (e) {
       showToast(getErrorMessage(e, 'Could not undo'), { tone: 'danger' });
     }
@@ -45,7 +70,7 @@ export function useQuickApprove() {
       }
       showToast(approvedMessage(1), {
         tone: 'success',
-        action: { label: 'Undo', onSelect: () => void undo(txn.id, reason) },
+        action: { label: 'Undo', onSelect: () => void undo(txn.id, reason, data.verifiedRules ?? []) },
       });
       return 'approved';
     } catch (e) {

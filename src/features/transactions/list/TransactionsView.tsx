@@ -161,7 +161,7 @@ export function TransactionsView({
             <TransactionsLoadError reference={list.reference} />
           )}
         </div>
-        {detailOpen ? <div aria-hidden="true" className="hidden w-full max-w-container-sm shrink-0 desk:block" /> : null}
+        {detailOpen ? <div aria-hidden="true" className="hidden w-full max-w-container-sm shrink-0 desk:ml-space-24 desk:block" /> : null}
         </div>
       </ShellPage>
       {filtersOpen ? (
