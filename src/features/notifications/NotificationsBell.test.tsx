@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
@@ -28,7 +28,14 @@ const mockApi = api as unknown as { GET: ReturnType<typeof vi.fn>; POST: ReturnT
 const bell = () => screen.getByRole('button', { name: 'Notifications' });
 
 describe('Notifications bell', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   beforeEach(() => {
+    // Rows' times read relative to today; pin today to the fixtures' day.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-21T10:00:00Z'));
     vi.resetAllMocks();
     mockApi.POST.mockResolvedValue({ data: undefined });
   });
