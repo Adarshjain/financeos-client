@@ -510,7 +510,7 @@ export const DialogContent = forwardRef<
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
             'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
             variant === 'side-panel'
-              ? 'desk:top-space-24 desk:right-space-24 desk:bottom-space-24 desk:left-auto'
+              ? cn('desk:top-space-24 desk:right-space-24 desk:bottom-space-24 desk:left-auto desk:w-full', dialogSizeClasses[size])
               : 'desk:inset-0 desk:items-center desk:justify-center desk:p-space-16',
             // A side panel's className places it (the page sets its top offset); the modal's goes to the panel.
             variant === 'side-panel' && className
