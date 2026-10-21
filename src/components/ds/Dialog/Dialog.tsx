@@ -1,7 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import React, { forwardRef, useCallback, useRef } from 'react';
+import React, { createContext, forwardRef, useCallback, useContext, useRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
@@ -356,7 +356,43 @@ DialogShell.displayName = 'DialogShell';
 
 /* Radix Dialog wrappers for accessible overlays */
 
-export const Dialog = DialogPrimitive.Root;
+const DialogVariantContext = createContext<{ variant: DialogVariant; open: boolean }>({
+  variant: 'modal',
+  open: true,
+});
+
+export interface DialogProps
+  extends Omit<React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>, 'modal'> {
+  /** `side-panel` is non-modal on desktop (no backdrop, the page behind stays usable); on phone it is a sheet with a backdrop. */
+  variant?: DialogVariant;
+}
+
+export const Dialog = ({
+  variant = 'modal',
+  open,
+  defaultOpen,
+  onOpenChange,
+  children,
+  ...props
+}: DialogProps) => {
+  const [isOpen, setIsOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen ?? false,
+    onChange: onOpenChange,
+  });
+  return (
+    <DialogVariantContext.Provider value={{ variant, open: isOpen }}>
+      <DialogPrimitive.Root
+        {...props}
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        modal={variant !== 'side-panel'}
+      >
+        {children}
+      </DialogPrimitive.Root>
+    </DialogVariantContext.Provider>
+  );
+};
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;
@@ -366,7 +402,6 @@ export interface DialogContentProps extends Omit<
   'title'
 > {
   size?: DialogSize;
-  variant?: DialogVariant;
   background?: DialogBackground;
   title?: React.ReactNode;
   description?: React.ReactNode;
@@ -389,7 +424,6 @@ export const DialogContent = forwardRef<
       className,
       style,
       size = 'md',
-      variant = 'modal',
       background = 'surface',
       title,
       description,
@@ -401,11 +435,13 @@ export const DialogContent = forwardRef<
       tertiary,
       dismissible = true,
       onPointerDownOutside,
+      onInteractOutside,
       onEscapeKeyDown,
       ...props
     },
     ref
   ) => {
+    const { variant, open } = useContext(DialogVariantContext);
     const closeRef = useRef<HTMLButtonElement>(null);
 
     const handleClose = () => {
@@ -435,6 +471,15 @@ export const DialogContent = forwardRef<
       onPointerDownOutside?.(e);
     };
 
+    // Side panel: the page behind stays usable, so a click or focus outside never closes it.
+    const handleInteractOutside: DialogContentProps['onInteractOutside'] = (e) => {
+      if (variant === 'side-panel') {
+        e.preventDefault();
+        return;
+      }
+      onInteractOutside?.(e);
+    };
+
     const handleEscapeKeyDown: DialogContentProps['onEscapeKeyDown'] = (e) => {
       if (!dismissible) {
         e.preventDefault();
@@ -445,11 +490,21 @@ export const DialogContent = forwardRef<
 
     return (
       <DialogPortal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
+        {variant === 'side-panel' ? (
+          <div
+            data-testid="dialog-backdrop"
+            data-state={open ? 'open' : 'closed'}
+            onClick={dismissible ? handleClose : undefined}
+            className="desk:hidden fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow"
+          />
+        ) : (
+          <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
+        )}
         <DialogPrimitive.Content
           ref={ref}
           style={{ pointerEvents: 'none' }}
           onPointerDownOutside={handlePointerDownOutside}
+          onInteractOutside={handleInteractOutside}
           onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',

@@ -35,7 +35,6 @@ const meta: Meta<typeof DialogContent> = {
   },
   args: {
     size: 'md',
-    variant: 'modal',
     background: 'surface',
     title: 'Dialog Title',
     description: 'Dialog description and context.',
@@ -46,10 +45,6 @@ const meta: Meta<typeof DialogContent> = {
     size: {
       control: 'select',
       options: ['sm', 'md', 'lg', 'xl'],
-    },
-    variant: {
-      control: 'select',
-      options: ['modal', 'side-panel'],
     },
     background: {
       control: 'select',
@@ -154,12 +149,19 @@ export const LargeForm: Story = {
 
 export const SidePanel: Story = {
   args: {
-    variant: 'side-panel',
     title: 'Detail inspector',
     description: 'Full height slide-out drawer on desktop.',
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Set on Dialog as variant="side-panel". Non-modal on desktop: no backdrop, the page behind stays usable, and the page swaps the content when another row is picked. On phone it is the bottom sheet with a backdrop.',
+      },
+    },
+  },
   render: (args) => (
-    <Dialog defaultOpen>
+    <Dialog defaultOpen variant="side-panel">
       <DialogTrigger asChild>
         <Button>Open dialog</Button>
       </DialogTrigger>
