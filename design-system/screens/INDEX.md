@@ -133,6 +133,7 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Lendings** — `P-lendings.dc.html` · `shots/P-lendings.webp`
 - **Rahul Sharma** — `P-lending-person.dc.html` · `shots/P-lending-person.webp`
 - **Rahul Sharma · settle up** — `P-lending-add.dc.html` · `shots/P-lending-add.webp`
+- **Rahul Sharma · export ledger** — `P-lending-export.dc.html` · `shots/P-lending-export.webp`
 
 ### 09 · Reports, dashboards builder & chat
 
@@ -265,6 +266,7 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Lendings** — `D-lendings.dc.html` · `shots/D-lendings.webp`
 - **Rahul Sharma** — `D-lending-person.dc.html` · `shots/D-lending-person.webp`
 - **Rahul Sharma · settle up** — `D-lending-add.dc.html` · `shots/D-lending-add.webp`
+- **Rahul Sharma · export ledger** — `D-lending-export.dc.html` · `shots/D-lending-export.webp`
 
 ### 09 · Reports, dashboards builder & chat
 
