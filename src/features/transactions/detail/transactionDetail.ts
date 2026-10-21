@@ -104,7 +104,7 @@ export function amountWords(amount: number): string {
 
 /** "₹2,95,030 after" (no "bal" prefix), or null when the balance is unknown. */
 export function balanceAfterWords(t: Transaction): string | null {
-  return t.balance != null ? `₹${formatAmount(t.balance, 0)} after` : null;
+  return t.balance != null ? `${t.balance < 0 ? '-' : ''}₹${formatAmount(Math.abs(t.balance), 0)} after` : null;
 }
 
 // ---- Links ----------------------------------------------------------------

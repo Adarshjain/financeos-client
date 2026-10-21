@@ -86,6 +86,10 @@ describe('field words', () => {
     expect(balanceAfterWords(txn({ balance: null }))).toBeNull();
   });
 
+  it('puts the minus before the rupee sign on a negative balance', () => {
+    expect(balanceAfterWords(txn({ balance: -208100 }))).toBe('-₹2,08,100 after');
+  });
+
   it('writes only the reward fields that are set, and nothing when none is', () => {
     expect(rewardsWords(txn())).toBeNull();
     expect(

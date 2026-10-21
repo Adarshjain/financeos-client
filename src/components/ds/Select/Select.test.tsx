@@ -86,6 +86,15 @@ describe('Select', () => {
     expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
   });
 
+  it('a custom trigger sizes to its content, so trigger chips sit side by side', () => {
+    const { container } = render(
+      <Select options={sampleOptions} trigger={<button type="button">Account</button>} />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveClass('inline-block', 'w-auto');
+    expect(root).not.toHaveClass('w-full');
+  });
+
   it('opens Popover with flexible width (min-w-popover-trigger max-w-container-sm)', () => {
     render(
       <Select

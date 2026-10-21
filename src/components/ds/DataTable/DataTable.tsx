@@ -70,6 +70,13 @@ function DataTableInner<Row extends RowData>(
     handleHeaderCheckboxChange,
   } = useDataTableState(props);
 
+  // A rendered row scrolls into view once each time it becomes highlighted, like DataTableRow,
+  // not on every render while it stays highlighted.
+  const scrolledIdRef = React.useRef<string | undefined>(undefined);
+  React.useEffect(() => {
+    if (highlightedRowId === undefined) scrolledIdRef.current = undefined;
+  }, [highlightedRowId]);
+
   return (
     <div
       ref={ref}
@@ -154,7 +161,8 @@ function DataTableInner<Row extends RowData>(
               <div
                 key={row.id}
                 ref={(el) => {
-                  if (isHighlighted && el) {
+                  if (isHighlighted && el && scrolledIdRef.current !== row.id) {
+                    scrolledIdRef.current = row.id;
                     el.scrollIntoView?.({ block: 'center' });
                   }
                 }}

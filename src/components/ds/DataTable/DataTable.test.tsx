@@ -870,6 +870,33 @@ describe('DataTable', () => {
       expect(renderRowMock).toHaveBeenCalledTimes(3);
     });
 
+    it('a rendered row scrolls into view once when highlighted, not on every render, and again on a new highlight', () => {
+      const scrollMock = vi.fn();
+      window.HTMLElement.prototype.scrollIntoView = scrollMock;
+      const renderRow = (row: TestRow, props: { highlighted: boolean }) => (
+        <div data-testid={`custom-row-${row.id}`} data-highlighted={String(props.highlighted)}>
+          {row.name}
+        </div>
+      );
+      const table = (id: string | undefined, data = testData) => (
+        <DataTable columns={testColumns} data={data} getRowId={(r) => r.id} highlightedRowId={id} renderRow={renderRow} />
+      );
+
+      const { rerender } = render(table('1'));
+      expect(screen.getByTestId('custom-row-1')).toHaveAttribute('data-highlighted', 'true');
+      expect(scrollMock).toHaveBeenCalledTimes(1);
+
+      rerender(table('1', [...testData]));
+      expect(scrollMock).toHaveBeenCalledTimes(1);
+
+      rerender(table('2'));
+      expect(scrollMock).toHaveBeenCalledTimes(2);
+
+      rerender(table(undefined));
+      rerender(table('2'));
+      expect(scrollMock).toHaveBeenCalledTimes(3);
+    });
+
     it('wrapRow wraps each row', () => {
       render(
         <DataTable

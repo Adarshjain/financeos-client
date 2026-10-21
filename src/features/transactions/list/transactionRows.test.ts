@@ -29,6 +29,10 @@ describe('transactionRow', () => {
     expect(transactionRow(t({ amount: 215000 }), ctx)).toMatchObject({ formattedAmount: '+2,15,000.00', isCredit: true });
   });
 
+  it('puts the minus before the rupee sign on a negative balance', () => {
+    expect(transactionRow(t({ balance: -210150 }), ctx).balance).toBe('-₹2,10,150');
+  });
+
   it('falls back to the bank text, then a dash', () => {
     expect(transactionRow(t({ description: null, sourcedDescription: 'UPI/SWIGGY' }), ctx).description).toBe('UPI/SWIGGY');
     expect(transactionRow(t({ description: null }), ctx).description).toBe('—');

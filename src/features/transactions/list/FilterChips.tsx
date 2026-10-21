@@ -123,7 +123,7 @@ export function FilterChips({ query, accounts, categories, needsReviewCount, onC
       <FilterChip
         selected={!allTime}
         removable={!allTime}
-        onRemove={() => onChange({ period: { kind: 'preset', id: 'all_time' } })}
+        onRemove={allTime ? undefined : () => onChange({ period: { kind: 'preset', id: 'all_time' } })}
         onClick={onOpenFilters}
       >
         {periodLabel(query.period)}
@@ -154,7 +154,7 @@ export function FilterChips({ query, accounts, categories, needsReviewCount, onC
       <FilterChip
         selected={query.amount !== null}
         removable={query.amount !== null}
-        onRemove={() => onChange({ amount: null })}
+        onRemove={query.amount === null ? undefined : () => onChange({ amount: null })}
         onClick={onOpenFilters}
       >
         {query.amount ? amountLabel(query.amount) : 'Amount'}

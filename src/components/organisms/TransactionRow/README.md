@@ -38,6 +38,7 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `tone?: 'default' | 'warning'`: Row visual tone (warning sets attention tint and 4px stripe)
 - `disabled?: boolean`: Dimmed disabled state (60% opacity), no pointer events
 - `muted?: boolean`: Dimmed like `disabled` (60% opacity) but stays interactive, like DataTable `rowState.muted`
+- `highlighted?: boolean`: The row open in the detail pane: `brand-tint` ground (selected and warning win), from DataTable's `rowProps.highlighted`
 - `selectable?: boolean`: Whether row is selectable
 - `defaultSelected?: boolean`: Uncontrolled initial selected state
 - `selected?: boolean`: Controlled selected state

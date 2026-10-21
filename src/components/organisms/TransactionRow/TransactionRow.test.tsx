@@ -239,6 +239,17 @@ describe('TransactionRow', () => {
     expect(excContainer.firstChild).toHaveClass('opacity-60');
   });
 
+  it('highlighted takes the brand-tint ground, and selected or warning win over it', () => {
+    const { container, rerender } = render(<TransactionRow description="Open tx" amount="100.00" highlighted />);
+    expect(container.firstChild).toHaveClass('bg-brand-tint');
+    expect(container.firstChild).not.toHaveClass('bg-surface');
+    rerender(<TransactionRow description="Open tx" amount="100.00" highlighted tone="warning" />);
+    expect(container.firstChild).toHaveClass('bg-attention-tint');
+    expect(container.firstChild).not.toHaveClass('bg-brand-tint');
+    rerender(<TransactionRow description="Open tx" amount="100.00" highlighted selectable selected />);
+    expect(container.firstChild).toHaveClass('bg-brand-tint', 'desk:border-l-brand');
+  });
+
   it('muted dims the row but keeps it pressable and selectable', () => {
     const onDetail = vi.fn();
     const onSelectedChange = vi.fn();
