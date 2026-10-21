@@ -1,4 +1,4 @@
-import { createDataTableColumnHelper } from '@/components/ds';
+import { createDataTableColumnHelper, Highlight } from '@/components/ds';
 
 export interface TransactionRowData {
   id: string;
@@ -19,7 +19,11 @@ export interface TransactionRowData {
 
 const helper = createDataTableColumnHelper<TransactionRowData>();
 
-export const transactionColumns = helper.columns([
+/** Columns whose description, category, account and amount cells mark `query` matches. */
+export const createTransactionColumns = (query?: string) => {
+  const mark = (value: string) =>
+    query ? <Highlight text={value} query={query} /> : value;
+  return helper.columns([
   helper.accessor('date', {
     id: 'date',
     header: 'Date',
@@ -30,26 +34,26 @@ export const transactionColumns = helper.columns([
     id: 'description',
     header: 'Description',
     meta: { size: 'fill', sortable: true, phone: 'main' },
-    cell: ({ row }) => row.original.description,
+    cell: ({ row }) => mark(row.original.description),
   }),
   helper.accessor('category', {
     id: 'category',
     header: 'Category',
     meta: { size: 'md' },
-    cell: ({ row }) => row.original.category ?? '',
+    cell: ({ row }) => mark(row.original.category ?? ''),
   }),
   helper.accessor('account', {
     id: 'account',
     header: 'Account',
     meta: { size: 'sm' },
-    cell: ({ row }) => row.original.account ?? '',
+    cell: ({ row }) => mark(row.original.account ?? ''),
   }),
   helper.accessor('amount', {
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', sortable: true, phone: 'amount' },
     cell: ({ row }) =>
-      row.original.formattedAmount ?? String(row.original.amount),
+      mark(row.original.formattedAmount ?? String(row.original.amount)),
   }),
   helper.accessor('balance', {
     id: 'balance',
@@ -58,3 +62,6 @@ export const transactionColumns = helper.columns([
     cell: ({ row }) => row.original.balance ?? '',
   }),
 ]);
+};
+
+export const transactionColumns = createTransactionColumns();

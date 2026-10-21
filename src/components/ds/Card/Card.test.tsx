@@ -206,4 +206,32 @@ describe('Card inset variant', () => {
       expect(screen.getByText('Row')).toHaveClass('border-line-soft', 'px-space-10');
     });
   });
+
+  describe('selected', () => {
+    it('applies the brand ring when selected', () => {
+      render(<Card selected data-testid="c" />);
+      expect(screen.getByTestId('c')).toHaveClass('ring-2', 'ring-brand');
+    });
+
+    it('has no ring by default or when false', () => {
+      render(
+        <>
+          <Card data-testid="a" />
+          <Card selected={false} data-testid="b" />
+        </>,
+      );
+      expect(screen.getByTestId('a')).not.toHaveClass('ring-2', 'ring-brand');
+      expect(screen.getByTestId('b')).not.toHaveClass('ring-2', 'ring-brand');
+    });
+
+    it('works with asChild on a button and keeps hover and pressed states', () => {
+      render(
+        <Card asChild selected>
+          <button type="button">Keep this one</button>
+        </Card>,
+      );
+      const btn = screen.getByRole('button', { name: 'Keep this one' });
+      expect(btn).toHaveClass('ring-2', 'ring-brand', 'hover:bg-hover', 'active:bg-pressed');
+    });
+  });
 });

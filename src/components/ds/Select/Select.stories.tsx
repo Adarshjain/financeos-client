@@ -130,6 +130,7 @@ const meta: Meta<typeof Select> = {
     loadingText: { control: 'text' },
     maxDisplayChips: { control: 'number' },
     showRadio: { control: 'boolean' },
+    size: { control: 'inline-radio', options: ['sm', 'md'] },
     defaultOpen: { control: 'boolean' },
     open: { control: 'boolean' },
     options: { table: { disable: true } },
@@ -166,6 +167,17 @@ export const Default: Story = {
     label: 'Standard Select',
     options: standardOptions,
     defaultValue: 'option-a',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    size: 'sm',
+    options: [
+      { value: 'purchase', label: 'Purchase' },
+      { value: 'refund', label: 'Refund' },
+    ],
+    defaultValue: 'purchase',
   },
 };
 

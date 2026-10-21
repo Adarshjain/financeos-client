@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useEffect } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -149,10 +150,14 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                   ) : null}
                   <span className="truncate max-w-full leading-tight">
                     {act.label}
-                    {act.count !== undefined ? ` ${act.count}` : ''}
                   </span>
+                  {act.count !== undefined ? (
+                    <Badge variant="solid" shape="rounded" size="sm" className="max-desk:hidden">
+                      {act.count}
+                    </Badge>
+                  ) : null}
                   {act.hint ? (
-                    <span className="text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none desk:hidden">
+                    <span className="text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none">
                       {act.hint}
                     </span>
                   ) : null}

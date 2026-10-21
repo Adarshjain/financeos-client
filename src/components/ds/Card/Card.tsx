@@ -214,6 +214,8 @@ export interface CardProps
   variant?: CardVariant;
   /** `danger` swaps only the border colour to `danger-border`. */
   tone?: CardTone;
+  /** Marks the card as chosen: a 2px `brand` ring that never changes the card's size. */
+  selected?: boolean;
 }
 
 const toneStyles: Record<CardTone, string> = {
@@ -235,6 +237,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       asChild = false,
       variant = 'default',
       tone = 'neutral',
+      selected,
       className,
       children,
       ...props
@@ -252,6 +255,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             'bg-surface border overflow-clip min-w-0',
             toneStyles[tone],
             variantStyles[variant],
+            selected && 'ring-2 ring-brand',
+            asChild &&
+              selected !== undefined &&
+              'cursor-pointer hover:bg-hover active:bg-pressed',
             className,
           )}
           {...props}

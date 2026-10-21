@@ -371,4 +371,21 @@ describe('Select menu layout (UAT)', () => {
     expect(action).not.toHaveClass('w-full');
     expect(action.parentElement).toHaveClass('justify-end');
   });
+
+  it('uses the md trigger height by default and control-sm for size="sm"', () => {
+    const { rerender } = render(<Select options={sampleOptions} placeholder="Pick" />);
+    expect(screen.getByRole('combobox')).toHaveClass('h-control-md', 'text-body');
+    rerender(<Select size="sm" options={sampleOptions} placeholder="Pick" />);
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveClass('h-control-sm', 'text-label');
+    expect(trigger).not.toHaveClass('h-control-md');
+  });
+
+  it('showRadio renders a Radio per option, checked for the selected one', () => {
+    render(<SelectMenu options={sampleOptions} value="hdfc" showRadio />);
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(sampleOptions.length);
+    expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    expect(radios[1]).toHaveAttribute('aria-checked', 'false');
+  });
 });

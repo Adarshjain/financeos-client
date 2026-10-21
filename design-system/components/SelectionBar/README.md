@@ -12,7 +12,7 @@ The bar that appears while items are selected: the count, a one-line summary, an
 Long-press a row to start, tap to add or remove, the eye icon opens the item's detail without leaving selection, × or back to finish. No checkboxes on phone. Desktop uses checkboxes.
 
 ## Props
-- `actions`: `{ id, icon, label, hint?, tone?, disabled?, onSelect }[]` from the page. On phone each action shows its `hint` under the label ("the pair", "clear Duplicate"); stories show hints exactly as the preview does.
+- `actions`: `{ id, icon, label, hint?, count?, tone?, disabled?, onSelect }[]` from the page. `count` renders as a solid count bubble after the label on desktop (hidden on phone, still in the aria-label). `hint` shows under the label on phone ("the pair", "clear Duplicate") and inline after the label on desktop ("needs exactly 2"); stories show hints exactly as the preview does.
 
 ## Built from
 Button, Icon.

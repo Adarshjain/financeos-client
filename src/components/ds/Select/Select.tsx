@@ -15,6 +15,7 @@ import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { getItemRowClass } from '../itemRow';
 import { Popover } from '../Popover/Popover';
+import { Radio } from '../Radio/Radio';
 import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 
@@ -302,16 +303,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           ) : null}
 
           {showRadio ? (
-            <span
-              className={cn(
-                'w-space-16 h-space-16 rounded-ds-pill border-2 shrink-0 flex items-center justify-center transition-colors',
-                isSelected ? 'border-brand' : 'border-line-strong',
-              )}
-            >
-              {isSelected ? (
-                <span className="w-space-8 h-space-8 rounded-ds-pill bg-brand" />
-              ) : null}
-            </span>
+            <Radio checked={isSelected} tabIndex={-1} className="pointer-events-none shrink-0" />
           ) : null}
 
           {opt.icon ? (
@@ -503,6 +495,7 @@ export interface SelectProps
   icon?: React.ReactNode;
   trigger?: React.ReactNode;
   showRadio?: boolean;
+  size?: 'sm' | 'md';
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -544,6 +537,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       icon: explicitIcon,
       trigger,
       showRadio = false,
+      size = 'md',
       open: controlledOpen,
       defaultOpen = false,
       onOpenChange,
@@ -555,6 +549,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     },
     ref,
   ) => {
+    const isSm = size === 'sm';
     const generatedId = useId();
     const id = explicitId || generatedId;
     const helperId = `${id}-helper`;
@@ -650,7 +645,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             <div className="flex items-center gap-space-6 flex-wrap flex-1 min-w-0">
               {selectedOptions.length === 0 ? (
                 placeholder ? (
-                  <span className="font-text font-medium text-body text-ink-4 truncate">
+                  <span className={cn('font-text font-medium text-ink-4 truncate', isSm ? 'text-label' : 'text-body')}>
                     {placeholder}
                   </span>
                 ) : null
@@ -682,7 +677,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           ) : null}
           <span
             className={cn(
-              'font-text font-medium text-body truncate flex-1 min-w-0',
+              'font-text font-medium truncate flex-1 min-w-0',
+              isSm ? 'text-label' : 'text-body',
               selectedOptions.length > 0 ? 'text-ink' : 'text-ink-4',
             )}
           >
@@ -724,10 +720,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           }
         }}
         className={cn(
-          'w-full flex items-center text-left transition-colors duration-fast rounded-ds-md border bg-surface font-text font-medium text-body text-ink',
+          'w-full flex items-center text-left transition-colors duration-fast rounded-ds-md border bg-surface font-text font-medium text-ink',
+          isSm ? 'text-label' : 'text-body',
           multiple && selectedOptions.length > 0
             ? 'min-h-control-md py-space-6 px-space-12 gap-space-6'
-            : 'h-control-md px-space-12 gap-space-8',
+            : isSm
+              ? 'h-control-sm px-space-8 gap-space-6'
+              : 'h-control-md px-space-12 gap-space-8',
           hasError
             ? 'border-danger focus-visible:ring-danger'
             : isOpen

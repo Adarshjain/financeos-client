@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 import shared from './tailwind.shared';
 
@@ -41,6 +42,8 @@ const config: Config = {
         'warning-tint': 'var(--ds-warning-tint)',
         'warning-border': 'var(--ds-warning-border)',
         'warning-ink': 'var(--ds-warning-ink)',
+        highlight: 'var(--ds-highlight)',
+        'highlight-soft': 'var(--ds-highlight-soft)',
         attention: 'var(--ds-attention)',
         'attention-tint': 'var(--ds-attention-tint)',
         info: 'var(--ds-info)',
@@ -251,12 +254,38 @@ const config: Config = {
           from: { transform: 'translateX(-100%)' },
           to: { transform: 'translateX(250%)' },
         },
+        'highlight-sweep': {
+          from: { backgroundSize: '0% 62%' },
+        },
       },
       animation: {
         sweep: 'sweep var(--ds-dur-loop) cubic-bezier(.2,.8,.2,1) infinite',
+        'highlight-sweep': 'highlight-sweep var(--ds-dur-emphasis) cubic-bezier(.2,.7,.2,1) both',
       },
     },
   },
+  plugins: [
+    // Search-match marker stroke (Highlight): gradient, size, rough ends and tilt can't be token classes.
+    plugin(({ addUtilities }) => {
+      addUtilities({
+        '.highlight-stroke': {
+          'background-image':
+            'linear-gradient(100deg, var(--ds-highlight) 0%, var(--ds-highlight-soft) 55%, var(--ds-highlight) 100%)',
+          'background-repeat': 'no-repeat',
+          'background-position': '0 85%',
+          'background-size': '100% 62%',
+          'border-radius': '.9em .3em .8em .25em/.35em .6em .3em .6em',
+          display: 'inline-block',
+          transform: 'rotate(-1.2deg)',
+          padding: '0 2px',
+          margin: '0 -2px',
+          'box-decoration-break': 'clone',
+          'background-color': 'transparent',
+          color: 'inherit',
+        },
+      });
+    }),
+  ],
 };
 
 export default config;

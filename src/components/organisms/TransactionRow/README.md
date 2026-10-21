@@ -45,6 +45,7 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `onDetail?: () => void`: Detail callback when trailing eye button is clicked
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
+- `query?: string`: Search text. Matches in string `description`, `account`, each `categories` label, `amount`, `note`, `plastic` and `contextLine` get the Highlight marker stroke (phone and desktop). ReactNode values are left alone. `createTransactionColumns(query)` gives the DataTable columns the same marks on description, category, account and amount (`transactionColumns` is the same without a query).
 
 ## Gestures
 
@@ -63,4 +64,4 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 - Selection interaction is handled by `useSelectableItem`.
 
 ## Built from
-Badge, StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection). Hooks: `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.
+Badge, Highlight (search matches), StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection). Hooks: `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.
