@@ -5,7 +5,6 @@ import {AlertTriangle, Info} from 'lucide-react';
 import {useState} from 'react';
 import {toast} from 'sonner';
 
-import {REVIEW_REASON_META, reviewReasonLabel} from '@/components/transactions/catalog';
 import {Badge} from '@/components/ui/badge';
 import {Card} from '@/components/ui/card';
 import {
@@ -17,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {REVIEW_REASON_META, reviewReasonLabel} from '@/features/transactions/catalog';
 import type {Account} from '@/lib/account.types';
 import {api} from '@/lib/api/client';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';

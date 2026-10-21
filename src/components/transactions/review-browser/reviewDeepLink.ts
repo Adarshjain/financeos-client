@@ -1,4 +1,4 @@
-import { REVIEW_REASONS } from '@/components/transactions/catalog';
+import { REVIEW_REASONS } from '@/features/transactions/catalog';
 
 /** Filters the review page may start with, from a push deep link such as `?account=…&from=…&to=…`. */
 export interface ReviewInitialFilters {

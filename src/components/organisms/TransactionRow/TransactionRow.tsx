@@ -64,8 +64,10 @@ export interface TransactionRowProps
 
   /** Visual tone: 'default' | 'warning' (e.g. monitored) */
   tone?: 'default' | 'warning';
-  /** Whether row is disabled (e.g. excluded) */
+  /** Whether row is disabled: dimmed and not interactive */
   disabled?: boolean;
+  /** Dimmed like disabled but still interactive (e.g. excluded: it still opens and selects) */
+  muted?: boolean;
   /** Whether row is selectable */
   selectable?: boolean;
   /** Default selected state (uncontrolled) */
@@ -113,6 +115,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       onMoreCategoriesClick,
       tone = 'default',
       disabled = false,
+      muted = false,
       selectable,
       defaultSelected,
       selected: selectedProp,
@@ -309,6 +312,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           selected && 'bg-brand-tint desk:border-l-brand',
           isWarning && 'bg-attention-tint desk:border-l-attention',
           disabled && 'opacity-60 pointer-events-none',
+          muted && !disabled && 'opacity-60',
           !selected && !isWarning && 'bg-surface hover:bg-hover active-self:bg-hover',
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
           className,

@@ -1,4 +1,4 @@
-import { REVIEW_REASON_META, REVIEW_REASONS } from '@/components/transactions/catalog';
+import { REVIEW_REASON_META, REVIEW_REASONS } from '@/features/transactions/catalog';
 
 export const REASON_OPTIONS: { label: string; shortLabel: string; value: string }[] = [
   { label: 'All Reasons', shortLabel: 'All', value: 'ALL' },

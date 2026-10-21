@@ -18,7 +18,7 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { useSearchText } from '@/features/loans/useSearchText';
+import { useSearchText } from '@/features/shell/useSearchText';
 
 import {
   LENDING_FILTERS,

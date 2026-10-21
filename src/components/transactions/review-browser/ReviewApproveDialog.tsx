@@ -1,6 +1,5 @@
 'use client';
 
-import { reviewReasonLabel } from '@/components/transactions/catalog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { reviewReasonLabel } from '@/features/transactions/catalog';
 import { ReviewReason } from '@/lib/transaction.types';
 
 interface ReviewApproveDialogProps {

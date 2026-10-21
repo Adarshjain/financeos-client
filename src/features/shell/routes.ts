@@ -29,6 +29,8 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/notifications$/,
   /^\/accounts$/,
   /^\/accounts\/[^/]+(\/(cards|rewards|statements))?$/,
+  // The list only; /transactions/import and /transactions/review stay Legacy.
+  /^\/transactions$/,
   /^\/settings(\/(activity|connections|ai|notifications|debug))?$/,
   /^\/loans(\/lendings)?$/,
   // A loan's page; /loans/calendar is its own Legacy page, not a loan id.

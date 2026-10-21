@@ -3,10 +3,10 @@ import React from 'react';
 import { LoanMatchBanner } from '@/features/loans/list/LoanMatchBanner';
 import { closedLoansLine, loanRow, loanTiles, parseLoansUrl } from '@/features/loans/list/loansList';
 import { LoansListCard } from '@/features/loans/list/LoansListCard';
-import { loaded, orNull } from '@/features/loans/loadHelpers';
 import { LoansLoadError } from '@/features/loans/LoansLoadError';
 import { fetchLoanMatches, fetchLoans, fetchLoansSummary } from '@/features/loans/loansServerApi';
 import { TileGrid } from '@/features/loans/TileGrid';
+import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
 
 type SearchParams = { q?: string; page?: string; size?: string };

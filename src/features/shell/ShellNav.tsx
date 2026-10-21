@@ -18,6 +18,7 @@ import {
 } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
+import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
 import {
@@ -29,10 +30,19 @@ import {
 } from './navigation';
 import { appHref, DS_HOME_HREF } from './routes';
 
-/** The Inbox count (act now + needs a look) for the rail and tab bar; nothing while it loads or is zero. */
-function useNavCounts(): Record<string, { count: number; countTone: 'danger' }> {
-  const { data } = useInboxSummary();
-  return data?.badge ? { inbox: { count: data.badge, countTone: 'danger' } } : {};
+type NavCount = { count: number; countTone: 'danger' | 'warning' };
+
+/**
+ * The counts on the rail and tab bar: Inbox (act now + needs a look) and Transactions (needs review);
+ * nothing while a count loads or is zero.
+ */
+function useNavCounts(): Record<string, NavCount> {
+  const { data: inbox } = useInboxSummary();
+  const { data: review } = useNeedsReviewCount();
+  const counts: Record<string, NavCount> = {};
+  if (inbox?.badge) counts.inbox = { count: inbox.badge, countTone: 'danger' };
+  if (review) counts.transactions = { count: review, countTone: 'warning' };
+  return counts;
 }
 
 export interface ShellUser {

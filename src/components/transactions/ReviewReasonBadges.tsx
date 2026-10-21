@@ -1,5 +1,5 @@
-import { REVIEW_REASON_META } from '@/components/transactions/catalog';
 import { Badge } from '@/components/ui/badge';
+import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import { ReviewReason, ReviewType } from '@/lib/transaction.types';
 import { cn } from '@/lib/utils';
 

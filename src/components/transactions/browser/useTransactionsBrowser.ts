@@ -3,11 +3,10 @@
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
+import { TRANSACTIONS_CATALOG } from '@/features/transactions/catalog';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { FilterClause } from '@/lib/reports.types';
-
-import { TRANSACTIONS_CATALOG } from '../catalog';
 
 export function useTransactionsBrowser() {
   const queryClient = useQueryClient();

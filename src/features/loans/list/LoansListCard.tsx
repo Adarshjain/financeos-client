@@ -19,8 +19,8 @@ import {
   TextField,
 } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
+import { useSearchText } from '@/features/shell/useSearchText';
 
-import { useSearchText } from '../useSearchText';
 import { loadClosedLoans } from './closedLoansAction';
 import {
   type LoanRow,

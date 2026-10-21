@@ -239,6 +239,27 @@ describe('TransactionRow', () => {
     expect(excContainer.firstChild).toHaveClass('opacity-60');
   });
 
+  it('muted dims the row but keeps it pressable and selectable', () => {
+    const onDetail = vi.fn();
+    const onSelectedChange = vi.fn();
+    const { container } = render(
+      <TransactionRow
+        description="Excluded tx"
+        amount="100.00"
+        muted
+        selectable
+        onDetail={onDetail}
+        onSelectedChange={onSelectedChange}
+      />,
+    );
+    expect(container.firstChild).toHaveClass('opacity-60');
+    expect(container.firstChild).not.toHaveClass('pointer-events-none');
+    fireEvent.click(screen.getByText('Excluded tx'));
+    expect(onDetail).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(onSelectedChange).toHaveBeenCalledWith(true);
+  });
+
   it('triggers onClick callback when row is clicked', () => {
     const handleClick = vi.fn();
     render(

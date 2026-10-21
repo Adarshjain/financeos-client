@@ -44,7 +44,7 @@ describe('/ds/login page and LoginForm', () => {
 
     await expect(
       DsLoginPage({ searchParams: Promise.resolve({ from: '/transactions' }) }),
-    ).rejects.toThrow('REDIRECT:/transactions');
+    ).rejects.toThrow('REDIRECT:/ds/transactions');
 
     await expect(
       DsLoginPage({ searchParams: Promise.resolve({}) }),

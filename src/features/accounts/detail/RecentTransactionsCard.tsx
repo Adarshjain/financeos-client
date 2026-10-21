@@ -10,6 +10,7 @@ import {
   EmptyState,
   Text,
 } from '@/components/ds';
+import { appHref } from '@/features/shell/routes';
 
 import type { TransactionRowModel } from './overview/cardOverviewModel';
 import { HeaderLink } from './overview/HeaderLink';
@@ -85,7 +86,7 @@ export function RecentTransactionsCard({
       title={title}
       subtitle={rows.length > 0 ? `Latest ${rows.length} of ${total}` : undefined}
       action={
-        <HeaderLink href={`/transactions?account=${accountId}`} chevron>
+        <HeaderLink href={appHref(`/transactions?account=${accountId}&period=all_time`)} chevron>
           View all
         </HeaderLink>
       }
