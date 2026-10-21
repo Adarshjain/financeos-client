@@ -6,7 +6,7 @@ import React, { forwardRef } from 'react';
 import { cn } from '../cn';
 
 export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
-export type BadgeVariant = 'soft' | 'solid' | 'outline' | 'dashed';
+export type BadgeVariant = 'soft' | 'solid' | 'outline' | 'dashed' | 'dot';
 export type BadgeShape = 'default' | 'rounded';
 export type BadgeSize = 'sm' | 'md';
 
@@ -48,6 +48,13 @@ const colorStyles: Record<BadgeVariant, Record<BadgeTone, string>> = {
     danger: 'border border-dashed border-danger-border bg-surface text-danger',
     info: 'border border-dashed border-info bg-surface text-info',
   },
+  dot: {
+    neutral: 'bg-ink',
+    success: 'bg-positive',
+    warning: 'bg-warning',
+    danger: 'bg-danger',
+    info: 'bg-info',
+  },
 };
 
 const sizeStyles: Record<BadgeSize, string> = {
@@ -77,13 +84,18 @@ export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
     ref,
   ) => {
     const isInteractive = Boolean(onClick || asChild);
+    const isDot = variant === 'dot';
     const isBold = variant === 'soft' || variant === 'solid';
 
     const classes = cn(
       'inline-flex items-center justify-center font-text leading-none select-none box-border shrink-0 whitespace-nowrap',
-      isBold ? 'font-bold' : 'font-semibold',
-      sizeStyles[size],
-      shapeStyles[shape],
+      isDot
+        ? 'h-space-8 w-space-8 rounded-ds-pill'
+        : [
+            isBold ? 'font-bold' : 'font-semibold',
+            sizeStyles[size],
+            shapeStyles[shape],
+          ],
       colorStyles[variant][tone],
       isInteractive && [
         'cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring',
@@ -122,7 +134,7 @@ export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
         className={classes}
         {...(props as React.HTMLAttributes<HTMLSpanElement>)}
       >
-        {children}
+        {isDot ? null : children}
       </span>
     );
   },

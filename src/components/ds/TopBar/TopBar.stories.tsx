@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, TopBar, type TopBarAction } from '@/components/ds';
+import { Button, Card, ListRow, TopBar, type TopBarAction } from '@/components/ds';
 
 const defaultActions: TopBarAction[] = [
   { id: 'search', icon: 'search', label: 'Search', onSelect: fn() },
@@ -66,5 +66,33 @@ export const WithPrimaryAction: Story = {
     crumb: 'Money',
     title: 'Transactions',
     actions: actionsWithPrimary,
+  },
+};
+
+export const WithNotifications: Story = {
+  args: {
+    title: 'Home',
+    actions: [
+      { id: 'search', icon: 'search', label: 'Search', onSelect: fn() },
+      {
+        id: 'notifications',
+        icon: 'notifications',
+        label: 'Notifications',
+        dot: true,
+        popover: {
+          onOpenChange: fn(),
+          content: (
+            <div className="w-72">
+              <ListRow title="HDFC Regalia bill due" subtitle="₹12,450 due in 3 days" />
+              <ListRow title="Statement parsed" subtitle="Axis Magnus, September" />
+              <ListRow title="2 rules need approval" subtitle="Suggested from recent transactions" />
+              <div className="p-space-8">
+                <Button variant="link">View all notifications</Button>
+              </div>
+            </div>
+          ),
+        },
+      },
+    ],
   },
 };

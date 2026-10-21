@@ -29,6 +29,7 @@ export interface ButtonProps
   loading?: boolean;
   loadingLabel?: React.ReactNode;
   count?: number | string;
+  dot?: boolean;
   icon?: React.ReactNode;
   asChild?: boolean;
 }
@@ -61,6 +62,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       loadingLabel,
       count,
+      dot = false,
       icon,
       disabled,
       asChild = false,
@@ -107,6 +109,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variantStyles[variant],
       isIconLink &&
         'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-line-heavy hover:after:hidden',
+      dot && 'relative',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,
@@ -146,6 +149,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               >
                 {formatCount(count)}
               </Badge>
+            ) : null}
+            {dot ? (
+              <Badge
+                variant="dot"
+                tone="danger"
+                data-testid="button-dot"
+                className="absolute top-space-4 right-space-4"
+              />
             ) : null}
           </>
         );
@@ -218,6 +229,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               >
                 {formatCount(count)}
               </Badge>
+            ) : null}
+            {dot ? (
+              <Badge
+                variant="dot"
+                tone="danger"
+                data-testid="button-dot"
+                className="absolute top-space-4 right-space-4"
+              />
             ) : null}
           </>
         )}

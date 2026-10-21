@@ -168,3 +168,13 @@ export const WithCount: Story = {
     count: 3,
   },
 };
+
+export const IconButtonWithDot: Story = {
+  args: {
+    variant: 'secondary',
+    iconOnly: true,
+    dot: true,
+    'aria-label': 'Notifications',
+    children: <Icon name="notifications" size="md" />,
+  },
+};

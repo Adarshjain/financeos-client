@@ -136,3 +136,17 @@ describe('Badge component', () => {
     expect(screen.getByText('Aligned')).toHaveClass('ml-auto');
   });
 });
+
+describe('Badge dot variant', () => {
+  it('renders an empty solid circle in the tone colour', () => {
+    const { container } = render(<Badge variant="dot" tone="danger">hidden</Badge>);
+    const dot = container.firstElementChild as HTMLElement;
+    expect(dot).toHaveClass('h-space-8', 'w-space-8', 'rounded-ds-pill', 'bg-danger');
+    expect(dot).toBeEmptyDOMElement();
+  });
+
+  it('follows the tone', () => {
+    const { container } = render(<Badge variant="dot" tone="success" />);
+    expect(container.firstElementChild).toHaveClass('bg-positive');
+  });
+});

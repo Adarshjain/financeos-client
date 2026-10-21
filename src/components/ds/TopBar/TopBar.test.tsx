@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -139,5 +139,49 @@ describe('TopBar back control (UAT)', () => {
   it('keeps a custom leading slot phone only', () => {
     render(<TopBar title="Home" leading={<span data-testid="lead">x</span>} />);
     expect(screen.getByTestId('lead').parentElement).toHaveClass('desk:hidden');
+  });
+});
+
+describe('TopBar dot and popover actions', () => {
+  it('passes dot to the button', () => {
+    render(<TopBar title="Home" actions={[{ id: 'n', icon: 'notifications', label: 'Notifications', dot: true }]} />);
+    expect(screen.getByTestId('button-dot')).toBeInTheDocument();
+  });
+
+  it('draws no dot when dot is not set', () => {
+    render(<TopBar title="Home" actions={[{ id: 'n', icon: 'notifications', label: 'Notifications' }]} />);
+    expect(screen.queryByTestId('button-dot')).not.toBeInTheDocument();
+  });
+
+  it('opens the popover on click and reports open and close', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <TopBar
+        title="Home"
+        actions={[
+          {
+            id: 'n',
+            icon: 'notifications',
+            label: 'Notifications',
+            popover: { content: <div>Bill due tomorrow</div>, onOpenChange },
+          },
+        ]}
+      />,
+    );
+    expect(screen.queryByText('Bill due tomorrow')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
+    expect(await screen.findByText('Bill due tomorrow')).toBeInTheDocument();
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    fireEvent.keyDown(screen.getByText('Bill due tomorrow'), { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByText('Bill due tomorrow')).not.toBeInTheDocument());
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('leaves actions without a popover unchanged', () => {
+    const onSelect = vi.fn();
+    render(<TopBar title="Home" actions={[{ id: 's', icon: 'search', label: 'Search', onSelect }]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
