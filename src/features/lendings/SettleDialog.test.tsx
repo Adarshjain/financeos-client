@@ -25,7 +25,6 @@ vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-13' }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({
   TransactionPickerField: (p: {
     label?: string;
-    placeholder?: string;
     value: { id: string } | null;
     direction?: string;
     onSelect: (t: unknown) => void;
@@ -33,7 +32,6 @@ vi.mock('@/features/transactions/TransactionPickerField', () => ({
   }) => (
     <div data-testid="tx-picker" data-direction={p.direction}>
       <span>{p.label ?? 'Transaction (optional)'}</span>
-      <span>{p.placeholder}</span>
       <span>{p.value ? `picked ${p.value.id}` : 'no transaction'}</span>
       <button type="button" onClick={() => p.onSelect({ id: 'tx1', amount: -500, date: '2026-10-12', accountId: 'a1' })}>
         Pick tx1
@@ -194,7 +192,6 @@ describe('SettleDialog', () => {
   it('has an optional Transaction field and records without one', async () => {
     renderDialog('lent');
     expect(screen.getByTestId('tx-picker')).toHaveTextContent('Transaction (optional)');
-    expect(screen.getByText('Pick a transaction')).toBeInTheDocument();
     record();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     expect(mutateAsync.mock.calls[0][0].transactionId).toBeUndefined();

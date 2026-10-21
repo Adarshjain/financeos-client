@@ -23,12 +23,6 @@ export function summaryAmount(tx: PickerSummaryLike): number {
   return tx.signedAmount ?? tx.amount ?? 0;
 }
 
-/** "13 Sep · HDFC Savings · IMPS from X · ₹2,300": the picker's one-line row. */
-export function pickerRowLabel(tx: PickerSummaryLike, accountName: string): string {
-  const text = tx.description || tx.sourcedDescription || 'Transaction';
-  return [formatDayMonth(tx.date), accountName, text, rupeesOf(summaryAmount(tx))].join(' · ');
-}
-
 /** The "also linked to n ledger entries" note a shareable row carries, or null. */
 export function sharedNote(
   refCount: number,
@@ -47,4 +41,21 @@ export function pickerEmptyHint(ruleHint: string | undefined, direction?: 'lent'
   if (direction === 'lent') return 'Lent entries link money-out (debit) transactions.';
   if (direction === 'borrowed') return 'Borrowed entries link money-in (credit) transactions.';
   return '';
+}
+
+/** One row of the open list: title = description, subtitle = "13 Sep · HDFC Savings ••1234" (+ the shared note). */
+export function pickerListItem(
+  tx: PickerSummaryLike,
+  account: { name: string; last4?: string | null },
+  note?: string | null,
+): { id: string; title: string; subtitle: string; amount: string; isCredit: boolean } {
+  const signed = summaryAmount(tx);
+  const where = account.last4 ? `${account.name} ••${account.last4}` : account.name;
+  return {
+    id: tx.id,
+    title: tx.description || tx.sourcedDescription || 'Transaction',
+    subtitle: [formatDayMonth(tx.date), where, note].filter(Boolean).join(' · '),
+    amount: rupeesOf(signed),
+    isCredit: signed > 0,
+  };
 }

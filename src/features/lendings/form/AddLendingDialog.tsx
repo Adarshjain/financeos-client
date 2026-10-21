@@ -215,7 +215,6 @@ export function AddLendingDialog({
             ) : null}
             <TransactionPickerField
               label="Linked transaction (optional)"
-              placeholder="Pick a transaction"
               value={transaction}
               onSelect={setTransaction}
               onClear={() => setTransaction(null)}

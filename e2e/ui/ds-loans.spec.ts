@@ -178,8 +178,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toBeVisible();
       await expect(dialog.getByText('Balance ₹15,000 in your favour')).toBeVisible();
 
-      await dialog.getByRole('combobox', { name: /^Transaction/ }).click();
-      await page.getByRole('option', { name: /UPI from Rahul Sharma/ }).click();
+      await dialog.getByRole('radio', { name: /UPI from Rahul Sharma/ }).click();
       await dialog.getByRole('button', { name: 'Record settlement' }).click();
 
       await expect(dialog).not.toBeVisible();

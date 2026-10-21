@@ -153,7 +153,6 @@ export function EditEntryDialog({
             ) : null}
             <TransactionPickerField
               label="Linked transaction (optional)"
-              placeholder="Pick a transaction"
               value={transaction}
               onSelect={(t: Transaction) => setTransaction(t)}
               onClear={() => setTransaction(null)}
