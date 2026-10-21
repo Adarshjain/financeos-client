@@ -37,7 +37,7 @@ FinanceOS is a personal money app for India, used mostly on phones: accounts, ca
 - Controls line up on fixed heights: `control-sm` 26, `control-md` 32, `control-lg` 36 for inputs, `control-xl` 44 for phone sheet footers and auth. Chips are `chip` 28.
 
 ### Shape, borders and shadows
-- Radii: `radius-md` 8 for controls, `radius-lg` 12 for cards and menus, `radius-xl` 14 for record cards and dialogs, `radius-sheet` 22 for phone sheet tops, `radius-pill` for chips. `radius-sm` 6 for badges, `radius-xs` 4 for keys and tiny bars.
+- Radii: `radius-md` 8 for controls, `radius-lg` 12 for cards and menus, `radius-xl` 14 for record cards and dialogs, `radius-sheet` 22 for phone sheet tops, `radius-pill` for chips. `radius-sm` 6 for badges, `radius-xs` 4 for keys and tiny bars, `radius-2xs` 2 for legend swatches.
 - Borders separate; shadows mean "floating". Cards never get a shadow. `shadow-pop` for menus and the desktop selection bar, `shadow-dialog`, `shadow-sheet`, `shadow-dock` for overlays, `shadow-raise` for auth illustration only.
 - No gradients in the UI, no coloured left-border accents on cards. The only stripes are the 3px selection and monitoring stripes on transaction rows.
 

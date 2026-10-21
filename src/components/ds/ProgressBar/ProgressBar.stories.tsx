@@ -30,6 +30,7 @@ const meta: Meta<typeof ProgressBar> = {
       options: ['brand', 'warning', 'danger'],
     },
     label: { control: 'text' },
+    segments: { control: 'object' },
   },
   args: {
     value: 21,
@@ -81,4 +82,57 @@ export const Indeterminate: Story = {
     tone: 'brand',
     label: 'Calculating…',
   },
+};
+
+export const Split: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Split form: flush segments, 8px high. `value` and `tone` are ignored. Always shown with a Legend.',
+      },
+    },
+  },
+  args: {
+    segments: [
+      { value: 3_55_000, label: 'interest', color: 'chart-rest' },
+      { value: 84_000, label: 'principal', color: 'brand' },
+    ],
+    label: undefined,
+  },
+  render: (args) => (
+    <div className="flex flex-col gap-space-12">
+      <ProgressBar {...args} />
+      <ProgressBar.Legend
+        items={[
+          { label: 'interest', color: 'chart-rest' },
+          { label: 'principal', color: 'brand' },
+        ]}
+      />
+    </div>
+  ),
+};
+
+export const SplitWithThreeSeries: Story = {
+  name: 'Split with three series',
+  args: {
+    segments: [
+      { value: 42_500, label: 'Groceries', color: 'chart-1' },
+      { value: 28_000, label: 'Dining', color: 'chart-2' },
+      { value: 15_200, label: 'Fuel', color: 'chart-3' },
+    ],
+    label: undefined,
+  },
+  render: (args) => (
+    <div className="flex flex-col gap-space-12">
+      <ProgressBar {...args} />
+      <ProgressBar.Legend
+        items={[
+          { label: 'Groceries', color: 'chart-1' },
+          { label: 'Dining', color: 'chart-2' },
+          { label: 'Fuel', color: 'chart-3' },
+        ]}
+      />
+    </div>
+  ),
 };

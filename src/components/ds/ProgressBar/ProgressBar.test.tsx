@@ -64,4 +64,87 @@ describe('ProgressBar component', () => {
     render(<ProgressBar value={50} label="50% of budget" />);
     expect(screen.getByText('50% of budget')).toBeInTheDocument();
   });
+
+  describe('split form', () => {
+    const segs = [
+      { value: 81, label: 'interest', color: 'chart-rest' as const },
+      { value: 19, label: 'principal', color: 'brand' as const },
+    ];
+
+    it('renders proportional widths in order with token colours', () => {
+      const { container } = render(<ProgressBar segments={segs} />);
+      const parts = container.querySelectorAll('[data-segment]');
+      expect(parts).toHaveLength(2);
+      expect(parts[0]).toHaveAttribute('data-segment', 'interest');
+      expect(parts[0]).toHaveStyle({ width: '81%' });
+      expect(parts[0]).toHaveClass('bg-series-rest');
+      expect(parts[1]).toHaveStyle({ width: '19%' });
+      expect(parts[1]).toHaveClass('bg-brand');
+    });
+
+    it('normalises to the sum when it is not 100', () => {
+      const { container } = render(
+        <ProgressBar
+          segments={[
+            { value: 1, label: 'a', color: 'chart-1' },
+            { value: 3, label: 'b', color: 'chart-2' },
+          ]}
+        />,
+      );
+      const parts = container.querySelectorAll('[data-segment]');
+      expect(parts[0]).toHaveStyle({ width: '25%' });
+      expect(parts[1]).toHaveStyle({ width: '75%' });
+    });
+
+    it('skips zero-value segments', () => {
+      const { container } = render(
+        <ProgressBar
+          segments={[
+            { value: 0, label: 'a', color: 'chart-1' },
+            { value: 5, label: 'b', color: 'chart-2' },
+          ]}
+        />,
+      );
+      expect(container.querySelectorAll('[data-segment]')).toHaveLength(1);
+      expect(container.querySelector('[data-segment="b"]')).toHaveStyle({
+        width: '100%',
+      });
+    });
+
+    it('renders an empty track when the sum is zero', () => {
+      const { container } = render(
+        <ProgressBar segments={[{ value: 0, label: 'a', color: 'chart-1' }]} />,
+      );
+      expect(container.querySelectorAll('[data-segment]')).toHaveLength(0);
+    });
+
+    it('ignores value and tone in split form', () => {
+      const { container } = render(
+        <ProgressBar segments={segs} value={50} tone="danger" />,
+      );
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      expect(container.querySelector('.bg-danger')).toBeNull();
+    });
+  });
+
+  describe('Legend', () => {
+    it('renders one swatch and label per item', () => {
+      const { container } = render(
+        <ProgressBar.Legend
+          items={[
+            { label: 'interest', color: 'chart-rest' },
+            { label: 'principal', color: 'brand' },
+          ]}
+        />,
+      );
+      expect(screen.getByText('interest')).toBeInTheDocument();
+      expect(screen.getByText('principal')).toBeInTheDocument();
+      expect(container.querySelector('[data-swatch="interest"]')).toHaveClass(
+        'bg-series-rest',
+      );
+      expect(container.querySelector('[data-swatch="principal"]')).toHaveClass(
+        'bg-brand',
+      );
+    });
+  });
 });

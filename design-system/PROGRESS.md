@@ -29,7 +29,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `fontFamily`: `font-text` (Figtree), `font-display` (Bricolage Grotesque) and `font-mono` (system monospace, Text `mono`).
    - `spacing`: `space-2` … `space-48`, by pixel value. Plus `safe-12` (12px above the safe area, for the floating TabBar: `bottom-safe-12`) and `tab-bar-clearance` (bottom padding pages keep under the TabBar: `pb-tab-bar-clearance`).
    - `ringColor`: `surface` (`ring-surface`, the ring around count badges on the TabBar).
-   - `borderRadius`: `rounded-ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
+   - `borderRadius`: `rounded-ds-2xs`, `ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
    - `boxShadow`: `shadow-pop`, `shadow-dialog`, `shadow-sheet`, `shadow-dock`, `shadow-raise`.
    - `height` and `minHeight`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `app-bar`, `tab-bar`.
    - `width`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`, `swipe-action`; `minWidth`: the same without `swipe-action`.
@@ -366,6 +366,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-21 · Phase 2 · Claude · ProgressBar split variant (owner-approved, loan Interest vs principal): `segments` + `ProgressBar.Legend`, README, Split and Split with three series stories, tests. Swatch uses new generic `radius-2xs` (2px, owner chose b). Existing variants unchanged. Owner approved split + square swatches 10-21.
 - 2026-10-21 · Phase 3 · Claude · Dinero links go to built Dinero pages via `src/features/shell/routes.ts` (`appHref`; identity at the big-bang swap); rail/tab bar active item works on /ds; delete-account redirect follows the caller. Settings: AI key status beside name + ghost menu (82332efb), notifications regrouped (fcfc34a5). Forced test edits: navigation, inboxRows, account, profile (2nd arg); E2E ds-shell (stale since 34985546: Upcoming off rail, Accounts tab) and ds-auth (from= lands on /ds/accounts). Checks: vitest 1668, tsc, lint, check-ui, E2E ds-*/inbox/upcoming/navigation/account-deletion 28/28. Deviations: none.
 - 2026-10-21 · Phase 3 · Claude · Notifications built (server 534de08 feed + V107; client cc9007d6 Dinero dot/popover + this commit): bell, dropdown, `/ds/notifications`, one Inbox nav entry, Dinero Inbox without Updates. Checks: vitest 4883+ ok, lint 0 errors, check-ui clean, API E2E notification-feed 7/7. Gaps: card header without title holds only Clear all; rail has no active item on /ds pages (pre-existing). Deviations: none.
 - 2026-10-20 · Phase 3 · Claude · Inbox & Upcoming built (client 527a1cbb, 40a1609f, 9cb978b1 + calendar; server 8e54867): Legacy logic moved to `src/features/{inbox,upcoming,lendings}`; Inbox count on Dinero rail/tab bar; clock icon; SwipeActions surface fill. Checks: vitest, typecheck, lint, check-ui, build-storybook ok; API E2E 40/40, Legacy UI E2E green. Gaps: StatusWords no danger tone (Overdue amber), MonthCalendar no legend, Settle segment in body. Deviations: none beyond those.

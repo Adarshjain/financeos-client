@@ -26,6 +26,7 @@ const SPACING_KEYS = {
 export const CN_SPACING = Object.keys(SPACING_KEYS);
 
 export const CN_RADIUS = [
+  'ds-2xs',
   'ds-xs',
   'ds-sm',
   'ds-md',
