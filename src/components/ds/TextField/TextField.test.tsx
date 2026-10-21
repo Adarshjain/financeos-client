@@ -286,3 +286,41 @@ describe('TextField focus (UAT)', () => {
     expect(container.querySelector('.border-danger')).toBeInTheDocument();
   });
 });
+
+describe('TextField size xl and align', () => {
+  it('xl uses control-xl height and figure text on the input', () => {
+    const { container } = render(<TextField label="Amount" size="xl" />);
+    expect(container.querySelector('.h-control-xl')).toBeInTheDocument();
+    expect(container.querySelector('.h-control-md')).not.toBeInTheDocument();
+    const input = screen.getByLabelText('Amount');
+    expect(input).toHaveClass('text-figure');
+    expect(input).not.toHaveClass('text-body');
+  });
+
+  it('md and lg stay control-md with body text', () => {
+    for (const size of ['md', 'lg'] as const) {
+      const { container, unmount } = render(<TextField label="Name" size={size} />);
+      expect(container.querySelector('.h-control-md')).toBeInTheDocument();
+      expect(screen.getByLabelText('Name')).toHaveClass('text-body');
+      unmount();
+    }
+  });
+
+  it('align right end-aligns the input text, with every size and embedded', () => {
+    render(
+      <>
+        <TextField label="A" align="right" />
+        <TextField label="B" size="xl" align="right" />
+        <TextField label="C" variant="embedded" align="right" />
+      </>,
+    );
+    for (const l of ['A', 'B', 'C']) {
+      expect(screen.getByLabelText(l)).toHaveClass('text-end');
+    }
+  });
+
+  it('defaults to left: no text-end', () => {
+    render(<TextField label="Name" />);
+    expect(screen.getByLabelText('Name')).not.toHaveClass('text-end');
+  });
+});

@@ -26,7 +26,11 @@ const meta: Meta<typeof TextField> = {
   argTypes: {
     size: {
       control: 'select',
-      options: ['md', 'lg'],
+      options: ['md', 'lg', 'xl'],
+    },
+    align: {
+      control: 'select',
+      options: ['left', 'right'],
     },
     variant: {
       control: 'select',
@@ -106,6 +110,16 @@ export const WithPrefix: Story = {
     prefix: '₹',
     inputMode: 'decimal',
     defaultValue: '44,319.00',
+  },
+};
+
+export const LargeRightAligned: Story = {
+  args: {
+    size: 'xl',
+    align: 'right',
+    prefix: '₹',
+    inputMode: 'decimal',
+    placeholder: '0.00',
   },
 };
 

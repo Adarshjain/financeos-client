@@ -6,7 +6,8 @@ A labelled single-line input. Label above in `ink-2` 12px bold; helper or error 
 Standard text input for forms, logins, and values.
 
 ## Props
-- `size?: 'md' | 'lg'`: padding only; both sizes are `control-md` (32px). Default `'lg'` has 12px side padding, `'md'` 10px.
+- `size?: 'md' | 'lg' | 'xl'`: `md` and `lg` are `control-md` (32px) and differ in padding only (default `'lg'` 12px side padding, `'md'` 10px). `xl` is `control-xl` high with the input text in the `figure` type style and `lg` padding.
+- `align?: 'left' | 'right'`: input text alignment, default `'left'`. `right` end-aligns the text; prefix stays at the start, suffix and clear at the end.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
 - `label?: React.ReactNode`: field label above the input.
 - `helper?: React.ReactNode`: helpful hint text below the input.
@@ -34,6 +35,8 @@ When `type="search"`, browser search cancel buttons are hidden, and `clearable` 
 - Password input (`type="password"`) includes an integrated Show/Hide toggle button.
 - Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
 - Search input (`type="search"`) with search prefix and clear button.
+- Size xl (`size="xl"`): taller field with `figure` text, for a primary figure. Usage: Add/Edit transaction amount: `size="xl" align="right"`.
+- Right aligned (`align="right"`): works with every size and with the embedded variant.
 - Embedded variant (`variant="embedded"`) inside dropdowns.
 
 ## Built from
