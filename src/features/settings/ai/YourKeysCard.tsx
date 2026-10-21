@@ -19,6 +19,11 @@ import { buildKeyRows, formatLastUsed, type KeyRow, maskedKey, providerLine } fr
 
 const ch = createDataTableColumnHelper<KeyRow>();
 
+function KeyStatus({ row }: { row: KeyRow }) {
+  if (!row.key) return <Badge tone="neutral">Not set</Badge>;
+  return row.key.status === 'ACTIVE' ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Invalid</Badge>;
+}
+
 interface YourKeysCardProps {
   keys: LlmKeyDto[];
   testingKeyId: string | null;
@@ -38,7 +43,13 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
         id: 'provider',
         header: 'Provider',
         meta: { size: 'fill', phone: 'main' },
-        cell: ({ row }) => <Text variant="body-strong">{providerLine(row.original)}</Text>,
+        // The status sits beside the name so on phone it stays clear of the menu button.
+        cell: ({ row }) => (
+          <span className="flex flex-wrap items-center gap-space-8">
+            <Text variant="body-strong">{providerLine(row.original)}</Text>
+            <KeyStatus row={row.original} />
+          </span>
+        ),
       }),
       ch.display({
         id: 'key',
@@ -66,19 +77,6 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
         ),
       }),
       ch.display({
-        id: 'status',
-        header: 'Status',
-        meta: { size: 'sm', phone: 'status' },
-        cell: ({ row }) =>
-          !row.original.key ? (
-            <Badge tone="neutral">Not set</Badge>
-          ) : row.original.key.status === 'ACTIVE' ? (
-            <Badge tone="success">Active</Badge>
-          ) : (
-            <Badge tone="danger">Invalid</Badge>
-          ),
-      }),
-      ch.display({
         id: 'actions',
         header: '',
         meta: { size: 'sm', align: 'end', phone: 'amount' },
@@ -97,7 +95,7 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
             <Menu
               align="end"
               trigger={
-                <Button variant="secondary" size="sm" iconOnly aria-label={`Key options for ${providerLine(row.original)}`}>
+                <Button variant="ghost" size="sm" iconOnly aria-label={`Key options for ${providerLine(row.original)}`}>
                   <Icon name="more" size="sm" />
                 </Button>
               }

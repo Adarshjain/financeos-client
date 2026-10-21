@@ -347,6 +347,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 
 
 - 2026-10-21 · **Notifications** (owner): one Inbox nav entry (Upcoming, Calendar are its tabs; phone tab bar Home · Inbox · Accounts · Transactions · More); bell + dot in top bar, dropdown latest 10 + See all, opening marks read; `/ds/notifications` page, clear one (Undo) / clear all (confirm); kept until cleared or 90 days; events: failures always, successes only when something changed, no manual-import successes, no sign-ins; Dinero Inbox drops Updates (server keeps them for Legacy until swap). Badge/Button `dot`, TopBar action `dot` + `popover` added.
+- 2026-10-21 · **Settings answers** (owner): failed manual imports keep their Inbox row; "Overdue nags" dropped, notification settings to be regrouped; AI key ⋯ ghost, status badge beside the provider name.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
