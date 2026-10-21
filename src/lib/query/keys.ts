@@ -9,6 +9,8 @@ export const keys = {
     cardOptions: () => [...keys.transactions.all, 'cardOptions'] as const,
     byId: (id: string) => [...keys.transactions.all, 'detail', id] as const,
     links: (transactionId: string) => [...keys.transactions.all, 'links', transactionId] as const,
+    /** How many transactions need review: the list's chip and the nav badge. Under `all`, so any transaction change refreshes it. */
+    needsReviewCount: () => [...keys.transactions.all, 'needs-review-count'] as const,
   },
 
   accounts: {

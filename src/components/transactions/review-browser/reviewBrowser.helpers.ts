@@ -1,4 +1,4 @@
-import { batchFailureLabel } from '@/components/transactions/catalog';
+import { batchFailureLabel } from '@/features/transactions/catalog';
 import { Account } from '@/lib/account.types';
 import { FilterClause } from '@/lib/reports.types';
 import { PagedTransaction, ReviewReason } from '@/lib/transaction.types';

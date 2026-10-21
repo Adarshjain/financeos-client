@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { batchFailureLabel, reviewReasonLabel } from '@/features/transactions/catalog';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';

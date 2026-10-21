@@ -97,6 +97,10 @@ const meta: Meta<typeof TransactionRow> = {
       control: 'boolean',
       description: 'Disabled state (dimmed)',
     },
+    muted: {
+      control: 'boolean',
+      description: 'Dimmed but still interactive',
+    },
     selectionMode: {
       control: 'boolean',
       description: 'Shows trailing eye button',
@@ -1113,6 +1117,17 @@ export const Excluded: Story = {
     provenance: 'Excluded',
     categories: ['Transfers'],
     disabled: true,
+  },
+};
+
+export const Muted: Story = {
+  args: {
+    description: 'Transfer to own FD',
+    amount: '1,00,000.00',
+    account: 'HDFC Bank Savings',
+    provenance: 'Excluded',
+    muted: true,
+    selectable: true,
   },
 };
 

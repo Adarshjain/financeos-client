@@ -20,3 +20,12 @@ describe('DsIndexPage Loans & lendings links', () => {
     expect(hrefs).toContain('/ds/loans');
   });
 });
+
+describe('DsIndexPage Transactions link', () => {
+  it('links /ds/transactions', () => {
+    render(<DsIndexPage />);
+    expect(screen.getByText('/ds/transactions')).toBeDefined();
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    expect(hrefs).toContain('/ds/transactions');
+  });
+});

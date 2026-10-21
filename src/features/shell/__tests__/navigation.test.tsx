@@ -20,6 +20,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: 0 }) }));
+
 let mockInboxBadge = 0;
 vi.mock('@/lib/query/hooks/useInbox', () => ({
   useInboxSummary: () => ({ data: { badge: mockInboxBadge } }),
@@ -84,7 +86,7 @@ describe('shell navigation', () => {
     render(<ShellRail user={{ email: 'a@b.test' }} />);
     expect(screen.getByRole('link', { name: /Inbox/i })).toHaveAttribute('href', '/ds/inbox');
     expect(screen.getByRole('link', { name: /a@b.test/i })).toHaveAttribute('href', '/ds/settings');
-    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
+    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/ds/transactions');
   });
 
   it('getActiveNavItem computes current item correctly and returns undefined for /ds', () => {
@@ -204,7 +206,7 @@ describe('shell navigation', () => {
 
     // Verify Section links
     expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/ds/accounts');
-    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
+    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/ds/transactions');
     expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
     expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
     expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/ds/loans/lendings');

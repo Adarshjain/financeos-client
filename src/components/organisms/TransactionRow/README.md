@@ -15,7 +15,7 @@ The phone transaction row: merchant and amount on top, a context line and catego
 - Green: credit amounts only (when `isCredit` is true).
 
 ## States
-Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity), selection mode (trailing eye icon opens the detail).
+Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity, not interactive), muted (60% opacity, still opens and selects: an excluded transaction), selection mode (trailing eye icon opens the detail).
 
 ## Props
 - `leading?: ReactNode`: Leading avatar or tile
@@ -36,7 +36,8 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `onCategoryClick?: (category: string) => void`: Click callback for first category badge
 - `onMoreCategoriesClick?: () => void`: Click callback for +n badge
 - `tone?: 'default' | 'warning'`: Row visual tone (warning sets attention tint and 4px stripe)
-- `disabled?: boolean`: Dimmed disabled state (60% opacity)
+- `disabled?: boolean`: Dimmed disabled state (60% opacity), no pointer events
+- `muted?: boolean`: Dimmed like `disabled` (60% opacity) but stays interactive, like DataTable `rowState.muted`
 - `selectable?: boolean`: Whether row is selectable
 - `defaultSelected?: boolean`: Uncontrolled initial selected state
 - `selected?: boolean`: Controlled selected state

@@ -5,7 +5,7 @@ import {
   REVIEW_REASON_META,
   reviewReasonLabel,
   TRANSACTIONS_CATALOG,
-} from '@/components/transactions/catalog';
+} from '@/features/transactions/catalog';
 
 describe('transactions catalog (CD-1, CD-5)', () => {
   it('defines metadata for review reasons', () => {

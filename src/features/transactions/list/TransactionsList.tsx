@@ -1,0 +1,168 @@
+'use client';
+
+import React from 'react';
+
+import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
+import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
+
+import { activeFilterWords } from './filterOptions';
+import { dayHeader, monthBand, type TransactionListRow } from './transactionRows';
+import { clearedQuery, isUnfiltered, type SortId, SORTS, TRANSACTIONS_SIZE_OPTIONS, type TransactionsQuery } from './transactionsUrl';
+
+type SortState = { id: string; desc: boolean } | null;
+
+const SORT_STATES: Record<SortId, { id: string; desc: boolean }> = {
+  newest: { id: 'date', desc: true },
+  oldest: { id: 'date', desc: false },
+  highest: { id: 'amount', desc: true },
+  lowest: { id: 'amount', desc: false },
+};
+
+/** The table header's sort for a query's sort. */
+export function sortStateOf(sort: SortId): SortState {
+  return SORT_STATES[sort];
+}
+
+/** The query sort for a header click; "off" and the description column (the server can't sort it) go back to newest. */
+export function sortIdOf(sort: SortState): SortId {
+  const hit = SORTS.find((s) => SORT_STATES[s.id].id === sort?.id && SORT_STATES[s.id].desc === sort.desc);
+  return hit?.id ?? 'newest';
+}
+
+/** The columns of the board, minus sorting by description. */
+function columnsFor(q: string) {
+  return createTransactionColumns(q).map((col) =>
+    col.id === 'description' ? { ...col, meta: { ...col.meta, sortable: false } } : col,
+  );
+}
+
+const asListRow = (row: TransactionRowData) => row as TransactionListRow;
+
+export interface TransactionsListProps {
+  query: TransactionsQuery;
+  rows: TransactionListRow[];
+  totalElements: number;
+  totalPages: number;
+  /** A new page or sort is loading while these rows stay. */
+  busy?: boolean;
+  /** The user has no account yet: nothing can exist, so the first-run state shows even under filters. */
+  noAccounts: boolean;
+  onChange: (patch: Partial<TransactionsQuery>, resetPage?: boolean) => void;
+  onAddAccount: () => void;
+  onImport: () => void;
+  /** A row was pressed (piece 2 opens the detail). */
+  onOpenDetail?: (id: string) => void;
+  /** The row open in the detail pane, shown highlighted. */
+  openId?: string;
+  /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
+  onEditCategories?: (id: string) => void;
+}
+
+/** The transactions in a card: table with month bands on desktop, rows under sticky day headers on phone. */
+export function TransactionsList({
+  query,
+  rows,
+  totalElements,
+  totalPages,
+  busy,
+  noAccounts,
+  onChange,
+  onAddAccount,
+  onImport,
+  onOpenDetail,
+  openId,
+  onEditCategories,
+}: TransactionsListProps) {
+  const columns = React.useMemo(() => columnsFor(query.q), [query.q]);
+  const byDate = query.sort === 'newest' || query.sort === 'oldest';
+
+  const pager = (
+    <Pager
+      page={query.page}
+      size={query.size}
+      totalElements={totalElements}
+      totalPages={totalPages}
+      unit="transactions"
+      sizeOptions={TRANSACTIONS_SIZE_OPTIONS}
+      sizeLabel={(n) => `${n} / page`}
+      onPageChange={(page) => onChange({ page }, false)}
+      onSizeChange={(size) => onChange({ size })}
+    />
+  );
+
+  const empty =
+    query.page === 0 && (noAccounts || isUnfiltered(query)) ? (
+      <EmptyState
+        title="No transactions yet"
+        description="Transactions belong to an account. Add your first one, then import a statement or add a transaction."
+        action={{ label: 'Add account', onSelect: onAddAccount }}
+        secondaryAction={{ label: 'Import', onSelect: onImport }}
+      />
+    ) : (
+      <EmptyState
+        title="No transactions match"
+        description={activeFilterWords(query)}
+        action={{ label: 'Clear all filters', variant: 'secondary', onSelect: () => onChange(clearedQuery(query)) }}
+      />
+    );
+
+  return (
+    <Card>
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        sort={sortStateOf(query.sort)}
+        onSortChange={(sort) => onChange({ sort: sortIdOf(sort) })}
+        onRowSelect={onOpenDetail ? (row) => onOpenDetail(row.id) : undefined}
+        highlightedRowId={openId}
+        band={(row) => monthBand(asListRow(row), byDate)}
+        dayHeader={(row) => dayHeader(asListRow(row), byDate)}
+        pager={pager}
+        busy={busy}
+        empty={empty}
+        stickyHeader={false}
+        renderRow={(row, rowProps) => {
+          const r = asListRow(row);
+          return (
+            <TransactionRow
+              key={r.id}
+              date={r.date}
+              description={r.description}
+              amount={r.formattedAmount}
+              isCredit={r.isCredit}
+              balance={r.balance}
+              account={r.account}
+              plastic={r.plastic}
+              reviewStatus={r.reviewStatus}
+              link={r.link}
+              provenance={r.provenance}
+              categories={r.categories}
+              unsetCategoryLabel="Set category"
+              onSetCategory={onEditCategories ? () => onEditCategories(r.id) : undefined}
+              onCategoryClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
+              onMoreCategoriesClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
+              tone={r.watching ? 'warning' : 'default'}
+              muted={r.excluded}
+              selectable={rowProps.selectable}
+              selected={rowProps.selected}
+              onSelectedChange={rowProps.onSelectedChange}
+              selectionMode={rowProps.selectionMode}
+              onDetail={onOpenDetail ? rowProps.onSelect : undefined}
+              query={query.q || undefined}
+            />
+          );
+        }}
+      />
+    </Card>
+  );
+}
+
+/** The list while the page loads. */
+export function TransactionsListSkeleton() {
+  return (
+    <Card>
+      <DataTable columns={createTransactionColumns()} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
+    </Card>
+  );
+}

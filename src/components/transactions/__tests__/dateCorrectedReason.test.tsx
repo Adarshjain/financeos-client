@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { REVIEW_REASON_META, reviewReasonLabel } from '@/components/transactions/catalog';
 import { REASON_OPTIONS } from '@/components/transactions/review-filter-bar/constants';
 import { ReviewReasonBadges } from '@/components/transactions/ReviewReasonBadges';
+import { REVIEW_REASON_META, reviewReasonLabel } from '@/features/transactions/catalog';
 
 // DATE_CORRECTED: the server capped an email alert's date to the day the email was sent.
 describe('DATE_CORRECTED review reason', () => {

@@ -3,10 +3,10 @@ import React from 'react';
 import { directionFor, lendingRow, lendingTiles, parseLendingsUrl, transferRows, unrecordedRows } from '@/features/lendings/list/lendingsList';
 import { LendingsListCard } from '@/features/lendings/list/LendingsListCard';
 import { UnlinkedTransfersCard } from '@/features/lendings/list/UnlinkedTransfersCard';
-import { loaded, orNull } from '@/features/loans/loadHelpers';
 import { LoansLoadError } from '@/features/loans/LoansLoadError';
 import { fetchAccounts, fetchPeople, fetchPeopleMatches, fetchPeopleSummary, fetchUnrecordedTransfers } from '@/features/loans/loansServerApi';
 import { TileGrid } from '@/features/loans/TileGrid';
+import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
 
 type SearchParams = { q?: string; filter?: string; page?: string; size?: string };

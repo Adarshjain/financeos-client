@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
 
-import { loaded, orNull } from './loadHelpers';
+import { loaded, orNull } from '../loadHelpers';
 
 describe('loadHelpers', () => {
   it('orNull passes a value through and turns a rejection into null', async () => {
