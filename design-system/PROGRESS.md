@@ -60,7 +60,7 @@ Build in this order, one component per step. After each one, set its status to *
 | --- | --- | --- |
 | 1 | Icon | Approved |
 | 2 | Popover | Approved |
-| 3 | Dialog | Approved |
+| 3 | Dialog | Approved (2026-10-21: side panel non-modal on desktop, `variant` moved to `Dialog`, Ready for review) |
 | 4 | TabBar | Approved |
 | 5 | Rail | Approved |
 | 6 | TopBar | Approved |
@@ -68,7 +68,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 8 | Pager | Approved |
 | 9 | Button | Approved |
 | 10 | Menu | Approved |
-| 11 | SelectionBar | Approved (2026-10-21: count bubble, hint on desktop too, Ready for review) |
+| 11 | SelectionBar | Approved (2026-10-21: count bubble, disabled action's hint on desktop, Ready for review) |
 | 12 | SwipeActions | Approved |
 | 13 | TextField | Approved (2026-10-21: `amount` variant, Ready for review) |
 | 14 | TextArea | Approved |
@@ -373,7 +373,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
-- 2026-10-21 · Phase 3 Transactions step 1 (Dinero changes; Claude + implementers): tokens `highlight`, `highlight-soft`, `dur-emphasis`; new Highlight, Radio, TransactionPicker (organism); TransactionRow `query`, `createTransactionColumns(query)`; Select `size` sm + Radio; Card `selected`; TextField `amount`; SelectionBar count bubble, hint on desktop. Checks: typecheck (src clean), lint, test 5468, check-ui, build-storybook green. Changed test: SelectionBar hint `desk:hidden` assertion (spec). Deviations: none.
+- 2026-10-21 · Phase 3 Transactions step 1 (Dinero changes; Claude + implementers): tokens `highlight`, `highlight-soft`, `dur-emphasis`; new Highlight, Radio, TransactionPicker (organism); TransactionRow `query`, `createTransactionColumns(query)`; Select `size` sm + Radio; Card `selected`; TextField `amount`; SelectionBar count bubble, disabled action's hint on desktop; Dialog side panel non-modal on desktop (`Dialog variant`, owner 10-21). Checks: typecheck (src clean), lint, test 5474, check-ui, build-storybook green; stories viewed 390/1440 light/dark. Deviations: none.
 
 - 2026-10-21 · Phase 3 · Claude · Loans & lendings step 3: `/ds/loans/lendings/[id]` (header with Settle up and ⋯ menu, server-paged ledger with running balance and totals line, Expected return, Matching with Find matches and Confirm all, Person, edit person and entry, delete with confirm, Export ledger from ⋯, the share row and `?export=1`); the top-bar + opens Add ledger entry for this person (`AddLendingProvider.openFor`). Optional Transaction picker on Settle up and Linked transaction on Add lending (open question closed). Moved from Legacy: `useCounterpartyMutations` (+`onError`), `useExportLedger` (+`notify`); the link logic of `UnlinkedTransfersCard` is now `useTransferLink`. `/loans/lendings/:id` built in routes; the person page sits outside the Lendings · Loans tabs. Forced test edits: routes.test.ts, routes.loans.test.ts, lendingsList.test.ts, lendings.test.tsx, UpcomingView.test.tsx (person links now `/ds/loans/lendings/…`); SettleDialog.test.tsx and AddLendingDialog.test.tsx (picker stand-in mock); moved tests useCounterpartyMutations.test.tsx, ExportLedgerDialog.test.tsx and useEditLendingEntry.test.tsx (import paths). Left out: Expected return Change, "settled 9 May" (open questions). Deviations (new copy): "Edit person details", "Delete entry"/"Delete person" impact lines, "Linked transaction (optional)", "Remove the transaction to change direction.", "Confirming…", "Linked n of m". Export ledger loads its entries when it opens; the server's `firstEntryDate` and `linkedEntryCount` feed "since" and "Linked n of m". Legacy's four hero stats (lent, borrowed, repaid to you, repaid by you) are not on the board; ledger totals only.
 - 2026-10-21 · Phase 3 · Claude · Loans & lendings step 2: `/ds/loans/[id]` (header, tiles, FY schedule with `?installment`, events & charges with confirm-before-delete, matching, Mark paid with difference words, event/charge/edit forms, Close/Reopen/Unlink Toasts with Undo) and the Dinero transaction picker (`src/features/transactions`). Moved from Legacy: `useLoanMutations`, update-loan hook, picker hook (+paging), request builders, FY key, `parseInstallmentParam`. `/loans/:id` built in routes (not `/loans/calendar`). Left out: Export, Show all. Top-bar + opens the event form (Legacy's Add Event). Forced test edits: routes.test.ts, routes.loans.test.ts, loansList.test.ts, loans.test.tsx, UpcomingView.test.tsx, InboxPage.test.tsx, inboxRows.test.ts (loan links now `/ds/loans/…`). Deviations (new copy): "Searching…", "Show more", "Looking for the bank debit…", "No entries yet", "Delete event"/"Delete charge" impact lines, EMI-change cause words ("rate rise", "prepayment"), "In n d" within 30 days. Interest vs principal card: one split bar per FY from first EMI's FY to next FY.

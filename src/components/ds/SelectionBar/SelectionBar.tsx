@@ -157,7 +157,13 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                     </Badge>
                   ) : null}
                   {act.hint ? (
-                    <span className="text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none">
+                    <span
+                      className={cn(
+                        'text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none',
+                        // Desktop shows only a disabled action's hint (its reason); phone shows every hint.
+                        !act.disabled && 'desk:hidden',
+                      )}
+                    >
                       {act.hint}
                     </span>
                   ) : null}

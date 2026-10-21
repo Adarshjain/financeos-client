@@ -105,10 +105,10 @@ describe('SelectionBar', () => {
       expect(screen.getAllByText(labelRegex)).toHaveLength(1);
     });
 
-    // Hint shows on phone and desktop
+    // Hint is present with desk:hidden
     const hint = screen.getByText('the pair');
     expect(hint).toBeInTheDocument();
-    expect(hint).not.toHaveClass('desk:hidden');
+    expect(hint).toHaveClass('desk:hidden');
 
     const selectAllBtn = screen.getByRole('button', {
       name: 'Select all 182',

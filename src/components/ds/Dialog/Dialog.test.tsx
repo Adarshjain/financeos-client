@@ -597,3 +597,65 @@ describe('Dialog close button (UAT)', () => {
     expect(save.parentElement?.parentElement).toHaveClass('pb-safe-12');
   });
 });
+
+describe('Dialog side panel (non-modal on desktop)', () => {
+  const settle = () => new Promise((r) => setTimeout(r, 20));
+
+  const renderPanel = (variant: 'modal' | 'side-panel', onOpenChange = vi.fn()) => {
+    render(
+      <div>
+        <button type="button">Row behind</button>
+        <Dialog open variant={variant} onOpenChange={onOpenChange}>
+          <DialogContent title="Detail">
+            <DialogBody>Body</DialogBody>
+          </DialogContent>
+        </Dialog>
+      </div>,
+    );
+    return onOpenChange;
+  };
+
+  it('draws a backdrop that is hidden on desktop and no Radix overlay', async () => {
+    renderPanel('side-panel');
+    const backdrop = screen.getByTestId('dialog-backdrop');
+    expect(backdrop).toHaveClass('desk:hidden');
+  });
+
+  it('an outside pointer-down does not close it', async () => {
+    const onOpenChange = renderPanel('side-panel');
+    await settle();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Row behind' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Row behind' }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.getByText('Body')).toBeInTheDocument();
+  });
+
+  it('Escape closes it', () => {
+    const onOpenChange = renderPanel('side-panel');
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('the x button closes it', () => {
+    const onOpenChange = renderPanel('side-panel');
+    const x = screen
+      .getAllByRole('button', { name: 'Close' })
+      .find((b) => !b.classList.contains('sr-only'))!;
+    fireEvent.click(x);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('a backdrop click closes it', () => {
+    const onOpenChange = renderPanel('side-panel');
+    fireEvent.click(screen.getByTestId('dialog-backdrop'));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('the modal variant keeps its overlay and closes on an outside click', async () => {
+    const onOpenChange = renderPanel('modal');
+    expect(screen.queryByTestId('dialog-backdrop')).toBeNull();
+    await settle();
+    fireEvent.pointerDown(document.body);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+});
