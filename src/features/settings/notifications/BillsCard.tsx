@@ -4,28 +4,20 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { Button, Card, Icon, ListRow, Select, Text } from '@/components/ds';
-import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { NotificationSettingsResponse, UpdateNotificationSettingsRequest } from '@/lib/api/types';
+import type { NotificationSettingsResponse } from '@/lib/api/types';
 
+import { KindSwitches, useSaveSettings } from './KindsCard';
+import { BILLS_KINDS } from './notificationKinds';
 import { hourLabel, OFFSET_CHOICES, offsetLabel, offsetsSummary, toggleOffset } from './notificationSettings.helpers';
-import { useNotificationSettingsMutations } from './useNotificationSettings';
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: hourLabel(h) }));
 
-/** Bills and EMIs: which days before the due date, and the hour pushes go out. Every change saves at once. */
-export function RemindCard({ settings }: { settings: NotificationSettingsResponse }) {
-  const { update } = useNotificationSettingsMutations();
+/** Bills & EMIs: days before due, the send hour, and the switches for their kinds. Every change saves at once. */
+export function BillsCard({ settings }: { settings: NotificationSettingsResponse }) {
+  const { save, pending } = useSaveSettings();
   const offsets = settings.reminderOffsets ?? [];
   const choices = [...new Set([...OFFSET_CHOICES, ...offsets])].sort((a, b) => b - a);
   const options = choices.map((o) => ({ value: String(o), label: offsetLabel(o) }));
-
-  const save = async (body: UpdateNotificationSettingsRequest) => {
-    try {
-      await update.mutateAsync(body);
-    } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not save notification settings'));
-    }
-  };
 
   const changeOffsets = (picked: string | string[]) => {
     const next = (Array.isArray(picked) ? picked.map(Number) : []).sort((a, b) => b - a);
@@ -40,7 +32,7 @@ export function RemindCard({ settings }: { settings: NotificationSettingsRespons
   };
 
   return (
-    <Card title="Remind me" subtitle="Bills and EMIs · every change saves immediately">
+    <Card title="Bills & EMIs" subtitle="Every change saves immediately">
       <ListRow
         title={<Text variant="body">Days before due</Text>}
         trailing={
@@ -49,9 +41,9 @@ export function RemindCard({ settings }: { settings: NotificationSettingsRespons
             options={options}
             value={offsets.map(String)}
             onValueChange={changeOffsets}
-            disabled={update.isPending}
+            disabled={pending}
             trigger={
-              <Button variant="secondary" size="sm" aria-label="Days before due" disabled={update.isPending}>
+              <Button variant="secondary" size="sm" aria-label="Days before due" disabled={pending}>
                 {offsetsSummary(offsets)}
                 <Icon name="chevron-down" size="xs" />
               </Button>
@@ -62,15 +54,15 @@ export function RemindCard({ settings }: { settings: NotificationSettingsRespons
       <ListRow
         wrap
         title={<Text variant="body">Send at</Text>}
-        subtitle="IST · statement digests and mailbox alerts go out as soon as they happen"
+        subtitle="IST · bill, EMI and money-due reminders go out from this hour"
         trailing={
           <Select
             options={HOUR_OPTIONS}
             value={String(settings.sendHour)}
             onValueChange={(v) => void save({ sendHour: Number(v) })}
-            disabled={update.isPending}
+            disabled={pending}
             trigger={
-              <Button variant="secondary" size="sm" aria-label="Send at" disabled={update.isPending}>
+              <Button variant="secondary" size="sm" aria-label="Send at" disabled={pending}>
                 {hourLabel(settings.sendHour)}
                 <Icon name="chevron-down" size="xs" />
               </Button>
@@ -78,6 +70,7 @@ export function RemindCard({ settings }: { settings: NotificationSettingsRespons
           />
         }
       />
+      <KindSwitches settings={settings} kinds={BILLS_KINDS} />
     </Card>
   );
 }

@@ -4,9 +4,11 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { Banner, Button, Card, CardEmpty, ListRow, Text } from '@/components/ds';
+import { SettingsToggle } from '@/components/organisms';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 
+import { useSaveSettings } from './KindsCard';
 import { addedOn, describeBrowser } from './notificationSettings.helpers';
 import { useNotificationSettingsMutations } from './useNotificationSettings';
 import type { ThisBrowser } from './useThisBrowser';
@@ -53,9 +55,10 @@ export function PushWarning({ settings, browser }: DevicesProps) {
   return null;
 }
 
-/** This browser first, then every other registered device. Removing a device needs no confirm. */
-export function DevicesCard({ settings, browser }: DevicesProps) {
+/** The master switch, then this browser and every other registered device. Removing a device needs no confirm. */
+export function PushCard({ settings, browser }: DevicesProps) {
   const { unsubscribe } = useNotificationSettingsMutations();
+  const { save, pending } = useSaveSettings();
   const devices = settings.devices ?? [];
   const env = browser.env;
   const others = devices.filter((d) => d.endpoint !== browser.endpoint);
@@ -81,8 +84,8 @@ export function DevicesCard({ settings, browser }: DevicesProps) {
 
   return (
     <Card
-      title="Devices"
-      subtitle="Web push"
+      title="Push"
+      subtitle="Pushes only. The bell always shows everything."
       action={
         showTest ? (
           <Button variant="link" size="sm" disabled={browser.testPending} onClick={browser.test}>
@@ -91,6 +94,16 @@ export function DevicesCard({ settings, browser }: DevicesProps) {
         ) : undefined
       }
     >
+      <SettingsToggle
+        // ListRow keeps a 4px left rail; match it so switches line up with the other rows.
+        className="px-space-16 border-l-4 border-l-transparent"
+        label="Push notifications"
+        description="Master switch for every device"
+        checked={settings.pushEnabled}
+        disabled={pending}
+        onCheckedChange={(v) => void save({ pushEnabled: v })}
+      />
+      <PushWarning settings={settings} browser={browser} />
       <ListRow
         title={<Text variant="body-strong">{`This browser · ${(env ? describeBrowser() : 'Browser')}`}</Text>}
         subtitle={status}
