@@ -13,6 +13,7 @@ import {
   effectiveAnchorId,
   linkProblem,
   linkTitle,
+  linkTypesFor,
   roleLabel,
 } from './linkModel';
 
@@ -162,5 +163,16 @@ describe('titles and role words', () => {
     expect(roleLabel('REFUND', 'anchor')).toBe('Purchase');
     expect(roleLabel('REFUND', 'member')).toBe('Refund');
     expect(roleLabel('TRANSFER', 'member')).toBe('Transfer in');
+  });
+});
+
+describe('linkTypesFor', () => {
+  it('offers every type for a debit and for several transactions', () => {
+    expect(linkTypesFor(tx('a', -100))).toEqual(['TRANSFER', 'CC_PAYMENT', 'REFUND', 'REVERSAL', 'FEE', 'EMI']);
+    expect(linkTypesFor(undefined)).toContain('FEE');
+  });
+
+  it('hides Fee and EMI for a credit', () => {
+    expect(linkTypesFor(tx('a', 250))).toEqual(['TRANSFER', 'CC_PAYMENT', 'REFUND', 'REVERSAL']);
   });
 });

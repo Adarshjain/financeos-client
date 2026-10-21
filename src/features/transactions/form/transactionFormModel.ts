@@ -18,7 +18,7 @@ export const NO_CHANNEL = 'NONE';
 
 export type Direction = 'debit' | 'credit';
 
-/** The reasons the server accepts on an edit; there is no "Other". */
+/** The reasons the server accepts on an edit. */
 export const EDITABLE_REASONS: readonly ReviewReason[] = [
   'UNRECONCILED',
   'CATEGORY_UNVERIFIED',

@@ -26,7 +26,7 @@ const stored = (over: Partial<Transaction> = {}): Transaction =>
     description: 'BigBasket',
     source: 'gmail_transaction_alert',
     reviewType: 'NEEDS_REVIEW',
-    reviewReasons: ['UNRECONCILED', 'OTHER'],
+    reviewReasons: ['UNRECONCILED'],
     createdAt: '',
     ...over,
   }) as Transaction;
@@ -44,7 +44,7 @@ describe('values', () => {
     expect(emptyValues('2026-10-13', 'a1')).toMatchObject({ direction: 'debit', date: '2026-10-13', accountId: 'a1', cardId: NO_CARD });
   });
 
-  it('fills Edit from the stored transaction, with the sign as a direction and no "Other" reason', () => {
+  it('fills Edit from the stored transaction, with the sign as a direction', () => {
     const v = valuesFromTransaction(stored({ cardId: 'c9', mcc: '5411', monitoringReason: 'x', isTransactionUnderMonitoring: true }));
     expect(v).toMatchObject({ direction: 'debit', amount: '3600.50', date: '2026-10-12', cardId: 'c9', mcc: '5411', monitored: true, reviewType: 'NEEDS_REVIEW' });
     expect(v.reviewReasons).toEqual(['UNRECONCILED']);

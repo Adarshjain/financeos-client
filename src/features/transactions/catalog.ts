@@ -17,7 +17,6 @@ export const REVIEW_REASON_META: Record<
   CATEGORY_UNVERIFIED: { label: 'Category unverified', shortLabel: 'Category', variant: 'info' },
   DUPLICATE_SUSPECT: { label: 'Possible duplicate', shortLabel: 'Duplicate', variant: 'warning' },
   DATE_CORRECTED: { label: 'Date corrected', shortLabel: 'Date', variant: 'warning' },
-  OTHER: { label: 'Other', shortLabel: 'Other', variant: 'outline' },
 };
 
 export const REVIEW_REASONS = Object.keys(REVIEW_REASON_META) as ReviewReason[];

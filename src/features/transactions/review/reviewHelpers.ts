@@ -1,8 +1,8 @@
 import { batchFailureLabel } from '@/features/transactions/catalog';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
-/** The reasons `batch-review` can clear or re-add. The server has no OTHER. */
-export type ClearableReason = Exclude<ReviewReason, 'OTHER'>;
+/** The reasons `batch-review` can clear or re-add. */
+export type ClearableReason = ReviewReason;
 
 /** The approve dialog's rows, in board order, with the words the board draws. */
 export const APPROVE_REASONS: { reason: ClearableReason; label: string; hint: string }[] = [

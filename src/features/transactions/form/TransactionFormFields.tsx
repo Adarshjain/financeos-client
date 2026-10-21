@@ -46,7 +46,7 @@ const REVIEW_OPTIONS = (isUpdate: boolean): SelectOption[] => [
 
 const REASON_OPTIONS: SelectOption[] = EDITABLE_REASONS.map((r) => ({
   value: r,
-  label: { UNRECONCILED: 'Unreconciled', CATEGORY_UNVERIFIED: 'Category unverified', DUPLICATE_SUSPECT: 'Duplicate', DATE_CORRECTED: 'Date corrected', OTHER: 'Other' }[r],
+  label: { UNRECONCILED: 'Unreconciled', CATEGORY_UNVERIFIED: 'Category unverified', DUPLICATE_SUSPECT: 'Duplicate', DATE_CORRECTED: 'Date corrected' }[r],
 }));
 
 const CHANNEL_OPTIONS: SelectOption[] = [

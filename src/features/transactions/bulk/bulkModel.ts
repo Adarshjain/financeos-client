@@ -5,9 +5,9 @@ import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 type Reviewable = Pick<Transaction, 'reviewType' | 'reviewReasons'>;
 
-/** The reasons an approve can clear; the server never sets OTHER and cannot clear it. */
+/** The reasons an approve can clear. */
 function clearableReasons(t: Reviewable): ReviewReason[] {
-  return (t.reviewReasons ?? []).filter((r) => r !== 'OTHER');
+  return t.reviewReasons ?? [];
 }
 
 /** A row Approve works on: it needs review and carries a reason to clear. Needs review with no reason has nothing to clear. */

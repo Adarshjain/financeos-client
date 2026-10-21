@@ -150,7 +150,7 @@ export const LargeForm: Story = {
 export const SidePanel: Story = {
   args: {
     title: 'Detail inspector',
-    description: 'Full height slide-out drawer on desktop.',
+    description: 'A card beside the page on desktop.',
   },
   parameters: {
     docs: {

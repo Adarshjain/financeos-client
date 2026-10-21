@@ -119,7 +119,7 @@ export function FilterChips({ query, accounts, categories, needsReviewCount, onC
   const allTime = isAllTime(query.period);
 
   return (
-    <div className="flex gap-space-8 overflow-x-auto -mx-space-16 px-space-16 desk:mx-0 desk:px-0 desk:flex-1 desk:min-w-0 desk:flex-wrap desk:overflow-visible">
+    <div className="flex gap-space-8 overflow-x-auto -mx-space-16 px-space-16 desk:mx-0 desk:px-0 desk:flex-1 desk:min-w-0">
       <FilterChip
         selected={!allTime}
         removable={!allTime}

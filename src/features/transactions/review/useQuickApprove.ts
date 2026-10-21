@@ -30,8 +30,7 @@ export function useQuickApprove() {
   const quickApprove = async (
     txn: Pick<Transaction, 'id' | 'reviewReasons'>,
   ): Promise<QuickApproveOutcome> => {
-    // OTHER cannot be cleared through batch-review; the server never sets it, so it is ignored.
-    const reasons = (txn.reviewReasons ?? []).filter((r): r is ClearableReason => r !== 'OTHER');
+    const reasons: ClearableReason[] = txn.reviewReasons ?? [];
     if (reasons.length === 0) return 'nothing-to-approve';
     if (reasons.length > 1) return 'needs-dialog';
     const [reason] = reasons;

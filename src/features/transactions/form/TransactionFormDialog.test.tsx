@@ -342,8 +342,8 @@ describe('Edit transaction', () => {
     });
   });
 
-  it('offers no "Other" reason, and shows the stored reasons ticked', async () => {
-    setup({ transaction: stored({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'OTHER'] }) });
+  it('offers the four server reasons, and shows the stored reasons ticked', async () => {
+    setup({ transaction: stored({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED'] }) });
     expect(screen.getByRole('combobox', { name: /^Why it needs review/ })).toHaveTextContent('Unreconciled');
     await user.click(screen.getByRole('combobox', { name: /^Why it needs review/ }));
     expect(screen.queryByRole('option', { name: 'Other' })).toBeNull();

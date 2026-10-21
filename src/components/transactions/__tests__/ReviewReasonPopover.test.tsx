@@ -36,7 +36,6 @@ describe('ReviewReasonPopover', () => {
       'Category unverified',
       'Possible duplicate',
       'Date corrected',
-      'Other',
     ]);
   });
 
