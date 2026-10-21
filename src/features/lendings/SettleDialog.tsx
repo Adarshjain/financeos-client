@@ -189,7 +189,6 @@ export function SettleDialog({
           ) : null}
           <TextField label="Note" value={note} onValueChange={setNote} placeholder="Optional" />
           <TransactionPickerField
-            placeholder="Pick a transaction"
             value={transaction}
             onSelect={setTransaction}
             onClear={() => setTransaction(null)}

@@ -7,8 +7,8 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
-  Select,
-  type SelectOption,
+  ListRow,
+  Radio,
   Text,
   TextField,
 } from '@/components/ds';
@@ -99,9 +99,9 @@ export function MarkPaidDialog({
     }
   };
 
-  const options: SelectOption[] = [
+  const options: { value: PayChoice; label: string; description: string }[] = [
     ...(found
-      ? [{ value: 'found', label: PAY_CHOICE_COPY.found.label, description: foundDebitLine(found, getAccountName(accounts, found.accountId)) }]
+      ? [{ value: 'found' as const, label: PAY_CHOICE_COPY.found.label, description: foundDebitLine(found, getAccountName(accounts, found.accountId)) }]
       : []),
     { value: 'none', ...PAY_CHOICE_COPY.none },
     { value: 'pick', ...PAY_CHOICE_COPY.pick },
@@ -132,17 +132,23 @@ export function MarkPaidDialog({
         }}
       >
         <DialogBody>
-          <Select
-            aria-label="How the EMI was paid"
-            options={options}
-            value={choice}
-            onValueChange={(value) => choose(value as PayChoice)}
-          />
-          {choice === 'found' && found ? (
-            <Text variant="caption" tone="ink-3" as="p">
-              {foundDebitLine(found, getAccountName(accounts, found.accountId))}
-            </Text>
-          ) : null}
+          <div role="radiogroup" aria-label="How the EMI was paid" className="flex flex-col">
+            {options.map((o) => (
+              <ListRow
+                key={o.value}
+                role="radio"
+                aria-checked={choice === o.value}
+                aria-label={o.label}
+                data-choice={o.value}
+                className="px-0"
+                wrap
+                onClick={() => choose(o.value)}
+                leading={<Radio checked={choice === o.value} tabIndex={-1} aria-hidden="true" />}
+                title={o.label}
+                subtitle={o.description || undefined}
+              />
+            ))}
+          </div>
           {searching && !found ? (
             <Text variant="caption" tone="ink-3" as="p">
               Looking for the bank debit…

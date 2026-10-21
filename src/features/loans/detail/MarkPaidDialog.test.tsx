@@ -51,7 +51,8 @@ function renderDialog(props: Partial<MarkPaidDialogProps> = {}) {
 
 const amount = () => screen.getByLabelText('Amount paid') as HTMLInputElement;
 const paidOn = () => screen.getByLabelText('Paid on') as HTMLInputElement;
-const choices = () => screen.getByRole('combobox', { name: 'How the EMI was paid' });
+const choice = (name: string | RegExp) => screen.getByRole('radio', { name });
+const expectChosen = (name: string) => expect(choice(name)).toHaveAttribute('aria-checked', 'true');
 const submit = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
 
 beforeEach(() => {
@@ -68,12 +69,19 @@ describe('MarkPaidDialog', () => {
 
   it('without a found debit opens on recording without a transaction, with the EMI and its due date', async () => {
     renderDialog();
-    expect(choices()).toHaveTextContent('Record payment without a transaction');
+    expectChosen('Record payment without a transaction');
     expect(amount()).toHaveValue('36603');
     expect(paidOn()).toHaveValue('05/10/2026');
-    await user.click(choices());
-    expect(screen.queryByRole('option', { name: /Link the bank debit we found/ })).toBeNull();
-    expect(screen.getByRole('option', { name: /Pick another bank debit/ })).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Link the bank debit we found/ })).toBeNull();
+    expect(choice(/Pick another bank debit/)).toBeInTheDocument();
+  });
+
+  it('shows the choices as radio rows where only the chosen one is on, and a row click chooses it', async () => {
+    renderDialog({ found });
+    expect(screen.getAllByRole('radio')).toHaveLength(3);
+    await user.click(choice(/Pick another bank debit/));
+    expectChosen('Pick another bank debit');
+    expect(choice(/Link the bank debit we found/)).toHaveAttribute('aria-checked', 'false');
   });
 
   it('records without a transaction', async () => {
@@ -85,7 +93,7 @@ describe('MarkPaidDialog', () => {
 
   it('offers the found debit first, filled in as what was paid, with the difference in words', () => {
     renderDialog({ found });
-    expect(choices()).toHaveTextContent('Link the bank debit we found');
+    expectChosen('Link the bank debit we found');
     expect(screen.getAllByText('"SBI Home Loan EMI" · HDFC Bank Savings · 5 Oct · ₹39,052').length).toBeGreaterThan(0);
     expect(amount()).toHaveValue('39052');
     expect(paidOn()).toHaveValue('05/10/2026');
@@ -110,8 +118,7 @@ describe('MarkPaidDialog', () => {
 
   it('switching to record without a transaction goes back to the EMI and its due date', async () => {
     const { onSubmit } = renderDialog({ found });
-    await user.click(choices());
-    await user.click(await screen.findByRole('option', { name: /Record payment without a transaction/ }));
+    await user.click(choice(/Record payment without a transaction/));
     expect(amount()).toHaveValue('36603');
     expect(screen.queryByText(/than EMI/)).toBeNull();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
@@ -132,10 +139,8 @@ describe('MarkPaidDialog', () => {
       },
     });
     const { onSubmit } = renderDialog();
-    await user.click(choices());
-    await user.click(await screen.findByRole('option', { name: /Pick another bank debit/ }));
-    await user.click(screen.getByRole('combobox', { name: /Bank debit/ }));
-    await user.click(await screen.findByRole('option', { name: /NACH EMI/ }));
+    await user.click(choice(/Pick another bank debit/));
+    await user.click(await screen.findByRole('radio', { name: /NACH EMI/ }));
     expect(amount()).toHaveValue('36603');
     expect(paidOn()).toHaveValue('07/10/2026');
     submit('Mark paid & link');
@@ -146,8 +151,7 @@ describe('MarkPaidDialog', () => {
 
   it('does not save a picked-debit choice with no debit picked', async () => {
     const { onSubmit } = renderDialog();
-    await user.click(choices());
-    await user.click(await screen.findByRole('option', { name: /Pick another bank debit/ }));
+    await user.click(choice(/Pick another bank debit/));
     submit('Mark paid & link');
     expect(await screen.findByText('Pick the bank debit, or record without a transaction')).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
@@ -186,14 +190,13 @@ describe('MarkPaidDialog', () => {
         onClose={vi.fn()}
       />,
     );
-    await waitFor(() => expect(choices()).toHaveTextContent('Link the bank debit we found'));
+    await waitFor(() => expectChosen('Link the bank debit we found'));
     expect(amount()).toHaveValue('39052');
   });
 
   it('does not take the choice back from someone who already chose', async () => {
     const view = renderDialog({ searching: true });
-    await user.click(choices());
-    await user.click(await screen.findByRole('option', { name: /Pick another bank debit/ }));
+    await user.click(choice(/Pick another bank debit/));
     view.rerender(
       <MarkPaidDialog
         installment={emi14}
@@ -206,7 +209,7 @@ describe('MarkPaidDialog', () => {
         onClose={vi.fn()}
       />,
     );
-    expect(choices()).toHaveTextContent('Pick another bank debit');
+    expectChosen('Pick another bank debit');
   });
 
   it('says nothing about the difference while the amount is empty', () => {
@@ -231,6 +234,6 @@ describe('MarkPaidDialog', () => {
       />,
     );
     expect(amount()).toHaveValue('30000');
-    expect(choices()).toHaveTextContent('Record payment without a transaction');
+    expectChosen('Record payment without a transaction');
   });
 });

@@ -9,7 +9,7 @@ vi.mock('@/lib/api/client', async () => {
 });
 
 vi.mock('@/lib/query/hooks/useAccounts', () => ({
-  useAccounts: () => ({ data: [{ id: 'a1', name: 'HDFC Savings' }] }),
+  useAccounts: () => ({ data: [{ id: 'a1', name: 'HDFC Savings', last4: '1234' }] }),
 }));
 
 import { api } from '@/lib/api/client';
@@ -44,38 +44,34 @@ function renderField(props: Partial<React.ComponentProps<typeof TransactionPicke
   return { onSelect, onClear };
 }
 
-const open = () => user.click(screen.getByRole('combobox'));
-
 beforeEach(() => vi.clearAllMocks());
 
 describe('TransactionPickerField', () => {
-  it('opens a search list whose rows read date · account · description · amount', async () => {
+  it('is an open list whose rows read description, date · account, amount', async () => {
     respond([txn('t1')]);
     renderField();
-    await open();
-    expect(await screen.findByRole('option', { name: '13 Sep · HDFC Savings · IMPS from X · ₹2,300' })).toBeInTheDocument();
+    expect(await screen.findByRole('radio', { name: 'IMPS from X' })).toBeInTheDocument();
+    expect(screen.getByText('13 Sep · HDFC Savings ••1234')).toBeInTheDocument();
+    expect(screen.getByText('₹2,300')).toBeInTheDocument();
   });
 
   it('puts the exact amount first, then the nearest date', async () => {
     respond([txn('far', { amount: -900, description: 'Far' }), txn('exact', { amount: -2300, description: 'Exact' })]);
     renderField({ suggestAmount: 2300 });
-    await open();
-    await screen.findByRole('option', { name: /Exact/ });
-    expect(screen.getAllByRole('option')[0]).toHaveTextContent('Exact');
+    await screen.findByRole('radio', { name: /Exact/ });
+    expect(screen.getAllByRole('radio')[0]).toHaveTextContent('Exact');
   });
 
   it('selects a row and reports the transaction', async () => {
     respond([txn('t1')]);
     const { onSelect } = renderField();
-    await open();
-    await user.click(await screen.findByRole('option', { name: /IMPS from X/ }));
+    await user.click(await screen.findByRole('radio', { name: /IMPS from X/ }));
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
   });
 
   it('sends the search to the server after a pause', async () => {
     respond([]);
     renderField();
-    await open();
     fireEvent.change(await screen.findByPlaceholderText('Search by description or amount'), { target: { value: 'emi' } });
     await waitFor(() => expect((api.POST as Mock).mock.calls.at(-1)?.[1].body.search).toBe('emi'));
   });
@@ -83,55 +79,49 @@ describe('TransactionPickerField', () => {
   it('applies the type filter and the date window it was given', async () => {
     respond([]);
     renderField({ type: 'DEBIT', suggestDate: '2026-10-05' });
-    await open();
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
     const filters = (api.POST as Mock).mock.calls[0][1].body.filters;
     expect(filters).toContainEqual({ field: 'type', operator: 'is', value: 'DEBIT' });
     expect(filters).toContainEqual({ field: 'date', operator: 'between', value: { from: '2026-09-05', to: '2026-11-04' } });
   });
 
-  it('says Searching until the first answer is in', async () => {
+  it('shows loading rows until the first answer is in', async () => {
     (api.POST as Mock).mockReturnValue(new Promise(() => undefined));
     renderField();
-    await open();
-    expect(screen.getByRole('option', { name: 'Searching…' })).toBeInTheDocument();
-    expect(screen.queryByText('No matching transactions')).toBeNull();
+    expect(screen.getAllByTestId('picker-skeleton').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/No matching transactions/)).toBeNull();
   });
 
   it('hides a row another obligation already claims, and says why when nothing is left', async () => {
     respond([txn('t1', { obligationRefs: [{ kind: 'LOAN' }] })]);
     renderField({ excludeAnyObligationRef: true, ruleHint: 'EMI settlements link money-out (debit) transactions' });
-    await open();
-    expect(await screen.findByText('No matching transactions')).toBeInTheDocument();
-    expect(screen.getByText('EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
+    expect(await screen.findByText('No matching transactions. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
   });
 
   it('notes a row that is already shared with ledger entries', async () => {
     respond([txn('t1', { obligationRefs: [{ kind: 'LENDING' }, { kind: 'LENDING' }] })]);
     renderField();
-    await open();
-    expect(await screen.findByText('also linked to 2 ledger entries')).toBeInTheDocument();
+    expect(await screen.findByText(/also linked to 2 ledger entries/)).toBeInTheDocument();
   });
 
   it('offers Show more while the server has more pages and asks for the next one', async () => {
     respond([txn('t1')], 2);
     renderField();
-    await open();
-    await screen.findByRole('option', { name: /IMPS from X/ });
+    await screen.findByRole('radio', { name: /IMPS from X/ });
     (api.POST as Mock).mockResolvedValue({
       data: { content: [txn('t2', { description: 'Second page' })], number: 1, size: 50, totalElements: 2, totalPages: 2 },
     });
     await user.click(screen.getByRole('button', { name: 'Show more' }));
-    expect(await screen.findByRole('option', { name: /Second page/ })).toBeInTheDocument();
+    expect(await screen.findByRole('radio', { name: /Second page/ })).toBeInTheDocument();
     expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.page).toBe(1);
     expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 
-  it('shows the picked transaction in the field and lets you remove it', async () => {
+  it('keeps the picked transaction in the list even when search results do not hold it, and lets you remove it', async () => {
     respond([]);
     const value: PickerSummaryLike = { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'IMPS from X', signedAmount: -2300 };
     const { onClear } = renderField({ value });
-    expect(screen.getByRole('combobox')).toHaveTextContent('13 Sep · HDFC Savings · IMPS from X · ₹2,300');
+    expect(screen.getByRole('radio', { name: 'IMPS from X' })).toHaveAttribute('aria-checked', 'true');
     await user.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onClear).toHaveBeenCalled();
   });
@@ -140,7 +130,31 @@ describe('TransactionPickerField', () => {
     respond([]);
     renderField({ disabled: true, value: { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'X', signedAmount: -1 } });
     expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
-    expect(screen.getByRole('combobox')).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'X' })).toHaveAttribute('aria-disabled', 'true');
+    expect(api.POST).not.toHaveBeenCalled();
+  });
+
+  it('with a pick in place, still says when a new search finds nothing, with the rule hint', async () => {
+    respond([]);
+    renderField({
+      value: { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'IMPS from X', signedAmount: -2300 },
+      ruleHint: 'EMI settlements link money-out (debit) transactions',
+    });
+    expect(await screen.findByText('No matching transactions. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
+  });
+
+  it('with a pick in place, shows a loading cue while the search is pending', () => {
+    (api.POST as Mock).mockReturnValue(new Promise(() => undefined));
+    renderField({ value: { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'IMPS from X', signedAmount: -2300 } });
+    expect(screen.getByTestId('picker-pending')).toBeInTheDocument();
+    expect(screen.queryByText(/No matching transactions/)).toBeNull();
+  });
+
+  it('disabled with no pick shows only the label: no search, no empty copy', () => {
+    renderField({ disabled: true });
+    expect(screen.getByText('Transaction (optional)')).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByText(/No matching transactions/)).toBeNull();
     expect(api.POST).not.toHaveBeenCalled();
   });
 });

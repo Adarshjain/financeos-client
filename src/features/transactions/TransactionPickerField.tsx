@@ -2,12 +2,12 @@
 
 import React from 'react';
 
-import { Button, Select, type SelectOption } from '@/components/ds';
+import { Button, Skeleton, Text } from '@/components/ds';
+import { TransactionPicker, type TransactionPickerItem } from '@/components/organisms';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
-import { getAccountName } from '@/lib/utils';
 
-import { pickerEmptyHint, pickerRowLabel, type PickerSummaryLike, sharedNote } from './pickerModel';
+import { pickerEmptyHint, pickerListItem, type PickerSummaryLike, sharedNote } from './pickerModel';
 import { useTransactionPicker } from './useTransactionPicker';
 
 export interface TransactionPickerFieldProps {
@@ -32,13 +32,13 @@ export interface TransactionPickerFieldProps {
 }
 
 /**
- * A field that opens a searchable list of bank transactions. The search is answered by the server (debounced),
- * rows are filtered and ordered by the picker rules (exact amount first, then nearest date), and "Show more"
- * asks for the next page. The picked transaction stays in the field; Remove clears it.
+ * An always-open, searchable list of bank transactions (the TransactionPicker organism). The search is answered
+ * by the server (debounced), rows are filtered and ordered by the picker rules (exact amount first, then nearest
+ * date), and "Show more" asks for the next page. The picked transaction stays at the top of the list; Remove clears it.
  */
 export function TransactionPickerField({
   label = 'Transaction (optional)',
-  placeholder = 'Search your debits',
+  placeholder = 'Search by description or amount',
   value,
   onSelect,
   onClear,
@@ -53,7 +53,6 @@ export function TransactionPickerField({
   disabled,
   error,
 }: TransactionPickerFieldProps) {
-  const [open, setOpen] = React.useState(false);
   const { data: accounts = [] } = useAccounts();
   const { search, setSearch, pending, candidates, hasMore, loadMore } = useTransactionPicker({
     direction,
@@ -63,56 +62,79 @@ export function TransactionPickerField({
     excludeIds: value ? [...(excludeIds ?? []), value.id] : excludeIds,
     excludeAnyObligationRef,
     shareableKind,
-    active: open && !disabled,
+    active: !disabled,
   });
 
-  const options = React.useMemo<SelectOption[]>(() => {
-    const rows: SelectOption[] = [];
-    if (value) {
-      const name = value.accountName || getAccountName(accounts, value.accountId);
-      rows.push({ value: value.id, label: pickerRowLabel(value, name) });
-    }
-    for (const t of candidates) {
-      rows.push({
-        value: t.id,
-        label: pickerRowLabel(t, getAccountName(accounts, t.accountId)),
-        description: sharedNote(t.obligationRefs?.length ?? 0, shareableKind, excludeAnyObligationRef) ?? undefined,
-      });
-    }
-    if (rows.length === (value ? 1 : 0)) {
-      rows.push({
-        value: '__empty',
-        label: pending ? 'Searching…' : 'No matching transactions',
-        description: pending ? undefined : pickerEmptyHint(ruleHint, direction),
-        disabled: true,
-      });
+  const items = React.useMemo<TransactionPickerItem[]>(() => {
+    const accountOf = (id: string, named?: string | null) => {
+      const found = accounts.find((a) => a.id === id) as { name: string; last4?: string } | undefined;
+      return { name: named || found?.name || 'Unknown', last4: found?.last4 };
+    };
+    const rows: TransactionPickerItem[] = [];
+    if (value) rows.push({ ...pickerListItem(value, accountOf(value.accountId, value.accountName)), disabled });
+    if (!disabled) {
+      for (const t of candidates) {
+        rows.push(
+          pickerListItem(
+            t,
+            accountOf(t.accountId),
+            sharedNote(t.obligationRefs?.length ?? 0, shareableKind, excludeAnyObligationRef),
+          ),
+        );
+      }
     }
     return rows;
-  }, [value, candidates, accounts, pending, ruleHint, direction, shareableKind, excludeAnyObligationRef]);
+  }, [value, candidates, accounts, disabled, shareableKind, excludeAnyObligationRef]);
+
+  const hint = pickerEmptyHint(ruleHint, direction);
+  const emptyCopy = hint ? `No matching transactions. ${hint}` : 'No matching transactions';
+
+  if (disabled && !value) {
+    return (
+      <div className="flex flex-col gap-space-4">
+        <Text as="div" variant="label" tone="ink-3">
+          {label}
+        </Text>
+        {error ? (
+          <Text as="div" variant="caption" tone="danger">
+            {error}
+          </Text>
+        ) : null}
+      </div>
+    );
+  }
+
+  // The pinned selection keeps the list non-empty, so a new search's loading and empty states are drawn here.
+  const pinned = !!value && !disabled;
 
   return (
     <div className="flex flex-col gap-space-4">
-      <Select
+      <TransactionPicker
         label={label}
-        placeholder={placeholder}
-        searchable
-        searchPlaceholder="Search by description or amount"
-        filter="none"
-        options={options}
-        value={value?.id ?? ''}
-        disabled={disabled}
-        error={error}
-        open={open}
-        onOpenChange={setOpen}
-        searchValue={search}
-        onSearchChange={setSearch}
-        action={hasMore ? { label: 'Show more', onSelect: loadMore } : undefined}
+        searchPlaceholder={placeholder}
+        items={items}
+        value={value?.id ?? null}
         onValueChange={(next) => {
           if (typeof next !== 'string' || next === value?.id) return;
           const picked = candidates.find((t) => t.id === next);
           if (picked) onSelect(picked as Transaction);
         }}
+        query={search}
+        onQueryChange={setSearch}
+        loading={pending}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
+        emptyLabel={emptyCopy}
+        error={error}
       />
+      {pinned && pending && candidates.length === 0 ? (
+        <Skeleton width="60%" height={14} data-testid="picker-pending" />
+      ) : null}
+      {pinned && !pending && candidates.length === 0 ? (
+        <Text as="div" variant="body" tone="ink-3">
+          {emptyCopy}
+        </Text>
+      ) : null}
       {value && !disabled ? (
         <div className="flex justify-end">
           <Button type="button" variant="link" size="sm" onClick={onClear}>

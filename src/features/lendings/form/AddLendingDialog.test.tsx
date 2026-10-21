@@ -54,7 +54,6 @@ vi.mock('@/lib/query/hooks/useCounterparties', () => ({
 vi.mock('@/features/transactions/TransactionPickerField', () => ({
   TransactionPickerField: (p: {
     label?: string;
-    placeholder?: string;
     value: { id: string } | null;
     direction?: string;
     onSelect: (t: unknown) => void;
@@ -62,7 +61,6 @@ vi.mock('@/features/transactions/TransactionPickerField', () => ({
   }) => (
     <div data-testid="tx-picker" data-direction={p.direction}>
       <span>{p.label ?? 'Transaction (optional)'}</span>
-      <span>{p.placeholder}</span>
       <span>{p.value ? `picked ${p.value.id}` : 'no transaction'}</span>
       <button type="button" onClick={() => p.onSelect({ id: 'tx1', amount: -500, date: '2026-10-12', accountId: 'a1' })}>
         Pick tx1
