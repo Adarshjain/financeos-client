@@ -16,10 +16,12 @@ import {
   TextArea,
   TextField,
 } from '@/components/ds';
+import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { type CounterpartyResponse, type CounterpartySelection, selectionName } from '@/lib/lending.types';
 import {
+  directionOf,
   ENTRY_TYPE_LABEL,
   entryTypesForDirection,
   isSettlementType,
@@ -27,6 +29,7 @@ import {
   settlementWarning,
 } from '@/lib/lendingEntry';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
+import type { Transaction } from '@/lib/transaction.types';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
@@ -55,23 +58,32 @@ interface Errors {
 }
 
 /**
- * Add lending: records one ledger entry for an existing person or a new one. The linked-transaction
- * field of the Legacy form is left out until Dinero has a transaction picker (open question).
+ * Add lending: records one ledger entry for an existing person or a new one, optionally linked to the bank
+ * transaction behind it. `initialPerson` opens it with that person already picked (a person's page).
  */
-export function AddLendingDialog({ onClose }: { onClose: () => void }) {
+export function AddLendingDialog({
+  onClose,
+  initialPerson,
+}: {
+  onClose: () => void;
+  initialPerson?: CounterpartyResponse;
+}) {
   const router = useRouter();
   const today = todayInAppZone();
   const createLending = useCreateLending({
     onError: (e) => showToast(getErrorMessage(e, 'Failed to create lending'), { tone: 'danger' }),
   });
 
-  const [party, setParty] = React.useState<CounterpartySelection | null>(null);
+  const [party, setParty] = React.useState<CounterpartySelection | null>(
+    initialPerson ? { kind: 'existing', counterparty: initialPerson } : null,
+  );
   const [search, setSearch] = React.useState('');
   const [entryType, setEntryType] = React.useState<LendingEntryType>('lent');
   const [amount, setAmount] = React.useState('');
   const [entryDate, setEntryDate] = React.useState(today);
   const [expectedReturnDate, setExpectedReturnDate] = React.useState('');
   const [notes, setNotes] = React.useState('');
+  const [transaction, setTransaction] = React.useState<Transaction | null>(null);
   const [errors, setErrors] = React.useState<Errors>({});
 
   const term = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
@@ -111,6 +123,7 @@ export function AddLendingDialog({ onClose }: { onClose: () => void }) {
           entryDate,
           expectedReturnDate: settlement ? '' : expectedReturnDate,
           notes,
+          transactionId: transaction?.id,
         }),
       );
       showToast('Lending recorded successfully');
@@ -168,7 +181,12 @@ export function AddLendingDialog({ onClose }: { onClose: () => void }) {
               label="Entry type"
               groups={ENTRY_TYPE_GROUPS}
               value={entryType}
-              onValueChange={(v) => setEntryType(v as LendingEntryType)}
+              onValueChange={(v) => {
+                const next = v as LendingEntryType;
+                // The picker's debit/credit filter follows the money's direction, so a pick may stop fitting.
+                if (directionOf(next) !== directionOf(entryType)) setTransaction(null);
+                setEntryType(next);
+              }}
             />
             <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
               <TextField
@@ -195,6 +213,16 @@ export function AddLendingDialog({ onClose }: { onClose: () => void }) {
                 {warning}
               </Text>
             ) : null}
+            <TransactionPickerField
+              label="Linked transaction (optional)"
+              placeholder="Pick a transaction"
+              value={transaction}
+              onSelect={setTransaction}
+              onClear={() => setTransaction(null)}
+              direction={directionOf(entryType)}
+              suggestAmount={amount && Number(amount) > 0 ? Number(amount) : null}
+              suggestDate={entryDate || null}
+            />
             {settlement ? null : (
               <DateField
                 label="Expected return date"

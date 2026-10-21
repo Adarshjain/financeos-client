@@ -16,7 +16,7 @@ import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { CreateLendingRequest, UpdateLendingRequest } from '@/lib/types';
 
-import { useCounterpartyMutations } from '../useCounterpartyMutations';
+import { useCounterpartyMutations } from './useCounterpartyMutations';
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -159,5 +159,36 @@ describe('useCounterpartyMutations — ledger totals (loans summary) invalidatio
     await waitFor(() => expect(result.current[name].isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.loans.summary() });
+  });
+});
+
+describe('useCounterpartyMutations — error toasts', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('hands a failure and its fallback sentence to the caller instead of the Legacy toast', async () => {
+    vi.mocked(api.DELETE).mockRejectedValue(new Error('boom'));
+    const onError = vi.fn();
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useCounterpartyMutations('cp1', { onError }), { wrapper: Wrapper });
+
+    result.current.deleteCp.mutate();
+
+    await waitFor(() => expect(result.current.deleteCp.isError).toBe(true));
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to delete counterparty');
+  });
+
+  it('does the same for the link and unlink mutations', async () => {
+    vi.mocked(api.PUT).mockRejectedValue(new Error('no'));
+    vi.mocked(api.DELETE).mockRejectedValue(new Error('no'));
+    const onError = vi.fn();
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useCounterpartyMutations('cp1', { onError }), { wrapper: Wrapper });
+
+    result.current.linkTransaction.mutate({ id: 'l1', transactionId: 't1' });
+    result.current.unlinkTransaction.mutate('l1');
+
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(2));
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to link transaction');
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to unlink transaction');
   });
 });

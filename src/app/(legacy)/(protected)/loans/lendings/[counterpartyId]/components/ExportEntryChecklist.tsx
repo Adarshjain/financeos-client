@@ -3,11 +3,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { ExportLedgerState } from '@/features/lendings/useExportLedger';
 import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
 import type { ExportableEntry } from '@/lib/lendingExport';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-
-import type { ExportLedgerState } from './useExportLedger';
 
 interface ExportEntryChecklistProps {
   state: ExportLedgerState;

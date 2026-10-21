@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { ExportLedgerState } from '@/features/lendings/useExportLedger';
 import { directionLabels, type LendingExportToggles } from '@/lib/lendingExport';
-
-import type { ExportLedgerState } from './useExportLedger';
 
 const TOGGLE_LABELS: Record<keyof LendingExportToggles, string> = {
   includeNotes: 'Include notes',

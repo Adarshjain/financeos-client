@@ -35,6 +35,7 @@ import type {
 import type { InstrumentListPage, InstrumentListQuery } from '@/lib/instrumentList';
 import type { EnqueueResponse, JobResponse, PagedJobResponse } from '@/lib/jobs.types';
 import type {
+  CounterpartyLedgerResponse,
   CounterpartyResponse,
   CreateCounterpartyRequest,
   CreateLendingRequest,
@@ -837,6 +838,17 @@ export const counterpartiesApi = {
       params: { query: { page, size, sort: [] } },
     });
     return data! as Page<CounterpartyResponse>;
+  },
+  get: async (id: string): Promise<CounterpartyResponse> => {
+    const { data } = await serverApi.GET('/api/v1/counterparties/{id}', { params: { path: { id } } });
+    return data! as CounterpartyResponse;
+  },
+  /** One page of the person's entries, newest first, each with the balance after it, plus the totals over all. */
+  ledger: async (id: string, page = 0, size = 25): Promise<CounterpartyLedgerResponse> => {
+    const { data } = await serverApi.GET('/api/v1/counterparties/{id}/ledger', {
+      params: { path: { id }, query: { page, size } },
+    });
+    return data! as CounterpartyLedgerResponse;
   },
   create: async (body: CreateCounterpartyRequest): Promise<CounterpartyResponse> => {
     const { data } = await serverApi.POST('/api/v1/counterparties', { body });

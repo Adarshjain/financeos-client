@@ -15,11 +15,11 @@ vi.mock('sonner', () => ({
 
 import { toast } from 'sonner';
 
+import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import { api, ApiError } from '@/lib/api/client';
 import type { Transaction } from '@/lib/transaction.types';
 import type { LendingResponse } from '@/lib/types';
 
-import { useCounterpartyMutations } from '../useCounterpartyMutations';
 import { useEditLendingEntry } from '../useEditLendingEntry';
 
 type FakeMutation = { mutateAsync: ReturnType<typeof vi.fn>; isPending: boolean };

@@ -43,7 +43,7 @@ const person = (over: Partial<CounterpartyListItem>): CounterpartyListItem => ({
   id: 'p1',
   name: 'Rahul Sharma',
   notes: null,
-  entryCount: 2,
+  entryCount: 2, linkedEntryCount: 0,
   netPosition: 15000,
   repaidByYou: 0,
   repaidToYou: 10000,
@@ -179,11 +179,11 @@ describe('/ds/loans/lendings', () => {
     expect(screen.getByText('due 23 Oct · last entry 23 Sep')).toBeInTheDocument();
   });
 
-  it('opens a person on the Legacy page when the row is pressed', async () => {
+  it('opens a person on the Dinero page when the row is pressed', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('Priya Nair')[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p2');
-    expect(screen.getByRole('link', { name: 'Open Priya Nair' })).toHaveAttribute('href', '/loans/lendings/p2');
+    expect(router.push).toHaveBeenCalledWith('/ds/loans/lendings/p2');
+    expect(screen.getByRole('link', { name: 'Open Priya Nair' })).toHaveAttribute('href', '/ds/loans/lendings/p2');
   });
 
   it('shows the Pager above and below with the server totals', async () => {

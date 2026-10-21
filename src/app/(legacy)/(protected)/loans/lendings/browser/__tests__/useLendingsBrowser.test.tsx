@@ -35,7 +35,7 @@ const cp1: CounterpartyResponse = {
   totalBorrowed: 0,
   repaidToYou: 0,
   repaidByYou: 0,
-  entryCount: 0,
+  entryCount: 0, linkedEntryCount: 0,
 };
 
 const tx: Transaction = {

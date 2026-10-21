@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, ListField } from '@/components/ds';
+import { Button, Card, ListField, Text } from '@/components/ds';
 import type { MatchSuggestionsResponse } from '@/lib/loan.types';
 
 import { nothingFound, suggestionRows } from './matchModel';
@@ -25,16 +25,16 @@ export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfi
       title="Matching"
       subtitle="EMIs ↔ bank debits"
       action={
-        <div className="flex items-center gap-space-12">
+        <Text variant="label" as="div" className="flex items-center gap-space-12">
           {rows.length > 0 ? (
-            <Button variant="link" onClick={onConfirmAll}>
+            <Button variant="link" size="sm" onClick={onConfirmAll}>
               Confirm all
             </Button>
           ) : null}
-          <Button variant="link" onClick={onFind} disabled={loading}>
+          <Button variant="link" size="sm" onClick={onFind} disabled={loading}>
             {loading ? 'Searching…' : 'Find matches'}
           </Button>
-        </div>
+        </Text>
       }
     >
       <ListField label="Linked" value={linked} />

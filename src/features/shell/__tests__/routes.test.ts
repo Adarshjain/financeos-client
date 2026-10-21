@@ -54,7 +54,7 @@ describe('appHref', () => {
       '/investments',
       '/rewards',
       '/rewards/rules?account=a1',
-      '/loans/lendings/c1',
+      '/loans/calendar',
       '/dashboards',
       '/reports',
       '/chat',

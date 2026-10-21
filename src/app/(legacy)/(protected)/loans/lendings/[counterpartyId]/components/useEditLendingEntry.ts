@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import { fromEntryType, type LendingEntryType, toEntryType } from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
 import { LendingResponse, LendingTransactionSummary } from '@/lib/types';
-
-import { useCounterpartyMutations } from './useCounterpartyMutations';
 
 type Mutations = ReturnType<typeof useCounterpartyMutations>;
 type EditMutations = Pick<Mutations, 'updateLending' | 'linkTransaction' | 'unlinkTransaction'>;

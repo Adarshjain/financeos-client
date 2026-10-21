@@ -26,7 +26,7 @@ function person(over: Partial<CounterpartyListItem> = {}): CounterpartyListItem 
     id: 'p1',
     name: 'Rahul Sharma',
     notes: null,
-    entryCount: 2,
+    entryCount: 2, linkedEntryCount: 0,
     netPosition: 15000,
     repaidByYou: 0,
     repaidToYou: 10000,
@@ -180,7 +180,7 @@ describe('lendingRow', () => {
       hasExpected: true,
       lastEntry: '10 Oct · repaid ₹10,000',
       phoneSub: 'expected 28 Oct · last entry 10 Oct',
-      href: '/loans/lendings/p1',
+      href: '/ds/loans/lendings/p1',
     });
   });
 

@@ -1,14 +1,8 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
-import { useCreateLending } from '@/features/lendings/useCreateLending';
-import {
-  useLinkLendingTransaction,
-  useUnlinkLendingTransaction,
-} from '@/features/lendings/useLendingTransactionLink';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -17,15 +11,19 @@ import type {
   UpdateLendingRequest,
 } from '@/lib/types';
 
+import { useCreateLending } from './useCreateLending';
+import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingTransactionLink';
 
-
-function onErrorToast(fallback: string) {
-  return (e: unknown) => toastError(e, fallback);
+export interface CounterpartyMutationOptions {
+  /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
+  onError?: (e: unknown, fallback: string) => void;
 }
 
 /** Mutations for the counterparty detail page (person profile + their ledger). */
-export function useCounterpartyMutations(counterpartyId: string) {
+export function useCounterpartyMutations(counterpartyId: string, options?: CounterpartyMutationOptions) {
   const qc = useQueryClient();
+  const onErrorToast = (fallback: string) => (e: unknown) =>
+    options?.onError ? options.onError(e, fallback) : toastError(e, fallback);
 
   const invalidateLendings = () => invalidateLendingQueries(qc);
   const invalidateLendingsAndTransactions = () => {
@@ -54,7 +52,9 @@ export function useCounterpartyMutations(counterpartyId: string) {
     onError: onErrorToast('Failed to delete counterparty'),
   });
 
-  const createLending = useCreateLending();
+  const createLending = useCreateLending(
+    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to create lending') } : undefined,
+  );
 
   const updateLending = useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateLendingRequest }) =>
@@ -72,9 +72,13 @@ export function useCounterpartyMutations(counterpartyId: string) {
     onError: onErrorToast('Failed to delete lending'),
   });
 
-  const linkTransaction = useLinkLendingTransaction();
+  const linkTransaction = useLinkLendingTransaction(
+    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to link transaction') } : undefined,
+  );
 
-  const unlinkTransaction = useUnlinkLendingTransaction();
+  const unlinkTransaction = useUnlinkLendingTransaction(
+    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to unlink transaction') } : undefined,
+  );
 
   return {
     updateCp,

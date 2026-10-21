@@ -1,9 +1,11 @@
 // These mirror generated schema shapes field-for-field; re-exported as aliases
 // instead of hand-duplicated so a server change can't silently drift the two.
 export type {
+  CounterpartyLedgerResponse,
   CounterpartyResponse,
   CreateCounterpartyRequest,
   CreateLendingRequest,
+  LedgerEntryResponse,
   LendingResponse,
   ObligationsResponse,
   UpdateCounterpartyRequest,
@@ -37,6 +39,9 @@ export type CounterpartySelection =
 export function selectionName(selection: CounterpartySelection): string {
   return selection.kind === 'new' ? selection.name : selection.counterparty.name;
 }
+
+/** The person page's counterparty (carries `firstEntryDate` and `linkedEntryCount`). */
+export type PersonCounterparty = Schemas['CounterpartyResponse'];
 
 /** What the person list reads: the generated shape plus the fields the Lendings table adds. */
 type CounterpartyBase = Schemas['CounterpartyResponse'];

@@ -13,10 +13,12 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LendingDirection } from '@/lib/lending.types';
-import { fromEntryType, settlementWarning } from '@/lib/lendingEntry';
+import { directionOf, fromEntryType, settlementWarning } from '@/lib/lendingEntry';
+import type { Transaction } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
@@ -41,6 +43,8 @@ export interface SettleDialogProps {
   direction: LendingDirection;
   /** What is outstanding, always positive. */
   balance: number;
+  /** Runs after the entry is recorded, so a page can refresh what it shows. */
+  onRecorded?: () => void;
 }
 
 type Quick = 'full' | 'half' | 'custom';
@@ -56,6 +60,7 @@ export function SettleDialog({
   name,
   direction,
   balance,
+  onRecorded,
 }: SettleDialogProps) {
   const first = firstNameOf(name);
   const createLending = useCreateLending({
@@ -68,6 +73,7 @@ export function SettleDialog({
   const [date, setDate] = React.useState(todayInAppZone());
   const [note, setNote] = React.useState('');
   const [amountError, setAmountError] = React.useState<string | null>(null);
+  const [transaction, setTransaction] = React.useState<Transaction | null>(null);
 
   React.useEffect(() => {
     if (!open) return;
@@ -77,6 +83,7 @@ export function SettleDialog({
     setDate(todayInAppZone());
     setNote('');
     setAmountError(null);
+    setTransaction(null);
   }, [open, balance]);
 
   const entryType = settleEntryType(direction, segment);
@@ -105,9 +112,11 @@ export function SettleDialog({
         ...fromEntryType(entryType),
         amount: parsed,
         entryDate: date,
+        transactionId: transaction?.id,
         notes: note.trim() || undefined,
       });
       showToast('Entry added');
+      onRecorded?.();
       onOpenChange(false);
     } catch {
       // onError already surfaced the toast.
@@ -137,7 +146,12 @@ export function SettleDialog({
             aria-label="Entry type"
             options={settleSegmentOptions(direction)}
             value={segment}
-            onValueChange={(v) => setSegment(v as SettleSegment)}
+            onValueChange={(v) => {
+              const next = v as SettleSegment;
+              // The picker's debit/credit filter follows the money's direction, so a pick may stop fitting.
+              if (directionOf(settleEntryType(direction, next)) !== directionOf(entryType)) setTransaction(null);
+              setSegment(next);
+            }}
           />
           <div className="grid grid-cols-2 gap-space-12">
             <TextField
@@ -174,6 +188,15 @@ export function SettleDialog({
             </div>
           ) : null}
           <TextField label="Note" value={note} onValueChange={setNote} placeholder="Optional" />
+          <TransactionPickerField
+            placeholder="Pick a transaction"
+            value={transaction}
+            onSelect={setTransaction}
+            onClear={() => setTransaction(null)}
+            direction={directionOf(entryType)}
+            suggestAmount={Number.isFinite(parsed) && parsed > 0 ? parsed : null}
+            suggestDate={date || null}
+          />
           {warning ? (
             <Text variant="label" tone="warning">
               {warning}

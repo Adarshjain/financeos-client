@@ -7,7 +7,7 @@ import { buildCreateLendingRequest, entriesLabel, lendingEntryProblem, positionL
 const rahul: CounterpartyResponse = {
   id: 'p1',
   name: 'Rahul Sharma',
-  entryCount: 2,
+  entryCount: 2, linkedEntryCount: 0,
   netPosition: 1200,
   repaidByYou: 0,
   repaidToYou: 0,
@@ -61,7 +61,7 @@ describe('labels', () => {
     expect(positionLabel(rahul)).toBe('Owes you ₹1,200.00');
     expect(positionLabel({ ...rahul, netPosition: -500 })).toBe('You owe ₹500.00');
     expect(positionLabel({ ...rahul, netPosition: 0 })).toBe('Settled');
-    expect(positionLabel({ ...rahul, entryCount: 0, netPosition: 0 })).toBe('No entries yet');
+    expect(positionLabel({ ...rahul, entryCount: 0, linkedEntryCount: 0, netPosition: 0 })).toBe('No entries yet');
   });
 
   it('entriesLabel pluralises', () => {

@@ -9,7 +9,7 @@ import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 import { LoanFormDialog } from './form/LoanFormDialog';
-import { activeLoansLendingsTab, isLoanDetailPath, loansLendingsTabs } from './loansLendingsTabs';
+import { activeLoansLendingsTab, isLoanDetailPath, isPersonDetailPath, loansLendingsTabs } from './loansLendingsTabs';
 import { useLoansLendingsCounts } from './useLoansLendingsCounts';
 
 /**
@@ -18,8 +18,9 @@ import { useLoansLendingsCounts } from './useLoansLendingsCounts';
  * tabs, then the tab's page. The counts load on their own after the page renders.
  */
 export function LoansLendingsShell({ children }: { children: React.ReactNode }) {
-  // A loan's own page has its own top bar: it renders on its own, without the tabs or their counts.
-  if (isLoanDetailPath(usePathname())) return <>{children}</>;
+  // A loan's or a person's own page has its own top bar: it renders on its own, without the tabs or their counts.
+  const pathname = usePathname();
+  if (isLoanDetailPath(pathname) || isPersonDetailPath(pathname)) return <>{children}</>;
   return <LoansLendingsFrame>{children}</LoansLendingsFrame>;
 }
 
