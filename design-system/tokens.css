@@ -40,6 +40,8 @@
   --ds-warning-ink: #7c3f0a;
   --ds-attention: #d97706;
   --ds-attention-tint: #fffbf3;
+  --ds-highlight: #8fdcb9;
+  --ds-highlight-soft: #b5ecd2;
   --ds-info: #2456d6;
   --ds-info-tint: #e8eefc;
   --ds-neutral-ink: #4b5563;
@@ -105,6 +107,7 @@
   --ds-dur-base: 200ms;
   --ds-dur-slow: 280ms;
   --ds-dur-loop: 1600ms;
+  --ds-dur-emphasis: 600ms;
   --ds-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .dark {
@@ -146,6 +149,8 @@
   --ds-warning-ink: #f7c987;
   --ds-attention: #f59e0b;
   --ds-attention-tint: #2a2212;
+  --ds-highlight: #1d6649;
+  --ds-highlight-soft: #24805b;
   --ds-info: #7fa2ff;
   --ds-info-tint: #1a2547;
   --ds-neutral-ink: #c9cfd6;

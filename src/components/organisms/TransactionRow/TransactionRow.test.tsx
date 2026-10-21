@@ -30,6 +30,46 @@ const adv = (ms: number) =>
     vi.advanceTimersByTime(ms);
   });
 
+describe('TransactionRow search highlight', () => {
+  const marked = (c: HTMLElement) =>
+    Array.from(c.querySelectorAll('mark')).map((m) => m.textContent);
+
+  it('marks matches in description, account, category and amount', () => {
+    const { container } = render(
+      <div>
+        <TransactionRow description="Adyar Anandha Bhavan" query="anandha" />
+        <TransactionRow account="HDFC Bank Savings" query="hdfc" />
+        <TransactionRow categories={['Food & dining']} query="food" />
+        <TransactionRow amount="3,600.00" query="3600" />
+      </div>,
+    );
+    const all = marked(container);
+    expect(all).toContain('Anandha');
+    expect(all).toContain('HDFC');
+    expect(all).toContain('Food');
+    expect(all).toContain('3,600');
+  });
+
+  it('leaves a ReactNode description alone', () => {
+    const { container } = render(
+      <TransactionRow description={<b>Anandha</b>} query="anandha" />,
+    );
+    expect(marked(container)).toHaveLength(0);
+  });
+
+  it('renders no marks without a query', () => {
+    const { container } = render(
+      <TransactionRow
+        description="Adyar Anandha Bhavan"
+        account="HDFC Bank Savings"
+        amount="3,600.00"
+        categories={['Food']}
+      />,
+    );
+    expect(marked(container)).toHaveLength(0);
+  });
+});
+
 describe('TransactionRow', () => {
   beforeEach(() => {
     vi.stubGlobal('jest', {

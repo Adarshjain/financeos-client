@@ -40,6 +40,7 @@ const meta = {
     variant: { control: 'inline-radio', options: ['default', 'inset'] },
     tone: { control: 'inline-radio', options: ['neutral', 'danger'] },
     asChild: { control: 'boolean' },
+    selected: { control: 'boolean' },
     action: { control: false },
     children: { control: false },
   },
@@ -199,6 +200,19 @@ export const DangerTone: Story = {
       <div className="px-space-16 pb-space-16">
         <Button variant="danger">Delete my account</Button>
       </div>
+    ),
+  },
+};
+
+export const Selected: Story = {
+  args: {
+    selected: true,
+    asChild: true,
+    children: (
+      <button type="button" className="flex w-full flex-col items-start p-space-12">
+        <Text variant="heading" as="div">SWIGGY BANGALORE</Text>
+        <Text variant="label" tone="ink-3" as="div">₹1,249.00 · HDFC Regalia ••7741</Text>
+      </button>
     ),
   },
 };

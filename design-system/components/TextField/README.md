@@ -35,6 +35,7 @@ When `type="search"`, browser search cancel buttons are hidden, and `clearable` 
 - Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
 - Search input (`type="search"`) with search prefix and clear button.
 - Embedded variant (`variant="embedded"`) inside dropdowns.
+- Amount variant (`variant="amount"`): Add/Edit transaction amount beside the Debit/Credit tabs, placeholder "0.00".
 
 ## Built from
 The shared field frame (`FieldFrame`) that TextArea, DateField and Select also use; Button (password toggle, clear button); Icon.

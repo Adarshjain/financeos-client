@@ -285,4 +285,29 @@ describe('TextField focus (UAT)', () => {
     const { container } = render(<TextField label="Name" error="Required" />);
     expect(container.querySelector('.border-danger')).toBeInTheDocument();
   });
+
+  describe('amount variant', () => {
+    it('end-aligns the input with the figure type style and tabular figures', () => {
+      render(<TextField variant="amount" label="Amount" placeholder="0.00" />);
+      const input = screen.getByLabelText('Amount');
+      expect(input).toHaveClass('text-figure', 'text-end', 'tabular-nums');
+      expect(input).not.toHaveClass('text-body');
+    });
+
+    it('keeps prefix, helper and error behaviour', () => {
+      render(
+        <TextField variant="amount" label="Amount" prefix="₹" helper="Debit" error="Required" />,
+      );
+      expect(screen.getByText('₹')).toBeInTheDocument();
+      expect(screen.getByText('Required')).toBeInTheDocument();
+      expect(screen.getByLabelText('Amount')).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('leaves the default variant unchanged', () => {
+      render(<TextField label="Name" />);
+      const input = screen.getByLabelText('Name');
+      expect(input).toHaveClass('text-body');
+      expect(input).not.toHaveClass('text-end', 'text-figure');
+    });
+  });
 });

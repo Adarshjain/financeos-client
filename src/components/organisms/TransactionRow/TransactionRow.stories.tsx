@@ -105,6 +105,10 @@ const meta: Meta<typeof TransactionRow> = {
       control: 'boolean',
       description: 'Shows trailing chevron icon',
     },
+    query: {
+      control: 'text',
+      description: 'Search text; matches get the marker stroke',
+    },
     borderTop: {
       control: 'boolean',
       description: 'Shows top border line',
@@ -1010,6 +1014,16 @@ export const Default: Story = {
     account: 'HDFC Bank Savings',
     provenance: 'Statement',
     categories: ['Groceries'],
+  },
+};
+
+export const SearchMatch: Story = {
+  args: {
+    description: 'Adyar Anandha Bhavan',
+    amount: '3,600.00',
+    account: 'HDFC Bank Savings',
+    categories: ['Food & dining'],
+    query: 'anandha',
   },
 };
 

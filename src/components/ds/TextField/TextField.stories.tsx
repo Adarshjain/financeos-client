@@ -184,3 +184,19 @@ export const Clearable: Story = {
   },
 };
 
+
+export const Amount: Story = {
+  args: {
+    variant: 'amount',
+    placeholder: '0.00',
+    inputMode: 'decimal',
+    prefix: '₹',
+    defaultValue: '1,24,900.00',
+  },
+  argTypes: {
+    variant: { control: 'inline-radio', options: ['default', 'embedded', 'amount'] },
+    prefix: { control: 'text' },
+    helper: { control: 'text' },
+    error: { control: 'text' },
+  },
+};

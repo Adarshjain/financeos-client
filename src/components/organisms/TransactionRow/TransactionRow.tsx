@@ -8,6 +8,7 @@ import {
   Button,
   Checkbox,
   cn,
+  Highlight,
   Icon,
   StatusWord,
   useControllableState,
@@ -84,6 +85,9 @@ export interface TransactionRowProps
 
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
+
+  /** Search text: matches in string description, account, categories, amount, note, plastic and contextLine get the marker stroke */
+  query?: string;
 }
 
 export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
@@ -117,6 +121,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       onDetail,
       chevron = false,
       borderTop = true,
+      query,
       className,
       children,
       ...props
@@ -128,6 +133,13 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       defaultValue: defaultSelected ?? false,
       onChange: onSelectedChange,
     });
+
+    const mark = (value: React.ReactNode): React.ReactNode =>
+      query && typeof value === 'string' ? (
+        <Highlight text={value} query={query} />
+      ) : (
+        value
+      );
 
     const isWarning = tone === 'warning';
     const isSelectable = Boolean(selectable);
@@ -149,18 +161,18 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const desktopContextElements: React.ReactNode[] = [];
 
     if (contextLine) {
-      contextElements.push(contextLine);
-      desktopContextElements.push(contextLine);
+      contextElements.push(mark(contextLine));
+      desktopContextElements.push(mark(contextLine));
     } else {
       if (account) {
         contextElements.push(
           <span key="account">
-            {account}
-            {plastic && ` ${plastic}`}
+            {mark(account)}
+            {plastic && <> {mark(plastic)}</>}
           </span>,
         );
       } else if (plastic) {
-        contextElements.push(<span key="plastic">{plastic}</span>);
+        contextElements.push(<span key="plastic">{mark(plastic)}</span>);
       }
 
       if (reviewStatus) {
@@ -176,7 +188,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       if (note) {
         const el = (
           <span key="note" className="text-ink-2">
-            {note}
+            {mark(note)}
           </span>
         );
         contextElements.push(el);
@@ -245,7 +257,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 shape="rounded"
                 onClick={() => onCategoryClick(categories[0])}
               >
-                {categories[0]}
+                {mark(categories[0])}
               </Badge>
             </span>
           ) : (
@@ -253,7 +265,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               variant="outline"
               shape="rounded"
             >
-              {categories[0]}
+              {mark(categories[0])}
             </Badge>
           )}
           {categories.length > 1 && (
@@ -366,7 +378,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
               <div className="text-heading font-medium desk:text-body-strong text-ink truncate">
-                {description ?? children}
+                {mark(description) ?? children}
               </div>
               {/* Phone context line (starts with the account) */}
               {contextElements.length > 0 && (
@@ -405,8 +417,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
             >
-              {account}
-              {plastic && ` ${plastic}`}
+              {mark(account)}
+              {plastic && <> {mark(plastic)}</>}
             </div>
 
             {/* Amount (Cell 6 on desktop; on phone col 2 across both rows, top-aligned, so it never pushes the left column apart) */}
@@ -418,7 +430,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
-              {amount}
+              {mark(amount)}
               {balance && (
                 <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}

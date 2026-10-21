@@ -105,10 +105,10 @@ describe('SelectionBar', () => {
       expect(screen.getAllByText(labelRegex)).toHaveLength(1);
     });
 
-    // Hint is present with desk:hidden
+    // Hint shows on phone and desktop
     const hint = screen.getByText('the pair');
     expect(hint).toBeInTheDocument();
-    expect(hint).toHaveClass('desk:hidden');
+    expect(hint).not.toHaveClass('desk:hidden');
 
     const selectAllBtn = screen.getByRole('button', {
       name: 'Select all 182',
@@ -156,5 +156,36 @@ describe('SelectionBar', () => {
     expect(linkBtn).toHaveClass('desk:h-control-md');
     const classList = Array.from(linkBtn.classList);
     expect(classList).not.toContain('h-control-md');
+  });
+
+  it('renders an action count inside the count bubble, not in the label', () => {
+    render(
+      <SelectionBar
+        count={2}
+        actions={[{ label: 'Approve', count: 2, onSelect: vi.fn() }]}
+        onClear={() => {}}
+      />,
+    );
+    const bubble = screen.getByRole('button', { name: 'Approve 2' }).querySelector('span.bg-ink');
+    expect(bubble).toHaveTextContent('2');
+    expect(screen.getByText('Approve')).not.toHaveTextContent('2');
+  });
+
+  it('omits the bubble when an action has no count', () => {
+    render(
+      <SelectionBar count={2} actions={[{ label: 'Link', onSelect: vi.fn() }]} onClear={() => {}} />,
+    );
+    expect(screen.getByRole('button', { name: 'Link' }).querySelector('span.bg-ink')).toBeNull();
+  });
+
+  it('shows a disabled action hint on desktop markup', () => {
+    render(
+      <SelectionBar
+        count={3}
+        actions={[{ label: 'Merge', hint: 'needs exactly 2', disabled: true }]}
+        onClear={() => {}}
+      />,
+    );
+    expect(screen.getByText('needs exactly 2')).not.toHaveClass('desk:hidden');
   });
 });

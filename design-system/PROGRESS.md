@@ -23,7 +23,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `backgroundColor`: `canvas`, `surface`, `sunken`, `subtle`, `hover`, `pressed` (tokens `bg-*`) → `bg-canvas`, `bg-surface`…; plus `ink` (token `ink`) → `bg-ink`, only for count bubbles.
    - `textColor`: `ink`, `ink-2`, `ink-3`, `ink-4`, `ink-faint` → `text-ink`…
    - `borderColor`: `line`, `line-soft`, `line-strong`, `line-handle` → `border-line`…
-   - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`.
+   - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`, `highlight`, `highlight-soft`.
    - Chart tokens use the name `series` (`chart-*` is already taken by the old theme): `series-1` … `series-5`, `series-rest`.
    - `fontSize`: one key per type style carrying its size, line height, weight and letter-spacing: `text-hero-figure`, `text-page-title`, `text-screen-title`, `text-figure`, `text-title`, `text-heading`, `text-body`, `text-body-strong`, `text-label`, `text-caption`, `text-overline`, `text-tab-label`. For `overline`, uppercase comes from the component.
    - `fontFamily`: `font-text` (Figtree), `font-display` (Bricolage Grotesque) and `font-mono` (system monospace, Text `mono`).
@@ -41,6 +41,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - Breakpoint: `lg` (1024px, Tailwind's default) is the only phone→desktop switch inside components (RULES §5c.2).
    - Radix state variants: `data-open:`, `data-closed:`, `data-checked:`, `data-unchecked:`, `data-indeterminate:`, `data-active:`, `data-inactive:`, `data-on:`, `data-highlighted:`, `data-disabled:`, `data-side-top:` / `-bottom:` / `-left:` / `-right:`. Use these instead of `data-[state=…]:`, which is an arbitrary value.
    - `transitionDuration`: `fast`, `base`, `sheet`.
+   - Search marks: `animate-highlight-sweep` (`dur-emphasis`, 600ms) and the utility `highlight-stroke` (2026-10-21).
 3. **Fonts.** Add Figtree (500, 600, 700, 800) and Bricolage Grotesque (600, 700, 800) as self-hosted woff2 files, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display`. Inter stays in place for the old UI.
 4. **Storybook** (approved as a new dev dependency, see Owner decisions):
    - Pick the latest stable release that officially supports this repo's Next.js, React and Tailwind versions. Prefer the Vite-based Next.js framework. Record the versions in the log.
@@ -67,22 +68,25 @@ Build in this order, one component per step. After each one, set its status to *
 | 8 | Pager | Approved |
 | 9 | Button | Approved |
 | 10 | Menu | Approved |
-| 11 | SelectionBar | Approved |
+| 11 | SelectionBar | Approved (2026-10-21: count bubble, hint on desktop too, Ready for review) |
 | 12 | SwipeActions | Approved |
-| 13 | TextField | Approved |
+| 13 | TextField | Approved (2026-10-21: `amount` variant, Ready for review) |
 | 14 | TextArea | Approved |
 | 15 | DateField | Approved |
-| 16 | Select | Approved (2026-10-19: create clears the search and is not offered for an existing option) |
+| 16 | Select | Approved (2026-10-19: create clears the search and is not offered for an existing option; 2026-10-21: `size` sm, radio from Radio, Ready for review) |
 | 17 | SearchField | Merged into TextField (see B2) |
 | 18 | FilterChip | Approved |
 | 19 | Checkbox | Approved |
+| 19b | Radio | Ready for review (2026-10-21) |
 | 20 | Switch | Approved |
 | 21 | SegmentedControl | Approved |
 | 22 | DropZone | Approved |
-| 23 | Card | Approved |
+| 23 | Card | Approved (2026-10-21: `selected`, Ready for review) |
 | 24 | ListRow | Approved |
 | 25 | SectionHeader | Approved |
-| 26 | TransactionRow | Approved |
+| 26 | TransactionRow | Approved (2026-10-21: `query` search marks, Ready for review) |
+| 26b | TransactionPicker (organism, open transaction list) | Ready for review (2026-10-21) |
+| 26c | Highlight | Ready for review (2026-10-21) |
 | 27 | RuleCard | Approved |
 | 28 | KpiTile | Approved |
 | 29 | Widget | Approved |
@@ -355,9 +359,11 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-21 · **Loans & lendings gap review** (owner): tabs Lendings · Loans, Lendings first and the nav default; closed loans as a "Closed · n · Show" line, settled people via the Settled filter; build all-loans EMI matching and all-people transfer matching (server); Interest this FY tile only, no tax lines/card; no Payoff order (parked) or Lendings card on Loans; loan page one page, no tabs; no per-person reminders (Expected return = date + Share); delete person any time with confirm; + adds loan/lending/entry, Quick add Lending enabled; Settle up gets an optional Pick a transaction field; no All time picker (owner plans "cycles", later); only today's per-person export; Part 2 accepted. Overpaid EMI (7): record what was paid, no choice; Mark paid shows the difference as words; loan EMI matching tolerance = max(₹100, 1% of EMI) (lendings stay ₹20, owner). Export ledger: per-person only, form drawn as {D,P}-lending-export; "money due back" push keeps `?export=1` to open it (one exception to dialogs-no-URL); export include options are switches. Boards approved 10-21. Interest vs principal (10-21): ProgressBar gets a split variant (owner reviews in Storybook), then the card. Unlinked transfers (10-21): also spot transfers naming a person with no entry, "Record as settlement" (server first). Lending tiles and last-entry wording as built: okay. Loan schedule (10-21): no buttons column; overdue row shows Mark paid; press an unpaid row = Mark paid, a linked paid row = EMI dialog with Unlink. Loan page Qs (10-21): DataTable rowState.pressable approved; Mark paid stays a Select (revisit); schedule bands as is, no per-event months saved; tiles without dividers; picker keeps "Show more" (revisit the whole picker at transaction linking); 9/3 columns; overdue row amber. Person page: no Change on Expected return (date is per entry, edited in the entry dialog).
 - 2026-10-21 · **Open questions closed** (owner): count pill on primary Button inverts (surface on ink); Quick add Transaction and Trade stay disabled until their Dinero forms ship; person ledger keeps the Settled badge, no per-entry settled date. Checkbox `minus` and Button `spinner` icons already in the registry.
 - 2026-10-21 · **Transactions gap review 1–6** (owner; artifact WToDC8REhPFvTxLrH9rKCE, Part 2 items 16–54 accepted): all filters in the URL, read on the server before the first fetch (never two fetches on load); search also matches amounts when the text is a number (server decides); default period Last 14 days (new preset); Up to statement is a plain filter, nothing special; no Similar card; MCC code only; Edit can set review reasons (server); Needs review with no reason puts Review status in its error state until the user changes it (no auto-move); Auto reviewed is disabled on Edit; search matches are marked with a mint highlighter stroke (lower two thirds, rough ends, slight tilt, swipes in once per new search, none with reduced motion; new generic tokens `highlight` #8fdcb9 / dark #1d6649 and `highlight-soft` #b5ecd2 / dark #24805b; samples artifact 6QGYFdjYqCNPLTMzq2Go8M); no save-and-add-another; installments and Mark paid choices as radio rows (overrides §7.3 for these; needs a Radio component); link/settle amount and date fields with difference words, no prepayment line; no "Other" link type; dividend form on stored fields (Type, per share × shares, ex-date, pay date = txn date, notes); one open transaction list everywhere, replacing the dropdown picker in Mark paid, Settle up, Add lending, Edit entry; select all = rows on the current page only; swipe approve / Review: one reason clears with Undo, several open the approve dialog.
+- 2026-10-21 · **Detail pane and amount filter** (owner): Dialog side panel is non-modal on desktop (no backdrop, list stays usable, a row click swaps the detail; phone stays a sheet); Amount filter From and To are two TextFields.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
+- 2026-10-21 · SelectionBar hints: P- boards word them differently from D- ("pick 2" vs "needs exactly 2"; "2 flagged" vs the count bubble); one `hint` serves both. (a) one hint, phone wording; (b) separate phone hint prop. Recommend a.
 
 
 
@@ -366,6 +372,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
+
+- 2026-10-21 · Phase 3 Transactions step 1 (Dinero changes; Claude + implementers): tokens `highlight`, `highlight-soft`, `dur-emphasis`; new Highlight, Radio, TransactionPicker (organism); TransactionRow `query`, `createTransactionColumns(query)`; Select `size` sm + Radio; Card `selected`; TextField `amount`; SelectionBar count bubble, hint on desktop. Checks: typecheck (src clean), lint, test 5468, check-ui, build-storybook green. Changed test: SelectionBar hint `desk:hidden` assertion (spec). Deviations: none.
 
 - 2026-10-21 · Phase 3 · Claude · Loans & lendings step 3: `/ds/loans/lendings/[id]` (header with Settle up and ⋯ menu, server-paged ledger with running balance and totals line, Expected return, Matching with Find matches and Confirm all, Person, edit person and entry, delete with confirm, Export ledger from ⋯, the share row and `?export=1`); the top-bar + opens Add ledger entry for this person (`AddLendingProvider.openFor`). Optional Transaction picker on Settle up and Linked transaction on Add lending (open question closed). Moved from Legacy: `useCounterpartyMutations` (+`onError`), `useExportLedger` (+`notify`); the link logic of `UnlinkedTransfersCard` is now `useTransferLink`. `/loans/lendings/:id` built in routes; the person page sits outside the Lendings · Loans tabs. Forced test edits: routes.test.ts, routes.loans.test.ts, lendingsList.test.ts, lendings.test.tsx, UpcomingView.test.tsx (person links now `/ds/loans/lendings/…`); SettleDialog.test.tsx and AddLendingDialog.test.tsx (picker stand-in mock); moved tests useCounterpartyMutations.test.tsx, ExportLedgerDialog.test.tsx and useEditLendingEntry.test.tsx (import paths). Left out: Expected return Change, "settled 9 May" (open questions). Deviations (new copy): "Edit person details", "Delete entry"/"Delete person" impact lines, "Linked transaction (optional)", "Remove the transaction to change direction.", "Confirming…", "Linked n of m". Export ledger loads its entries when it opens; the server's `firstEntryDate` and `linkedEntryCount` feed "since" and "Linked n of m". Legacy's four hero stats (lent, borrowed, repaid to you, repaid by you) are not on the board; ledger totals only.
 - 2026-10-21 · Phase 3 · Claude · Loans & lendings step 2: `/ds/loans/[id]` (header, tiles, FY schedule with `?installment`, events & charges with confirm-before-delete, matching, Mark paid with difference words, event/charge/edit forms, Close/Reopen/Unlink Toasts with Undo) and the Dinero transaction picker (`src/features/transactions`). Moved from Legacy: `useLoanMutations`, update-loan hook, picker hook (+paging), request builders, FY key, `parseInstallmentParam`. `/loans/:id` built in routes (not `/loans/calendar`). Left out: Export, Show all. Top-bar + opens the event form (Legacy's Add Event). Forced test edits: routes.test.ts, routes.loans.test.ts, loansList.test.ts, loans.test.tsx, UpcomingView.test.tsx, InboxPage.test.tsx, inboxRows.test.ts (loan links now `/ds/loans/…`). Deviations (new copy): "Searching…", "Show more", "Looking for the bank debit…", "No entries yet", "Delete event"/"Delete charge" impact lines, EMI-change cause words ("rate rise", "prepayment"), "In n d" within 30 days. Interest vs principal card: one split bar per FY from first EMI's FY to next FY.
