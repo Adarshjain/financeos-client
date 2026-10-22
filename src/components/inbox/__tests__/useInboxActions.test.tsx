@@ -17,6 +17,12 @@ import { keys } from '@/lib/query/keys';
 
 import { item } from './fixtures';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 const KEY = 'card_bill:abc-123:OVERDUE';
 
 function listWith(): InboxResponse {

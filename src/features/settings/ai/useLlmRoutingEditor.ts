@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { api } from '@/lib/api/client';
@@ -71,6 +72,7 @@ function toDraftEntry(entry: LlmRoutingGroupDto['entries'][number]): RoutingEntr
  */
 export function useLlmRoutingEditor() {
   const qc = useQueryClient();
+  const router = useRouter();
   const [drafts, setDrafts] = useState<Record<GroupType, DraftState>>(INITIAL_DRAFTS);
   const [routingError, setRoutingError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ group: GroupType; op: 'save' | 'reset' | 'test' } | null>(null);
@@ -81,6 +83,7 @@ export function useLlmRoutingEditor() {
     );
     // A routing change can flip which options are "available" elsewhere too.
     qc.invalidateQueries({ queryKey: keys.settings.all });
+    router.refresh();
   };
 
   const saveMutation = useMutation({

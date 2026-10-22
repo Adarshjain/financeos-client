@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -19,6 +20,7 @@ export interface BillRowActions {
  * so rows without one (awaiting the next statement) are ignored defensively.
  */
 export function useBillsWidgetActions() {
+  const router = useRouter();
   const { markPaid, unmarkPaid, updateDetails } = useBillMutations();
   const [paidTarget, setPaidTarget] = React.useState<CardBillResponse | null>(null);
   const [detailsTarget, setDetailsTarget] = React.useState<CardBillResponse | null>(null);
@@ -39,6 +41,7 @@ export function useBillsWidgetActions() {
       if (!bill.statementId) return;
       try {
         await unmarkPaid.mutateAsync(bill.statementId);
+        router.refresh();
         toast.success('Payment mark removed');
       } catch (e) {
         toast.error(getErrorMessage(e, 'Could not undo the payment mark'));
@@ -52,6 +55,7 @@ export function useBillsWidgetActions() {
     try {
       const bill = await markPaid.mutateAsync({ statementId, body });
       setPaidTarget(null);
+      router.refresh();
       toast.success(bill.status === 'PAID' ? 'Bill marked as paid' : 'Partial payment recorded');
     } catch (e) {
       toast.error(getErrorMessage(e, 'Could not mark the bill as paid'));
@@ -64,6 +68,7 @@ export function useBillsWidgetActions() {
     try {
       await updateDetails.mutateAsync({ statementId, body });
       setDetailsTarget(null);
+      router.refresh();
       toast.success('Statement details saved');
     } catch (e) {
       toast.error(getErrorMessage(e, 'Could not save the statement details'));

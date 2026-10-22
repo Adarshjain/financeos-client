@@ -6,6 +6,12 @@ import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import { api } from '@/lib/api/client';
 import type {
@@ -36,8 +37,10 @@ export function usePushPublicKey(enabled = true) {
 /** Every write returns the full settings view, so the cache is replaced rather than refetched. */
 export function useNotificationSettingsMutations() {
   const qc = useQueryClient();
+  const router = useRouter();
   const store = (settings: NotificationSettingsResponse) => {
     qc.setQueryData(keys.settings.notifications(), settings);
+    router.refresh();
   };
 
   const update = useMutation({

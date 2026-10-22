@@ -12,6 +12,12 @@ import { CUSTOM_OPTION_ID, draftEntryKey, useLlmRoutingEditor } from '@/features
 import { api } from '@/lib/api/client';
 import type { LlmRoutingGroupDto } from '@/lib/api/types';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

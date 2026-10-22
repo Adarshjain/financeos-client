@@ -1,6 +1,8 @@
 'use client';
 
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
@@ -30,6 +32,8 @@ export const sonnerInboxNotifier: InboxNotifier = {
   dismissFailed: (e) => toast.error(getErrorMessage(e, 'Could not dismiss this item')),
   undoFailed: (e) => toast.error(getErrorMessage(e, 'Could not undo')),
 };
+
+const INBOX_ACTION_KEY = ['inbox', 'action'] as const;
 
 interface Snapshot {
   list?: InboxResponse;
@@ -63,9 +67,21 @@ function restore(qc: QueryClient, snapshot: Snapshot | undefined) {
  */
 export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   const qc = useQueryClient();
-  const settle = () => qc.invalidateQueries({ queryKey: keys.inbox.all });
+  const router = useRouter();
+  // One router refresh after the last overlapping action settles, and only if one of them succeeded:
+  // an earlier refresh could resurrect a row another in-flight action has optimistically hidden.
+  const refreshDue = useRef(false);
+  const settle = (_data: unknown, error: unknown) => {
+    if (!error) refreshDue.current = true;
+    if (qc.isMutating({ mutationKey: INBOX_ACTION_KEY }) <= 1 && refreshDue.current) {
+      refreshDue.current = false;
+      router.refresh();
+    }
+    return qc.invalidateQueries({ queryKey: keys.inbox.all });
+  };
 
   const undo = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
     mutationFn: (key: string) =>
       api.DELETE('/api/v1/inbox/{key}/state', { params: { path: { key } } }).then(() => undefined),
     onSuccess: () => notifier.restored(),
@@ -76,6 +92,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   const undoFor = (key: string) => () => undo.mutate(key);
 
   const snooze = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
     mutationFn: ({ key, until }: { key: string; until: string }) =>
       api
         .POST('/api/v1/inbox/{key}/snooze', { params: { path: { key } }, body: { until } })
@@ -90,6 +107,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   });
 
   const dismiss = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
     mutationFn: (key: string) =>
       api.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key } } }).then(() => undefined),
     onMutate: (key) => hideRow(qc, key),

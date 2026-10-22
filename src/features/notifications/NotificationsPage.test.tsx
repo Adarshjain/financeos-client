@@ -13,9 +13,10 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
 }));
 const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
+const refresh = vi.hoisted(() => vi.fn());
 let search = '';
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push, replace }),
+  useRouter: () => ({ push, replace, refresh }),
   useSearchParams: () => new URLSearchParams(search),
   usePathname: () => '/ds/notifications',
 }));

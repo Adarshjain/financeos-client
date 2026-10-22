@@ -15,6 +15,12 @@ import { keys as queryKeys } from '@/lib/query/keys';
 
 import { AiSettings } from './AiSettings';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 const get = vi.fn();
 const post = vi.fn();
 const put = vi.fn();
