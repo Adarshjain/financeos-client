@@ -6,6 +6,7 @@ import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { createBankAccount } from '../fixtures/seed/accounts';
+import { createCategory } from '../fixtures/seed/categories';
 import type { TransactionResponse } from '../fixtures/seed/transactions';
 import { createTransaction, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
@@ -86,8 +87,6 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toBeVisible();
 
       await dialog.getByRole('textbox', { name: 'From' }).fill('1000');
-      // On phone the footer steps aside while a field has focus (on-screen keyboard); a tap elsewhere brings it back.
-      if (phone) await dialog.getByText('Every filter combines with the others').click();
       await expect(dialog.getByRole('button', { name: phone ? /^Show \d+$/ : /^Show \d+ transactions?$/ })).toBeVisible();
       expect(page.url()).not.toContain('amount');
 
@@ -107,8 +106,6 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
       await expect(dialog).toBeVisible();
       await dialog.getByRole('textbox', { name: 'From' }).fill('5');
-      // On phone the footer steps aside while a field has focus (on-screen keyboard); a tap elsewhere brings it back.
-      if (phone) await dialog.getByText('Every filter combines with the others').click();
       await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
       await expect(dialog).not.toBeVisible();
       expect(page.url()).toBe(applied);
@@ -183,6 +180,46 @@ for (const viewport of VIEWPORTS) {
         await page.waitForURL((u) => !u.search.includes('period='));
         await expect(row(page, 'Old Furniture')).toHaveCount(1);
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toHaveCount(0);
+      });
+
+      test('the Period chip opens a dropdown; Last 14 days + Apply sets the URL and drops the old row', async ({ page }) => {
+        await seedList();
+        await open(page);
+        await expect(row(page, 'Old Furniture')).toHaveCount(1);
+
+        await page.getByRole('button', { name: 'Period' }).click();
+        await expect(page.getByRole('dialog', { name: 'Filters' })).toHaveCount(0);
+        await expect(page.getByRole('radio', { name: 'Single date' })).toBeVisible();
+        await expect(page.getByRole('radio', { name: 'Range' })).toBeVisible();
+        await page.getByRole('combobox', { name: 'Preset' }).click();
+        await page.getByRole('option', { name: 'Last 14 days' }).click();
+        await page.getByRole('button', { name: 'Apply', exact: true }).click();
+
+        await page.waitForURL(/period=last_14_days/);
+        await expect(row(page, 'Old Furniture')).toHaveCount(0);
+        await expect(row(page, 'Rent Advance')).toHaveCount(1);
+        await expect(page.getByRole('button', { name: 'Last 14 days' })).toBeVisible();
+      });
+
+      test('Set category on a row opens the small dialog; Save shows the category and it survives a reload', async ({ page }) => {
+        const { api } = await seedList();
+        const food = await createCategory(api, 'Groceries E2E');
+        await open(page);
+
+        await row(page, 'Rent Advance').getByText('Set category').locator('visible=true').click();
+        const dialog = page.getByRole('dialog', { name: 'Set category' });
+        await expect(dialog).toBeVisible();
+        await expect(page.getByRole('dialog', { name: 'Edit transaction' })).toHaveCount(0);
+        await dialog.getByRole('combobox', { name: 'Categories' }).click();
+        await page.getByRole('option', { name: food.name }).click();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toBeVisible();
+        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+        await expect(dialog).not.toBeVisible();
+        await expect(row(page, 'Rent Advance')).toContainText(food.name);
+
+        await open(page);
+        await expect(row(page, 'Rent Advance')).toContainText(food.name);
       });
 
       test('the pager moves to the next page through the URL', async ({ page }) => {
@@ -397,6 +434,34 @@ for (const viewport of VIEWPORTS) {
 
         await page.getByRole('button', { name: 'Undo' }).click();
         await expect(needsReviewChip(page, 2)).toBeVisible();
+      });
+    }
+
+    if (!phone) {
+      test('Filters dialog: the Amount condition shows only the From/To fields it needs', async ({ page }) => {
+        await seedList();
+        await open(page);
+        await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
+        const dialog = page.getByRole('dialog', { name: 'Filters' });
+        const to = dialog.getByRole('textbox', { name: 'To' });
+        const from = dialog.getByRole('textbox', { name: 'From' });
+        await expect(from).toBeVisible();
+        await expect(to).not.toBeVisible();
+
+        await dialog.getByRole('combobox', { name: 'Condition' }).click();
+        await page.getByRole('option', { name: 'Between' }).click();
+        await expect(from).toBeVisible();
+        await expect(to).toBeVisible();
+
+        await dialog.getByRole('combobox', { name: 'Condition' }).click();
+        await page.getByRole('option', { name: 'Less than' }).click();
+        await expect(to).toBeVisible();
+        await expect(from).not.toBeVisible();
+
+        await dialog.getByRole('combobox', { name: 'Condition' }).click();
+        await page.getByRole('option', { name: 'Greater than' }).click();
+        await expect(from).toBeVisible();
+        await expect(to).not.toBeVisible();
       });
     }
 

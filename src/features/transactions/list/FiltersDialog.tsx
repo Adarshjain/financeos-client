@@ -4,13 +4,12 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import React from 'react';
 
 import {
-  DateField,
   Dialog,
   DialogBody,
   DialogContent,
   ListRow,
+  Reveal,
   SectionHeader,
-  SegmentedControl,
   Select,
   Switch,
   TextField,
@@ -24,29 +23,22 @@ import {
   accountGroups,
   AMOUNT_OP_OPTIONS,
   categoryOptions,
-  PERIOD_OPTIONS,
   REASON_OPTIONS,
   REVIEW_OPTIONS,
   SORT_ORDER_OPTIONS,
   SOURCE_OPTIONS,
   TYPE_OPTIONS,
 } from './filterOptions';
-import { draftFromQuery, type FiltersDraft, type PeriodMode, queryFromDraft } from './filtersDraft';
+import { draftFromQuery, type FiltersDraft, queryFromDraft } from './filtersDraft';
+import { PeriodEditor } from './PeriodEditor';
 import { loadMatchingCount } from './transactionsActions';
 import {
   type AmountOp,
   clearedQuery,
-  type PeriodPresetId,
   type SortId,
   type TransactionsQuery,
   type TypeFilter,
 } from './transactionsUrl';
-
-const PERIOD_MODES = [
-  { value: 'preset', label: 'Preset' },
-  { value: 'date', label: 'Single date' },
-  { value: 'range', label: 'Range' },
-];
 
 export const COUNT_DEBOUNCE_MS = 300;
 
@@ -89,6 +81,9 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
   const [draft, setDraft] = React.useState<FiltersDraft>(() => draftFromQuery(query));
   const set = (patch: Partial<FiltersDraft>) => setDraft((d) => ({ ...d, ...patch }));
 
+  const showFrom = draft.amountOp !== 'less_than';
+  const showTo = draft.amountOp !== 'greater_than';
+
   const draftQuery = queryFromDraft(base, draft);
   const count = useMatchingCount(draftQuery);
 
@@ -123,50 +118,31 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
       >
         <DialogBody className="p-0 gap-0">
           <SectionHeader borderTop={false}>Date</SectionHeader>
-          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
-            <SegmentedControl
-              aria-label="Date"
-              options={PERIOD_MODES}
-              value={draft.periodMode}
-              onValueChange={(mode) => set({ periodMode: mode as PeriodMode })}
-            />
-            {draft.periodMode === 'preset' ? (
-              <Select
-                label="Preset"
-                options={PERIOD_OPTIONS}
-                value={draft.preset}
-                onValueChange={(preset) => set({ preset: preset as PeriodPresetId })}
-              />
-            ) : null}
-            {draft.periodMode === 'date' ? (
-              <DateField label="Date" today={today} value={draft.date} onValueChange={(date) => set({ date: date as string })} />
-            ) : null}
-            {draft.periodMode === 'range' ? (
-              <DateField
-                range
-                label="Range"
-                today={today}
-                value={{ start: draft.from, end: draft.to }}
-                onValueChange={(range) => {
-                  if (typeof range === 'object') set({ from: range.start ?? '', to: range.end ?? '' });
-                }}
-              />
-            ) : null}
+          <div className="px-space-16 desk:px-space-20 py-space-12">
+            <PeriodEditor draft={draft} today={today} onChange={set} />
           </div>
 
           <SectionHeader>Account and category</SectionHeader>
           <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
-            <Select
-              multiple
-              searchable
-              searchPlaceholder="Search accounts"
-              label="Account"
-              placeholder="Any account"
-              disabled={accounts === null}
-              groups={accountGroups(accounts ?? [], draft.accounts)}
-              value={draft.accounts}
-              onValueChange={(accountIds) => set({ accounts: accountIds as string[] })}
-            />
+            <div className="grid grid-cols-2 gap-space-12">
+              <Select
+                multiple
+                searchable
+                searchPlaceholder="Search accounts"
+                label="Account"
+                placeholder="Any account"
+                disabled={accounts === null}
+                groups={accountGroups(accounts ?? [], draft.accounts)}
+                value={draft.accounts}
+                onValueChange={(accountIds) => set({ accounts: accountIds as string[] })}
+              />
+              <Select
+                label="Type"
+                options={TYPE_OPTIONS}
+                value={draft.type}
+                onValueChange={(type) => set({ type: type as TypeFilter })}
+              />
+            </div>
             <Select
               multiple
               searchable
@@ -178,12 +154,6 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
               value={draft.categories}
               onValueChange={(names) => set({ categories: names as string[] })}
             />
-            <Select
-              label="Type"
-              options={TYPE_OPTIONS}
-              value={draft.type}
-              onValueChange={(type) => set({ type: type as TypeFilter })}
-            />
           </div>
 
           <SectionHeader>Amount</SectionHeader>
@@ -192,31 +162,45 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
               label="Condition"
               options={AMOUNT_OP_OPTIONS}
               value={draft.amountOp}
-              onValueChange={(op) => set({ amountOp: op as AmountOp })}
+              onValueChange={(op) => {
+                const amountOp = op as AmountOp;
+                // A field the condition does not use is emptied, so a stale value is never applied.
+                set({
+                  amountOp,
+                  ...(amountOp === 'greater_than' ? { amountTo: '' } : {}),
+                  ...(amountOp === 'less_than' ? { amountFrom: '' } : {}),
+                });
+              }}
             />
-            <div className="grid grid-cols-2 gap-space-12">
-              <TextField
-                label="From"
-                prefix="₹"
-                inputMode="decimal"
-                disabled={draft.amountOp === 'less_than'}
-                value={draft.amountFrom}
-                onValueChange={(amountFrom) => set({ amountFrom })}
-              />
-              <TextField
-                label="To"
-                prefix="₹"
-                inputMode="decimal"
-                disabled={draft.amountOp === 'greater_than'}
-                value={draft.amountTo}
-                onValueChange={(amountTo) => set({ amountTo })}
-              />
+            <div className="flex -mx-space-6">
+              <Reveal axis="x" open={showFrom} className={showFrom ? 'grow basis-0' : 'grow-0 basis-0'}>
+                <div className="px-space-6">
+                  <TextField
+                    label="From"
+                    prefix="₹"
+                    inputMode="decimal"
+                    value={draft.amountFrom}
+                    onValueChange={(amountFrom) => set({ amountFrom })}
+                  />
+                </div>
+              </Reveal>
+              <Reveal axis="x" open={showTo} className={showTo ? 'grow basis-0' : 'grow-0 basis-0'}>
+                <div className="px-space-6">
+                  <TextField
+                    label="To"
+                    prefix="₹"
+                    inputMode="decimal"
+                    value={draft.amountTo}
+                    onValueChange={(amountTo) => set({ amountTo })}
+                  />
+                </div>
+              </Reveal>
             </div>
           </div>
 
           <SectionHeader>Status and source</SectionHeader>
           <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
-            <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+            <div className="grid grid-cols-2 gap-space-12">
               <Select
                 label="Review status"
                 options={REVIEW_OPTIONS}
@@ -229,13 +213,13 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
                 value={draft.reason}
                 onValueChange={(reason) => set({ reason: reason as string })}
               />
-              <Select
-                label="Import source"
-                options={SOURCE_OPTIONS}
-                value={draft.source}
-                onValueChange={(source) => set({ source: source as string })}
-              />
             </div>
+            <Select
+              label="Import source"
+              options={SOURCE_OPTIONS}
+              value={draft.source}
+              onValueChange={(source) => set({ source: source as string })}
+            />
             <ListRow
               borderTop={false}
               className="px-0"

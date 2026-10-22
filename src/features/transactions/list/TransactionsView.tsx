@@ -123,6 +123,7 @@ export function TransactionsView({
           {selectionHeader ?? <Tabs items={tabs} value="all" />}
           <FilterChips
             query={query}
+            today={today}
             accounts={accounts}
             categories={categories}
             needsReviewCount={needsReviewCount}
@@ -132,7 +133,7 @@ export function TransactionsView({
               <TextField
                 type="search"
                 size="md"
-                className={`shrink-0 desk:w-container-xs ${searchOpen ? 'max-desk:w-full' : 'max-desk:w-space-96'}`}
+                className={`grow shrink-0 min-w-space-96 desk:min-w-container-xs desk:basis-0 transition-all duration-base motion-reduce:transition-none ${searchOpen ? 'max-desk:basis-full' : 'max-desk:basis-space-96'}`}
                 prefix={<Icon name="search" size="sm" />}
                 clearable
                 clearLabel="Clear search"

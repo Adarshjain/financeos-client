@@ -419,7 +419,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
-              <div className="text-heading desk:text-body-strong text-ink break-words">
+              <div className="text-heading font-semibold desk:text-body-strong desk:font-semibold text-ink break-words">
                 {mark(description) ?? children}
               </div>
               {/* Phone context line (starts with the account) */}

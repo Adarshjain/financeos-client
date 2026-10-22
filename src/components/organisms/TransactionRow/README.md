@@ -5,7 +5,7 @@ The phone transaction row: merchant and amount on top, a context line and catego
 ## Anatomy
 - Line 1: description (`heading`) · amount (700, tabular, credits `positive`). Running balance sits under the amount in `caption`, as the bare amount ("₹2,95,030", no "bal" prefix; owner 2026-10-17).
 - Line 2, the context line, in this order: **account name first**, plastic (••7741), then amber review words, a note, blue link/record words, then grey provenance.
-- Categories (owner, 2026-10-22): no own line on phone. They end the grey context line as text: the first category, then "+n" if more; "Set category" as an amber word when none is set. Tappable when the handlers are given. Desktop keeps the Category cell with badges. The description is bold and never truncated (wraps). Amount is `title` on phone, `heading` on desktop. The amount and balance stay top-right.
+- Categories (owner, 2026-10-22): no own line on phone. They end the grey context line as text: the first category, then "+n" if more; "Set category" as an amber word when none is set. Tappable when the handlers are given. Desktop keeps the Category cell with badges. The description is semibold (600, owner 10-22) and never truncated (wraps). Amount is `title` on phone, `heading` on desktop. The amount and balance stay top-right.
 - Checkbox on desktop when selectable. Trailing chevron or eye icon in selection mode.
 
 ## Word colours

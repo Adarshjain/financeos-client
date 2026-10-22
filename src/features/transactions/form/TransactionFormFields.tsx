@@ -17,6 +17,7 @@ import type { Category } from '@/lib/categories.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
+import { CategoriesField } from './CategoriesField';
 import { CHANNEL_LABELS } from './constants';
 import {
   type Direction,
@@ -77,7 +78,6 @@ export interface TransactionFormFieldsProps {
   sourcedDescription?: string | null;
   /** Shown on the Review status field while Needs review has no reason. */
   reviewError?: string;
-  categoriesRef?: React.Ref<HTMLButtonElement>;
   onChange: (patch: Partial<TransactionFormValues>) => void;
   onAccountChange: (accountId: string) => void;
   onCategoriesChange: (ids: string[]) => void;
@@ -101,7 +101,6 @@ export function TransactionFormFields({
   suggestingCategories,
   sourcedDescription,
   reviewError,
-  categoriesRef,
   onChange,
   onAccountChange,
   onCategoriesChange,
@@ -122,6 +121,7 @@ export function TransactionFormFields({
         <SegmentedControl
           aria-label="Debit or credit"
           options={DIRECTIONS}
+          size="xl"
           value={values.direction}
           onValueChange={(direction) => onChange({ direction: direction as Direction })}
         />
@@ -189,18 +189,14 @@ export function TransactionFormFields({
         helper={descriptionHelper}
       />
 
-      <Select
-        ref={categoriesRef}
-        label="Categories"
-        placeholder="Add categories"
-        multiple
-        searchable
-        options={categories.map((c) => ({ value: c.id, label: c.name }))}
-        value={selectedCategoryIds}
-        onValueChange={(v) => onCategoriesChange(v as string[])}
+      <CategoriesField
+        categories={categories}
+        selectedCategoryIds={selectedCategoryIds}
+        creating={creatingCategory}
+        onChange={onCategoriesChange}
         onCreate={onCreateCategory}
-        loading={creatingCategory}
       />
+
 
       <TextField
         label="MCC code"

@@ -129,12 +129,12 @@ describe('TransactionsScreen', () => {
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Bank Savings');
   });
 
-  it('opens Edit on the Categories field from a row\'s Set category', async () => {
+  it('opens the Set category dialog from a row\'s Set category, not the Edit form', () => {
     setup();
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    expect(screen.getByText('Edit transaction')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /^Description/ })).toHaveValue('Uber');
-    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Categories/ })).toHaveFocus());
+    expect(screen.getByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
+    expect(screen.queryByText('Edit transaction')).toBeNull();
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('opens Edit from the detail, keeping the detail behind it', () => {
