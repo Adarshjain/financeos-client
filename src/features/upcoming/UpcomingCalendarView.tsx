@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Banner, Button, Card, CardEmpty, formatMonth, Icon, MonthCalendar, Skeleton } from '@/components/ds';
@@ -39,6 +39,7 @@ const monthTitle = (month: string) => formatMonth(`${month}-01`);
  */
 export function UpcomingCalendarView() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const billParam = searchParams.get('bill');
   const today = todayInAppZone();
   const [month, setMonth] = useUrlState(searchParams.toString(), (search) =>
@@ -196,6 +197,7 @@ export function UpcomingCalendarView() {
           name={settling.item.counterpartyName ?? ''}
           direction={settling.item.direction === 'borrowed' ? 'borrowed' : 'lent'}
           balance={settling.item.amount ?? 0}
+          onRecorded={() => router.refresh()}
         />
       ) : null}
     </div>

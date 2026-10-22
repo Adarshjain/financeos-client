@@ -1,6 +1,8 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 
 import { api } from '@/lib/api/client';
 import type { NotificationFeedPage, NotificationFeedSummary } from '@/lib/api/types';
@@ -31,30 +33,47 @@ export function useNotificationSummary() {
   });
 }
 
+const NOTIFICATION_WRITE_KEY = ['notifications', 'write'] as const;
+
 /** The mutations behind the bell and the page; each refreshes the feed and the unread count. */
 export function useNotificationMutations() {
   const qc = useQueryClient();
-  const settle = () => qc.invalidateQueries({ queryKey: keys.notifications.all });
+  const router = useRouter();
+  // One router refresh after the last overlapping write settles, and only if one succeeded: an earlier
+  // refresh could resurrect a row another in-flight clear has optimistically hidden.
+  const refreshDue = useRef(false);
+  const settle = (_data: unknown, error: unknown) => {
+    if (!error) refreshDue.current = true;
+    if (qc.isMutating({ mutationKey: NOTIFICATION_WRITE_KEY }) <= 1 && refreshDue.current) {
+      refreshDue.current = false;
+      router.refresh();
+    }
+    return qc.invalidateQueries({ queryKey: keys.notifications.all });
+  };
 
   const markRead = useMutation({
+    mutationKey: NOTIFICATION_WRITE_KEY,
     mutationFn: (before?: string) =>
       api.POST('/api/v1/notifications/feed/read', { body: { before } }).then(() => undefined),
     onSettled: settle,
   });
 
   const clear = useMutation({
+    mutationKey: NOTIFICATION_WRITE_KEY,
     mutationFn: (id: string) =>
       api.POST('/api/v1/notifications/feed/{id}/clear', { params: { path: { id } } }).then(() => undefined),
     onSettled: settle,
   });
 
   const restore = useMutation({
+    mutationKey: NOTIFICATION_WRITE_KEY,
     mutationFn: (id: string) =>
       api.POST('/api/v1/notifications/feed/{id}/restore', { params: { path: { id } } }).then(() => undefined),
     onSettled: settle,
   });
 
   const clearAll = useMutation({
+    mutationKey: NOTIFICATION_WRITE_KEY,
     mutationFn: async () => {
       const { data } = await api.POST('/api/v1/notifications/feed/clear');
       return (data as { cleared: number } | undefined)?.cleared ?? 0;

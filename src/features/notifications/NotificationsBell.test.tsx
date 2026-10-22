@@ -14,6 +14,12 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { feedPage, notif, serve } from './notificationsTestUtils';
 import { useNotificationsAction } from './useNotificationsAction';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 function Bar() {
   const bell = useNotificationsAction();
   return <TopBar title="Home" actions={[bell]} />;

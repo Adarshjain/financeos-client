@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Banner, Card, EmptyState } from '@/components/ds';
@@ -31,6 +31,7 @@ import { useUrlState } from './useUrlState';
  */
 export function UpcomingView() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const billParam = searchParams.get('bill');
   const [{ kind, months }, setState] = useUrlState(searchParams.toString(), (search) => {
     const params = new URLSearchParams(search);
@@ -135,6 +136,7 @@ export function UpcomingView() {
           name={settling.item.counterpartyName ?? ''}
           direction={settling.item.direction === 'borrowed' ? 'borrowed' : 'lent'}
           balance={settling.item.amount ?? 0}
+          onRecorded={() => router.refresh()}
         />
       ) : null}
     </div>

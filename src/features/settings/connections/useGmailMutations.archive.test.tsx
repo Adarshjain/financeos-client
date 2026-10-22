@@ -8,6 +8,12 @@ import { keys } from '@/lib/query/keys';
 
 import { useGmailMutations } from './useGmailMutations';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } };
@@ -27,6 +33,19 @@ describe('useGmailMutations archive / unarchive', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.POST).mockResolvedValue({ data: undefined } as never);
+    vi.mocked(api.PUT).mockResolvedValue({ data: undefined } as never);
+    vi.mocked(api.DELETE).mockResolvedValue({ data: undefined } as never);
+  });
+
+  it('connection and sender writes refresh the router once each', async () => {
+    const { result } = setup();
+
+    await act(() => result.current.disconnectMutation.mutateAsync('c1'));
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    await act(() => result.current.createSenderMutation.mutateAsync({} as never));
+    await act(() => result.current.updateSenderMutation.mutateAsync({ id: 's1', body: {} as never }));
+    await act(() => result.current.deleteSenderMutation.mutateAsync('s1'));
+    expect(routerRefresh).toHaveBeenCalledTimes(4);
   });
 
   it.each([
@@ -40,5 +59,6 @@ describe('useGmailMutations archive / unarchive', () => {
     expect(api.POST).toHaveBeenCalledWith(path, { params: { path: { ledgerId: 'ledger-1' } } });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: [...keys.settings.all, 'gmailAttention'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.inbox.all });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 });

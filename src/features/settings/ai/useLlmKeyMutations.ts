@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import { api } from '@/lib/api/client';
 import type { CreateLlmKeyRequest, LlmKeyDto } from '@/lib/api/types';
@@ -14,7 +15,11 @@ import { keys } from '@/lib/query/keys';
  */
 export function useLlmKeyMutations() {
   const qc = useQueryClient();
-  const invalidateAll = () => qc.invalidateQueries({ queryKey: keys.settings.all });
+  const router = useRouter();
+  const invalidateAll = () => {
+    router.refresh();
+    return qc.invalidateQueries({ queryKey: keys.settings.all });
+  };
 
   const createMutation = useMutation({
     mutationFn: (body: CreateLlmKeyRequest) => api.POST('/api/v1/llm-keys', { body }).then((r) => r.data!),
@@ -34,6 +39,7 @@ export function useLlmKeyMutations() {
         .PATCH('/api/v1/llm-keys/{id}/position', { params: { path: { id } }, body: { position } })
         .then((r) => r.data!),
     onSuccess: (updatedProviderKeys) => {
+      router.refresh();
       qc.setQueryData(keys.settings.llmKeys(), (current: LlmKeyDto[] | undefined) => {
         if (!current) return updatedProviderKeys;
         const updatedIds = new Set(updatedProviderKeys.map((k) => k.id));

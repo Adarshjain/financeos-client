@@ -35,6 +35,12 @@ vi.mock('../gmail/GmailSenderDialog', () => ({ GmailSenderDialog: () => null }))
 
 import { GmailConnect } from '../GmailConnect';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 function page(content: unknown[]): Paged {
   return { content, totalElements: content.length, totalPages: content.length ? 1 : 0, number: 0 } as unknown as Paged;
 }

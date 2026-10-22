@@ -13,6 +13,12 @@ import { keys } from '@/lib/query/keys';
 
 import { useNotificationFeed, useNotificationMutations, useNotificationSummary } from '../useNotifications';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 function setup() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -71,6 +77,7 @@ describe('useNotificationMutations', () => {
       body: { before: '2026-10-20T10:00:00Z' },
     });
     expect(spy).toHaveBeenCalledWith({ queryKey: keys.notifications.all });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
   it('clear and restore post to the item and refresh', async () => {
@@ -82,6 +89,7 @@ describe('useNotificationMutations', () => {
     expect(api.POST).toHaveBeenCalledWith('/api/v1/notifications/feed/{id}/clear', { params: { path: { id: 'n1' } } });
     expect(api.POST).toHaveBeenCalledWith('/api/v1/notifications/feed/{id}/restore', { params: { path: { id: 'n1' } } });
     expect(spy).toHaveBeenCalledTimes(2);
+    expect(routerRefresh).toHaveBeenCalledTimes(2);
   });
 
   it('clearAll posts to /feed/clear, returns the count and refreshes', async () => {
@@ -93,5 +101,32 @@ describe('useNotificationMutations', () => {
     expect(api.POST).toHaveBeenCalledWith('/api/v1/notifications/feed/clear');
     expect(cleared).toBe(4);
     expect(spy).toHaveBeenCalledWith({ queryKey: keys.notifications.all });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh the router when the write fails', async () => {
+    vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
+    const { go } = run((m) => m.clear.mutateAsync('n1').catch(() => undefined));
+    await go();
+    expect(routerRefresh).not.toHaveBeenCalled();
+  });
+
+  it('refreshes once, after the last of two overlapping writes settles', async () => {
+    const resolvers: Array<() => void> = [];
+    vi.mocked(api.POST).mockImplementation(
+      () => new Promise((resolve) => resolvers.push(() => resolve({ data: undefined } as never))) as never,
+    );
+    const { go } = run(async (m) => {
+      const a = m.clear.mutateAsync('n1');
+      const b = m.clear.mutateAsync('n2');
+      await waitFor(() => expect(resolvers).toHaveLength(2));
+      resolvers[0]();
+      await a;
+      expect(routerRefresh).not.toHaveBeenCalled();
+      resolvers[1]();
+      await b;
+    });
+    await go();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 });

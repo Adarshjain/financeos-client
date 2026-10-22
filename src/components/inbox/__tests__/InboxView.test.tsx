@@ -25,6 +25,12 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { InboxView } from '../InboxView';
 import { action, DISMISS, item, SNOOZE } from './fixtures';
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 function inbox(items: InboxItemResponse[], summary?: InboxResponse['summary']): InboxResponse {
   return {
     generatedAt: '2026-10-08T00:00:00Z',

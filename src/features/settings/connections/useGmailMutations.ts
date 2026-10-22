@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import { api } from '@/lib/api/client';
 import type { AssignAttentionRequest, GmailSenderRequest } from '@/lib/api/types';
@@ -9,9 +10,19 @@ import { keys } from '@/lib/query/keys';
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
 export function useGmailMutations() {
   const qc = useQueryClient();
-  const invalidateConnections = () => qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
-  const invalidateSenders = () => qc.invalidateQueries({ queryKey: keys.settings.gmailSenders() });
-  const invalidateAttention = () => qc.invalidateQueries({ queryKey: [...keys.settings.all, 'gmailAttention'] });
+  const router = useRouter();
+  const invalidateConnections = () => {
+    router.refresh();
+    return qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
+  };
+  const invalidateSenders = () => {
+    router.refresh();
+    return qc.invalidateQueries({ queryKey: keys.settings.gmailSenders() });
+  };
+  const invalidateAttention = () => {
+    router.refresh();
+    return qc.invalidateQueries({ queryKey: [...keys.settings.all, 'gmailAttention'] });
+  };
 
   const startOAuthMutation = useMutation({
     mutationFn: () => api.GET('/api/v1/gmail/oauth/start').then((r) => r.data),
