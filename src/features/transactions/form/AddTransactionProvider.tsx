@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { AccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 
 import { TransactionFormDialog } from './TransactionFormDialog';
@@ -32,12 +33,15 @@ export function AddTransactionProvider({ today, children }: { today: string; chi
     <AddTransactionContext.Provider value={api}>
       {children}
       {state ? (
-        <TransactionFormDialog
-          defaultAccountId={state.defaultAccountId}
-          today={today}
-          accounts={null as Account[] | null}
-          onClose={() => setState(null)}
-        />
+        // The provider sits above every page's own AccountDialogs, so the dialog brings one: Add account opens nested on top.
+        <AccountDialogs>
+          <TransactionFormDialog
+            defaultAccountId={state.defaultAccountId}
+            today={today}
+            accounts={null as Account[] | null}
+            onClose={() => setState(null)}
+          />
+        </AccountDialogs>
       ) : null}
     </AddTransactionContext.Provider>
   );

@@ -29,7 +29,12 @@ export const TRANSACTION_TABS = [
 ];
 
 export type TransactionsListResult =
-  | { ok: true; rows: TransactionListRow[]; totalElements: number; totalPages: number }
+  | {
+      ok: true;
+      rows: TransactionListRow[];
+      totalElements: number;
+      totalPages: number;
+    }
   | { ok: false; reference?: string };
 
 export interface TransactionsViewProps {
@@ -93,20 +98,28 @@ export function TransactionsView({
   // The nav badge reads the same number, so it does not ask again. Seeded in render so it is there before the
   // rail's query subscribes; the effect keeps it current when the number changes later.
   React.useState(() => {
-    if (needsReviewCount !== null) seedNeedsReviewCount(queryClient, needsReviewCount, 'initial');
+    if (needsReviewCount !== null)
+      seedNeedsReviewCount(queryClient, needsReviewCount, 'initial');
   });
   React.useEffect(() => {
-    if (needsReviewCount !== null) seedNeedsReviewCount(queryClient, needsReviewCount, 'update');
+    if (needsReviewCount !== null)
+      seedNeedsReviewCount(queryClient, needsReviewCount, 'update');
   }, [needsReviewCount, queryClient]);
 
   const go = (patch: Partial<TransactionsQuery>, resetPage = true) =>
     startTransition(() => {
-      router.push(transactionsUrl({ ...query, ...(resetPage ? { page: 0 } : {}), ...patch }), { scroll: false });
+      router.push(
+        transactionsUrl({
+          ...query,
+          ...(resetPage ? { page: 0 } : {}),
+          ...patch,
+        }),
+        { scroll: false }
+      );
     });
   const { text, setText } = useSearchText(query.q, (q) => go({ q }));
-  // Phone: the search is narrow so the chips share its row; it opens to the full row while focused or holding text.
+  // Phone: the search fills the row beside the chips; while focused it widens and pushes them out of view.
   const [searchFocused, setSearchFocused] = React.useState(false);
-  const searchOpen = searchFocused || text !== '';
 
   const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
     value: t.value,
@@ -119,55 +132,69 @@ export function TransactionsView({
     <>
       <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
         <div className="flex">
-        <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
-          {selectionHeader ?? <Tabs items={tabs} value="all" />}
-          <FilterChips
-            query={query}
-            today={today}
-            accounts={accounts}
-            categories={categories}
-            needsReviewCount={needsReviewCount}
-            onChange={go}
-            onOpenFilters={() => setFiltersOpen(true)}
-            search={
-              <TextField
-                type="search"
-                size="md"
-                className={`grow shrink-0 min-w-space-96 desk:min-w-container-xs desk:basis-0 transition-all duration-base motion-reduce:transition-none ${searchOpen ? 'max-desk:basis-full' : 'max-desk:basis-space-96'}`}
-                prefix={<Icon name="search" size="sm" />}
-                clearable
-                clearLabel="Clear search"
-                placeholder="Search merchant, amount…"
-                value={text}
-                onValueChange={setText}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-              />
-            }
-          />
-          {list.ok ? (
-            <TransactionsList
+          <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
+            {selectionHeader ? (
+              <>
+                <div className="desk:hidden">
+                  <Tabs items={tabs} value="all" />
+                </div>
+                {selectionHeader}
+              </>
+            ) : (
+              <Tabs items={tabs} value="all" />
+            )}
+            <FilterChips
               query={query}
-              rows={list.rows}
-              totalElements={list.totalElements}
-              totalPages={list.totalPages}
-              busy={pending}
-              noAccounts={accounts !== null && accounts.length === 0}
+              today={today}
+              accounts={accounts}
+              categories={categories}
+              needsReviewCount={needsReviewCount}
               onChange={go}
-              onAddAccount={() => accountDialogs.open()}
-              onImport={() => router.push(appHref('/transactions/import'))}
-              onOpenDetail={onOpenDetail}
-              openId={openId}
-              onEditCategories={onEditCategories}
-              selection={selection}
-              onSelectionChange={onSelectionChange}
-              wrapRow={wrapRow}
+              onOpenFilters={() => setFiltersOpen(true)}
+              search={
+                <TextField
+                  type="search"
+                  size="md"
+                  className={`min-w-0 desk:min-w-container-xs transition-all duration-base motion-reduce:transition-none ${searchFocused ? 'max-desk:grow-0 max-desk:shrink-0 max-desk:basis-11/12' : 'flex-1'}`}
+                  prefix={<Icon name="search" size="sm" />}
+                  clearable
+                  clearLabel="Clear search"
+                  placeholder="Search merchant, amount…"
+                  value={text}
+                  onValueChange={setText}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                />
+              }
             />
-          ) : (
-            <TransactionsLoadError reference={list.reference} />
-          )}
-        </div>
-        {detailOpen ? <div aria-hidden="true" className="hidden w-full max-w-container-sm shrink-0 desk:ml-space-24 desk:block" /> : null}
+            {list.ok ? (
+              <TransactionsList
+                query={query}
+                rows={list.rows}
+                totalElements={list.totalElements}
+                totalPages={list.totalPages}
+                busy={pending}
+                noAccounts={accounts !== null && accounts.length === 0}
+                onChange={go}
+                onAddAccount={() => accountDialogs.open()}
+                onImport={() => router.push(appHref('/transactions/import'))}
+                onOpenDetail={onOpenDetail}
+                openId={openId}
+                onEditCategories={onEditCategories}
+                selection={selection}
+                onSelectionChange={onSelectionChange}
+                wrapRow={wrapRow}
+              />
+            ) : (
+              <TransactionsLoadError reference={list.reference} />
+            )}
+          </div>
+          {detailOpen ? (
+            <div
+              aria-hidden="true"
+              className="hidden w-full max-w-container-sm shrink-0 desk:ml-space-24 desk:block"
+            />
+          ) : null}
         </div>
       </ShellPage>
       {filtersOpen ? (

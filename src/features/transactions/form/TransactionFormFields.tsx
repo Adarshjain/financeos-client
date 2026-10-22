@@ -140,17 +140,18 @@ export function TransactionFormFields({
         />
       </div>
 
-      <Pair>
+      <div className="grid grid-cols-5 gap-space-12">
         <DateField
           label="Date"
           today={today}
           value={values.date}
           onValueChange={(v) => onChange({ date: typeof v === 'string' ? v : '' })}
           error={errors.date}
-          className={noAccountYet ? 'col-span-2' : undefined}
+          className={noAccountYet ? 'col-span-5' : 'col-span-2'}
         />
         {noAccountYet ? null : (
           <Select
+            className="col-span-3"
             label="Account"
             placeholder="Select account"
             options={accountOptions}
@@ -161,7 +162,7 @@ export function TransactionFormFields({
             error={errors.accountId}
           />
         )}
-      </Pair>
+      </div>
       {noAccountYet ? (
         <EmptyState
           size="sm"
@@ -197,17 +198,6 @@ export function TransactionFormFields({
         onCreate={onCreateCategory}
       />
 
-
-      <TextField
-        label="MCC code"
-        optional
-        inputMode="numeric"
-        maxLength={4}
-        placeholder="e.g. 5411"
-        value={values.mcc}
-        onValueChange={(v) => onChange({ mcc: v.replace(/\D/g, '') })}
-        error={errors.mcc}
-      />
 
       {isUpdate ? (
         <>
@@ -293,6 +283,16 @@ export function TransactionFormFields({
           error={errors.convenienceFee}
         />
       </Pair>
+      <TextField
+        label="MCC code"
+        optional
+        inputMode="numeric"
+        maxLength={4}
+        placeholder="e.g. 5411"
+        value={values.mcc}
+        onValueChange={(v) => onChange({ mcc: v.replace(/\D/g, '') })}
+        error={errors.mcc}
+      />
       <div className="flex flex-col">
         <SettingsToggle
           label="EMI transaction"

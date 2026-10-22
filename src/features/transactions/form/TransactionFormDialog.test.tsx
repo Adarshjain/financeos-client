@@ -160,7 +160,9 @@ describe('Add transaction', () => {
   it('puts Debit/Credit and the amount, and Date and Account, side by side', () => {
     setup();
     expect(screen.getByRole('radiogroup', { name: 'Debit or credit' }).parentElement).toBe(amount().closest('div[class*="flex-1"]')?.parentElement);
-    expect(screen.getByLabelText('Date').closest('.grid')).toHaveClass('grid-cols-2');
+    expect(screen.getByLabelText('Date').closest('.grid')).toHaveClass('grid-cols-5');
+    expect(screen.getByLabelText('Date').closest('.col-span-2')).not.toBeNull();
+    expect(screen.getByRole('combobox', { name: /^Account/ }).closest('.col-span-3')).not.toBeNull();
   });
 
   it('shows the bank logo in the Account options and in the closed trigger', async () => {
