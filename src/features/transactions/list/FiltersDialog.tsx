@@ -15,19 +15,32 @@ import {
   Switch,
   TextField,
 } from '@/components/ds';
+import type { Account } from '@/lib/account.types';
+import type { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
+  accountGroups,
   AMOUNT_OP_OPTIONS,
+  categoryOptions,
   PERIOD_OPTIONS,
+  REASON_OPTIONS,
   REVIEW_OPTIONS,
   SORT_ORDER_OPTIONS,
   SOURCE_OPTIONS,
+  TYPE_OPTIONS,
 } from './filterOptions';
 import { draftFromQuery, type FiltersDraft, type PeriodMode, queryFromDraft } from './filtersDraft';
 import { loadMatchingCount } from './transactionsActions';
-import { type AmountOp, clearedQuery, type PeriodPresetId, type SortId, type TransactionsQuery } from './transactionsUrl';
+import {
+  type AmountOp,
+  clearedQuery,
+  type PeriodPresetId,
+  type SortId,
+  type TransactionsQuery,
+  type TypeFilter,
+} from './transactionsUrl';
 
 const PERIOD_MODES = [
   { value: 'preset', label: 'Preset' },
@@ -57,16 +70,21 @@ export interface FiltersDialogProps {
   query: TransactionsQuery;
   /** Today, YYYY-MM-DD, for the date fields. */
   today: string;
+  /** Null when they could not be loaded: their fields are then off. */
+  accounts: Account[] | null;
+  categories: Category[] | null;
   /** "Show": the query to open. */
   onApply: (query: TransactionsQuery) => void;
   onClose: () => void;
 }
 
 /**
- * The Filters dialog: period, amount, review status, import source, excluded only and sort. It edits a
- * draft; nothing reaches the address until "Show". Opening and closing it is page state, never a URL.
+ * The Filters dialog: every filter the chip row has (period, account, category, type, amount, review status,
+ * reason, monitoring, up to statement, import source, excluded only) and the sort. It edits a draft; nothing
+ * reaches the address until "Show". Cancel, ×, the backdrop and a swipe down all drop the draft. Opening and
+ * closing it is page state, never a URL.
  */
-export function FiltersDialog({ query, today, onApply, onClose }: FiltersDialogProps) {
+export function FiltersDialog({ query, today, accounts, categories, onApply, onClose }: FiltersDialogProps) {
   const [base, setBase] = React.useState(query);
   const [draft, setDraft] = React.useState<FiltersDraft>(() => draftFromQuery(query));
   const set = (patch: Partial<FiltersDraft>) => setDraft((d) => ({ ...d, ...patch }));
@@ -80,8 +98,18 @@ export function FiltersDialog({ query, today, onApply, onClose }: FiltersDialogP
     setDraft(draftFromQuery(cleared));
   };
 
+  // On a phone the footer's three buttons share one width, so the label drops the noun there.
   const showLabel =
-    count === undefined ? 'Show transactions' : `Show ${count} ${count === 1 ? 'transaction' : 'transactions'}`;
+    count === undefined ? (
+      <span>
+        Show <span className="max-desk:hidden">transactions</span>
+      </span>
+    ) : (
+      <span>
+        Show {count}{' '}
+        <span className="max-desk:hidden">{count === 1 ? 'transaction' : 'transactions'}</span>
+      </span>
+    );
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
@@ -89,6 +117,7 @@ export function FiltersDialog({ query, today, onApply, onClose }: FiltersDialogP
         size="md"
         title="Filters"
         description="Every filter combines with the others"
+        tertiary={{ label: 'Cancel', onSelect: onClose }}
         secondary={{ label: 'Clear all', onSelect: clearAll }}
         primary={{ label: showLabel, onSelect: () => onApply(draftQuery) }}
       >
@@ -123,6 +152,38 @@ export function FiltersDialog({ query, today, onApply, onClose }: FiltersDialogP
                 }}
               />
             ) : null}
+          </div>
+
+          <SectionHeader>Account and category</SectionHeader>
+          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
+            <Select
+              multiple
+              searchable
+              searchPlaceholder="Search accounts"
+              label="Account"
+              placeholder="Any account"
+              disabled={accounts === null}
+              groups={accountGroups(accounts ?? [], draft.accounts)}
+              value={draft.accounts}
+              onValueChange={(accountIds) => set({ accounts: accountIds as string[] })}
+            />
+            <Select
+              multiple
+              searchable
+              searchPlaceholder="Search categories"
+              label="Category"
+              placeholder="Any category"
+              disabled={categories === null}
+              options={categoryOptions(categories ?? [])}
+              value={draft.categories}
+              onValueChange={(names) => set({ categories: names as string[] })}
+            />
+            <Select
+              label="Type"
+              options={TYPE_OPTIONS}
+              value={draft.type}
+              onValueChange={(type) => set({ type: type as TypeFilter })}
+            />
           </div>
 
           <SectionHeader>Amount</SectionHeader>
@@ -163,12 +224,44 @@ export function FiltersDialog({ query, today, onApply, onClose }: FiltersDialogP
                 onValueChange={(review) => set({ review: review as string })}
               />
               <Select
+                label="Review reason"
+                options={REASON_OPTIONS}
+                value={draft.reason}
+                onValueChange={(reason) => set({ reason: reason as string })}
+              />
+              <Select
                 label="Import source"
                 options={SOURCE_OPTIONS}
                 value={draft.source}
                 onValueChange={(source) => set({ source: source as string })}
               />
             </div>
+            <ListRow
+              borderTop={false}
+              className="px-0"
+              title="Monitoring"
+              subtitle="Show only transactions under monitoring"
+              trailing={
+                <Switch
+                  aria-label="Monitoring"
+                  checked={draft.monitoring}
+                  onCheckedChange={(monitoring) => set({ monitoring })}
+                />
+              }
+            />
+            <ListRow
+              borderTop={false}
+              className="px-0"
+              title="Up to statement"
+              subtitle="Show only rows a statement covers"
+              trailing={
+                <Switch
+                  aria-label="Up to statement"
+                  checked={draft.upToStatement}
+                  onCheckedChange={(upToStatement) => set({ upToStatement })}
+                />
+              }
+            />
             <ListRow
               borderTop={false}
               className="px-0"

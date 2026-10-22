@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, type SelectOption, showToast } from '@/components/ds';
+import { BankLogo } from '@/components/organisms';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -129,7 +130,11 @@ export function TransactionFormDialog({
     accountDialogs.open();
   };
 
-  const accountOptions: SelectOption[] = selectableAccounts.map((a) => ({ value: a.id, label: a.name }));
+  const accountOptions: SelectOption[] = selectableAccounts.map((a) => ({
+    value: a.id,
+    label: a.name,
+    icon: <BankLogo bankId={'bank' in a ? (a.bank ?? null) : null} name={a.name} />,
+  }));
   const saving = createMutation.isPending || updateMutation.isPending;
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
 

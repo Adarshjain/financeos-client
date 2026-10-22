@@ -76,7 +76,7 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
   }
 
   return (
-    <>
+    <div className="max-desk:w-screen max-desk:max-w-full">
       <Text as="div" variant="heading" className="px-space-12 pt-space-8 pb-space-4">
         Notifications
       </Text>
@@ -90,6 +90,6 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
           </Popover.Close>
         </Text>
       </div>
-    </>
+    </div>
   );
 }

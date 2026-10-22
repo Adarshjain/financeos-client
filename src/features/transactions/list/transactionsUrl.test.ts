@@ -20,9 +20,10 @@ function groupParams(search: string): [string, string | string[]][] {
 }
 
 describe('parseTransactionsUrl', () => {
-  it('defaults to Last 14 days, newest, page one of 50', () => {
+  it('defaults to all time, newest, page one of 25', () => {
     expect(parseTransactionsUrl({})).toEqual(DEFAULT_QUERY);
-    expect(DEFAULT_QUERY.period).toEqual({ kind: 'preset', id: 'last_14_days' });
+    expect(DEFAULT_QUERY.period).toEqual(ALL_TIME);
+    expect(DEFAULT_QUERY.size).toBe(25);
   });
 
   it('reads the account param an account page links with', () => {
@@ -81,8 +82,9 @@ describe('transactionsUrl', () => {
     expect(transactionsUrl(DEFAULT_QUERY)).toBe('/ds/transactions');
   });
 
-  it('writes all time explicitly', () => {
-    expect(transactionsSearch({ ...DEFAULT_QUERY, period: ALL_TIME })).toBe('period=all_time');
+  it('leaves all time out and writes Last 14 days explicitly', () => {
+    expect(transactionsSearch({ ...DEFAULT_QUERY, period: ALL_TIME })).toBe('');
+    expect(transactionsSearch({ ...DEFAULT_QUERY, period: { kind: 'preset', id: 'last_14_days' } })).toBe('period=last_14_days');
   });
 
   it('round-trips every field', () => {
@@ -124,7 +126,8 @@ describe('clearedQuery and isUnfiltered', () => {
   });
 
   it('is unfiltered only for all time with nothing else', () => {
-    expect(isUnfiltered(DEFAULT_QUERY)).toBe(false);
+    expect(isUnfiltered(DEFAULT_QUERY)).toBe(true);
+    expect(isUnfiltered({ ...DEFAULT_QUERY, period: { kind: 'preset', id: 'last_14_days' } })).toBe(false);
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME })).toBe(true);
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME, page: 4, sort: 'lowest' })).toBe(true);
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME, q: 'a' })).toBe(false);

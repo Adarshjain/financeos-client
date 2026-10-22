@@ -99,6 +99,8 @@ export function useTransactionActions({ accounts, onDone }: TransactionActionsOp
 
   return {
     review,
+    /** The detail panel's Review button: always the dialog for that row, even with a single reason. */
+    reviewInDialog: (transaction: Transaction) => openApprove({ transactions: [transaction], fromBar: false }),
     /** From the selection bar: the selected rows that need review. */
     approve: (transactions: Transaction[]) => openApprove({ transactions, fromBar: true }),
     /** One swiped row (`fromBar` false) or the selection (`fromBar` true). */

@@ -1,3 +1,5 @@
+import type { Locator } from '@playwright/test';
+
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -15,6 +17,11 @@ const VIEWPORTS = [
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Loans & lendings, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
+
+    // On phone the dialog footer steps aside while a field has focus (on-screen keyboard); a tap on the sheet's top brings it back.
+    const closeKeyboard = async (dialog: Locator) => {
+      if (viewport.width < 641) await dialog.getByTestId('dialog-drag-area').click();
+    };
 
     test.beforeEach(async ({ context, request, page }) => {
       currentUser = await createUser(request, 'ui-ds-loans');
@@ -161,6 +168,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toBeVisible();
       await expect(dialog.getByRole('combobox', { name: /^Person/ })).toContainText('Rahul Sharma');
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('700');
+      await closeKeyboard(dialog);
       await dialog.getByRole('button', { name: 'Save entry' }).click();
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹25,700 · received ₹10,000 · closing ₹15,700')).toBeVisible();
@@ -226,6 +234,7 @@ for (const viewport of VIEWPORTS) {
       const dialog = page.getByRole('dialog', { name: 'Edit ledger entry' });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('26000');
+      await closeKeyboard(dialog);
       await dialog.getByRole('button', { name: 'Save changes' }).click();
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹10,000 · closing ₹16,000')).toBeVisible();
@@ -265,6 +274,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByPlaceholder('Type a name').fill(name);
       await page.getByRole('button', { name: `Add "${name}"` }).click();
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('40000');
+      await closeKeyboard(dialog);
       await dialog.getByRole('button', { name: 'Save entry' }).click();
 
       await expect(dialog).not.toBeVisible();
@@ -348,6 +358,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('textbox', { name: /^Principal/ }).fill('90000');
       await dialog.getByRole('textbox', { name: /^Annual rate/ }).fill('11');
       await dialog.getByRole('textbox', { name: /^Tenure/ }).fill('24');
+      await closeKeyboard(dialog);
       await dialog.getByRole('button', { name: 'Create loan' }).click();
 
       await expect(dialog).not.toBeVisible();

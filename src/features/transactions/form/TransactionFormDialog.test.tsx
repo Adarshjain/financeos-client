@@ -148,6 +148,36 @@ describe('Add transaction', () => {
     expect(screen.queryByText('Enter an amount greater than zero')).toBeNull();
   });
 
+  it('tints the amount green for a credit and leaves it neutral for a debit', async () => {
+    setup();
+    expect(amount()).not.toHaveClass('text-positive');
+    await user.click(screen.getByRole('radio', { name: 'Credit' }));
+    expect(amount()).toHaveClass('text-positive');
+    await user.click(screen.getByRole('radio', { name: 'Debit' }));
+    expect(amount()).not.toHaveClass('text-positive');
+  });
+
+  it('puts Debit/Credit and the amount, and Date and Account, side by side', () => {
+    setup();
+    expect(screen.getByRole('radiogroup', { name: 'Debit or credit' }).parentElement).toBe(amount().closest('div[class*="flex-1"]')?.parentElement);
+    expect(screen.getByLabelText('Date').closest('.grid')).toHaveClass('grid-cols-2');
+  });
+
+  it('shows the bank logo in the Account options and in the closed trigger', async () => {
+    accountList = [{ ...bank, bank: 'hdfc' } as unknown as Account, card];
+    setup({ defaultAccountId: 'b1' });
+    const trigger = screen.getByRole('combobox', { name: /^Account/ });
+    expect(trigger.querySelector('[data-sprite-cell]')).not.toBeNull();
+    await user.click(trigger);
+    const option = screen.getByRole('option', { name: /HDFC Savings/ });
+    expect(option.querySelector('[data-sprite-cell]')).not.toBeNull();
+  });
+
+  it('takes the description in a text area', () => {
+    setup();
+    expect(screen.getByRole('textbox', { name: /^Description/ }).tagName).toBe('TEXTAREA');
+  });
+
   it('keeps only a decimal number in the amount', () => {
     setup();
     fireEvent.change(amount(), { target: { value: '1a2,5.5' } });
@@ -196,7 +226,7 @@ describe('Add transaction', () => {
   it('picks the card holder default when a credit card is chosen, and sends it', async () => {
     setup();
     await user.click(screen.getByRole('combobox', { name: /^Account/ }));
-    await user.click(screen.getByRole('option', { name: 'HDFC Regalia Gold' }));
+    await user.click(screen.getByRole('option', { name: /HDFC Regalia Gold/ }));
     expect(screen.getByRole('combobox', { name: /^Card/ })).toHaveTextContent('Meera (•••• 7742)');
     fireEvent.change(amount(), { target: { value: '99' } });
     save();

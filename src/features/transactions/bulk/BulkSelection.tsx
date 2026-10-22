@@ -41,7 +41,7 @@ export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onM
   const flagged = selected.filter(isApprovable).length;
   return (
     <SelectionBar
-      className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
+      className="fixed inset-x-0 bottom-safe-12"
       count={selected.length}
       summary={selectionSummary(selected)}
       onClear={onClear}

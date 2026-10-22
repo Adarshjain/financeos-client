@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
 
-import { accountGroups, activeFilterWords, amountLabel, periodLabel, REASON_OPTIONS } from './filterOptions';
+import { accountGroups, activeFilterCount, activeFilterWords, amountLabel, periodLabel, REASON_OPTIONS } from './filterOptions';
 import { amountFromDraft, draftFromQuery, queryFromDraft } from './filtersDraft';
 import { ALL_TIME, DEFAULT_QUERY } from './transactionsUrl';
 
@@ -37,7 +37,7 @@ describe('labels', () => {
   it('writes periods and amounts', () => {
     expect(periodLabel({ kind: 'range', from: '2026-10-01', to: '2026-10-09' })).toBe('01/10/2026 – 09/10/2026');
     expect(periodLabel({ kind: 'date', date: '2026-10-05' })).toBe('05/10/2026');
-    expect(periodLabel(DEFAULT_QUERY.period)).toBe('Last 14 days');
+    expect(periodLabel({ kind: 'preset', id: 'last_14_days' })).toBe('Last 14 days');
     expect(amountLabel({ op: 'between', from: 500, to: 5000 })).toBe('₹500 – ₹5,000');
     expect(amountLabel({ op: 'greater_than', from: 99.5, to: null })).toBe('Over ₹99.50');
   });
@@ -47,7 +47,7 @@ describe('labels', () => {
   });
 
   it('describes the active filters for the no-match state', () => {
-    expect(activeFilterWords({ ...DEFAULT_QUERY, source: 'manual', excluded: true })).toBe('Last 14 days · excluded only · manual');
+    expect(activeFilterWords({ ...DEFAULT_QUERY, period: { kind: 'preset', id: 'last_14_days' }, source: 'manual', excluded: true })).toBe('Last 14 days · excluded only · manual');
     expect(activeFilterWords({ ...DEFAULT_QUERY, period: ALL_TIME, q: 'zz', accounts: ['a', 'b'] })).toBe('“zz” · 2 accounts');
   });
 });
@@ -65,5 +65,27 @@ describe('accountGroups', () => {
     expect(groups.map((g) => g.name)).toEqual(['Bank', 'Credit card']);
     expect(groups[0].options.map((o) => [o.label, o.hint])).toEqual([['HDFC Savings', undefined], ['Old bank', 'Closed']]);
     expect(accountGroups(accounts, ['k1']).map((g) => g.name)).toContain('Broker');
+  });
+});
+
+describe('every chip-row filter lives in the draft', () => {
+  const full = {
+    ...DEFAULT_QUERY,
+    accounts: ['a1', 'a2'],
+    categories: ['Groceries'],
+    type: 'debit' as const,
+    reason: 'UNRECONCILED' as const,
+    monitoring: true,
+    upToStatement: true,
+  };
+
+  it('round-trips accounts, categories, type, reason, monitoring and up to statement', () => {
+    expect(queryFromDraft(DEFAULT_QUERY, draftFromQuery(full))).toEqual(full);
+  });
+
+  it('counts the active filters, not the search', () => {
+    expect(activeFilterCount(DEFAULT_QUERY)).toBe(0);
+    expect(activeFilterCount({ ...DEFAULT_QUERY, q: 'zz' })).toBe(0);
+    expect(activeFilterCount({ ...full, period: { kind: 'preset', id: 'last_14_days' }, source: 'manual' })).toBe(8);
   });
 });

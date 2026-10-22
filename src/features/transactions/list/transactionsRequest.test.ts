@@ -11,7 +11,7 @@ describe('buildFilters', () => {
   });
 
   it('maps Last 14 days to last_x_days with 14', () => {
-    expect(buildFilters(DEFAULT_QUERY)).toEqual([{ field: 'date', operator: 'last_x_days', value: { amount: 14 } }]);
+    expect(buildFilters(q({ period: { kind: 'preset', id: 'last_14_days' } }))).toEqual([{ field: 'date', operator: 'last_x_days', value: { amount: 14 } }]);
   });
 
   it('maps the other periods', () => {
@@ -66,7 +66,7 @@ describe('search body and paging', () => {
 
   it('maps sort, page and size', () => {
     expect(searchPaging(q({ sort: 'lowest', page: 2, size: 25 }))).toEqual({ page: 2, size: 25, sort: ['amount,asc'] });
-    expect(searchPaging(q({}))).toEqual({ page: 0, size: 50, sort: ['date,desc'] });
+    expect(searchPaging(q({}))).toEqual({ page: 0, size: 25, sort: ['date,desc'] });
   });
 
   it('counts needs review with only that filter', () => {

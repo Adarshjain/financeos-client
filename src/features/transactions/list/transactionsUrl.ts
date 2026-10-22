@@ -7,7 +7,7 @@ import type { ReviewReason, ReviewType, TransactionSource } from '@/lib/transact
 export const TRANSACTIONS_HREF = appHref('/transactions');
 
 export const TRANSACTIONS_SIZE_OPTIONS = [25, 50, 100];
-export const TRANSACTIONS_DEFAULT_SIZE = 50;
+export const TRANSACTIONS_DEFAULT_SIZE = 25;
 
 // ---- Period ----------------------------------------------------------------
 
@@ -32,8 +32,9 @@ export type Period =
   | { kind: 'date'; date: string }
   | { kind: 'range'; from: string; to: string };
 
-export const DEFAULT_PERIOD = { kind: 'preset', id: 'last_14_days' } as const satisfies Period;
 export const ALL_TIME = { kind: 'preset', id: 'all_time' } as const satisfies Period;
+/** No period in the address means every transaction, latest first; "Last 14 days" is a choice, not the default. */
+export const DEFAULT_PERIOD = ALL_TIME;
 
 export function isAllTime(period: Period): boolean {
   return period.kind === 'preset' && period.id === 'all_time';

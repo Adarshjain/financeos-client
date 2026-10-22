@@ -31,14 +31,13 @@ describe('More sheet Quick add Lending', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('keeps Transaction and Trade disabled', () => {
+  it('keeps Trade disabled', () => {
     render(
       <AddLendingProvider>
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
       </AddLendingProvider>,
     );
     fireEvent.click(screen.getByRole('tab', { name: /More/i }));
-    expect(screen.getByRole('button', { name: /Transaction/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /Trade/i })).toBeDisabled();
   });
 });

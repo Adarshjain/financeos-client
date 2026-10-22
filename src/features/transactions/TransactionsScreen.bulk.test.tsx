@@ -205,7 +205,7 @@ describe('TransactionsScreen selection and bulk actions', () => {
     expect(posts('/api/v1/transactions/batch-review')[0]).toMatchObject({
       body: { transactionIds: ['t2', 't3'], reviewType: 'MANUALLY_REVIEWED' },
     });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Approved 2 transactions', { tone: 'success' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Approved 2 transactions', expect.objectContaining({ tone: 'success' })));
     await waitFor(() => expect(screen.queryByText(/ selected$/)).toBeNull());
   });
 
@@ -338,14 +338,15 @@ describe('TransactionsScreen review', () => {
     for (const swipe of screen.getAllByTestId('swipe')) expect(swipe).toHaveAttribute('data-disabled', 'true');
   });
 
-  it('the detail Review button approves a one-reason row, and is missing without a reason', async () => {
+  it('the detail Review button opens the approve dialog even for a one-reason row, and is missing without a reason', async () => {
     batch(['t2']);
     setup();
     fireEvent.click(screen.getAllByText('Rent')[0]);
     expect(screen.queryByRole('button', { name: 'Review' })).toBeNull();
     fireEvent.click(screen.getAllByText('Swiggy')[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Review' }));
-    await waitFor(() => expect(posts('/api/v1/transactions/batch-review')).toHaveLength(1));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Approved', expect.objectContaining({ tone: 'success' })));
+    expect(await screen.findByText('Approve 1 transaction')).toBeInTheDocument();
+    expect(posts('/api/v1/transactions/batch-review')).toHaveLength(0);
+    expect(showToast).not.toHaveBeenCalled();
   });
 });
