@@ -37,3 +37,6 @@ Both open the same Popover with the same item rows, so they look identical. They
 
 ## Built from
 Radix DropdownMenu, the shared item row (`itemRow`), Icon.
+
+## Motion
+Fades and slides in; fades and slides out on close (dur-fast).

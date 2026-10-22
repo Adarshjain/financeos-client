@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -197,5 +197,60 @@ describe('SelectionBar', () => {
     expect(root).toHaveAttribute('data-selection-bar');
     const pill = root.firstElementChild as HTMLElement;
     expect(pill).toHaveClass('w-full', 'desk:w-fit', 'desk:mx-auto');
+  });
+
+  describe('motion', () => {
+    const el = (c: HTMLElement) => c.querySelector('[data-selection-bar]') as HTMLElement | null;
+    const bar = (count: number) => (
+      <SelectionBar count={count} actions={defaultActions} onClear={() => {}} />
+    );
+
+    it('enters open when count is above 0', () => {
+      const { container } = render(bar(2));
+      expect(el(container)?.getAttribute('data-state')).toBe('open');
+    });
+
+    it('stays mounted while exiting, then unmounts on animationend', () => {
+      const { container, rerender } = render(bar(2));
+      rerender(bar(0));
+      const node = el(container);
+      expect(node).not.toBeNull();
+      expect(node?.getAttribute('data-state')).toBe('closed');
+      expect(screen.getByText('2 selected')).toBeTruthy();
+      act(() => {
+        // jsdom lacks AnimationEvent; React may listen on the prefixed name, so send both.
+        for (const type of ['animationend', 'webkitAnimationEnd']) {
+          node!.dispatchEvent(new Event(type, { bubbles: true }));
+        }
+      });
+      expect(el(container)).toBeNull();
+    });
+
+    it('unmounts after the fallback timeout when no animationend fires', () => {
+      vi.useFakeTimers();
+      const { container, rerender } = render(bar(2));
+      rerender(bar(0));
+      expect(el(container)).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(el(container)).toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('re-entry cancels the exit', () => {
+      const { container, rerender } = render(bar(2));
+      rerender(bar(0));
+      rerender(bar(3));
+      expect(el(container)?.getAttribute('data-state')).toBe('open');
+      expect(screen.getByText('3 selected')).toBeTruthy();
+      fireEvent.animationEnd(el(container)!);
+      expect(el(container)).not.toBeNull();
+    });
+
+    it('renders nothing when mounted with count 0', () => {
+      const { container } = render(bar(0));
+      expect(el(container)).toBeNull();
+    });
   });
 });

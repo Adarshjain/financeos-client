@@ -1,10 +1,11 @@
 'use client';
 
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import React, { forwardRef } from 'react';
+import React, { createContext, forwardRef, useContext, useRef } from 'react';
 
 import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
+import { useSlidingIndicator } from '../useSlidingIndicator';
 
 export interface TabItem {
   value: string;
@@ -91,19 +92,45 @@ export const Tabs = forwardRef<
 
 Tabs.displayName = 'Tabs';
 
+/** True once TabsList's measured indicator has taken over from the per-tab active underline. */
+const IndicatorContext = createContext(false);
+
+const ACTIVE_TAB = '[role="tab"][data-state="active"]';
+
+/** Underline slides between tabs (dur-base, none under reduced motion). First paint keeps each tab's own underline; the indicator replaces it once measured. */
 export const TabsList = forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const { rect, animated } = useSlidingIndicator(listRef, ACTIVE_TAB, ['data-state']);
+
   return (
     <TabsPrimitive.List
-      ref={ref}
+      ref={(node) => {
+        listRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+      }}
       className={cn(
-        'flex items-center gap-space-4 border-b border-line overflow-x-auto overflow-y-hidden flex-nowrap scrollbar-none',
+        'relative flex items-center gap-space-4 border-b border-line overflow-x-auto overflow-y-hidden flex-nowrap scrollbar-none',
         className,
       )}
       {...props}
-    />
+    >
+      <IndicatorContext.Provider value={rect !== null}>{children}</IndicatorContext.Provider>
+      {rect ? (
+        <span
+          aria-hidden="true"
+          data-tabs-indicator=""
+          className={cn(
+            'pointer-events-none absolute -bottom-px left-0 border-b-2 border-brand',
+            animated && 'transition-all duration-base motion-reduce:transition-none',
+          )}
+          style={{ width: rect.width, transform: `translateX(${rect.left}px)` }}
+        />
+      ) : null}
+    </TabsPrimitive.List>
   );
 });
 
@@ -127,6 +154,7 @@ export const TabsTrigger = forwardRef<
       ) : null}
     </>
   );
+  const indicatorOn = useContext(IndicatorContext);
   const link = asChild && React.isValidElement(children)
     ? (children as React.ReactElement<{ children?: React.ReactNode }>)
     : null;
@@ -145,7 +173,8 @@ export const TabsTrigger = forwardRef<
         'inline-block no-underline font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 rounded-none -mb-px transition-colors duration-fast select-none cursor-pointer',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
         'font-semibold text-ink-3 border-transparent hover:text-ink hover:bg-hover active:bg-pressed',
-        'data-active:text-brand-strong data-active:border-brand data-active:font-bold data-active:hover:bg-transparent data-active:hover:text-brand-strong',
+        'data-active:text-brand-strong data-active:font-bold data-active:hover:bg-transparent data-active:hover:text-brand-strong',
+        indicatorOn ? 'data-active:border-transparent' : 'data-active:border-brand',
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}

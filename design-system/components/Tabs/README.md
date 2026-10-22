@@ -27,3 +27,6 @@ Radix Tabs; the count after a label is `ink-3` text, not a bubble. Active stylin
 
 ## Variants
 - Plain, with counts (loaded or still loading), as links (route tabs), and scrolling (never wrapping) when they overflow on phone. One working story drives them all through controls.
+
+## Motion
+The active underline slides between tabs (dur-base); first paint uses each tab's own underline. None under reduced motion.

@@ -23,3 +23,6 @@ A short label for a control, shown on hover or keyboard focus. Desktop only: it 
 
 ## Built from
 Radix Tooltip (Floating UI).
+
+## Motion
+Fades in; fades out on close.

@@ -56,6 +56,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(
                 'max-desk:hidden z-overlay bg-brand text-on-brand rounded-ds-sm px-space-8 py-space-4',
                 'font-text text-caption max-w-container-sm',
                 'animate-in fade-in-0 duration-fast',
+                'data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards',
                 className,
               )}
             >
