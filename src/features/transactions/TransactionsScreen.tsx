@@ -10,6 +10,7 @@ import { isApprovable } from './bulk/bulkModel';
 import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
 import { useBulkSelection } from './bulk/useBulkSelection';
 import { useTransactionActions } from './bulk/useTransactionActions';
+import { CategoryDialog } from './category/CategoryDialog';
 import { TransactionDetailPanel } from './detail/TransactionDetailPanel';
 import { useAddTransaction } from './form/AddTransactionProvider';
 import { TransactionFormDialog } from './form/TransactionFormDialog';
@@ -23,12 +24,13 @@ export interface TransactionsScreenProps extends Omit<TransactionsViewProps, 'on
   transactions: Transaction[];
 }
 
-type FormState = { transaction: Transaction; focus?: 'categories' } | null;
+type FormState = { transaction: Transaction } | null;
 
 /** /ds/transactions: the list with its detail panel and the Edit dialog (Add is the shell's AddTransactionProvider), all opened from state (the address never changes). */
 export function TransactionsScreen({ transactions, ...view }: TransactionsScreenProps) {
   const [detailId, setDetailId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<FormState>(null);
+  const [categorising, setCategorising] = React.useState<Transaction | null>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
   const router = useRouter();
   const addTransaction = useAddTransaction();
@@ -47,7 +49,7 @@ export function TransactionsScreen({ transactions, ...view }: TransactionsScreen
 
   const editCategories = (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
-    if (transaction) setForm({ transaction, focus: 'categories' });
+    if (transaction) setCategorising(transaction);
   };
 
   return (
@@ -114,11 +116,11 @@ export function TransactionsScreen({ transactions, ...view }: TransactionsScreen
           }}
         />
       ) : null}
+      {categorising ? <CategoryDialog key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}
       {form ? (
         <TransactionFormDialog
           key={form.transaction.id}
           transaction={form.transaction}
-          focus={form.focus}
           today={view.today}
           accounts={view.accounts}
           onClose={() => setForm(null)}

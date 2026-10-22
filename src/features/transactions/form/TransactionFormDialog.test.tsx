@@ -397,9 +397,4 @@ describe('Edit transaction', () => {
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0][0].body).not.toHaveProperty('reviewReasons');
   });
-
-  it('starts on the Categories field when opened from Set category', async () => {
-    setup({ transaction: stored({ categories: [] }), focus: 'categories' });
-    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Categories/ })).toHaveFocus());
-  });
 });

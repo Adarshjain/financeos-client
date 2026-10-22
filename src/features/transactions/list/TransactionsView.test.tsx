@@ -105,6 +105,75 @@ describe('TransactionsView', () => {
     expect(lastUrl()).toBe('/ds/transactions');
   });
 
+  it('the Period chip opens a dropdown on the page; Apply writes the picked period', async () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Period' }));
+    expect(screen.queryByText('Every filter combines with the others')).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Apply' }));
+    expect(lastUrl()).toBe('/ds/transactions');
+  });
+
+  it('shows only the amount fields the condition needs, in the Filters dialog', async () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: '+ More' }));
+    await screen.findByRole('button', { name: /Show/ });
+    const closedOf = (label: string) => screen.getByLabelText(label).closest('[inert]');
+    // Default condition "greater than": From only.
+    expect(closedOf('From')).toBeNull();
+    expect(closedOf('To')).not.toBeNull();
+  });
+
+  describe('the Amount condition in the Filters dialog', () => {
+    const openDialog = async () => {
+      setup();
+      fireEvent.click(screen.getByRole('button', { name: '+ More' }));
+      await screen.findByRole('button', { name: /Show/ });
+    };
+    const pickCondition = (from: string, to: string) => {
+      fireEvent.click(screen.getByText(from));
+      const matches = screen.getAllByText(to);
+      fireEvent.click(matches[matches.length - 1]);
+    };
+    const type = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    const show = () => fireEvent.click(screen.getByRole('button', { name: /Show/ }));
+
+    it('greater than applies only From', async () => {
+      await openDialog();
+      type('From', '100');
+      show();
+      expect(lastUrl()).toBe('/ds/transactions?amount=gt&amountFrom=100');
+    });
+
+    it('less than applies only To, and the From typed before is dropped', async () => {
+      await openDialog();
+      type('From', '100');
+      pickCondition('Greater than', 'Less than');
+      type('To', '500');
+      show();
+      expect(lastUrl()).toBe('/ds/transactions?amount=lt&amountTo=500');
+    });
+
+    it('between applies both', async () => {
+      await openDialog();
+      pickCondition('Greater than', 'Between');
+      type('From', '100');
+      type('To', '500');
+      show();
+      expect(lastUrl()).toBe('/ds/transactions?amount=between&amountFrom=100&amountTo=500');
+    });
+
+    it('a field hidden by a condition change is emptied: back on between it is not applied', async () => {
+      await openDialog();
+      pickCondition('Greater than', 'Between');
+      type('From', '100');
+      type('To', '500');
+      pickCondition('Between', 'Greater than');
+      pickCondition('Greater than', 'Between');
+      show();
+      expect(lastUrl()).not.toContain('amount');
+    });
+  });
+
   it('offers no remove on the All time chip or an unset Amount chip', () => {
     setup({ query: { ...DEFAULT_QUERY, period: { kind: 'preset', id: 'all_time' } } });
     expect(screen.queryByRole('button', { name: 'Remove filter' })).not.toBeInTheDocument();
@@ -192,15 +261,15 @@ describe('TransactionsView', () => {
   it('opens the search to the full row on focus and keeps it open while it holds text', () => {
     setup();
     const input = screen.getByPlaceholderText('Search merchant, amount…');
-    const frame = () => input.closest('[class*="desk:w-container-xs"]') as HTMLElement;
-    expect(frame().className).toContain('max-desk:w-space-96');
+    const frame = () => input.closest('[class*="desk:min-w-container-xs"]') as HTMLElement;
+    expect(frame().className).toContain('max-desk:basis-space-96');
     fireEvent.focus(input);
-    expect(frame().className).toContain('max-desk:w-full');
+    expect(frame().className).toContain('max-desk:basis-full');
     fireEvent.blur(input);
-    expect(frame().className).toContain('max-desk:w-space-96');
+    expect(frame().className).toContain('max-desk:basis-space-96');
     fireEvent.change(input, { target: { value: 'zz' } });
     fireEvent.blur(input);
-    expect(frame().className).toContain('max-desk:w-full');
+    expect(frame().className).toContain('max-desk:basis-full');
   });
 
   it('Clear all in the dialog drops every filter to all time', async () => {

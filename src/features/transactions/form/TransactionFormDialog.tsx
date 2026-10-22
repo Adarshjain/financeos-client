@@ -41,8 +41,6 @@ export interface TransactionFormDialogProps {
   transaction?: Transaction;
   /** Add: the account to start on (the list's one account filter). */
   defaultAccountId?: string;
-  /** Edit opened from "Set category": start on the Categories field. */
-  focus?: 'categories';
   /** Today, YYYY-MM-DD, in the app's zone. */
   today: string;
   /** The accounts the page already loaded; the dialog keeps them current. */
@@ -55,7 +53,6 @@ export interface TransactionFormDialogProps {
 export function TransactionFormDialog({
   transaction,
   defaultAccountId = '',
-  focus,
   today,
   accounts: initialAccounts,
   onClose,
@@ -77,7 +74,6 @@ export function TransactionFormDialog({
     };
   });
   const [errors, setErrors] = React.useState<FormErrors>({});
-  const categoriesRef = React.useRef<HTMLButtonElement>(null);
 
   const {
     localCategories,
@@ -166,14 +162,6 @@ export function TransactionFormDialog({
         title={isUpdate ? 'Edit transaction' : 'Add transaction'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: isUpdate ? 'Save' : 'Save transaction', type: 'submit', form: FORM_ID, loading: saving }}
-        onOpenAutoFocus={
-          focus === 'categories'
-            ? (e) => {
-                e.preventDefault();
-                categoriesRef.current?.focus();
-              }
-            : undefined
-        }
       >
         <DialogBody>
           <form
@@ -200,7 +188,6 @@ export function TransactionFormDialog({
               suggestingCategories={suggestingCategories}
               sourcedDescription={transaction?.sourcedDescription}
               reviewError={reviewError}
-              categoriesRef={categoriesRef}
               onChange={change}
               onAccountChange={pickAccount}
               onCategoriesChange={(ids) =>
