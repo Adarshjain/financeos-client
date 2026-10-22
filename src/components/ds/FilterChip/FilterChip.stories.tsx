@@ -25,6 +25,8 @@ const meta: Meta<typeof FilterChip> = {
       control: { type: 'select' },
       options: ['brand', 'warning', 'neutral'],
     },
+    size: { control: { type: 'select' }, options: ['sm', 'md'] },
+    shape: { control: { type: 'select' }, options: ['pill', 'rounded'] },
     hasDropdown: { control: { type: 'boolean' } },
     removable: { control: { type: 'boolean' } },
     count: { control: { type: 'number' } },
@@ -109,6 +111,18 @@ export const WithCount: Story = {
 export const Removable: Story = {
   args: {
     children: 'This year',
+    selected: true,
+    removable: true,
+  },
+};
+
+export const FieldSized: Story = {
+  name: 'Field sized',
+  args: {
+    children: 'Category',
+    size: 'md',
+    shape: 'rounded',
+    hasDropdown: true,
     selected: true,
     removable: true,
   },

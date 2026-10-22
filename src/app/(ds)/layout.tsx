@@ -27,7 +27,10 @@ const bricolageGrotesque = localFont({
 });
 
 export const metadata: Metadata = rootMetadata;
-export const viewport: Viewport = rootViewport;
+/* Dinero: the on-screen keyboard overlays the page without resizing the layout viewport, so a phone
+   sheet keeps its size and position and the keyboard simply covers its footer. Legacy keeps the
+   shared `resizes-content` (its bottom bars rise above the keyboard). */
+export const viewport: Viewport = { ...rootViewport, interactiveWidget: 'resizes-visual' };
 
 /** Root layout of the Dinero UI: loads only tokens.css, ds.css and Figtree/Bricolage. */
 export default function DesignSystemLayout({

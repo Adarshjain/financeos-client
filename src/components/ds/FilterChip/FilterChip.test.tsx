@@ -127,4 +127,32 @@ describe('FilterChip', () => {
     );
     expect(spanRef.current).toBeInstanceOf(HTMLSpanElement);
   });
+
+  it('defaults to the 28px pill', () => {
+    const { container } = render(<FilterChip>Category</FilterChip>);
+    expect(container.querySelector('button')).toHaveClass('h-space-28', 'rounded-ds-pill');
+  });
+
+  it('size md uses the control height and shape rounded the field corners on the plain chip', () => {
+    const { container } = render(<FilterChip size="md" shape="rounded">Category</FilterChip>);
+    const chip = container.querySelector('button');
+    expect(chip).toHaveClass('h-control-md', 'rounded-ds-md');
+    expect(chip).not.toHaveClass('h-space-28', 'rounded-ds-pill');
+  });
+
+  it('size and shape apply to the removable chip and its inner buttons', () => {
+    const { container } = render(<FilterChip size="md" shape="rounded" removable>Category</FilterChip>);
+    const wrap = container.querySelector('span') as HTMLElement;
+    expect(wrap).toHaveClass('h-control-md', 'rounded-ds-md');
+    const [main, remove] = Array.from(container.querySelectorAll('button'));
+    expect(main).toHaveClass('rounded-l-ds-md');
+    expect(remove).toHaveClass('rounded-r-ds-md');
+  });
+
+  it('removable chip keeps pill inner corners by default', () => {
+    const { container } = render(<FilterChip removable>Category</FilterChip>);
+    const [main, remove] = Array.from(container.querySelectorAll('button'));
+    expect(main).toHaveClass('rounded-l-ds-pill');
+    expect(remove).toHaveClass('rounded-r-ds-pill');
+  });
 });

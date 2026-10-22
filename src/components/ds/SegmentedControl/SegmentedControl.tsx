@@ -5,6 +5,8 @@ import React, { forwardRef, useRef } from 'react';
 import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
 
+export type SegmentedControlSize = 'md' | 'lg' | 'xl';
+
 export interface SegmentedControlOption<T extends string = string> {
   value: T;
   label: React.ReactNode;
@@ -19,6 +21,8 @@ export interface SegmentedControlProps<T extends string = string>
   defaultValue?: T;
   onValueChange?: (value: T) => void;
   fullWidth?: boolean;
+  /** Height, with TextField's size names: md and lg are control-md, xl is control-xl */
+  size?: SegmentedControlSize;
   disabled?: boolean;
 }
 
@@ -29,6 +33,7 @@ const Impl = (
     defaultValue,
     onValueChange,
     fullWidth = false,
+    size = 'md',
     disabled = false,
     className,
     'aria-label': ariaLabel,
@@ -126,8 +131,9 @@ const Impl = (
             onClick={() => handleSelect(opt.value, opt.disabled)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              'inline-flex items-center justify-center gap-space-6 h-control-md px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
+              'inline-flex items-center justify-center gap-space-6 px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
+              size === 'xl' ? 'h-control-xl' : 'h-control-md',
               fullWidth && 'flex-1',
               isSelected
                 ? 'bg-brand text-on-brand'

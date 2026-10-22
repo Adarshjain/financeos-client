@@ -27,6 +27,7 @@ export * from './Popover/Popover';
 export * from './ProgressBar/ProgressBar';
 export * from './Radio/Radio';
 export * from './Rail/Rail';
+export * from './Reveal/Reveal';
 export * from './Root/Root';
 export * from './SearchPalette/SearchPalette';
 export * from './SectionHeader/SectionHeader';
