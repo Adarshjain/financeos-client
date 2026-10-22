@@ -51,7 +51,7 @@ const columns = [
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body-strong" tone={row.original.credit ? 'positive' : 'ink'}>
+      <Text variant="body-strong" tone={row.original.credit ? 'positive' : 'ink'} fraction="small">
         {row.original.amount}
       </Text>
     ),

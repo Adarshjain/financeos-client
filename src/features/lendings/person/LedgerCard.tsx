@@ -82,7 +82,7 @@ export function LedgerCard({
         meta: { size: 'sm', align: 'end', phone: 'hidden' },
         cell: ({ row }) =>
           row.original.lent ? (
-            <Text variant="body-strong">{row.original.lent}</Text>
+            <Text variant="body-strong" fraction="small">{row.original.lent}</Text>
           ) : (
             <Text variant="body" tone="ink-3">
               —
@@ -95,7 +95,7 @@ export function LedgerCard({
         meta: { size: 'sm', align: 'end', phone: 'hidden' },
         cell: ({ row }) =>
           row.original.received ? (
-            <Text variant="body-strong" tone="positive">
+            <Text variant="body-strong" tone="positive" fraction="small">
               {row.original.received}
             </Text>
           ) : (
@@ -108,7 +108,7 @@ export function LedgerCard({
         id: 'balance',
         header: 'Balance',
         meta: { size: 'sm', align: 'end', phone: 'amount' },
-        cell: ({ row }) => <Text variant="body-strong">{row.original.balance}</Text>,
+        cell: ({ row }) => <Text variant="body-strong" fraction="small">{row.original.balance}</Text>,
       }),
       ch.display({
         id: 'edit',

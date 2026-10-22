@@ -241,7 +241,7 @@ const bankBaseColumns = [
     header: 'Balance',
     meta: { size: 'md', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body-strong">{row.original.balance}</Text>
+      <Text variant="body-strong" fraction="small">{row.original.balance}</Text>
     ),
   }),
   bankCh.display({
@@ -369,7 +369,7 @@ const cardColumns = [
     header: 'Outstanding',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body-strong">{row.original.outstanding}</Text>
+      <Text variant="body-strong" fraction="small">{row.original.outstanding}</Text>
     ),
   }),
   cardCh.display({
@@ -493,7 +493,7 @@ const brokerColumns = [
     id: 'value',
     header: 'Value',
     meta: { size: 'md', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <Text variant="body-strong">{row.original.value}</Text>,
+    cell: ({ row }) => <Text variant="body-strong" fraction="small">{row.original.value}</Text>,
   }),
   brokerCh.display({
     id: 'cash',
@@ -566,7 +566,7 @@ const walletColumns = [
     header: 'Balance',
     meta: { size: 'md', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body-strong">{row.original.balance}</Text>
+      <Text variant="body-strong" fraction="small">{row.original.balance}</Text>
     ),
   }),
 ];

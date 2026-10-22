@@ -45,7 +45,7 @@ const columns = [
     id: 'close',
     header: 'Close',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <Text variant="body">{formatCurrency(row.original.close)}</Text>,
+    cell: ({ row }) => <Text variant="body" fraction="small">{formatCurrency(row.original.close)}</Text>,
   }),
 ];
 

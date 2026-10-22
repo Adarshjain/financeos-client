@@ -53,7 +53,7 @@ const columns = [
     header: 'Balance',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body-strong" tone={row.original.balanceTone}>
+      <Text variant="body-strong" tone={row.original.balanceTone} fraction="small">
         {row.original.balance}
       </Text>
     ),

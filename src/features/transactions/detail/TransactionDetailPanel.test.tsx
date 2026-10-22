@@ -104,7 +104,7 @@ describe('TransactionDetailPanel', () => {
     );
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
     expect(screen.getByText('UPI/DR/427812345678/BIGBASKET BANGALORE')).toBeInTheDocument();
-    expect(screen.getByText('₹3,600.00')).toBeInTheDocument();
+    expect(screen.getByText('.00').parentElement).toHaveTextContent('₹3,600.00');
     expect(screen.getByText('₹2,95,030 after')).toBeInTheDocument();
     for (const [label, value] of [
       ['Account', 'HDFC Regalia Gold'],
@@ -150,7 +150,7 @@ describe('TransactionDetailPanel', () => {
 
   it('draws a credit as money in', () => {
     renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn({ amount: 18500 })] })} />);
-    expect(screen.getByText('+₹18,500.00')).toBeInTheDocument();
+    expect(screen.getByText('.00').parentElement).toHaveTextContent('+₹18,500.00');
   });
 
   it('is closed without a transaction', () => {

@@ -47,7 +47,7 @@ const dupColumns = [
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'status' },
-    cell: ({ row }) => <Text variant="body">{formatCurrency(row.original.amount)}</Text>,
+    cell: ({ row }) => <Text variant="body" fraction="small">{formatCurrency(row.original.amount)}</Text>,
   }),
 ];
 

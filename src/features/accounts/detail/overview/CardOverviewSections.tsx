@@ -112,7 +112,7 @@ export function BillsCard({ accountId, rows }: { accountId: string; rows: BillRo
             <>
               {row.badge ? <Badge tone={row.badge.tone}>{row.badge.label}</Badge> : null}
               {row.amount ? (
-                <Text variant="body-strong" tone={row.muted ? 'ink-3' : 'ink'}>
+                <Text variant="body-strong" tone={row.muted ? 'ink-3' : 'ink'} fraction="small">
                   {row.amount}
                 </Text>
               ) : null}
