@@ -10,6 +10,7 @@ import {
   cn,
   Highlight,
   Icon,
+  Reveal,
   StatusWord,
   useControllableState,
   useSelectableItem,
@@ -151,6 +152,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const isSelectable = Boolean(selectable);
 
     const showEye = selectionMode && Boolean(onDetail);
+    // A selectable row keeps its eye mounted so it slides in and out with selection mode instead of popping.
+    const hasEye = Boolean(onDetail) && (isSelectable || selectionMode);
 
     const { itemProps, nestedControlProps } = useSelectableItem({
       selectable,
@@ -409,7 +412,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           <div
             className={cn(
               'grid gap-x-space-10 min-w-0 w-full flex-1 desk:contents',
-              showEye || chevron
+              hasEye || chevron
                 ? 'grid-cols-fill-auto-auto'
                 : 'grid-cols-fill-auto',
             )}
@@ -489,10 +492,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             </div>
 
             {/* Phone Trailing eye icon in selection mode or chevron */}
-            {(showEye || chevron) && (
+            {(hasEye || chevron) && (
               <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 desk:hidden">
-                {showEye && (
-                  <span {...nestedControlProps}>
+                {hasEye && (
+                  <Reveal open={showEye} axis="x">
+                    <span {...nestedControlProps} className="min-w-0">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -502,7 +506,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     >
                       <Icon name="view" size="md" />
                     </Button>
-                  </span>
+                    </span>
+                  </Reveal>
                 )}
                 {chevron && (
                   <Icon

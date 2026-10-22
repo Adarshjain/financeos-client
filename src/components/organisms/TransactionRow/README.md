@@ -15,7 +15,7 @@ The phone transaction row: merchant and amount on top, a context line and catego
 - Green: credit amounts only (when `isCredit` is true).
 
 ## States
-Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity, not interactive), muted (60% opacity, still opens and selects: an excluded transaction), selection mode (trailing eye icon opens the detail).
+Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity, not interactive), muted (60% opacity, still opens and selects: an excluded transaction), selection mode (trailing eye icon opens the detail; on phone it slides in and out with Reveal axis x).
 
 ## Props
 - `leading?: ReactNode`: Leading avatar or tile
@@ -66,4 +66,4 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 - Selection interaction is handled by `useSelectableItem`.
 
 ## Built from
-Badge, Highlight (search matches), StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection). Hooks: `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.
+Badge, Highlight (search matches), StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection), Reveal (eye slide). Hooks: `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.

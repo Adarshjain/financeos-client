@@ -9,14 +9,16 @@ export interface BankLogoProps {
   bankId: string | null;
   /** The account or bank name; its first letter fills the tile when there is no known logo. With no `bankId` the tile also carries an amber warning mark. */
   name: string;
+  /** Shows the amber warning mark. Defaults to `true` when there is no `bankId`; pass `false` for accounts that have no bank, such as wallets and brokers. */
+  warning?: boolean;
 }
 
 /** One bank's logo, cut from the shared sprite at public/banks/sprite.png, in the small square Avatar frame. */
-export function BankLogo({ bankId, name }: BankLogoProps) {
+export function BankLogo({ bankId, name, warning = !bankId }: BankLogoProps) {
   const bank = bankId ? bankById(bankId) : undefined;
   if (!bank) {
     const tile = <Avatar variant="square" size="sm" initials={(name.trim().slice(0, 1) || '?').toUpperCase()} />;
-    if (bankId) return tile;
+    if (!warning) return tile;
     // No bank set on the account: an amber mark at the top right, placed like a count badge.
     return (
       <span className="relative inline-flex shrink-0">

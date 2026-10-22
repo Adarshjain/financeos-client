@@ -183,6 +183,19 @@ describe('Add account', () => {
     expect(toast).toHaveBeenCalledWith('Account created successfully!');
   });
 
+  it('with onCreated, closes and hands over the new account without opening its page', async () => {
+    const created = { id: 'n9', type: AccountType.GENERIC, name: 'Cash wallet' };
+    mutations.createAccountMutation.mutateAsync.mockResolvedValue({ account: created, failedIdentifiers: [] });
+    const onCreated = vi.fn();
+    const onClose = vi.fn();
+    renderDialog({ initialType: AccountType.GENERIC, onCreated, onClose });
+    fill('Account name', 'Cash wallet');
+    submit('Create account');
+    await waitFor(() => expect(onCreated).toHaveBeenCalledWith(created));
+    expect(onClose).toHaveBeenCalled();
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
   it('tells which identifiers failed after creating', async () => {
     mutations.createAccountMutation.mutateAsync.mockResolvedValue({
       account: { id: 'n2', type: AccountType.GENERIC, name: 'Paytm' },

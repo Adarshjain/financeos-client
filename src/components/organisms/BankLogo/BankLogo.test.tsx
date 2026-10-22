@@ -43,4 +43,15 @@ describe('BankLogo', () => {
     render(<BankLogo bankId="hdfc" name="Salary" />);
     expect(screen.queryByTestId('bank-missing')).toBeNull();
   });
+
+  it('hides the warning mark when warning is false, even with no bank id', () => {
+    render(<BankLogo bankId={null} name="Cash" warning={false} />);
+    expect(screen.getByText('C')).toBeInTheDocument();
+    expect(screen.queryByTestId('bank-missing')).toBeNull();
+  });
+
+  it('shows the warning mark when warning is true, even with an unknown id', () => {
+    render(<BankLogo bankId="nope" name="Nova" warning />);
+    expect(screen.getByTestId('bank-missing')).toBeInTheDocument();
+  });
 });

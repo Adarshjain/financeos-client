@@ -62,10 +62,12 @@ export interface AccountFormDialogProps {
   initialType?: AccountType | null;
   /** The dialog was cancelled or the account was saved, closed or reopened. */
   onClose: () => void;
+  /** Add mode: called with the new account instead of opening its page; the dialog closes and the page stays put. */
+  onCreated?: (account: Account) => void;
 }
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
-export function AccountFormDialog({ account, initialType = null, onClose }: AccountFormDialogProps) {
+export function AccountFormDialog({ account, initialType = null, onClose, onCreated }: AccountFormDialogProps) {
   const router = useRouter();
   const isEdit = Boolean(account);
   const today = todayInAppZone();
@@ -199,7 +201,12 @@ export function AccountFormDialog({ account, initialType = null, onClose }: Acco
         if (failedIdentifiers.length > 0) {
           showToast(identifiersFailedMessage(failedIdentifiers, true), { tone: 'danger' });
         }
-        router.push(`${ACCOUNTS_HREF}/${created.id}`);
+        if (onCreated) {
+          onCreated(created);
+          onClose();
+        } else {
+          router.push(`${ACCOUNTS_HREF}/${created.id}`);
+        }
       }
     } catch (e) {
       setFailure(getErrorMessage(e, isEdit ? 'Failed to update account' : 'Failed to create account'));

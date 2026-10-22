@@ -9,8 +9,9 @@ import { AccountDialogs, useAccountDialogs } from './AccountDialogs';
 import { OpenDialogButton } from './OpenDialogButton';
 
 vi.mock('./AccountFormDialog', () => ({
-  AccountFormDialog: (props: { account?: Account; initialType?: string | null; onClose: () => void }) => (
+  AccountFormDialog: (props: { account?: Account; initialType?: string | null; onClose: () => void; onCreated?: unknown }) => (
     <div>
+      <p>{props.onCreated ? 'no navigate' : 'navigates'}</p>
       <p>dialog {props.account ? `edit ${props.account.name}` : `add ${props.initialType ?? 'none'}`}</p>
       <button onClick={props.onClose}>close</button>
     </div>
@@ -19,6 +20,8 @@ vi.mock('./AccountFormDialog', () => ({
 
 const account: Account = { id: 'c1', type: AccountType.CREDIT_CARD, name: 'HDFC Regalia', last4: '7741', creditLimit: 1 };
 
+const onCreated = vi.fn();
+
 function Triggers() {
   const { open, openEdit } = useAccountDialogs();
   return (
@@ -26,6 +29,7 @@ function Triggers() {
       <button onClick={() => open()}>add default</button>
       <button onClick={() => open('credit_card')}>add card</button>
       <button onClick={() => open('nonsense')}>add unknown</button>
+      <button onClick={() => open(undefined, { onCreated })}>add quiet</button>
       <button onClick={openEdit}>edit</button>
     </>
   );
@@ -39,6 +43,15 @@ describe('AccountDialogs', () => {
   it('renders no dialog until opened', () => {
     render(<AccountDialogs><Triggers /></AccountDialogs>);
     expect(screen.queryByText(/dialog/)).toBeNull();
+  });
+
+  it('passes onCreated through only when asked, so other callers keep navigating', () => {
+    render(<AccountDialogs><Triggers /></AccountDialogs>);
+    click('add default');
+    expect(screen.getByText('navigates')).toBeInTheDocument();
+    click('close');
+    click('add quiet');
+    expect(screen.getByText('no navigate')).toBeInTheDocument();
   });
 
   it('opens Add with Bank picked by default and for an unknown type', () => {

@@ -194,6 +194,18 @@ describe('TransactionRow', () => {
     expect(handleView).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the eye mounted but hidden outside selection mode, and reveals it in selection mode', () => {
+    const props = { description: 'Uber India', amount: '640.00', selectable: true, onDetail: vi.fn() };
+    const { rerender } = render(<TransactionRow {...props} />);
+    expect(screen.queryByRole('button', { name: /view transaction details/i })).toBeNull();
+    const hidden = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
+    expect(hidden.closest('[inert]')).not.toBeNull();
+    rerender(<TransactionRow {...props} selectionMode />);
+    const shown = screen.getByRole('button', { name: /view transaction details/i });
+    expect(shown.closest('[inert]')).toBeNull();
+    expect(shown.closest('[aria-hidden="true"]')).toBeNull();
+  });
+
   it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
     const handleView = vi.fn();
     render(
