@@ -5,9 +5,11 @@ import {
   DEFAULT_PERIOD,
   PERIOD_PRESETS,
   type PeriodPresetId,
+  REASON_PARAMS,
   REVIEW_PARAMS,
   type SortId,
   type TransactionsQuery,
+  type TypeFilter,
 } from './transactionsUrl';
 
 export type PeriodMode = 'preset' | 'date' | 'range';
@@ -29,6 +31,13 @@ export interface FiltersDraft {
   source: string;
   excluded: boolean;
   sort: SortId;
+  accounts: string[];
+  categories: string[];
+  type: TypeFilter;
+  /** `ANY` or a reason param ("unreconciled"). */
+  reason: string;
+  monitoring: boolean;
+  upToStatement: boolean;
 }
 
 export function draftFromQuery(query: TransactionsQuery): FiltersDraft {
@@ -46,6 +55,12 @@ export function draftFromQuery(query: TransactionsQuery): FiltersDraft {
     source: query.source ?? ANY,
     excluded: query.excluded,
     sort: query.sort,
+    accounts: query.accounts,
+    categories: query.categories,
+    type: query.type,
+    reason: query.reason ? (Object.keys(REASON_PARAMS).find((k) => REASON_PARAMS[k] === query.reason) ?? ANY) : ANY,
+    monitoring: query.monitoring,
+    upToStatement: query.upToStatement,
   };
 }
 
@@ -87,6 +102,12 @@ export function queryFromDraft(base: TransactionsQuery, draft: FiltersDraft): Tr
     source: draft.source === ANY ? null : (draft.source as TransactionsQuery['source']),
     excluded: draft.excluded,
     sort: draft.sort,
+    accounts: draft.accounts,
+    categories: draft.categories,
+    type: draft.type,
+    reason: draft.reason === ANY ? null : (REASON_PARAMS[draft.reason] ?? null),
+    monitoring: draft.monitoring,
+    upToStatement: draft.upToStatement,
     page: 0,
   };
 }

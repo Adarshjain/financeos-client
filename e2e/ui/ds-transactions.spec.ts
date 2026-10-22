@@ -78,10 +78,46 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     };
 
+    test('Filters dialog: nothing reaches the URL until Show, and Cancel drops the draft', async ({ page }) => {
+      await seedList();
+      await open(page);
+      await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
+      const dialog = page.getByRole('dialog', { name: 'Filters' });
+      await expect(dialog).toBeVisible();
+
+      await dialog.getByRole('textbox', { name: 'From' }).fill('1000');
+      // On phone the footer steps aside while a field has focus (on-screen keyboard); a tap elsewhere brings it back.
+      if (phone) await dialog.getByText('Every filter combines with the others').click();
+      await expect(dialog.getByRole('button', { name: phone ? /^Show \d+$/ : /^Show \d+ transactions?$/ })).toBeVisible();
+      expect(page.url()).not.toContain('amount');
+
+      await dialog.getByRole('button', { name: /^Show/ }).click();
+      await page.waitForURL(/amount=gt/);
+      expect(new URL(page.url()).searchParams.get('amountFrom')).toBe('1000');
+      await expect(dialog).not.toBeVisible();
+      // The amount chip is desktop-only; phone shows the count on "All filters" instead.
+      if (!phone) await expect(page.getByRole('button', { name: /Over ₹1,000/ })).toBeVisible();
+      // The amount is signed, as in the Legacy list: over 1,000 is money in, debits are negative.
+      await expect(row(page, 'Salary Credit')).toHaveCount(1);
+      await expect(row(page, 'Rent Advance')).toHaveCount(0);
+      await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
+
+      // Cancel: a changed draft never reaches the URL.
+      const applied = page.url();
+      await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('textbox', { name: 'From' }).fill('5');
+      // On phone the footer steps aside while a field has focus (on-screen keyboard); a tap elsewhere brings it back.
+      if (phone) await dialog.getByText('Every filter combines with the others').click();
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(dialog).not.toBeVisible();
+      expect(page.url()).toBe(applied);
+    });
+
     if (!phone) {
       test('list: seeded rows render under a month band, newest first', async ({ page }) => {
         await seedList();
-        await open(page);
+        await open(page, '?period=last_14_days');
         await expect(page.getByText(monthYear(todayString(-1))).first()).toBeVisible();
         for (const name of ['Swiggy Dinner', 'Uber Ride', 'Rent Advance', 'Salary Credit']) {
           await expect(row(page, name)).toHaveCount(1);
@@ -131,37 +167,20 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Rent Advance')).toHaveCount(1);
       });
 
-      test('Filters dialog: nothing reaches the URL until Show', async ({ page }) => {
-        await seedList();
-        await open(page);
-        await page.getByRole('button', { name: '+ More' }).click();
-        const dialog = page.getByRole('dialog', { name: 'Filters' });
-        await expect(dialog).toBeVisible();
-
-        await dialog.getByRole('textbox', { name: 'From' }).fill('1000');
-        await expect(dialog.getByRole('button', { name: /^Show \d+ transactions?$/ })).toBeVisible();
-        expect(page.url()).not.toContain('amount');
-
-        await dialog.getByRole('button', { name: /^Show/ }).click();
-        await page.waitForURL(/amount=gt/);
-        expect(new URL(page.url()).searchParams.get('amountFrom')).toBe('1000');
-        await expect(dialog).not.toBeVisible();
-        await expect(page.getByRole('button', { name: /Over ₹1,000/ })).toBeVisible();
-        // The amount is signed, as in the Legacy list: over 1,000 is money in, debits are negative.
-        await expect(row(page, 'Salary Credit')).toHaveCount(1);
-        await expect(row(page, 'Rent Advance')).toHaveCount(0);
-        await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
-      });
-
-      test('the period defaults to Last 14 days; removing the chip shows all time', async ({ page }) => {
+      test('the period defaults to all time; ?period=last_14_days shows a chip that removing clears', async ({ page }) => {
         await seedList();
         await open(page);
         expect(new URL(page.url()).searchParams.has('period')).toBe(false);
+        await expect(page.getByRole('button', { name: 'Period' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Remove filter' })).toHaveCount(0);
+        await expect(row(page, 'Old Furniture')).toHaveCount(1);
+
+        await open(page, '?period=last_14_days');
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toBeVisible();
         await expect(row(page, 'Old Furniture')).toHaveCount(0);
 
         await page.getByRole('button', { name: 'Remove filter' }).click();
-        await page.waitForURL(/period=all_time/);
+        await page.waitForURL((u) => !u.search.includes('period='));
         await expect(row(page, 'Old Furniture')).toHaveCount(1);
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toHaveCount(0);
       });
@@ -174,7 +193,8 @@ for (const viewport of VIEWPORTS) {
             createTransaction(api, bank.id, { amount: -(i + 1) * 10, date: todayString(-(i % 10)), description: `Pager Txn ${i + 1}` }),
           ),
         );
-        await open(page, '?size=25');
+        await open(page);
+        expect(new URL(page.url()).searchParams.has('size')).toBe(false);
         await expect(row(page, 'Pager Txn')).toHaveCount(25);
 
         await page.getByRole('button', { name: 'Page 2' }).first().click();
@@ -213,7 +233,7 @@ for (const viewport of VIEWPORTS) {
         await dialog.getByRole('textbox', { name: 'Amount', exact: true }).fill('777.5');
         await dialog.getByRole('textbox', { name: 'Description' }).fill('Coffee Beans Added');
         await dialog.getByRole('combobox', { name: /^Account/ }).click();
-        await page.getByRole('option', { name: 'Main Bank' }).click();
+        await page.getByRole('option', { name: /Main Bank/ }).click();
         await dialog.getByRole('button', { name: 'Save transaction' }).click();
 
         await expect(dialog).not.toBeVisible();
@@ -359,13 +379,19 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('2 selected')).toHaveCount(0);
       });
 
-      test('detail Review on a one-reason row approves it, and the toast Undo restores it', async ({ page }) => {
+      test('detail Review on a one-reason row opens the approve dialog; approving clears it with an Approved toast', async ({ page }) => {
         await seedList();
         await open(page);
         await row(page, 'Uber Ride').getByText('Uber Ride').click();
         const panel = page.getByRole('dialog', { name: 'Uber Ride' });
         await panel.getByRole('button', { name: 'Review', exact: true }).click();
 
+        const approve = page.getByRole('dialog', { name: /^Approve 1 transaction/ });
+        await expect(approve).toBeVisible();
+        await approve.getByRole('button', { name: 'Approve 1', exact: true }).click();
+        await expect(approve).not.toBeVisible();
+
+        // A clean run through the dialog ends in the "Approved" toast, which offers Undo.
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
         await expect(needsReviewChip(page, 1)).toBeVisible();
 
@@ -390,7 +416,7 @@ for (const viewport of VIEWPORTS) {
 
       test('rows sit under day group headers', async ({ page }) => {
         await seedList();
-        await open(page);
+        await open(page, '?period=last_14_days');
         for (const offset of [-1, -2, -3, -4]) {
           await expect(page.getByText(dayMonth(todayString(offset)), { exact: true }).first()).toBeVisible();
         }
@@ -419,14 +445,72 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('dialog')).toHaveCount(0);
       });
 
-      test('swipe right on a one-reason row approves it with a toast', async ({ page }) => {
+      test('All filters opens the Filters dialog with Cancel, Clear all and Show in the footer', async ({ page }) => {
         await seedList();
         await open(page);
-        await expect(needsReviewChip(page, 2)).toBeVisible();
+        // Phone shows only Period, Account and All filters.
+        await expect(page.getByRole('button', { name: 'Period' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Account' })).toBeVisible();
+        await expect(page.getByRole('button', { name: /^Type/ })).not.toBeVisible();
+        await expect(page.getByRole('button', { name: /^Needs review/ })).not.toBeVisible();
+
+        await page.getByRole('button', { name: /^All filters/ }).click();
+        const dialog = page.getByRole('dialog', { name: 'Filters' });
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
+        await expect(dialog.getByRole('button', { name: 'Clear all', exact: true })).toBeVisible();
+        await expect(dialog.getByRole('button', { name: /^Show \d+$/ })).toBeVisible();
+      });
+
+      test('focusing the search expands it inside the chip row', async ({ page }) => {
+        await seedList();
+        await open(page);
+        const search = page.getByPlaceholder(SEARCH);
+        const before = await search.boundingBox();
+        await search.focus();
+        await expect.poll(async () => (await search.boundingBox())?.width ?? 0).toBeGreaterThan((before?.width ?? 0) + 20);
+      });
+
+      test('long-press selection hides the tab bar behind the selection bar', async ({ page }) => {
+        await seedList();
+        await open(page);
+        const tabBar = page.locator('nav.desk\\:hidden');
+        await expect(tabBar).toBeVisible();
+
+        const box = await row(page, 'Rent Advance').boundingBox();
+        if (!box) throw new Error('row is not visible');
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await expect(page.getByText('1 selected')).toBeVisible();
+        await page.mouse.up();
+
+        await expect(page.getByRole('button', { name: 'Delete', exact: true })).toBeVisible();
+        await expect(tabBar).not.toBeVisible();
+      });
+
+      test('Quick add Transaction in the More sheet opens the Add transaction dialog without leaving the page', async ({ page }) => {
+        await seedList();
+        await open(page);
+        const before = page.url();
+        await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
+        await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Transaction' }).click();
+
+        await expect(page.getByRole('dialog', { name: 'Add transaction' })).toBeVisible();
+        await expect(page.getByRole('dialog', { name: 'More' })).not.toBeVisible();
+        expect(page.url()).toBe(before);
+      });
+
+      test('swipe right on a one-reason row approves it with a toast', async ({ page }) => {
+        await seedList();
+        // The Needs review chip is desktop-only; the review filter in the URL narrows the phone list to the two flagged rows.
+        await open(page, '?review=needs_review');
+        await expect(row(page, 'Uber Ride')).toHaveCount(1);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
 
         await swipe(page, row(page, 'Uber Ride'), 160);
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
-        await expect(needsReviewChip(page, 1)).toBeVisible();
+        await expect(row(page, 'Uber Ride')).toHaveCount(0);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
 
       test('swipe left asks first, then deletes the row', async ({ page }) => {

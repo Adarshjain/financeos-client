@@ -9,6 +9,7 @@ import {
   SegmentedControl,
   Select,
   type SelectOption,
+  TextArea,
   TextField,
 } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
@@ -54,8 +55,9 @@ const CHANNEL_OPTIONS: SelectOption[] = [
   ...(Object.keys(CHANNEL_LABELS) as TransactionChannel[]).map((c) => ({ value: c, label: CHANNEL_LABELS[c] })),
 ];
 
-function Pair({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">{children}</div>;
+/** Two fields side by side on every width; `stack` lets them stack on phone instead. */
+function Pair({ children, stack = false }: { children: React.ReactNode; stack?: boolean }) {
+  return <div className={stack ? 'grid grid-cols-1 desk:grid-cols-2 gap-space-12' : 'grid grid-cols-2 gap-space-12'}>{children}</div>;
 }
 
 export interface TransactionFormFieldsProps {
@@ -80,7 +82,7 @@ export interface TransactionFormFieldsProps {
   onAccountChange: (accountId: string) => void;
   onCategoriesChange: (ids: string[]) => void;
   onCreateCategory: (name: string) => void;
-  onDescriptionBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onDescriptionBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   onAddAccount: () => void;
 }
 
@@ -116,7 +118,7 @@ export function TransactionFormFields({
 
   return (
     <>
-      <div className="flex flex-col gap-space-8">
+      <div className="flex items-start gap-space-8">
         <SegmentedControl
           aria-label="Debit or credit"
           options={DIRECTIONS}
@@ -125,6 +127,8 @@ export function TransactionFormFields({
         />
         <TextField
           aria-label="Amount"
+          className="min-w-0 flex-1"
+          tone={values.direction === 'credit' ? 'success' : 'neutral'}
           size="xl"
           align="right"
           prefix="₹"
@@ -143,6 +147,7 @@ export function TransactionFormFields({
           value={values.date}
           onValueChange={(v) => onChange({ date: typeof v === 'string' ? v : '' })}
           error={errors.date}
+          className={noAccountYet ? 'col-span-2' : undefined}
         />
         {noAccountYet ? null : (
           <Select
@@ -175,7 +180,7 @@ export function TransactionFormFields({
         />
       ) : null}
 
-      <TextField
+      <TextArea
         label="Description"
         placeholder="What was it?"
         value={values.description}

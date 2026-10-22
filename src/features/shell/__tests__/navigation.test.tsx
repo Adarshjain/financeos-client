@@ -172,7 +172,8 @@ describe('shell navigation', () => {
       'Trade',
       'Import',
     ]);
-    expect(shellQuickAddItems.find((i) => i.id === 'transaction')?.disabled).toBe(true);
+    expect(shellQuickAddItems.find((i) => i.id === 'transaction')?.disabled).toBeUndefined();
+    expect(shellQuickAddItems.find((i) => i.id === 'transaction')?.dialog).toBe('transaction');
     expect(shellQuickAddItems.find((i) => i.id === 'lending')?.disabled).toBeUndefined();
     expect(shellQuickAddItems.find((i) => i.id === 'lending')?.dialog).toBe('lending');
     expect(shellQuickAddItems.find((i) => i.id === 'trade')?.disabled).toBe(true);
@@ -199,7 +200,7 @@ describe('shell navigation', () => {
     expect(dialog).toBeInTheDocument();
 
     // Verify Quick add items
-    expect(screen.getByRole('button', { name: /Transaction/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Transaction/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Lending/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Trade/i })).toBeDisabled();
     expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/transactions/import');

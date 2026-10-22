@@ -2,7 +2,9 @@ import React from 'react';
 
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
+import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
+import { todayInAppZone } from '@/lib/date-range';
 
 export default async function DsAppLayout({
   children,
@@ -13,6 +15,7 @@ export default async function DsAppLayout({
 
   return (
     <AddLendingProvider>
+      <AddTransactionProvider today={todayInAppZone()}>
       <div className="flex min-h-dvh">
         {/* Desktop Rail (hidden below desk) */}
         <div className="hidden desk:flex shrink-0 h-dvh sticky top-0">
@@ -35,6 +38,7 @@ export default async function DsAppLayout({
           }}
         />
       </div>
+      </AddTransactionProvider>
     </AddLendingProvider>
   );
 }

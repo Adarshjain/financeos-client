@@ -51,11 +51,44 @@ describe('useApproveTransactions', () => {
     expect(post()).toEqual([
       { body: { transactionIds: ['a', 'b'], reviewType: 'MANUALLY_REVIEWED', reviewReasons: ['DUPLICATE_SUSPECT', 'UNRECONCILED'] } },
     ]);
-    expect(showToast).toHaveBeenCalledWith('Approved 2 transactions', { tone: 'success' });
+    expect(showToast).toHaveBeenCalledWith('Approved 2 transactions', expect.objectContaining({ tone: 'success' }));
     expect(result.current.summary).toBeNull();
     const k = invalidate.mock.calls.map((c) => c[0]?.queryKey);
     expect(k).toEqual(expect.arrayContaining([keys.transactions.all, keys.transactions.needsReviewCount()]));
     expect(router.refresh).toHaveBeenCalled();
+  });
+
+  describe('Undo', () => {
+    const dialogApprove = async (verifiedRules?: unknown) => {
+      vi.mocked(api.POST).mockImplementation((async (path: string) =>
+        path === '/api/v1/rules/{id}/unverify'
+          ? { data: { restoredTransactionIds: [] } }
+          : { data: { succeededIds: ['a', 'b'], skippedIds: [], failures: [], verifiedRules } }) as never);
+      const hook = setup(() => useApproveTransactions());
+      await act(async () => {
+        await hook.result.current.approve(txns, ['DUPLICATE_SUSPECT', 'UNRECONCILED']);
+      });
+      return hook;
+    };
+
+    it('offers Undo that puts each row its own cleared reasons back', async () => {
+      await dialogApprove();
+      const options = showToast.mock.calls[0][1];
+      expect(options.action.label).toBe('Undo');
+      await act(async () => options.action.onSelect());
+      expect(post().slice(1)).toEqual([
+        { body: { transactionIds: ['a'], reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] } },
+        { body: { transactionIds: ['b'], reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED'] } },
+      ]);
+    });
+
+    it('also unverifies the verified rules and refreshes rules', async () => {
+      const { invalidate } = await dialogApprove([{ ruleId: 'r1', clearedTransactionIds: ['x'] }]);
+      await act(async () => showToast.mock.calls[0][1].action.onSelect());
+      const unverify = vi.mocked(api.POST).mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify');
+      expect(unverify.map((c) => c[1])).toEqual([{ params: { path: { id: 'r1' } }, body: { transactionIds: ['x'] } }]);
+      expect(invalidate.mock.calls.map((c) => c[0]?.queryKey)).toContainEqual(keys.rules.all);
+    });
   });
 
   it('opens the summary instead of a toast when a row was skipped or failed', async () => {

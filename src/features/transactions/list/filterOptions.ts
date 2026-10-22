@@ -141,3 +141,20 @@ export function activeFilterWords(query: TransactionsQuery): string {
   if (query.source) words.push(sourceLabel(query.source).toLowerCase());
   return words.join(' · ');
 }
+
+/** How many filters narrow the list, for the count on "All filters" (search is not a filter). */
+export function activeFilterCount(query: TransactionsQuery): number {
+  return [
+    !(query.period.kind === 'preset' && query.period.id === 'all_time'),
+    query.accounts.length > 0,
+    query.categories.length > 0,
+    query.type !== 'all',
+    query.amount !== null,
+    query.review !== null,
+    query.reason !== null,
+    query.monitoring,
+    query.upToStatement,
+    query.excluded,
+    query.source !== null,
+  ].filter(Boolean).length;
+}

@@ -8,6 +8,7 @@ import type { Transaction } from '@/lib/transaction.types';
 
 import { approvedMessage, type ClearableReason, mapBatchFailures, mapBatchSkips } from './reviewHelpers';
 import { useBatchReview } from './useBatchReview';
+import { useUndoApprove } from './useUndoApprove';
 
 export type ReviewTxn = Pick<Transaction, 'id' | 'reviewReasons' | 'description' | 'sourcedDescription'>;
 
@@ -25,6 +26,7 @@ export interface ReviewSummary {
  */
 export function useApproveTransactions() {
   const batch = useBatchReview();
+  const undo = useUndoApprove();
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
   const approve = async (transactions: ReviewTxn[], reasons: ClearableReason[]): Promise<boolean> => {
@@ -45,7 +47,20 @@ export function useApproveTransactions() {
           skips,
         });
       } else {
-        showToast(approvedMessage(data.succeededIds.length), { tone: 'success' });
+        // Each row gets back the ticked reasons it carried, as quick approve does.
+        const restores = new Map<string, { ids: string[]; reasons: ClearableReason[] }>();
+        for (const t of transactions.filter((x) => data.succeededIds.includes(x.id))) {
+          const cleared = (t.reviewReasons ?? []).filter((r) => reasons.includes(r));
+          if (cleared.length === 0) continue;
+          const key = [...cleared].sort().join(',');
+          const group = restores.get(key) ?? { ids: [], reasons: cleared };
+          group.ids.push(t.id);
+          restores.set(key, group);
+        }
+        showToast(approvedMessage(data.succeededIds.length), {
+          tone: 'success',
+          action: { label: 'Undo', onSelect: () => void undo([...restores.values()], data.verifiedRules ?? []) },
+        });
       }
       return true;
     } catch (e) {

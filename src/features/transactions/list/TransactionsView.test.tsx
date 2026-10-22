@@ -60,6 +60,7 @@ function setup(over: Partial<TransactionsViewProps> = {}) {
   return { props, ...renderWithQuery(<TransactionsView {...props} />) };
 }
 
+const LAST_14_DAYS = { kind: 'preset', id: 'last_14_days' } as const;
 const lastUrl = () => String(router.push.mock.calls.at(-1)?.[0]);
 
 beforeEach(() => {
@@ -76,7 +77,7 @@ describe('TransactionsView', () => {
     expect(screen.getByRole('tab', { name: 'All' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
     expect(screen.getByPlaceholderText('Search merchant, amount…')).toBeInTheDocument();
-    expect(screen.getByText('Last 14 days')).toBeInTheDocument();
+    expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
     expect(screen.getByText('Needs review · 25')).toBeInTheDocument();
     expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Set category').length).toBeGreaterThan(0);
@@ -98,10 +99,10 @@ describe('TransactionsView', () => {
     expect(lastUrl()).toBe('/ds/transactions');
   });
 
-  it('removing the period chip means all time, explicitly', () => {
-    setup();
+  it('removing the period chip means all time, which leaves the address bare', () => {
+    setup({ query: { ...DEFAULT_QUERY, period: LAST_14_DAYS } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Remove filter' })[0]);
-    expect(lastUrl()).toBe('/ds/transactions?period=all_time');
+    expect(lastUrl()).toBe('/ds/transactions');
   });
 
   it('offers no remove on the All time chip or an unset Amount chip', () => {
@@ -151,10 +152,55 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
-    expect(await screen.findByRole('button', { name: 'Show 7 transactions' })).toBeInTheDocument();
+    const show = await screen.findByRole('button', { name: 'Show 7 transactions' });
+    expect(show).toBeInTheDocument();
+    // On a phone only the noun is hidden (CSS), so the label reads "Show 7".
+    expect(show.querySelector('.max-desk\\:hidden')?.textContent).toBe('transactions');
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
     expect(lastUrl()).toBe('/ds/transactions?excluded=1');
+  });
+
+  it('Cancel drops the draft and closes the dialog without touching the address', async () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: '+ More' }));
+    fireEvent.click(screen.getByLabelText('Excluded transactions only'));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByText('Every filter combines with the others')).not.toBeInTheDocument();
+    expect(router.push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '+ More' }));
+    expect(screen.getByLabelText('Excluded transactions only')).not.toBeChecked();
+  });
+
+  it('holds Account, Monitoring and Up to statement in the dialog and applies them on Show', async () => {
+    setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'] } });
+    fireEvent.click(screen.getByRole('button', { name: '+ More' }));
+    expect(screen.getByText('Account and category')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Monitoring', { selector: '[role="switch"]' }));
+    fireEvent.click(screen.getByRole('button', { name: /Show/ }));
+    expect(lastUrl()).toBe('/ds/transactions?account=a1&monitoring=1');
+  });
+
+  it('puts a count of the active filters on All filters, which opens the dialog', () => {
+    setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'], monitoring: true } });
+    const chip = screen.getByRole('button', { name: /All filters/ });
+    expect(chip).toHaveTextContent('2');
+    fireEvent.click(chip);
+    expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
+  });
+
+  it('opens the search to the full row on focus and keeps it open while it holds text', () => {
+    setup();
+    const input = screen.getByPlaceholderText('Search merchant, amount…');
+    const frame = () => input.closest('[class*="desk:w-container-xs"]') as HTMLElement;
+    expect(frame().className).toContain('max-desk:w-space-96');
+    fireEvent.focus(input);
+    expect(frame().className).toContain('max-desk:w-full');
+    fireEvent.blur(input);
+    expect(frame().className).toContain('max-desk:w-space-96');
+    fireEvent.change(input, { target: { value: 'zz' } });
+    fireEvent.blur(input);
+    expect(frame().className).toContain('max-desk:w-full');
   });
 
   it('Clear all in the dialog drops every filter to all time', async () => {
@@ -162,7 +208,7 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     fireEvent.click(await screen.findByRole('button', { name: /Show/ }));
-    expect(lastUrl()).toBe('/ds/transactions?period=all_time');
+    expect(lastUrl()).toBe('/ds/transactions');
   });
 
   it('shows active dialog-only filters as removable chips', () => {
@@ -224,11 +270,11 @@ describe('TransactionsView', () => {
   });
 
   it('shows No transactions match with the active filters and clears them', () => {
-    setup({ query: { ...DEFAULT_QUERY, source: 'manual' }, list: { ok: true, rows: [], totalElements: 0, totalPages: 0 } });
+    setup({ query: { ...DEFAULT_QUERY, period: LAST_14_DAYS, source: 'manual' }, list: { ok: true, rows: [], totalElements: 0, totalPages: 0 } });
     expect(screen.getByText('No transactions match')).toBeInTheDocument();
     expect(screen.getByText('Last 14 days · manual')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear all filters' }));
-    expect(lastUrl()).toBe('/ds/transactions?period=all_time');
+    expect(lastUrl()).toBe('/ds/transactions');
   });
 
   it('shows No transactions yet with Add account and Import when nothing is filtered', () => {

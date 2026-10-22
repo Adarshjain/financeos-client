@@ -46,7 +46,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
       <Card selected={kept} asChild>
         <button type="button" className="flex min-w-0 flex-col gap-space-4 p-space-12 text-left" onClick={() => setKeepId(t.id)}>
           <span className="flex items-center justify-between gap-space-8">
-            <Text as="span" variant="body-strong" className="min-w-0 truncate">
+            <Text as="span" variant="body-strong" className="min-w-0 break-words">
               {t.description || t.sourcedDescription || '—'}
             </Text>
             <Badge tone={kept ? 'success' : 'danger'}>{kept ? 'Keep' : 'Delete · merge in'}</Badge>

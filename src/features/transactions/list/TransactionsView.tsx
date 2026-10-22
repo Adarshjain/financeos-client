@@ -104,6 +104,9 @@ export function TransactionsView({
       router.push(transactionsUrl({ ...query, ...(resetPage ? { page: 0 } : {}), ...patch }), { scroll: false });
     });
   const { text, setText } = useSearchText(query.q, (q) => go({ q }));
+  // Phone: the search is narrow so the chips share its row; it opens to the full row while focused or holding text.
+  const [searchFocused, setSearchFocused] = React.useState(false);
+  const searchOpen = searchFocused || text !== '';
 
   const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
     value: t.value,
@@ -118,27 +121,29 @@ export function TransactionsView({
         <div className="flex">
         <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
           {selectionHeader ?? <Tabs items={tabs} value="all" />}
-          <div className="flex flex-col gap-space-12 desk:flex-row desk:items-center">
-            <TextField
-              type="search"
-              size="md"
-              className="desk:w-container-xs desk:shrink-0"
-              prefix={<Icon name="search" size="sm" />}
-              clearable
-              clearLabel="Clear search"
-              placeholder="Search merchant, amount…"
-              value={text}
-              onValueChange={setText}
-            />
-            <FilterChips
-              query={query}
-              accounts={accounts}
-              categories={categories}
-              needsReviewCount={needsReviewCount}
-              onChange={go}
-              onOpenFilters={() => setFiltersOpen(true)}
-            />
-          </div>
+          <FilterChips
+            query={query}
+            accounts={accounts}
+            categories={categories}
+            needsReviewCount={needsReviewCount}
+            onChange={go}
+            onOpenFilters={() => setFiltersOpen(true)}
+            search={
+              <TextField
+                type="search"
+                size="md"
+                className={`shrink-0 desk:w-container-xs ${searchOpen ? 'max-desk:w-full' : 'max-desk:w-space-96'}`}
+                prefix={<Icon name="search" size="sm" />}
+                clearable
+                clearLabel="Clear search"
+                placeholder="Search merchant, amount…"
+                value={text}
+                onValueChange={setText}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+              />
+            }
+          />
           {list.ok ? (
             <TransactionsList
               query={query}
@@ -168,6 +173,8 @@ export function TransactionsView({
         <FiltersDialog
           query={query}
           today={today}
+          accounts={accounts}
+          categories={categories}
           onApply={(next) => {
             setFiltersOpen(false);
             go(next, false);

@@ -5,6 +5,7 @@ import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
+import { AddTransactionProvider } from './form/AddTransactionProvider';
 import type { TransactionListRow } from './list/transactionRows';
 import { transactionRows } from './list/transactionRows';
 import { DEFAULT_QUERY } from './list/transactionsUrl';
@@ -87,7 +88,11 @@ function setup(over: Partial<TransactionsScreenProps> = {}) {
     needsReviewCount: null,
     ...over,
   };
-  return renderWithQuery(<TransactionsScreen {...props} />);
+  return renderWithQuery(
+    <AddTransactionProvider today={props.today}>
+      <TransactionsScreen {...props} />
+    </AddTransactionProvider>,
+  );
 }
 
 const spacer = () => document.querySelector('[aria-hidden="true"].max-w-container-sm');

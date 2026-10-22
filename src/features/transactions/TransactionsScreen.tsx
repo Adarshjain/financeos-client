@@ -11,6 +11,7 @@ import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
 import { useBulkSelection } from './bulk/useBulkSelection';
 import { useTransactionActions } from './bulk/useTransactionActions';
 import { TransactionDetailPanel } from './detail/TransactionDetailPanel';
+import { useAddTransaction } from './form/AddTransactionProvider';
 import { TransactionFormDialog } from './form/TransactionFormDialog';
 import { defaultAccountId } from './form/transactionFormModel';
 import { LinkTransactionsDialog } from './link/LinkTransactionsDialog';
@@ -22,14 +23,15 @@ export interface TransactionsScreenProps extends Omit<TransactionsViewProps, 'on
   transactions: Transaction[];
 }
 
-type FormState = { kind: 'add' } | { kind: 'edit'; transaction: Transaction; focus?: 'categories' } | null;
+type FormState = { transaction: Transaction; focus?: 'categories' } | null;
 
-/** /ds/transactions: the list with its detail panel and the Add / Edit dialog, all opened from state (the address never changes). */
+/** /ds/transactions: the list with its detail panel and the Edit dialog (Add is the shell's AddTransactionProvider), all opened from state (the address never changes). */
 export function TransactionsScreen({ transactions, ...view }: TransactionsScreenProps) {
   const [detailId, setDetailId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<FormState>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
   const router = useRouter();
+  const addTransaction = useAddTransaction();
   const byId = React.useMemo(() => new Map(transactions.map((t) => [t.id, t])), [transactions]);
   const pageIds = React.useMemo(() => view.list.ok ? view.list.rows.map((r) => r.id) : [], [view.list]);
   // Another page, filter, sort or page size starts with nothing selected.
@@ -45,14 +47,14 @@ export function TransactionsScreen({ transactions, ...view }: TransactionsScreen
 
   const editCategories = (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
-    if (transaction) setForm({ kind: 'edit', transaction, focus: 'categories' });
+    if (transaction) setForm({ transaction, focus: 'categories' });
   };
 
   return (
     <>
       <TransactionsView
         {...view}
-        onAdd={() => setForm({ kind: 'add' })}
+        onAdd={() => addTransaction.open({ defaultAccountId: defaultAccountId(view.query.accounts) })}
         onOpenDetail={setDetailId}
         openId={detailId ?? undefined}
         detailOpen={detailId !== null}
@@ -96,10 +98,10 @@ export function TransactionsScreen({ transactions, ...view }: TransactionsScreen
         accounts={view.accounts}
         onOpenTransaction={setDetailId}
         onClose={() => setDetailId(null)}
-        onEdit={(transaction) => setForm({ kind: 'edit', transaction })}
+        onEdit={(transaction) => setForm({ transaction })}
         onDeleted={() => setDetailId(null)}
         onLink={(t) => setLinking([t])}
-        onReview={(t) => void actions.review(t)}
+        onReview={actions.reviewInDialog}
       />
       {linking ? (
         <LinkTransactionsDialog
@@ -114,10 +116,9 @@ export function TransactionsScreen({ transactions, ...view }: TransactionsScreen
       ) : null}
       {form ? (
         <TransactionFormDialog
-          key={form.kind === 'edit' ? form.transaction.id : 'add'}
-          transaction={form.kind === 'edit' ? form.transaction : undefined}
-          focus={form.kind === 'edit' ? form.focus : undefined}
-          defaultAccountId={defaultAccountId(view.query.accounts)}
+          key={form.transaction.id}
+          transaction={form.transaction}
+          focus={form.focus}
           today={view.today}
           accounts={view.accounts}
           onClose={() => setForm(null)}
