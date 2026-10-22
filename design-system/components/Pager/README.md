@@ -5,9 +5,9 @@ Pagination for any list that can outgrow one page, matching the app's TablePagin
 ## Use
 - It sits **above and below the list**: the first row of the list's card (under the card header, above the table header) and its last row. Card-grid lists (rule cards) put it above and under the grid. Both copies always show the same page.
 - Desktop: "1–50 / 182 transactions" · "50 / page ▾" · ‹ 1 2 … 4 › (or custom `summary`).
-- Phone: drop the unit and the page-size select, keep one neighbour fewer: "1–50 / 182" · ‹ 1 … 4 ›.
+- Phone: drop the unit and the page-size select; the page numbers are the same as desktop (one neighbour each side): "1–50 / 182" · ‹ 1 2 … 4 ›.
 - A single page shows the count and page size only, no arrows.
-- A gap of exactly one page shows that page, never an ellipsis (page 1 of 3 reads ‹ 1 2 3 ›, not ‹ 1 … 3 ›). Phone and desktop each get their own ellipses.
+- A gap of exactly one page shows that page, never an ellipsis (page 1 of 3 reads ‹ 1 2 3 ›, not ‹ 1 … 3 ›).
 - Server-side paging only. Never load every row and slice on the client.
 
 ## Variants

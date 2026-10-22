@@ -44,38 +44,16 @@ function pageSet(currentPage: number, totalPages: number, neighbours: number): n
   return filled;
 }
 
-type PageItem =
-  | { kind: 'page'; page: number; phone: boolean }
-  | { kind: 'ellipsis'; key: string; phone: boolean; desktop: boolean };
+type PageItem = { kind: 'page'; page: number } | { kind: 'ellipsis'; key: string };
 
-/**
- * One list for both forms: every page number appears once in the DOM. Phone keeps
- * one neighbour fewer than desktop, and each form gets its own ellipses.
- */
+/** Page numbers with an ellipsis wherever more than one page is skipped. Phone and desktop show the same items. */
 function getPageItems(currentPage: number, totalPages: number): PageItem[] {
-  const desktop = pageSet(currentPage, totalPages, 1);
-  const phone = new Set(pageSet(currentPage, totalPages, 0));
+  const pages = pageSet(currentPage, totalPages, 1);
   const items: PageItem[] = [];
-  let prevPhone: number | undefined;
-  // First ellipsis since the last phone page: the phone form reuses it for its own gap.
-  let spanEllipsis: Extract<PageItem, { kind: 'ellipsis' }> | undefined;
-  desktop.forEach((p, i) => {
-    const onPhone = phone.has(p);
-    const prevDesktop = desktop[i - 1];
-    if (prevDesktop !== undefined && p - prevDesktop > 1) {
-      const gap: PageItem = { kind: 'ellipsis', key: `gap-${p}`, phone: false, desktop: true };
-      items.push(gap);
-      spanEllipsis ??= gap;
-    }
-    if (onPhone) {
-      if (prevPhone !== undefined && p - prevPhone > 1) {
-        if (spanEllipsis) spanEllipsis.phone = true;
-        else items.push({ kind: 'ellipsis', key: `phone-gap-${p}`, phone: true, desktop: false });
-      }
-      prevPhone = p;
-      spanEllipsis = undefined;
-    }
-    items.push({ kind: 'page', page: p, phone: onPhone });
+  pages.forEach((p, i) => {
+    const prev = pages[i - 1];
+    if (prev !== undefined && p - prev > 1) items.push({ kind: 'ellipsis', key: `gap-${p}` });
+    items.push({ kind: 'page', page: p });
   });
   return items;
 }
@@ -216,11 +194,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                       <span
                         key={item.key}
                         aria-hidden="true"
-                        className={cn(
-                          'w-space-16 text-center text-ink-faint text-label select-none',
-                          !item.phone && 'hidden desk:inline',
-                          !item.desktop && 'desk:hidden',
-                        )}
+                        className="w-space-16 text-center text-ink-faint text-label select-none"
                       >
                         …
                       </span>
@@ -242,7 +216,6 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                         control,
                         'px-space-6 rounded-ds-md tabular-nums font-semibold',
                         isActive ? 'font-bold' : 'text-ink-2',
-                        !item.phone && 'hidden desk:inline-flex',
                       )}
                     >
                       {pageNumber}

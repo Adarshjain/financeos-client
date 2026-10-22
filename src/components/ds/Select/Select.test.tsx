@@ -107,7 +107,7 @@ describe('Select', () => {
     const option = screen.getByText('ICICI Bank');
     const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
     expect(popoverContent).toHaveClass('min-w-popover-trigger');
-    expect(popoverContent).toHaveClass('max-w-container-sm');
+    expect(popoverContent).toHaveClass('desk:max-w-container-sm');
   });
 
   it('updates value and calls onValueChange in uncontrolled mode', () => {

@@ -36,7 +36,7 @@ describe('SwipeActions', () => {
 
     // Drag right past threshold (startX: 100, endX: 210 = delta +110 > 96px threshold)
     fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
-    fireEvent.pointerMove(root, { clientX: 210, clientY: 50 });
+    fireEvent.pointerMove(root, { clientX: 234, clientY: 50 });
     fireEvent.pointerUp(root);
 
     expect(handleTrigger).toHaveBeenCalledTimes(1);
@@ -58,7 +58,7 @@ describe('SwipeActions', () => {
     const root = container.firstChild as HTMLElement;
 
     fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'mouse' });
-    fireEvent.pointerMove(root, { clientX: 210, clientY: 50, pointerType: 'mouse' });
+    fireEvent.pointerMove(root, { clientX: 234, clientY: 50, pointerType: 'mouse' });
     fireEvent.pointerUp(root, { pointerType: 'mouse' });
 
     expect(handleTrigger).toHaveBeenCalledTimes(1);
@@ -100,7 +100,7 @@ describe('SwipeActions', () => {
 
     // Drag left past threshold (startX: 200, endX: 90 = delta -110 < -96px threshold)
     fireEvent.pointerDown(root, { clientX: 200, clientY: 50, button: 0, pointerType: 'touch' });
-    fireEvent.pointerMove(root, { clientX: 90, clientY: 50 });
+    fireEvent.pointerMove(root, { clientX: 76, clientY: 50 });
     fireEvent.pointerUp(root);
 
     expect(handleTrigger).toHaveBeenCalledTimes(1);

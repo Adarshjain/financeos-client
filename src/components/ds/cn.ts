@@ -106,6 +106,7 @@ export const CN_MAX_WIDTH = [
   'container-md',
   'container-lg',
   'container-xl',
+  'container-viewport-inset',
 ] as const;
 
 export const CN_SIZE = [

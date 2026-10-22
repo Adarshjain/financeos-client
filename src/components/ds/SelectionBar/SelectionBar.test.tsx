@@ -116,13 +116,13 @@ describe('SelectionBar', () => {
     expect(selectAllBtn).toBeInTheDocument();
     expect(selectAllBtn).toHaveClass('h-control-md');
 
-    // Bar switches between docked bottom sheet (< desk) and floating pill (>= desk)
+    // One floating pill at every width, as wide as its content
     // The root carries the layer, so the bar stays above sticky section headers.
     const root = container.firstElementChild;
     expect(root).toHaveClass('relative', 'z-floating');
     const bar = root?.firstElementChild;
     expect(bar).toBeInTheDocument();
-    expect(bar).toHaveClass('rounded-t-ds-2xl', 'desk:rounded-ds-lg', 'shadow-up-1', 'desk:shadow-level-2', 'w-full', 'desk:w-fit');
+    expect(bar).toHaveClass('rounded-ds-lg', 'shadow-level-2', 'w-fit');
 
     fireEvent.click(selectAllBtn);
     expect(handleSelectAll).toHaveBeenCalledTimes(1);
@@ -187,5 +187,16 @@ describe('SelectionBar', () => {
       />,
     );
     expect(screen.getByText('needs exactly 2')).not.toHaveClass('desk:hidden');
+  });
+
+  it('marks itself for the tab bar and shrinks to its content, centred', () => {
+    const { container } = render(
+      <SelectionBar count={2} actions={[{ id: 'a', label: 'Approve' }]} onClear={() => {}} />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-selection-bar');
+    const pill = root.firstElementChild as HTMLElement;
+    expect(pill).toHaveClass('w-fit', 'mx-auto');
+    expect(pill).not.toHaveClass('w-full');
   });
 });

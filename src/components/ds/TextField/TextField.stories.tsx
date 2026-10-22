@@ -36,6 +36,10 @@ const meta: Meta<typeof TextField> = {
       control: 'select',
       options: ['default', 'embedded'],
     },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'success'],
+    },
     type: {
       control: 'select',
       options: ['text', 'password', 'number', 'email', 'search'],
@@ -107,6 +111,16 @@ export const Optional: Story = {
 export const WithPrefix: Story = {
   args: {
     label: 'Total due',
+    prefix: '₹',
+    inputMode: 'decimal',
+    defaultValue: '44,319.00',
+  },
+};
+
+export const SuccessTone: Story = {
+  args: {
+    label: 'Amount received',
+    tone: 'success',
     prefix: '₹',
     inputMode: 'decimal',
     defaultValue: '44,319.00',

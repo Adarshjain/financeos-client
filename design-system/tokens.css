@@ -95,6 +95,7 @@
   --ds-container-md: 640px;
   --ds-container-lg: 760px;
   --ds-container-xl: 920px;
+  --ds-container-viewport-inset: calc(100vw - 2 * var(--ds-space-20));
   --ds-icon-xs: 10px;
   --ds-icon-sm: 14px;
   --ds-icon-md: 16px;

@@ -9,6 +9,7 @@ Standard text input for forms, logins, and values.
 - `size?: 'md' | 'lg' | 'xl'`: `md` and `lg` are `control-md` (32px) and differ in padding only (default `'lg'` 12px side padding, `'md'` 10px). `xl` is `control-xl` high with the input text in the `figure` type style and `lg` padding.
 - `align?: 'left' | 'right'`: input text alignment, default `'left'`. `right` end-aligns the text; prefix stays at the start, suffix and clear at the end.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
+- `tone?: 'neutral' | 'success'`: default `'neutral'`. `success` colours the input's value text with `positive`, the money-in green.
 - `label?: React.ReactNode`: field label above the input.
 - `helper?: React.ReactNode`: helpful hint text below the input.
 - `error?: React.ReactNode`: error message below the input.
@@ -38,6 +39,7 @@ When `type="search"`, browser search cancel buttons are hidden, and `clearable` 
 - Size xl (`size="xl"`): taller field with `figure` text, for a primary figure. Usage: Add/Edit transaction amount: `size="xl" align="right"`.
 - Right aligned (`align="right"`): works with every size and with the embedded variant.
 - Embedded variant (`variant="embedded"`) inside dropdowns.
+- Success tone (`tone="success"`): value text in `positive`, for an amount that is money in.
 
 ## Built from
 The shared field frame (`FieldFrame`) that TextArea, DateField and Select also use; Button (password toggle, clear button); Icon.

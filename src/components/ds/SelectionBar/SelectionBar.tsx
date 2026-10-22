@@ -32,7 +32,7 @@ export interface SelectionBarProps
 /**
  * SelectionBar: bar that appears while items are selected in lists.
  * Shows count, summary line, and actions that apply to the selection.
- * Floating pill centred above list from desk up; docked to bottom edge below desk.
+ * A floating pill, as wide as its content and centred. On phone it covers the tab bar, which hides while a SelectionBar is mounted (the `data-selection-bar` mark, read by TabBar's `with-selection-bar:` variant).
  */
 export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
   (
@@ -67,11 +67,16 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
     if (count <= 0) return null;
 
     return (
-      <div ref={ref} className={cn('relative z-floating w-full', className)} {...props}>
+      <div
+        ref={ref}
+        data-selection-bar=""
+        className={cn('relative z-floating w-full', className)}
+        {...props}
+      >
         <div
           className={cn(
-            'bg-surface border-t desk:border border-line-strong rounded-t-ds-2xl desk:rounded-ds-lg shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto',
-            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 desk:p-0',
+            'bg-surface border border-line-strong rounded-ds-lg shadow-level-2 select-none text-body text-ink w-fit max-w-full mx-auto',
+            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 py-space-10 desk:p-0',
             'desk:flex desk:flex-row desk:items-center desk:px-space-12 desk:py-space-8 desk:gap-space-8',
           )}
         >

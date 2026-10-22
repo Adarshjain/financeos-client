@@ -1,7 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import React, { createContext, forwardRef, useCallback, useContext, useRef } from 'react';
+import React, { createContext, forwardRef, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
@@ -72,6 +72,17 @@ export interface DialogAction {
 
 export interface DialogPrimaryAction extends DialogAction {
   destructive?: boolean;
+}
+
+/** A field that opens the on-screen keyboard: a text input, a textarea or contenteditable. */
+function isTextEntry(el: EventTarget | null): boolean {
+  if (!(el instanceof HTMLElement)) return false;
+  if (el.isContentEditable) return true;
+  if (el instanceof HTMLTextAreaElement) return true;
+  if (el instanceof HTMLInputElement) {
+    return !['checkbox', 'radio', 'button', 'submit', 'reset', 'image', 'file', 'range', 'color'].includes(el.type);
+  }
+  return false;
 }
 
 export interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -194,6 +205,35 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
     ref
   ) => {
     const hasFooter = Boolean(primary || secondary || tertiary);
+    // The footer steps aside on phone while a text field has focus (on-screen keyboard open).
+    // This is on-screen keyboard state, not layout: it starts false, so the first render is the same
+    // on server and client. Blur is not guaranteed (field removed or disabled, Android back key closes
+    // the keyboard with focus kept), so while typing we also re-check on keyboard close and on taps.
+    const [typing, setTyping] = useState(false);
+    useEffect(() => {
+      if (!typing) return;
+      const active = () => document.activeElement;
+      const stillTyping = () => {
+        const el = active();
+        return isTextEntry(el) && (el as HTMLElement).isConnected && !(el as HTMLInputElement).disabled;
+      };
+      const recheck = () => {
+        if (!stillTyping()) setTyping(false);
+      };
+      const vv = window.visualViewport;
+      const startHeight = vv?.height;
+      const onViewport = () => {
+        if (vv && startHeight !== undefined && vv.height > startHeight) setTyping(false);
+        else recheck();
+      };
+      const onPointer = () => window.setTimeout(recheck, 0);
+      vv?.addEventListener('resize', onViewport);
+      document.addEventListener('pointerdown', onPointer, true);
+      return () => {
+        vv?.removeEventListener('resize', onViewport);
+        document.removeEventListener('pointerdown', onPointer, true);
+      };
+    }, [typing]);
     const hasVisibleHeader = Boolean(title || description || showClose);
 
     return (
@@ -210,6 +250,19 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
           className
         )}
         {...props}
+        onFocus={(e) => {
+          props.onFocus?.(e);
+          setTyping(isTextEntry(e.target));
+        }}
+        onBlur={(e) => {
+          props.onBlur?.(e);
+          const next = e.relatedTarget;
+          if (isTextEntry(next)) return;
+          if (next) setTyping(false);
+          else
+            // No related target: focus left the page or the field vanished. Settle, then trust activeElement.
+            window.setTimeout(() => setTyping(isTextEntry(document.activeElement)), 0);
+        }}
       >
         {srTitle && !title && (
           isRadix ? (
@@ -285,6 +338,7 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
 
         {hasFooter && (
           <DialogFooter
+            className={typing ? 'max-desk:hidden' : undefined}
             primary={primary}
             secondary={secondary}
             tertiary={tertiary}
@@ -488,6 +542,8 @@ export const DialogContent = forwardRef<
       onEscapeKeyDown?.(e);
     };
 
+    // Backdrop and panel share one layer (z-overlay) and stack by portal order, so a dialog opened
+    // over another has its own backdrop above the one underneath, dimming it and blocking its taps.
     return (
       <DialogPortal>
         {variant === 'side-panel' ? (
@@ -495,10 +551,10 @@ export const DialogContent = forwardRef<
             data-testid="dialog-backdrop"
             data-state={open ? 'open' : 'closed'}
             onClick={dismissible ? handleClose : undefined}
-            className="desk:hidden fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow"
+            className="desk:hidden fixed inset-0 z-overlay bg-backdrop animate-in fade-in-0 duration-slow data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow"
           />
         ) : (
-          <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
+          <DialogPrimitive.Overlay className="fixed inset-0 z-overlay bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
         )}
         <DialogPrimitive.Content
           ref={ref}

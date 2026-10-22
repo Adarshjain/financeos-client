@@ -47,7 +47,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
         ref={ref}
         aria-label="Primary"
         className={cn(
-          'fixed inset-x-space-12 bottom-safe-12 z-floating flex items-center bg-surface border border-line rounded-ds-pill shadow-up-1 py-space-8 px-space-4 select-none desk:hidden',
+          'fixed inset-x-space-12 bottom-safe-12 z-floating flex items-center bg-surface border border-line rounded-ds-pill shadow-up-1 py-space-8 px-space-4 select-none desk:hidden with-selection-bar:hidden',
           className,
         )}
         {...props}
