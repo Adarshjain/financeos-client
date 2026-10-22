@@ -48,7 +48,7 @@ import { useDetailTransaction } from './useDetailTransaction';
 import { useTransactionUnlink } from './useTransactionUnlink';
 
 /** Below the top bar (space-56), then the page gutter (space-24, as a margin so the two add up). */
-const PANEL_OFFSET = 'desk:top-space-56 desk:mt-space-24';
+const PANEL_OFFSET = 'desk:top-safe-56 desk:mt-space-24';
 
 export interface TransactionDetailPanelProps {
   /** The transaction to show; null keeps the panel closed. */
@@ -221,9 +221,8 @@ function DetailContent({
         <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
-              <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span">
-                {credit ? '+' : ''}
-                {amountWords(t.amount)}
+              <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
+                {`${credit ? '+' : ''}${amountWords(t.amount)}`}
               </Text>
               {balance ? (
                 <Text variant="label" tone="ink-3" as="span">

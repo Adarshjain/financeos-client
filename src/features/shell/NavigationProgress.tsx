@@ -78,7 +78,7 @@ export function NavigationProgress() {
 
   if (!showing) return null;
   return (
-    <div className="fixed inset-x-0 top-0 z-floating pointer-events-none">
+    <div className="fixed inset-x-0 top-safe-top z-floating pointer-events-none">
       <ProgressBar aria-label="Loading page" />
     </div>
   );

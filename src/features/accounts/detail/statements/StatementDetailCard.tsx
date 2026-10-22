@@ -135,7 +135,7 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
             <Text variant="label" tone="ink-3" as="div">
               {stat.label}
             </Text>
-            <Text variant="figure" as="div">
+            <Text variant="figure" as="div" fraction="small">
               {stat.value}
             </Text>
           </div>

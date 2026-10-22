@@ -90,6 +90,7 @@ export function UpcomingRow({
           <Text
             variant="body-strong"
             tone={amount.tone === 'none' ? 'ink-4' : amount.tone}
+            fraction="small"
           >
             {amount.text}
           </Text>

@@ -41,9 +41,8 @@ const columns = [
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
-      <Text variant="body" tone={row.original.type === 'CREDIT' ? 'positive' : 'ink'}>
-        {row.original.type === 'CREDIT' ? '+' : ''}
-        {formatCurrency(row.original.amount)}
+      <Text variant="body" tone={row.original.type === 'CREDIT' ? 'positive' : 'ink'} fraction="small">
+        {`${row.original.type === 'CREDIT' ? '+' : ''}${formatCurrency(row.original.amount)}`}
       </Text>
     ),
   }),
