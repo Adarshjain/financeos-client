@@ -4,6 +4,7 @@ import { useLongPress, usePress } from '@react-aria/interactions';
 import React, { useEffect, useRef } from 'react';
 import { mergeProps } from 'react-aria';
 
+import { hapticTick } from './haptics';
 import { isPhoneLayout } from './phoneLayout';
 
 export interface UseSelectableItemOptions {
@@ -36,7 +37,10 @@ export function useSelectableItem({
     isDisabled: disabled || !selectable,
     onLongPress: () => {
       if (moved.current) return;
-      if (!selected) onSelectedChange?.(true);
+      if (!selected) {
+        hapticTick();
+        onSelectedChange?.(true);
+      }
     },
   });
 

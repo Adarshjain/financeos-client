@@ -191,8 +191,9 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
                         variant="body-strong"
                         tone={item.isCredit ? 'positive' : 'ink'}
                         className="tabular-nums"
+                        fraction="small"
                       >
-                        <Highlight text={item.amount} query={query} />
+                        {query ? <Highlight text={item.amount} query={query} /> : item.amount}
                       </Text>
                     }
                   />

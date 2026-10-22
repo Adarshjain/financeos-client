@@ -1,4 +1,4 @@
-import { createDataTableColumnHelper, Highlight } from '@/components/ds';
+import { createDataTableColumnHelper, Highlight, Text } from '@/components/ds';
 
 export interface TransactionRowData {
   id: string;
@@ -52,8 +52,16 @@ export const createTransactionColumns = (query?: string) => {
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', sortable: true, phone: 'amount' },
-    cell: ({ row }) =>
-      mark(row.original.formattedAmount ?? String(row.original.amount)),
+    cell: ({ row }) => {
+      const text = row.original.formattedAmount ?? String(row.original.amount);
+      return query ? (
+        mark(text)
+      ) : (
+        <Text variant="body" tone={row.original.isCredit ? 'positive' : 'ink'} fraction="small">
+          {text}
+        </Text>
+      );
+    },
   }),
   helper.accessor('balance', {
     id: 'balance',

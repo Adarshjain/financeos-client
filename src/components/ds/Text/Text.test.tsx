@@ -123,4 +123,58 @@ describe('Text component', () => {
     const el = screen.getByText('Layout');
     expect(el).toHaveClass('mt-space-8', 'max-w-md', 'text-body', 'text-ink');
   });
+
+  describe('fraction="small"', () => {
+    const frac = (c: HTMLElement) => c.querySelector('[data-fraction]');
+
+    it.each([
+      ['+50,000.00', '+50,000', '.00'],
+      ['₹1,250.75', '₹1,250', '.75'],
+      ['-12.5', '-12', '.5'],
+    ])('splits %s at the last dot', (input, int, fr) => {
+      const { container } = render(<Text variant="figure" fraction="small">{input}</Text>);
+      expect(frac(container)?.textContent).toBe(fr);
+      expect(container.firstElementChild?.textContent).toBe(int + fr);
+      expect(container.firstElementChild?.firstChild?.textContent).toBe(int);
+    });
+
+    it('splits a number child', () => {
+      const { container } = render(<Text fraction="small">{12.5}</Text>);
+      expect(frac(container)?.textContent).toBe('.5');
+    });
+
+    it('leaves text without a decimal point and non-string children unchanged', () => {
+      const a = render(<Text fraction="small">₹1,250</Text>);
+      expect(frac(a.container)).toBeNull();
+      const b = render(<Text fraction="small"><b>1.50</b></Text>);
+      expect(frac(b.container)).toBeNull();
+    });
+
+    it('does nothing when the prop is off', () => {
+      const { container } = render(<Text>₹1,250.75</Text>);
+      expect(frac(container)).toBeNull();
+    });
+
+    it.each([
+      ['hero-figure', 'text-figure'],
+      ['figure', 'text-title'],
+      ['title', 'text-heading'],
+      ['heading', 'text-label'],
+      ['body', 'text-label'],
+      ['body-strong', 'text-label'],
+      ['label', 'text-caption'],
+    ] as const)('maps %s to %s', (variant, cls) => {
+      const { container } = render(<Text variant={variant} fraction="small">1.00</Text>);
+      expect(frac(container)).toHaveClass(cls);
+    });
+
+    it('mutes the fraction to ink-3 for ink, keeps tone for positive and danger', () => {
+      const a = render(<Text fraction="small">1.00</Text>);
+      expect(frac(a.container)).toHaveClass('text-ink-3');
+      const b = render(<Text tone="positive" fraction="small">1.00</Text>);
+      expect(frac(b.container)).not.toHaveClass('text-ink-3');
+      const c = render(<Text tone="danger" fraction="small">1.00</Text>);
+      expect(frac(c.container)).not.toHaveClass('text-ink-3');
+    });
+  });
 });

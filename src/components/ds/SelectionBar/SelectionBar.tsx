@@ -139,7 +139,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
         <div
           className={cn(
             'bg-surface border-t desk:border border-line-strong rounded-t-ds-2xl desk:rounded-ds-lg shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto',
-            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 desk:p-0',
+            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-safe-12 desk:p-0',
             'desk:flex desk:flex-row desk:items-center desk:px-space-12 desk:py-space-8 desk:gap-space-8',
           )}
         >

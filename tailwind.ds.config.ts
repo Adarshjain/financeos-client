@@ -145,7 +145,16 @@ const config: Config = {
         'space-96': 'var(--ds-space-96)',
         // Bottom offset for floating bars, and the clearance content keeps under a floating bar.
         'safe-12': 'calc(var(--ds-space-12) + env(safe-area-inset-bottom))',
+        // Device safe-area insets (notch, home bar, landscape); 0 on desktop.
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+        'safe-56': 'calc(var(--ds-space-56) + env(safe-area-inset-top))',
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
+      },
+      maxHeight: {
+        // Full dynamic viewport minus the notch / status-bar inset (a phone sheet never reaches under it).
+        'dvh-safe': 'calc(100dvh - env(safe-area-inset-top))',
       },
       borderRadius: {
         'ds-2xs': 'var(--ds-radius-2xs)',
