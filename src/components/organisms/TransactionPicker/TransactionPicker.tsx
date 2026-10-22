@@ -154,6 +154,7 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
                     role={multiple ? 'checkbox' : 'radio'}
                     aria-checked={checked}
                     aria-label={name}
+                    wrap
                     className="px-0"
                     disabled={item.disabled}
                     onClick={() => select(item.id)}

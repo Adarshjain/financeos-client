@@ -99,7 +99,7 @@ describe('TransactionRow', () => {
     expect(screen.getAllByText('bal ₹61,757')[0]).toBeInTheDocument();
     expect(screen.getAllByText(/HDFC Bank Savings/)[0]).toBeInTheDocument();
     expect(screen.getAllByText('Statement')[0]).toBeInTheDocument();
-    expect(screen.getByText('Groceries')).toBeInTheDocument();
+    expect(screen.getAllByText('Groceries')[0]).toBeInTheDocument();
   });
 
   it('renders credit amount with positive styling', () => {
@@ -130,11 +130,11 @@ describe('TransactionRow', () => {
 
     expect(screen.getAllByText('HDFC Regalia ••7741')[0]).toBeInTheDocument();
     expect(screen.getAllByText('Duplicate')[0]).toHaveClass('text-warning');
-    expect(screen.getByText('Food & dining')).toBeInTheDocument();
-    expect(screen.getByText('+1')).toBeInTheDocument();
+    expect(screen.getAllByText('Food & dining')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('+1')[0]).toBeInTheDocument();
   });
 
-  it('on phone puts the categories under the context line and keeps the amount top-right across both rows', () => {
+  it('on phone puts the categories in the context line, not on their own line, and keeps the amount top-right across both rows', () => {
     render(
       <TransactionRow
         description="BigBasket"
@@ -146,12 +146,13 @@ describe('TransactionRow', () => {
     );
     const cells = screen.getAllByRole('cell');
     const description = cells.find((c) => c.textContent?.startsWith('BigBasket'));
-    const categories = screen.getByText('Groceries').closest('[role="cell"]');
+    const categories = screen.getAllByText('Groceries')[1].closest('[role="cell"]');
     const amount = screen.getByText('3,600.00').closest('[role="cell"]');
 
     expect(description).toHaveClass('col-start-1', 'row-start-1');
     expect(description).toHaveTextContent('HDFC Bank Savings');
-    expect(categories).toHaveClass('col-start-1', 'row-start-2', 'justify-start');
+    expect(description).toHaveTextContent('Groceries');
+    expect(categories).toHaveClass('hidden', 'desk:flex');
     expect(amount).toHaveClass('col-start-2', 'row-start-1', 'row-span-2', 'self-start', 'desk:row-span-1');
   });
 
@@ -167,7 +168,7 @@ describe('TransactionRow', () => {
       />,
     );
 
-    const setBtn = screen.getByText('Set category');
+    const setBtn = screen.getAllByText('Set category')[0];
     expect(setBtn).toBeInTheDocument();
     fireEvent.click(setBtn);
     expect(handleSet).toHaveBeenCalledTimes(1);
@@ -542,7 +543,7 @@ describe('TransactionRow', () => {
         onSelectedChange={handleSelectedChange}
       />,
     );
-    const chip = screen.getByText('Dining');
+    const chip = screen.getAllByText('Dining')[0];
     giveSize(chip);
     await user.click(chip);
 

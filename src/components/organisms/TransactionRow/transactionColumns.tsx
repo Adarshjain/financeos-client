@@ -33,7 +33,7 @@ export const createTransactionColumns = (query?: string) => {
   helper.accessor('description', {
     id: 'description',
     header: 'Description',
-    meta: { size: 'fill', sortable: true, phone: 'main' },
+    meta: { size: 'fill', sortable: true, wrap: true, phone: 'main' },
     cell: ({ row }) => mark(row.original.description),
   }),
   helper.accessor('category', {
