@@ -298,6 +298,40 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       );
     };
 
+    // Phone: categories ride the grey context line as text (first category, then "+n")
+    const phoneCategory = (): React.ReactNode => {
+      if (!categories) return null;
+      const control = (label: React.ReactNode, onClick?: () => void) =>
+        onClick ? (
+          <span {...nestedControlProps}>
+            <Button variant="link" onClick={onClick}>
+              {label}
+            </Button>
+          </span>
+        ) : (
+          label
+        );
+      if (categories.length === 0) {
+        if (!unsetCategoryLabel) return null;
+        return (
+          <StatusWord key="category" tone="warning">
+            {control(unsetCategoryLabel, onSetCategory)}
+          </StatusWord>
+        );
+      }
+      return (
+        <span key="category" className="inline-flex items-center gap-x-space-4">
+          {control(mark(categories[0]), onCategoryClick && (() => onCategoryClick(categories[0])))}
+          {categories.length > 1 &&
+            control(`+${categories.length - 1}`, onMoreCategoriesClick)}
+        </span>
+      );
+    };
+    const phoneCategoryEl = phoneCategory();
+    const phoneContextElements = phoneCategoryEl
+      ? [...contextElements, phoneCategoryEl]
+      : contextElements;
+
     const isInteractive = Boolean(
       props.onClick || isSelectable || selectionMode || onSelectedChange,
     );
@@ -385,13 +419,13 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
-              <div className="text-heading font-medium desk:text-body-strong text-ink truncate">
+              <div className="text-heading desk:text-body-strong text-ink break-words">
                 {mark(description) ?? children}
               </div>
               {/* Phone context line (starts with the account) */}
-              {contextElements.length > 0 && (
+              {phoneContextElements.length > 0 && (
                 <div className="flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0 desk:hidden">
-                  {contextElements.map((el, i) => (
+                  {phoneContextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
                       {el}
@@ -401,7 +435,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               )}
               {/* Desktop context line under description */}
               {desktopContextElements.length > 0 && (
-                <div className="hidden desk:flex items-center gap-x-space-4 text-caption text-ink-3 truncate mt-space-2">
+                <div className="hidden desk:flex flex-wrap items-center gap-x-space-4 text-caption text-ink-3 break-words mt-space-2">
                   {desktopContextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
@@ -412,10 +446,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               )}
             </div>
 
-            {/* Categories (Cell 4 on desktop; on phone col 1 row 2, under the context line) */}
+            {/* Categories (Cell 4 on desktop only; on phone they sit in the context line) */}
             <div
               role="cell"
-              className="col-start-1 row-start-2 mt-space-6 flex items-center justify-start gap-space-4 empty:hidden desk:empty:flex desk:col-start-auto desk:row-start-auto desk:mt-0 desk:px-space-12 desk:py-space-6 min-w-0 truncate"
+              className="hidden desk:flex items-center justify-start gap-space-4 desk:px-space-12 desk:py-space-6 min-w-0 truncate"
             >
               {renderCategories()}
             </div>
@@ -433,8 +467,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             <div
               role="cell"
               className={cn(
-                'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-heading tabular-nums whitespace-nowrap',
-                'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-body-strong desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
+                'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
+                'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
