@@ -18,6 +18,10 @@ export type FilterChipVariant =
 
 export type FilterChipTone = 'brand' | 'warning' | 'neutral';
 
+export type FilterChipSize = 'sm' | 'md';
+
+export type FilterChipShape = 'pill' | 'rounded';
+
 export interface FilterChipProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   /** Controlled selected state */
@@ -30,6 +34,10 @@ export interface FilterChipProps
   variant?: FilterChipVariant;
   /** Semantic tone when selected: brand (default), warning (review), or neutral */
   tone?: FilterChipTone;
+  /** Height: sm is 28px (default); md matches TextField's default control height */
+  size?: FilterChipSize;
+  /** Corners: pill (default) or rounded, the same corners as TextField */
+  shape?: FilterChipShape;
   /** Whether the chip acts as a dropdown trigger with a chevron */
   hasDropdown?: boolean;
   /** Numeric count shown in a count badge */
@@ -49,6 +57,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
       onSelectedChange,
       variant,
       tone,
+      size = 'sm',
+      shape = 'pill',
       hasDropdown = false,
       count,
       removable = false,
@@ -71,6 +81,13 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     const isDashed = variant === 'dashed' || variant === 'more';
     const isSoft =
       variant === 'soft' || (!isDashed && variant !== 'outline' && isSelected);
+
+    const isMd = size === 'md';
+    const isRounded = shape === 'rounded';
+    const heightClass = isMd ? 'h-control-md' : 'h-space-28';
+    const radiusClass = isRounded ? 'rounded-ds-md' : 'rounded-ds-pill';
+    const radiusLeftClass = isRounded ? 'rounded-l-ds-md' : 'rounded-l-ds-pill';
+    const radiusRightClass = isRounded ? 'rounded-r-ds-md' : 'rounded-r-ds-pill';
 
     const showRemove = removable || Boolean(onRemove);
 
@@ -123,7 +140,9 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
         <span
           ref={ref as unknown as React.Ref<HTMLSpanElement>}
           className={cn(
-            'inline-flex items-center h-space-28 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap select-none transition-colors duration-fast',
+            'inline-flex items-center border font-text font-semibold text-label whitespace-nowrap select-none transition-colors duration-fast',
+            heightClass,
+            radiusClass,
             toneClasses,
             disabled && 'opacity-50 cursor-not-allowed',
             className,
@@ -133,7 +152,11 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
             type={type}
             disabled={disabled}
             onClick={handleClick}
-            className="inline-flex items-center gap-space-6 h-full pl-space-10 pr-space-4 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer rounded-l-ds-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed"
+            className={cn(
+              'inline-flex items-center gap-space-6 h-full pr-space-4 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed',
+              isMd ? 'pl-space-12' : 'pl-space-10',
+              radiusLeftClass,
+            )}
             {...props}
           >
             <span>{children}</span>
@@ -145,7 +168,11 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
             disabled={disabled}
             aria-label="Remove filter"
             onClick={handleRemoveClick}
-            className="inline-flex items-center justify-center h-full pl-space-2 pr-space-8 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer rounded-r-ds-pill opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed"
+            className={cn(
+              'inline-flex items-center justify-center h-full pl-space-2 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed',
+              isMd ? 'pr-space-10' : 'pr-space-8',
+              radiusRightClass,
+            )}
           >
             <Icon name="close" size="sm" />
           </button>
@@ -160,8 +187,11 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
         disabled={disabled}
         onClick={handleClick}
         className={cn(
-          'inline-flex items-center gap-space-6 h-space-28 px-space-10 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap transition-colors duration-fast select-none cursor-pointer',
+          'inline-flex items-center gap-space-6 border font-text font-semibold text-label whitespace-nowrap transition-colors duration-fast select-none cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
+          heightClass,
+          radiusClass,
+          isMd ? 'px-space-12' : 'px-space-10',
           toneClasses,
           disabled && 'opacity-50 cursor-not-allowed',
           className,

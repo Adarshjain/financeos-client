@@ -275,4 +275,18 @@ describe('SegmentedControl', () => {
     expect(secondBtn).toHaveAttribute('aria-checked', 'false');
     expect(thirdBtn).toHaveAttribute('aria-checked', 'false');
   });
+
+  it('keeps control-md height by default and for md and lg', () => {
+    const { rerender } = render(<SegmentedControl options={['Debit', 'Credit']} />);
+    expect(screen.getByRole('radio', { name: 'Debit' })).toHaveClass('h-control-md');
+    rerender(<SegmentedControl options={['Debit', 'Credit']} size="lg" />);
+    expect(screen.getByRole('radio', { name: 'Debit' })).toHaveClass('h-control-md');
+  });
+
+  it('size xl uses control-xl like TextField', () => {
+    render(<SegmentedControl options={['Debit', 'Credit']} size="xl" />);
+    const btn = screen.getByRole('radio', { name: 'Credit' });
+    expect(btn).toHaveClass('h-control-xl');
+    expect(btn).not.toHaveClass('h-control-md');
+  });
 });

@@ -17,7 +17,8 @@ A chip in the filter row under the search. Chips filter the list in place and co
 Icon, Badge (count). Dropdown chips: Select with `trigger={<FilterChip …/>}`.
 
 ## Props
-`selected`, `defaultSelected`, `onSelectedChange`, `variant` ('outline' | 'soft' | 'dashed'), `tone` ('brand' | 'warning' | 'neutral'), `hasDropdown`, `count`, `removable`, `onRemove`, `disabled`. When removable, `className` and `ref` go on the outer wrapper element and button props go on the main chip button.
+`selected`, `defaultSelected`, `onSelectedChange`, `variant` ('outline' | 'soft' | 'dashed'), `tone` ('brand' | 'warning' | 'neutral'), `size` ('sm' | 'md'), `shape` ('pill' | 'rounded'), `hasDropdown`, `count`, `removable`, `onRemove`, `disabled`. When removable, `className` and `ref` go on the outer wrapper element and button props go on the main chip button.
 
 ## Variants
+- Size: `sm` (default, 28px) or `md` (`control-md`, the same height as TextField). Shape: `pill` (default) or `rounded` (`radius-md`, the same corners as TextField, like Badge's `shape`). Both apply to the plain and the removable chip.
 - Outline (off), soft (selected/on), dashed ("+ More"), warning tone (review), dropdown, with count, removable, disabled.
