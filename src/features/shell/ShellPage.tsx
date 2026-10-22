@@ -53,6 +53,7 @@ export function ShellPage({
   return (
     <>
       <TopBar
+        data-view-transition="header"
         title={title}
         crumb={crumb}
         leading={backHref ? undefined : <Logo variant="mark" />}

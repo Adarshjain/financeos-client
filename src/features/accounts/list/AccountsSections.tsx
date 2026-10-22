@@ -21,6 +21,8 @@ import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
 import { appHref } from '@/features/shell/routes';
+import { SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import type {
   BankRow,
@@ -39,17 +41,23 @@ export function NameCell({
   name,
   last4,
   sub,
+  accountId,
 }: {
   name: string;
   last4?: string | null;
   sub?: string | null;
+  /** The account the row opens: its name grows into that page's title. */
+  accountId?: string;
 }) {
+  const nameText = (
+    <Text variant="body-strong" truncate>
+      {name}
+    </Text>
+  );
   return (
     <div className="flex flex-col min-w-0">
       <div className="flex items-baseline gap-space-6 min-w-0">
-        <Text variant="body-strong" truncate>
-          {name}
-        </Text>
+        {accountId ? <SharedName name={transitionName.account(accountId)}>{nameText}</SharedName> : nameText}
         {last4 ? (
           <Text variant="caption" tone="ink-3">
             ••{last4}
@@ -218,6 +226,7 @@ const bankBaseColumns = [
       <NameCell
         name={row.original.name}
         last4={row.original.last4}
+        accountId={row.original.id}
       />
     ),
   }),
@@ -355,6 +364,7 @@ const cardColumns = [
         name={row.original.name}
         last4={row.original.last4}
         sub={row.original.sharedLimit}
+        accountId={row.original.id}
       />
     ),
   }),
@@ -487,7 +497,7 @@ const brokerColumns = [
     id: 'broker',
     header: 'Broker',
     meta: { size: 'fill', phone: 'main' },
-    cell: ({ row }) => <NameCell name={row.original.name} />,
+    cell: ({ row }) => <NameCell name={row.original.name} accountId={row.original.id} />,
   }),
   brokerCh.display({
     id: 'value',
@@ -549,9 +559,11 @@ const walletColumns = [
     meta: { size: 'fill', phone: 'main', wrap: true },
     cell: ({ row }) => (
       <div className="flex items-baseline gap-space-8 min-w-0">
-        <Text variant="body-strong" truncate>
-          {row.original.name}
-        </Text>
+        <SharedName name={transitionName.account(row.original.id)}>
+          <Text variant="body-strong" truncate>
+            {row.original.name}
+          </Text>
+        </SharedName>
         {row.original.excluded ? (
           <StatusWord tone="neutral">Excluded</StatusWord>
         ) : null}

@@ -22,6 +22,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import { useUrlState } from '@/features/upcoming/useUrlState';
 import type { AppNotification } from '@/lib/api/types';
 import { useNotificationFeed, useNotificationMutations } from '@/lib/query/hooks/useNotifications';
+import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
 import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, parsePage, timeLabel } from './notificationsModel';
 import { NotificationsSkeleton } from './NotificationsSkeleton';
@@ -39,6 +40,8 @@ export function NotificationsPage() {
   const [seen, setSeen] = React.useState<{ page: number; unreadIds: ReadonlySet<string> } | null>(null);
 
   const items = React.useMemo(() => data?.content ?? [], [data]);
+  // Clearing one takes it out of the cache at once; the deferred rows let it fold away.
+  const shownItems = useDeferredRows(items);
   const totalPages = data?.totalPages ?? 0;
   const totalElements = data?.totalElements ?? 0;
 
@@ -107,36 +110,40 @@ export function NotificationsPage() {
     );
   } else {
     body = (
-      <Card
-        action={
-          <Text variant="label" as="span">
-            <Button variant="link" size="sm" onClick={() => setConfirmOpen(true)}>
-              Clear all
-            </Button>
-          </Text>
-        }
-      >
-        {pager}
-        {groupByDay(items).map((group) => (
-          <section key={group.label} data-testid="notification-day">
-            <SectionHeader as="h2" variant="strong" sticky={false} borderTop={false}>
-              {group.label}
-            </SectionHeader>
-            {group.items.map((n, index) => (
-              <React.Fragment key={n.id}>
-                {index > 0 ? <Divider /> : null}
-                <NotificationRow
-                  n={n}
-                  highlighted={seen?.page === page && seen.unreadIds.has(n.id)}
-                  onOpen={(href) => router.push(href)}
-                  onClear={() => void clearOne(n)}
-                />
-              </React.Fragment>
-            ))}
-          </section>
-        ))}
-        {pager}
-      </Card>
+      <ListTransition>
+        <Card
+          action={
+            <Text variant="label" as="span">
+              <Button variant="link" size="sm" onClick={() => setConfirmOpen(true)}>
+                Clear all
+              </Button>
+            </Text>
+          }
+        >
+          {pager}
+          {groupByDay(shownItems).map((group) => (
+            <RowTransition key={group.label}>
+              <section data-testid="notification-day">
+                <SectionHeader as="h2" variant="strong" sticky={false} borderTop={false}>
+                  {group.label}
+                </SectionHeader>
+                {group.items.map((n, index) => (
+                  <RowTransition key={n.id}>
+                    {index > 0 ? <Divider /> : null}
+                    <NotificationRow
+                      n={n}
+                      highlighted={seen?.page === page && seen.unreadIds.has(n.id)}
+                      onOpen={(href) => router.push(href)}
+                      onClear={() => void clearOne(n)}
+                    />
+                  </RowTransition>
+                ))}
+              </section>
+            </RowTransition>
+          ))}
+          {pager}
+        </Card>
+      </ListTransition>
     );
   }
 

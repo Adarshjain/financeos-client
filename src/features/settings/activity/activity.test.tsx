@@ -126,6 +126,15 @@ describe('list', () => {
     expect(screen.getByText('No background jobs found matching the selected filters.')).toBeInTheDocument();
   });
 
+  it('offers Clear filters only when a filter is set', () => {
+    const { unmount } = render(<ActivityPage {...props} />);
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+    unmount();
+    render(<ActivityPage {...props} statusFilter="FAILED" typeFilter="GMAIL_SYNC" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(push).toHaveBeenCalledWith('/ds/settings/activity', { scroll: false });
+  });
+
   it('shows Job with its subject, Started, Took, Result and Status', () => {
     jobs = [job({})];
     totalElements = 1;

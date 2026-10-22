@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Card, Skeleton } from '@/components/ds';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
+import { DetailLoadingTitle } from '@/features/shell/DetailLoadingTitle';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 function SkeletonCard({ rows }: { rows: number }) {
@@ -22,7 +23,7 @@ function SkeletonCard({ rows }: { rows: number }) {
 /** The person page's shape: who they are and the balance, then the ledger beside three cards. */
 export default function DsPersonLoading() {
   return (
-    <ShellPage crumb="Owe & lend / Lendings" title="Person" backHref={LENDINGS_HREF}>
+    <ShellPage crumb="Owe & lend / Lendings" title={<DetailLoadingTitle kind="person">Person</DetailLoadingTitle>} backHref={LENDINGS_HREF}>
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
         <Skeleton width="60%" height={20} />
         <Card>

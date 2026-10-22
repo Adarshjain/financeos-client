@@ -373,6 +373,8 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
+- 2026-10-23 · Phase 3 · Premium pass states/motion: (1) error/not-found app-bar titles "Error"/"Not found" ok? (2) add a fix line to "Could not load this figure" (forces loans.test:147, lendings.test:156)? (3) error/not-found art: none / reuse offline / new? (4) offline copy trim? (5) transaction row→detail morph needs Dinero Dialog to skip its slide when morphing — ok? (6) TransactionRow paise is a hand-sized span (Text has no responsive size): add responsive Text size / one size / keep?
+
 
 
 
@@ -381,6 +383,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
+
+- 2026-10-23 · Phase 3 · Claude + implementers · Premium pass wave 2: React ViewTransition (next.config `experimental.viewTransition`; src/lib/viewTransition.tsx, viewTransitionNames.ts; ds.css VT styles + reduced motion): page crossfade (not on the first page, whose streaming reveals blocked presses), row enter/exit/move on transactions, inbox, notifications, upcoming, loans, lendings, account recent; name morphs account→title, loan/person→DetailLoadingTitle→title. States: PageError/PageNotFound, (app) error + not-found, route error.tsx retry (`unstable_retry`), clear-filters on filtered empties. Checks: test 5922, lint 0 errors, check-ui, build-storybook, typecheck; E2E 118/119 (notifications push: env). Existing tests edited: none (cases appended to UpcomingView + activity tests). Not done: transaction row→detail morph (Open questions). Deviations: none.
 
 - 2026-10-22 · Phase 3 · Claude + implementers · Premium pass wave 1: Text `fraction` + amount sites; (ds) viewport cover/themeColor/startup images (scripts/gen-splash.mjs, public/splash), ds.css overscroll none, safe utilities (safe-top/left/right/56, max-h dvh-safe), TopBar/Root/Dialog/SelectionBar/NavigationProgress/detail panel safe areas; haptics.ts in useSelectableItem/useSwipe; router.refresh() after /ds mutations (inbox, notifications, notification settings, LLM keys/routing, Gmail, jobs, bills widget, Upcoming settle; success-only, once per overlapping burst). Checks: test 5890, lint 0 errors, check-ui, build-storybook, typecheck (src clean); E2E 110/112 (gmail consent: server UI_PATH http vs https dev client; notifications push: no service worker in dev — both env, no changed line on path). Forced test edits: router mocks in hooks/settings/inbox/notifications tests (incl. Legacy settings + inbox tests: shared hooks), TransactionRow + TransactionDetailPanel amount queries (split paise), Dialog max-h class. Deviations: none.
 - 2026-10-22 · Phase 3 · Claude + implementers · Review round 4 (motion + loading, see Owner decisions): SelectionBar presence enter/exit; Popover/Menu/Tooltip exit; new useSlidingIndicator (Tabs, SegmentedControl); TransactionRow eye-only gap; features/shell NavigationProgress + navigationStore, optimistic ShellNav item, mounted in (app) layout. Not done (listed): Banner/FilterChip dismiss exits (need presence), DropZone. Forced test edits: TransactionsScreen.bulk (2 tests wait for the bar's exit). Deviations: none.

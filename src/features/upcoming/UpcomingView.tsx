@@ -93,7 +93,16 @@ export function UpcomingView() {
           <Card>
             <EmptyState
               size="sm"
-              description={`Nothing scheduled within the next ${monthsLabel(months)}.`}
+              description={
+                kind === 'all'
+                  ? `Nothing scheduled within the next ${monthsLabel(months)}.`
+                  : `Nothing of this kind within the next ${monthsLabel(months)}.`
+              }
+              action={
+                kind === 'all'
+                  ? undefined
+                  : { label: 'Clear filters', variant: 'secondary', onSelect: () => changeKind('all') }
+              }
             />
           </Card>
         ) : (

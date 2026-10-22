@@ -160,7 +160,21 @@ export function ActivityJobsCard({
         pager={pager}
         phoneSub={phoneLine}
         onRowSelect={(job) => router.push(openHref(job.id), { scroll: false })}
-        empty={<EmptyState compact title="No background jobs found matching the selected filters." />}
+        empty={
+          <EmptyState
+            compact
+            title="No background jobs found matching the selected filters."
+            action={
+              statusFilter || typeFilter
+                ? {
+                    label: 'Clear filters',
+                    variant: 'link',
+                    onSelect: () => router.push(activityUrl({ statusFilter: '', typeFilter: '', size }), { scroll: false }),
+                  }
+                : undefined
+            }
+          />
+        }
         stickyHeader={false}
       />
     </Card>

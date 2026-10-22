@@ -11,6 +11,7 @@ import {
   Text,
 } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
+import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
 import type { TransactionRowModel } from './overview/cardOverviewModel';
 import { HeaderLink } from './overview/HeaderLink';
@@ -91,13 +92,16 @@ export function RecentTransactionsCard({
         </HeaderLink>
       }
     >
-      <DataTable
-        columns={columns}
-        data={rows}
-        getRowId={(row) => row.id}
-        phoneSub={(row) => (row.balance ? `${row.date} · bal ₹${row.balance}` : row.date)}
-        empty={<EmptyState compact description="No transactions yet" />}
-      />
+      <ListTransition>
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+          wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
+          phoneSub={(row) => (row.balance ? `${row.date} · bal ₹${row.balance}` : row.date)}
+          empty={<EmptyState compact description="No transactions yet" />}
+        />
+      </ListTransition>
     </Card>
   );
 }

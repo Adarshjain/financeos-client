@@ -19,6 +19,8 @@ import {
   TextField,
 } from '@/components/ds';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { RowTransition, SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import {
   LENDING_FILTERS,
@@ -37,9 +39,11 @@ const columns = [
     header: 'Person',
     meta: { size: 'fill', grow: 1.5, phone: 'main' },
     cell: ({ row }) => (
-      <Text variant="body-strong" truncate>
-        {row.original.name}
-      </Text>
+      <SharedName name={transitionName.person(row.original.id)}>
+        <Text variant="body-strong" truncate>
+          {row.original.name}
+        </Text>
+      </SharedName>
     ),
   }),
   ch.display({
@@ -161,6 +165,7 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
           columns={columns}
           data={rows}
           getRowId={(row) => row.id}
+          wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
           pager={pager}
           leading={(row) => (
             <Avatar variant="circle" tone={row.avatarTone} size="sm" initials={row.initials} />
@@ -171,6 +176,11 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
             <EmptyState
               compact
               description={filtered ? 'No people match.' : 'No lendings yet. Add a lending to start a ledger.'}
+              action={
+                filtered
+                  ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', filter: 'all', page: 0 }) }
+                  : undefined
+              }
             />
           }
           stickyHeader={false}
