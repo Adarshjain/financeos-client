@@ -6,6 +6,9 @@ import React, { forwardRef } from 'react';
 import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
 
+/** Gap kept to the viewport edge on each side. Mirrors the space-20 step (20px) used by container-viewport-inset; there is no JS token export to derive it from. */
+const VIEWPORT_GUTTER = 20;
+
 export const PopoverRoot = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
 export const PopoverPortal = PopoverPrimitive.Portal;
@@ -26,6 +29,7 @@ export const PopoverContent = forwardRef<
       align = 'start',
       side = 'bottom',
       sideOffset = 4,
+      collisionPadding = VIEWPORT_GUTTER,
       ...props
     },
     ref,
@@ -37,10 +41,11 @@ export const PopoverContent = forwardRef<
           align={align}
           side={side}
           sideOffset={sideOffset}
+          collisionPadding={collisionPadding}
           className={cn(
             'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-4 flex flex-col outline-none font-text',
             'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
-            'min-w-popover-trigger max-w-container-sm w-auto',
+            'min-w-popover-trigger max-w-container-viewport-inset desk:max-w-container-sm w-auto',
             className,
           )}
           {...props}

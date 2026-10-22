@@ -153,4 +153,9 @@ describe('TabBar', () => {
       'ring-surface',
     );
   });
+
+  it('hides while a selection bar is mounted', () => {
+    render(<TabBar items={sampleItems} current="home" />);
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toHaveClass('with-selection-bar:hidden');
+  });
 });

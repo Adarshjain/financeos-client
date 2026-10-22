@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -684,5 +684,152 @@ describe('side-panel placement', () => {
 
   it('takes the width of its size, not the width of its content', () => {
     expect(place(undefined, 'sm')).toHaveClass('desk:w-full', 'desk:max-w-container-sm');
+  });
+});
+
+describe('nested dialogs', () => {
+  it('gives every dialog its own backdrop on the same layer as its panel, in portal order', () => {
+    render(
+      <Dialog open variant="side-panel">
+        <DialogContent title="Detail">
+          <DialogBody>Lower body</DialogBody>
+          <Dialog open>
+            <DialogContent title="Confirm delete">
+              <DialogBody>Upper body</DialogBody>
+            </DialogContent>
+          </Dialog>
+        </DialogContent>
+      </Dialog>,
+    );
+    const lowerBackdrop = screen.getByTestId('dialog-backdrop');
+    const dialogs = screen.getAllByRole('dialog', { hidden: true });
+    expect(dialogs).toHaveLength(2);
+    // One overlay for the upper (modal) dialog, besides the lower sheet's backdrop.
+    const overlays = Array.from(document.body.querySelectorAll('.z-overlay.bg-backdrop'));
+    expect(overlays).toHaveLength(2);
+    expect(overlays.every((el) => !el.classList.contains('z-backdrop'))).toBe(true);
+    dialogs.forEach((d) => expect(d).toHaveClass('z-overlay'));
+    // Later in the DOM means above on the shared layer: the upper backdrop follows the lower panel.
+    const upperBackdrop = overlays.find((el) => el !== lowerBackdrop) as HTMLElement;
+    expect(dialogs[0].compareDocumentPosition(upperBackdrop) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(upperBackdrop.compareDocumentPosition(dialogs[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('a single dialog keeps its backdrop below its own panel', () => {
+    render(
+      <Dialog open>
+        <DialogContent title="Only">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const overlay = document.body.querySelector('.bg-backdrop') as HTMLElement;
+    expect(overlay).toHaveClass('z-overlay');
+    expect(overlay.compareDocumentPosition(screen.getByRole('dialog')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe('footer while typing on phone', () => {
+  const setup = () => {
+    render(
+      <DialogShell title="Edit" primary={{ label: 'Save' }}>
+        <DialogBody>
+          <input aria-label="Name" />
+          <input aria-label="Tick" type="checkbox" />
+          <textarea aria-label="Note" />
+        </DialogBody>
+      </DialogShell>,
+    );
+    return screen.getByRole('button', { name: 'Save' }).closest('.border-t') as HTMLElement;
+  };
+
+  it('hides the footer on phone while a text input has focus and shows it again on blur', () => {
+    const footer = setup();
+    expect(footer).not.toHaveClass('max-desk:hidden');
+    fireEvent.focusIn(screen.getByLabelText('Name'));
+    expect(footer).toHaveClass('max-desk:hidden');
+    fireEvent.focusOut(screen.getByLabelText('Name'), { relatedTarget: document.body });
+    expect(footer).not.toHaveClass('max-desk:hidden');
+  });
+
+  it('treats a textarea as text entry', () => {
+    const footer = setup();
+    fireEvent.focusIn(screen.getByLabelText('Note'));
+    expect(footer).toHaveClass('max-desk:hidden');
+  });
+
+  it('keeps the footer for a checkbox', () => {
+    const footer = setup();
+    fireEvent.focusIn(screen.getByLabelText('Tick'));
+    expect(footer).not.toHaveClass('max-desk:hidden');
+  });
+
+  it('keeps it hidden when focus moves from one text field to another', () => {
+    const footer = setup();
+    fireEvent.focusIn(screen.getByLabelText('Name'));
+    fireEvent.focusOut(screen.getByLabelText('Name'), { relatedTarget: screen.getByLabelText('Note') });
+    expect(footer).toHaveClass('max-desk:hidden');
+  });
+
+  it('shows the footer again when the focused field is removed without a blur', () => {
+    vi.useFakeTimers();
+    try {
+      const footer = setup();
+      const input = screen.getByLabelText('Name') as HTMLInputElement;
+      input.focus();
+      fireEvent.focusIn(input);
+      expect(footer).toHaveClass('max-desk:hidden');
+      input.disabled = true;
+      input.blur();
+      act(() => {
+        fireEvent.pointerDown(document.body);
+        vi.runAllTimers();
+      });
+      expect(footer).not.toHaveClass('max-desk:hidden');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('settles after a focusout with no related target', () => {
+    vi.useFakeTimers();
+    try {
+      const footer = setup();
+      const input = screen.getByLabelText('Name');
+      input.focus();
+      fireEvent.focusIn(input);
+      input.blur();
+      fireEvent.focusOut(input, { relatedTarget: null });
+      act(() => {
+        vi.runAllTimers();
+      });
+      expect(footer).not.toHaveClass('max-desk:hidden');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows the footer again when the keyboard closes (visual viewport grows) with focus kept', () => {
+    const listeners: Record<string, () => void> = {};
+    const vv = {
+      height: 400,
+      addEventListener: (t: string, fn: () => void) => { listeners[t] = fn; },
+      removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal('visualViewport', vv);
+    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
+    try {
+      const footer = setup();
+      const input = screen.getByLabelText('Name');
+      input.focus();
+      fireEvent.focusIn(input);
+      expect(footer).toHaveClass('max-desk:hidden');
+      vv.height = 800;
+      act(() => listeners.resize());
+      expect(footer).not.toHaveClass('max-desk:hidden');
+    } finally {
+      vi.unstubAllGlobals();
+      Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true });
+    }
   });
 });

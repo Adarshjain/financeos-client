@@ -85,7 +85,7 @@ describe('Pager', () => {
     expect(activePageBtn).toHaveAttribute('aria-current', 'page');
   });
 
-  it('renders each page number exactly once in the DOM with desktop neighbours carrying hidden desk:inline-flex', () => {
+  it('shows first, last, current and one neighbour each side on every screen size', () => {
     const { container } = render(
       <Pager
         page={4} // page 5 of 10
@@ -103,12 +103,10 @@ describe('Pager', () => {
       expect(screen.queryByRole('button', { name: `Page ${num}` })).not.toBeInTheDocument();
     });
 
-    // Pages 4 and 6 are neighbours of page 5, so they carry hidden desk:inline-flex
-    expect(screen.getByRole('button', { name: 'Page 4' })).toHaveClass('hidden', 'desk:inline-flex');
-    expect(screen.getByRole('button', { name: 'Page 6' })).toHaveClass('hidden', 'desk:inline-flex');
-    // Active, first and last pages show on both forms
-    ['Page 1', 'Page 5', 'Page 10'].forEach((name) => {
+    // Phone and desktop show the same items: nothing is hidden by breakpoint
+    ['Page 1', 'Page 4', 'Page 5', 'Page 6', 'Page 10'].forEach((name) => {
       expect(screen.getByRole('button', { name })).not.toHaveClass('hidden');
+      expect(screen.getByRole('button', { name }).className).not.toContain('desk:inline-flex');
     });
     // One ellipsis on each side, shown on both forms
     const gaps = Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) => el.textContent === '…');
@@ -131,18 +129,18 @@ describe('Pager', () => {
     expect(container.textContent).not.toContain('…');
   });
 
-  it('gives the phone form its own ellipsis where it drops a desktop neighbour', () => {
+  it('shows the same pages on phone and desktop with one ellipsis for a long gap', () => {
     const { container } = render(
-      <Pager page={3} size={10} totalElements={60} onPageChange={() => {}} />,
+      <Pager page={3} size={10} totalElements={100} onPageChange={() => {}} />,
     );
 
-    // Page 4 of 6: desktop 1 2 3 4 5 6, phone 1 … 4 5 6
-    expect(screen.getByRole('button', { name: 'Page 3' })).toHaveClass('hidden', 'desk:inline-flex');
-    expect(screen.getByRole('button', { name: 'Page 5' })).not.toHaveClass('hidden');
+    // Page 4 of 10: 1 2 3 4 5 … 10
+    [1, 2, 3, 4, 5, 10].forEach((num) => {
+      expect(screen.getByRole('button', { name: `Page ${num}` }).className).not.toMatch(/hidden/);
+    });
     const gaps = Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) => el.textContent === '…');
     expect(gaps).toHaveLength(1);
-    expect(gaps[0]).toHaveClass('desk:hidden');
-    expect(gaps[0]).not.toHaveClass('hidden');
+    expect(gaps[0].className).not.toMatch(/hidden/);
   });
 
   it('compact variant trims the padding and uses small controls', () => {

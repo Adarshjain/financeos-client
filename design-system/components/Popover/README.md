@@ -4,7 +4,7 @@ The one floating surface every dropdown uses: Select's list, Menu, DateField's c
 
 ## Use
 - Surface: `bg-surface`, `line` border, `radius-lg`, `shadow-pop`, `space-4` inner padding, `z-overlay`.
-- Width: at least the trigger's width (`min-w-popover-trigger`), growing with its content up to `dialog-sm` (440). Never a fixed pixel width, never narrower than its content.
+- Width: at least the trigger's width (`min-w-popover-trigger`), growing with its content up to `container-sm` (440) on desktop; on phone never wider than the viewport minus a `space-20` gutter each side (`container-viewport-inset`), and Radix `collisionPadding` is the same 20px so the left and right gaps are equal. Never a fixed pixel width, never narrower than its content.
 - One surface: content inside a Popover is never wrapped in another card, border or shadow.
 - Opens below and flips above near the bottom edge; 4px gap from the trigger.
 - Opens with `dur-base` (fade and 4px slide); closes on Escape, outside tap, or a pick.

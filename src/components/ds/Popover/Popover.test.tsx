@@ -32,7 +32,9 @@ describe('Popover', () => {
     const inner = screen.getByTestId('popover-inner');
     const content = inner.parentElement;
     expect(content).toHaveClass('min-w-popover-trigger');
-    expect(content).toHaveClass('max-w-container-sm');
+    expect(content).toHaveClass('desk:max-w-container-sm');
+    // Phone: never wider than the viewport minus an equal gutter each side
+    expect(content).toHaveClass('max-w-container-viewport-inset');
     expect(content).toHaveClass('w-auto');
     expect(content).toHaveClass('font-text');
     expect(content).toHaveClass('shadow-level-2');

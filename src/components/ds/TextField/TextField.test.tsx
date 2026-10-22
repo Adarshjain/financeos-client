@@ -323,4 +323,13 @@ describe('TextField size xl and align', () => {
     render(<TextField label="Name" />);
     expect(screen.getByLabelText('Name')).not.toHaveClass('text-end');
   });
+
+  it('colours the value with the money-in token only when tone is success', () => {
+    const { rerender } = render(<TextField label="Amount" defaultValue="10" />);
+    expect(screen.getByLabelText('Amount')).not.toHaveClass('text-positive');
+    expect(screen.getByLabelText('Amount')).toHaveClass('text-ink');
+    rerender(<TextField label="Amount" defaultValue="10" tone="success" />);
+    expect(screen.getByLabelText('Amount')).toHaveClass('text-positive');
+    expect(screen.getByLabelText('Amount')).not.toHaveClass('text-ink');
+  });
 });

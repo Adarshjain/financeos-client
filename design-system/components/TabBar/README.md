@@ -36,3 +36,6 @@ Icon, Badge (`variant="solid" shape="rounded" size="sm"`), Slot (for `asChild` l
 
 ## Variants
 - One format. Stories show Default (Home current), counts over 99, and with asChild link.
+
+## Hides under a SelectionBar
+While a SelectionBar is mounted anywhere in the document the TabBar is hidden (`with-selection-bar:hidden`, a Tailwind variant for `body:has([data-selection-bar])`), so the narrower bar covers its place without the tab bar peeking out.

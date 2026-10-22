@@ -11,6 +11,7 @@ import { useControllableState } from '../useControllableState';
 export type TextFieldSize = 'md' | 'lg' | 'xl';
 export type TextFieldAlign = 'left' | 'right';
 export type TextFieldVariant = 'default' | 'embedded';
+export type TextFieldTone = 'neutral' | 'success';
 
 export interface TextFieldProps
   extends Omit<
@@ -20,6 +21,8 @@ export interface TextFieldProps
   size?: TextFieldSize;
   align?: TextFieldAlign;
   variant?: TextFieldVariant;
+  /** `success` colours the value text with the money-in green (`positive`). */
+  tone?: TextFieldTone;
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
@@ -40,6 +43,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       size = 'lg',
       align = 'left',
       variant = 'default',
+      tone = 'neutral',
       type = 'text',
       inputMode,
       label,
@@ -160,6 +164,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
               type === 'search' &&
                 '[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',
               isNumeric && 'tabular-nums',
+              tone === 'success' && 'text-positive',
               disabled && 'cursor-not-allowed text-ink-faint',
               controlClassName,
             )}

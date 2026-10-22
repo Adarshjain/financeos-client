@@ -4,6 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { isPhoneLayout } from './phoneLayout';
 
+/** Horizontal travel (px) before the row starts to follow the finger. */
+const DEAD_ZONE = 24;
+
 export interface UseSwipeOptions {
   threshold?: number;
   disabled?: boolean;
@@ -28,6 +31,7 @@ export function useSwipe({
   const startY = useRef(0);
   const isScrolling = useRef(false);
   const draggingRef = useRef(false);
+  const engaged = useRef(false);
   const currentOffset = useRef(0);
 
   const onPointerDown = useCallback(
@@ -41,6 +45,7 @@ export function useSwipe({
       startX.current = e.clientX;
       startY.current = e.clientY;
       isScrolling.current = false;
+      engaged.current = false;
       draggingRef.current = true;
       currentOffset.current = 0;
       setIsDragging(true);
@@ -56,26 +61,31 @@ export function useSwipe({
       const deltaX = e.clientX - startX.current;
       const deltaY = e.clientY - startY.current;
 
-      // Vertical scroll takes priority if deltaY > deltaX
-      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 8) {
-        isScrolling.current = true;
-        draggingRef.current = false;
-        setIsDragging(false);
-        setOffset(0);
-        return;
-      }
-
-      if (Math.abs(deltaX) > 5 && typeof e.currentTarget?.setPointerCapture === 'function') {
-        try {
-          if (!e.currentTarget.hasPointerCapture?.(e.pointerId)) {
-            e.currentTarget.setPointerCapture(e.pointerId);
+      if (!engaged.current) {
+        // Vertical scroll wins when it leads before the swipe engages.
+        if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 8) {
+          isScrolling.current = true;
+          draggingRef.current = false;
+          setIsDragging(false);
+          setOffset(0);
+          return;
+        }
+        // Dead zone: the row stays put until the move is horizontal-dominant and past it.
+        if (Math.abs(deltaX) < DEAD_ZONE || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+        engaged.current = true;
+        if (typeof e.currentTarget?.setPointerCapture === 'function') {
+          try {
+            if (!e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }
+          } catch {
+            // Ignore
           }
-        } catch {
-          // Ignore
         }
       }
 
-      let nextOffset = deltaX;
+      // Measured from the dead-zone edge, so the row does not jump when it engages.
+      let nextOffset = Math.sign(deltaX) * Math.max(0, Math.abs(deltaX) - DEAD_ZONE);
       if (nextOffset > 0 && !canSwipeRight) {
         nextOffset = 0;
       } else if (nextOffset < 0 && !canSwipeLeft) {

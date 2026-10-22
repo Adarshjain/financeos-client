@@ -209,9 +209,11 @@ const config: Config = {
         'container-md': 'var(--ds-container-md)',
         'container-lg': 'var(--ds-container-lg)',
         'container-xl': 'var(--ds-container-xl)',
+        'container-viewport-inset': 'var(--ds-container-viewport-inset)',
       },
       minWidth: {
-        'popover-trigger': 'var(--radix-popover-trigger-width)',
+        // Capped at the phone inset so a full-width trigger never pushes a popover past the equal side gutters.
+        'popover-trigger': 'min(var(--radix-popover-trigger-width), var(--ds-container-viewport-inset))',
         'menu-trigger': 'var(--radix-dropdown-menu-trigger-width)',
         'control-sm': 'var(--ds-control-sm)',
         'control-md': 'var(--ds-control-md)',
@@ -265,6 +267,10 @@ const config: Config = {
     },
   },
   plugins: [
+    // `with-selection-bar:` is true while a SelectionBar is mounted anywhere in the document (the phone tab bar hides under it).
+    plugin(({ addVariant }) => {
+      addVariant('with-selection-bar', ':is(body:has([data-selection-bar]) &)');
+    }),
     // Search-match marker stroke (Highlight): gradient, size, rough ends and tilt can't be token classes.
     plugin(({ addUtilities }) => {
       addUtilities({
