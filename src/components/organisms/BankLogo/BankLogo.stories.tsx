@@ -17,4 +17,6 @@ export const Default: Story = {};
 
 export const UnknownBank: Story = { args: { bankId: 'nope', name: 'Nova' } };
 
+export const NoBankNoWarning: Story = { args: { bankId: null, name: 'Cash wallet', warning: false } };
+
 export const NoBank: Story = { args: { bankId: null, name: 'Cash wallet' } };
