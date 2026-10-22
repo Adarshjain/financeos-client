@@ -4,6 +4,25 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { SegmentedControl } from './SegmentedControl';
 
+
+function mockLayout(positions: Record<string, [number, number]>) {
+  const label = (el: HTMLElement) => (el.textContent ?? '').trim();
+  const left = vi
+    .spyOn(HTMLElement.prototype, 'offsetLeft', 'get')
+    .mockImplementation(function (this: HTMLElement) {
+      return positions[label(this)]?.[0] ?? 0;
+    });
+  const width = vi
+    .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+    .mockImplementation(function (this: HTMLElement) {
+      return positions[label(this)]?.[1] ?? 0;
+    });
+  return () => {
+    left.mockRestore();
+    width.mockRestore();
+  };
+}
+
 describe('SegmentedControl', () => {
   it('renders options as radio buttons with first tabbable when none selected', () => {
     render(<SegmentedControl options={['Debit', 'Credit']} />);
@@ -288,5 +307,32 @@ describe('SegmentedControl', () => {
     const btn = screen.getByRole('radio', { name: 'Credit' });
     expect(btn).toHaveClass('h-control-xl');
     expect(btn).not.toHaveClass('h-control-md');
+  });
+
+  describe('sliding thumb', () => {
+    const positions: Record<string, [number, number]> = { Debit: [0, 70], Credit: [70, 80] };
+
+    it('follows the selected option', () => {
+      const restore = mockLayout(positions);
+      const { container, rerender } = render(
+        <SegmentedControl options={['Debit', 'Credit']} value="Debit" />,
+      );
+      const thumb = () => container.querySelector<HTMLElement>('[data-segmented-thumb]');
+      expect(thumb()?.style.width).toBe('70px');
+      expect(thumb()?.style.transform).toBe('translateX(0px)');
+      rerender(<SegmentedControl options={['Debit', 'Credit']} value="Credit" />);
+      expect(thumb()?.style.width).toBe('80px');
+      expect(thumb()?.style.transform).toBe('translateX(70px)');
+      restore();
+    });
+
+    it('renders without a thumb and without ResizeObserver when nothing is selected', () => {
+      const original = globalThis.ResizeObserver;
+      // @ts-expect-error simulate an environment without ResizeObserver
+      delete globalThis.ResizeObserver;
+      const { container } = render(<SegmentedControl options={['Debit', 'Credit']} />);
+      expect(container.querySelector('[data-segmented-thumb]')).toBeNull();
+      globalThis.ResizeObserver = original;
+    });
   });
 });

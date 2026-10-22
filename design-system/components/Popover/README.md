@@ -30,3 +30,6 @@ The one floating surface every dropdown uses: Select's list, Menu, DateField's c
 
 ## Built from
 Radix Popover (Floating UI).
+
+## Motion
+Fades and slides in; fades and slides out on close (dur-fast).

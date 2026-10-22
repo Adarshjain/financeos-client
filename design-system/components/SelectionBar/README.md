@@ -19,3 +19,6 @@ Button, Icon.
 
 ## Variants
 - Four actions (transactions), a single action (rules), and an action that does not apply to the current selection (greyed, with the reason in the subtitle).
+
+## Motion
+Slides up from the bottom on enter and down on exit (dur-base); stays mounted until the exit ends. None under reduced motion.

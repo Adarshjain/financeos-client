@@ -142,16 +142,16 @@ describe('TransactionsScreen selection and bulk actions', () => {
     expect(screen.getByText('₹8,679 · 2 need review')).toBeInTheDocument();
   });
 
-  it('select all takes the rows on this page and Cancel puts them back', () => {
+  it('select all takes the rows on this page and Cancel puts them back', async () => {
     setup();
     tick('BigBasket');
     fireEvent.click(screen.getAllByRole('button', { name: 'Select all 4' })[0]);
     expect(screen.getByText('4 selected')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByText(/ selected$/)).toBeNull();
+    await waitFor(() => expect(screen.queryByText(/ selected$/)).toBeNull());
   });
 
-  it('starts from nothing when the filters change', () => {
+  it('starts from nothing when the filters change', async () => {
     const view = setup();
     tick('Swiggy');
     expect(screen.getByText('1 selected')).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('TransactionsScreen selection and bulk actions', () => {
         needsReviewCount={null}
       />,
     );
-    expect(screen.queryByText(/ selected$/)).toBeNull();
+    await waitFor(() => expect(screen.queryByText(/ selected$/)).toBeNull());
   });
 
   it('enables Merge for exactly two, with the pair hint; otherwise it is disabled saying pick 2', () => {

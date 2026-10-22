@@ -26,3 +26,6 @@ Two to four mutually exclusive views of the same content, shown side by side: De
 
 ## Built from
 Native buttons with radio group semantics, Icon (in option icons).
+
+## Motion
+The selected thumb slides between options (dur-base); first paint uses the option's own fill. None under reduced motion.

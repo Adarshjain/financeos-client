@@ -1,8 +1,27 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
+
+
+function mockLayout(positions: Record<string, [number, number]>) {
+  const label = (el: HTMLElement) => (el.textContent ?? '').trim();
+  const left = vi
+    .spyOn(HTMLElement.prototype, 'offsetLeft', 'get')
+    .mockImplementation(function (this: HTMLElement) {
+      return positions[label(this)]?.[0] ?? 0;
+    });
+  const width = vi
+    .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+    .mockImplementation(function (this: HTMLElement) {
+      return positions[label(this)]?.[1] ?? 0;
+    });
+  return () => {
+    left.mockRestore();
+    width.mockRestore();
+  };
+}
 
 describe('Tabs', () => {
   it('renders tablist and tabs from items', () => {
@@ -297,6 +316,61 @@ describe('Tabs', () => {
       const tab = screen.getByRole('tab', { name: /Statements\s*·\s*3/ });
       expect(tab.tagName).toBe('A');
       expect(tab).toHaveAttribute('href', '/s');
+    });
+  });
+
+  describe('sliding indicator', () => {
+    const items = [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Beta' },
+    ];
+    const positions: Record<string, [number, number]> = { Alpha: [0, 60], Beta: [64, 50] };
+
+    it('follows the active tab and hands the underline over to the indicator', () => {
+      const restore = mockLayout(positions);
+      const { container, rerender } = render(<Tabs value="a" items={items} />);
+      const indicator = () => container.querySelector<HTMLElement>('[data-tabs-indicator]');
+      expect(indicator()?.style.width).toBe('60px');
+      expect(indicator()?.style.transform).toBe('translateX(0px)');
+      expect(screen.getByRole('tab', { name: 'Alpha' }).className).toContain('data-active:border-transparent');
+      rerender(<Tabs value="b" items={items} />);
+      expect(indicator()?.style.width).toBe('50px');
+      expect(indicator()?.style.transform).toBe('translateX(64px)');
+      restore();
+    });
+
+    it('slides when the active tab changes but snaps when the same tab is resized', () => {
+      const callbacks: Array<() => void> = [];
+      const original = globalThis.ResizeObserver;
+      globalThis.ResizeObserver = class {
+        constructor(cb: () => void) {
+          callbacks.push(cb);
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      } as unknown as typeof ResizeObserver;
+      const pos: Record<string, [number, number]> = { Alpha: [0, 60], Beta: [64, 50] };
+      const restore = mockLayout(pos);
+      const { container, rerender } = render(<Tabs value="a" items={items} />);
+      const indicator = () => container.querySelector<HTMLElement>('[data-tabs-indicator]')!;
+      expect(indicator().className).not.toContain('transition-all');
+      rerender(<Tabs value="b" items={items} />);
+      expect(indicator().className).toContain('transition-all');
+      pos.Beta = [64, 80];
+      act(() => callbacks.forEach((cb) => cb()));
+      expect(indicator().style.width).toBe('80px');
+      expect(indicator().className).not.toContain('transition-all');
+      restore();
+      globalThis.ResizeObserver = original;
+    });
+
+    it('works without ResizeObserver', () => {
+      const original = globalThis.ResizeObserver;
+      // @ts-expect-error simulate an environment without ResizeObserver
+      delete globalThis.ResizeObserver;
+      expect(() => render(<Tabs defaultValue="a" items={items} />)).not.toThrow();
+      globalThis.ResizeObserver = original;
     });
   });
 });

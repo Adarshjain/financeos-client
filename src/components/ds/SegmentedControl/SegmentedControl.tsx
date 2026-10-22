@@ -1,9 +1,10 @@
 'use client';
 
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useCallback, useRef } from 'react';
 
 import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
+import { useSlidingIndicator } from '../useSlidingIndicator';
 
 export type SegmentedControlSize = 'md' | 'lg' | 'xl';
 
@@ -42,6 +43,16 @@ const Impl = (
   ref: React.ForwardedRef<HTMLDivElement>,
 ) => {
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const groupRef = useRef<HTMLDivElement | null>(null);
+  const setGroupRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      groupRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref],
+  );
+  const { rect, animated } = useSlidingIndicator(groupRef, '[role="radio"][aria-checked="true"]', ['aria-checked']);
 
   const normalizedOptions: SegmentedControlOption<string>[] = options.map((opt) =>
     typeof opt === 'string' ? { value: opt, label: opt } : opt,
@@ -99,18 +110,29 @@ const Impl = (
 
   return (
     <div
-      ref={ref}
+      ref={setGroupRef}
       role="radiogroup"
       aria-label={ariaLabel || 'Options'}
       aria-disabled={disabled}
       className={cn(
-        'border border-line-strong rounded-ds-md overflow-hidden bg-surface',
+        'relative border border-line-strong rounded-ds-md overflow-hidden bg-surface',
         fullWidth ? 'flex w-full' : 'inline-flex',
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
       {...props}
     >
+      {rect ? (
+        <span
+          aria-hidden="true"
+          data-segmented-thumb=""
+          className={cn(
+            'pointer-events-none absolute inset-y-0 left-0 bg-brand',
+            animated && 'transition-all duration-base motion-reduce:transition-none',
+          )}
+          style={{ width: rect.width, transform: `translateX(${rect.left}px)` }}
+        />
+      ) : null}
       {normalizedOptions.map((opt, idx) => {
         const isSelected = currentValue === opt.value;
         const isOptDisabled = disabled || Boolean(opt.disabled);
@@ -131,12 +153,12 @@ const Impl = (
             onClick={() => handleSelect(opt.value, opt.disabled)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              'inline-flex items-center justify-center gap-space-6 px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
+              'relative inline-flex items-center justify-center gap-space-6 px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
               size === 'xl' ? 'h-control-xl' : 'h-control-md',
               fullWidth && 'flex-1',
               isSelected
-                ? 'bg-brand text-on-brand'
+                ? cn('text-on-brand', !rect && 'bg-brand')
                 : isOptDisabled
                   ? 'text-ink-faint'
                   : 'text-ink-3 hover:text-ink hover:bg-hover active:bg-pressed',

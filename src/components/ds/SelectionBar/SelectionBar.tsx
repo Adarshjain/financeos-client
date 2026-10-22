@@ -1,11 +1,13 @@
 'use client';
 
-import React, { forwardRef, useEffect } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+
+const EXIT_FALLBACK_MS = 400;
 
 export interface SelectionBarAction {
   id?: string;
@@ -32,23 +34,72 @@ export interface SelectionBarProps
 /**
  * SelectionBar: bar that appears while items are selected in lists.
  * Shows count, summary line, and actions that apply to the selection.
+ * Slides up from the bottom on enter and down on exit (the last content stays mounted while it leaves; `data-selection-bar` stays until it is gone); no motion under reduced motion.
  * Floating pill centred above list from desk up; docked full width to the bottom edge below desk, where it covers the tab bar, which hides while a SelectionBar is mounted (the `data-selection-bar` mark, read by TabBar's `with-selection-bar:` variant).
  */
 export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
   (
     {
       count,
-      summary,
-      actions,
+      summary: summaryProp,
+      actions: actionsProp,
       onClear,
-      onSelectAll,
-      selectAllLabel,
+      onSelectAll: onSelectAllProp,
+      selectAllLabel: selectAllLabelProp,
       clearAriaLabel = 'Clear selection',
       className,
+      onAnimationEnd,
       ...props
     },
     ref,
   ) => {
+    const live = count > 0;
+    // The last content shown while selected, kept so the exit animation plays on real content.
+    const [lastShown, setLastShown] = useState({
+      count,
+      summary: summaryProp,
+      actions: actionsProp,
+      onSelectAll: onSelectAllProp,
+      selectAllLabel: selectAllLabelProp,
+    });
+    if (
+      live &&
+      (lastShown.count !== count ||
+        lastShown.summary !== summaryProp ||
+        lastShown.actions !== actionsProp ||
+        lastShown.onSelectAll !== onSelectAllProp ||
+        lastShown.selectAllLabel !== selectAllLabelProp)
+    ) {
+      setLastShown({
+        count,
+        summary: summaryProp,
+        actions: actionsProp,
+        onSelectAll: onSelectAllProp,
+        selectAllLabel: selectAllLabelProp,
+      });
+    }
+    const shown = live
+      ? {
+          count,
+          summary: summaryProp,
+          actions: actionsProp,
+          onSelectAll: onSelectAllProp,
+          selectAllLabel: selectAllLabelProp,
+        }
+      : lastShown;
+    const { summary, actions, onSelectAll, selectAllLabel } = shown;
+    const shownCount = shown.count;
+
+    // True once the exit animation finished (or was never needed): the bar renders nothing.
+    const [gone, setGone] = useState(!live);
+    if (live && gone) setGone(false);
+    useEffect(() => {
+      if (live) return;
+      // Fallback for when no animationend fires (reduced motion removes the animation).
+      const t = window.setTimeout(() => setGone(true), EXIT_FALLBACK_MS);
+      return () => window.clearTimeout(t);
+    }, [live]);
+
     // Esc key clears selection
     useEffect(() => {
       if (count <= 0) return;
@@ -64,13 +115,25 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       return () => window.removeEventListener('keydown', handleKeyDown);
     }, [count, onClear]);
 
-    if (count <= 0) return null;
+    if (!live && gone) return null;
 
     return (
       <div
         ref={ref}
         data-selection-bar=""
-        className={cn('relative z-floating w-full', className)}
+        data-state={live ? 'open' : 'closed'}
+        inert={!live}
+        onAnimationEnd={(e) => {
+          onAnimationEnd?.(e);
+          if (e.target === e.currentTarget && !live) setGone(true);
+        }}
+        className={cn(
+          'relative z-floating w-full',
+          'data-open:animate-in data-open:slide-in-from-bottom data-open:duration-base',
+          'data-closed:animate-out data-closed:slide-out-to-bottom data-closed:fill-mode-forwards data-closed:duration-base',
+          'motion-reduce:data-open:animate-none motion-reduce:data-closed:animate-none motion-reduce:data-closed:hidden',
+          className,
+        )}
         {...props}
       >
         <div
@@ -96,7 +159,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
           {/* Count and summary: column 2 on mobile, at the beginning on desktop */}
           <div className="flex flex-col leading-tight min-w-0 pr-space-4 desk:pr-0 col-start-2 order-2 desk:order-1">
             <b className="font-bold text-body text-ink tabular-nums truncate">
-              {count} selected
+              {shownCount} selected
             </b>
             {summary ? (
               <span className="text-caption font-semibold text-ink-3 truncate">
