@@ -20,6 +20,8 @@ import {
 } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { RowTransition, SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import { loadClosedLoans } from './closedLoansAction';
 import {
@@ -38,9 +40,11 @@ const columns = [
     meta: { size: 'fill', grow: 1.5, phone: 'main' },
     cell: ({ row }) => (
       <Text variant="body" truncate>
-        <Text variant="body-strong" as="span">
-          {row.original.name}
-        </Text>
+        <SharedName name={transitionName.loan(row.original.id)}>
+          <Text variant="body-strong" as="span">
+            {row.original.name}
+          </Text>
+        </SharedName>
         <Text variant="body" tone="ink-3" as="span">
           {`${row.original.lender ? ` · ${row.original.lender}` : ''} · ${row.original.kind}`}
         </Text>
@@ -186,12 +190,19 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
           columns={columns}
           data={visible}
           getRowId={(row) => row.id}
+          wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
           pager={pager}
           rowState={mutedWhenClosed}
           band={closedBand<LoanRow>(closedLine, toggle)}
           phoneSub={(row) => row.phoneSub}
           onRowSelect={(row) => router.push(row.href)}
-          empty={<EmptyState compact description={state.q ? 'No loans match.' : 'No loans yet. Add a loan to track its EMIs.'} />}
+          empty={
+            <EmptyState
+              compact
+              description={state.q ? 'No loans match.' : 'No loans yet. Add a loan to track its EMIs.'}
+              action={state.q ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', page: 0 }) } : undefined}
+            />
+          }
           stickyHeader={false}
         />
         <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} />

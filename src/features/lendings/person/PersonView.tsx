@@ -8,6 +8,8 @@ import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
+import { SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import { useAddLending } from '../form/AddLendingProvider';
 import { firstNameOf } from '../settle';
@@ -68,7 +70,12 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
     <>
       <ShellPage
         crumb="Owe & lend / Lendings"
-        title={cp.name}
+        title={
+          // The lendings row's name grows into this title.
+          <SharedName name={transitionName.person(cp.id)}>
+            <span>{cp.name}</span>
+          </SharedName>
+        }
         backHref={LENDINGS_HREF}
         onAdd={() => addLending.openFor(cp)}
       >

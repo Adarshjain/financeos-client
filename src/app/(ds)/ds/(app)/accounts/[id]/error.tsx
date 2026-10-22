@@ -2,21 +2,16 @@
 
 import React from 'react';
 
-import { ErrorState } from '@/components/organisms';
+import { PageError } from '@/features/shell/PageError';
 
 export default function DsAccountError({
   error,
   reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
+  unstable_retry?: () => void;
 }) {
-  return (
-    <ErrorState
-      title="Could not load this account"
-      description="The request failed. Try again, and quote the reference if it keeps failing."
-      action={{ label: 'Try again', onSelect: reset }}
-      reference={error.digest}
-    />
-  );
+  return <PageError error={error} reset={reset} unstable_retry={unstable_retry} what="this account" />;
 }

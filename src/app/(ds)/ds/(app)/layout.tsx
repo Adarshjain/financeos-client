@@ -6,6 +6,7 @@ import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
+import { PageTransition } from '@/lib/viewTransition';
 
 export default async function DsAppLayout({
   children,
@@ -33,7 +34,7 @@ export default async function DsAppLayout({
           <Suspense fallback={null}>
             <NavigationProgress />
           </Suspense>
-          {children}
+          <PageTransition>{children}</PageTransition>
         </div>
 
         {/* Phone floating TabBar (hidden from desk) */}

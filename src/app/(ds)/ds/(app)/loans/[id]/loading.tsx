@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Card, Skeleton } from '@/components/ds';
+import { DetailLoadingTitle } from '@/features/shell/DetailLoadingTitle';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 
@@ -22,7 +23,7 @@ function SkeletonCard({ rows }: { rows: number }) {
 /** The loan page's shape: the particulars line, the figures, then the schedule beside two cards. */
 export default function DsLoanLoading() {
   return (
-    <ShellPage crumb="Owe & lend / Loans" title="Loan" backHref={appHref('/loans')}>
+    <ShellPage crumb="Owe & lend / Loans" title={<DetailLoadingTitle kind="loan">Loan</DetailLoadingTitle>} backHref={appHref('/loans')}>
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
         <Skeleton width="60%" height={20} />
         <Card>

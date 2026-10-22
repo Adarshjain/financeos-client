@@ -7,6 +7,7 @@ import { Badge, Banner, Card, Divider, EmptyState, SectionHeader, Text } from '@
 import { ErrorState } from '@/components/organisms';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
+import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
 import { INBOX_SECTIONS, type InboxSectionKey } from './inbox.helpers';
 import type { PendingBillAction } from './inboxBillAction';
@@ -37,6 +38,8 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
   // Updates live in Notifications; the server still sends them for Legacy.
   const items = React.useMemo(() => (data?.items ?? []).filter((i) => i.section !== 'info'), [data]);
   const deepLink = useInboxDeepLink(highlightKey, data ? items : null);
+  // Snooze and dismiss hide the row in the cache at once; the deferred rows let it fold away.
+  const shownItems = useDeferredRows(items);
 
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
     const pending = pendingFor(item, button);
@@ -70,19 +73,21 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
   } else {
     body = (
       <>
-        <Card>
-          {INBOX_SECTIONS.filter(({ key }) => key !== 'info').map(({ key }) => (
-            <InboxSection
-              key={key}
-              sectionKey={key}
-              items={items.filter((i) => i.section === key)}
-              highlightKey={deepLink.found ? highlightKey : null}
-              onBillButton={onBillButton}
-              onSnooze={(item, until) => snooze(item.key, until)}
-              onDismiss={(item) => dismiss(item.key)}
-            />
-          ))}
-        </Card>
+        <ListTransition>
+          <Card>
+            {INBOX_SECTIONS.filter(({ key }) => key !== 'info').map(({ key }) => (
+              <InboxSection
+                key={key}
+                sectionKey={key}
+                items={shownItems.filter((i) => i.section === key)}
+                highlightKey={deepLink.found ? highlightKey : null}
+                onBillButton={onBillButton}
+                onSnooze={(item, until) => snooze(item.key, until)}
+                onDismiss={(item) => dismiss(item.key)}
+              />
+            ))}
+          </Card>
+        </ListTransition>
         <Text as="p" variant="caption" tone="ink-3" className="desk:hidden">
           <Text as="strong" variant="caption" tone="ink">
             Swipe
@@ -113,22 +118,24 @@ interface InboxSectionProps extends Omit<React.ComponentProps<typeof InboxRow>, 
 function InboxSection({ sectionKey, items, highlightKey, ...handlers }: InboxSectionProps) {
   if (items.length === 0) return null;
   return (
-    <section data-testid={`inbox-section-${sectionKey}`}>
-      <SectionHeader
-        as="h2"
-        variant="strong"
-        sticky={false}
-        borderTop={false}
-        meta={<Badge tone={SECTION_TONE[sectionKey]}>{items.length}</Badge>}
-      >
-        {INBOX_SECTION_TITLES[sectionKey]}
-      </SectionHeader>
-      {items.map((item, index) => (
-        <React.Fragment key={item.key}>
-          {index > 0 ? <Divider /> : null}
-          <InboxRow item={item} highlighted={item.key === highlightKey} {...handlers} />
-        </React.Fragment>
-      ))}
-    </section>
+    <RowTransition>
+      <section data-testid={`inbox-section-${sectionKey}`}>
+        <SectionHeader
+          as="h2"
+          variant="strong"
+          sticky={false}
+          borderTop={false}
+          meta={<Badge tone={SECTION_TONE[sectionKey]}>{items.length}</Badge>}
+        >
+          {INBOX_SECTION_TITLES[sectionKey]}
+        </SectionHeader>
+        {items.map((item, index) => (
+          <RowTransition key={item.key}>
+            {index > 0 ? <Divider /> : null}
+            <InboxRow item={item} highlighted={item.key === highlightKey} {...handlers} />
+          </RowTransition>
+        ))}
+      </section>
+    </RowTransition>
   );
 }

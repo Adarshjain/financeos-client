@@ -221,6 +221,7 @@ export function ShellTabBar({
       </Dialog>
 
       <TabBar
+        data-view-transition="tab-bar"
         items={shellTabBarItems.map((item) =>
           item.href
             ? {
@@ -255,6 +256,7 @@ export function ShellRail({
 
   return (
     <Rail
+      data-view-transition="rail"
       groups={shellRailGroups.map((group) => ({
         ...group,
         items: group.items.map((item) => ({

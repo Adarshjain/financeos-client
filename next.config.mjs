@@ -4,7 +4,8 @@ import { withSerwist } from '@serwist/turbopack';
 const nextConfig = {
   devIndicators: false,
   // Two root layouts ((legacy), (ds)) means no app/layout.tsx; app/global-not-found.tsx serves unmatched URLs.
-  experimental: { globalNotFound: true },
+  // viewTransition: React <ViewTransition> for the Dinero page fades and list/row motion (src/lib/viewTransition.tsx).
+  experimental: { globalNotFound: true, viewTransition: true },
   // Next 16 blocks cross-origin requests to dev-server internals (/_next/*) by
   // default, which breaks hydration and server actions when the app is opened
   // via a LAN IP. A bare '*' is rejected by Next's matcher; '*.*.*.*' matches

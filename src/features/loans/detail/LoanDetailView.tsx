@@ -7,6 +7,8 @@ import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { InstallmentDto, LoanDetailResponse, LoanEventType } from '@/lib/loan.types';
+import { SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import { ChargeFormDialog } from './ChargeFormDialog';
 import { EntriesCard } from './EntriesCard';
@@ -78,7 +80,12 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
     <>
       <ShellPage
         crumb="Owe & lend / Loans"
-        title={loan.name}
+        title={
+          // The loans row's name grows into this title.
+          <SharedName name={transitionName.loan(loan.id)}>
+            <span>{loan.name}</span>
+          </SharedName>
+        }
         backHref={appHref('/loans')}
         onAdd={() => setEventType('rate_change')}
       >

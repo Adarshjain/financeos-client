@@ -8,6 +8,7 @@ import { fetchAccounts, fetchPeople, fetchPeopleMatches, fetchPeopleSummary, fet
 import { TileGrid } from '@/features/loans/TileGrid';
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
+import { ListTransition } from '@/lib/viewTransition';
 
 type SearchParams = { q?: string; filter?: string; page?: string; size?: string };
 
@@ -40,12 +41,14 @@ export default async function DsLendingsPage({ searchParams }: { searchParams: P
         error="Could not load this figure"
       />
       {list.ok ? (
-        <LendingsListCard
-          state={state}
-          rows={list.data.content.map((p) => lendingRow(p, today))}
-          totalElements={list.data.totalElements}
-          totalPages={list.data.totalPages}
-        />
+        <ListTransition>
+          <LendingsListCard
+            state={state}
+            rows={list.data.content.map((p) => lendingRow(p, today))}
+            totalElements={list.data.totalElements}
+            totalPages={list.data.totalPages}
+          />
+        </ListTransition>
       ) : (
         <LoansLoadError what="people" reference={list.reference} />
       )}

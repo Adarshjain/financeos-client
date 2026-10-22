@@ -280,6 +280,21 @@ describe('UpcomingView states', () => {
     expect(screen.queryByTestId('tile-overdue')).toBeNull();
   });
 
+  it('a kind filter with no rows says so and Clear filters shows every kind again', () => {
+    search = new URLSearchParams('kind=card_bill');
+    mockQuery({ data: [row({ type: 'emi' })] });
+    render(<UpcomingView />);
+    expect(screen.getByText('Nothing of this kind within the next 3 months.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(screen.queryByText(/Nothing of this kind/)).toBeNull();
+  });
+
+  it('no filter and no rows has no Clear filters action', () => {
+    mockQuery({ data: [] });
+    render(<UpcomingView />);
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+  });
+
   it('singular month', () => {
     search = new URLSearchParams('months=1');
     mockQuery({ data: [] });

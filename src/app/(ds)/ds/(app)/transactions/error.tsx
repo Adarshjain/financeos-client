@@ -2,18 +2,16 @@
 
 import React from 'react';
 
-import { ErrorState } from '@/components/organisms';
-import { ShellPage } from '@/features/shell/ShellPage';
+import { PageError } from '@/features/shell/PageError';
 
-export default function DsTransactionsError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  return (
-    <ShellPage crumb="Money" title="Transactions">
-      <ErrorState
-        title="Could not load transactions"
-        description="The request failed. Try again, and quote the reference if it keeps failing."
-        action={{ label: 'Try again', onSelect: reset }}
-        reference={error.digest}
-      />
-    </ShellPage>
-  );
+export default function DsTransactionsError({
+  error,
+  reset,
+  unstable_retry,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+  unstable_retry?: () => void;
+}) {
+  return <PageError error={error} reset={reset} unstable_retry={unstable_retry} what="transactions" shell={{ crumb: 'Money', title: 'Transactions' }} />;
 }

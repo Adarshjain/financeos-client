@@ -8,6 +8,7 @@ import { fetchLoanMatches, fetchLoans, fetchLoansSummary } from '@/features/loan
 import { TileGrid } from '@/features/loans/TileGrid';
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
+import { ListTransition } from '@/lib/viewTransition';
 
 type SearchParams = { q?: string; page?: string; size?: string };
 
@@ -32,13 +33,15 @@ export default async function DsLoansPage({ searchParams }: { searchParams: Prom
       />
       {matches ? <LoanMatchBanner matches={matches} /> : null}
       {list.ok ? (
-        <LoansListCard
-          state={state}
-          rows={list.data.content.map((loan) => loanRow(loan, today))}
-          totalElements={list.data.totalElements}
-          totalPages={list.data.totalPages}
-          closedLine={closedLoansLine(summary?.closedLoanCount ?? 0)}
-        />
+        <ListTransition>
+          <LoansListCard
+            state={state}
+            rows={list.data.content.map((loan) => loanRow(loan, today))}
+            totalElements={list.data.totalElements}
+            totalPages={list.data.totalPages}
+            closedLine={closedLoansLine(summary?.closedLoanCount ?? 0)}
+          />
+        </ListTransition>
       ) : (
         <LoansLoadError what="loans" reference={list.reference} />
       )}

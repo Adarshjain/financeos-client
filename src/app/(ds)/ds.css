@@ -63,3 +63,135 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* View transitions (React <ViewTransition>, src/lib/viewTransition.tsx). Motion uses the duration tokens and the
+   standard easing from tokens.json; browsers without View Transitions update instantly.
+   - The page (PageTransition in the (app) layout) crossfades between pages and from skeleton to content.
+   - The shell and everything that floats above the page (top bar, rail, tab bar, progress, dialogs and their
+     backdrops, menus, toasts, the selection bar) keep their own layer and never animate, so moving rows can't
+     slide over them and the shell nav doesn't fade.
+   - Rows: ds-row-enter slides in, ds-row-exit folds away, ds-row-move follows the list.
+   - ds-morph: a row's part growing into the detail header (shared name). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--ds-dur-base);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+/* The page ((app) layout's PageTransition): crossfades in place; a taller or shorter page keeps its top edge
+   instead of stretching. The root under it holds only the background and the static shell. */
+::view-transition-group(.ds-page),
+::view-transition-old(.ds-page),
+::view-transition-new(.ds-page) {
+  animation-duration: var(--ds-dur-base);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+::view-transition-old(.ds-page),
+::view-transition-new(.ds-page) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+}
+
+[data-view-transition='rail'] {
+  view-transition-name: ds-rail;
+}
+
+[data-view-transition='tab-bar'] {
+  view-transition-name: ds-tab-bar;
+}
+
+[data-view-transition='progress'] {
+  view-transition-name: ds-progress;
+}
+
+/* match-element: a name per element, so several dialogs (or two pages' top bars) never clash. */
+.z-overlay.bg-backdrop,
+[role='dialog'],
+[data-radix-popper-content-wrapper],
+[data-sonner-toaster],
+[data-selection-bar],
+[data-view-transition='header'] {
+  view-transition-name: match-element;
+  view-transition-class: ds-static;
+}
+
+::view-transition-group(ds-rail),
+::view-transition-group(ds-tab-bar),
+::view-transition-group(ds-progress),
+::view-transition-group(.ds-static),
+::view-transition-new(ds-rail),
+::view-transition-new(ds-tab-bar),
+::view-transition-new(ds-progress),
+::view-transition-new(.ds-static) {
+  animation: none;
+}
+
+::view-transition-old(ds-rail),
+::view-transition-old(ds-tab-bar),
+::view-transition-old(ds-progress),
+::view-transition-old(.ds-static) {
+  display: none;
+}
+
+::view-transition-group(.ds-row-enter),
+::view-transition-group(.ds-row-exit),
+::view-transition-group(.ds-row-move) {
+  animation-duration: var(--ds-dur-base);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+/* A row whose height changes keeps its top edge instead of stretching. */
+::view-transition-old(.ds-row-move),
+::view-transition-new(.ds-row-move) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+  animation-duration: var(--ds-dur-base);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+::view-transition-new(.ds-row-enter) {
+  animation: ds-row-in var(--ds-dur-base) cubic-bezier(.2, .8, .2, 1) both;
+}
+
+::view-transition-old(.ds-row-exit) {
+  animation: ds-row-fold var(--ds-dur-base) cubic-bezier(.2, .8, .2, 1) both;
+}
+
+@keyframes ds-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--ds-space-8)));
+  }
+}
+
+@keyframes ds-row-fold {
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+::view-transition-group(.ds-morph) {
+  animation-duration: var(--ds-dur-slow);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+/* Text grows by its height without stretching sideways. */
+::view-transition-old(.ds-morph),
+::view-transition-new(.ds-morph) {
+  width: auto;
+  height: 100%;
+  animation-duration: var(--ds-dur-slow);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

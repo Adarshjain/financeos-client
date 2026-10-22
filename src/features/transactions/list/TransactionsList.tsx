@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
 import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
+import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
 import { activeFilterWords } from './filterOptions';
 import { dayHeader, monthBand, type TransactionListRow } from './transactionRows';
@@ -115,59 +116,62 @@ export function TransactionsList({
     );
 
   return (
-    <Card>
-      <DataTable
-        columns={columns}
-        data={rows}
-        getRowId={(row) => row.id}
-        sort={sortStateOf(query.sort)}
-        onSortChange={(sort) => onChange({ sort: sortIdOf(sort) })}
-        selectable={onSelectionChange !== undefined}
-        selection={selection}
-        onSelectionChange={onSelectionChange}
-        wrapRow={wrapRow ? (row, node) => wrapRow(asListRow(row), node) : undefined}
-        onRowSelect={onOpenDetail ? (row) => onOpenDetail(row.id) : undefined}
-        highlightedRowId={openId}
-        band={(row) => monthBand(asListRow(row), byDate)}
-        dayHeader={(row) => dayHeader(asListRow(row), byDate)}
-        pager={pager}
-        busy={busy}
-        empty={empty}
-        stickyHeader={false}
-        renderRow={(row, rowProps) => {
-          const r = asListRow(row);
-          return (
-            <TransactionRow
-              key={r.id}
-              date={r.date}
-              description={r.description}
-              amount={r.formattedAmount}
-              isCredit={r.isCredit}
-              balance={r.balance}
-              account={r.account}
-              plastic={r.plastic}
-              reviewStatus={r.reviewStatus}
-              link={r.link}
-              provenance={r.provenance}
-              categories={r.categories}
-              unsetCategoryLabel="Set category"
-              onSetCategory={onEditCategories ? () => onEditCategories(r.id) : undefined}
-              onCategoryClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
-              onMoreCategoriesClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
-              tone={r.watching ? 'warning' : 'default'}
-              muted={r.excluded}
-              highlighted={rowProps.highlighted}
-              selectable={rowProps.selectable}
-              selected={rowProps.selected}
-              onSelectedChange={rowProps.onSelectedChange}
-              selectionMode={rowProps.selectionMode}
-              onDetail={onOpenDetail ? rowProps.onSelect : undefined}
-              query={query.q || undefined}
-            />
-          );
-        }}
-      />
-    </Card>
+    <ListTransition>
+      <Card>
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+          sort={sortStateOf(query.sort)}
+          onSortChange={(sort) => onChange({ sort: sortIdOf(sort) })}
+          selectable={onSelectionChange !== undefined}
+          selection={selection}
+          onSelectionChange={onSelectionChange}
+          // Each row slides in, folds away and moves with the list (wrapping the swipe, so a swiped row folds as it is).
+          wrapRow={(row, node) => <RowTransition key={row.id}>{wrapRow ? wrapRow(asListRow(row), node) : node}</RowTransition>}
+          onRowSelect={onOpenDetail ? (row) => onOpenDetail(row.id) : undefined}
+          highlightedRowId={openId}
+          band={(row) => monthBand(asListRow(row), byDate)}
+          dayHeader={(row) => dayHeader(asListRow(row), byDate)}
+          pager={pager}
+          busy={busy}
+          empty={empty}
+          stickyHeader={false}
+          renderRow={(row, rowProps) => {
+            const r = asListRow(row);
+            return (
+              <TransactionRow
+                key={r.id}
+                date={r.date}
+                description={r.description}
+                amount={r.formattedAmount}
+                isCredit={r.isCredit}
+                balance={r.balance}
+                account={r.account}
+                plastic={r.plastic}
+                reviewStatus={r.reviewStatus}
+                link={r.link}
+                provenance={r.provenance}
+                categories={r.categories}
+                unsetCategoryLabel="Set category"
+                onSetCategory={onEditCategories ? () => onEditCategories(r.id) : undefined}
+                onCategoryClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
+                onMoreCategoriesClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
+                tone={r.watching ? 'warning' : 'default'}
+                muted={r.excluded}
+                highlighted={rowProps.highlighted}
+                selectable={rowProps.selectable}
+                selected={rowProps.selected}
+                onSelectedChange={rowProps.onSelectedChange}
+                selectionMode={rowProps.selectionMode}
+                onDetail={onOpenDetail ? rowProps.onSelect : undefined}
+                query={query.q || undefined}
+              />
+            );
+          }}
+        />
+      </Card>
+    </ListTransition>
   );
 }
 
