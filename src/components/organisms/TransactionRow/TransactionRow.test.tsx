@@ -206,6 +206,24 @@ describe('TransactionRow', () => {
     expect(shown.closest('[aria-hidden="true"]')).toBeNull();
   });
 
+  it('keeps the eye spacing inside the Reveal, not in the grid gap, so a closed eye leaves no space', () => {
+    const props = { description: 'Uber India', amount: '640.00', selectable: true, onDetail: vi.fn() };
+    render(<TransactionRow {...props} />);
+    const eye = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
+    const grid = eye.closest('.grid-cols-fill-auto-auto') as HTMLElement;
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveClass('gap-x-0');
+    expect(grid).not.toHaveClass('gap-x-space-10');
+    expect(eye.parentElement).toHaveClass('pl-space-10');
+  });
+
+  it('adds no extra eye padding when a chevron keeps the grid gap', () => {
+    render(<TransactionRow description="Uber India" amount="640.00" selectable onDetail={vi.fn()} chevron />);
+    const eye = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
+    expect(eye.closest('.grid-cols-fill-auto-auto')).toHaveClass('gap-x-space-10');
+    expect(eye.parentElement).not.toHaveClass('pl-space-10');
+  });
+
   it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
     const handleView = vi.fn();
     render(
