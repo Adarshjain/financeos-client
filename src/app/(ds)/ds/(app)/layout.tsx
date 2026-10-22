@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
+import { NavigationProgress } from '@/features/shell/NavigationProgress';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
@@ -28,7 +29,12 @@ export default async function DsAppLayout({
         </div>
 
         {/* Main content column */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-dvh">{children}</div>
+        <div className="flex-1 min-w-0 flex flex-col min-h-dvh">
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
+          {children}
+        </div>
 
         {/* Phone floating TabBar (hidden from desk) */}
         <ShellTabBar

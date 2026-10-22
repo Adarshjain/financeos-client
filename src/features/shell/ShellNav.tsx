@@ -29,6 +29,7 @@ import {
   shellRailGroups,
   shellTabBarItems,
 } from './navigation';
+import { usePendingPath } from './navigationStore';
 import { appHref, DS_HOME_HREF } from './routes';
 
 type NavCount = { count: number; countTone: 'danger' | 'warning' };
@@ -66,7 +67,9 @@ export function ShellTabBar({
   user: ShellUser;
 }) {
   const pathname = usePathname();
-  const current = getActiveNavItem(pathname);
+  // A clicked nav item reads as current at once, before the page commits.
+  const pendingPath = usePendingPath();
+  const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
   const counts = useNavCounts();
   const addLending = useAddLending();
   const addTransaction = useAddTransaction();
@@ -243,7 +246,9 @@ export function ShellRail({
   user: ShellUser;
 }) {
   const pathname = usePathname();
-  const current = getActiveNavItem(pathname);
+  // A clicked nav item reads as current at once, before the page commits.
+  const pendingPath = usePendingPath();
+  const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
   const counts = useNavCounts();
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);

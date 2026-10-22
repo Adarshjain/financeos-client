@@ -154,6 +154,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const showEye = selectionMode && Boolean(onDetail);
     // A selectable row keeps its eye mounted so it slides in and out with selection mode instead of popping.
     const hasEye = Boolean(onDetail) && (isSelectable || selectionMode);
+    const eyeOnly = hasEye && !chevron;
 
     const { itemProps, nestedControlProps } = useSelectableItem({
       selectable,
@@ -411,7 +412,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           {/* Inner wrapper 2 */}
           <div
             className={cn(
-              'grid gap-x-space-10 min-w-0 w-full flex-1 desk:contents',
+              'grid min-w-0 w-full flex-1 desk:contents',
+              // Eye only: the spacing lives in the amount cell and the Reveal content, so the closed
+              // eye (0 wide) leaves no gap. With a chevron the grid gap stays.
+              eyeOnly ? 'gap-x-0' : 'gap-x-space-10',
               hasEye || chevron
                 ? 'grid-cols-fill-auto-auto'
                 : 'grid-cols-fill-auto',
@@ -470,6 +474,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             <div
               role="cell"
               className={cn(
+                eyeOnly && 'pl-space-10',
                 'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
                 'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
                 isCredit ? 'text-positive' : 'text-ink',
@@ -496,7 +501,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 desk:hidden">
                 {hasEye && (
                   <Reveal open={showEye} axis="x">
-                    <span {...nestedControlProps} className="min-w-0">
+                    <span {...nestedControlProps} className={cn('block min-w-0', eyeOnly && 'pl-space-10')}>
                     <Button
                       variant="ghost"
                       size="sm"
