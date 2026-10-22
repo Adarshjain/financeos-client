@@ -258,18 +258,20 @@ describe('TransactionsView', () => {
     expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
   });
 
-  it('opens the search to the full row on focus and keeps it open while it holds text', () => {
+  it('widens the search on focus and collapses it on blur even while it holds text', () => {
     setup();
     const input = screen.getByPlaceholderText('Search merchant, amount…');
     const frame = () => input.closest('[class*="desk:min-w-container-xs"]') as HTMLElement;
-    expect(frame().className).toContain('max-desk:basis-space-96');
+    expect(frame().className).toContain('flex-1');
     fireEvent.focus(input);
-    expect(frame().className).toContain('max-desk:basis-full');
+    expect(frame().className).toContain('max-desk:basis-11/12');
     fireEvent.blur(input);
-    expect(frame().className).toContain('max-desk:basis-space-96');
+    expect(frame().className).toContain('flex-1');
     fireEvent.change(input, { target: { value: 'zz' } });
+    fireEvent.focus(input);
     fireEvent.blur(input);
-    expect(frame().className).toContain('max-desk:basis-full');
+    expect(frame().className).toContain('flex-1');
+    expect(frame().className).not.toContain('basis-11/12');
   });
 
   it('Clear all in the dialog drops every filter to all time', async () => {

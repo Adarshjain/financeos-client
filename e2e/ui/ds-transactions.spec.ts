@@ -590,6 +590,62 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
+
+      test('the filter row does not scroll by default and scrolls once the search is focused', async ({ page }) => {
+        await seedList();
+        await open(page);
+        const search = page.getByPlaceholder(SEARCH);
+        const scroller = search.locator('xpath=ancestor::div[contains(@class,"overflow-x-auto")][1]');
+        const overflow = () => scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
+        expect(await overflow()).toBeLessThanOrEqual(0);
+        await search.focus();
+        await expect.poll(overflow).toBeGreaterThan(0);
+      });
+
+      test('the page tabs stay visible while a row is selected', async ({ page }) => {
+        await seedList();
+        await open(page);
+        const allTab = page.getByRole('tab', { name: 'All', exact: true });
+        await expect(allTab).toBeVisible();
+
+        const box = await row(page, 'Rent Advance').boundingBox();
+        if (!box) throw new Error('row is not visible');
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await expect(page.getByText('1 selected')).toBeVisible();
+        await page.mouse.up();
+        await expect(allTab).toBeVisible();
+      });
+    }
+
+    if (!phone) {
+      test('Add transaction: Add account opens the account dialog on top, the new account is selected and Save works', async ({ page }) => {
+        await seedList();
+        await open(page);
+        await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+        const dialog = page.getByRole('dialog', { name: 'Add transaction' });
+        await expect(dialog).toBeVisible();
+        await dialog.getByRole('textbox', { name: 'Amount', exact: true }).fill('321');
+        await dialog.getByRole('textbox', { name: 'Description' }).fill('Fresh Account Spend');
+
+        await dialog.getByRole('combobox', { name: /^Account/ }).click();
+        await page.getByRole('button', { name: 'Add account' }).click();
+        const accountDialog = page.getByRole('dialog', { name: 'Add account' });
+        await expect(accountDialog).toBeVisible();
+        // The form underneath is aria-hidden while the account dialog is on top, but still on screen.
+        await expect(page.getByRole('dialog', { name: 'Add transaction', includeHidden: true })).toBeVisible();
+
+        // A wallet is the minimal account: a bank also needs a bank picked.
+        await accountDialog.getByRole('radio', { name: 'Wallet / cash' }).click();
+        await accountDialog.getByRole('textbox', { name: 'Account name' }).fill('Fresh Wallet');
+        await accountDialog.getByRole('button', { name: 'Create account' }).click();
+        await expect(accountDialog).not.toBeVisible({ timeout: 30_000 });
+
+        await expect(dialog.getByRole('combobox', { name: /^Account/ })).toContainText('Fresh Wallet');
+        await dialog.getByRole('button', { name: 'Save transaction' }).click();
+        await expect(dialog).not.toBeVisible();
+        await expect(row(page, 'Fresh Account Spend')).toHaveCount(1);
+      });
     }
   });
 }

@@ -13,6 +13,7 @@ const router = { push: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
 vi.mock('@/features/accounts/form/ds/AccountDialogs', () => ({
   useAccountDialogs: () => ({ open: vi.fn(), openEdit: vi.fn() }),
+  AccountDialogs: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 const create = vi.fn();
 vi.mock('./useTransactionMutations', () => ({

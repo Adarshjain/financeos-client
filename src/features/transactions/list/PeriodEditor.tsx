@@ -14,7 +14,10 @@ const PERIOD_MODES = [
   { value: 'range', label: 'Range' },
 ];
 
-export type PeriodDraft = Pick<FiltersDraft, 'periodMode' | 'preset' | 'date' | 'from' | 'to'>;
+export type PeriodDraft = Pick<
+  FiltersDraft,
+  'periodMode' | 'preset' | 'date' | 'from' | 'to'
+>;
 
 export interface PeriodEditorProps {
   draft: PeriodDraft;
@@ -28,30 +31,39 @@ export function PeriodEditor({ draft, today, onChange }: PeriodEditorProps) {
   return (
     <div className="flex flex-col gap-space-12">
       <SegmentedControl
-        aria-label="Date"
+        aria-label="Period type"
+        className="w-fit"
         options={PERIOD_MODES}
         value={draft.periodMode}
         onValueChange={(mode) => onChange({ periodMode: mode as PeriodMode })}
       />
       {draft.periodMode === 'preset' ? (
         <Select
-          label="Preset"
+          aria-label="Preset"
           options={PERIOD_OPTIONS}
           value={draft.preset}
-          onValueChange={(preset) => onChange({ preset: preset as PeriodPresetId })}
+          onValueChange={(preset) =>
+            onChange({ preset: preset as PeriodPresetId })
+          }
         />
       ) : null}
       {draft.periodMode === 'date' ? (
-        <DateField label="Date" today={today} value={draft.date} onValueChange={(date) => onChange({ date: date as string })} />
+        <DateField
+          aria-label="Date"
+          today={today}
+          value={draft.date}
+          onValueChange={(date) => onChange({ date: date as string })}
+        />
       ) : null}
       {draft.periodMode === 'range' ? (
         <DateField
           range
-          label="Range"
+          aria-label="Range"
           today={today}
           value={{ start: draft.from, end: draft.to }}
           onValueChange={(range) => {
-            if (typeof range === 'object') onChange({ from: range.start ?? '', to: range.end ?? '' });
+            if (typeof range === 'object')
+              onChange({ from: range.start ?? '', to: range.end ?? '' });
           }}
         />
       ) : null}

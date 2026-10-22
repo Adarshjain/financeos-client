@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, type SelectOption, showToast } from '@/components/ds';
 import { BankLogo } from '@/components/organisms';
+import { accountNeedsBank } from '@/features/accounts/accountBank';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -123,13 +124,20 @@ export function TransactionFormDialog({
   }, [knownAccountIds, accounts]);
   const addAccount = () => {
     setKnownAccountIds(new Set(accounts.map((a) => a.id)));
-    accountDialogs.open();
+    // Stay on this page: the new account is picked below once the accounts list has it.
+    accountDialogs.open(undefined, { onCreated: () => undefined });
   };
 
   const accountOptions: SelectOption[] = selectableAccounts.map((a) => ({
     value: a.id,
     label: a.name,
-    icon: <BankLogo bankId={'bank' in a ? (a.bank ?? null) : null} name={a.name} />,
+    icon: (
+      <BankLogo
+        bankId={'bank' in a ? (a.bank ?? null) : null}
+        name={a.name}
+        warning={accountNeedsBank(a.type) && !('bank' in a && a.bank)}
+      />
+    ),
   }));
   const saving = createMutation.isPending || updateMutation.isPending;
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
