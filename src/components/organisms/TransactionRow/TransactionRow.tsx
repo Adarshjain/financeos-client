@@ -148,6 +148,22 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         value
       );
 
+    // The amount cell sets its own responsive size (title on phone, heading on desktop), so its paise
+    // step down one style at each width (heading, label); credits keep their green, others mute to ink-3.
+    const markAmount = (value: React.ReactNode): React.ReactNode => {
+      if (query && typeof value === 'string') return mark(value);
+      if (typeof value !== 'string' && typeof value !== 'number') return value;
+      const text = String(value);
+      const at = text.lastIndexOf('.');
+      if (at < 0) return value;
+      return (
+        <>
+          {text.slice(0, at)}
+          <span className={cn('text-heading desk:text-label', !isCredit && 'text-ink-3')}>{text.slice(at)}</span>
+        </>
+      );
+    };
+
     const isWarning = tone === 'warning';
     const isSelectable = Boolean(selectable);
 
@@ -480,7 +496,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
-              {mark(amount)}
+              {markAmount(amount)}
               {balance && (
                 <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}

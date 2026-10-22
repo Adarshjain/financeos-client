@@ -95,7 +95,7 @@ describe('TransactionRow', () => {
     );
 
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
-    expect(screen.getByText('3,600.00')).toBeInTheDocument();
+    expect(screen.getByText('.00').parentElement).toHaveTextContent('3,600.00');
     expect(screen.getAllByText('bal ₹61,757')[0]).toBeInTheDocument();
     expect(screen.getAllByText(/HDFC Bank Savings/)[0]).toBeInTheDocument();
     expect(screen.getAllByText('Statement')[0]).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('TransactionRow', () => {
       />,
     );
 
-    const amountEl = screen.getByText('+2,15,000.00');
+    const amountEl = screen.getByText('.00').parentElement;
     expect(amountEl).toHaveClass('text-positive');
   });
 
@@ -147,7 +147,7 @@ describe('TransactionRow', () => {
     const cells = screen.getAllByRole('cell');
     const description = cells.find((c) => c.textContent?.startsWith('BigBasket'));
     const categories = screen.getAllByText('Groceries')[1].closest('[role="cell"]');
-    const amount = screen.getByText('3,600.00').closest('[role="cell"]');
+    const amount = screen.getByText('.00').closest('[role="cell"]');
 
     expect(description).toHaveClass('col-start-1', 'row-start-1');
     expect(description).toHaveTextContent('HDFC Bank Savings');
@@ -786,5 +786,24 @@ describe('TransactionRow', () => {
       fireEvent.click(checkboxes[0]);
       expect(handleSelectionChange).toHaveBeenCalledWith(['tx-1', 'tx-2']);
     });
+  });
+});
+
+describe('TransactionRow amount fraction', () => {
+  it('renders the paise in a smaller muted span, the integer part untouched', () => {
+    render(<TransactionRow description="BigBasket" amount="3,600.50" />);
+    const frac = screen.getByText('.50');
+    expect(frac).toHaveClass('text-heading', 'desk:text-label', 'text-ink-3');
+    expect(frac.parentElement?.textContent).toContain('3,600.50');
+  });
+
+  it('keeps a credit fraction in the credit tone (not muted)', () => {
+    render(<TransactionRow description="Salary" amount="+50,000.00" isCredit />);
+    expect(screen.getByText('.00')).not.toHaveClass('text-ink-3');
+  });
+
+  it('leaves a whole amount alone', () => {
+    const { container } = render(<TransactionRow description="Rent" amount="3,600" />);
+    expect(container.querySelector('.desk\\:text-label')).toBeNull();
   });
 });

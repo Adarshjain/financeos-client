@@ -383,7 +383,7 @@ describe('Dialog (Radix overlay)', () => {
 
     const content = screen.getByText('Dialog is open').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
-    expect(content).toHaveClass('max-h-dvh');
+    expect(content).toHaveClass('max-h-dvh-safe');
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
   });
 

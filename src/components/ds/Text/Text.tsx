@@ -28,6 +28,7 @@ export type TextTone =
 
 export type TextFamily = 'text' | 'display';
 export type TextAlign = 'start' | 'center' | 'end';
+export type TextFraction = 'small';
 
 export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   variant?: TextVariant;
@@ -37,6 +38,44 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   align?: TextAlign;
   truncate?: boolean;
   mono?: boolean;
+  fraction?: TextFraction;
+}
+
+/** One step smaller on the existing scale, for the part after the decimal point. */
+const fractionVariantStyles: Partial<Record<TextVariant, string>> = {
+  'hero-figure': 'text-figure',
+  figure: 'text-title',
+  title: 'text-heading',
+  heading: 'text-label',
+  body: 'text-label',
+  'body-strong': 'text-label',
+  label: 'text-caption',
+};
+
+/** Tones that stay as they are on the fraction; every other tone is muted to ink-3. */
+const fractionKeepTones: TextTone[] = ['positive', 'danger', 'ink-3', 'ink-4'];
+
+function renderFraction(
+  children: React.ReactNode,
+  variant: TextVariant,
+  tone: TextTone,
+): React.ReactNode {
+  if (typeof children !== 'string' && typeof children !== 'number') return children;
+  const text = String(children);
+  const at = text.lastIndexOf('.');
+  const smaller = fractionVariantStyles[variant];
+  if (at < 0 || !smaller) return children;
+  return (
+    <>
+      {text.slice(0, at)}
+      <span
+        data-fraction=""
+        className={cn(smaller, !fractionKeepTones.includes(tone) && 'text-ink-3')}
+      >
+        {text.slice(at)}
+      </span>
+    </>
+  );
 }
 
 const variantStyles: Record<TextVariant, string> = {
@@ -90,6 +129,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
       align,
       truncate = false,
       mono = false,
+      fraction,
       className,
       children,
       ...props
@@ -110,7 +150,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
         )}
         {...props}
       >
-        {children}
+        {fraction === 'small' ? renderFraction(children, variant, tone) : children}
       </Component>
     );
   },

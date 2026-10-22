@@ -48,7 +48,7 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 desk:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
+          'px-space-16 desk:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y overscroll-contain',
           className
         )}
         {...props}
@@ -201,7 +201,7 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
         ref={ref}
         className={cn(
           background === 'canvas' ? 'bg-canvas' : 'bg-surface',
-          'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh w-full',
+          'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh-safe desk:max-h-dvh w-full',
           'rounded-t-ds-2xl shadow-up-2 border-t',
           variant === 'side-panel'
             ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full'
@@ -527,7 +527,7 @@ export const DialogContent = forwardRef<
               ...style,
             }}
             className={cn(
-              'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh w-full',
+              'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh-safe desk:max-h-dvh w-full',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-2xl shadow-up-2 border-t',
               variant === 'side-panel'

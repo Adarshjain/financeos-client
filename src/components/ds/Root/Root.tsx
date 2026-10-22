@@ -18,7 +18,7 @@ export const Root = forwardRef<HTMLDivElement, RootProps>(
     return (
       <div
         ref={ref}
-        className={cn('min-h-dvh bg-canvas font-text text-ink', className)}
+        className={cn('min-h-dvh pl-safe-left pr-safe-right bg-canvas font-text text-ink', className)}
         {...props}
       >
         {children}

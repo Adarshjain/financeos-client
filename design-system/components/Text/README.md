@@ -10,6 +10,7 @@ Every piece of plain text on a page: titles, subtitles, body copy, helper lines,
 - `align`: optional, `start`, `center`, `end`. When omitted, inherits from parent.
 - `truncate`: one line with an ellipsis.
 - `mono`: optional boolean, switches the family to the system monospace stack (`font-mono`) and keeps the style's size, line height, weight and tabular figures.
+- `fraction`: optional, `small`. When children is a string or number with a decimal point, the part from the last `.` onward (".75") renders in the next smaller type style and, unless the tone is `positive`, `danger`, `ink-3` or `ink-4`, in `ink-3`. Same baseline, tabular figures, no layout shift. The sign and ₹ stay with the integer part. No `.` or other children: unchanged. Mapping: `hero-figure`→`figure`, `figure`→`title`, `title`→`heading`, `heading`/`body`/`body-strong`→`label`, `label`→`caption`; other variants are unchanged. Credits (`positive`) and `danger` keep their tone on the fraction, only smaller (owner, 2026-10-22: "smaller paise").
 - Numbers are always tabular (inherited from the type styles).
 
 ## Rules
@@ -21,3 +22,4 @@ Nothing else; the type styles and ink tokens.
 
 ## Variants
 - Every type style, each tone, the display family on page-title, centred, truncated, mono (owner item 41, 2026-10-20) for error codes, log lines, masked keys, model ids.
+- `fraction=small` on any figure style: smaller paise (owner, 2026-10-22).

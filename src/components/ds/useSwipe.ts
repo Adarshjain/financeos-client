@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+import { hapticTick } from './haptics';
 import { isPhoneLayout } from './phoneLayout';
 
 /** Horizontal travel (px) before the row starts to follow the finger. */
@@ -33,6 +34,8 @@ export function useSwipe({
   const draggingRef = useRef(false);
   const engaged = useRef(false);
   const currentOffset = useRef(0);
+  // Which side's threshold the drag is past (0 = none); a tick fires on each crossing.
+  const crossed = useRef(0);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -48,6 +51,7 @@ export function useSwipe({
       engaged.current = false;
       draggingRef.current = true;
       currentOffset.current = 0;
+      crossed.current = 0;
       setIsDragging(true);
       setOffset(0);
     },
@@ -92,10 +96,14 @@ export function useSwipe({
         nextOffset = 0;
       }
 
+      const side = nextOffset >= threshold ? 1 : nextOffset <= -threshold ? -1 : 0;
+      if (side !== 0 && side !== crossed.current) hapticTick();
+      crossed.current = side;
+
       currentOffset.current = nextOffset;
       setOffset(nextOffset);
     },
-    [canSwipeLeft, canSwipeRight],
+    [canSwipeLeft, canSwipeRight, threshold],
   );
 
   const onPointerUp = useCallback(

@@ -51,6 +51,10 @@ const meta: Meta<typeof Text> = {
     truncate: {
       control: 'boolean',
     },
+    fraction: {
+      control: 'radio',
+      options: [undefined, 'small'],
+    },
   },
 };
 
@@ -181,5 +185,13 @@ export const Mono: Story = {
     tone: 'ink-3',
     mono: true,
     children: 'GMAIL_AUTH_EXPIRED · gemini-2.5-flash · sk-ant-…a91f',
+  },
+};
+
+export const SmallFraction: Story = {
+  args: {
+    variant: 'figure',
+    fraction: 'small',
+    children: '₹1,250.75',
   },
 };
