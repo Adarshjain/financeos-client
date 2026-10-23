@@ -7,6 +7,7 @@ import type {
   ReplaceCardRequest,
   UpdateCardholderRequest,
 } from '@/lib/account.types';
+import { amountExpressionValue } from '@/lib/amountExpression';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
 export type Built<T> = { ok: true; body: T } | { ok: false; errors: Record<string, string> };
@@ -20,9 +21,16 @@ export function digitsOnly(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+/** The spend limit as a number (arithmetic evaluated); null when blank or not a usable amount. */
 function spendLimitOf(value: string): number | null {
-  const n = parseFloat(value);
-  return value && Number.isFinite(n) ? n : null;
+  return amountExpressionValue(value);
+}
+
+const SPEND_LIMIT_ERROR = 'Please enter a valid amount.';
+
+/** An error when the spend limit text is filled in but is not a usable amount (e.g. "5+" or "100/0"). */
+function spendLimitError(value: string): string | null {
+  return value.trim() && spendLimitOf(value) === null ? SPEND_LIMIT_ERROR : null;
 }
 
 function result<T>(errors: Record<string, string>, body: T): Built<T> {
@@ -60,6 +68,8 @@ export function buildAddHolder(v: AddHolderValues, today: string): Built<CreateC
   const errors: Record<string, string> = {};
   if (!v.name.trim()) errors.name = 'Cardholder name is required.';
   if (v.last4 && v.last4.length !== 4) errors.last4 = 'Card last 4 digits must be exactly 4 digits.';
+  const limit = spendLimitError(v.spendLimit);
+  if (limit) errors.spendLimit = limit;
   const opened = futureDateError('opened', v.openedOn, today);
   if (opened) errors.openedOn = opened;
   const issued = v.last4 ? futureDateError('issued', v.issuedOn, today) : null;
@@ -91,6 +101,8 @@ export function buildEditHolder(
   const errors: Record<string, string> = {};
   const opened = futureDateError('opened', v.openedOn, today);
   if (opened) errors.openedOn = opened;
+  const limit = spendLimitError(v.spendLimit);
+  if (limit) errors.spendLimit = limit;
   return result(errors, {
     personName: v.name.trim() || undefined,
     relationship: holder.role === 'PRIMARY' ? 'SELF' : v.relationship,

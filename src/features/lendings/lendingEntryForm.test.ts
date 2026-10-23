@@ -24,6 +24,12 @@ describe('lendingEntryProblem', () => {
     expect(lendingEntryProblem(existing, '100')).toBeNull();
     expect(lendingEntryProblem({ kind: 'new', name: 'Asha' }, '0.5')).toBeNull();
   });
+
+  it('rejects an amount that is not a finite number (an unresolved expression)', () => {
+    for (const bad of ['100/0', '5+', '100-200', '1.2.3']) {
+      expect(lendingEntryProblem(existing, bad)).toEqual({ field: 'amount', message: 'Amount must be greater than zero' });
+    }
+  });
 });
 
 describe('buildCreateLendingRequest', () => {

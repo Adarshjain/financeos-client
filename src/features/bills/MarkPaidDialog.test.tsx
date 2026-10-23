@@ -134,3 +134,28 @@ describe('MarkPaidDialog', () => {
     expect(markPaid).not.toHaveBeenCalled();
   });
 });
+
+describe('MarkPaidDialog amount arithmetic', () => {
+  it('turns 120+45 into 165 on blur and marks 165 paid', async () => {
+    renderDialog();
+    fireEvent.click(screen.getByRole('radio', { name: 'Part payment' }));
+    const amount = screen.getByLabelText('Amount paid');
+    fireEvent.change(amount, { target: { value: '120+45' } });
+    fireEvent.blur(amount);
+    expect(amount).toHaveValue('165');
+    submit();
+    await waitFor(() =>
+      expect(markPaid).toHaveBeenCalledWith({ statementId: 's1', body: { amount: 165, paidOn: '2026-10-13' } }),
+    );
+  });
+
+  it('marks the result paid when submitted without a blur', async () => {
+    renderDialog();
+    fireEvent.click(screen.getByRole('radio', { name: 'Part payment' }));
+    fireEvent.change(screen.getByLabelText('Amount paid'), { target: { value: '120+45' } });
+    submit();
+    await waitFor(() =>
+      expect(markPaid).toHaveBeenCalledWith({ statementId: 's1', body: { amount: 165, paidOn: '2026-10-13' } }),
+    );
+  });
+});

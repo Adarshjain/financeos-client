@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { api } from '@/lib/api/client';
@@ -34,55 +34,160 @@ export function usePushPublicKey(enabled = true) {
   });
 }
 
-/** Every write returns the full settings view, so the cache is replaced rather than refetched. */
+const WRITE_KEY = ['settings', 'notifications', 'write'] as const;
+
+type Cached = NotificationSettingsResponse | null | undefined;
+type Settings = NotificationSettingsResponse;
+
+/** What the server last confirmed for one switch, and how many toggles of it are in flight. Shared by every card. */
+interface Tracked {
+  inFlight: number;
+  confirmed: boolean | undefined;
+}
+const tracked = new WeakMap<QueryClient, Map<string, Tracked>>();
+
+type Switch =
+  | { type: 'kind'; id: string }
+  | { type: 'account'; id: string }
+  | { type: 'loan'; id: string };
+const switchKey = (w: Switch) => `${w.type}:${w.id}`;
+
+function readSwitch(s: Settings, w: Switch): boolean | undefined {
+  if (w.type === 'kind') return s.kinds?.[w.id];
+  return (w.type === 'account' ? s.mutedAccountIds : s.mutedLoanIds)?.includes(w.id) ?? false;
+}
+
+function writeSwitch(s: Settings, w: Switch, value: boolean | undefined): Settings {
+  if (w.type === 'kind') {
+    const kinds = { ...s.kinds };
+    if (value === undefined) delete kinds[w.id];
+    else kinds[w.id] = value;
+    return { ...s, kinds };
+  }
+  const field = w.type === 'account' ? 'mutedAccountIds' : 'mutedLoanIds';
+  const rest = (s[field] ?? []).filter((x) => x !== w.id);
+  return { ...s, [field]: value ? [...rest, w.id] : rest };
+}
+
+/**
+ * Kind and mute switches move at once and save behind it. Each switch remembers what the server last
+ * confirmed, so a failure puts it back to that (not to a neighbouring toggle's optimistic state), and an
+ * answer only touches its own switch (never replaces the whole view, which could carry another toggle's
+ * stale value). The page refreshes once, when the last write in flight settles, success or not.
+ */
 export function useNotificationSettingsMutations() {
   const qc = useQueryClient();
   const router = useRouter();
-  const store = (settings: NotificationSettingsResponse) => {
-    qc.setQueryData(keys.settings.notifications(), settings);
-    router.refresh();
+  const key = keys.settings.notifications();
+  const book = () => {
+    let m = tracked.get(qc);
+    if (!m) tracked.set(qc, (m = new Map()));
+    return m;
+  };
+  const cached = () => qc.getQueryData<Cached>(key);
+  const setCached = (change: (s: Settings) => Settings) => {
+    const now = cached();
+    if (now) qc.setQueryData<Cached>(key, change(now));
   };
 
+  /** Shows the switches at their new positions; the "before" is read once the cache is settled. */
+  const begin = async (changes: { w: Switch; value: boolean | undefined }[]) => {
+    await qc.cancelQueries({ queryKey: key });
+    const now = cached();
+    if (!now) return;
+    for (const { w } of changes) {
+      const entry = book().get(switchKey(w)) ?? { inFlight: 0, confirmed: readSwitch(now, w) };
+      if (entry.inFlight === 0) entry.confirmed = readSwitch(now, w);
+      entry.inFlight += 1;
+      book().set(switchKey(w), entry);
+    }
+    setCached((s) => changes.reduce((acc, { w, value }) => writeSwitch(acc, w, value), s));
+  };
+  /** One toggle answered: remember what the server holds and, once none is left in flight, show it. */
+  const finish = (w: Switch, server: boolean | undefined | 'failed') => {
+    const entry = book().get(switchKey(w));
+    if (!entry) return;
+    entry.inFlight = Math.max(0, entry.inFlight - 1);
+    if (server !== 'failed') entry.confirmed = server;
+    if (entry.inFlight === 0) setCached((s) => writeSwitch(s, w, entry.confirmed));
+  };
+  const settled = () => {
+    if (qc.isMutating({ mutationKey: WRITE_KEY }) <= 1) router.refresh();
+  };
+  /** A write that is not a switch: its own fields go into the cache, nothing else. */
+  const mergeFields = (server: Settings, fields: (keyof Settings)[]) =>
+    setCached((s) => ({ ...s, ...Object.fromEntries(fields.map((f) => [f, server[f]])) }));
+
+  const kindSwitches = (body: UpdateNotificationSettingsRequest) =>
+    Object.entries(body.kinds ?? {}).map(([id, value]) => ({
+      w: { type: 'kind', id } as Switch,
+      value: value === null ? undefined : value,
+    }));
+
   const update = useMutation({
+    mutationKey: WRITE_KEY,
     mutationFn: (body: UpdateNotificationSettingsRequest) =>
       api.PUT('/api/v1/notifications/settings', { body }).then((r) => r.data!),
-    onSuccess: store,
+    onMutate: (body) => begin(kindSwitches(body)),
+    onSuccess: (server, body) => {
+      for (const { w } of kindSwitches(body)) finish(w, readSwitch(server, w));
+      const { kinds: _kinds, ...fields } = body;
+      mergeFields(server, Object.keys(fields) as (keyof Settings)[]);
+    },
+    onError: (_e, body) => {
+      for (const { w } of kindSwitches(body)) finish(w, 'failed');
+    },
+    onSettled: settled,
   });
 
   const subscribe = useMutation({
+    mutationKey: WRITE_KEY,
     mutationFn: (body: PushSubscriptionRequest) =>
       api.POST('/api/v1/notifications/push/subscriptions', { body }).then((r) => r.data!),
-    onSuccess: store,
+    onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
+    onSettled: settled,
   });
 
   const unsubscribe = useMutation({
+    mutationKey: WRITE_KEY,
     mutationFn: (endpoint: string) =>
       api.POST('/api/v1/notifications/push/subscriptions/remove', { body: { endpoint } }).then((r) => r.data!),
-    onSuccess: store,
+    onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
+    onSettled: settled,
   });
 
   const mute = useMutation({
+    mutationKey: WRITE_KEY,
     mutationFn: ({ accountId, muted }: { accountId: string; muted: boolean }) =>
       api
         .PUT('/api/v1/notifications/accounts/{accountId}/mute', { params: { path: { accountId } }, body: { muted } })
         .then((r) => r.data!),
-    onSuccess: (settings) => {
-      store(settings);
+    onMutate: ({ accountId, muted }) => begin([{ w: { type: 'account', id: accountId }, value: muted }]),
+    onSuccess: (server, { accountId }) => {
+      const w: Switch = { type: 'account', id: accountId };
+      finish(w, readSwitch(server, w));
       // Bills carry the muted flag too.
       void qc.invalidateQueries({ queryKey: keys.bills.all });
     },
+    onError: (_e, { accountId }) => finish({ type: 'account', id: accountId }, 'failed'),
+    onSettled: settled,
   });
 
   const muteLoan = useMutation({
+    mutationKey: WRITE_KEY,
     mutationFn: ({ loanId, muted }: { loanId: string; muted: boolean }) =>
       api
         .PUT('/api/v1/notifications/loans/{loanId}/mute', { params: { path: { loanId } }, body: { muted } })
         .then((r) => r.data!),
-    onSuccess: (settings) => {
-      store(settings);
+    onMutate: ({ loanId, muted }) => begin([{ w: { type: 'loan', id: loanId }, value: muted }]),
+    onSuccess: (server, { loanId }) => {
+      const w: Switch = { type: 'loan', id: loanId };
+      finish(w, readSwitch(server, w));
       // Loan responses carry the muted flag too.
       void qc.invalidateQueries({ queryKey: keys.loans.all });
     },
+    onError: (_e, { loanId }) => finish({ type: 'loan', id: loanId }, 'failed'),
+    onSettled: settled,
   });
 
   const sendTest = useMutation({

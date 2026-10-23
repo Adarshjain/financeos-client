@@ -66,6 +66,19 @@ describe('buildAddHolder', () => {
     issuedOn: '2024-06-02',
   };
 
+  it('keeps an evaluated spend limit and rejects an invalid expression instead of truncating it', () => {
+    expect(buildAddHolder({ ...base, spendLimit: '50000+25000' }, TODAY)).toMatchObject({
+      ok: true,
+      body: { spendLimit: 75000 },
+    });
+    for (const bad of ['5+', '100/0', '100-200']) {
+      expect(buildAddHolder({ ...base, spendLimit: bad }, TODAY)).toEqual({
+        ok: false,
+        errors: { spendLimit: 'Please enter a valid amount.' },
+      });
+    }
+  });
+
   it('requires a name', () => {
     expect(buildAddHolder({ ...base, name: '  ' }, TODAY)).toMatchObject({
       ok: false,
@@ -114,6 +127,17 @@ describe('buildEditHolder', () => {
     expect(buildEditHolder(holder({ id: 'h2' }), v, TODAY)).toEqual({
       ok: true,
       body: { personName: 'Meera', relationship: 'CHILD', spendLimit: null, openedOn: '2024-06-01' },
+    });
+  });
+
+  it('evaluates the spend limit and blocks an invalid expression', () => {
+    expect(buildEditHolder(holder({ id: 'h2' }), { ...v, spendLimit: '1000*3' }, TODAY)).toMatchObject({
+      ok: true,
+      body: { spendLimit: 3000 },
+    });
+    expect(buildEditHolder(holder({ id: 'h2' }), { ...v, spendLimit: '100/0' }, TODAY)).toEqual({
+      ok: false,
+      errors: { spendLimit: 'Please enter a valid amount.' },
     });
   });
 

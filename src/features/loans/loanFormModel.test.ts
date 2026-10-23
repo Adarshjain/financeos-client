@@ -58,6 +58,34 @@ describe('loanProblems', () => {
   });
 });
 
+describe('loanProblems with unresolved expressions', () => {
+  it('rejects a non-finite principal or EMI on create', () => {
+    for (const bad of ['100/0', '5+', '100-200']) {
+      expect(loanProblems({ ...filled, principal: bad }, false)).toEqual([
+        { field: 'principal', message: 'Principal must be greater than zero' },
+      ]);
+      expect(loanProblems({ ...filled, emiAmount: bad }, false)).toEqual([
+        { field: 'emiAmount', message: 'EMI amount must be greater than zero' },
+      ]);
+    }
+  });
+
+  it('allows a blank EMI on create but not zero', () => {
+    expect(loanProblems({ ...filled, emiAmount: '' }, false)).toEqual([]);
+    expect(loanProblems({ ...filled, emiAmount: '0' }, false).map((p) => p.field)).toEqual(['emiAmount']);
+  });
+
+  it('on edit keeps blank figures but rejects typed ones that are not usable amounts', () => {
+    const blank = { ...emptyLoanValues('2026-10-21'), name: 'a', lender: 'b' };
+    expect(loanProblems(blank, true)).toEqual([]);
+    expect(loanProblems({ ...blank, principal: '5+', emiAmount: '100/0' }, true).map((p) => p.field)).toEqual([
+      'principal',
+      'emiAmount',
+    ]);
+    expect(loanProblems({ ...blank, principal: '450000', emiAmount: '30000' }, true)).toEqual([]);
+  });
+});
+
 describe('buildCreateLoanRequest', () => {
   it('trims text, converts figures and leaves blanks out', () => {
     expect(buildCreateLoanRequest(filled)).toEqual({

@@ -5,7 +5,9 @@ import { fn } from 'storybook/test';
 
 import {
   Button,
+  ContextMenu,
   Icon,
+  ListRow,
   Menu,
   MenuGroup,
   MenuItem,
@@ -179,4 +181,18 @@ export const LabelledTrigger: Story = {
       </>
     ),
   },
+};
+
+export const ContextMenuOnRow: StoryObj = {
+  name: 'Right-click menu',
+  render: () => (
+    <ContextMenu
+      items={[
+        { id: 'approve', label: 'Approve', onSelect: fn() },
+        { id: 'delete', label: 'Delete', tone: 'danger', onSelect: fn() },
+      ]}
+    >
+      <ListRow title="Right-click this row (desktop only)" />
+    </ContextMenu>
+  ),
 };

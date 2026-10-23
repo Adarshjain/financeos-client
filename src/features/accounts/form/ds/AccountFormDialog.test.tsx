@@ -536,3 +536,29 @@ describe('Edit account', () => {
     expect(screen.getByText('Zerodha · Broker')).toBeInTheDocument();
   });
 });
+
+describe('AccountFormDialog amount arithmetic', () => {
+  it('turns 200000+100000 into 300000 on blur and creates the card with that limit', async () => {
+    mutations.createAccountMutation.mutateAsync.mockResolvedValue({ account: { ...card, id: 'new1' }, failedIdentifiers: [] });
+    renderDialog({ initialType: AccountType.CREDIT_CARD });
+    fill('Account name', 'HDFC Regalia Gold');
+    await user.click(screen.getByRole('combobox', { name: /^Bank/ }));
+    await user.click(screen.getByRole('option', { name: /HDFC Bank/ }));
+    fill('Last 4 digits', '7741');
+    fill('Card anniversary', '15032024');
+    fill('Credit limit', '200000+100000');
+    fireEvent.blur(field('Credit limit'));
+    expect(field('Credit limit')).toHaveValue('300000');
+    submit('Create account');
+    await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled(), { timeout: 4000 });
+    expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].body).toMatchObject({ creditLimit: 300000 });
+  }, 20000);
+
+  it('keeps a negative opening balance that an expression works out to', async () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    fill('Opening balance', '1000-1500');
+    fireEvent.blur(field('Opening balance'));
+    expect(field('Opening balance')).toHaveValue('-500');
+  });
+});
+

@@ -13,6 +13,8 @@ import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
+import { removeChange } from '../optimistic/optimisticModel';
+import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import { deletedMessage } from './bulkModel';
 
 type Deleted = Pick<Transaction, 'id' | 'description' | 'sourcedDescription'>;
@@ -25,6 +27,7 @@ type Deleted = Pick<Transaction, 'id' | 'description' | 'sourcedDescription'>;
 export function useDeleteTransactions() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const optimistic = useOptimisticTransactions();
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
   const mutation = useMutation({
@@ -41,9 +44,13 @@ export function useDeleteTransactions() {
     },
   });
 
-  const remove = async (transactions: Deleted[]): Promise<boolean> => {
+  /** `instant` (one swiped row, not the bulk bar): the rows leave the list now and come back if the delete fails. */
+  const remove = async (transactions: Deleted[], instant = false): Promise<boolean> => {
+    const shown = instant ? optimistic?.begin(removeChange(transactions.map((t) => t.id))) : undefined;
     try {
-      const data = await mutation.mutateAsync(transactions.map((t) => t.id));
+      const send = () => mutation.mutateAsync(transactions.map((t) => t.id));
+      const data = await (shown ? shown.send(send) : send());
+      shown?.settle(data.failures.length === 0);
       const failures = mapBatchFailures(data.failures, { content: transactions });
       if (failures.length > 0) {
         setSummary({ succeededCount: data.succeededIds.length, skippedCount: 0, failures, skips: [] });
@@ -52,6 +59,7 @@ export function useDeleteTransactions() {
       }
       return true;
     } catch (e) {
+      shown?.settle(false);
       showToast(getErrorMessage(e, 'Could not delete'), { tone: 'danger' });
       return false;
     }

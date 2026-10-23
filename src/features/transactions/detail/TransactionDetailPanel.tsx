@@ -28,6 +28,8 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
+import { SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import { isApprovable } from '../bulk/bulkModel';
 import {
@@ -59,6 +61,8 @@ export interface TransactionDetailPanelProps {
   /** A linked transaction's name was pressed: the panel swaps to it. */
   onOpenTransaction: (id: string) => void;
   onClose: () => void;
+  /** The panel opens without its own slide, because the row morphs into it (see TransactionsScreen). */
+  morphing?: boolean;
   onEdit: (transaction: Transaction) => void;
   /** The transaction was deleted; the panel closes and the page refreshes. */
   onDeleted: () => void;
@@ -75,6 +79,7 @@ export function TransactionDetailPanel({
   accounts,
   onOpenTransaction,
   onClose,
+  morphing,
   ...rest
 }: TransactionDetailPanelProps) {
   // The last one opened stays up while the panel slides away.
@@ -89,17 +94,19 @@ export function TransactionDetailPanel({
 
   return (
     <Dialog variant="side-panel" open={transactionId !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
-      {transaction ? (
+      {/* A morphing detail leaves in the commit that closes it (its title is moving back into the row), not when the dialog has finished closing. */}
+      {transaction && !(morphing && transactionId === null) ? (
         <DetailContent
           key={transaction.id}
           transaction={transaction}
+          morphing={morphing}
           open={transactionId !== null}
           accounts={accounts}
           onOpenTransaction={onOpenTransaction}
           onClose={onClose}
           {...rest}
         />
-      ) : (
+      ) : transaction ? null : (
         <DialogContent size="sm" srTitle="Transaction" onClose={onClose} className={PANEL_OFFSET}>
           <DialogBody>
             {failed ? (
@@ -132,6 +139,7 @@ function DetailContent({
   accounts,
   onOpenTransaction,
   onClose,
+  morphing = false,
   onEdit,
   onDeleted,
   onLink,
@@ -217,13 +225,28 @@ function DetailContent({
 
   return (
     <>
-      <DialogContent size="sm" title={title} description={raw} onClose={onClose} className={PANEL_OFFSET}>
+      <DialogContent
+        size="sm"
+        title={
+          <SharedName name={transitionName.transactionTitle(t.id)}>
+            <span className="inline-block max-w-full">{title}</span>
+          </SharedName>
+        }
+        description={raw}
+        onClose={onClose}
+        animated={!morphing}
+        className={PANEL_OFFSET}
+      >
         <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
-              <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
-                {`${credit ? '+' : ''}${amountWords(t.amount)}`}
-              </Text>
+              <SharedName name={transitionName.transactionAmount(t.id)}>
+                <span className="inline-block">
+                  <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
+                    {`${credit ? '+' : ''}${amountWords(t.amount)}`}
+                  </Text>
+                </span>
+              </SharedName>
               {balance ? (
                 <Text variant="label" tone="ink-3" as="span">
                   {balance}

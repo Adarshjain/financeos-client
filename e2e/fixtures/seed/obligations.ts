@@ -9,25 +9,30 @@ import { addLending, createCounterparty, createLoan, monthsAhead } from './loans
 import { uploadAndIngest } from './statements';
 
 /**
- * A synthetic card statement whose period ended three days ago (two purchases, 6,000 in all).
+ * A synthetic card statement whose period ended `endedDaysAgo` days ago (default three; two purchases, 6,000 in all).
  * The generator's own due date depends on the run date, so callers that need a deterministic
  * bill pin the due date through `seedCardBill`.
  */
-export async function ingestCardStatement(api: ApiClient, cardId: string, last4: string): Promise<void> {
-  const periodEnd = istToday(-3);
+export async function ingestCardStatement(
+  api: ApiClient,
+  cardId: string,
+  last4: string,
+  endedDaysAgo = 3
+): Promise<void> {
+  const periodEnd = istToday(-endedDaysAgo);
   const pdf = await genCardPdf({
     issuer: 'HDFC Bank',
     cardLast4: last4,
     statementDate: periodEnd,
-    periodStart: istToday(-32),
+    periodStart: istToday(-endedDaysAgo - 29),
     periodEnd,
     previousBalance: 0,
     paymentsReceived: 0,
     financeCharges: 0,
     creditLimit: 100000,
     rows: [
-      { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
-      { date: istToday(-10), description: 'RESTAURANT DINING', debit: 1500 },
+      { date: istToday(-endedDaysAgo - 17), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
+      { date: istToday(-endedDaysAgo - 7), description: 'RESTAURANT DINING', debit: 1500 },
     ],
   });
   const { result } = await uploadAndIngest(api, cardId, [{ filename: `card-${last4}.pdf`, buffer: pdf }]);
@@ -50,13 +55,15 @@ export async function seedCardBill(
   options: { name: string; last4: string; dueInDays?: number }
 ): Promise<SeededCardBill> {
   const card = await createCreditCard(api, { name: options.name, last4: options.last4 });
-  await ingestCardStatement(api, card.id, options.last4);
+  // The server wants the due date 0 to 60 days after the period end, so a past due date ends the period earlier.
+  const dueInDays = options.dueInDays ?? 2;
+  await ingestCardStatement(api, card.id, options.last4, Math.max(3, 3 - dueInDays));
   const list = await api.GET('/api/v1/bills');
   expectStatus(list, 200);
   const statementId = list.data!.find((b) => b.accountId === card.id)!.statementId!;
   const patched = await api.PATCH('/api/v1/bills/{statementId}/details', {
     params: { path: { statementId } },
-    body: { paymentDueDate: istToday(options.dueInDays ?? 2), minimumAmountDue: 300 },
+    body: { paymentDueDate: istToday(dueInDays), minimumAmountDue: 300 },
   });
   expectStatus(patched, 200);
   return { cardId: card.id, cardName: options.name, last4: options.last4, statementId };

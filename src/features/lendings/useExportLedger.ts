@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { amountExpressionValue, sanitizeAmountExpressionInput } from '@/lib/amountExpression';
 import {
   buildLendingLedgerText,
   DEFAULT_LENDING_EXPORT_TOGGLES,
@@ -12,7 +13,7 @@ import {
   type LendingExportToggles,
   sinceLastSettledIds,
 } from '@/lib/lendingExport';
-import { sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
+import { toCalendarDate } from '@/lib/utils';
 
 /** Per-device conveniences only (your name + toggles); selection and opening balance never persist. */
 export const LENDING_EXPORT_STORAGE_KEY = 'financeos.lendingExport.v1';
@@ -118,12 +119,14 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
   const opening = openingOverride ?? derivedView;
   const openingIsDerived = openingOverride === null;
 
-  const parsedOpening = opening.amount.trim() === '' ? null : Number(opening.amount);
-  const openingBalance =
-    parsedOpening === null || Number.isNaN(parsedOpening) ? null : opening.theyOwe ? parsedOpening : -parsedOpening;
+  const parsedOpening = amountExpressionValue(opening.amount);
+  const openingBalance = parsedOpening === null ? null : opening.theyOwe ? parsedOpening : -parsedOpening;
+  // Text that is not a usable amount ("5+", "100/0") is an error, never silently left out of the export.
+  const openingError =
+    opening.amount.trim() !== '' && parsedOpening === null ? 'Please enter a valid amount.' : undefined;
 
   const setOpeningAmount = useCallback(
-    (raw: string) => setOpeningOverride({ amount: sanitizeDecimalInput(raw), theyOwe: opening.theyOwe }),
+    (raw: string) => setOpeningOverride({ amount: sanitizeAmountExpressionInput(raw), theyOwe: opening.theyOwe }),
     [opening.theyOwe],
   );
   const setOpeningTheyOwe = useCallback(
@@ -161,6 +164,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
 
   // --- actions -------------------------------------------------------------
   const copy = useCallback(async () => {
+    if (openingError) return;
     try {
       if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
       await navigator.clipboard.writeText(text);
@@ -168,9 +172,10 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
     } catch {
       notify('Could not copy — select the preview text and copy it manually', 'danger');
     }
-  }, [text, notify]);
+  }, [text, notify, openingError]);
 
   const share = useCallback(async () => {
+    if (openingError) return;
     try {
       await navigator.share({ title, text });
     } catch (err) {
@@ -178,7 +183,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
       await copy();
     }
-  }, [title, text, copy]);
+  }, [title, text, copy, openingError]);
 
   return {
     entries,
@@ -201,6 +206,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
     openingTheyOwe: opening.theyOwe,
     openingIsDerived,
     openingIncluded: openingBalance !== null,
+    openingError,
     setOpeningAmount,
     setOpeningTheyOwe,
     clearOpening,

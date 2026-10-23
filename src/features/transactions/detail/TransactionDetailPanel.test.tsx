@@ -91,6 +91,28 @@ beforeEach(() => {
   lending.unlink.mockResolvedValue({});
 });
 
+describe('TransactionDetailPanel morph', () => {
+  const panel = () => screen.getByText('BigBasket').closest('[role="dialog"] > div');
+
+  it('slides in by default', () => {
+    renderWithQuery(<TransactionDetailPanel {...props()} />);
+    expect(panel()).toHaveClass('slide-in-from-bottom');
+  });
+
+  it('opens without its own slide while morphing', () => {
+    renderWithQuery(<TransactionDetailPanel {...props({ morphing: true })} />);
+    expect(panel()).not.toHaveClass('slide-in-from-bottom');
+    expect(panel()).not.toHaveClass('desk:slide-in-from-right');
+  });
+
+  it('leaves in the commit that closes it while morphing', () => {
+    const { rerender } = renderWithQuery(<TransactionDetailPanel {...props({ morphing: true })} />);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    rerender(<TransactionDetailPanel {...props({ morphing: true, transactionId: null })} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
 describe('TransactionDetailPanel', () => {
   it('shows the name, the bank text, the amount, the balance after and the fields', () => {
     renderWithQuery(

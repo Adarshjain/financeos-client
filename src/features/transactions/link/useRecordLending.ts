@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type {
   CounterpartySelection,
@@ -43,6 +44,8 @@ export interface UseRecordLendingResult {
   suggestedId: string | null;
   amount: string;
   setAmount: (value: string) => void;
+  /** Set while the amount text is filled in but is not a positive number. */
+  amountError: string | undefined;
   entryDate: string;
   setEntryDate: (value: string) => void;
   expectedReturnDate: string;
@@ -186,8 +189,9 @@ export function useRecordLending({
     onSettled: () => setAttachingId(null),
   });
 
-  const canSubmitNew =
-    Boolean(transaction) && party !== null && Number(amount) > 0 && Boolean(entryDate);
+  const numAmount = amountExpressionValue(amount);
+  const canSubmitNew = Boolean(transaction) && party !== null && numAmount !== null && numAmount > 0 && Boolean(entryDate);
+  const amountError = amount.trim() && (numAmount === null || numAmount <= 0) ? 'Amount must be greater than zero' : undefined;
 
   const handleSubmitNew = () => {
     if (!canSubmitNew || !transaction || !party) {
@@ -197,7 +201,7 @@ export function useRecordLending({
     const body: CreateLendingRequest = {
       direction,
       kind,
-      amount: Number(amount),
+      amount: numAmount!,
       entryDate,
       transactionId: transaction.id,
       expectedReturnDate: expectedReturnDate || undefined,
@@ -223,6 +227,7 @@ export function useRecordLending({
     suggestedId,
     amount,
     setAmount,
+    amountError,
     entryDate,
     setEntryDate,
     expectedReturnDate,

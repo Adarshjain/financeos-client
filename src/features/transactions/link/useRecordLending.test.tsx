@@ -182,6 +182,34 @@ describe('useRecordLending — party selection and suggestion', () => {
     expect(result.current.suggestedId).toBeNull();
   });
 
+  it('shows a field error and blocks submit for an invalid amount expression; sends the evaluated number otherwise', async () => {
+    mockGetByPath({});
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(
+      () => useRecordLending({ transaction: debitTx, open: true, onOpenChange: vi.fn() }),
+      { wrapper: Wrapper },
+    );
+    await waitFor(() => expect(result.current.amount).toBe('1200'));
+    act(() => result.current.setParty({ kind: 'new', name: 'Kavita Rao' }));
+    expect(result.current.amountError).toBeUndefined();
+
+    for (const bad of ['100/0', '5+', '100-200']) {
+      act(() => result.current.setAmount(bad));
+      expect(result.current.canSubmitNew).toBe(false);
+      expect(result.current.amountError).toBe('Amount must be greater than zero');
+      act(() => result.current.handleSubmitNew());
+    }
+    expect(api.POST).not.toHaveBeenCalled();
+
+    act(() => result.current.setAmount('1000+200'));
+    expect(result.current.amountError).toBeUndefined();
+    act(() => result.current.handleSubmitNew());
+    await waitFor(() => expect(api.POST).toHaveBeenCalled());
+    const [, postOpts] = vi.mocked(api.POST).mock.calls[0] as unknown as [string, { body: Record<string, unknown> }];
+    expect(postOpts.body.amount).toBe(1200);
+  });
+
   it('cannot submit without a person, and a new person submits newCounterpartyName only', async () => {
     mockGetByPath({});
     vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);

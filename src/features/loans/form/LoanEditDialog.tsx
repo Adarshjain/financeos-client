@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LoanResponse } from '@/lib/loan.types';
@@ -47,11 +48,17 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
   };
 
   const submit = async () => {
-    const problems = loanProblems(values, true);
+    const resolved = {
+      ...values,
+      principal: resolveAmountExpression(values.principal),
+      emiAmount: resolveAmountExpression(values.emiAmount),
+    };
+    setValues(resolved);
+    const problems = loanProblems(resolved, true);
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
     try {
-      await updateLoan.mutateAsync({ id: loan.id, body: buildUpdateLoanRequest(values) });
+      await updateLoan.mutateAsync({ id: loan.id, body: buildUpdateLoanRequest(resolved) });
       showToast('Loan updated successfully');
       onClose();
       router.refresh();

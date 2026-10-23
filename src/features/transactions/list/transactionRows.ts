@@ -15,6 +15,8 @@ export interface TransactionListRow extends TransactionRowData {
   isCredit: boolean;
   /** The account's name. */
   account?: string;
+  /** The account's bank id; none for cash, wallets and accounts with no bank set. */
+  bankId?: string;
   /** "••7741", or "Meera · ••7742" on a card that is not yours. */
   plastic?: string;
   /** "₹2,95,030"; none on an excluded row. */
@@ -103,6 +105,11 @@ export interface RowContext {
   showSource: boolean;
 }
 
+function bankIdOf(accounts: RowContext['accounts'], accountId: string): string | undefined {
+  const a = accounts?.find((x) => x.id === accountId);
+  return a && 'bank' in a && a.bank ? a.bank : undefined;
+}
+
 export function transactionRow(t: Transaction, ctx: RowContext): TransactionListRow {
   const excluded = Boolean(t.isTransactionExcluded);
   const credit = t.amount > 0;
@@ -120,6 +127,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     formattedAmount: credit ? `+${amount}` : amount,
     isCredit: credit,
     account: ctx.accounts ? (ctx.accounts.find((a) => a.id === t.accountId)?.name ?? 'Unknown') : undefined,
+    bankId: bankIdOf(ctx.accounts, t.accountId),
     plastic: plasticOf(t),
     balance: t.balance != null && !excluded ? `${t.balance < 0 ? '-' : ''}₹${formatAmount(Math.abs(t.balance), 0)}` : undefined,
     categories,

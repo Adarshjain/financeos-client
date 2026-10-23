@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanResponse } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
@@ -31,6 +32,8 @@ export interface UseLoanPaymentLinkResult {
   setPaymentDate: (date: string) => void;
   amount: string;
   setAmount: (amount: string) => void;
+  /** Set while the amount text is filled in but is not a positive number. */
+  amountError: string | undefined;
   submitting: boolean;
   canSubmit: boolean;
   handleSubmit: () => void;
@@ -128,11 +131,13 @@ export function useLoanPaymentLink({
     if (nearest) setInstallmentSeq(nearest.seq);
   }, [loanId, installments, installmentSeq, transaction, paymentDate]);
 
+  const numAmount = amountExpressionValue(amount);
+
   const submitMutation = useMutation({
     mutationFn: () => {
       const body: CreateLoanPaymentRequest = {
         paymentDate,
-        amount: Number(amount),
+        amount: numAmount!,
         installmentSeq,
         transactionId: transaction!.id,
       };
@@ -153,8 +158,9 @@ export function useLoanPaymentLink({
   });
 
   const canSubmit = Boolean(
-    transaction && loanId && installmentSeq !== undefined && paymentDate && Number(amount) > 0,
+    transaction && loanId && installmentSeq !== undefined && paymentDate && numAmount !== null && numAmount > 0,
   );
+  const amountError = amount.trim() && (numAmount === null || numAmount <= 0) ? 'Enter an amount greater than zero' : undefined;
 
   const handleSubmit = () => {
     if (!canSubmit) {
@@ -177,6 +183,7 @@ export function useLoanPaymentLink({
     setPaymentDate,
     amount,
     setAmount,
+    amountError,
     submitting: submitMutation.isPending,
     canSubmit,
     handleSubmit,

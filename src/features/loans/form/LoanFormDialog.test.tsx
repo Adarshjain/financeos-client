@@ -173,3 +173,26 @@ describe('LoanFormDialog', () => {
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 });
+
+describe('LoanFormDialog amount arithmetic', () => {
+  it('turns 600000+400000 into 1000000 on blur and creates the loan with it', async () => {
+    render(<LoanFormDialog onClose={onClose} />);
+    fillRequired();
+    fill('Principal', '600000+400000');
+    fireEvent.blur(field('Principal'));
+    expect(field('Principal')).toHaveValue('1000000');
+    create();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ principal: 1000000 })));
+  });
+
+  it('creates the loan with the result when submitted without a blur, EMI included', async () => {
+    render(<LoanFormDialog onClose={onClose} />);
+    fillRequired();
+    fill('Principal', '600000+400000');
+    fill('EMI amount', '9000+500.5');
+    create();
+    await waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ principal: 1000000, emiAmount: 9500.5 })),
+    );
+  });
+});

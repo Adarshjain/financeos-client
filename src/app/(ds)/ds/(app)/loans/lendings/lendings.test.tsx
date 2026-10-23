@@ -153,7 +153,7 @@ describe('/ds/loans/lendings', () => {
   it('says so under each tile label when the summary fails, and still lists the people', async () => {
     server.fetchPeopleSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText('Could not load this figure')).toHaveLength(4);
+    expect(screen.getAllByText('Could not load this figure. Refresh the page to try again.')).toHaveLength(4);
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
   });
 

@@ -6,9 +6,9 @@ import { DateField, ListRow, Radio, Select, Skeleton, Text, TextField } from '@/
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { differenceWords } from '@/features/loans/detail/payModel';
 import { daysBetween, plainAmount } from '@/features/loans/loanFormat';
+import { amountExpressionProps, amountExpressionValue } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
 import type { InstallmentDto } from '@/lib/loan.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import type { UseLoanPaymentLinkResult } from './useLoanPaymentLink';
 
@@ -25,8 +25,11 @@ export function LoanPaymentLinkBody({ loanPayment }: { loanPayment: UseLoanPayme
   const today = todayInAppZone();
   const { loans, loanId, installments, installmentSeq } = loanPayment;
   const selected = installments.find((i) => i.seq === installmentSeq);
-  const difference =
-    selected && loanPayment.amount.trim() ? differenceWords(Number(loanPayment.amount.trim()), selected.emi) : null;
+  const paid = amountExpressionValue(loanPayment.amount);
+  const difference = selected && paid !== null ? differenceWords(paid, selected.emi) : null;
+  // The amount error waits for the field to lose focus, so a sum being typed ("120+") doesn't flash it.
+  const [amountTouched, setAmountTouched] = React.useState(false);
+  const amountProps = amountExpressionProps(loanPayment.amount, loanPayment.setAmount);
 
   return (
     <>
@@ -84,7 +87,12 @@ export function LoanPaymentLinkBody({ loanPayment }: { loanPayment: UseLoanPayme
           prefix="₹"
           inputMode="decimal"
           value={loanPayment.amount}
-          onValueChange={(v) => loanPayment.setAmount(sanitizeDecimalInput(v))}
+          {...amountProps}
+          onBlur={() => {
+            amountProps.onBlur();
+            setAmountTouched(true);
+          }}
+          error={amountTouched ? loanPayment.amountError : undefined}
           helper={difference ?? undefined}
         />
         <DateField

@@ -16,10 +16,10 @@ import {
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { PersonSelect } from '@/features/lendings/form/PersonSelect';
 import { plainAmount } from '@/features/loans/loanFormat';
+import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
 import { selectionName } from '@/lib/lending.types';
 import { ENTRY_TYPE_LABEL, entryTypesForDirection, isSettlementType, settlementWarning } from '@/lib/lendingEntry';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import type { UseRecordLendingResult } from './useRecordLending';
 
@@ -44,6 +44,9 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
   const warning = party
     ? settlementWarning(entryType, Number(lending.amount), existingPerson?.netPosition ?? 0, selectionName(party))
     : null;
+  // The amount error waits for the field to lose focus, so a sum being typed ("120+") doesn't flash it.
+  const [amountTouched, setAmountTouched] = React.useState(false);
+  const amountProps = amountExpressionProps(lending.amount, lending.setAmount);
 
   return (
     <>
@@ -79,7 +82,12 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
               prefix="₹"
               inputMode="decimal"
               value={lending.amount}
-              onValueChange={(v) => lending.setAmount(sanitizeDecimalInput(v))}
+              {...amountProps}
+              onBlur={() => {
+                amountProps.onBlur();
+                setAmountTouched(true);
+              }}
+              error={amountTouched ? lending.amountError : undefined}
             />
             <DateField
               label="Date"

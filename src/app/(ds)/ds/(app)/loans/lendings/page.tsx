@@ -38,7 +38,7 @@ export default async function DsLendingsPage({ searchParams }: { searchParams: P
       <TileGrid
         tiles={summary ? lendingTiles(summary) : null}
         labels={TILE_LABELS}
-        error="Could not load this figure"
+        error="Could not load this figure. Refresh the page to try again."
       />
       {list.ok ? (
         <ListTransition>

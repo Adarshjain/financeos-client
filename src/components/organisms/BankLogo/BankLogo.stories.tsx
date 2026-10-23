@@ -20,3 +20,7 @@ export const UnknownBank: Story = { args: { bankId: 'nope', name: 'Nova' } };
 export const NoBankNoWarning: Story = { args: { bankId: null, name: 'Cash wallet', warning: false } };
 
 export const NoBank: Story = { args: { bankId: null, name: 'Cash wallet' } };
+
+export const Small: Story = { args: { bankId: 'hdfc', name: 'Salary', size: 'sm' } };
+
+export const SmallNoBank: Story = { args: { bankId: null, name: 'Cash wallet', size: 'sm' } };

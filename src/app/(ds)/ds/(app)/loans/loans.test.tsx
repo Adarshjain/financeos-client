@@ -144,7 +144,7 @@ describe('/ds/loans', () => {
   it('says so under each tile label when the summary fails, and still lists the loans', async () => {
     server.fetchLoansSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText('Could not load this figure')).toHaveLength(4);
+    expect(screen.getAllByText('Could not load this figure. Refresh the page to try again.')).toHaveLength(4);
     expect(screen.getAllByText('Car Loan · HDFC Bank').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Closed ·/)).toBeNull();
   });

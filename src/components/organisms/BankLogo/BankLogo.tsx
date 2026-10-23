@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Avatar, Icon } from '@/components/ds';
+import { Avatar, cn, Icon } from '@/components/ds';
 import { bankById } from '@/features/banks/banks';
 import { SPRITE_CELL, SPRITE_IDS } from '@/features/banks/bankSprite.generated';
 
@@ -11,12 +11,15 @@ export interface BankLogoProps {
   name: string;
   /** Shows the amber warning mark. Defaults to `true` when there is no `bankId`; pass `false` for accounts that have no bank, such as wallets and brokers. */
   warning?: boolean;
+  /** `md` (default) is the 24px Avatar-sized tile. `sm` is the plain 14px logo (the `sm` icon step) for inline use beside text; with no known logo it renders nothing. */
+  size?: 'md' | 'sm';
 }
 
 /** One bank's logo, cut from the shared sprite at public/banks/sprite.png, in the small square Avatar frame. */
-export function BankLogo({ bankId, name, warning = !bankId }: BankLogoProps) {
+export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankLogoProps) {
   const bank = bankId ? bankById(bankId) : undefined;
   if (!bank) {
+    if (size === 'sm') return null;
     const tile = <Avatar variant="square" size="sm" initials={(name.trim().slice(0, 1) || '?').toUpperCase()} />;
     if (!warning) return tile;
     // No bank set on the account: an amber mark at the top right, placed like a count badge.
@@ -40,7 +43,10 @@ export function BankLogo({ bankId, name, warning = !bankId }: BankLogoProps) {
       aria-label={bank.name}
       data-sprite-cell={bank.spriteIndex}
       data-sprite-size={SPRITE_CELL}
-      className="inline-block h-space-24 w-space-24 shrink-0 overflow-hidden rounded-ds-sm bg-no-repeat"
+      className={cn(
+        'inline-block shrink-0 overflow-hidden rounded-ds-sm bg-no-repeat',
+        size === 'sm' ? 'h-icon-sm w-icon-sm' : 'h-space-24 w-space-24',
+      )}
       style={{
         backgroundImage: 'url(/banks/sprite.png)',
         backgroundSize: `${cells * 100}% 100%`,

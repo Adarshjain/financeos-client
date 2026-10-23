@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
+import { amountExpressionProps } from '@/lib/amountExpression';
 import { ENTRY_TYPE_SHORT, toEntryType } from '@/lib/lendingEntry';
 import { directionLabels, type ExportableEntry, type LendingExportToggles } from '@/lib/lendingExport';
 import { formatDate, formatMoney } from '@/lib/utils';
@@ -102,6 +103,7 @@ function Options({ state }: { state: ExportLedgerState }) {
     openingTheyOwe,
     openingIsDerived,
     openingIncluded,
+    openingError,
     setOpeningAmount,
     clearOpening,
     resetOpening,
@@ -131,8 +133,9 @@ function Options({ state }: { state: ExportLedgerState }) {
             label="Opening balance"
             inputMode="decimal"
             value={openingAmount}
-            onValueChange={setOpeningAmount}
+            {...amountExpressionProps(openingAmount, setOpeningAmount)}
             placeholder="Not included"
+            error={openingError}
             className="desk:w-space-96"
           />
           <div className="flex items-center gap-space-8 desk:flex-1">
@@ -194,7 +197,7 @@ export interface ExportLedgerDialogProps {
  */
 export function ExportLedgerDialog({ entries, theirName, defaultMyName, onClose }: ExportLedgerDialogProps) {
   const state = useExportLedger({ entries, theirName, defaultMyName, notify });
-  const disabled = state.noneSelected;
+  const disabled = state.noneSelected || Boolean(state.openingError);
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent

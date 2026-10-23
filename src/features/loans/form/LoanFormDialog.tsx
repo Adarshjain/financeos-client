@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -40,11 +41,17 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
   };
 
   const submit = async () => {
-    const problems = loanProblems(values, false);
+    const resolved = {
+      ...values,
+      principal: resolveAmountExpression(values.principal),
+      emiAmount: resolveAmountExpression(values.emiAmount),
+    };
+    setValues(resolved);
+    const problems = loanProblems(resolved, false);
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
     try {
-      await createLoan.mutateAsync(buildCreateLoanRequest(values));
+      await createLoan.mutateAsync(buildCreateLoanRequest(resolved));
       showToast('Loan created successfully');
       onClose();
       router.refresh();

@@ -4,6 +4,7 @@ import React from 'react';
 
 import { DateField, Select, type SelectOption, TextArea, TextField } from '@/components/ds';
 import { type Account, isAccountClosed } from '@/lib/account.types';
+import { amountExpressionProps } from '@/lib/amountExpression';
 import type { LoanType, RateType } from '@/lib/loan.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
@@ -103,7 +104,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 inputMode="decimal"
                 placeholder="1000000"
                 value={values.principal}
-                onValueChange={(v) => change({ principal: sanitizeDecimalInput(v) })}
+                {...amountExpressionProps(values.principal, (v) => change({ principal: v }))}
                 error={errors.principal}
               />
               <TextField
@@ -150,7 +151,8 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 inputMode="decimal"
                 placeholder="Auto if blank"
                 value={values.emiAmount}
-                onValueChange={(v) => change({ emiAmount: sanitizeDecimalInput(v) })}
+                {...amountExpressionProps(values.emiAmount, (v) => change({ emiAmount: v }))}
+                error={errors.emiAmount}
               />
             </div>
             <TextArea

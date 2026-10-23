@@ -27,6 +27,9 @@ Both open the same Popover with the same item rows, so they look identical. They
   - `open?: boolean`: controlled open state.
   - `defaultOpen?: boolean`: uncontrolled initial open state.
   - `onOpenChange?: (open: boolean) => void`: open change callback.
+- `<ContextMenu>` (right-click on desktop, wraps any row):
+  - `items: { id: string; label: string; onSelect: () => void; tone?: 'default' | 'danger' }[]`: the actions, in order; none = the browser's own menu stays.
+  - `children: React.ReactNode`: the row.
 - Subcomponents: `Menu.Item`, `Menu.Separator`, `Menu.Group`, `Menu.Label`, `Menu.Trigger`, `Menu.Content`.
 
 ## Variants
@@ -34,9 +37,10 @@ Both open the same Popover with the same item rows, so they look identical. They
 - Items with icons and hints.
 - Grouped with `Menu.Group` and `Menu.Separator`.
 - Labelled trigger or icon-only trigger.
+- `ContextMenu`: wraps a row; right-click opens the same Menu at the pointer with the actions the page gives (the phone swipe's actions). Desktop layout only (decided in the handler); in the phone layout it does nothing. The native menu is blocked only when ours opens. Behaviour wraps the row, never embedded in it.
 
 ## Built from
-Radix DropdownMenu, the shared item row (`itemRow`), Icon.
+Radix DropdownMenu, the shared item row (`itemRow`), Icon. `ContextMenu`: Menu anchored to a zero-size point at the pointer.
 
 ## Motion
 Fades and slides in; fades and slides out on close (dur-fast).

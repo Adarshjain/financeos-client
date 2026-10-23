@@ -12,6 +12,8 @@ import { CategoriesField } from '../form/CategoriesField';
 import { buildRequest, valuesFromTransaction } from '../form/transactionFormModel';
 import { useCategorySuggestions } from '../form/useCategorySuggestions';
 import { useTransactionMutations } from '../form/useTransactionMutations';
+import { patchChange } from '../optimistic/optimisticModel';
+import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 
 const NO_CATEGORIES: never[] = [];
 const noop = () => undefined;
@@ -28,6 +30,7 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
   const router = useRouter();
   const { data: allCategories = NO_CATEGORIES } = useCategories();
   const { updateMutation } = useTransactionMutations();
+  const optimistic = useOptimisticTransactions();
   const [error, setError] = React.useState<string | null>(null);
   const { localCategories, selectedCategories, setSelectedCategories, creatingCategory, createCategory } =
     useCategorySuggestions({
@@ -48,6 +51,34 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
         // The stored card is kept: with no card the request carries none either way.
         supportsCards: true,
       });
+      if (optimistic) {
+        // The categories show on the row now and the dialog closes; the save finishes behind it.
+        const shown = optimistic.begin(
+          patchChange(transaction.id, { categories: selectedCategories.map((c) => ({ id: c.id, name: c.name })) }),
+        );
+        onClose();
+        try {
+          // Sent behind any earlier write to this row, on the row as the server then holds it: only the categories are ours.
+          await shown.send(() =>
+            updateMutation.mutateAsync({
+              id: transaction.id,
+              body: buildRequest(valuesFromTransaction(shown.base(transaction.id) ?? transaction), {
+                isUpdate: true,
+                source: transaction.source,
+                categoryIds: selectedCategories.map((c) => c.id),
+                supportsCards: true,
+              }),
+            }),
+          );
+          shown.settle(true);
+          showToast('Transaction saved!');
+          router.refresh();
+        } catch (e) {
+          shown.settle(false);
+          showToast(getErrorMessage(e, 'An unexpected error occurred'), { tone: 'danger' });
+        }
+        return;
+      }
       await updateMutation.mutateAsync({ id: transaction.id, body });
       showToast('Transaction saved!');
       onClose();

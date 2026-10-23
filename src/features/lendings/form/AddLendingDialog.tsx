@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { type CounterpartyResponse, type CounterpartySelection, selectionName } from '@/lib/lending.types';
@@ -29,7 +30,6 @@ import {
   settlementWarning,
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { buildCreateLendingRequest, lendingEntryProblem } from '../lendingEntryForm';
 import { useCreateLending } from '../useCreateLending';
@@ -83,7 +83,9 @@ export function AddLendingDialog({
   const warning = party ? settlementWarning(entryType, Number(amount), partyNet, selectionName(party)) : null;
 
   const submit = async () => {
-    const problem = lendingEntryProblem(party, amount);
+    const resolvedAmount = resolveAmountExpression(amount);
+    if (resolvedAmount !== amount) setAmount(resolvedAmount);
+    const problem = lendingEntryProblem(party, resolvedAmount);
     setErrors(problem ? { [problem.field]: problem.message } : {});
     if (problem || !party) return;
     try {
@@ -91,7 +93,7 @@ export function AddLendingDialog({
         buildCreateLendingRequest({
           party,
           entryType,
-          amount,
+          amount: resolvedAmount,
           entryDate,
           expectedReturnDate: settlement ? '' : expectedReturnDate,
           notes,
@@ -156,10 +158,9 @@ export function AddLendingDialog({
                 inputMode="decimal"
                 placeholder="5000"
                 value={amount}
-                onValueChange={(v) => {
-                  setAmount(sanitizeDecimalInput(v));
-                  setErrors((e) => ({ ...e, amount: undefined }));
-                }}
+                {...amountExpressionProps(amount, setAmount, () =>
+                  setErrors((e) => ({ ...e, amount: undefined })),
+                )}
                 error={errors.amount}
               />
               <DateField

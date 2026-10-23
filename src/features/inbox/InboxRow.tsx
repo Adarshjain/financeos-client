@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, Icon, ListRow, SwipeActions } from '@/components/ds';
+import { Button, ContextMenu, Icon, ListRow, SwipeActions } from '@/components/ds';
 import type { InboxItemResponse } from '@/lib/api/types';
 
 import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inbox.helpers';
@@ -29,6 +29,12 @@ export function InboxRow({ item, highlighted, onBillButton, onSnooze, onDismiss 
   const buttons = rowButtons(item);
 
   return (
+    <ContextMenu
+      items={[
+        ...(snoozable ? [{ id: 'snooze', label: 'Snooze', onSelect: () => onSnooze(item, appTodayPlus(1)) }] : []),
+        ...(dismissable ? [{ id: 'dismiss', label: 'Dismiss', onSelect: () => onDismiss(item) }] : []),
+      ]}
+    >
     <SwipeActions
       disabled={!snoozable && !dismissable}
       left={
@@ -99,5 +105,6 @@ export function InboxRow({ item, highlighted, onBillButton, onSnooze, onDismiss 
         }
       />
     </SwipeActions>
+    </ContextMenu>
   );
 }

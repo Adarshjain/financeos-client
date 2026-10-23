@@ -18,6 +18,7 @@ import { useAccountFormMutations } from '@/features/accounts/form/useAccountForm
 import { useAccountIdentifiers } from '@/features/accounts/form/useAccountIdentifiers';
 import { appHref } from '@/features/shell/routes';
 import type { Account, AccountRequest } from '@/lib/account.types';
+import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { distinctLimitPools } from '@/lib/creditLimitPools';
 import { todayInAppZone } from '@/lib/date-range';
@@ -165,11 +166,21 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
   };
 
   const submit = async () => {
-    const found = validateAccountForm(values);
+    // Enter submits without a blur: settle any typed arithmetic (120+45) first.
+    const money = { allowNegative: true };
+    const resolved: AccountFormValues = {
+      ...values,
+      openingBalance: resolveAmountExpression(values.openingBalance, money),
+      cashBalance: resolveAmountExpression(values.cashBalance, money),
+      limitPoolLimit: resolveAmountExpression(values.limitPoolLimit, money),
+      creditLimit: resolveAmountExpression(values.creditLimit, money),
+    };
+    setValues(resolved);
+    const found = validateAccountForm(resolved);
     setErrors(found);
     if (Object.keys(found).length > 0 || !values.type) return;
     setFailure(null);
-    const request = buildAccountRequest(values);
+    const request = buildAccountRequest(resolved);
     const identifiers = fieldsFor(values.type).includes('identifiers') ? values.identifiers : [];
 
     if (account && request.type !== AccountType.BROKER && request.type !== AccountType.GENERIC) {

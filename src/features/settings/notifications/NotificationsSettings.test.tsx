@@ -318,6 +318,30 @@ describe('Notifications tab: kinds and grouping', () => {
   });
 });
 
+describe('Notifications tab: instant switches', () => {
+  it('flips a kind switch before the save answers, and flips it back with a toast when it fails', async () => {
+    let fail!: (e: unknown) => void;
+    vi.mocked(api.PUT).mockReturnValue(new Promise((_res, rej) => (fail = rej)) as never);
+    const { toast } = await import('sonner');
+    render();
+    const sw = await screen.findByLabelText('EMI overdue');
+    expect(sw).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(sw);
+    await waitFor(() => expect(screen.getByLabelText('EMI overdue')).toHaveAttribute('aria-checked', 'false'));
+    expect(toast.error).not.toHaveBeenCalled();
+    fail(new Error('boom'));
+    await waitFor(() => expect(screen.getByLabelText('EMI overdue')).toHaveAttribute('aria-checked', 'true'));
+    expect(toast.error).toHaveBeenCalled();
+  });
+
+  it('flips a mute switch before the save answers', async () => {
+    vi.mocked(api.PUT).mockReturnValue(new Promise(() => {}) as never);
+    render();
+    fireEvent.click(await screen.findByRole('switch', { name: 'Mute HDFC Regalia' }));
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Mute HDFC Regalia' })).toHaveAttribute('aria-checked', 'true'));
+  });
+});
+
 describe('Notifications tab: muted', () => {
   it('lists only open credit cards and mutes one', async () => {
     vi.mocked(api.PUT).mockResolvedValue({ data: settings({ mutedAccountIds: ['card-1'] }) } as never);

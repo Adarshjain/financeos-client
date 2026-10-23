@@ -400,3 +400,43 @@ describe('Edit transaction', () => {
     expect(update.mock.calls[0][0].body).not.toHaveProperty('reviewReasons');
   });
 });
+
+describe('Amount arithmetic', () => {
+  it('turns 120+45 into 165 on blur and sends 165', async () => {
+    setup({ defaultAccountId: 'b1' });
+    fireEvent.change(amount(), { target: { value: '120+45' } });
+    expect(amount()).toHaveValue('120+45');
+    fireEvent.blur(amount());
+    expect(amount()).toHaveValue('165');
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toMatchObject({ amount: -165 });
+  });
+
+  it('sends the result when saved without a blur', async () => {
+    setup({ defaultAccountId: 'b1' });
+    fireEvent.change(amount(), { target: { value: '120+45' } });
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toMatchObject({ amount: -165 });
+  });
+
+  it('resolves the instant discount and convenience fee on blur too', () => {
+    setup({ defaultAccountId: 'b1' });
+    fireEvent.change(screen.getByLabelText('Instant discount'), { target: { value: '10+5' } });
+    fireEvent.blur(screen.getByLabelText('Instant discount'));
+    expect(screen.getByLabelText('Instant discount')).toHaveValue('15');
+    fireEvent.change(screen.getByLabelText('Convenience fee'), { target: { value: '2*3' } });
+    fireEvent.blur(screen.getByLabelText('Convenience fee'));
+    expect(screen.getByLabelText('Convenience fee')).toHaveValue('6');
+  });
+
+  it('shows the amount error and does not send when the expression cannot be worked out', async () => {
+    setup({ defaultAccountId: 'b1' });
+    fireEvent.change(amount(), { target: { value: '5/0' } });
+    save();
+    expect(await screen.findByText('Enter an amount greater than zero')).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
+  });
+});
+

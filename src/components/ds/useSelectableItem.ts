@@ -54,6 +54,7 @@ export function useSelectableItem({
     };
   }
 
+  const ctrlDown = useRef(false);
   const { pressProps } = usePress({
     isDisabled: disabled,
     // usePress stops propagation of the events it handles unless told otherwise;
@@ -64,6 +65,9 @@ export function useSelectableItem({
     onPress: (e) => {
       e.continuePropagation();
       if (moved.current) return;
+      // macOS Ctrl+click is a right-click: the context menu opens, the row must not. The press completes on a
+      // click React Aria synthesizes itself (no ctrlKey), so the key is read from the pointerdown.
+      if (ctrlDown.current && !isPhoneLayout()) return;
       if (isPhoneLayout() && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
       else onPress?.();
     },
@@ -77,6 +81,7 @@ export function useSelectableItem({
 
   const movementProps: React.HTMLAttributes<HTMLElement> = {
     onPointerDown: (e) => {
+      ctrlDown.current = e.ctrlKey;
       stopTracking.current?.();
       const origin = { x: e.clientX, y: e.clientY };
       moved.current = false;

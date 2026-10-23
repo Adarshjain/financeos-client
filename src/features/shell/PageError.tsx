@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { startTransition } from 'react';
 
-import { ErrorState } from '@/components/organisms';
+import { ErrorState, Illustration } from '@/components/organisms';
 
 import { ShellPage, type ShellPageProps } from './ShellPage';
 
@@ -32,6 +32,7 @@ export function PageError({ error, reset, unstable_retry, what = 'this page', sh
   };
   const body = (
     <ErrorState
+      illustration={<Illustration variant="error" />}
       title={`Could not load ${what}`}
       description="The request failed. Try again, and quote the reference if it keeps failing."
       action={{ label: 'Try again', onSelect: retry }}

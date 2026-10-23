@@ -4,9 +4,9 @@ import React from 'react';
 
 import { DateField, Dialog, DialogBody, DialogContent, Select, TextArea, TextField } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import type { LoanChargeType } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { CHARGE_TYPES } from './entriesModel';
 import {
@@ -44,10 +44,12 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
   };
 
   const submit = async () => {
-    const problems = chargeProblems(values);
+    const resolved = { ...values, amount: resolveAmountExpression(values.amount) };
+    setValues(resolved);
+    const problems = chargeProblems(resolved);
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
-    const saved = await onSubmit({ ...values, transactionId: tx?.id });
+    const saved = await onSubmit({ ...resolved, transactionId: tx?.id });
     if (saved) onClose();
   };
 
@@ -82,7 +84,7 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
               inputMode="decimal"
               placeholder="5000"
               value={values.amount}
-              onValueChange={(v) => change({ amount: sanitizeDecimalInput(v) })}
+              {...amountExpressionProps(values.amount, (v) => change({ amount: v }))}
               error={errors.amount}
             />
             <DateField

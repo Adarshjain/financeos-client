@@ -15,6 +15,7 @@ import {
 } from '@/components/ds';
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { plainAmount } from '@/features/loans/loanFormat';
+import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -177,7 +178,8 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
           prefix="₹"
           inputMode="decimal"
           value={dividend.amount}
-          onValueChange={(v) => dividend.setAmount(sanitizeDecimalInput(v))}
+          {...amountExpressionProps(dividend.amount, dividend.setAmount)}
+          error={dividend.amountError}
         />
         <TextField
           label="TDS"
@@ -185,7 +187,8 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
           prefix="₹"
           inputMode="decimal"
           value={dividend.tds}
-          onValueChange={(v) => dividend.setTds(sanitizeDecimalInput(v))}
+          {...amountExpressionProps(dividend.tds, dividend.setTds)}
+          error={dividend.tdsError}
         />
       </div>
       <DateField
