@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -19,7 +18,6 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { PagePosition, SellEstimate } from '@/lib/investments.types';
 
@@ -39,17 +37,11 @@ import {
 import { PriceDialog, type PriceDialogTarget } from './PriceDialog';
 import { checkQuantity, quantityStep, sellFigures, taxFreeQuantity } from './sellMath';
 
-/** Where the record flows go until their Dinero dialogs are built: the Legacy pages. */
-export const RECORD_TRADE_HREF = appHref('/investments/tradebook');
-export const RECORD_DIVIDEND_HREF = appHref('/investments/dividends');
-export const RECORD_CORPORATE_ACTION_HREF = appHref('/investments/corporate-actions');
-export const EDIT_INSTRUMENT_HREF = appHref('/investments/instruments');
-
-function LinkAction({ href, children }: { href: string; children: React.ReactNode }) {
+function LinkAction({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
     <Text variant="label" as="div">
-      <Button asChild variant="link" size="sm">
-        <Link href={href}>{children}</Link>
+      <Button variant="link" size="sm" onClick={onClick}>
+        {children}
       </Button>
     </Text>
   );
@@ -130,13 +122,14 @@ export interface TradesCardProps {
   position: PagePosition;
   /** "3 lots · FIFO". */
   subtitle?: string;
+  onRecord: () => void;
 }
 
-export function TradesCard({ instrumentId, tab, rows, position, subtitle }: TradesCardProps) {
+export function TradesCard({ instrumentId, tab, rows, position, subtitle, onRecord }: TradesCardProps) {
   const showPager = tab === 'trades';
   const pager = showPager ? <SectionPager instrumentId={instrumentId} tab="trades" position={position} /> : undefined;
   return (
-    <Card title="Trades" subtitle={subtitle} action={<LinkAction href={RECORD_TRADE_HREF}>Record trade</LinkAction>}>
+    <Card title="Trades" subtitle={subtitle} action={<LinkAction onClick={onRecord}>Record trade</LinkAction>}>
       <DataTable
         columns={tradeColumns}
         data={rows}
@@ -223,14 +216,16 @@ export function DividendsCard({
   tab,
   rows,
   position,
+  onRecord,
 }: {
   instrumentId: string;
   tab: HoldingTab;
   rows: DividendRowModel[];
   position: PagePosition;
+  onRecord: () => void;
 }) {
   return (
-    <Card title="Dividends" action={<LinkAction href={RECORD_DIVIDEND_HREF}>Record</LinkAction>}>
+    <Card title="Dividends" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
       {tab === 'dividends' ? <SectionPager instrumentId={instrumentId} tab="dividends" position={position} /> : null}
       {rows.length === 0 ? <EmptyState compact description="No dividends recorded for this holding." /> : null}
       {rows.map((r) => (
@@ -247,9 +242,9 @@ export function DividendsCard({
   );
 }
 
-export function CorporateActionsCard({ rows }: { rows: CorporateActionRowModel[] }) {
+export function CorporateActionsCard({ rows, onRecord }: { rows: CorporateActionRowModel[]; onRecord: () => void }) {
   return (
-    <Card title="Corporate actions" subtitle="Recorded for this holding" action={<LinkAction href={RECORD_CORPORATE_ACTION_HREF}>Record</LinkAction>}>
+    <Card title="Corporate actions" subtitle="Recorded for this holding" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
       {rows.length === 0 ? <EmptyState compact description="No corporate actions recorded for this holding." /> : null}
       {rows.map((r) => (
         <ListRow key={r.id} title={r.title} subtitle={r.subtitle} wrap />
@@ -260,9 +255,9 @@ export function CorporateActionsCard({ rows }: { rows: CorporateActionRowModel[]
 
 // ---- Instrument ------------------------------------------------------------------------------
 
-export function InstrumentCard({ rows }: { rows: InstrumentRow[] }) {
+export function InstrumentCard({ rows, onEdit }: { rows: InstrumentRow[]; onEdit: () => void }) {
   return (
-    <Card title="Instrument" subtitle="Shared catalog entry" action={<LinkAction href={EDIT_INSTRUMENT_HREF}>Edit</LinkAction>}>
+    <Card title="Instrument" subtitle="Shared catalog entry" action={<LinkAction onClick={onEdit}>Edit</LinkAction>}>
       {rows.map((r) => (
         <ListRow key={r.label} title={r.label} trailing={<Text variant="body">{r.value}</Text>} />
       ))}

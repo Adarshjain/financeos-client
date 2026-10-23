@@ -6,14 +6,13 @@ import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ApiError } from '@/lib/api/client';
-import { toastError } from '@/lib/toastError';
-import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
-
 import {
   useCatalogSearch,
   useResolveInstrumentMutation,
-} from './useCatalogSearch';
+} from '@/features/investments/instruments/useCatalogSearch';
+import { ApiError } from '@/lib/api/client';
+import { toastError } from '@/lib/toastError';
+import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 interface InstrumentSearchFieldProps {
   type?: InstrumentType;

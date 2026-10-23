@@ -79,10 +79,18 @@ describe('DsIndexPage', () => {
     render(<DsIndexPage />);
 
     expect(screen.getByText('To build')).toBeDefined();
-    expect(screen.getByText('Tradebook')).toBeDefined();
+    expect(screen.getByText('Import tradebook')).toBeDefined();
     expect(screen.getByText('Rewards overview')).toBeDefined();
     expect(screen.getByText('Ask the data')).toBeDefined();
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    expect(hrefs.some((h) => h?.includes('tradebook'))).toBe(false);
+    expect(hrefs.some((h) => h?.includes('import-tradebook'))).toBe(false);
+  });
+
+  it('links every built Investments tab page', () => {
+    render(<DsIndexPage />);
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    for (const tab of ['tradebook', 'dividends', 'fno', 'corporate-actions', 'instruments']) {
+      expect(hrefs).toContain(`/ds/investments/${tab}`);
+    }
   });
 });

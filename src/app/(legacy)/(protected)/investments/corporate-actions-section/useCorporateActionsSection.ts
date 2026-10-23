@@ -4,13 +4,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from '@/features/investments/corporate-actions/corporateActionGone';
 import { api } from '@/lib/api/client';
 import { CorporateAction } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from '../corporate-actions/corporateActionGone';
 import { SortOrder } from './CorporateActionsFilterBar';
 
 /** The instrument a corporate-action dialog opens on, as the action response names it. */

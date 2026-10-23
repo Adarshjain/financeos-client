@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,6 +16,13 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationFeed: () => ({ data: undefined, isLoading: false, error: null, refetch: vi.fn() }),
   useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
 }));
+
+// The add dialogs are tested on their own: here each one only says which it is.
+vi.mock('./tradebook/TradeDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-trade', 'RecordTradeDialog'));
+vi.mock('./dividends/DividendFormDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-dividend', 'DividendAddDialog'));
+vi.mock('./fno/FnoAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-fno', 'FnoAddDialog'));
+vi.mock('./corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-action', 'CorporateActionDialog'));
+vi.mock('./instruments/InstrumentAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-instrument', 'InstrumentAddDialog'));
 
 const loadTabCounts = vi.fn();
 vi.mock('./tabCountsActions', () => ({ loadTabCounts: () => loadTabCounts() }));
@@ -63,13 +70,32 @@ describe('InvestmentsShell', () => {
     expect(tabTexts()).toEqual(['Holdings', 'Tradebook · 38', 'Dividends · 5', 'F&O · 5', 'Corporate actions · 2', 'Instruments']);
   });
 
-  it('links Holdings to Dinero and the other tabs to their Legacy pages', () => {
+  it('links every tab to its Dinero page', () => {
     renderShell();
     const href = (label: RegExp) => screen.getByRole('tab', { name: label }).getAttribute('href');
     expect(href(/^Holdings/)).toBe('/ds/investments');
-    expect(href(/^Tradebook/)).toBe('/investments/tradebook');
-    expect(href(/^Corporate actions/)).toBe('/investments/corporate-actions');
-    expect(href(/^Instruments/)).toBe('/investments/instruments');
+    expect(href(/^Tradebook/)).toBe('/ds/investments/tradebook');
+    expect(href(/^Dividends/)).toBe('/ds/investments/dividends');
+    expect(href(/^F&O/)).toBe('/ds/investments/fno');
+    expect(href(/^Corporate actions/)).toBe('/ds/investments/corporate-actions');
+    expect(href(/^Instruments/)).toBe('/ds/investments/instruments');
+  });
+
+  it('marks the tab the pathname is on', () => {
+    const cases: [string, string][] = [
+      ['/ds/investments', 'Holdings'],
+      ['/ds/investments/tradebook', 'Tradebook'],
+      ['/ds/investments/dividends', 'Dividends'],
+      ['/ds/investments/fno', 'F&O'],
+      ['/ds/investments/corporate-actions', 'Corporate actions'],
+      ['/ds/investments/instruments', 'Instruments'],
+    ];
+    for (const [path, label] of cases) {
+      pathname = path;
+      const { unmount } = renderShell();
+      expect(screen.getByRole('tab', { name: new RegExp(`^${label}`) }), path).toHaveAttribute('data-state', 'active');
+      unmount();
+    }
   });
 
   it('keeps the tabs without counts when the counts fail', async () => {
@@ -79,11 +105,33 @@ describe('InvestmentsShell', () => {
     expect(screen.getByRole('tab', { name: 'Tradebook' })).toBeInTheDocument();
   });
 
-  it('has the title Investments with its crumb, and no Add button', () => {
+  it('has the title Investments with its crumb and an Add button', () => {
     renderShell();
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Grow').length).toBeGreaterThan(0);
-    expect(screen.queryByRole('button', { name: 'Add' })).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Add' }).length).toBeGreaterThan(0);
+  });
+
+  it('opens no dialog until + is pressed', () => {
+    renderShell();
+    expect(screen.queryByTestId(/^dialog-/)).toBeNull();
+  });
+
+  it.each([
+    ['/ds/investments', 'trade'],
+    ['/ds/investments/tradebook', 'trade'],
+    ['/ds/investments/dividends', 'dividend'],
+    ['/ds/investments/fno', 'fno'],
+    ['/ds/investments/corporate-actions', 'action'],
+    ['/ds/investments/instruments', 'instrument'],
+  ])('opens the dialog of %s with the top bar +', (path, dialog) => {
+    pathname = path;
+    renderShell();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0]);
+    expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
+    expect(screen.getAllByTestId(/^dialog-/)).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
+    expect(screen.queryByTestId(/^dialog-/)).toBeNull();
   });
 
   it("renders a holding's own page without the tab strip", () => {

@@ -1,4 +1,5 @@
 import { formatAmount, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
+import type { InstrumentType } from '@/lib/types';
 
 const MINUS = '−';
 
@@ -54,9 +55,7 @@ export function moveTone(value: number | null | undefined): 'positive' | 'danger
 }
 
 /** "FY 26-27" from the FY's starting year (2026). */
-export function fyLabel(fy: number): string {
-  return `FY ${String(fy).slice(2)}-${String(fy + 1).slice(2)}`;
-}
+export { fyLabel } from '@/features/loans/detail/financialYear';
 
 /** "69,704": whole rupees without the sign. */
 export function plainRupees(value: number): string {
@@ -68,4 +67,25 @@ export function plainSignedRupees(value: number): string {
   const rounded = Math.round(value);
   if (rounded === 0) return '0';
   return `${rounded > 0 ? '+' : MINUS}${formatAmount(Math.abs(rounded), 0)}`;
+}
+
+/** "Stock", "Fund", "ETF": an instrument type in a word. */
+export const TYPE_WORDS: Record<InstrumentType, string> = { stock: 'Stock', mutual_fund: 'Fund', etf: 'ETF' };
+
+/** An instrument picked in a form. */
+export interface InstrumentRef {
+  id: string;
+  name: string;
+  symbol?: string | null;
+}
+
+/** "INFY · Infosys", or the name alone when there is no symbol (funds). */
+export function instrumentLabel(i: { name: string; symbol?: string | null }): string {
+  return i.symbol && i.symbol !== i.name ? `${i.symbol} · ${i.name}` : i.name;
+}
+
+/** "share(s)" or "unit(s)" for a quantity of an instrument type. */
+export function unitWord(type: InstrumentType, qty: number): string {
+  if (type === 'mutual_fund') return qty === 1 ? 'unit' : 'units';
+  return qty === 1 ? 'share' : 'shares';
 }

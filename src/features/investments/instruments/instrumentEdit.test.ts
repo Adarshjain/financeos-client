@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
+import type { Instrument } from '@/lib/types';
+
 import {
   assetClassSelection,
   AUTO_ASSET_CLASS,
@@ -8,9 +11,7 @@ import {
   INSTRUMENT_FIELD_LIMITS,
   instrumentFormErrors,
   isOverridden,
-} from '@/app/(legacy)/(protected)/investments/instrument-form/instrumentEdit';
-import { ApiError } from '@/lib/api/client';
-import type { Instrument } from '@/lib/types';
+} from './instrumentEdit';
 
 const base: Instrument = { id: 'i1', type: 'stock', name: 'Acme', currency: 'INR' };
 

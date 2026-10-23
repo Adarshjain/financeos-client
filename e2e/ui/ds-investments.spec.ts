@@ -34,8 +34,7 @@ for (const viewport of VIEWPORTS) {
       for (const name of [/^Tradebook/, /^Dividends/, /^F&O/, /^Corporate actions/, /^Instruments/]) {
         await expect(page.getByRole('tab', { name })).toBeVisible();
       }
-      // The tabs that are not built in Dinero yet go to their Legacy pages.
-      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveAttribute('href', '/investments/tradebook');
+      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveAttribute('href', '/ds/investments/tradebook');
       // The counts load on their own.
       await expect(page.getByRole('tab', { name: /^Tradebook · \d+/ })).toBeVisible();
 
@@ -48,7 +47,7 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
       await expect(shown(page.getByText(/manual price/))).toBeVisible();
       await expect(shown(page.getByText(/at cost \(no price\)/))).toBeVisible();
-      await expect(shown(page.getByRole('link', { name: 'record a merger' }))).toHaveAttribute('href', '/investments/corporate-actions');
+      await expect(shown(page.getByRole('button', { name: 'record a merger' }))).toBeVisible();
       await expect(shown(page.getByText(new RegExp(`Merged into ${seeded.target.name} · \\d+ Jul 23`)))).toBeVisible();
       await expect(shown(page.getByText('Stocks', { exact: false }))).toBeVisible();
       // One row per stock: INFY is held at two brokers and appears once.
@@ -160,8 +159,8 @@ for (const viewport of VIEWPORTS) {
     test('Holding page: only manual prices can be edited, and a delete asks first', async ({ page }) => {
       await page.goto(`/ds/investments/${seeded.infy.id}`);
       await expect(page.getByText('Price history')).toBeVisible();
-      // Both seeded prices are the user's own manual prices.
-      await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(2);
+      // Both seeded prices are the user's own manual prices; the Instrument card has an Edit of its own.
+      await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(3);
       await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(2);
 
       await page.getByRole('button', { name: 'Edit' }).first().click();

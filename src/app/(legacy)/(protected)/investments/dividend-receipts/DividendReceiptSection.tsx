@@ -1,15 +1,13 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { api } from '@/lib/api/client';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
+import { type ReceiptNote } from '@/features/investments/dividends/dividendsModel';
+import { useDividendReceiptMutations } from '@/features/investments/dividends/useDividendReceiptMutations';
 import { toastError } from '@/lib/toastError';
 import type { Dividend } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
@@ -19,7 +17,6 @@ import { ReceiptStatusBadge } from './ReceiptStatusBadge';
 /** A TDS hint is only offered when the shortfall looks like withholding. */
 const MAX_TDS_GAP_FRACTION = 0.25;
 
-type ManualStatus = 'received_untracked' | 'not_received';
 const DERIVED = 'derived';
 
 interface DividendReceiptSectionProps {
@@ -32,37 +29,18 @@ interface DividendReceiptSectionProps {
 }
 
 export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSuccess }: DividendReceiptSectionProps) {
-  const qc = useQueryClient();
   const txn = dividend.transaction ?? null;
-  const path = { params: { path: { id: dividend.id } } };
+  const receipt = useDividendReceiptMutations();
+  const busy = receipt.busy;
 
   const afterChange = async () => {
-    await Promise.all([
-      invalidateInvestmentQueries(qc),
-      qc.invalidateQueries({ queryKey: keys.transactions.all }),
-    ]);
+    await receipt.refresh();
     onSuccess?.();
   };
 
-  const linkMutation = useMutation({
-    mutationFn: (transactionId: string) =>
-      api.PUT('/api/v1/investments/dividends/{id}/transaction', {
-        ...path,
-        body: { transactionId, updateTds: false },
-      }),
-  });
-  const unlinkMutation = useMutation({
-    mutationFn: () => api.DELETE('/api/v1/investments/dividends/{id}/transaction', path),
-  });
-  const statusMutation = useMutation({
-    mutationFn: (status: ManualStatus | null) =>
-      api.PUT('/api/v1/investments/dividends/{id}/receipt-status', { ...path, body: { status } }),
-  });
-  const busy = linkMutation.isPending || unlinkMutation.isPending || statusMutation.isPending;
-
   const handleLink = async (transactionId: string) => {
     try {
-      await linkMutation.mutateAsync(transactionId);
+      await receipt.link.mutateAsync({ id: dividend.id, transactionId });
       toast.success('Linked');
       await afterChange();
     } catch (err) {
@@ -72,7 +50,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
 
   const handleUnlink = async () => {
     try {
-      await unlinkMutation.mutateAsync();
+      await receipt.unlink.mutateAsync(dividend.id);
       toast.success('Unlinked');
       await afterChange();
     } catch (err) {
@@ -82,7 +60,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
 
   const handleStatus = async (value: string) => {
     try {
-      await statusMutation.mutateAsync(value === DERIVED ? null : (value as ManualStatus));
+      await receipt.setNote.mutateAsync({ id: dividend.id, note: value as ReceiptNote });
       toast.success('Receipt note updated');
       await afterChange();
     } catch (err) {

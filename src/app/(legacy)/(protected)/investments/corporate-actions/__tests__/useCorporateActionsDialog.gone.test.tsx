@@ -14,8 +14,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
 import { toast } from 'sonner';
 
-import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from '@/app/(legacy)/(protected)/investments/corporate-actions/corporateActionGone';
 import { useCorporateActionsDialog } from '@/app/(legacy)/(protected)/investments/corporate-actions/useCorporateActionsDialog';
+import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from '@/features/investments/corporate-actions/corporateActionGone';
 import { api, ApiError } from '@/lib/api/client';
 import type { CorporateAction } from '@/lib/api/types';
 import { createTestQueryClient } from '@/test/renderWithQuery';

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buy, pageData, prices } from '@/features/investments/holding/holding.fixtures';
@@ -50,6 +50,25 @@ vi.mock('@/components/reports/views/ChartView', () => ({
     <div data-testid="chart">{`${data.categories.join(',')}|${data.series[0].data.join(',')}`}</div>
   ),
 }));
+
+// The record and edit dialogs are tested on their own: here they only show the props the page gives them.
+vi.mock('@/features/investments/tradebook/TradeDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('trade-dialog', 'RecordTradeDialog'));
+vi.mock('@/features/investments/dividends/DividendFormDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dividend-dialog', 'DividendAddDialog'));
+vi.mock('@/features/investments/corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('action-dialog', 'CorporateActionDialog'));
+vi.mock('@/features/investments/instruments/InstrumentEditDialog', async () => {
+  const { fakeDialog } = await import('@/test/fakeDialog');
+  const Fake = fakeDialog('edit-dialog', 'InstrumentEditDialog').InstrumentEditDialog;
+  return {
+    InstrumentEditDialog: (props: { onSaved?: (r: unknown) => void } & Record<string, unknown>) => (
+      <>
+        <Fake {...props} />
+        <button onClick={() => props.onSaved?.(editSaved.result)}>save edit</button>
+      </>
+    ),
+  };
+});
+const editSaved = vi.hoisted(() => ({ result: {} as unknown }));
+vi.mock('@/features/investments/instruments/ResetInstrumentDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('reset-dialog', 'ResetInstrumentDialog'));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
@@ -149,7 +168,7 @@ describe('/ds/investments/[instrumentId]: Overview', () => {
     expect(screen.getAllByText('Buy').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Zerodha').length).toBeGreaterThan(0);
     expect(screen.getAllByText('₹28,400').length).toBeGreaterThan(0);
-    expect(screen.getByRole('link', { name: 'Record trade' })).toHaveAttribute('href', '/investments/tradebook');
+    expect(screen.getByRole('button', { name: 'Record trade' })).toBeInTheDocument();
   });
 
   it('shows By broker with each broker\'s shares, average cost and value', async () => {
@@ -238,18 +257,100 @@ describe('/ds/investments/[instrumentId]: Overview', () => {
     expect(screen.getByText('Bonus 1:1')).toBeInTheDocument();
     expect(screen.getByText('ex 10 Jun 25')).toBeInTheDocument();
     expect(screen.queryByText(/Final|Interim|Applied/)).toBeNull();
-    expect(screen.getAllByRole('link', { name: 'Record' }).map((a) => a.getAttribute('href'))).toEqual([
-      '/investments/dividends',
-      '/investments/corporate-actions',
-    ]);
+    expect(screen.getAllByRole('button', { name: 'Record' })).toHaveLength(2);
   });
 
-  it('shows the Instrument card with an Edit link to the Legacy instruments page', async () => {
+  it('shows the Instrument card with an Edit button', async () => {
     await renderPage();
     for (const text of ['Shared catalog entry', 'INE009A01021', 'INFY.NS', 'Yahoo', 'none']) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
-    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/investments/instruments');
+    expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(1);
+  });
+});
+
+describe('/ds/investments/[instrumentId]: record and edit dialogs', () => {
+  const props = (id: string) => JSON.parse(screen.getByTestId(id).textContent ?? '{}') as Record<string, unknown>;
+  const instrument = { id: 'i-infy', name: 'Infosys', symbol: 'INFY' };
+
+  it('opens no dialog until one is asked for', async () => {
+    await renderPage();
+    for (const id of ['trade-dialog', 'dividend-dialog', 'action-dialog', 'edit-dialog']) expect(screen.queryByTestId(id)).toBeNull();
+  });
+
+  it('opens Record trade for the instrument from the Trades card, with no broker while two hold it', async () => {
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Record trade' }));
+    expect(props('trade-dialog')).toEqual({ initialInstrument: instrument });
+  });
+
+  it('opens Record trade from the top bar +', async () => {
+    await renderPage();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0]);
+    expect(props('trade-dialog').initialInstrument).toEqual(instrument);
+  });
+
+  it('starts Record trade on the broker when only one holds the instrument', async () => {
+    server.fetchHolding.mockResolvedValue({ ...data.holding, brokers: [data.holding.brokers[0]] });
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Record trade' }));
+    expect(props('trade-dialog').initialBrokerAccountId).toBe(data.holding.brokers[0].brokerAccountId);
+  });
+
+  it('opens Record dividend prefilled with the instrument from the Dividend button and the Dividends card', async () => {
+    await renderPage();
+    for (const trigger of [
+      () => screen.getAllByRole('button', { name: 'Dividend' })[0],
+      () => screen.getAllByRole('button', { name: 'Record' })[0],
+    ]) {
+      fireEvent.click(trigger());
+      expect((props('dividend-dialog').prefill as { instrumentId: string }).instrumentId).toBe('i-infy');
+      cleanup();
+      await renderPage();
+    }
+  });
+
+  it('opens Record corporate action for the instrument from the button and the card', async () => {
+    await renderPage();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Corporate action' })[0]);
+    expect(props('action-dialog')).toEqual({ instrument });
+    cleanup();
+    await renderPage();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record' })[1]);
+    expect(props('action-dialog')).toEqual({ instrument });
+  });
+
+  it('opens the instrument edit dialog from the Instrument card', async () => {
+    await renderPage();
+    // The Instrument card is the last section of Overview, after the price rows' own Edit buttons.
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit' }).at(-1)!);
+    expect((props('edit-dialog').instrument as { id: string }).id).toBe(data.instrument?.id);
+  });
+});
+
+describe('/ds/investments/[instrumentId]: instrument edit result', () => {
+  async function openAndSave(result: unknown) {
+    editSaved.result = result;
+    await renderPage();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit' }).at(-1)!);
+    fireEvent.click(screen.getByRole('button', { name: 'save edit' }));
+  }
+
+  it('goes to the new holding when the holdings moved to another instrument', async () => {
+    await openAndSave({ instrument: { id: 'i-new' }, moved: true, merged: false });
+    expect(router.replace).toHaveBeenCalledWith('/ds/investments/i-new');
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
+
+  it('goes to the existing holding when they merged into it', async () => {
+    await openAndSave({ instrument: { id: 'i-other' }, moved: true, merged: true });
+    expect(router.replace).toHaveBeenCalledWith('/ds/investments/i-other');
+  });
+
+  it('only refreshes the page when the instrument stayed', async () => {
+    await openAndSave({ instrument: { id: 'i-same' }, moved: false, merged: false });
+    expect(router.refresh).toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });
 
@@ -301,21 +402,22 @@ describe('/ds/investments/[instrumentId]: Price history', () => {
     expect(screen.getByText('₹1,470.00')).toBeInTheDocument();
   });
 
+  // The Prices tab: on Overview the Instrument card has an Edit button too.
   it('puts Edit and Delete only on the user\'s own manual price', async () => {
-    await renderPage();
+    await renderPage({ tab: 'prices' });
     expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(1);
   });
 
   it('shows no Edit or Delete when every price is from a feed', async () => {
     server.fetchPricesPage.mockResolvedValue({ ...data.prices, items: prices.filter((p) => !p.editable) });
-    await renderPage();
+    await renderPage({ tab: 'prices' });
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
   });
 
   it('edits the amount of a manual price: the date is shown and cannot change', async () => {
-    await renderPage();
+    await renderPage({ tab: 'prices' });
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     expect(within(dialog).getByDisplayValue('10/10/2026')).toBeDisabled();
@@ -333,7 +435,7 @@ describe('/ds/investments/[instrumentId]: Price history', () => {
   });
 
   it('refuses a price that is not above zero', async () => {
-    await renderPage();
+    await renderPage({ tab: 'prices' });
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '0' } });
@@ -453,7 +555,7 @@ describe('/ds/investments/[instrumentId]: a page past the end', () => {
 describe('/ds/investments/[instrumentId]: failures in the price dialogs', () => {
   it('keeps the Edit dialog open and says so when the server refuses the new amount', async () => {
     api.PUT.mockRejectedValue(new Error('refused'));
-    await renderPage();
+    await renderPage({ tab: 'prices' });
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1480' } });

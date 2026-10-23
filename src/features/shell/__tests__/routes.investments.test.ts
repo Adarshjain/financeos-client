@@ -12,9 +12,9 @@ describe('Investments routes', () => {
     expect(isBuiltRoute('/investments/i1/extra')).toBe(false);
   });
 
-  it('leaves the other tabs on their Legacy pages until their step lands', () => {
+  it('maps every other tab to its Dinero page', () => {
     for (const path of ['tradebook', 'dividends', 'fno', 'corporate-actions', 'instruments']) {
-      expect(appHref(`/investments/${path}`)).toBe(`/investments/${path}`);
+      expect(appHref(`/investments/${path}`)).toBe(`/ds/investments/${path}`);
     }
   });
 

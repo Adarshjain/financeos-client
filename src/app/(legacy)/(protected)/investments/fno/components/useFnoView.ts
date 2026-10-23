@@ -1,11 +1,12 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useDeleteFnoTrade } from '@/features/investments/fno/useFnoTradeMutations';
 import { Broker } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -27,11 +28,7 @@ export function useFnoView({ brokerAccounts }: UseFnoViewProps) {
   });
   const trades = useMemo(() => data?.trades ?? [], [data]);
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const deleteMutation = useDeleteFnoTrade();
 
   // Filter States
   const [search, setSearch] = useState('');

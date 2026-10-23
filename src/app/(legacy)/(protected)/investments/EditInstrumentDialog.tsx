@@ -16,18 +16,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { toastError } from '@/lib/toastError';
-import { AssetClass, Instrument, InstrumentCandidate } from '@/lib/types';
-
-import { EditInstrumentFields, type EditInstrumentValues } from './instrument-form/EditInstrumentFields';
 import {
   assetClassSelection,
   AUTO_ASSET_CLASS,
   identifierClearError,
   type InstrumentFormErrors,
   instrumentFormErrors,
-} from './instrument-form/instrumentEdit';
-import { useUpdateInstrument } from './instrument-form/useInstrumentEdit';
+} from '@/features/investments/instruments/instrumentEdit';
+import { useUpdateInstrument } from '@/features/investments/instruments/useInstrumentEdit';
+import { toastError } from '@/lib/toastError';
+import { AssetClass, Instrument, InstrumentCandidate } from '@/lib/types';
+
+import { EditInstrumentFields, type EditInstrumentValues } from './instrument-form/EditInstrumentFields';
 import { InstrumentSearchField } from './InstrumentSearchField';
 
 interface EditInstrumentDialogProps {

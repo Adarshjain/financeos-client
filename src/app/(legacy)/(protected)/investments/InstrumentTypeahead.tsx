@@ -7,15 +7,15 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  useCatalogSearch,
+  useResolveInstrumentMutation,
+} from '@/features/investments/instruments/useCatalogSearch';
 import { ApiError } from '@/lib/api/client';
 import { toastError } from '@/lib/toastError';
 import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
-import {
-  useCatalogSearch,
-  useResolveInstrumentMutation,
-} from './useCatalogSearch';
 
 interface InstrumentTypeaheadProps {
   selectedInstrument: Instrument | null;

@@ -109,7 +109,7 @@ export const bonus = {
   instrumentId: 'i-infy',
   type: 'bonus',
   ratioFrom: 1,
-  ratioTo: 1,
+  ratioTo: 2,
   exDate: '2025-06-10',
 } as unknown as CorporateAction;
 

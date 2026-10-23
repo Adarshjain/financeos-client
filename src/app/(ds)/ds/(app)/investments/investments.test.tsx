@@ -28,6 +28,9 @@ const server = vi.hoisted(() => ({
 }));
 vi.mock('@/features/investments/investmentsServerApi', () => server);
 
+// The record-a-merger dialog is tested on its own: here it only shows the props the list gives it.
+vi.mock('@/features/investments/corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('action-dialog', 'CorporateActionDialog'));
+
 const refresh = vi.hoisted(() => vi.fn());
 const refreshOptions = vi.hoisted(() => ({ onSettled: undefined as undefined | (() => void) }));
 const refreshState = vi.hoisted(() => ({ busy: false, jobId: null as string | null }));
@@ -221,13 +224,19 @@ describe('/ds/investments Holdings: rows', () => {
     expect(screen.getAllByText(/manual price/).length).toBeGreaterThan(0);
   });
 
-  it('says "at cost (no price)" with a record-a-merger link for a holding without a price', async () => {
+  it('says "at cost (no price)" with a record-a-merger button that opens the corporate-action dialog for that holding', async () => {
     await renderPage();
     expect(screen.getAllByText(/at cost \(no price\)/).length).toBeGreaterThan(0);
-    const links = screen.getAllByRole('link', { name: 'record a merger' });
-    expect(links.length).toBeGreaterThan(0);
-    // The corporate-action record flow is not built in Dinero yet: the link goes to the Legacy page.
-    expect(links[0]).toHaveAttribute('href', '/investments/corporate-actions');
+    const buttons = screen.getAllByRole('button', { name: 'record a merger' });
+    expect(buttons.length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('action-dialog')).toBeNull();
+    fireEvent.click(buttons[0]);
+    expect(JSON.parse(screen.getByTestId('action-dialog').textContent ?? '{}')).toEqual({
+      instrument: { id: 'i-sintex', name: 'Sintex', symbol: 'SINTEX' },
+      type: 'merger',
+    });
+    // The row itself was not opened.
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('writes a fund by its name with units', async () => {

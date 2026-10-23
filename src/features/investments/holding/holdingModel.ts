@@ -1,8 +1,9 @@
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import type { HoldingDetail, PricePoint, SellEstimate } from '@/lib/investments.types';
-import type { CorporateAction, Dividend, Instrument, InstrumentType, InvestmentTransactionResponse } from '@/lib/types';
+import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
-import { moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice } from '../investmentsFormat';
+import { ratioText } from '../corporate-actions/corporateActionRatio';
+import { moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref } from '../investmentsTabs';
 
 // ---- Tabs ----------------------------------------------------------------------
@@ -41,7 +42,6 @@ export const OVERVIEW_SIZES = { trades: 10, dividends: 5, prices: 10 } as const;
 
 // ---- Header ----------------------------------------------------------------------
 
-const TYPE_BADGE: Record<InstrumentType, string> = { stock: 'Stock', mutual_fund: 'Fund', etf: 'ETF' };
 
 const TERM_WORDS: Record<string, string> = {
   long: 'long term',
@@ -66,7 +66,7 @@ export function holdingHeader(holding: HoldingDetail, instrument: Instrument | n
     brokers > 0 ? `${brokers} ${brokers === 1 ? 'broker' : 'brokers'}` : '',
     holding.term ? TERM_WORDS[holding.term] : '',
   ].filter(Boolean);
-  return { title, badge: TYPE_BADGE[holding.assetType], meta: parts.join(' · ') };
+  return { title, badge: TYPE_WORDS[holding.assetType], meta: parts.join(' · ') };
 }
 
 export interface HoldingHeroModel {
@@ -100,11 +100,6 @@ const SOURCE_WORDS: Record<string, string> = { YAHOO: 'Yahoo', AMFI: 'AMFI', MAN
 export function sourceWord(source: string | null | undefined): string {
   if (!source) return '';
   return SOURCE_WORDS[source.toUpperCase()] ?? source;
-}
-
-function unitWord(type: InstrumentType, qty: number): string {
-  if (type === 'mutual_fund') return qty === 1 ? 'unit' : 'units';
-  return qty === 1 ? 'share' : 'shares';
 }
 
 /** The eight figures of the holding, in board order. `tradeCount` is the holding's trades in the tradebook. */
@@ -251,7 +246,8 @@ const ACTION_WORDS: Record<string, string> = { split: 'Split', bonus: 'Bonus', d
 
 export function corporateActionRow(a: CorporateAction): CorporateActionRowModel {
   const kind = String(a.type ?? a.actionType ?? '').toLowerCase();
-  const ratio = a.ratioFrom != null && a.ratioTo != null ? ` ${a.ratioFrom}:${a.ratioTo}` : '';
+  const text = ratioText(kind, a.ratioFrom ?? null, a.ratioTo ?? null, true);
+  const ratio = text ? ` ${text}` : '';
   const target = a.targetInstrumentName ? `into ${a.targetInstrumentName}` : '';
   return {
     id: a.id,

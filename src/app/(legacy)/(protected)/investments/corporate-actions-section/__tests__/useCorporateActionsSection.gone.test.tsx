@@ -13,8 +13,8 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.f
 import { QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { CORPORATE_ACTION_GONE_MESSAGE } from '@/app/(legacy)/(protected)/investments/corporate-actions/corporateActionGone';
 import { useCorporateActionsSection } from '@/app/(legacy)/(protected)/investments/corporate-actions-section/useCorporateActionsSection';
+import { CORPORATE_ACTION_GONE_MESSAGE } from '@/features/investments/corporate-actions/corporateActionGone';
 import { api, ApiError } from '@/lib/api/client';
 import type { CorporateAction } from '@/lib/api/types';
 import { createTestQueryClient } from '@/test/renderWithQuery';

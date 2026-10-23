@@ -1,9 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from '@/features/investments/corporate-actions/corporateActionGone';
+import { useCorporateActionMutations } from '@/features/investments/corporate-actions/useCorporateActionMutations';
 import { api } from '@/lib/api/client';
 import { CorporateAction, CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
@@ -11,8 +13,6 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Instrument } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
-
-import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from './corporateActionGone';
 
 // The generated request enum only has the 4 lowercase action kinds (no legacy
 // uppercase/actionType variants) — `@/lib/types`'s `CorporateActionType` is wider
@@ -83,35 +83,7 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialType]);
 
-  const createMutation = useMutation({
-    mutationFn: (body: CreateCorporateActionRequest) =>
-      api
-        .POST('/api/v1/instruments/{instrumentId}/corporate-actions', {
-          params: { path: { instrumentId: activeInstrumentId as string } },
-          body,
-        })
-        .then((r) => r.data! as CorporateAction),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
-  const updateMutation = useMutation({
-    mutationFn: (vars: { id: string; body: UpdateCorporateActionRequest }) =>
-      api
-        .PUT('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
-          params: {
-            path: { instrumentId: activeInstrumentId as string, id: vars.id },
-          },
-          body: vars.body,
-        })
-        .then((r) => r.data! as CorporateAction),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
-        params: { path: { instrumentId: activeInstrumentId as string, id } },
-      }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const { createMutation, updateMutation, deleteMutation } = useCorporateActionMutations(activeInstrumentId);
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const resetForm = () => {

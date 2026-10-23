@@ -5,21 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { REASON_LABELS } from '@/features/investments/dividends/dividendsModel';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
 import { ReceiptStatusBadge } from './ReceiptStatusBadge';
-import type { DividendMatchCandidate, DividendMatchItem, MatchReason, MatchTier } from './types';
+import type { DividendMatchCandidate, DividendMatchItem, MatchTier } from './types';
 
-export const REASON_LABELS: Record<MatchReason, string> = {
-  EXACT_GROSS: 'Exact amount',
-  NET_OF_RECORDED_TDS: 'Net of recorded TDS',
-  NET_OF_10PCT_TDS: 'Net of 10% TDS',
-  AMOUNT_WITHIN_BAND: 'Amount in range',
-  SPLIT_RATIO_SUSPECT: 'Split multiple? check expected amount',
-  DIVIDEND_KEYWORD: 'Says dividend',
-  NAME_MATCH: 'Names the company',
-  SYMBOL_MATCH: 'Mentions ticker',
-};
+export { REASON_LABELS };
 
 export const TIER_CONFIG: Record<MatchTier, { label: string; className: string }> = {
   EXACT: { label: 'Exact', className: 'text-emerald-600 dark:text-emerald-400' },

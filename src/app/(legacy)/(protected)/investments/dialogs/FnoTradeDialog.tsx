@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -10,9 +9,8 @@ import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, Dia
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCreateFnoTrade, useUpdateFnoTrade } from '@/features/investments/fno/useFnoTradeMutations';
 import { Broker } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import { CreateFnoTradeRequest, FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
 
@@ -27,21 +25,8 @@ export interface FnoTradeDialogProps {
 export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger, onSuccess }: FnoTradeDialogProps) {
   const isEdit = mode === 'edit' || !!trade;
   const [open, setOpen] = useState(false);
-  const qc = useQueryClient();
-  const createMutation = useMutation({
-    mutationFn: (body: CreateFnoTradeRequest) => api.POST('/api/v1/investments/fno', { body }).then((r) => r.data! as FnoTradeResponse),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
-  const updateMutation = useMutation({
-    mutationFn: (body: CreateFnoTradeRequest) =>
-      api
-        .PUT('/api/v1/investments/fno/{id}', {
-          params: { path: { id: trade?.id ?? '' } },
-          body,
-        })
-        .then((r) => r.data! as FnoTradeResponse),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const createMutation = useCreateFnoTrade();
+  const updateMutation = useUpdateFnoTrade(trade?.id);
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const [brokerAccountId, setBrokerAccountId] = useState(trade?.brokerAccountId || brokerAccounts[0]?.id || '');

@@ -1,19 +1,13 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useTradeMutations } from '@/features/investments/tradebook/useTradeMutations';
 import { Broker } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
-import { CreateInvestmentTransactionRequest } from '@/lib/api/types';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+import { ApiError } from '@/lib/api/client';
 import { toastError } from '@/lib/toastError';
-import {
-  Instrument,
-  InvestmentTransactionResponse,
-  InvestmentTransactionType,
-} from '@/lib/types';
+import { Instrument, InvestmentTransactionType } from '@/lib/types';
 
 interface UseCreateInvestmentFormProps {
   brokerAccounts: Broker[];
@@ -45,14 +39,7 @@ export function useCreateInvestmentForm({
   const [dpCharges, setDpCharges] = useState('');
   const [otherCharges, setOtherCharges] = useState('');
 
-  const qc = useQueryClient();
-  const createMutation = useMutation({
-    mutationFn: (body: CreateInvestmentTransactionRequest) =>
-      api
-        .POST('/api/v1/investments/transactions', { body })
-        .then((r) => r.data! as InvestmentTransactionResponse),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const { createTrade: createMutation } = useTradeMutations();
   const isSubmitting = createMutation.isPending;
   const [formKey, setFormKey] = useState(0);
 
