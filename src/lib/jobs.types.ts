@@ -30,6 +30,9 @@ export interface JobResponse<T = unknown> {
   errorCode?: string | null;
   errorMessage?: string | null;
   result?: T | null;
+  /** Statement imports: the account the file went to (null when unknown or not an import). */
+  accountId?: string | null;
+  accountName?: string | null;
   cancelRequested: boolean;
   attempt: number;
   createdAt: string;

@@ -38,6 +38,9 @@ export interface DropZoneProps
   /** Error message on the drop zone */
   error?: React.ReactNode;
 
+  /** Locks the zone: no picker, no drop, no removing queued files (an upload is running) */
+  disabled?: boolean;
+
   /** Whether to show the drop zone upload area box (default: true) */
   showDropArea?: boolean;
 
@@ -64,6 +67,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       onFilesSelected,
       error,
       showDropArea = true,
+      disabled = false,
       queuedFiles,
       onRemoveFile,
       children,
@@ -81,6 +85,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      if (disabled) return;
       setIsDragOver(true);
     };
 
@@ -95,12 +100,14 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       e.preventDefault();
       e.stopPropagation();
       setIsDragOver(false);
+      if (disabled) return;
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         onFilesSelected?.(Array.from(e.dataTransfer.files));
       }
     };
 
     const handleChooseFiles = () => {
+      if (disabled) return;
       fileInputRef.current?.click();
     };
 
@@ -125,6 +132,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
           type="file"
           multiple={multiple}
           accept={accept}
+          disabled={disabled}
           onChange={handleInputChange}
           className="sr-only"
           tabIndex={-1}
@@ -136,7 +144,8 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
           <div
             onClick={handleChooseFiles}
             className={cn(
-              'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast cursor-pointer',
+              'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast',
+              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
               activeDragging
                 ? 'border-brand bg-brand-tint'
                 : hasError
@@ -173,6 +182,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
               <Button
                 size="sm"
                 variant="primary"
+                disabled={disabled}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleChooseFiles();
@@ -211,6 +221,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                     size="sm"
                     variant="ghost"
                     iconOnly
+                    disabled={disabled}
                     aria-label={`Remove ${f.name}`}
                     onClick={(e) => {
                       e.stopPropagation();

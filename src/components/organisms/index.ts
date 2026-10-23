@@ -1,6 +1,7 @@
 export * from './BankLogo/BankLogo';
 export * from './ErrorState/ErrorState';
 export * from './Illustration/Illustration';
+export * from './JobsHistory/JobsHistory';
 export * from './Logo/Logo';
 export * from './RuleCard/RuleCard';
 export * from './SettingsToggle/SettingsToggle';

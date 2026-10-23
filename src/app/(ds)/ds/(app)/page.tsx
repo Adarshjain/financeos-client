@@ -34,6 +34,9 @@ export default function DsIndexPage() {
           <ListRow asChild title="Transactions" subtitle="/ds/transactions" chevron>
             <Link href="/ds/transactions" />
           </ListRow>
+          <ListRow asChild title="Import" subtitle="/ds/transactions/import" chevron>
+            <Link href="/ds/transactions/import" />
+          </ListRow>
           <ListRow asChild title="Categories" subtitle="/ds/transactions/categories" chevron>
             <Link href="/ds/transactions/categories" />
           </ListRow>

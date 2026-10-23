@@ -8,10 +8,11 @@ import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';
 import { JobResultBody } from '@/features/jobs/ds/results/JobResultBody';
 import { isActiveJob } from '@/features/jobs/jobModel';
+import { startedLabel, tookLabel, typeLabel } from '@/features/jobs/jobsModel';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import type { JobResponse } from '@/lib/types';
 
-import { startedByLabel, startedLabel, tookLabel, typeLabel } from './activityModel';
+import { startedByLabel } from './activityModel';
 
 /** One job's full result under the list: opened by `?job=`, from the page's rows or fetched when it is not on the page. */
 export function JobResultCard({

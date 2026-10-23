@@ -12,6 +12,7 @@ export interface JobsHistoryFilters {
   size: number;
   statusFilter: string;
   typeFilter: string;
+  since?: string;
 }
 
 /**

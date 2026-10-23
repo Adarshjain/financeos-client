@@ -135,4 +135,23 @@ describe('DropZone', () => {
     // Root box still shows dragging style if active
     expect(root).toBeInTheDocument();
   });
+
+  it('disabled: ignores drops, locks the picker button and the remove buttons', () => {
+    const onFilesSelected = vi.fn();
+    const onRemoveFile = vi.fn();
+    const { container } = render(
+      <DropZone
+        {...requiredProps}
+        disabled
+        onFilesSelected={onFilesSelected}
+        onRemoveFile={onRemoveFile}
+        queuedFiles={[{ id: '1', name: 'a.pdf', size: '1 MB' }]}
+      />,
+    );
+    const root = container.firstChild as HTMLElement;
+    fireEvent.drop(root, { dataTransfer: { files: [new File(['x'], 'a.pdf')] } });
+    expect(onFilesSelected).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /choose files/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /remove a.pdf/i })).toBeDisabled();
+  });
 });

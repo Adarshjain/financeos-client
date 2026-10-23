@@ -14,6 +14,8 @@ describe('appHref', () => {
     ['/accounts', '/ds/accounts'],
     ['/transactions', '/ds/transactions'],
     ['/transactions?account=a1', '/ds/transactions?account=a1'],
+    ['/transactions/import?account=a1', '/ds/transactions/import?account=a1'],
+    ['/transactions/import/job-1', '/ds/transactions/import/job-1'],
     ['/accounts/abc-123', '/ds/accounts/abc-123'],
     ['/accounts/abc-123/cards', '/ds/accounts/abc-123/cards'],
     ['/accounts/abc-123/rewards', '/ds/accounts/abc-123/rewards'],
@@ -50,7 +52,6 @@ describe('appHref', () => {
   it('leaves unbuilt Legacy paths alone', () => {
     for (const p of [
       '/dashboard',
-      '/transactions/import?account=a1',
       '/transactions/review',
       '/investments',
       '/rewards',

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { FilterChip, Select } from '@/components/ds';
+import { TYPE_OPTIONS } from '@/features/jobs/jobsModel';
 import { useJobsCount } from '@/features/jobs/useJobsHistory';
 
 import {
@@ -12,7 +13,6 @@ import {
   COUNTED_STATUSES,
   filterChipLabel,
   STATUS_OPTIONS,
-  TYPE_OPTIONS,
 } from './activityModel';
 
 // Select values are non-empty; '' (every status or type) travels as this sentinel.

@@ -9,7 +9,7 @@ describe('rowButtons', () => {
   it('upload, mark paid and reconnect are secondary', () => {
     const upload = item({ key: 'a', kind: 'statement_expected', actions: [nav('upload', 'Upload', '/transactions/import?account=1'), SNOOZE] });
     expect(rowButtons(upload)).toEqual([
-      { id: 'upload-0', label: 'Upload', variant: 'secondary', href: '/transactions/import?account=1' },
+      { id: 'upload-0', label: 'Upload', variant: 'secondary', href: '/ds/transactions/import?account=1' },
     ]);
     const paid = item({
       key: 'b',

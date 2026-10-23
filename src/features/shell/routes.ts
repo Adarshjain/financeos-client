@@ -30,8 +30,8 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/notifications$/,
   /^\/accounts$/,
   /^\/accounts\/[^/]+(\/(cards|rewards|statements))?$/,
-  // The list only; /transactions/import and /transactions/review stay Legacy.
-  /^\/transactions$/,
+  // The list, Import and an import's page; /transactions/review stays Legacy.
+  /^\/transactions(\/import(\/[^/]+)?)?$/,
   /^\/transactions\/categories$/,
   /^\/settings(\/(activity|connections|ai|notifications|debug))?$/,
   /^\/loans(\/lendings)?$/,

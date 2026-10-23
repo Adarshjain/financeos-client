@@ -18,12 +18,12 @@ import { api } from '@/lib/api/client';
 
 import { useJobActions } from '../useJobActions';
 
-function setup() {
+function setup(options?: Parameters<typeof useJobActions>[0]) {
   const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={qc}>{children}</QueryClientProvider>
   );
-  return renderHook(() => useJobActions(), { wrapper });
+  return renderHook(() => useJobActions(options), { wrapper });
 }
 
 describe('useJobActions router refresh', () => {
@@ -45,6 +45,14 @@ describe('useJobActions router refresh', () => {
     const { result } = setup();
     act(() => result.current.cancel('j1'));
     await waitFor(() => expect(result.current.busy).toBe(false));
+    expect(routerRefresh).not.toHaveBeenCalled();
+  });
+
+  it('hands the retried job to onRetried instead of refreshing', async () => {
+    const onRetried = vi.fn();
+    const { result } = setup({ onRetried });
+    act(() => result.current.retry('j1'));
+    await waitFor(() => expect(onRetried).toHaveBeenCalledWith({ id: 'j2' }));
     expect(routerRefresh).not.toHaveBeenCalled();
   });
 });

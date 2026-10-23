@@ -13,19 +13,21 @@ import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import {
-  formatFileSize,
-  MAX_REQUEST_BYTES,
-  MAX_REQUEST_MB,
-} from './FileDropzone';
+import { formatFileSize, MAX_REQUEST_BYTES, MAX_REQUEST_MB } from './fileLimits';
 
 interface UseIngestFormProps {
   accounts: Account[];
   /** From `?account=`; honoured only when that account is uploadable. */
   initialAccountId?: string;
+  /** The toast when the import succeeds; the page says where to see it. */
+  completedMessage?: string;
 }
 
-export function useIngestForm({ accounts, initialAccountId }: UseIngestFormProps) {
+export function useIngestForm({
+  accounts,
+  initialAccountId,
+  completedMessage = 'Statement ingestion completed — see results below.',
+}: UseIngestFormProps) {
   const qc = useQueryClient();
   const [selectedAccountId, setSelectedAccountId] = useState<string>(() => {
     const match = initialAccountId ? accounts.find((a) => a.id === initialAccountId) : undefined;
@@ -37,7 +39,7 @@ export function useIngestForm({ accounts, initialAccountId }: UseIngestFormProps
 
   const { isPolling } = useJobStatusPolling(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
-      toast.success('Statement ingestion completed — see results below.');
+      toast.success(completedMessage);
       qc.invalidateQueries({ queryKey: keys.transactions.all });
       // Imported transactions move balances, the emergency fund and dashboard widgets too.
       void invalidateMoneyQueries(qc);
@@ -201,6 +203,7 @@ export function useIngestForm({ accounts, initialAccountId }: UseIngestFormProps
     isUploading,
     isSending,
     uploadableAccounts,
+    addFiles,
     handleDragOver,
     handleDragLeave,
     handleDrop,

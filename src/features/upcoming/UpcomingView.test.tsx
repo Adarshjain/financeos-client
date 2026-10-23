@@ -214,7 +214,7 @@ describe('UpcomingView row trailing', () => {
 
   it('Upload links to the live import page for the account', () => {
     render(<UpcomingView />);
-    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
+    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/ds/transactions/import?account=A1');
   });
 
   it('lending rows get Settle plus a chevron to the person; Settle opens the sheet with direction and balance', () => {

@@ -130,7 +130,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('button', { name: 'Trade' })).toBeDisabled();
     const importLink = sheet.getByRole('link', { name: 'Import' });
     await expect(importLink).toBeVisible();
-    await expect(importLink).toHaveAttribute('href', '/transactions/import');
+    await expect(importLink).toHaveAttribute('href', '/ds/transactions/import');
 
     // Verify Section tiles in groups
     await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/ds/accounts');
