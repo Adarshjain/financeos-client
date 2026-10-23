@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { watchSession } from '@/lib/authExpiry';
 import type { UserResponse } from '@/lib/types';
 
 import { deleteAccount } from './actions';
@@ -43,10 +44,10 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
     setIsBusy(false);
 
     try {
-      const res = await deleteAccount({
+      const res = await watchSession(deleteAccount({
         password: hasPassword ? password : undefined,
         confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
-      }, toDinero);
+      }, toDinero));
 
       if (!res.success) {
         setIsDeleting(false);

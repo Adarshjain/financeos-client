@@ -53,7 +53,19 @@ describe('proxy', () => {
     const response = proxy(requestWithoutSession('/ds'));
 
     expect(response.headers.get('location')).toBe(
-      'https://financeos.local/login?from=%2Fds'
+      'https://financeos.local/ds/login?from=%2Fds'
     );
+  });
+
+  it('sends a signed-out Dinero page visit to the Dinero login with the page to return to', () => {
+    const response = proxy(requestWithoutSession('/ds/accounts'));
+
+    expect(response.headers.get('location')).toBe(
+      'https://financeos.local/ds/login?from=%2Fds%2Faccounts'
+    );
+  });
+
+  it('keeps the plain Legacy login for the root path', () => {
+    expect(proxy(requestWithoutSession('/')).headers.get('location')).toBe('https://financeos.local/login');
   });
 });

@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { isDsPath, loginHrefFor } from '@/features/shell/routes';
+
 // `/serwist` serves the compiled service worker, `/offline` is its document
 // fallback, and `/manifest.webmanifest` plus the `/icons` it references are
 // fetched by the browser before login — none of them may be bounced to the
@@ -38,6 +40,9 @@ export function proxy(request: NextRequest) {
 
   // Redirect to login if not authenticated and accessing protected route
   if (!isPublicPath && !hasSession) {
+    if (isDsPath(pathname)) {
+      return NextResponse.redirect(new URL(loginHrefFor(pathname), request.url));
+    }
     const loginUrl = new URL('/login', request.url);
     if (pathname !== '/') {
       loginUrl.searchParams.set('from', pathname);
@@ -49,6 +54,8 @@ export function proxy(request: NextRequest) {
   // This avoids redirect loops when the session cookie exists but is invalid
 
   const headers = new Headers(request.headers);
+  // The page being requested, for requireAuth to send a signed-out visitor back to it. Excludes Next's _rsc param.
+  headers.set('x-pathname', pathname);
   headers.set('x-request-id', crypto.randomUUID().replace(/-/g, '').slice(0, 20));
   const faroSession = request.cookies.get('faro_session')?.value;
   if (faroSession) {

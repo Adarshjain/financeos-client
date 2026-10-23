@@ -6,6 +6,7 @@ import React from 'react';
 import { showToast } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { watchSession } from '@/lib/authExpiry';
 import type {
   BatchLoanPaymentRequest,
   InstallmentDto,
@@ -105,7 +106,7 @@ export function useLoanActions(loanId: string) {
   // ---- Matching -----------------------------------------------------------------------------
 
   const fetchMatches = async (): Promise<MatchSuggestionsResponse | null> => {
-    const result = await loadLoanMatches(loanId);
+    const result = await watchSession(loadLoanMatches(loanId));
     if (!result.success) {
       showToast(result.error.message, { tone: 'danger' });
       return null;

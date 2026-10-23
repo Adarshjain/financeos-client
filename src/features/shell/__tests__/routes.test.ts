@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { appHref, DS_HOME_HREF, normalisePathname } from '../routes';
+import { appHref, DS_HOME_HREF, loginHrefFor, normalisePathname } from '../routes';
 
 describe('appHref', () => {
   it.each([
@@ -112,5 +112,31 @@ describe('normalisePathname', () => {
 
   it('exposes the index href', () => {
     expect(DS_HOME_HREF).toBe('/ds');
+  });
+});
+
+describe('loginHrefFor', () => {
+  it('sends a Dinero page to the Dinero login and back to the same page', () => {
+    expect(loginHrefFor('/ds/loans')).toBe('/ds/login?from=%2Fds%2Floans');
+    expect(loginHrefFor('/ds/transactions/abc')).toBe('/ds/login?from=%2Fds%2Ftransactions%2Fabc');
+  });
+
+  it('keeps Legacy paths and unknowns on the plain login', () => {
+    expect(loginHrefFor('/dashboard')).toBe('/login');
+    expect(loginHrefFor(null)).toBe('/login');
+    expect(loginHrefFor(undefined)).toBe('/login');
+    expect(loginHrefFor('')).toBe('/login');
+  });
+
+  it('never carries a path that is not a same-origin relative one', () => {
+    expect(loginHrefFor('//evil.example/ds')).toBe('/login');
+    expect(loginHrefFor('https://evil.example')).toBe('/login');
+    expect(loginHrefFor('/ds\\evil')).toBe('/login');
+    expect(loginHrefFor('/ds/\t/evil.com')).toBe('/login');
+    expect(loginHrefFor('/ds/a\nb')).toBe('/login');
+  });
+
+  it('does not loop from the login page itself', () => {
+    expect(loginHrefFor('/ds/login')).toBe('/ds/login');
   });
 });

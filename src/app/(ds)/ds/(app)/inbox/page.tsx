@@ -2,6 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
 import { InboxPage } from '@/features/inbox/InboxPage';
+import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { inboxApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
@@ -17,6 +18,7 @@ export default async function DsInboxPage({
   // A failed prefetch is not fatal: the page loads (and reports errors) on the client.
   const queryClient = getQueryClient();
   await queryClient.prefetchQuery({ queryKey: keys.inbox.list(), queryFn: () => inboxApi.list() });
+  await signInIfPrefetchFailed(queryClient, keys.inbox.list());
   const inbox = queryClient.getQueryData<Awaited<ReturnType<typeof inboxApi.list>>>(keys.inbox.list());
   if (inbox) {
     queryClient.setQueryData(keys.inbox.summary(), inbox.summary);

@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { watchSession } from '@/lib/authExpiry';
 import { keys } from '@/lib/query/keys';
 
 import { loadTabCounts } from './tabCountsActions';
@@ -14,7 +15,7 @@ export function useLoansLendingsCounts() {
   return useQuery({
     queryKey: [...keys.loans.summary(), 'tab-counts'],
     queryFn: async () => {
-      const result = await loadTabCounts();
+      const result = await watchSession(loadTabCounts());
       if (!result.success) throw new Error(result.error.message);
       return result.data;
     },

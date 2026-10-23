@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
+import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { ApiError } from '@/lib/api/client';
 import { counterpartiesApi } from '@/lib/apiClient';
 import type { CounterpartyLedgerResponse, PersonCounterparty } from '@/lib/lending.types';
@@ -21,7 +22,8 @@ export interface PersonPageData {
  * throws to the route's error state.
  */
 export const loadPersonPage = cache(async (id: string, state: PersonUrlState): Promise<PersonPageData> => {
-  const cp = await counterpartiesApi.get(id).catch((e: unknown) => {
+  const cp = await counterpartiesApi.get(id).catch(async (e: unknown) => {
+    await signInIfSessionEnded(e);
     if (e instanceof ApiError && e.status === 404) return null;
     throw e;
   });

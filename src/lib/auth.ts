@@ -1,6 +1,8 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
+
+import { loginHrefFor } from '@/features/shell/routes';
 
 import { ApiError,authApi } from './apiClient';
 import type { UserResponse } from './types';
@@ -63,9 +65,18 @@ export async function getOptionalSession(): Promise<UserResponse | null> {
 export async function requireAuth(): Promise<UserResponse> {
   const session = await getSession();
   if (!session) {
-    redirect('/login');
+    await redirectToSignIn();
   }
-  return session;
+  return session!;
+}
+
+/**
+ * Sends the visitor to sign in. In the Dinero area they come back to this page afterwards (the proxy sets
+ * x-pathname); Legacy keeps the plain /login.
+ */
+export async function redirectToSignIn(): Promise<never> {
+  const pathname = (await headers()).get('x-pathname');
+  redirect(loginHrefFor(pathname));
 }
 
 export async function setSessionCookie(value: string): Promise<void> {

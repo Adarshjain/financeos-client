@@ -15,6 +15,7 @@ import {
   TextField,
 } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
+import { watchSession } from '@/lib/authExpiry';
 import type { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
@@ -48,7 +49,7 @@ function useMatchingCount(draftQuery: TransactionsQuery): number | undefined {
   const { data } = useQuery({
     queryKey: [...keys.transactions.lists(), 'count', settled],
     queryFn: async () => {
-      const result = await loadMatchingCount(JSON.parse(settled) as TransactionsQuery);
+      const result = await watchSession(loadMatchingCount(JSON.parse(settled) as TransactionsQuery));
       if (!result.success) throw new Error(result.error.message);
       return result.data;
     },

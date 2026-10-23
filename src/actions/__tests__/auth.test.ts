@@ -2,8 +2,11 @@ import '@/test/next-mocks';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { handleGoogleCallbackAction, login, logout, signup, startGoogleSSO } from '@/actions/auth';
+import { handleGoogleCallbackAction, login, logout, logoutToDinero, signup, startGoogleSSO } from '@/actions/auth';
+import { appHref } from '@/features/shell/routes';
 import { authApi } from '@/lib/apiClient';
+import { clearSessionCookie } from '@/lib/auth';
+import { mockRedirect } from '@/test/next-mocks';
 
 vi.mock('@/lib/apiClient', () => ({
   authApi: {
@@ -14,6 +17,8 @@ vi.mock('@/lib/apiClient', () => ({
     handleGoogleCallback: vi.fn(),
   },
 }));
+
+vi.mock('@/lib/auth', async (orig) => ({ ...(await orig<typeof import('@/lib/auth')>()), clearSessionCookie: vi.fn() }));
 
 describe('auth server actions (WP-3)', () => {
   beforeEach(() => {
@@ -56,6 +61,20 @@ describe('auth server actions (WP-3)', () => {
 
     await logout();
     expect(authApi.logout).toHaveBeenCalled();
+  });
+
+  it('logout clears the cookie and redirects to the Legacy login', async () => {
+    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    await logout();
+    expect(clearSessionCookie).toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith('/login');
+  });
+
+  it('logoutToDinero clears the cookie and redirects to the Dinero login', async () => {
+    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    await logoutToDinero();
+    expect(clearSessionCookie).toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(appHref('/login'));
   });
 
   it('startGoogleSSO and handleGoogleCallbackAction call authApi helpers', async () => {

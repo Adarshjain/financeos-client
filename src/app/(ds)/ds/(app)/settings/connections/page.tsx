@@ -3,6 +3,7 @@ import React from 'react';
 
 import { oauthReturnFrom } from '@/features/settings/connections/connectionsModel';
 import { ConnectionsPage } from '@/features/settings/connections/ConnectionsPage';
+import { guardSession } from '@/features/shell/loadHelpers';
 import { gmailApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
@@ -14,11 +15,13 @@ export default async function DsSettingsConnectionsPage({
   const params = await searchParams;
 
   const attentionParams = { page: 0, size: 10, includeRetryable: false };
-  const [connections, senders, attention] = await Promise.all([
-    gmailApi.listConnections(),
-    gmailApi.listSenders(),
-    gmailApi.getAttentionItems(attentionParams.page, attentionParams.size, attentionParams.includeRetryable),
-  ]);
+  const [connections, senders, attention] = await guardSession(
+    Promise.all([
+      gmailApi.listConnections(),
+      gmailApi.listSenders(),
+      gmailApi.getAttentionItems(attentionParams.page, attentionParams.size, attentionParams.includeRetryable),
+    ])
+  );
 
   const queryClient = getQueryClient();
   queryClient.setQueryData(keys.settings.gmailConnection(), connections);

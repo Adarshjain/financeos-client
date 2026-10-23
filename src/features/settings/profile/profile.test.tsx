@@ -10,7 +10,7 @@ import { DeleteAccountCard } from './DeleteAccountCard';
 import { ProfileCard } from './ProfileCard';
 
 const logout = vi.fn();
-vi.mock('@/actions/auth', () => ({ logout: (...a: unknown[]) => logout(...a) }));
+vi.mock('@/actions/auth', () => ({ logoutToDinero: (...a: unknown[]) => logout(...a) }));
 
 const deleteAccount = vi.fn();
 vi.mock('./actions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
@@ -206,5 +206,32 @@ describe('DeleteAccountCard', () => {
     expect(screen.queryByText('Wrong password')).toBeNull();
     expect(screen.getByLabelText('Current password')).toHaveValue('');
     expect(screen.getByLabelText(/Type "DELETE"/)).toHaveValue('');
+  });
+});
+
+describe('AppearanceCard theme reveal', () => {
+  it('runs the switch inside a view transition growing from the clicked segment', async () => {
+    const start = vi.fn((cb: () => void) => {
+      cb();
+      return { ready: Promise.resolve(), finished: Promise.resolve() };
+    });
+    (document as unknown as { startViewTransition: unknown }).startViewTransition = start;
+    vi.stubGlobal('matchMedia', () => ({ matches: false }));
+    const animate = vi.fn();
+    document.documentElement.animate = animate as unknown as typeof document.documentElement.animate;
+    try {
+      render(<AppearanceCard />);
+      const light = screen.getByRole('radio', { name: 'Light' });
+      light.getBoundingClientRect = () => ({ left: 100, top: 50, width: 40, height: 20 }) as DOMRect;
+      fireEvent.pointerDown(light);
+      fireEvent.click(light);
+      expect(start).toHaveBeenCalledTimes(1);
+      expect(setTheme).toHaveBeenCalledWith('light');
+      await waitFor(() => expect(animate).toHaveBeenCalled());
+      expect(animate.mock.calls[0][0].clipPath[0]).toBe('circle(0px at 120px 60px)');
+    } finally {
+      delete (document as { startViewTransition?: unknown }).startViewTransition;
+      vi.unstubAllGlobals();
+    }
   });
 });

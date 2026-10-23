@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { logout } from '@/actions/auth';
+import { logoutToDinero } from '@/actions/auth';
 import { Avatar, Button, Card, ListRow } from '@/components/ds';
 import type { UserResponse } from '@/lib/types';
 
@@ -25,7 +25,7 @@ export function ProfileCard({ user }: { user: UserResponse }) {
         title={name}
         subtitle={detail}
         trailing={
-          <form action={logout}>
+          <form action={logoutToDinero}>
             <Button type="submit" variant="secondary" size="sm">
               Sign out
             </Button>

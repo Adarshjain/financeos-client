@@ -3,6 +3,7 @@
 import { type QueryClient, useQuery } from '@tanstack/react-query';
 
 import { loadNeedsReviewCount } from '@/features/transactions/list/transactionsActions';
+import { watchSession } from '@/lib/authExpiry';
 import { keys } from '@/lib/query/keys';
 
 /**
@@ -14,7 +15,7 @@ export function useNeedsReviewCount() {
   return useQuery({
     queryKey: keys.transactions.needsReviewCount(),
     queryFn: async () => {
-      const result = await loadNeedsReviewCount();
+      const result = await watchSession(loadNeedsReviewCount());
       if (!result.success) throw new Error(result.error.message);
       return result.data;
     },
