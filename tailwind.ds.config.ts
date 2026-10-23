@@ -145,6 +145,7 @@ const config: Config = {
         'space-96': 'var(--ds-space-96)',
         // Bottom offset for floating bars, and the clearance content keeps under a floating bar.
         'safe-12': 'calc(var(--ds-space-12) + env(safe-area-inset-bottom))',
+        'safe-24': 'calc(var(--ds-space-24) + env(safe-area-inset-bottom))',
         // Device safe-area insets (notch, home bar, landscape); 0 on desktop. --ds-safe-top zeroes the top one
         // under something that already took it (the new-version banner).
         'safe-top': 'var(--ds-safe-top, env(safe-area-inset-top))',

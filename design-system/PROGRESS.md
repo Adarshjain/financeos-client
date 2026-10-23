@@ -27,7 +27,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - Chart tokens use the name `series` (`chart-*` is already taken by the old theme): `series-1` … `series-5`, `series-rest`.
    - `fontSize`: one key per type style carrying its size, line height, weight and letter-spacing: `text-hero-figure`, `text-page-title`, `text-screen-title`, `text-figure`, `text-title`, `text-heading`, `text-body`, `text-body-strong`, `text-label`, `text-caption`, `text-overline`, `text-tab-label`. For `overline`, uppercase comes from the component.
    - `fontFamily`: `font-text` (Figtree), `font-display` (Bricolage Grotesque) and `font-mono` (system monospace, Text `mono`).
-   - `spacing`: `space-2` … `space-48`, by pixel value. Plus `safe-12` (12px above the safe area, for the floating TabBar: `bottom-safe-12`) and `tab-bar-clearance` (bottom padding pages keep under the TabBar: `pb-tab-bar-clearance`).
+   - `spacing`: `space-2` … `space-48`, by pixel value. Plus `safe-12` (12px above the safe area, for the floating TabBar: `bottom-safe-12`), `safe-24` (24px above it: the More sheet bottom padding, owner 2026-10-23) and `tab-bar-clearance` (bottom padding pages keep under the TabBar: `pb-tab-bar-clearance`).
    - `ringColor`: `surface` (`ring-surface`, the ring around count badges on the TabBar).
    - `borderRadius`: `rounded-ds-2xs`, `ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
    - `boxShadow`: `shadow-pop`, `shadow-dialog`, `shadow-sheet`, `shadow-dock`, `shadow-raise`.
@@ -399,6 +399,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-23 · Investments tabs (owner): Dividends Suggestions scan only on Rescan, never on open; a suggestion's Record opens the prefilled add dialog (kept); Import tradebook boards to be redrawn with every wizard step and Legacy's data.
 - 2026-10-23 · Notifications and Loans & lendings approved (owner: "mark them approved, I will raise if I find anything").
 - 2026-10-23 · Investments round 2 (owner): price chart 16:9 phone, 21:9 desktop (new generic aspect token); per-tab suggestions all accepted (Add/Reconcile like Edit, dropped dividend columns, current FY default everywhere incl. Tradebook, ≈ on estimated charges, Intraday for MIS, F&O gets All years, live-catalog search, no Held filter, row opens edit, no instrument delete, Delete as dialog tertiary link, switches in body); Delete links use a new danger-coloured link variant everywhere in Dinero.
+- 2026-10-23 · F&O All years (owner): every year's trades + totals (server `allYears`), month cards hidden, ITR export per FY only.
 - 2026-10-23 · Import tradebook (owner): its own page (/ds/investments/import), every Legacy feature ported, boards as redrawn; uses the Dinero Stepper (Upload files · Review · Result); CAS review shows the statement's transactions (Legacy renders none); include/skip rows = selection mode already on (desktop checkboxes, phone selected rows); older investments boards updated to the rules (link secondaries, words not pills).
 
 ## Open questions
