@@ -8,19 +8,11 @@
    The legacy theme, chart tokens and .bui-chat live in (legacy)/globals.css. */
 
 @layer base {
-  /* No sideways rubber-band; vertical overscroll stays on in the browser so its
+  /* No sideways rubber-band; vertical overscroll stays on (browser and installed app) so
      pull-to-refresh works. Inner scrollers use overscroll-contain. */
   html,
   body {
     overscroll-behavior-x: none;
-  }
-
-  /* Installed app: no browser pull-to-refresh, so no page bounce either. */
-  @media (display-mode: standalone) {
-    html,
-    body {
-      overscroll-behavior: none;
-    }
   }
 
   * {
