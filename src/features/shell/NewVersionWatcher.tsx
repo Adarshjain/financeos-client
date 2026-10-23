@@ -85,7 +85,9 @@ export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVe
         {announced ? (
           <Banner
             tone="info"
-            variant="page-top"
+            rounded="none"
+            // Full width at the top edge: it clears the notch and landscape sides itself.
+            className="pt-safe-top pl-safe-left pr-safe-right"
             action={{ label: 'Refresh', onSelect: () => window.location.reload() }}
             onDismiss={() => setVisible(false)}
             title="FinanceOS was updated."

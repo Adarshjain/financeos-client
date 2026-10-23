@@ -29,10 +29,10 @@ const meta: Meta<typeof Banner> = {
       options: ['danger', 'success', 'warning', 'info', 'neutral'],
       description: 'Banner tone',
     },
-    variant: {
+    rounded: {
       control: 'select',
-      options: ['inline', 'page-top'],
-      description: 'inline (default) or page-top: full width at the top of the app',
+      options: ['none', 'sm', 'md', 'lg'],
+      description: 'Corner radius (default lg)',
     },
     title: {
       control: 'text',
@@ -134,13 +134,13 @@ export const WithDismiss: Story = {
   },
 };
 
-export const PageTop: Story = {
-  name: 'Page top',
+export const FullWidth: Story = {
+  name: 'Full width',
   parameters: { layout: 'fullscreen' },
   decorators: [(Story) => <Story />],
   args: {
     tone: 'info',
-    variant: 'page-top',
+    rounded: 'none',
     title: 'FinanceOS was updated.',
     children: 'Refresh to use the latest version.',
     action: { label: 'Refresh', onSelect: fn() },

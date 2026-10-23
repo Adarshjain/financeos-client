@@ -10,14 +10,21 @@ import { type BannerTone,bannerToneStyles } from './toneStyles';
 
 export type { BannerTone };
 
-export type BannerVariant = 'inline' | 'page-top';
+export type BannerRounded = 'none' | 'sm' | 'md' | 'lg';
+
+const roundedStyles: Record<BannerRounded, string> = {
+  none: 'rounded-none',
+  sm: 'rounded-ds-sm',
+  md: 'rounded-ds-md',
+  lg: 'rounded-ds-lg',
+};
 
 export interface BannerProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'action'> {
   /** Tone of the banner */
   tone?: BannerTone;
-  /** inline (default): a rounded message inside a page. page-top: full width at the very top of the app, square, clearing the device safe areas */
-  variant?: BannerVariant;
+  /** Corner radius: lg (default) inside a page, none for a full-width banner at the edge of the app */
+  rounded?: BannerRounded;
   /** Optional bold lead-in title */
   title?: React.ReactNode;
   /** Optional single action on the right: action={{ label, onSelect }} */
@@ -32,7 +39,7 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
       children,
       className,
       tone = 'info',
-      variant = 'inline',
+      rounded = 'lg',
       title,
       action,
       onDismiss,
@@ -43,22 +50,21 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
   ) => {
     const isError = tone === 'danger';
     const computedRole = role || (isError ? 'alert' : 'status');
-    const pageTop = variant === 'page-top';
-    const row = 'px-space-12 py-space-10 flex items-center gap-space-8';
 
     return (
       <div
         ref={ref}
         role={computedRole}
         className={cn(
-          'text-label',
-          pageTop ? 'pt-safe-top pl-safe-left pr-safe-right' : cn('rounded-ds-lg', row),
+          'text-label flex items-center',
+          roundedStyles[rounded],
           bannerToneStyles[tone],
           className,
         )}
         {...props}
       >
-        <div className={pageTop ? row : 'contents'}>
+        {/* The message row; padding the page adds through className (e.g. safe-area insets) sits around it. */}
+        <div className="flex-1 min-w-0 px-space-12 py-space-10 flex items-center gap-space-8">
           <div className="flex-1 min-w-0">
             {title ? (
               <span className="font-extrabold mr-space-6">{concealMoney(title)}</span>
