@@ -36,10 +36,15 @@ export function holdingHref(instrumentId: string): string {
   return appHref(`${INVESTMENTS_PATH}/${instrumentId}`);
 }
 
+/** The tab pages under Investments (`tradebook`, `dividends`…), which are not holdings. */
+const TAB_SEGMENTS = new Set(
+  investmentsTabs.filter((t) => t.path !== INVESTMENTS_PATH).map((t) => t.path.slice(INVESTMENTS_PATH.length + 1)),
+);
+
 /** A holding's own page (`/ds/investments/<id>`): it carries its own top bar and tabs, outside the Investments tab strip. */
 export function isHoldingDetailPath(pathname: string | null | undefined): boolean {
   const path = (pathname ?? '').replace(/\/+$/, '');
   if (!path.startsWith(`${HOLDINGS_HREF}/`)) return false;
   const rest = path.slice(HOLDINGS_HREF.length + 1);
-  return rest !== '' && !rest.includes('/');
+  return rest !== '' && !rest.includes('/') && !TAB_SEGMENTS.has(rest);
 }

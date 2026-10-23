@@ -34,4 +34,10 @@ describe('investments tabs', () => {
     expect(isHoldingDetailPath('/ds/investments/i1/extra')).toBe(false);
     expect(isHoldingDetailPath(null)).toBe(false);
   });
+
+  it('does not take a tab page for a holding', () => {
+    for (const seg of ['tradebook', 'dividends', 'fno', 'corporate-actions', 'instruments']) {
+      expect(isHoldingDetailPath(`/ds/investments/${seg}`)).toBe(false);
+    }
+  });
 });
