@@ -13204,6 +13204,7 @@ export interface operations {
             query?: {
                 fy?: number;
                 brokerAccountId?: string;
+                allYears?: boolean;
             };
             header?: never;
             path?: never;

@@ -26,12 +26,14 @@ import type { FnoSummary } from '@/lib/investments.types';
 import type { FnoTradeResponse } from '@/lib/types';
 
 import { downloadCsv } from '../downloadCsv';
-import { fyLabel } from '../investmentsFormat';
 import { exportFnoCsv } from './fnoActions';
 import {
   CONTRACT_CHIPS,
+  currentFy,
+  FNO_ALL_YEARS,
   FNO_PAGE_SIZE_LABEL,
   FNO_SIZE_OPTIONS,
+  fnoFyLabel,
   type FnoListRow,
   fnoListRow,
   fnoUrl,
@@ -179,6 +181,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
 
   const exportForItr = async () => {
     setExporting(true);
+    if (state.fy == null) return;
     const result = await watchSession(exportFnoCsv(state.fy));
     setExporting(false);
     if (!result.success) {
@@ -241,12 +244,12 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
           />
         ) : null}
         <Select
-          value={String(state.fy)}
-          options={fyOptions(state.fy)}
-          onValueChange={(v) => go({ fy: Number(v), page: 0 })}
+          value={state.fy == null ? '' : String(state.fy)}
+          options={[FNO_ALL_YEARS, ...fyOptions(state.fy ?? currentFy())]}
+          onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
           trigger={
             <FilterChip hasDropdown className="shrink-0">
-              {fyLabel(state.fy)}
+              {fnoFyLabel(state.fy)}
             </FilterChip>
           }
         />
@@ -281,11 +284,13 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
                 ) : (
                   <span />
                 )}
-                <Text variant="label" as="span">
-                  <Button variant="link" size="sm" loading={exporting} onClick={() => void exportForItr()}>
-                    Export for ITR
-                  </Button>
-                </Text>
+                {state.fy != null ? (
+                  <Text variant="label" as="span">
+                    <Button variant="link" size="sm" loading={exporting} onClick={() => void exportForItr()}>
+                      Export for ITR
+                    </Button>
+                  </Text>
+                ) : null}
               </div>
             ) : undefined
           }
@@ -295,7 +300,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
               description={
                 filtered
                   ? 'No trades match.'
-                  : `No F&O trades in ${fyLabel(state.fy)}. Log a trade or import a broker Tax P&L statement.`
+                  : `No F&O trades${state.fy == null ? '' : ` in ${fnoFyLabel(state.fy)}`}. Log a trade or import a broker Tax P&L statement.`
               }
               action={
                 filtered

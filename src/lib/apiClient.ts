@@ -720,9 +720,9 @@ export const investmentsApi = {
     });
     return data! as unknown as PageFnoTrades;
   },
-  getFnoSummary: async (params?: { fy?: number; brokerAccountId?: string }): Promise<FnoSummary> => {
+  getFnoSummary: async (params?: { fy?: number; allYears?: boolean; brokerAccountId?: string }): Promise<FnoSummary> => {
     const { data } = await serverApi.GET('/api/v1/investments/fno/summary', {
-      params: { query: { fy: params?.fy, brokerAccountId: params?.brokerAccountId } },
+      params: { query: { fy: params?.fy, allYears: params?.allYears, brokerAccountId: params?.brokerAccountId } },
     });
     return data! as FnoSummary;
   },
@@ -1012,7 +1012,7 @@ export const dividendsApi = {
 
 export const fnoApi = {
   page: async (params?: FnoPageQuery): Promise<PageFnoTrades> => investmentsApi.getFnoPage(params),
-  summary: async (params?: { fy?: number; brokerAccountId?: string }): Promise<FnoSummary> => investmentsApi.getFnoSummary(params),
+  summary: async (params?: { fy?: number; allYears?: boolean; brokerAccountId?: string }): Promise<FnoSummary> => investmentsApi.getFnoSummary(params),
   exportCsv: async (fy?: number): Promise<CsvDownload> => investmentsApi.exportFnoCsv(fy),
   listTrades: async (params: { page?: number; size?: number; brokerAccountId?: string; symbol?: string; from?: string; to?: string } | undefined): Promise<FnoTradeListResponse> =>
     investmentsApi.getFnoTrades(params),

@@ -5,12 +5,12 @@ import { Card, Conceal, KpiTile, ListRow, ProgressBar, Text } from '@/components
 import type { FnoFiguresModel, PnlBarRow, UnderlyingRow } from './fnoModel';
 
 /** The phone's headline: the year's realised P&L, then Win rate and Charges side by side. Desktop shows tiles instead. */
-export function FnoHero({ figures }: { figures: FnoFiguresModel }) {
+export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresModel; allYears?: boolean }) {
   return (
     <div className="desk:hidden flex flex-col gap-space-12">
       <div className="flex flex-col gap-space-2">
         <Text variant="label" tone="ink-3" as="div">
-          Realised · FY
+          {realisedLabel(allYears)}
         </Text>
         <Text variant="hero-figure" family="display" tone={figures.realised.tone} as="div">
           <Conceal>{figures.realised.text}</Conceal>
@@ -47,16 +47,19 @@ export function FnoHero({ figures }: { figures: FnoFiguresModel }) {
   );
 }
 
-const TILE_LABELS = ['Realised · FY', 'Win rate', 'Charges'];
+/** The realised figure's label: the financial year, or every year. */
+export function realisedLabel(allYears: boolean): string {
+  return allYears ? 'Realised · all years' : 'Realised · FY';
+}
 
 /** The three desktop tiles. A summary that failed to load (null) says so in each. */
-export function FnoTiles({ figures }: { figures: FnoFiguresModel | null }) {
+export function FnoTiles({ figures, allYears = false }: { figures: FnoFiguresModel | null; allYears?: boolean }) {
   return (
     <div className="max-desk:hidden grid grid-cols-3 gap-space-16">
       {figures ? (
         <>
           <KpiTile
-            label="Realised · FY"
+            label={realisedLabel(allYears)}
             value={
               figures.realised.tone ? (
                 <Text as="span" variant="figure" tone={figures.realised.tone}>
@@ -72,7 +75,7 @@ export function FnoTiles({ figures }: { figures: FnoFiguresModel | null }) {
           <KpiTile label="Charges" value={figures.charges} context={figures.chargesSub} />
         </>
       ) : (
-        TILE_LABELS.map((label) => (
+        [realisedLabel(allYears), 'Win rate', 'Charges'].map((label) => (
           <KpiTile key={label} label={label} error="Could not load this figure. Refresh the page to try again." />
         ))
       )}

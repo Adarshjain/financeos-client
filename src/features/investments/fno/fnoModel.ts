@@ -35,8 +35,8 @@ export interface FnoUrlState {
   contract: FnoContract;
   /** A broker account id; '' = every broker. */
   broker: string;
-  /** The financial year's start year. */
-  fy: number;
+  /** The financial year's start year; null = every year (`fy=all`). */
+  fy: number | null;
   sort: FnoSort;
   page: number;
   size: number;
@@ -66,7 +66,7 @@ export function parseFnoUrl(params: {
     q: (params.q ?? '').trim(),
     contract: CONTRACTS.includes(params.contract as FnoContract) ? (params.contract as FnoContract) : '',
     broker: (params.broker ?? '').trim(),
-    fy: Number.isFinite(fy) && fy >= 1900 && fy <= 2200 ? fy : currentFy(),
+    fy: params.fy === 'all' ? null : Number.isFinite(fy) && fy >= 1900 && fy <= 2200 ? fy : currentFy(),
     sort: SORTS.includes(params.sort as FnoSort) ? (params.sort as FnoSort) : 'newest',
     page: Number.isFinite(page) && page > 0 ? page : 0,
     size: FNO_SIZE_OPTIONS.includes(size) ? size : FNO_DEFAULT_SIZE,
@@ -79,7 +79,8 @@ export function fnoUrl(state: FnoUrlState): string {
   if (state.q) query.set('q', state.q);
   if (state.contract) query.set('contract', state.contract);
   if (state.broker) query.set('broker', state.broker);
-  if (state.fy !== currentFy()) query.set('fy', String(state.fy));
+  if (state.fy == null) query.set('fy', 'all');
+  else if (state.fy !== currentFy()) query.set('fy', String(state.fy));
   if (state.sort !== 'newest') query.set('sort', state.sort);
   if (state.page > 0) query.set('page', String(state.page));
   if (state.size !== FNO_DEFAULT_SIZE) query.set('size', String(state.size));
@@ -90,7 +91,7 @@ export function fnoUrl(state: FnoUrlState): string {
 /** The page request for a state. */
 export function fnoQuery(state: FnoUrlState): FnoPageQuery {
   return {
-    fy: state.fy,
+    fy: state.fy ?? undefined,
     optionType: state.contract || undefined,
     brokerAccountId: state.broker || undefined,
     search: state.q || undefined,
@@ -114,6 +115,19 @@ export const SORT_OPTIONS: { value: FnoSort; label: string }[] = [
   { value: 'pnl_desc', label: 'Highest P&L' },
   { value: 'pnl_asc', label: 'Lowest P&L' },
 ];
+
+/** The summary request for a state: every year, or the one financial year. */
+export function fnoSummaryQuery(state: FnoUrlState): { fy?: number; allYears?: boolean; brokerAccountId?: string } {
+  return { ...(state.fy == null ? { allYears: true } : { fy: state.fy }), brokerAccountId: state.broker || undefined };
+}
+
+/** The FY filter's first option: every year (the URL's `fy=all`). */
+export const FNO_ALL_YEARS = { value: '', label: 'All years' };
+
+/** The FY filter's label: the year, or "All years". */
+export function fnoFyLabel(fy: number | null): string {
+  return fy == null ? FNO_ALL_YEARS.label : fyLabel(fy);
+}
 
 /** How many financial years the FY filter offers, counting back from the current one. */
 const FY_COUNT = 6;

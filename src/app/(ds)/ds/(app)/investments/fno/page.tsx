@@ -8,6 +8,7 @@ import { FnoListCard } from '@/features/investments/fno/FnoListCard';
 import {
   figuresModel,
   fnoQuery,
+  fnoSummaryQuery,
   fnoUrl,
   IMPORT_STATEMENT_HREF,
   monthRows,
@@ -27,7 +28,7 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
   const state = parseFnoUrl(await searchParams);
   const [list, summary, brokers] = await Promise.all([
     loaded(fetchFnoPage(fnoQuery(state))),
-    orNull(fetchFnoSummary({ fy: state.fy, brokerAccountId: state.broker || undefined })),
+    orNull(fetchFnoSummary(fnoSummaryQuery(state))),
     orNull(fetchBrokers()),
   ]);
 
@@ -39,7 +40,8 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
   }
 
   const figures = summary ? figuresModel(summary) : null;
-  const months = summary ? monthRows(summary) : [];
+  const fy = state.fy;
+  const months = summary && fy != null ? monthRows(summary) : [];
   const underlyings = summary ? underlyingRows(summary) : [];
 
   return (
@@ -47,8 +49,8 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
       <Button asChild variant="secondary" className="max-desk:w-full desk:self-end">
         <Link href={IMPORT_STATEMENT_HREF}>Import statement</Link>
       </Button>
-      {figures ? <FnoHero figures={figures} /> : null}
-      <FnoTiles figures={figures} />
+      {figures ? <FnoHero figures={figures} allYears={state.fy == null} /> : null}
+      <FnoTiles figures={figures} allYears={state.fy == null} />
       <FnoListCard
         state={state}
         trades={content}
@@ -59,7 +61,7 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
       />
       {months.length > 0 || underlyings.length > 0 ? (
         <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
-          {months.length > 0 ? <MonthCard rows={months} fy={fyLabel(state.fy)} /> : null}
+          {months.length > 0 ? <MonthCard rows={months} fy={fyLabel(fy!)} /> : null}
           {underlyings.length > 0 ? <UnderlyingCard rows={underlyings} /> : null}
         </div>
       ) : null}

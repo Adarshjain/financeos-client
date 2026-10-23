@@ -8,8 +8,8 @@ export function fetchFnoPage(query: FnoPageQuery): Promise<PageFnoTrades> {
   return fnoApi.page(query);
 }
 
-/** The financial year's results: realised P&L, win rate, charges, by month and by underlying. */
-export function fetchFnoSummary(query: { fy: number; brokerAccountId?: string }): Promise<FnoSummary> {
+/** The financial year's (or every year's) results: realised P&L, win rate, charges, by month and by underlying. */
+export function fetchFnoSummary(query: { fy?: number; allYears?: boolean; brokerAccountId?: string }): Promise<FnoSummary> {
   return fnoApi.summary(query);
 }
 

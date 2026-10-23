@@ -155,7 +155,7 @@ for (const viewport of VIEWPORTS) {
 
       await page.goto('/ds/investments/fno');
       await page.getByRole('button', { name: /^FY \d\d-\d\d/ }).click();
-      await page.getByRole('option').nth(1).click();
+      await page.getByRole('option').nth(2).click();
       await expect(page).toHaveURL(/fy=\d{4}/);
     });
 
@@ -210,6 +210,51 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Deleted the trade for BANKNIFTY26OCT56000PE')).toBeVisible();
       await expect(page.getByText('BANKNIFTY 56000 PE')).toHaveCount(0);
       await expect(shown(page.getByText('2 trades', { exact: true }))).toBeVisible();
+    });
+
+    test('All years lists trades from every year, with no month cards and no export', async ({ page }) => {
+      const api = makeApi(currentUser.cookie);
+      const broker = await createBrokerAccount(api, { name: 'Old Broker', clientId: 'OB1001' });
+      // A trade from FY 20-21: only All years shows it.
+      await createFnoTrade(api, {
+        brokerAccountId: broker.id,
+        entryDate: '2020-06-08',
+        exitDate: '2020-06-10',
+        tradingSymbol: 'FINNIFTY20JUN7000CE',
+        underlyingSymbol: 'FINNIFTY',
+        contractType: 'option',
+        optionType: 'CE',
+        strikePrice: 7000,
+        expiryDate: '2020-06-25',
+        quantity: 40,
+        buyValue: 4000,
+        sellValue: 6000,
+        totalCharges: 50,
+      });
+
+      await page.goto('/ds/investments/fno');
+      await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
+      await expect(page.getByText('FINNIFTY 7000 CE')).toHaveCount(0);
+      await expect(page.getByText('P&L by month')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Export for ITR' })).toBeVisible();
+
+      await page.getByRole('button', { name: /^FY \d\d-\d\d/ }).click();
+      await page.getByRole('option', { name: 'All years' }).click();
+      await expect(page).toHaveURL(/fy=all/);
+      await expect(page.getByRole('button', { name: /All years/ })).toBeVisible();
+      await expect(shown(page.getByText('FINNIFTY 7000 CE'))).toBeVisible();
+      await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
+      await expect(shown(page.getByText('4 trades', { exact: true }))).toBeVisible();
+      await expect(shown(page.getByText('Realised · all years', { exact: true }))).toBeVisible();
+      await expect(page.getByText('P&L by month')).toHaveCount(0);
+      await expect(page.getByText('By underlying')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Export for ITR' })).toHaveCount(0);
+
+      // Back to a single year drops fy from the address.
+      await page.getByRole('button', { name: /All years/ }).click();
+      await page.getByRole('option').nth(1).click();
+      await expect(page).not.toHaveURL(/fy=/);
+      await expect(page.getByText('FINNIFTY 7000 CE')).toHaveCount(0);
     });
 
     test('Export for ITR downloads the year as a CSV', async ({ page }) => {
