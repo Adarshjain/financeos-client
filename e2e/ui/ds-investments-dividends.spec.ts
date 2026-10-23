@@ -248,9 +248,10 @@ for (const viewport of VIEWPORTS) {
       expect(file.suggestedFilename()).toMatch(/^dividends.*\.csv$/);
     });
 
-    test('Suggestions: scanned on open, Rescan scans again, and a found payout can be recorded', async ({ page }) => {
+    test('Suggestions: scanned on the first Rescan, Rescan scans again, and a found payout can be recorded', async ({ page }) => {
       await page.goto(PAGE);
       const card = page.getByText(/^Suggestions/).first().locator('xpath=ancestor::div[contains(@class,"border")][1]');
+      await card.getByRole('button', { name: 'Rescan' }).click();
       await expect(card.getByText(/^Checked \d+ symbols?/)).toBeVisible({ timeout: 30_000 });
       await card.getByRole('button', { name: 'Rescan' }).click();
       await expect(card.getByText(/^Checked \d+ symbols?/)).toBeVisible({ timeout: 30_000 });

@@ -155,3 +155,24 @@ describe('DividendsView: hidden amounts', () => {
     expect(screen.getAllByText('₹ —').length).toBeGreaterThanOrEqual(6);
   });
 });
+
+describe('DividendsView: the suggestions scan only runs on Rescan', () => {
+  it('does not scan on mount, scans once on Rescan, and a broker change goes back to idle without scanning', async () => {
+    const view = renderWithQuery(<DividendsView {...props()} />);
+    await act(async () => {});
+    expect(actions.scanDividendSuggestions).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
+    expect(await screen.findByText('Nothing new found')).toBeInTheDocument();
+    expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(1);
+
+    view.rerender(<DividendsView {...{ ...props(), state: parseDividendsUrl({ broker: 'b2' }) }} />);
+    await act(async () => {});
+    expect(screen.queryByText('Nothing new found')).toBeNull();
+    expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
+    await waitFor(() => expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(2));
+    expect(actions.scanDividendSuggestions).toHaveBeenLastCalledWith('b2');
+  });
+});
