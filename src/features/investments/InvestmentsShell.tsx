@@ -11,18 +11,18 @@ import { CorporateActionDialog } from './corporate-actions/CorporateActionDialog
 import { DividendAddDialog } from './dividends/DividendFormDialog';
 import { FnoAddDialog } from './fno/FnoAddDialog';
 import { InstrumentAddDialog } from './instruments/InstrumentAddDialog';
-import { activeInvestmentsTab, investmentsTabHref, type InvestmentsTabId, investmentsTabs, isHoldingDetailPath } from './investmentsTabs';
+import { activeInvestmentsTab, investmentsTabHref, type InvestmentsTabId, investmentsTabs, isHoldingDetailPath, isImportPath } from './investmentsTabs';
 import { RecordTradeDialog } from './tradebook/TradeDialog';
 import { useInvestmentsCounts } from './useInvestmentsCounts';
 
 /**
  * The frame of `/ds/investments`, applied by the route layout: the top bar, then the tab strip, then the
  * tab's page. The counts load on their own after the page renders. The top bar's + adds what the open tab
- * lists, in a dialog that refreshes the page after saving. A holding's own page renders on its own, without the strip.
+ * lists, in a dialog that refreshes the page after saving. A holding's own page and the Import tradebook page render on their own, without the strip.
  */
 export function InvestmentsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (isHoldingDetailPath(pathname)) return <>{children}</>;
+  if (isHoldingDetailPath(pathname) || isImportPath(pathname)) return <>{children}</>;
   return <InvestmentsFrame>{children}</InvestmentsFrame>;
 }
 

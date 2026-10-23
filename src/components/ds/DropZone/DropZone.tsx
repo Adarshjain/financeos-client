@@ -53,6 +53,20 @@ export interface DropZoneProps
   children?: React.ReactNode;
 }
 
+/** True when the file matches an input `accept` list (".pdf,.xlsx", "image/*", "application/pdf"); no list accepts everything. */
+function isAccepted(file: File, accept?: string): boolean {
+  const tokens = (accept ?? '')
+    .split(',')
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+  if (tokens.length === 0) return true;
+  const name = file.name.toLowerCase();
+  const type = file.type.toLowerCase();
+  return tokens.some((t) =>
+    t.startsWith('.') ? name.endsWith(t) : t.endsWith('/*') ? type.startsWith(t.slice(0, -1)) : type === t,
+  );
+}
+
 export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
   (
     {
@@ -102,7 +116,8 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       setIsDragOver(false);
       if (disabled) return;
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        onFilesSelected?.(Array.from(e.dataTransfer.files));
+        const accepted = Array.from(e.dataTransfer.files).filter((f) => isAccepted(f, accept));
+        if (accepted.length > 0) onFilesSelected?.(accepted);
       }
     };
 
@@ -115,6 +130,8 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       if (e.target.files && e.target.files.length > 0) {
         onFilesSelected?.(Array.from(e.target.files));
       }
+      // Clear the input, so choosing the same file again (after removing it) still fires a change.
+      e.target.value = '';
     };
 
     return (

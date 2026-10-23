@@ -6,9 +6,8 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ImportAssetScope, ImportMode } from '@/features/investments/import/types';
 import { Broker as BrokerAccount, isAccountClosed } from '@/lib/account.types';
-
-import { ImportAssetScope, ImportMode } from './types';
 
 interface ImportStep1UploadProps {
   brokerAccounts: BrokerAccount[];

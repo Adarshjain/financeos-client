@@ -13,15 +13,13 @@ import {
   rupees,
   signedRupees,
 } from '../investmentsFormat';
+import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 
 /** The F&O tab. */
 export const FNO_HREF = appHref('/investments/fno');
 
-/**
- * The Legacy page that holds the statement import wizard (Zerodha Tax P&L, F&O only). There is no Dinero wizard yet,
- * so "Import statement" goes there; the path is not routed through `appHref` because this page will be a Dinero page.
- */
-export const IMPORT_STATEMENT_HREF = '/investments/fno';
+/** "Import statement" opens the Import tradebook page. */
+export const IMPORT_STATEMENT_HREF = INVESTMENTS_IMPORT_HREF;
 
 // ---- URL state ---------------------------------------------------------------
 

@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useImportWizard } from '@/features/investments/import/useImportWizard';
 import { Broker as BrokerAccount, isAccountOfType } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
@@ -21,7 +22,6 @@ import { AccountType } from '@/lib/types';
 import { ImportStep1Upload } from './import-wizard/ImportStep1Upload';
 import { ImportStep2Review } from './import-wizard/ImportStep2Review';
 import { ImportStep3Result } from './import-wizard/ImportStep3Result';
-import { useImportWizard } from './import-wizard/useImportWizard';
 
 interface ImportWizardDialogProps {
   brokerAccounts?: BrokerAccount[];

@@ -1,4 +1,4 @@
-import { CreateInstrumentRequest, ImportPreview, ReconciledExecution, ReconcilePreview } from '@/lib/types';
+import { CreateInstrumentRequest, ImportPreview, ImportRow, ReconcilePreview } from '@/lib/types';
 
 export type ImportMode = 'reconcile_zerodha' | 'reconcile_groww' | 'mf_cas';
 export type ImportAssetScope = 'all' | 'equity' | 'fno';
@@ -11,7 +11,7 @@ export interface RowState {
   newInstrument?: CreateInstrumentRequest;
 }
 
-export const isRowResolved = (state: RowState | undefined, exec: ReconciledExecution) =>
+export const isRowResolved = (state: RowState | undefined, exec: { matchedInstrument?: unknown }) =>
   !!(
     state?.selectedInstrumentId ||
     (state?.createNew && state?.newInstrument) ||
@@ -51,6 +51,18 @@ export const getCasConfirmableCount = (
   casPreview
     ? casPreview.rows.filter((r) => {
         const s = rowStates[r.rowIndex] || {};
-        return !s.skip && (s.selectedInstrumentId || r.matchedInstrument);
+        return !s.skip && isRowResolved(s, r);
       }).length
     : 0;
+
+/** CAS rows that are included but have no instrument (matched, mapped or created): they cannot be imported. */
+export const getCasUnresolvedRows = (
+  casPreview: ImportPreview | null,
+  rowStates: Record<number, RowState>,
+): ImportRow[] =>
+  casPreview
+    ? casPreview.rows.filter((r) => {
+        const s = rowStates[r.rowIndex];
+        return !s?.skip && !isRowResolved(s, r);
+      })
+    : [];

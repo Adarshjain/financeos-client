@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { Broker as BrokerAccount } from '@/lib/account.types';
-import { ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -20,16 +19,31 @@ import {
   buildInitialReconcileRowStates,
   buildReconcileCommitRequest,
 } from './importWizardHelpers';
-import { getCasConfirmableCount, getConfirmableCount, getUnresolvedRows } from './types';
+import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getUnresolvedRows } from './types';
 import { useImportWizardMutations } from './useImportWizardMutations';
 import { useImportWizardState } from './useImportWizardState';
+
+/** How the wizard tells the user things. Defaults to the Legacy toaster; Dinero pages pass their own. */
+export interface ImportWizardNotify {
+  error: (message: string) => void;
+  info: (message: string) => void;
+  /** A thrown error; `fallback` names what failed ("Failed to commit import"). */
+  caught: (error: unknown, fallback: string) => void;
+}
+
+export const legacyImportNotify: ImportWizardNotify = {
+  error: (message) => void toast.error(message),
+  info: (message) => void toast.info(message),
+  caught: (error, fallback) => toastError(error, fallback),
+};
 
 interface UseImportWizardProps {
   brokerAccounts: BrokerAccount[];
   onSuccess?: () => void;
+  notify?: ImportWizardNotify;
 }
 
-export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardProps) {
+export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImportNotify }: UseImportWizardProps) {
   const qc = useQueryClient();
   const {
     open,
@@ -78,9 +92,9 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
       qc.invalidateQueries({ queryKey: keys.accounts.all }); // broker balances derive from holdings
       onSuccess?.();
     } else if (job.status === 'FAILED') {
-      toast.error(job.errorMessage || 'Commit failed.');
+      notify.error(job.errorMessage || 'Commit failed.');
     } else if (job.status === 'CANCELLED') {
-      toast.info('Import commit job was cancelled.');
+      notify.info('Import commit job was cancelled.');
     }
     setActiveJobId(null);
     setIsCommitting(false);
@@ -97,7 +111,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
   const handlePreviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brokerAccountId) {
-      toast.error('Please select a target broker account.');
+      notify.error('Please select a target broker account.');
       return;
     }
 
@@ -106,12 +120,12 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
       if (mode === 'reconcile_zerodha' || mode === 'reconcile_groww') {
         const isFnoOnly = mode === 'reconcile_zerodha' && assetScope === 'fno';
         if (!isFnoOnly && tradebookFiles.length === 0) {
-          toast.error('Please upload at least one Tradebook / Order History file.');
+          notify.error('Please upload at least one Tradebook / Order History file.');
           setIsPreviewing(false);
           return;
         }
         if (taxpnlFiles.length === 0) {
-          toast.error('Please upload at least one Tax P&L / Capital Gains file.');
+          notify.error('Please upload at least one Tax P&L / Capital Gains file.');
           setIsPreviewing(false);
           return;
         }
@@ -127,13 +141,14 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
           holdingsFile,
         });
         setReconcilePreview(data);
+        setCasPreview(null);
         setRowStates(buildInitialReconcileRowStates(data.executions));
         setFnoRowStates(buildInitialFnoRowStates(data.fnoTrades));
         setStep(2);
       } else {
         // MF CAS
         if (!casFile) {
-          toast.error('Please select a CAS PDF/CSV file.');
+          notify.error('Please select a CAS PDF/CSV file.');
           setIsPreviewing(false);
           return;
         }
@@ -144,12 +159,12 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
           password: password || undefined,
         });
         setCasPreview(data);
+        setReconcilePreview(null);
         setRowStates(buildInitialCasRowStates(data.rows));
         setStep(2);
       }
     } catch (err) {
-      toastError(err, 'Failed to preview import: ' + (err as Error).message
-      );
+      notify.caught(err, 'Failed to preview import');
     } finally {
       setIsPreviewing(false);
     }
@@ -175,7 +190,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
         if (data?.jobId) {
           setActiveJobId(data.jobId);
           emitJobStarted(data.jobId);
-          toast.info('Reconciliation commit job started in background.');
+          notify.info('Reconciliation commit job started in background.');
         } else {
           setIsCommitting(false);
         }
@@ -188,13 +203,13 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
         if (data?.jobId) {
           setActiveJobId(data.jobId);
           emitJobStarted(data.jobId);
-          toast.info('Import commit job started in background.');
+          notify.info('Import commit job started in background.');
         } else {
           setIsCommitting(false);
         }
       }
     } catch (err) {
-      toastError(err, 'Failed to commit import');
+      notify.caught(err, 'Failed to commit import');
       setIsCommitting(false);
     }
   };
@@ -203,6 +218,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
   const selectedBrokerName = selectedBroker ? `${selectedBroker.name} (${selectedBroker.provider})` : 'Broker';
 
   const unresolvedCount = getUnresolvedRows(reconcilePreview, rowStates).length;
+  const casUnresolvedCount = getCasUnresolvedRows(casPreview, rowStates).length;
   const confirmableCount = mode === 'mf_cas' ? getCasConfirmableCount(casPreview, rowStates) : getConfirmableCount(reconcilePreview, rowStates, fnoRowStates);
 
   return {
@@ -237,6 +253,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
     commitResult,
     selectedBrokerName,
     unresolvedCount,
+    casUnresolvedCount,
     confirmableCount,
     handlePreviewSubmit,
     handleCommitSubmit,
