@@ -74,4 +74,15 @@ describe('DsIndexPage', () => {
     expect(routes.length).toBeGreaterThan(0);
     for (const route of routes) expect(hrefs, `${route} is missing from /ds`).toContain(route);
   });
+
+  it('lists the pages still to build, without links', () => {
+    render(<DsIndexPage />);
+
+    expect(screen.getByText('To build')).toBeDefined();
+    expect(screen.getByText('Holdings')).toBeDefined();
+    expect(screen.getByText('Rewards overview')).toBeDefined();
+    expect(screen.getByText('Ask the data')).toBeDefined();
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs.some((h) => h?.includes('investments'))).toBe(false);
+  });
 });

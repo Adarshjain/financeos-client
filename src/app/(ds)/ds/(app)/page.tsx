@@ -4,6 +4,35 @@ import React from 'react';
 import { Card, ListRow, SectionHeader } from '@/components/ds';
 import { ShellPage } from '@/features/shell/ShellPage';
 
+/** Boards in design-system/screens that have no /ds page yet: [page, area]. */
+const TO_BUILD: [string, string][] = [
+  ['Home', 'Home & dashboards'],
+  ['Dashboards', 'Home & dashboards'],
+  ['Dashboard view and editing', 'Home & dashboards'],
+  ['New dashboard', 'Home & dashboards'],
+  ['Add widget and widget settings', 'Home & dashboards'],
+  ['Search', 'Home & dashboards'],
+  ['Holdings', 'Investments'],
+  ['Holding detail', 'Investments'],
+  ['Tradebook', 'Investments'],
+  ['Record trade', 'Investments'],
+  ['Import tradebook', 'Investments'],
+  ['Dividends', 'Investments'],
+  ['F&O', 'Investments'],
+  ['Corporate actions', 'Investments'],
+  ['SIPs', 'Investments'],
+  ['Instruments', 'Investments'],
+  ['Reports', 'Reports'],
+  ['New report', 'Reports'],
+  ['Report view and breakdown', 'Reports'],
+  ['Underlying data', 'Reports'],
+  ['Ask the data', 'Reports'],
+  ['Rewards overview', 'Rewards'],
+  ['Which card?', 'Rewards'],
+  ['Earning rules', 'Rewards'],
+  ['Milestones and caps', 'Rewards'],
+];
+
 export default function DsIndexPage() {
   return (
     <ShellPage title="New design">
@@ -61,6 +90,14 @@ export default function DsIndexPage() {
           <ListRow asChild title="Notifications" subtitle="/ds/notifications" chevron>
             <Link href="/ds/notifications" />
           </ListRow>
+        </Card>
+
+        {/* Pages still to build: no route yet, so no link */}
+        <Card>
+          <SectionHeader borderTop={false}>To build</SectionHeader>
+          {TO_BUILD.map(([title, area]) => (
+            <ListRow key={`${area} ${title}`} title={title} subtitle={area} />
+          ))}
         </Card>
       </div>
     </ShellPage>
