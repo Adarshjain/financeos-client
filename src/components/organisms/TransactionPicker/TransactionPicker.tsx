@@ -3,13 +3,14 @@
 import React, { forwardRef } from 'react';
 
 import {
-  Button,
   Checkbox,
   cn,
   Highlight,
   Icon,
   ListRow,
+  Pager,
   Radio,
+  SegmentedControl,
   Skeleton,
   Text,
   TextField,
@@ -28,6 +29,14 @@ export interface TransactionPickerItem {
   disabledReason?: string;
 }
 
+export type TransactionPickerFilter = 'all' | 'debit' | 'credit';
+
+const FILTER_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'debit', label: 'Debit' },
+  { value: 'credit', label: 'Credit' },
+] as const;
+
 export interface TransactionPickerProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> {
   items: TransactionPickerItem[];
@@ -43,9 +52,15 @@ export interface TransactionPickerProps
   onQueryChange?: (query: string) => void;
   searchPlaceholder?: string;
   loading?: boolean;
-  hasMore?: boolean;
-  onLoadMore?: () => void;
-  loadMoreLabel?: React.ReactNode;
+  /** Debit / credit filter. Shown only when `onFilterChange` is given. The page fetches; the picker never filters. */
+  filter?: TransactionPickerFilter;
+  defaultFilter?: TransactionPickerFilter;
+  onFilterChange?: (filter: TransactionPickerFilter) => void;
+  /** Server-side paging: 0-based `page`, rows per page `pageSize`, and the server's `totalElements`. The Pager shows above and below the list when there is more than one page. */
+  page?: number;
+  pageSize?: number;
+  totalElements?: number;
+  onPageChange?: (page: number) => void;
   emptyLabel?: React.ReactNode;
   /** Caption above the list, e.g. "Open entries with Rahul Sharma" */
   label?: React.ReactNode;
@@ -67,9 +82,13 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
       onQueryChange,
       searchPlaceholder = 'Search…',
       loading = false,
-      hasMore = false,
-      onLoadMore,
-      loadMoreLabel = 'Show more',
+      filter: filterProp,
+      defaultFilter = 'all',
+      onFilterChange,
+      page = 0,
+      pageSize = 50,
+      totalElements = 0,
+      onPageChange,
       emptyLabel,
       label,
       error,
@@ -89,6 +108,12 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
       onChange: onQueryChange,
     });
 
+    const [filter, setFilter] = useControllableState<TransactionPickerFilter>({
+      value: filterProp,
+      defaultValue: defaultFilter,
+      onChange: onFilterChange,
+    });
+
     const selectedIds = Array.isArray(value) ? value : value ? [value] : [];
 
     const select = (id: string) => {
@@ -105,6 +130,20 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
 
     const showSkeleton = loading && items.length === 0;
     const showEmpty = !loading && items.length === 0;
+    const showPager = !!onPageChange && totalElements > pageSize;
+    const pager = (position: 'above' | 'below') =>
+      showPager ? (
+        <Pager
+          data-testid={`picker-pager-${position}`}
+          variant="compact"
+          borderPosition="none"
+          className="px-0"
+          page={page}
+          size={pageSize}
+          totalElements={totalElements}
+          onPageChange={onPageChange}
+        />
+      ) : null;
 
     return (
       <div
@@ -128,6 +167,20 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
           value={query}
           onValueChange={setQuery}
         />
+
+        {onFilterChange ? (
+          <SegmentedControl<TransactionPickerFilter>
+            size="sm"
+            className="self-start"
+            aria-label="Transaction type"
+            data-testid="picker-filter"
+            options={[...FILTER_OPTIONS]}
+            value={filter}
+            onValueChange={setFilter}
+          />
+        ) : null}
+
+        {pager('above')}
 
         <div
           role={multiple ? 'group' : 'radiogroup'}
@@ -207,19 +260,7 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
           </Text>
         ) : null}
 
-        {hasMore ? (
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              loading={loading && items.length > 0}
-              onClick={onLoadMore}
-            >
-              {loadMoreLabel}
-            </Button>
-          </div>
-        ) : null}
+        {pager('below')}
 
         {error ? (
           <Text as="div" variant="caption" tone="danger">

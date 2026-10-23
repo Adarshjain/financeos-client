@@ -27,7 +27,7 @@ const meta: Meta<typeof SegmentedControl> = {
     defaultValue: { control: 'text' },
     disabled: { control: 'boolean' },
     fullWidth: { control: 'boolean' },
-    size: { control: 'select', options: ['md', 'lg', 'xl'] },
+    size: { control: 'select', options: ['sm', 'md', 'lg', 'xl'] },
     onValueChange: { control: false },
   },
   render: function Render(args) {
@@ -105,5 +105,13 @@ export const FieldSized: Story = {
     options: ['Debit', 'Credit'],
     value: 'Debit',
     size: 'xl',
+  },
+};
+
+export const Compact: Story = {
+  args: {
+    options: ['All', 'Debit', 'Credit'],
+    value: 'All',
+    size: 'sm',
   },
 };

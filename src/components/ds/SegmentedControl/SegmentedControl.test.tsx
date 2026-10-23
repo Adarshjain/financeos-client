@@ -302,6 +302,14 @@ describe('SegmentedControl', () => {
     expect(screen.getByRole('radio', { name: 'Debit' })).toHaveClass('h-control-md');
   });
 
+  it('size sm is compact: control-sm height and tighter padding', () => {
+    render(<SegmentedControl options={['All', 'Debit']} size="sm" />);
+    const btn = screen.getByRole('radio', { name: 'Debit' });
+    expect(btn).toHaveClass('h-control-sm', 'px-space-8', 'text-label');
+    expect(btn).not.toHaveClass('h-control-md');
+    expect(btn).not.toHaveClass('px-space-12');
+  });
+
   it('size xl uses control-xl like TextField', () => {
     render(<SegmentedControl options={['Debit', 'Credit']} size="xl" />);
     const btn = screen.getByRole('radio', { name: 'Credit' });
