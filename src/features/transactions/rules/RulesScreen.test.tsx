@@ -161,7 +161,7 @@ describe('RulesScreen', () => {
     expect(options.action.label).toBe('Undo');
     options.action.onSelect();
     await waitFor(() =>
-      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', { params: { path: { id: 'r1' } }, body: { transactionIds: [] } }),
+      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', { params: { path: { id: 'r1' } }, body: { transactionIds: [], restore: [] } }),
     );
     await waitFor(() => expect(router.refresh).toHaveBeenCalledTimes(2));
   });
@@ -169,7 +169,18 @@ describe('RulesScreen', () => {
   it('bulk Approve offers Undo, which un-verifies every approved rule', async () => {
     stubLayout(false);
     http.POST.mockImplementation((url: string) =>
-      Promise.resolve({ data: url === '/api/v1/rules/verify' ? { verifiedCount: 2 } : { restoredTransactionIds: [] } }),
+      Promise.resolve({
+        data:
+          url === '/api/v1/rules/verify'
+            ? {
+                verifiedCount: 2,
+                verifiedRules: [
+                  { ruleId: 'r1', clearedTransactionIds: [], clearedTransactions: [] },
+                  { ruleId: 'r3', clearedTransactionIds: [], clearedTransactions: [] },
+                ],
+              }
+            : { restoredTransactionIds: [] },
+      }),
     );
     renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
     fireEvent.click(screen.getByLabelText('Select Dunzo'));
@@ -183,6 +194,85 @@ describe('RulesScreen', () => {
       const unverified = http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify').map((c) => c[1].params.path.id);
       expect(unverified.sort()).toEqual(['r1', 'r3']);
     });
+  });
+
+  const cleared = (id: string) => ({
+    transactionId: id,
+    previousReviewType: 'NEEDS_REVIEW',
+    previousReviewReasons: ['CATEGORY_UNVERIFIED'],
+    previousReviewedAt: null,
+    verifiedUpdatedAt: '2026-10-23T09:00:00Z',
+  });
+
+  it('Undo sends back exactly what the single approve cleared, and refreshes transactions', async () => {
+    http.POST.mockImplementation((url: string) =>
+      Promise.resolve({ data: url.endsWith('/unverify') ? { restoredTransactionIds: ['t1'], skippedTransactionIds: [] } : { clearedTransactions: [cleared('t1')] } }),
+    );
+    const { queryClient } = renderWithQuery(<RulesScreen {...props()} />);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    toasts.showToast.mock.calls[0][1].action.onSelect();
+    await waitFor(() =>
+      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', {
+        params: { path: { id: 'r1' } },
+        body: { transactionIds: [], restore: [cleared('t1')] },
+      }),
+    );
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['transactions'] }));
+  });
+
+  it('bulk Undo restores each rule with its own cleared rows and leaves already-verified rules alone', async () => {
+    stubLayout(false);
+    http.POST.mockImplementation((url: string) =>
+      Promise.resolve({
+        data:
+          url === '/api/v1/rules/verify'
+            ? { verifiedCount: 1, verifiedRules: [{ ruleId: 'r3', clearedTransactionIds: ['t9'], clearedTransactions: [cleared('t9')] }] }
+            : { restoredTransactionIds: [], skippedTransactionIds: [] },
+      }),
+    );
+    renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule({ verified: false }), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
+    fireEvent.click(screen.getByLabelText('Select Dunzo'));
+    fireEvent.click(screen.getByLabelText('Select Zomato'));
+    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    toasts.showToast.mock.calls[0][1].action.onSelect();
+    await waitFor(() => {
+      const undos = http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify');
+      expect(undos).toHaveLength(1);
+      expect(undos[0][1]).toEqual({ params: { path: { id: 'r3' } }, body: { transactionIds: [], restore: [cleared('t9')] } });
+    });
+  });
+
+  it('bulk Undo that fails for one rule still refreshes and says how many could not be undone', async () => {
+    stubLayout(false);
+    http.POST.mockImplementation((url: string, init?: { params?: { path?: { id?: string } } }) => {
+      if (url === '/api/v1/rules/verify') {
+        return Promise.resolve({
+          data: {
+            verifiedCount: 2,
+            verifiedRules: [
+              { ruleId: 'r1', clearedTransactionIds: [], clearedTransactions: [cleared('t1')] },
+              { ruleId: 'r3', clearedTransactionIds: [], clearedTransactions: [cleared('t9')] },
+            ],
+          },
+        });
+      }
+      return Promise.resolve(init?.params?.path?.id === 'r3' ? { error: { message: 'no' } } : { data: { restoredTransactionIds: [] } });
+    });
+    const { queryClient } = renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    fireEvent.click(screen.getByLabelText('Select Dunzo'));
+    fireEvent.click(screen.getByLabelText('Select Zomato'));
+    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    const refreshes = router.refresh.mock.calls.length;
+    toasts.showToast.mock.calls[0][1].action.onSelect();
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith("Couldn't undo 1 of 2 rules. Try again.", { tone: 'danger' }));
+    expect(http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify')).toHaveLength(2);
+    await waitFor(() => expect(router.refresh.mock.calls.length).toBeGreaterThan(refreshes));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['transactions'] });
   });
 
   it('a failed Undo is a toast', async () => {

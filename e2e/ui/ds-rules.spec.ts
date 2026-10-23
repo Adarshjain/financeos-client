@@ -9,6 +9,7 @@ import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { scriptCategorize } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { uploadAndIngest } from '../fixtures/seed/statements';
+import { searchAll } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
 const SHOTS = '/private/tmp/claude-501/-Users-adarshjana-Downloads-projects-FinanceOS/b7f55b60-fd0a-4b77-8b75-07847d35862c/scratchpad/rules';
@@ -19,6 +20,10 @@ const menuOf = (page: Page, name: string) =>
     .getByText(name, { exact: true })
     .locator('xpath=ancestor::div[.//button[@aria-label="Rule actions"]][1]')
     .getByRole('button', { name: 'Rule actions' });
+
+/** Transactions still waiting in review for an unverified category. */
+const inReview = async (cookie: string) =>
+  (await searchAll(makeApi(cookie))).filter((t) => t.reviewReasons?.includes('CATEGORY_UNVERIFIED')).length;
 
 const bankSpec: BankSpec = {
   bank: 'HDFC Bank',
@@ -151,19 +156,25 @@ for (const viewport of VIEWPORTS) {
 
     test('Undo on the approve toast un-verifies the rule, single and bulk', async ({ page }) => {
       await page.goto('/ds/transactions/rules');
+      expect(await inReview(user.cookie)).toBe(3);
       await page.getByRole('button', { name: 'Approve', exact: true }).first().click();
       await expect(page.getByRole('button', { name: 'Unverified · 2' })).toBeVisible();
+      await expect.poll(() => inReview(user.cookie)).toBe(2);
       await page.getByRole('button', { name: 'Undo' }).click();
       await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Verified · 0' })).toBeVisible();
+      // The transaction the approve cleared is back in review.
+      await expect.poll(() => inReview(user.cookie)).toBe(3);
 
       if (!phone) {
         await page.getByLabel('Select Ola Cabs').click();
         await page.getByLabel('Select Zepto').click();
         await page.getByText('2 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
         await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
+        await expect.poll(() => inReview(user.cookie)).toBe(1);
         await page.getByRole('button', { name: 'Undo' }).click();
         await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
+        await expect.poll(() => inReview(user.cookie)).toBe(3);
       }
     });
 
