@@ -385,6 +385,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-23 · **Nothing above tabs** (owner): no line, figure or button between the top bar and the tabs on any page; counts are dropped, anything kept moves inside the tab (Settings/Transactions pattern).
 - 2026-10-23 · **Investments gaps** (owner, artifact 59K12sPXXUTz5tae9hwyy3): add back every dropped feature; one row per stock (broker split on holding page + broker filter); keep manual instrument entry; jobs panel → toasts, plus a permanent "View job" link (not in the toast) to the exact job in Settings → Activity ?job=; build: "If you sell today", dividends by-instrument + CSV, F&O export/P&L by month/by underlying/FY filter + server pages, CA preview, small server adds; drop: Final/Interim, F&O open positions (for now), CA announcements. Dividend tiles: board's four + per-row receipt status word. Upcoming/announced dividends dropped entirely (no outside source; past-payout detection stays).
 - 2026-10-23 · **SIPs dropped** (owner): no SIPs tab, tags or new work; existing SIP code stays, untouched.
+- 2026-10-23 · Investments phone hero (owner): phone investments pages use the Holdings hero (big figure + change line + two-figure rows) instead of tiles; desktop keeps tiles; other areas later, after the owner sees a design.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -395,6 +396,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-23 · Boards · Claude · Phone investments hero replaces tiles: P-dividends(+edit), P-fno(+trade), P-holding, P-trade-record; tradebook, CA, instruments had none; import wizard step tiles kept. Deviations: none.
 - 2026-10-23 · Boards · Claude · Investments follow-ups (P+D): Holdings Name A–Z sort + totals add up; Dividends drops Detect from holdings, Suggestions always shown; CA record shows edit-only Delete. Deviations: none.
 - 2026-10-23 · Boards · Claude · Investments gap answers on P+D boards (holdings, holding, tradebook, record trade, dividends, F&O, corporate actions, instruments); new trade-edit, dividend-edit, fno-trade, corporate-action-record, instrument-edit, instrument-add. Deviations: none.
 - 2026-10-23 · Boards · Claude · SIPs removed from 16 boards (tab, Tradebook tags + "lump sum", holding/account SIP lines) and /ds To build. Deviations: none.

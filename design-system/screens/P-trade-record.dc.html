@@ -222,6 +222,12 @@ svg{flex:none}
 .dim{opacity:.55;pointer-events:none}
 
 
+.hx-hero{padding:8px 2px 0}
+.hx-lab{font-size:12px;line-height:16px;font-weight:600;color:#5B6472}
+.hx-big{font-family:'Bricolage Grotesque',Manrope,sans-serif;font-size:30px;line-height:34px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.hx-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 2px}
+.hx-fig{font-size:14px;line-height:20px;font-weight:800;margin-top:2px}
+.hx-cap{font-size:11px;line-height:14px;font-weight:500}
 </style>
 </helmet>
 <div class="shell fixed" style="height:100vh;overflow:hidden"><nav class="rail" aria-label="Primary">
@@ -248,12 +254,9 @@ svg{flex:none}
 <div class="hdr">
   <div><div class="meta">10 holdings</div></div>
 </div>
-<div class="kpis">
-  <div class="kpi"><div class="lbl">Current value</div><div class="kv">₹6,12,208</div></div>
-  <div class="kpi"><div class="lbl">Invested</div><div class="kv">₹4,73,799</div></div>
-  <div class="kpi"><div class="lbl">Unrealised</div><div class="kv pos">+₹1,40,834</div></div>
-  <div class="kpi"><div class="lbl">Realised FY</div><div class="kv">₹2,425</div></div>
-</div>
+<div class="hx-hero"><div class="hx-lab">Current value</div><div class="hx-big">₹6,38,208</div><div class="pos" style="margin-top:4px;font-weight:600">+₹3,566 today · +0.56%</div></div>
+<div class="hx-two"><div><div class="hx-lab">Invested</div><div class="hx-fig">₹4,93,299</div></div><div><div class="hx-lab">Unrealised</div><div class="hx-fig pos">+₹1,44,909</div></div></div>
+<div class="hx-cap mut" style="padding:0 2px">Realised FY ₹2,425</div>
 <div class="card tbl" style="--c:minmax(0,1.6fr) 80px 120px 120px">
   <div class="tr th"><div>Holding</div><div class="num">Qty</div><div class="num">Current</div><div class="num">P&amp;L</div></div>
   <div class="tr"><div class="c-main">INFY</div><div class="c-hide num">60</div><div class="c-num num">90,762</div><div class="c-hide num pos">+48,162</div><div class="c-sub">60 shares</div></div>
