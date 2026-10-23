@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Checkbox, Icon, ListRow, Select, Text, TextField } from '@/components/ds';
+import { Button, Checkbox, Icon, ListRow, Select, Text, TextField, useConcealed } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import type { LinkType, Transaction } from '@/lib/transaction.types';
 
@@ -28,6 +28,7 @@ const accountOf = (accounts: readonly Account[], id: string) => {
 
 /** Link between transactions: the members with their roles, a search for the other side, the note. */
 export function TransactionsLinkBody({ type, state, accounts, multi }: TransactionsLinkBodyProps) {
+  const concealed = useConcealed();
   const { members, anchorId, add, remove, setRole, note, setNote, alignRefundCategories, setAlignRefundCategories } =
     state;
   const subject = members[0];
@@ -89,7 +90,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
                       options={(['anchor', 'member'] as const).map((r) => ({ value: r, label: roleLabel(type, r) }))}
                     />
                   ) : null}
-                  <Text variant="body-strong" tone={item.isCredit ? 'positive' : 'ink'} as="span">
+                  <Text variant="body-strong" tone={item.isCredit && !concealed ? 'positive' : 'ink'} as="span">
                     {item.amount}
                   </Text>
                   <Button

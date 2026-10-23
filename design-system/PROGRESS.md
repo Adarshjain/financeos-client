@@ -111,6 +111,9 @@ Build in this order, one component per step. After each one, set its status to *
 | 49 | MonthCalendar (events mode) | Approved |
 | 50 | SearchPalette | Approved |
 | 51 | ErrorState (organism) | Approved (2026-10-19) |
+| 52 | Keypad | Ready for review (2026-10-23) |
+| 53 | Conceal | Ready for review (2026-10-23) |
+| 54 | AmountField (organism) | Ready for review (2026-10-23) |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -390,6 +393,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-23 · Phase 3 · Claude + implementers · Owner answers 10-23: Rules Undo full revert (server 311ae99; client cbbbbbf9, restore[] chunks, partial-failure toast); Import intro line removed; Keypad (Dinero) + AmountField organism: phone opens a stacked keypad sheet (Apply, backspace, live "= ₹X"), 15 amount fields swapped; registry `backspace`; Hide amounts: Conceal (Dinero, cookie FINANCEOS_HIDE_AMOUNTS → ConcealProvider), "₹ —" in Text/ListRow/KpiTile/Badge/Banner/Dialog/EmptyState/FilterChip/SectionHeader/StatusWords/Card/Widget/Toast/DataTable/MonthCalendar/ListField, balance line hidden, credits not green while hidden; toggles: top-bar eye, Settings switch, More row; registry `eye-slash`. Reviewed, fixes applied. Checks: tsc, lint, vitest, check-ui, storybook, ds E2E. Forced test edits: statements.test (desktop stub), accounts.test:107 + ds-loans.spec:306 (exact "Hide"), SettleDialog.test (desktop stub). Open: RSC payload still carries real amounts (visible text only); keypad has no parentheses. Deviations: none.
 - 2026-10-23 · Phase 3 · Claude + implementer · Transactions row→detail morph removed (owner: polish or remove; list reflow during the shared-element motion made it unfixable without a redesign): Dialog `animated` reverted, TransactionRow wrap props, morph state, view-transition names removed; detail opens with the standard Dialog animation. SharedName kept for loans/accounts/people. Checks: tsc, lint, vitest 6269, check-ui, storybook, ds-transactions E2E 46 passed. Forced test edits: morph/wrapper/animated tests removed. Deviations: none.
 - 2026-10-23 · Phase 3 · Claude + implementers · Questions round 10-23 builds: DataTable `hideHeader` (JobsHistory compact); Import + opens file picker, Recent imports paged (?page=, 30 days); Rules refresh icon (registry `arrow-clockwise`), Approve Undo toast; Categories desktop row click opens dialog; Transactions bank logo removed, Account column sm; Dialog `animated={false}` opaque from first frame, detail fields fade in; ds.css pull-to-refresh (overscroll-x only, none in standalone). Checks: tsc, lint, check-ui, vitest 6277, storybook, ds E2E 104 passed. Forced test edits: TransactionRow column size, TransactionsView logo test removed, Dialog animated test, CategoriesScreen desktop click, ImportScreen mocks. Deviations: none.
 

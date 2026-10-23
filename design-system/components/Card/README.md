@@ -25,3 +25,6 @@ Text, SectionHeader, Slot, Pager, Button, Icon.
 ## Variants
 - Title with subtitle and link, with an action, with rows, with a pager footer, with section bands, empty, asChild, inset (owner, 2026-10-20): job box with counter tiles and a group box, nested, danger tone (owner, 2026-10-20): Delete account card, border `danger-border`, rest unchanged.
 - Selected (merge dialog): `selected` adds a 2px `brand` ring; with `asChild` around a `<button>` the card also gets `hover` and `pressed` backgrounds.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title and subtitle (through Text) reads "₹ —". See Conceal.

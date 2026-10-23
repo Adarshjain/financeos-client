@@ -6,6 +6,7 @@ import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as So
 import { type BannerTone,bannerToneStyles } from '../Banner/toneStyles';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealText, useConcealedAnywhere } from '../Conceal/Conceal';
 
 export interface ToastProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'action'> {
@@ -30,6 +31,9 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
     },
     ref,
   ) => {
+    // The Toaster sits above the ConcealProvider, so the flag comes from the shared store.
+    const concealed = useConcealedAnywhere();
+    const shown = message ?? children;
     const isDanger = tone === 'danger';
     const isNeutral = tone === 'neutral';
 
@@ -44,7 +48,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         )}
         {...props}
       >
-        <span className="flex-1 min-w-0">{message ?? children}</span>
+        <span className="flex-1 min-w-0">{concealed && typeof shown === 'string' ? concealText(shown) : shown}</span>
         {action && (
           <Button
             type="button"

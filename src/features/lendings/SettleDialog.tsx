@@ -13,6 +13,8 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { isPhoneLayout } from '@/components/ds/phoneLayout';
+import { AmountField } from '@/components/organisms';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -98,7 +100,11 @@ export function SettleDialog({
     setAmountError(null);
     if (next === 'full') setAmount(String(balance));
     if (next === 'half') setAmount(String(halfOf(balance)));
-    if (next === 'custom') amountRef.current?.focus();
+    // On phone the amount opens its keypad (a click); focus would bring up the OS keyboard instead.
+    if (next === 'custom') {
+      if (isPhoneLayout()) amountRef.current?.click();
+      else amountRef.current?.focus();
+    }
   };
 
   const submit = async () => {
@@ -157,7 +163,7 @@ export function SettleDialog({
             }}
           />
           <div className="grid grid-cols-2 gap-space-12">
-            <TextField
+            <AmountField
               ref={amountRef}
               label="Amount"
               prefix="₹"

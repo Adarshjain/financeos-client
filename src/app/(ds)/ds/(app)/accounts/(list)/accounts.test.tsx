@@ -104,7 +104,7 @@ describe('/ds/accounts', () => {
     expect(openRow.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(push).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: /Hide/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
     expect(screen.queryByText('Old Card')).toBeNull();
   });
 

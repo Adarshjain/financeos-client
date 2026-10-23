@@ -17,3 +17,6 @@ Card, ProgressBar, Skeleton, Button (Retry action).
 
 ## Variants
 - Hero, delta in the bad direction, with a bar, with badges, loading, failed.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in value, delta and context reads "₹ —". See Conceal.

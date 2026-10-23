@@ -34,3 +34,6 @@ Radix Dialog, Button, Icon, the shared `useSheetDrag` hook.
 
 ## Variants
 - Desktop sizes sm, md, lg, xl; phone sheet; side panel; with tertiary; canvas background; non-dismissible (`dismissible={false}`); ConfirmDialog (tone danger/default, with preview, loading, alternative option).
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title and description reads "₹ —". See Conceal.

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SettleDialog } from './SettleDialog';
 
@@ -57,6 +57,24 @@ function renderDialog(direction: 'lent' | 'borrowed' = 'lent', balance = 12000, 
   );
   return onOpenChange;
 }
+
+function mockLayout(phone: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: query.includes('min-width') ? !phone : false,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    onchange: null,
+  }));
+}
+
+afterEach(() => {
+  // @ts-expect-error restore jsdom default (no matchMedia)
+  delete window.matchMedia;
+});
 
 const amount = () => screen.getByLabelText('Amount') as HTMLInputElement;
 const setAmount = (v: string) => fireEvent.change(amount(), { target: { value: v } });
@@ -131,6 +149,7 @@ describe('SettleDialog', () => {
   });
 
   it('Full, Half and Custom fill the amount; Custom focuses it', () => {
+    mockLayout(false);
     renderDialog('lent', 12000);
     expect(screen.getByRole('button', { name: 'Full ₹12,000' })).toHaveClass('bg-brand-tint');
     fireEvent.click(screen.getByRole('button', { name: 'Half' }));
@@ -140,6 +159,13 @@ describe('SettleDialog', () => {
     expect(amount()).toHaveValue('12000');
     fireEvent.click(screen.getByRole('button', { name: 'Custom' }));
     expect(amount()).toHaveFocus();
+  });
+
+  it('on phone, Custom opens the amount keypad', () => {
+    mockLayout(true);
+    renderDialog('lent', 12000);
+    fireEvent.click(screen.getByRole('button', { name: 'Custom' }));
+    expect(screen.getByTestId('amount-keypad-display')).toBeInTheDocument();
   });
 
   it('typing an amount selects Custom', () => {

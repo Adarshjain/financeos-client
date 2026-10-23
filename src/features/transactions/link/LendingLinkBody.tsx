@@ -11,8 +11,8 @@ import {
   Skeleton,
   Text,
   TextArea,
-  TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { PersonSelect } from '@/features/lendings/form/PersonSelect';
 import { plainAmount } from '@/features/loans/loanFormat';
@@ -77,7 +77,7 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
             />
           </div>
           <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
-            <TextField
+            <AmountField
               label="Amount"
               prefix="₹"
               inputMode="decimal"

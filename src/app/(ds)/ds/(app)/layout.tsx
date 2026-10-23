@@ -2,6 +2,8 @@ import React, { Suspense } from 'react';
 
 import { SessionExpiredDialog } from '@/features/auth/SessionExpiredDialog';
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
+import { HideAmountsProvider } from '@/features/shell/hideAmounts';
+import { readHideAmounts } from '@/features/shell/hideAmountsCookie';
 import { NavigationProgress } from '@/features/shell/NavigationProgress';
 import { NewVersionWatcher } from '@/features/shell/NewVersionWatcher';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
@@ -17,8 +19,10 @@ export default async function DsAppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAuth();
+  const hideAmounts = await readHideAmounts();
 
   return (
+    <HideAmountsProvider initialHidden={hideAmounts}>
     <AddLendingProvider>
       <AddTransactionProvider today={todayInAppZone()}>
       <NewVersionWatcher loadedVersion={buildVersion()} />
@@ -52,5 +56,6 @@ export default async function DsAppLayout({
       </div>
       </AddTransactionProvider>
     </AddLendingProvider>
+    </HideAmountsProvider>
   );
 }

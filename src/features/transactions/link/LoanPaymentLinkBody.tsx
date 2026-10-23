@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { DateField, ListRow, Radio, Select, Skeleton, Text, TextField } from '@/components/ds';
+import { DateField, ListRow, Radio, Select, Skeleton, Text } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { differenceWords } from '@/features/loans/detail/payModel';
 import { daysBetween, plainAmount } from '@/features/loans/loanFormat';
@@ -82,7 +83,7 @@ export function LoanPaymentLinkBody({ loanPayment }: { loanPayment: UseLoanPayme
         )
       ) : null}
       <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
-        <TextField
+        <AmountField
           label="Amount paid"
           prefix="₹"
           inputMode="decimal"

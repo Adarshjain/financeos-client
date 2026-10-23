@@ -21,3 +21,6 @@ A word, a middle dot (`·`) between words, never a pill. Colour is never the onl
 
 ## Built from
 - `Icon`
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in children reads "₹ —". See Conceal.

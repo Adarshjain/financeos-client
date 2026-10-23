@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-import { Button, Card, CardRow, Icon, Text } from '@/components/ds';
+import { Button, Card, CardRow, Icon, Text, useConcealed } from '@/components/ds';
 import { dayMonth, numericDateTime } from '@/features/jobs/format';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabels';
 import { appHref } from '@/features/shell/routes';
@@ -85,6 +85,7 @@ function Outcome({ message }: { message: SyncMessageResult }) {
 
 /** One email of a sync run: who sent it, which account it landed on, what happened and what to do about it. */
 export function SyncMessage({ message }: { message: SyncMessageResult }) {
+  const concealed = useConcealed();
   const more = message.createdCount - message.transactions.length;
   return (
     <CardRow className="flex-col items-stretch" data-testid="sync-message">
@@ -139,7 +140,7 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
               <Text variant="caption" tone="ink-2" truncate>
                 {dayMonth(t.date)} {t.description || '—'}
               </Text>
-              <Text variant="caption" tone={t.type === 'CREDIT' ? 'positive' : 'ink'} className="shrink-0">
+              <Text variant="caption" tone={t.type === 'CREDIT' && !concealed ? 'positive' : 'ink'} className="shrink-0">
                 {t.type === 'CREDIT' ? '+' : ''}
                 {formatCurrency(t.amount)}
               </Text>

@@ -3,6 +3,8 @@
 import React from 'react';
 
 import { Button, Card, Icon, ListRow, SegmentedControl, Text } from '@/components/ds';
+import { SettingsToggle } from '@/components/organisms';
+import { useHideAmounts } from '@/features/shell/hideAmounts';
 import { originOf, type RevealOrigin,revealTheme } from '@/lib/themeReveal';
 
 import { type ThemeChoice, useThemeChoice } from './useThemeChoice';
@@ -16,6 +18,7 @@ const THEME_OPTIONS = [
 /** Theme (saved by next-themes on this device) and the Storybook link. */
 export function AppearanceCard() {
   const { theme, setTheme } = useThemeChoice();
+  const { hidden, setHidden } = useHideAmounts();
   // The theme change grows from the segment that was clicked (or the control's centre for keyboard use).
   const origin = React.useRef<RevealOrigin | undefined>(undefined);
   const control = React.useRef<HTMLDivElement>(null);
@@ -42,6 +45,15 @@ export function AppearanceCard() {
             />
           </div>
         }
+      />
+      <SettingsToggle
+        // ListRow keeps a 4px left rail; match it so the switch lines up with the other rows.
+        className="px-space-16 border-l-4 border-l-transparent"
+        borderTop
+        label="Hide amounts"
+        description="Show ₹ — instead of balances and amounts"
+        checked={hidden}
+        onCheckedChange={setHidden}
       />
       <ListRow
         title="Storybook"

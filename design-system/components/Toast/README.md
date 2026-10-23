@@ -27,3 +27,6 @@ Banner (tones and layout), Sonner (queue and timing), Button `link` (action).
 
 ## Variants
 - Neutral, success, danger, warning, info; with action (`{ label, onSelect }`).
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in message (the Toaster sits above the provider, so it reads the flag from a shared store) reads "₹ —". See Conceal.

@@ -4,6 +4,7 @@ import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
 import { formatCount } from '../utils';
@@ -159,7 +160,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
             )}
             {...props}
           >
-            <span>{children}</span>
+            <span>{concealMoney(children)}</span>
             {countNode}
             {dropdownNode}
           </button>
@@ -198,7 +199,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
         )}
         {...props}
       >
-        <span>{children}</span>
+        <span>{concealMoney(children)}</span>
         {countNode}
         {dropdownNode}
       </button>

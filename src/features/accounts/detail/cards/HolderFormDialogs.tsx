@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { DateField, Select, Text, TextField } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 import type {
   Cardholder,
@@ -83,7 +84,7 @@ export function AddHolderDialog({
         onValueChange={(v) => setRelationship(v as CardholderRelationship)}
         options={RELATIONSHIP_OPTIONS}
       />
-      <TextField
+      <AmountField
         label="Monthly spend limit"
         optional
         prefix="₹"
@@ -189,7 +190,7 @@ export function EditHolderDialog({
         }
         disabled={primary}
       />
-      <TextField
+      <AmountField
         label="Spend limit"
         optional
         prefix="₹"

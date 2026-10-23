@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { DateField, Dialog, DialogBody, DialogContent, Select, TextField } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import type { LoanEventType } from '@/lib/loan.types';
@@ -109,7 +110,7 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
               />
             ) : null}
             {cash ? (
-              <TextField
+              <AmountField
                 label="Amount"
                 prefix="₹"
                 inputMode="decimal"
@@ -128,7 +129,7 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
               />
             ) : null}
             {values.eventType !== 'foreclosure' && values.adjustmentMode === 'reduce_emi' ? (
-              <TextField
+              <AmountField
                 label="New EMI override"
                 optional
                 prefix="₹"

@@ -12,8 +12,8 @@ import {
   type SelectOption,
   Text,
   TextArea,
-  TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
@@ -130,7 +130,7 @@ export function EditEntryDialog({
               onValueChange={(v) => setEntryType(v as LendingEntryType)}
             />
             <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
-              <TextField
+              <AmountField
                 label="Amount"
                 prefix="₹"
                 inputMode="decimal"

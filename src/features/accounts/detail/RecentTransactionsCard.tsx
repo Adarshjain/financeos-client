@@ -2,19 +2,21 @@
 
 import React from 'react';
 
-import {
-  Badge,
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  Text,
-} from '@/components/ds';
+import { Badge, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Text, useConcealed } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
 import type { TransactionRowModel } from './overview/cardOverviewModel';
 import { HeaderLink } from './overview/HeaderLink';
+
+function AmountCell({ amount, credit }: { amount: string; credit?: boolean }) {
+  const concealed = useConcealed();
+  return (
+    <Text variant="body-strong" tone={credit && !concealed ? 'positive' : 'ink'} fraction="small">
+      {amount}
+    </Text>
+  );
+}
 
 const ch = createDataTableColumnHelper<TransactionRowModel>();
 const columns = [
@@ -51,11 +53,7 @@ const columns = [
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => (
-      <Text variant="body-strong" tone={row.original.credit ? 'positive' : 'ink'} fraction="small">
-        {row.original.amount}
-      </Text>
-    ),
+    cell: ({ row }) => <AmountCell amount={row.original.amount} credit={row.original.credit} />,
   }),
   ch.display({
     id: 'balance',
@@ -63,7 +61,7 @@ const columns = [
     meta: { size: 'sm', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
-        {row.original.balance ?? '—'}
+        {row.original.balance ? <Conceal whole placeholder="">{row.original.balance}</Conceal> : '—'}
       </Text>
     ),
   }),

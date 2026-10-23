@@ -23,3 +23,6 @@ Nothing else; the type styles and ink tokens.
 ## Variants
 - Every type style, each tone, the display family on page-title, centred, truncated, mono (owner item 41, 2026-10-20) for error codes, log lines, masked keys, model ids.
 - `fraction=small` on any figure style: smaller paise (owner, 2026-10-22).
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in children (any string holding a ₹ amount; with `fraction`, the whole amount) reads "₹ —". See Conceal.

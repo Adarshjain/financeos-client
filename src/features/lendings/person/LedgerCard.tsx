@@ -12,11 +12,21 @@ import {
   Icon,
   Pager,
   Text,
+  useConcealed,
 } from '@/components/ds';
 
 import { LEDGER_SIZE_OPTIONS, type LedgerRow } from './personModel';
 
 const ch = createDataTableColumnHelper<LedgerRow>();
+
+function ReceivedCell({ children }: { children: string }) {
+  const concealed = useConcealed();
+  return (
+    <Text variant="body-strong" tone={concealed ? 'ink' : 'positive'} fraction="small">
+      {children}
+    </Text>
+  );
+}
 const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
 export interface LedgerCardProps {
@@ -95,9 +105,7 @@ export function LedgerCard({
         meta: { size: 'sm', align: 'end', phone: 'hidden' },
         cell: ({ row }) =>
           row.original.received ? (
-            <Text variant="body-strong" tone="positive" fraction="small">
-              {row.original.received}
-            </Text>
+            <ReceivedCell>{row.original.received}</ReceivedCell>
           ) : (
             <Text variant="body" tone="ink-3">
               —

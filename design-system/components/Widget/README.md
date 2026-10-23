@@ -19,3 +19,6 @@ Card, Menu, Skeleton, Button.
 
 ## Variants
 - Figure, rows loading, failed (error with action), unavailable (with action), with menu.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title and subtitle (through Card) reads "₹ —". See Conceal.

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, EmptyState, type EmptyStateProps, Icon } from '@/components/ds';
+import { Card, ConcealProvider, EmptyState, type EmptyStateProps, Icon } from '@/components/ds';
 
 /** The action objects are flattened into plain controls; an empty label removes that action. */
 type StoryArgs = Omit<EmptyStateProps, 'action' | 'secondaryAction' | 'illustration'> & {
@@ -76,4 +76,19 @@ export const Playground: Story = {
       }
     />
   ),
+};
+
+export const Concealed: Story = {
+  ...Playground,
+  args: { ...Playground.args, title: 'No bills over ₹5,000', description: 'Nothing above ₹5,000 this month' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
+  },
 };

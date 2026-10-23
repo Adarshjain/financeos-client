@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  flexRender,
   type Row as TanStackRow,
   type RowData,
   type Table,
@@ -12,6 +11,7 @@ import { mergeProps } from 'react-aria';
 import { Button } from '../Button/Button';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { useSelectableItem } from '../useSelectableItem';
 import type { DataTableColumnMeta, DataTableFeatures } from './types';
@@ -32,6 +32,12 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean };
   highlighted?: boolean;
   busy?: boolean;
+}
+
+/** A cell's content; a string holding a ₹ amount is hidden while amounts are hidden. */
+function CellContent({ render, ctx }: { render: unknown; ctx: unknown }) {
+  const content = typeof render === 'function' ? (render as (ctx: unknown) => React.ReactNode)(ctx) : (render as React.ReactNode);
+  return <>{concealMoney(content)}</>;
 }
 
 export function DataTableRow<Row extends RowData>({
@@ -89,7 +95,7 @@ export function DataTableRow<Row extends RowData>({
 
   const lead = leading?.(row.original) ?? null;
   const hasLead = lead !== null && lead !== false;
-  const sub = phoneSub?.(row.original);
+  const sub = concealMoney(phoneSub?.(row.original));
   const actions = phoneActions?.(row.original);
 
   const isHighlighted = highlighted;
@@ -228,11 +234,11 @@ export function DataTableRow<Row extends RowData>({
               <div className="flex items-center gap-space-10 min-w-0">
                 <div className="hidden desk:block shrink-0">{lead}</div>
                 <div className="min-w-0 flex-1">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  <CellContent render={cell.column.columnDef.cell} ctx={cell.getContext()} />
                 </div>
               </div>
             ) : (
-              flexRender(cell.column.columnDef.cell, cell.getContext())
+              <CellContent render={cell.column.columnDef.cell} ctx={cell.getContext()} />
             )}
           </div>
         );

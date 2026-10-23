@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Checkbox,
+  ConcealProvider,
   ConfirmDialog,
   Dialog,
   DialogBody,
@@ -257,4 +258,19 @@ export const ConfirmAlternative: StoryObj<typeof ConfirmDialog> = {
       onAlternative={fn()}
     />
   ),
+};
+
+export const Concealed: Story = {
+  ...Default,
+  args: { ...Default.args, title: 'Pay ₹4,500?', description: '₹4,500 leaves HDFC Savings' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
+  },
 };

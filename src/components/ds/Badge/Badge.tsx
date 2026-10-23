@@ -4,6 +4,7 @@ import { Slot } from '@radix-ui/react-slot';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 
 export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 export type BadgeVariant = 'soft' | 'solid' | 'outline' | 'dashed' | 'dot';
@@ -109,7 +110,7 @@ export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
     if (asChild) {
       return (
         <Slot ref={ref} className={classes} {...props}>
-          {children}
+          {concealMoney(children)}
         </Slot>
       );
     }
@@ -123,7 +124,7 @@ export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
           className={classes}
           {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
         >
-          {children}
+          {concealMoney(children)}
         </button>
       );
     }
@@ -134,7 +135,7 @@ export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
         className={classes}
         {...(props as React.HTMLAttributes<HTMLSpanElement>)}
       >
-        {isDot ? null : children}
+        {isDot ? null : concealMoney(children)}
       </span>
     );
   },

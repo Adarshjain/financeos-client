@@ -9,8 +9,8 @@ import {
   DialogBody,
   DialogContent,
   showToast,
-  TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -96,7 +96,7 @@ export function EditDetailsDialog({
     />
   );
   const amount = (field: DetailsField, label: string) => (
-    <TextField
+    <AmountField
       label={label}
       prefix="₹"
       inputMode="decimal"

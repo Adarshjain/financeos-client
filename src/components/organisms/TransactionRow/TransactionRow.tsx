@@ -8,10 +8,12 @@ import {
   Button,
   Checkbox,
   cn,
+  CONCEAL_PLACEHOLDER,
   Highlight,
   Icon,
   Reveal,
   StatusWord,
+  useConcealed,
   useControllableState,
   useSelectableItem,
 } from '@/components/ds';
@@ -144,6 +146,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       onChange: onSelectedChange,
     });
 
+    // Hidden amounts: the amount reads "₹ —" in ink (no green giving the direction away) and the running balance goes.
+    const concealed = useConcealed();
     const mark = (value: React.ReactNode): React.ReactNode =>
       query && typeof value === 'string' ? (
         <Highlight text={value} query={query} />
@@ -500,11 +504,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 eyeOnly && 'pl-space-10',
                 'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
                 'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
-                isCredit ? 'text-positive' : 'text-ink',
+                isCredit && !concealed ? 'text-positive' : 'text-ink',
               )}
             >
-              {markAmount(amount)}
-              {balance && (
+              {concealed && amount !== undefined ? CONCEAL_PLACEHOLDER : markAmount(amount)}
+              {balance && !concealed && (
                 <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}
                 </div>
@@ -516,7 +520,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-end tabular-nums text-ink-2 justify-self-end"
             >
-              {balance}
+              {concealed ? null : balance}
             </div>
 
             {/* Phone Trailing eye icon in selection mode or chevron */}

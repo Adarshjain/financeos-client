@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { ProgressBar, ProgressBarTone } from '../ProgressBar/ProgressBar';
 import { Skeleton } from '../Skeleton/Skeleton';
 
@@ -86,7 +87,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
       if (React.isValidElement(delta) || typeof delta === 'string') {
         return (
           <div className="mt-space-4 text-label font-bold flex items-center gap-space-4 flex-wrap">
-            {delta}
+            {concealMoney(delta)}
           </div>
         );
       }
@@ -104,7 +105,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
               !isGood && !isBad && 'text-ink-3',
             )}
           >
-            {deltaObj.value}
+            {concealMoney(deltaObj.value)}
           </span>
           {deltaObj.period && (
             <span className="font-medium text-ink-3">
@@ -168,7 +169,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
                   : 'font-text text-figure font-extrabold',
               )}
             >
-              {value}
+              {concealMoney(value)}
             </div>
           )}
 
@@ -195,7 +196,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
 
           {context && (
             <div className="mt-space-6 text-label font-medium text-ink-3">
-              {context}
+              {concealMoney(context)}
             </div>
           )}
         </>

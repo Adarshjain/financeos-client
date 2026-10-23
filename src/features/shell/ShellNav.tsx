@@ -13,6 +13,7 @@ import {
   Icon,
   ListRow,
   Rail,
+  Switch,
   TabBar,
   Text,
 } from '@/components/ds';
@@ -22,6 +23,7 @@ import { useAddTransaction } from '@/features/transactions/form/AddTransactionPr
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
+import { useHideAmounts } from './hideAmounts';
 import {
   getActiveNavItem,
   shellMoreGroups,
@@ -73,6 +75,7 @@ export function ShellTabBar({
   const counts = useNavCounts();
   const addLending = useAddLending();
   const addTransaction = useAddTransaction();
+  const { hidden, setHidden } = useHideAmounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -193,6 +196,16 @@ export function ShellTabBar({
                 </div>
               </div>
             ))}
+
+            {/* Hide amounts */}
+            <Card className="mt-space-16">
+              <ListRow
+                title="Hide amounts"
+                subtitle="Show ₹ — instead of amounts"
+                trailing={<Switch checked={hidden} onCheckedChange={setHidden} aria-label="Hide amounts" />}
+                borderTop={false}
+              />
+            </Card>
 
             {/* Profile row */}
             <Card className="mt-space-16">

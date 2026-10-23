@@ -9,6 +9,7 @@ import {
   CardEmpty,
   CardRow,
   CardSection,
+  ConcealProvider,
   FilterChip,
   Icon,
   Pager,
@@ -214,5 +215,20 @@ export const Selected: Story = {
         <Text variant="label" tone="ink-3" as="div">₹1,249.00 · HDFC Regalia ••7741</Text>
       </button>
     ),
+  },
+};
+
+export const Concealed: Story = {
+  ...TitleSubtitleLink,
+  args: { ...TitleSubtitleLink.args, title: 'Spend', subtitle: '₹12,000 of ₹20,000' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

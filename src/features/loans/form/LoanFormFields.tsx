@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { DateField, Select, type SelectOption, TextArea, TextField } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import type { LoanType, RateType } from '@/lib/loan.types';
@@ -97,7 +98,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
               />
             </Pair>
             <div className="grid grid-cols-1 desk:grid-cols-3 gap-space-12">
-              <TextField
+              <AmountField
                 label="Principal"
                 disabled={termsLocked}
                 prefix="₹"
@@ -143,7 +144,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 value={values.firstEmiDate}
                 onValueChange={(v) => change({ firstEmiDate: typeof v === 'string' ? v : '' })}
               />
-              <TextField
+              <AmountField
                 label="EMI amount"
                 disabled={termsLocked}
                 optional

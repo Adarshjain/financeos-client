@@ -1,6 +1,7 @@
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import {
   ArrowClockwise,
+  Backspace,
   Bell,
   CalendarBlank,
   CaretDown,
@@ -15,6 +16,7 @@ import {
   Clock,
   DotsThreeVertical,
   Eye,
+  EyeSlash,
   FileText,
   GearSix,
   Gift,
@@ -54,6 +56,7 @@ export const iconRegistry = {
   link: Link,
   chat: ChatCentered,
   view: Eye,
+  'eye-slash': EyeSlash,
   calendar: CalendarBlank,
   clock: Clock,
   upload: UploadSimple,
@@ -79,6 +82,7 @@ export const iconRegistry = {
   moon: Moon,
   monitor: Monitor,
   'arrow-clockwise': ArrowClockwise,
+  backspace: Backspace,
 } as const satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof iconRegistry;

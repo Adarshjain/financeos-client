@@ -12,6 +12,7 @@ import type { CardBillResponse } from '@/lib/api/types';
 import type { StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 import { resolveAsyncElements } from '@/test/resolveAsyncElements';
+import { stubLayout } from '@/test/stubLayout';
 
 import DsAccountStatementsLoading from './loading';
 import DsAccountStatementsPage from './page';
@@ -204,6 +205,8 @@ async function renderPage(
 describe('/ds/accounts/[id]/statements', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Desktop layout: the amount fields are plain inputs here (phone opens the keypad sheet).
+    stubLayout('desktop');
     loadAccount.mockResolvedValue(card);
     loadData.mockResolvedValue(data());
     api.GET.mockResolvedValue({ data: undefined });

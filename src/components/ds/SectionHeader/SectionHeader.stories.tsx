@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { Button, SectionHeader } from '@/components/ds';
+import { Button, ConcealProvider, SectionHeader } from '@/components/ds';
 
 const meta: Meta<typeof SectionHeader> = {
   title: 'DS/Data display/SectionHeader',
@@ -105,5 +105,20 @@ export const WithAction: Story = {
         Show
       </Button>
     ),
+  },
+};
+
+export const Concealed: Story = {
+  ...Strong,
+  args: { ...Strong.args, children: 'Total ₹12,000' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

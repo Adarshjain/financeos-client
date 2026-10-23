@@ -13,6 +13,7 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { plainAmount } from '@/features/loans/loanFormat';
 import { amountExpressionProps } from '@/lib/amountExpression';
@@ -173,7 +174,7 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
         />
       </div>
       <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
-        <TextField
+        <AmountField
           label="Gross amount"
           prefix="₹"
           inputMode="decimal"
@@ -181,7 +182,7 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
           {...amountExpressionProps(dividend.amount, dividend.setAmount)}
           error={dividend.amountError}
         />
-        <TextField
+        <AmountField
           label="TDS"
           optional
           prefix="₹"

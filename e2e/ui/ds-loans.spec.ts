@@ -303,7 +303,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Closed · 1')).toBeVisible();
       await page.getByRole('button', { name: /Show/ }).click();
       await expect(page.getByText('Old Bike Loan').first()).toBeVisible();
-      await page.getByRole('button', { name: /Hide/ }).click();
+      await page.getByRole('button', { name: 'Hide', exact: true }).click();
       await expect(page.getByText('Old Bike Loan')).toHaveCount(0);
 
       // A row opens the loan's (Legacy) page.
