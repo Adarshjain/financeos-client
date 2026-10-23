@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
 
+import { AddTradeProvider } from '../AddTradeProvider';
 import { ShellTabBar } from '../ShellNav';
 
 const router = { push: vi.fn() };
@@ -12,6 +13,10 @@ vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: {
 vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: 0 }) }));
 vi.mock('@/features/lendings/form/AddLendingDialog', () => ({
   AddLendingDialog: () => <p>lending dialog</p>,
+}));
+
+vi.mock('@/features/investments/tradebook/TradeDialog', () => ({
+  RecordTradeDialog: () => <p>trade dialog</p>,
 }));
 
 describe('More sheet Quick add Lending', () => {
@@ -31,13 +36,17 @@ describe('More sheet Quick add Lending', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('keeps Trade disabled', () => {
+  it('Trade closes the sheet and opens Record trade from state', () => {
     render(
-      <AddLendingProvider>
+      <AddTradeProvider>
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
-      </AddLendingProvider>,
+      </AddTradeProvider>,
     );
     fireEvent.click(screen.getByRole('tab', { name: /More/i }));
-    expect(screen.getByRole('button', { name: /Trade/i })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: /Trade/i }));
+
+    expect(screen.getByText('trade dialog')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(router.push).not.toHaveBeenCalled();
   });
 });

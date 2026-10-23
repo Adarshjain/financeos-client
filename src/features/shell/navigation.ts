@@ -91,7 +91,7 @@ export interface ShellQuickAddItem {
   href?: string;
   disabled?: boolean;
   /** Opens a dialog from state instead of navigating (the app provides the dialog). */
-  dialog?: 'lending' | 'transaction';
+  dialog?: 'lending' | 'trade' | 'transaction';
 }
 
 export interface ShellMoreGroup {
@@ -101,14 +101,13 @@ export interface ShellMoreGroup {
 
 /**
  * Quick add items for the phone More sheet (P-more).
- * Trade has no dedicated route yet (a Legacy dialog), so it is disabled until the owner decides on its
- * route. Transaction and Lending open their Add dialogs from state (no URL change).
+ * Transaction, Lending and Trade open their dialogs from state (no URL change).
  * Import links to /transactions/import.
  */
 export const shellQuickAddItems: ShellQuickAddItem[] = [
   { id: 'transaction', label: 'Transaction', icon: 'add', dialog: 'transaction' },
   { id: 'lending', label: 'Lending', icon: 'handshake', dialog: 'lending' },
-  { id: 'trade', label: 'Trade', icon: 'chart-line-up', disabled: true },
+  { id: 'trade', label: 'Trade', icon: 'chart-line-up', dialog: 'trade' },
   { id: 'import', label: 'Import', icon: 'upload', href: '/transactions/import' },
 ];
 
