@@ -69,8 +69,9 @@ input[type='number'] {
    standard easing from tokens.json; browsers without View Transitions update instantly.
    - The page (PageTransition in the (app) layout) crossfades between pages and from skeleton to content.
    - The shell and everything that floats above the page (top bar, rail, tab bar, progress, dialogs and their
-     backdrops, menus, toasts, the selection bar) keep their own layer and never animate, so moving rows can't
-     slide over them and the shell nav doesn't fade.
+     backdrops, menus, the selection bar) keep their own layer and never animate, so moving rows can't
+     slide over them and the shell nav doesn't fade. Toasts stay in the root layer: a named, frozen toaster
+     hid a toast that was still sliding in whenever a row left or the page refreshed (owner: flicker).
    - Rows: ds-row-enter slides in, ds-row-exit folds away, ds-row-move follows the list.
    - ds-morph: a row's part growing into the detail header (shared name). */
 ::view-transition-old(root),
@@ -111,7 +112,6 @@ input[type='number'] {
 .z-overlay.bg-backdrop,
 [role='dialog'],
 [data-radix-popper-content-wrapper],
-[data-sonner-toaster],
 [data-selection-bar],
 [data-view-transition='header'] {
   view-transition-name: match-element;
