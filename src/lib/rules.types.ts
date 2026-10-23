@@ -53,6 +53,12 @@ export interface RuleMatchTransaction {
   reviewType: string | null;
   appliedRuleId: string | null;
   appliedRuleName: string | null;
+  /** The account the transaction sits on; `accountBank` is its bank id. */
+  accountId?: string;
+  accountName?: string;
+  accountBank?: string | null;
+  cardId?: string | null;
+  cardLast4?: string | null;
 }
 
 export interface ApplyRuleRequest {

@@ -11,10 +11,12 @@ export interface CategoriesFieldProps {
   creating: boolean;
   onChange: (ids: string[]) => void;
   onCreate: (name: string) => void;
+  /** Why the field cannot be saved as it is. */
+  error?: React.ReactNode;
 }
 
 /** The Categories multi-select of the Add/Edit form and the Set category dialog. */
-export function CategoriesField({ categories, selectedCategoryIds, creating, onChange, onCreate }: CategoriesFieldProps) {
+export function CategoriesField({ categories, selectedCategoryIds, creating, onChange, onCreate, error }: CategoriesFieldProps) {
   return (
     <Select
       label="Categories"
@@ -26,6 +28,7 @@ export function CategoriesField({ categories, selectedCategoryIds, creating, onC
       onValueChange={(v) => onChange(v as string[])}
       onCreate={onCreate}
       loading={creating}
+      error={error}
     />
   );
 }

@@ -153,68 +153,64 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     };
 
     const renderActions = () => {
-      if (showEye) {
-        return (
-          <span {...nestedControlProps}>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              iconOnly
-              onClick={onDetail}
-              aria-label="View rule details"
-              className="text-brand-strong shrink-0"
-            >
-              <Icon name="view" size="md" />
-            </Button>
-          </span>
-        );
-      }
-
       const hasApprove = !isVerified && effectiveApprove?.onSelect;
       const hasMenu = menuItems && menuItems.length > 0;
 
-      if (!hasApprove && !hasMenu) return null;
+      // Selection mode is a phone pattern: the eye replaces the actions below `desk` only; on desktop they stay.
+      const eye = showEye ? (
+        <span {...nestedControlProps} className="desk:hidden">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            iconOnly
+            onClick={onDetail}
+            aria-label="View rule details"
+            className="text-brand-strong shrink-0"
+          >
+            <Icon name="view" size="md" />
+          </Button>
+        </span>
+      ) : null;
+
+      if (!hasApprove && !hasMenu) return eye;
 
       return (
-        <div {...nestedControlProps} className="flex items-center gap-space-6 shrink-0">
-          {hasApprove && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={effectiveApprove.onSelect}
-              icon={<Icon name="check" size="xs" />}
-            >
-              {effectiveApprove.label ?? 'Approve'}
-            </Button>
-          )}
+        <>
+          {eye}
+          <div
+            {...nestedControlProps}
+            className={cn('flex items-center gap-space-6 shrink-0', showEye && 'max-desk:hidden')}
+          >
+            {hasApprove && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={effectiveApprove.onSelect}
+                icon={<Icon name="check" size="xs" />}
+              >
+                {effectiveApprove.label ?? 'Approve'}
+              </Button>
+            )}
 
-          {hasMenu && (
-            <Menu.Root>
-              <MenuTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  iconOnly
-                  aria-label="Rule actions"
-                >
-                  <Icon name="more" size="sm" />
-                </Button>
-              </MenuTrigger>
-              <MenuContent align="end">
-                {menuItems.map((menuItem, idx) => (
-                  <MenuItem
-                    key={idx}
-                    destructive={menuItem.destructive}
-                    onSelect={menuItem.onSelect}
-                  >
-                    {menuItem.label}
-                  </MenuItem>
-                ))}
-              </MenuContent>
-            </Menu.Root>
-          )}
-        </div>
+            {hasMenu && (
+              <Menu.Root>
+                <MenuTrigger asChild>
+                  <Button size="sm" variant="ghost" iconOnly aria-label="Rule actions">
+                    <Icon name="more" size="sm" />
+                  </Button>
+                </MenuTrigger>
+                <MenuContent align="end">
+                  {menuItems.map((menuItem, idx) => (
+                    <MenuItem key={idx} destructive={menuItem.destructive} onSelect={menuItem.onSelect}>
+                      {menuItem.label}
+                    </MenuItem>
+                  ))}
+                </MenuContent>
+              </Menu.Root>
+            )}
+          </div>
+        </>
       );
     };
 

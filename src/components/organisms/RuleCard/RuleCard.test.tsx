@@ -113,6 +113,22 @@ describe('RuleCard', () => {
     expect(handleView).toHaveBeenCalledTimes(1);
   });
 
+  it('selection mode swaps the actions for the eye on phone only: both are drawn, each hidden at the other width', () => {
+    render(
+      <RuleCard
+        name="Lenskart"
+        matchType="Contains"
+        selectionMode
+        onDetail={vi.fn()}
+        onApprove={vi.fn()}
+        menuItems={[{ label: 'Edit rule' }]}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /view rule details/i }).parentElement).toHaveClass('desk:hidden');
+    expect(screen.getByRole('button', { name: /rule actions/i }).parentElement).toHaveClass('max-desk:hidden');
+    expect(screen.getByRole('button', { name: 'Approve' }).parentElement).toHaveClass('max-desk:hidden');
+  });
+
   it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
     const handleView = vi.fn();
     render(
