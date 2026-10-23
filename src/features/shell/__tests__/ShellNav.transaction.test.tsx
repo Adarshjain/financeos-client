@@ -25,12 +25,12 @@ describe('More sheet Quick add Transaction', () => {
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
       </AddTransactionProvider>,
     );
-    fireEvent.click(screen.getByRole('tab', { name: /More/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /Menu/i }));
     fireEvent.click(screen.getByRole('button', { name: /Transaction/i }));
 
     expect(screen.getByText('transaction form')).toBeInTheDocument();
     expect(formProps.mock.calls[0][0]).toMatchObject({ today: '2026-10-22' });
-    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByText('transaction form'));

@@ -103,7 +103,7 @@ export function ShellTabBar({
       <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
         <DialogContent
           size="sm"
-          srTitle="More"
+          srTitle="Menu"
           showClose={false}
           background="canvas"
           onClose={() => setMoreOpen(false)}

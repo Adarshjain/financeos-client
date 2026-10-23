@@ -26,13 +26,13 @@ describe('More sheet Quick add Lending', () => {
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
       </AddLendingProvider>,
     );
-    fireEvent.click(screen.getByRole('tab', { name: /More/i }));
-    expect(screen.getByRole('dialog', { name: 'More' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /Menu/i }));
+    expect(screen.getByRole('dialog', { name: 'Menu' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Lending/i }));
 
     expect(screen.getByText('lending dialog')).toBeInTheDocument();
-    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });
 
@@ -42,11 +42,11 @@ describe('More sheet Quick add Lending', () => {
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
       </AddTradeProvider>,
     );
-    fireEvent.click(screen.getByRole('tab', { name: /More/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /Menu/i }));
     fireEvent.click(screen.getByRole('button', { name: /Trade/i }));
 
     expect(screen.getByText('trade dialog')).toBeInTheDocument();
-    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });
 });

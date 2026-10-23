@@ -573,11 +573,11 @@ for (const viewport of VIEWPORTS) {
         await seedList();
         await open(page);
         const before = page.url();
-        await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
-        await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Transaction' }).click();
+        await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
+        await page.getByRole('dialog', { name: 'Menu' }).getByRole('button', { name: 'Transaction' }).click();
 
         await expect(page.getByRole('dialog', { name: 'Add transaction' })).toBeVisible();
-        await expect(page.getByRole('dialog', { name: 'More' })).not.toBeVisible();
+        await expect(page.getByRole('dialog', { name: 'Menu' })).not.toBeVisible();
         expect(page.url()).toBe(before);
       });
 

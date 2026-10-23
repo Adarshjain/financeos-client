@@ -23,15 +23,16 @@ export interface ShellNavGroup {
 
 /**
  * TabBar navigation items (phone bottom navigation, at most 5 items).
- * Items: Home, Inbox, Accounts, Transactions, More.
- * More uses the 'menu' icon and has no href (it triggers the More sheet).
+ * Items in order: Home, Transactions, Lendings, Inbox, Menu.
+ * Lendings shares the rail's 'loans' id, so the shared active-item logic lights it on /loans/*.
+ * Menu uses the 'menu' icon and has no href (it triggers the More sheet); Accounts lives in that sheet.
  */
 export const shellTabBarItems: ShellTabBarItem[] = [
   { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
-  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
-  { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
   { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
-  { id: 'more', label: 'More', icon: 'menu' },
+  { id: 'loans', label: 'Lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
+  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
+  { id: 'more', label: 'Menu', icon: 'menu' },
 ];
 
 /**

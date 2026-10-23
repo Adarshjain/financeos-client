@@ -58,14 +58,21 @@ describe('shell navigation', () => {
   it('matches TabBar items with menu icon and no href on More', () => {
     expect(shellTabBarItems.map((i) => i.id)).toEqual([
       'home',
-      'inbox',
-      'accounts',
       'transactions',
+      'loans',
+      'inbox',
       'more',
     ]);
+    expect(shellTabBarItems.map((i) => i.label)).toEqual(['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu']);
     const moreItem = shellTabBarItems.find((i) => i.id === 'more')!;
     expect(moreItem.icon).toBe('menu');
     expect(moreItem.href).toBeUndefined();
+  });
+
+  it('Lendings tab is active on the loans pages', () => {
+    for (const p of ['/ds/loans', '/ds/loans/lendings', '/ds/loans/people/1', '/ds/loans/7']) {
+      expect(getActiveNavItem(p)).toBe('loans');
+    }
   });
 
   it('getActiveNavItem follows Dinero pages: /ds paths light the same item as their Legacy twin', () => {
@@ -114,7 +121,8 @@ describe('shell navigation', () => {
     expect(rail.some((i) => i.id === 'upcoming')).toBe(false);
     expect(shellTabBarItems.some((i) => i.id === 'upcoming')).toBe(false);
     expect(rail.find((i) => i.id === 'inbox')?.also).toEqual(['/upcoming']);
-    expect(shellTabBarItems.find((i) => i.id === 'accounts')).toMatchObject({ icon: 'wallet', href: '/accounts' });
+    expect(shellTabBarItems.some((i) => i.id === 'accounts')).toBe(false);
+    expect(shellTabBarItems.find((i) => i.id === 'loans')).toMatchObject({ icon: 'handshake', href: '/loans/lendings' });
   });
 
   it('Rail and TabBar mark Inbox current on /upcoming', () => {
@@ -189,14 +197,14 @@ describe('shell navigation', () => {
     render(<ShellTabBar user={{ name: 'Arjun Mehta', email: 'arjun@example.test' }} />);
 
     // Initially sheet is not open
-    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
 
     // Tap More
-    const moreTab = screen.getByRole('tab', { name: /More/i });
+    const moreTab = screen.getByRole('tab', { name: /Menu/i });
     fireEvent.click(moreTab);
 
     // Sheet is now open
-    const dialog = screen.getByRole('dialog', { name: 'More' });
+    const dialog = screen.getByRole('dialog', { name: 'Menu' });
     expect(dialog).toBeInTheDocument();
 
     // Verify Quick add items
@@ -222,12 +230,12 @@ describe('shell navigation', () => {
     // Tap an item to close the sheet
     const accountsLink = screen.getByRole('link', { name: /Accounts/i });
     fireEvent.click(accountsLink);
-    expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
   });
 
   it('ShellTabBar falls back to user email and derives initials when no name is provided', () => {
     render(<ShellTabBar user={{ email: 'priya@example.test' }} />);
-    const moreTab = screen.getByRole('tab', { name: /More/i });
+    const moreTab = screen.getByRole('tab', { name: /Menu/i });
     fireEvent.click(moreTab);
 
     expect(screen.getByText('priya@example.test')).toBeInTheDocument();

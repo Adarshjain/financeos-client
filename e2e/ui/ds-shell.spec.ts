@@ -100,27 +100,38 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const railContainer = page.locator('.hidden.desk\\:flex');
     await expect(railContainer).not.toBeVisible();
 
-    // Verify floating TabBar items: Home, Inbox, Accounts, Transactions, More
+    // Verify floating TabBar items: Home, Transactions, Lendings, Inbox, Menu
     const tabBar = page.locator('nav.desk\\:hidden');
     await expect(tabBar).toBeVisible();
 
-    const expectedTabs = ['Home', 'Inbox', 'Accounts', 'Transactions', 'More'];
+    const expectedTabs = ['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu'];
     for (const tabName of expectedTabs) {
       await expect(tabBar.getByRole('tab', { name: tabName })).toBeVisible();
     }
   });
 
-  test('phone 390px: More tab opens More sheet, links live routes, and closes all 3 ways', async ({ page }) => {
+  test('phone 390px: tab bar order is Home, Transactions, Lendings, Inbox, Menu and Lendings opens /ds/loans/lendings', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
 
     const tabBar = page.locator('nav.desk\\:hidden');
-    const moreTab = tabBar.getByRole('tab', { name: 'More' });
+    await expect(tabBar.getByRole('tab')).toHaveText(['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu']);
+
+    await tabBar.getByRole('tab', { name: 'Lendings' }).click();
+    await expect(page).toHaveURL(/\/ds\/loans\/lendings/);
+  });
+
+  test('phone 390px: Menu tab opens More sheet, links live routes, and closes all 3 ways', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+
+    const tabBar = page.locator('nav.desk\\:hidden');
+    const moreTab = tabBar.getByRole('tab', { name: 'Menu' });
     await expect(moreTab).toBeVisible();
 
     // 1. Open More sheet by tapping More
     await moreTab.click();
-    const sheet = page.getByRole('dialog', { name: 'More' });
+    const sheet = page.getByRole('dialog', { name: 'Menu' });
     await expect(sheet).toBeVisible();
 
     // Verify Quick add items
@@ -182,19 +193,19 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
   test('phone 390px: Quick add Lending opens the Add ledger entry dialog without leaving the page', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
-    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
-    await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Lending' }).click();
+    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
+    await page.getByRole('dialog', { name: 'Menu' }).getByRole('button', { name: 'Lending' }).click();
 
     await expect(page.getByRole('dialog', { name: 'Add ledger entry' })).toBeVisible();
-    await expect(page.getByRole('dialog', { name: 'More' })).not.toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Menu' })).not.toBeVisible();
     expect(new URL(page.url()).pathname).toBe('/ds');
   });
 
   test('phone 390px: Quick add Trade opens the Record trade dialog without leaving the page', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
-    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
-    await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Trade' }).click();
+    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
+    await page.getByRole('dialog', { name: 'Menu' }).getByRole('button', { name: 'Trade' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Record trade' });
     await expect(dialog).toBeVisible();
@@ -206,8 +217,8 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
   test('phone 390px: Quick add Transaction opens the Add transaction dialog without leaving the page', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
-    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
-    await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Transaction' }).click();
+    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
+    await page.getByRole('dialog', { name: 'Menu' }).getByRole('button', { name: 'Transaction' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Add transaction' });
     await expect(dialog).toBeVisible();
