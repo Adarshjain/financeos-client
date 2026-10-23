@@ -123,7 +123,7 @@ for (const viewport of VIEWPORTS) {
     if (phone) {
       test('the More sheet has the switch too', async ({ page }) => {
         await openTransactions(page);
-        await page.getByRole('navigation', { name: 'Primary' }).getByRole('tab', { name: 'More' }).click();
+        await page.getByRole('navigation', { name: 'Primary' }).getByRole('tab', { name: 'Menu' }).click();
         const toggle = hideSwitch(page, '[role="dialog"]', 'instead of amounts');
         await toggle.click();
         await expect(toggle).toHaveAttribute('aria-checked', 'true');

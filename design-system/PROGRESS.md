@@ -400,6 +400,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-23 · Notifications and Loans & lendings approved (owner: "mark them approved, I will raise if I find anything").
 - 2026-10-23 · Investments round 2 (owner): price chart 16:9 phone, 21:9 desktop (new generic aspect token); per-tab suggestions all accepted (Add/Reconcile like Edit, dropped dividend columns, current FY default everywhere incl. Tradebook, ≈ on estimated charges, Intraday for MIS, F&O gets All years, live-catalog search, no Held filter, row opens edit, no instrument delete, Delete as dialog tertiary link, switches in body); Delete links use a new danger-coloured link variant everywhere in Dinero.
 - 2026-10-23 · F&O All years (owner): every year's trades + totals (server `allYears`), month cards hidden, ITR export per FY only.
+- 2026-10-23 · Phone tab bar (owner): Home, Transactions, Lendings, Inbox, Menu (More renamed Menu; Accounts only in the sheet); sheet bottom padding `safe-24`.
 - 2026-10-23 · Import tradebook (owner): its own page (/ds/investments/import), every Legacy feature ported, boards as redrawn; uses the Dinero Stepper (Upload files · Review · Result); CAS review shows the statement's transactions (Legacy renders none); include/skip rows = selection mode already on (desktop checkboxes, phone selected rows); older investments boards updated to the rules (link secondaries, words not pills).
 
 ## Open questions

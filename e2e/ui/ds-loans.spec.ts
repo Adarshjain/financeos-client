@@ -41,8 +41,8 @@ for (const viewport of VIEWPORTS) {
       if (viewport.width >= 1024) {
         await page.locator('nav.w-container-xs').getByRole('link', { name: 'Loans & lendings' }).click();
       } else {
-        await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
-        await page.getByRole('dialog', { name: 'More' }).getByRole('link', { name: 'Loans & lendings' }).click();
+        await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
+        await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: 'Loans & lendings' }).click();
       }
       await page.waitForURL('**/ds/loans/lendings');
 
@@ -129,7 +129,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Running balance · positive means Rahul owes you')).toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹15,000 · received ₹0 · closing ₹15,000')).toBeVisible();
       // The Lendings · Loans tabs belong to the two lists, not to a person's page.
-      await expect(page.getByRole('tab', { name: /^(Lendings|Loans)$/ })).toHaveCount(0);
+      await expect(page.locator('main').getByRole('tab', { name: /^(Lendings|Loans)$/ })).toHaveCount(0);
       await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/ds/loans/lendings');
     });
 
