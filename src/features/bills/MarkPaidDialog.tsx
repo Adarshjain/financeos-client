@@ -13,11 +13,11 @@ import {
   TextField,
 } from '@/components/ds';
 import { formatRupees } from '@/features/accounts/list/accountsList';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { MarkBillPaidRequest } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 export interface MarkPaidDialogProps {
   open: boolean;
@@ -79,8 +79,10 @@ export function MarkPaidDialog({
     const body: MarkBillPaidRequest = {};
     let valid = true;
     if (mode === 'part') {
-      const parsed = Number(amount);
-      if (!amount || !Number.isFinite(parsed) || parsed <= 0) {
+      const resolvedAmount = resolveAmountExpression(amount);
+      if (resolvedAmount !== amount) setAmount(resolvedAmount);
+      const parsed = Number(resolvedAmount);
+      if (!resolvedAmount || !Number.isFinite(parsed) || parsed <= 0) {
         setAmountError('Enter the amount you paid');
         valid = false;
       } else {
@@ -138,7 +140,7 @@ export function MarkPaidDialog({
               prefix="₹"
               inputMode="decimal"
               value={amount}
-              onValueChange={(v) => setAmount(sanitizeDecimalInput(v))}
+              {...amountExpressionProps(amount, setAmount)}
               error={amountError ?? undefined}
             />
           ) : null}

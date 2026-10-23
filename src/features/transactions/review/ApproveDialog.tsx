@@ -15,6 +15,8 @@ export interface ApproveDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Called after the request went through (clean or with a summary), once the dialog has closed. */
   onDone?: () => void;
+  /** One row (not the bulk bar): it clears on screen and the dialog closes at once; the save finishes behind it. */
+  instant?: boolean;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface ApproveDialogProps {
  * start ticked. Approving clears the ticked reasons on every row that has one. Skipped or failed rows
  * open the summary, so this component also renders it.
  */
-export function ApproveDialog({ transactions, open, onOpenChange, onDone }: ApproveDialogProps) {
+export function ApproveDialog({ transactions, open, onOpenChange, onDone, instant = false }: ApproveDialogProps) {
   const { approve, isPending, summary, closeSummary } = useApproveTransactions();
   const rows = useMemo(() => countReasons(transactions), [transactions]);
   const present = useMemo(() => rows.filter((r) => r.count > 0).map((r) => r.reason), [rows]);
@@ -39,6 +41,12 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone }: Appr
     setChosen(on ? [...ticked, reason] : ticked.filter((r) => r !== reason));
 
   const submit = async () => {
+    if (instant) {
+      onOpenChange(false);
+      onDone?.();
+      await approve(transactions, ticked, true);
+      return;
+    }
     const ok = await approve(transactions, ticked);
     if (!ok) return;
     onOpenChange(false);

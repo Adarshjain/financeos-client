@@ -226,3 +226,39 @@ describe('SettleDialog', () => {
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1));
   });
 });
+
+describe('SettleDialog amount arithmetic', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mutateAsync.mockResolvedValue({});
+  });
+
+  it('turns 120+45 into 165 on blur and records 165', async () => {
+    renderDialog('lent', 15000, 'Rahul Sharma');
+    const amount = screen.getByLabelText('Amount');
+    fireEvent.change(amount, { target: { value: '120+45' } });
+    expect(amount).toHaveValue('120+45');
+    fireEvent.blur(amount);
+    expect(amount).toHaveValue('165');
+    record();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ amount: 165 })));
+  });
+
+  it('records the result when submitted without leaving the field', async () => {
+    renderDialog('lent', 15000, 'Rahul Sharma');
+    fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '120+45' } });
+    record();
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ amount: 165 })));
+  });
+
+  it('keeps an expression that does not evaluate and shows the amount error', () => {
+    renderDialog('lent', 15000, 'Rahul Sharma');
+    const amount = screen.getByLabelText('Amount');
+    fireEvent.change(amount, { target: { value: '5/0' } });
+    fireEvent.blur(amount);
+    expect(amount).toHaveValue('5/0');
+    record();
+    expect(screen.getByText('Amount must be greater than zero')).toBeInTheDocument();
+    expect(mutateAsync).not.toHaveBeenCalled();
+  });
+});

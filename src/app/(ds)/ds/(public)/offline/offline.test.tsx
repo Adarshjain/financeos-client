@@ -16,7 +16,7 @@ describe('/ds/offline page and OfflineContent', () => {
     expect(screen.getByText("You're offline")).toBeDefined();
     expect(
       screen.getByText(
-        "Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show.",
+        "Check your connection and try again.",
       ),
     ).toBeDefined();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeDefined();

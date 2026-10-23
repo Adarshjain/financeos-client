@@ -29,7 +29,7 @@ export default async function DsLoansPage({ searchParams }: { searchParams: Prom
       <TileGrid
         tiles={summary ? loanTiles(summary, today) : null}
         labels={TILE_LABELS}
-        error="Could not load this figure"
+        error="Could not load this figure. Refresh the page to try again."
       />
       {matches ? <LoanMatchBanner matches={matches} /> : null}
       {list.ok ? (

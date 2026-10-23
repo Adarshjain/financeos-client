@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { EmptyState } from '@/components/ds';
+import { Illustration } from '@/components/organisms';
 
 import { appHref, DS_HOME_HREF } from './routes';
 import { ShellPage, type ShellPageProps } from './ShellPage';
@@ -32,6 +33,7 @@ export function PageNotFound({
   const router = useRouter();
   const body = (
     <EmptyState
+      illustration={<Illustration variant="notfound" />}
       title={`${what} not found`}
       description={description}
       action={{ label: backLabel, onSelect: () => router.push(backPath ? appHref(backPath) : DS_HOME_HREF) }}

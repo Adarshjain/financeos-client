@@ -14,6 +14,8 @@ vi.mock('next/navigation', async (importOriginal) => ({
 }));
 
 import { api } from '@/lib/api/client';
+import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 
 import { useNotificationSettingsMutations } from './useNotificationSettings';
 
@@ -46,5 +48,187 @@ describe('useNotificationSettingsMutations router refresh', () => {
     const { result } = setup();
     await act(() => result.current.sendTest.mutateAsync());
     expect(routerRefresh).not.toHaveBeenCalled();
+  });
+});
+
+const base = {
+  kinds: { EMI_OVERDUE: true },
+  mutedAccountIds: ['a0'],
+  mutedLoanIds: [],
+  reminderOffsets: [1],
+  sendHour: 9,
+} as unknown as NotificationSettingsResponse;
+
+function deferred<T>() {
+  let resolve!: (v: T) => void;
+  let reject!: (e: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+function setupSeeded() {
+  const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  qc.setQueryData(keys.settings.notifications(), base);
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+  );
+  const hook = renderHook(() => useNotificationSettingsMutations(), { wrapper });
+  const cached = () => qc.getQueryData<NotificationSettingsResponse>(keys.settings.notifications())!;
+  return { ...hook, cached };
+}
+
+describe('useNotificationSettingsMutations optimistic switches', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('moves a kind switch before the request resolves and keeps it on success', async () => {
+    const d = deferred<{ data: NotificationSettingsResponse }>();
+    vi.mocked(api.PUT).mockReturnValue(d.promise as never);
+    const { result, cached } = setupSeeded();
+    let p!: Promise<unknown>;
+    act(() => {
+      p = result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } });
+    });
+    await vi.waitFor(() => expect(cached().kinds.EMI_OVERDUE).toBe(false));
+    expect(routerRefresh).not.toHaveBeenCalled();
+    await act(async () => {
+      d.resolve({ data: { ...base, kinds: { EMI_OVERDUE: false } } });
+      await p;
+    });
+    expect(cached().kinds.EMI_OVERDUE).toBe(false);
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('puts a kind switch back when the save fails', async () => {
+    vi.mocked(api.PUT).mockRejectedValue(new Error('boom'));
+    const { result, cached } = setupSeeded();
+    await act(async () => {
+      await result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } }).catch(() => undefined);
+    });
+    expect(cached().kinds.EMI_OVERDUE).toBe(true);
+    // The page is read again after a failure too, so nothing stale is left behind.
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not move anything for a non-switch field (it keeps waiting)', async () => {
+    const d = deferred<{ data: NotificationSettingsResponse }>();
+    vi.mocked(api.PUT).mockReturnValue(d.promise as never);
+    const { result, cached } = setupSeeded();
+    act(() => {
+      void result.current.update.mutateAsync({ sendHour: 18 });
+    });
+    await vi.waitFor(() => expect(result.current.update.isPending).toBe(true));
+    expect(cached().sendHour).toBe(9);
+  });
+
+  it('moves and rolls back a card mute and a loan mute', async () => {
+    vi.mocked(api.PUT).mockRejectedValue(new Error('boom'));
+    const { result, cached } = setupSeeded();
+    await act(async () => {
+      await result.current.mute.mutateAsync({ accountId: 'a1', muted: true }).catch(() => undefined);
+      await result.current.mute.mutateAsync({ accountId: 'a0', muted: false }).catch(() => undefined);
+      await result.current.muteLoan.mutateAsync({ loanId: 'l1', muted: true }).catch(() => undefined);
+    });
+    expect(cached().mutedAccountIds).toEqual(['a0']);
+    expect(cached().mutedLoanIds).toEqual([]);
+
+    const d = deferred<{ data: NotificationSettingsResponse }>();
+    vi.mocked(api.PUT).mockReturnValue(d.promise as never);
+    act(() => {
+      void result.current.mute.mutateAsync({ accountId: 'a1', muted: true });
+      void result.current.muteLoan.mutateAsync({ loanId: 'l1', muted: true });
+    });
+    await vi.waitFor(() => {
+      expect(cached().mutedAccountIds).toEqual(['a0', 'a1']);
+      expect(cached().mutedLoanIds).toEqual(['l1']);
+    });
+  });
+
+  it('keeps a second toggle when the first one fails, and refreshes only after the last settles', async () => {
+    const first = deferred<never>();
+    const second = deferred<{ data: NotificationSettingsResponse }>();
+    vi.mocked(api.PUT)
+      .mockReturnValueOnce(first.promise as never)
+      .mockReturnValueOnce(second.promise as never);
+    const { result, cached } = setupSeeded();
+    let p1!: Promise<unknown>;
+    let p2!: Promise<unknown>;
+    act(() => {
+      p1 = result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } }).catch(() => undefined);
+    });
+    await vi.waitFor(() => expect(cached().kinds.EMI_OVERDUE).toBe(false));
+    act(() => {
+      p2 = result.current.update.mutateAsync({ kinds: { BILL_OVERDUE: false } });
+    });
+    await vi.waitFor(() => expect(cached().kinds.BILL_OVERDUE).toBe(false));
+    await act(async () => {
+      first.reject(new Error('boom'));
+      await p1;
+    });
+    expect(cached().kinds).toEqual({ EMI_OVERDUE: true, BILL_OVERDUE: false });
+    await act(async () => {
+      second.resolve({ data: { ...base, kinds: { EMI_OVERDUE: true, BILL_OVERDUE: false } } });
+      await p2;
+    });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('a response only touches its own switch: a late answer for one kind never undoes another still in flight', async () => {
+    const first = deferred<{ data: NotificationSettingsResponse }>();
+    const second = deferred<{ data: NotificationSettingsResponse }>();
+    vi.mocked(api.PUT)
+      .mockReturnValueOnce(first.promise as never)
+      .mockReturnValueOnce(second.promise as never);
+    const { result, cached } = setupSeeded();
+    let p1!: Promise<unknown>;
+    act(() => {
+      p1 = result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } });
+    });
+    await vi.waitFor(() => expect(cached().kinds.EMI_OVERDUE).toBe(false));
+    act(() => {
+      void result.current.update.mutateAsync({ kinds: { BILL_OVERDUE: false } });
+    });
+    await vi.waitFor(() => expect(cached().kinds.BILL_OVERDUE).toBe(false));
+    // The first answer was computed before the second write: it still says BILL_OVERDUE is on.
+    await act(async () => {
+      first.resolve({ data: { ...base, kinds: { EMI_OVERDUE: false, BILL_OVERDUE: true } } });
+      await p1;
+    });
+    expect(cached().kinds).toEqual({ EMI_OVERDUE: false, BILL_OVERDUE: false });
+    expect(routerRefresh).not.toHaveBeenCalled();
+    await act(async () => {
+      second.resolve({ data: { ...base, kinds: { EMI_OVERDUE: false, BILL_OVERDUE: false } } });
+    });
+    await vi.waitFor(() => expect(routerRefresh).toHaveBeenCalledTimes(1));
+  });
+
+  it('two toggles of one switch that both fail end at the server value, and the page is read once', async () => {
+    const first = deferred<never>();
+    const second = deferred<never>();
+    vi.mocked(api.PUT)
+      .mockReturnValueOnce(first.promise as never)
+      .mockReturnValueOnce(second.promise as never);
+    const { result, cached } = setupSeeded();
+    let p1!: Promise<unknown>;
+    let p2!: Promise<unknown>;
+    act(() => {
+      p1 = result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } }).catch(() => undefined);
+    });
+    await vi.waitFor(() => expect(cached().kinds.EMI_OVERDUE).toBe(false));
+    act(() => {
+      p2 = result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: true } }).catch(() => undefined);
+    });
+    await act(async () => {
+      first.reject(new Error('boom'));
+      await p1;
+    });
+    await act(async () => {
+      second.reject(new Error('boom'));
+      await p2;
+    });
+    expect(cached().kinds.EMI_OVERDUE).toBe(true);
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 });

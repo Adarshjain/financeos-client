@@ -11,10 +11,10 @@ import {
   showToast,
   TextField,
 } from '@/components/ds';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
   checkDetails,
@@ -64,7 +64,13 @@ export function EditDetailsDialog({
   };
 
   const submit = async () => {
-    const { body, errors: found } = checkDetails(form, initial);
+    const resolved: DetailsForm = {
+      ...form,
+      totalDue: resolveAmountExpression(form.totalDue),
+      minimumDue: resolveAmountExpression(form.minimumDue),
+    };
+    setForm(resolved);
+    const { body, errors: found } = checkDetails(resolved, initial);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     try {
@@ -95,7 +101,7 @@ export function EditDetailsDialog({
       prefix="₹"
       inputMode="decimal"
       value={form[field]}
-      onValueChange={(v) => set(field, sanitizeDecimalInput(v))}
+      {...amountExpressionProps(form[field], (v) => set(field, v))}
       error={errors[field]}
     />
   );

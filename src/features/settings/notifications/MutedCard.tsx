@@ -21,7 +21,6 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
   const { mute, muteLoan } = useNotificationSettingsMutations();
   const mutedCards = new Set(settings.mutedAccountIds ?? []);
   const mutedLoans = new Set(settings.mutedLoanIds ?? []);
-  const busy = mute.isPending || muteLoan.isPending;
 
   const toggleCard = async (accountId: string, muted: boolean) => {
     try {
@@ -53,7 +52,6 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
               <Switch
                 aria-label={`Mute ${card.name}`}
                 checked={mutedCards.has(card.id)}
-                disabled={busy}
                 onCheckedChange={(v) => void toggleCard(card.id, v)}
               />
             }
@@ -72,7 +70,6 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
               <Switch
                 aria-label={`Mute ${loan.name}`}
                 checked={mutedLoans.has(loan.id)}
-                disabled={busy}
                 onCheckedChange={(v) => void toggleLoan(loan.id, v)}
               />
             }

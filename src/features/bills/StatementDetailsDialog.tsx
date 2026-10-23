@@ -13,11 +13,11 @@ import {
   showToast,
   TextField,
 } from '@/components/ds';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateBillDetailsRequest } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 export interface StatementDetailsDialogProps {
   open: boolean;
@@ -52,8 +52,8 @@ export function StatementDetailsDialog({
   const router = useRouter();
   const { updateDetails } = useBillMutations();
   const today = todayInAppZone();
-  const [total, setTotal] = React.useState('');
-  const [minimum, setMinimum] = React.useState('');
+  const [totalText, setTotal] = React.useState('');
+  const [minimumText, setMinimum] = React.useState('');
   const [due, setDue] = React.useState('');
   const [totalError, setTotalError] = React.useState<string | null>(null);
   const [minimumError, setMinimumError] = React.useState<string | null>(null);
@@ -75,6 +75,10 @@ export function StatementDetailsDialog({
     const body: UpdateBillDetailsRequest = {};
     let valid = true;
     setFormError(null);
+    const total = resolveAmountExpression(totalText);
+    const minimum = resolveAmountExpression(minimumText);
+    setTotal(total);
+    setMinimum(minimum);
     if (due && due !== dueDate) body.paymentDueDate = due;
     if (total !== '' && Number(total) !== totalDue) {
       if (invalid(total)) {
@@ -131,16 +135,16 @@ export function StatementDetailsDialog({
           <TextField
             label="Total due (₹)"
             inputMode="decimal"
-            value={total}
-            onValueChange={(v) => setTotal(sanitizeDecimalInput(v))}
+            value={totalText}
+            {...amountExpressionProps(totalText, setTotal)}
             error={totalError ?? undefined}
           />
           <TextField
             label="Minimum due"
             optional
             inputMode="decimal"
-            value={minimum}
-            onValueChange={(v) => setMinimum(sanitizeDecimalInput(v))}
+            value={minimumText}
+            {...amountExpressionProps(minimumText, setMinimum)}
             error={minimumError ?? undefined}
           />
           <DateField

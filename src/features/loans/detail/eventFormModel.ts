@@ -11,7 +11,7 @@ export interface EventFormValues {
   newEmiOverride: string;
 }
 
-export type EventFormField = 'effectiveDate' | 'newAnnualRatePct' | 'amount';
+export type EventFormField = 'effectiveDate' | 'newAnnualRatePct' | 'amount' | 'newEmiOverride';
 
 export function emptyEventValues(today: string, eventType: LoanEventType = 'rate_change'): EventFormValues {
   return {
@@ -37,6 +37,10 @@ export function eventProblems(v: EventFormValues): { field: EventFormField; mess
   }
   if (isCashEvent(v.eventType) && !isPositive(v.amount)) {
     problems.push({ field: 'amount', message: 'Enter the amount' });
+  }
+  const overridesEmi = v.eventType !== 'foreclosure' && v.adjustmentMode === 'reduce_emi';
+  if (overridesEmi && v.newEmiOverride !== '' && !isPositive(v.newEmiOverride)) {
+    problems.push({ field: 'newEmiOverride', message: 'Enter the new EMI amount' });
   }
   return problems;
 }

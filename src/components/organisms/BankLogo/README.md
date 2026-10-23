@@ -6,6 +6,7 @@ One bank's logo in the small square frame (24px, `rounded-ds-sm`) Avatar `square
 - `bankId`: `string | null` (the server's id, such as `hdfc`)
 - `name`: `string` (first letter fills the fallback tile)
 - `warning`: `boolean`, default `!bankId` (shows the amber mark; pass `false` for accounts with no bank, such as wallets and brokers)
+- `size`: `'md' | 'sm'`, default `md`. `sm` is the plain 14px logo (icon `sm` step, no tile) for inline use beside text, such as the account name on a transaction row; with no known bank it renders nothing (no letter tile, no warning).
 
 ## Variants
 - Known bank: its cell cut from the single sprite `public/banks/sprite.png` (19 banks, 96px cells in one row).

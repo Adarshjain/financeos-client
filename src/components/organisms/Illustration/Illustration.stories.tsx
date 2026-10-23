@@ -19,7 +19,7 @@ const meta: Meta<typeof Illustration> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['signin', 'signup', 'offline'],
+      options: ['signin', 'signup', 'offline', 'notfound', 'error'],
     },
   },
 };
@@ -42,6 +42,36 @@ export const SignUp: Story = {
 export const Offline: Story = {
   args: {
     variant: 'offline',
+  },
+  decorators: [
+    (Story) => (
+      <div className="p-space-24 flex items-center justify-center">
+        <Card className="p-space-24 flex items-center justify-center">
+          <Story />
+        </Card>
+      </div>
+    ),
+  ],
+};
+
+export const NotFound: Story = {
+  args: {
+    variant: 'notfound',
+  },
+  decorators: [
+    (Story) => (
+      <div className="p-space-24 flex items-center justify-center">
+        <Card className="p-space-24 flex items-center justify-center">
+          <Story />
+        </Card>
+      </div>
+    ),
+  ],
+};
+
+export const Failure: Story = {
+  args: {
+    variant: 'error',
   },
   decorators: [
     (Story) => (

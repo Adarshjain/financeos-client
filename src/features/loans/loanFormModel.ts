@@ -36,7 +36,7 @@ export interface LoanFormValues {
   notes: string;
 }
 
-export type LoanFormField = 'name' | 'lender' | 'principal' | 'annualRatePct' | 'tenureMonths';
+export type LoanFormField = 'name' | 'lender' | 'principal' | 'annualRatePct' | 'tenureMonths' | 'emiAmount';
 
 export function emptyLoanValues(today: string): LoanFormValues {
   return {
@@ -87,8 +87,17 @@ export function loanProblems(values: LoanFormValues, isEdit: boolean): LoanProbl
   const problems: LoanProblem[] = [];
   if (!values.name.trim()) problems.push({ field: 'name', message: 'Loan name is required' });
   if (!values.lender.trim()) problems.push({ field: 'lender', message: 'Lender is required' });
-  if (isEdit) return problems;
-  if (!values.principal || Number(values.principal) <= 0) {
+  const principalOk = Number.isFinite(Number(values.principal)) && Number(values.principal) > 0;
+  const emiBad = values.emiAmount !== '' && !(Number.isFinite(Number(values.emiAmount)) && Number(values.emiAmount) > 0);
+  if (isEdit) {
+    // Blank figures are kept as they are; anything typed must be a usable amount (not "5+" or "100/0").
+    if (values.principal !== '' && !principalOk) {
+      problems.push({ field: 'principal', message: 'Principal must be greater than zero' });
+    }
+    if (emiBad) problems.push({ field: 'emiAmount', message: 'EMI amount must be greater than zero' });
+    return problems;
+  }
+  if (!principalOk) {
     problems.push({ field: 'principal', message: 'Principal must be greater than zero' });
   }
   if (!values.annualRatePct || Number(values.annualRatePct) <= 0) {
@@ -97,6 +106,7 @@ export function loanProblems(values: LoanFormValues, isEdit: boolean): LoanProbl
   if (!values.tenureMonths || Number(values.tenureMonths) < 1) {
     problems.push({ field: 'tenureMonths', message: 'Tenure must be at least 1 month' });
   }
+  if (emiBad) problems.push({ field: 'emiAmount', message: 'EMI amount must be greater than zero' });
   return problems;
 }
 

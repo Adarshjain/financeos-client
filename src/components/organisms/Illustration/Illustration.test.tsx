@@ -35,6 +35,20 @@ describe('Illustration component', () => {
     expect(screen.getByText('z z')).toBeInTheDocument();
   });
 
+  it('renders notfound variant with rupee and magnifying glass question mark', () => {
+    const { container } = render(<Illustration variant="notfound" />);
+    expect(screen.getByText('₹')).toBeInTheDocument();
+    expect(screen.getByText('?')).toBeInTheDocument();
+    expect(container.firstChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('renders error variant with tipped rupee and crossed plaster', () => {
+    const { container } = render(<Illustration variant="error" />);
+    expect(screen.getByText('₹')).toBeInTheDocument();
+    expect(container.querySelectorAll('rect[transform]')).toHaveLength(2);
+    expect(container.firstChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('hides copy on mobile via CSS classes for phone form', () => {
     const { container: c1 } = render(<Illustration variant="signin" />);
     const copy1 = c1.querySelector('h1')?.parentElement;

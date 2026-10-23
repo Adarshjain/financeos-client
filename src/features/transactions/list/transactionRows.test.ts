@@ -61,6 +61,15 @@ describe('transactionRow', () => {
     expect(transactionRow(t(), { accounts: null, showSource: false }).account).toBeUndefined();
   });
 
+  it('carries the account bank id, and none for an account with no bank or when accounts did not load', () => {
+    const withBank = [{ id: 'a1', name: 'HDFC Savings', type: 'bank_account', bank: 'hdfc' }] as unknown as typeof accounts;
+    expect(transactionRow(t(), { accounts: withBank, showSource: false }).bankId).toBe('hdfc');
+    const noBank = [{ id: 'a1', name: 'Cash', type: 'generic' }] as unknown as typeof accounts;
+    expect(transactionRow(t(), { accounts: noBank, showSource: false }).bankId).toBeUndefined();
+    expect(transactionRow(t({ accountId: 'zz' }), ctx).bankId).toBeUndefined();
+    expect(transactionRow(t(), { accounts: null, showSource: false }).bankId).toBeUndefined();
+  });
+
   it('shows the plastic unless it is the holder own card', () => {
     expect(transactionRow(t({ cardLast4: '7742', cardLabel: 'Meera' }), ctx).plastic).toBe('Meera · ••7742');
     expect(transactionRow(t({ cardLast4: '3356' }), ctx).plastic).toBe('••3356');

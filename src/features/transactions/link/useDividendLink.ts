@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
@@ -19,6 +20,8 @@ import {
   pickBestDividend,
   UNRESOLVED_RECEIPTS,
 } from './dividendLinkHelpers';
+
+const AMOUNT_ERROR = 'Please enter a valid amount.';
 
 export type DividendLinkMode = 'existing' | 'new';
 type DividendType = Schemas['CreateDividendRequest']['type'];
@@ -135,8 +138,8 @@ export function useDividendLink({
               brokerAccountId,
               instrumentId,
               type,
-              amount: parseFloat(amount),
-              tds: tds ? parseFloat(tds) : undefined,
+              amount: numAmount!,
+              tds: numTds ?? undefined,
               exDate: exDate || undefined,
               payDate,
               notes: notes.trim() || undefined,
@@ -174,20 +177,28 @@ export function useDividendLink({
     },
   });
 
-  const numAmount = parseFloat(amount);
+  const numAmount = amountExpressionValue(amount);
+  const numTds = amountExpressionValue(tds);
+  const amountError =
+    mode === 'new' && amount.trim() && (numAmount === null || numAmount <= 0) ? AMOUNT_ERROR : undefined;
+  const tdsError = mode === 'new' && tds.trim() && numTds === null ? AMOUNT_ERROR : undefined;
   const canSubmit =
     Boolean(transaction) &&
     (mode === 'existing'
       ? Boolean(selected)
-      : Boolean(holding) && numAmount > 0 && Boolean(payDate));
+      : Boolean(holding) &&
+        numAmount !== null &&
+        numAmount > 0 &&
+        (!tds.trim() || numTds !== null) &&
+        Boolean(payDate));
 
   const handleSubmit = () => {
     if (mode === 'new' && !holding) {
       toast.error('Please select a held instrument.');
       return;
     }
-    if (mode === 'new' && (isNaN(numAmount) || numAmount <= 0)) {
-      toast.error('Please enter a valid amount.');
+    if (mode === 'new' && (numAmount === null || numAmount <= 0 || (tds.trim() && numTds === null))) {
+      toast.error(AMOUNT_ERROR);
       return;
     }
     if (!canSubmit) {
@@ -223,6 +234,8 @@ export function useDividendLink({
     setTds,
     notes,
     setNotes,
+    amountError,
+    tdsError,
     submitting: submitMutation.isPending,
     canSubmit,
     handleSubmit,

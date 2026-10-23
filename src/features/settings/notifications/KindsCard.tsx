@@ -25,9 +25,9 @@ export function useSaveSettings() {
   return { save, pending: update.isPending };
 }
 
-/** One switch per kind; each saves on change and is disabled while a save is in flight. */
+/** One switch per kind; each moves at once and saves in the background (a failure puts it back). */
 export function KindSwitches({ settings, kinds }: { settings: NotificationSettingsResponse; kinds: KindRow[] }) {
-  const { save, pending } = useSaveSettings();
+  const { save } = useSaveSettings();
   return (
     <>
       {kinds.map((kind) => (
@@ -38,7 +38,6 @@ export function KindSwitches({ settings, kinds }: { settings: NotificationSettin
           label={kind.label}
           description={kind.description}
           checked={isKindEnabled(settings, kind.key)}
-          disabled={pending}
           onCheckedChange={(v) => void save({ kinds: { [kind.key]: v } })}
         />
       ))}

@@ -40,6 +40,7 @@ const meta: Meta<typeof DialogContent> = {
     description: 'Dialog description and context.',
     showClose: true,
     dismissible: true,
+    animated: true,
   },
   argTypes: {
     size: {
@@ -51,6 +52,7 @@ const meta: Meta<typeof DialogContent> = {
       options: ['surface', 'canvas'],
     },
     dismissible: { control: 'boolean' },
+    animated: { control: 'boolean' },
     showClose: { control: 'boolean' },
     title: { control: 'text' },
     description: { control: 'text' },

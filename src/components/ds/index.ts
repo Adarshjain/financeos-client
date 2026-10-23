@@ -20,6 +20,7 @@ export * from './Kbd/Kbd';
 export * from './KpiTile/KpiTile';
 export * from './ListField/ListField';
 export * from './ListRow/ListRow';
+export * from './Menu/ContextMenu';
 export * from './Menu/Menu';
 export * from './MonthCalendar/MonthCalendar';
 export * from './Pager/Pager';

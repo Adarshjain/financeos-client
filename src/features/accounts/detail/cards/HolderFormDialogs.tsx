@@ -9,7 +9,7 @@ import type {
   CardholderRelationship,
   CreateCardholderRequest,
 } from '@/lib/account.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 
 import {
   buildAddHolder,
@@ -52,8 +52,10 @@ export function AddHolderDialog({
   const { pending, error, submit } = useDialogSubmit(onClose);
 
   const handle = () => {
+    const resolvedLimit = resolveAmountExpression(spendLimit);
+    setSpendLimit(resolvedLimit);
     const built = buildAddHolder(
-      { name, relationship, spendLimit, openedOn, last4, issuedOn },
+      { name, relationship, spendLimit: resolvedLimit, openedOn, last4, issuedOn },
       today
     );
     if (!built.ok) {
@@ -87,7 +89,8 @@ export function AddHolderDialog({
         prefix="₹"
         inputMode="decimal"
         value={spendLimit}
-        onValueChange={(v) => setSpendLimit(sanitizeDecimalInput(v))}
+        {...amountExpressionProps(spendLimit, setSpendLimit)}
+        error={errors.spendLimit}
       />
       <DateField
         label="Opened on"
@@ -153,7 +156,9 @@ export function EditHolderDialog({
   const { pending, error, submit } = useDialogSubmit(onClose);
 
   const handle = () => {
-    const built = buildEditHolder(holder, { name, relationship, spendLimit, openedOn }, today);
+    const resolvedLimit = resolveAmountExpression(spendLimit);
+    setSpendLimit(resolvedLimit);
+    const built = buildEditHolder(holder, { name, relationship, spendLimit: resolvedLimit, openedOn }, today);
     if (!built.ok) {
       setErrors(built.errors);
       return;
@@ -190,7 +195,8 @@ export function EditHolderDialog({
         prefix="₹"
         inputMode="decimal"
         value={spendLimit}
-        onValueChange={(v) => setSpendLimit(sanitizeDecimalInput(v))}
+        {...amountExpressionProps(spendLimit, setSpendLimit)}
+        error={errors.spendLimit}
         helper={primary ? undefined : 'Leave empty when the add-on shares the full card limit.'}
       />
       <DateField

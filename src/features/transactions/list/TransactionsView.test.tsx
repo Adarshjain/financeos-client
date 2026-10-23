@@ -367,4 +367,14 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(router.refresh).toHaveBeenCalled();
   });
+
+  it('draws the account logo only for a known bank, so an unknown bank leaves no gap', () => {
+    const { container } = setup({
+      list: { ok: true, rows: [row({ id: 'k', bankId: 'hdfc' }), row({ id: 'u', bankId: 'nosuchbank' })], totalElements: 2, totalPages: 1 },
+    });
+    expect(container.ownerDocument.querySelectorAll('[data-sprite-cell]').length).toBeGreaterThan(0);
+    const gaps = container.ownerDocument.querySelectorAll('span.mr-space-4');
+    // Only the known bank's desktop cell draws the logo wrapper.
+    expect(gaps.length).toBe(1);
+  });
 });

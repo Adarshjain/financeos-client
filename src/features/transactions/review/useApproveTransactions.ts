@@ -6,6 +6,8 @@ import { showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Transaction } from '@/lib/transaction.types';
 
+import { approveChange } from '../optimistic/optimisticModel';
+import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import { approvedMessage, type ClearableReason, mapBatchFailures, mapBatchSkips } from './reviewHelpers';
 import { useBatchReview } from './useBatchReview';
 import { useUndoApprove } from './useUndoApprove';
@@ -27,15 +29,17 @@ export interface ReviewSummary {
 export function useApproveTransactions() {
   const batch = useBatchReview();
   const undo = useUndoApprove();
+  const optimistic = useOptimisticTransactions();
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
-  const approve = async (transactions: ReviewTxn[], reasons: ClearableReason[]): Promise<boolean> => {
+  /** `instant` (one row, not the bulk bar): the rows clear on screen now and come back if the approve fails. */
+  const approve = async (transactions: ReviewTxn[], reasons: ClearableReason[], instant = false): Promise<boolean> => {
+    const shown = instant ? optimistic?.begin(approveChange(transactions.map((t) => t.id), reasons)) : undefined;
     try {
-      const data = await batch.mutateAsync({
-        ids: transactions.map((t) => t.id),
-        reviewType: 'MANUALLY_REVIEWED',
-        reasons,
-      });
+      const send = () =>
+        batch.mutateAsync({ ids: transactions.map((t) => t.id), reviewType: 'MANUALLY_REVIEWED', reasons });
+      const data = await (shown ? shown.send(send) : send());
+      shown?.settle(data.failures.length === 0 && data.skippedIds.length === 0);
       const content = { content: transactions };
       const failures = mapBatchFailures(data.failures, content);
       const skips = mapBatchSkips(data.skippedIds, content);
@@ -64,6 +68,7 @@ export function useApproveTransactions() {
       }
       return true;
     } catch (e) {
+      shown?.settle(false);
       showToast(getErrorMessage(e, 'Could not approve'), { tone: 'danger' });
       return false;
     }

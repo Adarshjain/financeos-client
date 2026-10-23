@@ -9,7 +9,7 @@ test.describe('/ds Offline page (@ui)', () => {
     await page.goto(`${E2E_CLIENT_URL}/ds/offline`);
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
     await expect(
-      page.getByText("Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show.")
+      page.getByText("Check your connection and try again.")
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
   });

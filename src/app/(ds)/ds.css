@@ -174,7 +174,9 @@ input[type='number'] {
   }
 }
 
+/* Above the dialogs and the tab bar, which keep their own layers: a part growing into a dialog's header stays in sight. */
 ::view-transition-group(.ds-morph) {
+  z-index: 1;
   animation-duration: var(--ds-dur-slow);
   animation-timing-function: cubic-bezier(.2, .8, .2, 1);
 }
@@ -194,4 +196,25 @@ input[type='number'] {
   ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+/* Theme switch (src/lib/themeReveal.ts): the new theme grows over the old as a circle (animated in JS). While
+   it runs, <html> carries ds-theme-vt: nothing else keeps its own layer (so the rail, top bar, page and rows
+   are part of the root snapshot and reveal with it), and the root pair doesn't crossfade. */
+html.ds-theme-vt * {
+  view-transition-name: none !important;
+}
+
+html.ds-theme-vt::view-transition-old(root),
+html.ds-theme-vt::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.ds-theme-vt::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.ds-theme-vt::view-transition-new(root) {
+  z-index: 2;
 }

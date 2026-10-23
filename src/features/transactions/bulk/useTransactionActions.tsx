@@ -47,6 +47,14 @@ export function useTransactionActions({ accounts, onDone }: TransactionActionsOp
 
   const confirmDelete = async () => {
     if (!deleting) return;
+    if (!deleting.fromBar) {
+      // One swiped row: it leaves now and the delete finishes behind the closed confirm.
+      const { transactions } = deleting;
+      setDeleting(null);
+      onDone({ kind: 'delete', ids: transactions.map((t) => t.id), fromBar: false });
+      await del.remove(transactions, true);
+      return;
+    }
     const ok = await del.remove(deleting.transactions);
     if (!ok) return;
     const { transactions, fromBar } = deleting;
@@ -63,6 +71,7 @@ export function useTransactionActions({ accounts, onDone }: TransactionActionsOp
           transactions={lastApproving.transactions}
           open={approving !== null}
           onOpenChange={(open) => !open && setApproving(null)}
+          instant={!lastApproving.fromBar}
           onDone={() =>
             onDone({ kind: 'approve', ids: lastApproving.transactions.map((t) => t.id), fromBar: lastApproving.fromBar })
           }

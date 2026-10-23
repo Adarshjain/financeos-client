@@ -14,12 +14,12 @@ import {
   TextField,
 } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LendingDirection } from '@/lib/lending.types';
 import { directionOf, fromEntryType, settlementWarning } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
   firstNameOf,
@@ -102,7 +102,10 @@ export function SettleDialog({
   };
 
   const submit = async () => {
-    if (!amount || !Number.isFinite(parsed) || parsed <= 0) {
+    const resolvedAmount = resolveAmountExpression(amount);
+    if (resolvedAmount !== amount) setAmount(resolvedAmount);
+    const value = Number(resolvedAmount);
+    if (!resolvedAmount || !Number.isFinite(value) || value <= 0) {
       setAmountError('Amount must be greater than zero');
       return;
     }
@@ -110,7 +113,7 @@ export function SettleDialog({
       await createLending.mutateAsync({
         counterpartyId,
         ...fromEntryType(entryType),
-        amount: parsed,
+        amount: value,
         entryDate: date,
         transactionId: transaction?.id,
         notes: note.trim() || undefined,
@@ -160,11 +163,10 @@ export function SettleDialog({
               prefix="₹"
               inputMode="decimal"
               value={amount}
-              onValueChange={(v) => {
-                setAmount(sanitizeDecimalInput(v));
+              {...amountExpressionProps(amount, setAmount, () => {
                 setQuick('custom');
                 setAmountError(null);
-              }}
+              })}
               error={amountError ?? undefined}
             />
             <DateField

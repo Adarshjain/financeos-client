@@ -7,6 +7,7 @@ import { BankLogo, SettingsToggle } from '@/components/organisms';
 import { formatRupees } from '@/features/accounts/list/accountsList';
 import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
+import { resolveAmountExpression } from '@/lib/amountExpression';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -87,6 +88,10 @@ function AmountField({
       error={error}
       value={value}
       onValueChange={onValueChange}
+      onBlur={() => {
+        const resolved = resolveAmountExpression(value, { allowNegative: true });
+        if (resolved !== value) onValueChange(resolved);
+      }}
     />
   );
 }

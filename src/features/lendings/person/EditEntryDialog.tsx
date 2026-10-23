@@ -15,6 +15,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LedgerEntryResponse } from '@/lib/lending.types';
 import {
@@ -28,7 +29,6 @@ import {
   toEntryType,
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import type { PickerSummaryLike } from '../../transactions/pickerModel';
 import type { EntryChange } from './usePersonActions';
@@ -81,14 +81,16 @@ export function EditEntryDialog({
   const warning = settlementWarning(entryType, Number(amount), netPosition, personName);
 
   const submit = async () => {
-    if (!amount || !Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+    const resolvedAmount = resolveAmountExpression(amount);
+    if (resolvedAmount !== amount) setAmount(resolvedAmount);
+    if (!resolvedAmount || !Number.isFinite(Number(resolvedAmount)) || Number(resolvedAmount) <= 0) {
       setAmountError('Amount must be greater than zero');
       return;
     }
     const saved = await onSubmit(entry.id, {
       body: {
         ...fromEntryType(entryType),
-        amount: Number(amount),
+        amount: Number(resolvedAmount),
         entryDate: entryDate || undefined,
         expectedReturnDate: expectedReturnDate || undefined,
         notes: notes.trim() || undefined,
@@ -133,10 +135,7 @@ export function EditEntryDialog({
                 prefix="₹"
                 inputMode="decimal"
                 value={amount}
-                onValueChange={(v) => {
-                  setAmount(sanitizeDecimalInput(v));
-                  setAmountError(null);
-                }}
+                {...amountExpressionProps(amount, setAmount, () => setAmountError(null))}
                 error={amountError ?? undefined}
               />
               <DateField

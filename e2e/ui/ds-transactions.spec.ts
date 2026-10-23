@@ -565,6 +565,13 @@ for (const viewport of VIEWPORTS) {
         expect(page.url()).toBe(before);
       });
 
+      test('right-click does nothing special on the phone layout', async ({ page }) => {
+        await seedList();
+        await open(page);
+        await row(page, 'Rent Advance').dispatchEvent('contextmenu', { button: 2, cancelable: true });
+        await expect(page.getByRole('menu')).toHaveCount(0);
+      });
+
       test('swipe right on a one-reason row approves it with a toast', async ({ page }) => {
         await seedList();
         // The Needs review chip is desktop-only; the review filter in the URL narrows the phone list to the two flagged rows.
@@ -619,6 +626,35 @@ for (const viewport of VIEWPORTS) {
     }
 
     if (!phone) {
+      test('right-click a one-reason row: the menu offers Approve and Delete; Approve clears it with a toast', async ({ page }) => {
+        await seedList();
+        await open(page, '?review=needs_review');
+        await row(page, 'Uber Ride').click({ button: 'right' });
+        await expect(page.getByRole('menuitem', { name: 'Approve' })).toBeVisible();
+        await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+        await page.getByRole('menuitem', { name: 'Approve' }).click();
+        await expect(page.getByText('Approved', { exact: true })).toBeVisible();
+        await expect(row(page, 'Uber Ride')).toHaveCount(0);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+      });
+
+      test('right-click a clean row: no Approve; Delete asks first, then removes the row; Escape closes the menu', async ({ page }) => {
+        await seedList();
+        await open(page);
+        await row(page, 'Rent Advance').click({ button: 'right' });
+        await expect(page.getByRole('menuitem', { name: 'Approve' })).toHaveCount(0);
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('menu')).toHaveCount(0);
+
+        await row(page, 'Rent Advance').click({ button: 'right' });
+        await page.getByRole('menuitem', { name: 'Delete' }).click();
+        const confirm = page.getByRole('dialog', { name: /^Delete Rent Advance/ });
+        await expect(confirm).toBeVisible();
+        await confirm.getByRole('button', { name: 'Delete transaction' }).click();
+        await expect(row(page, 'Rent Advance')).toHaveCount(0);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+      });
+
       test('Add transaction: Add account opens the account dialog on top, the new account is selected and Save works', async ({ page }) => {
         await seedList();
         await open(page);

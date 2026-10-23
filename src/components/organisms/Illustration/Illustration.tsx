@@ -9,8 +9,10 @@ export interface IllustrationProps extends React.HTMLAttributes<HTMLDivElement> 
    * 'signin': Auth sign-in artwork with card, net worth, bill paid and coin
    * 'signup': Setup sign-up artwork with statement, Gmail, card advice and 3 steps
    * 'offline': Sleeping ₹ coin under a cloud (for EmptyState offline)
+   * 'notfound': ₹ coin holding a magnifying glass with a question mark (for not-found pages)
+   * 'error': ₹ coin tipped over with a crossed plaster and dizzy sparks (for error pages)
    */
-  variant: 'signin' | 'signup' | 'offline';
+  variant: 'signin' | 'signup' | 'offline' | 'notfound' | 'error';
 }
 
 /**
@@ -64,6 +66,141 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
             >
               z z
             </text>
+          </svg>
+        </div>
+      );
+    }
+
+    if (variant === 'notfound') {
+      return (
+        <div
+          ref={ref}
+          aria-hidden="true"
+          className={cn('inline-flex items-center justify-center shrink-0', className)}
+          {...props}
+        >
+          <svg
+            width="84"
+            height="64"
+            viewBox="0 0 84 64"
+            aria-hidden="true"
+            className="overflow-visible"
+          >
+            <ellipse cx="38" cy="60" rx="30" ry="4" fill="var(--ds-line-soft)" />
+            <circle
+              cx="30"
+              cy="42"
+              r="16"
+              fill="var(--ds-accent-gold)"
+              stroke="var(--ds-accent-gold-strong)"
+              strokeWidth={3}
+            />
+            <text
+              x="30"
+              y="48"
+              textAnchor="middle"
+              fontFamily="var(--ds-font-text),Figtree,sans-serif"
+              fontWeight="800"
+              fontSize="16"
+              fill="var(--ds-warning-ink)"
+            >
+              ₹
+            </text>
+            <line
+              x1="43"
+              y1="32"
+              x2="50"
+              y2="24"
+              stroke="var(--ds-ink-3)"
+              strokeWidth={4}
+              strokeLinecap="round"
+            />
+            <circle
+              cx="60"
+              cy="16"
+              r="13"
+              fill="var(--ds-line-soft)"
+              stroke="var(--ds-ink-3)"
+              strokeWidth={3}
+            />
+            <text
+              x="60"
+              y="22"
+              textAnchor="middle"
+              fontFamily="var(--ds-font-text),Figtree,sans-serif"
+              fontWeight="800"
+              fontSize="16"
+              fill="var(--ds-ink-3)"
+            >
+              ?
+            </text>
+          </svg>
+        </div>
+      );
+    }
+
+    if (variant === 'error') {
+      return (
+        <div
+          ref={ref}
+          aria-hidden="true"
+          className={cn('inline-flex items-center justify-center shrink-0', className)}
+          {...props}
+        >
+          <svg
+            width="84"
+            height="64"
+            viewBox="0 0 84 64"
+            aria-hidden="true"
+            className="overflow-visible"
+          >
+            <ellipse cx="42" cy="60" rx="24" ry="4" fill="var(--ds-line-soft)" />
+            <g transform="rotate(-18 42 40)">
+              <circle
+                cx="42"
+                cy="40"
+                r="19"
+                fill="var(--ds-accent-gold)"
+                stroke="var(--ds-accent-gold-strong)"
+                strokeWidth={3}
+              />
+              <text
+                x="42"
+                y="46"
+                textAnchor="middle"
+                fontFamily="var(--ds-font-text),Figtree,sans-serif"
+                fontWeight="800"
+                fontSize="18"
+                fill="var(--ds-warning-ink)"
+              >
+                ₹
+              </text>
+              <rect
+                x="35"
+                y="17"
+                width="16"
+                height="6"
+                rx="3"
+                transform="rotate(45 43 20)"
+                fill="var(--ds-danger-tint)"
+                stroke="var(--ds-danger)"
+                strokeWidth={1.5}
+              />
+              <rect
+                x="35"
+                y="17"
+                width="16"
+                height="6"
+                rx="3"
+                transform="rotate(-45 43 20)"
+                fill="var(--ds-danger-tint)"
+                stroke="var(--ds-danger)"
+                strokeWidth={1.5}
+              />
+            </g>
+            <path d="M26 8 L27.5 12 L31.5 13.5 L27.5 15 L26 19 L24.5 15 L20.5 13.5 L24.5 12 Z" fill="var(--ds-accent-gold-strong)" />
+            <path d="M44 0 L45.5 4 L49.5 5.5 L45.5 7 L44 11 L42.5 7 L38.5 5.5 L42.5 4 Z" fill="var(--ds-accent-gold-strong)" />
+            <path d="M62 8 L63.5 12 L67.5 13.5 L63.5 15 L62 19 L60.5 15 L56.5 13.5 L60.5 12 Z" fill="var(--ds-accent-gold-strong)" />
           </svg>
         </div>
       );

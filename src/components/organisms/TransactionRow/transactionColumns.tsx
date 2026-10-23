@@ -6,6 +6,8 @@ export interface TransactionRowData {
   description: string;
   category?: string;
   account?: string;
+  /** The account's bank id, when it has one; the row shows its logo before the name. */
+  bankId?: string;
   plastic?: string;
   amount: number | string;
   formattedAmount?: string;
@@ -45,7 +47,8 @@ export const createTransactionColumns = (query?: string) => {
   helper.accessor('account', {
     id: 'account',
     header: 'Account',
-    meta: { size: 'sm' },
+    // 'md' leaves room for the 14px bank logo and its gap beside the name.
+    meta: { size: 'md' },
     cell: ({ row }) => mark(row.original.account ?? ''),
   }),
   helper.accessor('amount', {

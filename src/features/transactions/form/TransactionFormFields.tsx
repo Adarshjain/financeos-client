@@ -13,9 +13,9 @@ import {
   TextField,
 } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
+import { amountExpressionProps } from '@/lib/amountExpression';
 import type { Category } from '@/lib/categories.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
-import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { CategoriesField } from './CategoriesField';
 import { CHANNEL_LABELS } from './constants';
@@ -135,7 +135,7 @@ export function TransactionFormFields({
           inputMode="decimal"
           placeholder="0.00"
           value={values.amount}
-          onValueChange={(v) => onChange({ amount: sanitizeDecimalInput(v) })}
+          {...amountExpressionProps(values.amount, (v) => onChange({ amount: v }))}
           error={errors.amount}
         />
       </div>
@@ -270,7 +270,7 @@ export function TransactionFormFields({
           inputMode="decimal"
           placeholder="0.00"
           value={values.instantDiscount}
-          onValueChange={(v) => onChange({ instantDiscount: sanitizeDecimalInput(v) })}
+          {...amountExpressionProps(values.instantDiscount, (v) => onChange({ instantDiscount: v }))}
           error={errors.instantDiscount}
         />
         <TextField
@@ -279,7 +279,7 @@ export function TransactionFormFields({
           inputMode="decimal"
           placeholder="0.00"
           value={values.convenienceFee}
-          onValueChange={(v) => onChange({ convenienceFee: sanitizeDecimalInput(v) })}
+          {...amountExpressionProps(values.convenienceFee, (v) => onChange({ convenienceFee: v }))}
           error={errors.convenienceFee}
         />
       </Pair>

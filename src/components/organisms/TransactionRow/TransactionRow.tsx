@@ -39,6 +39,8 @@ export interface TransactionRowProps
 
   /** Account name, e.g. "HDFC Bank Savings" or "HDFC Regalia" */
   account?: React.ReactNode;
+  /** Small logo shown right before the account name (phone context line and desktop Account cell). Leave unset for no logo and no gap. */
+  accountLogo?: React.ReactNode;
   /** Card or plastic identifier, e.g. "••7741" */
   plastic?: React.ReactNode;
   /** Amber review status/word, e.g. "Duplicate", "Watching", "Unreconciled" */
@@ -91,6 +93,10 @@ export interface TransactionRowProps
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
 
+  /** Wraps the description / the amount as drawn (after the search marker), for a page to give that part a view-transition name. The wrapper must render one element around the node. */
+  wrapDescription?: (node: React.ReactNode) => React.ReactNode;
+  wrapAmount?: (node: React.ReactNode) => React.ReactNode;
+
   /** Search text: matches in string description, account, categories, amount, note, plastic and contextLine get the marker stroke */
   query?: string;
 }
@@ -105,6 +111,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       isCredit = false,
       balance,
       account,
+      accountLogo,
       plastic,
       reviewStatus,
       note,
@@ -129,6 +136,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       chevron = false,
       borderTop = true,
       query,
+      wrapDescription,
+      wrapAmount,
       className,
       children,
       ...props
@@ -148,8 +157,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         value
       );
 
-    // The amount cell sets its own responsive size (title on phone, heading on desktop), so its paise
-    // step down one style at each width (heading, label); credits keep their green, others mute to ink-3.
+    // The paise use one size at every width (label, owner 2026-10-23); credits keep their green, others
+    // mute to ink-3.
     const markAmount = (value: React.ReactNode): React.ReactNode => {
       if (query && typeof value === 'string') return mark(value);
       if (typeof value !== 'string' && typeof value !== 'number') return value;
@@ -159,7 +168,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       return (
         <>
           {text.slice(0, at)}
-          <span className={cn('text-heading desk:text-label', !isCredit && 'text-ink-3')}>{text.slice(at)}</span>
+          <span className={cn('text-label', !isCredit && 'text-ink-3')}>{text.slice(at)}</span>
         </>
       );
     };
@@ -192,9 +201,12 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     } else {
       if (account) {
         contextElements.push(
-          <span key="account">
+          <span key="account" className={accountLogo ? 'inline-flex items-center gap-space-4' : undefined}>
+            {accountLogo}
+            <span>
             {mark(account)}
             {plastic && <> {mark(plastic)}</>}
+            </span>
           </span>,
         );
       } else if (plastic) {
@@ -443,7 +455,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
               <div className="text-heading font-semibold desk:text-body-strong desk:font-semibold text-ink break-words">
-                {mark(description) ?? children}
+                {wrapDescription ? wrapDescription(mark(description) ?? children) : (mark(description) ?? children)}
               </div>
               {/* Phone context line (starts with the account) */}
               {phoneContextElements.length > 0 && (
@@ -482,6 +494,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
             >
+              {accountLogo && <span className="inline-flex align-middle mr-space-4">{accountLogo}</span>}
               {mark(account)}
               {plastic && <> {mark(plastic)}</>}
             </div>
@@ -496,7 +509,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
-              {markAmount(amount)}
+              {wrapAmount ? wrapAmount(markAmount(amount)) : markAmount(amount)}
               {balance && (
                 <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}

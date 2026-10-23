@@ -106,6 +106,29 @@ describe('LoanEditDialog', () => {
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
   });
 
+  it('blocks saving an invalid principal or EMI expression with a field error', async () => {
+    render(<LoanEditDialog loan={loanFixture()} termsLocked={false} onClose={onClose} />);
+    fireEvent.change(field('Principal'), { target: { value: '100/0' } });
+    fireEvent.change(field('EMI amount'), { target: { value: '5+' } });
+    save();
+    expect(await screen.findByText('Principal must be greater than zero')).toBeInTheDocument();
+    expect(screen.getByText('EMI amount must be greater than zero')).toBeInTheDocument();
+    expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('saves the evaluated principal and EMI from expressions typed without a blur', async () => {
+    render(<LoanEditDialog loan={loanFixture()} termsLocked={false} onClose={onClose} />);
+    fireEvent.change(field('Principal'), { target: { value: '4000000+500000' } });
+    fireEvent.change(field('EMI amount'), { target: { value: '30000*2' } });
+    save();
+    await waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith({
+        id: 'l1',
+        body: expect.objectContaining({ principal: 4500000, emiAmount: 60000 }),
+      }),
+    );
+  });
+
   it('shows the server message when saving fails and stays open', async () => {
     mutateAsync.mockRejectedValue(new Error('nope'));
     render(<LoanEditDialog loan={loanFixture()} termsLocked onClose={onClose} />);

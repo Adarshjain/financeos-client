@@ -21,7 +21,8 @@ export function lendingEntryProblem(
   amount: string,
 ): { field: 'party' | 'amount'; message: string } | null {
   if (!party) return { field: 'party', message: 'Pick a person' };
-  if (!amount || Number(amount) <= 0) return { field: 'amount', message: 'Amount must be greater than zero' };
+  const value = Number(amount);
+  if (!amount || !Number.isFinite(value) || value <= 0) return { field: 'amount', message: 'Amount must be greater than zero' };
   return null;
 }
 

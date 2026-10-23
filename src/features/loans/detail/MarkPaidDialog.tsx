@@ -13,10 +13,11 @@ import {
   TextField,
 } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { resolveAmountExpression, sanitizeAmountExpressionInput } from '@/lib/amountExpression';
 import type { InstallmentDto } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
-import { getAccountName, sanitizeDecimalInput } from '@/lib/utils';
+import { getAccountName } from '@/lib/utils';
 
 import { PAYMENT_TRANSACTION_HINT } from './eventFormModel';
 import {
@@ -111,10 +112,12 @@ export function MarkPaidDialog({
   const difference = amount.trim() ? differenceWords(Number(amount.trim()), installment.emi) : null;
 
   const submit = async () => {
-    const problems = payProblems({ choice, amount, date, transactionId });
+    const resolvedAmount = resolveAmountExpression(amount);
+    if (resolvedAmount !== amount) setAmount(resolvedAmount);
+    const problems = payProblems({ choice, amount: resolvedAmount, date, transactionId });
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
-    const saved = await onSubmit({ amount, paymentDate: date, transactionId });
+    const saved = await onSubmit({ amount: resolvedAmount, paymentDate: date, transactionId });
     if (saved) onClose();
   };
 
@@ -181,9 +184,10 @@ export function MarkPaidDialog({
               value={amount}
               onValueChange={(v) => {
                 chose.current = true;
-                setAmount(sanitizeDecimalInput(v));
+                setAmount(sanitizeAmountExpressionInput(v));
                 setErrors((e) => ({ ...e, amount: undefined }));
               }}
+              onBlur={() => setAmount(resolveAmountExpression(amount))}
               helper={difference ?? undefined}
               error={errors.amount}
             />

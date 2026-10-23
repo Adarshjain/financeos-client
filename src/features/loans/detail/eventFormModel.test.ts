@@ -26,6 +26,21 @@ describe('event form', () => {
     expect(eventProblems({ ...emptyEventValues('2026-10-13'), newAnnualRatePct: '9.25' })).toEqual([]);
   });
 
+  it('an EMI override must be a usable amount when reducing the EMI, and is ignored otherwise', () => {
+    const base = { ...emptyEventValues('2026-10-13', 'prepayment'), amount: '1000' };
+    expect(eventProblems({ ...base, adjustmentMode: 'reduce_emi' })).toEqual([]);
+    for (const bad of ['100/0', '5+', '0']) {
+      expect(eventProblems({ ...base, adjustmentMode: 'reduce_emi', newEmiOverride: bad }).map((p) => p.field)).toEqual([
+        'newEmiOverride',
+      ]);
+    }
+    expect(eventProblems({ ...base, adjustmentMode: 'reduce_emi', newEmiOverride: '25000' })).toEqual([]);
+    expect(eventProblems({ ...base, adjustmentMode: 'reduce_tenure', newEmiOverride: '5+' })).toEqual([]);
+    expect(
+      eventProblems({ ...emptyEventValues('2026-10-13', 'foreclosure'), amount: '1000', adjustmentMode: 'reduce_emi', newEmiOverride: '5+' }),
+    ).toEqual([]);
+  });
+
   it('prepayments and foreclosures need an amount above zero', () => {
     for (const eventType of ['prepayment', 'foreclosure'] as const) {
       const v = emptyEventValues('2026-10-13', eventType);

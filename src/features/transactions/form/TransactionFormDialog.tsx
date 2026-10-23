@@ -8,12 +8,15 @@ import { BankLogo } from '@/components/organisms';
 import { accountNeedsBank } from '@/features/accounts/accountBank';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
+import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 
+import { mergeOntoLatest, patchChange, patchFromValues } from '../optimistic/optimisticModel';
+import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import {
   getCardOptions,
   getDefaultCardIdForAccount,
@@ -64,6 +67,7 @@ export function TransactionFormDialog({
   const { data: accounts = [] } = useAccounts(initialAccounts ?? undefined);
   const { data: allCategories = NO_CATEGORIES } = useCategories();
   const { createMutation, updateMutation } = useTransactionMutations();
+  const optimistic = useOptimisticTransactions();
 
   const [values, setValues] = React.useState<TransactionFormValues>(() => {
     if (transaction) return valuesFromTransaction(transaction);
@@ -143,16 +147,55 @@ export function TransactionFormDialog({
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
 
   const submit = async () => {
-    const found = formProblems(values, { isUpdate, original: transaction, selectableAccounts });
+    // Enter submits without a blur: settle any typed arithmetic (120+45) first.
+    const current: TransactionFormValues = {
+      ...values,
+      amount: resolveAmountExpression(values.amount),
+      instantDiscount: resolveAmountExpression(values.instantDiscount),
+      convenienceFee: resolveAmountExpression(values.convenienceFee),
+    };
+    setValues(current);
+    const found = formProblems(current, { isUpdate, original: transaction, selectableAccounts });
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     try {
-      const body = buildRequest(values, {
+      const body = buildRequest(current, {
         isUpdate,
         source: transaction?.source,
         categoryIds: selectedCategories.map((c) => c.id),
         supportsCards,
       });
+      if (transaction && optimistic) {
+        // Edit: the row and the detail show the new values now and the dialog closes; the save finishes behind it.
+        const shown = optimistic.begin(
+          patchChange(transaction.id, patchFromValues(current, selectedCategories.map((c) => ({ id: c.id, name: c.name })), transaction, supportsCards)),
+        );
+        onClose();
+        try {
+          // Sent behind any earlier write to this row: what the person changed, on the row as the server then holds it.
+          await shown.send(() => {
+            const latest = shown.base(transaction.id) ?? transaction;
+            const chosen = selectedCategories.map((c) => c.id).join();
+            const opened = (transaction.categories ?? []).map((c) => c.id).join();
+            return updateMutation.mutateAsync({
+              id: transaction.id,
+              body: buildRequest(mergeOntoLatest(current, transaction, latest), {
+                isUpdate,
+                source: transaction.source,
+                categoryIds: chosen === opened ? (latest.categories ?? []).map((c) => c.id) : selectedCategories.map((c) => c.id),
+                supportsCards,
+              }),
+            });
+          });
+          shown.settle(true);
+          showToast('Transaction saved!');
+          router.refresh();
+        } catch (e) {
+          shown.settle(false);
+          showToast(getErrorMessage(e, 'An unexpected error occurred'), { tone: 'danger' });
+        }
+        return;
+      }
       if (transaction) await updateMutation.mutateAsync({ id: transaction.id, body });
       else await createMutation.mutateAsync(body);
       showToast('Transaction saved!');

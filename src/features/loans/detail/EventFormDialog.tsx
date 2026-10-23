@@ -4,6 +4,7 @@ import React from 'react';
 
 import { DateField, Dialog, DialogBody, DialogContent, Select, TextField } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
+import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import type { LoanEventType } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -47,10 +48,16 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
   };
 
   const submit = async () => {
-    const problems = eventProblems(values);
+    const resolved = {
+      ...values,
+      amount: resolveAmountExpression(values.amount),
+      newEmiOverride: resolveAmountExpression(values.newEmiOverride),
+    };
+    setValues(resolved);
+    const problems = eventProblems(resolved);
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
-    const saved = await onSubmit({ ...values, transactionId: tx?.id });
+    const saved = await onSubmit({ ...resolved, transactionId: tx?.id });
     if (saved) onClose();
   };
 
@@ -108,7 +115,7 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
                 inputMode="decimal"
                 placeholder="100000"
                 value={values.amount}
-                onValueChange={(v) => change({ amount: sanitizeDecimalInput(v) })}
+                {...amountExpressionProps(values.amount, (v) => change({ amount: v }))}
                 error={errors.amount}
               />
             ) : null}
@@ -128,7 +135,8 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
                 inputMode="decimal"
                 placeholder="Auto if blank"
                 value={values.newEmiOverride}
-                onValueChange={(v) => change({ newEmiOverride: sanitizeDecimalInput(v) })}
+                {...amountExpressionProps(values.newEmiOverride, (v) => change({ newEmiOverride: v }))}
+                error={errors.newEmiOverride}
               />
             ) : null}
             <TransactionPickerField

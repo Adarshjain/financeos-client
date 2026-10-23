@@ -3,8 +3,10 @@
 import React from 'react';
 
 import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
-import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
-import { ListTransition, RowTransition } from '@/lib/viewTransition';
+import { BankLogo, createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
+import { bankById } from '@/features/banks/banks';
+import { ListTransition, RowTransition, SharedName } from '@/lib/viewTransition';
+import { transitionName } from '@/lib/viewTransitionNames';
 
 import { activeFilterWords } from './filterOptions';
 import { dayHeader, monthBand, type TransactionListRow } from './transactionRows';
@@ -55,6 +57,8 @@ export interface TransactionsListProps {
   onOpenDetail?: (id: string) => void;
   /** The row open in the detail pane, shown highlighted. */
   openId?: string;
+  /** The row whose description and amount carry their shared names now (it is about to open into the detail, or just closed from it). */
+  morphId?: string;
   /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
   onEditCategories?: (id: string) => void;
   /** The ticked row ids; the table's checkbox column shows when `onSelectionChange` is given (piece 5). */
@@ -77,6 +81,7 @@ export function TransactionsList({
   onImport,
   onOpenDetail,
   openId,
+  morphId,
   onEditCategories,
   selection,
   onSelectionChange,
@@ -148,6 +153,7 @@ export function TransactionsList({
                 isCredit={r.isCredit}
                 balance={r.balance}
                 account={r.account}
+                accountLogo={bankById(r.bankId) ? <BankLogo bankId={r.bankId ?? null} name={r.account ?? ''} size="sm" /> : undefined}
                 plastic={r.plastic}
                 reviewStatus={r.reviewStatus}
                 link={r.link}
@@ -166,6 +172,8 @@ export function TransactionsList({
                 selectionMode={rowProps.selectionMode}
                 onDetail={onOpenDetail ? rowProps.onSelect : undefined}
                 query={query.q || undefined}
+                wrapDescription={r.id === morphId ? (node) => <SharedName name={transitionName.transactionTitle(r.id)}><span className="inline-block max-w-full">{node}</span></SharedName> : undefined}
+                wrapAmount={r.id === morphId ? (node) => <SharedName name={transitionName.transactionAmount(r.id)}><span className="inline-block">{node}</span></SharedName> : undefined}
               />
             );
           }}

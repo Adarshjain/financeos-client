@@ -54,4 +54,16 @@ describe('BankLogo', () => {
     render(<BankLogo bankId="nope" name="Nova" warning />);
     expect(screen.getByTestId('bank-missing')).toBeInTheDocument();
   });
+
+  it('draws the plain 14px logo at size sm', () => {
+    render(<BankLogo bankId="hdfc" name="Salary" size="sm" />);
+    expect(screen.getByRole('img', { name: 'HDFC Bank' })).toHaveClass('h-icon-sm', 'w-icon-sm');
+  });
+
+  it('renders nothing at size sm with no known bank', () => {
+    const { container, rerender } = render(<BankLogo bankId={null} name="Cash" size="sm" />);
+    expect(container).toBeEmptyDOMElement();
+    rerender(<BankLogo bankId="nope" name="Nova" size="sm" />);
+    expect(container).toBeEmptyDOMElement();
+  });
 });

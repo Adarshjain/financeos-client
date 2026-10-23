@@ -199,6 +199,27 @@ describe.each([
   });
 });
 
+describe('Ctrl+press', () => {
+  it('desktop layout: a Ctrl+click (the macOS right-click) does not open the item', async () => {
+    stubLayout('desktop');
+    const { user, item, onPress } = setup();
+    giveSize(item);
+    await user.keyboard('{Control>}');
+    await user.pointer({ keys: '[MouseLeft>]', target: item });
+    await user.pointer({ keys: '[/MouseLeft]', target: item });
+    await user.keyboard('{/Control}');
+    expect(onPress).not.toHaveBeenCalled();
+  });
+  it('desktop layout: a plain click still opens it', async () => {
+    stubLayout('desktop');
+    const { user, item, onPress } = setup();
+    giveSize(item);
+    await user.pointer({ keys: '[MouseLeft>]', target: item });
+    await user.pointer({ keys: '[/MouseLeft]', target: item });
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('keyboard', () => {
   it('Enter/Space on the inner button does not trigger the item', async () => {
     const { user, onPress, onSelectedChange } = setup({ selectionMode: true });

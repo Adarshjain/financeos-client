@@ -70,6 +70,27 @@ describe('TransactionRow search highlight', () => {
   });
 });
 
+describe('TransactionRow wrappers', () => {
+  it('wrapDescription and wrapAmount wrap the drawn description and amount', () => {
+    render(
+      <TransactionRow
+        description="Rent Advance"
+        amount="3,600.00"
+        wrapDescription={(node) => <span data-testid="wd">{node}</span>}
+        wrapAmount={(node) => <span data-testid="wa">{node}</span>}
+      />,
+    );
+    expect(screen.getByTestId('wd')).toHaveTextContent('Rent Advance');
+    expect(screen.getByTestId('wa')).toHaveTextContent('3,600.00');
+  });
+
+  it('draws plainly without wrappers', () => {
+    render(<TransactionRow description="Rent Advance" amount="3,600.00" />);
+    expect(screen.queryByTestId('wd')).toBeNull();
+    expect(screen.getByText('Rent Advance')).toBeInTheDocument();
+  });
+});
+
 describe('TransactionRow', () => {
   beforeEach(() => {
     vi.stubGlobal('jest', {
@@ -724,7 +745,7 @@ describe('TransactionRow', () => {
 
       const accMeta = accCol.meta as DataTableColumnMeta | undefined;
       expect(accCol.id).toBe('account');
-      expect(accMeta?.size).toBe('sm');
+      expect(accMeta?.size).toBe('md');
 
       const amtMeta = amtCol.meta as DataTableColumnMeta | undefined;
       expect(amtCol.id).toBe('amount');
@@ -793,7 +814,8 @@ describe('TransactionRow amount fraction', () => {
   it('renders the paise in a smaller muted span, the integer part untouched', () => {
     render(<TransactionRow description="BigBasket" amount="3,600.50" />);
     const frac = screen.getByText('.50');
-    expect(frac).toHaveClass('text-heading', 'desk:text-label', 'text-ink-3');
+    expect(frac).toHaveClass('text-label', 'text-ink-3');
+    expect(frac).not.toHaveClass('text-heading');
     expect(frac.parentElement?.textContent).toContain('3,600.50');
   });
 
@@ -805,5 +827,25 @@ describe('TransactionRow amount fraction', () => {
   it('leaves a whole amount alone', () => {
     const { container } = render(<TransactionRow description="Rent" amount="3,600" />);
     expect(container.querySelector('.desk\\:text-label')).toBeNull();
+  });
+});
+
+describe('TransactionRow account logo', () => {
+  it('draws the logo before the account name on phone and desktop', () => {
+    const { container } = render(<TransactionRow description="Rent" account="HDFC Savings" accountLogo={<i data-testid="logo" />} />);
+    expect(screen.getAllByTestId('logo')).toHaveLength(2);
+    const html = container.innerHTML;
+    const first = html.indexOf('data-testid="logo"');
+    const second = html.indexOf('data-testid="logo"', first + 1);
+    expect(first).toBeLessThan(html.indexOf('HDFC Savings'));
+    expect(second).toBeLessThan(html.indexOf('HDFC Savings', html.indexOf('HDFC Savings') + 1));
+    expect(second).toBeGreaterThan(html.indexOf('HDFC Savings'));
+  });
+
+  it('adds no logo and no gap without one', () => {
+    const { container } = render(<TransactionRow description="Rent" account="Cash" />);
+    expect(screen.queryByTestId('logo')).toBeNull();
+    expect(container.querySelector('.gap-space-4.inline-flex')).toBeNull();
+    expect(container.querySelector('.mr-space-4')).toBeNull();
   });
 });

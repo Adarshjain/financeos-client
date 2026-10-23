@@ -265,6 +265,39 @@ describe('useDividendLink new mode', () => {
     expect(api.POST).not.toHaveBeenCalled();
   });
 
+  it('blocks submit with a field error for an invalid amount or TDS expression', async () => {
+    const { result } = await setupNew();
+    act(() => result.current.setHolding('b1|i1'));
+    for (const bad of ['100/0', '5+', '100-200']) {
+      act(() => result.current.setAmount(bad));
+      expect(result.current.canSubmit).toBe(false);
+      expect(result.current.amountError).toBe('Please enter a valid amount.');
+      act(() => result.current.handleSubmit());
+    }
+    act(() => result.current.setAmount('1000'));
+    expect(result.current.amountError).toBeUndefined();
+    act(() => result.current.setTds('100/0'));
+    expect(result.current.canSubmit).toBe(false);
+    expect(result.current.tdsError).toBe('Please enter a valid amount.');
+    act(() => result.current.handleSubmit());
+    expect(api.POST).not.toHaveBeenCalled();
+  });
+
+  it('sends the evaluated numbers for amount and TDS expressions', async () => {
+    (api.POST as Mock).mockResolvedValue({ data: { id: 'new-1' } });
+    (api.PUT as Mock).mockResolvedValue({ data: {} });
+    const { result, onSuccess } = await setupNew();
+    act(() => {
+      result.current.setHolding('b1|i1');
+      result.current.setAmount('500+500');
+      result.current.setTds('100/4');
+    });
+    expect(result.current.canSubmit).toBe(true);
+    act(() => result.current.handleSubmit());
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect((api.POST as Mock).mock.calls[0][1].body).toMatchObject({ amount: 1000, tds: 25 });
+  });
+
   it('creates the dividend then links it with updateTds=false', async () => {
     (api.POST as Mock).mockResolvedValue({ data: { id: 'new-1' } });
     (api.PUT as Mock).mockResolvedValue({ data: {} });
