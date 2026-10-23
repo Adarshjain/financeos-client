@@ -72,6 +72,9 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
   const [today] = React.useState(() => todayInAppZone());
   const [form, setForm] = React.useState<CorporateActionForm>(() => initialForm({ today, instrument, type, action }));
   const [errors, setErrors] = React.useState<FormErrors>({});
+  const [resolvingMain, setResolvingMain] = React.useState(false);
+  const [resolvingTarget, setResolvingTarget] = React.useState(false);
+  const resolving = resolvingMain || resolvingTarget;
   const [formError, setFormError] = React.useState<string | undefined>();
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
@@ -109,6 +112,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
 
   // ---- Save and delete ----
   const submit = async () => {
+    if (resolving) return;
     const found = validateForm(form);
     setErrors(found);
     const request = requestBody(form);
@@ -183,7 +187,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           description="Quantity and cost update when you save"
           tertiary={editing ? { label: 'Delete', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-          primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving }}
+          primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
         >
           <DialogBody>
             <form
@@ -205,6 +209,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                   error={errors.instrument}
                   onValueChange={(i) => change({ instrument: i }, 'instrument')}
                   onResolveError={(message) => showToast(message, { tone: 'danger' })}
+                  onResolvingChange={setResolvingMain}
                 />
                 <Select
                   label="Action"
@@ -229,6 +234,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                     error={errors.target}
                     onValueChange={(i) => change({ target: i }, 'target')}
                     onResolveError={(message) => showToast(message, { tone: 'danger' })}
+                    onResolvingChange={setResolvingTarget}
                   />
                 ) : null}
               </div>

@@ -34,6 +34,8 @@ export interface InstrumentSelectProps {
   onResolveError?: (message: string) => void;
   /** Adds an "Enter it manually" link at the foot of the list. */
   onEnterManually?: () => void;
+  /** Tells the form when a pick is still being resolved, so it can hold its submit until the field has the instrument. */
+  onResolvingChange?: (resolving: boolean) => void;
 }
 
 /**
@@ -51,10 +53,15 @@ export function InstrumentSelect({
   resolveExisting = true,
   onResolveError,
   onEnterManually,
+  onResolvingChange,
 }: InstrumentSelectProps) {
   const [query, setQuery] = React.useState('');
   const { results, isLoading, hasQuery } = useCatalogSearch(query, type);
   const resolve = useResolveInstrumentMutation();
+  const resolving = resolve.isPending;
+  React.useEffect(() => {
+    onResolvingChange?.(resolving);
+  }, [resolving, onResolvingChange]);
 
   const selectedKey = value ? `selected:${value.id}` : '';
   const groups = React.useMemo<SelectGroup[]>(() => {
