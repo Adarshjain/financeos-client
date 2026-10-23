@@ -124,7 +124,7 @@ describe('Banner', () => {
   it('page-top is square and clears the safe areas, with its message row inside', () => {
     const { container } = render(
       <Banner tone="info" variant="page-top" action={{ label: 'Refresh', onSelect: vi.fn() }} onDismiss={vi.fn()}>
-        New version available
+        Refresh to use the latest version.
       </Banner>,
     );
     const root = container.firstChild as HTMLElement;
