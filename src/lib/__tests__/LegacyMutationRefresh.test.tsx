@@ -75,6 +75,39 @@ describe('LegacyMutationRefresh', () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it('holds a waiting refresh back while a link click navigates, then runs it', async () => {
+    render(
+      <a href="/upcoming" onClick={(e) => e.preventDefault()}>
+        Upcoming
+        <LegacyMutationRefresh />
+      </a>,
+    );
+    await call('/api/v1/loans', 'POST');
+    act(() => void document.querySelector('a')!.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    flush();
+    expect(refresh).not.toHaveBeenCalled();
+    act(() => void vi.advanceTimersByTime(800));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('holds a waiting refresh back on Back and Forward', async () => {
+    render(<LegacyMutationRefresh />);
+    await call('/api/v1/loans', 'POST');
+    act(() => void window.dispatchEvent(new PopStateEvent('popstate')));
+    flush();
+    expect(refresh).not.toHaveBeenCalled();
+    act(() => void vi.advanceTimersByTime(800));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('a click that is not a link, or with no refresh waiting, changes nothing', async () => {
+    render(<LegacyMutationRefresh />);
+    await call('/api/v1/loans', 'POST');
+    act(() => void document.body.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    flush();
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it('restores fetch on unmount and stops refreshing', async () => {
     const { unmount } = render(<LegacyMutationRefresh />);
     unmount();

@@ -8,6 +8,9 @@ import { useEffect } from 'react';
 // none of which refresh the router, so this watches every successful write to /api/v1 and calls
 // router.refresh() once per burst. Mounted only in the Legacy root layout; /ds pages refresh per mutation.
 const REFRESH_DELAY_MS = 250;
+// A refresh dispatched while a link navigation is committing turns that push into a replace (Back then skips the
+// page). A link click or Back/Forward while a refresh is waiting pushes it past the navigation.
+const NAVIGATION_DELAY_MS = 1000;
 
 const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -34,10 +37,25 @@ export function LegacyMutationRefresh() {
     const originalFetch = window.fetch;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const scheduleRefresh = () => {
+    let pending = false;
+
+    const scheduleRefresh = (delay = REFRESH_DELAY_MS) => {
       clearTimeout(timer);
-      timer = setTimeout(() => router.refresh(), REFRESH_DELAY_MS);
+      pending = true;
+      timer = setTimeout(() => {
+        pending = false;
+        router.refresh();
+      }, delay);
     };
+
+    const deferForNavigation = () => {
+      if (pending) scheduleRefresh(NAVIGATION_DELAY_MS);
+    };
+    const onClick = (event: MouseEvent) => {
+      if ((event.target as Element | null)?.closest?.('a[href]')) deferForNavigation();
+    };
+    document.addEventListener('click', onClick, true);
+    window.addEventListener('popstate', deferForNavigation);
 
     const watchedFetch: typeof window.fetch = async (input, init) => {
       const response = await originalFetch(input, init);
@@ -53,6 +71,8 @@ export function LegacyMutationRefresh() {
 
     return () => {
       clearTimeout(timer);
+      document.removeEventListener('click', onClick, true);
+      window.removeEventListener('popstate', deferForNavigation);
       if (window.fetch === watchedFetch) window.fetch = originalFetch;
     };
   }, [router]);
