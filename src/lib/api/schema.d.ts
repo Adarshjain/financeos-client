@@ -4513,6 +4513,8 @@ export interface components {
         };
         CorporateActionRowResponse: {
             costAllocationPct?: number | null;
+            costPerUnitAfter?: number | null;
+            costPerUnitBefore?: number | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date */
@@ -5178,6 +5180,8 @@ export interface components {
             totalCharges: number;
             /** Format: int64 */
             tradeCount: number;
+            /** Format: int32 */
+            winCount: number;
             winRate: number;
         };
         FnoTradeListResponse: {
@@ -6708,6 +6712,23 @@ export interface components {
         };
         PositionsResponse: {
             positions: components["schemas"]["PositionDto"][];
+        };
+        PreviewCorporateActionRequest: {
+            costAllocationPct?: number;
+            /** Format: date */
+            exDate: string;
+            /** Format: uuid */
+            excludeActionId?: string;
+            fractionalCashInLieu?: number;
+            notes?: string;
+            /** Format: int32 */
+            ratioFrom: number;
+            /** Format: int32 */
+            ratioTo: number;
+            /** Format: uuid */
+            targetInstrumentId?: string;
+            /** @enum {string} */
+            type: "split" | "bonus" | "demerger" | "merger";
         };
         PreviewMatchesRequest: {
             matchType?: string;
@@ -12340,7 +12361,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateCorporateActionRequest"];
+                "application/json": components["schemas"]["PreviewCorporateActionRequest"];
             };
         };
         responses: {
@@ -13146,10 +13167,11 @@ export interface operations {
                 page?: number;
                 size?: number;
                 fy?: number;
-                optionType?: "CE" | "PE" | "FUT";
+                optionType?: "CE" | "PE" | "FUT" | "OPT";
                 brokerAccountId?: string;
                 underlying?: string;
                 sort?: string;
+                search?: string;
             };
             header?: never;
             path?: never;

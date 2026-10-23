@@ -713,6 +713,7 @@ export const investmentsApi = {
           optionType: params?.optionType,
           brokerAccountId: params?.brokerAccountId,
           underlying: params?.underlying,
+          search: params?.search,
           sort: params?.sort,
         },
       },
@@ -749,11 +750,11 @@ export const investmentsApi = {
     return data! as PagedDividendResponse;
   },
   /** Per-instrument dividend totals over the last `years` years (the server's default is 3 when omitted), biggest first. */
-  getDividendsByInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<ItemsPage<DividendInstrumentTotal>> => {
+  getDividendsByInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<Page<DividendInstrumentTotal>> => {
     const { data } = await serverApi.GET('/api/v1/investments/dividends/by-instrument', {
       params: { query: { years: params?.years, page: params?.page ?? 0, size: params?.size ?? 25 } },
     });
-    return data! as unknown as ItemsPage<DividendInstrumentTotal>;
+    return data! as unknown as Page<DividendInstrumentTotal>;
   },
   /** Every dividend matching the list filters, as CSV text plus the file name the server suggested. */
   exportDividendsCsv: async (filters?: DividendFilters): Promise<CsvDownload> =>
@@ -822,10 +823,10 @@ export const investmentsApi = {
     return data! as unknown as ItemsPage<CorporateActionItem>;
   },
   /** What recording this action would do to the user's holdings, without saving it. */
-  previewCorporateAction: async (instrumentId: string, body: CreateCorporateActionRequest): Promise<CorporateActionPreview> => {
+  previewCorporateAction: async (instrumentId: string, body: CreateCorporateActionRequest & { excludeActionId?: string }): Promise<CorporateActionPreview> => {
     const { data } = await serverApi.POST('/api/v1/instruments/{instrumentId}/corporate-actions/preview', {
       params: { path: { instrumentId } },
-      body: body as Schemas['CreateCorporateActionRequest'],
+      body: body as Schemas['PreviewCorporateActionRequest'],
     });
     return data! as unknown as CorporateActionPreview;
   },
@@ -972,7 +973,7 @@ export const instrumentsApi = {
 
 export const corporateActionsApi = {
   page: async (params?: CorporateActionPageQuery): Promise<ItemsPage<CorporateActionItem>> => investmentsApi.getCorporateActionsPage(params),
-  preview: async (instrumentId: string, data: CreateCorporateActionRequest): Promise<CorporateActionPreview> =>
+  preview: async (instrumentId: string, data: CreateCorporateActionRequest & { excludeActionId?: string }): Promise<CorporateActionPreview> =>
     investmentsApi.previewCorporateAction(instrumentId, data),
   listAll: async (): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(),
   listByInstrument: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
@@ -999,7 +1000,7 @@ export const dividendsApi = {
     });
     return data! as DividendReceiptSummary;
   },
-  byInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<ItemsPage<DividendInstrumentTotal>> =>
+  byInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<Page<DividendInstrumentTotal>> =>
     investmentsApi.getDividendsByInstrument(params),
   exportCsv: async (filters?: DividendFilters): Promise<CsvDownload> => investmentsApi.exportDividendsCsv(filters),
   create: async (data: CreateDividendRequest): Promise<Dividend> => investmentsApi.createDividend(data),
