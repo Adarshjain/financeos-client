@@ -55,6 +55,7 @@ function DataTableInner<Row extends RowData>(
     empty,
     skeletonRows,
     stickyHeader = true,
+    hideHeader = false,
     className,
     style,
     ...restProps
@@ -93,12 +94,14 @@ function DataTableInner<Row extends RowData>(
     >
       {pager && <div>{pager}</div>}
 
-      <DataTableHeader
-        table={table}
-        allSelected={allSelected}
-        onHeaderCheckboxChange={handleHeaderCheckboxChange}
-        stickyHeader={stickyHeader}
-      />
+      {!hideHeader && (
+        <DataTableHeader
+          table={table}
+          allSelected={allSelected}
+          onHeaderCheckboxChange={handleHeaderCheckboxChange}
+          stickyHeader={stickyHeader}
+        />
+      )}
 
       {loading ? (
         Array.from({ length: skeletonRows ?? 5 }).map((_, i) => (

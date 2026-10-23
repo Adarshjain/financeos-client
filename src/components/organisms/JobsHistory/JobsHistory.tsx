@@ -195,6 +195,7 @@ export function JobsHistory({ jobs, openHref, onOpen, pager, empty, loading, ske
       onRowSelect={onOpen}
       empty={empty}
       stickyHeader={false}
+      hideHeader={compact}
     />
   );
 }

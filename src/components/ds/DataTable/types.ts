@@ -110,4 +110,6 @@ export interface DataTableProps<Row extends RowData>
   skeletonRows?: number;
 
   stickyHeader?: boolean;
+  /** No header row on desktop, for a single-column list where it would only repeat the column's name. */
+  hideHeader?: boolean;
 }

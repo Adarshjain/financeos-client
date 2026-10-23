@@ -7,6 +7,21 @@ export const RECENT_IMPORTS_SIZE = 5;
 export const IMPORT_JOB_TYPE = 'STATEMENT_INGEST';
 export const IMPORT_ACTIVITY_HREF = appHref(`/settings/activity?type=${IMPORT_JOB_TYPE}`);
 
+/** `?page=` on the Import tab: the 0-based page of Recent imports; anything unusable is the first page. */
+export function parseImportPage(raw: string | string[] | undefined): number {
+  const page = Math.floor(Number(Array.isArray(raw) ? raw[0] : raw));
+  return Number.isFinite(page) && page > 0 ? page : 0;
+}
+
+/** The Import tab at a page of Recent imports, keeping the chosen account. */
+export function importUrl(opts: { page?: number; account?: string } = {}): string {
+  const out = new URLSearchParams();
+  if (opts.account) out.set('account', opts.account);
+  if (opts.page && opts.page > 0) out.set('page', String(opts.page));
+  const qs = out.toString();
+  return qs ? `${IMPORT_HREF}?${qs}` : IMPORT_HREF;
+}
+
 /** Recent imports covers this many days back. */
 export const RECENT_IMPORTS_DAYS = 30;
 
