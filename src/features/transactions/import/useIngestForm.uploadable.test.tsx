@@ -10,7 +10,7 @@ vi.mock('@/features/jobs/useJobStatusPolling', () => ({
 }));
 vi.mock('@/features/jobs/jobsBus', () => ({ emitJobStarted: vi.fn() }));
 
-import { useIngestForm } from '../components/useIngestForm';
+import { useIngestForm } from './useIngestForm';
 
 const acct = (id: string, type: string, extra: Record<string, unknown> = {}) =>
   ({ id, name: id, type, warnings: [], ...extra }) as any;

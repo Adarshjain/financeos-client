@@ -59,12 +59,15 @@ export function buildJobsQueryParams(filters: {
   size: number;
   statusFilter: string;
   typeFilter: string;
-}): { page: number; size: number; status?: string; type?: string } {
+  /** Only jobs created at or after this instant. */
+  since?: string;
+}): { page: number; size: number; status?: string; type?: string; since?: string } {
   return {
     page: filters.page,
     size: filters.size,
     status: filters.statusFilter || undefined,
     type: filters.typeFilter || undefined,
+    ...(filters.since ? { since: filters.since } : {}),
   };
 }
 

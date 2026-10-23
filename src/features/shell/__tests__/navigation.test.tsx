@@ -203,7 +203,7 @@ describe('shell navigation', () => {
     expect(screen.getByRole('button', { name: /Transaction/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Lending/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Trade/i })).toBeDisabled();
-    expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/ds/transactions/import');
 
     // Verify Section links
     expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/ds/accounts');

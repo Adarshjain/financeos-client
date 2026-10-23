@@ -36,6 +36,7 @@ const meta: Meta<typeof DropZone> = {
     dragHint: { control: 'text' },
     isDragging: { control: 'boolean' },
     showDropArea: { control: 'boolean' },
+    disabled: { control: 'boolean' },
     error: { control: 'text' },
     accept: { control: 'text' },
     multiple: { control: 'boolean' },
@@ -91,5 +92,13 @@ export const WithDropError: Story = {
   args: {
     ...defaultProps,
     error: 'This file type is not supported.',
+  },
+};
+
+export const Locked: Story = {
+  args: {
+    ...defaultProps,
+    disabled: true,
+    queuedFiles: [{ id: '1', name: 'Regalia-Gold-Oct.pdf', size: '1.2 MB' }],
   },
 };

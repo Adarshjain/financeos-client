@@ -38,7 +38,7 @@ import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { useIngestForm } from '../components/useIngestForm';
+import { useIngestForm } from './useIngestForm';
 
 const accounts = [{ id: 'acc-1', type: 'bank_account', name: 'HDFC' }] as unknown as Account[];
 
@@ -52,7 +52,7 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-function setup() {
+function setup(completedMessage?: string) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -60,7 +60,7 @@ function setup() {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   }
-  const hook = renderHook(() => useIngestForm({ accounts }), { wrapper: Wrapper });
+  const hook = renderHook(() => useIngestForm({ accounts, completedMessage }), { wrapper: Wrapper });
   act(() => {
     hook.result.current.setSelectedAccountId('acc-1');
     hook.result.current.handleFileChange({
@@ -172,5 +172,23 @@ describe('useIngestForm upload feedback', () => {
 
     act(() => onSettled?.(settledJob('FAILED')));
     expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: keys.transactions.all });
+  });
+
+  it('toasts its own words when the job succeeds, Legacy words by default', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: { jobId: 'job-1' } } as never);
+    const legacy = setup();
+    await act(async () => {
+      await legacy.result.current.handleSubmit();
+    });
+    act(() => onSettled?.(settledJob('SUCCEEDED')));
+    expect(toast.success).toHaveBeenCalledWith('Statement ingestion completed — see results below.');
+
+    vi.mocked(toast.success).mockClear();
+    const dinero = setup('Import finished. See it in Recent imports.');
+    await act(async () => {
+      await dinero.result.current.handleSubmit();
+    });
+    act(() => onSettled?.(settledJob('SUCCEEDED')));
+    expect(toast.success).toHaveBeenCalledWith('Import finished. See it in Recent imports.');
   });
 });

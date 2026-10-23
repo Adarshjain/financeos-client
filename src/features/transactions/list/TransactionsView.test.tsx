@@ -75,7 +75,7 @@ describe('TransactionsView', () => {
   it('shows the tabs, the search, the chips and the rows', () => {
     setup();
     expect(screen.getByRole('tab', { name: 'All' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/ds/transactions/import');
     expect(screen.getByPlaceholderText('Search merchant, amount…')).toBeInTheDocument();
     expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
     expect(screen.getByText('Needs review · 25')).toBeInTheDocument();
@@ -353,7 +353,7 @@ describe('TransactionsView', () => {
     expect(screen.getByText('No transactions yet')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add account' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    expect(lastUrl()).toBe('/transactions/import');
+    expect(lastUrl()).toBe('/ds/transactions/import');
   });
 
   it('shows the first-run state under filters when there is no account at all', () => {

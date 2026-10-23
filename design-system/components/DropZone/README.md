@@ -10,10 +10,10 @@ The import area. The whole zone is the target: tapping or clicking anywhere in i
 
 ## Props
 - `title`, `hint` and `buttonLabel` are required props ("Add statements", "PDF, XLSX or XLS · up to 25 MB per upload", "Choose files"); the component has no default copy.
-- Optional: `dragTitle`, `dragHint`, `isDragging`, `accept`, `multiple` (default true), `onFilesSelected`, `error`, `showDropArea` (default true), `queuedFiles`, `onRemoveFile`, `children`.
+- Optional: `dragTitle`, `dragHint`, `isDragging`, `accept`, `multiple` (default true), `onFilesSelected`, `error`, `showDropArea` (default true), `disabled` (locks picker, drop and remove while an upload runs; owner review pending), `queuedFiles`, `onRemoveFile`, `children`.
 
 ## Built from
 Button, ListRow (queued files), Icon, StatusWords.
 
 ## Variants
-- Idle, dragging over, queued files, a file that cannot be sent, zone-level error.
+- Idle, dragging over, queued files, a file that cannot be sent, zone-level error, locked (`disabled`: dimmed, no picker, drop or remove).

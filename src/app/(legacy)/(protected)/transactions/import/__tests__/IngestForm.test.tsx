@@ -8,7 +8,7 @@ vi.mock('@/components/jobs/JobsPanel', () => ({ JobsPanel: () => null }));
 vi.mock('@/lib/query', () => ({ useAccounts: (initial: Account[]) => ({ data: initial }) }));
 
 let state = { isUploading: false, isSending: false };
-vi.mock('../components/useIngestForm', () => ({
+vi.mock('@/features/transactions/import/useIngestForm', () => ({
   useIngestForm: () => ({
     selectedAccountId: 'acc-1',
     setSelectedAccountId: vi.fn(),

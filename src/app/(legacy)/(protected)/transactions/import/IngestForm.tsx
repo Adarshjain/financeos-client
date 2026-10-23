@@ -15,12 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useIngestForm } from '@/features/transactions/import/useIngestForm';
 import { type Account } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query';
 
 import { FileDropzone } from './components/FileDropzone';
 import { FilesQueueList } from './components/FilesQueueList';
-import { useIngestForm } from './components/useIngestForm';
+
 
 interface IngestFormProps {
   initialAccounts: Account[];

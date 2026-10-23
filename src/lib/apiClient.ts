@@ -1344,11 +1344,12 @@ export const ingestionApi = {
 };
 
 export const jobsApi = {
-  list: async (params?: { type?: string; status?: string; page?: number; size?: number }): Promise<PagedJobResponse> => {
+  list: async (params?: { type?: string; status?: string; since?: string; page?: number; size?: number }): Promise<PagedJobResponse> => {
     const { data } = await serverApi.GET('/api/v1/jobs', {
       params: {
         query: {
           type: params?.type,
+          since: params?.since,
           status: params?.status,
           page: params?.page,
           size: params?.size,

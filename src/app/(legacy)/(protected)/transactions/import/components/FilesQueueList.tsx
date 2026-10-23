@@ -4,8 +4,7 @@ import { FileSpreadsheet, FileText, Trash2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-
-import { formatFileSize } from './FileDropzone';
+import { formatFileSize } from '@/features/transactions/import/fileLimits';
 
 export function getFileIcon(fileName: string) {
   const ext = fileName.split('.').pop()?.toLowerCase();

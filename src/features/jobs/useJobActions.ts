@@ -10,7 +10,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
 /** Cancel and retry for one job row, with today's toasts and list refresh. */
-export function useJobActions() {
+export function useJobActions({ onRetried }: { onRetried?: (job: { id: string }) => void } = {}) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -32,7 +32,8 @@ export function useJobActions() {
       toast.success('Job retried');
       emitJobStarted(retried.id);
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
-      router.refresh();
+      if (onRetried) onRetried(retried);
+      else router.refresh();
     },
     onError: (err) => toastError(err, 'Failed to retry job'),
   });
