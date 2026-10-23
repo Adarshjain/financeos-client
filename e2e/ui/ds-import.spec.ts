@@ -97,6 +97,34 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/not found/i).first()).toBeVisible({ timeout: 30000 });
     });
 
+    test('Import tab: the app bar + opens the file picker', async ({ page }) => {
+      await page.goto('/ds/transactions/import');
+      const chooser = page.waitForEvent('filechooser');
+      await page.getByRole('button', { name: 'Add statements' }).click();
+      await chooser;
+    });
+
+    test('Import tab: Recent imports pages through the address, with no stray Job header', async ({ page }) => {
+      const now = new Date().toISOString();
+      const job = (n: number) => ({
+        id: `0a1b2c3d-4e5f-6789-abcd-ef01234567${String(n).padStart(2, '0')}`, type: 'STATEMENT_INGEST', status: 'SUCCEEDED',
+        triggerSource: 'USER', cancelRequested: false, attempt: 1, createdAt: now, startedAt: now, finishedAt: now,
+        result: { filesProcessed: 1, totalCreated: 1, totalDuplicatesFound: 0, fileDetails: [{ filename: `stmt-${n}.pdf`, status: 'SUCCESS', linesParsed: 1, created: 1, duplicates: 0, errorMessage: null }] },
+      });
+      // Browser jobs requests: three pages of one import each, by the page asked for.
+      await page.route('**/api/v1/jobs?**', (route) => {
+        const asked = Number(new URL(route.request().url()).searchParams.get('page') ?? '0');
+        return route.fulfill({ json: { content: [job(asked + 1)], totalElements: 3, totalPages: 3, last: asked === 2 } });
+      });
+      await page.goto('/ds/transactions/import');
+      await expect(page.getByText('stmt-1.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
+      await expect(page.getByRole('columnheader', { name: 'Job' })).toHaveCount(0);
+
+      await page.getByRole('button', { name: 'Page 2' }).first().click();
+      await expect(page).toHaveURL(/\/ds\/transactions\/import\?page=1/);
+      await expect(page.getByText('stmt-2.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
+    });
+
     test('Import tab: a running import found on load (reload, second tab) locks the form; a malformed import id is not found', async ({ page }) => {
       const now = new Date().toISOString();
       const running = {

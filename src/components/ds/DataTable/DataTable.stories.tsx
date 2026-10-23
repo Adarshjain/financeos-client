@@ -609,6 +609,13 @@ export const Empty: Story = {
   render: interactiveRender(),
 };
 
+export const HiddenHeader: Story = {
+  args: {
+    hideHeader: true,
+  },
+  render: interactiveRender(),
+};
+
 export const InDialog: Story = {
   render: function Render(args) {
     return (

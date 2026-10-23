@@ -818,6 +818,16 @@ describe('DataTable', () => {
     });
   });
 
+  describe('Hidden header', () => {
+    it('draws the header row by default and leaves it out with hideHeader', () => {
+      const { rerender } = render(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} />);
+      expect(screen.getByRole('columnheader', { name: /Name/ })).toBeInTheDocument();
+      rerender(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} hideHeader />);
+      expect(screen.queryByRole('columnheader')).not.toBeInTheDocument();
+      expect(screen.getByText('Alpha')).toBeInTheDocument();
+    });
+  });
+
   describe('Other', () => {
     it('footer renders between the last row and the bottom Pager', () => {
       render(

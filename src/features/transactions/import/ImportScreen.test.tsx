@@ -4,16 +4,25 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { JobResponse } from '@/lib/types';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => '/ds/transactions/import' }));
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => '/ds/transactions/import' }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
-vi.mock('@/features/shell/ShellPage', () => ({ ShellPage: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock('@/features/shell/ShellPage', () => ({
+  ShellPage: ({ children, onAdd, addLabel }: { children: React.ReactNode; onAdd?: () => void; addLabel?: string }) => (
+    <div>
+      {onAdd ? <button onClick={onAdd}>{addLabel ?? 'Add'}</button> : null}
+      {children}
+    </div>
+  ),
+}));
 vi.mock('@/features/transactions/form/AddTransactionProvider', () => ({ useAddTransaction: () => ({ open: vi.fn() }) }));
 vi.mock('@/lib/query', () => ({ useAccounts: (a: unknown) => ({ data: a }) }));
 vi.mock('@/features/jobs/jobsBus', () => ({ subscribeJobStarted: () => () => {} }));
 vi.mock('@/features/jobs/useJobActions', () => ({ useJobActions: () => ({ cancel: vi.fn(), retry: vi.fn(), busy: false }) }));
 
 let jobs: JobResponse[] = [];
-vi.mock('@/features/jobs/useJobsHistory', () => ({ useJobsHistory: () => ({ jobs, isPending: false, totalElements: jobs.length, totalPages: 1 }) }));
+let totalPages = 1;
+vi.mock('@/features/jobs/useJobsHistory', () => ({ useJobsHistory: () => ({ jobs, isPending: false, totalElements: jobs.length, totalPages }) }));
 
 const handleSubmit = vi.fn((e?: React.FormEvent) => e?.preventDefault());
 const clearAllFiles = vi.fn();
@@ -33,6 +42,8 @@ const file = (name: string) => new File(['x'], name, { type: 'application/pdf' }
 
 beforeEach(() => {
   jobs = [];
+  totalPages = 1;
+  push.mockClear();
   form = {
     selectedAccountId: 'a1', setSelectedAccountId: vi.fn(), files: [file('Oct.pdf'), file('Sep.pdf')], isUploading: false, isSending: false,
     uploadableAccounts: accounts, addFiles, removeFile: vi.fn(), clearAllFiles, handleSubmit,
@@ -96,5 +107,37 @@ describe('ImportScreen', () => {
   it('says Last 30 days over Recent imports', () => {
     render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
     expect(screen.getByText('Last 30 days')).toBeInTheDocument();
+  });
+
+  it('the app bar + opens the file picker', () => {
+    render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const click = vi.spyOn(input, 'click');
+    fireEvent.click(screen.getByRole('button', { name: 'Add statements' }));
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+
+  it('the app bar + does nothing while an import runs (the picker is disabled)', () => {
+    jobs = [running];
+    render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Add statements' }));
+    expect(screen.getByRole('button', { name: /Processing statements/ })).toBeDisabled();
+  });
+
+  it('pages Recent imports through the address, keeping the account', () => {
+    totalPages = 3;
+    jobs = [{ ...running, status: 'SUCCEEDED' } as JobResponse];
+    render(<ImportScreen initialAccounts={accounts} initialAccountId="a1" since="2026-09-22T18:30:00.000Z" page={1} />);
+    expect(screen.getAllByRole('button', { name: 'Page 3' }).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Page 3' })[0]);
+    expect(push).toHaveBeenCalledWith('/ds/transactions/import?account=a1&page=2', { scroll: false });
+  });
+
+  it('draws no pager for a single page', () => {
+    jobs = [{ ...running, status: 'SUCCEEDED' } as JobResponse];
+    render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
+    expect(screen.queryByRole('button', { name: 'Page 2' })).not.toBeInTheDocument();
   });
 });

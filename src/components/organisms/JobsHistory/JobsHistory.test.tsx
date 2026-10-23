@@ -24,6 +24,16 @@ const ingest = (over: Partial<JobResponse>, files: object[] = [{ filename: 'HDFC
 
 const base = { openHref: (j: JobResponse) => `/ds/transactions/import/${j.id}` };
 
+describe('JobsHistory header row', () => {
+  it('the compact list has none, the full list keeps it', () => {
+    const { unmount } = render(<JobsHistory compact jobs={[ingest({})]} {...base} />);
+    expect(screen.queryByRole('columnheader', { name: 'Job' })).not.toBeInTheDocument();
+    unmount();
+    render(<JobsHistory jobs={[ingest({})]} {...base} />);
+    expect(screen.getByRole('columnheader', { name: 'Job' })).toBeInTheDocument();
+  });
+});
+
 describe('JobsHistory compact', () => {
   it('names the job by its file, leads with a status word and links View', () => {
     render(<JobsHistory compact jobs={[ingest({})]} {...base} />);

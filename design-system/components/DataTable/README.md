@@ -11,6 +11,7 @@ The list frame for every table of records: column headers with sort, a selection
   - **Header row:** `overline` type in `ink-3` on `bg-sunken`, 32px tall. The checkbox column comes first when the table is selectable. Number columns (`align: 'end'`) are right-aligned with tabular figures.
   - **Rows:** at least 40px tall, cells padded `px-space-12 py-space-6`. A cell is one line with ellipsis unless its column has `wrap: true`; then it may hold several lines (a name with a muted subtitle, a description with its context line, two stacked values).
   - **Sorting:** a sortable header is clicked to sort by that column. Each click moves through ascending, descending and off. The active header shows a chevron for the direction. One column at a time.
+  - **Hidden header** (`hideHeader`): the header row is left out; the rows start at the top.
   - **Sticky header** (`stickyHeader`, default on): the header sticks to the top of the table's scroll container (report widgets, dialogs). On a page, the table doesn't scroll on its own, so nothing sticks there.
 - **Phone (below `desk`):** the header and the checkbox column aren't shown. Each row stacks into:
   - line 1: the `main` cell on the left, the `amount` cell on the right;
@@ -66,6 +67,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `pager?: ReactNode`, `footer?: ReactNode`.
 - `loading?: boolean`, `busy?: boolean`, `empty?: ReactNode`, `skeletonRows?: number`.
 - `stickyHeader?: boolean` (default `true`).
+- `hideHeader?: boolean` (default `false`): no header row on desktop, for a single-column list whose header would only repeat the column name (owner, 2026-10-23). Sorting and select-all live in the header, so use it only on tables that have neither.
 - Native props, `ref` and `className` (layout only) on the root.
 
 ## Built from
