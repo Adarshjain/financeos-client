@@ -231,6 +231,8 @@ const config: Config = {
         'control-xl': 'var(--ds-control-xl)',
         'container-xs': 'var(--ds-container-xs)',
       },
+      // The one non-16:9 frame: the holding price chart on desktop (owner, 2026-10-23). Generic, so any wide frame can use it.
+      aspectRatio: { wide: '21 / 9' },
       zIndex: {
         sticky: 'var(--ds-z-sticky)',
         floating: 'var(--ds-z-floating)',

@@ -1,6 +1,7 @@
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear } from '@/features/loans/detail/financialYear';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { todayInAppZone } from '@/lib/date-range';
 import type { TradesQuery } from '@/lib/investments.types';
 import type { JobResponse } from '@/lib/jobs.types';
 import type { ImportCommitResult, InvestmentTransactionResponse } from '@/lib/types';
@@ -25,10 +26,15 @@ export interface TradebookUrlState {
   broker: string;
   /** '' = both sides. */
   type: TradeSide | '';
-  /** The financial year's starting year (2026 = FY 26-27); null = every year. */
+  /** The financial year's starting year (2026 = FY 26-27); null = every year (`fy=all`). The current FY when the address has none. */
   fy: number | null;
   page: number;
   size: number;
+}
+
+/** The financial year the business date is in (start year). */
+export function currentFy(): number {
+  return fyStartYear(todayInAppZone());
 }
 
 export function parseTradebookUrl(params: {
@@ -46,7 +52,7 @@ export function parseTradebookUrl(params: {
     q: (params.q ?? '').trim(),
     broker: (params.broker ?? '').trim(),
     type: params.type === 'buy' || params.type === 'sell' ? params.type : '',
-    fy: params.fy && Number.isFinite(fy) && fy >= 1990 && fy <= 2200 ? fy : null,
+    fy: params.fy === 'all' ? null : Number.isFinite(fy) && fy >= 1990 && fy <= 2200 ? fy : currentFy(),
     page: Number.isFinite(page) && page > 0 ? page : 0,
     size: TRADEBOOK_SIZE_OPTIONS.includes(size) ? size : TRADEBOOK_DEFAULT_SIZE,
   };
@@ -58,7 +64,8 @@ export function tradebookUrl(state: TradebookUrlState): string {
   if (state.q) query.set('q', state.q);
   if (state.broker) query.set('broker', state.broker);
   if (state.type) query.set('type', state.type);
-  if (state.fy != null) query.set('fy', String(state.fy));
+  if (state.fy == null) query.set('fy', 'all');
+  else if (state.fy !== currentFy()) query.set('fy', String(state.fy));
   if (state.page > 0) query.set('page', String(state.page));
   if (state.size !== TRADEBOOK_DEFAULT_SIZE) query.set('size', String(state.size));
   const text = query.toString();
@@ -79,7 +86,7 @@ export function tradebookQuery(state: TradebookUrlState): TradesQuery {
 }
 
 export function isTradebookFiltered(state: TradebookUrlState): boolean {
-  return state.q !== '' || state.broker !== '' || state.type !== '' || state.fy != null;
+  return state.q !== '' || state.broker !== '' || state.type !== '' || state.fy !== currentFy();
 }
 
 /** The FY dropdown: every year, then the current FY and the seven before it. The selected year stays listed. */
