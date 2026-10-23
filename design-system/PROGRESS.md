@@ -393,6 +393,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-23 · Phase 3 · Claude · Import matches the other tabs (owner): ShellPage `flushTop` on the screen and its loading state; the loading skeleton line for the removed intro is gone. Checks: import vitest 37, ds-import E2E 15 passed, check-ui. Deviations: none.
 - 2026-10-23 · Phase 3 · Claude · Negative amounts (owner): AmountField `onNegative` — a negative keypad result ("= −₹200") or typed arithmetic applies without its sign and the transaction form switches to Debit; other amount fields still refuse negatives. Checks: tsc, lint, check-ui, AmountField/form vitest, ds-amount-keypad E2E 11 passed. Deviations: none.
 - 2026-10-23 · Phase 3 · Claude · Pull-to-refresh in the installed app (owner: works on Legacy, not /ds): dropped the standalone `overscroll-behavior: none` from ds.css; only sideways overscroll stays off. Deviations: none.
 - 2026-10-23 · Phase 3 · Claude + implementers · Transactions Approve Undo is a full, all-or-nothing revert (owner): one POST /transactions/undo-approve with the approve response's prior states (server 097e3d3); rows edited since are kept. Checks: tsc, lint, vitest, check-ui, ds-transactions + ds-rules E2E 69 passed, API review specs 30 passed. Forced test edits: hooks.test, TransactionsScreen.optimistic/bulk tests (Undo now one undo-approve call). Deviations: none.
