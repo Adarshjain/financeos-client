@@ -91,6 +91,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
     <ShellPage
       crumb="Money / Transactions"
       title="Import"
+      flushTop
       onAdd={chooseFiles}
       addLabel="Add statements"
     >

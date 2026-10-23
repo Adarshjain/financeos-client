@@ -7,9 +7,8 @@ import { ImportTabs } from '@/features/transactions/import/ImportTabs';
 /** Shown while the Import tab loads. */
 export default function DsImportLoading() {
   return (
-    <ShellPage crumb="Money / Transactions" title="Import">
+    <ShellPage crumb="Money / Transactions" title="Import" flushTop>
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
-        <Skeleton width="60%" height={16} />
         <ImportTabs />
         <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-12 desk:gap-space-16">
           <Card className="desk:col-span-7">
