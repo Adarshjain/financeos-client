@@ -127,7 +127,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('button', { name: 'Transaction' })).toBeEnabled();
     // Lending is enabled and opens the Add ledger entry dialog from state (no URL change)
     await expect(sheet.getByRole('button', { name: 'Lending' })).toBeEnabled();
-    await expect(sheet.getByRole('button', { name: 'Trade' })).toBeDisabled();
+    await expect(sheet.getByRole('button', { name: 'Trade' })).toBeEnabled();
     const importLink = sheet.getByRole('link', { name: 'Import' });
     await expect(importLink).toBeVisible();
     await expect(importLink).toHaveAttribute('href', '/ds/transactions/import');
@@ -188,6 +188,19 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(page.getByRole('dialog', { name: 'Add ledger entry' })).toBeVisible();
     await expect(page.getByRole('dialog', { name: 'More' })).not.toBeVisible();
     expect(new URL(page.url()).pathname).toBe('/ds');
+  });
+
+  test('phone 390px: Quick add Trade opens the Record trade dialog without leaving the page', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+    await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'More' }).click();
+    await page.getByRole('dialog', { name: 'More' }).getByRole('button', { name: 'Trade' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Record trade' });
+    await expect(dialog).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/ds');
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dialog).not.toBeVisible();
   });
 
   test('phone 390px: Quick add Transaction opens the Add transaction dialog without leaving the page', async ({ page }) => {
