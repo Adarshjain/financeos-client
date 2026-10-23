@@ -145,11 +145,12 @@ const config: Config = {
         'space-96': 'var(--ds-space-96)',
         // Bottom offset for floating bars, and the clearance content keeps under a floating bar.
         'safe-12': 'calc(var(--ds-space-12) + env(safe-area-inset-bottom))',
-        // Device safe-area insets (notch, home bar, landscape); 0 on desktop.
-        'safe-top': 'env(safe-area-inset-top)',
+        // Device safe-area insets (notch, home bar, landscape); 0 on desktop. --ds-safe-top zeroes the top one
+        // under something that already took it (the new-version banner).
+        'safe-top': 'var(--ds-safe-top, env(safe-area-inset-top))',
         'safe-left': 'env(safe-area-inset-left)',
         'safe-right': 'env(safe-area-inset-right)',
-        'safe-56': 'calc(var(--ds-space-56) + env(safe-area-inset-top))',
+        'safe-56': 'calc(var(--ds-space-56) + var(--ds-safe-top, env(safe-area-inset-top)))',
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       maxHeight: {

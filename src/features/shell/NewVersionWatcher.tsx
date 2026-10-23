@@ -2,24 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { showToast } from '@/components/ds';
+import { Banner, cn, Reveal } from '@/components/ds';
 
 import { fetchDeployedVersion, isChunkLoadError } from './newVersion';
 
 export const VERSION_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 /** Focus and visibilitychange usually fire together; one check covers both. */
 const MIN_GAP_MS = 5000;
-const TOAST_ID = 'new-version';
 
 /**
- * Tells an open tab that a newer deploy exists: a persistent "New version available / Reload" toast, shown
- * once. `loadedVersion` is the build id the server rendered this page with. Nothing is fetched on load; the
+ * Tells an open tab that a newer deploy exists: a full-width "New version available" banner above the shell
+ * with Refresh and dismiss, shown once (a dismiss lasts for the tab). It slides down from the top and back up. `loadedVersion` is the build id the server rendered this page with. Nothing is fetched on load; the
  * check runs when the tab regains focus and every 10 minutes. A failed lazy chunk load (the old deploy's
  * files are gone) counts as a new version too.
  */
 export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVersion: string }) {
   // The first value is the one this tab's code was loaded with; a refresh after a deploy renders a newer id.
   const [loadedVersion] = useState(renderedVersion);
+  const [announced, setAnnounced] = useState(false);
+  const [visible, setVisible] = useState(false);
   const shown = useRef(false);
   const inFlight = useRef(false);
   const lastCheck = useRef(0);
@@ -28,11 +29,8 @@ export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVe
     const announce = () => {
       if (shown.current) return;
       shown.current = true;
-      showToast('New version available', {
-        id: TOAST_ID,
-        duration: Infinity,
-        action: { label: 'Reload', onSelect: () => window.location.reload() },
-      });
+      setAnnounced(true);
+      setVisible(true);
     };
 
     const check = async () => {
@@ -74,5 +72,27 @@ export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVe
     };
   }, [loadedVersion]);
 
-  return null;
+  // Reveal and the slide wrapper stay mounted so both directions animate; the banner stays after a dismiss
+  // only to slide out. The data attribute (the layout's notch hand-off) is on only while it shows.
+  return (
+    <Reveal open={visible} data-new-version-banner={visible || undefined}>
+      <div
+        className={cn(
+          'transition-transform duration-base motion-reduce:transition-none',
+          visible ? 'translate-y-0' : '-translate-y-full'
+        )}
+      >
+        {announced ? (
+          <Banner
+            tone="info"
+            variant="page-top"
+            action={{ label: 'Refresh', onSelect: () => window.location.reload() }}
+            onDismiss={() => setVisible(false)}
+          >
+            New version available
+          </Banner>
+        ) : null}
+      </div>
+    </Reveal>
+  );
 }

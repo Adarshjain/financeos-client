@@ -29,6 +29,11 @@ const meta: Meta<typeof Banner> = {
       options: ['danger', 'success', 'warning', 'info', 'neutral'],
       description: 'Banner tone',
     },
+    variant: {
+      control: 'select',
+      options: ['inline', 'page-top'],
+      description: 'inline (default) or page-top: full width at the top of the app',
+    },
     title: {
       control: 'text',
       description: 'Optional bold lead-in title',
@@ -125,6 +130,19 @@ export const WithDismiss: Story = {
   args: {
     tone: 'info',
     children: 'A new feature has been added to your dashboard.',
+    onDismiss: fn(),
+  },
+};
+
+export const PageTop: Story = {
+  name: 'Page top',
+  parameters: { layout: 'fullscreen' },
+  decorators: [(Story) => <Story />],
+  args: {
+    tone: 'info',
+    variant: 'page-top',
+    children: 'New version available',
+    action: { label: 'Refresh', onSelect: fn() },
     onDismiss: fn(),
   },
 };

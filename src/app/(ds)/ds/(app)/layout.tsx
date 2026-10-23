@@ -25,9 +25,10 @@ export default async function DsAppLayout({
     <HideAmountsProvider initialHidden={hideAmounts}>
     <AddLendingProvider>
       <AddTransactionProvider today={todayInAppZone()}>
-      <NewVersionWatcher loadedVersion={buildVersion()} />
       <SessionExpiredDialog email={user.email} />
-      <div className="flex min-h-dvh">
+      <NewVersionWatcher loadedVersion={buildVersion()} />
+      {/* While the new-version banner shows above, it owns the notch inset (safe-top). */}
+      <div className="flex min-h-dvh [[data-new-version-banner]+&]:[--ds-safe-top:0px]">
         {/* Desktop Rail (hidden below desk) */}
         <div className="hidden desk:flex shrink-0 h-dvh sticky top-0">
           <ShellRail

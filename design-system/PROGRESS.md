@@ -396,6 +396,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-23 · Phase 3 · Claude · New-version notice (owner asked): toast → Banner `variant="page-top"` (new, README + story + test) above the whole /ds shell, Refresh + dismiss, slides down in / up out (Reveal + translate). `safe-top`/`safe-56` now read `--ds-safe-top` (fallback env), zeroed on the shell under the banner so the top bar doesn't double the notch inset; owner to confirm. Forced test edit: NewVersionWatcher.test asserted the toast. Deviations: the new variant and the safe-top change, pending owner OK.
 - 2026-10-23 · Boards · Claude · Phone investments hero replaces tiles: P-dividends(+edit), P-fno(+trade), P-holding, P-trade-record; tradebook, CA, instruments had none; import wizard step tiles kept. Deviations: none.
 - 2026-10-23 · Boards · Claude · Investments follow-ups (P+D): Holdings Name A–Z sort + totals add up; Dividends drops Detect from holdings, Suggestions always shown; CA record shows edit-only Delete. Deviations: none.
 - 2026-10-23 · Boards · Claude · Investments gap answers on P+D boards (holdings, holding, tradebook, record trade, dividends, F&O, corporate actions, instruments); new trade-edit, dividend-edit, fno-trade, corporate-action-record, instrument-edit, instrument-add. Deviations: none.
