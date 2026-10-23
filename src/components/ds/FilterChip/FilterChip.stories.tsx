@@ -3,7 +3,7 @@ import React from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import { FilterChip, Select } from '@/components/ds';
+import { ConcealProvider, FilterChip, Select } from '@/components/ds';
 
 const meta: Meta<typeof FilterChip> = {
   title: 'DS/Form fields/FilterChip',
@@ -148,4 +148,19 @@ export const WithSelectDropdown: Story = {
       }
     />
   ),
+};
+
+export const Concealed: Story = {
+  ...Default,
+  args: { ...Default.args, children: 'Amount ≥ ₹500' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
+  },
 };

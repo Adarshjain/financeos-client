@@ -4,6 +4,7 @@ import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Text } from '../Text/Text';
 
 export interface EmptyStateProps
@@ -59,12 +60,12 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
         >
           {title ? (
             <Text variant="label" tone="ink" as="span">
-              {title}
+              {concealMoney(title)}
             </Text>
           ) : null}
           {description ? (
             <Text variant="body" tone="ink-3" as="span">
-              {description}
+              {concealMoney(description)}
             </Text>
           ) : null}
           {children}
@@ -113,12 +114,12 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
             as="h3"
             className="m-0 text-ink"
           >
-            {title}
+            {concealMoney(title)}
           </Text>
         )}
         {description && (
           <Text variant="body" tone="ink-3" as="p" className="max-w-xs m-0">
-            {description}
+            {concealMoney(description)}
           </Text>
         )}
         {children}

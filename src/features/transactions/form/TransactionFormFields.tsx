@@ -12,7 +12,7 @@ import {
   TextArea,
   TextField,
 } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { AmountField, SettingsToggle } from '@/components/organisms';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import type { Category } from '@/lib/categories.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
@@ -125,7 +125,7 @@ export function TransactionFormFields({
           value={values.direction}
           onValueChange={(direction) => onChange({ direction: direction as Direction })}
         />
-        <TextField
+        <AmountField
           aria-label="Amount"
           className="min-w-0 flex-1"
           tone={values.direction === 'credit' ? 'success' : 'neutral'}
@@ -264,7 +264,7 @@ export function TransactionFormFields({
         />
       </Pair>
       <Pair>
-        <TextField
+        <AmountField
           label="Instant discount"
           prefix="₹"
           inputMode="decimal"
@@ -273,7 +273,7 @@ export function TransactionFormFields({
           {...amountExpressionProps(values.instantDiscount, (v) => onChange({ instantDiscount: v }))}
           error={errors.instantDiscount}
         />
-        <TextField
+        <AmountField
           label="Convenience fee"
           prefix="₹"
           inputMode="decimal"

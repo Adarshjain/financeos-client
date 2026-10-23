@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Button, showToast, Toast, Toaster } from '@/components/ds';
+import { Button, ConcealProvider, showToast, Toast, Toaster } from '@/components/ds';
 
 const meta: Meta<typeof Toast> = {
   title: 'DS/Feedback/Toast',
@@ -122,5 +122,20 @@ export const InteractiveTrigger: Story = {
         </div>
       </div>
     );
+  },
+};
+
+export const Concealed: Story = {
+  ...Neutral,
+  args: { ...Neutral.args, message: 'Paid ₹1,250 to Uber' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

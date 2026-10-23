@@ -1,3 +1,4 @@
+export * from './AmountField/AmountField';
 export * from './BankLogo/BankLogo';
 export * from './ErrorState/ErrorState';
 export * from './Illustration/Illustration';

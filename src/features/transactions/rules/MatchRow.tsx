@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Checkbox, ListRow, Text } from '@/components/ds';
+import { Badge, Checkbox, ListRow, Text, useConcealed } from '@/components/ds';
 import { BankLogo } from '@/components/organisms';
 import { formatAmount, formatDayMonth } from '@/features/accounts/list/accountsList';
 import { bankById } from '@/features/banks/banks';
@@ -22,6 +22,7 @@ export interface MatchRowProps {
 /** One transaction a rule's pattern matches: description, date · account · categories, and the amount. */
 export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: MatchRowProps) {
   const credit = txn.type === 'CREDIT';
+  const concealed = useConcealed();
   const amount = formatAmount(Math.abs(Number(txn.amount)), 2);
   const plastic = matchPlastic(txn);
   const names = txn.categories.map((c) => c.name);
@@ -60,7 +61,7 @@ export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: Matc
         </span>
       }
       trailing={
-        <Text variant="body-strong" tone={credit ? 'positive' : 'ink'} className="tabular-nums" fraction="small">
+        <Text variant="body-strong" tone={credit && !concealed ? 'positive' : 'ink'} className="tabular-nums" fraction="small">
           {credit ? `+${amount}` : amount}
         </Text>
       }

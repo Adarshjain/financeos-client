@@ -10,8 +10,8 @@ import {
   DialogContent,
   SegmentedControl,
   showToast,
-  TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { formatRupees } from '@/features/accounts/list/accountsList';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -135,7 +135,7 @@ export function MarkPaidDialog({
             onValueChange={(v) => setMode(v as Mode)}
           />
           {mode === 'part' ? (
-            <TextField
+            <AmountField
               label="Amount paid"
               prefix="₹"
               inputMode="decimal"

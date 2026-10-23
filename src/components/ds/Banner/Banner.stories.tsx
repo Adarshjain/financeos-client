@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Banner } from '@/components/ds';
+import { Banner,ConcealProvider } from '@/components/ds';
 
 const meta: Meta<typeof Banner> = {
   title: 'DS/Feedback/Banner',
@@ -126,5 +126,20 @@ export const WithDismiss: Story = {
     tone: 'info',
     children: 'A new feature has been added to your dashboard.',
     onDismiss: fn(),
+  },
+};
+
+export const Concealed: Story = {
+  ...Danger,
+  args: { ...Danger.args, title: 'Over budget.', children: '₹2,400 above the limit' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

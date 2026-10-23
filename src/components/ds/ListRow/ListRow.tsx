@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from '../Menu/Menu';
 
@@ -100,7 +101,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       if (!trailing && !chevron && !hasActions) return null;
       return (
         <div className="shrink-0 flex items-center gap-space-8 ml-auto">
-          {trailing}
+          {concealMoney(trailing)}
           {hasActions && (
             <MenuRoot>
               <MenuTrigger
@@ -149,9 +150,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
           {title !== undefined ? (
             <div className="flex-1 min-w-0">
-              <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{title}</div>
+              <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{concealMoney(title)}</div>
               {subtitle && (
-                <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{subtitle}</div>
+                <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{concealMoney(subtitle)}</div>
               )}
               {child.props.children}
             </div>
@@ -194,9 +195,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
         {title !== undefined ? (
           <div className="flex-1 min-w-0">
-            <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{title}</div>
+            <div className={cn('text-body-strong font-bold text-ink', wrap ? 'break-words' : 'truncate')}>{concealMoney(title)}</div>
             {subtitle && (
-              <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{subtitle}</div>
+              <div className={cn('text-label font-medium text-ink-3 mt-space-2', wrap ? 'break-words' : 'truncate')}>{concealMoney(subtitle)}</div>
             )}
             {children}
           </div>

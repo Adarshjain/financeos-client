@@ -22,3 +22,6 @@ Icon, Badge (count). Dropdown chips: Select with `trigger={<FilterChip …/>}`.
 ## Variants
 - Size: `sm` (default, 28px) or `md` (`control-md`, the same height as TextField). Shape: `pill` (default) or `rounded` (`radius-md`, the same corners as TextField, like Badge's `shape`). Both apply to the plain and the removable chip.
 - Outline (off), soft (selected/on), dashed ("+ More"), warning tone (review), dropdown, with count, removable, disabled.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in children reads "₹ —". See Conceal.

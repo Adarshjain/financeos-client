@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 
@@ -55,7 +56,7 @@ export const StatusWord = forwardRef<HTMLSpanElement, StatusWordProps>(
         {icon ? (
           <Icon name={icon} size="sm" className="shrink-0" />
         ) : null}
-        {children}
+        {concealMoney(children)}
       </span>
     );
   },

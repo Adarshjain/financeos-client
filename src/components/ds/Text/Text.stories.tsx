@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { Text } from '@/components/ds';
+import { ConcealProvider, Text } from '@/components/ds';
 
 const meta: Meta<typeof Text> = {
   title: 'DS/Foundations/Text',
@@ -193,5 +193,20 @@ export const SmallFraction: Story = {
     variant: 'figure',
     fraction: 'small',
     children: '₹1,250.75',
+  },
+};
+
+export const Concealed: Story = {
+  ...HeroFigure,
+  args: { ...HeroFigure.args, children: '₹11,98,842.50', fraction: 'small' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

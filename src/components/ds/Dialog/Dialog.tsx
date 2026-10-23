@@ -5,6 +5,7 @@ import React, { createContext, forwardRef, useCallback, useContext, useRef } fro
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
 import { useSheetDrag } from '../useSheetDrag';
@@ -244,12 +245,12 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
                   isRadix ? (
                     <DialogPrimitive.Title asChild>
                       <div className="font-extrabold text-title text-ink leading-tight">
-                        {title}
+                        {concealMoney(title)}
                       </div>
                     </DialogPrimitive.Title>
                   ) : (
                     <div className="font-extrabold text-title text-ink leading-tight">
-                      {title}
+                      {concealMoney(title)}
                     </div>
                   )
                 )}
@@ -257,12 +258,12 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
                   isRadix ? (
                     <DialogPrimitive.Description asChild>
                       <div className="text-label text-ink-3 mt-space-2">
-                        {description}
+                        {concealMoney(description)}
                       </div>
                     </DialogPrimitive.Description>
                   ) : (
                     <div className="text-label text-ink-3 mt-space-2">
-                      {description}
+                      {concealMoney(description)}
                     </div>
                   )
                 )}

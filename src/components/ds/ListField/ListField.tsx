@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 
 /**
  * ListField: A label/value pair for detail sheets.
@@ -25,7 +26,7 @@ export const ListField = forwardRef<HTMLDivElement, ListFieldProps>(
       >
         <span className="text-ink-3 shrink-0 font-medium">{label}</span>
         {value !== undefined ? (
-          <span className="text-ink font-semibold text-right min-w-0 break-words">{value}</span>
+          <span className="text-ink font-semibold text-right min-w-0 break-words">{concealMoney(value)}</span>
         ) : (
           children
         )}

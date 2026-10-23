@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Text, Widget } from '@/components/ds';
+import { ConcealProvider, Text, Widget } from '@/components/ds';
 
 const meta: Meta<typeof Widget> = {
   title: 'DS/Data display/Widget',
@@ -108,5 +108,20 @@ export const WithMenu: Story = {
         ₹11,98,842
       </Text>
     ),
+  },
+};
+
+export const Concealed: Story = {
+  ...Figure,
+  args: { ...Figure.args, title: 'Spend this month', subtitle: '₹12,000 of ₹20,000' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

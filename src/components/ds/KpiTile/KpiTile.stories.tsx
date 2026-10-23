@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Badge, KpiTile } from '@/components/ds';
+import { Badge, ConcealProvider, KpiTile } from '@/components/ds';
 
 const meta: Meta<typeof KpiTile> = {
   title: 'DS/Data display/KpiTile',
@@ -122,5 +122,19 @@ export const Failed: Story = {
       label: 'Retry',
       onSelect: fn(),
     },
+  },
+};
+
+export const Concealed: Story = {
+  args: { label: 'Net worth', value: '₹5,22,238', delta: { value: '▲ ₹41,220', period: 'this month', direction: 'good' }, context: 'of ₹6.00L' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

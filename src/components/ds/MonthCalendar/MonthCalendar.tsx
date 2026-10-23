@@ -4,6 +4,8 @@ import React, { forwardRef, useMemo, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealText, useConcealed } from '../Conceal/Conceal';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
 import { monthNames, monthNamesShort, weekdayLetters, weekdayNamesShort } from '../utils';
@@ -178,6 +180,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
   ) => {
     const isEventsMode = mode === 'events';
 
+    const concealed = useConcealed();
     const [currentValue, setCurrentValue] = useControllableState<MonthCalendarValue | undefined>({
       value,
       defaultValue,
@@ -286,13 +289,13 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                 {dayEvents.slice(0, maxEventsPerDay).map((ev) => (
                   <span
                     key={ev.id}
-                    title={ev.label}
+                    title={concealed ? concealText(ev.label) : ev.label}
                     className={cn(
                       'block h-space-6 rounded-ds-xs font-bold desk:h-auto desk:truncate desk:px-space-6 desk:py-space-2',
                       eventToneStyles[ev.tone ?? 'brand'],
                     )}
                   >
-                    <span className="hidden desk:inline">{ev.label}</span>
+                    <span className="hidden desk:inline">{concealMoney(ev.label)}</span>
                   </span>
                 ))}
                 {hidden > 0 && (

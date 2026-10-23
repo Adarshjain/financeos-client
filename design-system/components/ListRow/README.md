@@ -19,3 +19,5 @@ Avatar (leading avatar and icon tile), DateTile (leading date), Badge, Icon (che
 ## Variants
 - Leading: badge, date tile, avatar, icon tile or nothing. Trailing: action, trailing node, chevron, actions menu. Highlighted, disabled, wrap (owner, 2026-10-20).
 
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title, subtitle and trailing reads "₹ —". See Conceal.

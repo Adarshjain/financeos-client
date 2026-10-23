@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 
-import { Badge } from '@/components/ds';
+import { Badge,ConcealProvider } from '@/components/ds';
 
 const meta: Meta<typeof Badge> = {
   title: 'DS/Data display/Badge',
@@ -101,5 +101,20 @@ export const Dot: Story = {
   args: {
     variant: 'dot',
     tone: 'danger',
+  },
+};
+
+export const Concealed: Story = {
+  ...Soft,
+  args: { ...Soft.args, children: 'Due ₹4,500' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

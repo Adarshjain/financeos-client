@@ -4,6 +4,7 @@ import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { type BannerTone,bannerToneStyles } from './toneStyles';
 
@@ -51,9 +52,9 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
       >
         <div className="flex-1 min-w-0">
           {title ? (
-            <span className="font-extrabold mr-space-6">{title}</span>
+            <span className="font-extrabold mr-space-6">{concealMoney(title)}</span>
           ) : null}
-          {children ? <div className="inline">{children}</div> : null}
+          {children ? <div className="inline">{concealMoney(children)}</div> : null}
         </div>
         {action ? (
           <div className="shrink-0 flex items-center">

@@ -20,6 +20,7 @@ import {
   Skeleton,
   StatusWords,
   Text,
+  useConcealed,
 } from '@/components/ds';
 import { formatAmount } from '@/features/accounts/list/accountsList';
 import { appHref } from '@/features/shell/routes';
@@ -153,6 +154,7 @@ function DetailContent({
   const accountName = (id: string) => accounts?.find((a) => a.id === id)?.name ?? 'Unknown';
   const rows = linkRows(t.id, links, t.obligationRefs ?? [], accountName);
   const credit = t.amount > 0;
+  const concealed = useConcealed();
   const status = statusItems(t);
   const card = cardWords(t);
   const rewards = rewardsWords(t);
@@ -227,7 +229,7 @@ function DetailContent({
         <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
-              <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
+              <Text variant="figure" tone={credit && !concealed ? 'positive' : 'ink'} as="span" fraction="small">
                 {`${credit ? '+' : ''}${amountWords(t.amount)}`}
               </Text>
               {balance ? (

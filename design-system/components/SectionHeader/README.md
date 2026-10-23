@@ -17,3 +17,6 @@ The header that starts a section inside a list, card or sheet. One component for
 
 ## Built from
 Nothing else; Card and Dialog bodies use it.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in children reads "₹ —". See Conceal.

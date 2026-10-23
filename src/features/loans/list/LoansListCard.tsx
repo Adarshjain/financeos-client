@@ -4,20 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  Icon,
-  Pager,
-  ProgressBar,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Pager, ProgressBar, showToast, Text, TextField } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
@@ -62,13 +49,13 @@ const columns = [
     id: 'emi',
     header: 'EMI',
     meta: { size: 'sm', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => <Text variant="body">{row.original.emi}</Text>,
+    cell: ({ row }) => <Text variant="body"><Conceal whole>{row.original.emi}</Conceal></Text>,
   }),
   ch.display({
     id: 'outstanding',
     header: 'Outstanding',
     meta: { size: 'md', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <Text variant="body-strong">{row.original.outstanding}</Text>,
+    cell: ({ row }) => <Text variant="body-strong"><Conceal whole>{row.original.outstanding}</Conceal></Text>,
   }),
   ch.display({
     id: 'progress',

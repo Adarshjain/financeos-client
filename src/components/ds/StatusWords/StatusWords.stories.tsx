@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { StatusWord, StatusWords } from '@/components/ds';
+import { ConcealProvider, StatusWord, StatusWords } from '@/components/ds';
 
 const meta: Meta<typeof StatusWords> = {
   title: 'DS/Data display/StatusWords',
@@ -97,5 +97,20 @@ export const ContextLine: StoryObj<typeof StatusWords> = {
       { tone: 'info', label: 'Refund', icon: 'link' },
       { tone: 'neutral', label: 'Gmail' },
     ],
+  },
+};
+
+export const Concealed: StoryObj<typeof StatusWord> = {
+  ...Neutral,
+  args: { ...Neutral.args, children: 'Paid ₹1,250' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };

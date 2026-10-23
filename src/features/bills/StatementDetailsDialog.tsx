@@ -11,8 +11,8 @@ import {
   DialogContent,
   formatDate,
   showToast,
-  TextField,
 } from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateBillDetailsRequest } from '@/lib/api/types';
@@ -132,14 +132,14 @@ export function StatementDetailsDialog({
       >
         <DialogBody>
           {formError ? <Banner tone="danger">{formError}</Banner> : null}
-          <TextField
+          <AmountField
             label="Total due (₹)"
             inputMode="decimal"
             value={totalText}
             {...amountExpressionProps(totalText, setTotal)}
             error={totalError ?? undefined}
           />
-          <TextField
+          <AmountField
             label="Minimum due"
             optional
             inputMode="decimal"

@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { concealMoney } from '../Conceal/concealMoney';
 
 export type SectionHeaderVariant = 'strong' | 'band';
 export type SectionHeaderTone = 'neutral' | 'danger';
@@ -77,7 +78,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         )}
         {...props}
       >
-        <span>{children}</span>
+        <span>{concealMoney(children)}</span>
         {meta ? <span className="font-semibold text-ink-3">{meta}</span> : null}
         {action ? <span className="ml-auto shrink-0">{action}</span> : null}
       </Component>

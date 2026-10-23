@@ -7,6 +7,7 @@ import { TopBar, type TopBarAction } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
+import { useHideAmountsAction } from './hideAmounts';
 import { appHref } from './routes';
 
 /**
@@ -50,6 +51,7 @@ export function ShellPage({
   children,
 }: ShellPageProps) {
   const notifications = useNotificationsAction();
+  const hideAmounts = useHideAmountsAction();
   return (
     <>
       <TopBar
@@ -59,6 +61,7 @@ export function ShellPage({
         leading={backHref ? undefined : <Logo variant="mark" />}
         backHref={backHref}
         actions={[
+          hideAmounts,
           notifications,
           ...shellTopBarActions,
           ...(onAdd

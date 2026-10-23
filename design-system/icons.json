@@ -65,6 +65,11 @@
   "use": "Open detail during selection"
  },
  {
+  "name": "eye-slash",
+  "phosphor": "eye-slash",
+  "use": "Top-bar switch while amounts are hidden"
+ },
+ {
   "name": "calendar",
   "phosphor": "calendar-blank",
   "use": "DateField; Upcoming tab"
@@ -188,5 +193,10 @@
   "name": "arrow-clockwise",
   "phosphor": "arrow-clockwise",
   "use": "Refresh matches (Edit rule board)"
+ },
+ {
+  "name": "backspace",
+  "phosphor": "backspace",
+  "use": "Delete last character (amount keypad)"
  }
 ]

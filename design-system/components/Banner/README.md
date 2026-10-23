@@ -30,3 +30,6 @@ Button `link` (the action), Button `ghost` and Icon `close` (the dismiss control
 
 ## Variants
 - The five tones, with and without a title, with an action, with dismiss.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title and children reads "₹ —". See Conceal.

@@ -1,4 +1,4 @@
-import { createDataTableColumnHelper, Highlight, Text } from '@/components/ds';
+import { Conceal, createDataTableColumnHelper, Highlight, Text, useConcealed } from '@/components/ds';
 
 export interface TransactionRowData {
   id: string;
@@ -57,11 +57,9 @@ export const createTransactionColumns = (query?: string) => {
     cell: ({ row }) => {
       const text = row.original.formattedAmount ?? String(row.original.amount);
       return query ? (
-        mark(text)
+        <Conceal whole>{mark(text)}</Conceal>
       ) : (
-        <Text variant="body" tone={row.original.isCredit ? 'positive' : 'ink'} fraction="small">
-          {text}
-        </Text>
+        <AmountText text={text} isCredit={row.original.isCredit} />
       );
     },
   }),
@@ -69,9 +67,19 @@ export const createTransactionColumns = (query?: string) => {
     id: 'balance',
     header: 'Balance',
     meta: { size: 'sm', align: 'end' },
-    cell: ({ row }) => row.original.balance ?? '',
+    cell: ({ row }) => (row.original.balance ? <Conceal whole placeholder="">{row.original.balance}</Conceal> : ''),
   }),
 ]);
 };
 
 export const transactionColumns = createTransactionColumns();
+
+/** Desktop amount cell: a credit is green only while amounts show, so a hidden one gives nothing away. */
+function AmountText({ text, isCredit }: { text: string; isCredit?: boolean }) {
+  const concealed = useConcealed();
+  return (
+    <Text variant="body" tone={isCredit && !concealed ? 'positive' : 'ink'} fraction="small">
+      {text}
+    </Text>
+  );
+}

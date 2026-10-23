@@ -22,3 +22,6 @@ Button, Text. Illustration is passed via the `illustration` slot.
 
 ## Variants
 - First run, nothing matches (filters), all clear, couldn't load, with illustration, with a second action, and compact (one-line). One working story drives them all through controls.
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in title and description reads "₹ —". See Conceal.

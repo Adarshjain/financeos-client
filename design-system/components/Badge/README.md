@@ -18,3 +18,6 @@ Nothing else. Renders a `<span>`, `<button>`, or Radix `Slot` when `asChild`.
 - Shapes: `default` (rounded-ds-sm), `rounded` (rounded-ds-pill)
 - Sizes: `sm` (16px height, text-micro), `md` (20px height, text-caption)
 - Tones: `neutral`, `success`, `warning`, `danger`, `info`
+
+## Hidden amounts
+Under a `ConcealProvider` with `concealed`, each ₹ amount in children reads "₹ —". See Conceal.

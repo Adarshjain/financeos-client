@@ -1,6 +1,8 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { Conceal } from '../Conceal/Conceal';
+import { concealMoney } from '../Conceal/concealMoney';
 
 export type TextVariant =
   | 'hero-figure'
@@ -150,7 +152,13 @@ export const Text = forwardRef<HTMLElement, TextProps>(
         )}
         {...props}
       >
-        {fraction === 'small' ? renderFraction(children, variant, tone) : children}
+        {fraction === 'small' ? (
+          <Conceal whole value={typeof children === 'string' || typeof children === 'number' ? children : undefined}>
+            {renderFraction(children, variant, tone)}
+          </Conceal>
+        ) : (
+          concealMoney(children)
+        )}
       </Component>
     );
   },

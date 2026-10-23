@@ -2,17 +2,7 @@
 
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterChip,
-  Select,
-  Text,
-} from '@/components/ds';
+import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterChip, Select, Text } from '@/components/ds';
 import type { InstallmentDto } from '@/lib/loan.types';
 
 import { fyOptions, fySummaryLine, type ScheduleRow } from './scheduleModel';
@@ -32,6 +22,17 @@ function OverdueAction({ row, onMarkPaid }: { row: ScheduleRow; onMarkPaid: (ins
   );
 }
 
+/** "interest 10,000 · principal 4,347": the two bare amounts hide with the others. */
+export function PhoneSub({ text }: { text: string }) {
+  const match = /^interest ([-−]?[\d,.]+) · principal ([-−]?[\d,.]+)$/.exec(text);
+  if (!match) return <>{text}</>;
+  return (
+    <>
+      interest <Conceal whole>{match[1]}</Conceal> · principal <Conceal whole>{match[2]}</Conceal>
+    </>
+  );
+}
+
 function columnsFor(onMarkPaid: (inst: InstallmentDto) => void) {
   return helper.columns([
     helper.accessor('seq', { id: 'seq', header: '#', meta: { size: 'sm', phone: 'hidden' } }),
@@ -46,11 +47,11 @@ function columnsFor(onMarkPaid: (inst: InstallmentDto) => void) {
         </>
       ),
     }),
-    helper.accessor('opening', { id: 'opening', header: 'Opening', meta: { size: 'sm', align: 'end', phone: 'hidden' } }),
-    helper.accessor('emi', { id: 'emi', header: 'EMI', meta: { size: 'sm', align: 'end', phone: 'amount' } }),
-    helper.accessor('interest', { id: 'interest', header: 'Interest', meta: { size: 'sm', align: 'end', phone: 'hidden' } }),
-    helper.accessor('principal', { id: 'principal', header: 'Principal', meta: { size: 'sm', align: 'end', phone: 'hidden' } }),
-    helper.accessor('closing', { id: 'closing', header: 'Closing', meta: { size: 'sm', align: 'end', phone: 'hidden' } }),
+    helper.accessor('opening', { id: 'opening', header: 'Opening', meta: { size: 'sm', align: 'end', phone: 'hidden' }, cell: ({ getValue }) => <Conceal whole>{getValue()}</Conceal> }),
+    helper.accessor('emi', { id: 'emi', header: 'EMI', meta: { size: 'sm', align: 'end', phone: 'amount' }, cell: ({ getValue }) => <Conceal whole>{getValue()}</Conceal> }),
+    helper.accessor('interest', { id: 'interest', header: 'Interest', meta: { size: 'sm', align: 'end', phone: 'hidden' }, cell: ({ getValue }) => <Conceal whole>{getValue()}</Conceal> }),
+    helper.accessor('principal', { id: 'principal', header: 'Principal', meta: { size: 'sm', align: 'end', phone: 'hidden' }, cell: ({ getValue }) => <Conceal whole>{getValue()}</Conceal> }),
+    helper.accessor('closing', { id: 'closing', header: 'Closing', meta: { size: 'sm', align: 'end', phone: 'hidden' }, cell: ({ getValue }) => <Conceal whole>{getValue()}</Conceal> }),
     helper.display({
       id: 'status',
       header: 'Status',
@@ -109,7 +110,7 @@ export function ScheduleCard({ rows, installments, fy, onFyChange, highlightSeq,
         onRowSelect={onOpenRow}
         rowState={(row) => ({ tone: row.overdue ? 'warning' : undefined, pressable: !row.settled || Boolean(row.payment) })}
         highlightedRowId={highlightSeq == null ? undefined : String(highlightSeq)}
-        phoneSub={(row) => row.phoneSub}
+        phoneSub={(row) => <PhoneSub text={row.phoneSub} />}
         empty={<EmptyState compact description="No schedule to show yet." />}
         stickyHeader={false}
       />

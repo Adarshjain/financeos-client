@@ -2,7 +2,15 @@
 
 import React from 'react';
 
-import { DateField, Dialog, DialogBody, DialogContent, Select, TextArea, TextField } from '@/components/ds';
+import {
+  DateField,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  Select,
+  TextArea,
+} from '@/components/ds';
+import { AmountField } from '@/components/organisms';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import type { LoanChargeType } from '@/lib/loan.types';
@@ -78,7 +86,7 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
               value={values.chargeType}
               onValueChange={(v) => change({ chargeType: v as LoanChargeType })}
             />
-            <TextField
+            <AmountField
               label="Amount"
               prefix="₹"
               inputMode="decimal"

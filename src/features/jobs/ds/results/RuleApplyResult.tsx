@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Button, createDataTableColumnHelper, DataTable, Text, useConcealed } from '@/components/ds';
 import { dayMonth } from '@/features/jobs/format';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';
@@ -15,6 +15,16 @@ import { ResultSection } from './ResultSection';
 type Txn = NonNullable<RuleApplyData['transactions']>[number];
 
 const ch = createDataTableColumnHelper<Txn>();
+
+function AmountCell({ type, amount }: { type?: string | null; amount?: string | number | null }) {
+  const concealed = useConcealed();
+  const credit = type === 'CREDIT';
+  return (
+    <Text variant="body" tone={credit && !concealed ? 'positive' : 'ink'} fraction="small">
+      {`${credit ? '+' : ''}${formatCurrency(amount)}`}
+    </Text>
+  );
+}
 const columns = [
   ch.display({
     id: 'date',
@@ -40,11 +50,7 @@ const columns = [
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => (
-      <Text variant="body" tone={row.original.type === 'CREDIT' ? 'positive' : 'ink'} fraction="small">
-        {`${row.original.type === 'CREDIT' ? '+' : ''}${formatCurrency(row.original.amount)}`}
-      </Text>
-    ),
+    cell: ({ row }) => <AmountCell type={row.original.type} amount={row.original.amount} />,
   }),
 ];
 

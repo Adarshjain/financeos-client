@@ -6,6 +6,7 @@ import {
   Avatar,
   Badge,
   Card,
+  ConcealProvider,
   DateTile,
   ListRow,
   Text,
@@ -163,4 +164,18 @@ export const AsChild: Story = {
       <a href="#" />
     </ListRow>
   ),
+};
+
+export const Concealed: Story = {
+  args: { title: 'Rent', subtitle: 'Due ₹36,000 on 5 Nov', trailing: '₹36,000' },
+  decorators: [
+    (Story) => (
+      <ConcealProvider concealed>
+        <Story />
+      </ConcealProvider>
+    ),
+  ],
+  parameters: {
+    docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
+  },
 };
