@@ -26,7 +26,7 @@ The preset for destructive or hard-to-undo actions (delete a transaction, statem
 
 ## Props
 - `Dialog`: `variant` (`modal` | `side-panel`; `side-panel` makes it non-modal), plus `open`, `defaultOpen`, `onOpenChange`.
-- `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`, and adds `animated` (default `true`; `false` drops the slide/zoom on open and the exit animation, the panel only fades in and goes at once; for an open that another animation carries, such as a shared-element morph from a row).
+- `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`, and adds `animated` (default `true`; `false` drops the slide/zoom on open and the exit animation, the panel is opaque from its first frame, with no fade, and goes at once; for an open that another animation carries, such as a shared-element morph from a row).
 - `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from

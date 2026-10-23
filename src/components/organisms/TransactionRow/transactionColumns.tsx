@@ -47,8 +47,7 @@ export const createTransactionColumns = (query?: string) => {
   helper.accessor('account', {
     id: 'account',
     header: 'Account',
-    // 'md' leaves room for the 14px bank logo and its gap beside the name.
-    meta: { size: 'md' },
+    meta: { size: 'sm' },
     cell: ({ row }) => mark(row.original.account ?? ''),
   }),
   helper.accessor('amount', {
