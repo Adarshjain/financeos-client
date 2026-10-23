@@ -3,8 +3,7 @@
 import React from 'react';
 
 import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
-import { BankLogo, createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
-import { bankById } from '@/features/banks/banks';
+import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
 import { ListTransition, RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -153,7 +152,6 @@ export function TransactionsList({
                 isCredit={r.isCredit}
                 balance={r.balance}
                 account={r.account}
-                accountLogo={bankById(r.bankId) ? <BankLogo bankId={r.bankId ?? null} name={r.account ?? ''} size="sm" /> : undefined}
                 plastic={r.plastic}
                 reviewStatus={r.reviewStatus}
                 link={r.link}

@@ -24,7 +24,7 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `isCredit?: boolean`: Whether amount is a credit (+ positive green). Explicitly passed by caller.
 - `balance?: ReactNode`: Running balance below amount
 - `account?: ReactNode`: Account name
-- `accountLogo?: ReactNode`: Small logo (BankLogo `size="sm"`) shown right before the account name on the phone context line and in the desktop Account cell. Unset: no logo, no gap. The Account column is `md` wide to fit it.
+- `accountLogo?: ReactNode`: Small logo (BankLogo `size="sm"`) shown right before the account name on the phone context line and in the desktop Account cell. Unset: no logo, no gap.
 - `plastic?: ReactNode`: Card or plastic suffix (e.g. ••7741)
 - `reviewStatus?: ReactNode`: Amber review status word
 - `note?: ReactNode`: Note text

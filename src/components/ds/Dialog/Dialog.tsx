@@ -413,7 +413,7 @@ export interface DialogContentProps extends Omit<
   tertiary?: DialogAction;
   dismissible?: boolean;
   /**
-   * `false`: no slide or zoom on open and none on close; the panel fades in and goes at once. For an open that
+   * `false`: no slide, zoom or fade on open and none on close; the panel is opaque from its first frame and goes at once, so nothing behind shows through while another animation grows into it. For an open that
    * another animation carries (a shared-element morph), which a sliding panel would fight. Default `true`.
    */
   animated?: boolean;
@@ -550,7 +550,7 @@ export const DialogContent = forwardRef<
                     'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
                     'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
                   ]
-                : 'animate-in fade-in-0',
+                : undefined,
               isDragging
                 ? 'transition-none'
                 : 'transition-transform duration-slow ease-out desk:duration-base',

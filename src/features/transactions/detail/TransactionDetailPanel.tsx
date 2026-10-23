@@ -52,6 +52,9 @@ import { useTransactionUnlink } from './useTransactionUnlink';
 /** Below the top bar (space-56), then the page gutter (space-24, as a margin so the two add up). */
 const PANEL_OFFSET = 'desk:top-safe-56 desk:mt-space-24';
 
+/** The rest of a morphing detail (all but the growing title and amount) fades in once the row has grown into it. */
+const FADE_IN = 'animate-in fade-in-0 duration-base motion-reduce:animate-none';
+
 export interface TransactionDetailPanelProps {
   /** The transaction to show; null keeps the panel closed. */
   transactionId: string | null;
@@ -145,6 +148,7 @@ function DetailContent({
   onLink,
   onReview,
 }: DetailContentProps) {
+  const fade = morphing ? FADE_IN : undefined;
   const router = useRouter();
   const queryClient = useQueryClient();
   const unlink = useTransactionUnlink(t.id);
@@ -253,8 +257,12 @@ function DetailContent({
                 </Text>
               ) : null}
             </div>
-            {status.length > 0 ? <StatusWords items={status} /> : null}
-            <div className="flex flex-wrap items-center gap-space-8">
+            {status.length > 0 ? (
+              <div className={morphing ? FADE_IN : undefined}>
+                <StatusWords items={status} />
+              </div>
+            ) : null}
+            <div className={`flex flex-wrap items-center gap-space-8${morphing ? ` ${FADE_IN}` : ''}`}>
               <Button size="sm" onClick={() => onEdit(t)}>
                 Edit
               </Button>
@@ -274,10 +282,11 @@ function DetailContent({
             </div>
           </div>
 
-          <ListField label="Account" value={accountName(t.accountId)} />
-          {card ? <ListField label="Card" value={card} /> : null}
-          <ListField label="Date" value={longDate(t.date)} />
+          <ListField className={fade} label="Account" value={accountName(t.accountId)} />
+          {card ? <ListField className={fade} label="Card" value={card} /> : null}
+          <ListField className={fade} label="Date" value={longDate(t.date)} />
           <ListField
+            className={fade}
             label="Categories"
             value={
               categories.length > 0 ? (
@@ -293,13 +302,13 @@ function DetailContent({
               )
             }
           />
-          {t.mcc ? <ListField label="MCC" value={t.mcc} /> : null}
-          <ListField label="Source" value={sourceWords(t.source)} />
-          <ListField label="Review" value={<StatusWords items={reviewFieldItems(t)} />} />
-          {rewards ? <ListField label="Rewards" value={rewards} /> : null}
+          {t.mcc ? <ListField className={fade} label="MCC" value={t.mcc} /> : null}
+          <ListField className={fade} label="Source" value={sourceWords(t.source)} />
+          <ListField className={fade} label="Review" value={<StatusWords items={reviewFieldItems(t)} />} />
+          {rewards ? <ListField className={fade} label="Rewards" value={rewards} /> : null}
 
           {rows.length > 0 || linksFailed ? (
-            <>
+            <div className={fade}>
               <SectionHeader variant="band">Links</SectionHeader>
               {linksFailed ? (
                 <div className="px-space-16 py-space-10">
@@ -309,7 +318,7 @@ function DetailContent({
                 </div>
               ) : null}
               {rows.map(renderRow)}
-            </>
+            </div>
           ) : null}
         </DialogBody>
       </DialogContent>

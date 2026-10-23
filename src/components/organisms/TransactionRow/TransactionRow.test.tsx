@@ -745,7 +745,7 @@ describe('TransactionRow', () => {
 
       const accMeta = accCol.meta as DataTableColumnMeta | undefined;
       expect(accCol.id).toBe('account');
-      expect(accMeta?.size).toBe('md');
+      expect(accMeta?.size).toBe('sm');
 
       const amtMeta = amtCol.meta as DataTableColumnMeta | undefined;
       expect(amtCol.id).toBe('amount');

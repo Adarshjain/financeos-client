@@ -415,7 +415,7 @@ describe('Dialog (Radix overlay)', () => {
     expect(screen.getByRole('dialog')).toHaveClass('data-closed:animate-out');
   });
 
-  it('animated={false} drops the slide, zoom and exit animation but keeps a fade in', () => {
+  it('animated={false} drops the slide, zoom, fade and exit animation so the panel is opaque at once', () => {
     render(
       <Dialog open>
         <DialogContent animated={false} title="Still">
@@ -424,8 +424,7 @@ describe('Dialog (Radix overlay)', () => {
       </Dialog>,
     );
     const panel = screen.getByText('Still body').closest('[role="dialog"] > div');
-    expect(panel).toHaveClass('animate-in', 'fade-in-0');
-    for (const c of ['slide-in-from-bottom', 'desk:zoom-in-95', 'group-data-closed:animate-out', 'group-data-closed:slide-out-to-bottom']) {
+    for (const c of ['animate-in', 'fade-in-0', 'slide-in-from-bottom', 'desk:zoom-in-95', 'group-data-closed:animate-out', 'group-data-closed:slide-out-to-bottom']) {
       expect(panel).not.toHaveClass(c);
     }
     expect(screen.getByRole('dialog')).not.toHaveClass('data-closed:animate-out');
