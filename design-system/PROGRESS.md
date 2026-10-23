@@ -395,6 +395,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-23 · Boards · Claude · Investments gap answers on P+D boards (holdings, holding, tradebook, record trade, dividends, F&O, corporate actions, instruments); new trade-edit, dividend-edit, fno-trade, corporate-action-record, instrument-edit, instrument-add. Deviations: none.
 - 2026-10-23 · Boards · Claude · SIPs removed from 16 boards (tab, Tradebook tags + "lump sum", holding/account SIP lines) and /ds To build. Deviations: none.
 - 2026-10-23 · Boards · Claude · Nothing above tabs (P+D): investments (D), tradebook, dividends, F&O, corporate actions, instruments, holding, import, dashboards, reports, rewards, which card, earning rules; counts dropped, actions/prices line moved under the tabs. Deviations: none.
 - 2026-10-23 · Boards · Claude · P-investments Holdings tab redrawn calmer per owner (dc.html + shots webp); desktop board unchanged. Deviations: none.

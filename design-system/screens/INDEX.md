@@ -124,6 +124,12 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Instruments** — `P-instruments.dc.html` · `shots/P-instruments.webp`
 - **Import tradebook** — `P-import-wizard.dc.html` · `shots/P-import-wizard.webp`
 - **Investments · record trade** — `P-trade-record.dc.html` · `shots/P-trade-record.webp`
+- **Investments · edit trade** — `P-trade-edit.dc.html` · `shots/P-trade-edit.webp`
+- **Investments · edit dividend** — `P-dividend-edit.dc.html` · `shots/P-dividend-edit.webp`
+- **Investments · F&O trade** — `P-fno-trade.dc.html` · `shots/P-fno-trade.webp`
+- **Investments · record corporate action** — `P-corporate-action-record.dc.html` · `shots/P-corporate-action-record.webp`
+- **Investments · edit instrument** — `P-instrument-edit.dc.html` · `shots/P-instrument-edit.webp`
+- **Investments · add instrument** — `P-instrument-add.dc.html` · `shots/P-instrument-add.webp`
 
 ### 08 · Loans & lendings
 
@@ -257,6 +263,12 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Instruments** — `D-instruments.dc.html` · `shots/D-instruments.webp`
 - **Import tradebook** — `D-import-wizard.dc.html` · `shots/D-import-wizard.webp`
 - **Investments · record trade** — `D-trade-record.dc.html` · `shots/D-trade-record.webp`
+- **Investments · edit trade** — `D-trade-edit.dc.html` · `shots/D-trade-edit.webp`
+- **Investments · edit dividend** — `D-dividend-edit.dc.html` · `shots/D-dividend-edit.webp`
+- **Investments · F&O trade** — `D-fno-trade.dc.html` · `shots/D-fno-trade.webp`
+- **Investments · record corporate action** — `D-corporate-action-record.dc.html` · `shots/D-corporate-action-record.webp`
+- **Investments · edit instrument** — `D-instrument-edit.dc.html` · `shots/D-instrument-edit.webp`
+- **Investments · add instrument** — `D-instrument-add.dc.html` · `shots/D-instrument-add.webp`
 
 ### 08 · Loans & lendings
 
