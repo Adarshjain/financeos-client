@@ -8,6 +8,7 @@ export type SignupRequest = Schemas['SignupRequest'];
 export type LoginRequest = Schemas['LoginRequest'];
 export type GoogleAuthStartResponse = Schemas['GoogleAuthStartResponse'];
 export type UserResponse = Schemas['UserResponse'];
+export type AppLockStatus = Schemas['AppLockStatusResponse'];
 export type DeleteAccountRequest = Schemas['DeleteAccountRequest'];
 export type DeletionSummaryResponse = Schemas['DeletionSummaryResponse'];
 

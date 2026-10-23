@@ -103,12 +103,13 @@ function MultiChip({
 }
 
 /** A dropdown chip that picks one value. */
-function ChoiceChip({
+export function ChoiceChip({
   label,
   value,
   options,
   selected,
   className,
+  searchPlaceholder,
   onCommit,
 }: {
   label: React.ReactNode;
@@ -116,11 +117,15 @@ function ChoiceChip({
   options: SelectOption[];
   selected: boolean;
   className?: string;
+  /** Gives the dropdown a search field with this placeholder. */
+  searchPlaceholder?: string;
   onCommit: (value: string) => void;
 }) {
   return (
     <Select
       className={className}
+      searchable={searchPlaceholder !== undefined}
+      searchPlaceholder={searchPlaceholder}
       options={options}
       value={value}
       onValueChange={(next) => onCommit(next as string)}
@@ -271,8 +276,20 @@ export function FilterChips({
           searchPlaceholder="Search categories"
           className={DESK_ONLY}
           disabled={categories === null}
-          onCommit={(names) => onChange({ categories: names })}
+          onCommit={(names) => onChange({ categories: names, ...(names.length > 0 ? { uncategorized: false } : {}) })}
         />
+        {query.uncategorized ? (
+          <FilterChip
+            size="md"
+            shape="rounded"
+            selected
+            removable
+            onRemove={() => onChange({ uncategorized: false })}
+            onClick={onOpenFilters}
+          >
+            Uncategorized
+          </FilterChip>
+        ) : null}
         <ChoiceChip
           label={query.type === 'all' ? 'Type' : `Type · ${typeLabel}`}
           value={query.type}

@@ -16,6 +16,7 @@ import type {
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
 import type {
+  AppLockStatus,
   BuiltinWidgetResponse,
   CardBillResponse,
   ErrorResponse,
@@ -224,11 +225,22 @@ function extractSessionCookie(response: Response): string | undefined {
   return match ? match[1] : undefined;
 }
 
+/** The FINANCEOS_DEVICE cookie as a Cookie header, so a new session on an app-lock device starts armed. Empty outside a request. */
+async function deviceCookieHeader(): Promise<Record<string, string>> {
+  try {
+    const device = (await cookies()).get('FINANCEOS_DEVICE')?.value;
+    return device ? { Cookie: `FINANCEOS_DEVICE=${device}` } : {};
+  } catch (error) {
+    unstable_rethrow(error);
+    return {};
+  }
+}
+
 /** Un-authenticated POST that also returns the session cookie from `Set-Cookie`. */
 async function authPost<T>(endpoint: string, body: unknown): Promise<{ data: T; sessionCookie?: string }> {
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await deviceCookieHeader()) },
     body: JSON.stringify(body),
     cache: 'no-store',
   });
@@ -246,7 +258,7 @@ async function authGet<T>(endpoint: string, query?: Record<string, string | unde
   const qs = params.toString() ? `?${params}` : '';
   const response = await fetch(`${API_BASE}${endpoint}${qs}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await deviceCookieHeader()) },
     cache: 'no-store',
   });
   if (!response.ok) throw await parseError(response);
@@ -338,6 +350,41 @@ export const authApi = {
   getDeletionSummary: async (): Promise<{ counts: Record<string, number>; total: number }> => {
     const { data } = await serverApi.GET('/api/v1/auth/me/deletion-summary');
     return data! as { counts: Record<string, number>; total: number };
+  },
+};
+
+// ---------------------------------------------------------------------------
+// App lock
+// ---------------------------------------------------------------------------
+
+/** A WebAuthn options document as the server sends it: `{ publicKey: {...} }`. */
+export type WebAuthnOptionsJson = Record<string, unknown>;
+
+export const appLockApi = {
+  status: async (): Promise<AppLockStatus> => {
+    const { data } = await serverApi.GET('/api/v1/app-lock/status');
+    return data! as AppLockStatus;
+  },
+  registrationOptions: async (lockAfterSeconds: number): Promise<WebAuthnOptionsJson> => {
+    const { data } = await serverApi.POST('/api/v1/app-lock/registration/options', { body: { lockAfterSeconds } });
+    return data as unknown as WebAuthnOptionsJson;
+  },
+  registrationVerify: async (credential: unknown, label?: string): Promise<{ deviceId: string }> => {
+    const { data } = await serverApi.POST('/api/v1/app-lock/registration/verify', { body: { credential, label } });
+    return data! as { deviceId: string };
+  },
+  updateSettings: async (lockAfterSeconds: number): Promise<void> => {
+    await serverApi.PATCH('/api/v1/app-lock/settings', { body: { lockAfterSeconds } });
+  },
+  disable: async (): Promise<void> => {
+    await serverApi.DELETE('/api/v1/app-lock');
+  },
+  unlockOptions: async (): Promise<WebAuthnOptionsJson> => {
+    const { data } = await serverApi.POST('/api/v1/app-lock/unlock/options');
+    return data as unknown as WebAuthnOptionsJson;
+  },
+  unlockVerify: async (credential: unknown): Promise<void> => {
+    await serverApi.POST('/api/v1/app-lock/unlock/verify', { body: { credential } });
   },
 };
 
@@ -488,6 +535,11 @@ export const accountCardsApi = cardholdersApi;
 // ---------------------------------------------------------------------------
 
 export const categoriesApi = {
+  /** One page of categories, by name; `search` matches part of a name. */
+  page: async (params: { search?: string; page?: number; size?: number }): Promise<Page<Category>> => {
+    const { data } = await serverApi.GET('/api/v1/categories/page', { params: { query: params } });
+    return data as unknown as Page<Category>;
+  },
   list: async (): Promise<Category[]> => {
     const { data } = await serverApi.GET('/api/v1/categories');
     return (data as Category[]) || [];

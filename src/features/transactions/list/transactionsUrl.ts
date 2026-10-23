@@ -89,6 +89,8 @@ export interface TransactionsQuery {
   accounts: string[];
   /** Category names, as the server filters them. */
   categories: string[];
+  /** Only transactions with no category (`uncategorized=1`). */
+  uncategorized: boolean;
   type: TypeFilter;
   amount: AmountCondition | null;
   review: ReviewType | null;
@@ -108,6 +110,7 @@ export const DEFAULT_QUERY: TransactionsQuery = {
   period: DEFAULT_PERIOD,
   accounts: [],
   categories: [],
+  uncategorized: false,
   type: 'all',
   amount: null,
   review: null,
@@ -176,11 +179,14 @@ export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery
   const type = one(params.type);
   const source = one(params.source) as TransactionSource;
   const sort = SORTS.find((s) => s.id === one(params.sort));
+  // The two are exclusive: with no category asked for, picked categories could only give an empty list.
+  const uncategorized = one(params.uncategorized) === '1';
   return {
     q: one(params.q).trim(),
     period: parsePeriod(params),
     accounts: many(params.account),
-    categories: many(params.category),
+    categories: uncategorized ? [] : many(params.category),
+    uncategorized,
     type: type === 'debit' || type === 'credit' ? type : 'all',
     amount: parseAmount(params),
     review: REVIEW_PARAMS[one(params.review)] ?? null,
@@ -215,6 +221,7 @@ export function transactionsSearch(query: TransactionsQuery): string {
   } else if (!samePeriod(period, DEFAULT_PERIOD)) out.set('period', period.id);
   query.accounts.forEach((id) => out.append('account', id));
   query.categories.forEach((name) => out.append('category', name));
+  if (query.uncategorized) out.set('uncategorized', '1');
   if (query.type !== 'all') out.set('type', query.type);
   if (query.amount) {
     out.set('amount', keyOf(AMOUNT_PARAMS, query.amount.op) ?? '');

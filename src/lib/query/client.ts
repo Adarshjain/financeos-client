@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import React from 'react';
 
+import { notifyIfAppLocked } from '@/lib/appLock';
 import { notifyIfSessionExpired } from '@/lib/authExpiry';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 
@@ -8,14 +9,22 @@ export function makeQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
       // Server actions return a 401 as data, so look at what came back as well as at thrown errors.
-      onSuccess: (data) => notifyIfSessionExpired(data),
+      onSuccess: (data) => {
+        notifyIfSessionExpired(data);
+        notifyIfAppLocked(data);
+      },
       onError: (e) => {
+        notifyIfAppLocked(e);
         errorLog.record(e, { source: 'api' });
       },
     }),
     mutationCache: new MutationCache({
-      onSuccess: (data) => notifyIfSessionExpired(data),
+      onSuccess: (data) => {
+        notifyIfSessionExpired(data);
+        notifyIfAppLocked(data);
+      },
       onError: (e) => {
+        notifyIfAppLocked(e);
         errorLog.record(e, { source: 'api' });
       },
     }),

@@ -3,6 +3,7 @@ import createFetchClient, { type Middleware } from 'openapi-fetch';
 import { getFaro } from '@/instrumentation-client';
 import type { paths } from '@/lib/api/schema';
 import type { ErrorResponse } from '@/lib/api/types';
+import { APP_LOCKED_EVENT } from '@/lib/appLock';
 
 export class ApiError extends Error {
   public requestId?: string;
@@ -63,6 +64,12 @@ const browserMiddleware: Middleware = {
     if (response.status === 401) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('financeos:auth-expired'));
+      }
+    }
+
+    if (response.status === 423) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(APP_LOCKED_EVENT));
       }
     }
 

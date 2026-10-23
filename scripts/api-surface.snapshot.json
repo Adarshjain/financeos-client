@@ -1,7 +1,9 @@
 {
   "exports": [
+    "WebAuthnOptionsJson",
     "accountCardsApi",
     "accountsApi",
+    "appLockApi",
     "authApi",
     "billsApi",
     "cardholdersApi",
@@ -44,6 +46,15 @@
       "me",
       "signup",
       "startGoogleAuth"
+    ],
+    "appLockApi": [
+      "disable",
+      "registrationOptions",
+      "registrationVerify",
+      "status",
+      "unlockOptions",
+      "unlockVerify",
+      "updateSettings"
     ],
     "accountsApi": [
       "close",
@@ -97,6 +108,7 @@
       "create",
       "delete",
       "list",
+      "page",
       "update"
     ],
     "dashboardsApi": [

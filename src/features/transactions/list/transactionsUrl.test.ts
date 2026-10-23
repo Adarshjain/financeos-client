@@ -93,6 +93,7 @@ describe('transactionsUrl', () => {
       period: { kind: 'range', from: '2026-10-01', to: '2026-10-09' },
       accounts: ['a1', 'a2'],
       categories: ['Food & dining', 'Rent'],
+      uncategorized: false,
       type: 'debit',
       amount: { op: 'between', from: 500, to: 5000 },
       review: 'NEEDS_REVIEW',

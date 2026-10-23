@@ -5,6 +5,7 @@ import createFetchClient, { type Middleware } from 'openapi-fetch';
 import { ApiError } from '@/lib/api/client';
 import type { paths } from '@/lib/api/schema';
 import type { ErrorResponse } from '@/lib/api/types';
+import { isInServerAction, redirectToLock } from '@/lib/appLockServer';
 import { logger } from '@/lib/observability/logger';
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:6969';
@@ -14,9 +15,11 @@ const serverRequestTimings = new WeakMap<Request, number>();
 const serverMiddleware: Middleware = {
   async onRequest({ request }) {
     let sessionCookie: string | undefined;
+    let deviceCookie: string | undefined;
     try {
       const cookieStore = await cookies();
       sessionCookie = cookieStore.get('FINANCEOS_SESSION')?.value;
+      deviceCookie = cookieStore.get('FINANCEOS_DEVICE')?.value;
     } catch (error) {
       unstable_rethrow(error);
       // Outside request context
@@ -34,7 +37,12 @@ const serverMiddleware: Middleware = {
     }
 
     if (sessionCookie) {
-      request.headers.set('Cookie', `FINANCEOS_SESSION=${sessionCookie}`);
+      request.headers.set(
+        'Cookie',
+        deviceCookie
+          ? `FINANCEOS_SESSION=${sessionCookie}; FINANCEOS_DEVICE=${deviceCookie}`
+          : `FINANCEOS_SESSION=${sessionCookie}`,
+      );
     }
     if (requestId) {
       request.headers.set('X-Request-Id', requestId);
@@ -70,6 +78,11 @@ const serverMiddleware: Middleware = {
       requestId,
       sessionId,
     });
+
+    // Locked: a page render or route handler goes to the lock screen; a server action returns the error as data.
+    if (response.status === 423 && !(await isInServerAction())) {
+      await redirectToLock();
+    }
 
     if (!response.ok) {
       let errorResponse: ErrorResponse;

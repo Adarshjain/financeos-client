@@ -24,7 +24,7 @@ export function buildFilters(query: TransactionsQuery): FilterClause[] {
   const clauses: (FilterClause | null)[] = [
     periodClause(query.period),
     pickClause('accountId', query.accounts),
-    pickClause('category', query.categories),
+    query.uncategorized ? { field: 'category', operator: 'is_empty' } : pickClause('category', query.categories),
     query.type === 'all' ? null : { field: 'type', operator: 'is', value: query.type === 'debit' ? 'DEBIT' : 'CREDIT' },
     query.amount ? amountClause(query.amount) : null,
     query.review ? { field: 'reviewType', operator: 'is', value: query.review } : null,
