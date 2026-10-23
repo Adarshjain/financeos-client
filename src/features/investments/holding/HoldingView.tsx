@@ -1,10 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
-import { HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
+import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
+import { DividendAddDialog } from '@/features/investments/dividends/DividendFormDialog';
+import { InstrumentEditDialog } from '@/features/investments/instruments/InstrumentEditDialog';
+import { ResetInstrumentDialog } from '@/features/investments/instruments/ResetInstrumentDialog';
+import { holdingHref, HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
+import { RecordTradeDialog } from '@/features/investments/tradebook/TradeDialog';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 import { quantity, rupees, unitPrice } from '../investmentsFormat';
@@ -43,12 +49,17 @@ export interface HoldingViewProps {
   today: string;
 }
 
+type HoldingDialog = 'trade' | 'dividend' | 'corporate-action' | 'edit-instrument' | 'reset-instrument';
+
 const EMPTY_POSITION = { page: 0, size: 1, totalElements: 0, totalPages: 0 };
 
 /** One holding: its figures, then (Overview) every section or (a tab) that section's full list. */
 export function HoldingView({ data, tab, today }: HoldingViewProps) {
   const { holding, instrument, estimate, trades, dividends, corporateActions, prices, history } = data;
+  const router = useRouter();
   const [overriding, setOverriding] = React.useState(false);
+  const [dialog, setDialog] = React.useState<HoldingDialog | null>(null);
+  const closeDialog = () => setDialog(null);
 
   const header = holdingHeader(holding, instrument);
   const tradeRows = (trades?.content ?? []).map(tradeRow);
@@ -87,16 +98,30 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
   }));
 
   const id = holding.instrumentId;
+  const ref = { id, name: holding.name, symbol: holding.symbol };
   const trades_ = (
-    <TradesCard instrumentId={id} tab={tab} rows={tradeRows} position={tradePosition} subtitle={tradesSubtitle} />
+    <TradesCard
+      instrumentId={id}
+      tab={tab}
+      rows={tradeRows}
+      position={tradePosition}
+      subtitle={tradesSubtitle}
+      onRecord={() => setDialog('trade')}
+    />
   );
-  const dividends_ = <DividendsCard instrumentId={id} tab={tab} rows={dividendRows} position={dividendPosition} />;
-  const actions_ = <CorporateActionsCard rows={actionRows} />;
+  const dividends_ = <DividendsCard
+      instrumentId={id}
+      tab={tab}
+      rows={dividendRows}
+      position={dividendPosition}
+      onRecord={() => setDialog('dividend')}
+    />;
+  const actions_ = <CorporateActionsCard rows={actionRows} onRecord={() => setDialog('corporate-action')} />;
   const prices_ = <PriceHistoryCard instrumentId={id} name={holding.name} tab={tab} rows={priceRows} position={pricePosition} />;
 
   return (
     <>
-      <ShellPage crumb="Grow / Investments" title={header.title} backHref={HOLDINGS_HREF} flushTop>
+      <ShellPage crumb="Grow / Investments" title={header.title} backHref={HOLDINGS_HREF} flushTop onAdd={() => setDialog('trade')}>
         <div className="flex flex-col gap-space-12 desk:gap-space-16">
           <Tabs items={items} value={tab} />
           {tab === 'overview' ? (
@@ -106,6 +131,8 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
                 hero={holdingHero(holding)}
                 figures={holdingFigures(holding, instrument, tradePosition.totalElements)}
                 onOverride={() => setOverriding(true)}
+                onRecordDividend={() => setDialog('dividend')}
+                onRecordCorporateAction={() => setDialog('corporate-action')}
               />
               <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
                 <div className="desk:col-span-8 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
@@ -118,7 +145,7 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
                 <div className="desk:col-span-4 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
                   {dividends_}
                   {actions_}
-                  {instrument ? <InstrumentCard rows={instrumentRows(instrument)} /> : null}
+                  {instrument ? <InstrumentCard rows={instrumentRows(instrument)} onEdit={() => setDialog('edit-instrument')} /> : null}
                 </div>
               </div>
             </>
@@ -129,6 +156,32 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
           {tab === 'prices' ? prices_ : null}
         </div>
       </ShellPage>
+      {dialog === 'trade' ? (
+        <RecordTradeDialog
+          initialInstrument={ref}
+          initialBrokerAccountId={holding.brokers.length === 1 ? holding.brokers[0].brokerAccountId : undefined}
+          onClose={closeDialog}
+        />
+      ) : null}
+      {dialog === 'dividend' ? (
+        <DividendAddDialog
+          prefill={{ instrumentId: id, brokerAccountId: holding.brokers[0]?.brokerAccountId }}
+          onClose={closeDialog}
+        />
+      ) : null}
+      {dialog === 'corporate-action' ? <CorporateActionDialog instrument={ref} onClose={closeDialog} /> : null}
+      {dialog === 'edit-instrument' && instrument ? (
+        <InstrumentEditDialog
+          instrument={instrument}
+          onClose={closeDialog}
+          onReset={() => setDialog('reset-instrument')}
+          onSaved={({ instrument: saved, moved, merged }) =>
+            // An identifier edit can move the holdings to another instrument: this address is then gone.
+            moved || merged ? router.replace(holdingHref(saved.id)) : router.refresh()
+          }
+        />
+      ) : null}
+      {dialog === 'reset-instrument' && instrument ? <ResetInstrumentDialog instrument={instrument} onClose={closeDialog} /> : null}
       {overriding ? (
         <PriceDialog
           instrumentId={id}

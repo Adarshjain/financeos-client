@@ -18,11 +18,12 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { appHref } from '@/features/shell/routes';
+import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
 import type { InstrumentType } from '@/lib/types';
 
+import type { InstrumentRef } from '../investmentsFormat';
 import {
   groupBands,
   type HoldingListRow,
@@ -35,8 +36,8 @@ import {
   TYPE_CHIPS,
 } from './holdingsModel';
 
-/** Where "record a merger" goes until the corporate-action record flow is built in Dinero. */
-export const RECORD_MERGER_HREF = appHref('/investments/corporate-actions');
+/** Opens the record-a-merger dialog for a holding; the table's cells reach it through here. */
+const RecordMergerContext = React.createContext<(instrumentId: string) => void>(() => undefined);
 
 const ch = createDataTableColumnHelper<HoldingListRow>();
 
@@ -49,12 +50,20 @@ function Move({ move }: { move: { text: string; tone?: 'positive' | 'danger' } }
 }
 
 /** The record-a-merger line under a holding that has no price. */
-function NoPriceNote() {
+function NoPriceNote({ instrumentId }: { instrumentId: string }) {
+  const record = React.useContext(RecordMergerContext);
   return (
     <Text variant="label" tone="ink-3" as="div">
       No live price. If it merged or delisted,{' '}
-      <Button asChild variant="link" size="sm" onClick={(e) => e.stopPropagation()}>
-        <Link href={RECORD_MERGER_HREF}>record a merger</Link>
+      <Button
+        variant="link"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          record(instrumentId);
+        }}
+      >
+        record a merger
       </Button>
       .
     </Text>
@@ -97,7 +106,7 @@ const columns = [
           </Text>
           {r.noPrice && !r.merged ? (
             <div className="max-desk:hidden">
-              <NoPriceNote />
+              <NoPriceNote instrumentId={r.id} />
             </div>
           ) : null}
         </div>
@@ -211,7 +220,7 @@ function PhoneSub({ row }: { row: HoldingListRow }) {
         {row.manualPrice ? ' · manual price' : null}
         {row.noPrice ? ' · at cost (no price)' : null}
       </Text>
-      {row.noPrice ? <NoPriceNote /> : null}
+      {row.noPrice ? <NoPriceNote instrumentId={row.id} /> : null}
     </div>
   );
 }
@@ -236,6 +245,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
 
   const listRows = React.useMemo(() => rows.map(holdingListRow), [rows]);
   const bands = React.useMemo(() => groupBands(groups), [groups]);
+  const [merging, setMerging] = React.useState<InstrumentRef | null>(null);
   const byId = React.useMemo(() => new Map(rows.map((r) => [r.instrumentId, r])), [rows]);
 
   const brokerOptions = [{ value: '', label: 'All brokers' }, ...brokers.map((b) => ({ value: b.id, label: b.name }))];
@@ -257,8 +267,13 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   );
 
   const filtered = state.q !== '' || state.type !== '' || state.broker !== '';
+  const recordMerger = (instrumentId: string) => {
+    const row = byId.get(instrumentId);
+    if (row) setMerging({ id: row.instrumentId, name: row.name, symbol: row.symbol });
+  };
 
   return (
+    <RecordMergerContext.Provider value={recordMerger}>
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <div className="flex items-center gap-space-8 overflow-x-auto">
         <TextField
@@ -342,6 +357,8 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
         />
       </Card>
     </div>
+    {merging ? <CorporateActionDialog instrument={merging} type="merger" onClose={() => setMerging(null)} /> : null}
+    </RecordMergerContext.Provider>
   );
 }
 

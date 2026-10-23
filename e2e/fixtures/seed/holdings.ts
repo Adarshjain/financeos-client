@@ -54,7 +54,8 @@ export async function seedHoldings(api: ApiClient): Promise<SeededHoldings> {
     exDate: '2025-05-30',
     payDate: '2025-06-18',
   });
-  await createCorporateAction(api, infy.id, { type: 'bonus', ratioFrom: 1, ratioTo: 1, exDate: '2025-06-10' });
+  // A real 1:1 bonus (1 → 2) dated before the first buy, so it shows on the page without changing the quantities.
+  await createCorporateAction(api, infy.id, { type: 'bonus', ratioFrom: 1, ratioTo: 2, exDate: '2024-01-10' });
 
   const tcs = await stock(api, 'TCSX');
   await trade(api, { brokerAccountId: zerodha.id, instrumentId: tcs.id, type: 'buy', quantity: 10, price: 3620, tradeDate: '2024-06-03' });

@@ -1,14 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RECEIPT_FILTER_OPTIONS } from '@/features/investments/dividends/dividendsModel';
 
-export const RECEIPT_FILTER_OPTIONS = [
-  { value: 'all', label: 'All receipts' },
-  { value: 'received', label: 'Received' },
-  { value: 'awaiting', label: 'Awaiting' },
-  { value: 'overdue', label: 'Overdue' },
-  { value: 'unverifiable', label: 'No bank data' },
-  { value: 'received_untracked', label: 'Received (untracked)' },
-  { value: 'not_received', label: 'Not received' },
-] as const;
+export { RECEIPT_FILTER_OPTIONS };
 
 interface ReceiptFilterSelectProps {
   value: string;

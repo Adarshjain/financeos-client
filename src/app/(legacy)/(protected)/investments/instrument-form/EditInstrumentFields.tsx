@@ -3,14 +3,13 @@
 import { FormField } from '@/components/ui/form-field';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { InstrumentType } from '@/lib/types';
-
 import {
   ASSET_CLASS_OPTIONS,
   AUTO_ASSET_CLASS,
   INSTRUMENT_FIELD_LIMITS as LIMITS,
   type InstrumentFormField,
-} from './instrumentEdit';
+} from '@/features/investments/instruments/instrumentEdit';
+import type { InstrumentType } from '@/lib/types';
 
 export interface EditInstrumentValues {
   type: InstrumentType;

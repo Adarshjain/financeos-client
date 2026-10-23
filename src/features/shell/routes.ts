@@ -40,9 +40,8 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/loans\/(?!calendar$)[^/]+$/,
   // A person's page.
   /^\/loans\/lendings\/[^/]+$/,
-  // Holdings and a holding's page; the other Investments tabs stay Legacy until their step lands.
-  /^\/investments$/,
-  /^\/investments\/(?!tradebook$|dividends$|fno$|corporate-actions$|instruments$)[^/]+$/,
+  // Holdings, every Investments tab page (tradebook, dividends, fno, corporate-actions, instruments) and a holding's page.
+  /^\/investments(\/[^/]+)?$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */

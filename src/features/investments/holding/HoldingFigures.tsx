@@ -1,15 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 
 import { Badge, Button, Conceal, KpiTile, Text } from '@/components/ds';
-import { appHref } from '@/features/shell/routes';
 
 import type { HoldingFigure, HoldingHeaderModel, HoldingHeroModel } from './holdingModel';
-
-const DIVIDEND_HREF = appHref('/investments/dividends');
-const CORPORATE_ACTION_HREF = appHref('/investments/corporate-actions');
 
 /** The context line of a figure; the LTP figure ends with an "override" link. */
 function Context({ figure, onOverride }: { figure: HoldingFigure; onOverride: () => void }) {
@@ -34,6 +29,8 @@ export interface HoldingFiguresProps {
   hero: HoldingHeroModel;
   figures: HoldingFigure[];
   onOverride: () => void;
+  onRecordDividend: () => void;
+  onRecordCorporateAction: () => void;
 }
 
 /**
@@ -41,7 +38,7 @@ export interface HoldingFiguresProps {
  * the value as the hero and the figures as pairs; the desktop shows the value at the right with the record
  * links and the figures as tiles.
  */
-export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFiguresProps) {
+export function HoldingFigures({ header, hero, figures, onOverride, onRecordDividend, onRecordCorporateAction }: HoldingFiguresProps) {
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <div className="flex flex-col gap-space-12 desk:flex-row desk:items-end desk:justify-between">
@@ -69,11 +66,11 @@ export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFig
             ) : null}
           </div>
           <div className="max-desk:hidden flex items-center gap-space-8">
-            <Button asChild variant="secondary">
-              <Link href={DIVIDEND_HREF}>Dividend</Link>
+            <Button variant="secondary" onClick={onRecordDividend}>
+              Dividend
             </Button>
-            <Button asChild variant="secondary">
-              <Link href={CORPORATE_ACTION_HREF}>Corporate action</Link>
+            <Button variant="secondary" onClick={onRecordCorporateAction}>
+              Corporate action
             </Button>
           </div>
         </div>
@@ -92,8 +89,8 @@ export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFig
           </div>
         ))}
       </div>
-      <Button asChild variant="secondary" fullWidth className="desk:hidden">
-        <Link href={DIVIDEND_HREF}>Dividend</Link>
+      <Button variant="secondary" fullWidth className="desk:hidden" onClick={onRecordDividend}>
+        Dividend
       </Button>
 
       <div className="max-desk:hidden grid grid-cols-4 gap-space-16">

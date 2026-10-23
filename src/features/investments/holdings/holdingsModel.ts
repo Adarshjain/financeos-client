@@ -3,7 +3,7 @@ import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, Holdings
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
-import { fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice } from '../investmentsFormat';
+import { fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------
@@ -192,11 +192,6 @@ export interface HoldingListRow {
   pnl: { amount: string; plain: string; pct: string | null; tone: Tone } | null;
   /** The part of the phone's second line before the day change: "40 × ₹1,742.60", "0 shares". */
   position: string;
-}
-
-function unitWord(type: InstrumentType, qty: number): string {
-  if (type === 'mutual_fund') return qty === 1 ? 'unit' : 'units';
-  return qty === 1 ? 'share' : 'shares';
 }
 
 export function holdingListRow(row: HoldingRow): HoldingListRow {

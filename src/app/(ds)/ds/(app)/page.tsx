@@ -12,13 +12,7 @@ const TO_BUILD: [string, string][] = [
   ['New dashboard', 'Home & dashboards'],
   ['Add widget and widget settings', 'Home & dashboards'],
   ['Search', 'Home & dashboards'],
-  ['Tradebook', 'Investments'],
-  ['Record trade', 'Investments'],
   ['Import tradebook', 'Investments'],
-  ['Dividends', 'Investments'],
-  ['F&O', 'Investments'],
-  ['Corporate actions', 'Investments'],
-  ['Instruments', 'Investments'],
   ['Reports', 'Reports'],
   ['New report', 'Reports'],
   ['Report view and breakdown', 'Reports'],
@@ -81,6 +75,21 @@ export default function DsIndexPage() {
           {/* A holding's page needs a real id: open one from Holdings. */}
           <ListRow asChild title="Holding detail" subtitle="/ds/investments/[instrumentId]" chevron>
             <Link href="/ds/investments" />
+          </ListRow>
+          <ListRow asChild title="Tradebook" subtitle="/ds/investments/tradebook" chevron>
+            <Link href="/ds/investments/tradebook" />
+          </ListRow>
+          <ListRow asChild title="Dividends" subtitle="/ds/investments/dividends" chevron>
+            <Link href="/ds/investments/dividends" />
+          </ListRow>
+          <ListRow asChild title="F&O" subtitle="/ds/investments/fno" chevron>
+            <Link href="/ds/investments/fno" />
+          </ListRow>
+          <ListRow asChild title="Corporate actions" subtitle="/ds/investments/corporate-actions" chevron>
+            <Link href="/ds/investments/corporate-actions" />
+          </ListRow>
+          <ListRow asChild title="Instruments" subtitle="/ds/investments/instruments" chevron>
+            <Link href="/ds/investments/instruments" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />

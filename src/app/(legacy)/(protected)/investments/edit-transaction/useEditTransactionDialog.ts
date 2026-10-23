@@ -1,12 +1,11 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { useTradeMutations } from '@/features/investments/tradebook/useTradeMutations';
+import { ApiError } from '@/lib/api/client';
 import { UpdateInvestmentTransactionRequest } from '@/lib/api/types';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import {
   InvestmentTransactionResponse,
@@ -33,24 +32,12 @@ export function useEditTransactionDialog({
   setOpen,
   onSuccess,
 }: UseEditTransactionDialogProps) {
-  const qc = useQueryClient();
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      api.DELETE('/api/v1/investments/transactions/{id}', {
-        params: { path: { id: transaction.id } },
-      }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
-  const updateMutation = useMutation({
-    mutationFn: (body: UpdateInvestmentTransactionRequest) =>
-      api
-        .PUT('/api/v1/investments/transactions/{id}', {
-          params: { path: { id: transaction.id } },
-          body,
-        })
-        .then((r) => r.data! as InvestmentTransactionResponse),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const { deleteTrade, updateTrade } = useTradeMutations();
+  const deleteMutation = { isPending: deleteTrade.isPending, mutateAsync: () => deleteTrade.mutateAsync(transaction.id) };
+  const updateMutation = {
+    isPending: updateTrade.isPending,
+    mutateAsync: (body: UpdateInvestmentTransactionRequest) => updateTrade.mutateAsync({ id: transaction.id, body }),
+  };
   const isDeleting = deleteMutation.isPending;
   const isSubmitting = updateMutation.isPending;
 

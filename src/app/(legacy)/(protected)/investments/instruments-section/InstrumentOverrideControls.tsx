@@ -6,10 +6,9 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { describeOverriddenFields, isOverridden } from '@/features/investments/instruments/instrumentEdit';
+import { useResetInstrumentOverrides } from '@/features/investments/instruments/useInstrumentEdit';
 import type { Instrument } from '@/lib/types';
-
-import { describeOverriddenFields, isOverridden } from '../instrument-form/instrumentEdit';
-import { useResetInstrumentOverrides } from '../instrument-form/useInstrumentEdit';
 
 /** "Edited for your account" when the signed-in user has their own edits on the instrument. */
 export function InstrumentOverrideBadge({ instrument }: { instrument: Instrument }) {
