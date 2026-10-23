@@ -34,7 +34,16 @@ test.describe('/ds app lock (@ui)', () => {
     expect(res.status()).toBe(204);
   }
 
-  test('@mobile turn on, leave the app, come back to the lock screen, unlock to the same page', async ({ page }) => {
+  /** Records every URL the main frame visits, to prove the lock screen was shown before an automatic unlock. */
+  function trackVisited(page: Page) {
+    const visited: string[] = [];
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) visited.push(frame.url());
+    });
+    return visited;
+  }
+
+  test('@mobile turn on, leave the app, come back: the lock screen unlocks by itself to the same page', async ({ page }) => {
     await turnOn(page);
     await expect(page.getByText('Lock after')).toBeVisible();
     await expect(page.getByRole('combobox', { name: 'Lock after' })).toContainText('1 minute');
@@ -51,11 +60,29 @@ test.describe('/ds app lock (@ui)', () => {
     });
     await beacon;
 
+    const visited = trackVisited(page);
+    await page.goto(`${E2E_CLIENT_URL}/ds/settings`);
+    // No click: the passkey prompt opens on its own and returns to the page.
+    await page.waitForURL('**/ds/settings');
+    await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
+    expect(visited.some((u) => u.includes('/ds/locked?from=%2Fds%2Fsettings'))).toBe(true);
+  });
+
+  test('when the automatic prompt is refused the screen stays quiet; tapping Unlock then works', async ({ page }) => {
+    await turnOn(page);
+    await lockNow(page);
+    await authenticator.setUserVerified(false);
     await page.goto(`${E2E_CLIENT_URL}/ds/settings`);
     await page.waitForURL('**/ds/locked?from=*');
     await expect(page.getByRole('heading', { name: 'FinanceOS is locked' })).toBeVisible();
     await expect(page.getByText('Use Face ID or your fingerprint to open the app.')).toBeVisible();
+    // Give the automatic try time to be refused: no error, no redirect, the button is back.
+    await page.waitForTimeout(1500);
+    await expect(page.getByText("Couldn't verify. Try again.")).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Unlock' })).toBeEnabled();
+    expect(page.url()).toContain('/ds/locked');
 
+    await authenticator.setUserVerified(true);
     await page.getByRole('button', { name: 'Unlock' }).click();
     await page.waitForURL('**/ds/settings');
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
@@ -64,6 +91,7 @@ test.describe('/ds app lock (@ui)', () => {
   test('moving around the app while locked lands on the lock screen', async ({ page }) => {
     await turnOn(page);
     await lockNow(page);
+    await authenticator.setUserVerified(false); // keep the screen so it can be inspected
     await page.getByRole('link', { name: 'Loans & lendings' }).first().click();
     await page.waitForURL('**/ds/locked?from=*');
     await expect(page.getByRole('button', { name: 'Unlock' })).toBeVisible();
@@ -76,18 +104,20 @@ test.describe('/ds app lock (@ui)', () => {
     expect(page.url()).toBe(landed);
   });
 
-  test('a Legacy page goes to the same lock screen and comes back after unlock', async ({ page }) => {
+  test('a Legacy page goes to the same lock screen and comes back by itself after the automatic unlock', async ({ page }) => {
     await turnOn(page);
     await lockNow(page);
+    const visited = trackVisited(page);
     await page.goto(`${E2E_CLIENT_URL}/loans/calendar`);
-    await page.waitForURL('**/ds/locked?from=%2Floans%2Fcalendar');
-    await page.getByRole('button', { name: 'Unlock' }).click();
     await page.waitForURL('**/loans/calendar');
+    await expect(page).toHaveURL(/\/loans\/calendar$/);
+    expect(visited.some((u) => u.includes('/ds/locked?from=%2Floans%2Fcalendar'))).toBe(true);
   });
 
   test('sign out from the lock screen, sign in with the password: the app opens and app lock stays on', async ({ page }) => {
     await turnOn(page);
     await lockNow(page);
+    await authenticator.setUserVerified(false); // stay on the lock screen
     await page.goto(`${E2E_CLIENT_URL}/ds/settings`);
     await page.waitForURL('**/ds/locked?from=*');
 
@@ -109,10 +139,13 @@ test.describe('/ds app lock (@ui)', () => {
   test('a failed Face ID shows the error and the way out; the next good try unlocks', async ({ page }) => {
     await turnOn(page);
     await lockNow(page);
+    await authenticator.setUserVerified(false);
     await page.goto(`${E2E_CLIENT_URL}/ds/settings`);
     await page.waitForURL('**/ds/locked?from=*');
+    // The refused automatic try says nothing; only a tap shows the error.
+    await page.waitForTimeout(1500);
+    await expect(page.getByText("Couldn't verify. Try again.")).toBeHidden();
 
-    await authenticator.setUserVerified(false);
     await page.getByRole('button', { name: 'Unlock' }).click();
     await expect(page.getByText("Couldn't verify. Try again.")).toBeVisible();
     await expect(page.getByText(/Can't unlock\? Sign out, sign in with your password/)).toBeVisible();
@@ -126,6 +159,7 @@ test.describe('/ds app lock (@ui)', () => {
   test('after five wrong answers the session ends and Unlock goes to sign-in', async ({ page, playwright }) => {
     await turnOn(page);
     await lockNow(page);
+    await authenticator.setUserVerified(false); // the automatic try is refused, so it never counts
     await page.goto(`${E2E_CLIENT_URL}/ds/settings`);
     await page.waitForURL('**/ds/locked?from=*');
 
