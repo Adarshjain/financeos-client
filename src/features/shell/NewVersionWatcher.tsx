@@ -11,7 +11,7 @@ export const VERSION_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 const MIN_GAP_MS = 5000;
 
 /**
- * Tells an open tab that a newer deploy exists: a full-width "New version available" banner above the shell
+ * Tells an open tab that a newer deploy exists: a full-width "FinanceOS was updated" banner above the shell
  * with Refresh and dismiss, shown once (a dismiss lasts for the tab). It slides down from the top and back up. `loadedVersion` is the build id the server rendered this page with. Nothing is fetched on load; the
  * check runs when the tab regains focus and every 10 minutes. A failed lazy chunk load (the old deploy's
  * files are gone) counts as a new version too.
@@ -88,8 +88,9 @@ export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVe
             variant="page-top"
             action={{ label: 'Refresh', onSelect: () => window.location.reload() }}
             onDismiss={() => setVisible(false)}
+            title="FinanceOS was updated."
           >
-            New version available
+            Refresh to use the latest version.
           </Banner>
         ) : null}
       </div>

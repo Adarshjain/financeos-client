@@ -25,7 +25,7 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 - Say what happened and what to do next. Keep the form and its values.
 - No status icon: the tone and the words carry it (RULES §6). Dismiss control uses Icon `close`.
 - Placement inside a page is layout, not a variant: top of a form, top of a list, or inside a card.
-- `page-top` is the one app-wide notice above the whole shell (rail and top bar), e.g. "New version available · Refresh" (owner, 2026-10-23). Square corners, full width, and it takes the device safe-area insets (notch, landscape sides) so its text clears them; the app zeroes `--ds-safe-top` on the shell below it so the top bar does not add the notch inset again.
+- `page-top` is the one app-wide notice above the whole shell (rail and top bar), e.g. "**FinanceOS was updated.** Refresh to use the latest version." with a Refresh action (owner, 2026-10-23). Square corners, full width, and it takes the device safe-area insets (notch, landscape sides) so its text clears them; the app zeroes `--ds-safe-top` on the shell below it so the top bar does not add the notch inset again.
 
 ## Built from
 Button `link` (the action), Button `ghost` and Icon `close` (the dismiss control). Toast reuses its tones.

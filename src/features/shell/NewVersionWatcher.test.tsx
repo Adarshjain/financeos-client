@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 /** Shown banners; a dismissed one stays mounted (to slide out) but hidden, so role queries skip it. */
-const bannerCount = () => screen.queryAllByRole('status').filter((el) => el.textContent?.includes('New version available')).length;
+const bannerCount = () => screen.queryAllByRole('status').filter((el) => el.textContent?.includes('FinanceOS was updated.')).length;
 
 const focus = async () => {
   await act(async () => {

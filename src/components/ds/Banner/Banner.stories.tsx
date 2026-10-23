@@ -141,7 +141,8 @@ export const PageTop: Story = {
   args: {
     tone: 'info',
     variant: 'page-top',
-    children: 'New version available',
+    title: 'FinanceOS was updated.',
+    children: 'Refresh to use the latest version.',
     action: { label: 'Refresh', onSelect: fn() },
     onDismiss: fn(),
   },
