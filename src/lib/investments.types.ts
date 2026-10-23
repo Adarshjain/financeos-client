@@ -204,9 +204,11 @@ export interface FnoPageQuery {
   page?: number;
   size?: number;
   fy?: number;
-  optionType?: 'CE' | 'PE' | 'FUT';
+  optionType?: 'CE' | 'PE' | 'FUT' | 'OPT';
   brokerAccountId?: string;
   underlying?: string;
+  /** Case-insensitive contains over trading symbol, underlying and notes. */
+  search?: string;
   sort?: FnoSort;
 }
 
@@ -228,6 +230,7 @@ export interface FnoSummary {
   realisedPnl: number;
   tradeCount: number;
   winRate: number;
+  winCount: number;
   totalCharges: number;
   byMonth: FnoMonthPnl[];
   byUnderlying: FnoUnderlyingPnl[];
@@ -266,6 +269,9 @@ export interface CorporateActionItem {
   createdAt: string;
   quantityBefore: number | null;
   quantityAfter: number | null;
+  /** Cost per share before and after the action; null when the holding is not open. */
+  costPerUnitBefore: number | null;
+  costPerUnitAfter: number | null;
 }
 
 export interface CorporateActionPreviewHolding {
