@@ -20,6 +20,7 @@ const SPACING_KEYS = {
   'space-64': true,
   'space-96': true,
   'safe-12': true,
+  'safe-24': true,
   'safe-top': true,
   'safe-left': true,
   'safe-right': true,
