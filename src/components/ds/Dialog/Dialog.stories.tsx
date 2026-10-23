@@ -98,7 +98,7 @@ export const SmallWithTertiary: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        tertiary={{ label: 'Delete', onSelect: fn() }}
+        tertiary={{ label: 'Delete', tone: 'danger', onSelect: fn() }}
         secondary={{ label: 'Cancel', onSelect: fn() }}
         primary={{ label: 'Save', onSelect: fn() }}
       >

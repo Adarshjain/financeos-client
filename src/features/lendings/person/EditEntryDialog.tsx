@@ -106,7 +106,7 @@ export function EditEntryDialog({
       <DialogContent
         size="md"
         title="Edit ledger entry"
-        tertiary={{ label: 'Delete entry', onSelect: () => onDelete(entry), disabled: submitting }}
+        tertiary={{ label: 'Delete entry', tone: 'danger', onSelect: () => onDelete(entry), disabled: submitting }}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Save changes', type: 'submit', form: FORM_ID, loading: submitting }}
       >

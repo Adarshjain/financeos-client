@@ -3,7 +3,7 @@
 Buttons: one primary per view, secondary for everything else, ghost for low-emphasis icon actions, danger for destructive ones.
 
 ## Props
-- `variant`: `'primary'` | `'secondary'` | `'danger'` | `'danger-filled'` | `'ghost'` | `'link'` (default `'secondary'`)
+- `variant`: `'primary'` | `'secondary'` | `'danger'` | `'danger-filled'` | `'ghost'` | `'link'` | `'danger-link'` (default `'secondary'`)
 - `size`: `'sm'` | `'md'` | `'xl'` (default `'md'`)
 - `layout`: `'inline'` | `'stacked'` (default `'inline'`)
 - `fullWidth`: `boolean` (default `false`)
@@ -25,6 +25,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `btn-i` square icon button; give it an `aria-label`.
 - Icon button with dot: `iconOnly` + `dot` marks something unread (the notifications bell).
 - `link`: inline text action with underline and no border. The underline is the light `line-heavy` colour (owner, 2026-10-20), shows at rest and disappears on hover. When the link holds an icon (via `icon` or an Icon child) the control becomes `inline-flex` and the underline is an `after:` element (`inset-x-0`, `h-px`, `bg-line-heavy`) running continuously under icon, gap and text; text-only links keep `text-decoration`; icon-only links have no underline.
+- `danger-link`: a `link` in the `danger` text colour for Delete / Remove link actions (owner, 2026-10-23); same underline, sizes and icon handling; hover `danger-hover`, pressed `danger-pressed`.
 - Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px (`control-md`, the same as a form field), `btn-xl` 44px for auth.
 - Type: every size uses the `label` style (12px); `link` inherits the surrounding size.
 - Layout: `inline` (default) or `stacked` (icon above label at 64px height, for quick-action cards).

@@ -69,6 +69,8 @@ export interface DialogAction {
   form?: string;
   disabled?: boolean;
   loading?: boolean;
+  /** `danger` draws a secondary or tertiary action as a danger link. Primary uses `destructive`. */
+  tone?: 'danger';
 }
 
 export interface DialogPrimaryAction extends DialogAction {
@@ -103,7 +105,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
             {tertiary && (
               <Button
                 key="tertiary"
-                variant="link"
+                variant={tertiary.tone === 'danger' ? 'danger-link' : 'link'}
                 size="md"
                 type={tertiary.type ?? 'button'}
                 form={tertiary.form}
@@ -118,7 +120,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
             {secondary && (
               <Button
                 key="secondary"
-                variant="link"
+                variant={secondary.tone === 'danger' ? 'danger-link' : 'link'}
                 size="md"
                 type={secondary.type ?? 'button'}
                 form={secondary.form}

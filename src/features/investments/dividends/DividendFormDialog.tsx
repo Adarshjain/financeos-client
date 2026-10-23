@@ -146,7 +146,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           size="sm"
           title={editing ? 'Edit dividend' : 'Record dividend'}
           description={title}
-          tertiary={dividend ? { label: 'Delete', onSelect: () => setConfirmingDelete(true), disabled: submitting } : undefined}
+          tertiary={dividend ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: submitting } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
           primary={{ label: editing ? 'Save dividend' : 'Record dividend', type: 'submit', form: FORM_ID, loading: submitting }}
         >

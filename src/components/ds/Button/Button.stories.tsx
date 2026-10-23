@@ -19,7 +19,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'danger', 'danger-filled', 'ghost', 'link'],
+      options: ['primary', 'secondary', 'danger', 'danger-filled', 'ghost', 'link', 'danger-link'],
     },
     size: {
       control: 'select',
@@ -105,6 +105,14 @@ export const Link: Story = {
   render: () => (
     <Text variant="body">
       Your HDFC statement is ready. <Button variant="link">View statement</Button>
+    </Text>
+  ),
+};
+
+export const DangerLink: Story = {
+  render: () => (
+    <Text variant="body">
+      This statement was imported twice. <Button variant="danger-link">Delete statement</Button>
     </Text>
   ),
 };

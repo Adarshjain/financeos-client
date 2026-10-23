@@ -156,6 +156,22 @@ describe('DialogShell', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-danger');
   });
 
+  it('draws secondary and tertiary with tone danger as danger-link; primary stays as is', () => {
+    render(
+      <DialogShell
+        title="Tone test"
+        tertiary={{ label: 'Delete entry', tone: 'danger' }}
+        secondary={{ label: 'Remove', tone: 'danger' }}
+        primary={{ label: 'Save', tone: 'danger' }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    expect(screen.getByRole('button', { name: 'Delete entry' })).toHaveClass('underline', 'text-danger');
+    expect(screen.getByRole('button', { name: 'Remove' })).toHaveClass('underline', 'text-danger');
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveClass('bg-brand');
+  });
+
   it('fires onSelect for each action', () => {
     const onTertiary = vi.fn();
     const onSecondary = vi.fn();
