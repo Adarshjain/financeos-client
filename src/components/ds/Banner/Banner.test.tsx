@@ -121,16 +121,28 @@ describe('Banner', () => {
     expect(handleDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('page-top is square and clears the safe areas, with its message row inside', () => {
+  it('rounded picks the corner radius step, lg by default', () => {
+    const { container, rerender } = render(<Banner tone="info">Refresh to use the latest version.</Banner>);
+    const root = () => container.firstChild as HTMLElement;
+    expect(root()).toHaveClass('rounded-ds-lg');
+    rerender(<Banner tone="info" rounded="md">Refresh to use the latest version.</Banner>);
+    expect(root()).toHaveClass('rounded-ds-md');
+    rerender(<Banner tone="info" rounded="sm">Refresh to use the latest version.</Banner>);
+    expect(root()).toHaveClass('rounded-ds-sm');
+    rerender(<Banner tone="info" rounded="none">Refresh to use the latest version.</Banner>);
+    expect(root()).toHaveClass('rounded-none');
+    expect(root()).not.toHaveClass('rounded-ds-lg');
+  });
+
+  it('keeps its own message padding when the page adds padding around it', () => {
     const { container } = render(
-      <Banner tone="info" variant="page-top" action={{ label: 'Refresh', onSelect: vi.fn() }} onDismiss={vi.fn()}>
+      <Banner tone="info" rounded="none" className="pt-safe-top" action={{ label: 'Refresh', onSelect: vi.fn() }} onDismiss={vi.fn()}>
         Refresh to use the latest version.
       </Banner>,
     );
     const root = container.firstChild as HTMLElement;
-    expect(root).toHaveClass('bg-info-tint', 'pt-safe-top', 'pl-safe-left', 'pr-safe-right');
-    expect(root).not.toHaveClass('rounded-ds-lg');
-    expect(root.firstChild).toHaveClass('px-space-12', 'py-space-10', 'flex');
+    expect(root).toHaveClass('pt-safe-top', 'bg-info-tint');
+    expect(root.firstChild).toHaveClass('px-space-12', 'py-space-10');
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });

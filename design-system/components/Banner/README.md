@@ -11,13 +11,14 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 
 ## Props
 - `tone`: `'danger' | 'success' | 'warning' | 'info' | 'neutral'` (default `'info'`)
-- `variant`: `'inline' | 'page-top'` (default `'inline'`)
+- `rounded`: `'none' | 'sm' | 'md' | 'lg'` (default `'lg'`): `radius-sm/md/lg`, or square
 - `title?: ReactNode` (bold lead-in)
 - `children`: `ReactNode` (the message; supports block-level elements like `<p>`)
 - `action?: { label: ReactNode; onSelect: () => void }` (link-styled button on the right)
 - `onDismiss?: () => void` (optional close button at far right)
 
 ## Layout
+- The message row (text, action, dismiss) carries the banner's padding; padding passed through `className` adds around it.
 - One line of text keeps the banner one line tall: text and action are vertically centred, and the action is Button `link` (inline text, no padding), so adding an action never changes the height.
 - Longer text wraps; the action sits on the right vertically centred.
 
@@ -25,14 +26,14 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 - Say what happened and what to do next. Keep the form and its values.
 - No status icon: the tone and the words carry it (RULES §6). Dismiss control uses Icon `close`.
 - Placement inside a page is layout, not a variant: top of a form, top of a list, or inside a card.
-- `page-top` is the one app-wide notice above the whole shell (rail and top bar), e.g. "**FinanceOS was updated.** Refresh to use the latest version." with a Refresh action (owner, 2026-10-23). Square corners, full width, and it takes the device safe-area insets (notch, landscape sides) so its text clears them; the app zeroes `--ds-safe-top` on the shell below it so the top bar does not add the notch inset again.
+- A full-width banner at the edge of the app (e.g. "**FinanceOS was updated.** Refresh to use the latest version." above the shell, owner 2026-10-23) is `rounded="none"`; the page adds the safe-area insets as layout padding (`className`), which sits around the message row.
 
 ## Built from
 Button `link` (the action), Button `ghost` and Icon `close` (the dismiss control). Toast reuses its tones.
 
 ## Variants
-- `inline`: the five tones, with and without a title, with an action, with dismiss.
-- `page-top`: full width, square, safe-area aware (story "Page top").
+- The five tones, with and without a title, with an action, with dismiss.
+- `rounded`: none, sm, md, lg (story "Full width" shows none).
 
 ## Hidden amounts
 Under a `ConcealProvider` with `concealed`, each ₹ amount in title and children reads "₹ —". See Conceal.
