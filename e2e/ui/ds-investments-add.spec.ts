@@ -53,6 +53,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('combobox', { name: /Instrument/ }).click();
       await page.getByPlaceholder('Search by name or symbol').fill(seeded.tcs.symbol);
       await page.getByRole('option', { name: new RegExp(seeded.tcs.symbol) }).first().click();
+      await expect(dialog.getByRole('combobox', { name: /Instrument/ })).toContainText(seeded.tcs.symbol);
       await dialog.getByLabel('Qty').fill('7');
       await dialog.getByLabel('Price').fill('321');
       await dialog.getByRole('button', { name: 'Record buy' }).click();

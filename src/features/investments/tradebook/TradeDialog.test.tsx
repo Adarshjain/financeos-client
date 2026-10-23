@@ -28,13 +28,27 @@ const catalog = vi.hoisted(() => ({
   query: '',
   resolve: vi.fn(),
 }));
-vi.mock('../instruments/useCatalogSearch', () => ({
+vi.mock('../instruments/useCatalogSearch', async () => {
+  const React = await import('react');
+  return {
   useCatalogSearch: (query: string) => {
     catalog.query = query;
     return { results: query.trim().length >= 2 ? catalog.results : [], isLoading: false, hasQuery: query.trim().length >= 2 };
   },
-  useResolveInstrumentMutation: () => ({ mutateAsync: catalog.resolve, isPending: false }),
-}));
+  useResolveInstrumentMutation: () => {
+    const [isPending, setPending] = React.useState(false);
+    const mutateAsync = async (...args: unknown[]) => {
+      setPending(true);
+      try {
+        return await catalog.resolve(...args);
+      } finally {
+        setPending(false);
+      }
+    };
+    return { mutateAsync, isPending };
+  },
+  };
+});
 
 // The add-instrument dialog is tested on its own: here it only hands back the instrument it made.
 vi.mock('../instruments/InstrumentAddDialog', () => ({
@@ -227,6 +241,36 @@ describe('Record trade', () => {
     expect(onClose).not.toHaveBeenCalled();
     finish({ data: {} });
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  it('closes after a successful save', async () => {
+    open();
+    await pickInstrument();
+    fireEvent.change(screen.getByLabelText('Qty'), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Record buy' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(onSaved).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the picked instrument only once it is resolved, and does not save before that', async () => {
+    let resolved: (v: unknown) => void = () => undefined;
+    catalog.resolve.mockReturnValue(new Promise((resolve) => (resolved = resolve)));
+    open();
+    await pickInstrument();
+    const field = screen.getByRole('combobox', { name: /Instrument/ });
+    await waitFor(() => expect(field.textContent).toContain('Adding'));
+    expect(field.textContent).not.toContain('Infosys');
+    fireEvent.change(screen.getByLabelText('Qty'), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '10' } });
+    const record = screen.getByRole('button', { name: 'Record buy' });
+    expect((record as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.submit(record.closest('form') ?? screen.getByLabelText('Qty').closest('form')!);
+    expect(api.POST).not.toHaveBeenCalled();
+    expect(screen.queryByText('Choose an instrument')).toBeNull();
+    resolved(infy);
+    await waitFor(() => expect(screen.getByRole('combobox', { name: /Instrument/ }).textContent).toContain('Infosys'));
+    expect((screen.getByRole('button', { name: 'Record buy' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('closes on Escape when nothing is being saved', async () => {

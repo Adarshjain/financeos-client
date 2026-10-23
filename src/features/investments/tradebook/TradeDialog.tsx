@@ -71,6 +71,8 @@ interface FormProps {
   description: string;
   submitLabel: string;
   submitting: boolean;
+  /** True while a form field is still working out its value: the submit waits. */
+  holdSubmit?: boolean;
   /** Edit shows the settlement and every charge; Record folds the charges under a link. */
   editing: boolean;
   side: TradeSide;
@@ -109,7 +111,7 @@ function TradeForm(p: FormProps) {
         description={p.description}
         tertiary={p.onDelete ? { label: 'Delete', onSelect: p.onDelete, disabled: p.submitting } : undefined}
         secondary={{ label: 'Cancel', onSelect: p.onCancel, disabled: p.submitting }}
-        primary={{ label: p.submitLabel, type: 'submit', form: FORM_ID, loading: p.submitting }}
+        primary={{ label: p.submitLabel, type: 'submit', form: FORM_ID, loading: p.submitting, disabled: p.holdSubmit }}
       >
         <DialogBody>
           <form
@@ -119,7 +121,7 @@ function TradeForm(p: FormProps) {
             className="flex flex-col gap-space-16"
             onSubmit={(e) => {
               e.preventDefault();
-              p.onSubmit();
+              if (!p.holdSubmit) p.onSubmit();
             }}
           >
             <SegmentedControl aria-label="Buy or sell" options={SIDES} value={p.side} onValueChange={(v) => p.onSideChange(v as TradeSide)} fullWidth />
@@ -218,6 +220,7 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
   const [notes, setNotes] = React.useState('');
   const [charges, setCharges] = React.useState<ChargeTexts>(EMPTY_CHARGES);
   const [errors, setErrors] = React.useState<TradeFormErrors & { instrument?: string; broker?: string }>({});
+  const [resolving, setResolving] = React.useState(false);
 
   // The first open broker is the default until the user picks one.
   const openBrokers = brokers.filter((b) => !isAccountClosed(b) || b.id === brokerId);
@@ -277,6 +280,7 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
       description={`${broker?.name ?? 'Broker'} · prices in ₹`}
       submitLabel={`Record ${side}`}
       submitting={createTrade.isPending}
+      holdSubmit={resolving}
       editing={false}
       side={side}
       onSideChange={setSide}
@@ -289,6 +293,7 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
           }}
           helper="Type to search your catalog, AMFI or Yahoo."
           onEnterManually={() => setEnteringInstrument(true)}
+          onResolvingChange={setResolving}
           error={errors.instrument}
         />
       }
