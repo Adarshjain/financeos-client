@@ -1,3 +1,5 @@
+import { unstable_rethrow } from 'next/navigation';
+
 import { ApiError } from '@/lib/apiClient';
 import { AppError } from '@/lib/appError';
 import { logger } from '@/lib/observability/logger';
@@ -92,6 +94,8 @@ export async function apiResult<T>(
   try {
     return { success: true, data: await run() };
   } catch (error) {
+    // A redirect() thrown inside `run` (e.g. to the lock screen) must go on to Next, not become a failure result.
+    unstable_rethrow(error);
     return toErrorResult(error, fallbackMessage);
   }
 }

@@ -3,6 +3,7 @@ import { SerwistProvider } from '@serwist/turbopack/react';
 import { FaroRouteTracker } from '@/components/FaroRouteTracker';
 import { QueryProvider } from '@/components/QueryProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { AppLockWatcher } from '@/features/appLock/AppLockWatcher';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           {children}
         </SerwistProvider>
         <FaroRouteTracker />
+        <AppLockWatcher />
       </QueryProvider>
     </ThemeProvider>
   );

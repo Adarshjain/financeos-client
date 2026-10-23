@@ -52,7 +52,7 @@ test.describe('/ds session expiry and version (@ui)', () => {
 
     await page.getByLabel('Email').fill(currentUser.email);
     await page.getByLabel('Password', { exact: true }).fill(currentUser.password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL('**/ds/loans**');
   });
 

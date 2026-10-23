@@ -104,6 +104,7 @@ export function queryFromDraft(base: TransactionsQuery, draft: FiltersDraft): Tr
     sort: draft.sort,
     accounts: draft.accounts,
     categories: draft.categories,
+    uncategorized: draft.categories.length > 0 ? false : base.uncategorized,
     type: draft.type,
     reason: draft.reason === ANY ? null : (REASON_PARAMS[draft.reason] ?? null),
     monitoring: draft.monitoring,

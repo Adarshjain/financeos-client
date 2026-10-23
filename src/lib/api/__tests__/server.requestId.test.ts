@@ -5,7 +5,7 @@ import { serverApi } from '@/lib/api/server';
 
 vi.mock('next/headers', () => ({
   cookies: vi.fn().mockResolvedValue({
-    get: vi.fn().mockReturnValue({ value: 'mock-session' }),
+    get: vi.fn().mockImplementation((name: string) => (name === 'FINANCEOS_SESSION' ? { value: 'mock-session' } : undefined)),
   }),
   headers: vi.fn().mockResolvedValue({
     get: vi.fn().mockImplementation((name: string) => {

@@ -1,3 +1,5 @@
+import { notifyIfAppLocked } from '@/lib/appLock';
+
 /**
  * Who handles `financeos:auth-expired` (dispatched by the browser API client on any 401).
  * Legacy has no handler of its own, so QueryProvider sends it to /login. A page that can ask for the
@@ -47,5 +49,6 @@ export function notifyIfSessionExpired(value: unknown): void {
 export async function watchSession<T>(result: Promise<T>): Promise<T> {
   const value = await result;
   notifyIfSessionExpired(value);
+  notifyIfAppLocked(value);
   return value;
 }

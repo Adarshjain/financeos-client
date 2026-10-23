@@ -20,6 +20,9 @@ export default function DsIndexPage() {
           <ListRow asChild title="Offline" subtitle="/ds/offline" chevron>
             <Link href="/ds/offline" />
           </ListRow>
+          <ListRow asChild title="Locked" subtitle="/ds/locked" chevron>
+            <Link href="/ds/locked" />
+          </ListRow>
         </Card>
 
         {/* Signed in section */}
@@ -30,6 +33,9 @@ export default function DsIndexPage() {
           </ListRow>
           <ListRow asChild title="Transactions" subtitle="/ds/transactions" chevron>
             <Link href="/ds/transactions" />
+          </ListRow>
+          <ListRow asChild title="Categories" subtitle="/ds/transactions/categories" chevron>
+            <Link href="/ds/transactions/categories" />
           </ListRow>
           <ListRow asChild title="Lendings" subtitle="/ds/loans/lendings" chevron>
             <Link href="/ds/loans/lendings" />

@@ -1,10 +1,11 @@
 import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { redirect, unstable_rethrow } from 'next/navigation';
 import { cache } from 'react';
 
 import { loginHrefFor } from '@/features/shell/routes';
 
 import { ApiError,authApi } from './apiClient';
+import { redirectToLock } from './appLockServer';
 import type { UserResponse } from './types';
 
 /**
@@ -42,6 +43,10 @@ export const getSession = cache(async (): Promise<UserResponse | null> => {
       // redirects to /login, which resolves in one hop. `logout` clears it.
       return null;
     }
+    if (error instanceof ApiError && error.status === 423) {
+      // Locked: to the lock screen (a no-op when already on it, where the 423 is rethrown).
+      await redirectToLock();
+    }
     throw error;
   }
 });
@@ -57,7 +62,9 @@ export const getSession = cache(async (): Promise<UserResponse | null> => {
 export async function getOptionalSession(): Promise<UserResponse | null> {
   try {
     return await getSession();
-  } catch {
+  } catch (error) {
+    // A redirect to the lock screen is not "unknown".
+    unstable_rethrow(error);
     return null;
   }
 }

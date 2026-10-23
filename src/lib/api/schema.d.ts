@@ -452,6 +452,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/app-lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["heartbeat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["lock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/registration/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registrationOptions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/registration/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registrationVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateSettings_1"];
+        trace?: never;
+    };
+    "/api/v1/app-lock/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/unlock/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unlockOptions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/app-lock/unlock/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unlockVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/google/callback": {
         parameters: {
             query?: never;
@@ -670,6 +814,22 @@ export interface paths {
         get: operations["getAllCategories"];
         put?: never;
         post: operations["createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCategoriesPage"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3473,6 +3633,15 @@ export interface components {
             /** Format: int64 */
             transactions: number;
         };
+        AppLockStatusResponse: {
+            armed: boolean;
+            /** Format: int32 */
+            heartbeatSeconds: number;
+            /** Format: int32 */
+            lockAfterSeconds?: number | null;
+            locked: boolean;
+            rpId: string;
+        };
         AppNotificationResponse: {
             body?: string | null;
             /** Format: date-time */
@@ -5246,6 +5415,9 @@ export interface components {
             stt?: number | null;
         };
         JobResponse: {
+            /** Format: uuid */
+            accountId?: string | null;
+            accountName?: string | null;
             /** Format: int32 */
             attempt: number;
             cancelRequested: boolean;
@@ -5776,6 +5948,24 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageCategoryResponse: {
+            content: components["schemas"]["CategoryResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageCounterpartyResponse: {
             content: components["schemas"]["CounterpartyResponse"][];
             empty: boolean;
@@ -6211,6 +6401,17 @@ export interface components {
             /** Format: uuid */
             jobId?: string | null;
             jobType?: string | null;
+        };
+        RegistrationOptionsRequest: {
+            /** Format: int32 */
+            lockAfterSeconds: number;
+        };
+        RegistrationVerifyRequest: {
+            credential: unknown;
+            label?: string;
+        };
+        RegistrationVerifyResponse: {
+            deviceId: string;
         };
         RemovePushSubscriptionRequest: {
             endpoint: string;
@@ -6699,10 +6900,17 @@ export interface components {
             stacking: "EXCLUSIVE" | "ADDITIVE";
         };
         RuleMatchTransactionResponse: {
+            accountBank?: string | null;
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
             amount: number;
             /** Format: uuid */
             appliedRuleId?: string | null;
             appliedRuleName?: string | null;
+            /** Format: uuid */
+            cardId?: string | null;
+            cardLast4?: string | null;
             categories: components["schemas"]["CategoryResponse"][];
             /** Format: date */
             date: string;
@@ -7199,6 +7407,9 @@ export interface components {
             label: string;
             value: number;
         };
+        UnlockVerifyRequest: {
+            credential: unknown;
+        };
         UnrecordedDividendCredit: {
             holdingHints: components["schemas"]["DividendHoldingHint"][];
             transaction: components["schemas"]["TransactionResponse"];
@@ -7217,6 +7428,16 @@ export interface components {
             /** @enum {string} */
             direction: "lent" | "borrowed";
             transaction: components["schemas"]["TransactionResponse"];
+        };
+        UnverifyRuleRequest: {
+            transactionIds: string[];
+        };
+        UnverifyRuleResponse: {
+            restoredTransactionIds: string[];
+        };
+        UpdateAppLockSettingsRequest: {
+            /** Format: int32 */
+            lockAfterSeconds: number;
         };
         UpdateBillDetailsRequest: {
             minimumAmountDue?: number | null;
@@ -7346,17 +7567,6 @@ export interface components {
         UpdateRoutingRequest: {
             entries: components["schemas"]["RoutingEntryRequest"][];
         };
-        UnverifyRuleRequest: {
-            transactionIds: string[];
-        };
-        UnverifyRuleResponse: {
-            restoredTransactionIds: string[];
-        };
-        VerifiedRuleChange: {
-            clearedTransactionIds: string[];
-            /** Format: uuid */
-            ruleId: string;
-        };
         UpdateRuleRequest: {
             categoryIds?: string[];
             displayName?: string;
@@ -7411,6 +7621,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             pictureUrl?: string | null;
+        };
+        VerifiedRuleChange: {
+            clearedTransactionIds: string[];
+            /** Format: uuid */
+            ruleId: string;
         };
         WidgetLayout: {
             /** Format: int32 */
@@ -8557,6 +8772,273 @@ export interface operations {
             };
         };
     };
+    disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    heartbeat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    lock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    registrationOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationOptionsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    registrationVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RegistrationVerifyResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateSettings_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAppLockSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AppLockStatusResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlockOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlockVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnlockVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     handleGoogleCallback: {
         parameters: {
             query?: {
@@ -9048,6 +9530,43 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CategoryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCategoriesPage: {
+        parameters: {
+            query?: {
+                search?: string;
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageCategoryResponse"];
                 };
             };
             /** @description Error response */
@@ -12514,6 +13033,7 @@ export interface operations {
             query?: {
                 status?: string;
                 type?: string;
+                since?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */

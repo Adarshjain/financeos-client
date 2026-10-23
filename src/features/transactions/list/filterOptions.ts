@@ -131,6 +131,7 @@ export function activeFilterWords(query: TransactionsQuery): string {
   if (query.categories.length > 0) {
     words.push(query.categories.length === 1 ? '1 category' : `${query.categories.length} categories`);
   }
+  if (query.uncategorized) words.push('uncategorized');
   if (query.type !== 'all') words.push(query.type === 'debit' ? 'expense' : 'income');
   if (query.amount) words.push(amountLabel(query.amount).toLowerCase());
   if (query.review) words.push(reviewLabel(query.review).toLowerCase());
@@ -148,6 +149,7 @@ export function activeFilterCount(query: TransactionsQuery): number {
     !(query.period.kind === 'preset' && query.period.id === 'all_time'),
     query.accounts.length > 0,
     query.categories.length > 0,
+    query.uncategorized,
     query.type !== 'all',
     query.amount !== null,
     query.review !== null,
