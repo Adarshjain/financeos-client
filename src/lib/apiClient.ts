@@ -1210,12 +1210,24 @@ export const rewardsApi = {
 // ---------------------------------------------------------------------------
 
 export const rulesApi = {
-  list: async (params?: { page?: number; size?: number; sort?: string; search?: string; verified?: boolean }): Promise<PagedRules> => {
+  list: async (params?: {
+    page?: number;
+    size?: number;
+    sort?: string;
+    search?: string;
+    verified?: boolean;
+    source?: 'LLM' | 'USER';
+    matchType?: string;
+    categoryId?: string;
+  }): Promise<PagedRules> => {
     const { data } = await serverApi.GET('/api/v1/rules', {
       params: {
         query: {
           verified: params?.verified,
           search: params?.search,
+          source: params?.source,
+          matchType: params?.matchType,
+          categoryId: params?.categoryId,
           page: params?.page ?? 0, size: params?.size ?? 20, sort: params?.sort ? [params.sort] : [],
         },
       },

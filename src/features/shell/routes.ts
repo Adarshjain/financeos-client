@@ -20,6 +20,7 @@ const LEGACY_ALIASES: Record<string, string> = {
   '/settings/jobs': '/settings/activity',
   '/debug': '/settings/debug',
   '/rules/categories': '/transactions/categories',
+  '/rules': '/transactions/rules',
 };
 
 /** Neutral (Legacy-shaped) paths that have a Dinero page, as full-pathname patterns. */
@@ -32,7 +33,7 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/accounts\/[^/]+(\/(cards|rewards|statements))?$/,
   // The list, Import and an import's page; /transactions/review stays Legacy.
   /^\/transactions(\/import(\/[^/]+)?)?$/,
-  /^\/transactions\/categories$/,
+  /^\/transactions\/(categories|rules)$/,
   /^\/settings(\/(activity|connections|ai|notifications|debug))?$/,
   /^\/loans(\/lendings)?$/,
   // A loan's page; /loans/calendar is its own Legacy page, not a loan id.
