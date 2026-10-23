@@ -22,7 +22,6 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { isPhoneLayout } from '@/components/ds/phoneLayout';
 import { ErrorState } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -126,12 +125,15 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
                   <ListRow
                     key={category.id}
                     title={category.name}
-                    // A tap opens the actions on the phone; the desktop row has its ⋯ menu instead.
-                    onClick={() => {
-                      if (isPhoneLayout()) setDialog({ kind: 'actions', category });
-                    }}
+                    // A click or tap opens the actions; the desktop row also has its ⋯ menu.
+                    onClick={() => setDialog({ kind: 'actions', category })}
                     trailing={
-                      <div className="max-desk:hidden">
+                      // The menu (it renders in a portal) must not also open the row's dialog.
+                      <div
+                        className="max-desk:hidden"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
                         <Menu
                           align="end"
                           trigger={
