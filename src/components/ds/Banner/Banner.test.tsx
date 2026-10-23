@@ -120,4 +120,18 @@ describe('Banner', () => {
     fireEvent.click(closeBtn);
     expect(handleDismiss).toHaveBeenCalledTimes(1);
   });
+
+  it('page-top is square and clears the safe areas, with its message row inside', () => {
+    const { container } = render(
+      <Banner tone="info" variant="page-top" action={{ label: 'Refresh', onSelect: vi.fn() }} onDismiss={vi.fn()}>
+        New version available
+      </Banner>,
+    );
+    const root = container.firstChild as HTMLElement;
+    expect(root).toHaveClass('bg-info-tint', 'pt-safe-top', 'pl-safe-left', 'pr-safe-right');
+    expect(root).not.toHaveClass('rounded-ds-lg');
+    expect(root.firstChild).toHaveClass('px-space-12', 'py-space-10', 'flex');
+    expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+  });
 });

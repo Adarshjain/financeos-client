@@ -1,10 +1,7 @@
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NewVersionWatcher, VERSION_CHECK_INTERVAL_MS } from './NewVersionWatcher';
-
-const showToast = vi.fn();
-vi.mock('@/components/ds', () => ({ showToast: (...a: unknown[]) => showToast(...a) }));
 
 const fetchMock = vi.fn();
 let deployed = 'v1';
@@ -12,7 +9,6 @@ let deployed = 'v1';
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
   deployed = 'v1';
-  showToast.mockReset();
   fetchMock.mockReset();
   fetchMock.mockImplementation(async () => ({ ok: true, json: async () => ({ version: deployed }) }));
   vi.stubGlobal('fetch', fetchMock);
@@ -21,6 +17,9 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
+
+/** Shown banners; a dismissed one stays mounted (to slide out) but hidden, so role queries skip it. */
+const bannerCount = () => screen.queryAllByRole('status').filter((el) => el.textContent?.includes('New version available')).length;
 
 const focus = async () => {
   await act(async () => {
@@ -38,22 +37,44 @@ describe('NewVersionWatcher', () => {
     render(<NewVersionWatcher loadedVersion="v1" />);
     await focus();
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(showToast).not.toHaveBeenCalled();
+    expect(bannerCount()).toBe(0);
   });
 
-  it('shows one persistent Reload toast when focus finds a newer deploy, and stops checking', async () => {
+  it('shows one banner with Refresh when focus finds a newer deploy, and stops checking', async () => {
     render(<NewVersionWatcher loadedVersion="v1" />);
     deployed = 'v2';
     await focus();
-    expect(showToast).toHaveBeenCalledTimes(1);
-    const [message, options] = showToast.mock.calls[0];
-    expect(message).toBe('New version available');
-    expect(options.duration).toBe(Infinity);
-    expect(options.action.label).toBe('Reload');
+    expect(bannerCount()).toBe(1);
+    expect(screen.getByRole('button', { name: 'Refresh' })).toBeTruthy();
     vi.setSystemTime(Date.now() + 60_000);
     await focus();
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(1);
+  });
+
+  it('reloads the page on Refresh', async () => {
+    const reload = vi.fn();
+    vi.stubGlobal('location', { ...window.location, reload });
+    render(<NewVersionWatcher loadedVersion="v1" />);
+    deployed = 'v2';
+    await focus();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides on dismiss and does not come back in this tab', async () => {
+    render(<NewVersionWatcher loadedVersion="v1" />);
+    deployed = 'v2';
+    await focus();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(bannerCount()).toBe(0);
+    vi.setSystemTime(Date.now() + 60_000);
+    await focus();
+    await act(async () => {
+      vi.advanceTimersByTime(VERSION_CHECK_INTERVAL_MS);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(0);
   });
 
   it('checks when the tab becomes visible, and not when it is hidden', async () => {
@@ -68,7 +89,7 @@ describe('NewVersionWatcher', () => {
     await act(async () => {
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(1);
   });
 
   it('checks every 10 minutes', async () => {
@@ -78,14 +99,14 @@ describe('NewVersionWatcher', () => {
       vi.advanceTimersByTime(VERSION_CHECK_INTERVAL_MS);
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(1);
   });
 
   it('ignores an unreadable answer', async () => {
     fetchMock.mockResolvedValue({ ok: false });
     render(<NewVersionWatcher loadedVersion="v1" />);
     await focus();
-    expect(showToast).not.toHaveBeenCalled();
+    expect(bannerCount()).toBe(0);
   });
 
   it('treats a failed chunk load as a new version, once', async () => {
@@ -99,7 +120,7 @@ describe('NewVersionWatcher', () => {
         Object.assign(new Event('unhandledrejection'), { reason: new Error('Failed to fetch dynamically imported module: /x.js') })
       );
     });
-    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(1);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -108,7 +129,7 @@ describe('NewVersionWatcher', () => {
     rerender(<NewVersionWatcher loadedVersion="v2" />);
     deployed = 'v2';
     await focus();
-    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(bannerCount()).toBe(1);
   });
 
   it('does not announce a failed chunk load in dev', async () => {
@@ -120,7 +141,7 @@ describe('NewVersionWatcher', () => {
     await act(async () => {
       window.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason: err }));
     });
-    expect(showToast).not.toHaveBeenCalled();
+    expect(bannerCount()).toBe(0);
   });
 
   it('skips the 10-minute check while the tab is hidden', async () => {
@@ -139,6 +160,6 @@ describe('NewVersionWatcher', () => {
     await act(async () => {
       window.dispatchEvent(new ErrorEvent('error', { error: new Error('boom'), message: 'boom' }));
     });
-    expect(showToast).not.toHaveBeenCalled();
+    expect(bannerCount()).toBe(0);
   });
 });
