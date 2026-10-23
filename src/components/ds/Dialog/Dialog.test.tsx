@@ -402,47 +402,6 @@ describe('Dialog (Radix overlay)', () => {
     expect(content).not.toHaveClass('bg-surface');
   });
 
-  it('slides and zooms in and out by default', () => {
-    render(
-      <Dialog open>
-        <DialogContent title="Slides">
-          <DialogBody>Slide body</DialogBody>
-        </DialogContent>
-      </Dialog>,
-    );
-    const panel = screen.getByText('Slide body').closest('[role="dialog"] > div');
-    expect(panel).toHaveClass('slide-in-from-bottom', 'group-data-closed:animate-out', 'desk:zoom-in-95');
-    expect(screen.getByRole('dialog')).toHaveClass('data-closed:animate-out');
-  });
-
-  it('animated={false} drops the slide, zoom, fade and exit animation so the panel is opaque at once', () => {
-    render(
-      <Dialog open>
-        <DialogContent animated={false} title="Still">
-          <DialogBody>Still body</DialogBody>
-        </DialogContent>
-      </Dialog>,
-    );
-    const panel = screen.getByText('Still body').closest('[role="dialog"] > div');
-    for (const c of ['animate-in', 'fade-in-0', 'slide-in-from-bottom', 'desk:zoom-in-95', 'group-data-closed:animate-out', 'group-data-closed:slide-out-to-bottom']) {
-      expect(panel).not.toHaveClass(c);
-    }
-    expect(screen.getByRole('dialog')).not.toHaveClass('data-closed:animate-out');
-  });
-
-  it('animated={false} on a side panel drops the slide from the right', () => {
-    render(
-      <Dialog open variant="side-panel">
-        <DialogContent animated={false} title="Side">
-          <DialogBody>Side body</DialogBody>
-        </DialogContent>
-      </Dialog>,
-    );
-    const panel = screen.getByText('Side body').closest('[role="dialog"] > div');
-    expect(panel).not.toHaveClass('desk:slide-in-from-right');
-    expect(panel).not.toHaveClass('desk:group-data-closed:slide-out-to-right');
-  });
-
   it('does not render padded header wrapper when only srTitle is passed without visible header', () => {
     const { container } = render(
       <Dialog open>

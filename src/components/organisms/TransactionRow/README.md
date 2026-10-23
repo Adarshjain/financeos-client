@@ -45,7 +45,6 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `selected?: boolean`: Controlled selected state
 - `onSelectedChange?: (selected: boolean) => void`: Selection change callback
 - `selectionMode?: boolean`: Phone selection mode (displays trailing eye button)
-- `wrapDescription?` / `wrapAmount?: (node) => ReactNode`: wrap the description / amount as drawn, so a page can give that part a view-transition name (the wrapper renders one element around the node)
 - `onDetail?: () => void`: Detail callback when trailing eye button is clicked
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)

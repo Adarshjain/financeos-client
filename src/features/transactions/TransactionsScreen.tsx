@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { flushSync } from 'react-dom';
 
 import { ContextMenu, Icon, SwipeActions } from '@/components/ds';
 import type { Transaction } from '@/lib/transaction.types';
@@ -43,10 +42,6 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
 
 function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
   const [detailId, setDetailId] = React.useState<string | null>(null);
-  // The row whose description and amount carry their shared names (they grow into the detail's, and back), and
-  // whether the detail then opens without its own slide.
-  const [morphId, setMorphId] = React.useState<string | null>(null);
-  const [morphing, setMorphing] = React.useState(false);
   const [form, setForm] = React.useState<FormState>(null);
   const [categorising, setCategorising] = React.useState<Transaction | null>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
@@ -65,39 +60,6 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
     },
   });
 
-  // The row takes its names first (a commit of its own, no animation); the opening is then one transition in
-  // which they leave the row and arrive in the detail. Another row while the panel is open just swaps.
-  const openDetail = (id: string) => {
-    if (detailId !== null) {
-      setDetailId(id);
-      return;
-    }
-    flushSync(() => setMorphId(id));
-    React.startTransition(() => {
-      setMorphing(true);
-      setMorphId(null);
-      setDetailId(id);
-    });
-  };
-  // Closing hands the names back to the row, still on screen or not.
-  const closeDetail = () => {
-    if (detailId === null) return;
-    const id = detailId;
-    React.startTransition(() => {
-      setMorphId(id);
-      setDetailId(null);
-    });
-  };
-  // Once the detail has closed and the morph has run, the row gives its names up.
-  React.useEffect(() => {
-    if (detailId !== null) return;
-    const timer = setTimeout(() => {
-      setMorphId(null);
-      setMorphing(false);
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [detailId, morphId]);
-
   const editCategories = (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
     if (transaction) setCategorising(transaction);
@@ -108,9 +70,8 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
       <TransactionsView
         {...view}
         onAdd={() => addTransaction.open({ defaultAccountId: defaultAccountId(view.query.accounts) })}
-        onOpenDetail={openDetail}
+        onOpenDetail={setDetailId}
         openId={detailId ?? undefined}
-        morphId={morphId ?? undefined}
         detailOpen={detailId !== null}
         onEditCategories={editCategories}
         selection={selection.ids}
@@ -158,8 +119,7 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
         pageTransactions={transactions}
         accounts={view.accounts}
         onOpenTransaction={setDetailId}
-        onClose={closeDetail}
-        morphing={morphing}
+        onClose={() => setDetailId(null)}
         onEdit={(transaction) => setForm({ transaction })}
         onDeleted={() => setDetailId(null)}
         onLink={(t) => setLinking([t])}

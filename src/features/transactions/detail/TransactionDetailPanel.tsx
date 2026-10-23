@@ -28,8 +28,6 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
-import { SharedName } from '@/lib/viewTransition';
-import { transitionName } from '@/lib/viewTransitionNames';
 
 import { isApprovable } from '../bulk/bulkModel';
 import {
@@ -52,9 +50,6 @@ import { useTransactionUnlink } from './useTransactionUnlink';
 /** Below the top bar (space-56), then the page gutter (space-24, as a margin so the two add up). */
 const PANEL_OFFSET = 'desk:top-safe-56 desk:mt-space-24';
 
-/** The rest of a morphing detail (all but the growing title and amount) fades in once the row has grown into it. */
-const FADE_IN = 'animate-in fade-in-0 duration-base motion-reduce:animate-none';
-
 export interface TransactionDetailPanelProps {
   /** The transaction to show; null keeps the panel closed. */
   transactionId: string | null;
@@ -64,8 +59,6 @@ export interface TransactionDetailPanelProps {
   /** A linked transaction's name was pressed: the panel swaps to it. */
   onOpenTransaction: (id: string) => void;
   onClose: () => void;
-  /** The panel opens without its own slide, because the row morphs into it (see TransactionsScreen). */
-  morphing?: boolean;
   onEdit: (transaction: Transaction) => void;
   /** The transaction was deleted; the panel closes and the page refreshes. */
   onDeleted: () => void;
@@ -82,7 +75,6 @@ export function TransactionDetailPanel({
   accounts,
   onOpenTransaction,
   onClose,
-  morphing,
   ...rest
 }: TransactionDetailPanelProps) {
   // The last one opened stays up while the panel slides away.
@@ -97,12 +89,10 @@ export function TransactionDetailPanel({
 
   return (
     <Dialog variant="side-panel" open={transactionId !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
-      {/* A morphing detail leaves in the commit that closes it (its title is moving back into the row), not when the dialog has finished closing. */}
-      {transaction && !(morphing && transactionId === null) ? (
+      {transaction ? (
         <DetailContent
           key={transaction.id}
           transaction={transaction}
-          morphing={morphing}
           open={transactionId !== null}
           accounts={accounts}
           onOpenTransaction={onOpenTransaction}
@@ -142,13 +132,11 @@ function DetailContent({
   accounts,
   onOpenTransaction,
   onClose,
-  morphing = false,
   onEdit,
   onDeleted,
   onLink,
   onReview,
 }: DetailContentProps) {
-  const fade = morphing ? FADE_IN : undefined;
   const router = useRouter();
   const queryClient = useQueryClient();
   const unlink = useTransactionUnlink(t.id);
@@ -231,26 +219,17 @@ function DetailContent({
     <>
       <DialogContent
         size="sm"
-        title={
-          <SharedName name={transitionName.transactionTitle(t.id)}>
-            <span className="inline-block max-w-full">{title}</span>
-          </SharedName>
-        }
+        title={title}
         description={raw}
         onClose={onClose}
-        animated={!morphing}
         className={PANEL_OFFSET}
       >
         <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
-              <SharedName name={transitionName.transactionAmount(t.id)}>
-                <span className="inline-block">
-                  <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
-                    {`${credit ? '+' : ''}${amountWords(t.amount)}`}
-                  </Text>
-                </span>
-              </SharedName>
+              <Text variant="figure" tone={credit ? 'positive' : 'ink'} as="span" fraction="small">
+                {`${credit ? '+' : ''}${amountWords(t.amount)}`}
+              </Text>
               {balance ? (
                 <Text variant="label" tone="ink-3" as="span">
                   {balance}
@@ -258,11 +237,9 @@ function DetailContent({
               ) : null}
             </div>
             {status.length > 0 ? (
-              <div className={morphing ? FADE_IN : undefined}>
-                <StatusWords items={status} />
-              </div>
+              <StatusWords items={status} />
             ) : null}
-            <div className={`flex flex-wrap items-center gap-space-8${morphing ? ` ${FADE_IN}` : ''}`}>
+            <div className="flex flex-wrap items-center gap-space-8">
               <Button size="sm" onClick={() => onEdit(t)}>
                 Edit
               </Button>
@@ -282,11 +259,11 @@ function DetailContent({
             </div>
           </div>
 
-          <ListField className={fade} label="Account" value={accountName(t.accountId)} />
-          {card ? <ListField className={fade} label="Card" value={card} /> : null}
-          <ListField className={fade} label="Date" value={longDate(t.date)} />
+          <ListField label="Account" value={accountName(t.accountId)} />
+          {card ? <ListField label="Card" value={card} /> : null}
+          <ListField label="Date" value={longDate(t.date)} />
           <ListField
-            className={fade}
+           
             label="Categories"
             value={
               categories.length > 0 ? (
@@ -302,13 +279,13 @@ function DetailContent({
               )
             }
           />
-          {t.mcc ? <ListField className={fade} label="MCC" value={t.mcc} /> : null}
-          <ListField className={fade} label="Source" value={sourceWords(t.source)} />
-          <ListField className={fade} label="Review" value={<StatusWords items={reviewFieldItems(t)} />} />
-          {rewards ? <ListField className={fade} label="Rewards" value={rewards} /> : null}
+          {t.mcc ? <ListField label="MCC" value={t.mcc} /> : null}
+          <ListField label="Source" value={sourceWords(t.source)} />
+          <ListField label="Review" value={<StatusWords items={reviewFieldItems(t)} />} />
+          {rewards ? <ListField label="Rewards" value={rewards} /> : null}
 
           {rows.length > 0 || linksFailed ? (
-            <div className={fade}>
+            <div>
               <SectionHeader variant="band">Links</SectionHeader>
               {linksFailed ? (
                 <div className="px-space-16 py-space-10">

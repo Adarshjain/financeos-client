@@ -54,8 +54,6 @@ export interface TransactionsViewProps {
   onOpenDetail?: (id: string) => void;
   /** The row open in the detail pane. */
   openId?: string;
-  /** The row whose parts carry their shared names (see TransactionsList). */
-  morphId?: string;
   /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
   onEditCategories?: (id: string) => void;
   /** The detail side panel is open: on desktop the list leaves room for it instead of sitting underneath. */
@@ -84,7 +82,6 @@ export function TransactionsView({
   onAdd = noop,
   onOpenDetail,
   openId,
-  morphId,
   onEditCategories,
   detailOpen = false,
   selection,
@@ -183,7 +180,6 @@ export function TransactionsView({
                 onImport={() => router.push(appHref('/transactions/import'))}
                 onOpenDetail={onOpenDetail}
                 openId={openId}
-                morphId={morphId}
                 onEditCategories={onEditCategories}
                 selection={selection}
                 onSelectionChange={onSelectionChange}

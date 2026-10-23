@@ -70,27 +70,6 @@ describe('TransactionRow search highlight', () => {
   });
 });
 
-describe('TransactionRow wrappers', () => {
-  it('wrapDescription and wrapAmount wrap the drawn description and amount', () => {
-    render(
-      <TransactionRow
-        description="Rent Advance"
-        amount="3,600.00"
-        wrapDescription={(node) => <span data-testid="wd">{node}</span>}
-        wrapAmount={(node) => <span data-testid="wa">{node}</span>}
-      />,
-    );
-    expect(screen.getByTestId('wd')).toHaveTextContent('Rent Advance');
-    expect(screen.getByTestId('wa')).toHaveTextContent('3,600.00');
-  });
-
-  it('draws plainly without wrappers', () => {
-    render(<TransactionRow description="Rent Advance" amount="3,600.00" />);
-    expect(screen.queryByTestId('wd')).toBeNull();
-    expect(screen.getByText('Rent Advance')).toBeInTheDocument();
-  });
-});
-
 describe('TransactionRow', () => {
   beforeEach(() => {
     vi.stubGlobal('jest', {

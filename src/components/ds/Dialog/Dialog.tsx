@@ -412,11 +412,6 @@ export interface DialogContentProps extends Omit<
   secondary?: DialogAction;
   tertiary?: DialogAction;
   dismissible?: boolean;
-  /**
-   * `false`: no slide, zoom or fade on open and none on close; the panel is opaque from its first frame and goes at once, so nothing behind shows through while another animation grows into it. For an open that
-   * another animation carries (a shared-element morph), which a sliding panel would fight. Default `true`.
-   */
-  animated?: boolean;
 }
 
 export const DialogContent = forwardRef<
@@ -439,7 +434,6 @@ export const DialogContent = forwardRef<
       secondary,
       tertiary,
       dismissible = true,
-      animated = true,
       onPointerDownOutside,
       onInteractOutside,
       onEscapeKeyDown,
@@ -496,10 +490,8 @@ export const DialogContent = forwardRef<
 
     // Backdrop and panel share one layer (z-overlay) and stack by portal order, so a dialog opened
     // over another has its own backdrop above the one underneath, dimming it and blocking its taps.
-    // Not animated: the panel is in the same commit as the open, not one render later (the portal's own wait), so
-    // a transition that carries the open (a shared-element morph) sees it arrive.
     return (
-      <DialogPortal container={!animated && typeof document !== 'undefined' ? document.body : undefined}>
+      <DialogPortal>
         {variant === 'side-panel' ? (
           <div
             data-testid="dialog-backdrop"
@@ -518,7 +510,7 @@ export const DialogContent = forwardRef<
           onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
-            animated && 'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
+            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
             variant === 'side-panel'
               ? cn('desk:top-space-24 desk:right-space-24 desk:bottom-space-24 desk:left-auto desk:w-full', dialogSizeClasses[size])
               : 'desk:inset-0 desk:items-center desk:justify-center desk:p-space-16',
@@ -539,18 +531,11 @@ export const DialogContent = forwardRef<
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-2xl shadow-up-2 border-t',
               variant === 'side-panel'
-                ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full'
-                : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border',
+                ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
+                : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
               dialogSizeClasses[size],
-              animated
-                ? [
-                    variant === 'side-panel'
-                      ? 'desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
-                      : 'desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
-                    'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
-                    'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
-                  ]
-                : undefined,
+              'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
+              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
               isDragging
                 ? 'transition-none'
                 : 'transition-transform duration-slow ease-out desk:duration-base',
