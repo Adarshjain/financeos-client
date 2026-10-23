@@ -109,7 +109,7 @@ function TradeForm(p: FormProps) {
         size="md"
         title={p.title}
         description={p.description}
-        tertiary={p.onDelete ? { label: 'Delete', onSelect: p.onDelete, disabled: p.submitting } : undefined}
+        tertiary={p.onDelete ? { label: 'Delete', tone: 'danger', onSelect: p.onDelete, disabled: p.submitting } : undefined}
         secondary={{ label: 'Cancel', onSelect: p.onCancel, disabled: p.submitting }}
         primary={{ label: p.submitLabel, type: 'submit', form: FORM_ID, loading: p.submitting, disabled: p.holdSubmit }}
       >

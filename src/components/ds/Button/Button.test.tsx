@@ -47,6 +47,35 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold', 'decoration-line-heavy');
   });
 
+  it('draws danger-link as a link in the danger colour', () => {
+    const handleClick = vi.fn();
+    const { rerender } = render(
+      <Button variant="danger-link" onClick={handleClick}>
+        Delete statement
+      </Button>,
+    );
+    const btn = screen.getByRole('button', { name: 'Delete statement' });
+    expect(btn).toHaveClass('underline', 'font-bold', 'decoration-line-heavy', 'text-danger', 'p-0', 'hover:text-danger-hover', 'active:text-danger-pressed');
+    expect(btn).not.toHaveClass('border', 'bg-surface');
+    fireEvent.click(btn);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <Button variant="danger-link" disabled onClick={handleClick}>
+        Delete statement
+      </Button>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Delete statement' }));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <Button variant="danger-link" icon={<svg data-testid="i" />}>
+        Delete
+      </Button>,
+    );
+    expect(screen.getByRole('button')).toHaveClass('no-underline', 'after:bg-line-heavy');
+  });
+
   it('handles link variant clicks and disabled state', () => {
     const handleClick = vi.fn();
     const { rerender } = render(

@@ -122,7 +122,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
           size="sm"
           title={trade ? 'Edit F&O trade' : 'Add F&O trade'}
           description="Values in ₹"
-          tertiary={trade ? { label: 'Delete', onSelect: () => setConfirming(true), disabled: saving } : undefined}
+          tertiary={trade ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirming(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: 'Save trade', type: 'submit', form: FORM_ID, loading: saving }}
         >

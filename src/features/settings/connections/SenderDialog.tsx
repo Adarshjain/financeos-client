@@ -64,7 +64,7 @@ export function SenderDialog({
           title={editingSender ? 'Edit allowed sender' : 'Add allowed sender'}
           tertiary={
             editingSender
-              ? { label: 'Delete sender', disabled: submittingSender, onSelect: () => setConfirmingDelete(true) }
+              ? { label: 'Delete sender', tone: 'danger', disabled: submittingSender, onSelect: () => setConfirmingDelete(true) }
               : undefined
           }
           secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false) }}

@@ -14,7 +14,8 @@ export type ButtonVariant =
   | 'danger'
   | 'danger-filled'
   | 'ghost'
-  | 'link';
+  | 'link'
+  | 'danger-link';
 
 export type ButtonLayout = 'inline' | 'stacked';
 export type ButtonSize = 'sm' | 'md' | 'xl';
@@ -47,6 +48,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-pressed',
   link:
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
+  'danger-link':
+    'border-0 bg-transparent text-danger underline underline-offset-2 hover:no-underline hover:text-danger-hover active:text-danger-pressed p-0 h-auto font-bold inline',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -71,7 +74,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const isLink = variant === 'link';
+    const isLink = variant === 'link' || variant === 'danger-link';
     const asChildContent = asChild && React.isValidElement(children)
       ? (children as React.ReactElement<{ children?: React.ReactNode }>).props.children
       : children;
@@ -103,7 +106,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const classes = cn(
       isLink
-        ? 'inline font-text font-bold text-inherit underline decoration-line-heavy underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
+        ? 'inline font-text font-bold underline decoration-line-heavy underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
         : 'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer font-semibold',
       sizeClasses,
       variantStyles[variant],

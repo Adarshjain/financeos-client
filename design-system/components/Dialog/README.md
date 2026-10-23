@@ -12,10 +12,10 @@ The one overlay for forms, details, pickers and confirmations. It replaces Sheet
 - Phone: the sheet keeps its size and position when the on-screen keyboard opens (the root viewport sets `interactiveWidget: 'resizes-visual'`), so the keyboard covers the footer instead of the footer riding above it. The footer stays rendered.
 
 ## Anatomy
-Title and optional description, a body that is the only scroller, and a footer from props: up to three actions as data (`primary`, `secondary`, `tertiary`). Dialog draws the buttons itself in one row, left to right: tertiary, secondary, primary. Only primary is filled (`primary` or `danger-filled` when `destructive`); secondary and tertiary are `link`. On phone the actions present share the row in equal columns at `control-lg` height; on desktop they keep their natural width at `control-lg` height, aligned right. Props are `primary?: DialogPrimaryAction`, `secondary?: DialogAction`, `tertiary?: DialogAction` (no aliases).
+Title and optional description, a body that is the only scroller, and a footer from props: up to three actions as data (`primary`, `secondary`, `tertiary`). Dialog draws the buttons itself in one row, left to right: tertiary, secondary, primary. Only primary is filled (`primary` or `danger-filled` when `destructive`); secondary and tertiary are `link`, or `danger-link` when the action has `tone: 'danger'` (Delete / Remove). On phone the actions present share the row in equal columns at `control-lg` height; on desktop they keep their natural width at `control-lg` height, aligned right. Props are `primary?: DialogPrimaryAction`, `secondary?: DialogAction`, `tertiary?: DialogAction` (no aliases).
 
 ## Footer Actions API
-- `DialogAction`: `{ label: React.ReactNode; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean }`
+- `DialogAction`: `{ label: React.ReactNode; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`
 - `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
 
 ## Background
