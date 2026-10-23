@@ -48,10 +48,22 @@ vi.mock('recharts', () => {
     Area: Series('area'),
     Bar: Series('bar'),
     XAxis: () => null,
-    YAxis: ({ ticks }: { ticks?: number[] }) => (
-      <span data-testid="y-axis" data-ticks={JSON.stringify(ticks ?? null)} />
+    YAxis: ({
+      ticks,
+      tick,
+    }: {
+      ticks?: number[];
+      tick?: { fill?: string };
+    }) => (
+      <span
+        data-testid="y-axis"
+        data-ticks={JSON.stringify(ticks ?? null)}
+        data-tick-fill={tick?.fill ?? ''}
+      />
     ),
-    CartesianGrid: () => null,
+    CartesianGrid: ({ stroke }: { stroke?: string }) => (
+      <span data-testid="grid" data-stroke={stroke ?? ''} />
+    ),
     Tooltip: () => <span data-testid="tooltip" />,
   };
 });
@@ -256,6 +268,110 @@ describe('ChartView cartesian', () => {
     const table = screen.getByRole('table');
     expect(within(table).getByText('Feb')).toBeInTheDocument();
     expect(within(table).getByText('—')).toBeInTheDocument();
+  });
+});
+
+describe('ChartView yDomain and colors props', () => {
+  const rising = {
+    chartType: 'line' as const,
+    categories: months,
+    series: [{ name: 'p', data: [1000, 1010, 1040] }],
+  };
+  const ticks = () =>
+    JSON.parse(screen.getByTestId('y-axis').getAttribute('data-ticks')!);
+
+  it('includes zero by default and for yDomain "zero"', () => {
+    const { unmount } = render(<ChartView data={rising} />);
+    expect(ticks()[0]).toBe(0);
+    unmount();
+    render(<ChartView data={rising} yDomain="zero" />);
+    expect(ticks()[0]).toBe(0);
+  });
+
+  it('fits the axis to the data range for yDomain "data"', () => {
+    render(<ChartView data={rising} yDomain="data" />);
+    const t = ticks() as number[];
+    expect(t[0]).toBeGreaterThan(900);
+    expect(t[0]).toBeLessThanOrEqual(1000);
+    expect(t[t.length - 1]).toBeGreaterThanOrEqual(1040);
+  });
+
+  it('keeps the baseline of stacked bars at zero even for yDomain "data"', () => {
+    render(
+      <ChartView
+        data={{
+          chartType: 'stackedBar',
+          categories: months,
+          series: [
+            { name: 'a', data: [1000, 1010, 1040] },
+            { name: 'b', data: [10, 20, 30] },
+          ],
+        }}
+        yDomain="data"
+      />
+    );
+    expect(ticks()[0]).toBe(0);
+  });
+
+  it('overrides series colours by index and falls back to the palette', () => {
+    render(
+      <ChartView
+        data={{
+          chartType: 'line',
+          categories: months,
+          series: [
+            { name: 'a', data: [1, 2, 3] },
+            { name: 'b', data: [3, 2, 1] },
+          ],
+        }}
+        colors={['var(--ds-chart-1)']}
+      />
+    );
+    expect(screen.getByTestId('line-a')).toHaveAttribute(
+      'data-color',
+      'var(--ds-chart-1)'
+    );
+    expect(screen.getByTestId('line-b').getAttribute('data-color')).not.toBe(
+      'var(--ds-chart-1)'
+    );
+  });
+});
+
+describe('ChartView axisColor and gridColor props', () => {
+  const data = {
+    chartType: 'line' as const,
+    categories: months,
+    series: [{ name: 'p', data: [1, 2, 3] }],
+  };
+
+  it('keeps the app tokens by default', () => {
+    render(<ChartView data={data} />);
+    expect(screen.getByTestId('y-axis')).toHaveAttribute(
+      'data-tick-fill',
+      'hsl(var(--muted-foreground))'
+    );
+    expect(screen.getByTestId('grid')).toHaveAttribute(
+      'data-stroke',
+      'hsl(var(--chart-grid))'
+    );
+  });
+
+  it('draws tick labels and grid in the given colours', () => {
+    render(
+      <ChartView
+        data={data}
+        axisColor="var(--ds-ink-3)"
+        gridColor="var(--ds-line)"
+      />
+    );
+    expect(screen.getByTestId('y-axis')).toHaveAttribute(
+      'data-tick-fill',
+      'var(--ds-ink-3)'
+    );
+    expect(screen.getByTestId('grid')).toHaveAttribute(
+      'data-stroke',
+      'var(--ds-line)'
+    );
   });
 });
 
