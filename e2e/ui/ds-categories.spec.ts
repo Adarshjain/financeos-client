@@ -72,6 +72,24 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Pet care', { exact: true })).toHaveCount(0);
     });
 
+    test('a row opens the actions dialog; the ⋯ menu does not also open it', async ({ page }) => {
+      await page.goto('/ds/transactions/categories');
+      await page.getByText('Rent', { exact: true }).click();
+      const dialog = page.getByRole('dialog', { name: 'Rent' });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeVisible();
+      await expect(dialog.getByRole('button', { name: 'Rename' })).toBeVisible();
+      await expect(dialog.getByRole('button', { name: 'Delete' })).toBeVisible();
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      if (!phone) {
+        await page.getByRole('button', { name: 'Actions for Rent', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'Rename' }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(1);
+        await expect(page.getByRole('textbox', { name: 'Name' })).toBeVisible();
+      }
+    });
+
     test('Uncategorized card: count, latest three with Tag, Review opens the filtered list', async ({ page }) => {
       const api = makeApi(user.cookie);
       const bank = await createBankAccount(api, { name: 'Main Bank' });

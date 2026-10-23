@@ -152,6 +152,50 @@ describe('RulesScreen', () => {
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
   });
 
+  it('Approve offers Undo, which un-verifies that rule', async () => {
+    http.POST.mockImplementation((url: string) => Promise.resolve({ data: url.endsWith('/unverify') ? { restoredTransactionIds: [] } : {} }));
+    renderWithQuery(<RulesScreen {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    const [, options] = toasts.showToast.mock.calls[0];
+    expect(options.action.label).toBe('Undo');
+    options.action.onSelect();
+    await waitFor(() =>
+      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', { params: { path: { id: 'r1' } }, body: { transactionIds: [] } }),
+    );
+    await waitFor(() => expect(router.refresh).toHaveBeenCalledTimes(2));
+  });
+
+  it('bulk Approve offers Undo, which un-verifies every approved rule', async () => {
+    stubLayout(false);
+    http.POST.mockImplementation((url: string) =>
+      Promise.resolve({ data: url === '/api/v1/rules/verify' ? { verifiedCount: 2 } : { restoredTransactionIds: [] } }),
+    );
+    renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
+    fireEvent.click(screen.getByLabelText('Select Dunzo'));
+    fireEvent.click(screen.getByLabelText('Select Zomato'));
+    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    const [message, options] = toasts.showToast.mock.calls[0];
+    expect(message).toMatch(/^2 rules verified/);
+    options.action.onSelect();
+    await waitFor(() => {
+      const unverified = http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify').map((c) => c[1].params.path.id);
+      expect(unverified.sort()).toEqual(['r1', 'r3']);
+    });
+  });
+
+  it('a failed Undo is a toast', async () => {
+    http.POST.mockImplementation((url: string) =>
+      url.endsWith('/unverify') ? Promise.resolve({ error: { message: 'no' } }) : Promise.resolve({ data: {} }),
+    );
+    renderWithQuery(<RulesScreen {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
+    toasts.showToast.mock.calls[0][1].action.onSelect();
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
+  });
+
   it('Delete is in the menu and confirms first', async () => {
     http.DELETE.mockResolvedValue({});
     renderWithQuery(<RulesScreen {...props()} />);

@@ -183,5 +183,10 @@
   "name": "monitor",
   "phosphor": "monitor",
   "use": "Theme control (Light/Dark/System)"
+ },
+ {
+  "name": "arrow-clockwise",
+  "phosphor": "arrow-clockwise",
+  "use": "Refresh matches (Edit rule board)"
  }
 ]

@@ -60,10 +60,28 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
     onError: failed("Couldn't delete the rule. Try again."),
   });
 
+  // Undo of an approve. The Rules tab does not know which transactions the approve cleared, so none are re-flagged.
+  const unverifyMany = useMutation({
+    mutationFn: (ruleIds: string[]) =>
+      Promise.all(
+        ruleIds.map(async (id) => {
+          const { data, error } = await api.POST('/api/v1/rules/{id}/unverify', {
+            params: { path: { id } },
+            body: { transactionIds: [] },
+          });
+          if (error || !data) throw error ?? new Error('Could not undo');
+        }),
+      ),
+    onSuccess: done,
+    onError: failed("Couldn't undo the approval. Try again."),
+  });
+
   const verify = useMutation({
     mutationFn: (rule: CategoryRule) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id: rule.id } } }).then((r) => r.data),
     onSuccess: (_data, rule) => {
-      showToast('Rule verified. Matching transactions are cleared from review.');
+      showToast('Rule verified. Matching transactions are cleared from review.', {
+        action: { label: 'Undo', onSelect: () => unverifyMany.mutate([rule.id]) },
+      });
       handlers.onVerified?.([rule.id]);
       done();
     },
@@ -75,6 +93,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
     onSuccess: ({ verifiedCount }, ruleIds) => {
       showToast(
         `${verifiedCount} ${verifiedCount === 1 ? 'rule' : 'rules'} verified. Matching transactions are cleared from review.`,
+        { action: { label: 'Undo', onSelect: () => unverifyMany.mutate(ruleIds) } },
       );
       handlers.onVerified?.(ruleIds);
       done();

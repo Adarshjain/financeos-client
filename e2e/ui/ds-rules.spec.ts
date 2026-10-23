@@ -149,6 +149,24 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
     });
 
+    test('Undo on the approve toast un-verifies the rule, single and bulk', async ({ page }) => {
+      await page.goto('/ds/transactions/rules');
+      await page.getByRole('button', { name: 'Approve', exact: true }).first().click();
+      await expect(page.getByRole('button', { name: 'Unverified · 2' })).toBeVisible();
+      await page.getByRole('button', { name: 'Undo' }).click();
+      await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Verified · 0' })).toBeVisible();
+
+      if (!phone) {
+        await page.getByLabel('Select Ola Cabs').click();
+        await page.getByLabel('Select Zepto').click();
+        await page.getByText('2 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
+        await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
+        await page.getByRole('button', { name: 'Undo' }).click();
+        await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
+      }
+    });
+
     test('deleting a ticked rule drops it from the selection; Approve still works for the rest', async ({ page }) => {
       test.skip(phone, 'On phone the ⋮ is replaced by the eye while rules are selected.');
       await page.goto('/ds/transactions/rules');
@@ -172,7 +190,8 @@ for (const viewport of VIEWPORTS) {
         const tag = `${viewport.width}-${theme}`;
         await page.goto('/ds/transactions/rules');
         await expect(page.getByText('Zepto', { exact: true })).toBeVisible();
-        await page.screenshot({ path: `${SHOTS}/list-${tag}.png` });
+        // caret: 'initial' keeps Playwright from rewriting inline styles before React has hydrated (a false hydration warning).
+        await page.screenshot({ path: `${SHOTS}/list-${tag}.png`, caret: 'initial' });
         await menuOf(page, 'Third Wave').click();
         await page.getByRole('menuitem', { name: 'Edit rule' }).click();
         await expect(page.getByText('Matches now · 1')).toBeVisible();

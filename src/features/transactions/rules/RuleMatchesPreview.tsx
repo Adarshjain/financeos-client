@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, EmptyState, Pager, Skeleton, Text } from '@/components/ds';
+import { Button, Card, EmptyState, Icon, Pager, Skeleton, Text } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import type { MatchType } from '@/lib/rules.types';
 import { validatePattern } from '@/lib/rules.validate';
@@ -48,6 +48,7 @@ export function RuleMatchesPreview({ matchType, pattern, ruleId }: RuleMatchesPr
           variant="secondary"
           size="sm"
           loading={fetching}
+          icon={<Icon name="arrow-clockwise" size="xs" />}
           onClick={refetch}
         >
           Refresh matches

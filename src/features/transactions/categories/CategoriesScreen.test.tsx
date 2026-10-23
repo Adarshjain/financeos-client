@@ -96,11 +96,22 @@ describe('CategoriesScreen', () => {
     expect(await screen.findByText('Rename category')).toBeTruthy();
   });
 
-  it('desktop: tapping a row does nothing', () => {
+  it('desktop: clicking a row opens the same actions dialog as the phone', async () => {
     stubLayout(false);
     renderWithQuery(<CategoriesScreen categories={pageOf(categories)} state={state} />);
     fireEvent.click(screen.getByText('Dining out'));
-    expect(screen.queryByRole('button', { name: 'Rename' })).toBeNull();
+    expect(await screen.findByRole('button', { name: 'Rename' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
+  });
+
+  it('desktop: the menu goes straight to its form without opening the row dialog', async () => {
+    stubLayout(false);
+    renderWithQuery(<CategoriesScreen categories={pageOf(categories)} state={state} />);
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Actions for Dining out' }), { button: 0, ctrlKey: false });
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
+    expect(await screen.findByText('Rename category')).toBeTruthy();
+    expect(screen.queryByText('Rename this category or delete it.')).toBeNull();
   });
 
   it('the top bar + opens New category and creates it', async () => {
