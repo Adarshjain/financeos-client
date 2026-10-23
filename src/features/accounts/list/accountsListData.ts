@@ -1,3 +1,4 @@
+import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
@@ -52,10 +53,10 @@ export function loadAccountsListData(): AccountsListData {
   return {
     accounts: accountsApi.list().then(
       (accounts): AccountsResult => ({ accounts }),
-      (error: unknown): AccountsResult => ({
-        accounts: null,
-        errorReference: error instanceof ApiError ? error.requestId : undefined,
-      })
+      async (error: unknown): Promise<AccountsResult> => {
+        await signInIfSessionEnded(error);
+        return { accounts: null, errorReference: error instanceof ApiError ? error.requestId : undefined };
+      }
     ),
     bills: orNull(billsApi.list()),
     rewards: orNull(rewardTotals()),

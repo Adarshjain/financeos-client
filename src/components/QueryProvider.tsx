@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 
+import { isAuthExpiredClaimed } from '@/lib/authExpiry';
 import { getQueryClient } from '@/lib/query/client';
 
 export function QueryProvider({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let redirected = false;
     const handleAuthExpired = () => {
+      if (isAuthExpiredClaimed()) return;
       if (!redirected) {
         redirected = true;
         router.push('/login');

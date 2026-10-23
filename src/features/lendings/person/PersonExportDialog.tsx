@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, showToast, Skeleton } from '@/components/ds';
+import { watchSession } from '@/lib/authExpiry';
 import type { LedgerEntryResponse } from '@/lib/lending.types';
 
 import { ExportLedgerDialog } from '../export/ExportLedgerDialog';
@@ -22,7 +23,7 @@ export function PersonExportDialog({ counterpartyId, entryCount, theirName, defa
 
   React.useEffect(() => {
     let live = true;
-    void loadPersonLedger(counterpartyId, entryCount).then((result) => {
+    void watchSession(loadPersonLedger(counterpartyId, entryCount)).then((result) => {
       if (!live) return;
       if (result.success) setEntries([...result.data].reverse());
       else {

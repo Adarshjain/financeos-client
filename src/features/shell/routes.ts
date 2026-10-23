@@ -68,3 +68,30 @@ export function normalisePathname(pathname: string): string {
   if (pathname === DS_PREFIX || pathname === `${DS_PREFIX}/`) return '/';
   return pathname.startsWith(`${DS_PREFIX}/`) ? pathname.slice(DS_PREFIX.length) : pathname;
 }
+
+/** True for a path inside the Dinero area. */
+export function isDsPath(pathname: string): boolean {
+  return (DS_PREFIX as string) !== '' && (pathname === DS_PREFIX || pathname.startsWith(DS_PREFIX + '/'));
+}
+
+/**
+ * True for a same-origin relative path that is safe to redirect to: starts with one `/`, no backslash and no
+ * control character (browsers strip tabs and newlines, so `/\t/evil.com` would become `//evil.com`).
+ */
+export function isSafeLocalPath(path: string): boolean {
+  // eslint-disable-next-line no-control-regex
+  return path.startsWith('/') && !path.startsWith('//') && !path.includes('\\') && !/[\u0000-\u001f\u007f]/.test(path);
+}
+
+/**
+ * Where a signed-out visitor to `pathname` goes to sign in: the Dinero login with `from` set to the page they
+ * wanted (only a same-origin relative path is kept), or the plain login for Legacy paths.
+ */
+export function loginHrefFor(pathname: string | null | undefined): string {
+  if (!pathname || !isDsPath(pathname) || !isSafeLocalPath(pathname)) {
+    return '/login';
+  }
+  const login = appHref('/login');
+  if (pathname === login || pathname.startsWith(login + '/')) return login;
+  return `${login}?from=${encodeURIComponent(pathname)}`;
+}

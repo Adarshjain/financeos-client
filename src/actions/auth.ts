@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import { appHref } from '@/features/shell/routes';
 import { authApi } from '@/lib/apiClient';
 import { validationError } from '@/lib/apiResult';
 import { clearSessionCookie, rememberSsoState, setSessionCookie, takeSsoState } from '@/lib/auth';
@@ -74,14 +75,25 @@ export async function login(
   return action();
 }
 
-export async function logout(): Promise<void> {
+async function endSession(): Promise<void> {
   try {
     await authApi.logout();
   } catch {
     // Ignore logout errors — the local cookie is cleared regardless.
   }
   await clearSessionCookie();
+}
+
+/** Signs out to the Legacy login. Takes no argument: it is also a form action, which passes FormData. */
+export async function logout(): Promise<void> {
+  await endSession();
   redirect('/login');
+}
+
+/** Signs out to the Dinero login. */
+export async function logoutToDinero(): Promise<void> {
+  await endSession();
+  redirect(appHref('/login'));
 }
 
 export const startGoogleSSO = createDomainAction(

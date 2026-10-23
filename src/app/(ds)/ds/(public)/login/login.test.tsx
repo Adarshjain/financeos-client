@@ -51,6 +51,16 @@ describe('/ds/login page and LoginForm', () => {
     ).rejects.toThrow('REDIRECT:/dashboard');
   });
 
+  it.each(['/\t/evil.com', '/\n/evil.com', '//evil.com', '/\\evil.com'])('ignores an unsafe from %j', async (from) => {
+    vi.mocked(getOptionalSession).mockResolvedValue({
+      id: 'usr-1',
+      email: 'arjun@example.test',
+      admin: false,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    await expect(DsLoginPage({ searchParams: Promise.resolve({ from }) })).rejects.toThrow('REDIRECT:/dashboard');
+  });
+
   it('empty submit sends nothing and displays validation banner', async () => {
     render(<LoginForm />);
 

@@ -1,16 +1,20 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import React from 'react';
 
+import { notifyIfSessionExpired } from '@/lib/authExpiry';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 
 export function makeQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
+      // Server actions return a 401 as data, so look at what came back as well as at thrown errors.
+      onSuccess: (data) => notifyIfSessionExpired(data),
       onError: (e) => {
         errorLog.record(e, { source: 'api' });
       },
     }),
     mutationCache: new MutationCache({
+      onSuccess: (data) => notifyIfSessionExpired(data),
       onError: (e) => {
         errorLog.record(e, { source: 'api' });
       },

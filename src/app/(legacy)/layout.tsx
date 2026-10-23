@@ -4,6 +4,8 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { Toaster } from 'sonner';
 
+import { LegacyMutationRefresh } from '@/lib/LegacyMutationRefresh';
+
 import { Providers } from '../providers';
 import { metadata as rootMetadata, viewport as rootViewport } from '../rootMetadata';
 
@@ -36,6 +38,7 @@ export default function LegacyRootLayout({
       >
         <Providers>
           {children}
+          <LegacyMutationRefresh />
           <Toaster richColors position="top-center" />
         </Providers>
       </body>

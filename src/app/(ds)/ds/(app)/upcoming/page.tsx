@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
+import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { parseMonths } from '@/features/upcoming/upcomingModel';
 import { UpcomingView } from '@/features/upcoming/UpcomingView';
 import { obligationsApi } from '@/lib/apiClient';
@@ -23,6 +24,7 @@ export default async function DsUpcomingPage({
     queryKey: keys.obligations.upcoming({ months }),
     queryFn: async () => (await obligationsApi.getUpcoming(months)).items,
   });
+  await signInIfPrefetchFailed(qc, keys.obligations.upcoming({ months }));
   return (
     <HydrationBoundary state={dehydrate(qc)}>
       <UpcomingView />

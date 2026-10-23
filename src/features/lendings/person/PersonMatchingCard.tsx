@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge, Button, Card, ListField, ListRow, showToast, Text } from '@/components/ds';
+import { watchSession } from '@/lib/authExpiry';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 import { type TransferRow, transferRows } from '../list/lendingsList';
@@ -31,7 +32,7 @@ export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnli
   const find = async () => {
     setLoading(true);
     try {
-      const result = await loadPersonMatches(counterpartyId);
+      const result = await watchSession(loadPersonMatches(counterpartyId));
       if (!result.success) {
         showToast(result.error.message, { tone: 'danger' });
         return;

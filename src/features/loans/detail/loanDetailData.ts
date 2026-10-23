@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
+import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { accountsApi, loansApi } from '@/lib/apiClient';
@@ -20,7 +21,8 @@ export interface LoanPageData {
  */
 export const loadLoanPage = cache(async (id: string): Promise<LoanPageData> => {
   const [detail, schedule, accounts] = await Promise.all([
-    loansApi.getDetail(id).catch((e: unknown) => {
+    loansApi.getDetail(id).catch(async (e: unknown) => {
+      await signInIfSessionEnded(e);
       if (e instanceof ApiError && e.status === 404) return null;
       throw e;
     }),

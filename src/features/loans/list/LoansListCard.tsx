@@ -20,6 +20,7 @@ import {
 } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { watchSession } from '@/lib/authExpiry';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -137,7 +138,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
   React.useEffect(() => {
     if (!wantClosed || loaded || inflight.current === requestId) return;
     inflight.current = requestId;
-    void loadClosedLoans(state.q).then((result) => {
+    void watchSession(loadClosedLoans(state.q)).then((result) => {
       inflight.current = null;
       if (!result.success) {
         showToast(result.error.message, { tone: 'danger' });

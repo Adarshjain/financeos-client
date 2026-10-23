@@ -1,10 +1,13 @@
 import React, { Suspense } from 'react';
 
+import { SessionExpiredDialog } from '@/features/auth/SessionExpiredDialog';
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
 import { NavigationProgress } from '@/features/shell/NavigationProgress';
+import { NewVersionWatcher } from '@/features/shell/NewVersionWatcher';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
+import { buildVersion } from '@/lib/buildVersion';
 import { todayInAppZone } from '@/lib/date-range';
 import { PageTransition } from '@/lib/viewTransition';
 
@@ -18,6 +21,8 @@ export default async function DsAppLayout({
   return (
     <AddLendingProvider>
       <AddTransactionProvider today={todayInAppZone()}>
+      <NewVersionWatcher loadedVersion={buildVersion()} />
+      <SessionExpiredDialog email={user.email} />
       <div className="flex min-h-dvh">
         {/* Desktop Rail (hidden below desk) */}
         <div className="hidden desk:flex shrink-0 h-dvh sticky top-0">
