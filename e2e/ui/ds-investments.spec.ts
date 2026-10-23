@@ -130,11 +130,31 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('10 shares · avg ₹1,420.00')).toBeVisible();
 
       await expect(page.getByText('If you sell today')).toBeVisible();
-      await expect(page.getByText(/^Sell all \d+/)).toBeVisible();
+      await expect(page.getByText(/^Sell all \d+$/)).toBeVisible();
       await expect(page.getByText('Dividend ₹22 / share')).toBeVisible();
       await expect(page.getByText(/^Bonus 1:1/)).toBeVisible();
       await expect(page.getByText('Shared catalog entry')).toBeVisible();
       await expect(page.getByText(/Final|Interim|Applied/)).toHaveCount(0);
+    });
+
+    test('Holding page: the sell card offers a tax-free sale and works a typed quantity out in the page', async ({ page }) => {
+      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await expect(page.getByText('If you sell today')).toBeVisible();
+
+      // Every lot is long term and the year's exemption is untouched: Sell all itself shows tax ≈ ₹0.
+      await expect(page.getByText(/tax-free/)).toHaveCount(0);
+
+      const box = page.getByPlaceholder('Quantity');
+      await box.fill('20');
+      // 20 shares bought at 1,420 against 1,512.70: ₹1,854 of long-term gain.
+      await expect(page.getByText('Sell 20: Gain ₹1,854 · long term · tax ≈ ₹0 · ₹1,23,146 exemption left')).toBeVisible();
+
+      await box.fill('61');
+      await expect(page.getByText(/^Up to \d+ shares$/)).toBeVisible();
+      await expect(page.getByText(/^Sell \d+:/)).toHaveCount(0);
+
+      await box.fill('0');
+      await expect(page.getByText(/^Up to \d+ shares$/)).toBeVisible();
     });
 
     test('Holding page: only manual prices can be edited, and a delete asks first', async ({ page }) => {

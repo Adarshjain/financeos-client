@@ -7407,10 +7407,14 @@ export interface components {
             type: "KPI" | "CHART" | "TABLE";
         };
         SellEstimateResponse: {
+            bookedEquityLongTermGain?: number | null;
+            bookedOtherLongTermGain?: number | null;
+            bookedShortTermGain?: number | null;
             cost: number;
             equity: boolean;
             exemptionLeftAfter?: number | null;
             exemptionLeftBefore?: number | null;
+            exemptionLimit?: number | null;
             /** Format: int32 */
             fy: number;
             gain: number;

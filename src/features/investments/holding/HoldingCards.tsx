@@ -17,11 +17,13 @@ import {
   Pager,
   showToast,
   Text,
+  TextField,
 } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { PagePosition } from '@/lib/investments.types';
+import type { PagePosition, SellEstimate } from '@/lib/investments.types';
 
+import { fyLabel, quantity } from '../investmentsFormat';
 import { usePriceMutations } from '../usePriceMutations';
 import {
   type CorporateActionRowModel,
@@ -31,9 +33,11 @@ import {
   type InstrumentRow,
   priceDescription,
   type PriceRowModel,
+  sellLine,
   type TradeRow,
 } from './holdingModel';
 import { PriceDialog, type PriceDialogTarget } from './PriceDialog';
+import { checkQuantity, quantityStep, sellFigures, taxFreeQuantity } from './sellMath';
 
 /** Where the record flows go until their Dinero dialogs are built: the Legacy pages. */
 export const RECORD_TRADE_HREF = appHref('/investments/tradebook');
@@ -172,17 +176,42 @@ export function BrokersCard({ rows }: { rows: BrokerRowModel[] }) {
 
 // ---- If you sell today ------------------------------------------------------------------
 
-export function SellTodayCard({ fy, rows }: { fy: string; rows: { label: string; line: string }[] }) {
+export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate; assetType: string }) {
+  const [text, setText] = React.useState('');
+  const unit = assetType === 'mutual_fund' ? 'units' : 'shares';
+  const priced = !estimate.noPrice && estimate.price != null;
+  const free = React.useMemo(() => taxFreeQuantity(estimate, quantityStep(assetType)), [estimate, assetType]);
+  // The whole holding being tax-free is already what the Sell all row says.
+  const freeAll = free > 0 && Math.abs(free - estimate.quantity) < 1e-9;
+  const typed = text.trim() === '' ? null : checkQuantity(text, estimate.quantity);
+  const typedEstimate = typed?.ok ? sellFigures(estimate, typed.quantity) : null;
   return (
-    <Card title="If you sell today" subtitle={`Estimates · ${fy}`}>
-      {rows.map((r) => (
+    <Card title="If you sell today" subtitle={`Estimates · ${fyLabel(estimate.fy)}`}>
+      <ListRow title={`Sell all ${quantity(estimate.quantity)}`} subtitle={<Conceal>{sellLine(estimate)}</Conceal>} wrap />
+      {free > 0 && !freeAll ? (
         <ListRow
-          key={r.label}
-          title={r.label}
-          subtitle={<Conceal>{r.line}</Conceal>}
+          title={`Sell up to ${quantity(free)} tax-free`}
+          subtitle={<Conceal>{sellLine(sellFigures(estimate, free))}</Conceal>}
           wrap
         />
-      ))}
+      ) : null}
+      {priced ? (
+        <div className="px-space-16 py-space-12 flex flex-col gap-space-8">
+          <TextField
+            size="md"
+            inputMode="decimal"
+            placeholder="Quantity"
+            value={text}
+            onValueChange={setText}
+            helper={typed && !typed.ok ? `Up to ${quantity(estimate.quantity)} ${unit}` : undefined}
+          />
+          {typedEstimate ? (
+            <Text variant="caption" tone="ink-3">
+              <Conceal>{`Sell ${quantity(typedEstimate.quantity)}: ${sellLine(typedEstimate)}`}</Conceal>
+            </Text>
+          ) : null}
+        </div>
+      ) : null}
     </Card>
   );
 }

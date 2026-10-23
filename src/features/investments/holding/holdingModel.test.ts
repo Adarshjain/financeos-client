@@ -90,7 +90,7 @@ describe('holdingFigures', () => {
 
 describe('sellLine', () => {
   it('writes the gain, its term, the tax and what is left of the exemption', () => {
-    expect(sellLine(estimate)).toBe('Gain ₹48,162 · long term · tax ≈ ₹0 · ₹1,06,521 exemption left');
+    expect(sellLine(estimate)).toBe('Gain ₹48,162 · long term · tax ≈ ₹0 · ₹76,838 exemption left');
   });
 
   it('writes a loss, mixed terms, and leaves tax out for other asset classes', () => {
