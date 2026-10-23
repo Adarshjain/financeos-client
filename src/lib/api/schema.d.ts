@@ -3944,6 +3944,7 @@ export interface components {
         BulkVerifyRulesResponse: {
             /** Format: int32 */
             verifiedCount: number;
+            verifiedRules: components["schemas"]["RuleVerification"][];
         };
         CapStatus: {
             cap: number;
@@ -4172,6 +4173,17 @@ export interface components {
         ClearNotificationsResponse: {
             /** Format: int32 */
             cleared: number;
+        };
+        ClearedTransaction: {
+            previousReviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            /** @enum {string} */
+            previousReviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
+            /** Format: date-time */
+            previousReviewedAt?: string | null;
+            /** Format: uuid */
+            transactionId: string;
+            /** Format: date-time */
+            verifiedUpdatedAt: string;
         };
         CloseAccountRequest: {
             /** Format: date */
@@ -6937,6 +6949,12 @@ export interface components {
             source: string;
             verified: boolean;
         };
+        RuleVerification: {
+            clearedTransactionIds: string[];
+            clearedTransactions: components["schemas"]["ClearedTransaction"][];
+            /** Format: uuid */
+            ruleId: string;
+        };
         RunReportRequest: {
             datasource: string;
             definition: unknown;
@@ -7430,10 +7448,12 @@ export interface components {
             transaction: components["schemas"]["TransactionResponse"];
         };
         UnverifyRuleRequest: {
+            restore?: components["schemas"]["ClearedTransaction"][];
             transactionIds: string[];
         };
         UnverifyRuleResponse: {
             restoredTransactionIds: string[];
+            skippedTransactionIds: string[];
         };
         UpdateAppLockSettingsRequest: {
             /** Format: int32 */
@@ -7626,6 +7646,24 @@ export interface components {
             clearedTransactionIds: string[];
             /** Format: uuid */
             ruleId: string;
+        };
+        VerifyRuleResponse: {
+            /** Format: int32 */
+            appliedCount: number;
+            categories: components["schemas"]["CategoryResponse"][];
+            clearedTransactions: components["schemas"]["ClearedTransaction"][];
+            /** Format: date-time */
+            createdAt: string;
+            displayName?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            lastAppliedAt?: string | null;
+            matchType: string;
+            mcc?: string | null;
+            merchantKey: string;
+            source: string;
+            verified: boolean;
         };
         WidgetLayout: {
             /** Format: int32 */
@@ -16324,7 +16362,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RuleResponse"];
+                    "*/*": components["schemas"]["VerifyRuleResponse"];
                 };
             };
             /** @description Error response */

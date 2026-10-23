@@ -16,6 +16,9 @@ const isConflict = (error: unknown) =>
     (error.response.message || '').toLowerCase().includes('already exists') ||
     (error.response.message || '').toLowerCase().includes('duplicate'));
 
+/** Most rows the server takes in one unverify call. */
+const RESTORE_CHUNK = 5000;
+
 /** Add, edit, delete and approve rules. The list is server-rendered, so each success refreshes the page. */
 export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (id: string) => void; onVerified?: (ids: string[]) => void } = {}) {
   const queryClient = useQueryClient();
@@ -60,27 +63,44 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
     onError: failed("Couldn't delete the rule. Try again."),
   });
 
-  // Undo of an approve. The Rules tab does not know which transactions the approve cleared, so none are re-flagged.
+  // Undo of an approve: sends back what the approve returned, so the server restores every row it cleared
+  // exactly (rows edited since are left alone). Rows go in chunks of the server's limit, one rule at a time;
+  // repeating the unverify for later chunks is harmless. Resolves with how many rules could not be undone.
   const unverifyMany = useMutation({
-    mutationFn: (ruleIds: string[]) =>
-      Promise.all(
-        ruleIds.map(async (id) => {
-          const { data, error } = await api.POST('/api/v1/rules/{id}/unverify', {
-            params: { path: { id } },
-            body: { transactionIds: [] },
-          });
-          if (error || !data) throw error ?? new Error('Could not undo');
+    mutationFn: async (undo: { id: string; restore: Schemas['ClearedTransaction'][] }[]) => {
+      const results = await Promise.allSettled(
+        undo.map(async ({ id, restore }) => {
+          for (let from = 0; from === 0 || from < restore.length; from += RESTORE_CHUNK) {
+            const { data, error } = await api.POST('/api/v1/rules/{id}/unverify', {
+              params: { path: { id } },
+              body: { transactionIds: [], restore: restore.slice(from, from + RESTORE_CHUNK) },
+            });
+            if (error || !data) throw error ?? new Error('Could not undo');
+          }
         }),
-      ),
-    onSuccess: done,
+      );
+      return { failed: results.filter((r) => r.status === 'rejected').length, total: undo.length };
+    },
+    onSuccess: ({ failed, total }) => {
+      if (failed === 0) return;
+      showToast(
+        failed === total ? "Couldn't undo the approval. Try again." : `Couldn't undo ${failed} of ${total} rules. Try again.`,
+        { tone: 'danger' },
+      );
+    },
     onError: failed("Couldn't undo the approval. Try again."),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      void queryClient.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
+      done();
+    },
   });
 
   const verify = useMutation({
     mutationFn: (rule: CategoryRule) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id: rule.id } } }).then((r) => r.data),
-    onSuccess: (_data, rule) => {
+    onSuccess: (data, rule) => {
       showToast('Rule verified. Matching transactions are cleared from review.', {
-        action: { label: 'Undo', onSelect: () => unverifyMany.mutate([rule.id]) },
+        action: { label: 'Undo', onSelect: () => unverifyMany.mutate([{ id: rule.id, restore: data?.clearedTransactions ?? [] }]) },
       });
       handlers.onVerified?.([rule.id]);
       done();
@@ -90,10 +110,12 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
 
   const verifyMany = useMutation({
     mutationFn: (ruleIds: string[]) => api.POST('/api/v1/rules/verify', { body: { ruleIds } }).then((r) => r.data!),
-    onSuccess: ({ verifiedCount }, ruleIds) => {
+    onSuccess: ({ verifiedCount, verifiedRules }, ruleIds) => {
+      // Only rules that were unverified have an entry; the rest were already verified and stay so.
+      const undo = (verifiedRules ?? []).map((v) => ({ id: v.ruleId, restore: v.clearedTransactions }));
       showToast(
         `${verifiedCount} ${verifiedCount === 1 ? 'rule' : 'rules'} verified. Matching transactions are cleared from review.`,
-        { action: { label: 'Undo', onSelect: () => unverifyMany.mutate(ruleIds) } },
+        { action: { label: 'Undo', onSelect: () => unverifyMany.mutate(undo) } },
       );
       handlers.onVerified?.(ruleIds);
       done();
