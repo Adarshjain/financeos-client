@@ -35,7 +35,7 @@ const txn = (id: string, over: Record<string, unknown> = {}): PickerTransaction 
   }) as unknown as PickerTransaction;
 
 const respond = (content: PickerTransaction[], totalPages = 1) =>
-  (api.POST as Mock).mockResolvedValue({ data: { content, number: 0, size: 50, totalElements: content.length, totalPages } });
+  (api.POST as Mock).mockResolvedValue({ data: { content, number: 0, size: 10, totalElements: content.length, totalPages } });
 
 function renderField(props: Partial<React.ComponentProps<typeof TransactionPickerField>> = {}) {
   const onSelect = vi.fn();
@@ -104,20 +104,21 @@ describe('TransactionPickerField', () => {
     expect(await screen.findByText(/also linked to 2 ledger entries/)).toBeInTheDocument();
   });
 
-  it('pages with the Pager above and below, asking the server for the page', async () => {
+  it('pages with the Pager below only, asking the server for the page', async () => {
     (api.POST as Mock).mockResolvedValue({
-      data: { content: [txn('t1')], number: 0, size: 50, totalElements: 120, totalPages: 3 },
+      data: { content: [txn('t1')], number: 0, size: 10, totalElements: 30, totalPages: 3 },
     });
     renderField();
     await screen.findByRole('radio', { name: /IMPS from X/ });
-    expect(screen.getAllByRole('navigation', { name: 'Pagination' })).toHaveLength(2);
+    expect(screen.getAllByRole('navigation', { name: 'Pagination' })).toHaveLength(1);
     (api.POST as Mock).mockResolvedValue({
-      data: { content: [txn('t2', { description: 'Second page' })], number: 1, size: 50, totalElements: 120, totalPages: 3 },
+      data: { content: [txn('t2', { description: 'Second page' })], number: 1, size: 10, totalElements: 30, totalPages: 3 },
     });
-    await user.click(screen.getAllByRole('button', { name: 'Next page' })[0]!);
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(await screen.findByRole('radio', { name: /Second page/ })).toBeInTheDocument();
     expect(screen.queryByRole('radio', { name: /IMPS from X/ })).toBeNull();
     expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.page).toBe(1);
+    expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.size).toBe(10);
   });
 
   it('sends the Debit / Credit filter to the server and returns to the first page', async () => {

@@ -207,6 +207,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-23 · **Sell today + picker pager** (owner): holding "If you sell today" = Sell all + "Sell up to N tax-free" + an inline quantity field estimated in the client (no dialog); TransactionPicker pager below the list only, 10 per page, no page-size dropdown (overrides §5.5 above-and-below for the picker).
 - 2026-10-23 · **Approvals** (owner): Highlight and Radio approved; TransactionPicker uses pages + a compact SegmentedControl debit/credit filter; holding price chart may use the reports chart until it moves to organisms.
 - 2026-10-14 · Palette locked to Ink. brand is near-black ink; success uses the new `positive-tint` / `positive-strong` tokens.
 - 2026-10-14 · Overnight batch mode. Phase 2 components are built back to back. Each one is set to **Ready for review** and you move straight on; the owner reviews them all in the morning. This replaces "stop after each component" for tonight only.
@@ -393,7 +394,6 @@ Only the owner adds to this list. Each entry has a date and the decision.
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 - None open (Import/Categories/Rules questions answered 2026-10-23, see Owner decisions "Questions round 10-23").
 - 2026-10-23 · Phase 3 · Investments Holdings + holding (step 1), for the owner:
-  2. "Sell 20" row: no defined meaning; only "Sell all N" is built.
   3. Top-bar + (Record trade) and the holding's ⋯ menu are not drawn (their dialogs and menu content come in later steps). "Record trade", the two "Record" links, "Dividend", "Corporate action", Edit (instrument) and "record a merger" link to the Legacy pages until their steps.
   4. "Group by asset class ▾" (D-investments): left out; the list is always grouped by asset type (the only grouping the server gives).
   5. Allocation: the D board draws asset classes (Equity, Equity funds, Gold) with a bar each; the server gives asset types, so both layouts show the phone's one split bar by Stocks, Mutual funds, ETFs.

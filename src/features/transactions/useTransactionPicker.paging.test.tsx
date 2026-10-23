@@ -24,7 +24,7 @@ const txn = (id: string, date = '2026-10-01'): PickerTransaction =>
   }) as unknown as PickerTransaction;
 
 const page = (content: PickerTransaction[], number: number, totalPages: number) => ({
-  data: { content, number, size: 50, totalElements: totalPages * 50, totalPages },
+  data: { content, number, size: 10, totalElements: totalPages * 10, totalPages },
 });
 
 const queries = () => (api.POST as Mock).mock.calls.map((c) => c[1].params.query.page as number);
@@ -39,10 +39,11 @@ describe('useTransactionPicker paging', () => {
     const { result } = renderHook(() => useTransactionPicker({ active: true }));
     await waitFor(() => expect(result.current.candidates).toHaveLength(1));
     expect(queries()).toEqual([0]);
+    expect((api.POST as Mock).mock.calls[0]![1].params.query.size).toBe(10);
     expect(result.current.page).toBe(0);
     expect(result.current.totalPages).toBe(3);
-    expect(result.current.totalElements).toBe(150);
-    expect(result.current.pageSize).toBe(50);
+    expect(result.current.totalElements).toBe(30);
+    expect(result.current.pageSize).toBe(10);
   });
 
   it('goes to another page and shows only that page rows', async () => {

@@ -56,23 +56,22 @@ describe('TransactionPicker', () => {
     expect(marksOf()).toEqual(['3,600']);
   });
 
-  it('shows the Pager above and below the list only when there is more than one page', () => {
+  it('shows the Pager below the list only (never above) when there is more than one page', () => {
     const { rerender } = render(<TransactionPicker items={items} onPageChange={vi.fn()} pageSize={3} totalElements={3} />);
-    expect(screen.queryByTestId('picker-pager-above')).toBeNull();
     expect(screen.queryByTestId('picker-pager-below')).toBeNull();
     rerender(<TransactionPicker items={items} onPageChange={vi.fn()} pageSize={3} totalElements={7} />);
-    expect(screen.getByTestId('picker-pager-above')).toBeInTheDocument();
     expect(screen.getByTestId('picker-pager-below')).toBeInTheDocument();
+    expect(screen.queryByTestId('picker-pager-above')).toBeNull();
+    expect(screen.getAllByRole('navigation', { name: 'Pagination' })).toHaveLength(1);
     expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 
   it('asks for the next and previous page through onPageChange', async () => {
     const onPageChange = vi.fn();
     render(<TransactionPicker items={items} page={1} pageSize={3} totalElements={9} onPageChange={onPageChange} />);
-    const above = within(screen.getByTestId('picker-pager-above'));
-    await userEvent.click(above.getByRole('button', { name: 'Next page' }));
-    expect(onPageChange).toHaveBeenLastCalledWith(2);
     const below = within(screen.getByTestId('picker-pager-below'));
+    await userEvent.click(below.getByRole('button', { name: 'Next page' }));
+    expect(onPageChange).toHaveBeenLastCalledWith(2);
     await userEvent.click(below.getByRole('button', { name: 'Previous page' }));
     expect(onPageChange).toHaveBeenLastCalledWith(0);
   });
