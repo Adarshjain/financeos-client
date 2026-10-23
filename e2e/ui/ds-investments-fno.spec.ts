@@ -98,8 +98,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('+₹16,366')).toBeVisible();
       await expect(page.getByText('−₹4,571').last()).toBeVisible();
 
-      // There is no Dinero import wizard yet: the button goes to the Legacy page that has it.
-      await expect(page.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', '/investments/fno');
+      // The button goes to the Import tradebook page.
+      await expect(page.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', '/ds/investments/import');
     });
 
     test('contract, search, sort and year are answered by the server from the URL', async ({ page }) => {

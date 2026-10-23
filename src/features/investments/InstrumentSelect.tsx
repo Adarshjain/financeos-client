@@ -36,6 +36,8 @@ export interface InstrumentSelectProps {
   onEnterManually?: () => void;
   /** Tells the form when a pick is still being resolved, so it can hold its submit until the field has the instrument. */
   onResolvingChange?: (resolving: boolean) => void;
+  /** Opens the list from this element instead of the field (a link in a table row); the field's label is then not drawn. */
+  trigger?: React.ReactNode;
 }
 
 /**
@@ -54,6 +56,7 @@ export function InstrumentSelect({
   onResolveError,
   onEnterManually,
   onResolvingChange,
+  trigger,
 }: InstrumentSelectProps) {
   const [query, setQuery] = React.useState('');
   const { results, isLoading, hasQuery } = useCatalogSearch(query, type);
@@ -110,7 +113,7 @@ export function InstrumentSelect({
   const searching = isLoading || (typed && !hasQuery);
   return (
     <Select
-      label={label}
+      label={trigger ? undefined : label}
       helper={helper}
       error={error}
       placeholder="Search by name or symbol"
@@ -124,6 +127,7 @@ export function InstrumentSelect({
       filter="none"
       loading={resolve.isPending}
       loadingText="Adding…"
+      trigger={trigger}
       disabled={disabled}
       action={onEnterManually ? { label: 'Enter it manually', onSelect: onEnterManually } : undefined}
       emptyText={() => (searching ? 'Searching…' : typed ? 'No instruments found.' : 'Type at least 2 characters to search.')}

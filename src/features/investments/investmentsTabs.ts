@@ -36,6 +36,12 @@ export function holdingHref(instrumentId: string): string {
   return appHref(`${INVESTMENTS_PATH}/${instrumentId}`);
 }
 
+/** The Import tradebook page: its own page under Investments, outside the tab strip. */
+export const INVESTMENTS_IMPORT_HREF = appHref('/investments/import');
+
+/** Pages under Investments that are neither a tab nor a holding. */
+const OWN_PAGE_SEGMENTS = new Set(['import']);
+
 /** The tab pages under Investments (`tradebook`, `dividends`…), which are not holdings. */
 const TAB_SEGMENTS = new Set(
   investmentsTabs.filter((t) => t.path !== INVESTMENTS_PATH).map((t) => t.path.slice(INVESTMENTS_PATH.length + 1)),
@@ -46,7 +52,12 @@ export function isHoldingDetailPath(pathname: string | null | undefined): boolea
   const path = (pathname ?? '').replace(/\/+$/, '');
   if (!path.startsWith(`${HOLDINGS_HREF}/`)) return false;
   const rest = path.slice(HOLDINGS_HREF.length + 1);
-  return rest !== '' && !rest.includes('/') && !TAB_SEGMENTS.has(rest);
+  return rest !== '' && !rest.includes('/') && !TAB_SEGMENTS.has(rest) && !OWN_PAGE_SEGMENTS.has(rest);
+}
+
+/** The Import tradebook page (`/ds/investments/import`): it carries its own top bar and no tab strip. */
+export function isImportPath(pathname: string | null | undefined): boolean {
+  return (pathname ?? '').replace(/\/+$/, '') === INVESTMENTS_IMPORT_HREF;
 }
 
 /** The tab a pathname belongs to (`/ds/investments/dividends` is Dividends); anything else is Holdings. */

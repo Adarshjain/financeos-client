@@ -2,12 +2,12 @@
 
 import React from 'react';
 
+import { getUnresolvedRows, RowState } from '@/features/investments/import/types';
 import { ImportPreview, ReconcilePreview } from '@/lib/types';
 
 import { ClassifiedExecutionsTable } from './ClassifiedExecutionsTable';
 import { FnoTradesTable } from './FnoTradesTable';
 import { ReconciliationSummaryStats } from './ReconciliationSummaryStats';
-import { getUnresolvedRows, RowState } from './types';
 
 interface ImportStep2ReviewProps {
   reconcilePreview: ReconcilePreview | null;
