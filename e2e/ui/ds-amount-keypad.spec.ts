@@ -86,6 +86,20 @@ test.describe('/ds amount keypad, phone 390px (@ui @mobile)', () => {
     await key(page, '+').click();
     await expect(keypad.getByRole('button', { name: 'Apply' })).toBeDisabled();
   });
+
+  test('a negative result applies as a debit of the positive amount', async ({ page }) => {
+    const form = await openAddTransaction(page);
+    await form.getByRole('radio', { name: 'Credit' }).click();
+    const amount = form.locator('input[aria-label="Amount"]');
+    await amount.click();
+    const keypad = page.getByRole('dialog', { name: 'Amount' });
+    for (const k of ['1', '0', '0', '-', '3', '0', '0']) await key(page, k).click();
+    await expect(keypad.getByTestId('amount-keypad-result')).toHaveText('= −₹200');
+    await keypad.getByRole('button', { name: 'Apply' }).click();
+    await expect(keypad).toHaveCount(0);
+    await expect(amount).toHaveValue('200');
+    await expect(form.getByRole('radio', { name: 'Debit' })).toBeChecked();
+  });
 });
 
 test.describe('/ds amount keypad, desktop 1440px (@ui)', () => {

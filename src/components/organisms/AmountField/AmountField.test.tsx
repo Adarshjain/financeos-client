@@ -20,7 +20,7 @@ function mockLayout(phone: boolean) {
   }));
 }
 
-function Harness({ initial = '' }: { initial?: string }) {
+function Harness({ initial = '', onNegative }: { initial?: string; onNegative?: () => void }) {
   const [amount, setAmount] = useState(initial);
   return (
     <>
@@ -29,6 +29,7 @@ function Harness({ initial = '' }: { initial?: string }) {
         inputMode="decimal"
         value={amount}
         {...amountExpressionProps(amount, setAmount)}
+        onNegative={onNegative}
       />
       <output data-testid="stored">{amount}</output>
     </>
@@ -145,6 +146,29 @@ describe('AmountField on phone', () => {
     expect(keypad().getByRole('button', { name: 'Apply' })).toBeDisabled();
   });
 
+  it('with onNegative, a negative result applies without its sign and calls it', () => {
+    mockLayout(true);
+    const onNegative = vi.fn();
+    render(<Harness initial="500" onNegative={onNegative} />);
+    fireEvent.click(screen.getByRole('textbox'));
+    press('-', '7', '0', '0');
+    expect(screen.getByTestId('amount-keypad-result')).toHaveTextContent('= −₹200');
+    fireEvent.click(keypad().getByRole('button', { name: 'Apply' }));
+    expect(screen.getByTestId('stored')).toHaveTextContent('200');
+    expect(onNegative).toHaveBeenCalledTimes(1);
+  });
+
+  it('a positive result never calls onNegative', () => {
+    mockLayout(true);
+    const onNegative = vi.fn();
+    render(<Harness initial="500" onNegative={onNegative} />);
+    fireEvent.click(screen.getByRole('textbox'));
+    press('-', '2', '0', '0');
+    fireEvent.click(keypad().getByRole('button', { name: 'Apply' }));
+    expect(screen.getByTestId('stored')).toHaveTextContent('300');
+    expect(onNegative).not.toHaveBeenCalled();
+  });
+
   it('dismissing the sheet leaves the field unchanged', () => {
     mockLayout(true);
     render(<Harness initial="250" />);
@@ -168,6 +192,26 @@ describe('AmountField on desktop', () => {
     expect(screen.getByTestId('stored')).toHaveTextContent('120+45');
     fireEvent.blur(input);
     expect(screen.getByTestId('stored')).toHaveTextContent('165');
+  });
+
+  it('with onNegative, typed arithmetic that comes out negative loses its sign on blur', () => {
+    mockLayout(false);
+    const onNegative = vi.fn();
+    render(<Harness onNegative={onNegative} />);
+    const input = screen.getByRole('textbox', { name: 'Amount' });
+    fireEvent.change(input, { target: { value: '100-350' } });
+    fireEvent.blur(input);
+    expect(screen.getByTestId('stored')).toHaveTextContent('250');
+    expect(onNegative).toHaveBeenCalledTimes(1);
+  });
+
+  it('without onNegative, typed negative arithmetic stays as typed', () => {
+    mockLayout(false);
+    render(<Harness />);
+    const input = screen.getByRole('textbox', { name: 'Amount' });
+    fireEvent.change(input, { target: { value: '100-350' } });
+    fireEvent.blur(input);
+    expect(screen.getByTestId('stored')).toHaveTextContent('100-350');
   });
 
   it('focus does not open a sheet', () => {

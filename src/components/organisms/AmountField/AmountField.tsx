@@ -32,8 +32,16 @@ function formatResult(n: number): string {
  * dismissing the sheet leaves the field as it was. Takes TextField's props; pair it with
  * `amountExpressionProps` like any amount field.
  */
-export const AmountField = forwardRef<HTMLInputElement, TextFieldProps>(
-  ({ onMouseDown, onClick, ...props }, ref) => {
+export type AmountFieldProps = TextFieldProps & {
+  /**
+   * Accepts a negative result: the field gets the amount without its sign and this is called
+   * (the transaction form switches to debit). Without it a negative result can't be applied.
+   */
+  onNegative?: () => void;
+};
+
+export const AmountField = forwardRef<HTMLInputElement, AmountFieldProps>(
+  ({ onMouseDown, onClick, onBlur, onNegative, ...props }, ref) => {
     const [open, setOpen] = useState(false);
     const [draft, setDraft] = useState('');
 
@@ -44,11 +52,18 @@ export const AmountField = forwardRef<HTMLInputElement, TextFieldProps>(
 
     const hasOperator = hasAmountOperator(draft);
     const result = draft.trim() ? evaluateAmountExpression(draft) : null;
-    const valid = !draft.trim() || (result !== null && result >= 0);
+    const valid = !draft.trim() || (result !== null && (result >= 0 || !!onNegative));
+
+    /** Puts a resolved amount in the field; a negative one loses its sign and calls onNegative. */
+    const fill = (n: number) => {
+      props.onValueChange?.(String(Math.abs(n)));
+      if (n < 0) onNegative?.();
+    };
 
     const apply = () => {
       if (!valid) return;
-      props.onValueChange?.(draft.trim() ? String(result) : '');
+      if (result === null) props.onValueChange?.('');
+      else fill(result);
       setOpen(false);
     };
 
@@ -73,6 +88,13 @@ export const AmountField = forwardRef<HTMLInputElement, TextFieldProps>(
             }
             onClick?.(e);
           }}
+          onBlur={(e) => {
+            // Desktop: typed arithmetic that comes out negative is handled like the keypad's Apply.
+            const typed = String(props.value ?? '');
+            const n = onNegative && hasAmountOperator(typed) ? evaluateAmountExpression(typed) : null;
+            if (n !== null && n < 0) fill(n);
+            else onBlur?.(e);
+          }}
         />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent
@@ -88,7 +110,7 @@ export const AmountField = forwardRef<HTMLInputElement, TextFieldProps>(
                   ₹{draft.replace(/-/g, '−') || '0'}
                 </Text>
                 <Text variant="caption" tone="ink-3" as="p" data-testid="amount-keypad-result">
-                  {hasOperator && result !== null ? <>= ₹{formatResult(result)}</> : ' '}
+                  {hasOperator && result !== null ? <>= {result < 0 ? '−' : ''}₹{formatResult(Math.abs(result))}</> : ' '}
                 </Text>
               </div>
               <Keypad value={draft} onValueChange={setDraft} operators={OPERATORS} />
