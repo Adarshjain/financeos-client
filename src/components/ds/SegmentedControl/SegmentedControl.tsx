@@ -6,7 +6,7 @@ import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
 import { useSlidingIndicator } from '../useSlidingIndicator';
 
-export type SegmentedControlSize = 'md' | 'lg' | 'xl';
+export type SegmentedControlSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface SegmentedControlOption<T extends string = string> {
   value: T;
@@ -22,7 +22,7 @@ export interface SegmentedControlProps<T extends string = string>
   defaultValue?: T;
   onValueChange?: (value: T) => void;
   fullWidth?: boolean;
-  /** Height, with TextField's size names: md and lg are control-md, xl is control-xl */
+  /** Height, with TextField's size names: sm is control-sm (compact), md and lg are control-md, xl is control-xl */
   size?: SegmentedControlSize;
   disabled?: boolean;
 }
@@ -153,9 +153,10 @@ const Impl = (
             onClick={() => handleSelect(opt.value, opt.disabled)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              'relative inline-flex items-center justify-center gap-space-6 px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
+              'relative inline-flex items-center justify-center font-text font-bold text-label select-none transition-colors duration-fast',
+              size === 'sm' ? 'gap-space-4 px-space-8' : 'gap-space-6 px-space-12',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
-              size === 'xl' ? 'h-control-xl' : 'h-control-md',
+              size === 'xl' ? 'h-control-xl' : size === 'sm' ? 'h-control-sm' : 'h-control-md',
               fullWidth && 'flex-1',
               isSelected
                 ? cn('text-on-brand', !rect && 'bg-brand')

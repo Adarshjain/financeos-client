@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -56,13 +56,38 @@ describe('TransactionPicker', () => {
     expect(marksOf()).toEqual(['3,600']);
   });
 
-  it('shows Show more only with hasMore and calls onLoadMore', async () => {
-    const onLoadMore = vi.fn();
-    const { rerender } = render(<TransactionPicker items={items} onLoadMore={onLoadMore} />);
+  it('shows the Pager above and below the list only when there is more than one page', () => {
+    const { rerender } = render(<TransactionPicker items={items} onPageChange={vi.fn()} pageSize={3} totalElements={3} />);
+    expect(screen.queryByTestId('picker-pager-above')).toBeNull();
+    expect(screen.queryByTestId('picker-pager-below')).toBeNull();
+    rerender(<TransactionPicker items={items} onPageChange={vi.fn()} pageSize={3} totalElements={7} />);
+    expect(screen.getByTestId('picker-pager-above')).toBeInTheDocument();
+    expect(screen.getByTestId('picker-pager-below')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
-    rerender(<TransactionPicker items={items} hasMore onLoadMore={onLoadMore} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Show more' }));
-    expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks for the next and previous page through onPageChange', async () => {
+    const onPageChange = vi.fn();
+    render(<TransactionPicker items={items} page={1} pageSize={3} totalElements={9} onPageChange={onPageChange} />);
+    const above = within(screen.getByTestId('picker-pager-above'));
+    await userEvent.click(above.getByRole('button', { name: 'Next page' }));
+    expect(onPageChange).toHaveBeenLastCalledWith(2);
+    const below = within(screen.getByTestId('picker-pager-below'));
+    await userEvent.click(below.getByRole('button', { name: 'Previous page' }));
+    expect(onPageChange).toHaveBeenLastCalledWith(0);
+  });
+
+  it('shows the compact All / Debit / Credit filter only with onFilterChange, default All', async () => {
+    const { rerender } = render(<TransactionPicker items={items} />);
+    expect(screen.queryByTestId('picker-filter')).toBeNull();
+    const onFilterChange = vi.fn();
+    rerender(<TransactionPicker items={items} onFilterChange={onFilterChange} />);
+    const group = screen.getByTestId('picker-filter');
+    expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual(['All', 'Debit', 'Credit']);
+    expect(within(group).getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(group).getByRole('radio', { name: 'All' })).toHaveClass('h-control-sm');
+    await userEvent.click(within(group).getByRole('radio', { name: 'Credit' }));
+    expect(onFilterChange).toHaveBeenCalledWith('credit');
   });
 
   it('shows skeleton rows while loading with no items', () => {
@@ -71,8 +96,8 @@ describe('TransactionPicker', () => {
     expect(screen.queryByText('Nothing')).toBeNull();
   });
 
-  it('keeps items while loading more', () => {
-    render(<TransactionPicker items={items} loading hasMore />);
+  it('keeps items while loading another page', () => {
+    render(<TransactionPicker items={items} loading />);
     expect(screen.queryAllByTestId('picker-skeleton')).toHaveLength(0);
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
   });

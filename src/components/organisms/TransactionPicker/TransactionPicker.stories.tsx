@@ -13,7 +13,7 @@ const meta: Meta<typeof TransactionPicker> = {
     docs: {
       description: {
         component:
-          'One open transaction list: a search field, rows with a radio (or checkbox) at the left and the amount at the right, and Show more. The page fetches; the list never filters.',
+          'One open transaction list: a search field, rows with a radio (or checkbox) at the left and the amount at the right, a Debit / Credit filter, and a Pager above and below the list. The page fetches; the list never filters.',
       },
     },
   },
@@ -21,7 +21,10 @@ const meta: Meta<typeof TransactionPicker> = {
     multiple: { control: 'boolean' },
     query: { control: 'text' },
     loading: { control: 'boolean' },
-    hasMore: { control: 'boolean' },
+    filter: { control: 'select', options: ['all', 'debit', 'credit'] },
+    page: { control: 'number' },
+    pageSize: { control: 'number' },
+    totalElements: { control: 'number' },
     items: { control: 'object' },
     error: { control: 'text' },
     label: { control: 'text' },
@@ -34,7 +37,10 @@ const meta: Meta<typeof TransactionPicker> = {
     multiple: false,
     query: '',
     loading: false,
-    hasMore: true,
+    filter: 'all',
+    page: 0,
+    pageSize: 5,
+    totalElements: 23,
     label: 'Open transactions',
     emptyLabel: 'No matching transactions',
     value: null,
@@ -75,10 +81,11 @@ const meta: Meta<typeof TransactionPicker> = {
     ],
     onValueChange: fn(),
     onQueryChange: fn(),
-    onLoadMore: fn(),
+    onFilterChange: fn(),
+    onPageChange: fn(),
   },
   render: function Render(args) {
-    const [{ value, query }, updateArgs] = useArgs();
+    const [{ value, query, filter, page }, updateArgs] = useArgs();
     return (
       <TransactionPicker
         {...args}
@@ -88,9 +95,19 @@ const meta: Meta<typeof TransactionPicker> = {
           args.onValueChange?.(next);
           updateArgs({ value: next });
         }}
+        filter={filter}
+        onFilterChange={(next) => {
+          args.onFilterChange?.(next);
+          updateArgs({ filter: next, page: 0 });
+        }}
+        page={page}
+        onPageChange={(next) => {
+          args.onPageChange?.(next);
+          updateArgs({ page: next });
+        }}
         onQueryChange={(next) => {
           args.onQueryChange?.(next);
-          updateArgs({ query: next });
+          updateArgs({ query: next, page: 0 });
         }}
       />
     );

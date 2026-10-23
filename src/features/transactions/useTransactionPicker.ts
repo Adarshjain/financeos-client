@@ -13,7 +13,11 @@ import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 export type PickerTransaction = Schemas['TransactionResponse'];
 
 const DATE_WINDOW_DAYS = 30;
-const PAGE_SIZE = 50;
+export const PICKER_PAGE_SIZE = 50;
+const PAGE_SIZE = PICKER_PAGE_SIZE;
+
+/** The picker's own debit/credit filter. Ignored when the caller fixes the type (`type` or `direction`). */
+export type PickerTypeFilter = 'all' | 'debit' | 'credit';
 
 interface UseTransactionPickerProps {
   direction?: 'lent' | 'borrowed';
@@ -56,21 +60,28 @@ export function useTransactionPicker({
   const [results, setResults] = React.useState<PickerTransaction[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [totalPages, setTotalPages] = React.useState(0);
-  // "Load more" asks for the next page of the same search; any change of search or filter starts over.
+  const [totalElements, setTotalElements] = React.useState(0);
+  const [typeFilter, setTypeFilter] = React.useState<PickerTypeFilter>('all');
+  // The Pager asks for a page of the same search and filter; any change of search or filter starts over.
   const [paging, setPaging] = React.useState({ key: '', page: 0 });
   // The request (search and page) whose answer is in `results`: until it arrives the list is not final.
   const [settled, setSettled] = React.useState('');
   const requestIdRef = React.useRef(0);
+  // The search text of the last request sent: only a changed text waits for a typing pause.
+  const sentSearchRef = React.useRef<string | null>(null);
+  // The request (search, filter and page) the picker wants right now; an answer for any other is dropped.
+  const currentKeyRef = React.useRef('');
 
-  const searchKey = `${search}|${direction ?? ''}|${type ?? ''}|${suggestDate ?? ''}`;
+  const searchKey = `${search}|${direction ?? ''}|${type ?? ''}|${typeFilter}|${suggestDate ?? ''}`;
   const page = paging.key === searchKey ? paging.page : 0;
+  currentKeyRef.current = `${searchKey}|${page}`;
 
   const fetchResults = React.useCallback(
     async (query: string, pageNo: number, key: string) => {
       const requestId = ++requestIdRef.current;
       setLoading(true);
       try {
-        const effectiveType: 'DEBIT' | 'CREDIT' | null =
+        const forcedType: 'DEBIT' | 'CREDIT' | null =
           type !== undefined
             ? type
             : direction === 'lent'
@@ -78,6 +89,13 @@ export function useTransactionPicker({
               : direction === 'borrowed'
                 ? 'CREDIT'
                 : null;
+        const effectiveType: 'DEBIT' | 'CREDIT' | null =
+          forcedType ??
+          (typeFilter === 'debit'
+            ? 'DEBIT'
+            : typeFilter === 'credit'
+              ? 'CREDIT'
+              : null);
 
         const filters: FilterClause[] = [];
         if (effectiveType) {
@@ -106,12 +124,14 @@ export function useTransactionPicker({
           body: { filters, search: query.trim() || null },
           params: { query: { page: pageNo, size: PAGE_SIZE } },
         });
-        if (requestId !== requestIdRef.current) return;
+        if (requestId !== requestIdRef.current || key !== currentKeyRef.current) return;
         const content = data?.content ?? [];
-        setResults((prev) => (pageNo === 0 ? content : [...prev, ...content]));
+        setResults(content);
         setTotalPages(data?.totalPages ?? 1);
+        setTotalElements(data?.totalElements ?? content.length);
       } catch {
-        // Ignore background errors — the empty state covers this.
+        // A failed page must not keep the previous page's rows under the new page number: the empty state covers it.
+        if (requestId === requestIdRef.current && key === currentKeyRef.current) setResults([]);
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);
@@ -119,18 +139,28 @@ export function useTransactionPicker({
         }
       }
     },
-    [direction, type, suggestDate],
+    [direction, type, typeFilter, suggestDate]
   );
 
   React.useEffect(() => {
     if (!active) return;
-    // A typed search waits for a pause; the next page of the same search goes straight out.
-    const timer = setTimeout(() => fetchResults(search, page, `${searchKey}|${page}`), page === 0 ? 300 : 0);
+    // A changed search text waits for a pause; a page or filter change goes straight out.
+    const timer = setTimeout(
+      () => {
+        sentSearchRef.current = search;
+        fetchResults(search, page, `${searchKey}|${page}`);
+      },
+      search !== sentSearchRef.current ? 300 : 0
+    );
     return () => clearTimeout(timer);
   }, [active, search, page, searchKey, fetchResults]);
 
   React.useEffect(() => {
-    if (!active) setSearch('');
+    if (!active) {
+      setSearch('');
+      setTypeFilter('all');
+      sentSearchRef.current = null;
+    }
   }, [active]);
 
   // Paging belongs to one search: a new search or filter, or closing the picker, starts over at page 0 so an
@@ -159,7 +189,9 @@ export function useTransactionPicker({
     });
 
     const suggestAmt = suggestAmount != null ? Math.abs(suggestAmount) : null;
-    const suggestDateMs = suggestDate ? parseCalendarDate(suggestDate).getTime() : null;
+    const suggestDateMs = suggestDate
+      ? parseCalendarDate(suggestDate).getTime()
+      : null;
 
     return [...filtered].sort((a, b) => {
       if (suggestAmt != null) {
@@ -168,20 +200,47 @@ export function useTransactionPicker({
         if (aExact !== bExact) return aExact - bExact;
       }
       if (suggestDateMs != null) {
-        const aDiff = Math.abs(parseCalendarDate(a.date).getTime() - suggestDateMs);
-        const bDiff = Math.abs(parseCalendarDate(b.date).getTime() - suggestDateMs);
+        const aDiff = Math.abs(
+          parseCalendarDate(a.date).getTime() - suggestDateMs
+        );
+        const bDiff = Math.abs(
+          parseCalendarDate(b.date).getTime() - suggestDateMs
+        );
         if (aDiff !== bDiff) return aDiff - bDiff;
       }
       return b.date.localeCompare(a.date);
     });
-  }, [results, excludeIds, accept, suggestAmount, suggestDate, excludeAnyObligationRef, shareableKind]);
+  }, [
+    results,
+    excludeIds,
+    accept,
+    suggestAmount,
+    suggestDate,
+    excludeAnyObligationRef,
+    shareableKind,
+  ]);
 
   // True from opening (or typing) until the answer for the current search and page is in.
   const pending = active && settled !== `${searchKey}|${page}`;
-  const hasMore = page + 1 < totalPages;
-  const loadMore = React.useCallback(() => {
-    setPaging({ key: searchKey, page: page + 1 });
-  }, [searchKey, page]);
+  const setPage = React.useCallback(
+    (next: number) => {
+      setPaging({ key: searchKey, page: next });
+    },
+    [searchKey]
+  );
 
-  return { search, setSearch, loading, pending, candidates, hasMore, loadMore };
+  return {
+    search,
+    setSearch,
+    typeFilter,
+    setTypeFilter,
+    loading,
+    pending,
+    candidates,
+    page,
+    setPage,
+    pageSize: PAGE_SIZE,
+    totalPages,
+    totalElements,
+  };
 }

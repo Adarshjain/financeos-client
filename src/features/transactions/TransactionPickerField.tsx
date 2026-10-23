@@ -3,12 +3,23 @@
 import React from 'react';
 
 import { Button, Skeleton, Text } from '@/components/ds';
-import { TransactionPicker, type TransactionPickerItem } from '@/components/organisms';
+import {
+  TransactionPicker,
+  type TransactionPickerItem,
+} from '@/components/organisms';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { pickerEmptyHint, pickerListItem, type PickerSummaryLike, sharedNote } from './pickerModel';
-import { type PickerTransaction, useTransactionPicker } from './useTransactionPicker';
+import {
+  pickerEmptyHint,
+  pickerListItem,
+  type PickerSummaryLike,
+  sharedNote,
+} from './pickerModel';
+import {
+  type PickerTransaction,
+  useTransactionPicker,
+} from './useTransactionPicker';
 
 export interface TransactionPickerFieldProps {
   label?: string;
@@ -36,7 +47,7 @@ export interface TransactionPickerFieldProps {
 /**
  * An always-open, searchable list of bank transactions (the TransactionPicker organism). The search is answered
  * by the server (debounced), rows are filtered and ordered by the picker rules (exact amount first, then nearest
- * date), and "Show more" asks for the next page. The picked transaction stays at the top of the list; Remove clears it.
+ * date), and the Pager asks for another page. The picked transaction stays at the top of the list; Remove clears it.
  */
 export function TransactionPickerField({
   label = 'Transaction (optional)',
@@ -57,7 +68,18 @@ export function TransactionPickerField({
   error,
 }: TransactionPickerFieldProps) {
   const { data: accounts = [] } = useAccounts();
-  const { search, setSearch, pending, candidates, hasMore, loadMore } = useTransactionPicker({
+  const {
+    search,
+    setSearch,
+    typeFilter,
+    setTypeFilter,
+    pending,
+    candidates,
+    page,
+    setPage,
+    pageSize,
+    totalElements,
+  } = useTransactionPicker({
     direction,
     type,
     suggestAmount,
@@ -69,29 +91,52 @@ export function TransactionPickerField({
     active: !disabled,
   });
 
+  // A caller that fixes the type (direction or `type`, even `null`) owns it; the debit/credit filter is only for open lists.
+  const typeFixed =
+    type !== undefined ? type !== null : direction !== undefined;
+
   const items = React.useMemo<TransactionPickerItem[]>(() => {
     const accountOf = (id: string, named?: string | null) => {
-      const found = accounts.find((a) => a.id === id) as { name: string; last4?: string } | undefined;
+      const found = accounts.find((a) => a.id === id) as
+        | { name: string; last4?: string }
+        | undefined;
       return { name: named || found?.name || 'Unknown', last4: found?.last4 };
     };
     const rows: TransactionPickerItem[] = [];
-    if (value) rows.push({ ...pickerListItem(value, accountOf(value.accountId, value.accountName)), disabled });
+    if (value)
+      rows.push({
+        ...pickerListItem(value, accountOf(value.accountId, value.accountName)),
+        disabled,
+      });
     if (!disabled) {
       for (const t of candidates) {
         rows.push(
           pickerListItem(
             t,
             accountOf(t.accountId),
-            sharedNote(t.obligationRefs?.length ?? 0, shareableKind, excludeAnyObligationRef),
-          ),
+            sharedNote(
+              t.obligationRefs?.length ?? 0,
+              shareableKind,
+              excludeAnyObligationRef
+            )
+          )
         );
       }
     }
     return rows;
-  }, [value, candidates, accounts, disabled, shareableKind, excludeAnyObligationRef]);
+  }, [
+    value,
+    candidates,
+    accounts,
+    disabled,
+    shareableKind,
+    excludeAnyObligationRef,
+  ]);
 
   const hint = pickerEmptyHint(ruleHint, direction);
-  const emptyCopy = hint ? `No matching transactions. ${hint}` : 'No matching transactions';
+  const emptyCopy = hint
+    ? `No matching transactions. ${hint}`
+    : 'No matching transactions';
 
   if (disabled && !value) {
     return (
@@ -126,8 +171,12 @@ export function TransactionPickerField({
         query={search}
         onQueryChange={setSearch}
         loading={pending}
-        hasMore={hasMore}
-        onLoadMore={loadMore}
+        filter={typeFilter}
+        onFilterChange={typeFixed ? undefined : setTypeFilter}
+        page={page}
+        pageSize={pageSize}
+        totalElements={totalElements}
+        onPageChange={setPage}
         emptyLabel={emptyCopy}
         error={error}
       />
