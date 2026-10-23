@@ -93,10 +93,6 @@ export interface TransactionRowProps
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
 
-  /** Wraps the description / the amount as drawn (after the search marker), for a page to give that part a view-transition name. The wrapper must render one element around the node. */
-  wrapDescription?: (node: React.ReactNode) => React.ReactNode;
-  wrapAmount?: (node: React.ReactNode) => React.ReactNode;
-
   /** Search text: matches in string description, account, categories, amount, note, plastic and contextLine get the marker stroke */
   query?: string;
 }
@@ -136,8 +132,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       chevron = false,
       borderTop = true,
       query,
-      wrapDescription,
-      wrapAmount,
       className,
       children,
       ...props
@@ -455,7 +449,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
               <div className="text-heading font-semibold desk:text-body-strong desk:font-semibold text-ink break-words">
-                {wrapDescription ? wrapDescription(mark(description) ?? children) : (mark(description) ?? children)}
+                {mark(description) ?? children}
               </div>
               {/* Phone context line (starts with the account) */}
               {phoneContextElements.length > 0 && (
@@ -509,7 +503,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
-              {wrapAmount ? wrapAmount(markAmount(amount)) : markAmount(amount)}
+              {markAmount(amount)}
               {balance && (
                 <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}
