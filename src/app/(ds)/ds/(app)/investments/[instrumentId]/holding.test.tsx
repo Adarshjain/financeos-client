@@ -165,8 +165,69 @@ describe('/ds/investments/[instrumentId]: Overview', () => {
     expect(screen.getByText('If you sell today')).toBeInTheDocument();
     expect(screen.getByText('Estimates · FY 26-27')).toBeInTheDocument();
     expect(screen.getByText('Sell all 60')).toBeInTheDocument();
-    expect(screen.getByText('Gain ₹48,162 · long term · tax ≈ ₹0 · ₹1,06,521 exemption left')).toBeInTheDocument();
+    expect(screen.getByText('Gain ₹48,162 · long term · tax ≈ ₹0 · ₹76,838 exemption left')).toBeInTheDocument();
     expect(screen.queryByText(/^Sell 20/)).toBeNull();
+  });
+
+  describe('the sell card: tax-free row and the quantity box', () => {
+    const type = (value: string) => fireEvent.change(screen.getByPlaceholderText('Quantity'), { target: { value } });
+
+    it('shows no tax-free row when the whole holding adds no tax: Sell all already says it', async () => {
+      await renderPage();
+      expect(screen.getByText('Sell all 60')).toBeInTheDocument();
+      expect(screen.queryByText(/tax-free/)).toBeNull();
+    });
+
+    it('offers "Sell up to N tax-free" with the gain of N when the exemption runs out part way', async () => {
+      server.fetchSellEstimate.mockResolvedValue({ ...data.estimate, exemptionLeftBefore: 20000, bookedEquityLongTermGain: 105000 });
+      await renderPage();
+      expect(screen.getByText('Sell all 60')).toBeInTheDocument();
+      expect(screen.getByText('Sell up to 41 tax-free')).toBeInTheDocument();
+      expect(screen.getByText('Gain ₹19,421 · long term · tax ≈ ₹0 · ₹579 exemption left')).toBeInTheDocument();
+    });
+
+    it('hides the tax-free row when the first lot is a short-term gain, for a non-equity holding and with no price', async () => {
+      server.fetchSellEstimate.mockResolvedValue({
+        ...data.estimate,
+        lots: [{ ...data.estimate!.lots[0], term: 'short' }, ...data.estimate!.lots.slice(1)],
+      });
+      const first = await renderPage();
+      expect(screen.queryByText(/tax-free/)).toBeNull();
+      first.unmount();
+
+      server.fetchSellEstimate.mockResolvedValue({ ...data.estimate, equity: false, tax: null, stcgTax: null, ltcgTax: null, stcgRate: null, ltcgRate: null, exemptionLeftBefore: null, exemptionLeftAfter: null });
+      const second = await renderPage();
+      expect(screen.queryByText(/tax-free/)).toBeNull();
+      second.unmount();
+
+      server.fetchSellEstimate.mockResolvedValue({ ...data.estimate, price: null, noPrice: true });
+      await renderPage();
+      expect(screen.queryByText(/tax-free/)).toBeNull();
+      expect(screen.queryByPlaceholderText('Quantity')).toBeNull();
+    });
+
+    it('works the estimate of a typed quantity out in the page, with no server call', async () => {
+      await renderPage();
+      server.fetchSellEstimate.mockClear();
+      type('20');
+      expect(screen.getByText('Sell 20: Gain ₹1,854 · long term · tax ≈ ₹0 · ₹1,23,146 exemption left')).toBeInTheDocument();
+      type('25');
+      expect(screen.getByText('Sell 25: Gain ₹2,318 · long term · tax ≈ ₹0 · ₹1,22,683 exemption left')).toBeInTheDocument();
+      expect(server.fetchSellEstimate).not.toHaveBeenCalled();
+      expect(api.POST).not.toHaveBeenCalled();
+    });
+
+    it('names the limit and shows no estimate for an empty, zero, over-large or non-numeric quantity', async () => {
+      await renderPage();
+      expect(screen.queryByText(/^Up to 60 shares/)).toBeNull();
+      for (const bad of ['0', '61', 'abc', '-2']) {
+        type(bad);
+        expect(screen.getByText('Up to 60 shares')).toBeInTheDocument();
+        expect(screen.queryByText(/^Sell \d+:/)).toBeNull();
+      }
+      type('');
+      expect(screen.queryByText('Up to 60 shares')).toBeNull();
+    });
   });
 
   it('shows Dividends without a Final or Interim word, and Corporate actions without "Applied"', async () => {

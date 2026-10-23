@@ -7,7 +7,6 @@ import { type TabItem, Tabs } from '@/components/ds';
 import { HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import { ShellPage } from '@/features/shell/ShellPage';
 
-import { fyLabel } from '../investmentsFormat';
 import { quantity, rupees, unitPrice } from '../investmentsFormat';
 import {
   type BrokerRowModel,
@@ -32,7 +31,6 @@ import {
   holdingTabHref,
   instrumentRows,
   priceRow,
-  sellLine,
   tradeRow,
 } from './holdingModel';
 import { PriceChartCard } from './PriceChartCard';
@@ -72,9 +70,6 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
     sub: `${quantity(b.quantity)} ${holding.assetType === 'mutual_fund' ? 'units' : 'shares'} · avg ${unitPrice(b.avgCost)}`,
     value: rupees(b.currentValue),
   }));
-  const sellRows = estimate
-    ? [{ label: `Sell all ${quantity(estimate.quantity)}`, line: sellLine(estimate) }]
-    : [];
   const lots = estimate ? estimate.lots.length : 0;
   const tradesSubtitle = estimate && lots > 0 ? `${lots} ${lots === 1 ? 'lot' : 'lots'} · FIFO` : undefined;
 
@@ -118,7 +113,7 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
                   {prices_}
                   {trades_}
                   {brokerRows.length > 0 ? <BrokersCard rows={brokerRows} /> : null}
-                  {sellRows.length > 0 ? <SellTodayCard fy={fyLabel(estimate!.fy)} rows={sellRows} /> : null}
+                  {estimate ? <SellTodayCard estimate={estimate} assetType={holding.assetType} /> : null}
                 </div>
                 <div className="desk:col-span-4 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
                   {dividends_}

@@ -137,6 +137,11 @@ export interface SellEstimate {
   tax: number | null;
   exemptionLeftBefore: number | null;
   exemptionLeftAfter: number | null;
+  /** Equity only (null otherwise, and on an older server): the FY's booked gains the sale is set off against. */
+  bookedShortTermGain?: number | null;
+  bookedEquityLongTermGain?: number | null;
+  bookedOtherLongTermGain?: number | null;
+  exemptionLimit?: number | null;
   lots: SellEstimateLot[];
 }
 
