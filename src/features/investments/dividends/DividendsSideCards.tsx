@@ -62,15 +62,22 @@ export interface SuggestionsCardProps {
 }
 
 /**
- * Past payouts on shares you held that are not recorded yet. It scans once when the page opens (and not again
- * for any change made here); Rescan scans again. One Record opens the form, so the pay date can be set.
+ * Past payouts on shares you held that are not recorded yet. It never scans on its own: the first Rescan press
+ * scans (Yahoo) and the result stays for the visit, and Rescan scans again. A broker change goes back to idle.
+ * One Record opens the form, so the pay date can be set.
  */
 export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: SuggestionsCardProps) {
   const qc = useQueryClient();
   const mutations = useDividendMutations();
   const [recordingAll, setRecordingAll] = React.useState(false);
+  const brokerKey = brokerAccountId ?? '';
+  // The broker the user pressed Rescan for; a different (or no) broker leaves the scan off.
+  const [scannedFor, setScannedFor] = React.useState<string | null>(null);
+  React.useEffect(() => setScannedFor(null), [brokerKey]);
+  const enabled = scannedFor === brokerKey;
   const scan = useQuery({
     queryKey: suggestionsKey(brokerAccountId),
+    enabled,
     queryFn: async () => {
       const result = await watchSession(scanDividendSuggestions(brokerAccountId));
       if (!result.success) throw new Error(result.error.message);
@@ -81,6 +88,11 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
+  const rescan = () => {
+    if (enabled) void scan.refetch();
+    else setScannedFor(brokerKey);
+  };
 
   const suggestions = scan.data?.suggestions ?? [];
   const rows = suggestions.map((s) => ({ s, row: suggestionRow(s, thisYear) }));
@@ -123,7 +135,7 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
       subtitle="Paid on shares you held, not recorded yet"
       action={
         <span className="flex items-center gap-space-12">
-          <Button variant="link" size="sm" disabled={scan.isFetching || recordingAll} onClick={() => void scan.refetch()}>
+          <Button variant="link" size="sm" disabled={scan.isFetching || recordingAll} onClick={rescan}>
             Rescan
           </Button>
           {rows.length > 0 ? (
@@ -134,13 +146,13 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
         </span>
       }
     >
-      {scan.isPending || (scan.isFetching && !scan.data) ? (
+      {!enabled && !scan.data ? null : scan.isPending || (scan.isFetching && !scan.data) ? (
         <div className="flex flex-col gap-space-8 px-space-16 py-space-12">
           <Skeleton height={14} width="60%" />
           <Skeleton height={14} width="40%" />
         </div>
       ) : scan.isError ? (
-        <EmptyState compact description="Could not scan for dividends. Try again." action={{ label: 'Rescan', variant: 'link', onSelect: () => void scan.refetch() }} />
+        <EmptyState compact description="Could not scan for dividends. Try again." action={{ label: 'Rescan', variant: 'link', onSelect: rescan }} />
       ) : rows.length === 0 ? (
         <EmptyState compact description="Nothing new found" />
       ) : (

@@ -361,9 +361,24 @@ describe('/ds/investments/dividends: by instrument', () => {
   });
 });
 
+async function pressRescan() {
+  fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
+}
+
 describe('/ds/investments/dividends: suggestions', () => {
-  it('scans on open and lists what was found, with the year on an earlier payout', async () => {
+  it('does not scan on open: the card waits for Rescan', async () => {
     await renderPage();
+    expect(screen.getByText('Suggestions')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rescan' })).toBeEnabled();
+    await act(async () => {});
+    expect(actions.scanDividendSuggestions).not.toHaveBeenCalled();
+    expect(screen.queryByText('Nothing new found')).toBeNull();
+  });
+
+  it('scans once when Rescan is pressed, and lists what was found, with the year on an earlier payout', async () => {
+    await renderPage();
+    await pressRescan();
+    expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(1);
     expect(await screen.findByText('Suggestions · 2')).toBeInTheDocument();
     expect(screen.getByText('Paid on shares you held, not recorded yet')).toBeInTheDocument();
     expect(screen.getByText('TCS · ₹10 / share')).toBeInTheDocument();
@@ -374,6 +389,7 @@ describe('/ds/investments/dividends: suggestions', () => {
 
   it('opens the record form prefilled from the suggestion, so the pay date can be set', async () => {
     await renderPage();
+    await pressRescan();
     const row = (await screen.findByText('TCS · ₹10 / share')).closest('div[class*="flex"]') as HTMLElement;
     fireEvent.click(within(row.parentElement!.parentElement as HTMLElement).getAllByRole('button', { name: 'Record' })[0]);
     expect(await screen.findByText('Record dividend', { selector: 'h2, [role="heading"], div' })).toBeInTheDocument();
@@ -386,6 +402,7 @@ describe('/ds/investments/dividends: suggestions', () => {
 
   it('scans once with the broker filter, and no change made on the page scans again', async () => {
     const view = await renderPage({ broker: 'b1' });
+    await pressRescan();
     await screen.findByText('Suggestions · 2');
     expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(1);
     expect(actions.scanDividendSuggestions).toHaveBeenCalledWith('b1');
@@ -399,6 +416,7 @@ describe('/ds/investments/dividends: suggestions', () => {
 
   it('records them all', async () => {
     await renderPage();
+    await pressRescan();
     fireEvent.click(await screen.findByRole('button', { name: 'Record 2' }));
     await waitFor(() => expect(actions.acceptDividendSuggestions).toHaveBeenCalled());
     expect(actions.acceptDividendSuggestions.mock.calls[0][0].items).toHaveLength(2);
@@ -407,12 +425,14 @@ describe('/ds/investments/dividends: suggestions', () => {
   it('says how many were skipped as duplicates', async () => {
     actions.acceptDividendSuggestions.mockResolvedValue({ success: true, data: { created: [{}], skippedCount: 1 } });
     await renderPage();
+    await pressRescan();
     fireEvent.click(await screen.findByRole('button', { name: 'Record 2' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Recorded 1 dividend (1 skipped as duplicate)'));
   });
 
-  it('scans again on Rescan', async () => {
+  it('scans again on a second Rescan', async () => {
     await renderPage();
+    await pressRescan();
     await screen.findByText('Suggestions · 2');
     fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
     await waitFor(() => expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(2));
@@ -421,6 +441,7 @@ describe('/ds/investments/dividends: suggestions', () => {
   it('is always shown: it reads "Nothing new found" when the scan finds nothing', async () => {
     actions.scanDividendSuggestions.mockResolvedValue({ success: true, data: { suggestions: [], scannedSymbols: 1, skippedSymbols: ['XYZ'] } });
     await renderPage();
+    await pressRescan();
     expect(await screen.findByText('Nothing new found')).toBeInTheDocument();
     expect(screen.getByText('Suggestions')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Rescan' })).toBeInTheDocument();
@@ -431,12 +452,14 @@ describe('/ds/investments/dividends: suggestions', () => {
   it('says the scan failed and offers Rescan', async () => {
     actions.scanDividendSuggestions.mockResolvedValue({ success: false, error: { message: 'x' } });
     await renderPage();
+    await pressRescan();
     expect(await screen.findByText('Could not scan for dividends. Try again.')).toBeInTheDocument();
   });
 
   it('says why a record failed', async () => {
     actions.acceptDividendSuggestions.mockResolvedValue({ success: false, error: { message: 'Not allowed' } });
     await renderPage();
+    await pressRescan();
     fireEvent.click(await screen.findByRole('button', { name: 'Record 2' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
   });
