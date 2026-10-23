@@ -205,9 +205,9 @@ describe('TransactionsScreen instant approve', () => {
     await waitFor(() => expect(showToast).toHaveBeenCalled());
     showToast.mock.calls[0][1].action.onSelect();
     await waitFor(() =>
-      expect(vi.mocked(api.POST).mock.calls.map((c) => (c[1] as { body: { reviewType?: string } }).body.reviewType)).toEqual([
-        'MANUALLY_REVIEWED',
-        'NEEDS_REVIEW',
+      expect(vi.mocked(api.POST).mock.calls.map((c) => c[0])).toEqual([
+        '/api/v1/transactions/batch-review',
+        '/api/v1/transactions/undo-approve',
       ]),
     );
   });

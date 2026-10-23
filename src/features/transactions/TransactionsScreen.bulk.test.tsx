@@ -298,10 +298,8 @@ describe('TransactionsScreen review', () => {
     const [message, options] = showToast.mock.calls[0];
     expect(message).toBe('Approved');
     options.action.onSelect();
-    await waitFor(() => expect(posts('/api/v1/transactions/batch-review')).toHaveLength(2));
-    expect(posts('/api/v1/transactions/batch-review')[1]).toMatchObject({
-      body: { transactionIds: ['t2'], reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] },
-    });
+    await waitFor(() => expect(posts('/api/v1/transactions/undo-approve')).toHaveLength(1));
+    expect(posts('/api/v1/transactions/batch-review')).toHaveLength(1);
   });
 
   it('swipe right on a several-reason row opens the approve dialog for that row', async () => {

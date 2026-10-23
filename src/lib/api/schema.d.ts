@@ -3562,6 +3562,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transactions/undo-approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undoApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transactions/{id}": {
         parameters: {
             query?: never;
@@ -3765,6 +3781,7 @@ export interface components {
             transactionIds: string[];
         };
         BatchReviewResponse: {
+            approvedTransactions: components["schemas"]["ClearedTransaction"][];
             failures: components["schemas"]["BatchFailure"][];
             skippedIds: string[];
             succeededIds: string[];
@@ -6949,6 +6966,11 @@ export interface components {
             source: string;
             verified: boolean;
         };
+        RuleRestore: {
+            restore?: components["schemas"]["ClearedTransaction"][];
+            /** Format: uuid */
+            ruleId: string;
+        };
         RuleVerification: {
             clearedTransactionIds: string[];
             clearedTransactions: components["schemas"]["ClearedTransaction"][];
@@ -7425,6 +7447,14 @@ export interface components {
             label: string;
             value: number;
         };
+        UndoApproveRequest: {
+            approved?: components["schemas"]["ClearedTransaction"][];
+            rules?: components["schemas"]["RuleRestore"][];
+        };
+        UndoApproveResponse: {
+            restoredTransactionIds: string[];
+            skippedTransactionIds: string[];
+        };
         UnlockVerifyRequest: {
             credential: unknown;
         };
@@ -7644,6 +7674,7 @@ export interface components {
         };
         VerifiedRuleChange: {
             clearedTransactionIds: string[];
+            clearedTransactions: components["schemas"]["ClearedTransaction"][];
             /** Format: uuid */
             ruleId: string;
         };
@@ -16759,6 +16790,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageTransactionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undoApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoApproveRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UndoApproveResponse"];
                 };
             };
             /** @description Error response */

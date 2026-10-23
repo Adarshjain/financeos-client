@@ -31,7 +31,6 @@ export function useQuickApprove() {
     const reasons: ClearableReason[] = txn.reviewReasons ?? [];
     if (reasons.length === 0) return 'nothing-to-approve';
     if (reasons.length > 1) return 'needs-dialog';
-    const [reason] = reasons;
     // The row clears on screen now; a failure puts it back.
     const shown = optimistic?.begin(approveChange([txn.id], reasons));
     try {
@@ -48,7 +47,7 @@ export function useQuickApprove() {
       shown?.settle(true);
       showToast(approvedMessage(1), {
         tone: 'success',
-        action: { label: 'Undo', onSelect: () => void undo([{ ids: [txn.id], reasons: [reason] }], data.verifiedRules ?? []) },
+        action: { label: 'Undo', onSelect: () => void undo(data.approvedTransactions ?? [], data.verifiedRules ?? []) },
       });
       return 'approved';
     } catch (e) {
