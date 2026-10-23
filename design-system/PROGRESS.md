@@ -77,7 +77,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 17 | SearchField | Merged into TextField (see B2) |
 | 18 | FilterChip | Approved |
 | 19 | Checkbox | Approved |
-| 19b | Radio | Ready for review (2026-10-21) |
+| 19b | Radio | Approved (2026-10-23) |
 | 20 | Switch | Approved |
 | 21 | SegmentedControl | Approved |
 | 22 | DropZone | Approved |
@@ -86,7 +86,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 25 | SectionHeader | Approved |
 | 26 | TransactionRow | Approved (2026-10-21: `query` search marks, Ready for review) |
 | 26b | TransactionPicker (organism, open transaction list) | Ready for review (2026-10-21) |
-| 26c | Highlight | Ready for review (2026-10-21) |
+| 26c | Highlight | Approved (2026-10-23) |
 | 27 | RuleCard | Approved |
 | 28 | KpiTile | Approved |
 | 29 | Widget | Approved |
@@ -207,6 +207,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-23 · **Approvals** (owner): Highlight and Radio approved; TransactionPicker uses pages + a compact SegmentedControl debit/credit filter; holding price chart may use the reports chart until it moves to organisms.
 - 2026-10-14 · Palette locked to Ink. brand is near-black ink; success uses the new `positive-tint` / `positive-strong` tokens.
 - 2026-10-14 · Overnight batch mode. Phase 2 components are built back to back. Each one is set to **Ready for review** and you move straight on; the owner reviews them all in the morning. This replaces "stop after each component" for tonight only.
 - 2026-10-14 · Phase 3 must not start overnight. Pages wait for the owner's approvals.
@@ -392,7 +393,6 @@ Only the owner adds to this list. Each entry has a date and the decision.
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 - None open (Import/Categories/Rules questions answered 2026-10-23, see Owner decisions "Questions round 10-23").
 - 2026-10-23 · Phase 3 · Investments Holdings + holding (step 1), for the owner:
-  1. Price chart ("Price · 1 year", 1m/3m/1y/All): Dinero has no chart component; left out of the holding page.
   2. "Sell 20" row: no defined meaning; only "Sell all N" is built.
   3. Top-bar + (Record trade) and the holding's ⋯ menu are not drawn (their dialogs and menu content come in later steps). "Record trade", the two "Record" links, "Dividend", "Corporate action", Edit (instrument) and "record a merger" link to the Legacy pages until their steps.
   4. "Group by asset class ▾" (D-investments): left out; the list is always grouped by asset type (the only grouping the server gives).
@@ -401,16 +401,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
   7. Not in the data, so left out: "30 bought + 30 bonus", "₹1,420 pre-bonus", "long term since 11 Mar 25" (reads "long term"), the Bonus row inside Trades, "Received to HDFC Savings", "30 → 60 shares · cost halves". The Invested tile says "N holdings" where the board says "38 trades · first 9 Jan 24".
   8. The holding board's Overview already shows every section and also has tabs Trades, Dividends, Corporate actions, Prices: built so Overview shows the newest few of each (10 prices, 10 trades, 5 dividends) and a tab shows only that section, full and paged (25).
   9. Editing a manual price: the server changes the amount only, so the date shows disabled (a new date = delete and add).
-  10. Table money cells carry ₹ on desktop and read "+₹6,504 · +10.3%" (board: "+6,504 +10.3%"); the hero's day percent has one decimal (board: two).
+  10. The hero's day percent has one decimal (board: two).
   11. Tax this FY: "Realised gains" is booked long and short term net of losses; the symbols under Harvestable gains and Loss to offset come from the 50 open lots with the biggest gains. Top movers look at up to 200 holdings of the filter.
   12. /ds index: "Holding detail" links to Holdings (a holding's page needs an id).
+  13. Price chart height: the Dinero spacing scale has no step for a chart's height (the reports chart's own h-72 renders nothing there), so the chart frame is 16:9 (`aspect-video`) at every width: tall on a wide card. Owner: a chart-height step, or a different ratio?
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
-- 2026-10-23 · Phase 3 · Claude (implementer) · Investments step 1: Holdings (hero/tiles, prices line with Refresh + View job, search, type chips, Broker, sort, grouped table, Allocation, Tax this FY, Top movers) and the holding page (tabs, figures, price history with edit/delete, trades, by broker, sell today, dividends, corporate actions, instrument) at `/ds/investments[/id]`; all investments API client functions + api-surface snapshot + synced openapi/schema; price refresh and price mutations moved to `src/features/investments` (Legacy RefreshPricesButton, PriceHistoryPanel, EditPriceDialog import them). Forced test edits: routes.test ("leaves unbuilt Legacy paths alone" uses /investments/tradebook), navigation.test (Investments link /ds/investments), page.test (to-build list), ds-shell.spec (Investments href). Deviations: none. Open questions above.
+- 2026-10-23 · Organisms · Claude · TransactionPicker: server pages (Pager) + All/Debit/Credit filter; SegmentedControl size sm (owner). Deviations: none.
+- 2026-10-23 · Phase 3 · Claude (implementer) · Investments step 1: Holdings (hero/tiles, prices line with Refresh + View job, search, type chips, Broker, sort, grouped table, Allocation, Tax this FY, Top movers) and the holding page (tabs, figures, price history with edit/delete, trades, by broker, sell today, dividends, corporate actions, instrument) at `/ds/investments[/id]`; all investments API client functions + api-surface snapshot + synced openapi/schema; price refresh and price mutations moved to `src/features/investments` (Legacy RefreshPricesButton, PriceHistoryPanel, EditPriceDialog import them). Forced test edits: routes.test ("leaves unbuilt Legacy paths alone" uses /investments/tradebook), navigation.test (Investments link /ds/investments), page.test (to-build list), ds-shell.spec (Investments href). Price chart = the reports `ChartView` imported directly (owner 2026-10-23); `check-ui.mjs` allows exactly that import path. Deviations: that one allowance (owner decision above). Open questions above.
 - 2026-10-23 · Phase 3 · Claude · New-version notice (owner asked): toast → full-width info Banner above the whole /ds shell, Refresh + dismiss, slides down in / up out (Reveal + translate); copy "FinanceOS was updated. Refresh to use the latest version." Banner gets `rounded` none|sm|md|lg (default lg; owner asked, replaces a short-lived `page-top` variant); message row moved inside so className padding (safe-area insets) adds around it. `safe-top`/`safe-56` read `--ds-safe-top` (fallback env), zeroed on the shell under the banner (owner OK'd 10-23). Forced test edit: NewVersionWatcher.test asserted the toast. Deviations: none beyond the owner's asks.
 - 2026-10-23 · Boards · Claude · Phone investments hero replaces tiles: P-dividends(+edit), P-fno(+trade), P-holding, P-trade-record; tradebook, CA, instruments had none; import wizard step tiles kept. Deviations: none.
 - 2026-10-23 · Boards · Claude · Investments follow-ups (P+D): Holdings Name A–Z sort + totals add up; Dividends drops Detect from holdings, Suggestions always shown; CA record shows edit-only Delete. Deviations: none.

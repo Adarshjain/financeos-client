@@ -69,6 +69,8 @@ export interface Instrument {
   lastPrice?: string | number | null;
   lastPriceAsOf?: string | null;
   lastPriceSource?: PriceSource | null;
+  /** Nobody holds it any more (no open quantity in any account). */
+  notHeld?: boolean;
   /** The class the allocation widget and tax figures use; the caller's own override when they set one. */
   assetClass?: AssetClass | null;
   assetClassSource?: 'AMFI' | 'RULE' | 'MANUAL' | null;
@@ -238,6 +240,10 @@ export interface InvestmentTransactionResponse {
   externalRef?: string;
   notes?: string;
   createdAt?: string;
+  /** Sells only: the gain or loss this sell booked (FIFO). */
+  realisedPnl?: number | null;
+  /** Sells only: delivery or intraday. */
+  settlement?: 'delivery' | 'intraday' | null;
 }
 
 export type PagedInvestmentTransactionResponse =

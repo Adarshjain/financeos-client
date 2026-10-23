@@ -30,6 +30,10 @@ export interface InstrumentListQuery {
   type?: InstrumentType;
   /** `name,desc` only: the server's default is `name,asc`, so ascending sends no sort. */
   sort?: 'name,desc';
+  /** Only instruments whose last price is stale. */
+  stale?: boolean;
+  /** true = held, false = not held. */
+  held?: boolean;
   page: number;
   size: number;
 }

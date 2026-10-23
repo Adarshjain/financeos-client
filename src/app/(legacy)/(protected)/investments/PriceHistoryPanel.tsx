@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Check, Edit2, Loader2, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -11,8 +11,8 @@ import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePriceMutations } from '@/features/investments/usePriceMutations';
 import { api } from '@/lib/api/client';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { PriceHistoryPoint } from '@/lib/types';
@@ -31,8 +31,6 @@ export interface PriceHistoryPanelProps {
 }
 
 export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
-  const qc = useQueryClient();
-
   const { data, isLoading } = useQuery({
     queryKey: keys.investments.priceHistory(instrument.id),
     queryFn: async () =>
@@ -49,25 +47,8 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
   const [editPriceInput, setEditPriceInput] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const updateMutation = useMutation({
-    mutationFn: (vars: { priceId: string; price: number }) =>
-      api.PUT('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
-        params: {
-          path: { instrumentId: instrument.id, priceId: vars.priceId },
-        },
-        body: { price: vars.price },
-      }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const { updatePrice: updateMutation, deletePrice: deleteMutation } = usePriceMutations(instrument.id);
   const isUpdating = updateMutation.isPending;
-
-  const deleteMutation = useMutation({
-    mutationFn: (priceId: string) =>
-      api.DELETE('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
-        params: { path: { instrumentId: instrument.id, priceId } },
-      }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
 
   const sortedPoints = useMemo(() => {
     return [...points].sort((a, b) => new Date(b.asOf).getTime() - new Date(a.asOf).getTime());

@@ -12,8 +12,6 @@ const TO_BUILD: [string, string][] = [
   ['New dashboard', 'Home & dashboards'],
   ['Add widget and widget settings', 'Home & dashboards'],
   ['Search', 'Home & dashboards'],
-  ['Holdings', 'Investments'],
-  ['Holding detail', 'Investments'],
   ['Tradebook', 'Investments'],
   ['Record trade', 'Investments'],
   ['Import tradebook', 'Investments'],
@@ -76,6 +74,13 @@ export default function DsIndexPage() {
           </ListRow>
           <ListRow asChild title="Loans" subtitle="/ds/loans" chevron>
             <Link href="/ds/loans" />
+          </ListRow>
+          <ListRow asChild title="Holdings" subtitle="/ds/investments" chevron>
+            <Link href="/ds/investments" />
+          </ListRow>
+          {/* A holding's page needs a real id: open one from Holdings. */}
+          <ListRow asChild title="Holding detail" subtitle="/ds/investments/[instrumentId]" chevron>
+            <Link href="/ds/investments" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />

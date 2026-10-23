@@ -53,7 +53,7 @@ describe('appHref', () => {
     for (const p of [
       '/dashboard',
       '/transactions/review',
-      '/investments',
+      '/investments/tradebook',
       '/rewards',
       '/rewards/rules?account=a1',
       '/loans/calendar',
