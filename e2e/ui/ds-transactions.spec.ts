@@ -5,10 +5,14 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { resetLlm, setLlmMode } from '../fixtures/control';
+import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
+import { scriptCategorize } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { createCategory } from '../fixtures/seed/categories';
+import { uploadAndIngest } from '../fixtures/seed/statements';
 import type { TransactionResponse } from '../fixtures/seed/transactions';
-import { createTransaction, todayString } from '../fixtures/seed/transactions';
+import { createTransaction, searchAll, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
 type Reason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
@@ -39,6 +43,18 @@ async function flag(api: ApiClient, t: TransactionResponse, reasons: Reason[]) {
   });
   if (res.response.status !== 200) throw new Error(`flag failed (${res.response.status}): ${JSON.stringify(res.error)}`);
 }
+
+const undoSpec: BankSpec = {
+  bank: 'HDFC Bank',
+  accountLast10: '5566778899',
+  periodStart: '2026-04-01',
+  periodEnd: '2026-04-30',
+  opening: 20000,
+  rows: [
+    { date: '2026-04-09', description: 'OLA CABS RIDE', debit: 260 },
+    { date: '2026-04-12', description: 'OLA CABS RIDE', debit: 310 },
+  ],
+};
 
 const VIEWPORTS = [
   { name: 'desktop 1440px', tag: '@ui', width: 1440, height: 900 },
@@ -685,3 +701,44 @@ for (const viewport of VIEWPORTS) {
     }
   });
 }
+
+test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
+  test('approving a row of an unverified rule clears its sibling too; Undo brings both back with their reasons', async ({
+    context,
+    request,
+    page,
+  }) => {
+    const user = await createUser(request, 'ui-ds-undo');
+    await loginContext(context, user.cookie);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const api = makeApi(user.cookie);
+    await resetLlm(api);
+    await setLlmMode(api, 'SCHEMA_DEFAULT');
+    await scriptCategorize(api, [
+      { index: 0, merchantKey: 'OLA CABS', displayName: 'Ola Cabs', categoryNames: ['Travel'] },
+      { index: 1, merchantKey: 'OLA CABS', displayName: 'Ola Cabs', categoryNames: ['Travel'] },
+    ]);
+    const account = await createBankAccount(api, { name: 'Undo Account' });
+    const { job } = await uploadAndIngest(api, account.id, [{ filename: 'undo.pdf', buffer: await genBankPdf(undoSpec) }]);
+    expect(job.status).toBe('SUCCEEDED');
+    const flagged = async () =>
+      (await searchAll(api)).filter((t) => t.reviewType === 'NEEDS_REVIEW' && t.reviewReasons?.includes('CATEGORY_UNVERIFIED'));
+    expect(await flagged()).toHaveLength(2);
+
+    await page.goto('/ds/transactions');
+    await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
+    await expect(needsReviewChip(page, 2)).toBeVisible();
+
+    await page.getByRole('checkbox', { name: /^Select .*Ola/i }).first().click();
+    await page.getByRole('button', { name: 'Approve 1' }).click();
+    const dialog = page.getByRole('dialog').filter({ hasText: 'Tick the reasons to clear' });
+    await dialog.getByRole('button', { name: 'Approve 1' }).click();
+    // The rule is verified, so the other Ola row is cleared as well.
+    await expect(needsReviewChip(page, 0)).toBeVisible();
+    await expect.poll(async () => (await flagged()).length).toBe(0);
+
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(needsReviewChip(page, 2)).toBeVisible();
+    await expect.poll(async () => (await flagged()).length).toBe(2);
+  });
+});
