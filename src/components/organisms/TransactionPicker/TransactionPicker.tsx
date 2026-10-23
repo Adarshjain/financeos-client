@@ -56,7 +56,7 @@ export interface TransactionPickerProps
   filter?: TransactionPickerFilter;
   defaultFilter?: TransactionPickerFilter;
   onFilterChange?: (filter: TransactionPickerFilter) => void;
-  /** Server-side paging: 0-based `page`, rows per page `pageSize`, and the server's `totalElements`. The Pager shows above and below the list when there is more than one page. */
+  /** Server-side paging: 0-based `page`, rows per page `pageSize`, and the server's `totalElements`. The Pager shows below the list only, when there is more than one page. */
   page?: number;
   pageSize?: number;
   totalElements?: number;
@@ -86,7 +86,7 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
       defaultFilter = 'all',
       onFilterChange,
       page = 0,
-      pageSize = 50,
+      pageSize = 10,
       totalElements = 0,
       onPageChange,
       emptyLabel,
@@ -131,10 +131,10 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
     const showSkeleton = loading && items.length === 0;
     const showEmpty = !loading && items.length === 0;
     const showPager = !!onPageChange && totalElements > pageSize;
-    const pager = (position: 'above' | 'below') =>
+    const pager = () =>
       showPager ? (
         <Pager
-          data-testid={`picker-pager-${position}`}
+          data-testid="picker-pager-below"
           variant="compact"
           borderPosition="none"
           className="px-0"
@@ -179,8 +179,6 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
             onValueChange={setFilter}
           />
         ) : null}
-
-        {pager('above')}
 
         <div
           role={multiple ? 'group' : 'radiogroup'}
@@ -260,7 +258,7 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
           </Text>
         ) : null}
 
-        {pager('below')}
+        {pager()}
 
         {error ? (
           <Text as="div" variant="caption" tone="danger">

@@ -13,7 +13,7 @@ const meta: Meta<typeof TransactionPicker> = {
     docs: {
       description: {
         component:
-          'One open transaction list: a search field, rows with a radio (or checkbox) at the left and the amount at the right, a Debit / Credit filter, and a Pager above and below the list. The page fetches; the list never filters.',
+          'One open transaction list: a search field, rows with a radio (or checkbox) at the left and the amount at the right, a Debit / Credit filter, and a Pager below the list. The page fetches; the list never filters.',
       },
     },
   },

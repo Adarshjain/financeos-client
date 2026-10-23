@@ -13,7 +13,7 @@ import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 export type PickerTransaction = Schemas['TransactionResponse'];
 
 const DATE_WINDOW_DAYS = 30;
-export const PICKER_PAGE_SIZE = 50;
+export const PICKER_PAGE_SIZE = 10;
 const PAGE_SIZE = PICKER_PAGE_SIZE;
 
 /** The picker's own debit/credit filter. Ignored when the caller fixes the type (`type` or `direction`). */
