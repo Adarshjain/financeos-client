@@ -208,7 +208,7 @@ describe('shell navigation', () => {
     // Verify Section links
     expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/ds/accounts');
     expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/ds/transactions');
-    expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
+    expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/ds/investments');
     expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
     expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/ds/loans/lendings');
     expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/dashboards');

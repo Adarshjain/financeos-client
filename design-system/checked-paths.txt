@@ -16,3 +16,4 @@ src/features/inbox/
 src/features/notifications/
 src/features/loans/
 src/features/transactions/
+src/features/investments/

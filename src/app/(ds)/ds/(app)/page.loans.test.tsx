@@ -29,3 +29,14 @@ describe('DsIndexPage Transactions link', () => {
     expect(hrefs).toContain('/ds/transactions');
   });
 });
+
+describe('DsIndexPage Investments links', () => {
+  it('links Holdings and the holding page, and no longer lists them as still to build', () => {
+    render(<DsIndexPage />);
+    expect(screen.getByText('Holdings')).toBeDefined();
+    expect(screen.getByText('Holding detail')).toBeDefined();
+    expect(screen.getByText('/ds/investments')).toBeDefined();
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    expect(hrefs.filter((h) => h === '/ds/investments')).toHaveLength(2);
+  });
+});

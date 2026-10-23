@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit3 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -19,8 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { api, ApiError } from '@/lib/api/client';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+import { usePriceMutations } from '@/features/investments/usePriceMutations';
 import { toastError } from '@/lib/toastError';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -48,15 +46,7 @@ export function EditPriceDialog({
       ? instrument.lastPriceAsOf.split('T')[0]
       : toCalendarDate(new Date())
   );
-  const qc = useQueryClient();
-  const setPriceMutation = useMutation({
-    mutationFn: (body: { price: number; asOf?: string }) =>
-      api.POST('/api/v1/instruments/{id}/price', {
-        params: { path: { id: instrument.id } },
-        body,
-      }),
-    onSuccess: () => invalidateInvestmentQueries(qc),
-  });
+  const { setPrice: setPriceMutation } = usePriceMutations(instrument.id);
   const isSubmitting = setPriceMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {

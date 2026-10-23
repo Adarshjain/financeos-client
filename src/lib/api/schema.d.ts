@@ -916,6 +916,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/corporate-actions/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCorporateActionPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/counterparties": {
         parameters: {
             query?: never;
@@ -1674,6 +1690,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/instruments/{id}/prices/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPriceHistoryPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/instruments/{instrumentId}/corporate-actions": {
         parameters: {
             query?: never;
@@ -1684,6 +1716,22 @@ export interface paths {
         get: operations["getCorporateActions"];
         put?: never;
         post: operations["createCorporateAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instruments/{instrumentId}/corporate-actions/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewCorporateAction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1732,6 +1780,38 @@ export interface paths {
         get: operations["getDividends"];
         put?: never;
         post: operations["createDividend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/by-instrument": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getByInstrument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["exportCsv"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1914,6 +1994,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/investments/fno/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["exportFnoCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/fno/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFnoTradesPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/fno/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFnoSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/investments/fno/{id}": {
         parameters: {
             query?: never;
@@ -1925,6 +2053,54 @@ export interface paths {
         put: operations["updateFnoTrade"];
         post?: never;
         delete: operations["deleteFnoTrade"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/holdings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getHoldings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/holdings/{instrumentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getHolding"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/holdings/{instrumentId}/sell-estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSellEstimate"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3813,6 +3989,14 @@ export interface components {
             label: string;
             op: string;
         };
+        Broker: {
+            accountName: string;
+            avgCost: number;
+            /** Format: uuid */
+            brokerAccountId: string;
+            currentValue: number;
+            quantity: number;
+        };
         BrokerAccountResponse: {
             /** Format: date */
             anchorDate?: string | null;
@@ -4288,6 +4472,20 @@ export interface components {
             linked: components["schemas"]["DividendResponse"][];
             skipped: components["schemas"]["SkippedDividendMatch"][];
         };
+        CorporateActionPage: {
+            items: components["schemas"]["CorporateActionRowResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        CorporateActionPreviewResponse: {
+            holdings: components["schemas"]["HoldingEffect"][];
+        };
         CorporateActionResponse: {
             costAllocationPct?: number | null;
             /** Format: date-time */
@@ -4302,6 +4500,33 @@ export interface components {
             instrumentName: string;
             instrumentSymbol?: string | null;
             notes?: string | null;
+            /** Format: int32 */
+            ratioFrom: number;
+            /** Format: int32 */
+            ratioTo: number;
+            /** Format: uuid */
+            targetInstrumentId?: string | null;
+            targetInstrumentName?: string | null;
+            targetInstrumentSymbol?: string | null;
+            /** @enum {string} */
+            type: "split" | "bonus" | "demerger" | "merger";
+        };
+        CorporateActionRowResponse: {
+            costAllocationPct?: number | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date */
+            exDate: string;
+            fractionalCashInLieu?: number | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            instrumentSymbol?: string | null;
+            notes?: string | null;
+            quantityAfter?: number | null;
+            quantityBefore?: number | null;
             /** Format: int32 */
             ratioFrom: number;
             /** Format: int32 */
@@ -4780,6 +5005,17 @@ export interface components {
             nameScore: number;
             symbol?: string | null;
         };
+        DividendInstrumentTotalResponse: {
+            gross: number;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            net: number;
+            /** Format: int64 */
+            payouts: number;
+            symbol?: string | null;
+            tds: number;
+        };
         DividendMatchCandidate: {
             impliedTds?: number | null;
             reasons: ("EXACT_GROSS" | "NET_OF_RECORDED_TDS" | "NET_OF_10PCT_TDS" | "AMOUNT_WITHIN_BAND" | "SPLIT_RATIO_SUSPECT" | "DIVIDEND_KEYWORD" | "NAME_MATCH" | "SYMBOL_MATCH")[];
@@ -4928,6 +5164,21 @@ export interface components {
             field?: string;
             operator?: string;
             value?: unknown;
+        };
+        FnoSummaryResponse: {
+            byMonth: components["schemas"]["MonthPnl"][];
+            byUnderlying: components["schemas"]["UnderlyingPnl"][];
+            /** Format: date */
+            fromDate: string;
+            /** Format: int32 */
+            fy: number;
+            realisedPnl: number;
+            /** Format: date */
+            toDate: string;
+            totalCharges: number;
+            /** Format: int64 */
+            tradeCount: number;
+            winRate: number;
         };
         FnoTradeListResponse: {
             totalRealizedPnl: number;
@@ -5097,6 +5348,13 @@ export interface components {
         GoogleAuthStartResponse: {
             authorizationUrl: string;
         };
+        Group: {
+            /** @enum {string} */
+            assetType: "stock" | "mutual_fund" | "etf";
+            /** Format: int32 */
+            count: number;
+            value: number;
+        };
         HarvestLosses: {
             longTerm: number;
             shortTerm: number;
@@ -5173,6 +5431,80 @@ export interface components {
             gain: number;
             /** Format: int32 */
             withinDays: number;
+        };
+        Header: {
+            currentValue: number;
+            dayChange?: number | null;
+            dayChangePct?: number | null;
+            invested: number;
+            /** Format: date */
+            priceAsOf?: string | null;
+            unrealised: number;
+            unrealisedPct?: number | null;
+            /** Format: double */
+            xirr?: number | null;
+        };
+        HoldingDetailResponse: {
+            /** @enum {string} */
+            assetType: "stock" | "mutual_fund" | "etf";
+            avgCost: number;
+            brokers: components["schemas"]["Broker"][];
+            currentValue: number;
+            dayChange?: number | null;
+            dayChangePct?: number | null;
+            dividends: number;
+            /** Format: date */
+            firstBuyDate?: string | null;
+            /** Format: uuid */
+            instrumentId: string;
+            invested: number;
+            ltp?: number | null;
+            manualPrice: boolean;
+            /** Format: date */
+            mergedIntoDate?: string | null;
+            mergedIntoName?: string | null;
+            name: string;
+            noPrice: boolean;
+            /** Format: date */
+            priceAsOf?: string | null;
+            quantity: number;
+            realisedPnl: number;
+            symbol?: string | null;
+            term?: string | null;
+            totalCharges: number;
+            unrealised: number;
+            unrealisedPct?: number | null;
+            /** Format: double */
+            xirr?: number | null;
+        };
+        HoldingEffect: {
+            avgCostAfter: number;
+            avgCostBefore: number;
+            /** Format: uuid */
+            brokerAccountId: string;
+            brokerAccountName: string;
+            childCost?: number | null;
+            /** Format: uuid */
+            childInstrumentId?: string | null;
+            childQuantity?: number | null;
+            fractionalRealized?: number | null;
+            openCostAfter: number;
+            openCostBefore: number;
+            quantityAfter: number;
+            quantityBefore: number;
+        };
+        HoldingsResponse: {
+            groups: components["schemas"]["Group"][];
+            header: components["schemas"]["Header"];
+            holdings: components["schemas"]["Row"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
         };
         ImportCommitRequest: {
             /** Format: uuid */
@@ -5370,6 +5702,7 @@ export interface components {
             mergeNote?: string | null;
             mergedHoldings: boolean;
             name: string;
+            notHeld: boolean;
             overridden: boolean;
             overriddenFields: string[];
             schemeCategory?: string | null;
@@ -5410,7 +5743,10 @@ export interface components {
             price: number;
             provider?: string | null;
             quantity: number;
+            realisedPnl?: number | null;
             sebiCharges?: number | null;
+            /** @enum {string|null} */
+            settlement?: "delivery" | "intraday" | null;
             /** @enum {string} */
             settlementType: "delivery" | "intraday";
             source?: string | null;
@@ -5785,6 +6121,16 @@ export interface components {
             email: string;
             password: string;
         };
+        Lot: {
+            /** Format: date */
+            buyDate: string;
+            cost: number;
+            costPerUnit: number;
+            gain: number;
+            proceeds: number;
+            quantity: number;
+            term: string;
+        };
         MarkBillPaidRequest: {
             amount?: number | null;
             /** Format: date */
@@ -5874,6 +6220,10 @@ export interface components {
             beforeHistory: boolean;
             month: string;
             outflow: number;
+        };
+        MonthPnl: {
+            month: string;
+            pnl: number;
         };
         MuteAccountRequest: {
             muted: boolean;
@@ -6013,8 +6363,44 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageDividendInstrumentTotalResponse: {
+            content: components["schemas"]["DividendInstrumentTotalResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageDividendResponse: {
             content: components["schemas"]["DividendResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageFnoTradeResponse: {
+            content: components["schemas"]["FnoTradeResponse"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -6326,6 +6712,17 @@ export interface components {
         PreviewMatchesRequest: {
             matchType?: string;
             merchantKey: string;
+        };
+        PriceHistoryPage: {
+            items: components["schemas"]["InstrumentPriceResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
         };
         PricePreview: {
             /** Format: date */
@@ -6895,6 +7292,32 @@ export interface components {
             providerName: string;
             trainsOnData: string;
         };
+        Row: {
+            /** @enum {string} */
+            assetType: "stock" | "mutual_fund" | "etf";
+            avgCost: number;
+            /** Format: int32 */
+            brokerCount: number;
+            currentValue: number;
+            dayChange?: number | null;
+            dayChangePct?: number | null;
+            /** Format: uuid */
+            instrumentId: string;
+            invested: number;
+            ltp?: number | null;
+            manualPrice: boolean;
+            /** Format: date */
+            mergedIntoDate?: string | null;
+            mergedIntoName?: string | null;
+            name: string;
+            noPrice: boolean;
+            /** Format: date */
+            priceAsOf?: string | null;
+            quantity: number;
+            symbol?: string | null;
+            unrealised: number;
+            unrealisedPct?: number | null;
+        };
         RowBreakdownResponse: {
             /** Format: date */
             asOf: string;
@@ -6982,6 +7405,29 @@ export interface components {
             definition: unknown;
             /** @enum {string} */
             type: "KPI" | "CHART" | "TABLE";
+        };
+        SellEstimateResponse: {
+            cost: number;
+            equity: boolean;
+            exemptionLeftAfter?: number | null;
+            exemptionLeftBefore?: number | null;
+            /** Format: int32 */
+            fy: number;
+            gain: number;
+            /** Format: uuid */
+            instrumentId: string;
+            longTermGain: number;
+            lots: components["schemas"]["Lot"][];
+            ltcgRate?: number | null;
+            ltcgTax?: number | null;
+            noPrice: boolean;
+            price?: number | null;
+            proceeds: number;
+            quantity: number;
+            shortTermGain: number;
+            stcgRate?: number | null;
+            stcgTax?: number | null;
+            tax?: number | null;
         };
         SetDividendReceiptStatusRequest: {
             /** @enum {string|null} */
@@ -7435,6 +7881,12 @@ export interface components {
             fieldLabel: string;
             operator: string;
             text: string;
+        };
+        UnderlyingPnl: {
+            pnl: number;
+            /** Format: int64 */
+            trades: number;
+            underlying: string;
         };
         UnderlyingRange: {
             /** Format: date */
@@ -9872,6 +10324,41 @@ export interface operations {
             };
         };
     };
+    getCorporateActionPage: {
+        parameters: {
+            query?: {
+                type?: "split" | "bonus" | "demerger" | "merger";
+                search?: string;
+                sort?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionPage"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getCounterparties: {
         parameters: {
             query?: {
@@ -11408,6 +11895,8 @@ export interface operations {
                 search?: string;
                 type?: "stock" | "mutual_fund" | "etf";
                 sort?: string;
+                stale?: boolean;
+                held?: boolean;
                 page?: number;
                 size?: number;
             };
@@ -11736,6 +12225,40 @@ export interface operations {
             };
         };
     };
+    getPriceHistoryPage: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PriceHistoryPage"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getCorporateActions: {
         parameters: {
             query?: never;
@@ -11789,6 +12312,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CorporateActionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewCorporateAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCorporateActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionPreviewResponse"];
                 };
             };
             /** @description Error response */
@@ -11943,6 +12501,7 @@ export interface operations {
                 type?: "dividend" | "interest" | "other";
                 from?: string;
                 to?: string;
+                fy?: number;
                 receipt?: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
                 /** @description Zero-based page index (0..N) */
                 page?: number;
@@ -12010,6 +12569,81 @@ export interface operations {
             };
         };
     };
+    getByInstrument: {
+        parameters: {
+            query?: {
+                years?: number;
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDividendInstrumentTotalResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    exportCsv: {
+        parameters: {
+            query?: {
+                holdingId?: string;
+                brokerAccountId?: string;
+                instrumentId?: string;
+                type?: "dividend" | "interest" | "other";
+                from?: string;
+                to?: string;
+                fy?: number;
+                receipt?: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getDividendReceiptSummary: {
         parameters: {
             query?: {
@@ -12017,6 +12651,9 @@ export interface operations {
                 brokerAccountId?: string;
                 instrumentId?: string;
                 type?: "dividend" | "interest" | "other";
+                from?: string;
+                to?: string;
+                fy?: number;
             };
             header?: never;
             path?: never;
@@ -12213,6 +12850,9 @@ export interface operations {
                 brokerAccountId?: string;
                 instrumentId?: string;
                 type?: "dividend" | "interest" | "other";
+                from?: string;
+                to?: string;
+                fy?: number;
             };
             header?: never;
             path?: never;
@@ -12465,6 +13105,106 @@ export interface operations {
             };
         };
     };
+    exportFnoCsv: {
+        parameters: {
+            query?: {
+                fy?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getFnoTradesPage: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                fy?: number;
+                optionType?: "CE" | "PE" | "FUT";
+                brokerAccountId?: string;
+                underlying?: string;
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageFnoTradeResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getFnoSummary: {
+        parameters: {
+            query?: {
+                fy?: number;
+                brokerAccountId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FnoSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     updateFnoTrade: {
         parameters: {
             query?: never;
@@ -12517,6 +13257,106 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getHoldings: {
+        parameters: {
+            query?: {
+                brokerAccountId?: string;
+                assetType?: string;
+                search?: string;
+                sort?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HoldingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getHolding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HoldingDetailResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getSellEstimate: {
+        parameters: {
+            query?: {
+                quantity?: number;
+            };
+            header?: never;
+            path: {
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SellEstimateResponse"];
+                };
             };
             /** @description Error response */
             default: {
@@ -12967,6 +13807,8 @@ export interface operations {
                 instrumentId?: string;
                 holdingId?: string;
                 search?: string;
+                type?: "buy" | "sell";
+                fy?: number;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */

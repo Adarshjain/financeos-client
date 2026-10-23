@@ -297,6 +297,8 @@ function check(lines, all = false, classes = true) {
     }
     if (
       !/^src\/components\/ds\/.*\.stories\.tsx$/.test(file) &&
+      // owner 2026-10-23: reports chart until moved to organisms (exactly this import path, nothing else)
+      !/from ['"]@\/components\/reports\/views\/ChartView['"]/.test(text) &&
       /from ['"](?:@\/components\/(?!ds\/|ds['"]|organisms\/|organisms['"])|@\/app\/[^'"]*\/components\/)/.test(text)
     ) {
       errors.push({ file, line, rule: 'old-import', why: 'imports old UI — new code uses only src/components/ds; move shared logic (hooks, queries) to src/lib or src/features first (RULES §1.8)', text: text.trim().slice(0, 160) });

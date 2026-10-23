@@ -1,77 +1,25 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { emitJobStarted } from '@/features/jobs/jobsBus';
-import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
-import { api, ApiError } from '@/lib/api/client';
-import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
-import { toastError } from '@/lib/toastError';
-import type { EnqueueResponse, PriceRefreshResult } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { useRefreshPrices } from '@/features/investments/useRefreshPrices';
+
+const notify = {
+  info: (message: string) => toast.info(message),
+  success: (message: string) => toast.success(message),
+  warning: (message: string) => toast.warning(message, { duration: 6000 }),
+  error: (message: string) => toast.error(message),
+};
 
 export function RefreshPricesButton() {
-  const qc = useQueryClient();
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
-
-  const { isPolling } = useJobStatusPolling<PriceRefreshResult>(
-    activeJobId,
-    (job) => {
-      if (job.status === 'SUCCEEDED' && job.result) {
-        const { refreshed, skipped, failed, asOf } = job.result;
-        const formattedAsOf = asOf ? formatDate(asOf) : 'today';
-        let message = `Updated ${refreshed} price${refreshed === 1 ? '' : 's'} (as of ${formattedAsOf}); ${skipped} skipped.`;
-
-        if (failed && failed.length > 0) {
-          const failDetails = failed
-            .map((f) => `${f.instrumentName || f.instrumentId}: ${f.reason}`)
-            .join(', ');
-          message += ` Failed: ${failDetails}`;
-          toast.warning(message, { duration: 6000 });
-        } else {
-          toast.success(message);
-        }
-        invalidateInvestmentQueries(qc);
-      } else if (job.status === 'FAILED') {
-        toast.error(job.errorMessage || 'Failed to refresh prices.');
-      } else if (job.status === 'CANCELLED') {
-        toast.info('Price refresh job was cancelled.');
-      }
-      setActiveJobId(null);
-    }
-  );
-
-  const refreshMutation = useMutation({
-    mutationFn: () =>
-      api
-        .POST('/api/v1/investments/prices/refresh', { params: { query: {} } })
-        .then((r) => r.data! as EnqueueResponse),
-  });
-
-  const handleRefresh = async () => {
-    try {
-      const data = await refreshMutation.mutateAsync();
-      if (data?.jobId) {
-        setActiveJobId(data.jobId);
-        emitJobStarted(data.jobId);
-        toast.info('Price refresh started in background.');
-      }
-    } catch (err) {
-      toastError(err, 'Failed to refresh prices'
-      );
-    }
-  };
-
-  const busy = refreshMutation.isPending || (Boolean(activeJobId) && isPolling);
+  const { refresh, busy } = useRefreshPrices({ notify });
 
   return (
     <Button
       type="button"
-      onClick={handleRefresh}
+      onClick={refresh}
       disabled={busy}
       variant="outline"
       size="sm"

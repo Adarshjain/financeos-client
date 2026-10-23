@@ -34,6 +34,24 @@ import type {
   UpdateDashboardRequest,
 } from '@/lib/dashboards.types';
 import type { InstrumentListPage, InstrumentListQuery } from '@/lib/instrumentList';
+import type {
+  CorporateActionItem,
+  CorporateActionPageQuery,
+  CorporateActionPreview,
+  CsvDownload,
+  DividendFilters,
+  DividendInstrumentTotal,
+  FnoPageQuery,
+  FnoSummary,
+  HoldingDetail,
+  HoldingsQuery,
+  HoldingsResponse,
+  ItemsPage,
+  PageFnoTrades,
+  PricePage,
+  SellEstimate,
+  TradesQuery,
+} from '@/lib/investments.types';
 import type { EnqueueResponse, JobResponse, PagedJobResponse } from '@/lib/jobs.types';
 import type {
   CounterpartyLedgerResponse,
@@ -113,6 +131,7 @@ import type {
   UpdateRuleRequest,
 } from '@/lib/rules.types';
 import type { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
+import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type {
   BatchDeleteRequest,
   BatchDeleteResponse,
@@ -142,7 +161,6 @@ import type {
   DividendReceiptSummary,
   DividendSuggestionsResponse,
   DividendSummary,
-  DividendType,
   FnoTradeListResponse,
   FnoTradeResponse,
   GmailCleanupPreview,
@@ -312,6 +330,31 @@ async function authenticatedFormPost<T>(
   if (!response.ok) throw await parseError(response);
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
+}
+
+/** The query of the dividend list, summary and export endpoints (the same filters for all). */
+function dividendFilterQuery(filters?: DividendFilters) {
+  return {
+    holdingId: filters?.holdingId,
+    brokerAccountId: filters?.brokerAccountId,
+    instrumentId: filters?.instrumentId,
+    type: filters?.type,
+    from: filters?.from,
+    to: filters?.to,
+    fy: filters?.fy,
+    receipt: filters?.receipt,
+  };
+}
+
+/** Authenticated GET of a CSV endpoint: the text and the file name from Content-Disposition. */
+async function csvDownload(path: string, query: Record<string, string | number | undefined>, fallbackName: string): Promise<CsvDownload> {
+  const get = serverApi.GET as unknown as (
+    path: string,
+    init: { params: { query: Record<string, string | number | undefined> }; parseAs: 'text' },
+  ) => Promise<{ data?: string; response: Response }>;
+  const { data, response } = await get(path, { params: { query }, parseAs: 'text' });
+  const match = /filename="?([^";]+)"?/.exec(response.headers.get('content-disposition') ?? '');
+  return { csv: data ?? '', filename: match?.[1] ?? fallbackName };
 }
 
 // ---------------------------------------------------------------------------
@@ -621,12 +664,16 @@ export const investmentsApi = {
     const { data } = await serverApi.GET('/api/v1/investments/positions');
     return data! as InvestmentPositionResponse;
   },
-  getTrades: async (params?: { page?: number; size?: number; sort?: string; brokerAccountId?: string; instrumentId?: string }): Promise<PagedInvestmentTransactionResponse> => {
+  getTrades: async (params?: TradesQuery): Promise<PagedInvestmentTransactionResponse> => {
     const { data } = await serverApi.GET('/api/v1/investments/transactions', {
       params: {
         query: {
           brokerAccountId: params?.brokerAccountId,
           instrumentId: params?.instrumentId,
+          holdingId: params?.holdingId,
+          search: params?.search,
+          type: params?.type,
+          fy: params?.fy,
           page: params?.page ?? 0, size: params?.size ?? 50, sort: params?.sort ? [params.sort] : [],
         },
       },
@@ -655,6 +702,31 @@ export const investmentsApi = {
     const { data } = await serverApi.POST('/api/v1/investments/fno', { body: body as Schemas['CreateFnoTradeRequest'] });
     return data! as FnoTradeResponse;
   },
+  /** One server page of F&O trades (newer endpoint, with the FY, option type, broker and underlying filters). */
+  getFnoPage: async (params?: FnoPageQuery): Promise<PageFnoTrades> => {
+    const { data } = await serverApi.GET('/api/v1/investments/fno/page', {
+      params: {
+        query: {
+          page: params?.page ?? 0,
+          size: params?.size ?? 25,
+          fy: params?.fy,
+          optionType: params?.optionType,
+          brokerAccountId: params?.brokerAccountId,
+          underlying: params?.underlying,
+          sort: params?.sort,
+        },
+      },
+    });
+    return data! as unknown as PageFnoTrades;
+  },
+  getFnoSummary: async (params?: { fy?: number; brokerAccountId?: string }): Promise<FnoSummary> => {
+    const { data } = await serverApi.GET('/api/v1/investments/fno/summary', {
+      params: { query: { fy: params?.fy, brokerAccountId: params?.brokerAccountId } },
+    });
+    return data! as FnoSummary;
+  },
+  exportFnoCsv: async (fy?: number): Promise<CsvDownload> =>
+    csvDownload('/api/v1/investments/fno/export.csv', { fy }, 'fno.csv'),
   updateFnoTrade: async (id: string, body: UpdateFnoTradeRequest): Promise<FnoTradeResponse> => {
     const { data } = await serverApi.PUT('/api/v1/investments/fno/{id}', {
       params: { path: { id } },
@@ -665,18 +737,27 @@ export const investmentsApi = {
   deleteFnoTrade: async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } });
   },
-  getDividends: async (params?: { page?: number; size?: number; sort?: string; brokerAccountId?: string; instrumentId?: string; year?: number }): Promise<PagedDividendResponse> => {
+  getDividends: async (params?: DividendFilters & { page?: number; size?: number; sort?: string; year?: number }): Promise<PagedDividendResponse> => {
     const { data } = await serverApi.GET('/api/v1/investments/dividends', {
       params: {
         query: {
-          brokerAccountId: params?.brokerAccountId,
-          instrumentId: params?.instrumentId,
+          ...dividendFilterQuery(params),
           page: params?.page ?? 0, size: params?.size ?? 50, sort: params?.sort ? [params.sort] : [],
         },
       },
     });
     return data! as PagedDividendResponse;
   },
+  /** Per-instrument dividend totals over the last `years` years (the server's default is 3 when omitted), biggest first. */
+  getDividendsByInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<ItemsPage<DividendInstrumentTotal>> => {
+    const { data } = await serverApi.GET('/api/v1/investments/dividends/by-instrument', {
+      params: { query: { years: params?.years, page: params?.page ?? 0, size: params?.size ?? 25 } },
+    });
+    return data! as unknown as ItemsPage<DividendInstrumentTotal>;
+  },
+  /** Every dividend matching the list filters, as CSV text plus the file name the server suggested. */
+  exportDividendsCsv: async (filters?: DividendFilters): Promise<CsvDownload> =>
+    csvDownload('/api/v1/investments/dividends/export.csv', dividendFilterQuery(filters), 'dividends.csv'),
   createDividend: async (body: CreateDividendRequest): Promise<Dividend> => {
     const { data } = await serverApi.POST('/api/v1/investments/dividends', { body: body as Schemas['CreateDividendRequest'] });
     return data! as Dividend;
@@ -698,6 +779,62 @@ export const investmentsApi = {
   acceptDividendSuggestions: async (body: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> => {
     const { data } = await serverApi.POST('/api/v1/investments/dividends/suggestions/accept', { body: body as Schemas['AcceptSuggestionsRequest'] });
     return data! as AcceptSuggestionsResponse;
+  },
+  getHoldings: async (params?: HoldingsQuery): Promise<HoldingsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/holdings', {
+      params: {
+        query: {
+          brokerAccountId: params?.brokerAccountId,
+          assetType: params?.assetType,
+          search: params?.search,
+          sort: params?.sort,
+          page: params?.page ?? 0,
+          size: params?.size ?? 50,
+        },
+      },
+    });
+    return data! as unknown as HoldingsResponse;
+  },
+  getHolding: async (instrumentId: string): Promise<HoldingDetail> => {
+    const { data } = await serverApi.GET('/api/v1/investments/holdings/{instrumentId}', { params: { path: { instrumentId } } });
+    return data! as unknown as HoldingDetail;
+  },
+  /** What selling `quantity` today would realise and cost in tax; no quantity = the whole holding. */
+  getSellEstimate: async (instrumentId: string, quantity?: number): Promise<SellEstimate> => {
+    const { data } = await serverApi.GET('/api/v1/investments/holdings/{instrumentId}/sell-estimate', {
+      params: { path: { instrumentId }, query: { quantity } },
+    });
+    return data! as unknown as SellEstimate;
+  },
+  getTaxHarvest: async (params?: { fy?: number; page?: number; size?: number }): Promise<TaxHarvestResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/tax/harvest', {
+      params: { query: { fy: params?.fy, page: params?.page ?? 0, size: params?.size ?? 5 } },
+    });
+    return data! as unknown as TaxHarvestResponse;
+  },
+  /** One page of recorded corporate actions across instruments (the Corporate actions tab). */
+  getCorporateActionsPage: async (params?: CorporateActionPageQuery): Promise<ItemsPage<CorporateActionItem>> => {
+    const { data } = await serverApi.GET('/api/v1/corporate-actions/page', {
+      params: {
+        query: { type: params?.type, search: params?.search, sort: params?.sort, page: params?.page ?? 0, size: params?.size ?? 25 },
+      },
+    });
+    return data! as unknown as ItemsPage<CorporateActionItem>;
+  },
+  /** What recording this action would do to the user's holdings, without saving it. */
+  previewCorporateAction: async (instrumentId: string, body: CreateCorporateActionRequest): Promise<CorporateActionPreview> => {
+    const { data } = await serverApi.POST('/api/v1/instruments/{instrumentId}/corporate-actions/preview', {
+      params: { path: { instrumentId } },
+      body: body as Schemas['CreateCorporateActionRequest'],
+    });
+    return data! as unknown as CorporateActionPreview;
+  },
+  /** One page of an instrument's price history, newest first. */
+  getPricesPage: async (instrumentId: string, params?: { page?: number; size?: number }): Promise<PricePage> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/{id}/prices/page', {
+      params: { path: { id: instrumentId }, query: { page: params?.page ?? 0, size: params?.size ?? 10 } },
+    });
+    return data! as unknown as PricePage;
   },
   getCorporateActions: async (instrumentId?: string): Promise<CorporateAction[]> => {
     if (instrumentId) {
@@ -729,11 +866,13 @@ export const investmentsApi = {
     query?: string;
     type?: InstrumentType;
     sort?: InstrumentListQuery['sort'];
+    stale?: boolean;
+    held?: boolean;
     page?: number;
     size?: number;
   }): Promise<InstrumentListPage> => {
     const { data } = await serverApi.GET('/api/v1/instruments', {
-      params: { query: { search: params?.query, type: params?.type, sort: params?.sort, page: params?.page, size: params?.size } },
+      params: { query: { search: params?.query, type: params?.type, sort: params?.sort, stale: params?.stale, held: params?.held, page: params?.page, size: params?.size } },
     });
     return (data as InstrumentListPage | undefined) ?? { items: [], page: params?.page ?? 0, size: params?.size ?? 0, totalElements: 0, totalPages: 0 };
   },
@@ -796,7 +935,7 @@ export const instrumentsApi = {
   search: async (q?: string): Promise<Instrument[]> => investmentsApi.search(q),
   /** One page of the catalog with its total (see instrumentListQuery). */
   list: async (params: InstrumentListQuery): Promise<InstrumentListPage> =>
-    investmentsApi.getInstruments({ query: params.search, type: params.type, sort: params.sort, page: params.page, size: params.size }),
+    investmentsApi.getInstruments({ query: params.search, type: params.type, sort: params.sort, stale: params.stale, held: params.held, page: params.page, size: params.size }),
   catalogSearch: async (query: string, type?: InstrumentType): Promise<InstrumentCandidate[]> => {
     const { data } = await serverApi.GET('/api/v1/instruments/catalog-search', { params: { query: { q: query, type } } });
     return (data as InstrumentCandidate[]) || [];
@@ -818,6 +957,8 @@ export const instrumentsApi = {
     const { data } = await serverApi.GET('/api/v1/instruments/{id}/prices', { params: { path: { id } } });
     return (data as PriceHistoryPoint[]) || [];
   },
+  pricesPage: async (instrumentId: string, params?: { page?: number; size?: number }): Promise<PricePage> =>
+    investmentsApi.getPricesPage(instrumentId, params),
   updatePrice: async (instrumentId: string, priceId: string, body: { price: number | string }): Promise<void> => {
     await serverApi.PUT('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
       params: { path: { instrumentId, priceId } },
@@ -830,6 +971,9 @@ export const instrumentsApi = {
 };
 
 export const corporateActionsApi = {
+  page: async (params?: CorporateActionPageQuery): Promise<ItemsPage<CorporateActionItem>> => investmentsApi.getCorporateActionsPage(params),
+  preview: async (instrumentId: string, data: CreateCorporateActionRequest): Promise<CorporateActionPreview> =>
+    investmentsApi.previewCorporateAction(instrumentId, data),
   listAll: async (): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(),
   listByInstrument: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
   list: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
@@ -841,20 +985,23 @@ export const corporateActionsApi = {
 };
 
 export const dividendsApi = {
-  list: async (params: { page?: number; size?: number; brokerAccountId?: string; instrumentId?: string; year?: number }): Promise<PagedDividendResponse> =>
+  list: async (params: DividendFilters & { page?: number; size?: number; year?: number }): Promise<PagedDividendResponse> =>
     investmentsApi.getDividends(params),
-  summary: async (filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType }): Promise<DividendSummary> => {
+  summary: async (filters?: DividendFilters): Promise<DividendSummary> => {
     const { data } = await serverApi.GET('/api/v1/investments/dividends/summary', {
-      params: { query: { holdingId: filters?.holdingId, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId, type: filters?.type } },
+      params: { query: dividendFilterQuery(filters) },
     });
     return data! as DividendSummary;
   },
-  receiptSummary: async (filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType }): Promise<DividendReceiptSummary> => {
+  receiptSummary: async (filters?: DividendFilters): Promise<DividendReceiptSummary> => {
     const { data } = await serverApi.GET('/api/v1/investments/dividends/receipts/summary', {
-      params: { query: { holdingId: filters?.holdingId, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId, type: filters?.type } },
+      params: { query: dividendFilterQuery(filters) },
     });
     return data! as DividendReceiptSummary;
   },
+  byInstrument: async (params?: { years?: number; page?: number; size?: number }): Promise<ItemsPage<DividendInstrumentTotal>> =>
+    investmentsApi.getDividendsByInstrument(params),
+  exportCsv: async (filters?: DividendFilters): Promise<CsvDownload> => investmentsApi.exportDividendsCsv(filters),
   create: async (data: CreateDividendRequest): Promise<Dividend> => investmentsApi.createDividend(data),
   update: async (id: string, data: UpdateDividendRequest): Promise<Dividend> => investmentsApi.updateDividend(id, data),
   delete: async (id: string): Promise<void> => investmentsApi.deleteDividend(id),
@@ -863,6 +1010,9 @@ export const dividendsApi = {
 };
 
 export const fnoApi = {
+  page: async (params?: FnoPageQuery): Promise<PageFnoTrades> => investmentsApi.getFnoPage(params),
+  summary: async (params?: { fy?: number; brokerAccountId?: string }): Promise<FnoSummary> => investmentsApi.getFnoSummary(params),
+  exportCsv: async (fy?: number): Promise<CsvDownload> => investmentsApi.exportFnoCsv(fy),
   listTrades: async (params: { page?: number; size?: number; brokerAccountId?: string; symbol?: string; from?: string; to?: string } | undefined): Promise<FnoTradeListResponse> =>
     investmentsApi.getFnoTrades(params),
   createTrade: async (data: CreateFnoTradeRequest): Promise<FnoTradeResponse> => investmentsApi.createFnoTrade(data),

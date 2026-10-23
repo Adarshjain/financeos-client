@@ -135,7 +135,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     // Verify Section tiles in groups
     await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/ds/accounts');
     await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/ds/transactions');
-    await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
+    await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/ds/investments');
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
     await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/ds/loans/lendings');
     await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
