@@ -95,9 +95,6 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
       addLabel="Add statements"
     >
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
-        <Text variant="body" tone="ink-3" as="p">
-          PDF or XLSX bank and card statements · password-protected files supported
-        </Text>
         <ImportTabs />
         <div className="grid grid-cols-1 items-start gap-space-12 desk:grid-cols-12 desk:gap-space-16">
           <Card className="desk:col-span-7">
