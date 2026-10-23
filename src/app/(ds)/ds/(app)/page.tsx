@@ -20,7 +20,6 @@ const TO_BUILD: [string, string][] = [
   ['Dividends', 'Investments'],
   ['F&O', 'Investments'],
   ['Corporate actions', 'Investments'],
-  ['SIPs', 'Investments'],
   ['Instruments', 'Investments'],
   ['Reports', 'Reports'],
   ['New report', 'Reports'],
