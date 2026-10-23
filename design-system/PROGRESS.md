@@ -207,6 +207,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-23 · **Price chart** (owner): fix the holding price chart with generic ChartView props (data-fitted y-axis, series colour from Dinero chart tokens); defaults keep Reports unchanged.
 - 2026-10-23 · **Sell today + picker pager** (owner): holding "If you sell today" = Sell all + "Sell up to N tax-free" + an inline quantity field estimated in the client (no dialog); TransactionPicker pager below the list only, 10 per page, no page-size dropdown (overrides §5.5 above-and-below for the picker).
 - 2026-10-23 · **Approvals** (owner): Highlight and Radio approved; TransactionPicker uses pages + a compact SegmentedControl debit/credit filter; holding price chart may use the reports chart until it moves to organisms.
 - 2026-10-14 · Palette locked to Ink. brand is near-black ink; success uses the new `positive-tint` / `positive-strong` tokens.

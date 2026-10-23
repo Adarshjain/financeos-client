@@ -9,6 +9,9 @@ import type { PriceHistoryPoint } from '@/lib/types';
 
 import { CHART_RANGES, type ChartRange, priceChartData, pricesInRange, RANGE_TITLES } from './priceChart';
 
+// The Dinero chart token follows light/dark by itself.
+const PRICE_LINE_COLORS = ['var(--ds-chart-1)'];
+
 // The Dinero scale has no chart-height step (h-72 is dropped), so the frame takes the chart's height from its width.
 /** "Price · 1 year": the daily close over a range, from the stored price history. */
 export function PriceChartCard({ history }: { history: PriceHistoryPoint[] }) {
@@ -25,7 +28,7 @@ export function PriceChartCard({ history }: { history: PriceHistoryPoint[] }) {
           <EmptyState compact description="Not enough prices to draw a chart yet." />
         ) : (
           <div className="aspect-video">
-            <ChartView data={priceChartData(points)} fill />
+            <ChartView data={priceChartData(points)} fill yDomain="data" colors={PRICE_LINE_COLORS} axisColor="var(--ds-ink-3)" gridColor="var(--ds-line)" />
           </div>
         )}
       </div>

@@ -59,9 +59,21 @@ const ANIMATION_MS = 450;
 export function ChartView({
   data: raw,
   fill,
+  yDomain,
+  colors,
+  axisColor,
+  gridColor,
 }: {
   data: ChartViewData;
   fill?: boolean;
+  /** Cartesian axis tick label colour (any CSS colour); default is the app's muted text. */
+  axisColor?: string;
+  /** Cartesian grid line colour (any CSS colour); default is the app's chart grid. */
+  gridColor?: string;
+  /** Cartesian value axis: 'zero' (default) always includes 0; 'data' fits the axis to the data range. */
+  yDomain?: 'zero' | 'data';
+  /** Cartesian series colours (any CSS colour) by series index; missing entries use the default palette. */
+  colors?: string[];
 }) {
   // Static enum categories/series read as their labels (e.g. "Bank account").
   const data = labelChartData(raw);
@@ -90,17 +102,35 @@ export function ChartView({
       />
     );
   }
-  return <CartesianChart data={data} fill={fill} money={money} />;
+  return (
+    <CartesianChart
+      data={data}
+      fill={fill}
+      money={money}
+      yDomain={yDomain}
+      colors={colors}
+      axisColor={axisColor}
+      gridColor={gridColor}
+    />
+  );
 }
 
 function CartesianChart({
   data,
   fill,
   money,
+  yDomain,
+  colors: colorOverrides,
+  axisColor,
+  gridColor,
 }: {
+  axisColor?: string;
+  gridColor?: string;
   data: ChartViewData;
   fill?: boolean;
   money: boolean;
+  yDomain?: 'zero' | 'data';
+  colors?: string[];
 }) {
   const { chartType, categories } = data;
   const gradientId = useId().replace(/:/g, '');
@@ -115,7 +145,9 @@ function CartesianChart({
   );
   const colors: Record<string, string> = {};
   series.forEach((s, i) => {
-    colors[seriesLabel(s.name)] = s.folded ? OTHER_COLOR : seriesColor(i);
+    colors[seriesLabel(s.name)] = s.folded
+      ? OTHER_COLOR
+      : (colorOverrides?.[i] ?? seriesColor(i));
   });
   const colorOf = (s: FoldedSeries) => colors[seriesLabel(s.name)];
 
@@ -131,9 +163,10 @@ function CartesianChart({
   const yTicks = yAxisTicks(
     series,
     categories.length,
-    chartType === 'stackedBar'
+    chartType === 'stackedBar',
+    yDomain !== 'data'
   );
-  const tick = { fontSize, fill: 'hsl(var(--muted-foreground))' };
+  const tick = { fontSize, fill: axisColor ?? 'hsl(var(--muted-foreground))' };
   // Room per category, in characters; Recharts skips ticks that still collide.
   const labelChars = width
     ? Math.max(
@@ -148,7 +181,7 @@ function CartesianChart({
     <CartesianGrid
       key="grid"
       vertical={false}
-      stroke="hsl(var(--chart-grid))"
+      stroke={gridColor ?? 'hsl(var(--chart-grid))'}
     />,
     <XAxis
       key="x"
@@ -348,16 +381,17 @@ function SeriesLegend({
 }
 
 /**
- * Y ticks from the data extent, always including the zero baseline. A stack's
+ * Y ticks from the data extent, including the zero baseline unless `includeZero` is off. A stack's
  * extent is its per-category positive / negative sums, not single values.
  */
 function yAxisTicks(
   series: Series[],
   categoryCount: number,
-  stacked: boolean
+  stacked: boolean,
+  includeZero = true
 ): number[] {
-  let min = 0;
-  let max = 0;
+  let min = includeZero ? 0 : Infinity;
+  let max = includeZero ? 0 : -Infinity;
   for (let i = 0; i < categoryCount; i++) {
     let up = 0;
     let down = 0;
@@ -371,9 +405,20 @@ function yAxisTicks(
         down = Math.min(down, v);
       }
     }
+    if (!includeZero && !stacked) {
+      // Without the zero baseline, only real values bound the axis.
+      for (const s of series) {
+        const v = s.data[i];
+        if (v == null) continue;
+        max = Math.max(max, v);
+        min = Math.min(min, v);
+      }
+      continue;
+    }
     max = Math.max(max, up);
     min = Math.min(min, down);
   }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return niceTicks(0, 0);
   return niceTicks(min, max);
 }
 
