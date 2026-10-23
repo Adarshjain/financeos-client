@@ -12,7 +12,7 @@ import { CHART_RANGES, type ChartRange, priceChartData, pricesInRange, RANGE_TIT
 // The Dinero chart token follows light/dark by itself.
 const PRICE_LINE_COLORS = ['var(--ds-chart-1)'];
 
-// The Dinero scale has no chart-height step (h-72 is dropped), so the frame takes the chart's height from its width.
+// The Dinero scale has no chart-height step (h-72 is dropped), so the frame takes the chart's height from its width: 16:9 on the phone, 21:9 on desktop.
 /** "Price · 1 year": the daily close over a range, from the stored price history. */
 export function PriceChartCard({ history }: { history: PriceHistoryPoint[] }) {
   const [range, setRange] = React.useState<ChartRange>('1y');
@@ -27,7 +27,7 @@ export function PriceChartCard({ history }: { history: PriceHistoryPoint[] }) {
         {points.length < 2 ? (
           <EmptyState compact description="Not enough prices to draw a chart yet." />
         ) : (
-          <div className="aspect-video">
+          <div className="aspect-video desk:aspect-wide">
             <ChartView data={priceChartData(points)} fill yDomain="data" colors={PRICE_LINE_COLORS} axisColor="var(--ds-ink-3)" gridColor="var(--ds-line)" />
           </div>
         )}

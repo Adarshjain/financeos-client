@@ -22,7 +22,9 @@ import {
 import { useSearchText } from '@/features/shell/useSearchText';
 
 import { jobHref } from '../holdings/PricesLine';
+import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 import {
+  currentFy,
   fyOptions,
   isTradebookFiltered,
   TRADEBOOK_SIZE_OPTIONS,
@@ -136,7 +138,7 @@ function columnsFor(onEdit: (row: TradebookRow) => void) {
       meta: { size: 'sm', align: 'end', phone: 'hidden' },
       cell: ({ row }) => (
         <Text variant="body" tone="ink-3">
-          <Conceal whole>{row.original.chargesPlain}</Conceal>
+          <Conceal whole>{row.original.chargesPlain === '0' ? '0' : `≈${row.original.chargesPlain}`}</Conceal>
         </Text>
       ),
     }),
@@ -220,6 +222,9 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
   const filtered = isTradebookFiltered(state);
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <Button asChild variant="secondary" className="max-desk:w-full desk:self-end">
+        <Link href={INVESTMENTS_IMPORT_HREF}>Import tradebook</Link>
+      </Button>
       <JobsLine lines={jobLines} />
       <div className="flex flex-col desk:flex-row desk:items-center gap-space-8">
         <TextField
@@ -253,7 +258,7 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
             options={fyChoices}
             onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
             trigger={
-              <FilterChip hasDropdown selected={state.fy != null} className="shrink-0">
+              <FilterChip hasDropdown selected={state.fy !== currentFy()} className="shrink-0">
                 {fyText}
               </FilterChip>
             }
@@ -272,7 +277,7 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
             <EmptyState
               compact
               description={filtered ? 'No trades match.' : 'No trades recorded. Record a trade or import your tradebook.'}
-              action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => router.push(tradebookUrl({ ...state, q: '', broker: '', type: '', fy: null, page: 0 })) } : undefined}
+              action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => router.push(tradebookUrl({ ...state, q: '', broker: '', type: '', fy: currentFy(), page: 0 })) } : undefined}
             />
           }
           stickyHeader={false}

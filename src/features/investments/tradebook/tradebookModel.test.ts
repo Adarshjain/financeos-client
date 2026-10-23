@@ -5,6 +5,7 @@ import {
   allCharges,
   chargesTotal,
   chargeTextsOf,
+  currentFy,
   EMPTY_CHARGES,
   exactRupees,
   filledCharges,
@@ -25,8 +26,8 @@ import {
 } from './tradebookModel';
 
 describe('tradebook URL state', () => {
-  it('defaults to the first page of 25, every broker, both sides, every year', () => {
-    expect(parseTradebookUrl({})).toEqual({ q: '', broker: '', type: '', fy: null, page: 0, size: 25 });
+  it('defaults to the first page of 25, every broker, both sides, the current FY', () => {
+    expect(parseTradebookUrl({})).toEqual({ q: '', broker: '', type: '', fy: currentFy(), page: 0, size: 25 });
   });
 
   it('reads every filter and ignores junk', () => {
@@ -38,7 +39,13 @@ describe('tradebook URL state', () => {
       page: 2,
       size: 50,
     });
-    expect(parseTradebookUrl({ type: 'hold', fy: 'abc', page: '-3', size: '7' })).toEqual({ q: '', broker: '', type: '', fy: null, page: 0, size: 25 });
+    expect(parseTradebookUrl({ type: 'hold', fy: 'abc', page: '-3', size: '7' })).toEqual({ q: '', broker: '', type: '', fy: currentFy(), page: 0, size: 25 });
+  });
+
+  it('writes All years as fy=all and keeps the current FY out of the URL', () => {
+    expect(parseTradebookUrl({ fy: 'all' }).fy).toBeNull();
+    expect(tradebookUrl(parseTradebookUrl({ fy: 'all' }))).toBe('/ds/investments/tradebook?fy=all');
+    expect(tradebookUrl(parseTradebookUrl({ fy: String(currentFy()) }))).toBe('/ds/investments/tradebook');
   });
 
   it('keeps defaults out of the URL and round-trips the rest', () => {
@@ -58,13 +65,14 @@ describe('tradebook URL state', () => {
       page: 1,
       size: 25,
     });
-    expect(tradebookQuery(parseTradebookUrl({}))).toMatchObject({ search: undefined, brokerAccountId: undefined, type: undefined, fy: undefined });
+    expect(tradebookQuery(parseTradebookUrl({}))).toMatchObject({ search: undefined, brokerAccountId: undefined, type: undefined, fy: currentFy() });
+    expect(tradebookQuery(parseTradebookUrl({ fy: 'all' })).fy).toBeUndefined();
   });
 
   it('knows when a filter is on', () => {
     expect(isTradebookFiltered(parseTradebookUrl({}))).toBe(false);
     expect(isTradebookFiltered(parseTradebookUrl({ page: '3', size: '50' }))).toBe(false);
-    for (const p of [{ q: 'a' }, { broker: 'b' }, { type: 'buy' }, { fy: '2026' }]) expect(isTradebookFiltered(parseTradebookUrl(p))).toBe(true);
+    for (const p of [{ q: 'a' }, { broker: 'b' }, { type: 'buy' }, { fy: '2025' }, { fy: 'all' }]) expect(isTradebookFiltered(parseTradebookUrl(p))).toBe(true);
   });
 });
 

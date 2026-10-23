@@ -45,7 +45,7 @@ for (const viewport of VIEWPORTS) {
     }
 
     test('lists the newest trades first, 25 a page, with the Pager above and below', async ({ page }) => {
-      await page.goto('/ds/investments/tradebook');
+      await page.goto('/ds/investments/tradebook?fy=all');
 
       await expectPager(page, '1–25', seeded.total);
       // Newest first: the October fund buy, then the sell, then the stock's buys.
@@ -67,25 +67,25 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('pages through the server, and an address past the end shows the last page', async ({ page }) => {
-      await page.goto('/ds/investments/tradebook');
+      await page.goto('/ds/investments/tradebook?fy=all');
       await page.getByRole('button', { name: 'Page 2' }).first().click();
       await page.waitForURL(/page=1/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
 
-      await page.goto('/ds/investments/tradebook?page=9');
+      await page.goto('/ds/investments/tradebook?fy=all&page=9');
       await page.waitForURL(/page=1/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
     });
 
     test('the filters are one URL change each and answered by the server', async ({ page }) => {
-      await page.goto('/ds/investments/tradebook');
+      await page.goto('/ds/investments/tradebook?fy=all');
 
       await page.getByRole('button', { name: seeded.groww.name, exact: true }).click();
       await page.waitForURL(new RegExp(`broker=${seeded.groww.id}`));
       // Groww holds the 13 even-numbered buys and the fund.
       await expectPager(page, '1–14', 14);
       await page.getByRole('button', { name: 'All brokers', exact: true }).click();
-      await page.waitForURL((url) => url.search === '');
+      await page.waitForURL((url) => url.search === '?fy=all');
 
       await page.getByRole('button', { name: 'Sell', exact: true }).click();
       await page.waitForURL(/type=sell/);
@@ -94,12 +94,12 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL(/type=buy/);
       await expectPager(page, '1–25', seeded.total - 1);
       await page.getByRole('button', { name: 'Buy', exact: true }).click();
-      await page.waitForURL((url) => url.search === '');
+      await page.waitForURL((url) => url.search === '?fy=all');
 
       await page.getByRole('button', { name: /All years/ }).click();
       await page.getByRole('option', { name: 'FY 26-27' }).click();
-      await page.waitForURL(/fy=2026/);
-      // October 2026: the fund buy and the sell.
+      // The current FY has no fy in the address. October 2026: the fund buy and the sell.
+      await page.waitForURL((url) => url.search === '');
       await expectPager(page, '1–2', 2);
 
       await page.getByPlaceholder('Instrument').fill('zzznothing');
@@ -107,7 +107,17 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('No trades match.')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
+      await expectPager(page, '1–2', 2);
+      await page.getByRole('button', { name: /FY 26-27/ }).click();
+      await page.getByRole('option', { name: 'All years' }).click();
+      await page.waitForURL(/fy=all/);
       await expectPager(page, '1–25', seeded.total);
+    });
+
+    test('the page opens on the current financial year', async ({ page }) => {
+      await page.goto('/ds/investments/tradebook');
+      await expectPager(page, '1–2', 2);
+      await expect(page.getByRole('button', { name: /FY 26-27/ }).first()).toBeVisible();
     });
 
     test('a trade opens filled in, saves a change and shows it in the list', async ({ page }) => {
@@ -134,7 +144,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Trade updated')).toBeVisible();
       await expect(dialog).toHaveCount(0);
       await expect(shown(page.getByText(viewport.phone ? '₹10,000' : '10,000', { exact: true }))).toBeVisible();
-      if (!viewport.phone) await expect(page.getByText('20.00', { exact: true })).toBeVisible();
+      if (!viewport.phone) await expect(page.getByText('≈20.00', { exact: true })).toBeVisible();
     });
 
     test('Delete asks first, says what stays, and removes the trade', async ({ page }) => {

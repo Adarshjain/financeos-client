@@ -41,6 +41,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - Breakpoint: `lg` (1024px, Tailwind's default) is the only phone→desktop switch inside components (RULES §5c.2).
    - Radix state variants: `data-open:`, `data-closed:`, `data-checked:`, `data-unchecked:`, `data-indeterminate:`, `data-active:`, `data-inactive:`, `data-on:`, `data-highlighted:`, `data-disabled:`, `data-side-top:` / `-bottom:` / `-left:` / `-right:`. Use these instead of `data-[state=…]:`, which is an arbitrary value.
    - `transitionDuration`: `fast`, `base`, `sheet`.
+   - `aspectRatio`: `aspect-wide` (21:9), beside Tailwind's `aspect-video` (16:9); chart frames use `aspect-video desk:aspect-wide` (owner, 2026-10-23).
    - Search marks: `animate-highlight-sweep` (`dur-emphasis`, 600ms) and the utility `highlight-stroke` (2026-10-21).
 3. **Fonts.** Add Figtree (500, 600, 700, 800) and Bricolage Grotesque (600, 700, 800) as self-hosted woff2 files, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display`. Inter stays in place for the old UI.
 4. **Storybook** (approved as a new dev dependency, see Owner decisions):
@@ -397,6 +398,8 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-23 · Investments phone hero (owner): phone investments pages use the Holdings hero (big figure + change line + two-figure rows) instead of tiles; desktop keeps tiles; other areas later, after the owner sees a design.
 - 2026-10-23 · Investments tabs (owner): Dividends Suggestions scan only on Rescan, never on open; a suggestion's Record opens the prefilled add dialog (kept); Import tradebook boards to be redrawn with every wizard step and Legacy's data.
 - 2026-10-23 · Notifications and Loans & lendings approved (owner: "mark them approved, I will raise if I find anything").
+- 2026-10-23 · Investments round 2 (owner): price chart 16:9 phone, 21:9 desktop (new generic aspect token); per-tab suggestions all accepted (Add/Reconcile like Edit, dropped dividend columns, current FY default everywhere incl. Tradebook, ≈ on estimated charges, Intraday for MIS, F&O gets All years, live-catalog search, no Held filter, row opens edit, no instrument delete, Delete as dialog tertiary link, switches in body); Delete links use a new danger-coloured link variant everywhere in Dinero.
+- 2026-10-23 · Import tradebook (owner): its own page (/ds/investments/import), every Legacy feature ported, boards as redrawn; uses the Dinero Stepper (Upload files · Review · Result); CAS review shows the statement's transactions (Legacy renders none); include/skip rows = selection mode already on (desktop checkboxes, phone selected rows); older investments boards updated to the rules (link secondaries, words not pills).
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -412,14 +415,6 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
   10. The hero's day percent has one decimal (board: two).
   11. Tax this FY: "Realised gains" is booked long and short term net of losses; the symbols under Harvestable gains and Loss to offset come from the 50 open lots with the biggest gains. Top movers look at up to 200 holdings of the filter.
   12. /ds index: "Holding detail" links to Holdings (a holding's page needs an id).
-  13. Price chart height: the Dinero spacing scale has no step for a chart's height (the reports chart's own h-72 renders nothing there), so the chart frame is 16:9 (`aspect-video`) at every width: tall on a wide card. Owner: a chart-height step, or a different ratio?
-- 2026-10-23 · Phase 3 · Investments tabs (Tradebook, Dividends, F&O, Corporate actions, Instruments), for the owner:
-  1. Dividends: Reconcile and Add dialogs are not drawn (built like Edit, keeping Legacy features); no Dismiss on suggestions (server has none); dropped columns ex-date/broker/type/source; default FY current (Legacy: all).
-  2. Tradebook: charges are an estimate (no server figure); FY default All years; phone row qty × price with date below; MIS reads Intraday.
-  3. F&O: futures "1 lot · notional" not in data; contract name composed from fields; FY filter has no All years.
-  4. Corporate actions: "30 bought + 30 bonus" not in data; Before/After field labels use own wording.
-  5. Instruments: search hits the live catalog (Legacy: own list only); no Held filter drawn; row press opens edit; no delete (Legacy none).
-  6. Everywhere: Delete is the dialog's tertiary link; switches sit in the body, not headers.
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.

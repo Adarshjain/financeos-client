@@ -2,7 +2,9 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { fyLabel } from '@/features/investments/investmentsFormat';
 import { fundBuy, job, stockBuy, trade, tradesPage } from '@/features/investments/tradebook/tradebook.fixtures';
+import { currentFy } from '@/features/investments/tradebook/tradebookModel';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import DsTradebookLoading from './loading';
@@ -75,7 +77,7 @@ describe('/ds/investments/tradebook: data', () => {
       search: undefined,
       brokerAccountId: undefined,
       type: undefined,
-      fy: undefined,
+      fy: currentFy(),
       sort: 'tradeDate,desc',
       page: 0,
       size: 25,
@@ -125,7 +127,7 @@ describe('/ds/investments/tradebook: rows', () => {
     }
     expect(first('1 Oct 26')).toBeTruthy();
     expect(first('35,500')).toBeTruthy();
-    expect(first('42.10')).toBeTruthy();
+    expect(first('≈42.10')).toBeTruthy();
     expect(first('Parag Parikh Flexi Cap')).toBeTruthy();
     expect(first('Delivery')).toBeTruthy();
   });
@@ -210,9 +212,23 @@ describe('/ds/investments/tradebook: filters', () => {
   it('picks a financial year', async () => {
     await renderPage();
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /All years/ }));
+    await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
     await user.click(await screen.findByRole('option', { name: 'FY 25-26' }));
     expect(router.push).toHaveBeenLastCalledWith('/ds/investments/tradebook?fy=2025', { scroll: false });
+  });
+
+  it('defaults to the current FY and All years is chosen explicitly', async () => {
+    await renderPage();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
+    await user.click(await screen.findByRole('option', { name: 'All years' }));
+    expect(router.push).toHaveBeenLastCalledWith('/ds/investments/tradebook?fy=all', { scroll: false });
+  });
+
+  it('asks the server for every year when the address says fy=all', async () => {
+    await renderPage({ fy: 'all' });
+    expect(tradebook.fetchTradebookPage).toHaveBeenCalledWith(expect.objectContaining({ fy: undefined }));
+    expect(screen.getByRole('button', { name: /All years/ })).toBeTruthy();
   });
 
   it('pages through the server: next page and page size', async () => {
