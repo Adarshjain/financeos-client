@@ -157,6 +157,15 @@ describe('Add transaction', () => {
     expect(amount()).not.toHaveClass('text-positive');
   });
 
+  it('an amount that works out negative switches the form to debit and keeps the amount positive', async () => {
+    setup();
+    await user.click(screen.getByRole('radio', { name: 'Credit' }));
+    fireEvent.change(amount(), { target: { value: '100-300' } });
+    fireEvent.blur(amount());
+    expect(amount()).toHaveValue('200');
+    expect(screen.getByRole('radio', { name: 'Debit' })).toBeChecked();
+  });
+
   it('puts Debit/Credit and the amount, and Date and Account, side by side', () => {
     setup();
     expect(screen.getByRole('radiogroup', { name: 'Debit or credit' }).parentElement).toBe(amount().closest('div[class*="flex-1"]')?.parentElement);

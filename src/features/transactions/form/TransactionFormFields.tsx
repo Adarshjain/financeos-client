@@ -136,6 +136,7 @@ export function TransactionFormFields({
           placeholder="0.00"
           value={values.amount}
           {...amountExpressionProps(values.amount, (v) => onChange({ amount: v }))}
+          onNegative={() => onChange({ direction: 'debit' })}
           error={errors.amount}
         />
       </div>
