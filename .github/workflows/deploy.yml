@@ -8,9 +8,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# A newer push cancels the run in flight (tests or deploy) and deploys only the latest commit.
 concurrency:
   group: deploy
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   # Empty when the secret is unset; slack-notify.sh then warns and exits 0.
