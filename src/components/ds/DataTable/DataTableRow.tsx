@@ -13,7 +13,7 @@ import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
-import { useSelectableItem } from '../useSelectableItem';
+import { clickPoint, useSelectableItem } from '../useSelectableItem';
 import type { DataTableColumnMeta, DataTableFeatures } from './types';
 
 export interface DataTableRowComponentProps<Row extends RowData> {
@@ -23,7 +23,7 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   isSelected: boolean;
   isSelectionMode: boolean;
   onRowSelectionToggle: (rowId: string, next: boolean) => void;
-  onRowSelect?: (row: Row) => void;
+  onRowSelect?: (row: Row, point?: { x: number; y: number }) => void;
   renderExpanded?: (row: Row) => React.ReactNode;
   getRowCanExpand?: (row: Row) => boolean;
   leading?: (row: Row) => React.ReactNode;
@@ -76,9 +76,9 @@ export function DataTableRow<Row extends RowData>({
   const isClickable =
     (Boolean(onRowSelect) || canExpand || selectable) && !rowState?.disabled;
 
-  const handleRowPress = () => {
+  const handleRowPress = (point: { x: number; y: number }) => {
     if (onRowSelect) {
-      onRowSelect(row.original);
+      onRowSelect(row.original, point);
     } else if (canExpand) {
       row.toggleExpanded();
     }
@@ -263,7 +263,7 @@ export function DataTableRow<Row extends RowData>({
             size="sm"
             iconOnly
             aria-label="Open"
-            onClick={() => onRowSelect?.(row.original)}
+            onClick={(e) => onRowSelect?.(row.original, clickPoint(e))}
             icon={<Icon name="view" size="md" />}
           />
         </div>

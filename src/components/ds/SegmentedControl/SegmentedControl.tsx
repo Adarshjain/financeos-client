@@ -116,7 +116,7 @@ const Impl = (
       aria-disabled={disabled}
       className={cn(
         'relative border border-line-strong rounded-ds-md overflow-hidden bg-surface',
-        fullWidth ? 'flex w-full' : 'inline-flex',
+        fullWidth ? 'flex w-full' : 'inline-flex w-fit self-start justify-self-start',
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}

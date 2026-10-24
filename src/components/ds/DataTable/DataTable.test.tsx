@@ -398,7 +398,7 @@ describe('DataTable', () => {
       expect(eyeButtons.length).toBeGreaterThan(0);
 
       fireEvent.click(eyeButtons[0]);
-      expect(handleRowSelect).toHaveBeenCalledWith(testData[0]);
+      expect(handleRowSelect).toHaveBeenCalledWith(testData[0], expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }));
       expect(handleSelectionChange).not.toHaveBeenCalled();
     });
   });
@@ -419,7 +419,7 @@ describe('DataTable', () => {
       const row = rowButtons[0];
 
       fireEvent.click(row);
-      expect(handleRowSelect).toHaveBeenCalledWith(testData[0]);
+      expect(handleRowSelect).toHaveBeenCalledWith(testData[0], expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }));
 
       fireEvent.keyDown(row, { key: 'Enter' });
       fireEvent.keyUp(row, { key: 'Enter' });
@@ -767,7 +767,7 @@ describe('DataTable', () => {
       fireEvent.click(beta);
       expect(onRowSelect).not.toHaveBeenCalled();
       fireEvent.click(screen.getAllByRole('button', { name: /Alpha/i })[0]);
-      expect(onRowSelect).toHaveBeenCalledWith(testData[0]);
+      expect(onRowSelect).toHaveBeenCalledWith(testData[0], expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }));
     });
   });
 

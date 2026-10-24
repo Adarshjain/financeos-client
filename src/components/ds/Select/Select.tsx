@@ -2,8 +2,12 @@
 
 import React, {
   forwardRef,
+  useCallback,
+  useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -18,6 +22,7 @@ import { Popover } from '../Popover/Popover';
 import { Radio } from '../Radio/Radio';
 import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
+import { fitChips } from './fitChips';
 
 export interface SelectOption {
   value: string;
@@ -56,11 +61,14 @@ export interface SelectMenuProps {
   onSelectedChange?: (value: string) => void;
   onClear?: () => void;
   onDone?: () => void;
+  /** Multiple only: when given, a Discard & close action sits between Clear and Done */
+  onDiscard?: () => void;
   onClose?: () => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
   action?: SelectAction;
   clearLabel?: React.ReactNode;
+  discardLabel?: React.ReactNode;
   doneLabel?: (count: number) => React.ReactNode;
   filter?: 'auto' | 'none' | ((option: SelectOption, query: string) => boolean);
   showRadio?: boolean;
@@ -88,11 +96,13 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       onSelectedChange,
       onClear,
       onDone,
+      onDiscard,
       onClose,
       onCreate,
       createLabel,
       action,
       clearLabel = 'Clear',
+      discardLabel = 'Discard & close',
       doneLabel,
       filter = 'auto',
       showRadio = false,
@@ -444,6 +454,16 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             >
               {clearLabel}
             </Button>
+            {onDiscard ? (
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={onDiscard}
+              >
+                {discardLabel}
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="primary"
@@ -486,9 +506,10 @@ export interface SelectProps
   createLabel?: (query: string) => React.ReactNode;
   action?: SelectAction;
   clearLabel?: React.ReactNode;
+  /** Multiple only: restores the value the field had when the popover opened, then closes */
+  discardLabel?: React.ReactNode;
   doneLabel?: (count: number) => React.ReactNode;
   filter?: 'auto' | 'none' | ((option: SelectOption, query: string) => boolean);
-  maxDisplayChips?: number;
   disabled?: boolean;
   loading?: boolean;
   loadingText?: string;
@@ -504,6 +525,9 @@ export interface SelectProps
   menuClassName?: string;
   emptyText?: (query: string) => React.ReactNode;
 }
+
+// A chip's measured width is cached per value and label, so a renamed option is measured again.
+const chipKey = (opt: SelectOption) => `${opt.value}\u0000${opt.label}`;
 
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(
   (
@@ -528,9 +552,9 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       createLabel,
       action,
       clearLabel,
+      discardLabel,
       doneLabel,
       filter,
-      maxDisplayChips = 2,
       disabled = false,
       loading = false,
       loadingText = 'Loading…',
@@ -613,12 +637,95 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       setOpen(false);
     };
 
+    // The value when the popover opened, so Discard & close can put it back.
+    const latestValue = useRef(currentValue);
+    latestValue.current = currentValue;
+    const valueAtOpen = useRef(currentValue);
+    useEffect(() => {
+      if (isOpen) valueAtOpen.current = latestValue.current;
+    }, [isOpen]);
+
+    const handleDiscard = () => {
+      const before = valueAtOpen.current;
+      const now = latestValue.current;
+      const same =
+        Array.isArray(before) && Array.isArray(now)
+          ? before.length === now.length && before.every((v, i) => v === now[i])
+          : before === now;
+      if (!same) setCurrentValue(before);
+      setOpen(false);
+    };
+
     const hasError = Boolean(error);
     const isLockedOrDisabled = Boolean(disabled || loading);
 
-    // Visible chips and overflow for multiple
-    const visibleChips = selectedOptions.slice(0, maxDisplayChips);
-    const overflowCount = Math.max(0, selectedOptions.length - maxDisplayChips);
+    // Multiple: as many chips as fit on one line, the rest as "+n". Widths are measured once per chip (all chips render for that pass, before paint), then fitted to the row.
+    const chipRowRef = useRef<HTMLDivElement | null>(null);
+    const [chipWidths, setChipWidths] = useState<Record<string, number>>({});
+    const [overflowMeasure, setOverflowMeasure] = useState({ extent: 0, length: 0 });
+    const [chipRow, setChipRow] = useState({ extent: 0, between: 0 });
+    const selectedCount = selectedOptions.length;
+    const hasChips = selectedCount > 0;
+    const needsMeasure =
+      multiple &&
+      selectedCount > 0 &&
+      (selectedOptions.some((opt) => chipWidths[chipKey(opt)] === undefined) ||
+        String(selectedCount).length > String(overflowMeasure.length).length);
+
+    const measureRow = useCallback(() => {
+      const row = chipRowRef.current;
+      if (!row) return;
+      const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+      setChipRow((prev) =>
+        prev.extent === row.clientWidth && prev.between === gap ? prev : { extent: row.clientWidth, between: gap },
+      );
+    }, []);
+
+    useLayoutEffect(() => {
+      const row = chipRowRef.current;
+      if (!row || !multiple) return;
+      measureRow();
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(measureRow);
+      observer.observe(row);
+      return () => observer.disconnect();
+    }, [multiple, loading, hasChips, measureRow]);
+
+    useLayoutEffect(() => {
+      const row = chipRowRef.current;
+      if (!row || !needsMeasure) return;
+      // A zero width means the row is hidden or not laid out yet: record nothing and measure again when it is.
+      const next: Record<string, number> = { ...chipWidths };
+      let recorded = false;
+      row.querySelectorAll<HTMLElement>('[data-chip-key]').forEach((el) => {
+        const w = el.getBoundingClientRect().width;
+        if (w > 0) {
+          next[el.dataset.chipKey as string] = w;
+          recorded = true;
+        }
+      });
+      if (recorded) setChipWidths(next);
+      const overflowEl = row.querySelector<HTMLElement>('[data-chip-overflow]');
+      const overflowWidth = overflowEl?.getBoundingClientRect().width ?? 0;
+      if (overflowWidth > 0) {
+        setOverflowMeasure({ extent: overflowWidth, length: selectedCount });
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [needsMeasure, selectedOptions, loading, chipRow.extent]);
+
+    const fitCount = needsMeasure
+      ? selectedCount
+      : fitChips(
+          selectedOptions.map((opt) => chipWidths[chipKey(opt)] ?? 0),
+          overflowMeasure.extent,
+          chipRow.extent,
+          chipRow.between,
+        );
+    // When not even the first chip fits beside its +n, it still shows, shrunk with an ellipsis.
+    const shownCount = needsMeasure ? selectedCount : Math.max(fitCount, Math.min(1, selectedCount));
+    const firstShrinks = !needsMeasure && fitCount === 0;
+    const visibleChips = selectedOptions.slice(0, shownCount);
+    const overflowCount = needsMeasure ? 0 : Math.max(0, selectedCount - shownCount);
 
     // Selected icon
     const displayIcon =
@@ -642,7 +749,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       if (multiple) {
         return (
           <>
-            <div className="flex items-center gap-space-6 flex-wrap flex-1 min-w-0">
+            <div ref={chipRowRef} className="flex items-center gap-space-6 flex-nowrap overflow-hidden flex-1 min-w-0">
               {selectedOptions.length === 0 ? (
                 placeholder ? (
                   <span className={cn('font-text font-medium text-ink-4 truncate', isSm ? 'text-label' : 'text-body')}>
@@ -651,12 +758,22 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 ) : null
               ) : (
                 <>
-                  {visibleChips.map((opt) => (
-                    <Badge key={opt.value} variant="outline" shape="rounded">
-                      {opt.label}
+                  {visibleChips.map((opt, i) => (
+                    <Badge
+                      key={opt.value}
+                      variant="outline"
+                      shape="rounded"
+                      data-chip-key={chipKey(opt)}
+                      className={firstShrinks && i === 0 ? 'shrink min-w-0' : undefined}
+                    >
+                      <span className="truncate">{opt.label}</span>
                     </Badge>
                   ))}
-                  {overflowCount > 0 ? (
+                  {needsMeasure ? (
+                    <Badge variant="outline" shape="rounded" data-chip-overflow="">
+                      +{selectedCount}
+                    </Badge>
+                  ) : overflowCount > 0 ? (
                     <Badge variant="outline" shape="rounded">
                       +{overflowCount}
                     </Badge>
@@ -664,7 +781,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 </>
               )}
             </div>
-            <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0 ml-auto" />
+            <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className={cn('shrink-0 ml-auto', disabled ? 'text-ink-faint' : 'text-ink-4')} />
           </>
         );
       }
@@ -686,7 +803,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               ? selectedOptions[0].label
               : placeholder}
           </span>
-          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0 ml-auto" />
+          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className={cn('shrink-0 ml-auto', disabled ? 'text-ink-faint' : 'text-ink-4')} />
         </>
       );
     })();
@@ -727,13 +844,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             : isSm
               ? 'h-control-sm px-space-8 gap-space-6'
               : 'h-control-md px-space-12 gap-space-8',
-          hasError
-            ? 'border-danger focus-visible:ring-danger'
-            : isOpen
-              ? 'border-line-strong ring-2 ring-focus-ring ring-offset-2'
-              : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
-          disabled &&
-            'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+          disabled
+            ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
+            : hasError
+              ? 'border-danger focus-visible:ring-danger'
+              : isOpen
+                ? 'border-line-strong ring-2 ring-focus-ring ring-offset-2'
+                : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           triggerClassName,
         )}
         {...restProps}
@@ -782,11 +899,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             onSelect={handleSelect}
             onClear={handleClear}
             onDone={handleDone}
+            onDiscard={multiple ? handleDiscard : undefined}
             onClose={() => setOpen(false)}
             onCreate={onCreate}
             createLabel={createLabel}
             action={action}
             clearLabel={clearLabel}
+            discardLabel={discardLabel}
             doneLabel={doneLabel}
             filter={filter}
             showRadio={showRadio}

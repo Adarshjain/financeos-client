@@ -208,6 +208,50 @@ export const CanvasBackground: Story = {
   ),
 };
 
+export const WithSections: Story = {
+  args: { size: 'md', title: 'Edit rule' },
+  render: (args) => (
+    <Dialog defaultOpen>
+      <DialogContent
+        {...args}
+        primary={{ label: 'Save rule', onSelect: fn() }}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
+      >
+        <DialogBody>
+          <Dialog.Section title="Conditions">
+            <TextField label="Description contains" defaultValue="Swiggy" />
+          </Dialog.Section>
+          <Dialog.Section title="Then">
+            <TextField label="Set category" defaultValue="Food & dining" />
+          </Dialog.Section>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const CollapsibleSections: Story = {
+  args: { size: 'md', title: 'Edit rule' },
+  render: (args) => (
+    <Dialog defaultOpen>
+      <DialogContent
+        {...args}
+        primary={{ label: 'Save rule', onSelect: fn() }}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
+      >
+        <DialogBody>
+          <Dialog.Section title="Conditions" collapsible onOpenChange={fn()}>
+            <TextField label="Description contains" defaultValue="Swiggy" />
+          </Dialog.Section>
+          <Dialog.Section title="Advanced" collapsible defaultOpen={false} onOpenChange={fn()}>
+            <TextField label="Amount at least" defaultValue="₹500" />
+          </Dialog.Section>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
 export const Confirm: StoryObj<typeof ConfirmDialog> = {
   render: () => (
     <ConfirmDialog

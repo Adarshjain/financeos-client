@@ -44,6 +44,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const generatedId = useId();
     const id = explicitId ?? generatedId;
     const helperId = `${id}-helper`;
+    const labelId = `${id}-label`;
     const hasError = Boolean(error);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -65,6 +66,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <FieldFrame
         id={id}
+        labelId={labelId}
         helperId={helperId}
         label={label}
         optional={optional}
@@ -81,17 +83,19 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           value={value}
           defaultValue={defaultValue}
           onChange={handleChange}
+          aria-labelledby={label ? labelId : undefined}
           aria-invalid={hasError ? 'true' : undefined}
           aria-describedby={hasError || helper ? helperId : undefined}
           style={inlineStyles}
           className={cn(
             'w-full min-h-control-md px-space-12 py-space-8 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-y [field-sizing:content]',
-            'transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
-            hasError
-              ? 'border-danger focus:ring-danger'
-              : 'border-line-strong',
-            disabled &&
-              'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+            'transition-colors duration-fast focus:outline-none',
+            disabled
+              ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
+              : [
+                  'focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
+                  hasError ? 'border-danger focus:ring-danger' : 'border-line-strong',
+                ],
             controlClassName,
           )}
           {...props}

@@ -128,7 +128,6 @@ const meta: Meta<typeof Select> = {
     searchable: { control: 'boolean' },
     loading: { control: 'boolean' },
     loadingText: { control: 'text' },
-    maxDisplayChips: { control: 'number' },
     showRadio: { control: 'boolean' },
     size: { control: 'inline-radio', options: ['sm', 'md'] },
     defaultOpen: { control: 'boolean' },
@@ -142,6 +141,7 @@ const meta: Meta<typeof Select> = {
     createLabel: { table: { disable: true } },
     clearLabel: { table: { disable: true } },
     doneLabel: { table: { disable: true } },
+    discardLabel: { control: 'text' },
     filter: { table: { disable: true } },
   },
   render: function Render(args) {
@@ -194,6 +194,26 @@ export const MultiSelect: Story = {
   args: {
     label: 'Multiple selection',
     multiple: true,
+    options: standardOptions,
+    defaultValue: ['option-a', 'option-b'],
+  },
+};
+
+/** Chips fill one line of the field, the rest collapse into +n; Discard & close restores the value from when it opened. */
+export const MultiSelectOverflow: Story = {
+  args: {
+    label: 'Many selected',
+    multiple: true,
+    options: standardOptions,
+    defaultValue: standardOptions.map((o) => o.value),
+  },
+};
+
+export const DisabledMultiSelect: Story = {
+  args: {
+    label: 'Unavailable multiple selection',
+    multiple: true,
+    disabled: true,
     options: standardOptions,
     defaultValue: ['option-a', 'option-b'],
   },

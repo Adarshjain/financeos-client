@@ -183,6 +183,24 @@ export const LabelledTrigger: Story = {
   },
 };
 
+export const ContextMenuAtPoint: StoryObj = {
+  name: 'Menu at a press point',
+  parameters: { docs: { description: { story: 'Controlled: open at a point, such as where a DataTable row was pressed (onRowSelect hands the point over). Works on phone and desktop.' } } },
+  render: () => (
+    <ContextMenu
+      open
+      point={{ x: 160, y: 120 }}
+      onOpenChange={fn()}
+      items={[
+        { id: 'edit', label: 'Edit', onSelect: fn() },
+        { id: 'clone', label: 'Clone', onSelect: fn() },
+        { id: 'end-clone', label: 'End & clone', onSelect: fn(), disabled: true },
+        { id: 'delete', label: 'Delete', tone: 'danger', onSelect: fn() },
+      ]}
+    />
+  ),
+};
+
 export const ContextMenuOnRow: StoryObj = {
   name: 'Right-click menu',
   render: () => (

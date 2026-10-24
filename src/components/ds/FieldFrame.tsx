@@ -1,10 +1,12 @@
 import React from 'react';
 
 import { cn } from './cn';
+import { Text } from './Text/Text';
 
 export interface FieldFrameProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   id?: string;
+  /** Id of the label text; the control points at it with aria-labelledby */
   labelId?: string;
   helperId?: string;
   label?: React.ReactNode;
@@ -40,10 +42,13 @@ export const FieldFrame = React.forwardRef<HTMLDivElement, FieldFrameProps>(
         {...props}
       >
         {label ? (
-          <label
-            htmlFor={id}
+          // Plain text, not a <label>: tapping a label must not focus or open the control. The control links to it with aria-labelledby.
+          <Text
+            as="div"
             id={labelId}
-            className="block font-text font-bold text-label text-ink-2 mb-space-6 select-none"
+            variant="label"
+            tone="ink-2"
+            className="block font-text font-bold mb-space-6 select-none"
           >
             {label}
             {optional ? (
@@ -51,7 +56,7 @@ export const FieldFrame = React.forwardRef<HTMLDivElement, FieldFrameProps>(
                 (Optional)
               </span>
             ) : null}
-          </label>
+          </Text>
         ) : null}
 
         {children}

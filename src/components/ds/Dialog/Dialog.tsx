@@ -7,6 +7,8 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
+import { Reveal } from '../Reveal/Reveal';
+import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { useControllableState } from '../useControllableState';
 import { useSheetDrag } from '../useSheetDrag';
 
@@ -61,6 +63,92 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
 );
 
 DialogBody.displayName = 'DialogBody';
+
+export interface DialogSectionProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+  title: React.ReactNode;
+  /** The whole band becomes the toggle, with a chevron, and the content folds with Reveal */
+  collapsible?: boolean;
+  open?: boolean;
+  /** Collapsible only; sections start open */
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+/**
+ * Dialog.Section: a section band that spans the dialog edge to edge (it cancels DialogBody's side
+ * padding), with its content below at the body's own padding, so band and body text line up.
+ */
+export const DialogSection = forwardRef<HTMLDivElement, DialogSectionProps>(
+  (
+    {
+      title,
+      collapsible = false,
+      open: controlledOpen,
+      defaultOpen = true,
+      onOpenChange,
+      children,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const [isOpen, setOpen] = useControllableState<boolean>({
+      value: controlledOpen,
+      defaultValue: defaultOpen,
+      onChange: onOpenChange,
+    });
+    const shown = !collapsible || isOpen;
+    const toggle = () => setOpen(!isOpen);
+
+    return (
+      <div
+        ref={ref}
+        className={cn('-mx-space-16 desk:-mx-space-20 flex flex-col', className)}
+        {...props}
+      >
+        <SectionHeader
+          variant="band"
+          className={cn(
+            'px-space-16 desk:px-space-20',
+            collapsible &&
+              'cursor-pointer transition-colors duration-fast hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset'
+          )}
+          action={
+            collapsible ? (
+              <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4" />
+            ) : undefined
+          }
+          {...(collapsible
+            ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-expanded': isOpen,
+                onClick: toggle,
+                onKeyDown: (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle();
+                  }
+                },
+              }
+            : {})}
+        >
+          {title}
+        </SectionHeader>
+        {collapsible ? (
+          <Reveal open={shown}>
+            <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-12">{children}</div>
+          </Reveal>
+        ) : (
+          <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-12">{children}</div>
+        )}
+      </div>
+    );
+  }
+);
+
+DialogSection.displayName = 'DialogSection';
 
 export interface DialogAction {
   label: React.ReactNode;
@@ -396,6 +484,7 @@ export const Dialog = ({
     </DialogVariantContext.Provider>
   );
 };
+Dialog.Section = DialogSection;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;

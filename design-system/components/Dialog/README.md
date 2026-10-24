@@ -14,6 +14,9 @@ The one overlay for forms, details, pickers and confirmations. It replaces Sheet
 ## Anatomy
 Title and optional description, a body that is the only scroller, and a footer from props: up to three actions as data (`primary`, `secondary`, `tertiary`). Dialog draws the buttons itself in one row, left to right: tertiary, secondary, primary. Only primary is filled (`primary` or `danger-filled` when `destructive`); secondary and tertiary are `link`, or `danger-link` when the action has `tone: 'danger'` (Delete / Remove). On phone the actions present share the row in equal columns at `control-lg` height; on desktop they keep their natural width at `control-lg` height, aligned right. Props are `primary?: DialogPrimaryAction`, `secondary?: DialogAction`, `tertiary?: DialogAction` (no aliases).
 
+## Dialog.Section
+`Dialog.Section` (`DialogSection`): a section band inside `DialogBody` that spans the dialog edge to edge (it cancels the body's side padding), with its text aligned to the body text and its children below at the body padding. Props: `title`, `children`, `collapsible?: boolean`, `open?` / `defaultOpen?` (default `true`) / `onOpenChange?` (collapsible only, through `useControllableState`). When collapsible the whole band is the toggle with a chevron (`chevron-up` open, `chevron-down` closed) and the content folds with Reveal.
+
 ## Footer Actions API
 - `DialogAction`: `{ label: React.ReactNode; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`
 - `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
@@ -27,12 +30,14 @@ The preset for destructive or hard-to-undo actions (delete a transaction, statem
 ## Props
 - `Dialog`: `variant` (`modal` | `side-panel`; `side-panel` makes it non-modal), plus `open`, `defaultOpen`, `onOpenChange`.
 - `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`.
+- `Dialog.Section`: `title`, `collapsible`, `open`, `defaultOpen`, `onOpenChange`.
 - `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
-Radix Dialog, Button, Icon, the shared `useSheetDrag` hook.
+Radix Dialog, Button, Icon, the shared `useSheetDrag` hook. `Dialog.Section`: SectionHeader (band), Icon, Reveal.
 
 ## Variants
+- Sections (`Dialog.Section`), plain and collapsible.
 - Desktop sizes sm, md, lg, xl; phone sheet; side panel; with tertiary; canvas background; non-dismissible (`dismissible={false}`); ConfirmDialog (tone danger/default, with preview, loading, alternative option).
 
 ## Hidden amounts

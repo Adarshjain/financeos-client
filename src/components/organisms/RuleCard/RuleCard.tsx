@@ -3,11 +3,13 @@
 import React, { forwardRef } from 'react';
 import { mergeProps } from 'react-aria';
 
+import type { PressPoint } from '@/components/ds';
 import {
   Badge,
   Button,
   Card,
   Checkbox,
+  clickPoint,
   cn,
   Icon,
   Menu,
@@ -74,7 +76,7 @@ export interface RuleCardProps
   /** Selection mode (phone): shows trailing eye icon replacing Approve and kebab menu */
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked in selection mode */
-  onDetail?: () => void;
+  onDetail?: (point?: PressPoint) => void;
 }
 
 export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
@@ -164,7 +166,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             size="sm"
             variant="ghost"
             iconOnly
-            onClick={onDetail}
+            onClick={(e) => onDetail?.(clickPoint(e))}
             aria-label="View rule details"
             className="text-brand-strong shrink-0"
           >

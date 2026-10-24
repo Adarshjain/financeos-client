@@ -27,9 +27,10 @@ Both open the same Popover with the same item rows, so they look identical. They
   - `open?: boolean`: controlled open state.
   - `defaultOpen?: boolean`: uncontrolled initial open state.
   - `onOpenChange?: (open: boolean) => void`: open change callback.
-- `<ContextMenu>` (right-click on desktop, wraps any row):
-  - `items: { id: string; label: string; onSelect: () => void; tone?: 'default' | 'danger' }[]`: the actions, in order; none = the browser's own menu stays.
-  - `children: React.ReactNode`: the row.
+- `<ContextMenu>` (right-click on desktop, wraps any row; or open it at a point you give, on phone and desktop):
+  - `items: { id: string; label: string; onSelect: () => void; tone?: 'default' | 'danger'; disabled?: boolean }[]`: the actions, in order; none = the browser's own menu stays.
+  - `children?: React.ReactNode`: the row a right-click opens the menu from. Leave it out when you drive the menu with `open` and `point`.
+  - `open?: boolean`, `point?: { x: number; y: number } | null` (viewport coordinates), `onOpenChange?: (open: boolean) => void`: controlled. The menu opens at `point` in either layout. Press a DataTable row with `onRowSelect={(row, point) => setMenu({ row, point })}` and render `<ContextMenu open={!!menu} point={menu?.point} onOpenChange={(o) => !o && setMenu(null)} items={…} />`; the row fires only the page's `onRowSelect`.
 - Subcomponents: `Menu.Item`, `Menu.Separator`, `Menu.Group`, `Menu.Label`, `Menu.Trigger`, `Menu.Content`.
 
 ## Variants
@@ -37,6 +38,7 @@ Both open the same Popover with the same item rows, so they look identical. They
 - Items with icons and hints.
 - Grouped with `Menu.Group` and `Menu.Separator`.
 - Labelled trigger or icon-only trigger.
+- `ContextMenu` at a press point: controlled with `open` and `point`, phone and desktop, items may be disabled.
 - `ContextMenu`: wraps a row; right-click opens the same Menu at the pointer with the actions the page gives (the phone swipe's actions). Desktop layout only (decided in the handler); in the phone layout it does nothing. The native menu is blocked only when ours opens. Behaviour wraps the row, never embedded in it.
 
 ## Built from
