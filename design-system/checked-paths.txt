@@ -18,3 +18,5 @@ src/features/loans/
 src/features/transactions/
 src/features/investments/
 src/features/rewards/overview/
+src/features/rewards/which-card/
+src/app/(ds)/ds/(app)/rewards/(tabs)/which-card/
