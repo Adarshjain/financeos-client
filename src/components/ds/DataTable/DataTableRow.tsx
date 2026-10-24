@@ -281,7 +281,10 @@ export function DataTableRow<Row extends RowData>({
       )}
 
       {actions && (
-        <div className="desk:hidden col-span-full row-start-3 flex justify-end gap-space-8 pt-space-8">
+        <div
+          {...nestedControlProps}
+          className="desk:hidden col-span-full row-start-3 flex justify-end gap-space-8 pt-space-8"
+        >
           {actions}
         </div>
       )}
