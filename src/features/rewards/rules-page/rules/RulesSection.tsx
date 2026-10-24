@@ -12,7 +12,6 @@ import {
   Icon,
   Menu,
   MenuItem,
-  MenuSeparator,
   showToast,
   Text,
 } from '@/components/ds';
@@ -51,9 +50,6 @@ interface RuleRow {
   year: { text: string; zero: boolean } | null;
   phoneSub: string;
   onEdit: () => void;
-  onClone: () => void;
-  onEnd: () => void;
-  onDelete: () => void;
 }
 
 const ch = createDataTableColumnHelper<RuleRow>();
@@ -130,37 +126,6 @@ const columns = [
             </Text>
           ),
       }),
-      ch.display({
-        id: 'actions',
-        header: '',
-        meta: { size: 'xs', align: 'end', phone: 'hidden' },
-        cell: ({ row }) => (
-          <Menu
-            align="end"
-            trigger={
-              <Button
-                variant="ghost"
-                size="sm"
-                iconOnly
-                aria-label={`Actions for ${row.original.rule.name}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Icon name="more" size="sm" />
-              </Button>
-            }
-          >
-            <MenuItem onSelect={() => row.original.onEdit()}>Edit</MenuItem>
-            <MenuItem onSelect={() => row.original.onClone()}>Clone</MenuItem>
-            {row.original.ended ? null : (
-              <MenuItem onSelect={() => row.original.onEnd()}>End & clone</MenuItem>
-            )}
-            <MenuSeparator />
-            <MenuItem destructive onSelect={() => row.original.onDelete()}>
-              Delete
-            </MenuItem>
-          </Menu>
-        ),
-      }),
 ];
 
 export interface RulesSectionProps {
@@ -214,9 +179,6 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       year,
       phoneSub: ruleSubtitle(rule, today, year?.text),
       onEdit: () => setOpen({ mode: 'edit', rule }),
-      onClone: () => setOpen({ mode: 'clone', rule }),
-      onEnd: () => endAndClone(rule),
-      onDelete: () => setDeleting(rule),
     };
   });
 
@@ -236,17 +198,24 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
 
   return (
     <Card
-      title="Rules · priority order"
-      subtitle="The first rule that matches a transaction earns; additive rules stack on top"
+      title={account?.name ? `How ${account.name} earns` : 'Rules'}
+      subtitle="Checked top to bottom; the first match earns, additive rules add on top"
       action={
-        <Text variant="label" as="div" className="flex flex-wrap items-center gap-space-12">
-          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setTesting(true)}>
+        <Menu
+          align="end"
+          trigger={
+            <Button variant="ghost" size="sm" iconOnly aria-label="Rule actions">
+              <Icon name="more" size="sm" />
+            </Button>
+          }
+        >
+          <MenuItem disabled={!accountId} onSelect={() => setTesting(true)}>
             Test a transaction
-          </Button>
-          <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => setReordering(true)}>
-            Reorder
-          </Button>
-        </Text>
+          </MenuItem>
+          <MenuItem disabled={rules.length < 2} onSelect={() => setReordering(true)}>
+            Reorder rules
+          </MenuItem>
+        </Menu>
       }
     >
       <DataTable
@@ -255,21 +224,6 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         getRowId={(r) => r.id}
         onRowSelect={(r) => r.onEdit()}
         phoneSub={(r) => r.phoneSub}
-        phoneActions={(r) => (
-          <Text variant="label" as="div" className="flex items-center gap-space-12">
-            <Button variant="link" size="sm" onClick={r.onEdit}>
-              Edit
-            </Button>
-            <Button variant="link" size="sm" onClick={r.onClone}>
-              Clone
-            </Button>
-            {r.ended ? null : (
-              <Button variant="link" size="sm" onClick={r.onEnd}>
-                End & clone
-              </Button>
-            )}
-          </Text>
-        )}
         rowState={(r) => (r.ended ? { muted: true } : undefined)}
         empty={
           <EmptyState
@@ -294,6 +248,10 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
           defaultPriority={(rules.length ? Math.max(...rules.map((r) => r.priority)) : 0) + 1}
           onClose={() => setOpen(null)}
           onDelete={editing && open.mode === 'edit' ? () => setDeleting(editing) : undefined}
+          onClone={editing && open.mode === 'edit' ? () => setOpen({ mode: 'clone', rule: editing }) : undefined}
+          onEndAndClone={
+            editing && open.mode === 'edit' && !isEnded(editing, today) ? () => endAndClone(editing) : undefined
+          }
         />
       ) : null}
 

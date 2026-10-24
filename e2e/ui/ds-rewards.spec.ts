@@ -209,9 +209,9 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(toast(page, 'Rule updated')).toBeVisible();
     await expect(edit).toHaveCount(0);
 
-    // Clone from the row menu opens a prefilled New rule; save it under a new name.
-    await page.getByRole('button', { name: 'Actions for Ds Created Rule', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'Clone', exact: true }).click();
+    // Clone from the Edit rule dialog opens a prefilled New rule; save it under a new name.
+    await page.getByText('Ds Created Rule', { exact: true }).click();
+    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'Clone', exact: true }).click();
     const clone = page.getByRole('dialog', { name: /New rule/ });
     await expect(clone).toBeVisible();
     await expect(clone.getByLabel('Rate %')).toHaveValue('3');
@@ -221,8 +221,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Cloned Rule', { exact: true })).toBeVisible();
 
     // End & clone ends the rule today and opens its successor.
-    await page.getByRole('button', { name: 'Actions for Ds Ending Rule', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'End & clone' }).click();
+    await page.getByText('Ds Ending Rule', { exact: true }).click();
+    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'End & clone', exact: true }).click();
     await expect(toast(page, /"Ds Ending Rule" ended/)).toBeVisible();
     const successor = page.getByRole('dialog', { name: /New rule/ });
     await expect(successor).toBeVisible();
@@ -230,8 +230,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(successor).toHaveCount(0);
 
     // Delete asks first.
-    await page.getByRole('button', { name: 'Actions for Ds Cloned Rule', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page.getByText('Ds Cloned Rule', { exact: true }).click();
+    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'Delete rule' }).click();
     const confirm = page.getByRole('dialog', { name: /Delete rule "Ds Cloned Rule"/ });
     await expect(confirm).toBeVisible();
     await confirm.getByRole('button', { name: 'Delete rule' }).click();
@@ -251,7 +251,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     const before = await isAbove(page, 'Ds First Rule', 'Ds Second Rule');
     const [top, bottom] = before ? ['Ds First Rule', 'Ds Second Rule'] : ['Ds Second Rule', 'Ds First Rule'];
 
-    await page.getByRole('button', { name: 'Reorder' }).click();
+    await page.getByRole('button', { name: 'Rule actions' }).click();
+    await page.getByRole('menuitem', { name: 'Reorder rules' }).click();
     const dialog = page.getByRole('dialog', { name: 'Reorder rules' });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: `Move up ${bottom}` }).click();
@@ -274,7 +275,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.goto(`/ds/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Test Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
-    await page.getByRole('button', { name: 'Test a transaction' }).click();
+    await page.getByRole('button', { name: 'Rule actions' }).click();
+    await page.getByRole('menuitem', { name: 'Test a transaction' }).click();
     const test1 = page.getByRole('dialog', { name: 'Test a transaction' });
     await expect(test1).toBeVisible();
     await test1.getByRole('textbox', { name: /^Amount/ }).fill('1000');
@@ -439,7 +441,7 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
-  test('rules stack with Edit/Clone links and open dialogs as sheets; a Which card? result opens its breakdown', async ({ page }) => {
+  test('rules stack, a row tap opens Edit rule with Clone, and dialogs open as sheets; a Which card? result opens its breakdown', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const { account: card } = await createRewardCard(api, { name: 'Ds Phone Card', anniversaryDate: anniversary() });
@@ -448,12 +450,15 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
 
     await page.goto(`/ds/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Phone Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
-    // No ⋮ menu or table header on phone: the rows carry their own links.
+    // No ⋮ menu or table header on phone, and no links on the rows: a tap opens Edit rule.
     await expect(page.getByRole('button', { name: 'Actions for Ds Phone Rule' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Edit', exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Clone', exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Edit', exact: true })).toHaveCount(1); // Card settings only
+    await expect(page.getByRole('button', { name: 'Clone', exact: true })).toHaveCount(0);
 
-    await page.getByRole('button', { name: 'Clone', exact: true }).first().click();
+    await page.getByText('Ds Phone Rule', { exact: true }).click();
+    const editSheet = page.getByRole('dialog', { name: /Edit rule/ });
+    await expect(editSheet).toBeVisible();
+    await editSheet.getByRole('button', { name: 'Clone', exact: true }).click();
     const sheet = page.getByRole('dialog', { name: /New rule/ });
     await expect(sheet).toBeVisible();
     const box = await sheet.boundingBox();
@@ -464,10 +469,6 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
     await expect(sheet.getByRole('button', { name: 'Save & recompute' })).toBeVisible();
     await sheet.getByRole('button', { name: 'Cancel' }).click();
     await expect(sheet).toHaveCount(0);
-
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    await expect(page.getByRole('dialog', { name: /Edit rule/ })).toBeVisible();
-    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'Cancel' }).click();
 
     await page.goto('/ds/rewards/which-card');
     await expect(page.getByText('Enter the spend details above')).toBeVisible({ timeout: 45_000 });

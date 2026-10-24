@@ -83,7 +83,7 @@ beforeEach(() => {
 describe('RulesPage', () => {
   it('shows the sections in the board’s order', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    const titles = ['Rules · priority order', 'Caps', 'Milestones', 'Card settings'].map((t) => screen.getByText(t));
+    const titles = ['How HDFC Regalia Gold earns', 'Caps', 'Milestones', 'Card settings'].map((t) => screen.getByText(t));
     titles.slice(1).forEach((el, i) => {
       expect(titles[i].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
