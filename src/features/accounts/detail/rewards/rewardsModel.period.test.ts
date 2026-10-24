@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { MilestoneStatus, RewardLine, RewardReport, RewardRule } from '@/lib/rewards.types';
 
@@ -16,6 +16,13 @@ import {
   ruleExtras,
   windowLabel,
 } from './rewardsModel';
+
+// Ranges drop the year of the current one, so the clock is fixed.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-13T06:00:00Z'));
+});
+afterAll(() => vi.useRealTimers());
 
 const window = { from: '2026-03-15', to: '2027-03-14', calendarYear: false };
 
@@ -57,17 +64,17 @@ describe('period in the address', () => {
   });
   it('writes the period, the custom dates and a reset page', () => {
     const base = '/ds/rewards/cards/c1';
-    expect(rewardsHref(base, { period: 'LAST_MONTH', page: 0, size: 25 })).toBe(`${base}?period=LAST_MONTH`);
-    expect(rewardsHref(base, { period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30', page: 2, size: 25 })).toBe(
+    expect(rewardsHref(base, { period: 'LAST_MONTH', page: 0, size: 10 })).toBe(`${base}?period=LAST_MONTH`);
+    expect(rewardsHref(base, { period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30', page: 2, size: 10 })).toBe(
       `${base}?period=CUSTOM&from=2026-05-01&to=2026-06-30&page=3`,
     );
-    expect(rewardsHref(base, { period: 'THIS_ANNIVERSARY_YEAR', page: 0, size: 25 })).toBe(base);
+    expect(rewardsHref(base, { period: 'THIS_ANNIVERSARY_YEAR', page: 0, size: 10 })).toBe(base);
   });
   it('words the period in the tile and the lines subtitle', () => {
-    expect(windowLabel(window)).toBe('anniversary year 15 Mar → 14 Mar');
-    expect(windowLabel({ from: '2026-10-01', to: '2026-10-13', calendarYear: false }, 'THIS_MONTH')).toBe('this month 1 Oct → 13 Oct');
-    expect(linesSubtitle(3, window, 'LAST_3_MONTHS')).toBe('3 lines · last 3 months');
-    expect(linesSubtitle(3, window, 'LAST_ANNIVERSARY_YEAR')).toBe('3 lines · previous anniversary year');
+    expect(windowLabel(window)).toBe('Anniversary year 15 Mar 26 – 14 Mar 27');
+    expect(windowLabel({ from: '2026-10-01', to: '2026-10-13', calendarYear: false }, 'THIS_MONTH')).toBe('This month 1–13 Oct');
+    expect(linesSubtitle(3, window, 'LAST_3_MONTHS')).toBe('3 lines · Last 3 months');
+    expect(linesSubtitle(3, window, 'LAST_ANNIVERSARY_YEAR')).toBe('3 lines · Previous anniversary year');
   });
 });
 
@@ -154,15 +161,15 @@ describe('milestones', () => {
     expect(c.count).toBe(2);
     expect(c.paid).toBe('₹2,500');
     expect(c.rows.map((r) => r.title)).toEqual(['Annual spend', 'Fee waiver']);
-    expect(c.rows[0]).toMatchObject({ subtitle: '15 Mar → 14 Mar · credited 30 Sep', payout: '₹2,500' });
-    expect(c.rows[1]).toMatchObject({ subtitle: 'One-time · 1 Mar → 1 May · credited 2 May', payout: 'Tracker' });
+    expect(c.rows[0]).toMatchObject({ subtitle: '15 Mar 26 – 14 Mar 27 · credited 30 Sep', payout: '₹2,500' });
+    expect(c.rows[1]).toMatchObject({ subtitle: 'One-time · 1 Mar – 1 May · credited 2 May', payout: 'Tracker' });
   });
   it('has no completed list when none finished', () => {
     expect(completedMilestones([{ ...m, achieved: false }])).toBeNull();
   });
   it('shows a one-time offer with its dates', () => {
     const open = buildMilestone({ ...m, achieved: false, progress: 100, windowType: 'ONE_TIME', windowStart: '2026-10-01', windowEnd: '2026-12-31', basis: 'TXN_COUNT', threshold: 4, minTxnAmount: 1500 }, '2026-10-13');
-    expect(open.caption).toContain('one-time 1 Oct → 31 Dec');
+    expect(open.caption).toContain('One-time 1 Oct – 31 Dec');
     expect(open.figure.of).toBe('of 4 transactions');
     expect(open.subtitle).toBe('4 transactions of ₹1,500+ each in the period → ₹2,500 bonus');
   });

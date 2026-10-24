@@ -9,12 +9,14 @@ import type { Category } from '@/lib/categories.types';
 import type { TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
+import { readRuleTest } from './ruleTestReading';
+
 const NONE = 'NONE';
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);
 
 /** The rule dialog's own tester: one purchase run against the rule as it is being typed, in the browser. */
 export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRuleForm>; categories: Category[] }) {
-  const { preview } = f;
+  const reading = f.preview ? readRuleTest(f.preview, f) : null;
   return (
     <div className="flex flex-col gap-space-12">
       <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
@@ -65,9 +67,22 @@ export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRu
           <Text variant="body">Intl</Text>
         </label>
       </div>
-      <Text variant="body-strong" tone={preview == null ? 'ink-3' : preview.matched ? 'positive' : 'warning'} as="p">
-        {preview?.text ?? 'Enter an amount (and accrual fields) to test.'}
-      </Text>
+      {reading ? (
+        <div className="flex flex-col gap-space-4">
+          {reading.headline ? (
+            <Text variant="figure" tone={reading.tone} as="p">
+              {reading.headline}
+            </Text>
+          ) : null}
+          <Text variant="body-strong" tone={reading.headline ? 'ink-3' : reading.tone} as="p">
+            {reading.verdict}
+          </Text>
+        </div>
+      ) : (
+        <Text variant="body-strong" tone="ink-3" as="p">
+          Enter an amount (and accrual fields) to test.
+        </Text>
+      )}
       {f.daysOfWeek.length > 0 ? (
         <Text variant="caption" tone="ink-3" as="p">
           Note: this rule has day-of-week conditions, which the tester doesn’t simulate. Caps aren’t simulated either.

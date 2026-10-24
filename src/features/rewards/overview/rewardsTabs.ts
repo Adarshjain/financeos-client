@@ -12,8 +12,8 @@ export interface RewardsTab {
 
 export const rewardsTabs: RewardsTab[] = [
   { id: 'overview', label: 'Overview', segment: '' },
-  { id: 'which-card', label: 'Which card?', segment: '/which-card' },
   { id: 'rules', label: 'Earning rules', segment: '/rules' },
+  { id: 'which-card', label: 'Which card?', segment: '/which-card' },
 ];
 
 /** The Overview URL. */

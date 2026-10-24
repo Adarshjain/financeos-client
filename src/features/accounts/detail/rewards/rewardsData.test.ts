@@ -26,7 +26,7 @@ describe('loadRewardsTabData', () => {
 
   it('refetches the last page when the requested page is past the end', async () => {
     getRewardLines.mockResolvedValueOnce(page(4, [])).mockResolvedValueOnce(page(1, [{}]));
-    const data = await loadRewardsTabData(account, '2026-10-13', { page: '5' });
+    const data = await loadRewardsTabData(account, '2026-10-13', { page: '5', size: '25' });
     expect(getRewardLines).toHaveBeenCalledTimes(2);
     expect(getRewardLines.mock.calls[0][0]).toMatchObject({ page: 4 });
     expect(getRewardLines.mock.calls[1][0]).toMatchObject({ page: 1 });

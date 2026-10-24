@@ -125,3 +125,8 @@ export function periodWords(preset: RangePreset | undefined, window: RewardsWind
       return 'custom range';
   }
 }
+
+/** The first letter in capitals, for a window word that is a label or starts a segment: "This anniversary year". */
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

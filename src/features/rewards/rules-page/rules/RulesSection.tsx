@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   ConfirmDialog,
+  ContextMenu,
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
@@ -49,7 +50,6 @@ interface RuleRow {
   /** What it earned this reward year; null when the report is not loaded. */
   year: { text: string; zero: boolean } | null;
   phoneSub: string;
-  onEdit: () => void;
 }
 
 const ch = createDataTableColumnHelper<RuleRow>();
@@ -137,7 +137,8 @@ export interface RulesSectionProps {
 /** The Rules card of the Earning rules page: the card's rules in the order they are checked, with their actions. */
 export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   const rules = useRewardRules(accountId).data ?? [];
-  const capBuckets = useRewardCapBuckets(accountId).data ?? [];
+  const bucketsQuery = useRewardCapBuckets(accountId);
+  const capBuckets = bucketsQuery.data ?? [];
   const categories = useCategories().data ?? [];
   const account = useAccounts().data?.find((a) => a.id === accountId);
   const defaultRewardType = useRewardAccountConfig(accountId).data?.defaultRewardType ?? 'CASH';
@@ -147,6 +148,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   const [reordering, setReordering] = React.useState(false);
   const [testing, setTesting] = React.useState(false);
   const [deleting, setDeleting] = React.useState<RewardRule | null>(null);
+  const [menu, setMenu] = React.useState<{ rule: RewardRule; point: { x: number; y: number } } | null>(null);
   const endAndClone = useEndDateAndClone((updated) => {
     refresh();
     setOpen({ mode: 'clone', rule: updated });
@@ -156,7 +158,6 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
 
   const isBank = account?.type === AccountType.BANK_ACCOUNT;
   const cardholders = account && 'cardholders' in account ? (account.cardholders ?? []) : [];
-  const editing = open && open.mode !== 'new' ? open.rule : undefined;
 
   const rows: RuleRow[] = rules.map((rule, index) => {
     const ended = isEnded(rule, today);
@@ -178,7 +179,6 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       cap: [capWords(rule), rule.perTxnCap != null ? `max ${rule.perTxnCap} / txn` : null].filter(Boolean).join(' · ') || '—',
       year,
       phoneSub: ruleSubtitle(rule),
-      onEdit: () => setOpen({ mode: 'edit', rule }),
     };
   });
 
@@ -198,8 +198,8 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
 
   return (
     <Card
-      title={account?.name ? `How ${account.name} earns` : 'Rules'}
-      subtitle="First match earns; additive rules add on top"
+      title="Rules"
+      subtitle="Applied in the order below"
       action={
         <Menu
           align="end"
@@ -222,7 +222,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         columns={columns}
         data={rows}
         getRowId={(r) => r.id}
-        onRowSelect={(r) => r.onEdit()}
+        onRowSelect={(r, point) => (point ? setMenu({ rule: r.rule, point }) : setOpen({ mode: 'edit', rule: r.rule }))}
         phoneSub={(r) => r.phoneSub}
         rowState={(r) => (r.ended ? { muted: true } : undefined)}
         empty={
@@ -242,18 +242,32 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
           cloneFrom={open.mode === 'clone' ? open.rule : undefined}
           categories={categories}
           capBuckets={capBuckets}
+          capBucketsLoading={bucketsQuery.isLoading}
           cardholders={cardholders}
           isBank={isBank}
           defaultRewardType={defaultRewardType}
           defaultPriority={(rules.length ? Math.max(...rules.map((r) => r.priority)) : 0) + 1}
           onClose={() => setOpen(null)}
-          onDelete={editing && open.mode === 'edit' ? () => setDeleting(editing) : undefined}
-          onClone={editing && open.mode === 'edit' ? () => setOpen({ mode: 'clone', rule: editing }) : undefined}
-          onEndAndClone={
-            editing && open.mode === 'edit' && !isEnded(editing, today) ? () => endAndClone(editing) : undefined
-          }
         />
       ) : null}
+
+      <ContextMenu
+        open={menu !== null}
+        point={menu?.point}
+        onOpenChange={(o) => (o ? undefined : setMenu(null))}
+        items={
+          menu
+            ? [
+                { id: 'edit', label: 'Edit', onSelect: () => setOpen({ mode: 'edit', rule: menu.rule }) },
+                { id: 'clone', label: 'Clone', onSelect: () => setOpen({ mode: 'clone', rule: menu.rule }) },
+                ...(isEnded(menu.rule, today)
+                  ? []
+                  : [{ id: 'end-clone', label: 'End & clone', onSelect: () => endAndClone(menu.rule) }]),
+                { id: 'delete', label: 'Delete', tone: 'danger' as const, onSelect: () => setDeleting(menu.rule) },
+              ]
+            : []
+        }
+      />
 
       {reordering ? <ReorderRulesDialog accountId={accountId} rules={rules} onClose={() => setReordering(false)} /> : null}
       {testing ? (

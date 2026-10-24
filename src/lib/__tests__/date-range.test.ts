@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatComparedRange,
   formatDateRange,
+  formatDateRangeCompressed,
   formatDateRangeFull,
   todayInAppZone,
 } from '../date-range';
@@ -288,5 +289,23 @@ describe('formatComparedRange', () => {
 
   it('prints the previous window when the current one is unknown', () => {
     expect(compared({ from: '2026-08-05', to: '2026-09-03' }, null)).toBe('vs 5 Aug – 3 Sep');
+  });
+});
+
+describe('formatDateRangeCompressed — the compressed rule only', () => {
+  const compressed = (from: string | null, to: string | null) => formatDateRangeCompressed(from, to, { today });
+
+  it('never names a period or reads relative to today', () => {
+    expect(compressed('2026-09-01', '2026-09-30')).toBe('1–30 Sep');
+    expect(compressed('2026-04-01', '2027-03-31')).toBe('1 Apr 26 – 31 Mar 27');
+    expect(compressed('2026-10-01', '2026-10-03')).toBe('1–3 Oct');
+    expect(compressed('2026-03-15', '2026-12-31')).toBe('15 Mar – 31 Dec');
+  });
+
+  it('prints a single day as a day, and an open end as formatDateRange does', () => {
+    expect(compressed('2026-09-04', '2026-09-04')).toBe('4 Sep');
+    expect(compressed('2026-09-04', null)).toBe('since 4 Sep');
+    expect(compressed(null, null)).toBe('All time');
+    expect(compressed(null, '2026-09-04')).toBe('until 4 Sep');
   });
 });

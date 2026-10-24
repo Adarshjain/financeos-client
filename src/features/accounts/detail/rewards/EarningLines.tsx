@@ -10,12 +10,15 @@ import {
   EmptyState,
   FilterChip,
   Pager,
+  Select,
   StatusWords,
   Text,
 } from '@/components/ds';
 
 import { RewardLineDialog } from './RewardLineDialog';
 import { type LineRow, PAGE_SIZES, rewardsHref, type RewardsQuery, type RuleChip } from './rewardsModel';
+
+const ALL_RULES = 'all';
 
 const ch = createDataTableColumnHelper<LineRow>();
 
@@ -84,31 +87,35 @@ export interface EarningLinesProps {
   query: RewardsQuery;
 }
 
-/** The Earning lines card: rule chips (`?rule=`), and the lines with a server-side pager (`?page=`, `?size=`). */
+/** The Transactions card: a rule dropdown in its header (`?rule=`), and the earning lines with a server-side pager (`?page=`, `?size=`). */
 export function EarningLines({ basePath, subtitle, rows, total, chips, query }: EarningLinesProps) {
   const router = useRouter();
   const go = (next: Partial<RewardsQuery>) => router.push(rewardsHref(basePath, { ...query, ...next }));
   // The line dialog opens from state, not the address.
   const [open, setOpen] = useState<LineRow | null>(null);
 
-  return (
-    <Card title="Earning lines" subtitle={subtitle}>
-      {chips.length > 1 ? (
-        <div className="flex gap-space-8 overflow-x-auto px-space-16 pb-space-12">
-          <FilterChip selected={!query.ruleId} onSelectedChange={() => go({ ruleId: undefined, page: 0 })}>
-            All rules
+  const ruleOptions = [{ value: ALL_RULES, label: 'All rules' }, ...chips.map((c) => ({ value: c.id, label: c.label }))];
+  const chosen = ruleOptions.find((o) => o.value === (query.ruleId ?? ALL_RULES));
+  // One choice among the rules, in the card's header; with a single rule there is nothing to choose.
+  const ruleFilter =
+    chips.length > 1 ? (
+      <Select
+        value={query.ruleId ?? ALL_RULES}
+        options={ruleOptions}
+        onValueChange={(value) => {
+          const next = Array.isArray(value) ? value[0] : value;
+          go({ ruleId: next === ALL_RULES ? undefined : next, page: 0 });
+        }}
+        trigger={
+          <FilterChip hasDropdown selected={Boolean(query.ruleId)}>
+            {chosen?.label ?? 'All rules'}
           </FilterChip>
-          {chips.map((chip) => (
-            <FilterChip
-              key={chip.id}
-              selected={query.ruleId === chip.id}
-              onSelectedChange={() => go({ ruleId: chip.id, page: 0 })}
-            >
-              {chip.label}
-            </FilterChip>
-          ))}
-        </div>
-      ) : null}
+        }
+      />
+    ) : undefined;
+
+  return (
+    <Card title="Transactions" subtitle={subtitle} action={ruleFilter}>
       <DataTable
         columns={columns}
         data={rows}

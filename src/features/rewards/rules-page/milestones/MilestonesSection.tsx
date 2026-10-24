@@ -75,22 +75,22 @@ export function MilestonesSection({
           <ListRow
             key={m.id}
             clickable
+            wrap
             title={m.name}
             subtitle={[milestoneSummary(m), milestoneDetail(m), usage?.[m.id]?.range, usage?.[m.id] ? paidWhen(m) : null]
               .filter(Boolean)
               .join(' · ')}
             onClick={() => setOpen({ mode: 'edit', id: m.id })}
-            trailing={
-              usage?.[m.id] ? (
-                <div className="flex w-space-96 max-w-full flex-col items-end gap-space-4 desk:w-container-xs">
-                  <ProgressBar className="w-full" value={usage[m.id].pct} />
-                  <Text variant="caption" tone="ink-3">
-                    {usage[m.id].label}
-                  </Text>
-                </div>
-              ) : undefined
-            }
-          />
+          >
+            {usage?.[m.id] ? (
+              <div className="mt-space-8 flex w-full flex-col gap-space-4">
+                <ProgressBar className="w-full" value={usage[m.id].pct} />
+                <Text variant="caption" tone="ink-3">
+                  {usage[m.id].label}
+                </Text>
+              </div>
+            ) : null}
+          </ListRow>
         ))
       )}
 

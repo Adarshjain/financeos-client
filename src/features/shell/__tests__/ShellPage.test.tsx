@@ -26,6 +26,12 @@ describe('ShellPage top-bar actions', () => {
     expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
   });
 
+  it('has no hide-amounts eye (the choice lives in the More sheet and Settings)', () => {
+    render(<ShellPage title="Accounts">content</ShellPage>);
+    expect(screen.queryByRole('button', { name: 'Hide amounts' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show amounts' })).toBeNull();
+  });
+
   it('puts the add action after the shared actions, labelled on desktop only', () => {
     render(
       <ShellPage title="Accounts" addHref="/ds/accounts/new" addLabel="Add account">

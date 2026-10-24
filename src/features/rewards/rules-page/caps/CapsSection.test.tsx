@@ -57,7 +57,7 @@ describe('CapsSection', () => {
   it('lists each cap with its amount, window and the rules using it', () => {
     render(<CapsSection accountId="a1" />);
     expect(screen.getByText('Dining & grocery cap')).toBeInTheDocument();
-    expect(screen.getByText('5,000 pts per calendar month · used by rule 1')).toBeInTheDocument();
+    expect(screen.getByText('5,000 pts · Per calendar month · used by rule 1')).toBeInTheDocument();
   });
 
   it('says so when there are no caps', () => {

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -88,6 +88,20 @@ describe('MilestonesSection', () => {
     render(<MilestonesSection accountId="a1" />);
     expect(screen.getByText('Quarterly voucher')).toBeInTheDocument();
     expect(screen.getByText('₹1,00,000 spend / quarter → ₹1,000')).toBeInTheDocument();
+  });
+
+  it('draws the progress bar and caption below the text, inside the row and not beside it', () => {
+    render(
+      <MilestonesSection accountId="a1" usage={{ m1: { pct: 40, label: '40% · 30 d left', range: '1 Jul → 30 Sep' } }} />,
+    );
+    const row = screen.getByText('Quarterly voucher').closest('[role="button"]') as HTMLElement;
+    const bar = within(row).getByRole('progressbar');
+    const caption = within(row).getByText('40% · 30 d left');
+    const title = within(row).getByText('Quarterly voucher');
+    expect(title.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(bar.compareDocumentPosition(caption) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Same column as the text, so the bar spans the row's content width.
+    expect(bar.closest('div[class*="flex-1"]')).toBe(title.closest('div[class*="flex-1"]'));
   });
 
   it('says so when there are no milestones', () => {

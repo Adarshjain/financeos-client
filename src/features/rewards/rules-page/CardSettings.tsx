@@ -11,8 +11,7 @@ import { accountAnniversaryDate, type RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { useRewardAccountConfig, useUpdateRewardAccountConfig } from '../queries/useRewardAccountConfigQueries';
-import { useRewardRules } from '../queries/useRewardRulesQueries';
-import { feesInBasis, perCardholderCaps, rewardTypeWord } from './rulesPageModel';
+import { rewardTypeWord } from './rulesPageModel';
 import { useRefreshUsage } from './rulesRefresh';
 
 const REWARD_TYPE_OPTIONS = [
@@ -34,12 +33,11 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 /** The Card settings card: what applies to every rule on the card. Reward type and point value change in a dialog; the anniversary is the account's own. */
 export function CardSettings({ accountId }: { accountId: string }) {
   const config = useRewardAccountConfig(accountId).data;
-  const rules = useRewardRules(accountId).data ?? [];
   const account = useAccounts().data?.find((a) => a.id === accountId);
   const [editing, setEditing] = React.useState(false);
   const [editingCard, setEditingCard] = React.useState(false);
   const anniversary = accountAnniversaryDate(account);
-  const live = rules.filter((r) => !r.activeTo);
+  const cash = (config?.defaultRewardType ?? 'CASH') === 'CASH';
 
   return (
     <Card
@@ -53,30 +51,26 @@ export function CardSettings({ accountId }: { accountId: string }) {
         </Text>
       }
     >
-      <div className="grid grid-cols-2 gap-space-16 p-space-16 desk:grid-cols-5">
+      <div className="grid grid-cols-2 gap-space-16 p-space-16 desk:grid-cols-3">
         <Fact label="Reward type">
           <Text variant="body-strong">{rewardTypeWord(config?.defaultRewardType)}</Text>
         </Fact>
-        <Fact label="Point value">
-          <Text variant="body-strong">
-            {config?.pointValueInr != null ? `₹${config.pointValueInr}/pt` : 'Default (₹0.25/pt)'}
-          </Text>
-        </Fact>
+        {cash ? null : (
+          <Fact label="Point value">
+            <Text variant="body-strong">
+              {config?.pointValueInr != null ? `₹${config.pointValueInr}/pt` : 'Default (₹0.25/pt)'}
+            </Text>
+          </Fact>
+        )}
         <Fact label="Anniversary">
           <Text variant="body-strong">{anniversary ? formatDayMonthYear(anniversary) : 'Not set'}</Text>
           {account ? (
             <Text variant="label" as="div">
               <Button variant="link" size="sm" onClick={() => setEditingCard(true)}>
-                Edit card
+                Edit
               </Button>
             </Text>
           ) : null}
-        </Fact>
-        <Fact label="Fees in basis">
-          <Text variant="body-strong">{feesInBasis(live)}</Text>
-        </Fact>
-        <Fact label="Per-cardholder caps">
-          <Text variant="body-strong">{perCardholderCaps(live)}</Text>
         </Fact>
       </div>
       {editing ? (
@@ -154,14 +148,16 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
             value={type}
             onValueChange={(v) => setType((Array.isArray(v) ? v[0] : v) as RewardType)}
           />
-          <TextField
-            label="Point value (₹/pt)"
-            optional
-            inputMode="decimal"
-            placeholder="0.25 (default)"
-            value={value}
-            onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
-          />
+          {type === 'CASH' ? null : (
+            <TextField
+              label="Point value (₹/pt)"
+              optional
+              inputMode="decimal"
+              placeholder="0.25 (default)"
+              value={value}
+              onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
+            />
+          )}
         </DialogBody>
       </DialogContent>
     </Dialog>

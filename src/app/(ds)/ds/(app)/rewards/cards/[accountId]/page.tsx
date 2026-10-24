@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { loadAccount } from '@/features/accounts/detail/accountData';
 import { accountTabsFor } from '@/features/accounts/detail/accountTabsModel';
+import { AccountTitle } from '@/features/accounts/detail/AccountTitle';
 import { loadRewardsTabData, type RewardsSearchParams } from '@/features/accounts/detail/rewards/rewardsData';
 import { RewardsTab } from '@/features/accounts/detail/rewards/RewardsTab';
 import { REWARDS_HREF, rewardsCardHref } from '@/features/rewards/overview/rewardsTabs';
@@ -22,7 +23,7 @@ export default async function DsRewardsCardPage({
   const today = todayInAppZone();
   const data = await loadRewardsTabData(account, today, searchParams ? await searchParams : undefined);
   return (
-    <ShellPage crumb="Grow / Rewards" title={account.name} backHref={REWARDS_HREF}>
+    <ShellPage crumb="Grow / Rewards" title={<AccountTitle account={account} />} backHref={REWARDS_HREF}>
       <RewardsTab account={account} today={today} data={data} basePath={rewardsCardHref(account.id)} />
     </ShellPage>
   );
