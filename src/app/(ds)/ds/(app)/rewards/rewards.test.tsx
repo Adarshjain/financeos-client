@@ -318,7 +318,7 @@ describe('/ds/rewards/cards/[accountId]', () => {
     loadData.mockResolvedValue(tabData({ report: { ...report, summary: { ...report.summary, cashbackInr: 300, grossValueInr: 300 } } }));
     await renderCard();
     expect(screen.getByText('₹300 + 2,180 pts')).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Set point value' }).getAttribute('href')).toBe('/rewards/rules?account=c1');
-    expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/rewards/rules?account=c1');
+    expect(screen.getByRole('link', { name: 'Set point value' }).getAttribute('href')).toBe('/ds/rewards/rules?account=c1');
+    expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/ds/rewards/rules?account=c1');
   });
 });

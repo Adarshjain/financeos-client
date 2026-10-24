@@ -17,8 +17,6 @@ const TO_BUILD: [string, string][] = [
   ['Report view and breakdown', 'Reports'],
   ['Underlying data', 'Reports'],
   ['Ask the data', 'Reports'],
-  ['Earning rules', 'Rewards'],
-  ['Milestones and caps', 'Rewards'],
 ];
 
 export default function DsIndexPage() {

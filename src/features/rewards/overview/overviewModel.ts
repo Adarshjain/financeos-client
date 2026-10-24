@@ -11,6 +11,8 @@ export interface CardTotal {
   to: string;
   calendarYearFallback: boolean;
   points: number;
+  /** Points paid by points-currency milestones; they count as earned points too. */
+  milestonePoints?: number | null;
   grossValueInr?: number | null;
   /** Null while the account has no point value for its points. */
   pointValueInr?: number | null;
@@ -43,6 +45,10 @@ export interface RewardsOverviewModel {
   cards: OverviewCard[];
 }
 
+/** Points earned in the reward year: the earning lines' plus the milestones'. */
+export const earnedPoints = (total: Pick<CardTotal, 'points' | 'milestonePoints'>): number =>
+  total.points + (total.milestonePoints ?? 0);
+
 const pts = (n: number) => `${formatAmount(n, 0)} pts`;
 
 /** "₹1,502", "₹1,502 + 1,040 pts", or "1,040 pts" when there are no rupees at all. */
@@ -63,7 +69,7 @@ export function buildOverview(
   const rows = cards.map((card) => {
     const total = totals.find((t) => t.accountId === card.id);
     const rupees = total?.grossValueInr ?? 0;
-    const points = total && unvalued.has(card.id) ? Math.max(0, total.points) : 0;
+    const points = total && unvalued.has(card.id) ? Math.max(0, earnedPoints(total)) : 0;
     const identity = [card.last4 ? `••${card.last4}` : null, card.bank || null].filter(Boolean);
     const window = total ? windowLabel({ from: total.from, to: total.to, calendarYear: total.calendarYearFallback }) : null;
     return {

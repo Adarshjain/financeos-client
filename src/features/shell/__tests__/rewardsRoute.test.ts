@@ -9,8 +9,11 @@ describe('Rewards routes', () => {
     expect(appHref('/rewards/cards/a1')).toBe('/ds/rewards/cards/a1');
   });
 
+  it('sends Earning rules to its Dinero page, keeping the query', () => {
+    expect(appHref('/rewards/rules?account=a1')).toBe('/ds/rewards/rules?account=a1');
+  });
+
   it('leaves the pages not built yet on Legacy', () => {
-    expect(appHref('/rewards/rules?account=a1')).toBe('/rewards/rules?account=a1');
     expect(appHref('/rewards/recommend')).toBe('/rewards/recommend');
   });
 });

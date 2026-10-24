@@ -1,6 +1,7 @@
 'use client';
 
 import { useRewardRulePreview } from '@/features/rewards/preview/useRewardRulePreview';
+import type { RewardNotifier } from '@/features/rewards/rewardNotifier';
 import { Category } from '@/lib/categories.types';
 import { RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
 
@@ -16,6 +17,8 @@ interface UseRewardRuleFormProps {
   cloneFrom?: RewardRule;
   defaultPriority: number;
   onSaved: () => void;
+  /** How validation and save results are shown; default Legacy's toasts. */
+  notify?: RewardNotifier;
 }
 
 /**
@@ -34,6 +37,7 @@ export function useRewardRuleForm({
   cloneFrom,
   defaultPriority,
   onSaved,
+  notify,
 }: UseRewardRuleFormProps) {
   const fields = useRewardRuleFormFields({ categories, defaultRewardType, rule, cloneFrom });
   const preview = useRewardRulePreview(fields);
@@ -45,6 +49,7 @@ export function useRewardRuleForm({
     defaultPriority,
     onSaved,
     fields,
+    notify,
   });
 
   return {

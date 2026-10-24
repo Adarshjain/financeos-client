@@ -78,4 +78,17 @@ describe('loadRewardsOverviewData', () => {
     GET.mockRejectedValue(new Error('down'));
     expect((await loadRewardsOverviewData()).model).toBeNull();
   });
+
+  it('treats points that came only from milestones as earned points: unvalued without a point value', async () => {
+    list.mockResolvedValue([card('a', 'HDFC'), card('b', 'Amex')]);
+    GET.mockResolvedValue({
+      data: [
+        { ...total('a', 0, 0), milestonePoints: 500 },
+        { ...total('b', 0, 0, 0.5), milestonePoints: 500 },
+      ],
+    });
+    const { model } = await loadRewardsOverviewData();
+    expect(model?.cards.find((c) => c.id === 'a')).toMatchObject({ earned: '500 pts', needsPointValue: true });
+    expect(model?.cards.find((c) => c.id === 'b')).toMatchObject({ needsPointValue: false });
+  });
 });

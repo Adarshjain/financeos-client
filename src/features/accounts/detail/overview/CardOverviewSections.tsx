@@ -10,6 +10,7 @@ import {
   ProgressBar,
   Text,
 } from '@/components/ds';
+import { appHref } from '@/features/shell/routes';
 
 import { accountHref } from '../accountTabsModel';
 import type { BillRowModel } from '../billsHistoryModel';
@@ -130,7 +131,7 @@ export function RewardsCard({ accountId, model }: { accountId: string; model: Re
       title="Rewards"
       subtitle={model.subtitle}
       action={
-        <HeaderLink href={`/rewards/rules?account=${accountId}`} chevron>
+        <HeaderLink href={appHref(`/rewards/rules?account=${accountId}`)} chevron>
           Rules
         </HeaderLink>
       }

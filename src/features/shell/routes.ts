@@ -42,9 +42,11 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/loans\/lendings\/[^/]+$/,
   // Holdings, every Investments tab page (tradebook, dividends, fno, corporate-actions, instruments) and a holding's page.
   /^\/investments(\/[^/]+)?$/,
-  // Rewards overview and a card's rewards page. Which card? and Earning rules are not built yet, so they stay Legacy.
+  // Rewards overview and a card's rewards page. Which card? is not built yet, so it stays Legacy.
   /^\/rewards$/,
   /^\/rewards\/cards\/[^/]+$/,
+  // Earning rules.
+  /^\/rewards\/rules$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */
