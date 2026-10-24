@@ -1,7 +1,7 @@
 import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import { serverApi } from '@/lib/api/server';
-import { accountsApi, rewardsApi } from '@/lib/apiClient';
+import { accountsApi } from '@/lib/apiClient';
 import { AccountType } from '@/lib/types';
 
 import { buildOverview, type CardTotal, type RewardsOverviewModel } from './overviewModel';
@@ -11,14 +11,17 @@ export interface RewardsOverviewData {
   model: RewardsOverviewModel | null;
 }
 
-/** The credit cards the overview lists. */
-export function overviewCards(accounts: readonly Account[]): Account[] {
-  return accounts.filter((a) => a.type === AccountType.CREDIT_CARD && !isAccountClosed(a));
+/** The accounts the overview lists: every open credit card, plus any other open account the totals report. */
+export function overviewCards(accounts: readonly Account[], totals: readonly CardTotal[] = []): Account[] {
+  const reported = new Set(totals.map((t) => t.accountId));
+  return accounts.filter(
+    (a) => !isAccountClosed(a) && (a.type === AccountType.CREDIT_CARD || reported.has(a.id))
+  );
 }
 
 /**
- * Everything the Rewards overview needs: the accounts and every card's reward-year total (one request each),
- * then the point value of each card that earned points, to tell valued points (already in the ₹) from unvalued ones.
+ * Everything the Rewards overview needs: the accounts and the reward-year total of every account with rewards
+ * (one request). Points are unvalued when the totals row carries no point value.
  */
 export async function loadRewardsOverviewData(): Promise<RewardsOverviewData> {
   const [accounts, totals] = await Promise.all([
@@ -32,15 +35,6 @@ export async function loadRewardsOverviewData(): Promise<RewardsOverviewData> {
     ),
   ]);
   if (!accounts || !totals) return { model: null };
-  const cards = overviewCards(accounts);
-  const withPoints = cards.filter((c) => (totals.find((t) => t.accountId === c.id)?.points ?? 0) > 0);
-  const configs = await Promise.allSettled(withPoints.map((c) => rewardsApi.getConfig(c.id)));
-  // A card whose point value could not be read is treated as valued: never claim points are unvalued without knowing.
-  const unvalued = new Set(
-    withPoints.filter((_, i) => {
-      const c = configs[i];
-      return c.status === 'fulfilled' && c.value.pointValueInr == null;
-    }).map((c) => c.id)
-  );
-  return { model: buildOverview(cards, totals, unvalued) };
+  const unvalued = new Set(totals.filter((t) => t.points > 0 && t.pointValueInr == null).map((t) => t.accountId));
+  return { model: buildOverview(overviewCards(accounts, totals), totals, unvalued) };
 }

@@ -17,13 +17,14 @@ vi.mock('@/features/shell/loadHelpers', () => ({ signInIfSessionEnded: vi.fn() }
 
 const card = (id: string, name: string, extra: Partial<Account> = {}) =>
   ({ id, type: AccountType.CREDIT_CARD, name, balance: 0, creditLimit: 1, ...extra }) as Account;
-const total = (accountId: string, points: number, grossValueInr: number) => ({
+const total = (accountId: string, points: number, grossValueInr: number, pointValueInr: number | null = null) => ({
   accountId,
   from: '2026-03-15',
   to: '2027-03-14',
   calendarYearFallback: false,
   points,
   grossValueInr,
+  pointValueInr,
 });
 
 describe('loadRewardsOverviewData', () => {
@@ -33,7 +34,7 @@ describe('loadRewardsOverviewData', () => {
     getConfig.mockReset();
   });
 
-  it('asks the totals once and the point value only of cards that earned points', async () => {
+  it('asks the totals once, makes no config calls and takes unvalued points from pointValueInr', async () => {
     list.mockResolvedValue([
       card('a', 'HDFC'),
       card('b', 'Amex'),
@@ -41,25 +42,31 @@ describe('loadRewardsOverviewData', () => {
       { id: 'w', type: AccountType.GENERIC, name: 'Wallet', balance: 0 },
       card('x', 'Old', { closedOn: '2020-01-01' } as Partial<Account>),
     ]);
-    GET.mockResolvedValue({ data: [total('a', 100, 50), total('b', 40, 0), total('c', 0, 12), total('x', 0, 99)] });
-    getConfig.mockImplementation(async (id: string) => ({ accountId: id, pointValueInr: id === 'a' ? 0.5 : null }));
+    GET.mockResolvedValue({
+      data: [total('a', 100, 50, 0.5), total('b', 40, 0), total('c', 0, 12), total('x', 0, 99)],
+    });
 
     const { model } = await loadRewardsOverviewData();
 
     expect(GET).toHaveBeenCalledTimes(1);
     expect(GET).toHaveBeenCalledWith('/api/v1/rewards/totals');
-    expect(getConfig.mock.calls.map((c) => c[0]).sort()).toEqual(['a', 'b']);
+    expect(getConfig).not.toHaveBeenCalled();
     expect(model?.cards.map((c) => c.id)).toEqual(['a', 'c', 'b']);
     expect(model?.total).toBe('₹62 + 40 pts');
     expect(model?.cards.find((c) => c.id === 'b')).toMatchObject({ earned: '40 pts', needsPointValue: true });
+    expect(model?.cards.find((c) => c.id === 'a')).toMatchObject({ earned: '₹50', needsPointValue: false });
   });
 
-  it('does not call points unvalued when their point value could not be read', async () => {
-    list.mockResolvedValue([card('a', 'HDFC')]);
-    GET.mockResolvedValue({ data: [total('a', 100, 50)] });
-    getConfig.mockRejectedValue(new Error('down'));
+  it('lists a non-card account that has reward rules, and ignores one the totals do not report', async () => {
+    list.mockResolvedValue([
+      card('a', 'HDFC'),
+      { id: 'w', type: AccountType.GENERIC, name: 'Wallet', balance: 0 },
+      { id: 'z', type: AccountType.GENERIC, name: 'Other', balance: 0 },
+    ]);
+    GET.mockResolvedValue({ data: [total('a', 0, 10), total('w', 30, 5)] });
     const { model } = await loadRewardsOverviewData();
-    expect(model?.cards[0]).toMatchObject({ earned: '₹50', needsPointValue: false });
+    expect(model?.cards.map((c) => c.id)).toEqual(['a', 'w']);
+    expect(model?.cards.find((c) => c.id === 'w')).toMatchObject({ earned: '₹5 + 30 pts', needsPointValue: true });
   });
 
   it('has no model when the accounts or the totals failed', async () => {

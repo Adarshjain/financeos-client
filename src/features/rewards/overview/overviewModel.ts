@@ -12,6 +12,8 @@ export interface CardTotal {
   calendarYearFallback: boolean;
   points: number;
   grossValueInr?: number | null;
+  /** Null while the account has no point value for its points. */
+  pointValueInr?: number | null;
 }
 
 export interface OverviewCardInput {

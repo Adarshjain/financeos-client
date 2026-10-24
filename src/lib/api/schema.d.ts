@@ -7263,6 +7263,7 @@ export interface components {
             /** Format: date */
             from: string;
             grossValueInr?: number | null;
+            pointValueInr?: number | null;
             points: number;
             /** Format: date */
             to: string;
