@@ -6,17 +6,18 @@ import {
   formatPct,
   formatRupees,
 } from '@/features/accounts/list/accountsList';
+import { formatDateRangeCompressed } from '@/lib/date-range';
 import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
 import { REASON_META } from '@/lib/rewards.types';
 
 import { daysBetween, plural } from '../overview/dates';
 import type { RewardsWindow } from '../overview/rewardsWindow';
-import { DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriod';
+import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriod';
 
 export type { RewardsWindow };
 
-export const PAGE_SIZES = [25, 50, 100] as const;
-export const DEFAULT_PAGE_SIZE = 25;
+export const PAGE_SIZES = [10, 25, 50, 100] as const;
+export const DEFAULT_PAGE_SIZE = 10;
 
 function pts(n: number): string {
   return `${formatAmount(n, 0)} pts`;
@@ -34,9 +35,9 @@ export interface RewardsKpi {
 }
 
 export function windowLabel(window: RewardsWindow, preset?: RangePreset): string {
-  const range = `${formatDayMonth(window.from)} → ${formatDayMonth(window.to)}`;
-  if (preset && preset !== DEFAULT_PERIOD) return `${periodWords(preset, window)} ${range}`;
-  return `${window.calendarYear ? 'calendar year' : 'anniversary year'} ${range}`;
+  const range = formatDateRangeCompressed(window.from, window.to);
+  if (preset && preset !== DEFAULT_PERIOD) return `${capitalize(periodWords(preset, window))} ${range}`;
+  return `${window.calendarYear ? 'Calendar year' : 'Anniversary year'} ${range}`;
 }
 
 /** The four tiles; a tile the report has no figure for (effective return) is left out. */
@@ -243,7 +244,7 @@ export function lineRow(line: RewardLine): LineRow {
 }
 
 export function linesSubtitle(total: number, window: RewardsWindow, preset?: RangePreset): string {
-  return `${plural(total, 'line', 'lines')} · ${periodWords(preset, window)}`;
+  return `${plural(total, 'line', 'lines')} · ${capitalize(periodWords(preset, window))}`;
 }
 
 // ---- Milestones ------------------------------------------------------------
@@ -301,7 +302,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
   }
 
   const caption: string[] = [`${pct}%`];
-  if (m.windowType === 'ONE_TIME') caption.push(`one-time ${formatDayMonth(m.windowStart)} → ${formatDayMonth(m.windowEnd)}`);
+  if (m.windowType === 'ONE_TIME') caption.push(`One-time ${formatDateRangeCompressed(m.windowStart, m.windowEnd)}`);
   if (m.achieved && m.payoutDate) caption.push(`credited ${formatDayMonth(m.payoutDate)}`);
   if (pace && !m.achieved) {
     caption.push(`${plural(pace.daysLeft, 'day', 'days')} left`);
@@ -355,7 +356,7 @@ export function completedMilestones(milestones: readonly MilestoneStatus[]): Com
       title: m.name || 'Milestone',
       subtitle: [
         m.windowType === 'ONE_TIME' ? 'One-time' : null,
-        `${formatDayMonth(m.windowStart)} → ${formatDayMonth(m.windowEnd)}`,
+        formatDateRangeCompressed(m.windowStart, m.windowEnd),
         m.payoutDate ? `credited ${formatDayMonth(m.payoutDate)}` : null,
       ]
         .filter(Boolean)

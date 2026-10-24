@@ -232,11 +232,24 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
 
       {assumed ? (
         <Card title="Assumptions">
-          <ListRow
-            title={<Text tone="ink-3">Point values</Text>}
-            trailing={<Text>{assumed.pointValues ?? '—'}</Text>}
-          />
-          <ListRow title={<Text tone="ink-3">Merchant MCC</Text>} trailing={<Text>{assumed.mcc ?? '—'}</Text>} />
+          <div className="grid grid-cols-1 gap-space-16 p-space-16 desk:grid-cols-2">
+            <div className="flex min-w-0 flex-col gap-space-4">
+              <Text variant="overline" tone="ink-3" as="div">
+                Point values
+              </Text>
+              <Text variant="body-strong" as="div">
+                {assumed.pointValues ?? '—'}
+              </Text>
+            </div>
+            <div className="flex min-w-0 flex-col gap-space-4">
+              <Text variant="overline" tone="ink-3" as="div">
+                Merchant MCC
+              </Text>
+              <Text variant="body-strong" as="div">
+                {assumed.mcc ?? '—'}
+              </Text>
+            </div>
+          </div>
         </Card>
       ) : null}
 

@@ -38,11 +38,9 @@ export function rulePositionsUsing(bucketId: string, rules: RewardRule[]): numbe
     .flatMap((rule, index) => (rule.capBucketId === bucketId ? [index + 1] : []));
 }
 
-/** "5,000 pts per calendar month · per cardholder · used by rule 1". */
+/** "5,000 pts · Per calendar month · per cardholder · used by rule 1". */
 export function capSubtitle(bucket: RewardCapBucket, rules: RewardRule[]): string {
-  const parts = [
-    `${capAmountText(bucket.cap, bucket.rewardType)} ${CAP_WINDOW_LABELS[bucket.windowType].toLowerCase()}`,
-  ];
+  const parts = [capAmountText(bucket.cap, bucket.rewardType), CAP_WINDOW_LABELS[bucket.windowType]];
   if (bucket.counterScope === 'PER_CARDHOLDER') parts.push('per cardholder');
   const positions = rulePositionsUsing(bucket.id, rules);
   if (positions.length > 0) {

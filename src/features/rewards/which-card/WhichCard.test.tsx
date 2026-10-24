@@ -124,6 +124,19 @@ describe('WhichCard', () => {
     expect(screen.getByText('5812')).toBeInTheDocument();
   });
 
+  it('lays the assumptions out as labelled facts: one column on phone, two from desktop', async () => {
+    POST.mockResolvedValue({
+      data: { ...response([rec({ pointValueSource: 'DEFAULT', pointValueInr: 0.25 })]), input: { amount: 4500, mcc: '5812' } },
+    });
+    renderPage();
+    rank();
+    await screen.findByText('Assumptions');
+    const grid = screen.getByText('Point values').closest('.grid');
+    expect(grid?.className).toContain('grid-cols-1');
+    expect(grid?.className).toContain('desk:grid-cols-2');
+    expect(grid?.contains(screen.getByText('Merchant MCC'))).toBe(true);
+  });
+
   it('keeps every Legacy input under More options', () => {
     renderPage();
     for (const label of ['Merchant', 'MCC', 'More categories', 'Cards to compare']) {

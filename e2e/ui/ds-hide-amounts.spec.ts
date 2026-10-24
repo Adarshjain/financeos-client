@@ -40,17 +40,23 @@ for (const viewport of VIEWPORTS) {
       await expect(row(page, 'Uber Ride')).toBeVisible({ timeout: 45_000 });
     };
 
-    /** The eye in the top bar (its name flips with the state). */
-    const eye = (page: Page, name: 'Hide amounts' | 'Show amounts') =>
-      page.getByRole('banner').getByRole('button', { name });
+    /** The top bar has no eye any more: the choice is the Settings switch (and the More sheet's, on phone). */
+    const eye = (page: Page) => page.getByRole('banner').getByRole('button', { name: /^(Hide|Show) amounts$/ });
 
-    test('the top-bar eye hides every amount and the balance line, and shows them again', async ({ page }) => {
+    /** Sets the Hide amounts switch in Settings (it persists in the cookie). */
+    const setHidden = async (page: Page, hidden: boolean) => {
+      await page.goto('/ds/settings');
+      const toggle = hideSwitch(page, 'main', 'balances and amounts');
+      await expect(toggle).toBeVisible({ timeout: 45_000 });
+      if ((await toggle.getAttribute('aria-checked')) !== String(hidden)) await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-checked', String(hidden));
+    };
+
+    test('the Settings switch hides every amount and the balance line, and shows them again; the top bar has no eye', async ({ page }) => {
+      await setHidden(page, true);
       await openTransactions(page);
       const uber = row(page, 'Uber Ride');
-      await expect(uber).toContainText('1,250');
-      await expect(uber).toContainText('₹');
-
-      await eye(page, 'Hide amounts').click();
+      await expect(eye(page)).toHaveCount(0);
       await expect(uber).toContainText(SHOWN);
       await expect(uber).not.toContainText('1,250');
       await expect(row(page, 'Salary Credit')).not.toContainText('50,000');
@@ -58,13 +64,15 @@ for (const viewport of VIEWPORTS) {
       if (phone) await expect(uber.getByText(SHOWN).locator('visible=true')).toHaveCount(1);
       await expect(page.locator('main')).not.toContainText(/\d,\d{3}/);
 
-      await eye(page, 'Show amounts').click();
-      await expect(uber).toContainText('1,250');
+      await setHidden(page, false);
+      await openTransactions(page);
+      await expect(row(page, 'Uber Ride')).toContainText('1,250');
+      await expect(row(page, 'Uber Ride')).toContainText('₹');
     });
 
     test('the choice survives a reload and the first HTML already hides the amounts', async ({ page }) => {
+      await setHidden(page, true);
       await openTransactions(page);
-      await eye(page, 'Hide amounts').click();
       await expect(row(page, 'Uber Ride')).toContainText(SHOWN);
 
       // The server renders from the cookie: strip scripts so only the painted markup is left.
@@ -77,7 +85,6 @@ for (const viewport of VIEWPORTS) {
       await page.reload();
       await expect(row(page, 'Uber Ride')).toContainText(SHOWN);
       await expect(row(page, 'Uber Ride')).not.toContainText('1,250');
-      await expect(eye(page, 'Show amounts')).toBeVisible();
     });
 
     test('Accounts: balances read "₹ —" while hidden', async ({ page }) => {
@@ -85,18 +92,20 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Main Bank').first()).toBeVisible({ timeout: 45_000 });
       await expect(page.locator('main')).toContainText('56,404');
 
-      await eye(page, 'Hide amounts').click();
+      await setHidden(page, true);
+      await page.goto('/ds/accounts');
+      await expect(page.getByText('Main Bank').first()).toBeVisible({ timeout: 45_000 });
       await expect(page.locator('main')).not.toContainText('56,404');
       await expect(page.locator('main')).toContainText(SHOWN);
     });
 
-    test('Settings: the switch hides amounts, the top-bar eye follows it', async ({ page }) => {
+    test('Settings: the switch hides amounts and persists', async ({ page }) => {
       await page.goto('/ds/settings');
       const toggle = hideSwitch(page, 'main', 'balances and amounts');
       await expect(toggle).toHaveAttribute('aria-checked', 'false');
       await toggle.click();
       await expect(toggle).toHaveAttribute('aria-checked', 'true');
-      await expect(eye(page, 'Show amounts')).toBeVisible();
+      await expect(eye(page)).toHaveCount(0);
 
       await page.reload();
       await expect(hideSwitch(page, 'main', 'balances and amounts')).toHaveAttribute('aria-checked', 'true');
@@ -110,8 +119,8 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('inputs are not hidden: the amount typed in Add transaction stays readable', async ({ page }) => {
+      await setHidden(page, true);
       await openTransactions(page);
-      await eye(page, 'Hide amounts').click();
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Add transaction' });
       await expect(dialog).toBeVisible();

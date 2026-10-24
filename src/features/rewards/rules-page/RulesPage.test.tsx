@@ -83,7 +83,7 @@ beforeEach(() => {
 describe('RulesPage', () => {
   it('shows the sections in the board’s order', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    const titles = ['How HDFC Regalia Gold earns', 'Caps', 'Milestones', 'Card settings'].map((t) => screen.getByText(t));
+    const titles = ['Rules', 'Caps', 'Milestones', 'Card settings'].map((t) => screen.getByText(t));
     titles.slice(1).forEach((el, i) => {
       expect(titles[i].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
@@ -121,36 +121,54 @@ describe('RulesPage', () => {
 describe('Card settings', () => {
   const card = () => screen.getByText('Card settings').closest('div[class*="border"]') as HTMLElement;
 
-  it('shows reward type, point value, the read-only anniversary and the per-rule facts', () => {
+  it('shows reward type, point value and the read-only anniversary, and no per-rule facts', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
     const settings = card();
     expect(within(settings).getByText('Points')).toBeInTheDocument();
     expect(within(settings).getByText('₹0.5/pt')).toBeInTheDocument();
     expect(within(settings).getByText('15 Mar 2024')).toBeInTheDocument();
-    expect(within(settings).getByText('Excluded')).toBeInTheDocument();
-    expect(within(settings).getByText('No · account-wide')).toBeInTheDocument();
+    expect(within(settings).queryByText('Fees in basis')).not.toBeInTheDocument();
+    expect(within(settings).queryByText('Per-cardholder caps')).not.toBeInTheDocument();
+  });
+
+  it('hides Point value on a cash card, in the card and in its edit dialog', () => {
+    config = { defaultRewardType: 'CASH', pointValueInr: 0.5 };
+    render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
+    expect(within(card()).queryByText('Point value')).not.toBeInTheDocument();
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
+    expect(screen.queryByRole('textbox', { name: /^Point value/ })).not.toBeInTheDocument();
+  });
+
+  it('shows Point value in the edit dialog again once the type is switched to points', () => {
+    config = { defaultRewardType: 'CASH', pointValueInr: null };
+    render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
+    fireEvent.click(screen.getByRole('combobox', { name: /^Rewards paid as/ }));
+    fireEvent.click(screen.getByRole('option', { name: 'Reward points' }));
+    expect(screen.getByRole('textbox', { name: /^Point value/ })).toBeInTheDocument();
   });
 
   it('says so when the anniversary and point value are not set', () => {
-    config = { defaultRewardType: 'CASH', pointValueInr: null };
+    config = { defaultRewardType: 'POINTS', pointValueInr: null };
     render(<RulesPage accountId="a2" usage={null} today="2026-10-24" />);
     expect(within(card()).getByText('Not set')).toBeInTheDocument();
     expect(within(card()).getByText('Default (₹0.25/pt)')).toBeInTheDocument();
   });
 
-  it('opens the account’s own edit from Edit card', () => {
+  it('opens the account’s own edit from the Anniversary fact’s Edit link', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit card' }));
+    expect(screen.queryByRole('button', { name: 'Edit card' })).not.toBeInTheDocument();
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[1]);
     expect(screen.getByText('Edit account dialog for HDFC Regalia Gold')).toBeInTheDocument();
   });
 
   it('saves reward type and point value together, from the dialog, not as you type', () => {
     updateConfig.mockImplementation((_b: unknown, o: { onSuccess: () => void }) => o.onSuccess());
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(within(card()).getByRole('button', { name: 'Edit' }));
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
+    fireEvent.change(screen.getByRole('textbox', { name: /^Point value/ }), { target: { value: '0.75' } });
     fireEvent.click(screen.getByRole('combobox', { name: /^Rewards paid as/ }));
     fireEvent.click(screen.getByRole('option', { name: 'Cash ₹' }));
-    fireEvent.change(screen.getByRole('textbox', { name: /^Point value/ }), { target: { value: '0.75' } });
     expect(updateConfig).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
     expect(updateConfig).toHaveBeenCalledWith(
@@ -162,7 +180,7 @@ describe('Card settings', () => {
 
   it('refuses a point value of zero', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(within(card()).getByRole('button', { name: 'Edit' }));
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
     fireEvent.change(screen.getByRole('textbox', { name: /^Point value/ }), { target: { value: '0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
     expect(toast).toHaveBeenCalledWith('Point value must be greater than ₹0', { tone: 'danger' });
@@ -172,7 +190,7 @@ describe('Card settings', () => {
   it('clears the point value back to the default', () => {
     updateConfig.mockImplementation((_b: unknown, o: { onSuccess: () => void }) => o.onSuccess());
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(within(card()).getByRole('button', { name: 'Edit' }));
+    fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
     fireEvent.change(screen.getByRole('textbox', { name: /^Point value/ }), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
     expect(updateConfig).toHaveBeenCalledWith({ accountId: 'a1', defaultRewardType: 'POINTS', pointValueInr: null }, expect.anything());

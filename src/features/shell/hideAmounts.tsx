@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { ConcealProvider, type TopBarAction } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds';
 
 import { HIDE_AMOUNTS_COOKIE } from './hideAmountsName';
 
@@ -46,15 +46,4 @@ export function HideAmountsProvider({ initialHidden, children }: { initialHidden
 
 export function useHideAmounts(): HideAmountsValue {
   return React.useContext(HideAmountsContext);
-}
-
-/** The top-bar eye: hides or shows every amount on the page. */
-export function useHideAmountsAction(): TopBarAction {
-  const { hidden, setHidden } = useHideAmounts();
-  return {
-    id: 'hide-amounts',
-    icon: hidden ? 'eye-slash' : 'view',
-    label: hidden ? 'Show amounts' : 'Hide amounts',
-    onSelect: () => setHidden(!hidden),
-  };
 }

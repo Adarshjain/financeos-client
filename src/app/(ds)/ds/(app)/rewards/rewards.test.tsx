@@ -1,6 +1,6 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { RewardsTabData } from '@/features/accounts/detail/rewards/rewardsData';
 import type { RewardsOverviewData } from '@/features/rewards/overview/overviewData';
@@ -13,6 +13,13 @@ import Layout from './(tabs)/layout';
 import OverviewPage from './(tabs)/page';
 import CardPage from './cards/[accountId]/page';
 
+// Ranges drop the year of the current one, so the clock is fixed.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-13T06:00:00Z'));
+});
+afterAll(() => vi.useRealTimers());
+
 class NotFoundSignal extends Error {}
 const push = vi.fn();
 const refresh = vi.fn();
@@ -24,6 +31,25 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, refresh }),
   usePathname: () => pathname,
   useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/features/rewards/rules-page/rules/RuleDialog', () => ({
+  RuleDialog: ({ rule, onClose }: { rule?: { name: string }; onClose: () => void }) => (
+    <div role="dialog" aria-label="Edit rule">
+      <span>{`Editing ${rule?.name ?? 'new'}`}</span>
+      <button onClick={onClose}>Cancel</button>
+    </div>
+  ),
+}));
+vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: [] }) }));
+vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
+vi.mock('@/features/rewards/queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: [] }) }));
+vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({
+  useRewardAccountConfig: () => ({ data: { defaultRewardType: 'POINTS' } }),
+}));
+vi.mock('@/features/rewards/queries/useRewardRulesQueries', () => ({
+  useDeleteRewardRule: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateRewardRule: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 const loadOverview = vi.fn<() => Promise<RewardsOverviewData>>();
@@ -43,8 +69,8 @@ vi.mock('@/lib/date-range', async (orig) => ({
 const model = {
   total: '₹1,502 + 1,040 pts',
   cards: [
-    { id: 'a', name: 'HDFC Regalia', subtitle: '••7741 · HDFC · anniversary year 15 Mar → 14 Mar', earned: '₹1,090', needsPointValue: false, href: '/ds/rewards/cards/a', setValueHref: '/rewards/rules?account=a' },
-    { id: 'b', name: 'Amex Platinum', subtitle: '••1005 · anniversary year 1 Jan → 31 Dec', earned: '₹412 + 1,040 pts', needsPointValue: true, href: '/ds/rewards/cards/b', setValueHref: '/rewards/rules?account=b' },
+    { id: 'a', name: 'HDFC Regalia', bankId: 'hdfc', identity: 'HDFC Bank · ••7741', capLeft: '₹100 left of ₹500 · Dining', nextMilestone: 'Met · Oct', year: 'Anniversary year 15 Mar 26 – 14 Mar 27', subtitle: 'HDFC Bank · ••7741 · Anniversary year 15 Mar 26 – 14 Mar 27', earned: '₹1,090', needsPointValue: false, href: '/ds/rewards/cards/a', setValueHref: '/rewards/rules?account=a' },
+    { id: 'b', name: 'Amex Platinum', bankId: null, identity: '••1005', capLeft: '—', nextMilestone: '₹1.2L to go · Annual spend', year: 'Calendar year 1 Jan – 31 Dec', subtitle: '••1005 · Calendar year 1 Jan – 31 Dec', earned: '₹412 + 1,040 pts', needsPointValue: true, href: '/ds/rewards/cards/b', setValueHref: '/rewards/rules?account=b' },
   ],
 };
 
@@ -60,8 +86,8 @@ describe('/ds/rewards', () => {
 
   it('shows the three tabs, Overview open, pointing at their routes', async () => {
     await renderOverview();
-    const tabs = ['Overview', 'Which card?', 'Earning rules'].map((n) => screen.getByRole('tab', { name: n }));
-    expect(tabs.map((t) => t.getAttribute('href'))).toEqual(['/ds/rewards', '/ds/rewards/which-card', '/ds/rewards/rules']);
+    const tabs = ['Overview', 'Earning rules', 'Which card?'].map((n) => screen.getByRole('tab', { name: n }));
+    expect(tabs.map((t) => t.getAttribute('href'))).toEqual(['/ds/rewards', '/ds/rewards/rules', '/ds/rewards/which-card']);
   });
 
   it('opens the tab of the address', async () => {
@@ -77,10 +103,19 @@ describe('/ds/rewards', () => {
     expect(screen.getByText('₹1,502 + 1,040 pts')).toBeDefined();
     expect(screen.getByText('Each card over its own reward year')).toBeDefined();
     expect(screen.getByText('HDFC Regalia')).toBeDefined();
-    expect(screen.getByText('••7741 · HDFC · anniversary year 15 Mar → 14 Mar')).toBeDefined();
+    expect(screen.getAllByText('HDFC Bank · ••7741 · Anniversary year 15 Mar 26 – 14 Mar 27').length).toBeGreaterThan(0);
+    expect(screen.getByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeDefined();
     expect(screen.getByText('₹1,090')).toBeDefined();
     expect(screen.getByText('₹412 + 1,040 pts')).toBeDefined();
     expect(screen.queryByText('Eligible spend')).toBeNull();
+  });
+
+  it('lists the cards in a table: Card, Reward year, Cap left, Next milestone and Earned', async () => {
+    await renderOverview();
+    expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Card', 'Reward year', 'Cap left', 'Next milestone', 'Earned']);
+    expect(screen.getByText('HDFC Bank · ••7741')).toBeDefined();
+    expect(screen.getByText('₹100 left of ₹500 · Dining')).toBeDefined();
+    expect(screen.getByText('₹1.2L to go · Annual spend')).toBeDefined();
   });
 
   it('opens a card’s rewards page when its row is tapped', async () => {
@@ -178,8 +213,8 @@ const tabData = (over: Partial<RewardsTabData> = {}): RewardsTabData => ({
   window: { from: '2026-03-15', to: '2027-03-14', calendarYear: false },
   report,
   rules: [rule, { ...rule, id: 'r2', name: 'Fuel', priority: 2 }],
-  lines: { content: [line], totalElements: 1, totalPages: 1, size: 25, number: 0, first: true, last: true, empty: false },
-  query: { page: 0, size: 25 },
+  lines: { content: [line], totalElements: 1, totalPages: 1, size: 10, number: 0, first: true, last: true, empty: false },
+  query: { page: 0, size: 10 },
   ...over,
 });
 
@@ -197,9 +232,21 @@ describe('/ds/rewards/cards/[accountId]', () => {
     await renderCard({ period: 'LAST_MONTH' });
     expect(loadData.mock.calls[0][2]).toEqual({ period: 'LAST_MONTH' });
     expect(screen.getAllByText('HDFC Regalia').length).toBeGreaterThan(0);
-    expect(screen.getByText('Earning lines')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: '5X' }));
+    expect(screen.getByText('Transactions')).toBeDefined();
+    expect(screen.queryByText('Earning lines')).toBeNull();
+  });
+
+  it('filters the transactions by rule from a dropdown chip in the card header, not a chip row', async () => {
+    await renderCard();
+    expect(screen.queryByRole('button', { name: '5X' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'All rules' }));
+    fireEvent.click(screen.getByRole('option', { name: '5X' }));
     expect(push).toHaveBeenCalledWith('/ds/rewards/cards/c1?rule=r1');
+  });
+
+  it('starts the transactions at 10 a page', async () => {
+    await renderCard();
+    expect(screen.getAllByRole('button', { name: 'Rows per page' })[0].textContent).toContain('10');
   });
 
   it('is not found for a broker or a missing account', async () => {
@@ -210,7 +257,7 @@ describe('/ds/rewards/cards/[accountId]', () => {
   });
 
   it('chooses a period: any preset resets the page, Custom starts from the dates on screen', async () => {
-    loadData.mockResolvedValue(tabData({ query: { page: 2, size: 25, ruleId: 'r1' } }));
+    loadData.mockResolvedValue(tabData({ query: { page: 2, size: 10, ruleId: 'r1' } }));
     await renderCard();
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Last month' }));
@@ -220,20 +267,60 @@ describe('/ds/rewards/cards/[accountId]', () => {
     expect(push).toHaveBeenLastCalledWith('/ds/rewards/cards/c1?rule=r1&period=CUSTOM&from=2026-03-15&to=2027-03-14');
   });
 
+  it('puts the Custom range From and To fields in two equal columns', async () => {
+    loadData.mockResolvedValue(
+      tabData({ query: { page: 0, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+    );
+    await renderCard();
+    const grid = screen.getByLabelText('From').closest('.grid');
+    expect(grid?.className).toContain('grid-cols-2');
+    expect(grid?.contains(screen.getByLabelText('To'))).toBe(true);
+  });
+
+  it('shows the bank logo with the card name in the top bar', async () => {
+    await renderCard();
+    expect(within(screen.getByRole('banner')).getByText('HDFC Regalia')).toBeDefined();
+    expect(within(screen.getByRole('banner')).getByTestId('bank-missing')).toBeDefined();
+  });
+
+  it('titles the milestones section, with the open milestone inside it', async () => {
+    await renderCard();
+    expect(screen.getByText('Milestones')).toBeDefined();
+    expect(screen.getAllByText('Annual spend')).toHaveLength(1);
+    expect(screen.getByText(/Spend ₹4L in the year/)).toBeDefined();
+  });
+
+  it('opens a rule of this account in the rule dialog in place (Edit, no Delete or Clone), and closes it', async () => {
+    await renderCard();
+    fireEvent.click(screen.getByRole('button', { name: /^1 · 5X/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit rule' });
+    expect(within(dialog).getByText('Editing 5X')).toBeDefined();
+    expect(push).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog', { name: 'Edit rule' })).toBeNull();
+  });
+
+  it('keeps rule rows plain when the rule list failed to load', async () => {
+    loadData.mockResolvedValue(tabData({ rules: null }));
+    await renderCard();
+    expect(screen.getByText('Rules on this account')).toBeDefined();
+    expect(screen.queryByRole('button', { name: /^5X/ })).toBeNull();
+  });
+
   it('shows the two date fields for a custom period, and the preset it is on', async () => {
     loadData.mockResolvedValue(
-      tabData({ query: { page: 0, size: 25, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+      tabData({ query: { page: 0, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
     );
     await renderCard();
     expect(screen.getByRole('combobox').textContent).toContain('Custom range');
     expect(screen.getByText('From')).toBeDefined();
     expect(screen.getByText('To')).toBeDefined();
-    expect(screen.getByText('1 line · custom range')).toBeDefined();
+    expect(screen.getByText('1 line · Custom range')).toBeDefined();
   });
 
   it('changes a custom end through its date field, back to the first page', async () => {
     loadData.mockResolvedValue(
-      tabData({ query: { page: 3, size: 25, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+      tabData({ query: { page: 3, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
     );
     await renderCard();
     const from = screen.getByLabelText('From');
@@ -267,7 +354,7 @@ describe('/ds/rewards/cards/[accountId]', () => {
     await renderCard();
     expect(screen.getByText('Completed · 1')).toBeDefined();
     expect(screen.getByText('Fee waiver')).toBeDefined();
-    expect(screen.getByText('One-time · 1 Jul → 30 Sep · credited 30 Sep')).toBeDefined();
+    expect(screen.getByText('One-time · 1 Jul – 30 Sep · credited 30 Sep')).toBeDefined();
     expect(screen.getAllByText('Annual spend')).toHaveLength(1);
   });
 
@@ -291,7 +378,7 @@ describe('/ds/rewards/cards/[accountId]', () => {
   });
 
   it('keeps the period control when the report failed, so a bad range can be changed', async () => {
-    loadData.mockResolvedValue(tabData({ report: null, query: { page: 0, size: 25, period: 'CUSTOM' } }));
+    loadData.mockResolvedValue(tabData({ report: null, query: { page: 0, size: 10, period: 'CUSTOM' } }));
     await renderCard();
     expect(screen.getByText('Could not load rewards')).toBeDefined();
     fireEvent.click(screen.getByRole('combobox'));

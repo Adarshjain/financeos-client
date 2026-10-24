@@ -222,6 +222,19 @@ export function formatDateRange(from: DateInput, to: DateInput, options?: DateRa
 }
 
 /**
+ * Only the compressed rule (4): "1–30 Sep", "15 Mar – 14 Mar 27". Never a name (FY27, Sep), never a form relative
+ * to today (MTD, Last 3m, "→ today"), so a label that already carries its own words stays true. Falls back to
+ * formatDateRange() when an end is missing.
+ */
+export function formatDateRangeCompressed(from: DateInput, to: DateInput, options?: DateRangeOptions): string {
+  const start = toDay(from);
+  const end = lastDay(to, options);
+  if (!start || !end) return formatDateRange(from, to, options);
+  const today = resolveToday(options);
+  return sameDay(start, end) ? dayLabel(start, today) : compressed(start, end, today);
+}
+
+/**
  * formatDateRange() for a file name: the same compact rules minus everything
  * relative to today (no Today/Yesterday, no MTD/FYTD/YTD/Last…, no "→ today"),
  * and the year is always printed, so the name stays true whenever the file is

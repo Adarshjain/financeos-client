@@ -67,6 +67,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText(/₹200/).first()).toBeVisible();
     await expect(page.getByText(/₹30/).first()).toBeVisible();
 
+    // A table: the card's reward year has its own column.
+    await expect(page.getByRole('columnheader', { name: 'Reward year' })).toBeVisible();
+    await expect(page.getByText(/^Anniversary year /).first()).toBeVisible();
+
     await page.getByText('Ds High Card', { exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/ds/rewards/cards/${high.id}`), { timeout: 45_000 });
     await expect(page.getByText('Eligible spend')).toBeVisible({ timeout: 45_000 });
@@ -81,7 +85,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     const month = fixedMonth();
 
     await page.goto(`/ds/rewards/cards/${card.id}?page=2`);
-    await expect(page.getByText('Earning lines')).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('main').getByText('Transactions', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
 
     // A preset change drops ?page=.
     await page.getByRole('combobox', { name: 'Period' }).click();
@@ -138,6 +142,53 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText(/of ₹20/).first()).toBeVisible();
     await expect(page.getByRole('progressbar').first()).toBeVisible();
     await expect(page.getByText('Ds Never Matches earned nothing this period')).toBeVisible();
+  });
+
+  test('card page: Transactions pages at 10 and a rule chip in its header filters the lines', async ({ page }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const { account: card } = await createRewardCard(api, { name: 'Ds Filter Card', anniversaryDate: anniversary() });
+    await createRewardRule(api, card.id, { name: 'Ds Filter Base', percentRate: 2 });
+    // A rule no spend can match: choosing it leaves the list empty.
+    await createRewardRule(api, card.id, { name: 'Ds Filter Idle', percentRate: 5, mccs: ['9999'] });
+    await spend(api, card.id, { amount: 1500, date: spendDay('10'), description: 'Ds Filter Line' });
+
+    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await expect(page.getByRole('main').getByText('Transactions', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByText('Ds Filter Line').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rows per page' }).first()).toContainText('10');
+
+    await page.getByRole('button', { name: 'All rules' }).click();
+    await page.getByRole('option', { name: 'Ds Filter Idle' }).click();
+    await expect(page).toHaveURL(/rule=/);
+    await expect(page.getByText('No earning lines')).toBeVisible();
+    await expect(page.getByText('Ds Filter Line')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Ds Filter Idle' }).first().click();
+    await page.getByRole('option', { name: 'Ds Filter Base' }).click();
+    await expect(page.getByText('Ds Filter Line').first()).toBeVisible();
+  });
+
+  test('card page: a rule row opens Edit rule in place; a rename shows in the list', async ({ page }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const { account: card } = await createRewardCard(api, { name: 'Ds Rename Card', anniversaryDate: anniversary() });
+    await createRewardRule(api, card.id, { name: 'Ds Rename Rule', percentRate: 2 });
+    await spend(api, card.id, { amount: 1500, date: spendDay('10'), description: 'Ds Rename Line' });
+
+    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await expect(page.getByText('Rules on this account')).toBeVisible({ timeout: 45_000 });
+    await page.getByRole('button', { name: /^\d+ · Ds Rename Rule/ }).click();
+    const edit = page.getByRole('dialog', { name: /Edit rule/ });
+    await expect(edit).toBeVisible();
+    // In place: still on the card page.
+    await expect(page).toHaveURL(new RegExp(`/ds/rewards/cards/${card.id}`));
+    await edit.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Renamed Rule');
+    await edit.getByRole('button', { name: 'Save & recompute' }).click();
+    await expect(toast(page, 'Rule updated')).toBeVisible();
+    await expect(edit).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^\d+ · Ds Renamed Rule/ })).toBeVisible();
+    await expect(page.getByText('Ds Rename Rule', { exact: true })).toHaveCount(0);
   });
 
   test('card page: fallback banners for a card without statements and for an account without an anniversary', async ({ page }) => {
@@ -200,8 +251,15 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(create).toHaveCount(0);
     await expect(page.getByText('Ds Created Rule', { exact: true })).toBeVisible();
 
-    // Edit by tapping the row.
+    // Pressing a row opens a menu: exactly Edit, Clone, End & clone, Delete; Escape closes it.
     await page.getByText('Ds Created Rule', { exact: true }).click();
+    await expect(page.getByRole('menuitem')).toHaveText(['Edit', 'Clone', 'End & clone', 'Delete']);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menuitem')).toHaveCount(0);
+
+    // Edit from the row menu.
+    await page.getByText('Ds Created Rule', { exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
     const edit = page.getByRole('dialog', { name: /Edit rule/ });
     await expect(edit).toBeVisible();
     await edit.getByLabel('Rate %').fill('3');
@@ -209,9 +267,9 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(toast(page, 'Rule updated')).toBeVisible();
     await expect(edit).toHaveCount(0);
 
-    // Clone from the Edit rule dialog opens a prefilled New rule; save it under a new name.
+    // Clone from the row menu opens a prefilled New rule; save it under a new name.
     await page.getByText('Ds Created Rule', { exact: true }).click();
-    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'Clone', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Clone', exact: true }).click();
     const clone = page.getByRole('dialog', { name: /New rule/ });
     await expect(clone).toBeVisible();
     await expect(clone.getByLabel('Rate %')).toHaveValue('3');
@@ -222,7 +280,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
 
     // End & clone ends the rule today and opens its successor.
     await page.getByText('Ds Ending Rule', { exact: true }).click();
-    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'End & clone', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'End & clone', exact: true }).click();
     await expect(toast(page, /"Ds Ending Rule" ended/)).toBeVisible();
     const successor = page.getByRole('dialog', { name: /New rule/ });
     await expect(successor).toBeVisible();
@@ -231,7 +289,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
 
     // Delete asks first.
     await page.getByText('Ds Cloned Rule', { exact: true }).click();
-    await page.getByRole('dialog', { name: /Edit rule/ }).getByRole('button', { name: 'Delete rule' }).click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog', { name: /Delete rule "Ds Cloned Rule"/ });
     await expect(confirm).toBeVisible();
     await confirm.getByRole('button', { name: 'Delete rule' }).click();
@@ -286,13 +344,17 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await test1.getByRole('button', { name: 'Close' }).last().click();
     await expect(test1).toHaveCount(0);
 
-    await expect(page.getByText('Default (₹0.25/pt)')).toBeVisible();
+    // A cash card has no point value; switching it to reward points shows the field.
+    await expect(page.getByText('Point value', { exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
     const settings = page.getByRole('dialog', { name: 'Card settings' });
     await expect(settings).toBeVisible();
+    await expect(settings.getByLabel(/^Point value/)).toHaveCount(0);
+    await settings.getByRole('combobox', { name: /^Rewards paid as/ }).click();
+    await page.getByRole('option', { name: 'Reward points' }).click();
     await settings.getByLabel(/^Point value/).fill('0.5');
     await settings.getByRole('button', { name: 'Save settings' }).click();
-    await expect(toast(page, 'Point value set to ₹0.5/pt')).toBeVisible();
+    await expect(toast(page, 'Card settings saved')).toBeVisible();
     await expect(page.getByText('₹0.5/pt', { exact: true })).toBeVisible();
 
     await page.reload();
@@ -441,7 +503,7 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
-  test('rules stack, a row tap opens Edit rule with Clone, and dialogs open as sheets; a Which card? result opens its breakdown', async ({ page }) => {
+  test('rules stack, a row tap opens the row menu with Clone, and dialogs open as sheets; a Which card? result opens its breakdown', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const { account: card } = await createRewardCard(api, { name: 'Ds Phone Card', anniversaryDate: anniversary() });
@@ -450,15 +512,13 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
 
     await page.goto(`/ds/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Phone Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
-    // No ⋮ menu or table header on phone, and no links on the rows: a tap opens Edit rule.
+    // No ⋮ menu or table header on phone, and no links on the rows: a tap opens the row menu.
     await expect(page.getByRole('button', { name: 'Actions for Ds Phone Rule' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Edit', exact: true })).toHaveCount(1); // Card settings only
+    await expect(page.getByRole('button', { name: 'Edit', exact: true })).toHaveCount(2); // Card settings and its Anniversary link only
     await expect(page.getByRole('button', { name: 'Clone', exact: true })).toHaveCount(0);
 
     await page.getByText('Ds Phone Rule', { exact: true }).click();
-    const editSheet = page.getByRole('dialog', { name: /Edit rule/ });
-    await expect(editSheet).toBeVisible();
-    await editSheet.getByRole('button', { name: 'Clone', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Clone', exact: true }).click();
     const sheet = page.getByRole('dialog', { name: /New rule/ });
     await expect(sheet).toBeVisible();
     const box = await sheet.boundingBox();

@@ -37,7 +37,8 @@ export function RewardsPeriodControl({ basePath, query, window, today }: Rewards
     <div className="flex flex-col desk:flex-row desk:items-end gap-space-12">
       <Select label="Period" options={OPTIONS} value={preset} onValueChange={choose} />
       {preset === 'CUSTOM' ? (
-        <>
+        // Two equal columns on phone; on desktop the fields join the row of the select.
+        <div className="grid grid-cols-2 gap-space-12 desk:contents">
           <DateField
             label="From"
             today={today}
@@ -52,7 +53,7 @@ export function RewardsPeriodControl({ basePath, query, window, today }: Rewards
             minDate={window.from}
             onValueChange={(v) => (typeof v === 'string' && v ? go({ period: 'CUSTOM', from: window.from, to: v }) : undefined)}
           />
-        </>
+        </div>
       ) : null}
     </div>
   );

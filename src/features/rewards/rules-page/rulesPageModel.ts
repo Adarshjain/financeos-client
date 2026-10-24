@@ -121,15 +121,3 @@ export function ruleSubtitle(rule: RewardRule): string {
 
 /** "Points" or "Cash". */
 export const rewardTypeWord = (type: RewardType | null | undefined): string => (type === 'POINTS' ? 'Points' : 'Cash');
-
-/** Fees in basis across the card's live rules: "Excluded", "Included" or "Per rule". */
-export function feesInBasis(rules: readonly RewardRule[]): string {
-  if (rules.length === 0) return 'Included';
-  const excluded = rules.filter((r) => r.feeTreatment === 'EXCLUDE_FEE').length;
-  return excluded === 0 ? 'Included' : excluded === rules.length ? 'Excluded' : 'Per rule';
-}
-
-/** Whether any rule counts its cap per cardholder. */
-export function perCardholderCaps(rules: readonly RewardRule[]): string {
-  return rules.some((r) => r.counterScope === 'PER_CARDHOLDER') ? 'Yes · per cardholder' : 'No · account-wide';
-}

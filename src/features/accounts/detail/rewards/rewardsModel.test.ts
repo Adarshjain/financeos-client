@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { MilestoneStatus, RewardLine, RewardReport, RewardRule } from '@/lib/rewards.types';
 
@@ -14,7 +14,16 @@ import {
   ruleChips,
   ruleDescription,
   ruleLines,
+  windowLabel,
 } from './rewardsModel';
+import { capitalize } from './rewardsPeriod';
+
+// Ranges drop the year of the current one, so the clock is fixed.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-13T06:00:00Z'));
+});
+afterAll(() => vi.useRealTimers());
 
 const window = { from: '2026-03-15', to: '2027-03-14', calendarYear: false };
 
@@ -60,11 +69,11 @@ describe('buildKpis', () => {
     expect(eligible).toMatchObject({ value: '₹83,764', context: '30 of 30 transactions earned' });
     expect(gross).toMatchObject({ value: '2,180 pts', context: '≈ ₹1,090 at ₹0.50 / pt' });
     expect(adjustments).toMatchObject({ value: '₹0', context: 'no fees netted' });
-    expect(effective).toMatchObject({ value: '1.3%', context: 'anniversary year 15 Mar → 14 Mar' });
+    expect(effective).toMatchObject({ value: '1.3%', context: 'Anniversary year 15 Mar 26 – 14 Mar 27' });
   });
   it('names the calendar year when there is no anniversary', () => {
     const k = buildKpis(report, { from: '2026-01-01', to: '2026-12-31', calendarYear: true });
-    expect(k[3].context).toBe('calendar year 1 Jan → 31 Dec');
+    expect(k[3].context).toBe('Calendar year 1 Jan – 31 Dec');
   });
   it('nets discounts against fees and lists both', () => {
     const k = buildKpis({ ...report, summary: { ...report.summary, fees: 590, discounts: 100 } }, window);
@@ -107,17 +116,27 @@ describe('clampedPage', () => {
   });
 });
 
+describe('window words', () => {
+  it('capitalises a word that is a label or starts a segment, and leaves mid-phrase ones lower case', () => {
+    expect(capitalize('this anniversary year')).toBe('This anniversary year');
+    expect(windowLabel({ from: '2026-03-15', to: '2027-03-14', calendarYear: true })).toMatch(/^Calendar year /);
+    expect(windowLabel({ from: '2026-09-01', to: '2026-09-30', calendarYear: false }, 'LAST_MONTH')).toBe('Last month 1–30 Sep');
+    const cycle = { milestoneId: 'm', name: 'Spend', windowType: 'STATEMENT_CYCLE', windowStart: '2026-10-01', windowEnd: '2026-10-31', basis: 'SPEND', threshold: 1000, progress: 0, achieved: false, payoutType: 'CASH_VALUE', rewardType: 'CASH', countedInSummary: false } as MilestoneStatus;
+    expect(buildMilestone(cycle, '2026-10-13').subtitle).toBe('Spend ₹1,000 in the statement cycle');
+  });
+});
+
 describe('parseRewardsQuery / rewardsHref', () => {
   it('reads rule, 1-based page and size', () => {
     expect(parseRewardsQuery({ rule: 'r2', page: '3', size: '50' }, ['r1', 'r2'])).toEqual({ ruleId: 'r2', page: 2, size: 50 });
   });
   it('ignores unknown rules and invalid page or size', () => {
-    expect(parseRewardsQuery({ rule: 'nope', page: '0', size: '7' }, ['r1'])).toEqual({ ruleId: undefined, page: 0, size: 25 });
-    expect(parseRewardsQuery(undefined, [])).toEqual({ ruleId: undefined, page: 0, size: 25 });
+    expect(parseRewardsQuery({ rule: 'nope', page: '0', size: '7' }, ['r1'])).toEqual({ ruleId: undefined, page: 0, size: 10 });
+    expect(parseRewardsQuery(undefined, [])).toEqual({ ruleId: undefined, page: 0, size: 10 });
   });
   it('writes only non-default params', () => {
     const base = '/ds/accounts/c1/rewards';
-    expect(rewardsHref(base, { page: 0, size: 25 })).toBe(base);
+    expect(rewardsHref(base, { page: 0, size: 10 })).toBe(base);
     expect(rewardsHref(base, { ruleId: 'r1', page: 1, size: 50 })).toBe(`${base}?rule=r1&page=2&size=50`);
   });
 });
@@ -145,8 +164,8 @@ describe('lineRow', () => {
     expect(r).toMatchObject({ earned: '₹12', rule: 'No rule', holder: null, why: { label: 'No rule', tone: 'neutral' } });
   });
   it('pluralises the subtitle', () => {
-    expect(linesSubtitle(30, window)).toBe('30 lines · this anniversary year');
-    expect(linesSubtitle(1, { ...window, calendarYear: true })).toBe('1 line · this calendar year');
+    expect(linesSubtitle(30, window)).toBe('30 lines · This anniversary year');
+    expect(linesSubtitle(1, { ...window, calendarYear: true })).toBe('1 line · This calendar year');
   });
 });
 

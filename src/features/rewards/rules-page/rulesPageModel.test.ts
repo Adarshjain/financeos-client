@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { RewardCapBucket, RewardReport, RewardRule } from '@/lib/rewards.types';
 
-import { appliesTo, buildUsage, capWords, feesInBasis, isEnded, perCardholderCaps, ruleSubtitle } from './rulesPageModel';
+import { appliesTo, buildUsage, capWords, isEnded, ruleSubtitle } from './rulesPageModel';
 
 const rule = (over: Partial<RewardRule> = {}): RewardRule =>
   ({
@@ -120,15 +120,5 @@ describe('rule row words', () => {
     expect(isEnded(rule({ activeTo: '2026-10-24' }), '2026-10-24')).toBe(true);
     expect(isEnded(rule({ activeTo: '2026-10-25' }), '2026-10-24')).toBe(false);
     expect(isEnded(rule(), '2026-10-24')).toBe(false);
-  });
-});
-
-describe('card settings facts', () => {
-  it('summarises fees and per-cardholder caps across the rules', () => {
-    expect(feesInBasis([])).toBe('Included');
-    expect(feesInBasis([rule({ feeTreatment: 'EXCLUDE_FEE' })])).toBe('Excluded');
-    expect(feesInBasis([rule({ feeTreatment: 'EXCLUDE_FEE' }), rule()])).toBe('Per rule');
-    expect(perCardholderCaps([rule()])).toBe('No · account-wide');
-    expect(perCardholderCaps([rule({ counterScope: 'PER_CARDHOLDER' })])).toBe('Yes · per cardholder');
   });
 });

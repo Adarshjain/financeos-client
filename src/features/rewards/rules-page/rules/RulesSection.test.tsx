@@ -51,6 +51,7 @@ const rule = (over: Partial<RewardRule> = {}): RewardRule =>
 
 let rules: RewardRule[] = [];
 let caps: RewardCapBucket[] = [];
+let capsLoading = false;
 const create = vi.fn();
 const update = vi.fn();
 const remove = vi.fn();
@@ -64,7 +65,7 @@ vi.mock('../../queries/useRewardRulesQueries', () => ({
   useDeleteRewardRule: () => ({ mutate: remove, isPending: false }),
   useReorderRewardRules: () => ({ mutate: reorder, isPending: false }),
 }));
-vi.mock('../../queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: caps }) }));
+vi.mock('../../queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: caps, isLoading: capsLoading }) }));
 vi.mock('../../queries/useRewardAccountConfigQueries', () => ({
   useRewardAccountConfig: () => ({ data: { defaultRewardType: 'POINTS' } }),
 }));
@@ -110,9 +111,17 @@ const openHeaderMenu = async (item: string) => {
   await user.click(screen.getByRole('button', { name: 'Rule actions' }));
   await user.click(await screen.findByRole('menuitem', { name: item }));
 };
-// A row tap opens Edit rule; the dialog carries Clone, End & clone and Delete.
-const openRow = async (name: string) => {
+// A row press opens a menu at the press point (Edit, Clone, End & clone, Delete).
+const pressRow = async (name: string) => {
   fireEvent.click(screen.getByText(name, { exact: false }));
+  await screen.findByRole('menuitem', { name: 'Edit' });
+};
+const pickMenu = async (item: string) => {
+  await userEvent.setup().click(await screen.findByRole('menuitem', { name: item }));
+};
+const openRow = async (name: string) => {
+  await pressRow(name);
+  await pickMenu('Edit');
   await screen.findByText('Edit rule');
 };
 const lastButton = (name: string) => {
@@ -125,6 +134,7 @@ beforeEach(() => {
   adder = null;
   rules = [rule(), rule({ id: 'r2', name: 'Base', priority: 1, mccs: [], pointsPerSlab: 4 })];
   caps = [];
+  capsLoading = false;
   recommendData = undefined;
   create.mockImplementation(succeed);
   update.mockImplementation(succeed);
@@ -147,9 +157,10 @@ describe('RulesSection list', () => {
     rules = [rule({ activeTo: '2025-01-01' })];
     renderSection();
     expect(screen.getAllByText(/ended/).length).toBeGreaterThan(0);
-    await openRow('5X on dining');
-    expect(screen.getByRole('button', { name: 'Clone' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
+    await pressRow('5X on dining');
+    expect(screen.getByRole('menuitem', { name: 'Clone' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'End & clone' })).not.toBeInTheDocument();
   });
 
   it('suggests a base rule when there are none, and disables Reorder rules', async () => {
@@ -160,12 +171,14 @@ describe('RulesSection list', () => {
     expect(await screen.findByRole('menuitem', { name: 'Reorder rules' })).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('titles the card after the selected card and keeps no per-row actions', () => {
+  it('is titled Rules, says the order, and keeps no per-row actions', () => {
     renderSection();
     expect(screen.queryByRole('button', { name: /^Actions for / })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
-    expect(screen.getByText('How HDFC Regalia earns')).toBeInTheDocument();
+    expect(screen.getByText('Rules')).toBeInTheDocument();
+    expect(screen.getByText('Applied in the order below')).toBeInTheDocument();
+    expect(screen.queryByText(/earns$/)).not.toBeInTheDocument();
   });
 });
 
@@ -216,26 +229,39 @@ describe('the top bar +', () => {
   });
 });
 
-describe('rule dialog actions', () => {
-  it('a row tap opens Edit filled in, with Clone and End & clone links', async () => {
+describe('the row menu', () => {
+  it('opens exactly where the row was pressed, with Edit, Clone, End & clone and a red Delete', async () => {
+    renderSection();
+    await userEvent.setup().pointer({
+      keys: '[MouseLeft]',
+      target: screen.getByText('5X on dining', { exact: false }),
+      coords: { clientX: 120, clientY: 340 },
+    });
+    await screen.findByRole('menuitem', { name: 'Edit' });
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Edit', 'Clone', 'End & clone', 'Delete']);
+    const anchor = document.querySelector('[data-context-anchor]') as HTMLElement;
+    expect([anchor.style.left, anchor.style.top]).toEqual(['120px', '340px']);
+    expect(screen.queryByText('Edit rule')).not.toBeInTheDocument();
+  });
+
+  it('Edit opens the dialog filled in, without Clone, End & clone or Delete rule in it', async () => {
     renderSection();
     await openRow('5X on dining');
     expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.getByRole('button', { name: 'Save & recompute' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Clone' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'End & clone' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
   });
 
-  it('Clone opens a new rule prefilled from it, without the links or Delete', async () => {
+  it('Clone opens a new rule prefilled from it', async () => {
     renderSection();
-    await openRow('5X on dining');
-    fireEvent.click(screen.getByRole('button', { name: 'Clone' }));
+    await pressRow('5X on dining');
+    await pickMenu('Clone');
     await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
   });
 
   it('a new rule has neither link', async () => {
@@ -251,8 +277,8 @@ describe('rule dialog actions', () => {
       opts.onSuccess(rule({ activeTo: new Date().toISOString().slice(0, 10) })),
     );
     renderSection();
-    await openRow('5X on dining');
-    fireEvent.click(screen.getByRole('button', { name: 'End & clone' }));
+    await pressRow('5X on dining');
+    await pickMenu('End & clone');
     expect(update).toHaveBeenCalledWith(
       { id: 'r1', body: expect.objectContaining({ name: '5X on dining', activeTo: expect.any(String) }) },
       expect.anything(),
@@ -261,10 +287,10 @@ describe('rule dialog actions', () => {
     expect(screen.getByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
   });
 
-  it('Delete confirms with the Legacy words, then removes the rule', async () => {
+  it('Delete confirms with the Legacy words, then removes the rule and says so', async () => {
     renderSection();
-    await openRow('5X on dining');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete rule' }));
+    await pressRow('5X on dining');
+    await pickMenu('Delete');
     expect(screen.getByText('Delete rule "5X on dining"?')).toBeInTheDocument();
     expect(screen.getByText(/Historical reports will no longer see it/)).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();
@@ -272,13 +298,21 @@ describe('rule dialog actions', () => {
     expect(remove).toHaveBeenCalledWith('r1', expect.anything());
     expect(toast).toHaveBeenCalledWith('Rule deleted');
   });
+
+  it('Cancel on the delete confirmation keeps the rule', async () => {
+    renderSection();
+    await pressRow('5X on dining');
+    await pickMenu('Delete');
+    fireEvent.click(lastButton('Cancel'));
+    expect(remove).not.toHaveBeenCalled();
+  });
 });
 
 describe('refreshing the server figures', () => {
   it('re-reads them after a delete, a reorder and a save, so the so-far amounts follow', async () => {
     renderSection();
-    await openRow('5X on dining');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete rule' }));
+    await pressRow('5X on dining');
+    await pickMenu('Delete');
     fireEvent.click(lastButton('Delete rule'));
     expect(refresh).toHaveBeenCalledTimes(1);
     await openHeaderMenu('Reorder rules');
@@ -428,38 +462,46 @@ describe('rule dialog', () => {
     expect(toast).toHaveBeenCalledWith('Rule updated');
   });
 
-  it('deletes from the dialog’s red link after confirming', async () => {
+  it('has no Delete rule action in the dialog footer, only Cancel and Save', async () => {
     renderSection();
     await openRow('5X on dining');
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete rule' }));
-    expect(screen.getByText('Delete rule "5X on dining"?')).toBeInTheDocument();
-    fireEvent.click(lastButton('Delete rule'));
-    expect(remove).toHaveBeenCalledWith('r1', expect.anything());
+    expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 
-  it('keeps the rarer fields in a fold that opens on Advanced options', async () => {
+  it('groups the fields as Legacy does, in Basics, Match, Earn, Limits and a closed Test this rule, with no fold', async () => {
     renderSection();
     openNew();
     await screen.findByRole('textbox', { name: /^Name/ });
-    expect(screen.queryByRole('combobox', { name: /^Stacking/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox', { name: /^Per-transaction cap/ })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced options' }));
-    expect(screen.getByRole('combobox', { name: /^Stacking/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^Cardholder scope/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^Counter scope/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^Days of week/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^EMI spends/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^International/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /^Convenience fee/ })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /^Min amount/ })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /^Per-transaction cap/ })).toBeInTheDocument();
+    const bands = ['Basics', 'Match', 'Earn', 'Limits', 'Test this rule'].map((t) => screen.getByText(t, { selector: '*' }));
+    bands.slice(1).forEach((el, i) => {
+      expect(bands[i].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    expect(screen.queryByRole('button', { name: 'Advanced options' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Test this rule' })).toHaveAttribute('aria-expanded', 'false');
+    for (const name of ['Stacking', 'Card scope', 'Counter scope', 'Categories', 'Channels', 'Days of week', 'EMI spends', 'International', 'Convenience fee', 'Rewards paid as', 'Period cap']) {
+      expect(screen.getByRole('combobox', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
+    }
+    for (const name of ['Name', 'MCC codes', 'Merchant pattern', 'Min amount', 'Max amount', 'Per-transaction cap']) {
+      expect(screen.getByRole('textbox', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
+    }
+    expect(screen.getByRole('textbox', { name: /^Active from/ })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /^Active until/ })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /^Cardholder scope/ })).not.toBeInTheDocument();
   });
 
-  it('builds tiered rates from the fold and sends window and steps', async () => {
+  it('drops Card scope and Counter scope when the card has no cardholders', async () => {
+    renderSection(undefined, 'a2');
+    openNew();
+    await screen.findByRole('textbox', { name: /^Name/ });
+    expect(screen.queryByRole('combobox', { name: /^Card scope/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /^Counter scope/ })).not.toBeInTheDocument();
+  });
+
+  it('builds tiered rates and sends window and steps', async () => {
     renderSection();
     openNew();
     fireEvent.change(await screen.findByRole('textbox', { name: /^Name/ }), { target: { value: 'Tiered' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced options' }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'Tiered rate' }));
     expect(screen.getAllByRole('textbox', { name: /^Rate %/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Add tier' }));
@@ -493,6 +535,145 @@ describe('rule dialog', () => {
     choose('Rewards paid as', 'Cash ₹');
     fireEvent.change(textbox('Rate %'), { target: { value: '2' } });
     fireEvent.click(screen.getByRole('button', { name: 'Test this rule' }));
-    expect(within(document.body).getByText(/Matches → /)).toBeInTheDocument();
+    expect(within(document.body).getByText('Matches · 2% of ₹1,000')).toBeInTheDocument();
+    expect(within(document.body).getByText('₹20.00')).toBeInTheDocument();
+  });
+});
+
+const bucket = (over: Partial<RewardCapBucket> = {}): RewardCapBucket =>
+  ({
+    id: 'c1',
+    accountId: 'a1',
+    name: 'Dining cap',
+    cap: 5000,
+    rewardType: 'POINTS',
+    windowType: 'CALENDAR_MONTH',
+    counterScope: 'ACCOUNT',
+    ruleCount: 0,
+    createdAt: '',
+    updatedAt: '',
+    ...over,
+  }) as RewardCapBucket;
+
+describe('When cap is hit', () => {
+  const fillNewWithOwnCap = () => {
+    fireEvent.change(textbox('Name'), { target: { value: 'Capped' } });
+    fireEvent.change(textbox('Rate %'), { target: { value: '2' } });
+    choose('Period cap', 'This rule’s own cap');
+    fireEvent.change(textbox('Cap'), { target: { value: '500' } });
+  };
+
+  it('defaults to Stop for a new rule', async () => {
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    fillNewWithOwnCap();
+    expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Stop (earn nothing)');
+    fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toEqual(expect.objectContaining({ periodCap: 500, onCapExhausted: 'STOP' }));
+  });
+
+  it('keeps the user’s choice through Period cap None, own, None, own', async () => {
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    choose('Period cap', 'This rule’s own cap');
+    choose('When cap is hit', 'Fall through to next rule');
+    choose('Period cap', 'No period cap');
+    choose('Period cap', 'This rule’s own cap');
+    expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Fall through to next rule');
+  });
+
+  it('keeps the stored value when editing', async () => {
+    rules = [rule({ periodCap: 500, capWindow: 'CALENDAR_MONTH', onCapExhausted: 'FALL_THROUGH' })];
+    renderSection();
+    await openRow('5X on dining');
+    expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Fall through to next rule');
+    fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
+    await waitFor(() => expect(update).toHaveBeenCalled());
+    expect(update.mock.calls[0][0].body).toEqual(expect.objectContaining({ onCapExhausted: 'FALL_THROUGH' }));
+  });
+
+  it('keeps the source’s value when cloning', async () => {
+    rules = [rule({ periodCap: 500, capWindow: 'CALENDAR_MONTH', onCapExhausted: 'FALL_THROUGH' })];
+    renderSection();
+    await pressRow('5X on dining');
+    await pickMenu('Clone');
+    await screen.findByText('New rule');
+    expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Fall through to next rule');
+    fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toEqual(expect.objectContaining({ onCapExhausted: 'FALL_THROUGH' }));
+  });
+});
+
+describe('Shared bucket', () => {
+  it('is disabled with a pointer to Caps when no bucket has the rule’s reward type', async () => {
+    caps = [bucket({ rewardType: 'CASH' })];
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    choose('Period cap', 'Shared bucket');
+    expect(screen.getByRole('combobox', { name: /^Shared bucket/ })).toBeDisabled();
+    expect(screen.getByText('No points bucket yet. Add one in Caps.')).toBeInTheDocument();
+  });
+
+  it('is not disabled and shows no "none yet" helper while the buckets are still loading', async () => {
+    capsLoading = true;
+    caps = [];
+    rules = [rule({ capBucketId: 'c1', periodCap: null })];
+    renderSection();
+    await openRow('5X on dining');
+    expect(screen.getByRole('combobox', { name: /^Shared bucket/ })).not.toBeDisabled();
+    expect(screen.queryByText(/bucket yet/)).not.toBeInTheDocument();
+  });
+
+  it('is enabled when a bucket of the reward type exists, and words its window in capitals', async () => {
+    caps = [bucket()];
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    choose('Period cap', 'Shared bucket');
+    const select = screen.getByRole('combobox', { name: /^Shared bucket/ });
+    expect(select).not.toBeDisabled();
+    fireEvent.click(select);
+    expect(screen.getByRole('option', { name: 'Dining cap — 5000 pts · Per calendar month' })).toBeInTheDocument();
+  });
+});
+
+describe('Test this rule result', () => {
+  const openTester = async () => {
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    fireEvent.click(screen.getByRole('button', { name: 'Test this rule' }));
+  };
+
+  it('asks for an amount before it can say anything', async () => {
+    await openTester();
+    fireEvent.change(textbox('Amount'), { target: { value: '' } });
+    expect(screen.getByText('Enter an amount (and accrual fields) to test.')).toBeInTheDocument();
+  });
+
+  it('reads a match as the reward and a verdict', async () => {
+    await openTester();
+    choose('Rewards paid as', 'Cash ₹');
+    fireEvent.change(textbox('Rate %'), { target: { value: '5' } });
+    fireEvent.change(textbox('Amount'), { target: { value: '2500' } });
+    expect(screen.getByText('₹125.00')).toBeInTheDocument();
+    expect(screen.getByText('Matches · 5% of ₹2,500')).toBeInTheDocument();
+  });
+
+  it('reads a miss as nothing earned and the reason', async () => {
+    await openTester();
+    fireEvent.change(textbox('Min amount'), { target: { value: '5000' } });
+    expect(screen.getByText('0 pts')).toBeInTheDocument();
+    expect(screen.getByText('No match · Below minimum amount ₹5000')).toBeInTheDocument();
+  });
+
+  it('keeps the day-of-week caveat only when the rule has days', async () => {
+    await openTester();
+    expect(screen.queryByText(/day-of-week conditions/)).not.toBeInTheDocument();
   });
 });

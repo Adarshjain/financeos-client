@@ -1,30 +1,40 @@
+'use client';
+
 import React from 'react';
 
 import { Badge, Card, ListRow, ProgressBar, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
+import type { RewardRule } from '@/lib/rewards.types';
 
 import { HeaderLink } from '../overview/HeaderLink';
 import type { CardholderRow, CompletedMilestones, MilestoneModel, RuleExtras, RuleLine } from './rewardsModel';
+import { RuleEditor } from './RuleEditor';
 
-export function MilestoneCard({ model }: { model: MilestoneModel }) {
+/** The milestones still to reach, one block each under one "Milestones" header. */
+export function MilestonesCard({ items }: { items: { key: string; model: MilestoneModel }[] }) {
   return (
-    <Card
-      title={model.title}
-      subtitle={model.subtitle}
-      action={model.status ? <Badge tone={model.status.tone}>{model.status.label}</Badge> : undefined}
-    >
-      <div className="px-space-16 pb-space-16 flex flex-col gap-space-6">
-        <div className="flex items-baseline justify-between gap-space-12">
-          <Text variant="body-strong">{model.figure.done}</Text>
-          <Text variant="body" tone="ink-3">
-            {model.figure.of}
-          </Text>
-        </div>
-        <ProgressBar value={model.pct} />
-        <Text variant="caption" tone="ink-3" as="div">
-          {model.caption}
-        </Text>
-      </div>
+    <Card title="Milestones">
+      {items.map(({ key, model }) => (
+        <ListRow
+          key={key}
+          title={model.title}
+          subtitle={model.subtitle}
+          trailing={model.status ? <Badge tone={model.status.tone}>{model.status.label}</Badge> : undefined}
+        >
+          <div className="flex flex-col gap-space-6 mt-space-6">
+            <div className="flex items-baseline justify-between gap-space-12">
+              <Text variant="body-strong">{model.figure.done}</Text>
+              <Text variant="body" tone="ink-3">
+                {model.figure.of}
+              </Text>
+            </div>
+            <ProgressBar value={model.pct} />
+            <Text variant="caption" tone="ink-3" as="div">
+              {model.caption}
+            </Text>
+          </div>
+        </ListRow>
+      ))}
     </Card>
   );
 }
@@ -65,11 +75,16 @@ export function RulesCard({
   accountId,
   rules,
   extras,
+  all,
 }: {
   accountId: string;
   rules: RuleLine[];
   extras: Record<string, RuleExtras>;
+  /** The full rules, so a tap can open one in the rule dialog; null when the rule list failed to load. */
+  all: readonly RewardRule[] | null;
 }) {
+  // The rule dialog opens from state, not the address.
+  const [editing, setEditing] = React.useState<RewardRule | null>(null);
   return (
     <Card
       title="Rules on this account"
@@ -82,12 +97,15 @@ export function RulesCard({
     >
       {rules.map((rule) => {
         const { bars, note } = extras[rule.id] ?? { bars: [], note: null };
+        const full = all?.find((r) => r.id === rule.id);
         return (
           <ListRow
             key={rule.id}
             title={rule.title}
             subtitle={rule.description || undefined}
             trailing={<Text variant="body-strong">{rule.earned}</Text>}
+            clickable={Boolean(full)}
+            onClick={full ? () => setEditing(full) : undefined}
           >
             {bars.length > 0 || note ? (
               <div className="flex flex-col gap-space-6 mt-space-6">
@@ -104,6 +122,9 @@ export function RulesCard({
           </ListRow>
         );
       })}
+      {editing && all ? (
+        <RuleEditor accountId={accountId} rule={editing} rules={all} onClose={() => setEditing(null)} />
+      ) : null}
     </Card>
   );
 }
