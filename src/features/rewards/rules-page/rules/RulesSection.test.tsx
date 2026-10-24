@@ -135,12 +135,12 @@ beforeEach(() => {
 describe('RulesSection list', () => {
   it('lists the rules in priority order with their earn, scope, stacking and what they earned', () => {
     renderSection({ r1: { text: '0 pts', zero: true }, r2: { text: '2,180 pts', zero: false } });
-    const rows = screen.getAllByText(/ so far$/);
-    expect(rows[0].textContent).toContain('20 pts / ₹150 · 3 MCCs');
-    expect(rows[0].textContent).toContain('exclusive');
-    expect(rows[0].textContent).toContain('0 pts so far');
-    expect(rows[1].textContent).toContain('everything else');
+    expect(screen.getByText('20 pts / ₹150 · 3 MCCs')).toBeInTheDocument();
+    expect(screen.getByText('4 pts / ₹150 · everything else')).toBeInTheDocument();
+    expect(screen.getAllByText(/^· exclusive/).length).toBe(2);
+    expect(screen.getByText('0 pts')).toBeInTheDocument();
     expect(screen.getByText('2,180 pts')).toBeInTheDocument();
+    expect(screen.queryByText(/so far/)).toBeNull();
   });
 
   it('greys an ended rule, says it ended and offers no End & clone for it', async () => {

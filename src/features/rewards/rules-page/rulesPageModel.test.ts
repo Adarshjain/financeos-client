@@ -109,13 +109,11 @@ describe('rule row words', () => {
     expect(capWords(rule())).toBeNull();
   });
 
-  it('writes earns, applies to, cap, stacking and what it earned so far', () => {
-    expect(ruleSubtitle(rule({ periodCap: 5000, capWindow: 'CALENDAR_MONTH' }), '2026-10-24', '0 pts')).toBe(
-      '20 pts / ₹150 · 3 MCCs · capped 5,000 / month · exclusive · 0 pts so far',
+  it('writes earns, applies to and cap; stacking, dates and earnings stay off the second line', () => {
+    expect(ruleSubtitle(rule({ periodCap: 5000, capWindow: 'CALENDAR_MONTH', activeFrom: '2026-01-01' }))).toBe(
+      '20 pts / ₹150 · 3 MCCs · capped 5,000 / month',
     );
-    expect(ruleSubtitle(rule({ stacking: 'ADDITIVE', perTxnCap: 100 }), '2026-10-24', undefined)).toBe(
-      '20 pts / ₹150 · 3 MCCs · max 100 / txn · additive',
-    );
+    expect(ruleSubtitle(rule({ stacking: 'ADDITIVE', perTxnCap: 100 }))).toBe('20 pts / ₹150 · 3 MCCs · max 100 / txn');
   });
 
   it('marks an ended rule: the end day itself is outside it', () => {

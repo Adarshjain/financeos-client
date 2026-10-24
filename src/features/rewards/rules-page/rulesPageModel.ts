@@ -1,7 +1,6 @@
 import { capTone, milestonePace } from '@/features/accounts/detail/rewards/rewardsModel';
 import { formatAmount, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import { accrualSummary } from '@/features/rewards/rules/manager/helpers';
-import { formatDateRange } from '@/lib/date-range';
 import type { RewardCapBucket, RewardReport, RewardRule, RewardType } from '@/lib/rewards.types';
 
 /** One cap's use in the reward year, drawn as a bar on its row. */
@@ -113,14 +112,10 @@ export function capWords(rule: RewardRule): string | null {
   return `capped ${amount} / ${CAP_NOUN[rule.capWindow ?? 'CALENDAR_MONTH']}`;
 }
 
-/** The row's second line: earns · applies to · cap · stacking · dates · so far. */
-export function ruleSubtitle(rule: RewardRule, today: string, earned: string | undefined): string {
+/** The phone row's second line: earns · applies to · cap. Stacking, dates and earnings are on the row already. */
+export function ruleSubtitle(rule: RewardRule): string {
   const parts = [accrualSummary(rule), appliesTo(rule), capWords(rule)];
   if (rule.perTxnCap != null) parts.push(`max ${rule.perTxnCap} / txn`);
-  parts.push(rule.stacking === 'EXCLUSIVE' ? 'exclusive' : 'additive');
-  if (rule.activeFrom || rule.activeTo) parts.push(formatDateRange(rule.activeFrom, rule.activeTo, { endExclusive: true }));
-  if (isEnded(rule, today)) parts.push('ended');
-  if (earned) parts.push(`${earned} so far`);
   return parts.filter(Boolean).join(' · ');
 }
 
