@@ -523,6 +523,28 @@ describe('DataTable', () => {
       expect(actionContainer).toHaveClass('desk:hidden');
     });
 
+    it('a press on a phone action runs only that action, not the row', async () => {
+      const onRowSelect = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <DataTable
+          columns={testColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          onRowSelect={onRowSelect}
+          phoneActions={() => (
+            <button type="button" onClick={onAction}>
+              Clone
+            </button>
+          )}
+        />,
+      );
+
+      await userEvent.click(screen.getAllByRole('button', { name: 'Clone' })[0]);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onRowSelect).not.toHaveBeenCalled();
+    });
+
     it('leading renders in the main cell on desktop and left of the text on phone; null draws nothing', () => {
       render(
         <DataTable
