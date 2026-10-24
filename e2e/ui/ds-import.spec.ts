@@ -85,7 +85,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/^DS Import Bank · started/)).toBeVisible();
 
       await page.goBack();
-      await expect(page.getByText('Recent imports')).toBeVisible();
+      await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
     });
 
     test('Import tab: Activity link goes to the imports in Activity; an unknown import is not found', async ({ page }) => {
