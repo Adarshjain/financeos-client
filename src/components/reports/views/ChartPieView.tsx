@@ -14,10 +14,11 @@ import {
   SERIES_SLOTS,
   seriesColor,
   SURFACE_COLOR,
-  valueFormat,
 } from '@/components/charts/chart-format';
 import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
-import { useElementSize } from '@/components/charts/useElementSize';
+import { valueFormat } from '@/lib/charts/chart-format';
+import { formatShare } from '@/lib/charts/chart-series';
+import { useElementSize } from '@/lib/charts/useElementSize';
 import { cn } from '@/lib/utils';
 
 import type { ChartViewData } from './ChartView';
@@ -205,11 +206,6 @@ export function ChartPieView({
   );
 }
 
-function formatShare(ratio: number): string {
-  const pct = ratio * 100;
-  return pct > 0 && pct < 1 ? '<1%' : `${Math.round(pct)}%`;
-}
-
 export function ChartDataTable({ data }: { data: ChartViewData }) {
   const { categories, series } = data;
   return (
@@ -237,9 +233,4 @@ export function ChartDataTable({ data }: { data: ChartViewData }) {
       </tbody>
     </table>
   );
-}
-
-/** Legend/tooltip label for a series keyed by its measure field, e.g. "spend" -> "Spend". */
-export function seriesLabel(name: string): string {
-  return name.length ? name.charAt(0).toUpperCase() + name.slice(1) : name;
 }

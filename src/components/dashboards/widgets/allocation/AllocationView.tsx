@@ -8,9 +8,10 @@
 import { PieChart } from 'lucide-react';
 import { useState } from 'react';
 
-import { formatCompact, SURFACE_COLOR } from '@/components/charts/chart-format';
-import { useElementSize } from '@/components/charts/useElementSize';
+import { SURFACE_COLOR } from '@/components/charts/chart-format';
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
+import { formatCompact } from '@/lib/charts/chart-format';
+import { useElementSize } from '@/lib/charts/useElementSize';
 import type { ChartData } from '@/lib/reports.types';
 
 import type { TemplateViewProps } from '../../builtins/registry';
