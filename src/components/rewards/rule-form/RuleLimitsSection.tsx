@@ -10,20 +10,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  CAP_WINDOW_LABELS,
+  inputClass,
+  sectionClass,
+  sectionTitleClass,
+  selectTriggerClass,
+} from '@/features/rewards/rules/form/constants';
+import {
   CapExhaustedBehavior,
   CapWindow,
   RewardCapBucket,
   RewardType,
 } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
-
-import {
-  CAP_WINDOW_LABELS,
-  inputClass,
-  sectionClass,
-  sectionTitleClass,
-  selectTriggerClass,
-} from './constants';
 
 interface RuleLimitsSectionProps {
   rewardType: RewardType;

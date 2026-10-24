@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { useRewardMilestoneForm } from '@/features/rewards/milestones/useRewardMilestoneForm';
 import type { AccountCard } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
@@ -22,7 +23,6 @@ import {
   selectTriggerClass,
 } from './milestone-form/MilestoneBasicsGrid';
 import { MilestoneCategoryMccSection } from './milestone-form/MilestoneCategoryMccSection';
-import { useRewardMilestoneForm } from './milestone-form/useRewardMilestoneForm';
 
 interface RewardMilestoneFormProps {
   accountId: string;

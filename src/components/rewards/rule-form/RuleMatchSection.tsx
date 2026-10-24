@@ -10,6 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  CHANNEL_OPTIONS,
+  chipClass,
+  DAY_OPTIONS,
+  inputClass,
+  MERCHANT_MATCH_LABELS,
+  sectionClass,
+  sectionTitleClass,
+  selectTriggerClass,
+} from '@/features/rewards/rules/form/constants';
 import { Category } from '@/lib/categories.types';
 import {
   DayOfWeek,
@@ -20,17 +30,6 @@ import {
 } from '@/lib/rewards.types';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
-
-import {
-  CHANNEL_OPTIONS,
-  chipClass,
-  DAY_OPTIONS,
-  inputClass,
-  MERCHANT_MATCH_LABELS,
-  sectionClass,
-  sectionTitleClass,
-  selectTriggerClass,
-} from './constants';
 
 interface RuleMatchSectionProps {
   categories: Category[];

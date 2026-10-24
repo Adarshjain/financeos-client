@@ -2,13 +2,13 @@
 
 import { useMemo } from 'react';
 
+import { useRecommendSimulator } from '@/features/rewards/simulator/useRecommendSimulator';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 
 import { SimulatorForm } from './simulator/SimulatorForm';
 import { SimulatorResults } from './simulator/SimulatorResults';
-import { useRecommendSimulator } from './simulator/useRecommendSimulator';
 
 export default function RecommendSimulator() {
   const { data: rawAccounts = [] } = useAccounts();

@@ -12,15 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AccountCard } from '@/lib/account.types';
-import { CounterScope, RuleStacking } from '@/lib/rewards.types';
-import { cn, formatDate, toCalendarDate } from '@/lib/utils';
-
 import {
   inputClass,
   sectionClass,
   selectTriggerClass,
-} from './constants';
+} from '@/features/rewards/rules/form/constants';
+import { AccountCard } from '@/lib/account.types';
+import { CounterScope, RuleStacking } from '@/lib/rewards.types';
+import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
 interface RuleBasicsSectionProps {
   name: string;

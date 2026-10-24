@@ -9,14 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AccrualType, CapWindow, RewardType } from '@/lib/rewards.types';
-import { cn, sanitizeDecimalInput } from '@/lib/utils';
-
 import {
   CAP_WINDOW_LABELS,
   inputClass,
   selectTriggerClass,
-} from './constants';
+} from '@/features/rewards/rules/form/constants';
+import { AccrualType, CapWindow, RewardType } from '@/lib/rewards.types';
+import { cn, sanitizeDecimalInput } from '@/lib/utils';
 
 interface TieredRateInputsProps {
   tierWindow: CapWindow;

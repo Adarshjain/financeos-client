@@ -19,11 +19,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { accrualSummary, capSummary, matchSummary } from '@/features/rewards/rules/manager/helpers';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { RewardRule } from '@/lib/rewards.types';
 import { cn } from '@/lib/utils';
-
-import { accrualSummary, capSummary, matchSummary } from './helpers';
 
 interface RuleCardItemProps {
   rule: RewardRule;

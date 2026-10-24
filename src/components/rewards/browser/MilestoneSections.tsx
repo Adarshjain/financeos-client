@@ -4,11 +4,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { milestonePayoutTotal, milestoneProgressText } from '@/features/rewards/browser/helpers';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { MilestoneStatus } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-
-import { milestonePayoutTotal, milestoneProgressText } from './helpers';
 
 function MilestoneRow({ m }: { m: MilestoneStatus }) {
   const pct =

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { formatMoney } from '@/lib/utils';
 
-import type { RewardRuleFormFields } from './useRewardRuleFormFields';
+import type { RewardRuleFormFields } from '../rules/form/useRewardRuleFormFields';
 
 /** The "test this rule" live preview — replays the same matching + accrual logic the engine runs server-side. */
 export function useRewardRulePreview(fields: RewardRuleFormFields): { matched: boolean; text: string } | null {

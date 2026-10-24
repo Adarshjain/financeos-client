@@ -1,11 +1,11 @@
 'use client';
 
+import { useRewardRulePreview } from '@/features/rewards/preview/useRewardRulePreview';
 import { Category } from '@/lib/categories.types';
 import { RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
 
 import { useRewardRuleFormFields } from './useRewardRuleFormFields';
 import { useRewardRuleFormSubmit } from './useRewardRuleFormSubmit';
-import { useRewardRulePreview } from './useRewardRulePreview';
 
 interface UseRewardRuleFormProps {
   accountId: string;

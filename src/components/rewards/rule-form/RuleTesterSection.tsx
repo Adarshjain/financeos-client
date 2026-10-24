@@ -10,17 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Category } from '@/lib/categories.types';
-import { DayOfWeek } from '@/lib/rewards.types';
-import { TransactionChannel } from '@/lib/transaction.types';
-import { cn, sanitizeDecimalInput } from '@/lib/utils';
-
 import {
   CHANNEL_OPTIONS,
   chipClass,
   inputClass,
   selectTriggerClass,
-} from './constants';
+} from '@/features/rewards/rules/form/constants';
+import { Category } from '@/lib/categories.types';
+import { DayOfWeek } from '@/lib/rewards.types';
+import { TransactionChannel } from '@/lib/transaction.types';
+import { cn, sanitizeDecimalInput } from '@/lib/utils';
 
 interface RuleTesterSectionProps {
   categories: Category[];
