@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
 
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 
 import {
   getCurrentPushSubscription,
@@ -69,9 +69,9 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
       const payload = await subscribeToPush(keyInfo?.publicKey ?? '');
       await subscribe.mutateAsync(payload);
       setEndpoint(payload.endpoint);
-      toast.success('Notifications enabled on this device');
+      notify.success('Notifications enabled on this device');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not enable notifications'));
+      notify.error(getErrorMessage(e, 'Could not enable notifications'));
     } finally {
       setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
@@ -86,9 +86,9 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
         await unsubscribe.mutateAsync((removed ?? endpoint) as string);
       }
       setEndpoint(null);
-      toast.success('Notifications disabled on this device');
+      notify.success('Notifications disabled on this device');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not disable notifications'));
+      notify.error(getErrorMessage(e, 'Could not disable notifications'));
     } finally {
       setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
@@ -98,9 +98,9 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
   const test = async () => {
     try {
       const result = await sendTest.mutateAsync();
-      toast.success(result.sent > 0 ? `Test sent to ${result.sent} device${result.sent === 1 ? '' : 's'}` : 'No device accepted the test');
+      notify.success(result.sent > 0 ? `Test sent to ${result.sent} device${result.sent === 1 ? '' : 's'}` : 'No device accepted the test');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not send a test'));
+      notify.error(getErrorMessage(e, 'Could not send a test'));
     }
   };
 

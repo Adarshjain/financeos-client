@@ -1,17 +1,21 @@
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { showToast } from '@/components/ds/Toast/Toast';
 import { ApiError } from '@/lib/api/client';
 import { AppError } from '@/lib/appError';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { navigateTo } from '@/lib/diagnostics/navigate';
 import { toastError, toastErrorResult } from '@/lib/toastError';
+import { markDineroToaster } from '@/lib/toastTarget';
 
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
   },
 }));
+
+vi.mock('@/components/ds/Toast/Toast', () => ({ showToast: vi.fn() }));
 
 vi.mock('@/lib/diagnostics/navigate', () => ({
   navigateTo: vi.fn(),
@@ -170,5 +174,16 @@ describe('toastError', () => {
 
     expect(errorLog.getSnapshot()[0].source).toBe('action');
     expect(errorLog.getSnapshot()[0].ref).toBe('req-action-1');
+  });
+});
+
+describe('toastError on a Dinero page', () => {
+  it('shows a danger toast on the Dinero toaster instead of sonner', () => {
+    vi.clearAllMocks();
+    const release = markDineroToaster();
+    toastError(new Error('boom'), 'fallback');
+    release();
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(showToast).toHaveBeenCalledWith('boom', expect.objectContaining({ tone: 'danger' }));
   });
 });

@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Banner, Button, Card, CardEmpty, ListRow, Text } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 
 import { useSaveSettings } from './KindsCard';
 import { addedOn, describeBrowser } from './notificationSettings.helpers';
@@ -69,9 +69,9 @@ export function PushCard({ settings, browser }: DevicesProps) {
   const remove = async (endpoint: string) => {
     try {
       await unsubscribe.mutateAsync(endpoint);
-      toast.success('Device removed');
+      notify.success('Device removed');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not remove the device'));
+      notify.error(getErrorMessage(e, 'Could not remove the device'));
     }
   };
 

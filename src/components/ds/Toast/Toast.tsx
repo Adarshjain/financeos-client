@@ -1,7 +1,9 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps } from 'sonner';
+
+import { markDineroToaster } from '@/lib/toastTarget';
 
 import { type BannerTone,bannerToneStyles } from '../Banner/toneStyles';
 import { Button } from '../Button/Button';
@@ -84,6 +86,7 @@ export function Toaster({
   mobileOffset,
   ...props
 }: ToasterProps) {
+  useEffect(() => markDineroToaster(), []);
   return (
     <SonnerToaster
       id={id}

@@ -1,10 +1,10 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { toast } from 'sonner';
 
 import { useDiagnostics } from '@/lib/diagnostics/DiagnosticsProvider';
 import { type DiagnosticRecord, errorLog } from '@/lib/diagnostics/errorLog';
+import { notify } from '@/lib/notify';
 
 /** The client error ring buffer and its actions: copy a reference, copy all, share, clear. */
 export function useLocalFailures() {
@@ -31,7 +31,7 @@ export function useLocalFailures() {
   const copyRef = (rec: DiagnosticRecord): boolean => {
     if (!navigator?.clipboard) return false;
     navigator.clipboard.writeText(rec.ref);
-    toast.success(`Copied ref ${rec.ref}`);
+    notify.success(`Copied ref ${rec.ref}`);
     return true;
   };
 
@@ -39,7 +39,7 @@ export function useLocalFailures() {
     const text = reportText();
     if (navigator?.clipboard) {
       navigator.clipboard.writeText(text);
-      toast.success('Diagnostics report copied to clipboard');
+      notify.success('Diagnostics report copied to clipboard');
     }
   };
 
@@ -61,7 +61,7 @@ export function useLocalFailures() {
 
   const clear = () => {
     errorLog.clear();
-    toast.info('Local error history cleared');
+    notify.info('Local error history cleared');
   };
 
   return { records, copyRef, copyAll, share, clear };

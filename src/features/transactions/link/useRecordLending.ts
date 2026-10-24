@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
@@ -19,6 +18,7 @@ import {
   suggestedEntryType,
   toEntryType,
 } from '@/lib/lendingEntry';
+import { notify } from '@/lib/notify';
 import { useCounterpartySuggestion } from '@/lib/query/hooks/useCounterparties';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -164,7 +164,7 @@ export function useRecordLending({
     mutationFn: (body: CreateLendingRequest) =>
       api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
     onSuccess: () => {
-      toast.success('Lending recorded');
+      notify.success('Lending recorded');
       finishAndClose();
     },
     onError: (err: unknown) => {
@@ -180,7 +180,7 @@ export function useRecordLending({
       }),
     onMutate: (lendingId: string) => setAttachingId(lendingId),
     onSuccess: () => {
-      toast.success('Attached to ledger entry');
+      notify.success('Attached to ledger entry');
       finishAndClose();
     },
     onError: (err: unknown) => {
@@ -195,7 +195,7 @@ export function useRecordLending({
 
   const handleSubmitNew = () => {
     if (!canSubmitNew || !transaction || !party) {
-      toast.error('Fill in the required fields');
+      notify.error('Fill in the required fields');
       return;
     }
     const body: CreateLendingRequest = {

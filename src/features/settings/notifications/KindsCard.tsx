@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Card } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse, UpdateNotificationSettingsRequest } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 
 import type { KindGroup, KindRow } from './notificationKinds';
 import { isKindEnabled } from './notificationSettings.helpers';
@@ -19,7 +19,7 @@ export function useSaveSettings() {
     try {
       await update.mutateAsync(body);
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not save notification settings'));
+      notify.error(getErrorMessage(e, 'Could not save notification settings'));
     }
   };
   return { save, pending: update.isPending };

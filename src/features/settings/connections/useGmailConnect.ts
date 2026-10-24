@@ -2,7 +2,6 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
@@ -12,6 +11,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 // @/lib/types only marks it optional — see "Spec follow-ups" in the
 // migration report.
 import type { GmailSenderRequest, GmailSenderResponse } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { SyncSummary } from '@/lib/types';
@@ -65,15 +65,15 @@ export function useGmailConnect() {
 
   const { isPolling } = useJobStatusPolling<SyncSummary>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
-      toast.success('Sync completed!');
+      notify.success('Sync completed!');
       // The job is what actually creates/reconciles transactions.
       qc.invalidateQueries({ queryKey: keys.transactions.all });
     } else if (job.status === 'FAILED') {
       setMessage({ type: 'error', text: job.errorMessage || 'Sync failed.' });
-      toast.error('Sync failed.');
+      notify.error('Sync failed.');
     } else if (job.status === 'CANCELLED') {
       setMessage({ type: 'error', text: 'Sync job was cancelled.' });
-      toast.info('Sync cancelled.');
+      notify.info('Sync cancelled.');
     }
     // "Recent sync jobs" only live-polls while its own list shows an active job, so a refetch that
     // raced the enqueue can leave it empty; refresh it whenever the job settles.
@@ -107,7 +107,7 @@ export function useGmailConnect() {
   const handleDisconnect = async (id: string): Promise<boolean> => {
     try {
       await disconnectMutation.mutateAsync(id);
-      toast.success('Gmail account disconnected');
+      notify.success('Gmail account disconnected');
       return true;
     } catch (err) {
       toastError(err, 'Failed to disconnect Gmail connection');
@@ -122,7 +122,7 @@ export function useGmailConnect() {
       if (data?.jobId) {
         setActiveJobId(data.jobId);
         emitJobStarted(data.jobId);
-        toast.info('Gmail sync started in background.');
+        notify.info('Gmail sync started in background.');
       }
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Failed to sync Gmail') });
@@ -132,7 +132,7 @@ export function useGmailConnect() {
   const handleRetryAttentionItem = async (ledgerId: string) => {
     try {
       const data = await retryAttentionMutation.mutateAsync(ledgerId);
-      toast.success('Item queued for retry!');
+      notify.success('Item queued for retry!');
       if (data?.jobId) {
         setActiveJobId(data.jobId);
         emitJobStarted(data.jobId);
@@ -145,7 +145,7 @@ export function useGmailConnect() {
   const handleArchiveAttentionItem = async (ledgerId: string) => {
     try {
       await archiveAttentionMutation.mutateAsync(ledgerId);
-      toast.success('Item archived');
+      notify.success('Item archived');
     } catch (err) {
       toastError(err, 'Failed to archive Gmail attention item');
     }
@@ -154,7 +154,7 @@ export function useGmailConnect() {
   const handleUnarchiveAttentionItem = async (ledgerId: string) => {
     try {
       await unarchiveAttentionMutation.mutateAsync(ledgerId);
-      toast.success('Item moved back to Needs Attention');
+      notify.success('Item moved back to Needs Attention');
     } catch (err) {
       toastError(err, 'Failed to unarchive Gmail attention item');
     }
@@ -188,10 +188,10 @@ export function useGmailConnect() {
     try {
       if (editingSender) {
         await updateSenderMutation.mutateAsync({ id: editingSender.id, body: requestData });
-        toast.success('Sender updated');
+        notify.success('Sender updated');
       } else {
         await createSenderMutation.mutateAsync(requestData);
-        toast.success('Sender added');
+        notify.success('Sender added');
       }
       setIsSenderDialogOpen(false);
     } catch (err) {
@@ -202,7 +202,7 @@ export function useGmailConnect() {
   const handleSenderDelete = async (id: string): Promise<boolean> => {
     try {
       await deleteSenderMutation.mutateAsync(id);
-      toast.success('Sender deleted');
+      notify.success('Sender deleted');
       return true;
     } catch (err) {
       toastError(err, 'Failed to delete Gmail sender');

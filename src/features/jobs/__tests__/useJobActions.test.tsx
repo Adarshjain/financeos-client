@@ -7,6 +7,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/components/ds/Toast/Toast', () => ({ showToast: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { info: vi.fn(), success: vi.fn(), error: vi.fn() } }));
 const routerRefresh = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', async (importOriginal) => ({
@@ -14,7 +15,9 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }));
 
+import { showToast } from '@/components/ds/Toast/Toast';
 import { api } from '@/lib/api/client';
+import { markDineroToaster } from '@/lib/toastTarget';
 
 import { useJobActions } from '../useJobActions';
 
@@ -54,5 +57,17 @@ describe('useJobActions router refresh', () => {
     act(() => result.current.retry('j1'));
     await waitFor(() => expect(onRetried).toHaveBeenCalledWith({ id: 'j2' }));
     expect(routerRefresh).not.toHaveBeenCalled();
+  });
+});
+
+describe('useJobActions on a Dinero page', () => {
+  it('shows the retry success on the Dinero toaster', async () => {
+    vi.clearAllMocks();
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'j2' } } as never);
+    const release = markDineroToaster();
+    const { result } = setup();
+    act(() => result.current.retry('j1'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Job retried', expect.objectContaining({ tone: 'success' })));
+    release();
   });
 });

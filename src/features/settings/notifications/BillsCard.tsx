@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button, Card, Icon, ListRow, Select, Text } from '@/components/ds';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 
 import { KindSwitches, useSaveSettings } from './KindsCard';
 import { BILLS_KINDS } from './notificationKinds';
@@ -25,7 +25,7 @@ export function BillsCard({ settings }: { settings: NotificationSettingsResponse
     const changed = choices.find((o) => next.includes(o) !== offsets.includes(o));
     const result = changed === undefined ? offsets : toggleOffset(offsets, changed);
     if (result.length === 0) {
-      toast.error('Keep at least one reminder');
+      notify.error('Keep at least one reminder');
       return;
     }
     void save({ reminderOffsets: result });

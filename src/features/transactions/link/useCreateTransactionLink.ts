@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 import { createTransactionLink } from '@/features/transactions/detail/transactionDetailApi';
+import { notify } from '@/lib/notify';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -15,7 +15,7 @@ export function useCreateTransactionLink(onLinked: () => void) {
   return useMutation({
     mutationFn: (body: CreateTransactionLinkRequest) => createTransactionLink(body),
     onSuccess: () => {
-      toast.success('Transactions linked successfully');
+      notify.success('Transactions linked successfully');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       // A TRANSFER/REVERSAL link moves the emergency fund's outflow and the spending calendar.
       void invalidateMoneyQueries(queryClient);
