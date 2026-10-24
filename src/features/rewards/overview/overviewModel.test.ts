@@ -133,7 +133,7 @@ describe('nextMilestoneText', () => {
   it('says what is to go: rupees for a spend target, a count for transactions', () => {
     expect(nextMilestoneText({ ...spend, progress: 280000, threshold: 400000 }, null)).toBe('₹1.2L to go · Annual spend');
     expect(nextMilestoneText({ ...spend, progress: 3500, threshold: 4000 }, null)).toBe('₹500 to go · Annual spend');
-    expect(nextMilestoneText({ name: 'Ten swipes', progress: 7, threshold: 10, basis: 'COUNT', windowEnd: '2026-10-31' }, null)).toBe(
+    expect(nextMilestoneText({ name: 'Ten swipes', progress: 7, threshold: 10, basis: 'TXN_COUNT', windowEnd: '2026-10-31' }, null)).toBe(
       '3 more · Ten swipes'
     );
   });
