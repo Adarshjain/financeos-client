@@ -5,18 +5,18 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { Aggregation, DatasourceCatalog } from '@/lib/reports.types';
-
 import type {
   AggTableDraft,
   DimensionDraft,
   MeasureDraft,
-} from '../builderReducer';
-import { newDraftId } from '../builderReducer';
-import { fieldByName } from '../catalog';
-import { AGGREGATION_LABELS } from '../labels';
+} from '@/features/reports/builder/builderReducer';
+import { newDraftId } from '@/features/reports/builder/builderReducer';
+import { fieldByName } from '@/features/reports/builder/catalog';
+import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
+import { aggregatedColumnKey } from '@/features/reports/builder/serialize';
+import type { Aggregation, DatasourceCatalog } from '@/lib/reports.types';
+
 import { MeasureRefEditor } from '../MeasureRefEditor';
-import { aggregatedColumnKey } from '../serialize';
 import type { SortKey } from '../SortBuilder';
 import { SortBuilder } from '../SortBuilder';
 import { DimensionList } from './DimensionList';

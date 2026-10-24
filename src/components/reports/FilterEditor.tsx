@@ -8,11 +8,12 @@ import { Fragment } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import type { DynamicOptions } from '@/features/reports/builder/catalog';
+import { filterableFields, operatorsForField } from '@/features/reports/builder/catalog';
+import { defaultFilterClause } from '@/features/reports/builder/filterClause';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
-import type { DynamicOptions } from './catalog';
-import { filterableFields, operatorsForField } from './catalog';
-import { defaultFilterClause, FilterRow } from './FilterRow';
+import { FilterRow } from './FilterRow';
 
 interface FilterEditorProps {
   catalog: DatasourceCatalog;

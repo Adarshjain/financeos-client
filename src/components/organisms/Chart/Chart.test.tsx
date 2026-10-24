@@ -357,6 +357,18 @@ describe('Chart pie / donut', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
+  it('lets `money` decide over the measure name', () => {
+    const asMoney = render(<Chart data={pie({ measure: { field: 'spend', aggregation: 'sum' } })} money />);
+    expect(screen.getByText('₹6,000')).toBeInTheDocument();
+    asMoney.unmount();
+    const notMoney = render(<Chart data={pie({ measure: sumAmount })} money={false} />);
+    expect(screen.queryByText('₹6,000')).not.toBeInTheDocument();
+    expect(screen.getByText('6,000')).toBeInTheDocument();
+    notMoney.unmount();
+    render(<Chart data={pie({ measure: { field: 'spend', aggregation: 'sum' } })} />);
+    expect(screen.queryByText('₹6,000')).not.toBeInTheDocument();
+  });
+
   it('formats as money when the measure is a money field, but not for counts', () => {
     const money = render(<Chart data={pie({ measure: sumAmount })} />);
     expect(screen.getByText('₹6,000')).toBeInTheDocument();

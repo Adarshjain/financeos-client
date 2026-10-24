@@ -18,8 +18,8 @@
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
+import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { formatComparedRange, formatDateRange, formatDateRangeFull } from '@/lib/date-range';
-import { formatMeasureValue } from '@/lib/reports.helpers';
 import type { KpiData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 

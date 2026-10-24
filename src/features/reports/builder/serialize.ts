@@ -27,7 +27,7 @@ import type { BuilderState } from './builderReducer';
 import { fieldByName, isDateFieldName, valueKind } from './catalog';
 
 /** Whether a filter clause has a value appropriate to its operator. */
-function isFilterComplete(
+export function isFilterComplete(
   catalog: DatasourceCatalog,
   clause: FilterClause,
 ): boolean {
@@ -68,6 +68,14 @@ function cleanFilters(
   return filters.filter((f) => isFilterComplete(catalog, f));
 }
 
+/** A series split makes no sense for pie, donut (slices) or breakdown (rows). */
+export function hasSeries(chartType: ChartDefinition['chartType']): boolean {
+  return chartType !== 'pie' && chartType !== 'donut' && chartType !== 'breakdown';
+}
+
+export const TOP_N_MAX = 50;
+export const SUB_LIMIT_MAX = 10;
+
 function dimRef(
   catalog: DatasourceCatalog,
   field: string,
@@ -106,7 +114,7 @@ export function serializeDefinition(
 
   if (state.type === 'CHART') {
     const c = state.chart;
-    const isPieDonut = c.chartType === 'pie' || c.chartType === 'donut';
+    const isBreakdown = c.chartType === 'breakdown';
     const def: ChartDefinition = {
       chartType: c.chartType,
       dimension: dimRef(catalog, c.dimensionField ?? '', c.dimensionGranularity),
@@ -116,8 +124,24 @@ export function serializeDefinition(
       },
       filters,
     };
-    if (!isPieDonut && c.seriesField) {
+    if (hasSeries(c.chartType) && c.seriesField) {
       def.series = dimRef(catalog, c.seriesField, c.seriesGranularity);
+    }
+    if (c.limit !== undefined) {
+      def.limit = c.limit;
+      if (c.other) def.other = true;
+    }
+    if (c.order) def.order = c.order;
+    // A comparison shifts the date window, so it is meaningless (and dropped) on a date dimension.
+    if (c.comparisonEnabled && !isDateFieldName(catalog, c.dimensionField)) {
+      const comparison: NonNullable<ChartDefinition['comparison']> = { enabled: true, period: 'previous_period' };
+      if (c.comparisonHigherIsBetter !== undefined) comparison.higherIsBetter = c.comparisonHigherIsBetter;
+      if (c.comparisonDisplay === 'previous_value') comparison.display = 'previous_value';
+      def.comparison = comparison;
+    }
+    if (isBreakdown && c.subDimensionField) {
+      def.subDimension = dimRef(catalog, c.subDimensionField, c.subDimensionGranularity);
+      if (c.subLimit !== undefined) def.subLimit = c.subLimit;
     }
     return def;
   }
@@ -199,40 +223,60 @@ export function aggregatedColumnKey(field: string, aggregation: string): string 
   return `${field}_${aggregation}`;
 }
 
-/** Reasons the current definition cannot be run/saved yet (for inline hints). */
-export function validationErrors(
+/** The part of the editor a validation message belongs to, so it can show at that field. */
+export type IssueKey =
+  | 'measure'
+  | 'aggregation'
+  | 'dimension'
+  | 'series'
+  | 'limit'
+  | 'subDimension'
+  | 'subLimit'
+  | 'columns'
+  | 'rows'
+  | 'tableColumns'
+  | 'measures'
+  | 'filters';
+
+export interface ValidationIssue {
+  key: IssueKey;
+  message: string;
+}
+
+/** Reasons the current definition cannot be run/saved yet, each with the field it belongs to. */
+export function validationIssues(
   state: BuilderState,
   catalog: DatasourceCatalog,
-): string[] {
-  const errors: string[] = [];
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const add = (key: IssueKey, message: string) => issues.push({ key, message });
 
   if (state.type === 'KPI') {
     const k = state.kpi;
-    if (!k.measure) errors.push('Select a measure.');
-    if (!k.aggregation) errors.push('Select an aggregation.');
+    if (!k.measure) add('measure', 'Select a measure.');
+    if (!k.aggregation) add('aggregation', 'Select an aggregation.');
   } else if (state.type === 'CHART') {
     const c = state.chart;
     if (!c.dimensionField) {
-      errors.push('Select a dimension.');
+      add('dimension', 'Select a dimension.');
     } else if (isDateFieldName(catalog, c.dimensionField) && !c.dimensionGranularity) {
-      errors.push('Select a granularity for the date dimension.');
+      add('dimension', 'Select a granularity for the date dimension.');
     }
-    if (!c.measureField) errors.push('Select a measure.');
-    else if (!c.measureAggregation) errors.push('Select a measure aggregation.');
+    if (!c.measureField) add('measure', 'Select a measure.');
+    else if (!c.measureAggregation) add('aggregation', 'Select a measure aggregation.');
 
-    const isPieDonut = c.chartType === 'pie' || c.chartType === 'donut';
     if (
-      !isPieDonut &&
+      hasSeries(c.chartType) &&
       c.seriesField &&
       isDateFieldName(catalog, c.seriesField) &&
       !c.seriesGranularity
     ) {
-      errors.push('Select a granularity for the date series.');
+      add('series', 'Select a granularity for the date series.');
     }
   } else {
     const t = state.table;
     if (t.tableMode === 'raw') {
-      if (t.raw.columns.length === 0) errors.push('Add at least one column.');
+      if (t.raw.columns.length === 0) add('tableColumns', 'Add at least one column.');
     } else {
       const completeRows = t.agg.rows.filter((g) => g.field);
       const completeColumns = t.agg.columns.filter((g) => g.field);
@@ -240,48 +284,71 @@ export function validationErrors(
         (m) => m.field && m.aggregation,
       );
       if (completeRows.length === 0) {
-        errors.push('Add at least one row dimension.');
+        add('rows', 'Add at least one row dimension.');
       }
-      if (completeMeasures.length === 0) errors.push('Add at least one measure.');
+      if (completeMeasures.length === 0) add('measures', 'Add at least one measure.');
       const dateMissingGran = [...completeRows, ...completeColumns].some(
         (g) => isDateFieldName(catalog, g.field) && !g.granularity,
       );
       if (dateMissingGran) {
-        errors.push('Select a granularity for each date dimension.');
+        add('rows', 'Select a granularity for each date dimension.');
       }
       const rowFields = new Set(completeRows.map((g) => g.field));
       if (completeColumns.some((g) => rowFields.has(g.field))) {
-        errors.push('A field cannot be used in both rows and columns.');
+        add('columns', 'A field cannot be used in both rows and columns.');
       }
       // Within-list duplicates were never checked, so the same dimension could
       // be grouped on twice in one axis, or the same field aggregated twice the
       // same way.
       if (rowFields.size !== completeRows.length) {
-        errors.push('Each row dimension must be a different field.');
+        add('rows', 'Each row dimension must be a different field.');
       }
       const columnFieldSet = new Set(completeColumns.map((g) => g.field));
       if (columnFieldSet.size !== completeColumns.length) {
-        errors.push('Each column dimension must be a different field.');
+        add('columns', 'Each column dimension must be a different field.');
       }
       const measureKeys = new Set(
         completeMeasures.map((m) => `${m.field}:${m.aggregation}`),
       );
       if (measureKeys.size !== completeMeasures.length) {
-        errors.push('Each measure must be a different field/aggregation pair.');
+        add('measures', 'Each measure must be a different field/aggregation pair.');
       }
     }
   }
 
-  errors.push(...billingCycleErrors(state, catalog));
-  return errors;
+  if (state.type === 'CHART') {
+    const c = state.chart;
+    if (c.limit !== undefined && !(Number.isInteger(c.limit) && c.limit >= 1 && c.limit <= TOP_N_MAX)) {
+      add('limit', `Top N must be a whole number from 1 to ${TOP_N_MAX}.`);
+    }
+    if (c.chartType === 'breakdown' && c.subDimensionField) {
+      if (c.subDimensionField === c.dimensionField) add('subDimension', 'Sub-rows must differ from rows.');
+      if (isDateFieldName(catalog, c.subDimensionField) && !c.subDimensionGranularity) {
+        add('subDimension', 'Select a granularity for the date sub-rows.');
+      }
+      if (c.subLimit !== undefined && !(Number.isInteger(c.subLimit) && c.subLimit >= 1 && c.subLimit <= SUB_LIMIT_MAX)) {
+        add('subLimit', `Sub-rows must be a whole number from 1 to ${SUB_LIMIT_MAX}.`);
+      }
+    }
+  }
+
+  for (const message of billingCycleErrors(state, catalog)) add('filters', message);
+  return issues;
+}
+
+/** Reasons the current definition cannot be run/saved yet (for inline hints). */
+export function validationErrors(
+  state: BuilderState,
+  catalog: DatasourceCatalog,
+): string[] {
+  return validationIssues(state, catalog).map((i) => i.message);
 }
 
 /** Fields the definition groups or lists by (dimensions, series, rows, columns). */
 function groupedFieldNames(state: BuilderState): string[] {
   if (state.type === 'CHART') {
     const c = state.chart;
-    const isPieDonut = c.chartType === 'pie' || c.chartType === 'donut';
-    return [c.dimensionField, isPieDonut ? undefined : c.seriesField].filter((f): f is string => !!f);
+    return [c.dimensionField, hasSeries(c.chartType) ? c.seriesField : undefined, c.chartType === 'breakdown' ? c.subDimensionField : undefined].filter((f): f is string => !!f);
   }
   if (state.type === 'TABLE') {
     const t = state.table;

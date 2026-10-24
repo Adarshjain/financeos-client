@@ -10,6 +10,7 @@ import {
 import type {
   Aggregation,
   ChartDefinition,
+  ChartOrder,
   ComparisonDisplay,
   DatasourceCatalog,
   FilterClause,
@@ -41,6 +42,23 @@ export interface ChartDraft {
   seriesGranularity?: Granularity;
   measureField?: string;
   measureAggregation?: Aggregation;
+  /** Top N (1..50); undefined = every category. */
+  limit?: number;
+  /** With `limit`: fold the rest into "Other". */
+  other?: boolean;
+  /** undefined = the default order (by dimension; high to low for a breakdown). */
+  order?: ChartOrder;
+  /** Off unless set; never on for a date dimension (serialize drops it). */
+  comparisonEnabled?: boolean;
+  /** undefined = no preference (neutral). */
+  comparisonHigherIsBetter?: boolean;
+  /** undefined = the default (`change`); only `previous_value` is serialized. */
+  comparisonDisplay?: ComparisonDisplay;
+  /** Breakdown only: the sub-rows' dimension. */
+  subDimensionField?: string;
+  subDimensionGranularity?: Granularity;
+  /** Breakdown only: sub-rows per row (1..10); undefined = the server default (3). */
+  subLimit?: number;
 }
 
 export interface RawTableDraft {
@@ -186,8 +204,15 @@ export function builderReducer(
       };
     case 'KPI_SET':
       return { ...state, kpi: { ...state.kpi, ...action.value } };
-    case 'CHART_SET':
-      return { ...state, chart: { ...state.chart, ...action.value } };
+    case 'CHART_SET': {
+      const chart = { ...state.chart, ...action.value };
+      // Sub-rows cannot be the rows' own field: choosing it as the dimension drops the sub-dimension.
+      if (action.value.dimensionField !== undefined && action.value.dimensionField === chart.subDimensionField) {
+        chart.subDimensionField = undefined;
+        chart.subDimensionGranularity = undefined;
+      }
+      return { ...state, chart };
+    }
     case 'TABLE_SET':
       return { ...state, table: { ...state.table, ...action.value } };
     case 'TABLE_SET_RAW':
@@ -252,6 +277,15 @@ export function hydrateState(report: ReportResponse): BuilderState {
       seriesGranularity: d.series?.granularity,
       measureField: d.measure?.field,
       measureAggregation: d.measure?.aggregation,
+      limit: d.limit,
+      other: d.other,
+      order: d.order,
+      comparisonEnabled: d.comparison?.enabled === true ? true : undefined,
+      comparisonHigherIsBetter: d.comparison?.higherIsBetter,
+      comparisonDisplay: d.comparison?.display,
+      subDimensionField: d.subDimension?.field,
+      subDimensionGranularity: d.subDimension?.granularity,
+      subLimit: d.subLimit,
     };
   } else {
     if (!isTableDefinition(def)) {

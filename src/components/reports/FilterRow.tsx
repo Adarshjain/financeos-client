@@ -15,6 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { DynamicOptions } from '@/features/reports/builder/catalog';
+import {
+  fieldByName,
+  filterableFields,
+  operatorsForField,
+  valueKind,
+} from '@/features/reports/builder/catalog';
+import { defaultFilterClause } from '@/features/reports/builder/filterClause';
+import { humanizeToken } from '@/features/reports/builder/labels';
 import {
   buildFilter,
   dateBetween,
@@ -28,42 +37,10 @@ import type {
   FilterValue,
 } from '@/lib/reports.types';
 
-import type { DynamicOptions } from './catalog';
-import {
-  fieldByName,
-  filterableFields,
-  operatorsForField,
-  valueKind,
-} from './catalog';
 import { getFieldIcon } from './filter/fieldIcons';
 import { ValueEditor } from './filter/ValueEditor';
-import { humanizeToken } from './labels';
 
 export { getFieldIcon } from './filter/fieldIcons';
-
-/** A fresh clause for (field, operator) with an empty default value per kind. */
-export function defaultFilterClause(
-  catalog: DatasourceCatalog,
-  field: FieldDefinition,
-  operator: string
-): FilterClause {
-  switch (valueKind(catalog, field, operator)) {
-    case 'none':
-      return buildFilter(field.name, operator);
-    case 'multi':
-      return buildFilter(field.name, operator, []);
-    case 'numberBetween':
-      return buildFilter(field.name, operator, numberBetween(0, 0));
-    case 'dateBetween':
-      return buildFilter(field.name, operator, dateBetween('', ''));
-    case 'relativeAmount':
-      return buildFilter(field.name, operator, relativeAmount(1));
-    case 'boolean':
-      return buildFilter(field.name, operator, true);
-    default:
-      return buildFilter(field.name, operator, '');
-  }
-}
 
 interface FilterRowProps {
   catalog: DatasourceCatalog;

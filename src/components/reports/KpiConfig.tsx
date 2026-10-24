@@ -13,9 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { KpiDraft } from '@/features/reports/builder/builderReducer';
 import type { ComparisonDisplay, DatasourceCatalog } from '@/lib/reports.types';
 
-import type { KpiDraft } from './builderReducer';
 import { MeasureRefEditor } from './MeasureRefEditor';
 
 interface KpiConfigProps {

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import type { BuilderState } from '@/features/reports/builder/builderReducer';
+import { initialBuilderState } from '@/features/reports/builder/builderReducer';
+import { validationErrors } from '@/features/reports/builder/serialize';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
-
-import type { BuilderState } from '../builderReducer';
-import { initialBuilderState } from '../builderReducer';
-import { validationErrors } from '../serialize';
 
 const operators = {
   date: { absolute: ['is', 'between'], relative: ['this_month'], cycle: ['this_billing_cycle', 'previous_billing_cycle'] },

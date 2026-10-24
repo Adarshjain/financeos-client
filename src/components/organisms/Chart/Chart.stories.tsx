@@ -22,6 +22,7 @@ const meta: Meta<typeof Chart> = {
   argTypes: {
     data: { control: 'object' },
     fill: { control: 'boolean' },
+    money: { control: 'boolean' },
     yDomain: { control: 'inline-radio', options: ['zero', 'data'] },
   },
 };

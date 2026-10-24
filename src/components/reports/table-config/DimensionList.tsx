@@ -5,10 +5,10 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import type { DimensionDraft } from '@/features/reports/builder/builderReducer';
+import { newDraftId } from '@/features/reports/builder/builderReducer';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
-import type { DimensionDraft } from '../builderReducer';
-import { newDraftId } from '../builderReducer';
 import { DimensionRefEditor } from '../DimensionRefEditor';
 
 export interface DimensionListProps {

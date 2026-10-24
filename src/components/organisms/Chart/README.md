@@ -12,6 +12,7 @@ A report chart over Recharts, drawn in Dinero tokens. Renders a report's chart d
 ## Props
 - `data: ChartInput`: categories, series (aligned by index), `chartType` and `measure` (money formatting when the measure is a money field)
 - `fill?: boolean`: fill the parent's height instead of the default frame
+- `money?: boolean`: whether values are money; when given it wins over the measure-name inference, when omitted behaviour is unchanged
 - `yDomain?: 'zero' | 'data'`: value axis includes 0 (default) or fits the data range
 
 ## Variants

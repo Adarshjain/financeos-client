@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { isRelativeDateOp, operatorsForField, valueKind } from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog, FieldDefinition } from '@/lib/reports.types';
-
-import { isRelativeDateOp, operatorsForField, valueKind } from '../catalog';
 
 const catalog = {
   fields: [],

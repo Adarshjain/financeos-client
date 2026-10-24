@@ -2,7 +2,6 @@
 // the option lists the builder controls render, honoring the field-role /
 // allowedInReports / per-type-operator rules. No React, no side effects.
 
-import type { ComboboxOption } from '@/components/Combobox';
 import type {
   Aggregation,
   DatasourceCatalog,
@@ -12,11 +11,14 @@ import type {
   ReportType,
 } from '@/lib/reports.types';
 
+/** One option of an enum field: the stored value as `id`, the label people read as `name`. */
+export type EnumOption = { id: string; name: string };
+
 /** Options for dynamic enum fields (category, account), keyed by field name. */
 /** Present (true) on DynamicOptions when the values request failed. */
 export const DYNAMIC_OPTIONS_FAILED: unique symbol = Symbol('dynamicOptionsFailed');
 
-export type DynamicOptions = Record<string, ComboboxOption[]> & { [DYNAMIC_OPTIONS_FAILED]?: true };
+export type DynamicOptions = Record<string, EnumOption[]> & { [DYNAMIC_OPTIONS_FAILED]?: true };
 
 /**
  * The boolean filter field flagging transactions excluded from reports. It is a
@@ -121,7 +123,7 @@ export function isRelativeDateOp(
 export function enumOptionsFor(
   field: FieldDefinition,
   dynamic: DynamicOptions,
-): ComboboxOption[] {
+): EnumOption[] {
   if (field.dynamic) {
     return dynamic[field.name] ?? [];
   }

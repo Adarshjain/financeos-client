@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { DYNAMIC_OPTIONS_FAILED } from '@/components/reports/catalog';
+import { DYNAMIC_OPTIONS_FAILED } from '@/features/reports/builder/catalog';
 import type { FieldDefinition } from '@/lib/reports.types';
 
 import { ValueEditor } from '../ValueEditor';

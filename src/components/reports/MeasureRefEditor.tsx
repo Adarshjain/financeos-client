@@ -13,14 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { aggsFor, fieldsFor } from '@/features/reports/builder/catalog';
+import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
 import type {
   Aggregation,
   DatasourceCatalog,
   ReportType,
 } from '@/lib/reports.types';
-
-import { aggsFor, fieldsFor } from './catalog';
-import { AGGREGATION_LABELS } from './labels';
 
 export interface MeasureValue {
   field?: string;

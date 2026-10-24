@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMeasureValue, valueLabel } from '@/lib/reports.helpers';
+import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
+import { valueLabel } from '@/lib/reports.helpers';
 import type {
   PivotColumn,
   PivotMeasureInfo,

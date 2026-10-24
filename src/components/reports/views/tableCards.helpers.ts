@@ -2,9 +2,8 @@
 // titles a card, which one is its figure, and the muted line made of the rest.
 // Driven only by column metadata, so any datasource's table reads as cards.
 
+import { formatCell } from '@/features/reports/view/cells';
 import type { TableColumn, TableRow } from '@/lib/reports.types';
-
-import { formatCell } from './TableView';
 
 export interface CardLayout {
   /** The card's title column; null when the table has no text column. */

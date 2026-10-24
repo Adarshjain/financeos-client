@@ -20,6 +20,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { builderReducer, hydrateState, initialBuilderState } from '@/features/reports/builder/builderReducer';
+import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from '@/features/reports/builder/serialize';
+import { useReportDynamicOptions } from '@/features/reports/builder/useReportDynamicOptions';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type {
@@ -31,11 +34,8 @@ import type {
 } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 
-import { builderReducer, hydrateState, initialBuilderState } from './builderReducer';
 import { PreviewPane } from './PreviewPane';
 import { ReportConfigurator } from './ReportConfigurator';
-import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from './serialize';
-import { useReportDynamicOptions } from './useReportDynamicOptions';
 
 interface ReportBuilderProps {
   mode: 'create' | 'edit';

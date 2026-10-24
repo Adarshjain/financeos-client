@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { DynamicOptions } from '@/features/reports/builder/catalog';
+import { DYNAMIC_OPTIONS_FAILED, enumOptionsFor, valueKind } from '@/features/reports/builder/catalog';
 import {
   dateBetween,
   numberBetween,
@@ -22,8 +24,6 @@ import type {
   FilterValue,
 } from '@/lib/reports.types';
 
-import type { DynamicOptions } from '../catalog';
-import { DYNAMIC_OPTIONS_FAILED, enumOptionsFor, valueKind } from '../catalog';
 import { MultiSelect } from '../MultiSelect';
 
 export interface ValueEditorProps {

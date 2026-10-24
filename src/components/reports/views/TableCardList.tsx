@@ -18,13 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatCell } from '@/features/reports/view/cells';
 import type { SortClause, TableColumn, TableData, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { cardLayout, cardMetaLine } from './tableCards.helpers';
 import { TitleCell } from './tableCells';
 import { TablePagination } from './TablePagination';
-import { formatCell, groupLabel, groupTotal, subtitleText } from './TableView';
+import { groupLabel, groupTotal, subtitleText } from './TableView';
 
 /** The sort select's value for the report's own order. */
 const DEFAULT_ORDER = '__default__';

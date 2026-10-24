@@ -12,15 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { ChartDraft } from '@/features/reports/builder/builderReducer';
+import { CHART_TYPE_LABELS } from '@/features/reports/builder/labels';
 import type { ChartDefinition, DatasourceCatalog } from '@/lib/reports.types';
 
-import type { ChartDraft } from './builderReducer';
 import { DimensionRefEditor } from './DimensionRefEditor';
-import { CHART_TYPE_LABELS } from './labels';
 import { MeasureRefEditor } from './MeasureRefEditor';
 
 const CHART_TYPE_OPTIONS = (
-  Object.keys(CHART_TYPE_LABELS) as ChartDefinition['chartType'][]
+  Object.keys(CHART_TYPE_LABELS) as (keyof typeof CHART_TYPE_LABELS)[]
 ).map((t) => ({ value: t, label: CHART_TYPE_LABELS[t] }));
 
 interface ChartConfigProps {
