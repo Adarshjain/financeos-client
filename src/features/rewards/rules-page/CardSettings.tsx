@@ -46,9 +46,11 @@ export function CardSettings({ accountId }: { accountId: string }) {
       title="Card settings"
       subtitle="Apply to every rule on this card"
       action={
-        <Button variant="link" disabled={!accountId} onClick={() => setEditing(true)}>
-          Edit
-        </Button>
+        <Text variant="label" as="div">
+          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </Text>
       }
     >
       <div className="grid grid-cols-2 gap-space-16 p-space-16 desk:grid-cols-5">
@@ -63,9 +65,11 @@ export function CardSettings({ accountId }: { accountId: string }) {
         <Fact label="Anniversary">
           <Text variant="body-strong">{anniversary ? formatDayMonthYear(anniversary) : 'Not set'}</Text>
           {account ? (
-            <Button variant="link" onClick={() => setEditingCard(true)}>
-              Edit card
-            </Button>
+            <Text variant="label" as="div">
+              <Button variant="link" size="sm" onClick={() => setEditingCard(true)}>
+                Edit card
+              </Button>
+            </Text>
           ) : null}
         </Fact>
         <Fact label="Fees in basis">

@@ -59,9 +59,11 @@ export function MilestonesSection({
       title="Milestones"
       subtitle="Bonuses for hitting a spend threshold"
       action={
-        <Button variant="link" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
-          New milestone
-        </Button>
+        <Text variant="label" as="div">
+          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
+            New milestone
+          </Button>
+        </Text>
       }
     >
       {milestones.length === 0 ? (
@@ -80,7 +82,7 @@ export function MilestonesSection({
             onClick={() => setOpen({ mode: 'edit', id: m.id })}
             trailing={
               usage?.[m.id] ? (
-                <div className="flex w-container-xs max-w-full flex-col items-end gap-space-4">
+                <div className="flex w-space-96 max-w-full flex-col items-end gap-space-4 desk:w-container-xs">
                   <ProgressBar className="w-full" value={usage[m.id].pct} />
                   <Text variant="caption" tone="ink-3">
                     {usage[m.id].label}
