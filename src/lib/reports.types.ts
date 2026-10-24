@@ -294,6 +294,12 @@ export interface ReportResponse {
   updatedAt: string;
 }
 
+/** A dashboard that uses a report. */
+export interface ReportDashboardRef {
+  id: string;
+  name: string;
+}
+
 /** List-view report metadata (no definition). */
 export interface ReportSummaryResponse {
   id: string;
@@ -303,6 +309,10 @@ export interface ReportSummaryResponse {
   datasource: string;
   createdAt: string;
   updatedAt: string;
+  /** The chart subtype on the wire ("bar", "stackedBar", "breakdown"…); null for KPI and table, absent on an older server. */
+  chartType?: string | null;
+  /** The dashboards that use the report, ordered by name (empty when none). */
+  dashboards: ReportDashboardRef[];
 }
 
 /** Pagination params for running a TABLE report; ignored by KPI/CHART. */

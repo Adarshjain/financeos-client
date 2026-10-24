@@ -1198,7 +1198,7 @@ function asReportData(raw: unknown): ReportData {
 export const reportsApi = {
   list: async (type?: ReportType): Promise<ReportSummaryResponse[]> => {
     const { data } = await serverApi.GET('/api/v1/reports', { params: { query: { type } } });
-    return (data as ReportSummaryResponse[]) || [];
+    return data || [];
   },
   getById: async (id: string): Promise<ReportResponse> => {
     const { data } = await serverApi.GET('/api/v1/reports/{id}', { params: { path: { id } } });

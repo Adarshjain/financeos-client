@@ -2,7 +2,6 @@
 
 import type {
   Aggregation,
-  ChartDefinition,
   Granularity,
 } from '@/lib/reports.types';
 
@@ -23,14 +22,7 @@ export const GRANULARITY_LABELS: Record<Granularity, string> = {
   fy: 'Financial year',
 };
 
-export const CHART_TYPE_LABELS: Record<ChartDefinition['chartType'], string> = {
-  line: 'Line',
-  bar: 'Bar',
-  stackedBar: 'Stacked bar',
-  area: 'Area',
-  pie: 'Pie',
-  donut: 'Donut',
-};
+export { CHART_TYPE_LABELS } from '@/features/reports/chartTypeLabels';
 
 /** Turn an operator/field token like `last_x_days` into `Last N days`. */
 export function humanizeToken(token: string): string {

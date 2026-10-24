@@ -5,13 +5,13 @@
 import type { Layout } from 'react-grid-layout/legacy';
 
 import {
+  bottomRow,
   DASHBOARD_GRID_COLUMNS,
   HALF_WIDTH,
   isBuiltinWidget,
   isTextWidget,
   newBuiltinWidget,
   newTextWidget,
-  newWidget,
   QUARTER_WIDTH,
   textDescription,
   textWidgetHeight,
@@ -23,7 +23,6 @@ import type {
   WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
-import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 // Serialize the editable parts of a dashboard so unsaved changes can be detected.
 export function editSignature(
@@ -52,26 +51,7 @@ export function editSignature(
   });
 }
 
-/** The first free row below every existing widget. */
-function bottomRow(widgets: WidgetResponse[]): number {
-  return widgets.reduce((max, w) => Math.max(max, w.layout.y + w.layout.h), 0);
-}
-
-/** A new report widget, placed below the current set, in response shape. */
-export function reportWidgetResponse(
-  widgets: WidgetResponse[],
-  report: ReportSummaryResponse
-): WidgetResponse {
-  const widget = newWidget(report.id, { y: bottomRow(widgets) });
-  return {
-    id: widget.id,
-    kind: 'report',
-    reportId: widget.reportId,
-    title: widget.title ?? null,
-    layout: widget.layout,
-    report: { name: report.name, type: report.type, available: true },
-  };
-}
+export { reportWidgetResponse } from '@/lib/dashboards.helpers';
 
 /** A new built-in widget, placed below the current set, in response shape. */
 export function builtinWidgetResponse(

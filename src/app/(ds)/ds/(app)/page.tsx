@@ -12,7 +12,6 @@ const TO_BUILD: [string, string][] = [
   ['New dashboard', 'Home & dashboards'],
   ['Add widget and widget settings', 'Home & dashboards'],
   ['Search', 'Home & dashboards'],
-  ['Reports', 'Reports'],
   ['New report', 'Reports'],
   ['Report view and breakdown', 'Reports'],
   ['Underlying data', 'Reports'],
@@ -94,6 +93,9 @@ export default function DsIndexPage() {
           </ListRow>
           <ListRow asChild title="Which card?" subtitle="/ds/rewards/which-card" chevron>
             <Link href="/ds/rewards/which-card" />
+          </ListRow>
+          <ListRow asChild title="Reports" subtitle="/ds/reports" chevron>
+            <Link href="/ds/reports" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />

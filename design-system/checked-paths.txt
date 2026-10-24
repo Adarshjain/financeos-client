@@ -22,3 +22,5 @@ src/features/rewards/which-card/
 src/features/rewards/rules-page/
 src/app/(ds)/ds/(app)/rewards/(tabs)/rules/
 src/app/(ds)/ds/(app)/rewards/(tabs)/which-card/
+src/features/reports/
+src/app/(ds)/ds/(app)/reports/

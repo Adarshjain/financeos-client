@@ -8,7 +8,7 @@ import type {
   WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
-import type { SortClause } from '@/lib/reports.types';
+import type { ReportSummaryResponse, SortClause } from '@/lib/reports.types';
 
 /** The dashboard grid is always 100 columns wide. */
 export const DASHBOARD_GRID_COLUMNS = 100;
@@ -58,6 +58,27 @@ export function newWidget(
       h: DEFAULT_WIDGET_HEIGHT,
       ...layout,
     },
+  };
+}
+
+/** The first free row below every existing widget. */
+export function bottomRow(widgets: WidgetResponse[]): number {
+  return widgets.reduce((max, w) => Math.max(max, w.layout.y + w.layout.h), 0);
+}
+
+/** A new report widget, placed below the current set, in response shape. */
+export function reportWidgetResponse(
+  widgets: WidgetResponse[],
+  report: Pick<ReportSummaryResponse, 'id' | 'name' | 'type'>
+): WidgetResponse {
+  const widget = newWidget(report.id, { y: bottomRow(widgets) });
+  return {
+    id: widget.id,
+    kind: 'report',
+    reportId: widget.reportId,
+    title: widget.title ?? null,
+    layout: widget.layout,
+    report: { name: report.name, type: report.type, available: true },
   };
 }
 
