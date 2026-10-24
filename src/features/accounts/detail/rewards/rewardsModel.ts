@@ -1,9 +1,17 @@
-import { formatAmount, formatCompactRupees, formatDayMonth, formatPct, formatRupees } from '@/features/accounts/list/accountsList';
-import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule } from '@/lib/rewards.types';
+import {
+  formatAmount,
+  formatCompactRupees,
+  formatDayMonth,
+  formatDayMonthYear,
+  formatPct,
+  formatRupees,
+} from '@/features/accounts/list/accountsList';
+import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
 import { REASON_META } from '@/lib/rewards.types';
 
 import { daysBetween, plural } from '../overview/dates';
 import type { RewardsWindow } from '../overview/rewardsWindow';
+import { DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriod';
 
 export type { RewardsWindow };
 
@@ -21,19 +29,30 @@ export interface RewardsKpi {
   label: string;
   value: string;
   context?: string;
+  /** Points are earned but the card has no point value, so they stay points beside the rupees. */
+  needsPointValue?: boolean;
 }
 
-export function windowLabel(window: RewardsWindow): string {
-  return `${window.calendarYear ? 'calendar year' : 'anniversary year'} ${formatDayMonth(window.from)} → ${formatDayMonth(window.to)}`;
+export function windowLabel(window: RewardsWindow, preset?: RangePreset): string {
+  const range = `${formatDayMonth(window.from)} → ${formatDayMonth(window.to)}`;
+  if (preset && preset !== DEFAULT_PERIOD) return `${periodWords(preset, window)} ${range}`;
+  return `${window.calendarYear ? 'calendar year' : 'anniversary year'} ${range}`;
 }
 
 /** The four tiles; a tile the report has no figure for (effective return) is left out. */
-export function buildKpis(report: RewardReport, window: RewardsWindow): RewardsKpi[] {
+export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: RangePreset): RewardsKpi[] {
   const s = report.summary;
   const totalPts = s.points + s.milestonesPts;
+  const unvalued = totalPts > 0 && s.pointsValueInr == null;
 
   // grossValueInr = cashback + cash milestones + points valued at the card's point value.
-  const grossValue = totalPts > 0 ? pts(totalPts) : formatRupees(s.grossValueInr);
+  const grossValue = unvalued
+    ? s.grossValueInr > 0
+      ? `${formatRupees(s.grossValueInr)} + ${pts(totalPts)}`
+      : pts(totalPts)
+    : totalPts > 0
+      ? pts(totalPts)
+      : formatRupees(s.grossValueInr);
   const grossContext: string[] = [];
   if (totalPts > 0 && s.pointsValueInr != null) {
     grossContext.push(`≈ ${formatRupees(s.grossValueInr)} at ₹${formatAmount(s.pointsValueInr / totalPts)} / pt`);
@@ -59,6 +78,7 @@ export function buildKpis(report: RewardReport, window: RewardsWindow): RewardsK
       label: 'Gross rewards',
       value: grossValue,
       context: grossContext.length > 0 ? grossContext.join(' · ') : undefined,
+      needsPointValue: unvalued || undefined,
     },
     {
       key: 'adjustments',
@@ -68,7 +88,7 @@ export function buildKpis(report: RewardReport, window: RewardsWindow): RewardsK
     },
   ];
   if (s.effectivePct != null) {
-    kpis.push({ key: 'effective', label: 'Effective return', value: formatPct(s.effectivePct), context: windowLabel(window) });
+    kpis.push({ key: 'effective', label: 'Effective return', value: formatPct(s.effectivePct), context: windowLabel(window, preset) });
   }
   return kpis;
 }
@@ -78,6 +98,11 @@ export function buildKpis(report: RewardReport, window: RewardsWindow): RewardsK
 export interface RewardsQuery {
   /** Rule filter; undefined = all rules. */
   ruleId?: string;
+  /** Period preset; undefined = the current reward year. */
+  period?: RangePreset;
+  /** Custom range ends (YYYY-MM-DD); only with `period` CUSTOM. */
+  from?: string;
+  to?: string;
   /** 0-based. */
   page: number;
   size: number;
@@ -86,16 +111,26 @@ export interface RewardsQuery {
 type Param = string | string[] | undefined;
 const first = (p: Param) => (Array.isArray(p) ? p[0] : p);
 
-/** `?rule=` (only a known rule id), `?page=` (1-based in the URL), `?size=` (one of the page sizes). */
+/**
+ * `?rule=` (only a known rule id), `?period=` (a preset; the default is left out), `?from=` and `?to=` (valid
+ * dates, only for a custom period), `?page=` (1-based in the URL), `?size=` (one of the page sizes).
+ */
 export function parseRewardsQuery(
-  params: { rule?: Param; page?: Param; size?: Param } | undefined,
+  params: { rule?: Param; period?: Param; from?: Param; to?: Param; page?: Param; size?: Param } | undefined,
   knownRuleIds: readonly string[]
 ): RewardsQuery {
   const rule = first(params?.rule);
   const page = Number(first(params?.page));
   const size = Number(first(params?.size));
+  const rawPeriod = first(params?.period);
+  const period = rawPeriod && isRangePreset(rawPeriod) && rawPeriod !== DEFAULT_PERIOD ? rawPeriod : undefined;
+  const from = first(params?.from);
+  const to = first(params?.to);
   return {
     ruleId: rule && knownRuleIds.includes(rule) ? rule : undefined,
+    period,
+    from: period === 'CUSTOM' && isIsoDate(from) ? from : undefined,
+    to: period === 'CUSTOM' && isIsoDate(to) ? to : undefined,
     page: Number.isInteger(page) && page >= 1 ? page - 1 : 0,
     size: (PAGE_SIZES as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE,
   };
@@ -105,6 +140,13 @@ export function parseRewardsQuery(
 export function rewardsHref(base: string, query: RewardsQuery): string {
   const params = new URLSearchParams();
   if (query.ruleId) params.set('rule', query.ruleId);
+  if (query.period && query.period !== DEFAULT_PERIOD) {
+    params.set('period', query.period);
+    if (query.period === 'CUSTOM') {
+      if (query.from) params.set('from', query.from);
+      if (query.to) params.set('to', query.to);
+    }
+  }
   if (query.page > 0) params.set('page', String(query.page + 1));
   if (query.size !== DEFAULT_PAGE_SIZE) params.set('size', String(query.size));
   const qs = params.toString();
@@ -134,6 +176,16 @@ export interface LineRow {
   rule: string;
   earned: string;
   why: { label: string; tone: 'neutral' | 'info' | 'warning' | 'success' };
+  /** What the line dialog shows when the line is tapped. */
+  detail: LineDetail;
+}
+
+export interface LineDetail {
+  title: string;
+  /** The description from the source, when it differs from the title. */
+  source: string | null;
+  rows: { label: string; value: string }[];
+  reason: { label: string; explain: string; tone: LineRow['why']['tone'] };
 }
 
 const WHY_TONE: Record<RewardLine['reason'], LineRow['why']['tone']> = {
@@ -151,6 +203,31 @@ const WHY_TONE: Record<RewardLine['reason'], LineRow['why']['tone']> = {
   TXN_EXCLUDED: 'neutral',
 };
 
+const earnedText = (line: Pick<RewardLine, 'earned' | 'earnedUnit'>) =>
+  line.earnedUnit === 'RUPEES' ? formatRupees(line.earned) : pts(line.earned);
+
+/** The tapped line's computation: dates, amounts, MCC, channel, rule, earned, and the reason in one sentence. */
+export function lineDetail(line: RewardLine): LineDetail {
+  const rows: LineDetail['rows'] = [{ label: 'Transaction date', value: formatDayMonthYear(line.transactionDate) }];
+  if (line.effectiveDate !== line.transactionDate) {
+    rows.push({ label: 'Settled (used for rewards)', value: formatDayMonthYear(line.effectiveDate) });
+  }
+  rows.push({ label: 'Amount charged', value: formatRupees(line.amount) });
+  if (line.basis !== line.amount) rows.push({ label: 'Eligible after refunds', value: formatRupees(line.basis) });
+  if (line.mcc) rows.push({ label: 'MCC', value: line.mcc });
+  if (line.channel) rows.push({ label: 'Channel', value: line.channel });
+  rows.push({ label: 'Rule', value: line.ruleName ?? '—' });
+  rows.push({ label: 'Earned', value: line.earned > 0 ? earnedText(line) : '—' });
+  const title = line.description || line.sourcedDescription || '—';
+  const meta = REASON_META[line.reason];
+  return {
+    title,
+    source: line.description && line.sourcedDescription && line.description !== line.sourcedDescription ? line.sourcedDescription : null,
+    rows,
+    reason: { label: meta.label, explain: meta.explain, tone: WHY_TONE[line.reason] },
+  };
+}
+
 export function lineRow(line: RewardLine): LineRow {
   return {
     id: `${line.transactionId}:${line.ruleId ?? ''}`,
@@ -159,13 +236,14 @@ export function lineRow(line: RewardLine): LineRow {
     holder: line.cardLabel ?? null,
     basis: formatAmount(line.basis, 0),
     rule: line.ruleName ?? 'No rule',
-    earned: line.earnedUnit === 'RUPEES' ? formatRupees(line.earned) : pts(line.earned),
+    earned: earnedText(line),
     why: { label: REASON_META[line.reason].label, tone: WHY_TONE[line.reason] },
+    detail: lineDetail(line),
   };
 }
 
-export function linesSubtitle(total: number, window: RewardsWindow): string {
-  return `${plural(total, 'line', 'lines')} · this ${window.calendarYear ? 'calendar' : 'anniversary'} year`;
+export function linesSubtitle(total: number, window: RewardsWindow, preset?: RangePreset): string {
+  return `${plural(total, 'line', 'lines')} · ${periodWords(preset, window)}`;
 }
 
 // ---- Milestones ------------------------------------------------------------
@@ -223,6 +301,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
   }
 
   const caption: string[] = [`${pct}%`];
+  if (m.windowType === 'ONE_TIME') caption.push(`one-time ${formatDayMonth(m.windowStart)} → ${formatDayMonth(m.windowEnd)}`);
   if (m.achieved && m.payoutDate) caption.push(`credited ${formatDayMonth(m.payoutDate)}`);
   if (pace && !m.achieved) {
     caption.push(`${plural(pace.daysLeft, 'day', 'days')} left`);
@@ -244,13 +323,109 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
   };
 }
 
+// ---- Completed milestones --------------------------------------------------
+
+export interface CompletedMilestones {
+  count: number;
+  /** What the finished milestones paid, "₹2,500 + 5,000 pts"; null when none pays. */
+  paid: string | null;
+  rows: { id: string; title: string; subtitle: string; payout: string }[];
+}
+
+/** What a set of milestones pays, as "₹2,500 + 5,000 pts"; null when none of them pays. */
+export function milestonePaid(list: readonly MilestoneStatus[]): string | null {
+  const paying = list.filter((m) => m.payoutType === 'CASH_VALUE');
+  const inr = paying.filter((m) => m.rewardType !== 'POINTS').reduce((sum, m) => sum + (m.payoutValue ?? 0), 0);
+  const points = paying.filter((m) => m.rewardType === 'POINTS').reduce((sum, m) => sum + (m.payoutValue ?? 0), 0);
+  const parts = [inr > 0 ? formatRupees(inr) : null, points > 0 ? pts(points) : null].filter(Boolean);
+  return parts.length > 0 ? parts.join(' + ') : null;
+}
+
+/** Every achieved milestone window, latest credit first, each with the day it was credited. */
+export function completedMilestones(milestones: readonly MilestoneStatus[]): CompletedMilestones | null {
+  const done = milestones
+    .filter((m) => m.achieved)
+    .sort((a, b) => (b.payoutDate ?? b.windowEnd).localeCompare(a.payoutDate ?? a.windowEnd));
+  if (done.length === 0) return null;
+  return {
+    count: done.length,
+    paid: milestonePaid(done),
+    rows: done.map((m) => ({
+      id: `${m.milestoneId}:${m.windowStart}`,
+      title: m.name || 'Milestone',
+      subtitle: [
+        m.windowType === 'ONE_TIME' ? 'One-time' : null,
+        `${formatDayMonth(m.windowStart)} → ${formatDayMonth(m.windowEnd)}`,
+        m.payoutDate ? `credited ${formatDayMonth(m.payoutDate)}` : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      payout:
+        m.payoutType !== 'CASH_VALUE'
+          ? 'Tracker'
+          : m.rewardType === 'POINTS'
+            ? pts(m.payoutValue ?? 0)
+            : formatRupees(m.payoutValue ?? 0),
+    })),
+  };
+}
+
 // ---- Rules on this account -------------------------------------------------
+
+export interface CapBar {
+  key: string;
+  /** "₹3,200 of ₹5,000 · resets 1 Nov". */
+  label: string;
+  pct: number;
+  tone: 'brand' | 'warning' | 'danger';
+}
 
 export interface RuleLine {
   id: string;
   title: string;
   description: string;
   earned: string;
+}
+
+export interface RuleExtras {
+  /** One bar for the cap, or one per cardholder when the cap counts per cardholder. */
+  bars: CapBar[];
+  /** Set when the rule earned nothing in the period. */
+  note: string | null;
+}
+
+/** Amber from 80% of the cap, red once it is hit. */
+export function capTone(pct: number): CapBar['tone'] {
+  return pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : 'brand';
+}
+
+function capBars(rule: RewardRuleBreakdown): CapBar[] {
+  const cap = rule.capStatus;
+  if (!cap || cap.cap <= 0) return [];
+  const points = rule.earnedUnit === 'POINTS';
+  const amount = (n: number) => (points ? `${formatAmount(n, 0)}` : formatRupees(n));
+  const capText = points ? `${formatAmount(cap.cap, 0)} pts` : formatRupees(cap.cap);
+  const resets = `resets ${formatDayMonth(cap.windowEnd)}`;
+  const pct = (used: number) => Math.min(100, Math.round((used / cap.cap) * 100));
+  if (cap.counterScope === 'PER_CARDHOLDER' && (cap.perCard ?? []).length > 0) {
+    return (cap.perCard ?? []).map((c) => ({
+      key: c.cardId ?? 'unattributed',
+      label: `${c.cardLabel}: ${amount(c.used)} of ${capText} · ${resets}`,
+      pct: pct(c.used),
+      tone: capTone(pct(c.used)),
+    }));
+  }
+  if (cap.used == null) return [];
+  const shared = cap.sharedBucket ? `Shared "${cap.sharedBucket}" ` : '';
+  const fallback = cap.cycleFallback ? ' (month fallback)' : '';
+  return [
+    {
+      key: 'cap',
+      label: `${shared}${amount(cap.used)} of ${capText}${fallback} · ${resets}`,
+      pct: pct(cap.used),
+      tone: capTone(pct(cap.used)),
+    },
+  ];
 }
 
 const CAP_NOUN: Record<CapWindow, string> = {
@@ -298,6 +473,67 @@ export function ruleLines(rules: readonly RewardRule[] | null, report: RewardRep
       .map((r) => ({ id: r.id, title: `${r.priority} · ${r.name}`, description: ruleDescription(r), earned: earnedFor(r.id) }));
   }
   return report.rules.map((r) => ({ id: r.ruleId, title: r.name, description: '', earned: earnedFor(r.ruleId) }));
+}
+
+/** A rule's cap bars and, when it earned nothing in the period, the plain note saying so (no guessed cause). */
+export function ruleExtras(id: string, rules: readonly RewardRule[] | null, report: RewardReport): RuleExtras {
+  const b = report.rules.find((r) => r.ruleId === id);
+  const name = rules?.find((r) => r.id === id)?.name ?? b?.name ?? 'Rule';
+  return { bars: b ? capBars(b) : [], note: (b?.earned ?? 0) === 0 ? `${name} earned nothing this period` : null };
+}
+
+// ---- Banners and the cardholder split -------------------------------------------
+
+export interface RewardsBanner {
+  key: 'cycle' | 'anniversary' | 'unattributed';
+  text: string;
+  /** "Manage cards": opens the account's Cards tab. */
+  action?: { label: string };
+}
+
+/** The amber notes of the report, worded as the live page does. */
+export function rewardsBanners(report: RewardReport): RewardsBanner[] {
+  const banners: RewardsBanner[] = [];
+  if (report.cycleFallback) {
+    banners.push({
+      key: 'cycle',
+      text: 'Some statement-cycle caps fell back to calendar months — add statements for this account to get exact cycle windows.',
+    });
+  }
+  if (report.anniversaryFallback) {
+    banners.push({
+      key: 'anniversary',
+      text: 'Some anniversary-year windows fell back to calendar years — set the card’s anniversary date by editing the account on the Accounts page.',
+    });
+  }
+  const n = report.perCardAttributionIncomplete ?? 0;
+  if (n > 0) {
+    banners.push({
+      key: 'unattributed',
+      text: `${plural(n, 'transaction', 'transactions')} on this multi-card account ${n === 1 ? 'is' : 'are'} unattributed and could not match card-scoped rules or limits.`,
+      action: { label: 'Manage cards' },
+    });
+  }
+  return banners;
+}
+
+export interface CardholderRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  earned: string;
+}
+
+/** The split by cardholder, with the transactions that have no card as Unattributed; none unless the account has two or more cards. */
+export function cardholderRows(report: RewardReport): CardholderRow[] {
+  const cards = report.byCard ?? [];
+  if (cards.length < 2) return [];
+  return cards.map((c) => ({
+    id: c.cardId ?? 'unattributed',
+    title: c.unattributed ? 'Unattributed' : c.cardLabel,
+    subtitle: `${plural(c.txnCount, 'transaction', 'transactions')} · ${formatRupees(c.basisSpend)} spend`,
+    earned: c.points > 0 ? `${c.cashbackInr > 0 ? `${formatRupees(c.cashbackInr)} + ` : ''}${pts(c.points)}` : formatRupees(c.cashbackInr),
+  }));
 }
 
 /** The last page index when `page` is past the end of `total` rows; null when `page` is fine. */

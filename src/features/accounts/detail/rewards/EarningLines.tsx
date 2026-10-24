@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   Card,
@@ -14,6 +14,7 @@ import {
   Text,
 } from '@/components/ds';
 
+import { RewardLineDialog } from './RewardLineDialog';
 import { type LineRow, PAGE_SIZES, rewardsHref, type RewardsQuery, type RuleChip } from './rewardsModel';
 
 const ch = createDataTableColumnHelper<LineRow>();
@@ -87,6 +88,8 @@ export interface EarningLinesProps {
 export function EarningLines({ basePath, subtitle, rows, total, chips, query }: EarningLinesProps) {
   const router = useRouter();
   const go = (next: Partial<RewardsQuery>) => router.push(rewardsHref(basePath, { ...query, ...next }));
+  // The line dialog opens from state, not the address.
+  const [open, setOpen] = useState<LineRow | null>(null);
 
   return (
     <Card title="Earning lines" subtitle={subtitle}>
@@ -110,8 +113,9 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
         columns={columns}
         data={rows}
         getRowId={(r) => r.id}
+        onRowSelect={setOpen}
         phoneSub={(r) => `${r.date} · ₹${r.basis} · ${r.rule}`}
-        empty={<EmptyState compact title="No earning lines" description="Nothing matches this rule in this reward year." />}
+        empty={<EmptyState compact title="No earning lines" description="Nothing matches this rule in this period." />}
         pager={
           <Pager
             page={query.page}
@@ -124,6 +128,7 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
           />
         }
       />
+      {open ? <RewardLineDialog detail={open.detail} onClose={() => setOpen(null)} /> : null}
     </Card>
   );
 }

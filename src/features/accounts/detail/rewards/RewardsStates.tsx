@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Card, EmptyState } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
+import { appHref } from '@/features/shell/routes';
 
 export function RewardsEmpty({ accountId, accountName }: { accountId: string; accountName: string }) {
   const router = useRouter();
@@ -13,7 +14,7 @@ export function RewardsEmpty({ accountId, accountName }: { accountId: string; ac
       <EmptyState
         title={`No reward rules on ${accountName}`}
         description="Rewards earned here show once a rule covers this account."
-        action={{ label: 'Add reward rule', onSelect: () => router.push(`/rewards/rules?account=${accountId}`) }}
+        action={{ label: 'Add reward rule', onSelect: () => router.push(appHref(`/rewards/rules?account=${accountId}`)) }}
       />
     </Card>
   );

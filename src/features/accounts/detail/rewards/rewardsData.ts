@@ -5,6 +5,7 @@ import { accountAnniversaryDate, type PagedRewardLines, type RewardReport, type 
 
 import { type RewardsWindow,rewardsWindowFor } from '../overview/rewardsWindow';
 import { clampedPage, parseRewardsQuery, type RewardsQuery } from './rewardsModel';
+import { resolvePeriod } from './rewardsPeriod';
 
 export interface RewardsTabData {
   window: RewardsWindow;
@@ -15,26 +16,36 @@ export interface RewardsTabData {
   query: RewardsQuery;
 }
 
-type SearchParams = { rule?: string | string[]; page?: string | string[]; size?: string | string[] };
+export type RewardsSearchParams = {
+  rule?: string | string[];
+  period?: string | string[];
+  from?: string | string[];
+  to?: string | string[];
+  page?: string | string[];
+  size?: string | string[];
+};
 
 const ok = <T,>(r: PromiseSettledResult<T>): T | null => (r.status === 'fulfilled' ? r.value : null);
 
 /**
- * Everything the Rewards tab needs. The rule list loads alongside the reward year; once both are in, the
+ * Everything the Rewards tab needs. The rule list loads alongside the reward year (the default period); once both are in, the
  * report and one page of earning lines load in parallel (the rule list validates the `?rule=` filter).
  */
 export async function loadRewardsTabData(
   account: Account,
   today: string,
-  params: SearchParams | undefined
+  params: RewardsSearchParams | undefined
 ): Promise<RewardsTabData> {
   const accountId = account.id;
   const rulesPending = Promise.allSettled([rewardsApi.listRules(accountId)]);
   const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
   const mine = totals?.find((t) => t.accountId === accountId);
-  const window: RewardsWindow = mine
+  const anniversary = accountAnniversaryDate(account);
+  const reportYear: RewardsWindow = mine
     ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
-    : rewardsWindowFor(accountAnniversaryDate(account), today);
+    : rewardsWindowFor(anniversary, today);
+  // The period is read from the address before the first fetch, so a chosen period never loads twice.
+  const window = resolvePeriod(parseRewardsQuery(params, []), reportYear, today, anniversary);
   const reportPending = Promise.allSettled([rewardsApi.getReport(accountId, window.from, window.to)]);
   const rules = ok((await rulesPending)[0]);
   let query = parseRewardsQuery(params, (rules ?? []).map((r) => r.id));
