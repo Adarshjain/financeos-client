@@ -37,32 +37,30 @@ const columns = ch.columns([
     id: 'description',
     header: 'Description',
     meta: { size: 'fill', phone: 'main' },
+    // The rule sits under the description, so the half-width card has room for every column.
     cell: ({ row }) => (
-      <>
-        {row.original.description}
-        {row.original.holder ? (
-          <Text variant="body" tone="ink-3" as="span">
-            {' '}
-            · {row.original.holder}
+      <div className="flex flex-col min-w-0">
+        <Text variant="body" truncate>
+          {row.original.description}
+          {row.original.holder ? (
+            <Text variant="body" tone="ink-3" as="span">
+              {' '}
+              · {row.original.holder}
+            </Text>
+          ) : null}
+        </Text>
+        <div className="max-desk:hidden min-w-0">
+          <Text variant="caption" tone="ink-3" truncate>
+            {row.original.rule}
           </Text>
-        ) : null}
-      </>
+        </div>
+      </div>
     ),
   }),
   ch.accessor('basis', {
     id: 'basis',
     header: 'Basis (₹)',
     meta: { size: 'sm', align: 'end', phone: 'hidden' },
-  }),
-  ch.accessor('rule', {
-    id: 'rule',
-    header: 'Rule',
-    meta: { size: 'md', phone: 'hidden' },
-    cell: ({ getValue }) => (
-      <Text variant="body" tone="ink-3" as="span">
-        {getValue()}
-      </Text>
-    ),
   }),
   ch.accessor('earned', {
     id: 'earned',
@@ -72,7 +70,7 @@ const columns = ch.columns([
   ch.display({
     id: 'why',
     header: 'Why',
-    meta: { size: 'sm', phone: 'status' },
+    meta: { size: 'md', phone: 'status' },
     cell: ({ row }) => <StatusWords items={[row.original.why]} />,
   }),
 ]);

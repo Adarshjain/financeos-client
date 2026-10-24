@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { buildOverview, capLeftText, type CardTotal, earnedText, nextMilestoneText } from './overviewModel';
+import { buildOverview, capLeftText, type CardTotal, earnedText, labelLines, nextMilestoneText, yearLines } from './overviewModel';
 
 // Ranges drop the year of the current one, so the clock is fixed.
 beforeAll(() => {
@@ -165,5 +165,19 @@ describe('buildOverview: cap and milestone columns', () => {
     ).cards;
     expect([a.capLeft, a.nextMilestone]).toEqual(['₹100 left of ₹500 · Dining', '₹1.2L to go · Annual spend']);
     expect([b.capLeft, b.nextMilestone]).toEqual(['—', '—']);
+  });
+});
+
+describe('table cell lines', () => {
+  it('puts the figure over its label, and keeps label-less text on one line', () => {
+    expect(labelLines('₹100 left of ₹500 · Dining 5%')).toEqual({ main: '₹100 left of ₹500', sub: 'Dining 5%' });
+    expect(labelLines('Met · Oct')).toEqual({ main: 'Met', sub: 'Oct' });
+    expect(labelLines('—')).toEqual({ main: '—', sub: null });
+  });
+
+  it('puts the reward year range over its kind', () => {
+    expect(yearLines('Anniversary year 15 Jul 26 – 14 Jul 27')).toEqual({ main: '15 Jul 26 – 14 Jul 27', sub: 'Anniversary year' });
+    expect(yearLines('Calendar year 1 Jan – 31 Dec')).toEqual({ main: '1 Jan – 31 Dec', sub: 'Calendar year' });
+    expect(yearLines('')).toEqual({ main: '', sub: null });
   });
 });

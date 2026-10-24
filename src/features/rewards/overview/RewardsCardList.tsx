@@ -7,12 +7,28 @@ import React from 'react';
 import { Button, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 
-import type { OverviewCard } from './overviewModel';
+import { labelLines, type OverviewCard, yearLines } from './overviewModel';
 
 /** A press on a control inside a row must not also open the row. */
 const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
 const ch = createDataTableColumnHelper<OverviewCard>();
+
+/** A figure over its label, so neither is cut off in a narrow column. */
+function TwoLines({ main, sub }: { main: string; sub: string | null }) {
+  return (
+    <div className="flex flex-col min-w-0">
+      <Text variant="body" truncate>
+        {main}
+      </Text>
+      {sub ? (
+        <Text variant="caption" tone="ink-3" truncate>
+          {sub}
+        </Text>
+      ) : null}
+    </div>
+  );
+}
 
 const columns = ch.columns([
   ch.display({
@@ -38,31 +54,28 @@ const columns = ch.columns([
     id: 'year',
     header: 'Reward year',
     meta: { size: 'lg', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3" truncate>
-        {row.original.year}
-      </Text>
-    ),
+    cell: ({ row }) => {
+      const { main, sub } = yearLines(row.original.year);
+      return <TwoLines main={main} sub={sub} />;
+    },
   }),
   ch.display({
     id: 'capLeft',
     header: 'Cap left',
     meta: { size: 'lg', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3" truncate>
-        {row.original.capLeft}
-      </Text>
-    ),
+    cell: ({ row }) => {
+      const { main, sub } = labelLines(row.original.capLeft);
+      return <TwoLines main={main} sub={sub} />;
+    },
   }),
   ch.display({
     id: 'nextMilestone',
     header: 'Next milestone',
     meta: { size: 'lg', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3" truncate>
-        {row.original.nextMilestone}
-      </Text>
-    ),
+    cell: ({ row }) => {
+      const { main, sub } = labelLines(row.original.nextMilestone);
+      return <TwoLines main={main} sub={sub} />;
+    },
   }),
   ch.display({
     id: 'earned',
