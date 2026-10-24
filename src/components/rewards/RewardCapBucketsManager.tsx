@@ -4,12 +4,6 @@ import { Layers, Loader2, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-reac
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  useCreateRewardCapBucket,
-  useDeleteRewardCapBucket,
-  useRewardCapBuckets,
-  useUpdateRewardCapBucket,
-} from '@/components/rewards/queries/useRewardCapBucketsQueries';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -17,6 +11,12 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  useCreateRewardCapBucket,
+  useDeleteRewardCapBucket,
+  useRewardCapBuckets,
+  useUpdateRewardCapBucket,
+} from '@/features/rewards/queries/useRewardCapBucketsQueries';
 import { ApiError } from '@/lib/api/client';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
 import { toastError } from '@/lib/toastError';

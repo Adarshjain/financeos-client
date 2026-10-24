@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useRewardRulesManager } from '@/features/rewards/rules/manager/useRewardRulesManager';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
@@ -23,7 +24,6 @@ import { toCalendarDate } from '@/lib/utils';
 
 import { AccountConfigHeader } from './rules-manager/AccountConfigHeader';
 import { RuleCardItem } from './rules-manager/RuleCardItem';
-import { useRewardRulesManager } from './rules-manager/useRewardRulesManager';
 
 interface RewardRulesManagerProps {
   initialAccountId: string;

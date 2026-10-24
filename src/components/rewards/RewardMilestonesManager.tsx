@@ -4,11 +4,11 @@ import { Loader2, MoreVertical, Pencil, Plus, Trash2, Trophy } from 'lucide-reac
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { useDeleteRewardMilestone, useRewardMilestones } from '@/components/rewards/queries/useRewardMilestonesQueries';
 import RewardMilestoneForm from '@/components/rewards/RewardMilestoneForm';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useDeleteRewardMilestone, useRewardMilestones } from '@/features/rewards/queries/useRewardMilestonesQueries';
 import type { AccountCard } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';

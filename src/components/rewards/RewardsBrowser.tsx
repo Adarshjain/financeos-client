@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Card } from '@/components/ui/card';
+import { useRewardsBrowser } from '@/features/rewards/browser/useRewardsBrowser';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 
@@ -13,7 +14,6 @@ import { RewardLinesTable } from './browser/RewardLinesTable';
 import { RewardsBrowserFilterBar } from './browser/RewardsBrowserFilterBar';
 import { RewardsSummaryCards } from './browser/RewardsSummaryCards';
 import { RuleBreakdownGrid } from './browser/RuleBreakdownGrid';
-import { useRewardsBrowser } from './browser/useRewardsBrowser';
 
 interface RewardsBrowserProps {
   initialAccountId: string;

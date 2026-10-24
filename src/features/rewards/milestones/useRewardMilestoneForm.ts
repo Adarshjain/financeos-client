@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   useCreateRewardMilestone,
   useUpdateRewardMilestone,
-} from '@/components/rewards/queries/useRewardMilestonesQueries';
+} from '@/features/rewards/queries/useRewardMilestonesQueries';
 import { ApiError } from '@/lib/api/client';
 import { Category } from '@/lib/categories.types';
 import {

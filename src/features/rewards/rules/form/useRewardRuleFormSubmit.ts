@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 
-import { useCreateRewardRule, useUpdateRewardRule } from '@/components/rewards/queries/useRewardRulesQueries';
+import { useCreateRewardRule, useUpdateRewardRule } from '@/features/rewards/queries/useRewardRulesQueries';
 import { ApiError } from '@/lib/api/client';
 import { RewardCapBucket, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
 import { toastError } from '@/lib/toastError';

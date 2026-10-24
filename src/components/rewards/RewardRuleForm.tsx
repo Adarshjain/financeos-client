@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useRewardRuleForm } from '@/features/rewards/rules/form/useRewardRuleForm';
 import type { AccountCard } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type {
@@ -21,7 +22,6 @@ import { RuleEarnSection } from './rule-form/RuleEarnSection';
 import { RuleLimitsSection } from './rule-form/RuleLimitsSection';
 import { RuleMatchSection } from './rule-form/RuleMatchSection';
 import { RuleTesterSection } from './rule-form/RuleTesterSection';
-import { useRewardRuleForm } from './rule-form/useRewardRuleForm';
 
 interface RewardRuleFormProps {
   accountId: string;

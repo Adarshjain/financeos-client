@@ -10,6 +10,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  chipClass,
+  inputClass,
+  sectionClass,
+  sectionTitleClass,
+  selectTriggerClass,
+} from '@/features/rewards/rules/form/constants';
+import {
   AccrualType,
   CapWindow,
   CashbackRounding,
@@ -17,13 +24,6 @@ import {
 } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
-import {
-  chipClass,
-  inputClass,
-  sectionClass,
-  sectionTitleClass,
-  selectTriggerClass,
-} from './constants';
 import { TieredRateInputs } from './TieredRateInputs';
 
 interface RuleEarnSectionProps {

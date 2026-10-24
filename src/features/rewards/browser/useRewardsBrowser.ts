@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useRewardLines, useRewardReport } from '@/components/rewards/queries/useRewardReportQueries';
+import { useRewardLines, useRewardReport } from '@/features/rewards/queries/useRewardReportQueries';
 import { Account } from '@/lib/account.types';
 import { accountAnniversaryDate, RewardLine } from '@/lib/rewards.types';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';

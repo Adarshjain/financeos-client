@@ -7,10 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatEarned, lineDescription } from '@/features/rewards/browser/helpers';
 import { REASON_META, RewardLine } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-
-import { formatEarned, lineDescription } from './helpers';
 
 interface RewardLineDetailDialogProps {
   selectedLine: RewardLine | null;
