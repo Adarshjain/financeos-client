@@ -55,7 +55,7 @@ export function useRestoreHomeDashboard() {
 type ShownDashboard = Pick<DashboardResponse, 'id' | 'name' | 'description' | 'isDefault' | 'widgets'>;
 
 /** PUT the dashboard as shown with `widgets` in place of its own. */
-async function putWidgets(dashboard: ShownDashboard, widgets: WidgetResponse[]): Promise<DashboardResponse> {
+export async function putWidgets(dashboard: ShownDashboard, widgets: WidgetResponse[]): Promise<DashboardResponse> {
   const body: UpdateDashboardRequest = {
     name: dashboard.name,
     description: dashboard.description?.trim() || undefined,

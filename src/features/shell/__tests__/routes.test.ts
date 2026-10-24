@@ -26,6 +26,7 @@ describe('appHref', () => {
     ['/settings/ai', '/ds/settings/ai'],
     ['/settings/notifications', '/ds/settings/notifications'],
     ['/settings/debug', '/ds/settings/debug'],
+    ['/reports', '/ds/reports'],
   ])('maps %s', (from, to) => expect(appHref(from)).toBe(to));
 
   it.each([
@@ -55,7 +56,8 @@ describe('appHref', () => {
       '/transactions/review',
       '/loans/calendar',
       '/dashboards',
-      '/reports',
+      '/reports/new',
+      '/reports/abc-123',
       '/chat',
       '/settings/ingest',
       '/storybook',

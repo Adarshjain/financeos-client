@@ -14327,6 +14327,17 @@ components:
       - description
       - transactionId
       - type
+    LastMet:
+      type: object
+      properties:
+        achievedOn:
+          type: string
+          format: date
+        name:
+          type: string
+      required:
+      - achievedOn
+      - name
     LedgerEntryResponse:
       type: object
       properties:
@@ -15332,6 +15343,49 @@ components:
           x-required: true
       required:
       - muted
+    NearestCap:
+      type: object
+      properties:
+        cap:
+          type: number
+        label:
+          type: string
+        unit:
+          type: string
+        used:
+          type: number
+        windowEnd:
+          type: string
+          format: date
+      required:
+      - cap
+      - label
+      - unit
+      - used
+      - windowEnd
+    NextMilestone:
+      type: object
+      properties:
+        basis:
+          type: string
+          enum:
+          - SPEND
+          - TXN_COUNT
+        name:
+          type: string
+        progress:
+          type: number
+        threshold:
+          type: number
+        windowEnd:
+          type: string
+          format: date
+      required:
+      - basis
+      - name
+      - progress
+      - threshold
+      - windowEnd
     NotificationEvaluateResponse:
       type: object
       properties:
@@ -17053,6 +17107,17 @@ components:
       required:
       - datasources
       - operators
+    ReportDashboardRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
     ReportData:
       type: object
       additionalProperties: true
@@ -17131,9 +17196,17 @@ components:
     ReportSummaryResponse:
       type: object
       properties:
+        chartType:
+          type: string
+          nullable: true
+          x-nullable: true
         createdAt:
           type: string
           format: date-time
+        dashboards:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportDashboardRef"
         datasource:
           type: string
         description:
@@ -17156,6 +17229,7 @@ components:
           format: date-time
       required:
       - createdAt
+      - dashboards
       - datasource
       - id
       - name
@@ -18184,10 +18258,16 @@ components:
           type: number
           nullable: true
           x-nullable: true
+        lastMet:
+          $ref: "#/components/schemas/LastMet"
         milestonePoints:
           type: number
         milestoneValueInr:
           type: number
+        nearestCap:
+          $ref: "#/components/schemas/NearestCap"
+        nextMilestone:
+          $ref: "#/components/schemas/NextMilestone"
         pointValueInr:
           type: number
           nullable: true

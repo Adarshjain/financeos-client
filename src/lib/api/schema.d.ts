@@ -5855,6 +5855,11 @@ export interface components {
             /** @enum {string} */
             type: "DEBIT" | "CREDIT";
         };
+        LastMet: {
+            /** Format: date */
+            achievedOn: string;
+            name: string;
+        };
         LedgerEntryResponse: {
             amount: number;
             /** Format: uuid */
@@ -6234,6 +6239,23 @@ export interface components {
         };
         MuteLoanRequest: {
             muted: boolean;
+        };
+        NearestCap: {
+            cap: number;
+            label: string;
+            unit: string;
+            used: number;
+            /** Format: date */
+            windowEnd: string;
+        };
+        NextMilestone: {
+            /** @enum {string} */
+            basis: "SPEND" | "TXN_COUNT";
+            name: string;
+            progress: number;
+            threshold: number;
+            /** Format: date */
+            windowEnd: string;
         };
         NotificationEvaluateResponse: {
             /** Format: int32 */
@@ -6877,6 +6899,11 @@ export interface components {
             datasources: components["schemas"]["SingleDatasourceView"][];
             operators: components["schemas"]["OperatorCatalog"];
         };
+        ReportDashboardRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
         ReportData: {
             [key: string]: unknown;
         };
@@ -6909,8 +6936,10 @@ export interface components {
             updatedAt: string;
         };
         ReportSummaryResponse: {
+            chartType?: string | null;
             /** Format: date-time */
             createdAt: string;
+            dashboards: components["schemas"]["ReportDashboardRef"][];
             datasource: string;
             description?: string | null;
             /** Format: uuid */
@@ -7263,8 +7292,11 @@ export interface components {
             /** Format: date */
             from: string;
             grossValueInr?: number | null;
+            lastMet?: components["schemas"]["LastMet"];
             milestonePoints: number;
             milestoneValueInr: number;
+            nearestCap?: components["schemas"]["NearestCap"];
+            nextMilestone?: components["schemas"]["NextMilestone"];
             pointValueInr?: number | null;
             points: number;
             /** Format: date */

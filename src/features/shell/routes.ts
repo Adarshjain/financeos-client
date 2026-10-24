@@ -47,6 +47,8 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/rewards\/cards\/[^/]+$/,
   // Earning rules.
   /^\/rewards\/rules$/,
+  // The Reports list only; New report and a report's editor stay Legacy until they are built.
+  /^\/reports$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */

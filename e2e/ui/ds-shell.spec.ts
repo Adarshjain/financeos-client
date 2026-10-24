@@ -150,7 +150,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/ds/rewards');
     await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/ds/loans/lendings');
     await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
-    await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
+    await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/ds/reports');
     await expect(sheet.getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
 
     // Verify Profile row
