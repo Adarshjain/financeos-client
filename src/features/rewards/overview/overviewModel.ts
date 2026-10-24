@@ -37,7 +37,7 @@ export interface NextMilestone {
   name: string;
   progress: number;
   threshold: number;
-  basis: 'SPEND' | 'COUNT';
+  basis: 'SPEND' | 'TXN_COUNT';
   windowEnd: string;
 }
 
