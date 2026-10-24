@@ -69,7 +69,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
 
     // A table: the card's reward year has its own column.
     await expect(page.getByRole('columnheader', { name: 'Reward year' })).toBeVisible();
-    await expect(page.getByText(/^Anniversary year /).first()).toBeVisible();
+    await expect(page.getByText('Anniversary year', { exact: true }).first()).toBeVisible();
 
     await page.getByText('Ds High Card', { exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/ds/rewards/cards/${high.id}`), { timeout: 45_000 });

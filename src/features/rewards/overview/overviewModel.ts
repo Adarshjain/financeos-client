@@ -113,6 +113,18 @@ export function nextMilestoneText(
   return '—';
 }
 
+/** "₹100 left of ₹500 · Dining" → the figure, then the label under it; text with no label stays one line. */
+export function labelLines(text: string): { main: string; sub: string | null } {
+  const at = text.indexOf(' · ');
+  return at < 0 ? { main: text, sub: null } : { main: text.slice(0, at), sub: text.slice(at + 3) };
+}
+
+/** "Anniversary year 15 Mar – 14 Mar 27" → the range, then the kind of year under it. */
+export function yearLines(year: string): { main: string; sub: string | null } {
+  const m = /^(Anniversary year|Calendar year)\s+(.+)$/.exec(year);
+  return m ? { main: m[2], sub: m[1] } : { main: year, sub: null };
+}
+
 /** "₹1,502", "₹1,502 + 1,040 pts", or "1,040 pts" when there are no rupees at all. */
 export function earnedText(rupees: number, unvaluedPoints: number): string {
   if (unvaluedPoints <= 0) return formatRupees(rupees);
