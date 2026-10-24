@@ -115,6 +115,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 52 | Keypad | Approved (2026-10-23) |
 | 53 | Conceal | Approved (2026-10-23) |
 | 54 | AmountField (organism) | Approved (2026-10-23) |
+| 55 | ReorderList | Ready for review (2026-10-24) |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
