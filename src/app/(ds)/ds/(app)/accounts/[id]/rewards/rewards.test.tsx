@@ -134,7 +134,7 @@ function data(over: Partial<RewardsTabData> = {}): RewardsTabData {
       last: false,
       empty: false,
     },
-    query: { page: 0, size: 25 },
+    query: { page: 0, size: 10 },
     ...over,
   };
 }
@@ -161,10 +161,10 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.getByText('30 of 30 transactions earned')).toBeDefined();
     expect(screen.getByText('≈ ₹1,090 at ₹0.50 / pt')).toBeDefined();
     expect(screen.getByText('1.3%')).toBeDefined();
-    expect(screen.getByText('anniversary year 15 Mar → 14 Mar')).toBeDefined();
+    expect(screen.getByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeDefined();
 
-    expect(screen.getByText('Earning lines')).toBeDefined();
-    expect(screen.getByText('30 lines · this anniversary year')).toBeDefined();
+    expect(screen.getByText('Transactions')).toBeDefined();
+    expect(screen.getByText('30 lines · This anniversary year')).toBeDefined();
     expect(screen.getAllByText(/Uber/).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Earned').length).toBeGreaterThan(0);
 
@@ -209,15 +209,17 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.queryByText('Rules on this account')).toBeNull();
   });
 
-  it('sets ?rule= when a rule chip is chosen and clears it on All rules', async () => {
+  it('sets ?rule= when a rule is chosen in the dropdown and clears it on All rules', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: '5X' }));
+    fireEvent.click(screen.getByRole('button', { name: 'All rules' }));
+    fireEvent.click(screen.getByRole('option', { name: '5X' }));
     expect(push).toHaveBeenCalledWith('/ds/accounts/c1/rewards?rule=r1');
 
     push.mockClear();
-    loadData.mockResolvedValue(data({ query: { ruleId: 'r1', page: 1, size: 25 } }));
+    loadData.mockResolvedValue(data({ query: { ruleId: 'r1', page: 1, size: 10 } }));
     await renderPage({ rule: 'r1' });
-    fireEvent.click(screen.getAllByRole('button', { name: 'All rules' }).at(-1)!);
+    fireEvent.click(screen.getByRole('button', { name: '5X' }));
+    fireEvent.click(screen.getByRole('option', { name: 'All rules' }));
     expect(push).toHaveBeenCalledWith('/ds/accounts/c1/rewards');
   });
 

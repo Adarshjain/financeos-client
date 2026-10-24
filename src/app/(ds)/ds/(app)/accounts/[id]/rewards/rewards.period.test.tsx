@@ -40,7 +40,7 @@ describe('Accounts → card → Rewards period', () => {
       report,
       rules: [],
       lines: null,
-      query: { page: 0, size: 25 },
+      query: { page: 0, size: 10 },
     });
   });
 
