@@ -104,7 +104,8 @@ describe('/ds/rewards', () => {
     expect(screen.getByText('Each card over its own reward year')).toBeDefined();
     expect(screen.getByText('HDFC Regalia')).toBeDefined();
     expect(screen.getAllByText('HDFC Bank · ••7741 · Anniversary year 15 Mar 26 – 14 Mar 27').length).toBeGreaterThan(0);
-    expect(screen.getByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeDefined();
+    expect(screen.getByText('15 Mar 26 – 14 Mar 27')).toBeDefined();
+    expect(screen.getByText('Anniversary year')).toBeDefined();
     expect(screen.getByText('₹1,090')).toBeDefined();
     expect(screen.getByText('₹412 + 1,040 pts')).toBeDefined();
     expect(screen.queryByText('Eligible spend')).toBeNull();
@@ -114,8 +115,10 @@ describe('/ds/rewards', () => {
     await renderOverview();
     expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Card', 'Reward year', 'Cap left', 'Next milestone', 'Earned']);
     expect(screen.getByText('HDFC Bank · ••7741')).toBeDefined();
-    expect(screen.getByText('₹100 left of ₹500 · Dining')).toBeDefined();
-    expect(screen.getByText('₹1.2L to go · Annual spend')).toBeDefined();
+    expect(screen.getByText('₹100 left of ₹500')).toBeDefined();
+    expect(screen.getByText('Dining')).toBeDefined();
+    expect(screen.getByText('₹1.2L to go')).toBeDefined();
+    expect(screen.getByText('Annual spend')).toBeDefined();
   });
 
   it('opens a card’s rewards page when its row is tapped', async () => {
