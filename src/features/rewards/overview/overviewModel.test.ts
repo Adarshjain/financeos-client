@@ -67,12 +67,22 @@ describe('buildOverview', () => {
     expect(a).toMatchObject({
       subtitle: '••7741 · HDFC · anniversary year 15 Mar → 14 Mar',
       href: '/ds/rewards/cards/a',
-      setValueHref: '/rewards/rules?account=a',
+      setValueHref: '/ds/rewards/rules?account=a',
     });
     expect(c.subtitle).toBe('calendar year 1 Jan → 31 Dec');
   });
 
   it('is empty without cards', () => {
     expect(buildOverview([], totals, new Set())).toEqual({ total: '₹0', cards: [] });
+  });
+
+  it('counts the points milestones paid as earned points, as the card page does', () => {
+    const m = buildOverview(
+      cards,
+      [total('a', { grossValueInr: 0, points: 400, milestonePoints: 600 })],
+      new Set(['a'])
+    );
+    expect(m.cards[0]).toMatchObject({ id: 'a', earned: '1,000 pts', needsPointValue: true });
+    expect(m.total).toBe('1,000 pts');
   });
 });

@@ -19,4 +19,6 @@ src/features/transactions/
 src/features/investments/
 src/features/rewards/overview/
 src/features/rewards/which-card/
+src/features/rewards/rules-page/
+src/app/(ds)/ds/(app)/rewards/(tabs)/rules/
 src/app/(ds)/ds/(app)/rewards/(tabs)/which-card/

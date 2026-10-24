@@ -1,23 +1,21 @@
 'use client';
 
-import { toast } from 'sonner';
-
 import { useUpdateRewardRule } from '@/features/rewards/queries/useRewardRulesQueries';
+import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { RewardRule } from '@/lib/rewards.types';
-import { toastError } from '@/lib/toastError';
 import { formatDate, toCalendarDate } from '@/lib/utils';
 
 /** Ends a rule today (activeTo) and hands the updated rule to onEnded so the caller can open a successor form. */
-export function useEndDateAndClone(onEnded: (updated: RewardRule) => void) {
+export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notify: RewardNotifier = sonnerRewardNotifier) {
   const updateRule = useUpdateRewardRule();
   return (rule: RewardRule) => {
     const today = toCalendarDate(new Date());
     if (rule.activeFrom && rule.activeFrom >= today) {
-      toast.error('Rule starts today or later — just edit it directly.');
+      notify.error('Rule starts today or later — just edit it directly.');
       return;
     }
     if (rule.activeTo && rule.activeTo <= today) {
-      toast.error('Rule already ended — use Clone to create a successor.');
+      notify.error('Rule already ended — use Clone to create a successor.');
       return;
     }
     updateRule.mutate(
@@ -58,10 +56,10 @@ export function useEndDateAndClone(onEnded: (updated: RewardRule) => void) {
       },
       {
         onSuccess: (updated) => {
-          toast.success(`"${rule.name}" ended ${formatDate(today)} — configure its successor`);
+          notify.success(`"${rule.name}" ended ${formatDate(today)} — configure its successor`);
           onEnded(updated);
         },
-        onError: (e) => toastError(e, 'Failed to update reward rule'),
+        onError: (e) => notify.failure(e, 'Failed to update reward rule'),
       }
     );
   };

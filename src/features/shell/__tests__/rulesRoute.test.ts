@@ -8,7 +8,7 @@ describe('Rules tab route', () => {
     expect(appHref('/rules?status=verified&page=2')).toBe('/ds/transactions/rules?status=verified&page=2');
   });
 
-  it('leaves the rewards rules page alone', () => {
-    expect(appHref('/rewards/rules?account=a1')).toBe('/rewards/rules?account=a1');
+  it('sends the rewards rules page to its Dinero page', () => {
+    expect(appHref('/rewards/rules?account=a1')).toBe('/ds/rewards/rules?account=a1');
   });
 });

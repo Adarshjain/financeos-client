@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import {
   useCreateRewardMilestone,
   useUpdateRewardMilestone,
 } from '@/features/rewards/queries/useRewardMilestonesQueries';
-import { ApiError } from '@/lib/api/client';
+import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { Category } from '@/lib/categories.types';
 import {
   MilestoneBasis,
@@ -18,7 +17,6 @@ import {
   RewardMilestoneRequest,
   RewardType,
 } from '@/lib/rewards.types';
-import { toastError } from '@/lib/toastError';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 interface UseRewardMilestoneFormProps {
@@ -27,6 +25,8 @@ interface UseRewardMilestoneFormProps {
   defaultRewardType: RewardType;
   milestone?: RewardMilestone;
   onSaved: () => void;
+  /** How validation and save results are shown; default Legacy's toasts. */
+  notify?: RewardNotifier;
 }
 
 export function useRewardMilestoneForm({
@@ -35,6 +35,7 @@ export function useRewardMilestoneForm({
   defaultRewardType,
   milestone,
   onSaved,
+  notify = sonnerRewardNotifier,
 }: UseRewardMilestoneFormProps) {
   const isUpdateMode = !!milestone;
 
@@ -98,23 +99,23 @@ export function useRewardMilestoneForm({
 
   const onSubmit = () => {
     if (!name.trim()) {
-      toast.error('Milestone name is required.');
+      notify.error('Milestone name is required.');
       return;
     }
     const thresholdValue = Number(threshold);
     if (!threshold.trim() || Number.isNaN(thresholdValue) || thresholdValue <= 0) {
-      toast.error('Threshold must be a positive number.');
+      notify.error('Threshold must be a positive number.');
       return;
     }
     if (
       payoutType === 'CASH_VALUE' &&
       (!payoutValue.trim() || Number(payoutValue) <= 0)
     ) {
-      toast.error('Payout value is required for a value-paying milestone.');
+      notify.error('Payout value is required for a value-paying milestone.');
       return;
     }
     if (windowType === 'ONE_TIME' && (!activeFrom || !activeTo)) {
-      toast.error('A one-time milestone needs both a start date and a deadline.');
+      notify.error('A one-time milestone needs both a start date and a deadline.');
       return;
     }
     const badMcc = [
@@ -122,7 +123,7 @@ export function useRewardMilestoneForm({
       ...parseMccList(excludeMccs),
     ].find((m) => !/^\d{4}$/.test(m));
     if (badMcc) {
-      toast.error(`MCC must be a 4-digit code: ${badMcc}`);
+      notify.error(`MCC must be a 4-digit code: ${badMcc}`);
       return;
     }
     const body: RewardMilestoneRequest = {
@@ -148,11 +149,10 @@ export function useRewardMilestoneForm({
       activeTo: activeTo ? toCalendarDate(activeTo) : null,
     };
     const onSuccess = () => {
-      toast.success(isUpdateMode ? 'Milestone updated' : 'Milestone created');
+      notify.success(isUpdateMode ? 'Milestone updated' : 'Milestone created');
       onSaved();
     };
-    const onError = (e: unknown) =>
-      toastError(e, 'Failed to save milestone');
+    const onError = (e: unknown) => notify.failure(e, 'Failed to save milestone');
     if (isUpdateMode && milestone) {
       updateMilestoneMutation.mutate({ id: milestone.id, body }, { onSuccess, onError });
     } else {

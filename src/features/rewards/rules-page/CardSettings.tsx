@@ -1,0 +1,165 @@
+'use client';
+
+import React from 'react';
+
+import { Button, Card, Dialog, DialogBody, DialogContent, Select, showToast, Text, TextField } from '@/components/ds';
+import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
+import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
+import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { accountAnniversaryDate, type RewardType } from '@/lib/rewards.types';
+import { sanitizeDecimalInput } from '@/lib/utils';
+
+import { useRewardAccountConfig, useUpdateRewardAccountConfig } from '../queries/useRewardAccountConfigQueries';
+import { useRewardRules } from '../queries/useRewardRulesQueries';
+import { feesInBasis, perCardholderCaps, rewardTypeWord } from './rulesPageModel';
+import { useRefreshUsage } from './rulesRefresh';
+
+const REWARD_TYPE_OPTIONS = [
+  { value: 'CASH', label: 'Cash ₹' },
+  { value: 'POINTS', label: 'Reward points' },
+];
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-space-4">
+      <Text variant="overline" tone="ink-3" as="div">
+        {label}
+      </Text>
+      <div className="flex flex-wrap items-center gap-space-8">{children}</div>
+    </div>
+  );
+}
+
+/** The Card settings card: what applies to every rule on the card. Reward type and point value change in a dialog; the anniversary is the account's own. */
+export function CardSettings({ accountId }: { accountId: string }) {
+  const config = useRewardAccountConfig(accountId).data;
+  const rules = useRewardRules(accountId).data ?? [];
+  const account = useAccounts().data?.find((a) => a.id === accountId);
+  const [editing, setEditing] = React.useState(false);
+  const [editingCard, setEditingCard] = React.useState(false);
+  const anniversary = accountAnniversaryDate(account);
+  const live = rules.filter((r) => !r.activeTo);
+
+  return (
+    <Card
+      title="Card settings"
+      subtitle="Apply to every rule on this card"
+      action={
+        <Button variant="link" disabled={!accountId} onClick={() => setEditing(true)}>
+          Edit
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-2 gap-space-16 p-space-16 desk:grid-cols-5">
+        <Fact label="Reward type">
+          <Text variant="body-strong">{rewardTypeWord(config?.defaultRewardType)}</Text>
+        </Fact>
+        <Fact label="Point value">
+          <Text variant="body-strong">
+            {config?.pointValueInr != null ? `₹${config.pointValueInr}/pt` : 'Default (₹0.25/pt)'}
+          </Text>
+        </Fact>
+        <Fact label="Anniversary">
+          <Text variant="body-strong">{anniversary ? formatDayMonthYear(anniversary) : 'Not set'}</Text>
+          {account ? (
+            <Button variant="link" onClick={() => setEditingCard(true)}>
+              Edit card
+            </Button>
+          ) : null}
+        </Fact>
+        <Fact label="Fees in basis">
+          <Text variant="body-strong">{feesInBasis(live)}</Text>
+        </Fact>
+        <Fact label="Per-cardholder caps">
+          <Text variant="body-strong">{perCardholderCaps(live)}</Text>
+        </Fact>
+      </div>
+      {editing ? (
+        <CardSettingsDialog
+          key={accountId}
+          accountId={accountId}
+          rewardType={config?.defaultRewardType ?? 'CASH'}
+          pointValue={config?.pointValueInr != null ? String(config.pointValueInr) : ''}
+          onClose={() => setEditing(false)}
+        />
+      ) : null}
+      {editingCard && account ? <AccountFormDialog account={account} onClose={() => setEditingCard(false)} /> : null}
+    </Card>
+  );
+}
+
+interface CardSettingsDialogProps {
+  accountId: string;
+  rewardType: RewardType;
+  pointValue: string;
+  onClose: () => void;
+}
+
+/** Reward type and point value, saved together with the button (never as you type). */
+export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose }: CardSettingsDialogProps) {
+  const update = useUpdateRewardAccountConfig();
+  const refresh = useRefreshUsage();
+  const [type, setType] = React.useState<RewardType>(rewardType);
+  const [value, setValue] = React.useState(pointValue);
+
+  const save = () => {
+    const num = value.trim() ? parseFloat(value) : null;
+    if (num != null && (Number.isNaN(num) || num <= 0)) {
+      showToast('Point value must be greater than ₹0', { tone: 'danger' });
+      return;
+    }
+    const typeChanged = type !== rewardType;
+    const valueChanged = value.trim() !== pointValue.trim();
+    update.mutate(
+      { accountId, defaultRewardType: type, pointValueInr: num },
+      {
+        onSuccess: () => {
+          showToast(
+            typeChanged && !valueChanged
+              ? type === 'POINTS'
+                ? 'Card now defaults to reward points'
+                : 'Card now defaults to cash'
+              : !typeChanged && valueChanged
+                ? num != null
+                  ? `Point value set to ₹${num}/pt`
+                  : 'Point value reset to default (₹0.25/pt)'
+                : 'Card settings saved',
+          );
+          refresh();
+          onClose();
+        },
+        onError: (e) => dsRewardNotifier.failure(e, 'Failed to update reward config'),
+      },
+    );
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent
+        size="sm"
+        title="Card settings"
+        description="Apply to every rule on this card."
+        secondary={{ label: 'Cancel', onSelect: onClose, disabled: update.isPending }}
+        primary={{ label: 'Save settings', onSelect: save, loading: update.isPending }}
+      >
+        <DialogBody>
+          <Select
+            label="Rewards paid as"
+            options={REWARD_TYPE_OPTIONS}
+            value={type}
+            onValueChange={(v) => setType((Array.isArray(v) ? v[0] : v) as RewardType)}
+          />
+          <TextField
+            label="Point value (₹/pt)"
+            optional
+            inputMode="decimal"
+            placeholder="0.25 (default)"
+            value={value}
+            onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
+          />
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  );
+}

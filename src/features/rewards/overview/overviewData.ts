@@ -4,7 +4,7 @@ import { serverApi } from '@/lib/api/server';
 import { accountsApi } from '@/lib/apiClient';
 import { AccountType } from '@/lib/types';
 
-import { buildOverview, type CardTotal, type RewardsOverviewModel } from './overviewModel';
+import { buildOverview, type CardTotal, earnedPoints, type RewardsOverviewModel } from './overviewModel';
 
 export interface RewardsOverviewData {
   /** Null when the accounts or the totals request failed. */
@@ -35,6 +35,6 @@ export async function loadRewardsOverviewData(): Promise<RewardsOverviewData> {
     ),
   ]);
   if (!accounts || !totals) return { model: null };
-  const unvalued = new Set(totals.filter((t) => t.points > 0 && t.pointValueInr == null).map((t) => t.accountId));
+  const unvalued = new Set(totals.filter((t) => earnedPoints(t) > 0 && t.pointValueInr == null).map((t) => t.accountId));
   return { model: buildOverview(overviewCards(accounts, totals), totals, unvalued) };
 }

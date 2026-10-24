@@ -174,7 +174,7 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.getByText('First match wins')).toBeDefined();
     expect(screen.getByText('1 · 5X')).toBeDefined();
     expect(screen.getByText('MCC 5812 · 20 pts / ₹150')).toBeDefined();
-    expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/rewards/rules?account=c1');
+    expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/ds/rewards/rules?account=c1');
   });
 
   it('shows each milestone under its own name, whatever type it is', async () => {
@@ -229,7 +229,7 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.getByText('No reward rules on Paytm Wallet')).toBeDefined();
     expect(screen.getByText('Rewards earned here show once a rule covers this account.')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Add reward rule' }));
-    expect(push).toHaveBeenCalledWith('/rewards/rules?account=w1');
+    expect(push).toHaveBeenCalledWith('/ds/rewards/rules?account=w1');
   });
 
   it('shows an error with Try again when the report failed, and keeps the page when only the lines failed', async () => {
