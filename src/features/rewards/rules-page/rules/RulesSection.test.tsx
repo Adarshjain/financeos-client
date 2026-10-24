@@ -79,6 +79,7 @@ vi.mock('@/lib/query/hooks/useAccounts', () => ({
     data: [
       {
         id: 'a1',
+        name: 'HDFC Regalia',
         type: AccountType.CREDIT_CARD,
         cardholders: [{ id: 'h1', accountId: 'a1', role: 'PRIMARY', personName: 'Arjun', currentLast4: '4521', cards: [] }],
       },
@@ -104,10 +105,15 @@ const renderSection = (usage?: Record<string, { text: string; zero: boolean }>, 
   );
 const refresh = vi.fn();
 const openNew = () => act(() => adder!());
-const openMenu = async (row: number, item: string) => {
+const openHeaderMenu = async (item: string) => {
   const user = userEvent.setup();
-  await user.click(screen.getAllByRole('button', { name: /^Actions for / })[row]);
+  await user.click(screen.getByRole('button', { name: 'Rule actions' }));
   await user.click(await screen.findByRole('menuitem', { name: item }));
+};
+// A row tap opens Edit rule; the dialog carries Clone, End & clone and Delete.
+const openRow = async (name: string) => {
+  fireEvent.click(screen.getByText(name, { exact: false }));
+  await screen.findByText('Edit rule');
 };
 const lastButton = (name: string) => {
   const all = screen.getAllByRole('button', { name });
@@ -141,17 +147,47 @@ describe('RulesSection list', () => {
     rules = [rule({ activeTo: '2025-01-01' })];
     renderSection();
     expect(screen.getAllByText(/ended/).length).toBeGreaterThan(0);
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /^Actions for / }));
-    expect(await screen.findByRole('menuitem', { name: 'Clone' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'End & clone' })).not.toBeInTheDocument();
+    await openRow('5X on dining');
+    expect(screen.getByRole('button', { name: 'Clone' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
   });
 
-  it('suggests a base rule when there are none, and disables Reorder', () => {
+  it('suggests a base rule when there are none, and disables Reorder rules', async () => {
     rules = [];
     renderSection();
     expect(screen.getByText(/Start with a base rule/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Reorder' })).toBeDisabled();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Reorder rules' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('titles the card after the selected card and keeps no per-row actions', () => {
+    renderSection();
+    expect(screen.queryByRole('button', { name: /^Actions for / })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
+    expect(screen.getByText('How HDFC Regalia earns')).toBeInTheDocument();
+  });
+});
+
+describe('header menu', () => {
+  it('offers Test a transaction and Reorder rules, both enabled with two rules and a card', async () => {
+    renderSection();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Test a transaction' })).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Reorder rules' })).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('disables Reorder rules with fewer than two rules', async () => {
+    rules = [rule()];
+    renderSection();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Reorder rules' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('disables Test a transaction without a card', async () => {
+    renderSection(undefined, '');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Test a transaction' })).toHaveAttribute('aria-disabled', 'true');
   });
 });
 
@@ -180,23 +216,34 @@ describe('the top bar +', () => {
   });
 });
 
-describe('rule menu', () => {
-  it('Edit opens the rule filled in', async () => {
+describe('rule dialog actions', () => {
+  it('a row tap opens Edit filled in, with Clone and End & clone links', async () => {
     renderSection();
-    await openMenu(0, 'Edit');
+    await openRow('5X on dining');
     expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
-    expect(screen.getByText('Edit rule')).toBeInTheDocument();
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.getByRole('button', { name: 'Save & recompute' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clone' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'End & clone' })).toBeInTheDocument();
   });
 
-  it('Clone opens a new rule prefilled from it', async () => {
+  it('Clone opens a new rule prefilled from it, without the links or Delete', async () => {
     renderSection();
-    await openMenu(0, 'Clone');
-    expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
-    expect(screen.getByText('New rule')).toBeInTheDocument();
+    await openRow('5X on dining');
+    fireEvent.click(screen.getByRole('button', { name: 'Clone' }));
+    await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
+  });
+
+  it('a new rule has neither link', async () => {
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
   });
 
   it('End & clone ends the rule today, then opens its successor', async () => {
@@ -204,18 +251,20 @@ describe('rule menu', () => {
       opts.onSuccess(rule({ activeTo: new Date().toISOString().slice(0, 10) })),
     );
     renderSection();
-    await openMenu(0, 'End & clone');
+    await openRow('5X on dining');
+    fireEvent.click(screen.getByRole('button', { name: 'End & clone' }));
     expect(update).toHaveBeenCalledWith(
       { id: 'r1', body: expect.objectContaining({ name: '5X on dining', activeTo: expect.any(String) }) },
       expect.anything(),
     );
-    expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
-    expect(screen.getByText('New rule')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
+    expect(screen.getByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
   });
 
   it('Delete confirms with the Legacy words, then removes the rule', async () => {
     renderSection();
-    await openMenu(0, 'Delete');
+    await openRow('5X on dining');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete rule' }));
     expect(screen.getByText('Delete rule "5X on dining"?')).toBeInTheDocument();
     expect(screen.getByText(/Historical reports will no longer see it/)).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();
@@ -228,10 +277,11 @@ describe('rule menu', () => {
 describe('refreshing the server figures', () => {
   it('re-reads them after a delete, a reorder and a save, so the so-far amounts follow', async () => {
     renderSection();
-    await openMenu(0, 'Delete');
+    await openRow('5X on dining');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete rule' }));
     fireEvent.click(lastButton('Delete rule'));
     expect(refresh).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder' }));
+    await openHeaderMenu('Reorder rules');
     fireEvent.click(await screen.findByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save order' }));
     expect(refresh).toHaveBeenCalledTimes(2);
@@ -239,10 +289,10 @@ describe('refreshing the server figures', () => {
 
   it('re-reads them after a rule is saved, but not when the dialog is cancelled', async () => {
     renderSection();
-    await openMenu(0, 'Edit');
+    await openRow('5X on dining');
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(refresh).not.toHaveBeenCalled();
-    await openMenu(0, 'Edit');
+    await openRow('5X on dining');
     fireEvent.click(await screen.findByRole('button', { name: 'Save & recompute' }));
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
   });
@@ -251,7 +301,7 @@ describe('refreshing the server figures', () => {
 describe('reorder', () => {
   it('Save sends the new order of every rule', async () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder' }));
+    await openHeaderMenu('Reorder rules');
     expect(await screen.findByText('Reorder rules')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save order' }));
@@ -261,7 +311,7 @@ describe('reorder', () => {
 
   it('Cancel throws the new order away', async () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder' }));
+    await openHeaderMenu('Reorder rules');
     fireEvent.click(await screen.findByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(reorder).not.toHaveBeenCalled();
@@ -270,7 +320,7 @@ describe('reorder', () => {
 
   it('says nothing is sent when the order did not change', async () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder' }));
+    await openHeaderMenu('Reorder rules');
     fireEvent.click(await screen.findByRole('button', { name: 'Save order' }));
     expect(reorder).not.toHaveBeenCalled();
   });
@@ -297,7 +347,7 @@ describe('test a transaction', () => {
       ],
     };
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: 'Test a transaction' }));
+    await openHeaderMenu('Test a transaction');
     expect(await screen.findByText('See which rule wins on this card, and what it earns with your real cap usage.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'More options' }));
     fireEvent.change(screen.getByRole('textbox', { name: /^MCC/ }), { target: { value: '5812' } });
@@ -312,7 +362,7 @@ describe('test a transaction', () => {
 
   it('asks for a valid amount before calling anything', async () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: 'Test a transaction' }));
+    await openHeaderMenu('Test a transaction');
     fireEvent.change(await screen.findByRole('textbox', { name: /^Amount/ }), { target: { value: '0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Run test' }));
     expect(recommend).not.toHaveBeenCalled();
@@ -367,7 +417,7 @@ describe('rule dialog', () => {
 
   it('saves an edit with the rule’s own priority', async () => {
     renderSection();
-    await openMenu(0, 'Edit');
+    await openRow('5X on dining');
     fireEvent.change(await screen.findByRole('textbox', { name: /^Name/ }), { target: { value: 'Dining 6X' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
     await waitFor(() => expect(update).toHaveBeenCalled());
@@ -380,7 +430,7 @@ describe('rule dialog', () => {
 
   it('deletes from the dialog’s red link after confirming', async () => {
     renderSection();
-    await openMenu(0, 'Edit');
+    await openRow('5X on dining');
     fireEvent.click(await screen.findByRole('button', { name: 'Delete rule' }));
     expect(screen.getByText('Delete rule "5X on dining"?')).toBeInTheDocument();
     fireEvent.click(lastButton('Delete rule'));

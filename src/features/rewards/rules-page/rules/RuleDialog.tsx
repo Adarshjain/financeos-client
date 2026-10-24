@@ -69,6 +69,10 @@ export interface RuleDialogProps {
   onClose: () => void;
   /** Edit only: asks the section to confirm deleting this rule. */
   onDelete?: () => void;
+  /** Edit only: opens a new rule prefilled from this one. */
+  onClone?: () => void;
+  /** Edit only, and only for a rule that has not ended: ends it today and opens its successor. */
+  onEndAndClone?: () => void;
 }
 
 const ALL = 'ALL';
@@ -139,6 +143,8 @@ export function RuleDialog({
   defaultPriority,
   onClose,
   onDelete,
+  onClone,
+  onEndAndClone,
 }: RuleDialogProps) {
   const refresh = useRefreshUsage();
   const f = useRewardRuleForm({
@@ -183,6 +189,20 @@ export function RuleDialog({
         primary={{ label: 'Save & recompute', onSelect: f.onSubmit, loading: f.isSubmitting }}
       >
         <DialogBody>
+          {rule && (onClone || onEndAndClone) ? (
+            <Text variant="label" as="div" className="flex items-center gap-space-12">
+              {onClone ? (
+                <Button type="button" variant="link" size="sm" onClick={onClone}>
+                  Clone
+                </Button>
+              ) : null}
+              {onEndAndClone ? (
+                <Button type="button" variant="link" size="sm" onClick={onEndAndClone}>
+                  End & clone
+                </Button>
+              ) : null}
+            </Text>
+          ) : null}
           <TextField label="Name" placeholder="e.g. 5% online" value={f.name} onValueChange={f.setName} />
 
           <SectionHeader variant="band">Earns</SectionHeader>
