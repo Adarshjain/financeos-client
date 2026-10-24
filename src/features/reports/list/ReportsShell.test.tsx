@@ -21,8 +21,8 @@ describe('ReportsShell', () => {
     expect(reports).toHaveAttribute('data-state', 'active');
   });
 
-  it('puts New report on the + and leaves New report on Legacy until it is built', () => {
+  it('puts New report on the + and opens the Dinero editor', () => {
     renderWithQuery(<ReportsShell>body</ReportsShell>);
-    expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/reports/new');
+    expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/ds/reports/new');
   });
 });

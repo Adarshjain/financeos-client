@@ -199,18 +199,39 @@ export interface KpiDefinition {
   };
 }
 
+/** How a chart's categories are ordered: by the dimension itself, or by the measure (high to low, low to high). */
+export type ChartOrder = 'dimension' | 'value_desc' | 'value_asc';
+
+/** CHART comparison: the previous period beside the current one. Not offered on a date dimension. */
+export interface ChartComparison {
+  enabled?: boolean;
+  period?: 'previous_period';
+  higherIsBetter?: boolean;
+  display?: ComparisonDisplay;
+}
+
 /** CHART: one measure over a dimension, optionally split into series. */
 export interface ChartDefinition {
-  chartType: 'line' | 'bar' | 'stackedBar' | 'area' | 'pie' | 'donut';
+  /** `breakdown` is a ranked list (rows with sub-rows), not a drawn chart. */
+  chartType: 'line' | 'bar' | 'stackedBar' | 'area' | 'pie' | 'donut' | 'breakdown';
   /** X-axis / primary grouping. */
   dimension: DimensionRef;
-  /** Optional split into multiple series; ignored for `pie`/`donut`. */
+  /** Optional split into multiple series; ignored for `pie`/`donut`/`breakdown`. */
   series?: DimensionRef;
   /** Single measure (v1). */
   measure: MeasureRef;
   filters: FilterClause[];
-  // No sort, no limit — charts are not sorted server-side; cap points/series
-  // client-side if needed.
+  /** Keep the top N categories (1..50). */
+  limit?: number;
+  /** With `limit`: fold the rest into one "Other" category. */
+  other?: boolean;
+  /** Absent = `dimension` order (`value_desc` for a breakdown). */
+  order?: ChartOrder;
+  comparison?: ChartComparison;
+  /** Breakdown only: the sub-rows under each row. */
+  subDimension?: DimensionRef;
+  /** Breakdown only: sub-rows kept per row (1..10, default 3). */
+  subLimit?: number;
 }
 
 /** TABLE (raw): per-transaction rows for the selected columns. */
@@ -373,6 +394,28 @@ export interface KpiData {
   meta: ReportDataMeta;
 }
 
+/** A breakdown row's sub-row: one value of the sub-dimension under the row. */
+export interface BreakdownSubRow {
+  label: string;
+  value: number;
+  count: number;
+}
+
+/** What a breakdown row carries beside the chart's category and value. */
+export interface BreakdownRow {
+  count: number;
+  avg: number | null;
+  previousCount: number | null;
+  subRows: BreakdownSubRow[];
+}
+
+/** The breakdown block of chart data: one entry per category, aligned by index to `categories`. */
+export interface BreakdownData {
+  rows: BreakdownRow[];
+  total: number | null;
+  previousTotal: number | null;
+}
+
 export interface ChartData {
   type: 'CHART';
   chartType: string;
@@ -387,6 +430,19 @@ export interface ChartData {
   valueLabels?: Record<string, string> | null;
   /** Static enum series dimension only: stored series name → display label. */
   seriesValueLabels?: Record<string, string> | null;
+  /** The comparison period's series, aligned to `categories`; present when the definition compares. */
+  previous?: {
+    series: { name: string; data: (number | null)[] }[];
+    dateRange: { from: string; to: string } | null;
+  } | null;
+  /** Where "Other" sits in `categories` and how many categories it folded. */
+  other?: { index: number; foldedCount: number } | null;
+  /** Breakdown only. */
+  breakdown?: BreakdownData | null;
+  /** Date dimension: the window each category covers, aligned to `categories` (null = unknown). */
+  categoryRanges?: ({ from: string; to: string } | null)[] | null;
+  /** Static enum sub-dimension only: stored value → display label. */
+  subValueLabels?: Record<string, string> | null;
 }
 
 export interface TableColumn {

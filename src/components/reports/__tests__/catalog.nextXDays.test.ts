@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRelativeDateOp, valueKind } from '@/components/reports/catalog';
+import { isRelativeDateOp, valueKind } from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog, FieldDefinition } from '@/lib/reports.types';
 
 const catalog = {

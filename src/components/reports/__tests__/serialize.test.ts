@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DatasourceCatalog } from '@/lib/reports.types';
-
-import type { BuilderState } from '../builderReducer';
-import { initialBuilderState } from '../builderReducer';
+import type { BuilderState } from '@/features/reports/builder/builderReducer';
+import { initialBuilderState } from '@/features/reports/builder/builderReducer';
 import {
   aggregatedColumnKey,
   buildCreateRequest,
@@ -12,7 +10,8 @@ import {
   isMinimalValid,
   serializeDefinition,
   validationErrors,
-} from '../serialize';
+} from '@/features/reports/builder/serialize';
+import type { DatasourceCatalog } from '@/lib/reports.types';
 
 // Minimal catalog: `date` is the only date-typed field, which is what
 // isDateFieldName keys the granularity rules off.

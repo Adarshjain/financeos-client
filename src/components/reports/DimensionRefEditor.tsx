@@ -11,15 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { fieldsFor, isDateFieldName } from '@/features/reports/builder/catalog';
+import { GRANULARITY_LABELS } from '@/features/reports/builder/labels';
 import type {
   DatasourceCatalog,
   DimensionRef,
   Granularity,
   ReportType,
 } from '@/lib/reports.types';
-
-import { fieldsFor, isDateFieldName } from './catalog';
-import { GRANULARITY_LABELS } from './labels';
 
 const GRANULARITY_OPTIONS = (
   Object.keys(GRANULARITY_LABELS) as Granularity[]

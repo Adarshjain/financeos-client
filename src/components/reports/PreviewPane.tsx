@@ -24,14 +24,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import type { BuilderState } from '@/features/reports/builder/builderReducer';
+import { buildRunRequest, validationErrors } from '@/features/reports/builder/serialize';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';
 import type { DatasourceCatalog, KpiData, RunReportRequest, SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
-import type { BuilderState } from './builderReducer';
-import { buildRunRequest, validationErrors } from './serialize';
 import { KpiUnderlyingDialog } from './underlying/KpiUnderlyingDialog';
 import { ReportDataView } from './views/ReportDataView';
 import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';

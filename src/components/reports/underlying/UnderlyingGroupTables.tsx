@@ -9,7 +9,8 @@
 
 import { CardSortBar,TableCardList } from '@/components/reports/views/TableCardList';
 import { TablePagination } from '@/components/reports/views/TablePagination';
-import { formatCell, groupLabel, groupTotal, TableView } from '@/components/reports/views/TableView';
+import { groupLabel, groupTotal, TableView } from '@/components/reports/views/TableView';
+import { formatCell } from '@/features/reports/view/cells';
 import type { SortClause, TableData, TableRow } from '@/lib/reports.types';
 import { BELOW_SM_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 

@@ -21,6 +21,8 @@ export interface ChartProps {
   fill?: boolean;
   /** Cartesian value axis: `zero` (default) always includes 0, `data` fits the axis to the data range. */
   yDomain?: 'zero' | 'data';
+  /** Whether values are money. Given, it wins; omitted, a measure named like an amount is money (and a count never is). */
+  money?: boolean;
 }
 
 /**
@@ -31,6 +33,7 @@ export function Chart({
   data: raw,
   fill,
   yDomain,
+  money: moneyProp,
 }: ChartProps) {
   // Static enum categories/series read as their labels (e.g. "Bank account").
   const data = labelChartData(raw);
@@ -39,9 +42,10 @@ export function Chart({
   if (categories.length === 0 || series.length === 0) return <ChartEmpty />;
 
   const money =
-    !!data.measure &&
-    data.measure.aggregation !== 'count' &&
-    isMoneyField(data.measure.field);
+    moneyProp ??
+    (!!data.measure &&
+      data.measure.aggregation !== 'count' &&
+      isMoneyField(data.measure.field));
 
   if (chartType === 'pie' || chartType === 'donut') {
     return (

@@ -11,7 +11,7 @@ import {
   isRelativeDateOp,
   operatorsForField,
   valueKind,
-} from '@/components/reports/catalog';
+} from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
 const mockCatalog: DatasourceCatalog = {

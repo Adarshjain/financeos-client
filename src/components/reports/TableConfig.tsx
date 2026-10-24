@@ -9,13 +9,13 @@
 // Page size is a runtime concern, not part of the saved definition.
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { DatasourceCatalog } from '@/lib/reports.types';
-
 import type {
   AggTableDraft,
   RawTableDraft,
   TableDraft,
-} from './builderReducer';
+} from '@/features/reports/builder/builderReducer';
+import type { DatasourceCatalog } from '@/lib/reports.types';
+
 import { AggTableConfig } from './table-config/AggTableConfig';
 import { RawTableConfig } from './table-config/RawTableConfig';
 

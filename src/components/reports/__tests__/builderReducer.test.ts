@@ -5,7 +5,7 @@ import {
   hydrateState,
   initialBuilderState,
   newDraftId,
-} from '@/components/reports/builderReducer';
+} from '@/features/reports/builder/builderReducer';
 import type { ReportResponse } from '@/lib/reports.types';
 
 describe('builderReducer (CD-12)', () => {

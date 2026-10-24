@@ -94,7 +94,7 @@ describe('ReportsScreen list', () => {
   it('opens the editor on a row tap', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await user.click(within(screen.getByRole('table')).getByText('Net worth over time'));
-    expect(router.push).toHaveBeenCalledWith('/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
   });
 
   it('shows the empty state for no reports at all', () => {
@@ -160,7 +160,7 @@ describe('row menu', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await openMenu('Net worth over time');
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
-    expect(router.push).toHaveBeenCalledWith('/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
   });
 
   it('Duplicate copies the report, toasts with Undo, and Undo deletes the copy', async () => {
@@ -284,6 +284,6 @@ describe('row menu', () => {
     expect(screen.getAllByRole('button', { name: 'Options for Net worth over time' })).toHaveLength(2);
     await user.click(screen.getAllByRole('button', { name: 'Options for Net worth over time' })[1]);
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
-    expect(router.push).toHaveBeenCalledWith('/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
   });
 });

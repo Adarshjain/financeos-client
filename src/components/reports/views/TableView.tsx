@@ -18,31 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMeasureValue, valueLabel } from '@/lib/reports.helpers';
+import { formatCell } from '@/features/reports/view/cells';
 import type {
   SortClause,
   TableColumn,
   TableData,
   TableRow as ReportTableRow,
 } from '@/lib/reports.types';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { TitleCell } from './tableCells';
 import { TablePagination } from './TablePagination';
-
-/** One cell as the table prints it (also the mobile cards' text): a dash when empty. */
-export function formatCell(value: unknown, column: TableColumn): string {
-  if (value === null || value === undefined || value === '') return '—';
-  if (column.type === 'number') {
-    const n = typeof value === 'number' ? value : Number(value);
-    if (Number.isNaN(n)) return String(value);
-    // Raw rows carry no aggregation; the catalog format hint wins over the name heuristic.
-    return formatMeasureValue(n, { field: column.key, format: column.format ?? undefined });
-  }
-  if (column.type === 'date') return formatDate(String(value));
-  if (column.type === 'boolean') return value === true || value === 'true' ? 'Yes' : 'No';
-  return valueLabel(String(value), column.valueLabels);
-}
 
 /** A subtitle column's text for a row, or null when it is empty (nothing to print beside the title). */
 export function subtitleText(row: ReportTableRow, column: TableColumn | null | undefined): string | null {

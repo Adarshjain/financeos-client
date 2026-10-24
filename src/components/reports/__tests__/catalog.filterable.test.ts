@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { filterableFields } from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog } from '@/lib/reports.types';
-
-import { filterableFields } from '../catalog';
 
 const catalog = {
   operators: { date: { absolute: [], relative: [] }, string: [], number: [], enum: [], boolean: [] },

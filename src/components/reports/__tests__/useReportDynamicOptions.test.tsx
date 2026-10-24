@@ -8,11 +8,10 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
-import { DYNAMIC_OPTIONS_FAILED } from '@/components/reports/catalog';
+import { DYNAMIC_OPTIONS_FAILED } from '@/features/reports/builder/catalog';
+import { useReportDynamicOptions } from '@/features/reports/builder/useReportDynamicOptions';
 import { api } from '@/lib/api/client';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
-
-import { useReportDynamicOptions } from '../useReportDynamicOptions';
 
 const catalog: DatasourceCatalog = {
   fields: [

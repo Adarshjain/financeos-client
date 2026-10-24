@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions } from '@/components/reports/catalog';
+import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions } from '@/features/reports/builder/catalog';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';

@@ -6,9 +6,9 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
-import { type BuilderState, initialBuilderState } from '@/components/reports/builderReducer';
 import { PreviewPane } from '@/components/reports/PreviewPane';
 import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
+import { type BuilderState, initialBuilderState } from '@/features/reports/builder/builderReducer';
 import { api } from '@/lib/api/client';
 import type { DatasourceCatalog, TableData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

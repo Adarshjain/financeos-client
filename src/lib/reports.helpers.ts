@@ -13,7 +13,6 @@ import type {
   TableData,
   TableDefinition,
 } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 
 /**
  * Whether a field's numeric values are monetary.
@@ -28,30 +27,6 @@ import { formatMoney } from '@/lib/utils';
  */
 export function isMoneyField(field: string): boolean {
   return field.toLowerCase().endsWith('amount');
-}
-
-/**
- * Renders a measure value consistently across the KPI, raw-table and pivot
- * views: counts as plain integers, money as currency, everything else to two
- * decimal places.
- */
-export function formatMeasureValue(
-  value: number | null | undefined,
-  options: { field?: string; aggregation?: string; format?: 'currency' | 'number' | 'percent' },
-): string {
-  if (value === null || value === undefined) return '—';
-  if (options.aggregation === 'count') {
-    return new Intl.NumberFormat('en-IN').format(value);
-  }
-  if (options.format === 'currency') return formatMoney(value);
-  if (options.format === 'percent') {
-    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value) + '%';
-  }
-  if (options.format === 'number') {
-    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);
-  }
-  if (options.field && isMoneyField(options.field)) return formatMoney(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
