@@ -153,7 +153,7 @@ function DataTableInner<Row extends RowData>(
               onSelectedChange: (next: boolean) =>
                 handleRowSelectionToggle(row.id, next),
               selectionMode: isSelectionMode,
-              onSelect: () => onRowSelect?.(row.original),
+              onSelect: (point) => onRowSelect?.(row.original, point),
               highlighted: isHighlighted,
               expanded: isExpanded,
               onExpandedChange: (next: boolean) => row.toggleExpanded(next),

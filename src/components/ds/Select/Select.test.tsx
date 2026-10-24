@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Select, SelectMenu, type SelectOption } from './Select';
 
@@ -9,6 +9,21 @@ const sampleOptions: SelectOption[] = [
   { value: 'icici', label: 'ICICI Bank', hint: '••8832' },
   { value: 'sbi', label: 'State Bank of India', disabled: true, disabledReason: 'down' },
 ];
+
+// jsdom has no layout: chips, the "+n" badge and the chip row report the sizes given here.
+function mockChipLayout({ row, chip, overflow }: { row: number; chip: number; overflow: number }) {
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} unobserve() {} });
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(row);
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    const width = this.hasAttribute('data-chip-overflow') ? overflow : this.hasAttribute('data-chip-key') ? chip : 0;
+    return { width, height: 0, top: 0, left: 0, right: width, bottom: 0, x: 0, y: 0, toJSON: () => ({}) };
+  });
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('Select', () => {
   it('renders closed single select with placeholder', () => {
@@ -35,16 +50,17 @@ describe('Select', () => {
       { value: '3', label: 'Travel' },
       { value: '4', label: 'Bills' },
     ];
+    mockChipLayout({ row: 150, chip: 60, overflow: 30 });
     render(
       <Select
         multiple
         options={multiOptions}
         defaultValue={['1', '2', '3', '4']}
-        maxDisplayChips={2}
       />,
     );
     expect(screen.getByText('Food & dining')).toBeInTheDocument();
     expect(screen.getByText('Groceries')).toBeInTheDocument();
+    expect(screen.queryByText('Travel')).not.toBeInTheDocument();
     expect(screen.getByText('+2')).toBeInTheDocument();
   });
 

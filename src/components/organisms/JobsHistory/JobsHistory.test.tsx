@@ -64,7 +64,7 @@ describe('JobsHistory compact', () => {
     const onOpen = vi.fn();
     const { rerender } = render(<JobsHistory compact jobs={[ingest({})]} onOpen={onOpen} {...base} />);
     fireEvent.click(screen.getAllByText('HDFC-savings.pdf')[0]);
-    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ id: 'j1' }));
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ id: 'j1' }), expect.anything());
     rerender(<JobsHistory compact jobs={[]} empty={<p>No imports</p>} {...base} />);
     expect(screen.getByText('No imports')).toBeInTheDocument();
   });

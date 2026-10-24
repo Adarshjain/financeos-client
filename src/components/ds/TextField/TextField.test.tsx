@@ -122,7 +122,7 @@ describe('TextField component', () => {
       render(<TextField type="search" label="Find the other side" />);
       const label = screen.getByText('Find the other side');
       const input = screen.getByRole('searchbox');
-      expect(label).toHaveAttribute('for', input.getAttribute('id'));
+      expect(input).toHaveAttribute('aria-labelledby', label.id);
     });
 
     it('renders helper message with aria-describedby', () => {

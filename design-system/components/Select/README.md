@@ -30,12 +30,16 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `filter`: `'auto' | 'none' | ((option, query) => boolean)`.
 - `emptyText`: `(query: string) => ReactNode`.
 - `size`: `'sm' | 'md'` (default `md`). `sm` is a `control-sm` field with `label` text and `space-8` side padding, for a role or type picker sitting inside a list row. The chevron stays `icon-md`.
-- `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `icon`, `trigger`, `showRadio`, `maxDisplayChips`, `open`, `defaultOpen`, `onOpenChange`.
+- `discardLabel`: `ReactNode` (default `Discard & close`), multiple only. Restores the value the field had when the popover opened (calling `onValueChange` with it if it changed) and closes. Footer order, left to right: Clear (link), Discard & close (link), Done (primary). Escape and an outside click keep the selection as it is.
+- Chips (multiple) show as many as fit on one line of the field, measured from the field's width; the rest collapse into a `+n` badge that always fits inside the field. No `maxDisplayChips`.
+- Disabled: no hover, press, focus or open styling; same look as a disabled TextField (`bg-sunken`, faint text, chevron and chips, `opacity-60`).
+- The label is plain text (not a `<label>`): tapping it does nothing. The field points at it with `aria-labelledby`.
+- `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `icon`, `trigger`, `showRadio`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
-Popover, TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Clear, Done), FieldFrame.
+Popover, TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Clear, Discard & close, Done), FieldFrame.
 
 ## Variants
-- **Single select**; **single with search and icons**; **multi select** (checkboxes, Clear and Done); **multi with search and create**; **sectioned list**; **with an action row**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
+- **Single select**; **single with search and icons**; **multi select** (checkboxes, Clear, Discard & close and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with an action row**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
 - **Small** (`size="sm"`, inline in a list row).
 - Closed field states: value, placeholder, icon, open, chips, overflow, error, disabled, loading.

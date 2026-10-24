@@ -51,7 +51,7 @@ export interface DataTableRowProps {
   selected: boolean;
   onSelectedChange: (selected: boolean) => void;
   selectionMode: boolean;
-  onSelect: () => void;
+  onSelect: (point?: { x: number; y: number }) => void;
   highlighted: boolean;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
@@ -76,7 +76,8 @@ export interface DataTableProps<Row extends RowData>
   allSelected?: boolean;
   onAllSelectedChange?: (allSelected: boolean) => void;
 
-  onRowSelect?: (row: Row) => void;
+  /** A row was pressed. `point` is where (viewport coordinates), so a page can open a ContextMenu there. */
+  onRowSelect?: (row: Row, point?: { x: number; y: number }) => void;
 
   renderExpanded?: (row: Row) => React.ReactNode;
   getRowCanExpand?: (row: Row) => boolean;

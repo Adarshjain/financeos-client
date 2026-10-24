@@ -10,7 +10,7 @@ Standard text input for forms, logins, and values.
 - `align?: 'left' | 'right'`: input text alignment, default `'left'`. `right` end-aligns the text; prefix stays at the start, suffix and clear at the end.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
 - `tone?: 'neutral' | 'success'`: default `'neutral'`. `success` colours the input's value text with `positive`, the money-in green.
-- `label?: React.ReactNode`: field label above the input.
+- `label?: React.ReactNode`: field label above the input. Plain text, not a `<label>`: tapping it does not focus the input; the input points at it with `aria-labelledby` (TextArea, DateField and Select the same). Disabled replaces hover, focus and error styling.
 - `helper?: React.ReactNode`: helpful hint text below the input.
 - `error?: React.ReactNode`: error message below the input.
 - `optional?: boolean`: shows "(Optional)" next to the label.

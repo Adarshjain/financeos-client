@@ -3,10 +3,12 @@
 import React, { forwardRef } from 'react';
 import { mergeProps } from 'react-aria';
 
+import type { PressPoint } from '@/components/ds';
 import {
   Badge,
   Button,
   Checkbox,
+  clickPoint,
   cn,
   CONCEAL_PLACEHOLDER,
   Highlight,
@@ -87,7 +89,7 @@ export interface TransactionRowProps
   /** Selection mode: displays trailing eye icon to view details */
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked to view detail */
-  onDetail?: () => void;
+  onDetail?: (point?: PressPoint) => void;
 
   /** Trailing chevron indicator */
   chevron?: boolean;
@@ -532,7 +534,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={onDetail}
+                      onClick={(e) => onDetail?.(clickPoint(e))}
                       aria-label="View transaction details"
                       className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
                     >

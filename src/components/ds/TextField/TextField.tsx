@@ -70,6 +70,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const generatedId = useId();
     const id = explicitId ?? generatedId;
     const helperId = `${id}-helper`;
+    const labelId = `${id}-label`;
     const [showPassword, setShowPassword] = useState(false);
 
     const internalInputRef = useRef<HTMLInputElement | null>(null);
@@ -117,6 +118,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     return (
       <FieldFrame
         id={id}
+        labelId={labelId}
         helperId={helperId}
         label={label}
         optional={optional}
@@ -129,15 +131,17 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             'flex items-center gap-space-8 w-full border rounded-ds-md bg-surface font-text font-medium text-body text-ink transition-colors duration-fast',
             isXl ? 'h-control-xl' : 'h-control-md',
             isMd ? 'px-space-10' : 'px-space-12',
-            isEmbedded
-              ? 'focus-within:ring-0 focus-within:ring-offset-0'
-              : 'focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-            hasError
-              ? 'border-danger focus-within:ring-danger'
-              : 'border-line-strong',
-            isEmbedded && !hasError && 'focus-within:border-brand',
-            disabled &&
-              'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+            disabled
+              ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
+              : [
+                  isEmbedded
+                    ? 'focus-within:ring-0 focus-within:ring-offset-0'
+                    : 'focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
+                  hasError
+                    ? 'border-danger focus-within:ring-danger'
+                    : 'border-line-strong',
+                  isEmbedded && !hasError && 'focus-within:border-brand',
+                ],
           )}
         >
           {prefix ? (
@@ -155,6 +159,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             placeholder={placeholder}
             value={value}
             onChange={handleChange}
+            aria-labelledby={label ? labelId : undefined}
             aria-invalid={hasError ? 'true' : undefined}
             aria-describedby={hasError || helper ? helperId : undefined}
             className={cn(

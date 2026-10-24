@@ -56,7 +56,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `sortMode?: 'server' | 'client'` (default `'server'`).
 - `selectable?: boolean`, `selection?: string[]`, `defaultSelection`, `onSelectionChange`: through `useControllableState`.
 - `allSelected?: boolean`, `onAllSelectedChange?`.
-- `onRowSelect?: (row) => void`.
+- `onRowSelect?: (row, point?: { x: number; y: number }) => void`: `point` is where the row was pressed (viewport coordinates; the row's bottom-left for a keyboard press), so a page can open a ContextMenu there.
 - `renderExpanded?: (row) => ReactNode`, `getRowCanExpand?: (row) => boolean`, `expanded?: string[]`, `defaultExpanded`, `onExpandedChange`.
 - `leading?: (row) => ReactNode`: a mark (bank logo) at the start of the `main` cell on desktop; on phone it sits left of the `main` and `phoneSub` lines, so the sub-line starts under the name. `null` draws nothing.
 - `phoneSub?: (row) => ReactNode`, `phoneActions?: (row) => ReactNode`.

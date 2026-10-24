@@ -7,12 +7,27 @@ import { mergeProps } from 'react-aria';
 import { hapticTick } from './haptics';
 import { isPhoneLayout } from './phoneLayout';
 
+/** Where a press happened, in viewport coordinates: the pointer, or the item's bottom-left for a keyboard press. */
+export interface PressPoint {
+  x: number;
+  y: number;
+}
+
+/** Where a click happened: the pointer, or the control's bottom-left when a key triggered it (detail 0). */
+export function clickPoint(e: React.MouseEvent<HTMLElement>): PressPoint {
+  if (e.detail === 0) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return { x: rect.left, y: rect.bottom };
+  }
+  return { x: e.clientX, y: e.clientY };
+}
+
 export interface UseSelectableItemOptions {
   selectable?: boolean;
   selected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
   selectionMode?: boolean;
-  onPress?: () => void;
+  onPress?: (point: PressPoint) => void;
   disabled?: boolean;
   longPressThreshold?: number;
 }
@@ -55,6 +70,7 @@ export function useSelectableItem({
   }
 
   const ctrlDown = useRef(false);
+  const lastPointer = useRef<PressPoint | null>(null);
   const { pressProps } = usePress({
     isDisabled: disabled,
     // usePress stops propagation of the events it handles unless told otherwise;
@@ -69,7 +85,15 @@ export function useSelectableItem({
       // click React Aria synthesizes itself (no ctrlKey), so the key is read from the pointerdown.
       if (ctrlDown.current && !isPhoneLayout()) return;
       if (isPhoneLayout() && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
-      else onPress?.();
+      else if (onPress) {
+        const rect = (e.target as HTMLElement).getBoundingClientRect();
+        const fromPointer = e.pointerType !== 'keyboard' && e.pointerType !== 'virtual';
+        onPress(
+          fromPointer && lastPointer.current
+            ? lastPointer.current
+            : { x: rect.left, y: fromPointer ? rect.top : rect.bottom },
+        );
+      }
     },
   });
 
@@ -82,6 +106,7 @@ export function useSelectableItem({
   const movementProps: React.HTMLAttributes<HTMLElement> = {
     onPointerDown: (e) => {
       ctrlDown.current = e.ctrlKey;
+      lastPointer.current = { x: e.clientX, y: e.clientY };
       stopTracking.current?.();
       const origin = { x: e.clientX, y: e.clientY };
       moved.current = false;
