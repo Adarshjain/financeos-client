@@ -2,11 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanResponse } from '@/lib/loan.types';
+import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
@@ -146,7 +146,7 @@ export function useLoanPaymentLink({
         .then((r) => r.data!);
     },
     onSuccess: (data) => {
-      toast.success(`Installment #${data.installmentSeq} settled`);
+      notify.success(`Installment #${data.installmentSeq} settled`);
       queryClient.invalidateQueries({ queryKey: keys.loans.all });
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       onOpenChange(false);
@@ -164,7 +164,7 @@ export function useLoanPaymentLink({
 
   const handleSubmit = () => {
     if (!canSubmit) {
-      toast.error('Select a loan and installment, and check the amount');
+      notify.error('Select a loan and installment, and check the amount');
       return;
     }
     submitMutation.mutate();

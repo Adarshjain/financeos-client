@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { notify } from '@/lib/notify';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 import { useGmailMutations } from './useGmailMutations';
@@ -51,9 +51,9 @@ export function useAssignAccount(
       });
 
       if (res?.reactivatedCount && res.reactivatedCount > 0) {
-        toast.success(`Re-processing ${res.reactivatedCount} parked emails`);
+        notify.success(`Re-processing ${res.reactivatedCount} parked emails`);
       } else {
-        toast.success('Account identifier assigned');
+        notify.success('Account identifier assigned');
       }
 
       onDone();

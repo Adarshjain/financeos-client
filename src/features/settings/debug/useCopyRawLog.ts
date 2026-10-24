@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
+import { notify } from '@/lib/notify';
 
 /** Fetches the raw log lines of a lookup and copies them as JSON (today's "Copy raw"). */
 export function useCopyRawLog(currentRef: string | undefined, currentType: string = 'auto') {
@@ -27,10 +27,10 @@ export function useCopyRawLog(currentRef: string | undefined, currentType: strin
       const rawText = JSON.stringify(data ?? [], null, 2);
       if (navigator?.clipboard) {
         await navigator.clipboard.writeText(rawText);
-        toast.success('Raw log entries copied to clipboard');
+        notify.success('Raw log entries copied to clipboard');
       }
     } catch {
-      toast.error('Failed to fetch raw log lines');
+      notify.error('Failed to fetch raw log lines');
     } finally {
       setCopying(false);
     }

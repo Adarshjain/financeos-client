@@ -2,10 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
 import { Category } from '@/lib/categories.types';
+import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -57,7 +57,7 @@ export function useCategorySuggestions({
     try {
       const trimmed = categoryName.trim();
       if (!trimmed) {
-        toast.error('Failed to create category: Category name is required');
+        notify.error('Failed to create category: Category name is required');
         return;
       }
       const newCategory = await createCategoryMutation.mutateAsync(trimmed);

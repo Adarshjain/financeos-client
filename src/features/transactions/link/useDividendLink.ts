@@ -2,11 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -160,7 +160,7 @@ export function useDividendLink({
       }
     },
     onSuccess: () => {
-      toast.success(mode === 'existing' ? 'Dividend linked' : 'Dividend recorded and linked');
+      notify.success(mode === 'existing' ? 'Dividend linked' : 'Dividend recorded and linked');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       invalidateInvestmentQueries(queryClient);
       onOpenChange(false);
@@ -194,15 +194,15 @@ export function useDividendLink({
 
   const handleSubmit = () => {
     if (mode === 'new' && !holding) {
-      toast.error('Please select a held instrument.');
+      notify.error('Please select a held instrument.');
       return;
     }
     if (mode === 'new' && (numAmount === null || numAmount <= 0 || (tds.trim() && numTds === null))) {
-      toast.error(AMOUNT_ERROR);
+      notify.error(AMOUNT_ERROR);
       return;
     }
     if (!canSubmit) {
-      toast.error(mode === 'existing' ? 'Select a dividend to link' : 'Check the dividend details');
+      notify.error(mode === 'existing' ? 'Select a dividend to link' : 'Check the dividend details');
       return;
     }
     submitMutation.mutate();

@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Card, CardEmpty, CardSection, ListRow, Switch, Text } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';
+import { notify } from '@/lib/notify';
 
 import { useNotificationSettingsMutations } from './useNotificationSettings';
 
@@ -26,7 +26,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
     try {
       await mute.mutateAsync({ accountId, muted });
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not update the card'));
+      notify.error(getErrorMessage(e, 'Could not update the card'));
     }
   };
 
@@ -34,7 +34,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
     try {
       await muteLoan.mutateAsync({ loanId, muted });
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not update the loan'));
+      notify.error(getErrorMessage(e, 'Could not update the loan'));
     }
   };
 

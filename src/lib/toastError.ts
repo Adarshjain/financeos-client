@@ -1,10 +1,9 @@
-import { toast } from 'sonner';
-
 import { ApiError } from '@/lib/api/client';
 import { AppError } from '@/lib/appError';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { navigateTo } from '@/lib/diagnostics/navigate';
 import { refOf } from '@/lib/diagnostics/ref';
+import { notify } from '@/lib/notify';
 import type { ErrorResponse } from '@/lib/types';
 
 function extractErrorMessage(e: unknown, fallback: string): string {
@@ -38,7 +37,7 @@ export function toastError(e: unknown, fallback: string): void {
   const ref = rec.ref && rec.ref !== 'unknown' ? rec.ref : (refOf(e as Parameters<typeof refOf>[0]) || undefined);
   const hasRef = ref && ref !== 'unknown';
 
-  toast.error(message, {
+  notify.error(message, {
     description: hasRef ? `Ref ${ref}` : undefined,
     duration: rec.status >= 500 || rec.status === 0 ? 8000 : 5000,
     action: hasRef
@@ -69,7 +68,7 @@ export function toastErrorResult(error: ErrorResponse, fallback: string): void {
   const ref = refOf(error) || rec.ref;
   const hasRef = ref && ref !== 'unknown';
 
-  toast.error(message, {
+  notify.error(message, {
     description: hasRef ? `Ref ${ref}` : undefined,
     duration: rec.status >= 500 || rec.status === 0 ? 8000 : 5000,
     action: hasRef

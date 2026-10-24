@@ -2,13 +2,13 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
+import { notify } from '@/lib/notify';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -39,14 +39,14 @@ export function useIngestForm({
 
   const { isPolling } = useJobStatusPolling(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
-      toast.success(completedMessage);
+      notify.success(completedMessage);
       qc.invalidateQueries({ queryKey: keys.transactions.all });
       // Imported transactions move balances, the emergency fund and dashboard widgets too.
       void invalidateMoneyQueries(qc);
     } else if (job.status === 'FAILED') {
-      toast.error(job.errorMessage || 'Ingestion failed.');
+      notify.error(job.errorMessage || 'Ingestion failed.');
     } else {
-      toast.info('Ingestion cancelled.');
+      notify.info('Ingestion cancelled.');
     }
     // The toast points at the jobs panel, so refresh it now rather than on its next poll tick.
     qc.invalidateQueries({ queryKey: keys.jobs.all });
@@ -104,7 +104,7 @@ export function useIngestForm({
     });
 
     if (invalidFiles.length > 0) {
-      toast.error(
+      notify.error(
         `Invalid file format: ${invalidFiles.join(
           ', '
         )}. Only PDF and Excel are allowed.`
@@ -112,7 +112,7 @@ export function useIngestForm({
     }
 
     if (oversizedFiles.length > 0) {
-      toast.error(
+      notify.error(
         `Too large (max ${MAX_REQUEST_MB}MB per upload): ${oversizedFiles.join(
           ', '
         )}.`
@@ -121,7 +121,7 @@ export function useIngestForm({
 
     if (validFiles.length > 0) {
       setFiles((prev) => [...prev, ...validFiles]);
-      toast.success(`Added ${validFiles.length} file(s) to the queue.`);
+      notify.success(`Added ${validFiles.length} file(s) to the queue.`);
     }
   };
 
@@ -152,17 +152,17 @@ export function useIngestForm({
     if (e) e.preventDefault();
     if (isUploading) return;
     if (!selectedAccountId) {
-      toast.error('Please select an account first.');
+      notify.error('Please select an account first.');
       return;
     }
     if (files.length === 0) {
-      toast.error('Please select at least one file to upload.');
+      notify.error('Please select at least one file to upload.');
       return;
     }
 
     const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
     if (totalBytes > MAX_REQUEST_BYTES) {
-      toast.error(
+      notify.error(
         `Upload is ${formatFileSize(
           totalBytes
         )}; the limit is ${MAX_REQUEST_MB}MB per upload. Remove some files and try again.`
@@ -170,7 +170,7 @@ export function useIngestForm({
       return;
     }
 
-    const toastId = toast.loading(
+    const toastId = notify.loading(
       `Uploading ${files.length} file${files.length === 1 ? '' : 's'}…`
     );
     try {
@@ -183,14 +183,14 @@ export function useIngestForm({
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         setFiles([]);
-        toast.info('Upload complete — processing in the background.', {
+        notify.info('Upload complete — processing in the background.', {
           id: toastId,
         });
       } else {
-        toast.dismiss(toastId);
+        notify.dismiss(toastId);
       }
     } catch (err: unknown) {
-      toast.dismiss(toastId);
+      notify.dismiss(toastId);
       toastError(err, 'Failed to start ingestion job');
     }
   };
