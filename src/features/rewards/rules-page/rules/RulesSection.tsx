@@ -62,7 +62,7 @@ const columns = [
       ch.display({
         id: 'position',
         header: '#',
-        meta: { size: 'xs', phone: 'hidden' },
+        meta: { size: 'sm', phone: 'hidden' },
         cell: ({ row }) => (
           <Text variant="body" tone="ink-3" as="span">
             {row.original.position}
@@ -239,14 +239,14 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       title="Rules · priority order"
       subtitle="The first rule that matches a transaction earns; additive rules stack on top"
       action={
-        <div className="flex flex-wrap items-center gap-space-12">
-          <Button variant="link" disabled={!accountId} onClick={() => setTesting(true)}>
+        <Text variant="label" as="div" className="flex flex-wrap items-center gap-space-12">
+          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setTesting(true)}>
             Test a transaction
           </Button>
-          <Button variant="link" disabled={rules.length < 2} onClick={() => setReordering(true)}>
+          <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => setReordering(true)}>
             Reorder
           </Button>
-        </div>
+        </Text>
       }
     >
       <DataTable
@@ -256,19 +256,19 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         onRowSelect={(r) => r.onEdit()}
         phoneSub={(r) => r.phoneSub}
         phoneActions={(r) => (
-          <>
-            <Button variant="link" onClick={r.onEdit}>
+          <Text variant="label" as="div" className="flex items-center gap-space-12">
+            <Button variant="link" size="sm" onClick={r.onEdit}>
               Edit
             </Button>
-            <Button variant="link" onClick={r.onClone}>
+            <Button variant="link" size="sm" onClick={r.onClone}>
               Clone
             </Button>
             {r.ended ? null : (
-              <Button variant="link" onClick={r.onEnd}>
+              <Button variant="link" size="sm" onClick={r.onEnd}>
                 End & clone
               </Button>
             )}
-          </>
+          </Text>
         )}
         rowState={(r) => (r.ended ? { muted: true } : undefined)}
         empty={

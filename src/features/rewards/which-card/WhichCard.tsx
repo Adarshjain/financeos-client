@@ -81,7 +81,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
 
       <Card>
         <CardRow>
-          <form id={FORM_ID} onSubmit={submit} className="flex flex-col gap-space-12">
+          <form id={FORM_ID} onSubmit={submit} className="flex w-full flex-col gap-space-12">
             <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-4">
               <AmountField
                 label="Amount"
@@ -173,9 +173,11 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
         title={result ? resultTitle(result.input, data.categories, today) : 'Ranked cards'}
         subtitle={result ? cardsEvaluated(result.recommendations.length) : undefined}
         action={
-          <Button type="submit" form={FORM_ID} variant="link" loading={recommend.isPending} loadingLabel="Evaluating…">
-            Rank cards
-          </Button>
+          <Text variant="label" as="div">
+            <Button type="submit" form={FORM_ID} variant="link" size="sm" loading={recommend.isPending} loadingLabel="Evaluating…">
+              Rank cards
+            </Button>
+          </Text>
         }
       >
         {rows.length === 0 ? (

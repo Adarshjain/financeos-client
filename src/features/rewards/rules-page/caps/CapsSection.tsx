@@ -46,9 +46,11 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
       title="Caps"
       subtitle="Shared buckets rules can draw from"
       action={
-        <Button variant="link" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
-          New cap
-        </Button>
+        <Text variant="label" as="div">
+          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
+            New cap
+          </Button>
+        </Text>
       }
     >
       {caps.length === 0 ? (
@@ -65,7 +67,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
             onClick={() => setOpen({ mode: 'edit', id: cap.id })}
             trailing={
               usage?.[cap.id] ? (
-                <div className="flex w-container-xs max-w-full flex-col items-end gap-space-4">
+                <div className="flex w-space-96 max-w-full flex-col items-end gap-space-4 desk:w-container-xs">
                   <ProgressBar className="w-full" value={usage[cap.id].pct} tone={usage[cap.id].tone} />
                   <Text variant="caption" tone="ink-3">
                     {usage[cap.id].label}
