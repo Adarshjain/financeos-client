@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { useElementSize } from '@/components/charts/useElementSize';
+import { useElementSize } from '@/lib/charts/useElementSize';
 
 type Callback = (
   entries: { contentRect: { width: number; height: number } }[]

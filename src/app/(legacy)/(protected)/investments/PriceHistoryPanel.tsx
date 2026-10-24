@@ -6,13 +6,14 @@ import { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
-import { formatCompact, niceTicks, seriesColor, SURFACE_COLOR } from '@/components/charts/chart-format';
+import { seriesColor, SURFACE_COLOR } from '@/components/charts/chart-format';
 import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePriceMutations } from '@/features/investments/usePriceMutations';
 import { api } from '@/lib/api/client';
+import { formatCompact, niceTicks } from '@/lib/charts/chart-format';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { PriceHistoryPoint } from '@/lib/types';

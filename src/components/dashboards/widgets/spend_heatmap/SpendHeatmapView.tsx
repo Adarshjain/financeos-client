@@ -9,11 +9,11 @@
 import { CalendarDays } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { useElementSize } from '@/components/charts/useElementSize';
 import type { TemplateViewProps } from '@/components/dashboards/builtins/registry';
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useElementSize } from '@/lib/charts/useElementSize';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import { todayInAppZone } from '@/lib/date-range';
 import { buildFilter, isChartData } from '@/lib/reports.helpers';

@@ -8,11 +8,11 @@ import {
 } from 'lucide-react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
-import { formatCompact } from '@/components/charts/chart-format';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
 import { sumBalances } from '@/lib/accountTotals';
+import { formatCompact } from '@/lib/charts/chart-format';
 import { sumCreditUsage } from '@/lib/creditLimitPools';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';

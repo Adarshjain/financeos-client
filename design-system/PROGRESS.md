@@ -116,6 +116,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 53 | Conceal | Approved (2026-10-23) |
 | 54 | AmountField (organism) | Approved (2026-10-23) |
 | 55 | ReorderList | Ready for review (2026-10-24) |
+| 56 | Chart (organism) | Ready for review (2026-10-25) |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -416,6 +417,11 @@ Only the owner adds to this list. Each entry has a date and the decision.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
+- 2026-10-25 · Chart · pie stacked list cap: Legacy `max-h-[45%]` of the frame, now a flex split (list takes its content height, shrinks and scrolls; the pie keeps its minimum).
+- 2026-10-25 · Chart · stacked fill pie minimum height: Legacy `min-h-[8rem]` (128px), now `min-h-space-96` (96px); no token step at or above 128px.
+- 2026-10-25 · Chart · stacked non-fill pie height: Legacy `h-52` (208px), now `aspect-video`; no 208px token step.
+- 2026-10-25 · Chart · cartesian legend label cap: Legacy `max-w-[10rem]` (160px), now `max-w-space-96` (96px); no container step at or under 160px.
+- 2026-10-25 · Chart · donut centre text: Legacy `px-[22%]` each side (56% wide), now `w-7/12` (58%).
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 - 2026-10-24 · Phase 3 · Rewards Overview: the overview has no wording on any board or in Legacy for the card list's caption ("Each card over its own reward year") and the no-card empty state ("No credit cards available" / "Rewards earned show once a credit card is added."). Using those; confirm or give words.
 - 2026-10-24 · Phase 3 · Earning rules: the boards draw the card switch as chips; built as a Select (RULES §7.3, and 10–20 cards would not fit a chip row). Rarer rule fields fold with Reveal + a link toggle (no disclosure component). A per-cardholder cap row shows the highest cardholder's use (one bar per row).
@@ -440,6 +446,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
   4. CAS: rows with no fund now hold the import until mapped, created or skipped (Legacy imported the rest and failed those rows).
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+- 2026-10-25 · Organisms · Claude (implementer) · Chart: Dinero report chart (`src/components/organisms/Chart/`) for line, bar, stackedBar, area, pie, donut; price chart uses it; logic moved to `src/lib/charts/`; Legacy keeps `ChartView` until Phase 4; `check-ui` ChartView allowance removed. Deviations: 5-slot palette (chart-1..5, rest folds into chart-rest; Legacy 8); aspect frame `aspect-video desk:aspect-wide` instead of `h-72`.
 - 2026-10-25 · Phase 3 · Claude · Rewards table cells two-line (overview year/cap/milestone; card page rule under description, Why column fits) 639b2770; milestone basis TXN_COUNT 82580291; server api-spec fix 3b21f5a. Reports gap questions published (artifact SdyaTR1GdASPuHu8VVbKRb), unanswered. Forced test edit: ds-rewards.spec.ts:72 (year label now its own line). Deviations: none.
 - 2026-10-25 · Phase 3 · Claude (implementers) · Rewards UAT 1 built (see Owner decisions 10-24): Dinero 65247fb8; server fb68750 (no Gmail success feed), afc8ba9 (totals nearestCap/nextMilestone/lastMet); overview table, card page, Which card?, rules page + Legacy-grouped rule dialog, no top-bar eye. Unit/typecheck/lint/check-ui green; full ui E2E 1595 passed, failures = known (gmail, google-sso, notifications:31, rules-bulk-approve @mobile) + kpi-underlying:290 net-worth side order flaky on the old server too (found, parked). Forced test edits listed in commits. Deviations none.
 - 2026-10-24 · Phase 3 · Claude · Rules card decluttered (owner): card title "How <card> earns", Test/Reorder in a ⋮ menu, Clone/End & clone in the edit dialog, phone rows drop repeats (`RulesSection.tsx`, `RuleDialog.tsx`, `rulesPageModel.ts`); unit + ds-rewards E2E green; forced test edits: RulesPage/RulesSection/rulesPageModel tests; deviations none.

@@ -30,7 +30,7 @@ vi.mock('recharts', () => {
   };
 });
 
-vi.mock('@/components/charts/useElementSize', () => ({
+vi.mock('@/lib/charts/useElementSize', () => ({
   useElementSize: () => [() => {}, { width: 0, height: 0 }],
 }));
 

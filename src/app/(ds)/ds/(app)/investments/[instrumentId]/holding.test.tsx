@@ -45,8 +45,8 @@ const server = vi.hoisted(() => ({
 }));
 vi.mock('@/features/investments/investmentsServerApi', () => server);
 
-vi.mock('@/components/reports/views/ChartView', () => ({
-  ChartView: ({ data }: { data: { categories: string[]; series: { data: number[] }[] } }) => (
+vi.mock('@/components/organisms/Chart/Chart', () => ({
+  Chart: ({ data }: { data: { categories: string[]; series: { data: number[] }[] } }) => (
     <div data-testid="chart">{`${data.categories.join(',')}|${data.series[0].data.join(',')}`}</div>
   ),
 }));

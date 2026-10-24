@@ -25,24 +25,22 @@ import {
 } from 'recharts';
 
 import {
-  niceTicks,
   OTHER_COLOR,
   SERIES_SLOTS,
   seriesColor,
   SURFACE_COLOR,
-  truncateLabel,
-  valueFormat,
 } from '@/components/charts/chart-format';
 import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
-import { useElementSize } from '@/components/charts/useElementSize';
+import { truncateLabel, valueFormat } from '@/lib/charts/chart-format';
+import { type FoldedSeries, foldSeries, seriesLabel, yAxisTicks } from '@/lib/charts/chart-series';
+import { useElementSize } from '@/lib/charts/useElementSize';
 import { isMoneyField, labelChartData } from '@/lib/reports.helpers';
 import type { ChartData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
-import { ChartDataTable, ChartPieView, seriesLabel } from './ChartPieView';
+import { ChartDataTable, ChartPieView } from './ChartPieView';
 
 type ChartRow = Record<string, string | number | null>;
-type Series = ChartData['series'][number];
 
 export type ChartViewData = Pick<
   ChartData,
@@ -141,7 +139,8 @@ function CartesianChart({
   const series = foldSeries(
     data.series,
     categories.length,
-    data.measure?.aggregation
+    data.measure?.aggregation,
+    SERIES_SLOTS
   );
   const colors: Record<string, string> = {};
   series.forEach((s, i) => {
@@ -378,78 +377,4 @@ function SeriesLegend({
       ))}
     </ul>
   );
-}
-
-/**
- * Y ticks from the data extent, including the zero baseline unless `includeZero` is off. A stack's
- * extent is its per-category positive / negative sums, not single values.
- */
-function yAxisTicks(
-  series: Series[],
-  categoryCount: number,
-  stacked: boolean,
-  includeZero = true
-): number[] {
-  let min = includeZero ? 0 : Infinity;
-  let max = includeZero ? 0 : -Infinity;
-  for (let i = 0; i < categoryCount; i++) {
-    let up = 0;
-    let down = 0;
-    for (const s of series) {
-      const v = s.data[i] ?? 0;
-      if (stacked) {
-        if (v > 0) up += v;
-        else down += v;
-      } else {
-        up = Math.max(up, v);
-        down = Math.min(down, v);
-      }
-    }
-    if (!includeZero && !stacked) {
-      // Without the zero baseline, only real values bound the axis.
-      for (const s of series) {
-        const v = s.data[i];
-        if (v == null) continue;
-        max = Math.max(max, v);
-        min = Math.min(min, v);
-      }
-      continue;
-    }
-    max = Math.max(max, up);
-    min = Math.min(min, down);
-  }
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return niceTicks(0, 0);
-  return niceTicks(min, max);
-}
-
-const OTHER_NAME = 'Other';
-type FoldedSeries = Series & { folded?: boolean };
-
-/**
- * Past the 8 categorical slots, the smallest series fold into one neutral
- * "Other" series rather than cycling colours (two series would share a hue).
- * Only additive measures can be summed; anything else keeps every series.
- */
-function foldSeries(
-  series: Series[],
-  categoryCount: number,
-  aggregation: string | undefined
-): FoldedSeries[] {
-  if (series.length <= SERIES_SLOTS) return series;
-  if (aggregation && aggregation !== 'sum' && aggregation !== 'count')
-    return series;
-  const total = (s: Series) =>
-    s.data.reduce<number>((sum, v) => sum + Math.abs(v ?? 0), 0);
-  const ranked = [...series].sort((a, b) => total(b) - total(a));
-  const keep = new Set(ranked.slice(0, SERIES_SLOTS - 1));
-  const rest = ranked.slice(SERIES_SLOTS - 1);
-  const other: FoldedSeries = {
-    name: OTHER_NAME,
-    folded: true,
-    data: Array.from({ length: categoryCount }, (_, i) =>
-      rest.reduce<number>((sum, s) => sum + (s.data[i] ?? 0), 0)
-    ),
-  };
-  // Kept series stay in their original order so colour follows the entity.
-  return [...series.filter((s) => keep.has(s)), other];
 }
