@@ -399,17 +399,17 @@ describe('Routing editor dialog', () => {
     setup();
     const dialog = await openChatEditor();
     expect(within(dialog).getByText('Chat & reports')).toBeInTheDocument();
-    expect(within(dialog).getByText('#1')).toBeInTheDocument();
-    expect(within(dialog).getByText('#2')).toBeInTheDocument();
+    expect(within(dialog).getByText('1')).toBeInTheDocument();
+    expect(within(dialog).getByText('2')).toBeInTheDocument();
     expect(window.location.href).toBe(before);
   });
 
   it('moves rows up and down (ends disabled)', async () => {
     setup();
     const dialog = await openChatEditor();
-    expect(within(dialog).getByRole('button', { name: 'Move Gemini 3.8 Flash up' })).toBeDisabled();
-    expect(within(dialog).getByRole('button', { name: 'Move anthropic/claude-haiku-5.5 down' })).toBeDisabled();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Move Gemini 3.8 Flash down' }));
+    expect(within(dialog).getByRole('button', { name: 'Move up Gemini 3.8 Flash' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Move down anthropic/claude-haiku-5.5' })).toBeDisabled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Move down Gemini 3.8 Flash' }));
     const labels = within(dialog).getAllByText(/^(Gemini 3.8 Flash|anthropic\/claude-haiku-5.5)$/).map((n) => n.textContent);
     expect(labels).toEqual(['anthropic/claude-haiku-5.5', 'Gemini 3.8 Flash']);
   });
@@ -419,7 +419,7 @@ describe('Routing editor dialog', () => {
     const dialog = await openChatEditor();
     expect(within(dialog).queryByRole('button', { name: 'Remove Gemini 3.8 Flash' })).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Remove anthropic/claude-haiku-5.5' }));
-    expect(within(dialog).queryByText('#2')).toBeNull();
+    expect(within(dialog).queryByText('2')).toBeNull();
   });
 
   it('marks options without a key as Not configured', async () => {
@@ -433,7 +433,7 @@ describe('Routing editor dialog', () => {
     put.mockResolvedValue({ data: chat });
     setup();
     const dialog = await openChatEditor();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Move Gemini 3.8 Flash down' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Move down Gemini 3.8 Flash' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(put).toHaveBeenCalled());
     const [url, init] = put.mock.calls[0];
@@ -480,7 +480,7 @@ describe('Routing editor dialog', () => {
           body: expect.objectContaining({ provider: 'gemini', model: 'meta/llama' }),
         })
       );
-      expect(await within(dialog).findByText('#3')).toBeInTheDocument();
+      expect(await within(dialog).findByText('3')).toBeInTheDocument();
       expect(within(dialog).getByText('meta/llama')).toBeInTheDocument();
     });
 
@@ -501,7 +501,7 @@ describe('Routing editor dialog', () => {
       fireEvent.change(within(dialog).getByLabelText('Model id'), { target: { value: 'nope' } });
       fireEvent.click(within(dialog).getByRole('button', { name: /Test & add/ }));
       expect(await within(dialog).findByText('Model not found')).toBeInTheDocument();
-      expect(within(dialog).queryByText('#3')).toBeNull();
+      expect(within(dialog).queryByText('3')).toBeNull();
     });
 
     it('refuses a duplicate without probing', async () => {

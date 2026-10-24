@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Button, Dialog, DialogBody, DialogContent, Icon, ListRow, Text } from '@/components/ds';
+import { Banner, Button, Dialog, DialogBody, DialogContent, Icon, ReorderList, Text } from '@/components/ds';
 import type { RoutingOptionDto } from '@/lib/api/types';
 
 import { CustomModelFields } from './CustomModelFields';
@@ -23,6 +23,8 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
   const providerName = (id: string | null | undefined) =>
     providers.find((p) => p.id === (id ?? '').toLowerCase())?.name ?? id ?? '';
 
+  const keys = group ? group.draft.map(draftEntryKey) : [];
+
   return (
     <Dialog open={group !== null} onOpenChange={(open) => !open && group && !group.saving && group.onCancel()}>
       {group ? (
@@ -42,73 +44,48 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
           <DialogBody>
             <div className="flex flex-col gap-space-12">
               {error ? <Banner tone="danger">{error}</Banner> : null}
-              <div>
-                {group.draft.map((item, idx) => {
+              <ReorderList
+                items={group.draft.map((item, idx) => {
                   const custom = isCustomEntry(item);
                   const option = custom ? undefined : routingOptions.find((o) => o.id === item.optionId);
                   const hasKey = custom
                     ? providers.some((p) => p.id === (item.provider ?? '').toLowerCase() && p.hasKey)
                     : (option?.available ?? false);
                   const label = custom ? (item.model ?? '') : option?.label || item.optionId;
-                  return (
-                    <ListRow
-                      key={draftEntryKey(item)}
-                      leading={
-                        <span className="flex items-center gap-space-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            iconOnly
-                            aria-label={`Move ${label} up`}
-                            disabled={idx === 0}
-                            onClick={() => group.onMove(idx, -1)}
-                          >
-                            <Icon name="chevron-up" size="sm" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            iconOnly
-                            aria-label={`Move ${label} down`}
-                            disabled={idx === group.draft.length - 1}
-                            onClick={() => group.onMove(idx, 1)}
-                          >
-                            <Icon name="chevron-down" size="sm" />
-                          </Button>
-                          <Text variant="label" tone="ink-3" mono>
-                            #{idx + 1}
-                          </Text>
-                        </span>
-                      }
-                      title={
-                        <Text variant="body-strong" as="span" tone={hasKey ? 'ink' : 'ink-3'} mono={custom}>
-                          {label}
-                        </Text>
-                      }
-                      subtitle={
-                        custom || !hasKey
-                          ? [custom ? providerName(item.provider) : null, hasKey ? null : 'Not configured']
-                              .filter(Boolean)
-                              .join(' · ')
-                          : undefined
-                      }
-                      trailing={
-                        custom ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            iconOnly
-                            aria-label={`Remove ${item.model ?? 'model'}`}
-                            onClick={() => group.onRemove(idx)}
-                          >
-                            <Icon name="close" size="sm" />
-                          </Button>
-                        ) : undefined
-                      }
-                    />
-                  );
+                  return {
+                    id: draftEntryKey(item),
+                    ariaLabel: label,
+                    title: (
+                      <Text variant="body-strong" as="span" tone={hasKey ? 'ink' : 'ink-3'} mono={custom}>
+                        {label}
+                      </Text>
+                    ),
+                    subtitle:
+                      custom || !hasKey
+                        ? [custom ? providerName(item.provider) : null, hasKey ? null : 'Not configured']
+                            .filter(Boolean)
+                            .join(' · ')
+                        : undefined,
+                    trailing: custom ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        aria-label={`Remove ${item.model ?? 'model'}`}
+                        onClick={() => group.onRemove(idx)}
+                      >
+                        <Icon name="close" size="sm" />
+                      </Button>
+                    ) : undefined,
+                  };
                 })}
-              </div>
+                value={keys}
+                onValueChange={(next) => {
+                  // One adjacent swap: the first differing index moved down one step.
+                  const from = keys.findIndex((k, i) => k !== next[i]);
+                  if (from >= 0) group.onMove(from, 1);
+                }}
+              />
               <CustomModelFields providers={providers} testing={group.testing} error={group.addError} onAdd={group.onAdd} />
             </div>
           </DialogBody>
