@@ -17,3 +17,4 @@ src/features/notifications/
 src/features/loans/
 src/features/transactions/
 src/features/investments/
+src/features/rewards/overview/

@@ -34,38 +34,8 @@ export function milestonePayoutTotal(list: MilestoneStatus[]): string {
     .join(' + ');
 }
 
-export type RangePreset =
-  | 'THIS_ANNIVERSARY_YEAR'
-  | 'LAST_ANNIVERSARY_YEAR'
-  | 'THIS_MONTH'
-  | 'LAST_MONTH'
-  | 'LAST_3_MONTHS'
-  | 'THIS_FY'
-  | 'CUSTOM';
-
-export const RANGE_PRESETS: readonly RangePreset[] = [
-  'THIS_ANNIVERSARY_YEAR',
-  'LAST_ANNIVERSARY_YEAR',
-  'THIS_MONTH',
-  'LAST_MONTH',
-  'LAST_3_MONTHS',
-  'THIS_FY',
-  'CUSTOM',
-];
-
-export function isRangePreset(v: string): v is RangePreset {
-  return (RANGE_PRESETS as readonly string[]).includes(v);
-}
-
-export const RANGE_PRESET_LABELS: Record<RangePreset, string> = {
-  THIS_ANNIVERSARY_YEAR: 'This anniversary year',
-  LAST_ANNIVERSARY_YEAR: 'Previous anniversary year',
-  THIS_MONTH: 'This month',
-  LAST_MONTH: 'Last month',
-  LAST_3_MONTHS: 'Last 3 months',
-  THIS_FY: 'This FY',
-  CUSTOM: 'Custom range',
-};
+export { isRangePreset, RANGE_PRESET_LABELS, RANGE_PRESETS, type RangePreset } from '@/features/accounts/detail/rewards/rewardsPeriod';
+import type { RangePreset } from '@/features/accounts/detail/rewards/rewardsPeriod';
 
 export function presetRange(
   preset: Exclude<RangePreset, 'CUSTOM'>,

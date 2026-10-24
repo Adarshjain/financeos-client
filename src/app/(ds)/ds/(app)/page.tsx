@@ -17,7 +17,6 @@ const TO_BUILD: [string, string][] = [
   ['Report view and breakdown', 'Reports'],
   ['Underlying data', 'Reports'],
   ['Ask the data', 'Reports'],
-  ['Rewards overview', 'Rewards'],
   ['Which card?', 'Rewards'],
   ['Earning rules', 'Rewards'],
   ['Milestones and caps', 'Rewards'],
@@ -92,6 +91,9 @@ export default function DsIndexPage() {
           </ListRow>
           <ListRow asChild title="Import tradebook" subtitle="/ds/investments/import" chevron>
             <Link href="/ds/investments/import" />
+          </ListRow>
+          <ListRow asChild title="Rewards overview" subtitle="/ds/rewards" chevron>
+            <Link href="/ds/rewards" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />

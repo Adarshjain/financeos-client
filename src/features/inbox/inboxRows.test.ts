@@ -84,7 +84,7 @@ describe('rowButtons', () => {
     const withAccount = item({ key: 'w', kind: 'reward_milestone', refs: { accountId: 'acc-1' }, actions: [nav('open', 'Open', '/rewards?account=acc-1')] });
     const without = item({ key: 'x', kind: 'reward_cap', actions: [nav('open', 'Open', '/rewards?account=zz')] });
     expect(rowButtons(withAccount)[0]).toMatchObject({ label: 'Rewards', href: '/ds/accounts/acc-1/rewards' });
-    expect(rowButtons(without)[0]).toMatchObject({ label: 'Rewards', href: '/rewards?account=zz' });
+    expect(rowButtons(without)[0]).toMatchObject({ label: 'Rewards', href: '/ds/rewards?account=zz' });
   });
 
   it('a row with no actions has no buttons; snooze and dismiss are never buttons', () => {
