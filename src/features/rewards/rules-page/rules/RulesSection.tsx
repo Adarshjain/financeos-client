@@ -177,7 +177,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       applies: appliesTo(rule),
       cap: [capWords(rule), rule.perTxnCap != null ? `max ${rule.perTxnCap} / txn` : null].filter(Boolean).join(' · ') || '—',
       year,
-      phoneSub: ruleSubtitle(rule, today, year?.text),
+      phoneSub: ruleSubtitle(rule),
       onEdit: () => setOpen({ mode: 'edit', rule }),
     };
   });
@@ -199,7 +199,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   return (
     <Card
       title={account?.name ? `How ${account.name} earns` : 'Rules'}
-      subtitle="Checked top to bottom; the first match earns, additive rules add on top"
+      subtitle="First match earns; additive rules add on top"
       action={
         <Menu
           align="end"
