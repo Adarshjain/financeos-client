@@ -416,11 +416,11 @@ describe('/ds/investments/[instrumentId]: Price history', () => {
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
   });
 
-  it('edits the amount of a manual price: the date is shown and cannot change', async () => {
+  it('edits the amount of a manual price: the date is shown, can change, and is sent only when changed', async () => {
     await renderPage({ tab: 'prices' });
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
-    expect(within(dialog).getByDisplayValue('10/10/2026')).toBeDisabled();
+    expect(within(dialog).getByDisplayValue('10/10/2026')).toBeEnabled();
     const amount = within(dialog).getByLabelText('Price');
     expect(amount).toHaveValue('1470');
     fireEvent.change(amount, { target: { value: '1475.5' } });
