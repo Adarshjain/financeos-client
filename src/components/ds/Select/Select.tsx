@@ -454,6 +454,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
                 type="button"
                 variant="link"
                 size="sm"
+                className="mr-auto"
                 onClick={onDiscard}
               >
                 {discardLabel}
