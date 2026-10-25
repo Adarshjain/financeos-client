@@ -245,7 +245,6 @@ export function RuleDialog({
               multiple
               searchable
               placeholder="Any"
-              helper="OR with MCCs"
               options={categoryOptions}
               value={f.selectedCategories.map((c) => c.id)}
               onValueChange={(v) =>
@@ -328,7 +327,6 @@ export function RuleDialog({
               options={FEE_OPTIONS}
               value={f.feeTreatment}
               onValueChange={(v) => f.setFeeTreatment(first(v) as FeeTreatment)}
-              helper="Most issuers post the surcharge to the card but award nothing on it."
             />
           </Dialog.Section>
 
@@ -397,9 +395,6 @@ export function RuleDialog({
               <Checkbox checked={f.isTiered} onCheckedChange={(c) => f.setIsTiered(c === true)} />
               <Text variant="body">Tiered rate</Text>
             </label>
-            <Text variant="caption" tone="ink-3" as="p">
-              Rate steps as matched spend grows in a window (e.g. 10X above ₹20k/cycle).
-            </Text>
             {f.isTiered ? (
               <div className="flex flex-col gap-space-12">
                 <Select
@@ -456,14 +451,6 @@ export function RuleDialog({
                 </div>
               </div>
             ) : null}
-            {points ? (
-              <Text variant="caption" tone="ink-3" as="p">
-                Points are tracked as points — the report doesn’t convert them to a cash value.
-              </Text>
-            ) : null}
-            <Text variant="caption" tone="ink-3" as="p">
-              Tip: a 0-rate exclusive rule at high priority models an exclusion (e.g. fuel earns nothing).
-            </Text>
           </Dialog.Section>
 
           <Dialog.Section title="Limits">
@@ -510,11 +497,7 @@ export function RuleDialog({
                 options={bucketOptions}
                 value={f.capBucketId}
                 onValueChange={(v) => f.setCapBucketId(first(v))}
-                helper={
-                  noBucketOfType
-                    ? `No ${points ? 'points' : 'cash'} bucket yet. Add one in Caps.`
-                    : 'Several rules can drain one bucket’s ceiling together. A bucket only takes rules of its own reward type.'
-                }
+                helper={noBucketOfType ? `No ${points ? 'points' : 'cash'} bucket yet. Add one in Caps.` : undefined}
               />
             ) : null}
             {f.capMode !== 'NONE' ? (

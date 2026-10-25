@@ -28,13 +28,14 @@ const completed: CompletedMilestones = {
 };
 
 describe('MilestonesCard', () => {
-  it('shows the completed milestones inside the Milestones card, after the pending ones, with count and paid', () => {
+  it('shows the completed milestones inside the Milestones card, after the pending ones, with count and received', () => {
     const { container } = render(<MilestonesCard items={pending} completed={completed} />);
     expect(screen.getAllByText('Milestones')).toHaveLength(1);
     const text = container.textContent ?? '';
     expect(text.indexOf('Spend ₹4L')).toBeLessThan(text.indexOf('Completed · 2'));
     expect(text.indexOf('Completed · 2')).toBeLessThan(text.indexOf('Spend ₹1L'));
-    expect(screen.getByText('₹2,500 + 5,000 pts paid')).toBeInTheDocument();
+    expect(screen.getByText('₹2,500 + 5,000 pts received')).toBeInTheDocument();
+    expect(screen.queryByText(/pts paid/)).not.toBeInTheDocument();
     expect(within(container).getByText('₹1,500')).toBeInTheDocument();
     expect(screen.queryByText('Completed · 2', { selector: 'h2, h3' })).toBeNull();
   });

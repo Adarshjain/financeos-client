@@ -137,6 +137,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.goto(`/ds/rewards/cards/${card.id}`);
     await expect(page.getByText('Rules on this account')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText('Completed · 1')).toBeVisible();
+    await expect(page.getByText(/₹250 received/)).toBeVisible();
+    await expect(page.getByText(/₹250 paid/)).toHaveCount(0);
     await expect(page.getByText('Ds Done Milestone')).toBeVisible();
     // 10% of 500 is 50, capped at 20.
     await expect(page.getByText(/of ₹20/).first()).toBeVisible();
