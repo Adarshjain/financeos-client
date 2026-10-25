@@ -9,7 +9,64 @@ import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 import { useControllableState } from '../useControllableState';
 
 export const MenuRoot = DropdownMenuPrimitive.Root;
-export const MenuTrigger = DropdownMenuPrimitive.Trigger;
+/**
+ * Radix opens a dropdown on pointerdown, which fires the moment a finger lands, so a swipe that
+ * starts on the trigger opens the menu instead of scrolling. For touch/pen the pointerdown is
+ * cancelled (Radix skips its own open) and the menu opens on click, which only fires on a tap
+ * released without scrolling. The click re-enters Radix's own mouse pointerdown path, so open
+ * state stays owned by the root (controlled or not). Mouse and keyboard are unchanged.
+ */
+export const MenuTrigger = forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>
+>(({ onPointerDown, onPointerCancel, onClick, disabled, ...props }, ref) => {
+  const touchTap = React.useRef(false);
+  const reopening = React.useRef(false);
+  return (
+    <DropdownMenuPrimitive.Trigger
+      ref={ref}
+      disabled={disabled}
+      {...props}
+      onPointerDown={(e) => {
+        if (reopening.current) {
+          // The re-dispatched pointerdown below only opens the menu: rows and other ancestors saw the
+          // real one, so it must not start a second press there.
+          e.stopPropagation();
+          return;
+        }
+        onPointerDown?.(e);
+        touchTap.current = false;
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          touchTap.current = true;
+          e.preventDefault();
+        }
+      }}
+      onPointerCancel={(e) => {
+        onPointerCancel?.(e);
+        // The touch became a scroll: no click follows, so forget the tap.
+        touchTap.current = false;
+      }}
+      onClick={(e) => {
+        onClick?.(e);
+        if (!touchTap.current) return;
+        touchTap.current = false;
+        if (e.defaultPrevented || disabled) return;
+        const el = e.currentTarget;
+        // Already open (closed by the outside-tap dismissal or not): leave it to Radix.
+        if (el.getAttribute('data-state') === 'open') return;
+        reopening.current = true;
+        try {
+          el.dispatchEvent(
+            new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0 }),
+          );
+        } finally {
+          reopening.current = false;
+        }
+      }}
+    />
+  );
+});
+MenuTrigger.displayName = 'MenuTrigger';
 export const MenuPortal = DropdownMenuPrimitive.Portal;
 export const MenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 export const MenuSub = DropdownMenuPrimitive.Sub;
@@ -203,7 +260,7 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
 
 export const Menu: React.FC<MenuProps> & {
   Root: typeof DropdownMenuPrimitive.Root;
-  Trigger: typeof DropdownMenuPrimitive.Trigger;
+  Trigger: typeof MenuTrigger;
   Content: typeof MenuContent;
   Item: typeof MenuItem;
   Separator: typeof MenuSeparator;
@@ -242,9 +299,7 @@ export const Menu: React.FC<MenuProps> & {
       dir={dir}
     >
       {trigger && (
-        <DropdownMenuPrimitive.Trigger asChild>
-          {trigger}
-        </DropdownMenuPrimitive.Trigger>
+        <MenuTrigger asChild>{trigger}</MenuTrigger>
       )}
       <MenuContent
         align={align}
@@ -261,7 +316,7 @@ export const Menu: React.FC<MenuProps> & {
 
 Menu.displayName = 'Menu';
 Menu.Root = DropdownMenuPrimitive.Root;
-Menu.Trigger = DropdownMenuPrimitive.Trigger;
+Menu.Trigger = MenuTrigger;
 Menu.Content = MenuContent;
 Menu.Item = MenuItem;
 Menu.Separator = MenuSeparator;
