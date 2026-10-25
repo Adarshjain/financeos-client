@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Icon, SelectionBar, type SelectionBarAction } from '@/components/ds';
+import { Button, Icon, Menu, MenuItem, MenuSeparator, SelectionBar, type SelectionBarAction, Text } from '@/components/ds';
 
 const sampleActions: SelectionBarAction[] = [
   {
@@ -138,5 +138,51 @@ export const WithoutSelectAll: Story = {
     count: 2,
     summary: 'Batch selection',
     actions: sampleActions,
+  },
+};
+
+const pageNote = (
+  <>
+    <Text variant="label" tone="warning">
+      Unsaved changes
+    </Text>
+    <Menu
+      align="start"
+      side="top"
+      trigger={
+        <Button size="sm" variant="ghost" iconOnly aria-label="More options">
+          <Icon name="more" size="sm" />
+        </Button>
+      }
+    >
+      <MenuItem>Duplicate report</MenuItem>
+      <MenuItem>Add to dashboard</MenuItem>
+      <MenuSeparator />
+      <MenuItem destructive>Delete report</MenuItem>
+    </Menu>
+  </>
+);
+
+export const PageActions: Story = {
+  name: 'Page actions',
+  args: {
+    count: undefined,
+    onClear: undefined,
+    summary: pageNote,
+    actions: [
+      { label: 'Cancel', variant: 'link', onSelect: fn() },
+      { label: 'Save report', variant: 'primary', onSelect: fn() },
+    ],
+  },
+};
+
+export const PageActionsLoading: Story = {
+  name: 'Page actions loading',
+  args: {
+    ...PageActions.args,
+    actions: [
+      { label: 'Cancel', variant: 'link', onSelect: fn() },
+      { label: 'Saving report', variant: 'primary', loading: true, onSelect: fn() },
+    ],
   },
 };
