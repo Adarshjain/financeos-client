@@ -17,7 +17,7 @@ import { MilestoneDialog } from './MilestoneDialog';
 import { milestoneDetail, milestoneSummary } from './milestoneModel';
 
 const paidWhen = (m: RewardMilestone) =>
-  m.payoutType === 'CASH_VALUE' && m.payoutTiming === 'WINDOW_END' ? 'paid at window end' : null;
+  m.payoutType === 'CASH_VALUE' && m.payoutTiming === 'WINDOW_END' ? 'received at window end' : null;
 
 type Open = { mode: 'new' } | { mode: 'edit'; id: string } | null;
 

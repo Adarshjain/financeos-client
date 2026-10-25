@@ -494,6 +494,27 @@ describe('rule dialog', () => {
     expect(screen.queryByRole('combobox', { name: /^Cardholder scope/ })).not.toBeInTheDocument();
   });
 
+  it('carries no static explanatory descriptions, only the live card default', async () => {
+    caps = [bucket()];
+    renderSection();
+    openNew();
+    await screen.findByRole('textbox', { name: /^Name/ });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Tiered rate' }));
+    choose('Rewards paid as', 'Reward points');
+    choose('Period cap', 'Shared bucket');
+    for (const gone of [
+      /OR with MCCs/,
+      /Most issuers post the surcharge/,
+      /Rate steps as matched spend grows/,
+      /Tip: a 0-rate exclusive rule/,
+      /Points are tracked as points/,
+      /Several rules can drain one bucket/,
+    ]) {
+      expect(screen.queryByText(gone)).not.toBeInTheDocument();
+    }
+    expect(screen.getByText(/^Card default: /)).toBeInTheDocument();
+  });
+
   it('drops Card scope and Counter scope when the card has no cardholders', async () => {
     renderSection(undefined, 'a2');
     openNew();

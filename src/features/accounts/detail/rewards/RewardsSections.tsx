@@ -43,7 +43,7 @@ export function MilestonesCard({
       ))}
       {completed ? (
         <>
-          <SectionHeader variant="band" meta={completed.paid ? `${completed.paid} paid` : undefined}>
+          <SectionHeader variant="band" meta={completed.paid ? `${completed.paid} received` : undefined}>
             {`Completed · ${completed.count}`}
           </SectionHeader>
           {completed.rows.map((row) => (

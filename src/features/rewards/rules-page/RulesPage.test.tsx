@@ -107,7 +107,7 @@ describe('RulesPage', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
     expect(screen.getByText('1,250 / 5,000 · resets 1 Nov')).toBeInTheDocument();
     expect(screen.getByText('21% · 152 d left')).toBeInTheDocument();
-    expect(screen.getByText(/15 Mar → 14 Mar · paid at window end/)).toBeInTheDocument();
+    expect(screen.getByText(/15 Mar → 14 Mar · received at window end/)).toBeInTheDocument();
     expect(screen.getAllByRole('progressbar')).toHaveLength(2);
   });
 
