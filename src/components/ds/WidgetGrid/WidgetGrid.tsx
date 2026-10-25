@@ -404,7 +404,8 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
                 // isolate: the item's own grip, handle and actions (z-floating) stack inside it, so they never draw over a dragged item.
                 'relative isolate flex min-w-0 flex-col',
                 DESK_SPAN_CLASS[width],
-                editing && 'rounded-ds-lg ring-1 ring-line-strong',
+                // Opaque frame: a dragged item must not show the items it passes over.
+                editing && 'rounded-ds-lg ring-1 ring-line-strong bg-surface',
                 // Above the other items (which are z-auto), below the sticky bar and tab bar.
                 dragging && 'z-sticky shadow-level-3',
               )}

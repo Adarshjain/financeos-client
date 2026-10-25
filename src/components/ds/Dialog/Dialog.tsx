@@ -200,15 +200,15 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
             {tertiary && (
               <Button
                 key="tertiary"
-                variant={tertiary.tone === 'danger' ? 'danger-link' : 'link'}
+                variant={tertiary.tone === 'danger' ? 'danger-ghost' : 'ghost'}
                 size="md"
                 type={tertiary.type ?? 'button'}
                 form={tertiary.form}
                 disabled={tertiary.disabled}
                 loading={tertiary.loading}
-                icon={tertiary.icon ? <Icon name={tertiary.icon} size="xs" /> : undefined}
+                icon={tertiary.icon ? <Icon name={tertiary.icon} size="md" /> : undefined}
                 onClick={tertiary.onSelect}
-                className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
+                className="w-full desk:w-auto"
               >
                 {tertiary.label}
               </Button>
@@ -216,15 +216,15 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
             {secondary && (
               <Button
                 key="secondary"
-                variant={secondary.tone === 'danger' ? 'danger-link' : 'link'}
+                variant={secondary.tone === 'danger' ? 'danger-ghost' : 'ghost'}
                 size="md"
                 type={secondary.type ?? 'button'}
                 form={secondary.form}
                 disabled={secondary.disabled}
                 loading={secondary.loading}
-                icon={secondary.icon ? <Icon name={secondary.icon} size="xs" /> : undefined}
+                icon={secondary.icon ? <Icon name={secondary.icon} size="md" /> : undefined}
                 onClick={secondary.onSelect}
-                className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
+                className="w-full desk:w-auto"
               >
                 {secondary.label}
               </Button>

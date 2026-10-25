@@ -148,7 +148,7 @@ describe('DialogShell', () => {
     expect(buttons[1].firstElementChild!.contains(svg)).toBe(true);
   });
 
-  it('draws primary as primary or danger-filled, and secondary/tertiary as link', () => {
+  it('draws primary as primary or danger-filled, and secondary/tertiary as ghost', () => {
     const { rerender } = render(
       <DialogShell
         title="Variants test"
@@ -160,8 +160,11 @@ describe('DialogShell', () => {
       </DialogShell>,
     );
     expect(screen.getByRole('button', { name: 'Primary' })).toHaveClass('bg-brand');
-    expect(screen.getByRole('button', { name: 'Secondary' })).toHaveClass('underline');
-    expect(screen.getByRole('button', { name: 'Tertiary' })).toHaveClass('underline');
+    for (const name of ['Secondary', 'Tertiary']) {
+      const b = screen.getByRole('button', { name });
+      expect(b).toHaveClass('bg-transparent', 'h-control-md');
+      expect(b).not.toHaveClass('underline');
+    }
 
     rerender(
       <DialogShell
@@ -174,7 +177,7 @@ describe('DialogShell', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-danger');
   });
 
-  it('draws secondary and tertiary with tone danger as danger-link; primary stays as is', () => {
+  it('draws secondary and tertiary with tone danger as ghost in the danger colour; primary stays as is', () => {
     render(
       <DialogShell
         title="Tone test"
@@ -185,8 +188,8 @@ describe('DialogShell', () => {
         <DialogBody>Body</DialogBody>
       </DialogShell>,
     );
-    expect(screen.getByRole('button', { name: 'Delete entry' })).toHaveClass('underline', 'text-danger');
-    expect(screen.getByRole('button', { name: 'Remove' })).toHaveClass('underline', 'text-danger');
+    expect(screen.getByRole('button', { name: 'Delete entry' })).toHaveClass('bg-transparent', 'text-danger', 'h-control-md');
+    expect(screen.getByRole('button', { name: 'Remove' })).toHaveClass('bg-transparent', 'text-danger', 'h-control-md');
     expect(screen.getByRole('button', { name: 'Save' })).toHaveClass('bg-brand');
   });
 

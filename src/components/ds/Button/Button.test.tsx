@@ -385,4 +385,20 @@ describe('Button dot', () => {
     expect(screen.queryByTestId('button-dot')).not.toBeInTheDocument();
     expect(screen.getByRole('button')).not.toHaveClass('relative');
   });
+
+  describe('danger-ghost', () => {
+    it('is a ghost in the danger colour with the control height', () => {
+      render(<Button variant="danger-ghost">Delete</Button>);
+      const b = screen.getByRole('button', { name: 'Delete' });
+      expect(b).toHaveClass('bg-transparent', 'text-danger', 'hover:text-danger-hover', 'active:text-danger-pressed', 'h-control-md');
+      expect(b).not.toHaveClass('underline');
+    });
+
+    it('keeps the disabled and loading states of ghost', () => {
+      const { rerender } = render(<Button variant="danger-ghost" disabled>Delete</Button>);
+      expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+      rerender(<Button variant="danger-ghost" loading>Delete</Button>);
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true');
+    });
+  });
 });

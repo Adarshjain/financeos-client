@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ConcealProvider } from '@/components/ds';
 import { catalogFixture } from '@/features/reports/builder/editor.fixtures';
 import { workingCatalog } from '@/features/reports/builder/editorState';
 import type { ChartData, KpiData, PivotTableData, TableData } from '@/lib/reports.types';
@@ -70,6 +71,33 @@ describe('KPI result', () => {
     render(<ReportResult data={kpi()} catalog={catalog} />);
     expect(screen.getByText('Spend · sum')).toBeInTheDocument();
     expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
+  });
+
+  it('leaves the measure overline out for a widget (hideMeasure) and keeps it otherwise', () => {
+    const { rerender } = render(<ReportResult data={kpi()} catalog={catalog} hideMeasure />);
+    expect(screen.queryByText('Spend · sum')).toBeNull();
+    expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
+    rerender(<ReportResult data={kpi()} catalog={catalog} />);
+    expect(screen.getByText('Spend · sum')).toBeInTheDocument();
+  });
+
+  it('the figure is a button that calls onOpenKpi when given one, and plain text otherwise', async () => {
+    const onOpenKpi = vi.fn();
+    const { rerender } = render(<ReportResult data={kpi()} catalog={catalog} onOpenKpi={onOpenKpi} />);
+    await userEvent.click(screen.getByRole('button', { name: '₹1,84,320' }));
+    expect(onOpenKpi).toHaveBeenCalledTimes(1);
+    rerender(<ReportResult data={kpi()} catalog={catalog} />);
+    expect(screen.queryByRole('button', { name: '₹1,84,320' })).toBeNull();
+  });
+
+  it('hides the pressable figure\'s amount while amounts are hidden', () => {
+    render(
+      <ConcealProvider concealed>
+        <ReportResult data={kpi()} catalog={catalog} onOpenKpi={vi.fn()} />
+      </ConcealProvider>,
+    );
+    expect(screen.getByRole('button', { name: '₹ —' })).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('1,84,320');
   });
 
   it('draws the tile as a card, or plain with no card when asked (inside a widget)', () => {

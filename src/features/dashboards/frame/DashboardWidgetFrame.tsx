@@ -64,6 +64,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const href = widgetHref(widget);
   const canEditSettings = !editing && onSaveSettings != null && def != null;
   const items = editing ? [] : widgetMenuItems(widget, { canEditSettings });
+  // The KPI figure opens the same underlying data as the ⋮ menu's item.
+  const canOpenUnderlying = items.includes('underlying');
 
   // A component built-in fetches for itself; every other widget is loaded here.
   const loadsHere = available && (builtin ? widget.builtin?.kind === 'template' : Boolean(widget.reportId));
@@ -100,7 +102,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         );
       }
     }
-    return <ReportWidgetBody widget={widget} state={state} />;
+    return <ReportWidgetBody widget={widget} state={state} onOpenUnderlying={canOpenUnderlying ? () => setOverlay('underlying') : undefined} />;
   })();
 
   const subtitle = issue ? (

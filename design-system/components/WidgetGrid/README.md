@@ -22,3 +22,5 @@ The dashboard layout: items flow in order across a 12-column grid, each with a w
 
 ## Built from
 Button (secondary, sm, icon-only: grip and handle), Icon (`grip`, `resize-corner`), `cn`, `useControllableState`.
+
+- In edit mode each item's frame has an opaque `bg-surface`, so a dragged item is a solid lifted card and the items it passes over do not show through.

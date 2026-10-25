@@ -79,6 +79,19 @@ describe('HomeScreen', () => {
     expect(screen.getByRole('main').firstElementChild).toBe(screen.getByTestId('widgets'));
   });
 
+  it('the switcher takes the rest of the top bar: it grows with no fixed width, and so does its wrapper', () => {
+    render([home, money]);
+    const select = screen.getByTestId('home-switch');
+    // The Select's own wrapper grows and may shrink; the ⋯ button sits after it in a wrapper that grows too.
+    const field = select.closest('div.flex-1');
+    expect(field).not.toBeNull();
+    expect(field?.className).toMatch(/min-w-0/);
+    const row = field?.parentElement as HTMLElement;
+    expect(row.className).toMatch(/flex-1/);
+    expect(row.innerHTML).not.toMatch(/container-xs/);
+    expect(within(row).getByRole('button', { name: 'Dashboard actions' })).toBeInTheDocument();
+  });
+
   it('shows the default dashboard', () => {
     render([money, home]);
     expect(screen.getByTestId('widgets')).toHaveAttribute('data-dashboard', 'Home');

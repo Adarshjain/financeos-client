@@ -2,7 +2,7 @@
 
 // A saved report's result inside a widget (and in its full-page view): the same ReportResult the report editor
 // previews with, given the report's own datasource catalog (field labels, number formats) and, for a chart, its
-// definition (breakdown columns and bars). Tables sort by header and page inside the widget.
+// definition (breakdown columns and bars). A KPI's figure opens the underlying data (when the widget can), and the measure overline is left out: the widget has its own title. Tables sort by header and page inside the widget.
 
 import React from 'react';
 
@@ -17,7 +17,7 @@ import { useReportCatalog } from './useReportCatalog';
 import { type ReportWidgetState } from './useReportWidget';
 import { useSavedReport } from './useSavedReport';
 
-export function ReportWidgetBody({ widget, state }: { widget: WidgetResponse; state: ReportWidgetState }) {
+export function ReportWidgetBody({ widget, state, onOpenUnderlying }: { widget: WidgetResponse; state: ReportWidgetState; onOpenUnderlying?: () => void }) {
   const report = useSavedReport(widget.reportId);
   const catalog = useReportCatalog();
   const datasource = React.useMemo(
@@ -32,6 +32,8 @@ export function ReportWidgetBody({ widget, state }: { widget: WidgetResponse; st
       catalog={datasource}
       definition={isChartData(state.data) && report.data ? (report.data.definition as ChartDefinition) : undefined}
       kpiVariant="plain"
+      hideMeasure
+      onOpenKpi={onOpenUnderlying}
       busy={state.loading}
       sort={state.sort}
       onSortChange={state.setSort}

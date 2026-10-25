@@ -23,3 +23,5 @@ Button, Icon, Kbd, Menu, Popover.
 
 ## Variants
 - Top level, detail (back + crumb), with a primary action, phone and desktop forms.
+
+- A node title's wrapper grows to fill the space between the back/leading area and the actions at every width (`flex-1 min-w-0`), so a child marked `flex-1` (the dashboard switcher Select) fills it; a string title stays content-width on desktop.

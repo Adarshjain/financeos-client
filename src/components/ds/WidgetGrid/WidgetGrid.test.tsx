@@ -204,6 +204,13 @@ describe('WidgetGrid drag to reorder', () => {
     expect(itemEl(container, 'b').contains(screen.getByRole('button', { name: 'Drag to reorder Beta' }))).toBe(true);
   });
 
+  it('gives the edit frame an opaque surface so a dragged item is solid', () => {
+    const { container } = render(<WidgetGrid items={items} editing />);
+    for (const id of ['a', 'b', 'c']) expect(itemEl(container, id)).toHaveClass('bg-surface');
+    const view = render(<WidgetGrid items={items} />);
+    expect(itemEl(view.container, 'a')).not.toHaveClass('bg-surface');
+  });
+
   it('uses zero-min tracks so wide content cannot widen the page', () => {
     const { container } = render(<WidgetGrid items={items} editing />);
     expect(container.firstElementChild).toHaveClass('min-w-0', 'max-w-full', 'grid-cols-1');

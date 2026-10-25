@@ -73,9 +73,9 @@ export function HomeScreen() {
     add.mutate({ dashboard: active, widget: withTitle(reportWidgetResponse(active.widgets, report), title) });
 
   const switcher = (
-    <div className="flex min-w-0 items-center gap-space-8">
+    <div className="flex min-w-0 flex-1 items-center gap-space-8">
       <Select
-        className="min-w-0 flex-1 desk:w-container-xs desk:flex-none"
+        className="min-w-0 flex-1"
         data-testid="home-switch"
         value={active.id}
         options={dashboards.map((d) => ({ value: d.id, label: d.name }))}

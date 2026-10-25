@@ -141,7 +141,14 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
         ) : null}
 
         {/* Title + Crumb: phone stacks them with crumb above title, desktop puts crumb inline before title */}
-        <div className="flex-1 min-w-0 pr-space-4 desk:flex-initial desk:flex desk:items-center desk:gap-space-8">
+        <div
+          className={cn(
+            'flex-1 min-w-0 pr-space-4 desk:flex desk:items-center desk:gap-space-8',
+            // A node title (controls) takes all the free space at every width; a string stays content-width on desktop.
+            typeof title !== 'string' && 'desk:flex-1',
+            typeof title === 'string' && 'desk:flex-initial',
+          )}
+        >
           {crumb ? (
             <div className="flex items-center gap-space-8 min-w-0 mb-space-2 desk:mb-0">
               <span className="text-caption font-semibold text-ink-4 leading-none truncate desk:text-label desk:text-ink-3">
@@ -157,7 +164,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
           ) : (
             // A node (a Select trigger, a Menu button, a styled name): never a heading or clipped, so
             // controls keep their focus ring; centred, and every child may shrink on phone.
-            <div className="flex items-center gap-space-8 min-w-0 text-title font-extrabold text-ink leading-tight tracking-tight [&>*]:min-w-0">
+            <div className="flex flex-1 items-center gap-space-8 min-w-0 text-title font-extrabold text-ink leading-tight tracking-tight [&>*]:min-w-0">
               {title}
             </div>
           )}
