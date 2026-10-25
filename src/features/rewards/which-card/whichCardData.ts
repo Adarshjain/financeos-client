@@ -8,9 +8,15 @@ export interface WhichCardOption {
   name: string;
 }
 
+/** A credit card that can be compared; the bank and last four let the picker show its logo and search by them. */
+export interface WhichCardCard extends WhichCardOption {
+  bank?: string | null;
+  last4?: string;
+}
+
 export interface WhichCardData {
   /** The credit cards that can be compared. */
-  cards: WhichCardOption[];
+  cards: WhichCardCard[];
   categories: WhichCardOption[];
 }
 
@@ -24,7 +30,7 @@ export async function loadWhichCardData(): Promise<WhichCardData | null> {
   return {
     cards: rewardEligibleAccounts(accounts)
       .filter((a) => a.type === AccountType.CREDIT_CARD)
-      .map((a) => ({ id: a.id, name: a.name })),
+      .map((a) => ({ id: a.id, name: a.name, bank: 'bank' in a ? a.bank : undefined, last4: 'last4' in a ? a.last4 : undefined })),
     categories: categories.map((c) => ({ id: c.id, name: c.name })).sort((a, b) => a.name.localeCompare(b.name)),
   };
 }

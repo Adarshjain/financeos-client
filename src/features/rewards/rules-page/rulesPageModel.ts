@@ -99,7 +99,7 @@ export function appliesTo(rule: RewardRule): string {
   if (rule.daysOfWeek?.length) parts.push(rule.daysOfWeek.map((d) => d.slice(0, 3).toLowerCase()).join('/'));
   if (rule.minAmount != null || rule.maxAmount != null) parts.push(`₹${rule.minAmount ?? 0}–${rule.maxAmount ?? '∞'}`);
   if (rule.emiTreatment && rule.emiTreatment !== 'INCLUDE') parts.push(rule.emiTreatment === 'EXCLUDE_EMI' ? 'no EMI' : 'EMI only');
-  if (rule.intlTreatment && rule.intlTreatment !== 'INCLUDE') parts.push(rule.intlTreatment === 'EXCLUDE_INTL' ? 'no intl' : 'intl only');
+  if (rule.intlTreatment && rule.intlTreatment !== 'INCLUDE') parts.push(rule.intlTreatment === 'EXCLUDE_INTL' ? 'no international' : 'international only');
   if (rule.feeTreatment === 'EXCLUDE_FEE') parts.push('fees excluded');
   return parts.length > 0 ? parts.join(' · ') : 'everything else';
 }

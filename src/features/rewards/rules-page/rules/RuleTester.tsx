@@ -32,20 +32,22 @@ export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRu
           value={f.previewDescription}
           onValueChange={f.setPreviewDescription}
         />
-        <TextField
-          label="MCC"
-          inputMode="numeric"
-          maxLength={4}
-          placeholder="e.g. 5812"
-          value={f.previewMcc}
-          onValueChange={(v) => f.setPreviewMcc(v.replace(/\D/g, ''))}
-        />
-        <Select
-          label="Channel"
-          options={[{ value: NONE, label: 'Not set' }, ...CHANNEL_OPTIONS]}
-          value={f.previewChannel}
-          onValueChange={(v) => f.setPreviewChannel((asList(v)[0] ?? NONE) as TransactionChannel | 'NONE')}
-        />
+        <div className="grid grid-cols-2 gap-space-12 desk:col-span-2">
+            <TextField
+              label="MCC"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="e.g. 5812"
+              value={f.previewMcc}
+              onValueChange={(v) => f.setPreviewMcc(v.replace(/\D/g, ''))}
+            />
+            <Select
+              label="Channel"
+              options={[{ value: NONE, label: 'Not set' }, ...CHANNEL_OPTIONS]}
+              value={f.previewChannel}
+              onValueChange={(v) => f.setPreviewChannel((asList(v)[0] ?? NONE) as TransactionChannel | 'NONE')}
+            />
+        </div>
         <Select
           className="desk:col-span-2"
           label="Categories"
@@ -64,7 +66,7 @@ export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRu
         </label>
         <label className="flex items-center gap-space-8">
           <Checkbox checked={f.previewIntl} onCheckedChange={(c) => f.setPreviewIntl(c === true)} />
-          <Text variant="body">Intl</Text>
+          <Text variant="body">International</Text>
         </label>
       </div>
       {reading ? (

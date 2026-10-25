@@ -1,14 +1,13 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RewardsAddProvider } from '@/features/rewards/overview/RewardsAdd';
 import type { RewardCapBucket, RewardRule } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
 import { RulesRefreshProvider } from '../rulesRefresh';
-import { RULE_DIALOG_SUBTITLE } from './RuleDialog';
 import { RulesSection } from './RulesSection';
 
 const toast = vi.fn();
@@ -106,10 +105,8 @@ const renderSection = (usage?: Record<string, { text: string; zero: boolean }>, 
   );
 const refresh = vi.fn();
 const openNew = () => act(() => adder!());
-const openHeaderMenu = async (item: string) => {
-  const user = userEvent.setup();
-  await user.click(screen.getByRole('button', { name: 'Rule actions' }));
-  await user.click(await screen.findByRole('menuitem', { name: item }));
+const openHeaderAction = async (action: 'Test' | 'Reorder') => {
+  await userEvent.setup().click(screen.getByRole('button', { name: action }));
 };
 // A row press opens a menu at the press point (Edit, Clone, End & clone, Delete).
 const pressRow = async (name: string) => {
@@ -163,12 +160,11 @@ describe('RulesSection list', () => {
     expect(screen.queryByRole('menuitem', { name: 'End & clone' })).not.toBeInTheDocument();
   });
 
-  it('suggests a base rule when there are none, and disables Reorder rules', async () => {
+  it('suggests a base rule when there are none, and disables Reorder', async () => {
     rules = [];
     renderSection();
     expect(screen.getByText(/Start with a base rule/)).toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Reorder rules' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Reorder' })).toBeDisabled();
   });
 
   it('is titled Rules, says the order, and keeps no per-row actions', () => {
@@ -182,25 +178,24 @@ describe('RulesSection list', () => {
   });
 });
 
-describe('header menu', () => {
-  it('offers Test a transaction and Reorder rules, both enabled with two rules and a card', async () => {
+describe('header actions', () => {
+  it('has Test and Reorder link actions and no Rule actions menu, both enabled with two rules and a card', () => {
     renderSection();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Test a transaction' })).not.toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByRole('menuitem', { name: 'Reorder rules' })).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByRole('button', { name: 'Rule actions' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Test' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Reorder' })).toBeEnabled();
   });
 
-  it('disables Reorder rules with fewer than two rules', async () => {
+  it('disables Reorder with fewer than two rules, and keeps Test enabled', () => {
     rules = [rule()];
     renderSection();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Reorder rules' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Reorder' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Test' })).toBeEnabled();
   });
 
-  it('disables Test a transaction without a card', async () => {
+  it('disables Test without a card', () => {
     renderSection(undefined, '');
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Rule actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Test a transaction' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Test' })).toBeDisabled();
   });
 });
 
@@ -247,7 +242,7 @@ describe('the row menu', () => {
   it('Edit opens the dialog filled in, without Clone, End & clone or Delete rule in it', async () => {
     renderSection();
     await openRow('5X on dining');
-    expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
+    expect(await screen.findByText('Edit rule')).toBeInTheDocument();
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.getByRole('button', { name: 'Save & recompute' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
@@ -284,7 +279,6 @@ describe('the row menu', () => {
       expect.anything(),
     );
     await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
-    expect(screen.getByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
   });
 
   it('Delete confirms with the Legacy words, then removes the rule and says so', async () => {
@@ -315,7 +309,7 @@ describe('refreshing the server figures', () => {
     await pickMenu('Delete');
     fireEvent.click(lastButton('Delete rule'));
     expect(refresh).toHaveBeenCalledTimes(1);
-    await openHeaderMenu('Reorder rules');
+    await openHeaderAction('Reorder');
     fireEvent.click(await screen.findByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save order' }));
     expect(refresh).toHaveBeenCalledTimes(2);
@@ -335,7 +329,7 @@ describe('refreshing the server figures', () => {
 describe('reorder', () => {
   it('Save sends the new order of every rule', async () => {
     renderSection();
-    await openHeaderMenu('Reorder rules');
+    await openHeaderAction('Reorder');
     expect(await screen.findByText('Reorder rules')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save order' }));
@@ -345,7 +339,7 @@ describe('reorder', () => {
 
   it('Cancel throws the new order away', async () => {
     renderSection();
-    await openHeaderMenu('Reorder rules');
+    await openHeaderAction('Reorder');
     fireEvent.click(await screen.findByRole('button', { name: 'Move up Base' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(reorder).not.toHaveBeenCalled();
@@ -354,7 +348,7 @@ describe('reorder', () => {
 
   it('says nothing is sent when the order did not change', async () => {
     renderSection();
-    await openHeaderMenu('Reorder rules');
+    await openHeaderAction('Reorder');
     fireEvent.click(await screen.findByRole('button', { name: 'Save order' }));
     expect(reorder).not.toHaveBeenCalled();
   });
@@ -381,7 +375,7 @@ describe('test a transaction', () => {
       ],
     };
     renderSection();
-    await openHeaderMenu('Test a transaction');
+    await openHeaderAction('Test');
     expect(await screen.findByText('See which rule wins on this card, and what it earns with your real cap usage.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'More options' }));
     fireEvent.change(screen.getByRole('textbox', { name: /^MCC/ }), { target: { value: '5812' } });
@@ -396,7 +390,7 @@ describe('test a transaction', () => {
 
   it('asks for a valid amount before calling anything', async () => {
     renderSection();
-    await openHeaderMenu('Test a transaction');
+    await openHeaderAction('Test');
     fireEvent.change(await screen.findByRole('textbox', { name: /^Amount/ }), { target: { value: '0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Run test' }));
     expect(recommend).not.toHaveBeenCalled();
@@ -405,10 +399,20 @@ describe('test a transaction', () => {
 });
 
 describe('rule dialog', () => {
+  it('words the tester checkbox International, never Intl', async () => {
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    expect(screen.getAllByText('International').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Intl')).not.toBeInTheDocument();
+  });
+
   it('creates a rule: "any of" holds MCCs, everything else goes in its own field', async () => {
     renderSection();
     openNew();
-    expect(await screen.findByText(RULE_DIALOG_SUBTITLE)).toBeInTheDocument();
+    expect(await screen.findByText('New rule')).toBeInTheDocument();
+    expect(screen.queryByText(/Changes apply to every transaction/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Leave everything empty/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Per slab' }));
     fireEvent.change(textbox('Name'), { target: { value: 'Dining 5X' } });
     fireEvent.change(textbox('Slab size'), { target: { value: '150' } });
@@ -639,6 +643,34 @@ describe('Shared bucket', () => {
     expect(select).not.toBeDisabled();
     fireEvent.click(select);
     expect(screen.getByRole('option', { name: 'Dining cap — 5000 pts · Per calendar month' })).toBeInTheDocument();
+  });
+});
+
+describe('Test this rule section scroll', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('scrolls the section into view once it has unfolded, and not after it closes again', async () => {
+    const scroll = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scroll;
+    renderSection();
+    openNew();
+    await screen.findByText('New rule');
+    vi.useFakeTimers();
+    const toggle = screen.getByRole('button', { name: 'Test this rule' });
+    fireEvent.click(toggle);
+    expect(scroll).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll).toHaveBeenCalledWith({ block: 'start', behavior: 'smooth' });
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(scroll).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -10,9 +10,6 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
-  Icon,
-  Menu,
-  MenuItem,
   showToast,
   Text,
 } from '@/components/ds';
@@ -201,21 +198,18 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       title="Rules"
       subtitle="Applied in the order below"
       action={
-        <Menu
-          align="end"
-          trigger={
-            <Button variant="ghost" size="sm" iconOnly aria-label="Rule actions">
-              <Icon name="more" size="sm" />
+        <div className="flex items-center gap-space-12">
+          <Text variant="label" as="div">
+            <Button variant="link" size="sm" disabled={!accountId} onClick={() => setTesting(true)}>
+              Test
             </Button>
-          }
-        >
-          <MenuItem disabled={!accountId} onSelect={() => setTesting(true)}>
-            Test a transaction
-          </MenuItem>
-          <MenuItem disabled={rules.length < 2} onSelect={() => setReordering(true)}>
-            Reorder rules
-          </MenuItem>
-        </Menu>
+          </Text>
+          <Text variant="label" as="div">
+            <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => setReordering(true)}>
+              Reorder
+            </Button>
+          </Text>
+        </div>
       }
     >
       <DataTable

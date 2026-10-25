@@ -101,6 +101,8 @@ describe('rule row words', () => {
     expect(appliesTo(rule({ mccs: [], categories: [{ id: 'k', name: 'Dining' } as never] }))).toBe('Dining');
     expect(appliesTo(rule({ mccs: [], merchantPattern: 'swiggy', emiTreatment: 'EXCLUDE_EMI' }))).toBe('"swiggy" · no EMI');
     expect(appliesTo(rule({ mccs: [] }))).toBe('everything else');
+    expect(appliesTo(rule({ mccs: [], intlTreatment: 'EXCLUDE_INTL' }))).toBe('no international');
+    expect(appliesTo(rule({ mccs: [], intlTreatment: 'ONLY_INTL' }))).toBe('international only');
   });
 
   it('words an own cap and a shared cap', () => {

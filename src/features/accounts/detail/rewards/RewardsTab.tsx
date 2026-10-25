@@ -23,7 +23,7 @@ import {
 } from './rewardsModel';
 import { capitalize, periodWords } from './rewardsPeriod';
 import { RewardsPeriodControl } from './RewardsPeriodControl';
-import { CardholdersCard, CompletedMilestonesCard, MilestonesCard, RulesCard } from './RewardsSections';
+import { CardholdersCard, MilestonesCard, RulesCard } from './RewardsSections';
 import { RewardsEmpty, RewardsLoadError } from './RewardsStates';
 
 /**
@@ -105,12 +105,12 @@ export function RewardsTab({
           )}
         </div>
         <div className="desk:col-span-5 min-w-0 flex flex-col gap-space-12 desk:gap-space-16">
-          {pending.length > 0 ? (
+          {pending.length > 0 || completed ? (
             <MilestonesCard
               items={pending.map((m) => ({ key: `${m.milestoneId}:${m.windowStart}`, model: buildMilestone(m, today) }))}
+              completed={completed}
             />
           ) : null}
-          {completed ? <CompletedMilestonesCard completed={completed} /> : null}
           {ruleRows.length > 0 ? <RulesCard accountId={account.id} rules={ruleRows} extras={extras} all={rules} /> : null}
           {holders.length > 0 ? (
             <CardholdersCard rows={holders} subtitle={capitalize(words)} />

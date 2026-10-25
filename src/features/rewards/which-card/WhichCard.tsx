@@ -17,10 +17,11 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { AccountPicker, AmountField } from '@/components/organisms';
 import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { AccountType } from '@/lib/types';
 
 import { WhichCardBreakdownDialog } from './WhichCardBreakdownDialog';
 import type { WhichCardData } from './whichCardData';
@@ -36,6 +37,8 @@ import {
   resultTitle,
   type WhichCardForm,
 } from './whichCardModel';
+
+const CARD_TYPES: readonly AccountType[] = [AccountType.CREDIT_CARD];
 
 const FORM_ID = 'which-card-form';
 
@@ -143,13 +146,14 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
                     value={form.moreCategoryIds}
                     onValueChange={(v) => patch({ moreCategoryIds: asList(v) })}
                   />
-                  <Select
+                  <AccountPicker
                     label="Cards to compare"
                     multiple
                     placeholder="All cards"
-                    options={data.cards.map((c) => ({ value: c.id, label: c.name }))}
+                    accounts={data.cards.map((c) => ({ ...c, type: AccountType.CREDIT_CARD }))}
+                    types={CARD_TYPES}
                     value={form.accountIds}
-                    onValueChange={(v) => patch({ accountIds: asList(v) })}
+                    onValueChange={(ids) => patch({ accountIds: ids })}
                     emptyText={() => 'No credit cards available'}
                   />
                 </div>
