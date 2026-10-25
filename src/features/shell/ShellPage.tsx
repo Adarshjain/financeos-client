@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
+import { hasInAppHistory } from './navigationStore';
 import { appHref } from './routes';
 
 /**
@@ -40,6 +42,28 @@ export interface ShellPageProps {
   children: React.ReactNode;
 }
 
+/**
+ * Back click handler: browser back when the user arrived from inside the app, else the parent route.
+ * The router is optional so the page still renders outside an app router (tests, Storybook).
+ */
+function useBack(backHref?: string) {
+  let router: ReturnType<typeof useRouter> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    router = useRouter();
+  } catch {
+    router = null;
+  }
+  if (!backHref) return undefined;
+  return () => {
+    if (hasInAppHistory()) {
+      if (router) router.back();
+      else window.history.back();
+    } else if (router) router.push(backHref);
+    else window.location.assign(backHref);
+  };
+}
+
 /** One signed-in page: the top bar with this page's title and +, then the content area. */
 export function ShellPage({
   title,
@@ -53,6 +77,7 @@ export function ShellPage({
   children,
 }: ShellPageProps) {
   const notifications = useNotificationsAction();
+  const onBack = useBack(backHref);
   return (
     <>
       <TopBar
@@ -61,6 +86,7 @@ export function ShellPage({
         crumb={crumb}
         leading={backHref ? undefined : <Logo variant="mark" />}
         backHref={backHref}
+        onBack={onBack}
         actions={[
           notifications,
           ...shellTopBarActions,

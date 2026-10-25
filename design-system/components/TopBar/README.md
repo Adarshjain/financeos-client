@@ -7,10 +7,10 @@ The bar at the top of every screen: one component, two forms chosen by CSS at th
 - **Desktop** (56px, `bg-surface`, `line` bottom border): crumb and title on the left, the actions on the right; an action with a label shows it ("Add" with its ⌘N hint).
 
 ## Props
-- `title`: `ReactNode`
+- `title`: `ReactNode`. A string is the screen title (title type, truncates). Any other node (a dashboard Select trigger, a ⋯ Menu button) may be controls: it is not a heading, is not clipped (focus rings stay), is vertically centred with `space-8` gaps and each child may shrink (`min-w-0`) so it fits the phone bar.
 - `crumb`: optional `ReactNode`
 - `leading`: optional `ReactNode` (phone leading slot, e.g. logo or custom button)
-- `backHref`: optional `string` (renders a link back button at every width)
+- `backHref`: optional `string` (renders a link back button at every width). With `onBack` too, a plain left click calls `onBack` (the app sends it to browser back when the user came from inside the app); middle/modified clicks and SSR keep the href.
 - `onBack`: optional `() => void` (renders a back button at every width)
 - `actions`: an ordered list the **app** passes in, each `{ id, icon, label, onSelect, asChild?, children?, variant?: 'default' | 'primary', shortcut?, showLabel?, labelIconSize?, dot?, popover?, menu? }`. `dot` draws a danger dot on the button (something unread). `popover: { content, onOpenChange? }` makes the button open a Popover dropdown (align `end`) holding `content`; it is never `asChild`. `menu: { id, label, onSelect?, asChild?, children? }[]` makes the button open a Menu (align `end`) of those rows: an `asChild` row renders `children` (the app's link element) with the label inside, otherwise `onSelect` runs; mutually exclusive with `popover` and `asChild`. `labelIconSize` sizes the icon beside the label (desktop form); the icon-only phone form keeps `md`. The app passes `xs` beside text. The bar renders them; it decides nothing about which ones exist.  Which actions exist is app data.
 

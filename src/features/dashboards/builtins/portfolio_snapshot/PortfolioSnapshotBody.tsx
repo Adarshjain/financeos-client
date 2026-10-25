@@ -54,7 +54,7 @@ export function PortfolioSnapshotBody() {
   if (!data || isEmptyPortfolio(data)) {
     return (
       <EmptyState
-        compact
+        size="sm"
         title="No holdings yet"
         description="Add a trade or import from your broker to see your portfolio here."
         action={{ label: 'Go to investments', variant: 'link', onSelect: () => router.push(HOLDINGS_HREF) }}

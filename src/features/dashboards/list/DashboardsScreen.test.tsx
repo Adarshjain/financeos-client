@@ -15,7 +15,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 
-import type { BuiltinWidgetResponse, DashboardResponse } from '@/lib/dashboards.types';
+import type { DashboardResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
@@ -31,21 +31,15 @@ const widgets = (n: number, headers = 0) =>
 
 const home: DashboardResponse = { id: 'home', name: 'Home', description: 'Your money at a glance', isDefault: true, updatedAt: '2026-10-13T08:00:00Z', createdAt: '2026-10-01T00:00:00Z', widgets: widgets(12, 2) };
 const money: DashboardResponse = { id: 'money', name: 'Money overview', description: null, isDefault: false, updatedAt: '2026-10-09T08:00:00Z', createdAt: '2026-10-01T00:00:00Z', widgets: widgets(1) };
-const builtins = [
-  { key: 'net_worth', label: 'Net worth', description: 'What you own minus what you owe', category: 'money', kind: 'template', minW: 25, params: [] },
-  { key: 'upcoming', label: 'Upcoming', description: 'Bills and EMIs due soon', category: 'money', kind: 'template', minW: 50, params: [] },
-] as BuiltinWidgetResponse[];
 
 function render(dashboards: DashboardResponse[], reports: unknown[] = [{ id: 'r' }]) {
   const queryClient = createTestQueryClient();
   queryClient.setQueryData(keys.dashboards.list(), dashboards);
-  queryClient.setQueryData(keys.dashboards.builtins(), builtins);
   queryClient.setQueryData(keys.reports.list(), reports);
   // Fresh reads (a refetch after a change, the default toggle's re-read) answer with what the cache holds.
   api.GET.mockImplementation(async (url: string) => {
     if (url === '/api/v1/dashboards') return { data: dashboards };
     if (url === '/api/v1/dashboards/{id}') return { data: dashboards[0] };
-    if (url === '/api/v1/dashboards/builtins') return { data: builtins };
     return { data: [] };
   });
   return renderWithQuery(<DashboardsScreen />, { queryClient });
@@ -55,42 +49,67 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const card = (name: string) => screen.getByText(name, { selector: 'a' }).closest('[data-testid="dashboard-row"]') as HTMLElement;
+const menuOf = (name: string) => screen.getByRole('button', { name: `Options for ${name}` });
 
 describe('DashboardsScreen', () => {
-  it('shows the tabs with their counts and the built-in reference', () => {
+  it('shows the tabs with their counts and no built-in widgets card', () => {
     render([home, money]);
     expect(screen.getByRole('tab', { name: /Dashboards/ })).toHaveTextContent('Dashboards · 2');
     expect(screen.getByRole('tab', { name: /Reports/ })).toHaveTextContent('Reports · 1');
-    expect(screen.getByText('2 available · add to any board')).toBeInTheDocument();
-    expect(screen.getByText('Net worth')).toBeInTheDocument();
-    expect(screen.queryByText('What you own minus what you owe')).toBeNull();
+    expect(screen.queryByText('Built-in widgets')).toBeNull();
+    expect(screen.queryByText(/available · add to any board/)).toBeNull();
   });
 
-  it('lists each dashboard with its Default badge and a line of description, widgets (headers not counted) and update day', () => {
+  it('is a table with Dashboard, Widgets, Default, Updated columns, one row per dashboard', () => {
     render([home, money]);
-    expect(within(card('Home')).getByText('Default')).toBeInTheDocument();
-    expect(within(card('Home')).getByText('Your money at a glance · 12 widgets · Updated 13 Oct')).toBeInTheDocument();
-    expect(within(card('Money overview')).queryByText('Default')).toBeNull();
-    expect(within(card('Money overview')).getByText('No description · 1 widget · Updated 9 Oct')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    for (const name of ['Dashboard', 'Widgets', 'Default', 'Updated']) expect(within(table).getAllByText(name).length).toBeGreaterThan(0);
+    expect(within(table).getByText('Home')).toBeInTheDocument();
+    expect(within(table).getByText('Money overview')).toBeInTheDocument();
   });
 
-  it('opens a dashboard from its name, a link; the card itself is not a button', () => {
+  it('shows the description, widget count (headers not counted), Default badge and update day', () => {
     render([home, money]);
-    expect(within(card('Money overview')).getByRole('link', { name: 'Money overview' })).toHaveAttribute('href', '/ds/dashboards/money');
-    expect(card('Money overview')).not.toHaveAttribute('role', 'button');
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Your money at a glance')).toBeInTheDocument();
+    expect(within(table).getByText('12')).toBeInTheDocument();
+    expect(within(table).getByText('13 Oct')).toBeInTheDocument();
+    expect(within(table).getByText('9 Oct')).toBeInTheDocument();
+    // The Default badge is on Home's row only.
+    const rowOfName = (name: string) => within(table).getByText(name).closest('[role="button"]') as HTMLElement;
+    expect(within(rowOfName('Home')).getByText('Default')).toBeInTheDocument();
+    expect(within(rowOfName('Money overview')).queryByText('Default')).toBeNull();
+  });
+
+  it('pressing a row opens the dashboard', async () => {
+    render([home, money]);
+    await user.click(screen.getByText('Money overview'));
+    expect(router.push).toHaveBeenCalledWith('/ds/dashboards/money');
+  });
+
+  it('search narrows the rows by name and description, and says so when none match', async () => {
+    render([home, money]);
+    await user.type(screen.getByPlaceholderText('Search dashboards'), 'glance');
+    expect(screen.queryByText('Money overview')).toBeNull();
+    expect(screen.getByText('Home')).toBeInTheDocument();
+    await user.clear(screen.getByPlaceholderText('Search dashboards'));
+    await user.type(screen.getByPlaceholderText('Search dashboards'), 'zzz');
+    expect(screen.getByText('No dashboards match.')).toBeInTheDocument();
+    // The empty state's own action (the field has its own clear button too).
+    await user.click(screen.getAllByRole('button', { name: 'Clear search' }).at(-1)!);
+    expect(screen.getByText('Money overview')).toBeInTheDocument();
   });
 
   it('the ⋯ menu opens without navigating into the dashboard', async () => {
     render([home, money]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     expect(screen.getAllByRole('menuitem')).toHaveLength(3);
     expect(router.push).not.toHaveBeenCalled();
   });
 
   it('menu on a non-default dashboard: Edit, Set as default, Delete dashboard', async () => {
     render([home, money]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Edit', 'Set as default', 'Delete dashboard']);
     await user.click(screen.getByRole('menuitem', { name: 'Edit' }));
     // Only Edit navigates: the press in the menu is not also a press on the row.
@@ -99,14 +118,14 @@ describe('DashboardsScreen', () => {
 
   it('menu on the default dashboard offers Clear default', async () => {
     render([home, money]);
-    await user.click(within(card('Home')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Home'));
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Edit', 'Clear default', 'Delete dashboard']);
   });
 
   it('Set as default saves the dashboard as the default and says so', async () => {
     api.PUT.mockResolvedValue({ data: { ...money, isDefault: true } });
     render([money, home]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
     await waitFor(() => expect(api.PUT).toHaveBeenCalled());
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ name: 'Money overview', isDefault: true });
@@ -115,7 +134,7 @@ describe('DashboardsScreen', () => {
 
   it('Delete asks first, in the board words, and Cancel keeps the dashboard', async () => {
     render([home, money]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete Money overview?' });
     expect(within(dialog).getByText('This cannot be undone. Its widgets go with it; your saved reports stay.')).toBeInTheDocument();
@@ -128,7 +147,7 @@ describe('DashboardsScreen', () => {
   it('Delete dashboard removes it and confirms with a toast', async () => {
     api.DELETE.mockResolvedValue({});
     render([home, money]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete Money overview?' });
     await user.click(within(dialog).getByRole('button', { name: 'Delete dashboard' }));
@@ -139,7 +158,7 @@ describe('DashboardsScreen', () => {
   it('a failed delete says so and keeps the dialog for another try', async () => {
     api.DELETE.mockRejectedValue(new Error('boom'));
     render([home, money]);
-    await user.click(within(card('Money overview')).getByRole('button', { name: 'More options' }));
+    await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete dashboard' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));

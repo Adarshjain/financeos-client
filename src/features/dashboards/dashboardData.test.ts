@@ -46,30 +46,25 @@ beforeEach(() => {
 });
 
 describe('loadDashboardPage', () => {
-  it('fetches the dashboard, reports, built-in catalog, widget data and each report once, and hydrates them', async () => {
+  it('fetches the dashboard, reports and built-in catalog once, and hydrates the list and the catalog', async () => {
     const { dashboard: loaded, state } = await loadDashboardPage('d1');
     expect(loaded).toBe(dashboard);
     expect(dashboardsApi.getById).toHaveBeenCalledWith('d1');
     expect(reportsApi.list).toHaveBeenCalledTimes(1);
     expect(dashboardsApi.builtins).toHaveBeenCalledTimes(1);
-    // The widget data uses the plain page-size constant the browser first asks for.
-    expect(prefetchWidgetData).toHaveBeenCalledWith(expect.anything(), dashboard, 50);
-    // One saved report per distinct, available report widget; the catalog once.
-    expect(reportsApi.getById).toHaveBeenCalledTimes(1);
-    expect(reportsApi.getById).toHaveBeenCalledWith('r1');
-    expect(reportsApi.getDatasource).toHaveBeenCalledTimes(1);
     const cached = queries(state);
     expect(cached).toContain(JSON.stringify(keys.reports.list()));
     expect(cached).toContain(JSON.stringify(keys.dashboards.builtins()));
-    expect(cached).toContain(JSON.stringify(keys.reports.byId('r1')));
-    expect(cached).toContain(JSON.stringify(keys.reports.catalog()));
   });
 
-  it('does not fetch the catalog when no widget is a report', async () => {
-    dashboardsApi.getById.mockResolvedValue({ ...dashboard, widgets: [dashboard.widgets[3]] });
-    await loadDashboardPage('d1');
-    expect(reportsApi.getDatasource).not.toHaveBeenCalled();
+  it('reads no widget data: each widget loads when it scrolls into view', async () => {
+    const { state } = await loadDashboardPage('d1');
+    expect(prefetchWidgetData).not.toHaveBeenCalled();
     expect(reportsApi.getById).not.toHaveBeenCalled();
+    expect(reportsApi.getDatasource).not.toHaveBeenCalled();
+    const cached = queries(state);
+    expect(cached).not.toContain(JSON.stringify(keys.reports.byId('r1')));
+    expect(cached).not.toContain(JSON.stringify(keys.reports.catalog()));
   });
 
   it('is a 404 when the dashboard does not exist', async () => {

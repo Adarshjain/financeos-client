@@ -130,6 +130,7 @@ for (const viewport of VIEWPORTS) {
 
       // A built-in from the picker, then a saved report (the top bar's + opens it).
       await page.getByRole('button', { name: 'Add', exact: true }).click();
+      await page.getByRole('menuitem', { name: 'Add widget' }).click();
       let picker = page.getByRole('dialog', { name: /Add widget/ });
       await expect(picker.getByRole('tab', { name: /Built-in/ })).toBeVisible();
       await picker.getByRole('radio', { name: /Net worth/ }).click();
@@ -138,6 +139,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1);
 
       await page.getByRole('button', { name: 'Add', exact: true }).click();
+      await page.getByRole('menuitem', { name: 'Add widget' }).click();
       picker = page.getByRole('dialog', { name: /Add widget/ });
       await picker.getByRole('tab', { name: /My reports/ }).click();
       await picker.getByRole('radio', { name: /Ds Dash KPI/ }).click();
@@ -159,7 +161,10 @@ for (const viewport of VIEWPORTS) {
     test('Add header puts a titled section header on top, edited inline, and Save keeps it', async ({ page }) => {
       await page.goto('/ds/dashboards/new');
       await page.getByLabel('Dashboard name').fill('Ds headed board');
-      await page.getByRole('button', { name: 'Add header' }).first().click();
+      // The top bar's + opens Add widget and Add header; Add header is the second row.
+      await page.getByRole('button', { name: 'Add', exact: true }).click();
+      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Add header']);
+      await page.getByRole('menuitem', { name: 'Add header' }).click();
       // The new header's title field is right on the header and focused.
       const title = page.getByLabel('Header', { exact: true });
       await expect(title).toBeFocused();
@@ -170,6 +175,20 @@ for (const viewport of VIEWPORTS) {
       // A header is full width and not a widget.
       await expect(page.locator('[data-widget-grid-item][data-width="full"]')).toHaveCount(1);
       await expect(page.getByText('0 widgets', { exact: true })).toBeVisible();
+      // Plain heading text, not a grey band.
+      await expect(page.getByTestId('dashboard-header')).toBeVisible();
+    });
+
+    test('edit: no Add header button by the name; the confirm to discard is not red', async ({ page }) => {
+      const { dashboard } = await seedBoard('Ds plain discard');
+      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds plain discard', { timeout: 45_000 });
+      await expect(page.getByRole('button', { name: 'Add header' })).toHaveCount(0);
+      await page.getByLabel('Dashboard name').fill('Ds changed');
+      await page.getByRole('button', { name: 'Discard', exact: true }).click();
+      const confirm = page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', { name: 'Discard', exact: true });
+      await expect(confirm).toBeVisible();
+      expect(await confirm.getAttribute('class')).not.toMatch(/danger/);
     });
 
     test('widget menus: a report widget and a built-in offer their own items', async ({ page }) => {

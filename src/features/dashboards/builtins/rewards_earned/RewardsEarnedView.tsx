@@ -1,17 +1,14 @@
 'use client';
 
 // rewards_earned (view `rewards_fy`): rewards earned this financial year — a rupee headline (cashback +
-// valued points) and one line per card in its own unit ("42,300 pts ≈ ₹14,100", "₹3,240", or
-// "18,000 pts · Set value" linking to the card's reward settings). The headline and each card's rupee
-// figure open their reward lines ("View underlying data" over reward_earnings); unvalued points are not
-// tappable (their drill would read ₹0).
+// valued points) and one line per card in its own unit ("42,300 pts", "₹3,240", "1,200 pts + ₹300"), with no
+// divider lines. The headline and each card's figure open their reward lines ("View underlying data" over
+// reward_earnings); unvalued points are not tappable (their drill would read ₹0).
 
-import Link from 'next/link';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, Text } from '@/components/ds';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
-import { appHref } from '@/features/shell/routes';
 import { widgetTitle } from '@/lib/dashboards.helpers';
 import { isPivotTableData } from '@/lib/reports.helpers';
 
@@ -22,12 +19,12 @@ import { buildRewardsEarned, nativeText, type RewardCardRow, rewardsRequest } fr
 
 /** A card's earnings, tappable where the figure equals its drill; points on a card with no point value stay plain text. */
 function CardFigure({ row, onOpen }: { row: RewardCardRow; onOpen: () => void }) {
-  if (!row.cardId) return <Text variant="body-strong">{nativeText(row)}</Text>;
+  if (!row.cardId) return <Text variant="body-strong">{nativeText(row, { withValue: false })}</Text>;
   if (!row.unvalued) {
     return (
       <Text variant="body-strong">
         <Button variant="link" onClick={onOpen}>
-          {nativeText(row)}
+          {nativeText(row, { withValue: false })}
         </Button>
       </Text>
     );
@@ -81,19 +78,10 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
         <ListRow
           key={row.key}
           data-testid="rewards-row"
+          borderTop={false}
+          className="border-l-0 px-0"
           title={row.card}
-          trailing={
-            <>
-              <CardFigure row={row} onOpen={() => setDrill({ title: `${title} · ${row.card} · ${formatRupees(row.cash + row.pointsValue)}`, cardId: row.cardId })} />
-              {row.unvalued && row.cardId ? (
-                <Button variant="link" size="sm" asChild>
-                  <Link href={appHref(`/rewards/rules?account=${encodeURIComponent(row.cardId)}`)} prefetch={false}>
-                    Set value
-                  </Link>
-                </Button>
-              ) : null}
-            </>
-          }
+          trailing={<CardFigure row={row} onOpen={() => setDrill({ title: `${title} · ${row.card} · ${formatRupees(row.cash + row.pointsValue)}`, cardId: row.cardId })} />}
         />
       ))}
       <BuiltinPager page={data.page} unit="card" onPageChange={onPageChange} />

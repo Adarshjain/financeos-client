@@ -113,7 +113,11 @@ describe('TopMoversBody', () => {
     first.unmount();
     respond([pos('Flat', 0)]);
     const second = renderWithQuery(<TopMoversBody n={5} />);
-    expect(await screen.findByText('No price moves yet')).toBeInTheDocument();
+    const title = await screen.findByText('No price moves yet');
+    expect(title).toBeInTheDocument();
+    // Stacked and centred (title, then description), not laid out in one row.
+    expect(title.closest('div')?.className).toMatch(/flex-col/);
+    expect(title.closest('div')?.className).toMatch(/text-center/);
     second.unmount();
     vi.mocked(api.GET).mockRejectedValue(new Error('x'));
     renderWithQuery(<TopMoversBody n={5} />);

@@ -90,7 +90,11 @@ describe('PortfolioSnapshotBody', () => {
   it('no holdings: an empty state with a way to the Investments page', async () => {
     respond(summary({ totalInvested: 0, totalCurrentValue: 0 }));
     renderWithQuery(<PortfolioSnapshotBody />);
-    expect(await screen.findByText('No holdings yet')).toBeInTheDocument();
+    const title = await screen.findByText('No holdings yet');
+    expect(title).toBeInTheDocument();
+    // Stacked and centred (title, description, action), not laid out in one row.
+    expect(title.closest('div')?.className).toMatch(/flex-col/);
+    expect(title.closest('div')?.className).toMatch(/text-center/);
     await userEvent.click(screen.getByRole('button', { name: 'Go to investments' }));
     expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/investments'));
   });

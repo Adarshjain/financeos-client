@@ -1,15 +1,15 @@
 'use client';
 
-// bills_due: one row per open credit card, moving from "unbilled spend, statement expected" to "amount to
-// pay, due in N days" to overdue. Mark paid and Set details open the same dialogs as the Inbox; Undo removes
-// a manual payment mark.
+// bills_due: one row per open credit card, the card's name and one figure: the amount to pay, or the unbilled
+// spend while the statement is expected (an overdue bill or a late statement says so in colour). Mark paid and
+// Set details open the same dialogs as the Inbox; Undo removes a manual payment mark.
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, formatDate, ListRow, showToast, StatusWord, Text } from '@/components/ds';
+import { Button, EmptyState, ListRow, showToast, StatusWord, Text } from '@/components/ds';
 import { type BillCardState, buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
-import { billCardLabel, billDueText } from '@/features/bills/bills.helpers';
+import { billCardLabel } from '@/features/bills/bills.helpers';
 import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
 import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { appHref } from '@/features/shell/routes';
@@ -36,29 +36,12 @@ interface Actions {
   onUnmarkPaid: (bill: CardBillResponse) => void;
 }
 
-/** The context line under a card: statement date, due phrase, part-payment and unbilled spend. */
-function contextLine(state: BillCardState): React.ReactNode {
-  const { bill, phase, unbilled } = state;
-  if (phase === 'awaiting') {
-    const expected = bill.nextStatementExpectedOn;
-    if (bill.status === 'PAID' && bill.paidMarkedOn) return `Paid on ${formatDate(bill.paidMarkedOn, 'list')}`;
-    if (!expected) return 'No spend since the last statement';
-    const text = `${state.statementLate ? 'Statement due since' : 'Statement expected'} ${formatDate(expected, 'list')}`;
-    return state.statementLate ? <StatusWord tone="warning">{text}</StatusWord> : text;
+/** The one word beside the figure: unbilled while the statement is expected (warning when it is late), overdue when the bill is. */
+function statusWord(state: BillCardState): React.ReactNode {
+  if (state.phase === 'awaiting') {
+    return state.statementLate ? <StatusWord tone="warning">Statement late</StatusWord> : 'unbilled';
   }
-  const paid = bill.paidAmount ?? 0;
-  const due = `${billDueText(bill)}${bill.paymentDueDate && bill.status !== 'DUE_UNKNOWN' ? ` · ${formatDate(bill.paymentDueDate, 'list')}` : ''}`;
-  const parts: React.ReactNode[] = [phase === 'overdue' ? <StatusWord key="due" tone="warning">{due}</StatusWord> : due];
-  if ((bill.status === 'PARTIAL' || paid > 0) && bill.totalAmountDue != null) {
-    parts.push(`Paid ${formatMoney(paid)} of ${formatMoney(bill.totalAmountDue)}`);
-  }
-  if (unbilled != null && unbilled > 0) parts.push(`${formatMoney(unbilled)} spent since this statement`);
-  return parts.map((p, i) => (
-    <React.Fragment key={i}>
-      {i > 0 ? ' · ' : null}
-      {p}
-    </React.Fragment>
-  ));
+  return state.phase === 'overdue' ? <StatusWord tone="warning">Overdue</StatusWord> : null;
 }
 
 function BillRow({ state, highlighted, actions }: { state: BillCardState; highlighted: boolean; actions: Actions }) {
@@ -75,19 +58,14 @@ function BillRow({ state, highlighted, actions }: { state: BillCardState; highli
       data-statement-id={bill.statementId ?? undefined}
       data-account-id={bill.accountId}
       title={billCardLabel(bill)}
-      subtitle={contextLine(state)}
       trailing={
         <>
-          <div className="flex flex-col items-end">
+          <div className="flex items-baseline gap-space-6">
+            <Text variant="caption" tone="ink-3" as="span" data-testid="bill-status">
+              {statusWord(state)}
+            </Text>
             <Text variant="body-strong" tone={phase === 'overdue' ? 'danger' : 'ink'} fraction="small" data-testid="bill-headline">
               {headline != null ? formatMoney(headline) : '—'}
-            </Text>
-            <Text variant="caption" tone="ink-3">
-              {awaiting
-                ? 'unbilled'
-                : bill.minimumAmountDue != null
-                  ? `Min ${formatMoney(bill.minimumAmountDue)}`
-                  : null}
             </Text>
           </div>
           {!awaiting && bill.statementId && bill.status === 'DUE_UNKNOWN' ? (

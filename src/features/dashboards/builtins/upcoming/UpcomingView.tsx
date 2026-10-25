@@ -39,6 +39,7 @@ export function UpcomingView({ data, loading, onPageChange }: TemplateViewProps)
           <ListRow
             key={String(row.id ?? i)}
             data-testid="upcoming-row"
+            className="gap-space-8 py-space-8"
             leading={
               tile ? (
                 <DateTile day={tile.day} monthLabel={tile.monthLabel} />

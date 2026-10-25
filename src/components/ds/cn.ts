@@ -69,6 +69,7 @@ export const CN_HEIGHT = [
   'icon-sm',
   'icon-md',
   'icon-lg',
+  'icon-inline',
   'control-sm',
   'control-md',
   'control-lg',
@@ -87,6 +88,7 @@ export const CN_WIDTH = [
   'icon-sm',
   'icon-md',
   'icon-lg',
+  'icon-inline',
   'control-sm',
   'control-md',
   'control-lg',
@@ -119,6 +121,7 @@ export const CN_SIZE = [
   'icon-sm',
   'icon-md',
   'icon-lg',
+  'icon-inline',
 ] as const;
 
 export const CN_Z_INDEX = [

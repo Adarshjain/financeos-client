@@ -216,3 +216,47 @@ describe('TopBar menu actions', () => {
     expect(screen.getByRole('menuitem', { name: 'Import tradebook' })).toHaveAttribute('href', '/import');
   });
 });
+
+describe('TopBar title node and back click', () => {
+  it('renders a string title with the title type and truncation', () => {
+    render(<TopBar title="Accounts" />);
+    expect(screen.getByText('Accounts')).toHaveClass('text-title', 'truncate');
+  });
+
+  it('renders controls as the title: not a heading, centred, shrinkable', () => {
+    render(
+      <TopBar
+        title={
+          <>
+            <button type="button">Dashboard switcher</button>
+            <button type="button" aria-label="More">⋯</button>
+          </>
+        }
+      />,
+    );
+    const switcher = screen.getByRole('button', { name: 'Dashboard switcher' });
+    expect(screen.queryByRole('heading')).toBeNull();
+    const wrap = switcher.parentElement as HTMLElement;
+    expect(wrap).toHaveClass('flex', 'items-center', 'min-w-0');
+    expect(wrap).not.toHaveClass('truncate');
+    expect(wrap.parentElement).toHaveClass('flex-1', 'min-w-0');
+  });
+
+  it('calls onBack on a plain click of the back link and keeps its href', () => {
+    const onBack = vi.fn();
+    render(<TopBar title="Detail" backHref="/accounts" onBack={onBack} />);
+    const back = screen.getByRole('link', { name: 'Back' });
+    expect(back).toHaveAttribute('href', '/accounts');
+    const notPrevented = fireEvent.click(back);
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(notPrevented).toBe(false);
+  });
+
+  it('leaves modified clicks to the browser', () => {
+    const onBack = vi.fn();
+    render(<TopBar title="Detail" backHref="/accounts" onBack={onBack} />);
+    fireEvent.click(screen.getByRole('link', { name: 'Back' }), { metaKey: true });
+    fireEvent.click(screen.getByRole('link', { name: 'Back' }), { button: 1 });
+    expect(onBack).not.toHaveBeenCalled();
+  });
+});

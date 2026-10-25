@@ -85,34 +85,35 @@ describe('BillsDueBody', () => {
     expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800.00');
   });
 
-  it('an arrived card: due phrase and date, minimum, what was spent since, and Mark paid', async () => {
+  it('an arrived card: name and amount due only (no due line, minimum or spent-since line), and Mark paid', async () => {
     seed([open]);
     render();
     const row = await screen.findByTestId('bill-row');
     expect(row).toHaveTextContent('Open Card ••2');
-    expect(row).toHaveTextContent('Due in 4 days · 12 Oct');
-    expect(row).toHaveTextContent('₹300.00 spent since this statement');
+    expect(row).not.toHaveTextContent('Due in 4 days');
+    expect(row).not.toHaveTextContent('spent since this statement');
     expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000.00');
-    expect(row).toHaveTextContent('Min ₹200.00');
+    expect(row).not.toHaveTextContent('Min ₹200.00');
     expect(within(row).getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
   });
 
-  it('an overdue card says how late, and escalates its action', async () => {
+  it('an overdue card says Overdue in colour beside its amount', async () => {
     seed([overdue]);
     render();
     const row = await screen.findByTestId('bill-row');
-    expect(row).toHaveTextContent('Overdue by 7 days · 1 Oct');
+    expect(within(row).getByTestId('bill-status')).toHaveTextContent('Overdue');
+    expect(row).not.toHaveTextContent('Overdue by 7 days');
   });
 
-  it('an awaiting card headlines its unbilled spend and when the statement is expected; late says since', async () => {
+  it('an awaiting card headlines its unbilled spend with the word unbilled; a late statement says so in colour', async () => {
     seed([awaiting, late]);
     render();
     const [lateRow, wait] = await screen.findAllByTestId('bill-row');
     expect(within(wait).getByTestId('bill-headline')).toHaveTextContent('₹1,500.00');
     expect(wait).toHaveTextContent('unbilled');
-    expect(wait).toHaveTextContent('Statement expected 15 Oct');
+    expect(wait).not.toHaveTextContent('Statement expected');
     expect(wait).not.toHaveTextContent('Mark paid');
-    expect(lateRow).toHaveTextContent('Statement due since 5 Oct');
+    expect(within(lateRow).getByTestId('bill-status')).toHaveTextContent('Statement late');
   });
 
   it('Mark paid and Set details open the bill dialogs for that statement', async () => {
@@ -134,7 +135,7 @@ describe('BillsDueBody', () => {
     await user().click(screen.getByRole('button', { name: 'Nothing pending · 2 cards' }));
     expect(screen.getAllByTestId('bill-row')).toHaveLength(3);
     expect(screen.getByText('Quiet Card ••5')).toBeInTheDocument();
-    expect(screen.getByText('Paid on 8 Oct')).toBeInTheDocument();
+    expect(screen.queryByText('Paid on 8 Oct')).toBeNull();
   });
 
   it('Undo takes back a manual payment mark and says so', async () => {

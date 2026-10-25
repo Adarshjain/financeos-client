@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { commitRoute, resetInAppNavigation } from '../navigationStore';
 import { ShellPage } from '../ShellPage';
+
+const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
 
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationSummary: () => ({ data: { unread: 0 } }),
@@ -86,5 +90,31 @@ describe('ShellPage content area', () => {
       </ShellPage>,
     );
     expect(screen.getByRole('main').className).toContain('pt-0 desk:pt-0');
+  });
+});
+
+describe('ShellPage back', () => {
+  beforeEach(() => {
+    resetInAppNavigation();
+    router.back.mockClear();
+    router.push.mockClear();
+  });
+
+  it('goes back in history when the user arrived from inside the app', () => {
+    commitRoute('/ds/accounts');
+    commitRoute('/ds/accounts/1');
+    render(<ShellPage title="Detail" backHref="/ds/accounts">content</ShellPage>);
+    const back = screen.getByRole('link', { name: 'Back' });
+    expect(back).toHaveAttribute('href', '/ds/accounts');
+    fireEvent.click(back);
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the parent route on a direct landing', () => {
+    render(<ShellPage title="Detail" backHref="/ds/accounts">content</ShellPage>);
+    fireEvent.click(screen.getByRole('link', { name: 'Back' }));
+    expect(router.push).toHaveBeenCalledWith('/ds/accounts');
+    expect(router.back).not.toHaveBeenCalled();
   });
 });

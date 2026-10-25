@@ -2,8 +2,8 @@
 
 // A dashboard's page, for viewing, editing and creating (one page: edit is not a dialog).
 //   View   the name as the title, "N widgets", Set as default and Edit, then the widgets as they read.
-//   Edit   the name (required) and description, Add header, the widgets arranged by drag and resize, and the bottom
-//          bar: Discard and Save. The top bar's + adds a widget. Leaving with unsaved changes asks first.
+//   Edit   the name (required) and description, the widgets arranged by drag and resize, and the bottom bar:
+//          Discard and Save. The top bar's + opens Add widget and Add header. Leaving with unsaved changes asks first.
 //   Create the same editor on an empty draft, with Cancel and Create.
 // `?edit=1` opens straight into editing (the list's Edit link). The draft is one reducer; Save writes it with the
 // widgets re-flowed into the server's 100-column layout.
@@ -35,6 +35,9 @@ const NO_BUILTINS: readonly BuiltinWidgetResponse[] = [];
 const NO_REPORTS: readonly ReportSummaryResponse[] = [];
 const NO_ISSUES: ReadonlyMap<string, string> = new Map();
 
+/** Longer than the menu's close animation, after which it returns focus to its trigger. */
+const HEADER_FOCUS_DELAY_MS = 250;
+
 export const NAME_REQUIRED = 'Name the dashboard.';
 
 export interface DashboardScreenProps {
@@ -54,6 +57,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const [baseline, setBaseline] = React.useState(() => editorSignature(initial));
   const [tried, setTried] = React.useState(false);
   const [focusTick, setFocusTick] = React.useState(0);
+  const [headerTick, setHeaderTick] = React.useState(0);
   const [picking, setPicking] = React.useState(false);
   const [settingsFor, setSettingsFor] = React.useState<string | null>(null);
   const [discarding, setDiscarding] = React.useState(false);
@@ -82,6 +86,17 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
     if (focusTick === 0) return;
     body.current?.querySelector<HTMLElement>('[aria-invalid="true"], [data-dashboard-problem]')?.focus();
   }, [focusTick]);
+
+  // A header added from the top bar's menu: the menu hands focus back to its + as it closes, so the new header's
+  // title field takes focus after that.
+  React.useEffect(() => {
+    if (headerTick === 0) return;
+    const id = window.setTimeout(() => {
+      const fields = body.current?.querySelectorAll<HTMLInputElement>('[data-testid="dashboard-header-edit"] input') ?? [];
+      Array.from(fields).find((field) => field.value === '')?.focus();
+    }, HEADER_FOCUS_DELAY_MS);
+    return () => window.clearTimeout(id);
+  }, [headerTick]);
 
   const resetDraft = (from: DashboardResponse | undefined) => {
     const next = initialEditorState(from);
@@ -136,6 +151,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const addHeader = () => {
     // The new header's title field takes focus when it appears.
     dispatch({ type: 'ADD_HEADER', header: textWidgetResponse() });
+    setHeaderTick((t) => t + 1);
   };
 
   const settingsWidget = settingsFor ? state.widgets.find((w) => w.id === settingsFor) : undefined;
@@ -145,23 +161,27 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const count = (saved?.widgets ?? []).filter((w) => !isTextWidget(w)).length;
 
   return (
-    <ShellPage crumb={DASHBOARDS_CRUMB} title={shownName} backHref={DASHBOARDS_HREF} onAdd={editing ? () => setPicking(true) : undefined}>
+    <ShellPage crumb={DASHBOARDS_CRUMB} title={shownName}
+      backHref={DASHBOARDS_HREF}
+      addMenu={
+        editing
+          ? [
+              { id: 'add-widget', label: 'Add widget', onSelect: () => setPicking(true) },
+              { id: 'add-header', label: 'Add header', onSelect: addHeader },
+            ]
+          : undefined
+      }
+    >
       {editing ? (
         <div ref={body} className="flex flex-col gap-space-16 pb-space-48">
           <div className="flex flex-col gap-space-8 desk:max-w-container-md">
-            <div className="flex items-start gap-space-12">
-              <TextField
-                className="flex-1"
-                label="Dashboard name"
-                placeholder="e.g. Cards and loans"
-                value={state.name}
-                error={nameError}
-                onValueChange={(name) => dispatch({ type: 'SET_NAME', name })}
-              />
-              <Button variant="secondary" size="sm" className="mt-space-24" onClick={addHeader}>
-                Add header
-              </Button>
-            </div>
+            <TextField
+              label="Dashboard name"
+              placeholder="e.g. Cards and loans"
+              value={state.name}
+              error={nameError}
+              onValueChange={(name) => dispatch({ type: 'SET_NAME', name })}
+            />
             <TextField
               label="Description"
               optional
@@ -279,6 +299,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           }}
           title="Discard changes?"
           description={`Your edits to ${shownName} will be lost.`}
+          tone="default"
           confirmLabel="Discard"
           cancelLabel="Keep editing"
           onConfirm={() => {

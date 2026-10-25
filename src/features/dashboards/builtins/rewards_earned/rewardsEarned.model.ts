@@ -63,11 +63,11 @@ export function rewardsRequest(cardId: string | null): RunReportRequest {
   return adhocKpi('reward_earnings', 'valueInr', filters);
 }
 
-/** The card's earnings in its own unit. */
-export function nativeText(row: RewardCardRow): string {
+/** The card's earnings in its own unit; `withValue: false` drops the ≈ rupee value of points. */
+export function nativeText(row: RewardCardRow, { withValue = true }: { withValue?: boolean } = {}): string {
   const parts: string[] = [];
   if (row.points > 0) {
-    parts.push(row.unvalued ? `${formatCount(row.points)} pts` : `${formatCount(row.points)} pts ≈ ${formatRupees(row.pointsValue)}`);
+    parts.push(row.unvalued || !withValue ? `${formatCount(row.points)} pts` : `${formatCount(row.points)} pts ≈ ${formatRupees(row.pointsValue)}`);
   }
   if (row.cash > 0 || parts.length === 0) parts.push(formatRupees(row.cash));
   return parts.join(' + ');

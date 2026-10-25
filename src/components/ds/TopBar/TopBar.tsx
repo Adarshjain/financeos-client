@@ -45,6 +45,7 @@ export interface TopBarProps
   title: React.ReactNode;
   crumb?: React.ReactNode;
   leading?: React.ReactNode;
+  /** Back target. With `onBack` too, a plain click calls `onBack` and the href serves middle-click and SSR. */
   backHref?: string;
   onBack?: () => void;
   actions?: TopBarAction[];
@@ -85,6 +86,16 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
             iconOnly
             aria-label="Back"
             className="text-ink-2 hover:text-ink"
+            onClick={
+              onBack
+                ? (e) => {
+                    // A plain click goes through onBack (browser back); modified clicks keep the href.
+                    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                    e.preventDefault();
+                    onBack();
+                  }
+                : undefined
+            }
           >
             <a href={backHref}>
               <Icon name="chevron-left" size="md" />
@@ -139,9 +150,17 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               <span className="hidden desk:inline text-label text-ink-4">/</span>
             </div>
           ) : null}
-          <div className="text-title font-extrabold text-ink leading-tight tracking-tight truncate">
-            {title}
-          </div>
+          {typeof title === 'string' ? (
+            <div className="text-title font-extrabold text-ink leading-tight tracking-tight truncate">
+              {title}
+            </div>
+          ) : (
+            // A node (a Select trigger, a Menu button, a styled name): never a heading or clipped, so
+            // controls keep their focus ring; centred, and every child may shrink on phone.
+            <div className="flex items-center gap-space-8 min-w-0 text-title font-extrabold text-ink leading-tight tracking-tight [&>*]:min-w-0">
+              {title}
+            </div>
+          )}
         </div>
 
         {/* Actions */}

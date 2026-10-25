@@ -33,3 +33,5 @@ Radix Popover (Floating UI).
 
 ## Motion
 Fades and slides in; fades and slides out on close (dur-fast).
+
+- Focus return: on close, focus goes back to the trigger only if focus has not already moved to another element outside the content (so opening a Select beside a closing Menu is not dismissed). A consumer `onCloseAutoFocus` runs first and its `preventDefault` still wins.

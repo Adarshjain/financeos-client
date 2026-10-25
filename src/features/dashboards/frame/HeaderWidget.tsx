@@ -1,11 +1,12 @@
 'use client';
 
-// A section header on a dashboard (a "text" widget): its title, and its description under it when it has one.
+// A section header on a dashboard (a "text" widget): its title in plain heading text (no band), and its
+// description under it when it has one. It spans the full grid width on every layout.
 // While editing it is an interactive grid item: the title and description are fields right on the header.
 
 import React from 'react';
 
-import { SectionHeader, Text, TextField } from '@/components/ds';
+import { Text, TextField } from '@/components/ds';
 import { TEXT_DESCRIPTION_MAX, TEXT_TITLE_MAX, textDescription, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
@@ -43,9 +44,14 @@ export function HeaderWidget({ widget, issue, onChange }: HeaderWidgetProps) {
   }
   return (
     <div className="flex flex-col gap-space-2" data-testid="dashboard-header">
-      <SectionHeader as="h2" variant="strong" sticky={false} tone={issue ? 'danger' : 'neutral'} meta={issue}>
+      <Text as="h2" variant="heading" tone={issue ? 'danger' : 'ink'}>
         {widgetTitle(widget)}
-      </SectionHeader>
+      </Text>
+      {issue ? (
+        <Text variant="caption" tone="danger" as="p">
+          {issue}
+        </Text>
+      ) : null}
       {description ? (
         <Text variant="caption" tone="ink-3" as="p">
           {description}

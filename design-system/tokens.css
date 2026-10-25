@@ -100,6 +100,7 @@
   --ds-icon-sm: 14px;
   --ds-icon-md: 16px;
   --ds-icon-lg: 20px;
+  --ds-icon-inline: calc(1em - 2px);
   --ds-z-sticky: 2;
   --ds-z-floating: 10;
   --ds-z-backdrop: 20;

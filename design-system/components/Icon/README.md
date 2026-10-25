@@ -15,6 +15,7 @@ The one way to draw an icon in the new system: a Phosphor icon in the bold weigh
 - `sm` 14px (`icon-sm`): chips, field carets, small buttons, inline with 12–13px text.
 - `md` 16px (`icon-md`): buttons, bars, rows, menu items.
 - `lg` 20px (`icon-lg`): phone tab bar, desktop rail, selection bar.
+- Inside a `link` / `danger-link` Button the size is not chosen here: Button sets `icon-inline` (`calc(1em - 2px)`, 2px under the text) on every icon in it.
 
 ## Rules
 - Weight is bold: it matches the 700–800 type; regular reads spindly at 14–16px. `weight="fill"` only for a status mark (owner, 2026-10-20: no-bank `warning`).

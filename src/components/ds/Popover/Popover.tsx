@@ -3,6 +3,7 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import React, { forwardRef } from 'react';
 
+import { guardCloseAutoFocus } from '../closeAutoFocus';
 import { cn } from '../cn';
 import { useControllableState } from '../useControllableState';
 
@@ -30,6 +31,7 @@ export const PopoverContent = forwardRef<
       side = 'bottom',
       sideOffset = 4,
       collisionPadding = VIEWPORT_GUTTER,
+      onCloseAutoFocus,
       ...props
     },
     ref,
@@ -50,6 +52,7 @@ export const PopoverContent = forwardRef<
             className,
           )}
           {...props}
+          onCloseAutoFocus={guardCloseAutoFocus(onCloseAutoFocus)}
         >
           {children}
         </PopoverPrimitive.Content>

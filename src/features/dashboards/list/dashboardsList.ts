@@ -1,6 +1,9 @@
-import { dayMonth } from '@/features/jobs/format';
+import { formatDayMonthRelative } from '@/features/accounts/list/accountsList';
 import { isTextWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse } from '@/lib/dashboards.types';
+import { todayInAppZone } from '@/lib/date-range';
+
+import { dashboardHref } from '../routes';
 
 /** The name of the seeded dashboard "Restore default Home" brings back. */
 export const HOME_DASHBOARD_NAME = 'Home';
@@ -10,19 +13,56 @@ export function widgetCount(dashboard: Pick<DashboardResponse, 'widgets'>): numb
   return dashboard.widgets.filter((w) => !isTextWidget(w)).length;
 }
 
-/** "Your money at a glance · 12 widgets · Updated 13 Oct"; a dashboard without a description says so. */
-export function dashboardSubtitle(dashboard: Pick<DashboardResponse, 'description' | 'widgets' | 'updatedAt'>): string {
-  const n = widgetCount(dashboard);
-  const description = dashboard.description?.trim() || 'No description';
-  return `${description} · ${n} ${n === 1 ? 'widget' : 'widgets'} · Updated ${dayMonth(dashboard.updatedAt)}`;
-}
-
 /** Restore mints a fresh Home, so the action is offered only while there is none. */
 export function canRestoreHome(dashboards: readonly Pick<DashboardResponse, 'name'>[]): boolean {
   return !dashboards.some((d) => d.name === HOME_DASHBOARD_NAME);
 }
 
-/** "18 available · add to any board". */
-export function builtinsSubtitle(count: number): string {
-  return `${count} available · add to any board`;
+export interface DashboardRow {
+  id: string;
+  name: string;
+  description: string | null;
+  widgets: number;
+  /** "3 widgets". */
+  widgetsLabel: string;
+  isDefault: boolean;
+  updatedAt: string;
+  /** "today", "yesterday" or "25 Oct". */
+  updated: string;
+  /** The second line of a phone row: Default when it is, widgets, then when it was updated. */
+  phoneSub: string;
+  href: string;
+}
+
+export function dashboardRow(d: DashboardResponse): DashboardRow {
+  const widgets = widgetCount(d);
+  const widgetsLabel = `${widgets} ${widgets === 1 ? 'widget' : 'widgets'}`;
+  const updated = formatDayMonthRelative(todayInAppZone(new Date(d.updatedAt)), todayInAppZone());
+  return {
+    id: d.id,
+    name: d.name,
+    description: d.description?.trim() || null,
+    widgets,
+    widgetsLabel,
+    isDefault: d.isDefault,
+    updatedAt: d.updatedAt,
+    updated,
+    phoneSub: [d.isDefault ? 'Default' : null, widgetsLabel, `updated ${updated}`].filter(Boolean).join(' · '),
+    href: dashboardHref(d.id),
+  };
+}
+
+/** Rows in the order the server sent them. */
+export function dashboardRows(dashboards: readonly DashboardResponse[]): DashboardRow[] {
+  return dashboards.map(dashboardRow);
+}
+
+/** Rows matching the search (every word, against name and description). */
+export function filterDashboardRows(rows: DashboardRow[], search: string): DashboardRow[] {
+  const words = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return rows;
+  return rows.filter((r) => {
+    const haystack = `${r.name} ${r.description ?? ''}`.toLowerCase();
+    return words.every((w) => haystack.includes(w));
+  });
 }
