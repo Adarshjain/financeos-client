@@ -231,12 +231,12 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Ending Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Card switch changes the rules shown.
-    await page.getByRole('combobox', { name: 'Card', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Account', exact: true }).click();
     await page.getByRole('option', { name: 'Ds Rules Card B' }).click();
     await expect(page).toHaveURL(new RegExp(`account=${cardB.id}`));
     await expect(page.getByText('Ds B Rule', { exact: true })).toBeVisible();
     await expect(page.getByText('Ds Ending Rule', { exact: true })).toHaveCount(0);
-    await page.getByRole('combobox', { name: 'Card', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Account', exact: true }).click();
     await page.getByRole('option', { name: 'Ds Rules Card A' }).click();
     await expect(page.getByText('Ds Ending Rule', { exact: true })).toBeVisible();
 
@@ -309,8 +309,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     const before = await isAbove(page, 'Ds First Rule', 'Ds Second Rule');
     const [top, bottom] = before ? ['Ds First Rule', 'Ds Second Rule'] : ['Ds Second Rule', 'Ds First Rule'];
 
-    await page.getByRole('button', { name: 'Rule actions' }).click();
-    await page.getByRole('menuitem', { name: 'Reorder rules' }).click();
+    await page.getByRole('button', { name: 'Reorder', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Reorder rules' });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: `Move up ${bottom}` }).click();
@@ -333,8 +332,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.goto(`/ds/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Test Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
-    await page.getByRole('button', { name: 'Rule actions' }).click();
-    await page.getByRole('menuitem', { name: 'Test a transaction' }).click();
+    await page.getByRole('button', { name: 'Test', exact: true }).click();
     const test1 = page.getByRole('dialog', { name: 'Test a transaction' });
     await expect(test1).toBeVisible();
     await test1.getByRole('textbox', { name: /^Amount/ }).fill('1000');

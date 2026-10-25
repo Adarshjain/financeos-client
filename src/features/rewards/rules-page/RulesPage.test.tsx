@@ -91,15 +91,15 @@ describe('RulesPage', () => {
 
   it('switches card through the address, so the server loads the new card once', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(screen.getByRole('combobox', { name: /^Card/ }));
-    fireEvent.click(screen.getByRole('option', { name: 'Amex Platinum' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Account' }));
+    fireEvent.click(screen.getByRole('option', { name: /Amex Platinum$/ }));
     expect(replace).toHaveBeenCalledWith('/ds/rewards/rules?account=a2');
   });
 
   it('does not navigate when the same card is picked again', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
-    fireEvent.click(screen.getByRole('combobox', { name: /^Card/ }));
-    fireEvent.click(screen.getByRole('option', { name: 'HDFC Regalia Gold' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Account' }));
+    fireEvent.click(screen.getByRole('option', { name: /HDFC Regalia Gold$/ }));
     expect(replace).not.toHaveBeenCalled();
   });
 

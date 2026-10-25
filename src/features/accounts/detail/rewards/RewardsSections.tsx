@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Card, ListRow, ProgressBar, Text } from '@/components/ds';
+import { Badge, Card, ListRow, ProgressBar, SectionHeader, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import type { RewardRule } from '@/lib/rewards.types';
 
@@ -10,8 +10,14 @@ import { HeaderLink } from '../overview/HeaderLink';
 import type { CardholderRow, CompletedMilestones, MilestoneModel, RuleExtras, RuleLine } from './rewardsModel';
 import { RuleEditor } from './RuleEditor';
 
-/** The milestones still to reach, one block each under one "Milestones" header. */
-export function MilestonesCard({ items }: { items: { key: string; model: MilestoneModel }[] }) {
+/** The milestones still to reach, one block each, then the finished ones under a "Completed" section, in one "Milestones" card. */
+export function MilestonesCard({
+  items,
+  completed,
+}: {
+  items: { key: string; model: MilestoneModel }[];
+  completed?: CompletedMilestones | null;
+}) {
   return (
     <Card title="Milestones">
       {items.map(({ key, model }) => (
@@ -35,22 +41,21 @@ export function MilestonesCard({ items }: { items: { key: string; model: Milesto
           </div>
         </ListRow>
       ))}
-    </Card>
-  );
-}
-
-/** The finished milestones: each with the day it was credited, and what they paid in all. */
-export function CompletedMilestonesCard({ completed }: { completed: CompletedMilestones }) {
-  return (
-    <Card title={`Completed · ${completed.count}`} subtitle={completed.paid ? `${completed.paid} paid` : undefined}>
-      {completed.rows.map((row) => (
-        <ListRow
-          key={row.id}
-          title={row.title}
-          subtitle={row.subtitle}
-          trailing={<Text variant="body-strong">{row.payout}</Text>}
-        />
-      ))}
+      {completed ? (
+        <>
+          <SectionHeader variant="band" meta={completed.paid ? `${completed.paid} paid` : undefined}>
+            {`Completed · ${completed.count}`}
+          </SectionHeader>
+          {completed.rows.map((row) => (
+            <ListRow
+              key={row.id}
+              title={row.title}
+              subtitle={row.subtitle}
+              trailing={<Text variant="body-strong">{row.payout}</Text>}
+            />
+          ))}
+        </>
+      ) : null}
     </Card>
   );
 }

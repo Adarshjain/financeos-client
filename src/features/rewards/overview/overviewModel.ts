@@ -1,6 +1,5 @@
 import { windowLabel } from '@/features/accounts/detail/rewards/rewardsModel';
 import { formatAmount, formatCompactRupees, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
-import { bankById } from '@/features/banks/banks';
 import { appHref } from '@/features/shell/routes';
 
 import { rewardsCardHref } from './rewardsTabs';
@@ -144,9 +143,8 @@ export function buildOverview(
     const total = totals.find((t) => t.accountId === card.id);
     const rupees = total?.grossValueInr ?? 0;
     const points = total && unvalued.has(card.id) ? Math.max(0, earnedPoints(total)) : 0;
-    // The bank's display name, never its id; an id the app does not know is shown as it came.
-    const bankName = card.bank ? (bankById(card.bank)?.name ?? card.bank) : null;
-    const identity = [bankName, card.last4 ? `••${card.last4}` : null].filter(Boolean).join(' · ');
+    // The bank's logo is shown beside the name, so the identity is the last four only.
+    const identity = card.last4 ? `••${card.last4}` : '';
     const year = total ? windowLabel({ from: total.from, to: total.to, calendarYear: total.calendarYearFallback }) : '';
     return {
       rupees,

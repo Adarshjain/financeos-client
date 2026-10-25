@@ -69,13 +69,13 @@ describe('buildOverview', () => {
     expect(buildOverview(tied, [], new Set()).cards.map((c) => c.id)).toEqual(['y', 'z', 'x']);
   });
 
-  it('writes the card line: the bank display name and last four, then the reward year; links the card and its rules', () => {
+  it('writes the card line: the last four only (the logo shows the bank), then the reward year; links the card and its rules', () => {
     const [a, c] = buildOverview(cards, totals, new Set()).cards;
     expect(a).toMatchObject({
       bankId: 'hdfc',
-      identity: 'HDFC Bank · ••7741',
+      identity: '••7741',
       year: 'Anniversary year 15 Mar 26 – 14 Mar 27',
-      subtitle: 'HDFC Bank · ••7741 · Anniversary year 15 Mar 26 – 14 Mar 27',
+      subtitle: '••7741 · Anniversary year 15 Mar 26 – 14 Mar 27',
       href: '/ds/rewards/cards/a',
       setValueHref: '/ds/rewards/rules?account=a',
     });
@@ -83,7 +83,7 @@ describe('buildOverview', () => {
     expect(c.subtitle).toBe('Calendar year 1 Jan – 31 Dec');
   });
 
-  it('shows a bank the app does not know as it came, and a card with no last four by its bank alone', () => {
+  it('never writes the bank name in the card line, known or not; a card with no last four has none', () => {
     const [x, y] = buildOverview(
       [
         { id: 'x', name: 'X', bank: 'zzbank', last4: '1111' },
@@ -92,8 +92,9 @@ describe('buildOverview', () => {
       [],
       new Set()
     ).cards;
-    expect(x.identity).toBe('zzbank · ••1111');
-    expect(y).toMatchObject({ identity: 'State Bank of India', year: '', subtitle: 'State Bank of India' });
+    expect(x.identity).toBe('••1111');
+    expect(y).toMatchObject({ bankId: 'sbi', identity: '', year: '', subtitle: '' });
+    expect(x.subtitle).not.toMatch(/zzbank/);
   });
 
   it('is empty without cards', () => {

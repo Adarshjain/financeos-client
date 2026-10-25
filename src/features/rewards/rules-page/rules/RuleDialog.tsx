@@ -48,9 +48,6 @@ import { cardholderLabel } from '../milestones/milestoneModel';
 import { useRefreshUsage } from '../rulesRefresh';
 import { RuleTester } from './RuleTester';
 
-/** The subtitle of every rule dialog, as the owner worded it. */
-export const RULE_DIALOG_SUBTITLE = 'Changes apply to every transaction on this card. To change a rate from a date, use End & clone.';
-
 export interface RuleDialogProps {
   accountId: string;
   /** The rule being edited. */
@@ -71,6 +68,10 @@ export interface RuleDialogProps {
 
 /** A pair of fields: side by side on desktop, stacked on phone. */
 const PAIR = 'grid grid-cols-1 gap-space-12 desk:grid-cols-2';
+/** Two fields in one row at every width. */
+const ROW = 'grid grid-cols-2 gap-space-12';
+/** Match type and merchant pattern: exactly 35/65 (7fr/13fr). */
+const MATCH_ROW = 'grid grid-cols-[minmax(0,7fr)_minmax(0,13fr)] gap-space-12';
 const ALL = 'ALL';
 const NONE = 'NONE';
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);
@@ -162,6 +163,9 @@ export function RuleDialog({
     if (isNew) setOnCapExhausted('STOP');
   }, [isNew, setOnCapExhausted]);
   const today = todayInAppZone();
+  const testRef = React.useRef<HTMLDivElement>(null);
+  const scrollTimer = React.useRef<number | undefined>(undefined);
+  React.useEffect(() => () => window.clearTimeout(scrollTimer.current), []);
   const points = f.rewardType === 'POINTS';
   const unit = points ? '(pts)' : '(₹)';
   const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
@@ -182,7 +186,6 @@ export function RuleDialog({
       <DialogContent
         size="lg"
         title={rule ? 'Edit rule' : 'New rule'}
-        description={RULE_DIALOG_SUBTITLE}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: f.isSubmitting }}
         primary={{ label: 'Save & recompute', onSelect: f.onSubmit, loading: f.isSubmitting }}
       >
@@ -198,7 +201,7 @@ export function RuleDialog({
               />
             </div>
             {cardholders.length > 0 ? (
-              <div className={PAIR}>
+              <div className={ROW}>
                 <Select
                   label="Card scope"
                   options={[
@@ -216,7 +219,7 @@ export function RuleDialog({
                 />
               </div>
             ) : null}
-            <div className={PAIR}>
+            <div className={ROW}>
               <DateField
                 label="Active from"
                 optional
@@ -237,9 +240,6 @@ export function RuleDialog({
           </Dialog.Section>
 
           <Dialog.Section title="Match">
-            <Text variant="caption" tone="ink-3" as="p">
-              Leave everything empty to match all spends.
-            </Text>
             <Select
               label="Categories"
               multiple
@@ -258,7 +258,13 @@ export function RuleDialog({
               value={f.mccText}
               onValueChange={f.setMccText}
             />
-            <div className={PAIR}>
+            <div className={MATCH_ROW}>
+              <Select
+                label="Match type"
+                options={MATCH_OPTIONS}
+                value={f.merchantMatch}
+                onValueChange={(v) => f.setMerchantMatch((first(v) || NONE) as RewardMerchantMatch | 'NONE')}
+              />
               <TextField
                 label="Merchant pattern"
                 optional
@@ -266,30 +272,26 @@ export function RuleDialog({
                 value={f.merchantPattern}
                 onValueChange={f.setMerchantPattern}
               />
+            </div>
+            <div className={ROW}>
               <Select
-                label="Match type"
-                options={MATCH_OPTIONS}
-                value={f.merchantMatch}
-                onValueChange={(v) => f.setMerchantMatch((first(v) || NONE) as RewardMerchantMatch | 'NONE')}
+                label="Channels"
+                multiple
+                placeholder="Any"
+                options={CHANNEL_OPTIONS}
+                value={f.channels}
+                onValueChange={(v) => f.setChannels(asList(v) as TransactionChannel[])}
+              />
+              <Select
+                label="Days of week"
+                multiple
+                placeholder="Any"
+                options={DAY_OPTIONS}
+                value={f.daysOfWeek}
+                onValueChange={(v) => f.setDaysOfWeek(asList(v) as DayOfWeek[])}
               />
             </div>
-            <Select
-              label="Channels"
-              multiple
-              placeholder="Any"
-              options={CHANNEL_OPTIONS}
-              value={f.channels}
-              onValueChange={(v) => f.setChannels(asList(v) as TransactionChannel[])}
-            />
-            <Select
-              label="Days of week"
-              multiple
-              placeholder="Any"
-              options={DAY_OPTIONS}
-              value={f.daysOfWeek}
-              onValueChange={(v) => f.setDaysOfWeek(asList(v) as DayOfWeek[])}
-            />
-            <div className={PAIR}>
+            <div className={ROW}>
               <TextField
                 label="Min amount"
                 optional
@@ -307,7 +309,7 @@ export function RuleDialog({
                 onValueChange={(v) => f.setMaxAmount(sanitizeDecimalInput(v))}
               />
             </div>
-            <div className={PAIR}>
+            <div className={ROW}>
               <Select
                 label="EMI spends"
                 options={EMI_OPTIONS}
@@ -409,7 +411,7 @@ export function RuleDialog({
                 {f.tierRows.map((tier, index) => {
                   const last = index === f.tierRows.length - 1;
                   return (
-                    <div key={index} className="grid grid-cols-1 items-end gap-space-12 desk:grid-cols-[1fr_1fr_auto]">
+                    <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-space-12">
                       {last ? (
                         <Text variant="body-strong" tone="ink-3" as="div">
                           {index === 0 ? 'First' : 'Above'} · everything beyond
@@ -484,7 +486,7 @@ export function RuleDialog({
               onValueChange={(v) => f.setCapMode(first(v) as 'NONE' | 'OWN' | 'BUCKET')}
             />
             {f.capMode === 'OWN' ? (
-              <div className={PAIR}>
+              <div className={ROW}>
                 <TextField
                   label={`Cap ${unit}`}
                   inputMode="decimal"
@@ -525,7 +527,22 @@ export function RuleDialog({
             ) : null}
           </Dialog.Section>
 
-          <Dialog.Section title="Test this rule" collapsible defaultOpen={false}>
+          <Dialog.Section
+            ref={testRef}
+            title="Test this rule"
+            collapsible
+            defaultOpen={false}
+            onOpenChange={(open) => {
+              // Let the section finish unfolding, then bring it into the body's scroll view.
+              window.clearTimeout(scrollTimer.current);
+              if (open) {
+                scrollTimer.current = window.setTimeout(
+                  () => testRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }),
+                  220,
+                );
+              }
+            }}
+          >
             <RuleTester f={f} categories={categories} />
           </Dialog.Section>
         </DialogBody>
