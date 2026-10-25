@@ -46,6 +46,10 @@ export interface ReportResultProps {
   onSizeChange?: (size: number) => void;
   /** Breakdown only: a press on row `index`. */
   onOpenBreakdownRow?: (index: number) => void;
+  /** Aggregated table only: a press on the row with this `key`. */
+  onOpenTableRow?: (key: string) => void;
+  /** Aggregated table only: whether the row with this `key` can be opened; without it every row can. */
+  canOpenTableRow?: (key: string) => boolean;
 }
 
 const fieldOf = (catalog: DatasourceCatalog | undefined, name: string) => catalog?.fields.find((f) => f.name === name);
@@ -182,7 +186,7 @@ function RawTableResult({ data, catalog, busy, sort, onSortChange, onPageChange,
   );
 }
 
-function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChange, onSizeChange }: ReportResultProps & { data: PivotTableData }) {
+function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChange, onSizeChange, onOpenTableRow, canOpenTableRow }: ReportResultProps & { data: PivotTableData }) {
   const { rowDimensions, columnDimensions, measures, columns: pivotColumns, rows: raw, page } = data;
   const hasColumnDims = columnDimensions.length > 0;
   const rows = React.useMemo<Row[]>(() => raw.map((r) => ({ ...r, __row: r.key })) as unknown as Row[], [raw]);
@@ -242,6 +246,8 @@ function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChang
       sort={fromSort(sort)}
       onSortChange={(s) => onSortChange?.(toSort(s))}
       sortMode="server"
+      onRowSelect={onOpenTableRow ? (row) => onOpenTableRow(row.__row) : undefined}
+      rowState={canOpenTableRow ? (row) => ({ pressable: canOpenTableRow(row.__row) }) : undefined}
       busy={busy}
       pager={pager}
       empty={<EmptyState compact description="No rows match." />}

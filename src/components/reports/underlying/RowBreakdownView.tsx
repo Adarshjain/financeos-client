@@ -17,14 +17,14 @@ import { useState } from 'react';
 import { ResponsiveTableView } from '@/components/reports/views/ResponsiveTableView';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatAmount, UNDERLYING_PAGE_SIZE } from '@/features/reports/underlying/underlying.helpers';
+import type { BreakdownFrame, BreakdownSectionData } from '@/features/reports/underlying/underlying.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { SortClause, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { BreakdownSteps } from './BreakdownSteps';
-import { formatAmount, UNDERLYING_PAGE_SIZE } from './underlying.helpers';
-import type { BreakdownFrame, BreakdownSectionData } from './underlying.types';
 import { useBreakdownSection, useRowBreakdown } from './useRowBreakdown';
 
 export interface BreakdownRowHandlers {

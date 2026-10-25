@@ -7,12 +7,12 @@ vi.mock('@/lib/api/client', async () => {
 });
 vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')).selectMock);
 
+import type { RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 import { stubPhone } from '@/test/stubPhone';
 
 import { RowBreakdownView } from '../RowBreakdownView';
-import type { RowBreakdownResponse } from '../underlying.types';
 
 const BREAKDOWN = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown';
 const SECTION = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}';

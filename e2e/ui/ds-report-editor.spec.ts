@@ -1,6 +1,10 @@
+import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { createBankAccount } from '../fixtures/seed/accounts';
+import { createReport } from '../fixtures/seed/reports';
+import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
 /** Opens the dropdown named `field` and picks `option`. */
@@ -140,5 +144,47 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     ).toContainText('Dividends');
     await page.getByRole('button', { name: 'Save report' }).click();
     await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/, { timeout: 45_000 });
+  });
+
+  test('opens the rows behind a KPI from the Underlying data link', async ({
+    page,
+  }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const account = await createBankAccount(api, { name: `Underlying Bank ${Date.now()}` });
+    for (const [description, amount] of [
+      ['Underlying row Alpha', -100],
+      ['Underlying row Beta', -200],
+      ['Underlying row Gamma', -300],
+    ] as const) {
+      await createTransaction(api, account.id, { amount, description });
+    }
+    const report = await createReport(api, {
+      name: 'Ds underlying spend',
+      type: 'KPI',
+      datasource: 'transactions',
+      definition: {
+        measure: 'spend',
+        aggregation: 'sum',
+        filters: [{ field: 'date', operator: 'this_month' }],
+      },
+    } as never);
+
+    await page.goto(`/ds/reports/${report.id}`);
+    const link = page.getByRole('button', { name: 'Underlying data' });
+    await expect(link).toBeVisible({ timeout: 45_000 });
+
+    // From the link in the preview header.
+    await link.click();
+    const dialog = page.getByRole('dialog', { name: /^Underlying data/ });
+    await expect(dialog.getByText('3 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
+    for (const name of ['Underlying row Alpha', 'Underlying row Beta', 'Underlying row Gamma']) {
+      await expect(dialog.getByText(name).first()).toBeVisible();
+    }
+    await expect(dialog.getByText('Cards')).toHaveCount(0);
+    await expect(dialog.getByText('Open in Transactions')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+
   });
 });

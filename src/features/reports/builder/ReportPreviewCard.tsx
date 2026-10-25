@@ -3,9 +3,12 @@
 import React from 'react';
 
 import { Banner, Button, Card, EmptyState, Skeleton, Text } from '@/components/ds';
+import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
+import { categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { formatDateRange } from '@/lib/date-range';
-import type { DatasourceCatalog, ReportData } from '@/lib/reports.types';
+import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
+import type { DatasourceCatalog, ReportData, RunReportRequest } from '@/lib/reports.types';
 
 import type { PreviewState } from './useReportPreview';
 
@@ -31,6 +34,13 @@ export interface ReportPreviewCardProps {
 export function ReportPreviewCard({ preview, catalog, missing, onPreview }: ReportPreviewCardProps) {
   const { shown, loading, error, stale } = preview;
   const summary = shown ? resultSummary(shown.data) : null;
+  // The request of the rows behind a figure while the Underlying data dialog is open.
+  const [underlying, setUnderlying] = React.useState<RunReportRequest | null>(null);
+  const open = (request: RunReportRequest | null) => {
+    if (request) setUnderlying(request);
+  };
+  const pivot = shown && isPivotTableData(shown.data) ? shown.data : null;
+  const chart = shown && isChartData(shown.data) ? shown.data : null;
   return (
     <Card>
       <div className="flex flex-col gap-space-12 p-space-16">
@@ -45,9 +55,16 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
               </Text>
             ) : null}
           </div>
-          <Button size="sm" variant="secondary" loading={loading} onClick={onPreview}>
-            Preview
-          </Button>
+          <div className="flex items-center gap-space-12">
+            {shown && hasUnderlying(shown.request) ? (
+              <Button size="sm" variant="link" onClick={() => open(wholeReportRequest(shown.request))}>
+                Underlying data
+              </Button>
+            ) : null}
+            <Button size="sm" variant="secondary" loading={loading} onClick={onPreview}>
+              Preview
+            </Button>
+          </div>
         </div>
 
         {missing.length > 0 ? (
@@ -77,6 +94,9 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
             onSortChange={preview.changeSort}
             onPageChange={preview.changePage}
             onSizeChange={preview.changeSize}
+            onOpenBreakdownRow={chart ? (index) => open(categoryRequest(shown.request, chart, index, catalog)) : undefined}
+            onOpenTableRow={pivot ? (key) => open(tableRowRequest(shown.request, pivot, key, catalog)) : undefined}
+            canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
           />
         ) : loading ? (
           <div className="flex flex-col gap-space-8">
@@ -87,6 +107,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
           <EmptyState compact description="Click Preview to run this report." />
         )}
       </div>
+      {underlying ? <ReportUnderlyingDialog key={JSON.stringify(underlying)} request={underlying} onClose={() => setUnderlying(null)} /> : null}
     </Card>
   );
 }

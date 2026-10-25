@@ -11,12 +11,12 @@ vi.mock('../UnderlyingTransactionDialog', () => ({
     transactionId ? <div data-testid="txn-dialog">{transactionId}</div> : null,
 }));
 
+import type { BreakdownSectionData, RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { RowBreakdownDialog } from '../RowBreakdownDialog';
 import { RowBreakdownView } from '../RowBreakdownView';
-import type { BreakdownSectionData, RowBreakdownResponse } from '../underlying.types';
 import { useBreakdownStack } from '../useBreakdownStack';
 
 const BREAKDOWN = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown';
