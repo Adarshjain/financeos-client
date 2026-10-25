@@ -61,7 +61,7 @@ export interface SelectMenuProps {
   onSelectedChange?: (value: string) => void;
   onClear?: () => void;
   onDone?: () => void;
-  /** Multiple only: when given, a Discard & close action sits between Clear and Done */
+  /** Multiple only: when given, a Cancel action sits first, before Clear and Done */
   onDiscard?: () => void;
   onClose?: () => void;
   onCreate?: (query: string) => void;
@@ -102,7 +102,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       createLabel,
       action,
       clearLabel = 'Clear',
-      discardLabel = 'Discard & close',
+      discardLabel = 'Cancel',
       doneLabel,
       filter = 'auto',
       showRadio = false,
@@ -317,33 +317,35 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           ) : null}
 
           {opt.icon ? (
-            <span className="shrink-0 flex items-center">{opt.icon}</span>
+            <span className={cn('shrink-0 flex items-center', isDisabled && 'opacity-60')}>{opt.icon}</span>
           ) : null}
 
           <div className="flex-1 min-w-0">
             <span
               className={cn(
                 'block font-text font-medium text-body truncate',
-                isSelected && !multiple && !showRadio
-                  ? 'text-brand-strong'
-                  : 'text-ink',
+                isDisabled
+                  ? 'text-ink-faint'
+                  : isSelected && !multiple && !showRadio
+                    ? 'text-brand-strong'
+                    : 'text-ink',
               )}
             >
               {opt.label}
             </span>
             {opt.description ? (
-              <span className="block font-text font-medium text-caption text-ink-3 truncate">
+              <span className={cn('block font-text font-medium text-caption truncate', isDisabled ? 'text-ink-faint' : 'text-ink-3')}>
                 {opt.description}
               </span>
             ) : null}
           </div>
 
           {opt.disabledReason ? (
-            <span className="ml-auto font-text font-medium text-caption text-ink-4">
+            <span className={cn('ml-auto font-text font-medium text-caption', isDisabled ? 'text-ink-faint' : 'text-ink-4')}>
               {opt.disabledReason}
             </span>
           ) : opt.hint ? (
-            <span className="ml-auto font-text font-medium text-caption text-ink-4">
+            <span className={cn('ml-auto font-text font-medium text-caption', isDisabled ? 'text-ink-faint' : 'text-ink-4')}>
               {opt.hint}
             </span>
           ) : isSelected && !multiple && !showRadio ? (
@@ -446,14 +448,6 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
 
         {multiple ? (
           <div className="flex items-center justify-end gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4 text-label">
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              onClick={onClear}
-            >
-              {clearLabel}
-            </Button>
             {onDiscard ? (
               <Button
                 type="button"
@@ -464,6 +458,14 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
                 {discardLabel}
               </Button>
             ) : null}
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              onClick={onClear}
+            >
+              {clearLabel}
+            </Button>
             <Button
               type="button"
               variant="primary"
@@ -638,7 +640,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       setOpen(false);
     };
 
-    // The value when the popover opened, so Discard & close can put it back.
+    // The value when the popover opened, so Cancel can put it back.
     const latestValue = useRef(currentValue);
     latestValue.current = currentValue;
     const valueAtOpen = useRef(currentValue);
@@ -885,7 +887,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           open={isOpen}
           onOpenChange={setOpen}
           trigger={effectiveTrigger}
-          contentClassName={cn('p-0 overflow-hidden', menuClassName)}
+          // The field's own list is exactly its width; a custom trigger (a small chip) keeps the popover's natural width.
+          contentClassName={cn('p-0 overflow-hidden', !trigger && 'w-popover-trigger desk:max-w-container-viewport-inset', menuClassName)}
         >
           <SelectMenu
             id={id}

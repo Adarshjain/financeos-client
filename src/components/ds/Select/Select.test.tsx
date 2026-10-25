@@ -136,7 +136,7 @@ describe('Select', () => {
     expect(root).not.toHaveClass('w-full');
   });
 
-  it('opens Popover with flexible width (min-w-popover-trigger max-w-container-sm)', () => {
+  it('opens Popover exactly as wide as the trigger, capped by the viewport inset', () => {
     render(
       <Select
         defaultOpen
@@ -148,7 +148,8 @@ describe('Select', () => {
     const option = screen.getByText('ICICI Bank');
     const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
     expect(popoverContent).toHaveClass('min-w-popover-trigger');
-    expect(popoverContent).toHaveClass('desk:max-w-container-sm');
+    expect(popoverContent).toHaveClass('w-popover-trigger');
+    expect(popoverContent).toHaveClass('desk:max-w-container-viewport-inset');
   });
 
   it('updates value and calls onValueChange in uncontrolled mode', () => {
@@ -216,6 +217,23 @@ describe('SelectMenu', () => {
     fireEvent.click(screen.getByText('State Bank of India'));
     expect(onSelect).not.toHaveBeenCalled();
     expect(screen.getByText('down')).toBeInTheDocument();
+  });
+
+  it('greys a disabled option: label, description, reason and icon', () => {
+    render(
+      <SelectMenu
+        options={[
+          { value: 'a', label: 'Live', description: 'ok' },
+          { value: 'b', label: 'Off', description: 'nope', disabled: true, disabledReason: 'down', icon: <i data-testid="ic" /> },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Off')).toHaveClass('text-ink-faint');
+    expect(screen.getByText('Off')).not.toHaveClass('text-ink');
+    expect(screen.getByText('nope')).toHaveClass('text-ink-faint');
+    expect(screen.getByText('down')).toHaveClass('text-ink-faint');
+    expect(screen.getByTestId('ic').parentElement).toHaveClass('opacity-60');
+    expect(screen.getByText('Live')).toHaveClass('text-ink');
   });
 
   it('filters options when searchable', () => {

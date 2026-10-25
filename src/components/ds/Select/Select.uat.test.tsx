@@ -40,7 +40,7 @@ describe('Select label (not a tap target)', () => {
   });
 });
 
-describe('Select multiple: Discard & close', () => {
+describe('Select multiple: Cancel', () => {
   it('restores the value from when the popover opened, then closes', () => {
     const onValueChange = vi.fn();
     render(<Select multiple options={options} defaultValue={['food']} onValueChange={onValueChange} />);
@@ -48,7 +48,7 @@ describe('Select multiple: Discard & close', () => {
     fireEvent.click(screen.getByText('Groceries'));
     fireEvent.click(screen.getByText('Travel'));
     expect(onValueChange).toHaveBeenLastCalledWith(['food', 'groc', 'travel']);
-    fireEvent.click(screen.getByRole('button', { name: 'Discard & close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onValueChange).toHaveBeenLastCalledWith(['food']);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
@@ -57,7 +57,7 @@ describe('Select multiple: Discard & close', () => {
     const onValueChange = vi.fn();
     render(<Select multiple options={options} defaultValue={['food']} onValueChange={onValueChange} />);
     fireEvent.click(screen.getByRole('combobox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Discard & close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onValueChange).not.toHaveBeenCalled();
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
@@ -70,7 +70,7 @@ describe('Select multiple: Discard & close', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByText('Travel'));
-    fireEvent.click(screen.getByRole('button', { name: 'Discard & close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onValueChange).toHaveBeenLastCalledWith(['groc']);
   });
 
@@ -80,14 +80,14 @@ describe('Select multiple: Discard & close', () => {
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByText('Bills'));
     // controlled: the parent did not apply it, so the value is still the one from open
-    fireEvent.click(screen.getByRole('button', { name: 'Discard & close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onValueChange).toHaveBeenCalledTimes(1);
   });
 
-  it('draws Clear, Discard & close, Done left to right, with an overridable label', () => {
+  it('draws Cancel, Clear, Done left to right, with an overridable label', () => {
     render(<Select multiple options={options} defaultOpen discardLabel="Cancel changes" />);
-    const buttons = screen.getAllByRole('button').filter((b) => ['Clear', 'Cancel changes', 'Done'].includes(b.textContent ?? ''));
-    expect(buttons.map((b) => b.textContent)).toEqual(['Clear', 'Cancel changes', 'Done']);
+    const buttons = screen.getAllByRole('button').filter((b) => ['Cancel changes', 'Clear', 'Done'].includes(b.textContent ?? ''));
+    expect(buttons.map((b) => b.textContent)).toEqual(['Cancel changes', 'Clear', 'Done']);
   });
 
   it('Escape keeps today\'s behaviour: the selection stays', () => {
@@ -101,10 +101,10 @@ describe('Select multiple: Discard & close', () => {
 
   it('a standalone SelectMenu shows Discard only when given onDiscard', () => {
     const { rerender } = render(<SelectMenu options={options} multiple />);
-    expect(screen.queryByRole('button', { name: 'Discard & close' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     const onDiscard = vi.fn();
     rerender(<SelectMenu options={options} multiple onDiscard={onDiscard} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Discard & close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onDiscard).toHaveBeenCalled();
   });
 });

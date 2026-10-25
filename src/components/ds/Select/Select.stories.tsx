@@ -199,7 +199,7 @@ export const MultiSelect: Story = {
   },
 };
 
-/** Chips fill one line of the field, the rest collapse into +n; Discard & close restores the value from when it opened. */
+/** Chips fill one line of the field, the rest collapse into +n; Cancel restores the value from when it opened. */
 export const MultiSelectOverflow: Story = {
   args: {
     label: 'Many selected',
