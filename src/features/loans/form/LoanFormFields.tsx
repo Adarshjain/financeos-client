@@ -3,10 +3,11 @@
 import React from 'react';
 
 import { DateField, Select, type SelectOption, TextArea, TextField } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { AccountPicker, AmountField } from '@/components/organisms';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import type { LoanType, RateType } from '@/lib/loan.types';
+import { AccountType } from '@/lib/types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
@@ -17,19 +18,14 @@ import {
   RATE_TYPES,
 } from '../loanFormModel';
 
+const PAYMENT_ACCOUNT_TYPES: readonly AccountType[] = [AccountType.BANK_ACCOUNT];
+
 const LOAN_TYPE_OPTIONS: SelectOption[] = LOAN_TYPES.map((t) => ({ value: t.value, label: t.label }));
 const RATE_TYPE_OPTIONS: SelectOption[] = RATE_TYPES.map((t) => ({ value: t.value, label: t.label }));
 
 export type LoanFormErrors = Partial<Record<LoanFormField, string>>;
 
-function bankOptions(accounts: Account[]): SelectOption[] {
-  return [
-    { value: NO_PAYMENT_ACCOUNT, label: 'None' },
-    ...accounts
-      .filter((a) => a.type === 'bank_account' && !isAccountClosed(a))
-      .map((a) => ({ value: a.id, label: a.name })),
-  ];
-}
+const NO_PAYMENT_OPTION: SelectOption[] = [{ value: NO_PAYMENT_ACCOUNT, label: 'None' }];
 
 function Pair({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">{children}</div>;
@@ -89,12 +85,14 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 value={values.loanAccountNumber}
                 onValueChange={(loanAccountNumber) => change({ loanAccountNumber })}
               />
-              <Select
+              <AccountPicker
                 label="Payment bank account"
                 placeholder="Select bank account"
-                options={bankOptions(accounts)}
-                value={values.paymentAccountId || undefined}
-                onValueChange={(v) => change({ paymentAccountId: v as string })}
+                accounts={accounts.filter((a) => !isAccountClosed(a))}
+                types={PAYMENT_ACCOUNT_TYPES}
+                leadingOptions={NO_PAYMENT_OPTION}
+                value={values.paymentAccountId || null}
+                onValueChange={(v) => change({ paymentAccountId: v ?? '' })}
               />
             </Pair>
             <div className="grid grid-cols-1 desk:grid-cols-3 gap-space-12">

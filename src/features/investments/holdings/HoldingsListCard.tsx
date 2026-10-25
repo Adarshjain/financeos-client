@@ -15,13 +15,15 @@ import {
   Icon,
   Pager,
   Select,
+  type SelectOption,
   Text,
   TextField,
 } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
-import type { InstrumentType } from '@/lib/types';
+import { AccountType, type InstrumentType } from '@/lib/types';
 
 import type { InstrumentRef } from '../investmentsFormat';
 import {
@@ -35,6 +37,9 @@ import {
   SORT_OPTIONS,
   TYPE_CHIPS,
 } from './holdingsModel';
+
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
+const ALL_BROKERS: SelectOption[] = [{ value: '', label: 'All brokers' }];
 
 /** Opens the record-a-merger dialog for a holding; the table's cells reach it through here. */
 const RecordMergerContext = React.createContext<(instrumentId: string) => void>(() => undefined);
@@ -248,7 +253,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   const [merging, setMerging] = React.useState<InstrumentRef | null>(null);
   const byId = React.useMemo(() => new Map(rows.map((r) => [r.instrumentId, r])), [rows]);
 
-  const brokerOptions = [{ value: '', label: 'All brokers' }, ...brokers.map((b) => ({ value: b.id, label: b.name }))];
+  const brokerAccounts = React.useMemo(() => brokers.map((b) => ({ id: b.id, name: b.name, type: AccountType.BROKER })), [brokers]);
   const brokerName = brokers.find((b) => b.id === state.broker)?.name;
   const sortLabel = SORT_OPTIONS.find((o) => o.value === state.sort)?.label ?? SORT_OPTIONS[0].label;
 
@@ -303,10 +308,12 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           );
         })}
         {brokers.length > 0 ? (
-          <Select
+          <AccountPicker
+            accounts={brokerAccounts}
+            types={BROKER_TYPES}
+            leadingOptions={ALL_BROKERS}
             value={state.broker}
-            options={brokerOptions}
-            onValueChange={(v) => go({ broker: v as string, page: 0 })}
+            onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
             trigger={
               <FilterChip hasDropdown selected={state.broker !== ''} className="shrink-0">
                 {brokerName ?? 'Broker'}

@@ -12,7 +12,9 @@ import {
   TextArea,
   TextField,
 } from '@/components/ds';
-import { AmountField, SettingsToggle } from '@/components/organisms';
+import { AccountPicker, AmountField, SettingsToggle } from '@/components/organisms';
+import type { Account } from '@/lib/account.types';
+import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import type { Category } from '@/lib/categories.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
@@ -66,7 +68,8 @@ export interface TransactionFormFieldsProps {
   errors: FormErrors;
   isUpdate: boolean;
   today: string;
-  accountOptions: SelectOption[];
+  /** The accounts to choose from. */
+  accounts: readonly Account[];
   /** The accounts to record against: none shows the "no account yet" state in place of the Account field. */
   hasAccounts: boolean;
   cardOptions: { id: string; label: string }[];
@@ -92,7 +95,7 @@ export function TransactionFormFields({
   errors,
   isUpdate,
   today,
-  accountOptions,
+  accounts,
   hasAccounts,
   cardOptions,
   categories,
@@ -151,14 +154,15 @@ export function TransactionFormFields({
           className={noAccountYet ? 'col-span-5' : 'col-span-2'}
         />
         {noAccountYet ? null : (
-          <Select
+          <AccountPicker
             className="col-span-3"
             label="Account"
             placeholder="Select account"
-            options={accountOptions}
-            value={values.accountId}
+            accounts={accounts}
+            types={ACCOUNT_GROUP_ORDER}
+            value={values.accountId || null}
             disabled={isUpdate}
-            onValueChange={(v) => onAccountChange(v as string)}
+            onValueChange={(v) => onAccountChange(v ?? '')}
             action={isUpdate ? undefined : { label: 'Add account', onSelect: onAddAccount }}
             error={errors.accountId}
           />

@@ -14,6 +14,7 @@ import {
   Switch,
   TextField,
 } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import type { Category } from '@/lib/categories.types';
@@ -21,9 +22,10 @@ import { keys } from '@/lib/query/keys';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
-  accountGroups,
   AMOUNT_OP_OPTIONS,
   categoryOptions,
+  FILTER_ACCOUNT_TYPES,
+  filterAccounts,
   REASON_OPTIONS,
   REVIEW_OPTIONS,
   SORT_ORDER_OPTIONS,
@@ -126,16 +128,15 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
           <SectionHeader>Account and category</SectionHeader>
           <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
             <div className="grid grid-cols-2 gap-space-12">
-              <Select
+              <AccountPicker
                 multiple
-                searchable
-                searchPlaceholder="Search accounts"
                 label="Account"
                 placeholder="Any account"
                 disabled={accounts === null}
-                groups={accountGroups(accounts ?? [], draft.accounts)}
+                accounts={filterAccounts(draft.accounts, accounts ?? [])}
+                types={FILTER_ACCOUNT_TYPES}
                 value={draft.accounts}
-                onValueChange={(accountIds) => set({ accounts: accountIds as string[] })}
+                onValueChange={(accountIds) => set({ accounts: accountIds })}
               />
               <Select
                 label="Type"

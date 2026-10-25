@@ -3,9 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, type SelectOption, showToast } from '@/components/ds';
-import { BankLogo } from '@/components/organisms';
-import { accountNeedsBank } from '@/features/accounts/accountBank';
+import { Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
@@ -132,17 +130,6 @@ export function TransactionFormDialog({
     accountDialogs.open(undefined, { onCreated: () => undefined });
   };
 
-  const accountOptions: SelectOption[] = selectableAccounts.map((a) => ({
-    value: a.id,
-    label: a.name,
-    icon: (
-      <BankLogo
-        bankId={'bank' in a ? (a.bank ?? null) : null}
-        name={a.name}
-        warning={accountNeedsBank(a.type) && !('bank' in a && a.bank)}
-      />
-    ),
-  }));
   const saving = createMutation.isPending || updateMutation.isPending;
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
 
@@ -230,7 +217,7 @@ export function TransactionFormDialog({
               errors={errors}
               isUpdate={isUpdate}
               today={today}
-              accountOptions={accountOptions}
+              accounts={selectableAccounts}
               hasAccounts={selectableAccounts.length > 0}
               cardOptions={supportsCards ? cardOptions : []}
               categories={localCategories}

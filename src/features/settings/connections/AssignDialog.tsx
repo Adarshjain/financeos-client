@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Banner, Dialog, DialogBody, DialogContent, Select, Text } from '@/components/ds';
+import { Banner, Dialog, DialogBody, DialogContent, Text } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
+import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 
 import type { AttentionItem } from './attentionItem.helpers';
 import { useAssignAccount } from './useAssignAccount';
@@ -38,11 +40,12 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
               Emails referencing <strong>••{item?.extractedLast4 || '????'}</strong> will be remembered for this account.
             </Text>
             {a.errorMessage ? <Banner tone="danger">{a.errorMessage}</Banner> : null}
-            <Select
+            <AccountPicker
               label="Target account"
-              value={a.effectiveAccountId || undefined}
-              onValueChange={(v) => a.selectAccount(v as string)}
-              options={a.accounts.map((acc) => ({ value: acc.id, label: acc.name }))}
+              value={a.effectiveAccountId || null}
+              onValueChange={(v) => a.selectAccount(v ?? '')}
+              accounts={a.accounts}
+              types={ACCOUNT_GROUP_ORDER}
               placeholder={a.loadingAccounts ? 'Loading accounts…' : 'Select an account'}
               disabled={a.loadingAccounts || a.isPending}
             />

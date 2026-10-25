@@ -10,15 +10,18 @@ import {
   type SelectGroup,
   type SelectOption,
 } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
+import type { AccountType } from '@/lib/types';
 
 import {
-  accountGroups,
   activeFilterCount,
   amountLabel,
   ANY,
   categoryOptions,
+  FILTER_ACCOUNT_TYPES,
+  filterAccounts,
   periodLabel,
   REASON_OPTIONS,
   reviewLabel,
@@ -52,6 +55,7 @@ function MultiChip({
   value,
   options,
   groups,
+  accountPicker,
   searchPlaceholder,
   disabled,
   className,
@@ -61,6 +65,8 @@ function MultiChip({
   value: string[];
   options?: SelectOption[];
   groups?: SelectGroup[];
+  /** Lists accounts with the AccountPicker (grouped by type, with bank logos) instead of `options` / `groups`. */
+  accountPicker?: { accounts: readonly Account[]; types: readonly AccountType[] };
   searchPlaceholder: string;
   disabled?: boolean;
   className?: string;
@@ -74,32 +80,39 @@ function MultiChip({
     if (draft && !sameList(draft, value)) onCommit(draft);
     setDraft(null);
   };
-  return (
-    <Select
-      multiple
-      searchable
-      className={className}
-      searchPlaceholder={searchPlaceholder}
-      options={options}
-      groups={groups}
-      value={draft ?? value}
-      onValueChange={(next) => setDraft(next as string[])}
-      open={open}
-      onOpenChange={handleOpenChange}
-      trigger={
-        <FilterChip
-          size="md"
-          shape="rounded"
-          hasDropdown
-          disabled={disabled}
-          selected={value.length > 0}
-          count={value.length > 0 ? value.length : undefined}
-        >
-          {label}
-        </FilterChip>
-      }
-    />
+  const chip = (
+    <FilterChip
+      size="md"
+      shape="rounded"
+      hasDropdown
+      disabled={disabled}
+      selected={value.length > 0}
+      count={value.length > 0 ? value.length : undefined}
+    >
+      {label}
+    </FilterChip>
   );
+  const shared = {
+    className,
+    searchPlaceholder,
+    value: draft ?? value,
+    onValueChange: (next: string | string[]) => setDraft(next as string[]),
+    open,
+    onOpenChange: handleOpenChange,
+    trigger: chip,
+  };
+  if (accountPicker) {
+    return (
+      <AccountPicker
+        multiple
+        {...shared}
+        accounts={accountPicker.accounts}
+        types={accountPicker.types}
+        onValueChange={(next) => setDraft(next)}
+      />
+    );
+  }
+  return <Select multiple searchable {...shared} options={options} groups={groups} />;
 }
 
 /** A dropdown chip that picks one value. */
@@ -254,7 +267,7 @@ export function FilterChips({
         <MultiChip
           label="Account"
           value={query.accounts}
-          groups={accountGroups(accounts ?? [], query.accounts)}
+          accountPicker={{ accounts: filterAccounts(query.accounts, accounts ?? []), types: FILTER_ACCOUNT_TYPES }}
           searchPlaceholder="Search accounts"
           disabled={accounts === null}
           onCommit={(accountIds) => onChange({ accounts: accountIds })}

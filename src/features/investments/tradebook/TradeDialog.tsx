@@ -19,8 +19,9 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
-import { type Broker, isAccountClosed, isAccountOfType } from '@/lib/account.types';
+import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -49,6 +50,8 @@ import {
 } from './tradebookModel';
 import { useTradeMutations } from './useTradeMutations';
 
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
+
 const SIDES = [
   { value: 'buy', label: 'Buy' },
   { value: 'sell', label: 'Sell' },
@@ -60,11 +63,6 @@ const SETTLEMENTS: SelectOption[] = [
 ];
 
 const FORM_ID = 'trade-form';
-
-/** "Zerodha · ZQ4471": the account's name and its client id. */
-function brokerLabel(b: Broker): string {
-  return [b.name, b.clientId].filter(Boolean).join(' · ') + (isAccountClosed(b) ? ' (closed)' : '');
-}
 
 interface FormProps {
   title: string;
@@ -272,7 +270,6 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
     );
   }
 
-  const brokerOptions: SelectOption[] = openBrokers.map((b) => ({ value: b.id, label: brokerLabel(b) }));
   return (
     <>
     <TradeForm
@@ -298,13 +295,14 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
         />
       }
       bottom={
-        <Select
+        <AccountPicker
           label="Broker"
-          options={brokerOptions}
+          accounts={openBrokers}
+          types={BROKER_TYPES}
           value={effectiveBrokerId}
           loading={isLoading}
           onValueChange={(v) => {
-            setBrokerId(v as string);
+            setBrokerId(v ?? '');
             setErrors((e) => ({ ...e, broker: undefined }));
           }}
           error={errors.broker}

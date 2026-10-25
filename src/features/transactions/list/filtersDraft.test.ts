@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
 
-import { accountGroups, activeFilterCount, activeFilterWords, amountLabel, periodLabel, REASON_OPTIONS } from './filterOptions';
+import { activeFilterCount, activeFilterWords, amountLabel, filterAccounts, periodLabel, REASON_OPTIONS } from './filterOptions';
 import { amountFromDraft, draftFromQuery, queryFromDraft } from './filtersDraft';
 import { ALL_TIME, DEFAULT_QUERY } from './transactionsUrl';
 
@@ -52,19 +52,19 @@ describe('labels', () => {
   });
 });
 
-describe('accountGroups', () => {
+describe('filterAccounts', () => {
   const accounts = [
     { id: 'b1', name: 'HDFC Savings', type: 'bank_account' },
-    { id: 'c1', name: 'Regalia', type: 'credit_card' },
     { id: 'k1', name: 'Zerodha', type: 'broker' },
-    { id: 'b2', name: 'Old bank', type: 'bank_account', closedOn: '2020-01-01' },
+    { id: 'k2', name: 'Groww', type: 'broker' },
   ] as unknown as Account[];
 
-  it('groups by type, hides brokers unless picked and marks closed accounts', () => {
-    const groups = accountGroups(accounts, []);
-    expect(groups.map((g) => g.name)).toEqual(['Bank', 'Credit card']);
-    expect(groups[0].options.map((o) => [o.label, o.hint])).toEqual([['HDFC Savings', undefined], ['Old bank', 'Closed']]);
-    expect(accountGroups(accounts, ['k1']).map((g) => g.name)).toContain('Broker');
+  it('lists no broker when none is picked', () => {
+    expect(filterAccounts([], accounts).map((a) => a.id)).toEqual(['b1']);
+  });
+
+  it('lists only the picked brokers', () => {
+    expect(filterAccounts(['k1'], accounts).map((a) => a.id)).toEqual(['b1', 'k1']);
   });
 });
 
