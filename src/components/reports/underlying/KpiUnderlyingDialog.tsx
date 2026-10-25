@@ -45,6 +45,7 @@ import type {
   UnderlyingPeriod,
   UnderlyingSource,
 } from '@/features/reports/underlying/underlying.types';
+import { useBreakdownStack } from '@/features/reports/underlying/useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from '@/features/reports/underlying/useKpiUnderlying';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
@@ -62,7 +63,6 @@ import {
   UnderlyingPeriodTabs,
   UnderlyingWinnerNote,
 } from './UnderlyingParts';
-import { useBreakdownStack } from './useBreakdownStack';
 
 export interface KpiUnderlyingDialogProps {
   source: UnderlyingSource;

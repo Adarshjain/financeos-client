@@ -46,13 +46,13 @@ type Row = Record<string, unknown> & { __row: string };
 const ch = createDataTableColumnHelper<Row>();
 
 /** A cell as this table prints it: dates as "13 Oct", everything else as every report table does. */
-function cellText(value: unknown, column: TableColumn): string {
+export function cellText(value: unknown, column: TableColumn): string {
   if (column.type === 'date' && typeof value === 'string' && value !== '') return shortDate(value);
   return formatCell(value, column);
 }
 
 /** The column that names the row (the first that is not a date or a number); the first column otherwise. */
-const mainIndexOf = (columns: TableColumn[]) => Math.max(columns.findIndex((c) => c.type !== 'date' && c.type !== 'number'), 0);
+export const mainIndexOf = (columns: TableColumn[]) => Math.max(columns.findIndex((c) => c.type !== 'date' && c.type !== 'number'), 0);
 
 /** "Excluded from this figure: Old card (Closed account), …" from what the figure leaves out; null when nothing. */
 function excludedLine(items: UnderlyingExcludedItem[]): string | null {
@@ -78,11 +78,13 @@ export interface ReportUnderlyingDialogProps {
   dimensionLabel?: string;
   /** Index into `entries` the dialog opens on (a breakdown row's category); without it, "All". */
   initialEntry?: number;
+  /** The dialog's title; without it "Underlying data · <figure>". */
+  title?: string;
   onClose: () => void;
 }
 
 /** The dialog is open while it is mounted: the page mounts it for one opening and unmounts it on close. */
-export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensionLabel, initialEntry, onClose }: ReportUnderlyingDialogProps) {
+export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensionLabel, initialEntry, title: customTitle, onClose }: ReportUnderlyingDialogProps) {
   // The rows of the whole figure, or of the one category picked in the dropdown (a number as text).
   const [entry, setEntry] = React.useState(() =>
     initialEntry !== undefined && entries?.[initialEntry] ? String(initialEntry) : ALL_ENTRIES,
@@ -208,7 +210,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensi
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         size="xl"
-        title={figure ? `Underlying data · ${figure}` : 'Underlying data'}
+        title={customTitle ?? (figure ? `Underlying data · ${figure}` : 'Underlying data')}
         description={description}
         tertiary={{ label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
         secondary={{ label: 'Close', onSelect: onClose }}

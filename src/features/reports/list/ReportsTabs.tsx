@@ -12,13 +12,15 @@ export interface ReportsTabsProps {
   dashboards?: number;
   /** How many reports there are; undefined while it loads. */
   reports?: number;
+  /** Which tab is current; default Reports. */
+  active?: 'dashboards' | 'reports';
 }
 
-/** The Dashboards · Reports tab strip. Dashboards is not built in Dinero yet, so it stays the Legacy page until it is. */
-export function ReportsTabs({ dashboards, reports }: ReportsTabsProps) {
+/** The Dashboards · Reports tab strip, shared by both lists. */
+export function ReportsTabs({ dashboards, reports, active = 'reports' }: ReportsTabsProps) {
   const items: TabItem[] = [
     { value: 'dashboards', label: 'Dashboards', count: dashboards, asChild: true, children: <Link href={DASHBOARDS_HREF} /> },
     { value: 'reports', label: 'Reports', count: reports, asChild: true, children: <Link href={REPORTS_HREF} /> },
   ];
-  return <Tabs items={items} value="reports" />;
+  return <Tabs items={items} value={active} />;
 }

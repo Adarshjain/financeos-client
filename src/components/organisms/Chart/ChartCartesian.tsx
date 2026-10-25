@@ -29,7 +29,7 @@ import {
 } from '@/lib/charts/chart-series';
 import { useElementSize } from '@/lib/charts/useElementSize';
 
-import type { ChartInput } from './Chart';
+import type { ChartEntry, ChartInput } from './Chart';
 import { ChartDataTable, ChartLegend, ChartTooltip } from './ChartParts';
 import {
   CHART_AXIS_COLOR,
@@ -52,11 +52,13 @@ export function ChartCartesian({
   fill,
   money,
   yDomain,
+  onSelectEntry,
 }: {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   yDomain?: 'zero' | 'data';
+  onSelectEntry?: (entry: ChartEntry) => void;
 }) {
   const { chartType, categories } = data;
   const gradientId = useId().replace(/:/g, '');
@@ -152,9 +154,36 @@ export function ChartCartesian({
       }
     />,
   ];
+  const activeDot = { r: 4, strokeWidth: 2, stroke: CHART_SURFACE_COLOR };
+  const pressEntry = (s: FoldedSeries, category: unknown) => {
+    if (!onSelectEntry) return;
+    const i = categories.indexOf(String(category));
+    if (i < 0) return;
+    onSelectEntry({
+      key: categories[i],
+      label: categories[i],
+      seriesKey: seriesLabel(s.name),
+      value: s.data[i] ?? 0,
+    });
+  };
+  // A pressed point reports through a custom active dot (Recharts gives it the row and the series key).
+  const pressDot = (s: FoldedSeries) =>
+    onSelectEntry
+      ? (p: { cx?: number; cy?: number; payload?: ChartRow }) => (
+          <circle
+            cx={p.cx}
+            cy={p.cy}
+            r={activeDot.r}
+            fill={colorOf(s)}
+            stroke={activeDot.stroke}
+            strokeWidth={activeDot.strokeWidth}
+            className="cursor-pointer"
+            onClick={() => pressEntry(s, p.payload?.category)}
+          />
+        )
+      : activeDot;
   const margin = { ...CHART_MARGIN, right: narrow ? 4 : 8 };
   const singlePoint = categories.length === 1;
-  const activeDot = { r: 4, strokeWidth: 2, stroke: CHART_SURFACE_COLOR };
 
   let chart: React.ReactElement;
   if (chartType === 'line') {
@@ -174,7 +203,7 @@ export function ChartCartesian({
             dot={
               singlePoint ? { r: 4, strokeWidth: 0, fill: colorOf(s) } : false
             }
-            activeDot={activeDot}
+            activeDot={pressDot(s)}
             connectNulls
             animationDuration={ANIMATION_MS}
           />
@@ -213,7 +242,7 @@ export function ChartCartesian({
             dot={
               singlePoint ? { r: 4, strokeWidth: 0, fill: colorOf(s) } : false
             }
-            activeDot={activeDot}
+            activeDot={pressDot(s)}
             connectNulls
             animationDuration={ANIMATION_MS}
           />
@@ -239,6 +268,11 @@ export function ChartCartesian({
             stroke={stacked ? CHART_SURFACE_COLOR : undefined}
             strokeWidth={stacked ? 1 : 0}
             animationDuration={ANIMATION_MS}
+            onClick={
+              onSelectEntry
+                ? (d) => pressEntry(s, (d as { payload?: ChartRow }).payload?.category)
+                : undefined
+            }
           />
         ))}
       </BarChart>
@@ -250,7 +284,11 @@ export function ChartCartesian({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0 flex-col gap-space-8',
-        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide'
+        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide',
+        onSelectEntry &&
+          (isBar
+            ? '[&_.recharts-bar-rectangle]:cursor-pointer [&_.recharts-bar-rectangle:hover]:opacity-80 [&_.recharts-bar-rectangle:active]:opacity-60'
+            : '')
       )}
     >
       {series.length > 1 && (

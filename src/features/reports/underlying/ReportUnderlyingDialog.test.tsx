@@ -99,6 +99,14 @@ const entries = [
   { label: 'Rent', request: rentRequest },
 ];
 
+describe('ReportUnderlyingDialog title', () => {
+  it('uses the given title in place of the default one', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} title="Emergency fund balance" onClose={vi.fn()} />);
+    expect(await screen.findByText('Emergency fund balance')).toBeInTheDocument();
+    expect(screen.queryByText(/Underlying data ·/)).toBeNull();
+  });
+});
+
 describe('ReportUnderlyingDialog footer', () => {
   it('has Download CSV on the left and Close on the right, and Close closes the dialog', async () => {
     const onClose = vi.fn();

@@ -10,6 +10,8 @@ export const CHART_SURFACE_COLOR = 'var(--ds-bg-surface)';
 
 export const CHART_AXIS_COLOR = 'var(--ds-ink-3)';
 export const CHART_GRID_COLOR = 'var(--ds-line)';
+/** Outline marking one mark among many (today in the heatmap). */
+export const CHART_OUTLINE_COLOR = 'var(--ds-ink-2)';
 export const CHART_CURSOR_COLOR = 'var(--ds-bg-hover)';
 
 export function chartColor(index: number): string {
