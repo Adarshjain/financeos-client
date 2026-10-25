@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Banner, Button, Card, EmptyState, Skeleton, Text } from '@/components/ds';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
-import { categoryEntries, categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
+import { categoryEntries, categoryRequest, categoryTarget, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { formatDateRange } from '@/lib/date-range';
 import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
@@ -36,9 +36,10 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
   const summary = shown ? resultSummary(shown.data) : null;
   // The request of the rows behind a figure while the Underlying data dialog is open.
   // `entry` is the dropdown entry it opens on (a breakdown row's category); without it the dialog opens on All.
-  const [underlying, setUnderlying] = React.useState<{ request: RunReportRequest; entry?: number } | null>(null);
-  const open = (request: RunReportRequest | null, entry?: number) => {
-    if (request) setUnderlying({ request, entry });
+  // `pinned` is a request with its own pin (a chart entry's series): the dropdown's entries would drop it, so it has none.
+  const [underlying, setUnderlying] = React.useState<{ request: RunReportRequest; entry?: number; pinned?: boolean } | null>(null);
+  const open = (request: RunReportRequest | null, entry?: number, pinned?: boolean) => {
+    if (request) setUnderlying({ request, entry, pinned });
   };
   const pivot = shown && isPivotTableData(shown.data) ? shown.data : null;
   const chart = shown && isChartData(shown.data) ? shown.data : null;
@@ -107,6 +108,19 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
                   }
                 : undefined
             }
+            onOpenChartEntry={
+              chart
+                ? (index, seriesName) => {
+                    const target = categoryTarget(shown.request, chart, index, catalog, seriesName);
+                    if (!target) return;
+                    const entry = target.category === undefined ? -1 : (entries?.findIndex((e) => e.index === target.category) ?? -1);
+                    // No dropdown entry for it: open its own pinned request, never "All".
+                    if (target.category !== undefined && entry < 0) open(target.pinned ?? target.request, undefined, true);
+                    else open(target.request, entry, target.category === undefined);
+                  }
+                : undefined
+            }
+            canOpenChartEntry={chart ? (index, seriesName) => categoryTarget(shown.request, chart, index, catalog, seriesName) !== null : undefined}
             onOpenTableRow={pivot ? (key) => open(tableRowRequest(shown.request, pivot, key, catalog)) : undefined}
             canOpenBreakdownRow={chart ? (index) => categoryRequest(shown.request, chart, index, catalog) !== null : undefined}
             canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
@@ -123,7 +137,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
       {underlying ? <ReportUnderlyingDialog
           key={JSON.stringify(underlying)}
           request={underlying.request}
-          entries={entries}
+          entries={underlying.pinned ? undefined : entries}
           initialEntry={underlying.entry !== undefined && underlying.entry >= 0 ? underlying.entry : undefined}
           dimensionLabel={
             chart && shown

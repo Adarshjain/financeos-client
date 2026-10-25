@@ -25,6 +25,8 @@ export interface ChartEntry {
   /** The series label for a bar or point; absent for a slice or a heatmap cell. */
   seriesKey?: string;
   value: number;
+  /** The category's index in `data.categories` (bar, point, slice, heatmap day); absent when not meaningful. Labels can repeat, the index cannot. */
+  index?: number;
 }
 
 export interface ChartProps {
@@ -48,6 +50,8 @@ export interface ChartProps {
   onOpenRow?: (index: number) => void;
   /** A press on a cartesian bar or point, a pie/donut slice or its legend row, or a heatmap cell; absent = nothing is pressable. */
   onSelectEntry?: (entry: ChartEntry) => void;
+  /** With `onSelectEntry`: whether an entry is pressable; one it rejects has no press affordance and presses nothing. Absent = every entry is. */
+  canSelectEntry?: (entry: ChartEntry) => boolean;
   /** Heatmap only: how many months the calendar covers (default 6). */
   months?: number;
   /** Breakdown only: whether row `index` can open underlying data; without it every row can. */
@@ -70,6 +74,7 @@ export function Chart({
   onOpenRow,
   canOpenRow,
   onSelectEntry,
+  canSelectEntry,
   months,
 }: ChartProps) {
   if (raw.chartType === 'breakdown') {
@@ -108,6 +113,7 @@ export function Chart({
         money={money}
         months={months}
         onSelectEntry={onSelectEntry}
+        canSelectEntry={canSelectEntry}
       />
     );
   }
@@ -119,6 +125,7 @@ export function Chart({
         money={money}
         donut={chartType === 'donut'}
         onSelectEntry={onSelectEntry}
+        canSelectEntry={canSelectEntry}
       />
     );
   }
@@ -129,6 +136,7 @@ export function Chart({
       money={money}
       yDomain={yDomain}
       onSelectEntry={onSelectEntry}
+      canSelectEntry={canSelectEntry}
     />
   );
 }

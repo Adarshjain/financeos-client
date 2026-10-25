@@ -10,7 +10,7 @@ import React from 'react';
 import { showToast } from '@/components/ds';
 import { workingCatalog } from '@/features/reports/builder/editorState';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
-import { categoryEntries, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
+import { categoryEntries, type UnderlyingTarget, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import { isChartData } from '@/lib/reports.helpers';
@@ -26,10 +26,12 @@ export interface WidgetUnderlyingProps {
   widget: WidgetResponse;
   /** The widget's loaded result (a chart's categories come from it). */
   data: ReportData | null;
+  /** A chart entry or row to open on; without it the whole report. */
+  target?: UnderlyingTarget | null;
   onClose: () => void;
 }
 
-export function WidgetUnderlying({ widget, data, onClose }: WidgetUnderlyingProps) {
+export function WidgetUnderlying({ widget, data, target, onClose }: WidgetUnderlyingProps) {
   const saved = useSavedReport(widget.reportId);
   const catalog = useReportCatalog();
   const datasource = React.useMemo(
@@ -58,10 +60,15 @@ export function WidgetUnderlying({ widget, data, onClose }: WidgetUnderlyingProp
   );
 
   if (!whole || !datasource) return null;
+  // A category target keeps the entries dropdown and opens on its entry. When the dropdown has no such entry, or no
+  // data to list them from, the target's own pinned request opens instead, with no dropdown (never "All").
+  const initialEntry = target?.category !== undefined ? (entries?.findIndex((e) => e.index === target.category) ?? -1) : undefined;
+  const dropdown = !target || (initialEntry !== undefined && initialEntry >= 0);
   return (
     <ReportUnderlyingDialog
-      request={whole}
-      entries={entries}
+      request={!target ? whole : dropdown || !target.pinned ? target.request : target.pinned}
+      entries={dropdown ? entries : undefined}
+      initialEntry={initialEntry !== undefined && initialEntry >= 0 ? initialEntry : undefined}
       dimensionLabel={
         chart && request ? datasource.fields.find((f) => f.name === (request.definition as ChartDefinition).dimension.field)?.label : undefined
       }

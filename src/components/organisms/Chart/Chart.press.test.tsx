@@ -111,6 +111,7 @@ describe('Chart press', () => {
       label: 'Feb',
       seriesKey: 'Spend',
       value: 20,
+      index: 1,
     });
   });
 
@@ -137,6 +138,7 @@ describe('Chart press', () => {
       label: 'Travel',
       seriesKey: 'Spend',
       value: 40,
+      index: 1,
     });
     const list = screen.getByRole('list', { name: 'Chart data' });
     fireEvent.click(within(list).getByRole('button', { name: /Food/ }));
@@ -145,6 +147,7 @@ describe('Chart press', () => {
       label: 'Food',
       seriesKey: 'Spend',
       value: 60,
+      index: 0,
     });
   });
 

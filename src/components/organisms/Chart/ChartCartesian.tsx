@@ -11,6 +11,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -43,6 +44,8 @@ import {
 } from './chartTokens';
 
 type ChartRow = Record<string, string | number | null>;
+/** The row's category index: category labels can repeat, so a press reads the index, not the label. */
+const ROW_INDEX = '__index';
 
 const NARROW_PX = 400;
 const ANIMATION_MS = 450;
@@ -53,12 +56,14 @@ export function ChartCartesian({
   money,
   yDomain,
   onSelectEntry,
+  canSelectEntry,
 }: {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   yDomain?: 'zero' | 'data';
   onSelectEntry?: (entry: ChartEntry) => void;
+  canSelectEntry?: (entry: ChartEntry) => boolean;
 }) {
   const { chartType, categories } = data;
   const gradientId = useId().replace(/:/g, '');
@@ -81,7 +86,7 @@ export function ChartCartesian({
   const colorOf = (s: FoldedSeries) => colors[seriesLabel(s.name)];
 
   const rows: ChartRow[] = categories.map((c, i) => {
-    const row: ChartRow = { category: c };
+    const row: ChartRow = { category: c, [ROW_INDEX]: i };
     series.forEach((s) => {
       row[s.name] = s.data[i] ?? null;
     });
@@ -155,32 +160,52 @@ export function ChartCartesian({
     />,
   ];
   const activeDot = { r: 4, strokeWidth: 2, stroke: CHART_SURFACE_COLOR };
-  const pressEntry = (s: FoldedSeries, category: unknown) => {
-    if (!onSelectEntry) return;
-    const i = categories.indexOf(String(category));
-    if (i < 0) return;
-    onSelectEntry({
-      key: categories[i],
-      label: categories[i],
-      seriesKey: seriesLabel(s.name),
-      value: s.data[i] ?? 0,
-    });
+  const entryOf = (s: FoldedSeries, row?: ChartRow): ChartEntry | null => {
+    const at = row?.[ROW_INDEX];
+    const i = typeof at === 'number' ? at : categories.indexOf(String(row?.category));
+    return i < 0
+      ? null
+      : {
+          key: categories[i],
+          label: categories[i],
+          seriesKey: seriesLabel(s.name),
+          value: s.data[i] ?? 0,
+          index: i,
+        };
+  };
+  const pressable = (s: FoldedSeries, row?: ChartRow) => {
+    const entry = entryOf(s, row);
+    return !!onSelectEntry && !!entry && (canSelectEntry?.(entry) ?? true);
+  };
+  const pressEntry = (s: FoldedSeries, row?: ChartRow) => {
+    const entry = entryOf(s, row);
+    if (entry && pressable(s, row)) onSelectEntry?.(entry);
   };
   // A pressed point reports through a custom active dot (Recharts gives it the row and the series key).
   const pressDot = (s: FoldedSeries) =>
     onSelectEntry
-      ? (p: { cx?: number; cy?: number; payload?: ChartRow }) => (
-          <circle
-            cx={p.cx}
-            cy={p.cy}
-            r={activeDot.r}
-            fill={colorOf(s)}
-            stroke={activeDot.stroke}
-            strokeWidth={activeDot.strokeWidth}
-            className="cursor-pointer"
-            onClick={() => pressEntry(s, p.payload?.category)}
-          />
-        )
+      ? (p: { cx?: number; cy?: number; payload?: ChartRow }) =>
+          pressable(s, p.payload) ? (
+            <circle
+              cx={p.cx}
+              cy={p.cy}
+              r={activeDot.r}
+              fill={colorOf(s)}
+              stroke={activeDot.stroke}
+              strokeWidth={activeDot.strokeWidth}
+              className="cursor-pointer"
+              onClick={() => pressEntry(s, p.payload)}
+            />
+          ) : (
+            <circle
+              cx={p.cx}
+              cy={p.cy}
+              r={activeDot.r}
+              fill={colorOf(s)}
+              stroke={activeDot.stroke}
+              strokeWidth={activeDot.strokeWidth}
+            />
+          )
       : activeDot;
   const margin = { ...CHART_MARGIN, right: narrow ? 4 : 8 };
   const singlePoint = categories.length === 1;
@@ -270,10 +295,22 @@ export function ChartCartesian({
             animationDuration={ANIMATION_MS}
             onClick={
               onSelectEntry
-                ? (d) => pressEntry(s, (d as { payload?: ChartRow }).payload?.category)
+                ? (d) => pressEntry(s, (d as { payload?: ChartRow }).payload)
                 : undefined
             }
-          />
+          >
+            {onSelectEntry &&
+              rows.map((row, i) => (
+                <Cell
+                  key={i}
+                  className={
+                    pressable(s, row)
+                      ? 'cursor-pointer hover:opacity-80 active:opacity-60'
+                      : undefined
+                  }
+                />
+              ))}
+          </Bar>
         ))}
       </BarChart>
     );
@@ -284,11 +321,7 @@ export function ChartCartesian({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0 flex-col gap-space-8',
-        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide',
-        onSelectEntry &&
-          (isBar
-            ? '[&_.recharts-bar-rectangle]:cursor-pointer [&_.recharts-bar-rectangle:hover]:opacity-80 [&_.recharts-bar-rectangle:active]:opacity-60'
-            : '')
+        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide'
       )}
     >
       {series.length > 1 && (

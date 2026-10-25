@@ -31,6 +31,7 @@ const meta: Meta<typeof Chart> = {
     rowsLabel: { control: 'text' },
     onOpenRow: { control: false },
     onSelectEntry: { control: false },
+    canSelectEntry: { control: false },
     canOpenRow: { control: false },
   },
 };
@@ -323,6 +324,26 @@ export const Pressable: Story = {
       measure: spend,
     },
     onSelectEntry: fn(),
+  },
+};
+
+export const PressableSomeEntries: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'canSelectEntry rejects an entry: the Other slice has no cursor, hover or press state and its legend row is plain text.',
+      },
+    },
+  },
+  args: {
+    data: {
+      chartType: 'donut',
+      categories: ['Food & dining', 'Shopping', 'Travel', 'Other'],
+      series: [{ name: 'spend', data: [48210, 36840, 21450, 12600] }],
+      measure: spend,
+    },
+    onSelectEntry: fn(),
+    canSelectEntry: (entry) => entry.key !== 'Other',
   },
 };
 
