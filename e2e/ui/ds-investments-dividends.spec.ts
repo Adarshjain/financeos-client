@@ -71,7 +71,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/^Suggestions/)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Rescan' })).toBeVisible();
 
-      await page.screenshot({ path: `/tmp/financeos-shots/inv-dividends/page-${viewport.width}.png`, fullPage: true });
+      await page.screenshot({ path: test.info().outputPath(`page-${viewport.width}.png`), fullPage: true });
     });
 
     test('Receipt status, Type, FY and Broker are one URL change each and answered by the server', async ({ page }) => {
