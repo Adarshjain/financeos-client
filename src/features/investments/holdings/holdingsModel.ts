@@ -110,7 +110,7 @@ export function heroModel(header: HoldingsHeader): HoldingsHeroModel {
     header.dayChange == null
       ? null
       : {
-          text: `${signedRupees(header.dayChange)} today${header.dayChangePct == null ? '' : ` · ${signedPct(header.dayChangePct)}`}`,
+          text: `${signedRupees(header.dayChange)} today${header.dayChangePct == null ? '' : ` · ${signedPct(header.dayChangePct, 2)}`}`,
           tone: moveTone(header.dayChange),
         };
   const sub = [

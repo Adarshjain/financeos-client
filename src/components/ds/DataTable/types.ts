@@ -69,6 +69,8 @@ export interface DataTableProps<Row extends RowData>
   sortMode?: 'server' | 'client';
 
   selectable?: boolean;
+  /** Selection mode never ends: on phone a tap toggles a row without a long-press, even with nothing ticked. Needs `selectable`. */
+  selectionAlwaysOn?: boolean;
   selection?: string[];
   defaultSelection?: string[];
   onSelectionChange?: (selection: string[]) => void;

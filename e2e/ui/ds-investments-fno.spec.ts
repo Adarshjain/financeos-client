@@ -98,8 +98,9 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('+₹16,366')).toBeVisible();
       await expect(page.getByText('−₹4,571').last()).toBeVisible();
 
-      // The button goes to the Import tradebook page.
-      await expect(page.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', '/ds/investments/import');
+      // The top bar + is a menu; its Import statement row goes to the Import tradebook page.
+      await page.getByRole('button', { name: 'Add' }).first().click();
+      await expect(page.getByRole('menuitem', { name: 'Import statement' })).toHaveAttribute('href', '/ds/investments/import');
     });
 
     test('contract, search, sort and year are answered by the server from the URL', async ({ page }) => {

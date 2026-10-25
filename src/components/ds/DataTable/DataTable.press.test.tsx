@@ -62,3 +62,36 @@ describe('DataTable renderRow press point', () => {
     expect(onRowSelect).toHaveBeenCalledWith({ id: '1', name: 'Rent' }, { x: 30, y: 70 });
   });
 });
+
+describe('DataTable selectionAlwaysOn', () => {
+  const modeOf = (props: Record<string, unknown>) => {
+    let mode: boolean | null = null;
+    render(
+      <DataTable
+        columns={columns}
+        data={[{ id: '1', name: 'Rent' }]}
+        getRowId={(r) => r.id}
+        selectable
+        selection={[]}
+        renderRow={(row, rowProps) => {
+          mode = rowProps.selectionMode;
+          return <span>{row.name}</span>;
+        }}
+        {...props}
+      />,
+    );
+    return mode;
+  };
+
+  it('is not in selection mode with nothing ticked by default', () => {
+    expect(modeOf({})).toBe(false);
+  });
+
+  it('stays in selection mode with nothing ticked', () => {
+    expect(modeOf({ selectionAlwaysOn: true })).toBe(true);
+  });
+
+  it('does nothing without selectable', () => {
+    expect(modeOf({ selectable: false, selectionAlwaysOn: true })).toBe(false);
+  });
+});

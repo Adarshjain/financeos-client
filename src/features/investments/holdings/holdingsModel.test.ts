@@ -65,7 +65,7 @@ describe('heroModel', () => {
   it('writes the value, today, and the two figures with their sub line', () => {
     const hero = heroModel(header);
     expect(hero.value).toBe('₹6,38,208');
-    expect(hero.day).toEqual({ text: '+₹3,566 today · +0.6%', tone: 'positive' });
+    expect(hero.day).toEqual({ text: '+₹3,566 today · +0.56%', tone: 'positive' });
     expect(hero.invested).toBe('₹4,93,299');
     expect(hero.unrealised).toEqual({ text: '+₹1,44,909', tone: 'positive' });
     expect(hero.unrealisedSub).toBe('+29.4% · XIRR 24.1%');
@@ -187,7 +187,7 @@ describe('Tax this FY', () => {
   it('writes the four desktop tiles, with Realised null when the tax request failed', () => {
     const tiles = holdingsTiles(header, 13, tax);
     expect(tiles.map((t) => t?.label)).toEqual(['Current value', 'Invested', 'Unrealised P&L', 'Realised this FY']);
-    expect(tiles[0]!.context).toBe('+₹3,566 today · +0.6%');
+    expect(tiles[0]!.context).toBe('+₹3,566 today · +0.56%');
     expect(tiles[1]!.context).toBe('13 holdings');
     expect(tiles[2]).toMatchObject({ value: '+₹1,44,909', tone: 'positive', context: '+29.4% · XIRR 24.1%' });
     expect(tiles[3]).toMatchObject({ value: '−₹11,075', context: 'LTCG ₹2,425 · STCG −₹13,500' });

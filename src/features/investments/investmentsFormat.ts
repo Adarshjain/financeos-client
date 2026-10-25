@@ -25,9 +25,9 @@ export function plainPrice(value: number): string {
   return formatAmount(value, 2);
 }
 
-/** "+10%" / "−0.3%": one decimal, none when it is zero; a zero reads "0%". */
-export function signedPct(value: number): string {
-  const text = Number(Math.abs(value).toFixed(1));
+/** "+10%" / "−0.3%": one decimal (`decimals` for more), none when it is zero; a zero reads "0%". */
+export function signedPct(value: number, decimals = 1): string {
+  const text = Number(Math.abs(value).toFixed(decimals));
   if (text === 0) return '0%';
   return `${value > 0 ? '+' : MINUS}${text}%`;
 }

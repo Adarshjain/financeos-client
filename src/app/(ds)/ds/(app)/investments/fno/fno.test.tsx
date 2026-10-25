@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConcealProvider } from '@/components/ds';
 import { brokers, fnoPage, summary, trades } from '@/features/investments/fno/fno.fixtures';
 import { FnoAddDialog } from '@/features/investments/fno/FnoAddDialog';
-import { FNO_HREF, IMPORT_STATEMENT_HREF } from '@/features/investments/fno/fnoModel';
+import { FNO_HREF } from '@/features/investments/fno/fnoModel';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import DsFnoPage from './page';
@@ -134,9 +134,9 @@ describe('/ds/investments/fno: page', () => {
     expect(screen.getByText('Realised +₹10,456 · taxed as business income')).toBeInTheDocument();
   });
 
-  it('links Import statement to the page that holds the import wizard', async () => {
+  it('has no Import statement button in the tab (the top bar + menu holds it)', async () => {
     await renderPage();
-    expect(screen.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', IMPORT_STATEMENT_HREF);
+    expect(screen.queryByRole('link', { name: 'Import statement' })).toBeNull();
   });
 
   it('turns every filter into one URL change that resets the page', async () => {

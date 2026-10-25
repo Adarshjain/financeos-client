@@ -54,6 +54,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `data`, and `getRowId(row)` (required; a stable id).
 - `sort?: { id: string; desc: boolean } | null`, `defaultSort`, `onSortChange`: through `useControllableState`.
 - `sortMode?: 'server' | 'client'` (default `'server'`).
+- `selectionAlwaysOn?: boolean` (needs `selectable`): selection mode never ends, so on phone a tap toggles a row without a long-press even when nothing is ticked (unticking every row leaves the mode on).
 - `selectable?: boolean`, `selection?: string[]`, `defaultSelection`, `onSelectionChange`: through `useControllableState`.
 - `allSelected?: boolean`, `onAllSelectedChange?`.
 - `onRowSelect?: (row, point?: { x: number; y: number }) => void`: `point` is where the row was pressed (viewport coordinates; the row's bottom-left for a keyboard press), so a page can open a ContextMenu there.

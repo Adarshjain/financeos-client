@@ -20,6 +20,8 @@ describe('investments formatting', () => {
 
   it('writes percents with one decimal, none when whole, and 0% for nothing', () => {
     expect(signedPct(10)).toBe('+10%');
+    expect(signedPct(1.2387, 2)).toBe('+1.24%');
+    expect(signedPct(-0.004, 2)).toBe('0%');
     expect(signedPct(-0.3)).toBe('−0.3%');
     expect(signedPct(113.04)).toBe('+113%');
     expect(signedPct(0.01)).toBe('0%');

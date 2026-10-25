@@ -28,6 +28,7 @@ function DataTableInner<Row extends RowData>(
     onSortChange: _onSortChange,
     sortMode: _sortMode,
     selectable = false,
+    selectionAlwaysOn = false,
     selection: _selection,
     defaultSelection: _defaultSelection,
     onSelectionChange: _onSelectionChange,
@@ -140,7 +141,9 @@ function DataTableInner<Row extends RowData>(
 
           const isSelected = Boolean(allSelected || row.getIsSelected());
           const isSelectionMode = Boolean(
-            allSelected || (selection && selection.length > 0),
+            allSelected ||
+              (selectable && selectionAlwaysOn) ||
+              (selection && selection.length > 0),
           );
           const isHighlighted = highlightedRowId === row.id;
           const isExpanded = row.getIsExpanded();

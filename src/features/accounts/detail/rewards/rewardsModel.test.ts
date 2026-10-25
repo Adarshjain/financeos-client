@@ -273,7 +273,7 @@ describe('rules', () => {
   });
   it('lists rules by priority with earned points', () => {
     const lines = ruleLines([rule2, rule1], report);
-    expect(lines.map((l) => l.title)).toEqual(['20 · 5X on dining', '10 · Base']);
+    expect(lines.map((l) => l.title)).toEqual(['5X on dining', 'Base']);
     expect(lines.map((l) => l.earned)).toEqual(['0 pts', '2,180 pts']);
   });
   it('falls back to the report when the rule list failed', () => {

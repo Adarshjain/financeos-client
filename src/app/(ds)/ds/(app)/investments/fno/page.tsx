@@ -1,8 +1,6 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
-import { Button } from '@/components/ds';
 import { FnoHero, FnoTiles, MonthCard, UnderlyingCard } from '@/features/investments/fno/FnoFigures';
 import { FnoListCard } from '@/features/investments/fno/FnoListCard';
 import {
@@ -10,7 +8,6 @@ import {
   fnoQuery,
   fnoSummaryQuery,
   fnoUrl,
-  IMPORT_STATEMENT_HREF,
   monthRows,
   parseFnoUrl,
   underlyingRows,
@@ -46,9 +43,6 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <Button asChild variant="secondary" className="max-desk:w-full desk:self-end">
-        <Link href={IMPORT_STATEMENT_HREF}>Import statement</Link>
-      </Button>
       {figures ? <FnoHero figures={figures} allYears={state.fy == null} /> : null}
       <FnoTiles figures={figures} allYears={state.fy == null} />
       <FnoListCard

@@ -7,7 +7,18 @@ import { cn } from '../cn';
 import { Icon, type IconSize } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 import { Kbd } from '../Kbd/Kbd';
+import { Menu } from '../Menu/Menu';
 import { Popover } from '../Popover/Popover';
+
+/** One row of a TopBarAction menu: a button row (`onSelect`) or a link row (`href`). */
+export interface TopBarMenuItem {
+  id: string;
+  label: string;
+  onSelect?: () => void;
+  /** The row renders `children` (a link element from the app) with the label inside. */
+  asChild?: boolean;
+  children?: React.ReactNode;
+}
 
 export interface TopBarAction {
   id: string;
@@ -25,6 +36,8 @@ export interface TopBarAction {
   dot?: boolean;
   /** Opens a dropdown from the button; never asChild. */
   popover?: { content: React.ReactNode; onOpenChange?: (open: boolean) => void };
+  /** Opens a Menu of these rows from the button (align end); never asChild or popover. */
+  menu?: TopBarMenuItem[];
 }
 
 export interface TopBarProps
@@ -164,6 +177,44 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,
               );
+
+              if (action.menu) {
+                return (
+                  <Menu
+                    key={action.id}
+                    align="end"
+                    trigger={
+                      <Button
+                        type="button"
+                        variant={btnVariant}
+                        size="md"
+                        iconOnly={!hasLabel}
+                        aria-label={action.label}
+                        dot={action.dot}
+                        className={buttonClasses}
+                      >
+                        {content}
+                      </Button>
+                    }
+                  >
+                    {action.menu.map((item) =>
+                      item.asChild && React.isValidElement(item.children) ? (
+                        <Menu.Item key={item.id} asChild>
+                          {React.cloneElement(
+                            item.children as React.ReactElement<{ children?: React.ReactNode }>,
+                            undefined,
+                            item.label,
+                          )}
+                        </Menu.Item>
+                      ) : (
+                        <Menu.Item key={item.id} onSelect={item.onSelect}>
+                          {item.label}
+                        </Menu.Item>
+                      ),
+                    )}
+                  </Menu>
+                );
+              }
 
               if (action.popover) {
                 return (

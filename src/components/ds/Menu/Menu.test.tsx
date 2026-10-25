@@ -204,3 +204,18 @@ describe('Menu', () => {
     expect(screen.getByTestId('custom-menu-content')).toBeInTheDocument();
   });
 });
+
+describe('MenuItem asChild', () => {
+  it('makes the child itself the menu row (a link keeps its href)', () => {
+    render(
+      <Menu defaultOpen trigger={<button type="button">Open menu</button>}>
+        <MenuItem asChild>
+          <a href="/somewhere">Go there</a>
+        </MenuItem>
+      </Menu>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Go there' });
+    expect(row.tagName).toBe('A');
+    expect(row).toHaveAttribute('href', '/somewhere');
+  });
+});

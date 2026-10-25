@@ -22,6 +22,8 @@ const TABS = [
   { path: '/ds/investments/instruments', dialog: 'Add instrument' },
 ];
 
+const MENU_TABS = new Set(['/ds/investments/tradebook', '/ds/investments/fno']);
+
 const plus = (page: Page) => page.getByRole('button', { name: 'Add', exact: true }).first();
 
 for (const viewport of VIEWPORTS) {
@@ -40,6 +42,8 @@ for (const viewport of VIEWPORTS) {
       test(`${tab.path}: + opens ${tab.dialog}`, async ({ page }) => {
         await page.goto(tab.path);
         await plus(page).click();
+        // On Tradebook and F&O the + is a menu: its first row is the add.
+        if (MENU_TABS.has(tab.path)) await page.getByRole('menuitem', { name: tab.dialog }).click();
         await expect(page.getByRole('dialog', { name: tab.dialog })).toBeVisible();
         await page.getByRole('button', { name: 'Cancel' }).click();
         await expect(page.getByRole('dialog')).toHaveCount(0);

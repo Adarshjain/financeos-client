@@ -12,14 +12,14 @@ The bar at the top of every screen: one component, two forms chosen by CSS at th
 - `leading`: optional `ReactNode` (phone leading slot, e.g. logo or custom button)
 - `backHref`: optional `string` (renders a link back button at every width)
 - `onBack`: optional `() => void` (renders a back button at every width)
-- `actions`: an ordered list the **app** passes in, each `{ id, icon, label, onSelect, asChild?, children?, variant?: 'default' | 'primary', shortcut?, showLabel?, labelIconSize?, dot?, popover? }`. `dot` draws a danger dot on the button (something unread). `popover: { content, onOpenChange? }` makes the button open a Popover dropdown (align `end`) holding `content`; it is never `asChild`. `labelIconSize` sizes the icon beside the label (desktop form); the icon-only phone form keeps `md`. The app passes `xs` beside text. The bar renders them; it decides nothing about which ones exist.  Which actions exist is app data.
+- `actions`: an ordered list the **app** passes in, each `{ id, icon, label, onSelect, asChild?, children?, variant?: 'default' | 'primary', shortcut?, showLabel?, labelIconSize?, dot?, popover?, menu? }`. `dot` draws a danger dot on the button (something unread). `popover: { content, onOpenChange? }` makes the button open a Popover dropdown (align `end`) holding `content`; it is never `asChild`. `menu: { id, label, onSelect?, asChild?, children? }[]` makes the button open a Menu (align `end`) of those rows: an `asChild` row renders `children` (the app's link element) with the label inside, otherwise `onSelect` runs; mutually exclusive with `popover` and `asChild`. `labelIconSize` sizes the icon beside the label (desktop form); the icon-only phone form keeps `md`. The app passes `xs` beside text. The bar renders them; it decides nothing about which ones exist.  Which actions exist is app data.
 
 ## Rules
 - The + (`primary`) opens the add form for the current screen; it is the only add button (RULES §7.1).
 - Page actions (Export, Merge…) don't go here; they live in the page or a ⋮ menu.
 
 ## Built from
-Button, Icon, Kbd.
+Button, Icon, Kbd, Menu, Popover.
 
 ## Variants
 - Top level, detail (back + crumb), with a primary action, phone and desktop forms.
