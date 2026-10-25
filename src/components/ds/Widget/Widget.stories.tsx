@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { ConcealProvider, Text, Widget } from '@/components/ds';
+import { ConcealProvider, ListRow, Text, Widget } from '@/components/ds';
 
 const meta: Meta<typeof Widget> = {
   title: 'DS/Data display/Widget',
@@ -27,6 +27,7 @@ const meta: Meta<typeof Widget> = {
     unavailableTitle: { control: 'text' },
     menuItems: { control: 'object' },
     action: { control: 'object' },
+    flush: { control: 'boolean' },
   },
 };
 
@@ -107,6 +108,21 @@ export const WithMenu: Story = {
       <Text variant="figure">
         ₹11,98,842
       </Text>
+    ),
+  },
+};
+
+export const Flush: Story = {
+  args: {
+    title: 'Upcoming',
+    subtitle: 'Next 14 days',
+    flush: true,
+    children: (
+      <>
+        <ListRow title="Amex Platinum bill" trailing="₹33,900" />
+        <ListRow title="Priya Nair · you owe" trailing="₹12,000" />
+        <ListRow title="Regalia Gold bill" trailing="₹44,319" />
+      </>
     ),
   },
 };

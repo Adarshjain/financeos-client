@@ -9,7 +9,7 @@ import { concealMoney } from '../Conceal/concealMoney';
 import { ProgressBar, ProgressBarTone } from '../ProgressBar/ProgressBar';
 import { Skeleton } from '../Skeleton/Skeleton';
 
-export type KpiTileVariant = 'default' | 'hero';
+export type KpiTileVariant = 'default' | 'hero' | 'plain';
 export type KpiDeltaDirection = 'good' | 'bad' | 'neutral';
 
 export interface KpiDelta {
@@ -37,7 +37,7 @@ export interface KpiTileProps
   label?: React.ReactNode;
   /** Main KPI value, e.g. "₹11,98,842", "62%" */
   value?: React.ReactNode;
-  /** Size variant: 'default' (figure size 22px) or 'hero' (headline size 30px) */
+  /** 'default' (figure size 22px), 'hero' (headline size 30px) or 'plain' (the default's content with no card surface, border or padding, for a tile that already sits inside a card) */
   variant?: KpiTileVariant;
   /** Delta information (change figure and comparison period) */
   delta?: KpiDelta | React.ReactNode;
@@ -200,6 +200,19 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
             </div>
           )}
         </>
+      );
+    }
+
+    if (variant === 'plain') {
+      return (
+        <div
+          ref={ref}
+          role={error ? 'alert' : undefined}
+          className={cn('min-w-0 flex flex-col select-none', className)}
+          {...props}
+        >
+          {body}
+        </div>
       );
     }
 

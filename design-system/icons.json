@@ -203,5 +203,15 @@
   "name": "backspace",
   "phosphor": "backspace",
   "use": "Delete last character (amount keypad)"
+ },
+ {
+  "name": "grip",
+  "phosphor": "dots-six-vertical",
+  "use": "Drag handle (WidgetGrid)"
+ },
+ {
+  "name": "resize-corner",
+  "phosphor": "arrow-down-right",
+  "use": "Corner resize handle (WidgetGrid)"
  }
 ]

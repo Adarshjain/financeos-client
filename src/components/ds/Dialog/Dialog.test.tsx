@@ -762,3 +762,42 @@ describe('nested dialogs', () => {
     expect(overlay.compareDocumentPosition(screen.getByRole('dialog')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
+
+describe('Dialog size full', () => {
+  it('fills the viewport with no radius, sheet handle or breakpoint-only close', () => {
+    render(
+      <Dialog defaultOpen>
+        <DialogContent size="full" title="Card utilisation" onClose={vi.fn()}>
+          <DialogBody>Widget body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const panel = screen.getByText('Widget body').closest('div.pointer-events-auto');
+    expect(panel).toHaveClass('w-dvw', 'h-dvh', 'rounded-none', 'border-0');
+    expect(panel).not.toHaveClass('rounded-t-ds-2xl');
+    expect(screen.queryByTestId('dialog-drag-area')?.querySelector('.cursor-grab')).toBeNull();
+    const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => !b.classList.contains('sr-only'));
+    expect(close).toHaveClass('inline-flex');
+    expect(close).not.toHaveClass('hidden');
+  });
+
+  it('the close button closes it', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog defaultOpen onOpenChange={onOpenChange}>
+        <DialogContent size="full" title="Card utilisation">
+          <DialogBody>Widget body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => !b.classList.contains('sr-only'))!;
+    fireEvent.click(close);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('shell has no handle at full size', () => {
+    const { container } = render(<DialogShell size="full" title="Full" />);
+    expect(container.firstChild).toHaveClass('w-dvw', 'h-dvh');
+    expect(container.querySelector('.cursor-grab')).toBeNull();
+  });
+});

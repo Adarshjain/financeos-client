@@ -13,7 +13,8 @@ import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { useControllableState } from '../useControllableState';
 import { useSheetDrag } from '../useSheetDrag';
 
-export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
+/** `full` fills the whole viewport (100dvw x 100dvh), on phone too: no sheet, no handle. */
+export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type DialogVariant = 'modal' | 'side-panel';
 export type DialogBackground = 'surface' | 'canvas';
 
@@ -22,7 +23,10 @@ const dialogSizeClasses: Record<DialogSize, string> = {
   ['md']: 'desk:max-w-container-md',
   ['lg']: 'desk:max-w-container-lg',
   ['xl']: 'desk:max-w-container-xl',
+  ['full']: '',
 };
+
+const fullPanelClasses = 'w-dvw h-dvh max-h-dvh rounded-none shadow-none border-0';
 
 export interface DialogHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -292,17 +296,22 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
   ) => {
     const hasFooter = Boolean(primary || secondary || tertiary);
     const hasVisibleHeader = Boolean(title || description || showClose);
+    const isFull = size === 'full';
 
     return (
       <div
         ref={ref}
         className={cn(
           background === 'canvas' ? 'bg-canvas' : 'bg-surface',
-          'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh-safe desk:max-h-dvh w-full',
-          'rounded-t-ds-2xl shadow-up-2 border-t',
-          variant === 'side-panel'
-            ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full'
-            : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border',
+          'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft',
+          isFull
+            ? fullPanelClasses
+            : cn(
+                'max-h-dvh-safe desk:max-h-dvh w-full rounded-t-ds-2xl shadow-up-2 border-t',
+                variant === 'side-panel'
+                  ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full'
+                  : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border',
+              ),
           dialogSizeClasses[size],
           className
         )}
@@ -325,10 +334,10 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
 
         <div
           data-testid="dialog-drag-area"
-          {...(dismissible ? dragProps : {})}
+          {...(dismissible && !isFull ? dragProps : {})}
           className="select-none shrink-0 touch-none"
         >
-          {dismissible ? (
+          {dismissible && !isFull ? (
             <div className="desk:hidden cursor-grab active:cursor-grabbing touch-none py-space-8">
               <DialogHandle />
             </div>
@@ -369,7 +378,10 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
                   type="button"
                   aria-label="Close"
                   onClick={onClose}
-                  className="hidden desk:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                  className={cn(
+                    isFull ? 'inline-flex' : 'hidden desk:inline-flex',
+                    'text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring',
+                  )}
                 >
                   <Icon name="close" size="md" />
                 </button>
@@ -541,6 +553,7 @@ export const DialogContent = forwardRef<
   ) => {
     const { variant, open } = useContext(DialogVariantContext);
     const closeRef = useRef<HTMLButtonElement>(null);
+    const isFull = size === 'full';
 
     const handleClose = () => {
       closeRef.current?.click();
@@ -609,11 +622,13 @@ export const DialogContent = forwardRef<
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
             'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
-            variant === 'side-panel'
+            isFull
+              ? 'inset-0'
+              : variant === 'side-panel'
               ? cn('desk:top-space-24 desk:right-space-24 desk:bottom-space-24 desk:left-auto desk:w-full', dialogSizeClasses[size])
               : 'desk:inset-0 desk:items-center desk:justify-center desk:p-space-16',
             // A side panel's className places it (the page sets its top offset); the modal's goes to the panel.
-            variant === 'side-panel' && className
+            variant === 'side-panel' && !isFull && className
           )}
           {...props}
         >
@@ -625,19 +640,26 @@ export const DialogContent = forwardRef<
               ...style,
             }}
             className={cn(
-              'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh-safe desk:max-h-dvh w-full',
+              'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
-              'rounded-t-ds-2xl shadow-up-2 border-t',
-              variant === 'side-panel'
-                ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
-                : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
-              dialogSizeClasses[size],
-              'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
-              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
+              isFull
+                ? cn(
+                    fullPanelClasses,
+                    'animate-in fade-in-0 group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
+                  )
+                : cn(
+                    'max-h-dvh-safe desk:max-h-dvh w-full rounded-t-ds-2xl shadow-up-2 border-t',
+                    variant === 'side-panel'
+                      ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
+                      : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
+                    dialogSizeClasses[size],
+                    'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
+                    'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
+                  ),
               isDragging
                 ? 'transition-none'
                 : 'transition-transform duration-slow ease-out desk:duration-base',
-              variant !== 'side-panel' && className
+              (variant !== 'side-panel' || isFull) && className
             )}
           >
             <DialogPrimitive.Close

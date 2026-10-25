@@ -45,7 +45,7 @@ const meta: Meta<typeof DialogContent> = {
   argTypes: {
     size: {
       control: 'select',
-      options: ['sm', 'md', 'lg', 'xl'],
+      options: ['sm', 'md', 'lg', 'xl', 'full'],
     },
     background: {
       control: 'select',
@@ -334,4 +334,17 @@ export const Concealed: Story = {
   parameters: {
     docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
+};
+
+export const Full: Story = {
+  args: { size: 'full', title: 'Card utilisation', description: 'All cards, last 6 months.' },
+  render: (args) => (
+    <Dialog defaultOpen>
+      <DialogContent {...args} secondary={{ label: 'Close', onSelect: fn() }}>
+        <DialogBody>
+          <Text variant="body">HDFC Regalia ₹1,24,500 of ₹4,00,000 used. ICICI Amazon Pay ₹18,200 of ₹2,00,000 used.</Text>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  ),
 };

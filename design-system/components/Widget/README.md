@@ -12,13 +12,14 @@ A dashboard tile: title, subtitle and a ⋮ menu, then a figure, rows, a chart o
 Report widgets: Edit report · View full page · View underlying data (KPIs). Built-ins and templates: Widget settings · Duplicate as my report (templates) · View full page.
 
 ## Props
-`title`, `subtitle`, `menu`, `menuItems`, `loading`, `loadingSkeleton`, `error` (message node), `errorTitle`, `unavailable` (message node), `unavailableTitle`, `action` (`{ label, onSelect }`).
+`title`, `subtitle`, `menu`, `menuItems`, `loading`, `loadingSkeleton`, `error` (message node), `errorTitle`, `unavailable` (message node), `unavailableTitle`, `action` (`{ label, onSelect }`), `flush`.
 
 ## Built from
 Card, Menu, Skeleton, Button.
 
 ## Variants
 - Figure, rows loading, failed (error with action), unavailable (with action), with menu.
+- Flush (`flush`): the body has no side or bottom padding, so list rows and tables run edge to edge (owner, 2026-10-25); loading, failed and unavailable keep the padding.
 
 ## Hidden amounts
 Under a `ConcealProvider` with `concealed`, each ₹ amount in title and subtitle (through Card) reads "₹ —". See Conceal.

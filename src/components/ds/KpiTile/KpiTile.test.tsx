@@ -93,4 +93,13 @@ describe('KpiTile', () => {
     fireEvent.click(retryBtn);
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });
+
+  it('plain variant draws the content with no card surface or padding', () => {
+    const { container } = render(<KpiTile variant="plain" label="Spent" value="₹97,044" data-testid="tile" />);
+    const tile = screen.getByTestId('tile');
+    expect(screen.getByText('₹97,044')).toHaveClass('text-figure');
+    expect(tile).not.toHaveClass('border');
+    expect(tile.className).not.toMatch(/\bp[xy]?-space/);
+    expect(container.querySelector('[class*="px-space-16"]')).toBeNull();
+  });
 });

@@ -20,7 +20,7 @@ const meta: Meta<typeof KpiTile> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'hero'],
+      options: ['default', 'hero', 'plain'],
     },
     label: {
       control: 'text',
@@ -65,6 +65,19 @@ export const Hero: Story = {
       period: 'this month',
       direction: 'good',
     },
+  },
+};
+
+export const Plain: Story = {
+  args: {
+    label: 'Spent · October',
+    value: '₹97,044',
+    variant: 'plain',
+    delta: { value: '▲ 28%', period: 'vs Sep', direction: 'bad' },
+    context: '1 – 31 Oct',
+  },
+  parameters: {
+    docs: { description: { story: 'No card surface, border or padding: for a tile that already sits inside a card, such as a report widget.' } },
   },
 };
 
