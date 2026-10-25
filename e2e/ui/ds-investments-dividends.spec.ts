@@ -71,7 +71,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/^Suggestions/)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Rescan' })).toBeVisible();
 
-      await page.screenshot({ path: `/private/tmp/claude-501/-Users-adarshjana-Downloads-projects-FinanceOS/b7f55b60-fd0a-4b77-8b75-07847d35862c/scratchpad/inv-dividends/page-${viewport.width}.png`, fullPage: true });
+      await page.screenshot({ path: test.info().outputPath(`page-${viewport.width}.png`), fullPage: true });
     });
 
     test('Receipt status, Type, FY and Broker are one URL change each and answered by the server', async ({ page }) => {

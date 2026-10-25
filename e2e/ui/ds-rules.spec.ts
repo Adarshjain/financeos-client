@@ -12,8 +12,6 @@ import { uploadAndIngest } from '../fixtures/seed/statements';
 import { searchAll } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
-const SHOTS = '/private/tmp/claude-501/-Users-adarshjana-Downloads-projects-FinanceOS/b7f55b60-fd0a-4b77-8b75-07847d35862c/scratchpad/rules';
-
 /** The ⋮ of the card titled `name`. */
 const menuOf = (page: Page, name: string) =>
   page
@@ -202,16 +200,16 @@ for (const viewport of VIEWPORTS) {
         await page.goto('/ds/transactions/rules');
         await expect(page.getByText('Zepto', { exact: true })).toBeVisible();
         // caret: 'initial' keeps Playwright from rewriting inline styles before React has hydrated (a false hydration warning).
-        await page.screenshot({ path: `${SHOTS}/list-${tag}.png`, caret: 'initial' });
+        await page.screenshot({ path: test.info().outputPath(`list-${tag}.png`), caret: 'initial' });
         await menuOf(page, 'Third Wave').click();
         await page.getByRole('menuitem', { name: 'Edit rule' }).click();
         await expect(page.getByText('Matches now · 1')).toBeVisible();
-        await page.screenshot({ path: `${SHOTS}/edit-${tag}.png` });
+        await page.screenshot({ path: test.info().outputPath(`edit-${tag}.png`) });
         await page.goto('/ds/transactions/rules');
         await menuOf(page, 'Third Wave').click();
         await page.getByRole('menuitem', { name: 'Find matches' }).click();
         await expect(page.getByRole('dialog').getByRole('checkbox').first()).toBeVisible();
-        await page.screenshot({ path: `${SHOTS}/matches-${tag}.png` });
+        await page.screenshot({ path: test.info().outputPath(`matches-${tag}.png`) });
       });
     }
   });
