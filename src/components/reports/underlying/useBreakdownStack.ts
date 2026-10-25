@@ -6,7 +6,7 @@
 
 import { useCallback, useState } from 'react';
 
-import type { BreakdownFrame } from './underlying.types';
+import type { BreakdownFrame } from '@/features/reports/underlying/underlying.types';
 
 export interface BreakdownStack {
   /** The open frames, outermost first. */

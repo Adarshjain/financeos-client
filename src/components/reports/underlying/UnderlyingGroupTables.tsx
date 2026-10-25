@@ -10,11 +10,10 @@
 import { CardSortBar,TableCardList } from '@/components/reports/views/TableCardList';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { groupLabel, groupTotal, TableView } from '@/components/reports/views/TableView';
+import { partitionByGroup } from '@/features/reports/underlying/underlying.helpers';
 import { formatCell } from '@/features/reports/view/cells';
 import type { SortClause, TableData, TableRow } from '@/lib/reports.types';
 import { BELOW_SM_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
-
-import { partitionByGroup } from './underlying.helpers';
 
 export interface UnderlyingGroupTablesProps {
   /** The page of rows, all groups together. */

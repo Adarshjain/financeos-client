@@ -28,11 +28,11 @@ import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
 
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
-import type { UnderlyingSource } from '@/components/reports/underlying/underlying.types';
 import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import type { UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 import type { KpiData, SortClause } from '@/lib/reports.types';

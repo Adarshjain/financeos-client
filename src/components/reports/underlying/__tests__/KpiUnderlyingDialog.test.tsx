@@ -16,13 +16,13 @@ vi.mock('../UnderlyingTransactionDialog', () => ({
 
 import { toast } from 'sonner';
 
+import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
+import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { api, ApiError } from '@/lib/api/client';
 import type { KpiData, RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { KpiUnderlyingDialog } from '../KpiUnderlyingDialog';
-import { formatAmount } from '../underlying.helpers';
-import type { KpiUnderlyingResponse, UnderlyingSource } from '../underlying.types';
 
 const UNDERLYING = '/api/v1/reports/underlying';
 const CSV = '/api/v1/reports/underlying/csv';

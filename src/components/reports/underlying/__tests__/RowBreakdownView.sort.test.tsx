@@ -6,11 +6,11 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import type { BreakdownSectionData, RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
 import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { RowBreakdownView } from '../RowBreakdownView';
-import type { BreakdownSectionData, RowBreakdownResponse } from '../underlying.types';
 
 // Section header sort: asc → desc → default over the whole section on the
 // server, session-only per section, back to page 1 on every change.

@@ -33,6 +33,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  formatKpiValue,
+  saveBlob,
+  UNDERLYING_PAGE_SIZE,
+  underlyingCsvFilename,
+  underlyingSubtitleKey,
+} from '@/features/reports/underlying/underlying.helpers';
+import type {
+  KpiUnderlyingResponse,
+  UnderlyingPeriod,
+  UnderlyingSource,
+} from '@/features/reports/underlying/underlying.types';
+import { fetchUnderlyingCsv, useKpiUnderlying } from '@/features/reports/underlying/useKpiUnderlying';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
@@ -42,18 +55,6 @@ import { cn } from '@/lib/utils';
 
 import { LazyUnderlyingTransactionDialog } from './LazyUnderlyingTransactionDialog';
 import { RowBreakdownView } from './RowBreakdownView';
-import {
-  formatKpiValue,
-  saveBlob,
-  UNDERLYING_PAGE_SIZE,
-  underlyingCsvFilename,
-  underlyingSubtitleKey,
-} from './underlying.helpers';
-import type {
-  KpiUnderlyingResponse,
-  UnderlyingPeriod,
-  UnderlyingSource,
-} from './underlying.types';
 import { UnderlyingGroupTables } from './UnderlyingGroupTables';
 import {
   NotCountedDisclosure,
@@ -62,7 +63,6 @@ import {
   UnderlyingWinnerNote,
 } from './UnderlyingParts';
 import { useBreakdownStack } from './useBreakdownStack';
-import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
 export interface KpiUnderlyingDialogProps {
   source: UnderlyingSource;

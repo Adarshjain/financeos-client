@@ -8,12 +8,12 @@ vi.mock('@/lib/api/client', async () => {
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
+import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { api } from '@/lib/api/client';
 import type { KpiData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { KpiUnderlyingDialog } from '../KpiUnderlyingDialog';
-import type { KpiUnderlyingResponse, UnderlyingSource } from '../underlying.types';
 
 // The footer follows the body: Download CSV exports the KPI's own rows, so it
 // is offered on the list only; inside a row breakdown the footer is just Close.

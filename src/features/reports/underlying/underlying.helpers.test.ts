@@ -11,7 +11,7 @@ import {
   sourceKey,
   underlyingCsvFilename,
   underlyingSubtitleKey,
-} from '../underlying.helpers';
+} from './underlying.helpers';
 
 describe('asFormat', () => {
   it('keeps the three known formats', () => {

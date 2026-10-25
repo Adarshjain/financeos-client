@@ -11,13 +11,13 @@ vi.mock('@/lib/api/client', async () => {
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 vi.mock('../UnderlyingTransactionDialog', () => ({ UnderlyingTransactionDialog: () => null }));
 
+import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
+import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { api, ApiError } from '@/lib/api/client';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { KpiUnderlyingDialog } from '../KpiUnderlyingDialog';
-import { formatAmount } from '../underlying.helpers';
-import type { KpiUnderlyingResponse, UnderlyingSource } from '../underlying.types';
 
 const UNDERLYING = '/api/v1/reports/underlying';
 const CSV = '/api/v1/reports/underlying/csv';

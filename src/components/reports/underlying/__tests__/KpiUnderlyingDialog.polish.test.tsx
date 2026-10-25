@@ -12,13 +12,13 @@ vi.mock('../UnderlyingTransactionDialog', () => ({
     transactionId ? <div data-testid="txn-dialog">{transactionId}</div> : null,
 }));
 
+import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { api } from '@/lib/api/client';
 import type { KpiData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 import { stubPhone } from '@/test/stubPhone';
 
 import { KpiUnderlyingDialog } from '../KpiUnderlyingDialog';
-import type { KpiUnderlyingResponse, UnderlyingSource } from '../underlying.types';
 
 const UNDERLYING = '/api/v1/dashboards/builtins/{key}/underlying';
 const source: UnderlyingSource = { kind: 'builtin', key: 'net_worth', params: {} };

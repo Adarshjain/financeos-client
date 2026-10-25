@@ -6,12 +6,12 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
+import type { BreakdownSectionData, RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
 import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { RowBreakdownView } from '../RowBreakdownView';
-import { formatAmount } from '../underlying.helpers';
-import type { BreakdownSectionData, RowBreakdownResponse } from '../underlying.types';
 
 const BREAKDOWN = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown';
 const SECTION = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}';

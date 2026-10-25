@@ -9,16 +9,15 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
-import { cn } from '@/lib/utils';
-
-import { formatAmount } from './underlying.helpers';
+import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type {
   KpiUnderlyingResponse,
   UnderlyingExcludedItem,
   UnderlyingFilterChip,
   UnderlyingPeriod,
-} from './underlying.types';
+} from '@/features/reports/underlying/underlying.types';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
+import { cn } from '@/lib/utils';
 
 interface PeriodTabsProps {
   period: UnderlyingPeriod;

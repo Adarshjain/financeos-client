@@ -13,8 +13,8 @@ import { keys } from '@/lib/query/keys';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { createTestQueryClient } from '@/test/renderWithQuery';
 
-import type { UnderlyingSource } from '../underlying.types';
-import { fetchUnderlyingCsv, type UnderlyingQuery, useKpiUnderlying } from '../useKpiUnderlying';
+import type { UnderlyingSource } from './underlying.types';
+import { fetchUnderlyingCsv, type UnderlyingQuery, useKpiUnderlying } from './useKpiUnderlying';
 
 const request: RunReportRequest = {
   type: 'KPI',
