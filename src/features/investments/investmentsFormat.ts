@@ -1,6 +1,8 @@
 import { formatAmount, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import type { InstrumentType } from '@/lib/types';
 
+import { isLivePrice } from './marketHours';
+
 const MINUS = '−';
 
 /** "₹6,38,208": whole rupees. */
@@ -103,4 +105,10 @@ export function instrumentLabel(i: { name: string; symbol?: string | null }): st
 export function unitWord(type: InstrumentType, qty: number): string {
   if (type === 'mutual_fund') return qty === 1 ? 'unit' : 'units';
   return qty === 1 ? 'share' : 'shares';
+}
+
+/** "Live · 11:45" while the market is open and the price is from today, else "Close · 13 Oct, 15:30"; '' when the price has no time. */
+export function priceTimeLabel(day: string, at: string | null | undefined, now: Date): string {
+  if (!istTime(at)) return '';
+  return isLivePrice(at, now) ? `Live · ${istTime(at)}` : `Close · ${dayWithTime(day, at)}`;
 }

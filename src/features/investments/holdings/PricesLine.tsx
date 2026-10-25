@@ -25,18 +25,20 @@ export function jobHref(jobId: string): string {
 export interface PricesLineProps {
   /** "13 Oct", or null when no price is known. */
   asOf: string | null;
+  /** The whole wording when the price has a time ("Live · 11:45"); asOf is used when absent. */
+  label?: string | null;
   /** The newest price-refresh job on record. */
   latestJobId: string | null;
 }
 
 /** "Prices as of 13 Oct · Refresh · View job": Refresh starts the job and reports through toasts; View job is a permanent link to the exact job. */
-export function PricesLine({ asOf, latestJobId }: PricesLineProps) {
+export function PricesLine({ asOf, label, latestJobId }: PricesLineProps) {
   const router = useRouter();
   const { refresh, busy, jobId } = useRefreshPrices({ notify, onSettled: () => router.refresh() });
   const viewJob = jobId ?? latestJobId;
   return (
     <Text variant="caption" tone="ink-3" as="div">
-      {asOf ? `Prices as of ${asOf} · ` : 'No prices yet · '}
+      {label ? `${label} · ` : asOf ? `Prices as of ${asOf} · ` : 'No prices yet · '}
       <Button variant="link" size="sm" loading={busy} loadingLabel="Refreshing" onClick={() => void refresh()}>
         Refresh
       </Button>

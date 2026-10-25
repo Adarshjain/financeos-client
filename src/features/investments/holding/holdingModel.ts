@@ -3,7 +3,7 @@ import type { HoldingDetail, PricePoint, SellEstimate } from '@/lib/investments.
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 import { ratioText } from '../corporate-actions/corporateActionRatio';
-import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
+import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref } from '../investmentsTabs';
 
 // ---- Tabs ----------------------------------------------------------------------
@@ -103,10 +103,12 @@ export function sourceWord(source: string | null | undefined): string {
 }
 
 /** The eight figures of the holding, in board order. `tradeCount` is the holding's trades in the tradebook. */
-export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number): HoldingFigure[] {
+export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number, now: Date = new Date()): HoldingFigure[] {
   const unit = unitWord(holding.assetType, holding.quantity);
   const source = holding.manualPrice ? 'manual price' : sourceWord(instrument?.lastPriceSource);
-  const asOf = holding.priceAsOf ? dayWithTime(formatDayMonth(holding.priceAsOf), holding.priceAt) : '';
+  const day = holding.priceAsOf ? formatDayMonth(holding.priceAsOf) : '';
+  const timed = holding.manualPrice || !day ? '' : priceTimeLabel(day, holding.priceAt, now);
+  const asOf = timed || dayWithTime(day, holding.priceAt);
   return [
     { id: 'quantity', label: 'Quantity', value: quantity(holding.quantity) },
     { id: 'avgCost', label: 'Avg cost', value: unitPrice(holding.avgCost) },
@@ -114,7 +116,7 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
       id: 'ltp',
       label: 'LTP',
       value: holding.ltp != null && !holding.noPrice ? unitPrice(holding.ltp) : '—',
-      context: [source, asOf].filter(Boolean).join(' · ') || undefined,
+      context: (timed ? [asOf] : [source, asOf]).filter(Boolean).join(' · ') || undefined,
       override: true,
     },
     {
