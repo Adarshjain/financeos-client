@@ -126,7 +126,7 @@ describe('/ds/investments Holdings: figures', () => {
   it('shows the phone hero and the desktop tiles from the header', async () => {
     await renderPage();
     expect(screen.getAllByText('₹6,38,208').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('+₹3,566 today · +0.6%').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('+₹3,566 today · +0.56%').length).toBeGreaterThan(0);
     expect(screen.getAllByText('₹4,93,299').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('+₹1,44,909').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('+29.4% · XIRR 24.1%').length).toBeGreaterThan(0);

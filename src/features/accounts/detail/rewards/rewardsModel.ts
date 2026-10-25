@@ -471,7 +471,7 @@ export function ruleLines(rules: readonly RewardRule[] | null, report: RewardRep
   if (rules && rules.length > 0) {
     return [...rules]
       .sort((a, b) => b.priority - a.priority)
-      .map((r) => ({ id: r.id, title: `${r.priority} · ${r.name}`, description: ruleDescription(r), earned: earnedFor(r.id) }));
+      .map((r) => ({ id: r.id, title: r.name, description: ruleDescription(r), earned: earnedFor(r.id) }));
   }
   return report.rules.map((r) => ({ id: r.ruleId, title: r.name, description: '', earned: earnedFor(r.ruleId) }));
 }

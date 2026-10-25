@@ -237,6 +237,10 @@ export const Selectable: Story = {
   render: interactiveRender({ selectable: true }),
 };
 
+export const SelectionAlwaysOn: Story = {
+  render: interactiveRender({ selectable: true, selectionAlwaysOn: true, defaultSelection: ['1', '2'] }),
+};
+
 export const SelectAllAcrossPages: Story = {
   args: {
     selectable: true,

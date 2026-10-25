@@ -185,3 +185,34 @@ describe('TopBar dot and popover actions', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
+
+describe('TopBar menu actions', () => {
+  const open = () => fireEvent.pointerDown(screen.getByRole('button', { name: 'Add' }), { button: 0 });
+
+  it('opens a menu of the rows from the button', () => {
+    render(
+      <TopBar
+        title="Home"
+        actions={[{ id: 'add', icon: 'add', label: 'Add', menu: [{ id: 'a', label: 'Record trade' }, { id: 'b', label: 'Import tradebook' }] }]}
+      />,
+    );
+    expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
+    open();
+    expect(screen.getByRole('menuitem', { name: 'Record trade' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Import tradebook' })).toBeInTheDocument();
+  });
+
+  it('calls onSelect for a button row', () => {
+    const onSelect = vi.fn();
+    render(<TopBar title="Home" actions={[{ id: 'add', icon: 'add', label: 'Add', menu: [{ id: 'a', label: 'Record trade', onSelect }] }]} />);
+    open();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Record trade' }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a link row with its href', () => {
+    render(<TopBar title="Home" actions={[{ id: 'add', icon: 'add', label: 'Add', menu: [{ id: 'b', label: 'Import tradebook', asChild: true, children: <a href="/import" /> }] }]} />);
+    open();
+    expect(screen.getByRole('menuitem', { name: 'Import tradebook' })).toHaveAttribute('href', '/import');
+  });
+});

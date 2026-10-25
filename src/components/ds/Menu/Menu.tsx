@@ -70,6 +70,7 @@ export const MenuItem = forwardRef<
       active = false,
       action = false,
       disabled = false,
+      asChild = false,
       className,
       onClick,
       onSelect,
@@ -111,9 +112,10 @@ export const MenuItem = forwardRef<
         className={rowClass}
         onClick={onClick}
         onSelect={onSelect}
+        asChild={asChild}
         {...props}
       >
-        {content}
+        {asChild ? children : content}
       </DropdownMenuPrimitive.Item>
     );
   },

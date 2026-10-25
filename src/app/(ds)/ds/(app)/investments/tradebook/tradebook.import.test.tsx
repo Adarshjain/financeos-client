@@ -23,8 +23,8 @@ beforeEach(() => {
 });
 
 describe('/ds/investments/tradebook: Import tradebook', () => {
-  it('links to the Import tradebook page', async () => {
+  it('has no Import tradebook button in the tab (the top bar + menu holds it)', async () => {
     renderWithQuery(await DsTradebookPage({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByRole('link', { name: 'Import tradebook' })).toHaveAttribute('href', '/ds/investments/import');
+    expect(screen.queryByRole('link', { name: 'Import tradebook' })).toBeNull();
   });
 });

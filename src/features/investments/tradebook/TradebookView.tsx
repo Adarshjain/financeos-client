@@ -22,7 +22,6 @@ import {
 import { useSearchText } from '@/features/shell/useSearchText';
 
 import { jobHref } from '../holdings/PricesLine';
-import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 import {
   currentFy,
   fyOptions,
@@ -222,9 +221,6 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
   const filtered = isTradebookFiltered(state);
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <Button asChild variant="secondary" className="max-desk:w-full desk:self-end">
-        <Link href={INVESTMENTS_IMPORT_HREF}>Import tradebook</Link>
-      </Button>
       <JobsLine lines={jobLines} />
       <div className="flex flex-col desk:flex-row desk:items-center gap-space-8">
         <TextField

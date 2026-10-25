@@ -180,7 +180,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
 
     await page.goto(`/ds/rewards/cards/${card.id}`);
     await expect(page.getByText('Rules on this account')).toBeVisible({ timeout: 45_000 });
-    await page.getByRole('button', { name: /^\d+ · Ds Rename Rule/ }).click();
+    await page.getByRole('button', { name: /^Ds Rename Rule/ }).click();
     const edit = page.getByRole('dialog', { name: /Edit rule/ });
     await expect(edit).toBeVisible();
     // In place: still on the card page.
@@ -189,7 +189,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await edit.getByRole('button', { name: 'Save & recompute' }).click();
     await expect(toast(page, 'Rule updated')).toBeVisible();
     await expect(edit).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /^\d+ · Ds Renamed Rule/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Ds Renamed Rule/ })).toBeVisible();
     await expect(page.getByText('Ds Rename Rule', { exact: true })).toHaveCount(0);
   });
 

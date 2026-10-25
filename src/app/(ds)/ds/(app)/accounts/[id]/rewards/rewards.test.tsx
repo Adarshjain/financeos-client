@@ -172,7 +172,7 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.getByText('Behind')).toBeDefined();
     expect(screen.getByText('Rules on this account')).toBeDefined();
     expect(screen.getByText('First match wins')).toBeDefined();
-    expect(screen.getByText('1 · 5X')).toBeDefined();
+    expect(screen.getByText('5X')).toBeDefined();
     expect(screen.getByText('MCC 5812 · 20 pts / ₹150')).toBeDefined();
     expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/ds/rewards/rules?account=c1');
   });

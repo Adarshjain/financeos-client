@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { TopBar, type TopBarAction } from '@/components/ds';
+import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
@@ -30,6 +30,8 @@ export interface ShellPageProps {
   addHref?: string;
   /** A same-page add: the + calls this (e.g. opens a dialog) instead of navigating. Wins over addHref. */
   onAdd?: () => void;
+  /** The + opens a dropdown of these rows instead of one add. Wins over onAdd and addHref. */
+  addMenu?: TopBarMenuItem[];
   addLabel?: string;
   /** Where the phone back button goes (detail pages). Replaces the leading logo on phone; without it the bar shows the logo. */
   backHref?: string;
@@ -44,6 +46,7 @@ export function ShellPage({
   crumb,
   addHref,
   onAdd,
+  addMenu,
   addLabel,
   backHref,
   flushTop,
@@ -61,7 +64,19 @@ export function ShellPage({
         actions={[
           notifications,
           ...shellTopBarActions,
-          ...(onAdd
+          ...(addMenu
+            ? [
+                {
+                  id: 'add',
+                  icon: 'add' as const,
+                  label: addLabel ?? 'Add',
+                  variant: 'primary' as const,
+                  showLabel: true,
+                  labelIconSize: 'xs' as const,
+                  menu: addMenu,
+                },
+              ]
+            : onAdd
             ? [
                 {
                   id: 'add',

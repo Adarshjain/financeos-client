@@ -27,6 +27,7 @@ Both open the same Popover with the same item rows, so they look identical. They
   - `open?: boolean`: controlled open state.
   - `defaultOpen?: boolean`: uncontrolled initial open state.
   - `onOpenChange?: (open: boolean) => void`: open change callback.
+- `<Menu.Item asChild>`: renders its single child (e.g. the app's link) as the row, with no icon or hint wrapper.
 - `<ContextMenu>` (right-click on desktop, wraps any row; or open it at a point you give, on phone and desktop):
   - `items: { id: string; label: string; onSelect: () => void; tone?: 'default' | 'danger'; disabled?: boolean }[]`: the actions, in order; none = the browser's own menu stays.
   - `children?: React.ReactNode`: the row a right-click opens the menu from. Leave it out when you drive the menu with `open` and `point`.

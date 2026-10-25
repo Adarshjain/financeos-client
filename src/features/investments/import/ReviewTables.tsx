@@ -139,6 +139,7 @@ export function ExecutionsTable({ executions, rowStates, setRowStates, locked }:
           data={rows}
           getRowId={(r) => r.id}
           selectable
+          selectionAlwaysOn
           selection={selectedOf(
             rows.map((r) => r.id),
             skipped,
@@ -264,6 +265,7 @@ export function FnoTable({ trades, fnoRowStates, setFnoRowStates, locked }: FnoT
           data={rows}
           getRowId={(r) => r.id}
           selectable
+          selectionAlwaysOn
           selection={selectedOf(
             rows.map((r) => r.id),
             skipped,
@@ -392,6 +394,7 @@ export function CasTable({ rows: importRows, rowStates, setRowStates, locked }: 
           data={rows}
           getRowId={(r) => r.id}
           selectable
+          selectionAlwaysOn
           selection={selectedOf(
             rows.map((r) => r.id),
             skipped,

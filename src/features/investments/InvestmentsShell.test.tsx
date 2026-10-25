@@ -119,9 +119,7 @@ describe('InvestmentsShell', () => {
 
   it.each([
     ['/ds/investments', 'trade'],
-    ['/ds/investments/tradebook', 'trade'],
     ['/ds/investments/dividends', 'dividend'],
-    ['/ds/investments/fno', 'fno'],
     ['/ds/investments/corporate-actions', 'action'],
     ['/ds/investments/instruments', 'instrument'],
   ])('opens the dialog of %s with the top bar +', (path, dialog) => {
@@ -132,6 +130,29 @@ describe('InvestmentsShell', () => {
     expect(screen.getAllByTestId(/^dialog-/)).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
     expect(screen.queryByTestId(/^dialog-/)).toBeNull();
+  });
+
+  it.each([
+    ['/ds/investments/tradebook', 'trade', 'Record trade', 'Import tradebook'],
+    ['/ds/investments/fno', 'fno', 'Add F&O trade', 'Import statement'],
+  ])('makes the + on %s a menu with the add and the import', (path, dialog, addLabel, importLabel) => {
+    pathname = path;
+    renderShell();
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
+    expect(screen.queryByTestId(/^dialog-/)).toBeNull();
+    expect(screen.getByRole('menuitem', { name: importLabel })).toHaveAttribute('href', '/ds/investments/import');
+    fireEvent.click(screen.getByRole('menuitem', { name: addLabel }));
+    expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
+  });
+
+  it('keeps the + a plain button on Holdings, Dividends, Corporate actions and Instruments', () => {
+    for (const path of ['/ds/investments', '/ds/investments/dividends', '/ds/investments/corporate-actions', '/ds/investments/instruments']) {
+      pathname = path;
+      const { unmount } = renderShell();
+      fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
+      expect(screen.queryByRole('menu'), path).toBeNull();
+      unmount();
+    }
   });
 
   it("renders a holding's own page without the tab strip", () => {

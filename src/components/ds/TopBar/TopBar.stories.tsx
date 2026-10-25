@@ -96,3 +96,24 @@ export const WithNotifications: Story = {
     ],
   },
 };
+
+export const WithMenu: Story = {
+  args: {
+    title: 'Investments',
+    actions: [
+      { id: 'search', icon: 'search', label: 'Search', onSelect: fn() },
+      {
+        id: 'add',
+        icon: 'add',
+        label: 'Add',
+        variant: 'primary',
+        showLabel: true,
+        labelIconSize: 'xs',
+        menu: [
+          { id: 'record', label: 'Record trade', onSelect: fn() },
+          { id: 'import', label: 'Import tradebook', asChild: true, children: <a href="#import" /> },
+        ],
+      },
+    ],
+  },
+};
