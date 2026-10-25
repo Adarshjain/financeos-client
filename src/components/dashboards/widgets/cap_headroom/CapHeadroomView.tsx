@@ -10,11 +10,12 @@ import Link from 'next/link';
 import type { TemplateViewProps } from '@/components/dashboards/builtins/registry';
 import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
+import { formatCount } from '@/features/dashboards/builtins/builtin.helpers';
+import { type CapItem, capItems, type CapTone } from '@/features/dashboards/builtins/cap_headroom/capHeadroom.model';
 import { isRawTableData } from '@/lib/reports.helpers';
 import { cn, formatMoney } from '@/lib/utils';
 
-import { formatCount, ListPager, WidgetNote } from '../cards_spending_kit/kit';
-import { type CapItem, capItems, type CapTone } from './capHeadroom.model';
+import { ListPager, WidgetNote } from '../cards_spending_kit/kit';
 
 const BAR: Record<CapTone, string> = {
   neutral: 'bg-slate-400 dark:bg-slate-500',

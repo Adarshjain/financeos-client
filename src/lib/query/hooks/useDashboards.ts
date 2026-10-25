@@ -121,30 +121,40 @@ export function useAddDashboardWidget() {
  * `updatedAt` is the version the caller showed. The server clears the flag
  * on the previous default.
  */
+export async function setDefaultDashboard({
+  id,
+  makeDefault,
+  updatedAt,
+}: {
+  id: string;
+  makeDefault: boolean;
+  updatedAt: string;
+}) {
+  const { data: current } = await api.GET('/api/v1/dashboards/{id}', {
+    params: { path: { id } },
+  });
+  if (!current) throw new Error('Dashboard not found');
+  if (current.updatedAt !== updatedAt) {
+    throw new Error(
+      'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
+    );
+  }
+  const widgets = current.widgets.map(toDashboardWidget);
+  return api.PUT('/api/v1/dashboards/{id}', {
+    params: { path: { id } },
+    body: {
+      name: current.name,
+      description: current.description ?? undefined,
+      isDefault: makeDefault,
+      widgets,
+    },
+  });
+}
+
 export function useSetDefaultDashboard() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, makeDefault, updatedAt }: { id: string; makeDefault: boolean; updatedAt: string }) => {
-      const { data: current } = await api.GET('/api/v1/dashboards/{id}', {
-        params: { path: { id } },
-      });
-      if (!current) throw new Error('Dashboard not found');
-      if (current.updatedAt !== updatedAt) {
-        throw new Error(
-          'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
-        );
-      }
-      const widgets = current.widgets.map(toDashboardWidget);
-      return api.PUT('/api/v1/dashboards/{id}', {
-        params: { path: { id } },
-        body: {
-          name: current.name,
-          description: current.description ?? undefined,
-          isDefault: makeDefault,
-          widgets,
-        },
-      });
-    },
+    mutationFn: setDefaultDashboard,
     onSuccess: (_res, vars) => {
       qc.invalidateQueries({ queryKey: keys.dashboards.all });
       toast.success(vars.makeDefault ? 'Set as default' : 'Default cleared');

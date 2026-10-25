@@ -39,6 +39,7 @@ import { type ComponentType, createElement, type ReactElement } from 'react';
 
 import { BillsDueWidget } from '@/components/bills/BillsDueWidget';
 import { InboxWidget } from '@/components/inbox/InboxWidget';
+import { ALL_CARDS_SUBTITLE, ATTENTION_SUBTITLE, NET_WORTH_SUBTITLE, upcomingSubtitle } from '@/features/dashboards/builtins/subtitles';
 import {
   BUILTIN_ATTENTION,
   BUILTIN_BILLS_DUE,
@@ -142,20 +143,17 @@ function withGroups(): Record<string, BuiltinRegistryEntry> {
 export const BUILTIN_REGISTRY: Readonly<Record<string, BuiltinRegistryEntry>> = {
   [BUILTIN_NET_WORTH]: {
     icon: Wallet,
-    subtitle: () => 'All accounts',
+    subtitle: () => NET_WORTH_SUBTITLE,
   },
   [BUILTIN_ATTENTION]: {
     icon: Inbox,
     Body: InboxBody,
     phone: CONTENT,
-    subtitle: () => 'Most urgent first',
+    subtitle: () => ATTENTION_SUBTITLE,
   },
   [BUILTIN_UPCOMING]: {
     icon: CalendarClock,
-    subtitle: (widget) => {
-      const days = widgetParams(widget).days;
-      return typeof days === 'number' ? `Next ${days} ${days === 1 ? 'day' : 'days'}` : null;
-    },
+    subtitle: (widget) => upcomingSubtitle(widgetParams(widget)),
   },
   [BUILTIN_BILLS_DUE]: {
     icon: CreditCard,
@@ -163,7 +161,7 @@ export const BUILTIN_REGISTRY: Readonly<Record<string, BuiltinRegistryEntry>> = 
     phone: CONTENT,
     subtitle: (widget) => {
       const accountId = widgetParams(widget).accountId;
-      return typeof accountId === 'string' ? createElement(CardNameSubtitle, { accountId }) : 'All cards';
+      return typeof accountId === 'string' ? createElement(CardNameSubtitle, { accountId }) : ALL_CARDS_SUBTITLE;
     },
   },
   ...withGroups(),

@@ -11,10 +11,10 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { nextWidth, widthToggleLabel } from '@/features/dashboards/editor/dashboardEditor.helpers';
 import { isBuiltinWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 
-import { nextWidth, widthToggleLabel } from './editor/dashboardEditor.helpers';
 import { WidgetActionsMenu } from './WidgetActionsMenu';
 import { widgetHref, WidgetIcon, WidgetSubtitle } from './widgetMeta';
 

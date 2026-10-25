@@ -14,29 +14,17 @@ import { useState } from 'react';
 import type { TemplateViewProps } from '@/components/dashboards/builtins/registry';
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { EmptyState } from '@/components/ui/empty-state';
+import { formatCount, formatRupees } from '@/features/dashboards/builtins/builtin.helpers';
+import {
+  buildRewardsEarned,
+  nativeText,
+  type RewardCardRow,
+  rewardsRequest,
+} from '@/features/dashboards/builtins/rewards_earned/rewardsEarned.model';
 import { widgetTitle } from '@/lib/dashboards.helpers';
-import { buildFilter, isPivotTableData } from '@/lib/reports.helpers';
-import type { RunReportRequest } from '@/lib/reports.types';
+import { isPivotTableData } from '@/lib/reports.helpers';
 
-import { adhocKpi, DrillValue, formatCount, formatRupees, ListPager, WidgetNote } from '../cards_spending_kit/kit';
-import { buildRewardsEarned, type RewardCardRow } from './rewardsEarned.model';
-
-/** Reward value earned this FY, optionally on one card. */
-export function rewardsRequest(cardId: string | null): RunReportRequest {
-  const filters = [buildFilter('effectiveDate', 'current_fy')];
-  if (cardId) filters.push(buildFilter('card', 'is', cardId));
-  return adhocKpi('reward_earnings', 'valueInr', filters);
-}
-
-/** The card's earnings in its own unit. */
-export function nativeText(row: RewardCardRow): string {
-  const parts: string[] = [];
-  if (row.points > 0) {
-    parts.push(row.unvalued ? `${formatCount(row.points)} pts` : `${formatCount(row.points)} pts ≈ ${formatRupees(row.pointsValue)}`);
-  }
-  if (row.cash > 0 || parts.length === 0) parts.push(formatRupees(row.cash));
-  return parts.join(' + ');
-}
+import { DrillValue, ListPager, WidgetNote } from '../cards_spending_kit/kit';
 
 const figureClass = 'font-semibold tabular-nums text-slate-900 dark:text-white';
 

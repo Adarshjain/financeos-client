@@ -9,12 +9,13 @@ import Link from 'next/link';
 
 import type { TemplateViewProps } from '@/components/dashboards/builtins/registry';
 import { EmptyState } from '@/components/ui/empty-state';
+import { formatCount } from '@/features/dashboards/builtins/builtin.helpers';
+import { type MilestoneItem, nearestPerCard } from '@/features/dashboards/builtins/milestone_progress/milestoneProgress.model';
 import { todayInAppZone } from '@/lib/date-range';
 import { isRawTableData } from '@/lib/reports.helpers';
 import { formatMoney } from '@/lib/utils';
 
-import { formatCount, ListPager, WidgetNote } from '../cards_spending_kit/kit';
-import { type MilestoneItem, nearestPerCard } from './milestoneProgress.model';
+import { ListPager, WidgetNote } from '../cards_spending_kit/kit';
 
 function amount(value: number, counts: boolean): string {
   return counts ? formatCount(value) : formatMoney(value);

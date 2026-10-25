@@ -11,6 +11,8 @@ import { useMemo, useState } from 'react';
 
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { moverWindow } from '@/features/dashboards/builtins/top_movers/moverWindow';
+import { type Mover, topMovers } from '@/features/dashboards/builtins/top_movers/topMovers';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +27,6 @@ import {
   WidgetLoadError,
   WidgetLoadingRows,
 } from '../investmentsLoansKit/kit';
-import { type Mover, topMovers } from './topMovers';
 
 type Side = 'gainers' | 'losers';
 
@@ -102,12 +103,7 @@ export function TopMoversWidget({ n, className }: { n: number; className?: strin
   );
 }
 
-/** "08/10 → 09/10": the row's own previous close → latest price (when the rows' windows differ). */
-export function moverWindow(mover: Mover): string | null {
-  if (!mover.previousCloseAsOf) return null;
-  const to = mover.lastPriceAsOf ? dayMonth(mover.lastPriceAsOf) : null;
-  return to ? `${dayMonth(mover.previousCloseAsOf)} → ${to}` : `since ${dayMonth(mover.previousCloseAsOf)}`;
-}
+export { moverWindow };
 
 function MoverRow({ mover, showWindow, onOpen }: { mover: Mover; showWindow: boolean; onOpen: () => void }) {
   const tone = gainTone(mover.changePct);

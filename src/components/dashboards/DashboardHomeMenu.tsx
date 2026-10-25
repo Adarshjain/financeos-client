@@ -18,13 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditor.helpers';
 import type { BuiltinWidgetResponse, DashboardResponse, WidgetParams } from '@/lib/dashboards.types';
 import { useAddDashboardWidget, useSetDefaultDashboard } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 import { AddWidgetDialog } from './AddWidgetDialog';
-import { builtinWidgetResponse, reportWidgetResponse } from './editor/dashboardEditor.helpers';
 
 interface DashboardHomeMenuProps {
   dashboard: DashboardResponse;

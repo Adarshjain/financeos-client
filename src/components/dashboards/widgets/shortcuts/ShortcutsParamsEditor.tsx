@@ -16,9 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ITEMS_PARAM, itemsSpec, moveId, removeId, toggleId } from '@/features/dashboards/builtins/shortcuts/shortcutsParams';
 import { cn } from '@/lib/utils';
-
-import { ITEMS_PARAM, itemsSpec, moveId, removeId, toggleId } from './shortcutsParams';
 
 const GROUPS: Array<{ kind: ShortcutKind; label: string }> = [
   { kind: 'page', label: 'Pages' },

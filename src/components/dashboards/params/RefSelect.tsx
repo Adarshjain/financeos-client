@@ -29,10 +29,8 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useActiveLoans } from '@/lib/query/hooks/useLoans';
 import { AccountType } from '@/lib/types';
 
-import type { ParamRef } from './paramsModel';
+import { ALL_VALUE, type ParamRef, UNAVAILABLE_LABEL } from './paramsModel';
 
-/** The "All …" choice's value (Radix Select items cannot use ''). */
-export const ALL_VALUE = '__all__';
 
 interface RefCopy {
   all: string;
@@ -47,9 +45,6 @@ const COPY: Record<ParamRef, RefCopy> = {
   account: { all: 'All accounts', placeholder: 'Choose an account', empty: 'No open accounts', noun: 'account' },
   loan: { all: 'All loans', placeholder: 'Choose a loan', empty: 'No active loans', noun: 'loan' },
 };
-
-/** The stale value's option ("No longer available" is never a pick). */
-export const UNAVAILABLE_LABEL = 'No longer available';
 
 const ACCOUNT_GROUPS: Array<{ type: AccountType; label: string }> = [
   { type: AccountType.BANK_ACCOUNT, label: 'Bank accounts' },

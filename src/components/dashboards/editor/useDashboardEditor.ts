@@ -6,6 +6,15 @@ import { useEffect, useState } from 'react';
 import type { Layout } from 'react-grid-layout/legacy';
 import { toast } from 'sonner';
 
+import {
+  applyLayout,
+  builtinWidgetResponse,
+  editSignature,
+  reportWidgetResponse,
+  toggleWidth,
+  updateTextWidget,
+  withHeaderOnTop,
+} from '@/features/dashboards/editor/dashboardEditor.helpers';
 import { api } from '@/lib/api/client';
 import { toDashboardWidget, validateWidgets } from '@/lib/dashboards.helpers';
 import type {
@@ -21,17 +30,7 @@ import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 
-import {
-  applyLayout,
-  builtinWidgetResponse,
-  editSignature,
-  reportWidgetResponse,
-  toggleWidth,
-  updateTextWidget,
-  withHeaderOnTop,
-} from './dashboardEditor.helpers';
-
-export { editSignature } from './dashboardEditor.helpers';
+export { editSignature } from '@/features/dashboards/editor/dashboardEditor.helpers';
 
 interface UseDashboardEditorProps {
   mode: 'create' | 'edit';

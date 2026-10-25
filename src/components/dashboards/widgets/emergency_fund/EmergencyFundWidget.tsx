@@ -14,38 +14,25 @@ import { WidgetMessage, WidgetSkeleton } from '@/components/dashboards/WidgetSta
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { formatRupees } from '@/features/dashboards/builtins/builtin.helpers';
+import { formatMonthsCovered, monthName, noFigureReason } from '@/features/dashboards/builtins/emergency_fund/emergencyFund.model';
+import { liquidBalanceRequest, monthOutflowRequest } from '@/features/dashboards/builtins/emergency_fund/emergencyFund.requests';
 import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { type EmergencyFund, type EmergencyFundMonth, useEmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
+import { type EmergencyFundMonth, useEmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-import { DrillValue, formatRupees } from '../cards_spending_kit/kit';
-import { liquidBalanceRequest, monthOutflowRequest } from './emergencyFund.requests';
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+import { DrillValue } from '../cards_spending_kit/kit';
 
 const BAND_TEXT: Record<string, string> = {
   low: 'text-rose-600 dark:text-rose-400',
   medium: 'text-amber-600 dark:text-amber-400',
   high: 'text-emerald-600 dark:text-emerald-400',
 };
-
-/** "Apr" (and the year, for labels: "Apr 2026") from YYYY-MM. */
-export function monthName(month: string, withYear = false): string {
-  const [y, m] = month.split('-').map(Number);
-  const name = MONTHS[m - 1] ?? month;
-  return withYear ? `${name} ${y}` : name;
-}
-
-/** "4.2 months" / "1 month". */
-export function formatMonthsCovered(months: number): string {
-  const text = Number.isInteger(months) ? String(months) : months.toFixed(1);
-  return `${text} ${months === 1 ? 'month' : 'months'}`;
-}
 
 function MonthBars({ months, onOpen }: { months: EmergencyFundMonth[]; onOpen: (m: EmergencyFundMonth) => void }) {
   const max = Math.max(0, ...months.filter((m) => !m.beforeHistory).map((m) => m.outflow));
@@ -87,19 +74,6 @@ function MonthBars({ months, onOpen }: { months: EmergencyFundMonth[]; onOpen: (
       })}
     </div>
   );
-}
-
-/** Why there is no months-covered figure yet. */
-export function noFigureReason(fund: EmergencyFund): string {
-  if (fund.historyMonths === 0) {
-    return 'Months covered appear once your bank and cash accounts have a full month of transactions.';
-  }
-  const span = `${fund.historyMonths} ${fund.historyMonths === 1 ? 'month' : 'months'}`;
-  // The figure uses the median month, so a few months with outflow among mostly empty ones still give 0.
-  if (fund.months.some((m) => !m.beforeHistory && Number(m.outflow) > 0)) {
-    return `Most of the last ${span} had no outflow from your bank and cash accounts, so the usual monthly outflow is ₹0.`;
-  }
-  return `No outflow from your bank and cash accounts in the last ${span}.`;
 }
 
 const LIQUID_TYPES: readonly string[] = [AccountType.BANK_ACCOUNT, AccountType.GENERIC];

@@ -6,11 +6,6 @@ import { ShellPage } from '@/features/shell/ShellPage';
 
 /** Boards in design-system/screens that have no /ds page yet: [page, area]. */
 const TO_BUILD: [string, string][] = [
-  ['Home', 'Home & dashboards'],
-  ['Dashboards', 'Home & dashboards'],
-  ['Dashboard view and editing', 'Home & dashboards'],
-  ['New dashboard', 'Home & dashboards'],
-  ['Add widget and widget settings', 'Home & dashboards'],
   ['Search', 'Home & dashboards'],
   ['Report view and breakdown', 'Reports'],
   ['Underlying data', 'Reports'],
@@ -41,6 +36,19 @@ export default function DsIndexPage() {
         {/* Signed in section */}
         <Card>
           <SectionHeader borderTop={false}>Signed in</SectionHeader>
+          <ListRow asChild title="Home" subtitle="/ds/dashboard" chevron>
+            <Link href="/ds/dashboard" />
+          </ListRow>
+          <ListRow asChild title="Dashboards" subtitle="/ds/dashboards" chevron>
+            <Link href="/ds/dashboards" />
+          </ListRow>
+          {/* A dashboard's page needs a real id: open one from Dashboards. */}
+          <ListRow asChild title="Dashboard" subtitle="/ds/dashboards/[id]" chevron>
+            <Link href="/ds/dashboards" />
+          </ListRow>
+          <ListRow asChild title="New dashboard" subtitle="/ds/dashboards/new" chevron>
+            <Link href="/ds/dashboards/new" />
+          </ListRow>
           <ListRow asChild title="Accounts" subtitle="/ds/accounts" chevron>
             <Link href="/ds/accounts" />
           </ListRow>

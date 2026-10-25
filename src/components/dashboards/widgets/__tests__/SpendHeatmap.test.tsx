@@ -11,20 +11,20 @@ vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
 }));
 
 import {
+  daySpendRequest,
+  fitGrid,
+  SpendHeatmapView,
+  visibleMonthLabels,
+} from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+import {
   buildHeatmap,
+  heatmapMonths,
   levelOf,
   parseDayLabel,
   quartiles,
   spendByDay,
   windowStart,
-} from '@/components/dashboards/widgets/spend_heatmap/heatmap.model';
-import {
-  daySpendRequest,
-  fitGrid,
-  heatmapMonths,
-  SpendHeatmapView,
-  visibleMonthLabels,
-} from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+} from '@/components/organisms/Chart/heatmap.model';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { dayChart, dialogProps, noop, NOW, rawTable, TODAY, widget } from './cardsSpendingFixtures';

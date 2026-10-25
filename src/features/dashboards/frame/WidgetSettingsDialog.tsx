@@ -1,0 +1,75 @@
+'use client';
+
+// "Widget settings": a built-in's params (the same form as the picker's) and an optional title in place of its own.
+// Mounted only while open. Save hands the change to the dashboard (view mode saves it straight away, edit mode
+// takes it into the draft); a failed save keeps the dialog open.
+
+import React from 'react';
+
+import { Dialog, DialogBody, DialogContent, showToast, TextField } from '@/components/ds';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import { widgetParams } from '@/lib/dashboards.helpers';
+import type { BuiltinWidgetResponse, WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
+
+import { ParamFields } from '../params/ParamFields';
+import { useBuiltinParamsForm } from '../params/useBuiltinParamsForm';
+
+/** Stands in for the params form of a widget that has none. */
+const NO_PARAMS: BuiltinWidgetResponse = { key: '', label: '', description: '', category: '', kind: 'template', minW: 0, params: [] };
+
+export interface WidgetSettingsChange {
+  /** A built-in's new params; absent for a widget without any (a report widget): only its title changes. */
+  params?: WidgetParams;
+  title: string | null;
+}
+
+export interface WidgetSettingsDialogProps {
+  widget: WidgetResponse;
+  /** The built-in's catalog entry; none for a report widget (its title is all there is to set). */
+  def?: BuiltinWidgetResponse;
+  /** Named in the description: "Changes this widget on Money overview only". */
+  dashboardName?: string;
+  onSave: (change: WidgetSettingsChange) => Promise<void> | void;
+  onClose: () => void;
+}
+
+export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClose }: WidgetSettingsDialogProps) {
+  const form = useBuiltinParamsForm(def ?? NO_PARAMS, widgetParams(widget));
+  const name = def?.label ?? widget.report?.name ?? '';
+  const [title, setTitle] = React.useState(widget.title ?? '');
+  const [saving, setSaving] = React.useState(false);
+  // State updates are async: the ref stops a second press before the re-render disables the button.
+  const inFlight = React.useRef(false);
+
+  const save = async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSaving(true);
+    try {
+      await onSave({ ...(def ? { params: form.params() } : {}), title: title.trim() || null });
+      onClose();
+    } catch (e) {
+      showToast(getErrorMessage(e, "Couldn't save the widget settings. Try again."), { tone: 'danger' });
+    } finally {
+      inFlight.current = false;
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
+      <DialogContent
+        size="sm"
+        title={`Widget settings · ${name}`}
+        description={dashboardName ? `Changes this widget on ${dashboardName} only` : undefined}
+        secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
+        primary={{ label: 'Save', onSelect: () => void save(), disabled: !form.valid || saving, loading: saving }}
+      >
+        <DialogBody>
+          <ParamFields form={form} />
+          <TextField label="Title" optional placeholder={name} value={title} onValueChange={setTitle} />
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  );
+}

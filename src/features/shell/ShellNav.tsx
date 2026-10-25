@@ -35,6 +35,8 @@ import {
 import { usePendingPath } from './navigationStore';
 import { appHref, DS_HOME_HREF } from './routes';
 
+const subscribeNever = () => () => undefined;
+
 type NavCount = { count: number; countTone: 'danger' | 'warning' };
 
 /**
@@ -44,7 +46,12 @@ type NavCount = { count: number; countTone: 'danger' | 'warning' };
 function useNavCounts(): Record<string, NavCount> {
   const { data: inbox } = useInboxSummary();
   const { data: review } = useNeedsReviewCount();
+  // Pages seed these counts into the cache while they render, so what the rail and the tab bar find in it depends on
+  // their order in the tree and on when each hydrates. Counts therefore wait for hydration: the server and the first
+  // client render both draw none, and they show at once after it.
+  const hydrated = React.useSyncExternalStore(subscribeNever, () => true, () => false);
   const counts: Record<string, NavCount> = {};
+  if (!hydrated) return counts;
   if (inbox?.badge) counts.inbox = { count: inbox.badge, countTone: 'danger' };
   if (review) counts.transactions = { count: review, countTone: 'warning' };
   return counts;

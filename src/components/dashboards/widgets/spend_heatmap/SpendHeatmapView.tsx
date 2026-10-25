@@ -10,20 +10,18 @@ import { CalendarDays } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import type { TemplateViewProps } from '@/components/dashboards/builtins/registry';
+import { buildHeatmap, type HeatCell, heatmapMonths,type HeatWeek } from '@/components/organisms/Chart/heatmap.model';
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
+import { daySpendRequest } from '@/features/dashboards/builtins/spend_heatmap/heatmap.requests';
 import { useElementSize } from '@/lib/charts/useElementSize';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import { todayInAppZone } from '@/lib/date-range';
-import { buildFilter, isChartData } from '@/lib/reports.helpers';
-import type { RunReportRequest } from '@/lib/reports.types';
+import { isChartData } from '@/lib/reports.helpers';
 import { cn, formatMoney } from '@/lib/utils';
 
-import { adhocKpi, WidgetNote } from '../cards_spending_kit/kit';
-import { buildHeatmap, type HeatCell, type HeatWeek } from './heatmap.model';
-
-export const HEATMAP_DEFAULT_MONTHS = 6;
+import { WidgetNote } from '../cards_spending_kit/kit';
 
 /** Intensity fills, none → heaviest (the picker preview uses the same scale). */
 export const HEAT_LEVEL_CLASSES = [
@@ -42,21 +40,7 @@ const LABEL_COL = 26;
 const CHROME_H = 48;
 const DAY_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', ''];
 
-/** The heatmap's months param (1–12), defaulting to 6. */
-export function heatmapMonths(params: Record<string, unknown>): number {
-  const m = params.months;
-  return typeof m === 'number' && m >= 1 ? Math.min(12, Math.floor(m)) : HEATMAP_DEFAULT_MONTHS;
-}
-
-/** One day's spend, as the calendar counts it: debits, not excluded, not a transfer leg. */
-export function daySpendRequest(date: string): RunReportRequest {
-  return adhocKpi('transactions', 'spend', [
-    buildFilter('type', 'is', 'DEBIT'),
-    buildFilter('isExcluded', 'is', false),
-    buildFilter('isTransferLeg', 'is', false),
-    buildFilter('date', 'is', date),
-  ]);
-}
+export { daySpendRequest };
 
 /** Cell size and how many of the latest weeks fit the box; an unmeasured box (0×0) shows all at the default size. */
 export function fitGrid(width: number, height: number, weeks: number): { cell: number; shown: number } {

@@ -4,7 +4,6 @@
 // saved reports.
 
 import type { BuiltinWidgetResponse } from '@/lib/dashboards.types';
-import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 export type PickerCategory =
   | 'all'
@@ -33,32 +32,4 @@ export function visibleCategories(builtins: BuiltinWidgetResponse[]): typeof PIC
   return PICKER_CATEGORIES.filter((c) => c.id === 'all' || c.id === 'reports' || used.has(c.id));
 }
 
-/** Case-insensitive match of every word of the query against any of the texts. */
-export function matchesQuery(query: string, ...texts: Array<string | null | undefined>): boolean {
-  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return true;
-  const haystack = texts.filter(Boolean).join(' ').toLowerCase();
-  return words.every((w) => haystack.includes(w));
-}
-
-/** The built-ins shown for a category and query (none under Your reports). */
-export function filterBuiltins(
-  builtins: BuiltinWidgetResponse[],
-  category: PickerCategory,
-  query: string,
-): BuiltinWidgetResponse[] {
-  if (category === 'reports') return [];
-  return builtins.filter(
-    (b) => (category === 'all' || b.category === category) && matchesQuery(query, b.label, b.description),
-  );
-}
-
-/** The saved reports shown for a category and query (only under All and Your reports). */
-export function filterReports(
-  reports: ReportSummaryResponse[],
-  category: PickerCategory,
-  query: string,
-): ReportSummaryResponse[] {
-  if (category !== 'all' && category !== 'reports') return [];
-  return reports.filter((r) => matchesQuery(query, r.name, r.type));
-}
+export { filterBuiltins, filterReports, matchesQuery } from '@/features/dashboards/picker/pickerModel';

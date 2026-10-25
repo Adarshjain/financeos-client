@@ -83,7 +83,7 @@ export function reportWidgetResponse(
 }
 
 /** A new built-in's width: full when its minimum is the whole grid, a quarter when it allows one, else half. */
-function newBuiltinWidth(minW: number): number {
+export function newBuiltinWidth(minW: number): number {
   if (minW >= DASHBOARD_GRID_COLUMNS) return DASHBOARD_GRID_COLUMNS;
   if (minW <= QUARTER_WIDTH) return QUARTER_WIDTH;
   return Math.max(HALF_WIDTH, minW);
@@ -175,6 +175,15 @@ export function isWidgetAvailable(widget: WidgetResponse): boolean {
   if (isTextWidget(widget)) return true;
   if (isBuiltinWidget(widget)) return widget.builtin != null;
   return Boolean(widget.reportId) && widget.report?.available === true;
+}
+
+/**
+ * Where a built-in's header "Open" and "View full page" go (a Legacy-shaped path): its own page (Accounts, Inbox, Upcoming).
+ * Null for a saved report (its page is the report editor, offered as "Edit report"), an unavailable widget, or a built-in without one.
+ */
+export function widgetHref(widget: WidgetResponse, available: boolean = isWidgetAvailable(widget)): string | null {
+  if (!available || !isBuiltinWidget(widget)) return null;
+  return widget.builtin?.href ?? null;
 }
 
 /** Display title: the override, else the built-in label, else the report name. A header's title is its text. */

@@ -32,6 +32,8 @@ import { DashboardGrid } from '@/components/dashboards/DashboardGrid';
 import { DashboardStack } from '@/components/dashboards/DashboardStack';
 import { DashboardTextWidget } from '@/components/dashboards/DashboardTextWidget';
 import { DashboardView } from '@/components/dashboards/DashboardView';
+import { DashboardEditorHeader } from '@/components/dashboards/editor/DashboardEditorHeader';
+import { useDashboardEditor } from '@/components/dashboards/editor/useDashboardEditor';
 import {
   applyLayout,
   editSignature,
@@ -39,9 +41,7 @@ import {
   updateTextWidget,
   widthStops,
   withHeaderOnTop,
-} from '@/components/dashboards/editor/dashboardEditor.helpers';
-import { DashboardEditorHeader } from '@/components/dashboards/editor/DashboardEditorHeader';
-import { useDashboardEditor } from '@/components/dashboards/editor/useDashboardEditor';
+} from '@/features/dashboards/editor/dashboardEditor.helpers';
 import { api } from '@/lib/api/client';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { createTestQueryClient } from '@/test/renderWithQuery';

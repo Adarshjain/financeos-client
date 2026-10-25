@@ -8,11 +8,6 @@ vi.mock('@/lib/api/client', async () => {
 });
 
 import { DashboardWidgetView } from '@/components/dashboards/DashboardWidgetView';
-import { api } from '@/lib/api/client';
-import { newBuiltinWidget, QUARTER_WIDTH } from '@/lib/dashboards.helpers';
-import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
-import { renderWithQuery } from '@/test/renderWithQuery';
-
 import {
   builtinWidgetResponse,
   canToggleWidth,
@@ -20,7 +15,11 @@ import {
   toggleWidth,
   widthStops,
   widthToggleLabel,
-} from '../dashboardEditor.helpers';
+} from '@/features/dashboards/editor/dashboardEditor.helpers';
+import { api } from '@/lib/api/client';
+import { newBuiltinWidget, QUARTER_WIDTH } from '@/lib/dashboards.helpers';
+import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
+import { renderWithQuery } from '@/test/renderWithQuery';
 
 const widget = (minW: number, w: number, x = 0): WidgetResponse => ({
   id: `w${minW}-${w}`,

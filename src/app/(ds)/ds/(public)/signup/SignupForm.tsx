@@ -14,6 +14,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { Illustration } from '@/components/organisms';
+import { appHref } from '@/features/shell/routes';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function SignupForm() {
@@ -33,7 +34,7 @@ export function SignupForm() {
 
   useEffect(() => {
     if (isSuccess) {
-      router.push('/dashboard');
+      router.push(appHref('/dashboard'));
     }
   }, [isSuccess, router]);
 

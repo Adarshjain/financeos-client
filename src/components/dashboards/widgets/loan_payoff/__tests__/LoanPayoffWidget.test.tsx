@@ -12,12 +12,13 @@ vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   ),
 }));
 
+import { principalRepaidPct } from '@/features/dashboards/builtins/loan_payoff/loanPayoff';
 import { api } from '@/lib/api/client';
 import type { LoanResponse } from '@/lib/loan.types';
 import { ACTIVE_LOANS_PAGE } from '@/lib/query/hooks/useLoans';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { LoanNameSubtitle, LoanPayoffWidget, principalRepaidPct } from '../LoanPayoffWidget';
+import { LoanNameSubtitle, LoanPayoffWidget } from '../LoanPayoffWidget';
 
 const loan = (over: Partial<LoanResponse> = {}): LoanResponse => ({
   id: 'l1',

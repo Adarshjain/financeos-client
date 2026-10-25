@@ -3,13 +3,10 @@
 // and the filter that narrows positions to one slice.
 
 import { seriesColor } from '@/components/charts/chart-format';
-import type { ChartData, FilterClause } from '@/lib/reports.types';
+import { ASSET_CLASSES, NO_CLASS, sliceFilter } from '@/features/dashboards/builtins/allocation/allocationData';
+import type { ChartData } from '@/lib/reports.types';
 
-/** The asset classes the server knows (positions.assetClass). */
-export const ASSET_CLASSES = ['EQUITY', 'DEBT', 'HYBRID', 'GOLD', 'INTERNATIONAL', 'OTHER'] as const;
-
-/** The chart's bucket for holdings with no asset class yet. */
-export const NO_CLASS = '(none)';
+export { ASSET_CLASSES, NO_CLASS, sliceFilter };
 
 export interface AllocationSlice {
   /** The stored category ("EQUITY", or "(none)"). */
@@ -36,12 +33,6 @@ export function allocationSlices(data: ChartData): AllocationSlice[] {
     share: total > 0 ? s.value / total : 0,
     color: seriesColor(i),
   }));
-}
-
-/** The positions filter for one slice; "Unclassified" is every holding outside the known classes. */
-export function sliceFilter(key: string): FilterClause {
-  if ((ASSET_CLASSES as readonly string[]).includes(key)) return { field: 'assetClass', operator: 'is', value: key };
-  return { field: 'assetClass', operator: 'not_in', value: [...ASSET_CLASSES] };
 }
 
 /** "64%", "<1%" for a sliver. */

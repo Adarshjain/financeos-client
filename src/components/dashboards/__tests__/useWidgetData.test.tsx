@@ -8,7 +8,7 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
-import { useWidgetData } from '@/components/dashboards/useWidgetData';
+import { useWidgetData } from '@/features/dashboards/data/useWidgetData';
 import { api, ApiError } from '@/lib/api/client';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import { createTestQueryClient } from '@/test/renderWithQuery';

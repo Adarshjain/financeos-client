@@ -14,6 +14,8 @@ import { SubtitleText } from '@/components/dashboards/builtins/BuiltinSubtitle';
 import { WidgetMessage, WidgetSkeleton } from '@/components/dashboards/WidgetStates';
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ACCOUNT_TILE_DAYS, trendValues } from '@/features/dashboards/builtins/account_tile/accountTrend';
+import { accountTypeText } from '@/features/dashboards/builtins/subtitles';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -24,16 +26,11 @@ import { cn } from '@/lib/utils';
 
 import { DrillValue, WidgetNote } from '../cards_spending_kit/kit';
 
-export const ACCOUNT_TILE_DAYS = 30;
+export { ACCOUNT_TILE_DAYS, trendValues };
 
 export interface AccountTileWidgetProps {
   accountId: string | null;
   className?: string;
-}
-
-/** The trend as the headline reads it: a card's owed amount goes up as it is spent on. */
-export function trendValues(account: Pick<Account, 'type'>, balances: readonly number[]): number[] {
-  return account.type === AccountType.CREDIT_CARD ? balances.map((b) => -b) : [...balances];
 }
 
 function Trend({ account }: { account: Account }) {
@@ -110,6 +107,5 @@ export function AccountTileWidget({ accountId, className }: AccountTileWidgetPro
 /** The tile's subtitle: the account's type ("Bank account", "Credit card"…); "Account" until the list loads. */
 export function AccountTypeSubtitle({ accountId }: { accountId: string }) {
   const { data: accounts } = useAccounts();
-  const type = accounts?.find((a) => a.id === accountId)?.type;
-  return <SubtitleText>{(type && TYPE_LABEL[type]) || 'Account'}</SubtitleText>;
+  return <SubtitleText>{accountTypeText(accounts, accountId, (type) => TYPE_LABEL[type])}</SubtitleText>;
 }

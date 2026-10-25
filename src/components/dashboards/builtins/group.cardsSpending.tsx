@@ -15,7 +15,9 @@ import { CardUtilisationWidget } from '@/components/dashboards/widgets/card_util
 import { EmergencyFundWidget } from '@/components/dashboards/widgets/emergency_fund/EmergencyFundWidget';
 import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone_progress/MilestoneProgressView';
 import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
-import { heatmapMonths, SpendHeatmapView } from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+import { SpendHeatmapView } from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+import { heatmapMonths } from '@/components/organisms/Chart/heatmap.model';
+import { ALL_CARDS_SUBTITLE, monthsSubtitle, stringParam } from '@/features/dashboards/builtins/subtitles';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
@@ -24,11 +26,6 @@ import type { GroupEntries, GroupViews } from './group.types';
 import type { BuiltinBodyProps, PhoneSlot } from './registry';
 
 const CONTENT: PhoneSlot = { fit: 'content' };
-
-function stringParam(params: Record<string, unknown>, key: string): string | null {
-  const v = params[key];
-  return typeof v === 'string' && v ? v : null;
-}
 
 /** A card-scoped widget's subtitle: the picked card's name, else `fallback` (null defers to the server's). */
 function cardSubtitle(fallback: string | null) {
@@ -54,7 +51,7 @@ export const CARDS_SPENDING_ENTRIES: GroupEntries = {
   card_utilisation: {
     Body: CardUtilisationBody,
     phone: CONTENT,
-    subtitle: cardSubtitle('All cards'),
+    subtitle: cardSubtitle(ALL_CARDS_SUBTITLE),
   },
   milestone_progress: {
     phone: CONTENT,
@@ -70,8 +67,7 @@ export const CARDS_SPENDING_ENTRIES: GroupEntries = {
   spend_heatmap: {
     phone: { fit: 'fill', className: 'h-[220px]' },
     subtitle: (widget) => {
-      const months = heatmapMonths(widgetParams(widget));
-      return `Last ${months} ${months === 1 ? 'month' : 'months'}`;
+      return monthsSubtitle(heatmapMonths(widgetParams(widget)));
     },
   },
   account_tile: {

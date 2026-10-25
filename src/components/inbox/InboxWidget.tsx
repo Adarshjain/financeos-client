@@ -5,6 +5,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRows';
 import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse, InboxSummaryResponse } from '@/lib/api/types';
@@ -13,16 +14,6 @@ import { cn } from '@/lib/utils';
 
 import { InboxBillDialogs } from './InboxBillDialogs';
 import { InboxWidgetRow } from './InboxWidgetRow';
-
-/** How many decisions the widget shows before pointing at the Inbox page. */
-export const INBOX_WIDGET_ROW_LIMIT = 4;
-
-/** Act-now rows first, then needs-a-look, up to the limit; info rows stay on the Inbox page. */
-export function inboxWidgetRows(items: InboxItemResponse[], limit = INBOX_WIDGET_ROW_LIMIT): InboxItemResponse[] {
-  const actNow = items.filter((i) => i.section === 'act_now');
-  const needsLook = items.filter((i) => i.section === 'needs_look');
-  return [...actNow, ...needsLook].slice(0, limit);
-}
 
 /**
  * The Inbox widget BODY (the host supplies the frame and title): counts for "Act now" and

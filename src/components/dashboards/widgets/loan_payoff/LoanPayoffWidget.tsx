@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { SubtitleText } from '@/components/dashboards/builtins/BuiltinSubtitle';
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Button } from '@/components/ui/button';
+import { principalRepaidPct } from '@/features/dashboards/builtins/loan_payoff/loanPayoff';
 import type { LoanResponse } from '@/lib/loan.types';
 import { useActiveLoans } from '@/lib/query/hooks/useLoans';
 
@@ -25,13 +26,6 @@ import {
   WidgetLoadError,
   WidgetLoadingRows,
 } from '../investmentsLoansKit/kit';
-
-/** Share of the original principal repaid so far, 0–100. */
-export function principalRepaidPct(loan: Pick<LoanResponse, 'principal' | 'outstandingPrincipal'>): number {
-  if (!(loan.principal > 0)) return 0;
-  const pct = ((loan.principal - loan.outstandingPrincipal) / loan.principal) * 100;
-  return Math.max(0, Math.min(100, pct));
-}
 
 export function LoanPayoffWidget({ loanId, className }: { loanId: string | null; className?: string }) {
   const { data: loans = [], isLoading, error } = useActiveLoans();

@@ -11,6 +11,7 @@ import { Receipt } from 'lucide-react';
 import { useState } from 'react';
 
 import { LazyKpiUnderlyingDialog, LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
+import { lotKeys, TAX_HARVEST_LOTS } from '@/features/dashboards/builtins/tax_harvest/taxHarvest';
 import { useTaxHarvest } from '@/lib/query/hooks/useInvestments';
 import type { TaxHarvestLot } from '@/lib/taxHarvest.types';
 
@@ -23,24 +24,7 @@ import {
 } from '../investmentsLoansKit/kit';
 import { BookedGains, ExemptionBar, HarvestLines, LotRow } from './TaxHarvestParts';
 
-/** Open lots the widget lists (the server pages them, largest gain first). */
-export const TAX_HARVEST_LOTS = 5;
-
 const TERM_TITLE = { short: 'Equity short-term P&L this FY', long: 'Equity long-term P&L this FY' } as const;
-
-/**
- * Stable, unique keys for the listed lots: holding, buy date and quantity,
- * plus an occurrence index when one holding has identical lots.
- */
-export function lotKeys(lots: readonly TaxHarvestLot[]): string[] {
-  const seen = new Map<string, number>();
-  return lots.map((l) => {
-    const base = `${l.holdingId}:${l.buyDate}:${l.quantity}`;
-    const n = seen.get(base) ?? 0;
-    seen.set(base, n + 1);
-    return `${base}:${n}`;
-  });
-}
 
 export function TaxHarvestWidget({ className }: { className?: string }) {
   const { data, isLoading, error } = useTaxHarvest({ page: 0, size: TAX_HARVEST_LOTS });
