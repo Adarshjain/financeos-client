@@ -95,4 +95,13 @@ describe('Widget', () => {
     const content = screen.getByTestId('widget-content');
     expect(content.parentElement).toHaveClass('px-space-16');
   });
+
+  it('flush drops the body padding; the default and the states keep it', () => {
+    const { rerender } = render(<Widget title="A">body</Widget>);
+    expect(screen.getByText('body').className).toContain('px-space-16');
+    rerender(<Widget title="A" flush>body</Widget>);
+    expect(screen.getByText('body').className).not.toContain('px-space-16');
+    rerender(<Widget title="A" flush error="Down" errorTitle="Couldn't load">body</Widget>);
+    expect(screen.getByRole('alert').parentElement?.className).toContain('px-space-16');
+  });
 });

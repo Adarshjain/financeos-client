@@ -4,6 +4,7 @@ import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
+import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import {
   Menu,
@@ -48,6 +49,8 @@ export interface WidgetProps
   unavailableTitle?: React.ReactNode;
   /** Action for error or unavailable states (e.g. Retry or Remove) */
   action?: WidgetAction;
+  /** Drops the body's side and bottom padding so rows (ListRow, DataTable) sit edge to edge; the states keep theirs */
+  flush?: boolean;
 }
 
 export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
@@ -64,6 +67,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       unavailable,
       unavailableTitle,
       action,
+      flush = false,
       className,
       children,
       ...props
@@ -187,7 +191,14 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
         className={className}
         {...props}
       >
-        <div className="px-space-16 pb-space-12 pt-0 flex-1">{renderBody()}</div>
+        <div
+          className={cn(
+            'flex-1',
+            !flush || loading || error || unavailable ? 'px-space-16 pb-space-12 pt-0' : undefined,
+          )}
+        >
+          {renderBody()}
+        </div>
       </Card>
     );
   },

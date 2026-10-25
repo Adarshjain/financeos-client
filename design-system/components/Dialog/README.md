@@ -21,6 +21,9 @@ Title and optional description, a body that is the only scroller, and a footer f
 - `DialogAction`: `{ label: React.ReactNode; icon?: IconName; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`. `icon` is an Icon registry name drawn before the label at `xs` (beside button text), e.g. `download` on "Download CSV" (owner, 2026-10-25).
 - `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
 
+## Full size
+`size="full"` fills the whole viewport (`100dvw` x `100dvh`, no radius, no margin, no border or shadow) on phone and desktop, for expanding a dashboard widget to a full view. Dynamic viewport units follow the device orientation with no JavaScript. Owner decision 2026-10-25: on phone it is NOT a bottom sheet (no drag handle, no swipe to close) and keeps the × close at every width. This is the one exception to RULES §5.6. The body is still the only scroller; header and footer behave as in the other sizes.
+
 ## Background
 `background`: `surface` (default) or `canvas`. Use `canvas` when the body is made of tiles or cards that carry their own `surface` and border, so they stand out from the sheet. The More sheet (`P-more`) is the one use today. Pages never recolour a Dialog with `className`.
 
@@ -29,7 +32,7 @@ The preset for destructive or hard-to-undo actions (delete a transaction, statem
 
 ## Props
 - `Dialog`: `variant` (`modal` | `side-panel`; `side-panel` makes it non-modal), plus `open`, `defaultOpen`, `onOpenChange`.
-- `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`.
+- `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl` | `full`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`.
 - `Dialog.Section`: `title`, `collapsible`, `open`, `defaultOpen`, `onOpenChange`.
 - `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 
@@ -38,7 +41,7 @@ Radix Dialog, Button, Icon, the shared `useSheetDrag` hook. `Dialog.Section`: Se
 
 ## Variants
 - Sections (`Dialog.Section`), plain and collapsible.
-- Desktop sizes sm, md, lg, xl; phone sheet; side panel; with tertiary; canvas background; non-dismissible (`dismissible={false}`); ConfirmDialog (tone danger/default, with preview, loading, alternative option).
+- Desktop sizes sm, md, lg, xl; full (whole viewport, phone and desktop, × close, no sheet); phone sheet; side panel; with tertiary; canvas background; non-dismissible (`dismissible={false}`); ConfirmDialog (tone danger/default, with preview, loading, alternative option).
 
 ## Hidden amounts
 Under a `ConcealProvider` with `concealed`, each ₹ amount in title and description reads "₹ —". See Conceal.

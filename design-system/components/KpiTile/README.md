@@ -13,9 +13,10 @@ Overline label (`lbl`), value (`kv`, tabular; `kv-hero` for the one headline num
 Card, ProgressBar, Skeleton, Button (Retry action).
 
 ## Props
-`label`, `value`, `variant` ('default' | 'hero'), `delta` (either a `{ value, period?, direction? }` object or a custom node), `progressBar`, `badges`, `context`, `loading`, `error` (message node), `action` (`{ label, onSelect }`).
+`label`, `value`, `variant` ('default' | 'hero' | 'plain'), `delta` (either a `{ value, period?, direction? }` object or a custom node), `progressBar`, `badges`, `context`, `loading`, `error` (message node), `action` (`{ label, onSelect }`).
 
 ## Variants
+- Plain: the default's content with no card surface, border or padding, for a tile inside a card (a report widget).
 - Hero, delta in the bad direction, with a bar, with badges, loading, failed.
 
 ## Hidden amounts
