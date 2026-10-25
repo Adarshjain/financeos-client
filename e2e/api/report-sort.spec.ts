@@ -217,7 +217,7 @@ test.describe('Runtime header sort on report runs (@api)', () => {
       'Sort Beta EMI #1',
       'Sort Alpha EMI #1',
     ]);
-    expectStatus(await runBuiltin(api, 'upcoming', 'kind,asc'), 400);
+    expectStatus(await runBuiltin(api, 'upcoming', 'accountName,asc'), 400);
     expectStatus(await runBuiltin(api, 'upcoming', 'dueDate,sideways'), 400);
     // The KPI built-in ignores it.
     expectStatus(await runBuiltin(api, 'net_worth', 'name,asc'), 200);
