@@ -3,9 +3,8 @@
 import React, { forwardRef, useEffect, useState } from 'react';
 
 import { Badge } from '../Badge/Badge';
-import { Button } from '../Button/Button';
+import { Button, type ButtonVariant } from '../Button/Button';
 import { cn } from '../cn';
-import { dockedBarSurface } from '../dockedBar';
 import { Icon } from '../Icon/Icon';
 
 const EXIT_FALLBACK_MS = 400;
@@ -19,21 +18,27 @@ export interface SelectionBarAction {
   count?: number | string;
   tone?: 'default' | 'danger';
   disabled?: boolean;
+  /** Draws the action as a plain Button of this variant (page-action use); omitted keeps the bulk-action look. */
+  variant?: Extract<ButtonVariant, 'primary' | 'secondary' | 'link' | 'danger' | 'danger-filled' | 'danger-link'>;
+  loading?: boolean;
 }
 
 export interface SelectionBarProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  count: number;
+  /** Number selected. Omitted: no count, the bar is always open while mounted (page-action use). */
+  count?: number;
+  /** Under the count; without `count`, the leading content (a note, a Menu). */
   summary?: React.ReactNode;
   actions: SelectionBarAction[];
-  onClear: () => void;
+  /** Draws the × (and Esc while `count` is set) when given. */
+  onClear?: () => void;
   onSelectAll?: () => void;
   selectAllLabel?: string;
   clearAriaLabel?: string;
 }
 
 /**
- * SelectionBar: bar that appears while items are selected in lists.
+ * SelectionBar: bar that appears while items are selected in lists, or (without `count`) a plain page-action bar.
  * Shows count, summary line, and actions that apply to the selection.
  * Slides up from the bottom on enter and down on exit (the last content stays mounted while it leaves; `data-selection-bar` stays until it is gone); no motion under reduced motion.
  * Floating pill centred above list from desk up; docked full width to the bottom edge below desk, where it covers the tab bar, which hides while a SelectionBar is mounted (the `data-selection-bar` mark, read by TabBar's `with-selection-bar:` variant).
@@ -54,7 +59,8 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
     },
     ref,
   ) => {
-    const live = count > 0;
+    const counted = count !== undefined;
+    const live = !counted || count > 0;
     // The last content shown while selected, kept so the exit animation plays on real content.
     const [lastShown, setLastShown] = useState({
       count,
@@ -90,6 +96,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       : lastShown;
     const { summary, actions, onSelectAll, selectAllLabel } = shown;
     const shownCount = shown.count;
+    const showClear = !!onClear;
 
     // True once the exit animation finished (or was never needed): the bar renders nothing.
     const [gone, setGone] = useState(!live);
@@ -103,7 +110,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
     // Esc key clears selection
     useEffect(() => {
-      if (count <= 0) return;
+      if (!onClear || count === undefined || count <= 0) return;
 
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.defaultPrevented) return;
@@ -139,13 +146,16 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       >
         <div
           className={cn(
-            dockedBarSurface,
+            'bg-surface border-line-strong shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto desk:border desk:rounded-ds-lg',
             'border-t rounded-t-ds-2xl',
-            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-safe-12 desk:p-0',
+            counted
+              ? 'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-safe-12 desk:p-0'
+              : 'flex flex-row items-center gap-space-8 px-space-14 pt-space-10 pb-safe-12',
             'desk:flex desk:flex-row desk:items-center desk:px-space-12 desk:py-space-8 desk:gap-space-8',
           )}
         >
           {/* Close button (×): column 1 on mobile, at the end on desktop */}
+          {showClear ? (
           <Button
             type="button"
             size="md"
@@ -157,18 +167,25 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
           >
             <Icon name="close" size="sm" />
           </Button>
+          ) : null}
 
           {/* Count and summary: column 2 on mobile, at the beginning on desktop */}
-          <div className="flex flex-col leading-tight min-w-0 pr-space-4 desk:pr-0 col-start-2 order-2 desk:order-1">
-            <b className="font-bold text-body text-ink tabular-nums truncate">
-              {shownCount} selected
-            </b>
-            {summary ? (
-              <span className="text-caption font-semibold text-ink-3 truncate">
-                {summary}
-              </span>
-            ) : null}
-          </div>
+          {counted ? (
+            <div className="flex flex-col leading-tight min-w-0 pr-space-4 desk:pr-0 col-start-2 order-2 desk:order-1">
+              <b className="font-bold text-body text-ink tabular-nums truncate">
+                {shownCount} selected
+              </b>
+              {summary ? (
+                <span className="text-caption font-semibold text-ink-3 truncate">
+                  {summary}
+                </span>
+              ) : null}
+            </div>
+          ) : summary ? (
+            <div className="flex items-center gap-space-8 min-w-0 flex-1 desk:flex-none order-2 desk:order-1">
+              {summary}
+            </div>
+          ) : null}
 
           {/* Select all link (if present): column 3 on mobile */}
           {onSelectAll ? (
@@ -185,16 +202,38 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
           {/* Divider between count and actions on desktop */}
           <div
-            className="hidden desk:block w-px h-space-24 bg-line mx-space-2 desk:order-2"
+            className={cn('hidden w-px h-space-24 bg-line mx-space-2 desk:order-2', (counted || summary) && 'desk:block')}
             aria-hidden="true"
           />
 
           {/* Actions: row 2 grid on mobile, row flex on desktop */}
           <div
-            className="col-start-1 col-span-3 grid grid-flow-col auto-cols-fr gap-space-4 pt-space-8 border-t border-line-soft desk:border-t-0 desk:pt-0 desk:flex desk:items-center desk:gap-space-6 order-4 desk:order-4"
+            className={cn(
+              counted
+                ? 'col-start-1 col-span-3 grid grid-flow-col auto-cols-fr gap-space-4 pt-space-8 border-t border-line-soft desk:border-t-0 desk:pt-0 desk:flex desk:items-center desk:gap-space-6 order-4 desk:order-4'
+                : 'flex items-center gap-space-12 min-w-0 order-4',
+              !counted && !summary && 'w-full justify-end',
+            )}
           >
             {actions.map((act, idx) => {
               const isDanger = act.tone === 'danger';
+              if (act.variant) {
+                return (
+                  <Button
+                    key={act.id ?? idx}
+                    type="button"
+                    size="md"
+                    variant={act.variant}
+                    disabled={act.disabled}
+                    loading={act.loading}
+                    onClick={act.onSelect}
+                    icon={act.icon}
+                    className="min-w-0 shrink"
+                  >
+                    {act.label}
+                  </Button>
+                );
+              }
               return (
                 <Button
                   key={act.id ?? idx}

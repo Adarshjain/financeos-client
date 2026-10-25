@@ -253,4 +253,63 @@ describe('SelectionBar', () => {
       expect(el(container)).toBeNull();
     });
   });
+
+  describe('page actions (no count)', () => {
+    it('has no count text and no clear button without onClear', () => {
+      render(<SelectionBar actions={[{ label: 'Save report', variant: 'primary' }]} />);
+      expect(screen.queryByText(/selected/)).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Save report' })).toBeInTheDocument();
+    });
+
+    it('draws the clear button when onClear is given and Esc does not call it', () => {
+      const onClear = vi.fn();
+      render(<SelectionBar actions={[{ label: 'Save', variant: 'primary' }]} onClear={onClear} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
+      expect(onClear).toHaveBeenCalledTimes(1);
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(onClear).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders the summary node as the leading slot', () => {
+      render(
+        <SelectionBar
+          summary={<><span>Unsaved changes</span><button type="button">More</button></>}
+          actions={[{ label: 'Cancel', variant: 'link' }]}
+        />,
+      );
+      expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'More' })).toBeInTheDocument();
+    });
+
+    it('runs variant actions and disables a loading one', () => {
+      const onCancel = vi.fn();
+      const onSave = vi.fn();
+      const { rerender } = render(
+        <SelectionBar
+          actions={[
+            { label: 'Cancel', variant: 'link', onSelect: onCancel },
+            { label: 'Save report', variant: 'primary', onSelect: onSave },
+          ]}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save report' }));
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onSave).toHaveBeenCalledTimes(1);
+
+      rerender(
+        <SelectionBar
+          actions={[
+            { label: 'Cancel', variant: 'link', onSelect: onCancel },
+            { label: 'Saving report', variant: 'primary', loading: true, onSelect: onSave },
+          ]}
+        />,
+      );
+      const saving = screen.getByRole('button', { name: /Saving report/ });
+      expect(saving).toBeDisabled();
+      fireEvent.click(saving);
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+  });
 });
