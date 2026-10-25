@@ -130,6 +130,24 @@ describe('DialogShell', () => {
     ]);
   });
 
+  it('draws a footer action icon before its label, only on the actions that set one', () => {
+    const { container } = render(
+      <DialogShell
+        title="Export"
+        secondary={{ label: 'Cancel' }}
+        primary={{ label: 'Download CSV', icon: 'download' }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    const buttons = Array.from(container.querySelectorAll('.grid.grid-flow-col button'));
+    expect(buttons[0].querySelector('svg')).toBeNull();
+    const svg = buttons[1].querySelector('svg')!;
+    expect(svg).not.toBeNull();
+    expect(buttons[1].textContent).toBe('Download CSV');
+    expect(buttons[1].firstElementChild!.contains(svg)).toBe(true);
+  });
+
   it('draws primary as primary or danger-filled, and secondary/tertiary as link', () => {
     const { rerender } = render(
       <DialogShell

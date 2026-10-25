@@ -85,6 +85,11 @@
   "use": "Import, Choose files"
  },
  {
+  "name": "download",
+  "phosphor": "download-simple",
+  "use": "Download CSV (Dialog footer action)"
+ },
+ {
   "name": "merge",
   "phosphor": "git-merge",
   "use": "Merge transactions"

@@ -29,6 +29,10 @@ const meta: Meta<typeof ProgressBar> = {
       control: 'select',
       options: ['brand', 'warning', 'danger'],
     },
+    color: {
+      control: 'select',
+      options: [undefined, 'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5', 'chart-rest'],
+    },
     label: { control: 'text' },
     segments: { control: 'object' },
   },
@@ -65,6 +69,14 @@ export const Danger: Story = {
     value: 108,
     tone: 'danger',
     label: '108% · over by ₹12,400',
+  },
+};
+
+export const ChartColour: Story = {
+  args: {
+    value: 46,
+    color: 'chart-2',
+    label: '46% · Groceries ₹42,500 of ₹92,000',
   },
 };
 

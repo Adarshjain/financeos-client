@@ -5,6 +5,7 @@ import React, { forwardRef, useEffect, useState } from 'react';
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { dockedBarSurface } from '../dockedBar';
 import { Icon } from '../Icon/Icon';
 
 const EXIT_FALLBACK_MS = 400;
@@ -138,7 +139,8 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       >
         <div
           className={cn(
-            'bg-surface border-t desk:border border-line-strong rounded-t-ds-2xl desk:rounded-ds-lg shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto',
+            dockedBarSurface,
+            'border-t rounded-t-ds-2xl',
             'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-safe-12 desk:p-0',
             'desk:flex desk:flex-row desk:items-center desk:px-space-12 desk:py-space-8 desk:gap-space-8',
           )}

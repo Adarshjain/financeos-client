@@ -118,6 +118,23 @@ export const SmallWithTertiary: Story = {
   ),
 };
 
+export const ActionWithIcon: Story = {
+  args: { size: 'sm', title: 'Export report' },
+  render: (args) => (
+    <Dialog defaultOpen>
+      <DialogContent
+        {...args}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
+        primary={{ label: 'Download CSV', icon: 'download', onSelect: fn() }}
+      >
+        <DialogBody>
+          <Text variant="body">Spend by category, April to September 2026, 248 rows.</Text>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
 export const LargeForm: Story = {
   args: {
     size: 'lg',

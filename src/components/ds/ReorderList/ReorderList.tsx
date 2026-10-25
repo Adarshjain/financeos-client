@@ -28,6 +28,8 @@ export interface ReorderListProps
   onValueChange?: (ids: string[]) => void;
   /** Move button label prefixes; the item's name follows */
   labels?: { moveUp?: string; moveDown?: string };
+  /** `md` (default): subtitle, standard rows. `sm`: dense rows at control-sm height, title only, for use inside forms. */
+  size?: 'md' | 'sm';
 }
 
 type Dir = 'up' | 'down';
@@ -48,7 +50,7 @@ function orderItems(items: ReorderListItem[], ids: string[] | undefined): Reorde
 }
 
 export const ReorderList = forwardRef<HTMLDivElement, ReorderListProps>(
-  ({ items, value, defaultValue, onValueChange, labels, className, ...props }, ref) => {
+  ({ items, value, defaultValue, onValueChange, labels, size = 'md', className, ...props }, ref) => {
     const [ids, setIds] = useControllableState<string[]>({
       value,
       defaultValue,
@@ -120,9 +122,10 @@ export const ReorderList = forwardRef<HTMLDivElement, ReorderListProps>(
 
     const moveUp = labels?.moveUp ?? 'Move up';
     const moveDown = labels?.moveDown ?? 'Move down';
+    const isSm = size === 'sm';
 
     return (
-      <div ref={setRoot} className={className} {...props}>
+      <div ref={setRoot} data-size={size} className={className} {...props}>
         {ordered.map((item, idx) => {
           const name = item.ariaLabel ?? (typeof item.title === 'string' ? item.title : '');
           return (
@@ -132,15 +135,18 @@ export const ReorderList = forwardRef<HTMLDivElement, ReorderListProps>(
                 if (el) rowRefs.current.set(item.id, el);
                 else rowRefs.current.delete(item.id);
               }}
-              className={cn('transition-transform duration-base motion-reduce:transition-none')}
+              className={cn(
+                'transition-transform duration-base motion-reduce:transition-none',
+                isSm && 'h-control-sm py-0 px-space-8 gap-space-8',
+              )}
               highlighted={moved?.id === item.id && moved.key === orderKey}
               leading={
-                <Text variant="label" tone="ink-3" mono>
+                <Text variant={isSm ? 'caption' : 'label'} tone="ink-3" mono>
                   {idx + 1}
                 </Text>
               }
               title={item.title}
-              subtitle={item.subtitle}
+              subtitle={isSm ? undefined : item.subtitle}
               trailing={
                 <>
                   {item.trailing}
@@ -153,7 +159,7 @@ export const ReorderList = forwardRef<HTMLDivElement, ReorderListProps>(
                     disabled={idx === 0}
                     onClick={() => move(item.id, 'up')}
                   >
-                    <Icon name="chevron-up" size="sm" />
+                    <Icon name="chevron-up" size={isSm ? 'xs' : 'sm'} />
                   </Button>
                   <Button
                     variant="ghost"
@@ -164,7 +170,7 @@ export const ReorderList = forwardRef<HTMLDivElement, ReorderListProps>(
                     disabled={idx === ordered.length - 1}
                     onClick={() => move(item.id, 'down')}
                   >
-                    <Icon name="chevron-down" size="sm" />
+                    <Icon name="chevron-down" size={isSm ? 'xs' : 'sm'} />
                   </Button>
                 </>
               }

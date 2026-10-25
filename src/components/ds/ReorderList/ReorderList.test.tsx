@@ -107,4 +107,33 @@ describe('ReorderList', () => {
     expect(scroll).toHaveBeenCalledWith({ block: 'nearest' });
     proto.scrollIntoView = original;
   });
+
+  describe('size sm', () => {
+    const withSubtitle = [
+      { id: 'a', title: 'Alpha', subtitle: 'First' },
+      { id: 'b', title: 'Beta', subtitle: 'Second' },
+    ];
+
+    it('keeps md as the default and shows subtitles', () => {
+      const { container } = render(<ReorderList items={withSubtitle} />);
+      expect(container.firstChild).toHaveAttribute('data-size', 'md');
+      expect(screen.getByText('First')).toBeInTheDocument();
+    });
+
+    it('draws dense title-only rows at control-sm height', () => {
+      const { container } = render(<ReorderList items={withSubtitle} size="sm" />);
+      expect(container.firstChild).toHaveAttribute('data-size', 'sm');
+      expect(screen.queryByText('First')).toBeNull();
+      expect(screen.getByText('Alpha')).toBeInTheDocument();
+      expect(container.querySelectorAll('.h-control-sm')).toHaveLength(2 + 4);
+    });
+
+    it('still moves rows and numbers them', () => {
+      const onValueChange = vi.fn();
+      render(<ReorderList items={withSubtitle} size="sm" onValueChange={onValueChange} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Move down Alpha' }));
+      expect(onValueChange).toHaveBeenCalledWith(['b', 'a']);
+      expect(screen.getByText('2')).toBeInTheDocument();
+    });
+  });
 });

@@ -20,6 +20,7 @@ import { Icon } from '../Icon/Icon';
 import { getItemRowClass } from '../itemRow';
 import { Popover } from '../Popover/Popover';
 import { Radio } from '../Radio/Radio';
+import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 import { fitChips } from './fitChips';
@@ -405,9 +406,9 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           {filteredGroups.map((g, gIdx) => (
             <React.Fragment key={g.name || gIdx}>
               {g.name ? (
-                <div className="font-text text-overline font-extrabold uppercase text-ink-4 px-space-10 pt-space-8 pb-space-4 select-none">
+                <SectionHeader variant="band" borderTop={false} className={gIdx > 0 ? 'mt-space-4' : undefined}>
                   {g.name}
-                </div>
+                </SectionHeader>
               ) : null}
               {g.options.map((opt) => renderOption(opt))}
             </React.Fragment>

@@ -7,6 +7,7 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
+import type { IconName } from '../Icon/registry';
 import { Reveal } from '../Reveal/Reveal';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { useControllableState } from '../useControllableState';
@@ -157,6 +158,8 @@ export interface DialogAction {
   form?: string;
   disabled?: boolean;
   loading?: boolean;
+  /** Icon registry name drawn before the label (xs, beside button text). */
+  icon?: IconName;
   /** `danger` draws a secondary or tertiary action as a danger link. Primary uses `destructive`. */
   tone?: 'danger';
 }
@@ -199,6 +202,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 form={tertiary.form}
                 disabled={tertiary.disabled}
                 loading={tertiary.loading}
+                icon={tertiary.icon ? <Icon name={tertiary.icon} size="xs" /> : undefined}
                 onClick={tertiary.onSelect}
                 className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
               >
@@ -214,6 +218,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 form={secondary.form}
                 disabled={secondary.disabled}
                 loading={secondary.loading}
+                icon={secondary.icon ? <Icon name={secondary.icon} size="xs" /> : undefined}
                 onClick={secondary.onSelect}
                 className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
               >
@@ -229,6 +234,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 form={primary.form}
                 disabled={primary.disabled}
                 loading={primary.loading}
+                icon={primary.icon ? <Icon name={primary.icon} size="xs" /> : undefined}
                 onClick={primary.onSelect}
                 className="w-full desk:w-auto"
               >
