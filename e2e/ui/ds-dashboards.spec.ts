@@ -265,6 +265,30 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds guarded');
     });
 
+    test('browser Back with unsaved changes asks first: Keep editing stays with the edits, Discard goes back', async ({ page }) => {
+      const { dashboard } = await seedBoard('Ds back guarded');
+      // Arrive by an in-app navigation, so Back stays in the app.
+      await page.goto('/ds/dashboards');
+      await page.getByRole('main').getByText('Ds back guarded', { exact: true }).first().click();
+      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}$`));
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      const name = page.getByLabel('Dashboard name');
+      await name.fill('Ds back renamed');
+      await expect(page.getByText('Unsaved changes')).toBeVisible();
+
+      // page.goBack would wait for a navigation that the guard cancels.
+      await page.evaluate(() => window.history.back());
+      const confirm = page.getByRole('dialog', { name: 'Discard changes?' });
+      await expect(confirm).toBeVisible();
+      await confirm.getByRole('button', { name: 'Keep editing' }).click();
+      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}$`));
+      await expect(name).toHaveValue('Ds back renamed');
+
+      await page.evaluate(() => window.history.back());
+      await page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', { name: 'Discard', exact: true }).click();
+      await expect(page).toHaveURL(/\/ds\/dashboards$/);
+    });
+
     test('remove a widget and rename, then Save writes it', async ({ page }) => {
       const { dashboard } = await seedBoard('Ds trimmed');
       await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);

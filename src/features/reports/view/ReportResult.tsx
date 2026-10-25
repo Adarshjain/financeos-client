@@ -3,7 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import React from 'react';
 
-import { createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
+import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
 import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
@@ -47,6 +47,10 @@ export interface ReportResultProps {
   onSizeChange?: (size: number) => void;
   /** KPI only: the tile's form; 'plain' draws it with no card of its own (a widget already is one). */
   kpiVariant?: React.ComponentProps<typeof KpiTile>['variant'];
+  /** KPI only: leave out the measure and aggregation overline ("Spend · sum"); a dashboard widget has its own title. */
+  hideMeasure?: boolean;
+  /** KPI only: the figure is pressable and calls this (a widget opens its underlying data). */
+  onOpenKpi?: () => void;
   /** Breakdown only: the chart definition the data was run with (its columns, bars and comparison preference). */
   definition?: ChartDefinition;
   /** Breakdown only: a press on row `index`. */
@@ -87,7 +91,19 @@ function previewValue(
 
 // ---- KPI -------------------------------------------------------------------
 
-function KpiResult({ data, catalog, variant }: { data: KpiData; catalog?: DatasourceCatalog; variant?: React.ComponentProps<typeof KpiTile>['variant'] }) {
+function KpiResult({
+  data,
+  catalog,
+  variant,
+  hideMeasure,
+  onOpen,
+}: {
+  data: KpiData;
+  catalog?: DatasourceCatalog;
+  variant?: React.ComponentProps<typeof KpiTile>['variant'];
+  hideMeasure?: boolean;
+  onOpen?: () => void;
+}) {
   const format = data.format ?? fieldOf(catalog, data.measure)?.format ?? null;
   const fmt = (n: number | null) => previewValue(n, { field: data.measure, aggregation: data.aggregation, format }, catalog);
   const label = `${fieldOf(catalog, data.measure)?.label ?? data.measure} · ${AGGREGATION_LABELS[data.aggregation].toLowerCase()}`;
@@ -106,8 +122,16 @@ function KpiResult({ data, catalog, variant }: { data: KpiData; catalog?: Dataso
   return (
     <KpiTile
       variant={variant}
-      label={label}
-      value={fmt(data.value)}
+      label={hideMeasure ? undefined : label}
+      value={
+        onOpen ? (
+          <Button variant="link" onClick={onOpen} title="View underlying data">
+            {concealMoney(fmt(data.value))}
+          </Button>
+        ) : (
+          fmt(data.value)
+        )
+      }
       delta={delta}
       context={range ? formatDateRange(range.from, range.to) : undefined}
     />
@@ -298,7 +322,7 @@ function ChartResult({
 /** A report's result as the preview shows it: KPI tile, chart, breakdown list or table, by the data's type. */
 export function ReportResult(props: ReportResultProps) {
   const { data, catalog } = props;
-  if (isKpiData(data)) return <KpiResult data={data} catalog={catalog} variant={props.kpiVariant} />;
+  if (isKpiData(data)) return <KpiResult data={data} catalog={catalog} variant={props.kpiVariant} hideMeasure={props.hideMeasure} onOpen={props.onOpenKpi} />;
   if (isChartData(data)) {
     return (
       <ChartResult

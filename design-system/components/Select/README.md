@@ -23,15 +23,15 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `searchable`: boolean, embeds search input.
 - `searchPlaceholder`, `searchValue`, `onSearchChange`: search controls.
 - `onCreate`, `createLabel`: create option from search query. The create row shows only when the typed text is not already an option (any case); Enter or a click calls `onCreate` with the trimmed text and clears the search for the next entry. The page adds the new option and selects it (identifiers on Add/Edit account, saved with the form).
-- `action`: `{ label, onSelect }`, pinned action row under options: a `link` Button at `label` size, natural width, aligned right.
-- Layout: the menu has `space-6` padding inside the popover edge. The option list is the only scroller (it scrolls with the wheel and by touch even inside a modal Dialog); the search row, create row, `action` row and the multi-select Clear and Done row stay pinned. Cancel, Clear (link, `label` size) and Done (primary) keep their natural width; Cancel sits at the left edge, Clear and Done at the right.
+- `action`: `{ label, onSelect }`, pinned action row under options: a `ghost` Button (owner, 2026-10-25; was `link`), natural width, aligned right.
+- Layout: the menu has `space-6` padding inside the popover edge. The option list is the only scroller (it scrolls with the wheel and by touch even inside a modal Dialog); the search row, create row, `action` row and the multi-select Clear and Done row stay pinned. Cancel, Clear (ghost, sm) and Done (primary) keep their natural width; Cancel sits at the left edge, Clear and Done at the right.
 - `clearLabel`: custom label for multi-select clear button (default: `'Clear'`).
 - `doneLabel`: `(count: number) => ReactNode`, custom label for multi-select done button (default: `'Done'`).
 - `filter`: `'auto' | 'none' | ((option, query) => boolean)`.
 - `emptyText`: `(query: string) => ReactNode`.
 - `size`: `'sm' | 'md'` (default `md`). `sm` is a `control-sm` field with `label` text and `space-8` side padding, for a role or type picker sitting inside a list row. The chevron stays `icon-md`.
 - The list is exactly as wide as the field (capped by the viewport inset); with a custom `trigger` it keeps the popover width.
-- `discardLabel`: `ReactNode` (default `Cancel`), multiple only. Restores the value the field had when the popover opened (calling `onValueChange` with it if it changed) and closes. Footer: Cancel (link) on the left; Clear (link) and Done (primary) on the right. Escape and an outside click keep the selection as it is.
+- `discardLabel`: `ReactNode` (default `Cancel`), multiple only. Restores the value the field had when the popover opened (calling `onValueChange` with it if it changed) and closes. Footer: Cancel (ghost) on the left; Clear (ghost) and Done (primary) on the right. Escape and an outside click keep the selection as it is.
 - Chips (multiple) show as many as fit on one line of the field, measured from the field's width; the rest collapse into a `+n` badge that always fits inside the field. No `maxDisplayChips`.
 - Disabled: no hover, press, focus or open styling; same look as a disabled TextField (`bg-sunken`, faint text, chevron and chips, `opacity-60`).
 - The label is plain text (not a `<label>`): tapping it does nothing. The field points at it with `aria-labelledby`.

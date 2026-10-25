@@ -221,6 +221,7 @@ describe('TopBar title node and back click', () => {
   it('renders a string title with the title type and truncation', () => {
     render(<TopBar title="Accounts" />);
     expect(screen.getByText('Accounts')).toHaveClass('text-title', 'truncate');
+    expect(screen.getByText('Accounts').parentElement).toHaveClass('desk:flex-initial');
   });
 
   it('renders controls as the title: not a heading, centred, shrinkable', () => {
@@ -239,7 +240,8 @@ describe('TopBar title node and back click', () => {
     const wrap = switcher.parentElement as HTMLElement;
     expect(wrap).toHaveClass('flex', 'items-center', 'min-w-0');
     expect(wrap).not.toHaveClass('truncate');
-    expect(wrap.parentElement).toHaveClass('flex-1', 'min-w-0');
+    expect(wrap).toHaveClass('flex-1');
+    expect(wrap.parentElement).toHaveClass('flex-1', 'min-w-0', 'desk:flex-1');
   });
 
   it('calls onBack on a plain click of the back link and keeps its href', () => {

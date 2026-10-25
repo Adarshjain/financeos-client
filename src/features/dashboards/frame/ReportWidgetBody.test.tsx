@@ -43,6 +43,15 @@ describe('ReportWidgetBody', () => {
     expect(result.mock.calls.at(-1)![0].definition).toBeUndefined();
   });
 
+  it('leaves the measure overline out and passes the underlying-data opener to the KPI figure', async () => {
+    const open = vi.fn();
+    renderWithQuery(<ReportWidgetBody widget={widget} state={state({ type: 'KPI' } as KpiData)} onOpenUnderlying={open} />);
+    await screen.findByTestId('result');
+    const props = result.mock.calls.at(-1)![0];
+    expect(props.hideMeasure).toBe(true);
+    expect(props.onOpenKpi).toBe(open);
+  });
+
   it('draws a KPI without a card of its own: the widget already is one', async () => {
     renderWithQuery(<ReportWidgetBody widget={widget} state={state({ type: 'KPI' } as KpiData)} />);
     await screen.findByTestId('result');

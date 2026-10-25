@@ -15,6 +15,7 @@ export type ButtonVariant =
   | 'danger-filled'
   | 'ghost'
   | 'link'
+  | 'danger-ghost'
   | 'danger-link';
 
 export type ButtonLayout = 'inline' | 'stacked';
@@ -46,6 +47,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-transparent bg-danger text-on-brand hover:bg-danger-hover active:bg-danger-pressed',
   ghost:
     'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-pressed',
+  'danger-ghost':
+    'border border-transparent bg-transparent text-danger hover:bg-hover hover:text-danger-hover active:bg-pressed active:text-danger-pressed',
   link:
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
   'danger-link':

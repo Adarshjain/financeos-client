@@ -3,7 +3,7 @@
 Buttons: one primary per view, secondary for everything else, ghost for low-emphasis icon actions, danger for destructive ones.
 
 ## Props
-- `variant`: `'primary'` | `'secondary'` | `'danger'` | `'danger-filled'` | `'ghost'` | `'link'` | `'danger-link'` (default `'secondary'`)
+- `variant`: `'primary'` | `'secondary'` | `'danger'` | `'danger-filled'` | `'ghost'` | `'danger-ghost'` | `'link'` | `'danger-link'` (default `'secondary'`)
 - `size`: `'sm'` | `'md'` | `'xl'` (default `'md'`)
 - `layout`: `'inline'` | `'stacked'` (default `'inline'`)
 - `fullWidth`: `boolean` (default `false`)
@@ -26,6 +26,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - Icon button with dot: `iconOnly` + `dot` marks something unread (the notifications bell).
 - `link`: inline text action with underline and no border. The underline is the light `line-heavy` colour (owner, 2026-10-20), shows at rest and disappears on hover. When the link holds an icon (via `icon` or an Icon child) the control becomes `inline-flex` and the control becomes `inline-flex justify-center` and icon + gap + text sit in one content-width wrapper whose `after:` element (`inset-x-0`, `h-px`, `bg-line-heavy`) draws the underline continuously, so a stretched link (`fullWidth`, equal-share footer row) never underlines its empty space; text-only links keep `text-decoration`; icon-only links have no underline.
 - Link icons are always 2px smaller than the text: the link variant sizes every `svg` inside it to `size-icon-inline` (`calc(1em - 2px)`), whatever `size` the Icon was given, so it follows the surrounding Text.
+- `danger-ghost`: `ghost` layout and heights with the `danger` text colour; hover `hover` fill and `danger-hover` text, pressed `pressed` fill and `danger-pressed` text; same disabled and loading states as ghost. For destructive secondary or tertiary Dialog footer actions (owner 2026-10-25, "Ghost actions").
 - `danger-link`: a `link` in the `danger` text colour for Delete / Remove link actions (owner, 2026-10-23); same underline, sizes and icon handling (including the icon size below); hover `danger-hover`, pressed `danger-pressed`.
 - Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px (`control-md`, the same as a form field), `btn-xl` 44px for auth.
 - Type: every size uses the `label` style (12px); `link` inherits the surrounding size.

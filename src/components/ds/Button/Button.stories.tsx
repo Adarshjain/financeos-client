@@ -19,7 +19,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'danger', 'danger-filled', 'ghost', 'link', 'danger-link'],
+      options: ['primary', 'secondary', 'danger', 'danger-filled', 'ghost', 'danger-ghost', 'link', 'danger-link'],
     },
     size: {
       control: 'select',
@@ -107,6 +107,10 @@ export const Link: Story = {
       Your HDFC statement is ready. <Button variant="link">View statement</Button>
     </Text>
   ),
+};
+
+export const DangerGhost: Story = {
+  args: { variant: 'danger-ghost', children: 'Delete' },
 };
 
 export const DangerLink: Story = {

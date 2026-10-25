@@ -10,6 +10,7 @@ vi.mock('@/features/reports/underlying/ReportUnderlyingDialog', () => ({
   ),
 }));
 
+import { ConcealProvider } from '@/components/ds';
 import type { ReportData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -67,6 +68,16 @@ describe('RewardsEarnedView', () => {
     const filters = requestOf().definition.filters as Array<{ field: string; value: unknown }>;
     expect(filters.map((f) => f.field)).toEqual(['effectiveDate', 'card']);
     expect(filters[1].value).toBe('c2');
+  });
+
+  it('hides the amounts, headline and card figures included, while amounts are hidden', () => {
+    renderWithQuery(
+      <ConcealProvider concealed>
+        <RewardsEarnedView {...view(data)} />
+      </ConcealProvider>,
+    );
+    expect(screen.getAllByRole('button', { name: '₹ —' }).length).toBeGreaterThan(0);
+    expect(document.body.textContent).not.toMatch(/₹\s?\d/);
   });
 
   it('empty: no rewards yet this financial year', () => {

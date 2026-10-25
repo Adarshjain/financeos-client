@@ -438,9 +438,9 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         {action ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            {/* A link sized like the label style, as card header links are */}
+            {/* A ghost button, aligned right */}
             <div className="flex justify-end px-space-10 py-space-8 text-label">
-              <Button type="button" variant="link" onClick={action.onSelect}>
+              <Button type="button" variant="ghost" onClick={action.onSelect}>
                 {action.label}
               </Button>
             </div>
@@ -452,7 +452,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             {onDiscard ? (
               <Button
                 type="button"
-                variant="link"
+                variant="ghost"
                 size="sm"
                 className="mr-auto"
                 onClick={onDiscard}
@@ -462,7 +462,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             ) : null}
             <Button
               type="button"
-              variant="link"
+              variant="ghost"
               size="sm"
               onClick={onClear}
             >

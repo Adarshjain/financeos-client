@@ -183,4 +183,106 @@ describe('useLeaveGuard', () => {
     window.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(false);
   });
+
+  describe('with the Navigation API (Back is cancelled before the router applies it)', () => {
+    let navigation: EventTarget & { currentEntry: { index: number }; traverseTo: ReturnType<typeof vi.fn> };
+    beforeEach(() => {
+      navigation = Object.assign(new EventTarget(), { currentEntry: { index: 3 }, traverseTo: vi.fn() });
+      Object.defineProperty(window, 'navigation', { value: navigation, configurable: true });
+    });
+    afterEach(() => {
+      delete (window as unknown as { navigation?: unknown }).navigation;
+    });
+
+    const navigate = (init: { type?: string; url?: string; key?: string; sameDocument?: boolean; cancelable?: boolean } = {}) => {
+      const event = Object.assign(new Event('navigate', { cancelable: init.cancelable ?? true }), {
+        navigationType: init.type ?? 'traverse',
+        destination: { url: `${window.location.origin}${init.url ?? '/ds/reports'}`, key: init.key ?? 'k-list', sameDocument: init.sameDocument ?? true },
+      });
+      act(() => {
+        navigation.dispatchEvent(event);
+      });
+      return event;
+    };
+
+    it('cancels Back while work is unsaved and holds where it led; Leave takes that very entry', () => {
+      render(<Page active />);
+      const event = navigate();
+      expect(event.defaultPrevented).toBe(true);
+      expect(pending()).toBe('/ds/reports');
+      fireEvent.click(screen.getByText('Leave'));
+      expect(navigation.traverseTo).toHaveBeenCalledWith('k-list');
+      expect(push).not.toHaveBeenCalled();
+    });
+
+    it('asks even when Back leads to an entry with this same address', () => {
+      render(<Page active />);
+      expect(navigate({ url: '/ds/reports/new' }).defaultPrevented).toBe(true);
+      expect(pending()).toBe('/ds/reports/new');
+    });
+
+    it('stays after Stay: nothing moves, and the next Leave answers a new question only', () => {
+      render(<Page active />);
+      navigate();
+      fireEvent.click(screen.getByText('Stay'));
+      expect(pending()).toBe('');
+      expect(navigation.traverseTo).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByText('Cancel'));
+      fireEvent.click(screen.getByText('Leave'));
+      expect(navigation.traverseTo).not.toHaveBeenCalled();
+      expect(push).toHaveBeenCalledWith('/ds/reports');
+    });
+
+    it('lets Back through when nothing is unsaved, and leaves pushes, other documents and uncancellable steps alone', () => {
+      const { rerender } = render(<Page active={false} />);
+      expect(navigate().defaultPrevented).toBe(false);
+      rerender(<Page active />);
+      expect(navigate({ type: 'push' }).defaultPrevented).toBe(false);
+      expect(navigate({ sameDocument: false }).defaultPrevented).toBe(false);
+      expect(navigate({ cancelable: false }).defaultPrevented).toBe(false);
+      expect(pending()).toBe('');
+    });
+
+    it('lets its own Leave step through without asking again', () => {
+      render(<Page active />);
+      navigate();
+      fireEvent.click(screen.getByText('Leave'));
+      expect(navigate().defaultPrevented).toBe(false);
+    });
+
+    it('goes by address when the entry Back led to is gone by the time Leave is chosen', () => {
+      navigation.traverseTo.mockImplementation(() => {
+        throw new DOMException('gone', 'InvalidStateError');
+      });
+      render(<Page active />);
+      navigate();
+      fireEvent.click(screen.getByText('Leave'));
+      expect(push).toHaveBeenCalledWith('/ds/reports');
+    });
+
+    it('goes by address when the traverse to that entry fails afterwards', async () => {
+      navigation.traverseTo.mockReturnValue({ finished: Promise.reject(new Error('aborted')) });
+      render(<Page active />);
+      navigate();
+      fireEvent.click(screen.getByText('Leave'));
+      await act(async () => undefined);
+      expect(push).toHaveBeenCalledWith('/ds/reports');
+    });
+
+    it('a Back answered Stay does not turn a later link Leave into a Back', () => {
+      render(<Page active />);
+      navigate();
+      fireEvent.click(screen.getByText('Stay'));
+      fireEvent.click(screen.getByText('Reports'));
+      fireEvent.click(screen.getByText('Leave'));
+      expect(navigation.traverseTo).not.toHaveBeenCalled();
+      expect(push).toHaveBeenCalledWith('/ds/reports');
+    });
+
+    it('stops listening when the page goes away', () => {
+      const { unmount } = render(<Page active />);
+      unmount();
+      expect(navigate().defaultPrevented).toBe(false);
+    });
+  });
 });

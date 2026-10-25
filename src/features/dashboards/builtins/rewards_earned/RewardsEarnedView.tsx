@@ -7,7 +7,7 @@
 
 import React from 'react';
 
-import { Button, EmptyState, ListRow, Text } from '@/components/ds';
+import { Button, concealMoney, EmptyState, ListRow, Text } from '@/components/ds';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
 import { widgetTitle } from '@/lib/dashboards.helpers';
 import { isPivotTableData } from '@/lib/reports.helpers';
@@ -19,12 +19,12 @@ import { buildRewardsEarned, nativeText, type RewardCardRow, rewardsRequest } fr
 
 /** A card's earnings, tappable where the figure equals its drill; points on a card with no point value stay plain text. */
 function CardFigure({ row, onOpen }: { row: RewardCardRow; onOpen: () => void }) {
-  if (!row.cardId) return <Text variant="body-strong">{nativeText(row, { withValue: false })}</Text>;
+  if (!row.cardId) return <Text variant="body-strong">{concealMoney(nativeText(row, { withValue: false }))}</Text>;
   if (!row.unvalued) {
     return (
       <Text variant="body-strong">
         <Button variant="link" onClick={onOpen}>
-          {nativeText(row, { withValue: false })}
+          {concealMoney(nativeText(row, { withValue: false }))}
         </Button>
       </Text>
     );
@@ -36,7 +36,7 @@ function CardFigure({ row, onOpen }: { row: RewardCardRow; onOpen: () => void })
         <>
           {' + '}
           <Button variant="link" onClick={onOpen}>
-            {formatRupees(row.cash)}
+            {concealMoney(formatRupees(row.cash))}
           </Button>
         </>
       ) : null}
@@ -65,7 +65,7 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
       <div className="flex flex-col gap-space-2 pb-space-8">
         <Text variant="figure" as="div">
           <Button variant="link" onClick={() => setDrill({ title: `${title} · ${formatRupees(model.totalInr)}`, cardId: null })}>
-            {formatRupees(model.totalInr)}
+            {concealMoney(formatRupees(model.totalInr))}
           </Button>
         </Text>
         {model.unvaluedPoints > 0 ? (
