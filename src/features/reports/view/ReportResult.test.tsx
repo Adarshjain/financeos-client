@@ -72,6 +72,14 @@ describe('KPI result', () => {
     expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
   });
 
+  it('draws the tile as a card, or plain with no card when asked (inside a widget)', () => {
+    const { container, rerender } = render(<ReportResult data={kpi()} catalog={catalog} />);
+    expect(container.querySelector('[class*="px-space-16"]')).not.toBeNull();
+    rerender(<ReportResult data={kpi()} catalog={catalog} kpiVariant="plain" />);
+    expect(container.querySelector('[class*="px-space-16"]')).toBeNull();
+    expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
+  });
+
   it('shows the change with its sign and percent', () => {
     render(<ReportResult data={kpi()} catalog={catalog} />);
     expect(screen.getByText('+₹14,320 (+8.4%)')).toBeInTheDocument();

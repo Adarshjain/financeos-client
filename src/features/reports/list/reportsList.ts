@@ -7,7 +7,7 @@ import type { ReportDashboardRef, ReportSummaryResponse, ReportType } from '@/li
 /** The Reports list URL. */
 export const REPORTS_HREF = appHref('/reports');
 
-/** The Dashboards tab: Dashboards is not built in Dinero yet, so this stays the Legacy page until it is. */
+/** The Dashboards tab. */
 export const DASHBOARDS_HREF = appHref('/dashboards');
 
 /** The Ask the data page. */

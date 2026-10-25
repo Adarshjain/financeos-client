@@ -12,12 +12,12 @@ vi.mock('../UnderlyingTransactionDialog', () => ({
 }));
 
 import type { BreakdownSectionData, RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
+import { useBreakdownStack } from '@/features/reports/underlying/useBreakdownStack';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { RowBreakdownDialog } from '../RowBreakdownDialog';
 import { RowBreakdownView } from '../RowBreakdownView';
-import { useBreakdownStack } from '../useBreakdownStack';
 
 const BREAKDOWN = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown';
 

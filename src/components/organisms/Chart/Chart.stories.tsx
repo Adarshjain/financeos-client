@@ -30,6 +30,7 @@ const meta: Meta<typeof Chart> = {
     higherIsBetter: { control: 'boolean' },
     rowsLabel: { control: 'text' },
     onOpenRow: { control: false },
+    onSelectEntry: { control: false },
     canOpenRow: { control: false },
   },
 };
@@ -264,4 +265,79 @@ export const BreakdownWithOtherRow: Story = {
     rowsLabel: 'Category',
     onOpenRow: fn(),
   },
+};
+
+export const Sparkline: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-space-96">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    data: {
+      chartType: 'sparkline',
+      categories: months,
+      series: [{ name: 'net worth', data: [1420000, 1465000, 1448000, 1512000, 1560000, 1618000] }],
+      measure: spend,
+    },
+  },
+};
+
+// A rolling window ending today, so the calendar always has recent days.
+const heatDays = Array.from({ length: 180 }, (_, i) => {
+  const d = new Date(Date.now() - (179 - i) * 86_400_000);
+  return d.toISOString().slice(0, 10);
+});
+
+const heatData = {
+  chartType: 'heatmap',
+  categories: heatDays,
+  series: [
+    {
+      name: 'spend',
+      data: heatDays.map((_, i) => (i % 7 === 3 ? 0 : ((i * 37) % 11) * 450 + 120)),
+    },
+  ],
+  measure: spend,
+} as never;
+
+export const Heatmap: Story = {
+  args: { data: heatData },
+};
+
+export const Pressable: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'With onSelectEntry the bars, points, slices and their legend rows, and heatmap days with a value, are pressable.',
+      },
+    },
+  },
+  args: {
+    data: {
+      chartType: 'bar',
+      categories: months,
+      series: [{ name: 'spend', data: [38450, 41200, 36980, 52340, 47810, 61275] }],
+      measure: spend,
+    },
+    onSelectEntry: fn(),
+  },
+};
+
+export const PressableDonut: Story = {
+  args: {
+    data: {
+      chartType: 'donut',
+      categories: ['Food & dining', 'Shopping', 'Travel', 'Bills'],
+      series: [{ name: 'spend', data: [48210, 36840, 21450, 12600] }],
+      measure: spend,
+    },
+    onSelectEntry: fn(),
+  },
+};
+
+export const PressableHeatmap: Story = {
+  args: { data: heatData, onSelectEntry: fn() },
 };

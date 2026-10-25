@@ -11,10 +11,10 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Text } from '@/components/ds';
 import { cn } from '@/components/ds/cn';
 import { valueFormat } from '@/lib/charts/chart-format';
-import { formatShare } from '@/lib/charts/chart-series';
+import { formatShare, seriesLabel } from '@/lib/charts/chart-series';
 import { useElementSize } from '@/lib/charts/useElementSize';
 
-import type { ChartInput } from './Chart';
+import type { ChartEntry, ChartInput } from './Chart';
 import {
   ChartDataTable,
   ChartEmpty,
@@ -44,11 +44,13 @@ export function ChartPie({
   fill,
   money,
   donut,
+  onSelectEntry,
 }: {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   donut: boolean;
+  onSelectEntry?: (entry: ChartEntry) => void;
 }) {
   const [frameRef, { width, height }] = useElementSize<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
@@ -92,6 +94,13 @@ export function ChartPie({
   const measured = width > 0;
   const stacked = measured && width < STACK_BELOW_PX;
   const pieSize = Math.floor(Math.min(height, width * 0.45));
+  const press = (s: Slice) =>
+    onSelectEntry?.({
+      key: s.name,
+      label: s.folded ? `Other (${s.folded.length})` : s.name,
+      seriesKey: seriesLabel(first.name),
+      value: s.value,
+    });
   const focus = active !== null ? slices[active] : null;
 
   return (
@@ -99,6 +108,8 @@ export function ChartPie({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0',
+        onSelectEntry &&
+          '[&_.recharts-pie-sector]:cursor-pointer [&_.recharts-pie-sector:active]:opacity-80',
         stacked ? 'flex-col gap-space-12' : 'items-center gap-space-24',
         fill
           ? 'h-full min-h-0'
@@ -136,6 +147,11 @@ export function ChartPie({
                 animationDuration={450}
                 onMouseEnter={(_, i) => setActive(i)}
                 onMouseLeave={() => setActive(null)}
+                onClick={
+                  onSelectEntry
+                    ? (_, i) => press(slices[i])
+                    : undefined
+                }
               >
                 {slices.map((s, i) => (
                   <Cell
@@ -190,30 +206,50 @@ export function ChartPie({
             onMouseEnter={() => setActive(i)}
             onMouseLeave={() => setActive(null)}
             className={cn(
-              'flex items-center gap-space-8 rounded-ds-sm px-space-8 py-space-4 transition-opacity',
+              'transition-opacity',
               active !== null && active !== i && 'opacity-50'
             )}
           >
-            <ChartSwatch line={false} color={s.color} />
-            <Text
-              variant="caption"
-              tone="ink-3"
-              truncate
-              className="min-w-0 flex-1"
-            >
-              {s.folded ? `Other (${s.folded.length})` : s.name}
-            </Text>
-            <Text variant="label">
-              {format.full(s.value)}
-            </Text>
-            <Text
-              variant="micro"
-              tone="ink-3"
-              align="end"
-              className="w-space-32"
-            >
-              {formatShare(s.value / total)}
-            </Text>
+            {(() => {
+              const content = (
+                <>
+                  <ChartSwatch line={false} color={s.color} />
+                  <Text
+                    variant="caption"
+                    tone="ink-3"
+                    truncate
+                    className="min-w-0 flex-1 text-start"
+                  >
+                    {s.folded ? `Other (${s.folded.length})` : s.name}
+                  </Text>
+                  <Text variant="label">{format.full(s.value)}</Text>
+                  <Text
+                    variant="micro"
+                    tone="ink-3"
+                    align="end"
+                    className="w-space-32"
+                  >
+                    {formatShare(s.value / total)}
+                  </Text>
+                </>
+              );
+              const rowClass =
+                'flex w-full items-center gap-space-8 rounded-ds-sm px-space-8 py-space-4';
+              return onSelectEntry ? (
+                <button
+                  type="button"
+                  onClick={() => press(s)}
+                  className={cn(
+                    rowClass,
+                    'cursor-pointer hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset'
+                  )}
+                >
+                  {content}
+                </button>
+              ) : (
+                <div className={rowClass}>{content}</div>
+              );
+            })()}
           </li>
         ))}
       </ul>

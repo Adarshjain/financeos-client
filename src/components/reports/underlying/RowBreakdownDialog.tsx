@@ -14,10 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useBreakdownStack } from '@/features/reports/underlying/useBreakdownStack';
 
 import { LazyUnderlyingTransactionDialog } from './LazyUnderlyingTransactionDialog';
 import { RowBreakdownView } from './RowBreakdownView';
-import { useBreakdownStack } from './useBreakdownStack';
 
 export interface RowBreakdownDialogProps {
   /** The datasource whose row is broken down (e.g. `net_worth`, `positions`). */

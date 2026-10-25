@@ -8,11 +8,10 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import { useBreakdownSection } from '@/features/reports/underlying/useRowBreakdown';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { createTestQueryClient } from '@/test/renderWithQuery';
-
-import { useBreakdownSection } from '../useRowBreakdown';
 
 const SECTION = '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}';
 

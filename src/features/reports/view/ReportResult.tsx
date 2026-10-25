@@ -45,6 +45,8 @@ export interface ReportResultProps {
   onSortChange?: (sort: SortClause | null) => void;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** KPI only: the tile's form; 'plain' draws it with no card of its own (a widget already is one). */
+  kpiVariant?: React.ComponentProps<typeof KpiTile>['variant'];
   /** Breakdown only: the chart definition the data was run with (its columns, bars and comparison preference). */
   definition?: ChartDefinition;
   /** Breakdown only: a press on row `index`. */
@@ -85,7 +87,7 @@ function previewValue(
 
 // ---- KPI -------------------------------------------------------------------
 
-function KpiResult({ data, catalog }: { data: KpiData; catalog?: DatasourceCatalog }) {
+function KpiResult({ data, catalog, variant }: { data: KpiData; catalog?: DatasourceCatalog; variant?: React.ComponentProps<typeof KpiTile>['variant'] }) {
   const format = data.format ?? fieldOf(catalog, data.measure)?.format ?? null;
   const fmt = (n: number | null) => previewValue(n, { field: data.measure, aggregation: data.aggregation, format }, catalog);
   const label = `${fieldOf(catalog, data.measure)?.label ?? data.measure} · ${AGGREGATION_LABELS[data.aggregation].toLowerCase()}`;
@@ -103,6 +105,7 @@ function KpiResult({ data, catalog }: { data: KpiData; catalog?: DatasourceCatal
   }
   return (
     <KpiTile
+      variant={variant}
       label={label}
       value={fmt(data.value)}
       delta={delta}
@@ -295,7 +298,7 @@ function ChartResult({
 /** A report's result as the preview shows it: KPI tile, chart, breakdown list or table, by the data's type. */
 export function ReportResult(props: ReportResultProps) {
   const { data, catalog } = props;
-  if (isKpiData(data)) return <KpiResult data={data} catalog={catalog} />;
+  if (isKpiData(data)) return <KpiResult data={data} catalog={catalog} variant={props.kpiVariant} />;
   if (isChartData(data)) {
     return (
       <ChartResult

@@ -138,7 +138,7 @@ describe('counts', () => {
 
   it('shows the dashboards count on its tab', () => {
     renderWithQuery(<ReportsScreen {...props({ dashboards: 3 })} />);
-    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/dashboards');
+    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/ds/dashboards');
     const reports = screen.getByRole('tab', { name: /^Reports\s*·\s*3$/ });
     expect(reports).toHaveAttribute('href', '/ds/reports');
     expect(reports).toHaveAttribute('data-state', 'active');

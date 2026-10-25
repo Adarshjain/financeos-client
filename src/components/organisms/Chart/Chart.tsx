@@ -5,15 +5,27 @@ import type { BreakdownBars, BreakdownColumn, ChartData } from '@/lib/reports.ty
 
 import { ChartBreakdown } from './ChartBreakdown';
 import { ChartCartesian } from './ChartCartesian';
+import { ChartHeatmap } from './ChartHeatmap';
 import { ChartEmpty } from './ChartParts';
 import { ChartPie } from './ChartPie';
+import { ChartSparkline } from './ChartSparkline';
 
 /** A report's chart data: categories and series aligned by index, plus the chart type. */
-export type ChartInput = Pick<
-  ChartData,
-  'chartType' | 'categories' | 'series'
-> &
-  Partial<ChartData>;
+export type ChartInput = Pick<ChartData, 'categories' | 'series'> &
+  Partial<Omit<ChartData, 'chartType'>> & {
+    chartType: ChartData['chartType'] | 'sparkline' | 'heatmap';
+  };
+
+/** What a press on a bar, point, slice (or its legend row) or heatmap cell reports. */
+export interface ChartEntry {
+  /** The category (bar, point, slice) or the day as YYYY-MM-DD (heatmap cell). */
+  key: string;
+  /** What the user reads for it: the category label, or the day as dd/mm/yyyy. */
+  label: string;
+  /** The series label for a bar or point; absent for a slice or a heatmap cell. */
+  seriesKey?: string;
+  value: number;
+}
 
 export interface ChartProps {
   /** What to draw; `chartType` picks line, bar, stackedBar, area, pie or donut. */
@@ -34,6 +46,10 @@ export interface ChartProps {
   rowsLabel?: string;
   /** Breakdown only: a press on row `index` (the index into `data.categories`) opens its underlying data. */
   onOpenRow?: (index: number) => void;
+  /** A press on a cartesian bar or point, a pie/donut slice or its legend row, or a heatmap cell; absent = nothing is pressable. */
+  onSelectEntry?: (entry: ChartEntry) => void;
+  /** Heatmap only: how many months the calendar covers (default 6). */
+  months?: number;
   /** Breakdown only: whether row `index` can open underlying data; without it every row can. */
   canOpenRow?: (index: number) => boolean;
 }
@@ -53,6 +69,8 @@ export function Chart({
   rowsLabel,
   onOpenRow,
   canOpenRow,
+  onSelectEntry,
+  months,
 }: ChartProps) {
   if (raw.chartType === 'breakdown') {
     return (
@@ -80,6 +98,19 @@ export function Chart({
       data.measure.aggregation !== 'count' &&
       isMoneyField(data.measure.field));
 
+  if (chartType === 'sparkline') {
+    return <ChartSparkline data={data} />;
+  }
+  if (chartType === 'heatmap') {
+    return (
+      <ChartHeatmap
+        data={data}
+        money={money}
+        months={months}
+        onSelectEntry={onSelectEntry}
+      />
+    );
+  }
   if (chartType === 'pie' || chartType === 'donut') {
     return (
       <ChartPie
@@ -87,6 +118,7 @@ export function Chart({
         fill={fill}
         money={money}
         donut={chartType === 'donut'}
+        onSelectEntry={onSelectEntry}
       />
     );
   }
@@ -96,6 +128,7 @@ export function Chart({
       fill={fill}
       money={money}
       yDomain={yDomain}
+      onSelectEntry={onSelectEntry}
     />
   );
 }

@@ -17,20 +17,16 @@ import { useState } from 'react';
 import { ResponsiveTableView } from '@/components/reports/views/ResponsiveTableView';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { type BreakdownRowHandlers, rowClickHandler } from '@/features/reports/underlying/breakdownRows';
 import { formatAmount, UNDERLYING_PAGE_SIZE } from '@/features/reports/underlying/underlying.helpers';
-import type { BreakdownFrame, BreakdownSectionData } from '@/features/reports/underlying/underlying.types';
+import type { BreakdownSectionData } from '@/features/reports/underlying/underlying.types';
+import { useBreakdownSection, useRowBreakdown } from '@/features/reports/underlying/useRowBreakdown';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
-import type { SortClause, TableRow } from '@/lib/reports.types';
+import type { SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { BreakdownSteps } from './BreakdownSteps';
-import { useBreakdownSection, useRowBreakdown } from './useRowBreakdown';
-
-export interface BreakdownRowHandlers {
-  onOpenTransaction: (id: string) => void;
-  onOpenBreakdown: (frame: BreakdownFrame) => void;
-}
 
 interface RowBreakdownViewProps extends BreakdownRowHandlers {
   datasource: string;
@@ -187,22 +183,4 @@ function BreakdownSectionTable({
       )}
     </section>
   );
-}
-
-function rowClickHandler(
-  section: BreakdownSectionData,
-  { onOpenTransaction, onOpenBreakdown }: BreakdownRowHandlers,
-): ((row: TableRow) => void) | undefined {
-  if (section.rowAction === 'transaction') {
-    return (row) => {
-      if (row.id != null) onOpenTransaction(String(row.id));
-    };
-  }
-  if (section.rowAction === 'breakdown' && section.rowBreakdownDatasource) {
-    const nested = section.rowBreakdownDatasource;
-    return (row) => {
-      if (row.id != null) onOpenBreakdown({ datasource: nested, rowId: String(row.id) });
-    };
-  }
-  return undefined;
 }

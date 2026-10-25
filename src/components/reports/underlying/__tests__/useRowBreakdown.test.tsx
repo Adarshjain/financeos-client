@@ -8,10 +8,9 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import { useBreakdownSection, useRowBreakdown } from '@/features/reports/underlying/useRowBreakdown';
 import { api } from '@/lib/api/client';
 import { createTestQueryClient } from '@/test/renderWithQuery';
-
-import { useBreakdownSection, useRowBreakdown } from '../useRowBreakdown';
 
 function Wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={createTestQueryClient()}>{children}</QueryClientProvider>;
