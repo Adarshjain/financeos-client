@@ -86,6 +86,13 @@ describe('DsIndexPage', () => {
     expect(hrefs.some((h) => h?.includes('import-tradebook'))).toBe(false);
   });
 
+  it('lists the built report page (via Reports) and no longer lists it as to build', () => {
+    render(<DsIndexPage />);
+    expect(screen.getByText('/ds/reports/[id]')).toBeDefined();
+    expect(screen.queryByText('Report view and breakdown')).toBeNull();
+    expect(screen.queryByText('Underlying data')).toBeNull();
+  });
+
   it('links every built Investments tab page', () => {
     render(<DsIndexPage />);
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
