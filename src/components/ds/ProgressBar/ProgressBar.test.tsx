@@ -32,6 +32,23 @@ describe('ProgressBar component', () => {
     expect(container.querySelector('.bg-danger')).toBeInTheDocument();
   });
 
+  it('fills with a chart colour instead of the tone, for every chart colour', () => {
+    const cases = [
+      ['chart-1', 'bg-series-1'],
+      ['chart-2', 'bg-series-2'],
+      ['chart-3', 'bg-series-3'],
+      ['chart-4', 'bg-series-4'],
+      ['chart-5', 'bg-series-5'],
+      ['chart-rest', 'bg-series-rest'],
+    ] as const;
+    for (const [color, cls] of cases) {
+      const { container, unmount } = render(<ProgressBar value={30} tone="danger" color={color} />);
+      expect(container.querySelector(`.${cls}`)).toHaveStyle({ width: '30%' });
+      expect(container.querySelector('.bg-danger')).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it('clamps fill at 100% when value exceeds max', () => {
     const { container } = render(<ProgressBar value={108} tone="danger" />);
     const fill = container.querySelector('.bg-danger');

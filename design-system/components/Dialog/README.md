@@ -18,7 +18,7 @@ Title and optional description, a body that is the only scroller, and a footer f
 `Dialog.Section` (`DialogSection`): a section band inside `DialogBody` that spans the dialog edge to edge (it cancels the body's side padding), with its text aligned to the body text and its children below at the body padding. Props: `title`, `children`, `collapsible?: boolean`, `open?` / `defaultOpen?` (default `true`) / `onOpenChange?` (collapsible only, through `useControllableState`). When collapsible the whole band is the toggle with a chevron (`chevron-up` open, `chevron-down` closed) and the content folds with Reveal.
 
 ## Footer Actions API
-- `DialogAction`: `{ label: React.ReactNode; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`
+- `DialogAction`: `{ label: React.ReactNode; icon?: IconName; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`. `icon` is an Icon registry name drawn before the label at `xs` (beside button text), e.g. `download` on "Download CSV" (owner, 2026-10-25).
 - `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
 
 ## Background

@@ -5,6 +5,7 @@ An ordered list the user re-ranks with Move up and Move down buttons, one step a
 ## Props
 - `items: { id, title, subtitle?, trailing?, ariaLabel? }[]` (`ariaLabel` names the row in the move buttons when `title` is not plain text)
 - `value?: string[]` / `defaultValue?: string[]` / `onValueChange?(ids: string[])` (item ids in order; items not listed follow in the order given, ids with no item are ignored)
+- `size?: 'md' | 'sm'` (default `md`)
 - `labels?: { moveUp?: string; moveDown?: string }` (defaults "Move up" / "Move down"; the item's name follows each)
 - Native div props and `className` (layout only); the ref goes to the root.
 
@@ -14,7 +15,9 @@ An ordered list the user re-ranks with Move up and Move down buttons, one step a
 - The row just moved is highlighted until another row moves, scrolls into view if needed, and slides to its new place. Keyboard focus stays on the same button, or on the other one when that button becomes disabled.
 
 ## Variants
-- One look. States: default, with a trailing action, long list.
+- `md` (default): subtitle, standard ListRow rows.
+- `sm` (owner, 2026-10-25): dense rows at `control-sm` height, title only (subtitles are not drawn), `caption` position number, `xs` chevrons, tighter gaps (`space-8`); for use inside forms such as report table columns.
+- States: default, with a trailing action, long list.
 
 ## Built from
 ListRow (row, highlighted), Button (ghost, sm, icon-only), Icon (chevron-up, chevron-down), Text (position).

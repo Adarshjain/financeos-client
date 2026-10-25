@@ -6,7 +6,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - Closed: a field with the value (optionally led by an icon or image, such as a bank logo) and a ChevronDown (`icon-md`) at the right that turns to ChevronUp while open.
 - Open: one Popover surface (never a card inside the popover), at least as wide as the trigger and wider when the options need it (up to `dialog-sm`, 440), so a list opened from a small FilterChip still shows its options in full, with search first when there are more than about eight options and a Check on the current value. Works as a dropdown at every size.
 - **Custom trigger**: any element can open the list through the `trigger` slot. A FilterChip is the trigger for every dropdown filter, so filter chips get search, multi-select, and sections for free. One dropdown, never a second chip-only dropdown.
-- Options use the shared item row: `body` weight 500 (not bold), the current value on `brand-tint` with a Check; section headers are `overline`.
+- Options use the shared item row: `body` weight 500 (not bold), the current value on `brand-tint` with a Check; section headers are the SectionHeader `band` variant (owner, 2026-10-25), drawn only for groups with a name; a group named `''` has no header.
 - Multi-select chips wrap to a second line before they truncate; "+n" when they overflow.
 - Dependent fields appear only after their trigger.
 
@@ -38,7 +38,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `icon`, `trigger`, `showRadio`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
-Popover, TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Cancel, Clear, Done), FieldFrame.
+Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Cancel, Clear, Done), FieldFrame.
 
 ## Variants
 - **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with an action row**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).

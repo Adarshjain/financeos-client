@@ -45,6 +45,7 @@ const meta = {
     defaultValue: { control: false },
     onValueChange: { control: false },
     labels: { control: 'object' },
+    size: { control: 'select', options: ['md', 'sm'] },
   },
   render: function Render(args) {
     const [, updateArgs] = useArgs();
@@ -81,4 +82,8 @@ export const WithTrailingAction: Story = {
 
 export const LongList: Story = {
   args: { items: rules, value: rules.map((r) => r.id) },
+};
+
+export const Compact: Story = {
+  args: { size: 'sm', items: rules, value: rules.map((r) => r.id) },
 };

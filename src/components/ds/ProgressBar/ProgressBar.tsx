@@ -13,6 +13,8 @@ export type ProgressBarSeries =
   | 'chart-5'
   | 'chart-rest';
 
+export type ProgressBarColor = Exclude<ProgressBarSeries, 'brand'>;
+
 export interface ProgressBarSegment {
   value: number;
   label: string;
@@ -37,6 +39,8 @@ export interface ProgressBarProps
   min?: number;
   max?: number;
   tone?: ProgressBarTone;
+  /** Fills with a chart palette colour instead of `tone`'s. Ignored in split form. */
+  color?: ProgressBarColor;
   label?: React.ReactNode;
 }
 
@@ -47,6 +51,7 @@ const ProgressBarRoot = forwardRef<HTMLDivElement, ProgressBarProps>(
       min = 0,
       max = 100,
       tone = 'brand',
+      color,
       label,
       segments,
       className,
@@ -90,11 +95,13 @@ const ProgressBarRoot = forwardRef<HTMLDivElement, ProgressBarProps>(
         ? Math.min(Math.max(((value - min) / range) * 100, 0), 100)
         : 0;
 
-    const fillToneClass = {
-      brand: 'bg-brand',
-      warning: 'bg-warning',
-      danger: 'bg-danger',
-    }[tone] ?? 'bg-brand';
+    const fillToneClass = color
+      ? seriesClass[color]
+      : ({
+          brand: 'bg-brand',
+          warning: 'bg-warning',
+          danger: 'bg-danger',
+        }[tone] ?? 'bg-brand');
 
     return (
       <div ref={ref} className={cn('w-full select-none', className)} {...props}>

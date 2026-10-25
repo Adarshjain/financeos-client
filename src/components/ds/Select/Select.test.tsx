@@ -282,6 +282,17 @@ describe('SelectMenu', () => {
     expect(screen.getByText('Cards')).toBeInTheDocument();
   });
 
+  it('draws group names as SectionHeader bands and leaves unnamed groups headerless', () => {
+    const groups = [
+      { name: '', options: [{ value: 'cash', label: 'Cash' }] },
+      { name: 'Banks', options: [{ value: 'hdfc', label: 'HDFC' }] },
+      { name: 'Cards', options: [{ value: 'amex', label: 'Amex' }] },
+    ];
+    const { container } = render(<SelectMenu groups={groups} />);
+    const bands = container.querySelectorAll('.bg-sunken.uppercase');
+    expect(Array.from(bands).map((b) => b.textContent)).toEqual(['Banks', 'Cards']);
+  });
+
   it('renders action row and fires click', () => {
     const onSelect = vi.fn();
     render(
