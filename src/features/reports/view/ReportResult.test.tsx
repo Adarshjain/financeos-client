@@ -10,8 +10,37 @@ import type { ChartData, KpiData, PivotTableData, TableData } from '@/lib/report
 import { ReportResult } from './ReportResult';
 
 vi.mock('@/components/organisms/Chart/Chart', () => ({
-  Chart: ({ data, money }: { data: { chartType: string }; money?: boolean }) => (
-    <div data-testid="chart" data-type={data.chartType} data-money={String(money)} />
+  Chart: ({
+    data,
+    money,
+    columns,
+    bars,
+    higherIsBetter,
+    rowsLabel,
+    onOpenRow,
+    canOpenRow,
+  }: {
+    data: { chartType: string };
+    money?: boolean;
+    columns?: string[];
+    bars?: string;
+    higherIsBetter?: boolean;
+    rowsLabel?: string;
+    onOpenRow?: (index: number) => void;
+    canOpenRow?: (index: number) => boolean;
+  }) => (
+    <div
+      data-testid="chart"
+      data-type={data.chartType}
+      data-money={String(money)}
+      data-columns={columns?.join(',')}
+      data-bars={bars}
+      data-higher={String(higherIsBetter)}
+      data-rows-label={rowsLabel}
+      data-can-open-1={String(canOpenRow?.(1))}
+    >
+      <button onClick={() => onOpenRow?.(1)}>open row 1</button>
+    </div>
   ),
 }));
 
@@ -91,12 +120,26 @@ describe('chart result', () => {
     expect(screen.getByTestId('chart')).toHaveAttribute('data-money', 'false');
   });
 
-  it('lists a breakdown in the placeholder view and reports a pressed row by its index', async () => {
+  it('hands a breakdown to the Chart with its definition and the row callbacks, and reports a pressed row by its index', async () => {
     const onOpen = vi.fn();
-    render(<ReportResult data={chart({ chartType: 'breakdown' })} catalog={catalog} onOpenBreakdownRow={onOpen} />);
-    expect(screen.queryByTestId('chart')).not.toBeInTheDocument();
-    expect(screen.getAllByText('₹42,180').length).toBeGreaterThan(0);
-    await user.click(screen.getAllByText('Shopping')[0]);
+    const definition = { columns: ['amount', 'count'], bars: 'share_of_total', comparison: { enabled: true, higherIsBetter: false } };
+    render(
+      <ReportResult
+        data={chart({ chartType: 'breakdown' })}
+        catalog={catalog}
+        definition={definition as never}
+        onOpenBreakdownRow={onOpen}
+        canOpenBreakdownRow={(i) => i === 1}
+      />,
+    );
+    const el = screen.getByTestId('chart');
+    expect(el).toHaveAttribute('data-type', 'breakdown');
+    expect(el).toHaveAttribute('data-columns', 'amount,count');
+    expect(el).toHaveAttribute('data-bars', 'share_of_total');
+    expect(el).toHaveAttribute('data-higher', 'false');
+    expect(el).toHaveAttribute('data-rows-label', 'Category');
+    expect(el).toHaveAttribute('data-can-open-1', 'true');
+    await user.click(screen.getByRole('button', { name: 'open row 1' }));
     expect(onOpen).toHaveBeenCalledWith(1);
   });
 });

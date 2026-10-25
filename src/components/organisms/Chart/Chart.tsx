@@ -1,8 +1,9 @@
 'use client';
 
 import { isMoneyField, labelChartData } from '@/lib/reports.helpers';
-import type { ChartData } from '@/lib/reports.types';
+import type { BreakdownBars, BreakdownColumn, ChartData } from '@/lib/reports.types';
 
+import { ChartBreakdown } from './ChartBreakdown';
 import { ChartCartesian } from './ChartCartesian';
 import { ChartEmpty } from './ChartParts';
 import { ChartPie } from './ChartPie';
@@ -23,6 +24,18 @@ export interface ChartProps {
   yDomain?: 'zero' | 'data';
   /** Whether values are money. Given, it wins; omitted, a measure named like an amount is money (and a count never is). */
   money?: boolean;
+  /** Breakdown only: the value columns, in the order they are drawn; absent = amount, share, and change when the data compares. */
+  columns?: BreakdownColumn[];
+  /** Breakdown only: what the bars are relative to; absent = the largest row. */
+  bars?: BreakdownBars;
+  /** Breakdown only: an increase reads good when true, bad when false, neutral when unset. */
+  higherIsBetter?: boolean;
+  /** Breakdown only: the heading of the label column (the rows' dimension); default "Category". */
+  rowsLabel?: string;
+  /** Breakdown only: a press on row `index` (the index into `data.categories`) opens its underlying data. */
+  onOpenRow?: (index: number) => void;
+  /** Breakdown only: whether row `index` can open underlying data; without it every row can. */
+  canOpenRow?: (index: number) => boolean;
 }
 
 /**
@@ -34,7 +47,27 @@ export function Chart({
   fill,
   yDomain,
   money: moneyProp,
+  columns,
+  bars,
+  higherIsBetter,
+  rowsLabel,
+  onOpenRow,
+  canOpenRow,
 }: ChartProps) {
+  if (raw.chartType === 'breakdown') {
+    return (
+      <ChartBreakdown
+        data={raw}
+        money={moneyProp}
+        columns={columns}
+        bars={bars}
+        higherIsBetter={higherIsBetter}
+        rowsLabel={rowsLabel}
+        onOpenRow={onOpenRow}
+        canOpenRow={canOpenRow}
+      />
+    );
+  }
   // Static enum categories/series read as their labels (e.g. "Bank account").
   const data = labelChartData(raw);
   const { chartType, categories, series } = data;

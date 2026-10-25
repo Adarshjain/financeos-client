@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { signed } from './format';
+import { signed } from './signed';
 
 describe('signed', () => {
   it('shows the sign of a change', () => {

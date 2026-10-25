@@ -16,9 +16,10 @@ import {
   newDraftId,
 } from './builderReducer';
 import { columnsFor, fieldByName, isDateFieldName } from './catalog';
+import { ConfigSection } from './ConfigSection';
 import { AGGREGATION_LABELS } from './labels';
-import { chartTypeOptions } from './options';
-import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton } from './pickers';
+import { chartTypeOptions, dimensionOptions, granularityOptions } from './options';
+import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton, RevealPair } from './pickers';
 import { aggregatedColumnKey, hasSeries,type IssueKey, SUB_LIMIT_MAX, TOP_N_MAX } from './serialize';
 
 export type Issues = Partial<Record<IssueKey, string>>;
@@ -45,25 +46,30 @@ export function KpiOptions({ catalog, state, dispatch, issues }: SectionProps) {
   // A comparison needs a date field to shift; without one it is off whatever the draft says.
   const hasDateField = catalog.fields.some((f) => f.type === 'date');
   return (
-    <div className={STACK}>
-      <MeasurePicker
-        catalog={catalog}
-        type="KPI"
-        value={{ field: k.measure, aggregation: k.aggregation }}
-        fieldError={issues.measure}
-        aggregationError={issues.aggregation}
-        onChange={setMeasure}
-      />
-      <CompareFields
-        enabled={k.comparisonEnabled}
-        onEnabledChange={(comparisonEnabled) => set({ comparisonEnabled })}
-        disabledReason={hasDateField ? undefined : 'Needs a date field'}
-        display={k.comparisonDisplay}
-        onDisplayChange={(comparisonDisplay) => set({ comparisonDisplay })}
-        higherIsBetter={k.higherIsBetter}
-        onHigherIsBetterChange={(higherIsBetter) => set({ higherIsBetter })}
-      />
-    </div>
+    <>
+      <ConfigSection>
+        <MeasurePicker
+          catalog={catalog}
+          type="KPI"
+          value={{ field: k.measure, aggregation: k.aggregation }}
+          fieldError={issues.measure}
+          aggregationError={issues.aggregation}
+          onChange={setMeasure}
+        />
+      </ConfigSection>
+      <ConfigSection>
+        <CompareFields
+          enabled={k.comparisonEnabled}
+          disabledReason={hasDateField ? undefined : 'Needs a date field'}
+          display={k.comparisonDisplay}
+          onShowChange={(show) =>
+            set({ comparisonEnabled: show !== 'none', comparisonDisplay: show === 'previous_value' ? 'previous_value' : undefined })
+          }
+          higherIsBetter={k.higherIsBetter}
+          onHigherIsBetterChange={(higherIsBetter) => set({ higherIsBetter })}
+        />
+      </ConfigSection>
+    </>
   );
 }
 
@@ -103,46 +109,77 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
   const comparing = !!c.comparisonEnabled && !isDateDimension;
   const columnOptions = BREAKDOWN_COLUMN_OPTIONS.filter((o) => o.value !== 'change' || comparing);
   return (
-    <div className={STACK}>
-      <PickSelect
-        label="Chart type"
-        value={c.chartType}
-        options={chartTypeOptions()}
-        onValueChange={(chartType) => chartType && set({ chartType: chartType as typeof c.chartType })}
-      />
-      <DimensionPicker
-        catalog={catalog}
-        type="CHART"
-        label={dimensionLabel}
-        value={{ field: c.dimensionField, granularity: c.dimensionGranularity }}
-        error={issues.dimension}
-        onChange={(v) => set({ dimensionField: v.field, dimensionGranularity: v.granularity })}
-      />
-      {hasSeries(c.chartType) ? (
+    <>
+      <ConfigSection>
+        <PickSelect
+          label="Chart type"
+          value={c.chartType}
+          options={chartTypeOptions()}
+          onValueChange={(chartType) => chartType && set({ chartType: chartType as typeof c.chartType })}
+        />
         <DimensionPicker
           catalog={catalog}
           type="CHART"
-          label="Series (optional split)"
-          noneLabel="No series"
-          placeholder="No series"
-          value={{ field: c.seriesField, granularity: c.seriesGranularity }}
-          error={issues.series}
-          onChange={(v) => set({ seriesField: v.field, seriesGranularity: v.granularity })}
+          label={dimensionLabel}
+          value={{ field: c.dimensionField, granularity: c.dimensionGranularity }}
+          error={issues.dimension}
+          onChange={(v) => set({ dimensionField: v.field, dimensionGranularity: v.granularity })}
         />
-      ) : null}
-      {isBreakdown ? (
-        <>
+        {hasSeries(c.chartType) ? (
           <DimensionPicker
             catalog={catalog}
             type="CHART"
-            label="Sub-rows"
-            noneLabel="No sub-rows"
-            placeholder="No sub-rows"
-            exclude={c.dimensionField ? [c.dimensionField] : []}
-            value={{ field: c.subDimensionField, granularity: c.subDimensionGranularity }}
-            error={issues.subDimension}
-            onChange={(v) => set({ subDimensionField: v.field, subDimensionGranularity: v.granularity })}
+            label="Series (optional split)"
+            noneLabel="No series"
+            placeholder="No series"
+            value={{ field: c.seriesField, granularity: c.seriesGranularity }}
+            error={issues.series}
+            onChange={(v) => set({ seriesField: v.field, seriesGranularity: v.granularity })}
           />
+        ) : null}
+      </ConfigSection>
+      {isBreakdown ? (
+        <ConfigSection title="Breakdown">
+          <RevealPair
+            open={!!c.subDimensionField}
+            first={
+              <PickSelect
+                label="Sub-rows"
+                value={c.subDimensionField}
+                options={dimensionOptions(catalog, 'CHART', c.dimensionField ? [c.dimensionField] : [], c.subDimensionField)}
+                noneLabel="No sub-rows"
+                placeholder="No sub-rows"
+                error={isDateFieldName(catalog, c.subDimensionField) ? undefined : issues.subDimension}
+                onValueChange={(field) =>
+                  set({
+                    subDimensionField: field,
+                    subDimensionGranularity: isDateFieldName(catalog, field) ? (c.subDimensionGranularity ?? 'month') : undefined,
+                  })
+                }
+              />
+            }
+            second={
+              <CountField
+                label="Sub-rows per row"
+                min={1}
+                max={SUB_LIMIT_MAX}
+                placeholder="3"
+                value={c.subLimit}
+                error={issues.subLimit}
+                onValueChange={(subLimit) => set({ subLimit })}
+              />
+            }
+          />
+          {isDateFieldName(catalog, c.subDimensionField) ? (
+            <PickSelect
+              label="Sub-rows group by"
+              value={c.subDimensionGranularity}
+              options={granularityOptions()}
+              placeholder="Select granularity"
+              error={issues.subDimension}
+              onValueChange={(granularity) => set({ subDimensionGranularity: granularity as typeof c.subDimensionGranularity })}
+            />
+          ) : null}
           <Select
             multiple
             label="Columns"
@@ -162,62 +199,56 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
             options={BREAKDOWN_BAR_OPTIONS}
             onValueChange={(bars) => bars && set({ bars: bars as BreakdownBars })}
           />
-          {c.subDimensionField ? (
-            <CountField
-              label="Sub-rows per row"
-              min={1}
-              max={SUB_LIMIT_MAX}
-              placeholder="3"
-              value={c.subLimit}
-              error={issues.subLimit}
-              onValueChange={(subLimit) => set({ subLimit })}
-            />
-          ) : null}
-        </>
+        </ConfigSection>
       ) : null}
-      <MeasurePicker
-        catalog={catalog}
-        type="CHART"
-        fieldLabel={isBreakdown ? 'Measure' : 'Measure (Y-axis)'}
-        value={{ field: c.measureField, aggregation: c.measureAggregation }}
-        fieldError={issues.measure}
-        aggregationError={issues.aggregation}
-        onChange={setMeasure}
-      />
-      <div className={PAIR}>
-        <CountField
-          label="Show top"
-          min={1}
-          max={TOP_N_MAX}
-          placeholder="All"
-          value={c.limit}
-          error={issues.limit}
-          onValueChange={(limit) => set({ limit, other: limit === undefined ? undefined : c.other })}
+      <ConfigSection>
+        <MeasurePicker
+          catalog={catalog}
+          type="CHART"
+          fieldLabel={isBreakdown ? 'Measure' : 'Measure (Y-axis)'}
+          value={{ field: c.measureField, aggregation: c.measureAggregation }}
+          fieldError={issues.measure}
+          aggregationError={issues.aggregation}
+          onChange={setMeasure}
         />
-        <PickSelect
-          label="Order"
-          value={c.order ?? (isBreakdown ? 'value_desc' : 'dimension')}
-          options={ORDER_OPTIONS}
-          onValueChange={(order) => set({ order: order as typeof c.order })}
+        <div className={PAIR}>
+          <CountField
+            label="Show top"
+            min={1}
+            max={TOP_N_MAX}
+            placeholder="All"
+            value={c.limit}
+            error={issues.limit}
+            onValueChange={(limit) => set({ limit, other: limit === undefined ? undefined : c.other })}
+          />
+          <PickSelect
+            label="Order"
+            value={c.order ?? (isBreakdown ? 'value_desc' : 'dimension')}
+            options={ORDER_OPTIONS}
+            onValueChange={(order) => set({ order: order as typeof c.order })}
+          />
+        </div>
+        <SettingsToggle
+          label="Group the rest as Other"
+          description={c.limit === undefined ? 'Set a top number first' : undefined}
+          checked={!!c.other && c.limit !== undefined}
+          disabled={c.limit === undefined}
+          onCheckedChange={(other) => set({ other })}
         />
-      </div>
-      <SettingsToggle
-        label="Group the rest as Other"
-        description={c.limit === undefined ? 'Set a top number first' : undefined}
-        checked={!!c.other && c.limit !== undefined}
-        disabled={c.limit === undefined}
-        onCheckedChange={(other) => set({ other })}
-      />
-      <CompareFields
-        enabled={!!c.comparisonEnabled}
-        onEnabledChange={(comparisonEnabled) => set({ comparisonEnabled })}
-        disabledReason={isDateDimension ? 'Not available on a date dimension' : undefined}
-        display={c.comparisonDisplay}
-        onDisplayChange={(comparisonDisplay) => set({ comparisonDisplay })}
-        higherIsBetter={c.comparisonHigherIsBetter}
-        onHigherIsBetterChange={(comparisonHigherIsBetter) => set({ comparisonHigherIsBetter })}
-      />
-    </div>
+      </ConfigSection>
+      <ConfigSection>
+        <CompareFields
+          enabled={!!c.comparisonEnabled}
+          disabledReason={isDateDimension ? 'Not available on a date dimension' : undefined}
+          display={c.comparisonDisplay}
+          onShowChange={(show) =>
+            set({ comparisonEnabled: show !== 'none', comparisonDisplay: show === 'previous_value' ? 'previous_value' : undefined })
+          }
+          higherIsBetter={c.comparisonHigherIsBetter}
+          onHigherIsBetterChange={(comparisonHigherIsBetter) => set({ comparisonHigherIsBetter })}
+        />
+      </ConfigSection>
+    </>
   );
 }
 
@@ -233,39 +264,41 @@ const DIRECTIONS = [
   { value: 'desc', label: 'Descending' },
 ];
 
-/** The sort clauses of a table: a key (a column, a group-by or an aggregated measure) and a direction each. */
-function SortList({ keys, value, onChange }: { keys: SortKey[]; value: SortClause[]; onChange: (value: SortClause[]) => void }) {
+/** The "Sort" section of a table: a key (a column, a group-by or an aggregated measure) and a direction per clause. */
+function SortSection({ keys, value, onChange }: { keys: SortKey[]; value: SortClause[]; onChange: (value: SortClause[]) => void }) {
   const options = keys.map((k) => ({ value: k.key, label: k.label }));
   const update = (i: number, patch: Partial<SortClause>) => onChange(value.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
   return (
-    <div className={STACK}>
+    <ConfigSection
+      title="Sort"
+      action={
+        keys.length > 0 ? (
+          <Button size="sm" variant="link" onClick={() => onChange([...value, { key: keys[0].key, direction: 'asc' }])}>
+            Add sort
+          </Button>
+        ) : undefined
+      }
+    >
       {value.map((clause, i) => (
         <div key={i} className="flex items-end gap-space-8">
-          <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-8 flex-1 min-w-0">
+          <div className="grid grid-cols-2 gap-space-8 flex-1 min-w-0">
             <PickSelect label={i === 0 ? 'Sort by' : 'Then by'} value={clause.key} options={options} onValueChange={(key) => key && update(i, { key })} />
             <PickSelect label="Direction" value={clause.direction} options={DIRECTIONS} onValueChange={(d) => d && update(i, { direction: d as SortClause['direction'] })} />
           </div>
           <RemoveButton label="Remove sort" onSelect={() => onChange(value.filter((_, idx) => idx !== i))} />
         </div>
       ))}
-      {keys.length > 0 ? (
-        <div>
-          <Button variant="link" onClick={() => onChange([...value, { key: keys[0].key, direction: 'asc' }])}>
-            Add sort
-          </Button>
-        </div>
-      ) : null}
-    </div>
+    </ConfigSection>
   );
 }
 
-function RawTableOptions({ catalog, state, dispatch, issues }: SectionProps) {
+function RawTableFields({ catalog, state, dispatch, issues }: SectionProps) {
   const raw = state.table.raw;
   const label = (name: string) => fieldByName(catalog, name)?.label ?? name;
   const setColumns = (columns: string[]) =>
     dispatch({ type: 'TABLE_SET_RAW', value: { columns, sort: raw.sort.filter((s) => columns.includes(s.key)) } });
   return (
-    <div className={STACK}>
+    <>
       <Select
         multiple
         searchable
@@ -283,45 +316,41 @@ function RawTableOptions({ catalog, state, dispatch, issues }: SectionProps) {
       />
       {raw.columns.length > 1 ? (
         <ReorderList
+          size="sm"
           items={raw.columns.map((c) => ({ id: c, title: label(c), ariaLabel: label(c) }))}
           value={raw.columns}
           onValueChange={setColumns}
         />
       ) : null}
-      <SortList
-        keys={raw.columns.map((c) => ({ key: c, label: label(c) }))}
-        value={raw.sort}
-        onChange={(sort) => dispatch({ type: 'TABLE_SET_RAW', value: { sort } })}
-      />
-    </div>
+    </>
   );
 }
 
 const fieldNames = (drafts: DimensionDraft[]): string[] => drafts.filter((d) => d.field).map((d) => d.field as string);
 
-function AggTableOptions({ catalog, state, dispatch, issues }: SectionProps) {
-  const agg = state.table.agg;
+/** Sort keys of an aggregated table: the row dimensions, and the measure keys only while there are no column dimensions. */
+function aggSortKeys(catalog: DatasourceCatalog, rows: DimensionDraft[], columns: DimensionDraft[], measures: MeasureDraft[]): SortKey[] {
   const label = (name: string | undefined) => fieldByName(catalog, name)?.label ?? name ?? '';
-
-  // Sort keys: the row dimensions, and the measure keys only while there are no column dimensions.
-  const sortKeys = (rows: DimensionDraft[], columns: DimensionDraft[], measures: MeasureDraft[]): SortKey[] => {
-    const keys: SortKey[] = rows.filter((g) => g.field).map((g) => ({ key: g.field as string, label: label(g.field) }));
-    if (fieldNames(columns).length === 0) {
-      for (const m of measures) {
-        if (!m.field || !m.aggregation) continue;
-        keys.push({ key: aggregatedColumnKey(m.field, m.aggregation), label: `${AGGREGATION_LABELS[m.aggregation]} · ${label(m.field)}` });
-      }
+  const keys: SortKey[] = rows.filter((g) => g.field).map((g) => ({ key: g.field as string, label: label(g.field) }));
+  if (fieldNames(columns).length === 0) {
+    for (const m of measures) {
+      if (!m.field || !m.aggregation) continue;
+      keys.push({ key: aggregatedColumnKey(m.field, m.aggregation), label: `${AGGREGATION_LABELS[m.aggregation]} · ${label(m.field)}` });
     }
-    return keys;
-  };
+  }
+  return keys;
+}
+
+function AggTableFields({ catalog, state, dispatch, issues }: SectionProps) {
+  const agg = state.table.agg;
   const apply = (patch: Partial<AggTableDraft>) => {
     const next = { ...agg, ...patch };
-    const keys = sortKeys(next.rows, next.columns, next.measures);
+    const keys = aggSortKeys(catalog, next.rows, next.columns, next.measures);
     dispatch({ type: 'TABLE_SET_AGG', value: { ...patch, sort: agg.sort.filter((s) => keys.some((k) => k.key === s.key)) } });
   };
 
   return (
-    <div className={STACK}>
+    <>
       <DimensionList
         title="Group by"
         addLabel="Add group"
@@ -361,12 +390,9 @@ function AggTableOptions({ catalog, state, dispatch, issues }: SectionProps) {
             Add measure
           </Button>
         </div>
-        {agg.measures.length === 0 && issues.measures ? (
-          <FieldError message={issues.measures} />
-        ) : null}
+        {agg.measures.length === 0 && issues.measures ? <FieldError message={issues.measures} /> : null}
       </div>
-      <SortList keys={sortKeys(agg.rows, agg.columns, agg.measures)} value={agg.sort} onChange={(sort) => dispatch({ type: 'TABLE_SET_AGG', value: { sort } })} />
-    </div>
+    </>
   );
 }
 
@@ -416,21 +442,40 @@ function DimensionList({
 }
 
 export function TableOptions(props: SectionProps) {
-  const { state, dispatch } = props;
+  const { catalog, state, dispatch } = props;
+  const raw = state.table.raw;
+  const agg = state.table.agg;
+  const isRaw = state.table.tableMode === 'raw';
+  const label = (name: string) => fieldByName(catalog, name)?.label ?? name;
   return (
-    <div className={STACK}>
-      <SegmentedControl
-        fullWidth
-        size="md"
-        aria-label="Table type"
-        options={[
-          { value: 'raw', label: 'Raw rows' },
-          { value: 'aggregated', label: 'Aggregated' },
-        ]}
-        value={state.table.tableMode}
-        onValueChange={(tableMode) => dispatch({ type: 'TABLE_SET', value: { tableMode } })}
-      />
-      {state.table.tableMode === 'raw' ? <RawTableOptions {...props} /> : <AggTableOptions {...props} />}
-    </div>
+    <>
+      <ConfigSection title="Columns">
+        <SegmentedControl
+          fullWidth
+          size="sm"
+          aria-label="Table type"
+          options={[
+            { value: 'raw', label: 'Raw rows' },
+            { value: 'aggregated', label: 'Aggregated' },
+          ]}
+          value={state.table.tableMode}
+          onValueChange={(tableMode) => dispatch({ type: 'TABLE_SET', value: { tableMode } })}
+        />
+        {isRaw ? <RawTableFields {...props} /> : <AggTableFields {...props} />}
+      </ConfigSection>
+      {isRaw ? (
+        <SortSection
+          keys={raw.columns.map((c) => ({ key: c, label: label(c) }))}
+          value={raw.sort}
+          onChange={(sort) => dispatch({ type: 'TABLE_SET_RAW', value: { sort } })}
+        />
+      ) : (
+        <SortSection
+          keys={aggSortKeys(catalog, agg.rows, agg.columns, agg.measures)}
+          value={agg.sort}
+          onChange={(sort) => dispatch({ type: 'TABLE_SET_AGG', value: { sort } })}
+        />
+      )}
+    </>
   );
 }

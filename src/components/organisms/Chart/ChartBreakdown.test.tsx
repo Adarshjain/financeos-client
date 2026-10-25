@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { ChartData } from '@/lib/reports.types';
 
-import { BreakdownView, type BreakdownViewProps } from './BreakdownView';
+import { ChartBreakdown, type ChartBreakdownProps } from './ChartBreakdown';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
@@ -36,12 +36,12 @@ const data = (over: Partial<ChartData> = {}): ChartData => ({
 const compared = (): ChartData =>
   data({ previous: { series: [{ name: 'Spend', data: [400, 250, 100] }], dateRange: null } });
 
-const view = (props: Partial<BreakdownViewProps> = {}, d: ChartData = data()) => render(<BreakdownView data={d} money {...props} />);
+const view = (props: Partial<ChartBreakdownProps> = {}, d: ChartData = data()) => render(<ChartBreakdown data={d} money {...props} />);
 // The first header is the expand column's (blank). A value shows twice: in its cell and in the phone line; the cell comes first.
 const headers = () => screen.getAllByRole('columnheader').map((h) => h.textContent).slice(1);
 const cell = (text: string) => screen.getAllByText(text)[0];
 
-describe('BreakdownView columns', () => {
+describe('ChartBreakdown columns', () => {
   it('shows rank, label, amount and share by default, with no change without a comparison', () => {
     view();
     expect(headers()).toEqual(['#', 'Category', 'Amount', 'Share']);
@@ -88,7 +88,7 @@ describe('BreakdownView columns', () => {
   });
 });
 
-describe('BreakdownView change, signs', () => {
+describe('ChartBreakdown change, signs', () => {
   it('measures against the size of a negative previous value, so a rise reads as an increase', () => {
     const d = compared();
     d.previous!.series[0].data = [-400, 250, 100];
@@ -106,7 +106,7 @@ describe('BreakdownView change, signs', () => {
   });
 });
 
-describe('BreakdownView change', () => {
+describe('ChartBreakdown change', () => {
   it('prints a signed percent against the previous period, and a dash with no previous value', () => {
     const d = compared();
     d.previous!.series[0].data = [400, null, 100];
@@ -141,7 +141,7 @@ describe('BreakdownView change', () => {
   });
 });
 
-describe('BreakdownView bars', () => {
+describe('ChartBreakdown bars', () => {
   const fills = () => screen.getAllByRole('progressbar').map((b) => Number(b.getAttribute('aria-valuenow')));
 
   it('measures each bar against the largest row by default, leaving the Other row out of the largest', () => {
@@ -162,7 +162,39 @@ describe('BreakdownView bars', () => {
   });
 });
 
-describe('BreakdownView Other row', () => {
+describe('ChartBreakdown bar colours', () => {
+  const fillClasses = () => screen.getAllByRole('progressbar').map((b) => (b.firstElementChild as HTMLElement).className);
+
+  it('draws each row in its own chart colour by rank, and the Other row in the rest colour', () => {
+    view();
+    const [food, shopping, other] = fillClasses();
+    expect(food).toContain('bg-series-1');
+    expect(shopping).toContain('bg-series-2');
+    expect(other).toContain('bg-series-rest');
+  });
+
+  it('cycles chart-1 to chart-5 and starts again at the sixth row', () => {
+    const names = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    const d = data({
+      categories: names,
+      series: [{ name: 'Spend', data: [70, 60, 50, 40, 30, 20, 10] }],
+      other: null,
+      breakdown: { rows: names.map(() => ({ count: 1, avg: 1, previousCount: 1, subRows: [] })), total: 280, previousTotal: null },
+    });
+    view({}, d);
+    expect(fillClasses().map((c) => /bg-series-(\d|rest)/.exec(c)?.[0])).toEqual([
+      'bg-series-1',
+      'bg-series-2',
+      'bg-series-3',
+      'bg-series-4',
+      'bg-series-5',
+      'bg-series-1',
+      'bg-series-2',
+    ]);
+  });
+});
+
+describe('ChartBreakdown Other row', () => {
   it('reads "Other · N categories" with no rank, and is neither expandable nor pressable', async () => {
     const onOpen = vi.fn();
     view({ onOpenRow: onOpen });
@@ -190,7 +222,7 @@ describe('BreakdownView Other row', () => {
   });
 });
 
-describe('BreakdownView sub-rows and presses', () => {
+describe('ChartBreakdown sub-rows and presses', () => {
   it('expands a row with sub-rows on a press, showing each with its count and value, and opens nothing', async () => {
     const onOpen = vi.fn();
     view({ onOpenRow: onOpen });

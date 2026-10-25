@@ -4,6 +4,7 @@
 // ad-hoc KPI underlying endpoint. A row that cannot be pinned exactly (the "Other" slot, a missing value, a
 // date bucket without a known window, a date row of a table) has no underlying: the builders return null.
 
+import { labelChartData } from '@/lib/reports.helpers';
 import type {
   Aggregation,
   ChartData,
@@ -127,6 +128,28 @@ export function categoryRequest(
     filters.push(clause);
   }
   return kpiRequest(request, measure, filters, comparison);
+}
+
+/** One entry of the Underlying data dialog's dimension dropdown: a category and the request of the rows behind it. */
+export interface UnderlyingEntry {
+  /** The category as the report prints it. */
+  label: string;
+  request: RunReportRequest;
+  /** The category's index in the result it came from (categoryEntries sets it). */
+  index?: number;
+}
+
+/** Every category of a chart or breakdown whose rows can be listed (not "Other", not one that cannot be pinned), in order. */
+export function categoryEntries(
+  request: RunReportRequest,
+  data: ChartData,
+  catalog: DatasourceCatalog,
+): UnderlyingEntry[] {
+  const labelled = labelChartData(data);
+  return data.categories.flatMap((_, index) => {
+    const entry = categoryRequest(request, data, index, catalog);
+    return entry ? [{ label: labelled.categories[index], request: entry, index }] : [];
+  });
 }
 
 /**

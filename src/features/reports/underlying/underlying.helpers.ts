@@ -1,9 +1,9 @@
 // Pure helpers for the "View underlying data" dialog: query params, labels,
 // value formatting and the CSV file name.
 
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { formatDateRangeForFilename, todayInAppZone } from '@/lib/date-range';
 import type { SortClause, TableRow } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import type { UnderlyingSource } from './underlying.types';
 

@@ -22,15 +22,16 @@ import {
   Tabs,
   Text,
 } from '@/components/ds';
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { formatCell } from '@/features/reports/view/cells';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { RunReportRequest, SortClause, TableColumn } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import { asFormat, saveBlob, UNDERLYING_PAGE_SIZE, underlyingCsvFilename } from './underlying.helpers';
 import type { UnderlyingExcludedItem, UnderlyingPeriod } from './underlying.types';
+import type { UnderlyingEntry } from './underlyingRequest';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -64,17 +65,29 @@ function hidesExcluded(request: RunReportRequest): boolean {
   return request.definition.filters.some((f) => f.field === 'isExcluded' && f.operator === 'is' && f.value === false);
 }
 
+const ALL_ENTRIES = 'all';
 const DEFAULT_SORT = 'default';
 const sortValue = (s: SortClause | null) => (s ? `${s.key},${s.direction}` : DEFAULT_SORT);
 
 export interface ReportUnderlyingDialogProps {
-  /** The ad-hoc KPI request whose rows are listed (see underlyingRequest.ts). */
+  /** The ad-hoc KPI request whose rows are listed (see underlyingRequest.ts); with `entries`, the whole report's, which "All" returns to. */
   request: RunReportRequest;
+  /** A chart or breakdown's categories, each with its own request: shown as a dropdown that narrows the rows to one. */
+  entries?: UnderlyingEntry[];
+  /** The dimension's label: the dropdown's chip reads "<dimension label>: <entry>", its default entry "All". */
+  dimensionLabel?: string;
+  /** Index into `entries` the dialog opens on (a breakdown row's category); without it, "All". */
+  initialEntry?: number;
   onClose: () => void;
 }
 
 /** The dialog is open while it is mounted: the page mounts it for one opening and unmounts it on close. */
-export function ReportUnderlyingDialog({ request, onClose }: ReportUnderlyingDialogProps) {
+export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensionLabel, initialEntry, onClose }: ReportUnderlyingDialogProps) {
+  // The rows of the whole figure, or of the one category picked in the dropdown (a number as text).
+  const [entry, setEntry] = React.useState(() =>
+    initialEntry !== undefined && entries?.[initialEntry] ? String(initialEntry) : ALL_ENTRIES,
+  );
+  const request = entries?.[Number(entry)]?.request ?? wholeRequest;
   const source = React.useMemo(() => ({ kind: 'adhoc' as const, request }), [request]);
   const [period, setPeriod] = React.useState<UnderlyingPeriod>('current');
   const [sort, setSort] = React.useState<SortClause | null>(null);
@@ -144,6 +157,12 @@ export function ReportUnderlyingDialog({ request, onClose }: ReportUnderlyingDia
     setPeriod(next as UnderlyingPeriod);
     setPage(0);
   };
+  const changeEntry = (value: string | string[]) => {
+    setEntry(String(value));
+    // A category's request may have no previous period, so the new rows start at this period's first page.
+    setPeriod('current');
+    setPage(0);
+  };
   const changeSort = (value: string | string[]) => {
     const [key, direction] = String(value).split(',');
     setSort(value === DEFAULT_SORT ? null : { key, direction: direction as SortClause['direction'] });
@@ -175,6 +194,13 @@ export function ReportUnderlyingDialog({ request, onClose }: ReportUnderlyingDia
       { value: `${c.key},asc`, label: `${c.label} (ascending)` },
     ]),
   ];
+  const allLabel = 'All';
+  const entryOptions = [
+    { value: ALL_ENTRIES, label: allLabel },
+    ...(entries ?? []).map((e, i) => ({ value: String(i), label: e.label })),
+  ];
+  const entryText = entryOptions.find((o) => o.value === entry)?.label ?? allLabel;
+  const entryChip = dimensionLabel ? `${dimensionLabel}: ${entryText}` : entryText;
   const sortedColumn = sort ? raw?.columns.find((c) => c.key === sort.key) : null;
   const footer = data ? excludedLine(data.notCounted) : null;
 
@@ -184,7 +210,8 @@ export function ReportUnderlyingDialog({ request, onClose }: ReportUnderlyingDia
         size="xl"
         title={figure ? `Underlying data · ${figure}` : 'Underlying data'}
         description={description}
-        tertiary={{ label: 'Download CSV', onSelect: download, loading: downloading, disabled: !data }}
+        tertiary={{ label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
+        secondary={{ label: 'Close', onSelect: onClose }}
       >
         <DialogBody>
           {shown?.previousAvailable ? (
@@ -218,7 +245,19 @@ export function ReportUnderlyingDialog({ request, onClose }: ReportUnderlyingDia
 
           {raw && data ? (
             <>
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-end gap-space-8">
+                {entries && entries.length > 0 ? (
+                  <Select
+                    value={entry}
+                    options={entryOptions}
+                    onValueChange={changeEntry}
+                    trigger={
+                      <FilterChip hasDropdown selected={entry !== ALL_ENTRIES}>
+                        {entryChip}
+                      </FilterChip>
+                    }
+                  />
+                ) : null}
                 <Select
                   value={sortValue(sort)}
                   options={sortOptions}

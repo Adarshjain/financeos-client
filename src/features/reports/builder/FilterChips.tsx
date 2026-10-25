@@ -7,6 +7,7 @@ import { buildFilter } from '@/lib/reports.helpers';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
 import { type DynamicOptions, fieldByName, filterableFields, operatorsForField, valueKind } from './catalog';
+import { ConfigSection } from './ConfigSection';
 import { defaultFilterClause } from './filterClause';
 import { describeFilter } from './filterLabel';
 import { FilterValueEditor } from './FilterValueEditor';
@@ -87,62 +88,69 @@ export function FilterChips({ catalog, dynamicOptions, filters, error, onAdd, on
     if (open) setDraft(blankClause(catalog));
   };
 
-  return (
-    <div className="flex flex-col gap-space-8">
-      <div className="flex gap-space-8 overflow-x-auto desk:flex-wrap pb-space-2">
-        {filters.map((clause, i) => (
-          <div key={i} className="shrink-0">
-            <Popover
-              contentProps={{ 'aria-label': `Edit filter ${fieldByName(catalog, clause.field)?.label ?? clause.field}` }}
-              trigger={
-                <FilterChip hasDropdown removable selected onRemove={() => onRemove(i)}>
-                  {describeFilter(catalog, clause, dynamicOptions)}
-                </FilterChip>
-              }
+  const addFilter = (
+    <Popover
+      open={adding}
+      onOpenChange={openAdd}
+      trigger={
+        <Button size="sm" variant="link">
+          Add filter
+        </Button>
+      }
+    >
+      {draft ? (
+        <>
+          <FilterForm catalog={catalog} dynamicOptions={dynamicOptions} clause={draft} onChange={setDraft} />
+          <div className="flex justify-end p-space-12 pt-0">
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!isFilterComplete(catalog, draft)}
+              onClick={() => {
+                onAdd(draft);
+                setAdding(false);
+              }}
             >
-              <FilterForm catalog={catalog} dynamicOptions={dynamicOptions} clause={clause} onChange={(c) => onUpdate(i, c)} />
-              <div className="flex justify-end p-space-12 pt-0">
-                <Popover.Close asChild>
-                  <Button variant="primary" size="sm">
-                    Done
-                  </Button>
-                </Popover.Close>
-              </div>
-            </Popover>
+              Apply filter
+            </Button>
           </div>
-        ))}
-        <div className="shrink-0">
-          <Popover
-            open={adding}
-            onOpenChange={openAdd}
-            trigger={<FilterChip variant="dashed">Add filter</FilterChip>}
-          >
-            {draft ? (
-              <>
-                <FilterForm catalog={catalog} dynamicOptions={dynamicOptions} clause={draft} onChange={setDraft} />
+        </>
+      ) : (
+        <Text variant="body" tone="ink-3" as="p">
+          This datasource has no fields to filter by.
+        </Text>
+      )}
+    </Popover>
+  );
+
+  return (
+    <ConfigSection title="Filters" action={addFilter}>
+      {filters.length > 0 ? (
+        <div className="flex gap-space-8 overflow-x-auto desk:flex-wrap pb-space-2">
+          {filters.map((clause, i) => (
+            <div key={i} className="shrink-0">
+              <Popover
+                contentProps={{ 'aria-label': `Edit filter ${fieldByName(catalog, clause.field)?.label ?? clause.field}` }}
+                trigger={
+                  <FilterChip hasDropdown removable selected onRemove={() => onRemove(i)}>
+                    {describeFilter(catalog, clause, dynamicOptions)}
+                  </FilterChip>
+                }
+              >
+                <FilterForm catalog={catalog} dynamicOptions={dynamicOptions} clause={clause} onChange={(c) => onUpdate(i, c)} />
                 <div className="flex justify-end p-space-12 pt-0">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    disabled={!isFilterComplete(catalog, draft)}
-                    onClick={() => {
-                      onAdd(draft);
-                      setAdding(false);
-                    }}
-                  >
-                    Apply filter
-                  </Button>
+                  <Popover.Close asChild>
+                    <Button variant="primary" size="sm">
+                      Done
+                    </Button>
+                  </Popover.Close>
                 </div>
-              </>
-            ) : (
-              <Text variant="body" tone="ink-3" as="p">
-                This datasource has no fields to filter by.
-              </Text>
-            )}
-          </Popover>
+              </Popover>
+            </div>
+          ))}
         </div>
-      </div>
+      ) : null}
       {error ? <FieldError message={error} /> : null}
-    </div>
+    </ConfigSection>
   );
 }

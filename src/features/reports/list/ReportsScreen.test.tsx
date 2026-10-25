@@ -6,11 +6,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { reportRows } from './reportsList';
+import { CHAT_HREF, reportRows } from './reportsList';
 import { ReportsScreen, type ReportsScreenProps } from './ReportsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+const search = vi.hoisted(() => ({ params: new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => search.params }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -61,7 +62,6 @@ const props = (over: Partial<ReportsScreenProps> = {}): ReportsScreenProps => ({
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
 async function openMenu(name: string) {
-  // A row draws its menu twice (desktop cell, phone line); CSS shows one.
   await user.click(screen.getAllByRole('button', { name: `Options for ${name}` })[0]);
 }
 
@@ -83,11 +83,11 @@ describe('ReportsScreen list', () => {
     expect(within(table).getByText('Home')).toBeInTheDocument();
   });
 
-  it('has no datasource chips and no counts on the type chips', () => {
+  it('has the type chips and no Datasource filter', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
-    expect(screen.queryByRole('button', { name: /^Transactions$/ })).toBeNull();
-    for (const label of ['All', 'KPI', 'Chart', 'Table']) {
-      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Datasource/ })).toBeNull();
+    for (const label of ['All', 'KPI', 'Chart', 'Breakdown', 'Table']) {
+      expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     }
   });
 
@@ -103,18 +103,92 @@ describe('ReportsScreen list', () => {
   });
 });
 
+const kpi2 = report({ id: 'r4', name: 'Spend last month' });
+const breakdown = report({ id: 'r5', name: 'Where the money went', type: 'CHART', chartType: 'breakdown' });
+const tableR = report({ id: 'r6', name: 'Recent transactions', type: 'TABLE' });
+const mixed = rowsFor([spend, worth, kpi2, rewards, breakdown, tableR]);
+
+describe('counts', () => {
+  it('counts each type chip (Breakdown apart from Chart), with no count on All', () => {
+    renderWithQuery(<ReportsScreen {...props({ rows: mixed })} />);
+    expect(screen.getByRole('button', { name: /^KPI\s*3$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Chart\s*1$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Breakdown\s*1$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Table\s*1$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
+  });
+
+  it('keeps the chip counts and the Reports tab count when a type is chosen, and lists only that type', () => {
+    renderWithQuery(<ReportsScreen {...props({ rows: mixed, type: 'KPI' })} />);
+    expect(screen.getByRole('button', { name: /^KPI\s*3$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Chart\s*1$/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Reports\s*·\s*6$/ })).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Spend last month')).toBeInTheDocument();
+    expect(within(table).queryByText('Recent transactions')).toBeNull();
+    expect(within(table).queryByText('Where the money went')).toBeNull();
+  });
+
+  it('lists only breakdowns on the Breakdown chip', () => {
+    renderWithQuery(<ReportsScreen {...props({ rows: mixed, type: 'BREAKDOWN' })} />);
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Where the money went')).toBeInTheDocument();
+    expect(within(table).queryByText('Rewards earned by card')).toBeNull();
+  });
+
+  it('shows the dashboards count on its tab', () => {
+    renderWithQuery(<ReportsScreen {...props({ dashboards: 3 })} />);
+    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/dashboards');
+    const reports = screen.getByRole('tab', { name: /^Reports\s*·\s*3$/ });
+    expect(reports).toHaveAttribute('href', '/ds/reports');
+    expect(reports).toHaveAttribute('data-state', 'active');
+  });
+});
+
+describe('toolbar', () => {
+  it('has search and the type chips in one row, and Ask the data only in the Ask instead card', () => {
+    renderWithQuery(<ReportsScreen {...props()} />);
+    const search = screen.getByPlaceholderText('Search reports');
+    expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'All' }).closest('div[class*="overflow-x-auto"]'));
+    const asks = screen.getAllByRole('link', { name: 'Ask the data' });
+    expect(asks).toHaveLength(1);
+    expect(asks[0]).toHaveAttribute('href', CHAT_HREF);
+    const card = asks[0].closest('div[class*="rounded"]') as HTMLElement;
+    expect(within(card).getByText('Ask instead')).toBeInTheDocument();
+    expect(within(card).getByText('Chat turns a question into a saved report')).toBeInTheDocument();
+    expect(within(card).getByText(/dining spend per month on Regalia/)).toBeInTheDocument();
+  });
+});
+
 describe('type chips', () => {
-  it('a chip goes to its ?type= URL and All goes to the plain URL', async () => {
+  it('a chip filters in place and sets its ?type= URL without a server round trip; All clears it', async () => {
+    const replace = vi.spyOn(window.history, 'replaceState');
     renderWithQuery(<ReportsScreen {...props({ type: 'KPI' })} />);
-    await user.click(screen.getByRole('button', { name: 'Chart' }));
-    expect(router.push).toHaveBeenLastCalledWith(expect.stringMatching(/\/reports\?type=CHART$/), { scroll: false });
+    await user.click(screen.getByRole('button', { name: /^Chart/ }));
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/ds/reports?type=CHART');
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Rewards earned by card')).toBeInTheDocument();
+    expect(within(table).queryByText('Net worth over time')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'All' }));
-    expect(router.push).toHaveBeenLastCalledWith(expect.not.stringContaining('?'), { scroll: false });
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/ds/reports');
+    expect(within(screen.getByRole('table')).getByText('Net worth over time')).toBeInTheDocument();
+    expect(router.push).not.toHaveBeenCalled();
+    expect(router.refresh).not.toHaveBeenCalled();
+    replace.mockRestore();
+  });
+
+  it('follows the URL when it changes after load (back/forward)', () => {
+    const { rerender } = renderWithQuery(<ReportsScreen {...props()} />);
+    expect(screen.getByRole('button', { name: 'All' }).className).toContain('bg-brand-tint');
+    search.params = new URLSearchParams('type=TABLE');
+    rerender(<ReportsScreen {...props()} />);
+    expect(screen.getByRole('button', { name: /^Table/ }).className).toContain('bg-brand-tint');
+    search.params = new URLSearchParams();
   });
 
   it('marks the chip of the URL type as selected', () => {
     renderWithQuery(<ReportsScreen {...props({ type: 'TABLE' })} />);
-    expect(screen.getByRole('button', { name: 'Table' }).className).toContain('bg-brand-tint');
+    expect(screen.getByRole('button', { name: /^Table/ }).className).toContain('bg-brand-tint');
     expect(screen.getByRole('button', { name: 'All' }).className).not.toContain('bg-brand-tint');
   });
 
@@ -122,11 +196,12 @@ describe('type chips', () => {
     renderWithQuery(<ReportsScreen {...props({ type: 'TABLE', rows: [] })} />);
     expect(screen.getByText('No reports match.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith(expect.not.stringContaining('?'), { scroll: false });
+    expect(screen.getByRole('button', { name: 'All' }).className).toContain('bg-brand-tint');
+    expect(router.push).not.toHaveBeenCalled();
   });
 });
 
-describe('search and Datasource filter', () => {
+describe('search', () => {
   it('searches the loaded list without asking the server', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await user.type(screen.getByPlaceholderText('Search reports'), 'rewards');
@@ -134,16 +209,6 @@ describe('search and Datasource filter', () => {
     expect(within(table).getByText('Rewards earned by card')).toBeInTheDocument();
     expect(within(table).queryByText('Net worth over time')).toBeNull();
     expect(router.push).not.toHaveBeenCalled();
-  });
-
-  it('filters by datasource from the Datasource chip', async () => {
-    renderWithQuery(<ReportsScreen {...props()} />);
-    await user.click(screen.getByRole('button', { name: /Datasource/ }));
-    await user.click(await screen.findByText('Net worth', { selector: '[role="option"] *, [role="option"]' }));
-    await user.keyboard('{Escape}');
-    const table = screen.getByRole('table');
-    await waitFor(() => expect(within(table).queryByText('Spend this month')).toBeNull());
-    expect(within(table).getByText('Net worth over time')).toBeInTheDocument();
   });
 
   it('Clear filters empties the search', async () => {
@@ -278,12 +343,18 @@ describe('row menu', () => {
     });
   });
 
-  it('a phone row has the same menu on its own line', async () => {
+  it('a row has one menu, at its trailing edge on desktop and phone, and a press on it does not open the row', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
-    // Desktop cell and phone line: two menus per row.
-    expect(screen.getAllByRole('button', { name: 'Options for Net worth over time' })).toHaveLength(2);
-    await user.click(screen.getAllByRole('button', { name: 'Options for Net worth over time' })[1]);
+    expect(screen.getAllByRole('button', { name: 'Options for Net worth over time' })).toHaveLength(1);
+    await openMenu('Net worth over time');
+    expect(router.push).not.toHaveBeenCalled();
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
+    expect(router.push).toHaveBeenCalledTimes(1);
     expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
+  });
+
+  it('a phone row reads name, then type, datasource, dashboards and updated on one line', () => {
+    renderWithQuery(<ReportsScreen {...props()} />);
+    expect(within(screen.getByRole('table')).getByText(/^KPI · Transactions · on Home · updated /)).toBeInTheDocument();
   });
 });

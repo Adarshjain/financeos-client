@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
 import { Card } from '@/components/ds';
 import { Chart } from '@/components/organisms';
@@ -24,6 +25,12 @@ const meta: Meta<typeof Chart> = {
     fill: { control: 'boolean' },
     money: { control: 'boolean' },
     yDomain: { control: 'inline-radio', options: ['zero', 'data'] },
+    columns: { control: 'check', options: ['amount', 'share', 'count', 'avg', 'change'] },
+    bars: { control: 'inline-radio', options: ['relative_to_largest', 'share_of_total'] },
+    higherIsBetter: { control: 'boolean' },
+    rowsLabel: { control: 'text' },
+    onOpenRow: { control: false },
+    canOpenRow: { control: false },
   },
 };
 
@@ -132,4 +139,129 @@ export const PriceChart: Story = {
       </div>
     </Card>
   ),
+};
+
+const sub = (label: string, value: number, count: number) => ({ label, value, count });
+
+const rankedSpend = {
+  chartType: 'breakdown',
+  dimension: 'category',
+  categories: ['Food & dining', 'Shopping', 'Bills & utilities', 'Travel', 'Groceries', 'Fuel'],
+  series: [{ name: 'spend', data: [48210, 36840, 29600, 21450, 18275, 9350] }],
+  measure: spend,
+  breakdown: {
+    rows: [
+      { count: 42, avg: 1148, previousCount: 39, subRows: [] },
+      { count: 18, avg: 2047, previousCount: 21, subRows: [] },
+      { count: 11, avg: 2691, previousCount: 11, subRows: [] },
+      { count: 6, avg: 3575, previousCount: 4, subRows: [] },
+      { count: 24, avg: 761, previousCount: 26, subRows: [] },
+      { count: 9, avg: 1039, previousCount: 8, subRows: [] },
+    ],
+    total: 163725,
+    previousTotal: 158900,
+  },
+} as never;
+
+const withBreakdownCard = (Story: React.ComponentType) => (
+  <Card>
+    <Story />
+  </Card>
+);
+
+export const BreakdownRelativeBars: Story = {
+  decorators: [withBreakdownCard],
+  parameters: {
+    docs: {
+      description: {
+        story: 'A ranked list: each bar is measured against the largest row, in the row\u2019s own chart colour.',
+      },
+    },
+  },
+  args: { data: rankedSpend, columns: ['amount', 'share', 'count'], rowsLabel: 'Category', onOpenRow: fn() },
+};
+
+export const BreakdownShareBars: Story = {
+  decorators: [withBreakdownCard],
+  parameters: {
+    docs: { description: { story: 'Each bar is measured against the total, so it reads as the row\u2019s share.' } },
+  },
+  args: { data: rankedSpend, bars: 'share_of_total', columns: ['amount', 'share', 'avg'], rowsLabel: 'Category', onOpenRow: fn() },
+};
+
+export const BreakdownWithSubRows: Story = {
+  decorators: [withBreakdownCard],
+  parameters: {
+    docs: {
+      description: {
+        story: 'A row with sub-rows expands on a press; its underlying data opens from the link inside.',
+      },
+    },
+  },
+  args: {
+    data: {
+      chartType: 'breakdown',
+      dimension: 'category',
+      categories: ['Food & dining', 'Shopping', 'Travel'],
+      series: [{ name: 'spend', data: [48210, 36840, 21450] }],
+      measure: spend,
+      previous: { series: [{ name: 'spend', data: [44150, 41200, 21450] }], dateRange: null },
+      breakdown: {
+        rows: [
+          {
+            count: 42,
+            avg: 1148,
+            previousCount: 39,
+            subRows: [
+              sub('HDFC Regalia', 27640, 24),
+              sub('ICICI Amazon Pay', 14320, 13),
+              sub('SBI Savings', 6250, 5),
+            ],
+          },
+          { count: 18, avg: 2047, previousCount: 21, subRows: [sub('HDFC Regalia', 25400, 11), sub('Axis Ace', 11440, 7)] },
+          { count: 6, avg: 3575, previousCount: 4, subRows: [sub('Axis Ace', 21450, 6)] },
+        ],
+        total: 106500,
+        previousTotal: 106800,
+      },
+    } as never,
+    columns: ['amount', 'share', 'count', 'change'],
+    higherIsBetter: false,
+    rowsLabel: 'Category',
+    onOpenRow: fn(),
+  },
+};
+
+export const BreakdownWithOtherRow: Story = {
+  decorators: [withBreakdownCard],
+  parameters: {
+    docs: {
+      description: {
+        story: 'With a top limit the rest fold into one Other row in the neutral chart colour; it neither expands nor opens.',
+      },
+    },
+  },
+  args: {
+    data: {
+      chartType: 'breakdown',
+      dimension: 'category',
+      categories: ['Food & dining', 'Shopping', 'Bills & utilities', 'Other'],
+      series: [{ name: 'spend', data: [48210, 36840, 29600, 21300] }],
+      measure: spend,
+      other: { index: 3, foldedCount: 5 },
+      breakdown: {
+        rows: [
+          { count: 42, avg: 1148, previousCount: 39, subRows: [] },
+          { count: 18, avg: 2047, previousCount: 21, subRows: [] },
+          { count: 11, avg: 2691, previousCount: 11, subRows: [] },
+          { count: 17, avg: 1253, previousCount: 15, subRows: [] },
+        ],
+        total: 135950,
+        previousTotal: 158900,
+      },
+    } as never,
+    columns: ['amount', 'share', 'count'],
+    rowsLabel: 'Category',
+    onOpenRow: fn(),
+  },
 };

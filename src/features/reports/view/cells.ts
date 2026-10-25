@@ -1,6 +1,6 @@
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { valueLabel } from '@/lib/reports.helpers';
 import type { TableColumn } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 import { formatDate } from '@/lib/utils';
 
 /** One cell as the table prints it (also the mobile cards' text): a dash when empty. */

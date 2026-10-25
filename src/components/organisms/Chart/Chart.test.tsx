@@ -484,3 +484,35 @@ describe('Chart pie / donut', () => {
     expect(screen.queryByText('Total')).not.toBeInTheDocument();
   });
 });
+
+describe('Chart breakdown', () => {
+  const breakdown = {
+    chartType: 'breakdown',
+    categories: ['Food', 'Shopping'],
+    series: [{ name: 'Spend', data: [400, 200] }],
+    measure: { field: 'spend', aggregation: 'sum' },
+    breakdown: {
+      rows: [
+        { count: 20, avg: 20, previousCount: 18, subRows: [] },
+        { count: 6, avg: 33, previousCount: 5, subRows: [] },
+      ],
+      total: 600,
+      previousTotal: null,
+    },
+  } as never;
+
+  it('draws the ranked list, not a chart, with its columns, heading and total', () => {
+    render(<Chart data={breakdown} money columns={['amount', 'count']} rowsLabel="Category" />);
+    expect(screen.queryByText('No data for this configuration.')).toBeNull();
+    expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(expect.arrayContaining(['Category', 'Amount', 'Txns']));
+    expect(screen.getByText('Food')).toBeInTheDocument();
+    expect(screen.getByText('Total ₹600')).toBeInTheDocument();
+  });
+
+  it('opens a row through onOpenRow with its index', () => {
+    const onOpenRow = vi.fn();
+    render(<Chart data={breakdown} onOpenRow={onOpenRow} />);
+    fireEvent.click(screen.getByText('Shopping'));
+    expect(onOpenRow).toHaveBeenCalledWith(1);
+  });
+});

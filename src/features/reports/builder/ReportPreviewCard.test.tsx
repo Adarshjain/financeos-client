@@ -10,6 +10,7 @@ import { ReportPreviewCard } from './ReportPreviewCard';
 import type { PreviewState } from './useReportPreview';
 
 const underlyingRequest = vi.hoisted(() => ({
+  categoryEntries: vi.fn(),
   categoryRequest: vi.fn(),
   tableRowRequest: vi.fn(),
 }));
@@ -19,11 +20,26 @@ vi.mock('@/features/reports/underlying/underlyingRequest', async (orig) => ({
   ...underlyingRequest,
 }));
 vi.mock('@/features/reports/underlying/ReportUnderlyingDialog', () => ({
-  ReportUnderlyingDialog: ({ request, onClose }: { request: unknown; onClose: () => void }) => {
+  ReportUnderlyingDialog: ({
+    request,
+    entries,
+    dimensionLabel,
+    initialEntry,
+    onClose,
+  }: {
+    request: unknown;
+    entries?: unknown[];
+    dimensionLabel?: string;
+    initialEntry?: number;
+    onClose: () => void;
+  }) => {
     React.useEffect(() => mounted(), []);
     return (
       <div data-testid="underlying">
         {JSON.stringify(request)}
+        <span data-testid="entries">{entries ? `${entries.length} entries` : 'no entries'}</span>
+        <span data-testid="initial">{initialEntry === undefined ? 'no initial' : `initial ${initialEntry}`}</span>
+        <span data-testid="dimension">{dimensionLabel ?? 'no label'}</span>
         <button onClick={onClose}>close</button>
       </div>
     );
@@ -81,6 +97,22 @@ beforeEach(() => {
 });
 
 describe('ReportPreviewCard underlying data', () => {
+  it('gives a chart result the category entries and the dimension label to the dialog', async () => {
+    underlyingRequest.categoryEntries.mockReturnValue([{ label: 'Food', request: {} }]);
+    card(preview(chartRequest, chartData));
+    await user.click(screen.getByRole('button', { name: 'Underlying data' }));
+    expect(underlyingRequest.categoryEntries).toHaveBeenCalledWith(chartRequest, chartData, catalog);
+    expect(screen.getByTestId('entries')).toHaveTextContent('1 entries');
+    expect(screen.getByTestId('dimension')).toHaveTextContent(catalog.fields.find((f) => f.name === 'category')!.label);
+  });
+
+  it('gives a table result no entries', async () => {
+    card(preview({ ...chartRequest, type: 'TABLE' }, pivotData));
+    await user.click(screen.getByRole('button', { name: 'Underlying data' }));
+    expect(screen.getByTestId('entries')).toHaveTextContent('no entries');
+    expect(screen.getByTestId('dimension')).toHaveTextContent('no label');
+  });
+
   it('hides the Underlying data link for a report without a measure', () => {
     card(preview(rawRequest, rawData));
     expect(screen.queryByRole('button', { name: 'Underlying data' })).not.toBeInTheDocument();
@@ -92,12 +124,25 @@ describe('ReportPreviewCard underlying data', () => {
     expect(screen.getByTestId('underlying')).toHaveTextContent('"type":"KPI"');
   });
 
-  it('asks categoryRequest for a pressed breakdown row, with the catalog, and opens its request', async () => {
+  it('asks categoryRequest for a pressed breakdown row, with the catalog, and opens the whole report on that row\'s entry', async () => {
     underlyingRequest.categoryRequest.mockReturnValue({ type: 'KPI', datasource: 'transactions', definition: { marker: 1 } });
+    underlyingRequest.categoryEntries.mockReturnValue([
+      { label: 'a', request: {}, index: 0 },
+      { label: 'c', request: {}, index: 2 },
+    ]);
     card(preview(chartRequest, chartData));
     await user.click(screen.getByRole('button', { name: 'breakdown row' }));
     expect(underlyingRequest.categoryRequest).toHaveBeenCalledWith(chartRequest, chartData, 2, catalog);
-    expect(screen.getByTestId('underlying')).toHaveTextContent('"marker":1');
+    expect(screen.getByTestId('underlying')).not.toHaveTextContent('"marker":1');
+    expect(screen.getByTestId('underlying')).toHaveTextContent('"type":"KPI"');
+    expect(screen.getByTestId('initial')).toHaveTextContent('initial 1');
+  });
+
+  it('opens the link on All, without an initial entry', async () => {
+    underlyingRequest.categoryEntries.mockReturnValue([{ label: 'a', request: {}, index: 0 }]);
+    card(preview(chartRequest, chartData));
+    await user.click(screen.getByRole('button', { name: 'Underlying data' }));
+    expect(screen.getByTestId('initial')).toHaveTextContent('no initial');
   });
 
   it('opens nothing for a breakdown row with no request', async () => {
@@ -114,15 +159,18 @@ describe('ReportPreviewCard underlying data', () => {
     expect(underlyingRequest.tableRowRequest).toHaveBeenCalledWith(expect.anything(), pivotData, 'r1', catalog);
   });
 
-  it('starts a fresh dialog when the request changes', async () => {
-    underlyingRequest.categoryRequest.mockReturnValueOnce({ type: 'KPI', datasource: 'transactions', definition: { n: 1 } });
+  it('starts a fresh dialog when the opened entry changes', async () => {
+    underlyingRequest.categoryRequest.mockReturnValue({ type: 'KPI', datasource: 'transactions', definition: {} });
+    underlyingRequest.categoryEntries.mockReturnValue([
+      { label: 'a', request: {}, index: 0 },
+      { label: 'c', request: {}, index: 2 },
+    ]);
     card(preview(chartRequest, chartData));
     await user.click(screen.getByRole('button', { name: 'breakdown row' }));
-    expect(screen.getByTestId('underlying')).toHaveTextContent('"n":1');
-    underlyingRequest.categoryRequest.mockReturnValueOnce({ type: 'KPI', datasource: 'transactions', definition: { n: 2 } });
-    await user.click(screen.getByRole('button', { name: 'breakdown row' }));
-    expect(screen.getByTestId('underlying')).toHaveTextContent('"n":2');
-    // A new request is a new mount, so period, sort, page and CSV error start over.
+    expect(screen.getByTestId('initial')).toHaveTextContent('initial 1');
+    await user.click(screen.getByRole('button', { name: 'Underlying data' }));
+    expect(screen.getByTestId('initial')).toHaveTextContent('no initial');
+    // A new entry is a new mount, so period, sort, page and CSV error start over.
     expect(mounted).toHaveBeenCalledTimes(2);
   });
 });

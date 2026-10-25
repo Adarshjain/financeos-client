@@ -19,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { valueLabel } from '@/lib/reports.helpers';
 import type {
   PivotColumn,
@@ -27,6 +26,7 @@ import type {
   PivotTableData,
   SortClause,
 } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 import { cn } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';

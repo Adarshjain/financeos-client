@@ -21,22 +21,26 @@ export const NEW_REPORT_HREF = appHref('/reports/new');
 
 // ---- URL state -------------------------------------------------------------
 
-export const REPORT_TYPES: ReportType[] = ['KPI', 'CHART', 'TABLE'];
+/** What the type chips filter by: the report types, with Breakdown (a chart subtype) split out of Chart. */
+export type ReportKind = 'KPI' | 'CHART' | 'BREAKDOWN' | 'TABLE';
+
+export const REPORT_KINDS: ReportKind[] = ['KPI', 'CHART', 'BREAKDOWN', 'TABLE'];
 
 /** The type chips after All, in board order. */
-export const TYPE_CHIPS: { type: ReportType; label: string }[] = [
+export const TYPE_CHIPS: { type: ReportKind; label: string }[] = [
   { type: 'KPI', label: 'KPI' },
   { type: 'CHART', label: 'Chart' },
+  { type: 'BREAKDOWN', label: 'Breakdown' },
   { type: 'TABLE', label: 'Table' },
 ];
 
 /** The type filter in the URL (`?type=`); anything else is All. */
-export function parseReportsType(params: { type?: string }): ReportType | undefined {
-  return REPORT_TYPES.find((t) => t === params.type);
+export function parseReportsType(params: { type?: string }): ReportKind | undefined {
+  return REPORT_KINDS.find((t) => t === params.type);
 }
 
 /** The Reports list URL for a type filter; All has no query string. */
-export function reportsUrl(type?: ReportType): string {
+export function reportsUrl(type?: ReportKind): string {
   return type ? `${REPORTS_HREF}?type=${type}` : REPORTS_HREF;
 }
 
@@ -79,17 +83,19 @@ export interface ReportRow {
   name: string;
   description: string | null;
   type: ReportType;
+  /** The type chip this report counts under. */
+  kind: ReportKind;
   typeLabel: string;
   datasource: string;
   datasourceLabel: string;
   areaId: string;
   areaLabel: string;
   dashboards: ReportDashboardRef[];
-  /** "On dashboards" cell: the names, or an em dash. */
+  /** "On dashboards" cell: the names, or "None". */
   onDashboards: string;
   /** "today", "yesterday" or "25 Oct". */
   updated: string;
-  /** The second line of a phone row. */
+  /** The second line of a phone row: type, datasource, where it is used, updated. */
   phoneSub: string;
   href: string;
 }
@@ -107,20 +113,23 @@ export function reportRow(report: ReportSummaryResponse, datasourceLabels: Recor
   const datasourceLabel = datasourceLabels[report.datasource] ?? report.datasource;
   const dashboards = report.dashboards ?? [];
   const used = usedOn(dashboards);
+  const typeLabel = report.chartType ? chartTypeLabel(report.chartType) : TYPE_LABELS[report.type];
+  const updated = formatDayMonthRelative(todayInAppZone(new Date(report.updatedAt)), todayInAppZone());
   return {
     id: report.id,
     name: report.name,
     description: report.description?.trim() || null,
     type: report.type,
-    typeLabel: report.chartType ? chartTypeLabel(report.chartType) : TYPE_LABELS[report.type],
+    kind: report.type === 'CHART' && report.chartType === 'breakdown' ? 'BREAKDOWN' : report.type,
+    typeLabel,
     datasource: report.datasource,
     datasourceLabel,
     areaId: area.id,
     areaLabel: area.label,
     dashboards,
-    onDashboards: dashboards.length > 0 ? dashboards.map((d) => d.name).join(' · ') : '—',
-    updated: formatDayMonthRelative(todayInAppZone(new Date(report.updatedAt)), todayInAppZone()),
-    phoneSub: used ? `${datasourceLabel} · ${used}` : datasourceLabel,
+    onDashboards: dashboards.length > 0 ? dashboards.map((d) => d.name).join(' · ') : 'None',
+    updated,
+    phoneSub: [typeLabel, datasourceLabel, used, `updated ${updated}`].filter(Boolean).join(' · '),
     href: reportHref(report.id),
   };
 }
@@ -132,18 +141,18 @@ export function reportRows(reports: ReportSummaryResponse[], datasourceLabels: R
     .sort((a, b) => areaOrder(a.areaId) - areaOrder(b.areaId) || a.name.localeCompare(b.name));
 }
 
-/** The datasources the rows use, as options for the Datasource filter (by label). */
-export function datasourceOptions(rows: ReportRow[]): { value: string; label: string }[] {
-  const seen = new Map<string, string>();
-  for (const r of rows) seen.set(r.datasource, r.datasourceLabel);
-  return [...seen].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
+/** How many reports each type chip holds, over every report (so a chip's count does not change with the filter). */
+export function typeCounts(rows: ReportRow[]): Record<ReportKind, number> {
+  const counts: Record<ReportKind, number> = { KPI: 0, CHART: 0, BREAKDOWN: 0, TABLE: 0 };
+  for (const r of rows) counts[r.kind] += 1;
+  return counts;
 }
 
-/** Rows matching the search (every word, against name, description and datasource) and the chosen datasources. */
-export function filterRows(rows: ReportRow[], search: string, datasources: string[]): ReportRow[] {
+/** Rows of the chosen type (all when none) matching the search (every word, against name, description and datasource). */
+export function filterRows(rows: ReportRow[], search: string, kind?: ReportKind): ReportRow[] {
   const words = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return rows.filter((r) => {
-    if (datasources.length > 0 && !datasources.includes(r.datasource)) return false;
+    if (kind && r.kind !== kind) return false;
     if (words.length === 0) return true;
     const haystack = `${r.name} ${r.description ?? ''} ${r.datasourceLabel}`.toLowerCase();
     return words.every((w) => haystack.includes(w));

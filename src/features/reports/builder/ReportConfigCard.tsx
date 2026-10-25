@@ -2,23 +2,16 @@
 
 import React from 'react';
 
-import { Card, SegmentedControl, Select, Text, TextArea } from '@/components/ds';
+import { SegmentedControl, Select, TextArea, TextField } from '@/components/ds';
 import type { DatasourceCatalog, ReportCatalog, ReportType } from '@/lib/reports.types';
 
 import type { BuilderAction, BuilderState } from './builderReducer';
 import type { DynamicOptions } from './catalog';
+import { ConfigSection } from './ConfigSection';
 import { workingCatalog } from './editorState';
 import { FilterChips } from './FilterChips';
-import { datasourceGroups, FORMAT_HINTS, FORMAT_OPTIONS } from './options';
+import { datasourceGroups, FORMAT_OPTIONS } from './options';
 import { ChartOptions, type Issues, KpiOptions, TableOptions } from './typeOptions';
-
-function Overline({ children }: { children: React.ReactNode }) {
-  return (
-    <Text variant="overline" tone="ink-3" as="p">
-      {children}
-    </Text>
-  );
-}
 
 export interface ReportConfigCardProps {
   allDatasources: ReportCatalog;
@@ -27,72 +20,71 @@ export interface ReportConfigCardProps {
   state: BuilderState;
   dispatch: React.Dispatch<BuilderAction>;
   issues: Issues;
+  /** "Give the report a name." once a save was tried without one. */
+  nameError?: string;
 }
 
-/** The left card of the editor: description, format, datasource, the format's own options, then the filters. */
-export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, state, dispatch, issues }: ReportConfigCardProps) {
+/** The left column of the editor: name, description and datasource, then a section each for the format, its options and the filters. */
+export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, state, dispatch, issues, nameError }: ReportConfigCardProps) {
   // Format and datasource are fixed once the report is saved.
   const fixed = state.mode === 'edit';
   const section = { catalog, state, dispatch, issues };
   return (
-    <Card>
-      <div className="flex flex-col gap-space-16 p-space-16">
+    <div className="flex flex-col gap-space-16">
+      <div className="flex flex-col gap-space-12">
+        <TextField
+          label="Report name"
+          placeholder="Report name"
+          value={state.name}
+          error={nameError}
+          onValueChange={(value) => dispatch({ type: 'SET_NAME', value })}
+        />
         <TextArea
           label="Description"
           optional
-          minRows={2}
+          controlClassName="block"
           placeholder="What this report answers"
           value={state.description}
           onValueChange={(value) => dispatch({ type: 'SET_DESCRIPTION', value })}
         />
-
-        <div className="flex flex-col gap-space-8">
-          <Overline>Format</Overline>
-          <SegmentedControl
-            fullWidth
-            aria-label="Report format"
-            options={FORMAT_OPTIONS}
-            value={state.type}
-            disabled={fixed}
-            onValueChange={(value: ReportType) => dispatch({ type: 'SET_TYPE', value })}
-          />
-          <Text variant="caption" tone="ink-3" as="p">
-            {FORMAT_HINTS[state.type]}
-          </Text>
-        </div>
-
-        <div className="flex flex-col gap-space-8">
-          <Overline>Datasource</Overline>
-          <Select
-            aria-label="Datasource"
-            searchable
-            groups={datasourceGroups(allDatasources.datasources)}
-            value={state.datasource}
-            disabled={fixed}
-            onValueChange={(name) => {
-              const value = Array.isArray(name) ? name[0] : name;
-              if (value) dispatch({ type: 'SET_DATASOURCE', value, catalog: workingCatalog(allDatasources, value) });
-            }}
-          />
-        </div>
-
-        {state.type === 'KPI' ? <KpiOptions {...section} /> : null}
-        {state.type === 'CHART' ? <ChartOptions {...section} /> : null}
-        {state.type === 'TABLE' ? <TableOptions {...section} /> : null}
-
-        <div className="flex flex-col gap-space-8">
-          <Overline>Filters</Overline>
-          <FilterChips
-            catalog={catalog}
-            dynamicOptions={dynamicOptions}
-            filters={state.filters}
-            error={issues.filters}
-            onAdd={(value) => dispatch({ type: 'ADD_FILTER', value })}
-            onUpdate={(index, value) => dispatch({ type: 'UPDATE_FILTER', index, value })}
-            onRemove={(index) => dispatch({ type: 'REMOVE_FILTER', index })}
-          />
-        </div>
+        <Select
+          label="Datasource"
+          searchable
+          groups={datasourceGroups(allDatasources.datasources)}
+          value={state.datasource}
+          disabled={fixed}
+          onValueChange={(name) => {
+            const value = Array.isArray(name) ? name[0] : name;
+            if (value) dispatch({ type: 'SET_DATASOURCE', value, catalog: workingCatalog(allDatasources, value) });
+          }}
+        />
       </div>
-    </Card>
+
+      <ConfigSection>
+        <SegmentedControl
+          fullWidth
+          size="sm"
+          aria-label="Report format"
+          options={FORMAT_OPTIONS}
+          value={state.type}
+          disabled={fixed}
+          onValueChange={(value: ReportType) => dispatch({ type: 'SET_TYPE', value })}
+        />
+      </ConfigSection>
+
+      {state.type === 'KPI' ? <KpiOptions {...section} /> : null}
+      {state.type === 'CHART' ? <ChartOptions {...section} /> : null}
+      {state.type === 'TABLE' ? <TableOptions {...section} /> : null}
+
+      <FilterChips
+        catalog={catalog}
+        dynamicOptions={dynamicOptions}
+        filters={state.filters}
+        error={issues.filters}
+        onAdd={(value) => dispatch({ type: 'ADD_FILTER', value })}
+        onUpdate={(index, value) => dispatch({ type: 'UPDATE_FILTER', index, value })}
+        onRemove={(index) => dispatch({ type: 'REMOVE_FILTER', index })}
+      />
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Banner, Button, Card, EmptyState, Skeleton, Text } from '@/components/ds';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
-import { categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
+import { categoryEntries, categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { formatDateRange } from '@/lib/date-range';
 import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
@@ -35,12 +35,14 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
   const { shown, loading, error, stale } = preview;
   const summary = shown ? resultSummary(shown.data) : null;
   // The request of the rows behind a figure while the Underlying data dialog is open.
-  const [underlying, setUnderlying] = React.useState<RunReportRequest | null>(null);
-  const open = (request: RunReportRequest | null) => {
-    if (request) setUnderlying(request);
+  // `entry` is the dropdown entry it opens on (a breakdown row's category); without it the dialog opens on All.
+  const [underlying, setUnderlying] = React.useState<{ request: RunReportRequest; entry?: number } | null>(null);
+  const open = (request: RunReportRequest | null, entry?: number) => {
+    if (request) setUnderlying({ request, entry });
   };
   const pivot = shown && isPivotTableData(shown.data) ? shown.data : null;
   const chart = shown && isChartData(shown.data) ? shown.data : null;
+  const entries = React.useMemo(() => (chart && shown ? categoryEntries(shown.request, chart, catalog) : undefined), [chart, shown, catalog]);
   return (
     <Card>
       <div className="flex flex-col gap-space-12 p-space-16">
@@ -97,7 +99,14 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
             onPageChange={preview.changePage}
             onSizeChange={preview.changeSize}
             definition={chart ? (shown.request.definition as ChartDefinition) : undefined}
-            onOpenBreakdownRow={chart ? (index) => open(categoryRequest(shown.request, chart, index, catalog)) : undefined}
+            onOpenBreakdownRow={
+              chart
+                ? (index) => {
+                    // The dialog opens on the row's entry; "All" in its dropdown is the whole report.
+                    if (categoryRequest(shown.request, chart, index, catalog)) open(wholeReportRequest(shown.request), entries?.findIndex((e) => e.index === index));
+                  }
+                : undefined
+            }
             onOpenTableRow={pivot ? (key) => open(tableRowRequest(shown.request, pivot, key, catalog)) : undefined}
             canOpenBreakdownRow={chart ? (index) => categoryRequest(shown.request, chart, index, catalog) !== null : undefined}
             canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
@@ -111,7 +120,18 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
           <EmptyState compact description="Click Preview to run this report." />
         )}
       </div>
-      {underlying ? <ReportUnderlyingDialog key={JSON.stringify(underlying)} request={underlying} onClose={() => setUnderlying(null)} /> : null}
+      {underlying ? <ReportUnderlyingDialog
+          key={JSON.stringify(underlying)}
+          request={underlying.request}
+          entries={entries}
+          initialEntry={underlying.entry !== undefined && underlying.entry >= 0 ? underlying.entry : undefined}
+          dimensionLabel={
+            chart && shown
+              ? catalog.fields.find((f) => f.name === (shown.request.definition as ChartDefinition).dimension.field)?.label
+              : undefined
+          }
+          onClose={() => setUnderlying(null)}
+        /> : null}
     </Card>
   );
 }

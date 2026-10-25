@@ -32,6 +32,8 @@ export interface PreviewState {
   changePage: (page: number) => void;
   changeSize: (size: number) => void;
   changeSort: (sort: SortClause | null) => void;
+  /** Back to the empty state: no result, no error, and any run still in flight is ignored. */
+  clear: () => void;
 }
 
 /**
@@ -103,5 +105,11 @@ export function useReportPreview({
     changePage: (p) => again(p, size, shown?.sort ?? null),
     changeSize: (s) => again(0, s, shown?.sort ?? null),
     changeSort: (s) => again(0, size, s),
+    clear: () => {
+      latest.current++;
+      setShown(null);
+      setError(null);
+      setLoading(false);
+    },
   };
 }

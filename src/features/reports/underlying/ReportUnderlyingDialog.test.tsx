@@ -86,6 +86,90 @@ describe('shortDate', () => {
   });
 });
 
+const foodRequest: RunReportRequest = {
+  ...request,
+  definition: { ...request.definition, filters: [...(request.definition as { filters: unknown[] }).filters, { field: 'category', operator: 'is', value: 'Food' }] },
+} as never;
+const rentRequest: RunReportRequest = {
+  ...request,
+  definition: { ...request.definition, filters: [...(request.definition as { filters: unknown[] }).filters, { field: 'category', operator: 'is', value: 'Rent' }] },
+} as never;
+const entries = [
+  { label: 'Food', request: foodRequest },
+  { label: 'Rent', request: rentRequest },
+];
+
+describe('ReportUnderlyingDialog footer', () => {
+  it('has Download CSV on the left and Close on the right, and Close closes the dialog', async () => {
+    const onClose = vi.fn();
+    renderWithQuery(<ReportUnderlyingDialog request={request} onClose={onClose} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    const download = screen.getByRole('button', { name: 'Download CSV' });
+    const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => b.textContent === 'Close')!;
+    expect(download.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(download.querySelector('svg')).not.toBeNull();
+    await user.click(close);
+    expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('ReportUnderlyingDialog dimension dropdown', () => {
+  it('is not shown without entries', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} dimensionLabel="Category" onClose={vi.fn()} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    expect(screen.queryByRole('button', { name: /Category: All/ })).toBeNull();
+  });
+
+  it('starts at Category: All with the whole report, beside the sort control', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} dimensionLabel="Category" onClose={vi.fn()} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    const all = screen.getByRole('button', { name: /Category: All/ });
+    expect(all.closest('[class*="justify-end"]')).toBe(screen.getByRole('button', { name: /Sort/ }).closest('[class*="justify-end"]'));
+    expect(call(0)[1].body).toEqual(request);
+  });
+
+  it('lists the entries and narrows the rows to the one picked, then back to all', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} dimensionLabel="Category" onClose={vi.fn()} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    await user.click(screen.getByRole('button', { name: /Category: All/ }));
+    expect(await screen.findByRole('option', { name: 'Food' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Rent' })).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Rent' }));
+    await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: rentRequest }));
+    expect(screen.getByRole('button', { name: 'Category: Rent' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Category: Rent' }));
+    await user.click(await screen.findByRole('option', { name: 'All' }));
+    await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: request }));
+  });
+
+  it('opens on the row\'s entry, and All goes back to the whole report', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} initialEntry={1} dimensionLabel="Category" onClose={vi.fn()} />);
+    expect(await screen.findByRole('button', { name: 'Category: Rent' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Category: All' })).toBeNull();
+    expect(vi.mocked(api.POST).mock.calls.at(0)?.[1]).toMatchObject({ body: rentRequest });
+    await user.click(screen.getByRole('button', { name: 'Category: Rent' }));
+    await user.click(await screen.findByRole('option', { name: 'All' }));
+    await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: request }));
+  });
+
+  it('goes back to the first page of this period, and downloads the CSV of the one picked', async () => {
+    renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} dimensionLabel="Category" onClose={vi.fn()} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    await user.click(screen.getAllByRole('button', { name: 'Page 2' })[0]);
+    await waitFor(() => expect(lastQuery().page).toBe(1));
+    await user.click(screen.getByRole('tab', { name: 'Previous period' }));
+    await waitFor(() => expect(lastQuery().period).toBe('previous'));
+    await user.click(screen.getByRole('button', { name: /Category: All/ }));
+    await user.click(await screen.findByRole('option', { name: 'Food' }));
+    await waitFor(() => expect(lastQuery()).toMatchObject({ period: 'current', page: 0 }));
+    await user.click(screen.getByRole('button', { name: 'Download CSV' }));
+    await waitFor(() => expect(saveBlob).toHaveBeenCalled());
+    const csv = vi.mocked(api.POST).mock.calls.find((c) => String(c[0]).endsWith('/csv')) as unknown as [string, { body: unknown }];
+    expect(csv[1].body).toEqual(foodRequest);
+  });
+});
+
 describe('ReportUnderlyingDialog', () => {
   it('lists the rows with the figure, the count and range in the header', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);

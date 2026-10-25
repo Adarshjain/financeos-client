@@ -10,7 +10,7 @@ import type {
   TableDefinitionAggregated,
 } from '@/lib/reports.types';
 
-import { categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from './underlyingRequest';
+import { categoryEntries, categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from './underlyingRequest';
 
 const ds = catalogFixture.datasources[0];
 const catalog: DatasourceCatalog = { fields: ds.fields, operators: catalogFixture.operators };
@@ -189,6 +189,27 @@ describe('categoryRequest with the report own filters', () => {
       catalog,
     );
     expect(filtersOf(out).at(-1)).toEqual({ field: 'type', operator: 'is', value: 'DEBIT' });
+  });
+});
+
+describe('categoryEntries', () => {
+  it('lists each category with its own request, leaving out Other and a category that cannot be pinned', () => {
+    const request = chartReq(chartDef());
+    const data = chartData({ other: { index: 3, foldedCount: 4 } });
+    const entries = categoryEntries(request, data, catalog);
+    expect(entries.map((e) => e.label)).toEqual(['Food', 'Rent']);
+    expect(entries[0].request).toEqual(categoryRequest(request, data, 0, catalog));
+    expect(entries[1].request).toEqual(categoryRequest(request, data, 1, catalog));
+  });
+
+  it('reads a static enum category by its label', () => {
+    const request = chartReq(chartDef({ dimension: { field: 'type' } }));
+    const entries = categoryEntries(request, chartData({ categories: ['DEBIT'], valueLabels: { DEBIT: 'Money out' } }), catalog);
+    expect(entries.map((e) => e.label)).toEqual(['Money out']);
+  });
+
+  it('is empty when no category can be pinned', () => {
+    expect(categoryEntries(chartReq(chartDef()), chartData({ categories: ['(none)'] }), catalog)).toEqual([]);
   });
 });
 
