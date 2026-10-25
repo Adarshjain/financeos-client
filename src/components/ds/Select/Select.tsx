@@ -527,7 +527,8 @@ export interface SelectProps
 }
 
 // A chip's measured width is cached per value and label, so a renamed option is measured again.
-const chipKey = (opt: SelectOption) => `${opt.value}\u0000${opt.label}`;
+// Read back from a `data-chip-key` attribute, so it must survive server HTML: a NUL there turns into U+FFFD on parse and the chip is never found again.
+const chipKey = (opt: SelectOption) => JSON.stringify([opt.value, opt.label]);
 
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(
   (

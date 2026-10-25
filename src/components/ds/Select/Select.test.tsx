@@ -1,5 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Select, SelectMenu, type SelectOption } from './Select';
@@ -23,6 +25,29 @@ function mockChipLayout({ row, chip, overflow }: { row: number; chip: number; ov
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe('Select multiple hydrated from server HTML', () => {
+  it('leaves the measure pass once hydrated: all chips fit, so no "+n" badge', async () => {
+    mockChipLayout({ row: 600, chip: 80, overflow: 30 });
+    const options = [
+      { value: 'a', label: 'Amount' },
+      { value: 'b', label: 'Share' },
+      { value: 'c', label: 'Txns' },
+    ];
+    const element = <Select multiple options={options} value={['a', 'b', 'c']} onValueChange={() => {}} />;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    // The server's HTML goes through the parser, which rewrites a NUL in an attribute to U+FFFD.
+    container.innerHTML = renderToString(element);
+    await act(async () => {
+      hydrateRoot(container, element);
+    });
+    expect(container.querySelectorAll('[data-chip-key]')).toHaveLength(3);
+    expect(container.querySelector('[data-chip-overflow]')).toBeNull();
+    expect(container.textContent).not.toMatch(/\+\d/);
+    container.remove();
+  });
 });
 
 describe('Select', () => {
