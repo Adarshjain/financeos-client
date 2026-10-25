@@ -17,13 +17,14 @@ vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   ),
 }));
 
+import { lotKeys, TAX_HARVEST_LOTS } from '@/features/dashboards/builtins/tax_harvest/taxHarvest';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { TaxHarvestLot, TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { bookedGainsRequest } from '../../investmentsLoansKit/kit';
-import { lotKeys, TAX_HARVEST_LOTS, TaxHarvestWidget } from '../TaxHarvestWidget';
+import { TaxHarvestWidget } from '../TaxHarvestWidget';
 
 const lot = (over: Partial<TaxHarvestLot> = {}): TaxHarvestLot => ({
   holdingId: 'h1',

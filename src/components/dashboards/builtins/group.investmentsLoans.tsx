@@ -8,17 +8,17 @@
 
 import { createElement } from 'react';
 
+import { shortcutIds } from '@/features/dashboards/builtins/shortcuts/shortcutsParams';
+import { moversCount } from '@/features/dashboards/builtins/top_movers/topMovers';
 import { widgetParams } from '@/lib/dashboards.helpers';
 
 import { AllocationView } from '../widgets/allocation/AllocationView';
 import { LendingBalancesWidget } from '../widgets/lending_balances/LendingBalancesWidget';
 import { LoanNameSubtitle, LoanPayoffWidget } from '../widgets/loan_payoff/LoanPayoffWidget';
 import { PortfolioSnapshotWidget } from '../widgets/portfolio_snapshot/PortfolioSnapshotWidget';
-import { shortcutIds } from '../widgets/shortcuts/shortcutsParams';
 import { ShortcutsParamsEditor } from '../widgets/shortcuts/ShortcutsParamsEditor';
 import { ShortcutsWidget } from '../widgets/shortcuts/ShortcutsWidget';
 import { TaxHarvestWidget } from '../widgets/tax_harvest/TaxHarvestWidget';
-import { moversCount } from '../widgets/top_movers/topMovers';
 import { TopMoversWidget } from '../widgets/top_movers/TopMoversWidget';
 import type { GroupEntries, GroupViews } from './group.types';
 import type { BuiltinBodyProps, PhoneSlot } from './registry';

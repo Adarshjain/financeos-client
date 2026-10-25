@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { inboxItemHref } from '@/features/dashboards/builtins/attention/attentionRows';
 import { actionHref, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { cn, formatMoney } from '@/lib/utils';
@@ -13,11 +14,6 @@ import { severityStripeClass } from './severityStripe';
 interface InboxWidgetRowProps {
   item: InboxItemResponse;
   onBillAction: (item: InboxItemResponse, action: InboxActionResponse) => void;
-}
-
-/** The row's own place on the Inbox page (the page scrolls to and rings `?item=`). */
-export function inboxItemHref(key: string): string {
-  return `/inbox?item=${encodeURIComponent(key)}`;
 }
 
 /**

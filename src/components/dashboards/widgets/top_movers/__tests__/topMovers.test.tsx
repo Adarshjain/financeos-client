@@ -12,11 +12,11 @@ vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   ),
 }));
 
+import { moversCount, topMovers } from '@/features/dashboards/builtins/top_movers/topMovers';
 import { api } from '@/lib/api/client';
 import type { Position } from '@/lib/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { moversCount, topMovers } from '../topMovers';
 import { TopMoversWidget } from '../TopMoversWidget';
 
 let seq = 0;

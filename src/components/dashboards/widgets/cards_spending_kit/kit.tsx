@@ -1,13 +1,14 @@
 'use client';
 
 // Small pieces shared by the cards & spending built-ins: a drillable figure
-// (the KpiView value affordance), typed reads of report rows, a pager for list
-// views, and the ad-hoc KPI requests their drills open.
+// (the KpiView value affordance), a pager for list views and the row list's note.
+// The pure helpers (row reads, ad-hoc KPI, formatting) live in
+// '@/features/dashboards/builtins/builtin.helpers'.
 
 import type { ReactNode } from 'react';
 
 import { TablePagination } from '@/components/reports/views/TablePagination';
-import type { FilterClause, RunReportRequest, TablePage, TableRow } from '@/lib/reports.types';
+import type { TablePage } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 interface DrillValueProps {
@@ -44,20 +45,6 @@ export function DrillValue({ onClick, label, className, title, children }: Drill
   );
 }
 
-/** A row cell as a string ('' when absent). */
-export function cellText(row: TableRow | undefined, key: string): string {
-  const v = row?.[key];
-  return v == null ? '' : String(v);
-}
-
-/** A row cell as a finite number, or null. */
-export function cellNumber(row: TableRow | Record<string, unknown> | undefined, key: string): number | null {
-  const v = row?.[key];
-  if (v == null || v === '') return null;
-  const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
 /** The pager under a list view, only when the rows span more than one page. */
 export function ListPager({
   page,
@@ -82,15 +69,6 @@ export function ListPager({
   );
 }
 
-/** An ad-hoc KPI (sum of `measure`) for "View underlying data", without a period comparison. */
-export function adhocKpi(datasource: string, measure: string, filters: FilterClause[]): RunReportRequest {
-  return {
-    type: 'KPI',
-    datasource,
-    definition: { measure, aggregation: 'sum', filters, comparison: { enabled: false } },
-  };
-}
-
 /** The row list's empty / error line inside a widget body. */
 export function WidgetNote({ children, tone = 'muted' }: { children: ReactNode; tone?: 'muted' | 'danger' }) {
   return (
@@ -104,25 +82,4 @@ export function WidgetNote({ children, tone = 'muted' }: { children: ReactNode; 
       {children}
     </p>
   );
-}
-
-/** Whole days from `from` to `to` (both YYYY-MM-DD; negative when `to` is earlier). */
-export function daysBetween(from: string, to: string): number {
-  const utc = (d: string) => {
-    const [y, m, day] = d.slice(0, 10).split('-').map(Number);
-    return Date.UTC(y, m - 1, day);
-  };
-  return Math.round((utc(to) - utc(from)) / 86_400_000);
-}
-
-/** A whole number in Indian grouping ("42,300"). */
-export function formatCount(value: number): string {
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value);
-}
-
-const WHOLE_RUPEES = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-
-/** Rupees without paise ("₹14,100"), for summary figures whose drill shows the exact amount. */
-export function formatRupees(value: number): string {
-  return WHOLE_RUPEES.format(value);
 }

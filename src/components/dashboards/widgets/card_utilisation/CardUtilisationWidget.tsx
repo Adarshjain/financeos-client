@@ -13,6 +13,7 @@ import { WidgetMessage, WidgetSkeleton } from '@/components/dashboards/WidgetSta
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { buildUtilisationModel, type UtilisationRow } from '@/features/dashboards/builtins/card_utilisation/cardUtilisation.model';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -25,7 +26,6 @@ import {
 import { cn, formatMoney } from '@/lib/utils';
 
 import { DrillValue, WidgetNote } from '../cards_spending_kit/kit';
-import { buildUtilisationModel, type UtilisationRow } from './cardUtilisation.model';
 
 export interface CardUtilisationWidgetProps {
   /** Only this card; every open credit card when absent. */

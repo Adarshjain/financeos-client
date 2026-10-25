@@ -31,7 +31,7 @@ describe('/ds/signup page and SignupForm', () => {
     vi.clearAllMocks();
   });
 
-  it('redirects signed-in user away to /dashboard', async () => {
+  it('redirects signed-in user away to /ds/dashboard', async () => {
     vi.mocked(getOptionalSession).mockResolvedValue({
       id: 'usr-1',
       email: 'arjun@example.test',
@@ -39,7 +39,7 @@ describe('/ds/signup page and SignupForm', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     });
 
-    await expect(DsSignupPage()).rejects.toThrow('REDIRECT:/dashboard');
+    await expect(DsSignupPage()).rejects.toThrow('REDIRECT:/ds/dashboard');
   });
 
   it('renders initial form with info banner and form fields', () => {
@@ -109,7 +109,7 @@ describe('/ds/signup page and SignupForm', () => {
     });
   });
 
-  it('displays success banner and redirects to /dashboard upon successful signup', async () => {
+  it('displays success banner and redirects to /ds/dashboard upon successful signup', async () => {
     vi.mocked(signup).mockResolvedValue({
       success: true,
       data: {
@@ -137,7 +137,7 @@ describe('/ds/signup page and SignupForm', () => {
       expect(
         screen.getByText('Account created! Redirecting…'),
       ).toBeDefined();
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+      expect(mockPush).toHaveBeenCalledWith('/ds/dashboard');
     });
   });
 

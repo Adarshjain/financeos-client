@@ -49,6 +49,9 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/rewards\/rules$/,
   // The Reports list, New report and a report's editor (opening a report opens its editor).
   /^\/reports(\/[^/]+)?$/,
+  // Home (the default dashboard), the Dashboards list, New dashboard and a dashboard's page (view and edit).
+  /^\/dashboard$/,
+  /^\/dashboards(\/[^/]+)?$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */

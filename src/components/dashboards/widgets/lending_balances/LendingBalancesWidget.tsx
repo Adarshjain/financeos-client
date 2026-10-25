@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { useActionLauncher } from '@/components/shortcuts/actions';
 import { Button } from '@/components/ui/button';
+import { LENDING_BALANCES_TOP } from '@/features/dashboards/builtins/lending_balances/lendingBalances';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 import { settleUpEntry } from '@/lib/lendingEntry';
 import { useOutstandingCounterparties } from '@/lib/query/hooks/useCounterparties';
@@ -26,9 +27,6 @@ import {
   WidgetLoadError,
   WidgetLoadingRows,
 } from '../investmentsLoansKit/kit';
-
-/** People the widget lists before "View all". */
-export const LENDING_BALANCES_TOP = 5;
 
 const ACTION = 'record-lending';
 

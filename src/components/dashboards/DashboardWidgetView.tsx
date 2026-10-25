@@ -32,6 +32,7 @@ import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePaginat
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { useWidgetData } from '@/features/dashboards/data/useWidgetData';
 import type { UnderlyingSource } from '@/features/reports/underlying/underlying.types';
 import { widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
@@ -40,7 +41,6 @@ import { cn } from '@/lib/utils';
 
 import { builtinEntryOf, templateViewOf } from './builtins/registry';
 import { WidgetEditHeader, WidgetViewHeader } from './DashboardWidgetHeader';
-import { useWidgetData } from './useWidgetData';
 import { widgetVisualKind } from './widgetMeta';
 import { WidgetReportContent, WidgetUnavailable } from './WidgetStates';
 

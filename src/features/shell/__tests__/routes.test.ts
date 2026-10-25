@@ -29,6 +29,10 @@ describe('appHref', () => {
     ['/reports', '/ds/reports'],
     ['/reports/new', '/ds/reports/new'],
     ['/reports/abc-123', '/ds/reports/abc-123'],
+    ['/dashboard', '/ds/dashboard'],
+    ['/dashboards', '/ds/dashboards'],
+    ['/dashboards/new', '/ds/dashboards/new'],
+    ['/dashboards/abc-123?edit=1', '/ds/dashboards/abc-123?edit=1'],
   ])('maps %s', (from, to) => expect(appHref(from)).toBe(to));
 
   it.each([
@@ -54,10 +58,8 @@ describe('appHref', () => {
 
   it('leaves unbuilt Legacy paths alone', () => {
     for (const p of [
-      '/dashboard',
       '/transactions/review',
       '/loans/calendar',
-      '/dashboards',
       '/chat',
       '/settings/ingest',
       '/storybook',

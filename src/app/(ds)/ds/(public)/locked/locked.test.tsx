@@ -34,16 +34,16 @@ describe('/ds/locked page', () => {
     expect(el.props.from).toBe('/ds/loans');
   });
 
-  it('falls back to the dashboard (still Legacy) for an unsafe from', async () => {
+  it('falls back to Home for an unsafe from', async () => {
     status.mockResolvedValue(locked);
     const el = (await DsLockedPage({ searchParams: Promise.resolve({ from: '//evil.com' }) })) as { props: { from: string } };
-    expect(el.props.from).toBe('/dashboard');
+    expect(el.props.from).toBe('/ds/dashboard');
   });
 
   it('ignores a repeated from parameter instead of failing', async () => {
     status.mockResolvedValue(locked);
     const el = (await DsLockedPage({ searchParams: Promise.resolve({ from: ['/ds/a', '/ds/b'] }) })) as { props: { from: string } };
-    expect(el.props.from).toBe('/dashboard');
+    expect(el.props.from).toBe('/ds/dashboard');
   });
 
   it('goes straight to where they were headed when nothing is locked', async () => {

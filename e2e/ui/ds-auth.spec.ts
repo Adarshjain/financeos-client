@@ -28,15 +28,15 @@ test.describe('/ds Auth UI (@ui)', () => {
     expect(errorText).not.toBe('500');
     expect(errorText).toMatch(/invalid|invite|closed|error/i);
 
-    // 2. Successful signup lands on dashboard
+    // 2. Successful signup lands on the Dinero dashboard
     const goodEmail = nextEmail('good-signup');
     await page.getByLabel('Email').fill(goodEmail);
     await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
     await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    await page.waitForURL('**/dashboard', { timeout: 15000 });
-    expect(page.url()).toContain('/dashboard');
+    await page.waitForURL('**/ds/dashboard', { timeout: 15000 });
+    expect(page.url()).toContain('/ds/dashboard');
   });
 
   test('signup password under 8 characters shows danger banner before submit', async ({ page }) => {

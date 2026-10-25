@@ -14,11 +14,15 @@ import dynamic from 'next/dynamic';
 import { type ComponentType, type ReactNode, useCallback, useState } from 'react';
 
 import type { LendingFormPreset } from '@/components/lendings/useAddLendingForm';
+import {
+  type ActionId,
+  type DialogActionId,
+  type PageActionId,
+  SHORTCUT_ACTION_DEFS,
+} from '@/features/dashboards/builtins/shortcuts/shortcutsCatalog';
 import { toastError } from '@/lib/toastError';
 
-export type DialogActionId = 'add-transaction' | 'record-lending';
-export type PageActionId = 'import-statement' | 'ask-chat' | 'review-queue';
-export type ActionId = DialogActionId | PageActionId;
+export type { ActionId, DialogActionId, PageActionId };
 
 /** What a preset can seed; only record-lending takes one today. */
 export type ActionPreset = LendingFormPreset;
@@ -60,13 +64,23 @@ const DIALOGS: Record<DialogActionId, ComponentType<ActionDialogProps>> = {
   'record-lending': dynamic(LOADERS['record-lending'], { ssr: false }),
 };
 
-export const SHORTCUT_ACTIONS: Readonly<Record<ActionId, ShortcutAction>> = {
-  'add-transaction': { kind: 'dialog', id: 'add-transaction', label: 'Add transaction', icon: Plus },
-  'record-lending': { kind: 'dialog', id: 'record-lending', label: 'Record lending', icon: HandCoins },
-  'import-statement': { kind: 'page', id: 'import-statement', label: 'Import statement', icon: Import, href: '/transactions/import' },
-  'ask-chat': { kind: 'page', id: 'ask-chat', label: 'Ask chat', icon: MessageSquare, href: '/chat' },
-  'review-queue': { kind: 'page', id: 'review-queue', label: 'Review queue', icon: CheckSquare, href: '/transactions/review' },
+const ICONS: Record<ActionId, LucideIcon> = {
+  'add-transaction': Plus,
+  'record-lending': HandCoins,
+  'import-statement': Import,
+  'ask-chat': MessageSquare,
+  'review-queue': CheckSquare,
 };
+
+/** The shared action table (labels, hrefs) with this UI's icons on top. */
+export const SHORTCUT_ACTIONS: Readonly<Record<ActionId, ShortcutAction>> = Object.fromEntries(
+  Object.values(SHORTCUT_ACTION_DEFS).map((def) => [
+    def.id,
+    'dialog' in def
+      ? { kind: 'dialog', id: def.id, label: def.label, icon: ICONS[def.id] }
+      : { kind: 'page', id: def.id, label: def.label, icon: ICONS[def.id], href: def.href },
+  ]),
+) as Record<ActionId, ShortcutAction>;
 
 /** An action by id; null for an unknown id. */
 export function getAction(id: string): ShortcutAction | null {

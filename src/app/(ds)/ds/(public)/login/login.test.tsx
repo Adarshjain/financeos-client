@@ -48,7 +48,7 @@ describe('/ds/login page and LoginForm', () => {
 
     await expect(
       DsLoginPage({ searchParams: Promise.resolve({}) }),
-    ).rejects.toThrow('REDIRECT:/dashboard');
+    ).rejects.toThrow('REDIRECT:/ds/dashboard');
   });
 
   it.each(['/\t/evil.com', '/\n/evil.com', '//evil.com', '/\\evil.com'])('ignores an unsafe from %j', async (from) => {
@@ -58,7 +58,7 @@ describe('/ds/login page and LoginForm', () => {
       admin: false,
       createdAt: '2026-01-01T00:00:00.000Z',
     });
-    await expect(DsLoginPage({ searchParams: Promise.resolve({ from }) })).rejects.toThrow('REDIRECT:/dashboard');
+    await expect(DsLoginPage({ searchParams: Promise.resolve({ from }) })).rejects.toThrow('REDIRECT:/ds/dashboard');
   });
 
   it('empty submit sends nothing and displays validation banner', async () => {

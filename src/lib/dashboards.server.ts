@@ -46,6 +46,8 @@ import { keys } from '@/lib/query/keys';
 export async function prefetchWidgetData(
   queryClient: QueryClient,
   dashboard: DashboardResponse,
+  /** The first page's size; must be the size the client first asks for (the Dinero pages pass their own plain constant). */
+  pageSize: number = DEFAULT_TABLE_PAGE_SIZE,
 ): Promise<void> {
   const renderable = dashboard.widgets.filter(isWidgetAvailable);
   const hasInbox = renderable.some(
@@ -61,11 +63,11 @@ export async function prefetchWidgetData(
         if (!builtin || !builtinKey || builtin.kind !== 'template') return undefined;
         const isTable = builtin.templateType === 'TABLE';
         const params = widgetParams(widget);
-        const options = isTable ? { page: 0, size: DEFAULT_TABLE_PAGE_SIZE } : {};
+        const options = isTable ? { page: 0, size: pageSize } : {};
         return queryClient.prefetchQuery({
           queryKey: keys.dashboards.widget(
             widget.id,
-            builtinWidgetQueryParams(builtinKey, params, isTable, 0, DEFAULT_TABLE_PAGE_SIZE),
+            builtinWidgetQueryParams(builtinKey, params, isTable, 0, pageSize),
           ),
           queryFn: () => dashboardsApi.builtinData(builtinKey, params, options),
         });
@@ -73,11 +75,11 @@ export async function prefetchWidgetData(
       const reportId = widget.reportId;
       if (!reportId) return undefined;
       const isTable = widget.report?.type === 'TABLE';
-      const options = isTable ? { page: 0, size: DEFAULT_TABLE_PAGE_SIZE } : {};
+      const options = isTable ? { page: 0, size: pageSize } : {};
       return queryClient.prefetchQuery({
         queryKey: keys.dashboards.widget(
           widget.id,
-          widgetQueryParams(reportId, isTable, 0, DEFAULT_TABLE_PAGE_SIZE),
+          widgetQueryParams(reportId, isTable, 0, pageSize),
         ),
         queryFn: () => reportsApi.runSaved(reportId, options),
       });

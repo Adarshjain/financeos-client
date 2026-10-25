@@ -7,7 +7,7 @@
 import { BarChart3, Gauge, LayoutGrid, type LucideIcon, Table2 } from 'lucide-react';
 import { createElement } from 'react';
 
-import { isBuiltinWidget, isTextWidget } from '@/lib/dashboards.helpers';
+import { isBuiltinWidget, isTextWidget, widgetHref } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
 import { SubtitleText } from './builtins/BuiltinSubtitle';
@@ -59,15 +59,7 @@ export function WidgetIcon({ widget, className }: { widget: WidgetResponse; clas
   return createElement(widgetIcon(widget), { className, 'aria-hidden': true });
 }
 
-/**
- * Where the header's "Open" button goes: a built-in's own page (Accounts, Inbox, Upcoming).
- * A saved report gets no "Open": its page is the report editor, already offered as
- * "Edit report" in the overflow menu.
- */
-export function widgetHref(widget: WidgetResponse, available: boolean): string | null {
-  if (!available || !isBuiltinWidget(widget)) return null;
-  return widget.builtin?.href ?? null;
-}
+export { widgetHref };
 
 /**
  * The muted line under a widget's title: the registry's param-aware subtitle,

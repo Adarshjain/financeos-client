@@ -1,0 +1,190 @@
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
+const push = vi.hoisted(() => vi.fn());
+const search = vi.hoisted(() => ({ value: '' }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push, refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(search.value),
+}));
+const showToast = vi.hoisted(() => vi.fn());
+vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
+  showToast: (...args: unknown[]) => showToast(...args),
+}));
+vi.mock('@/features/inbox/InboxBillHost', () => ({
+  InboxBillHost: ({ pending }: { pending: unknown }) => <div data-testid="bill-host" data-pending={JSON.stringify(pending)} />,
+}));
+
+import { api, ApiError } from '@/lib/api/client';
+import type { CardBillResponse } from '@/lib/api/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+import { bodyProps, NOW } from '../testFixtures';
+import { BillsDueBody } from './BillsDueBody';
+
+function bill(over: Partial<CardBillResponse> & { accountId: string }): CardBillResponse {
+  return { accountName: 'HDFC', last4: '1111', status: 'OPEN', muted: false, paidSource: 'NONE', ...over } as CardBillResponse;
+}
+
+const overdue = bill({
+  accountId: 'a-over', accountName: 'Overdue Card', last4: '1', statementId: 's-over', status: 'OVERDUE',
+  remainingAmount: 5000, totalAmountDue: 5000, paymentDueDate: '2026-10-01', daysUntilDue: -7,
+});
+const open = bill({
+  accountId: 'a-open', accountName: 'Open Card', last4: '2', statementId: 's-open', status: 'OPEN',
+  remainingAmount: 2000, totalAmountDue: 2000, minimumAmountDue: 200, paymentDueDate: '2026-10-12', daysUntilDue: 4, unbilledAmount: 300,
+});
+const awaiting = bill({
+  accountId: 'a-wait', accountName: 'Wait Card', last4: '3', status: 'AWAITING_STATEMENT',
+  unbilledAmount: 1500, nextStatementExpectedOn: '2026-10-15',
+});
+const late = bill({
+  accountId: 'a-late', accountName: 'Late Card', last4: '4', status: 'AWAITING_STATEMENT',
+  unbilledAmount: 100, nextStatementExpectedOn: '2026-10-05',
+});
+const quiet = bill({ accountId: 'a-quiet', accountName: 'Quiet Card', last4: '5', status: 'NO_DUE', unbilledAmount: 0 });
+const paidManually = bill({
+  accountId: 'a-paid', accountName: 'Paid Card', last4: '6', statementId: 's-paid', status: 'PAID', paidSource: 'MANUAL',
+  paidAmount: 800, paidMarkedOn: '2026-10-08', unbilledAmount: 0,
+});
+
+function seed(bills: CardBillResponse[]) {
+  vi.mocked(api.GET).mockResolvedValue({ data: bills } as never);
+}
+const render = (params: Record<string, unknown> = {}) => renderWithQuery(<BillsDueBody {...bodyProps('bills_due', params)} />);
+
+describe('BillsDueBody', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    search.value = '';
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const user = () => userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+  it('shows the loading rows while the bills load', () => {
+    vi.mocked(api.GET).mockReturnValue(new Promise(() => {}) as never);
+    render();
+    expect(screen.getByTestId('bills-widget-loading')).toBeInTheDocument();
+  });
+
+  it('overdue first, then arrived by due date, then awaiting; totals above', async () => {
+    seed([awaiting, open, overdue]);
+    render();
+    const rows = await screen.findAllByTestId('bill-row');
+    expect(rows.map((r) => r.getAttribute('data-phase'))).toEqual(['overdue', 'arrived', 'awaiting']);
+    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('To pay ₹7,000.00');
+    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800.00');
+  });
+
+  it('an arrived card: due phrase and date, minimum, what was spent since, and Mark paid', async () => {
+    seed([open]);
+    render();
+    const row = await screen.findByTestId('bill-row');
+    expect(row).toHaveTextContent('Open Card ••2');
+    expect(row).toHaveTextContent('Due in 4 days · 12 Oct');
+    expect(row).toHaveTextContent('₹300.00 spent since this statement');
+    expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000.00');
+    expect(row).toHaveTextContent('Min ₹200.00');
+    expect(within(row).getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
+  });
+
+  it('an overdue card says how late, and escalates its action', async () => {
+    seed([overdue]);
+    render();
+    const row = await screen.findByTestId('bill-row');
+    expect(row).toHaveTextContent('Overdue by 7 days · 1 Oct');
+  });
+
+  it('an awaiting card headlines its unbilled spend and when the statement is expected; late says since', async () => {
+    seed([awaiting, late]);
+    render();
+    const [lateRow, wait] = await screen.findAllByTestId('bill-row');
+    expect(within(wait).getByTestId('bill-headline')).toHaveTextContent('₹1,500.00');
+    expect(wait).toHaveTextContent('unbilled');
+    expect(wait).toHaveTextContent('Statement expected 15 Oct');
+    expect(wait).not.toHaveTextContent('Mark paid');
+    expect(lateRow).toHaveTextContent('Statement due since 5 Oct');
+  });
+
+  it('Mark paid and Set details open the bill dialogs for that statement', async () => {
+    seed([bill({ accountId: 'x', statementId: 's-x', status: 'DUE_UNKNOWN', remainingAmount: 900, totalAmountDue: 900 }), open]);
+    render();
+    const rows = await screen.findAllByTestId('bill-row');
+    const rowOf = (id: string) => rows.find((r) => r.getAttribute('data-statement-id') === id) as HTMLElement;
+    await user().click(within(rowOf('s-x')).getByRole('button', { name: 'Set details' }));
+    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending') ?? 'null')).toEqual({ type: 'set_details', statementId: 's-x' });
+    await user().click(within(rowOf('s-open')).getByRole('button', { name: 'Mark paid' }));
+    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending') ?? 'null')).toEqual({ type: 'mark_paid', statementId: 's-open' });
+  });
+
+  it('cards with nothing to pay and nothing unbilled collapse into one group that expands', async () => {
+    seed([quiet, paidManually, open]);
+    render();
+    await screen.findAllByTestId('bill-row');
+    expect(screen.getAllByTestId('bill-row')).toHaveLength(1);
+    await user().click(screen.getByRole('button', { name: 'Nothing pending · 2 cards' }));
+    expect(screen.getAllByTestId('bill-row')).toHaveLength(3);
+    expect(screen.getByText('Quiet Card ••5')).toBeInTheDocument();
+    expect(screen.getByText('Paid on 8 Oct')).toBeInTheDocument();
+  });
+
+  it('Undo takes back a manual payment mark and says so', async () => {
+    seed([paidManually]);
+    vi.mocked(api.DELETE).mockResolvedValue({ data: paidManually } as never);
+    render();
+    await user().click(await screen.findByRole('button', { name: 'Nothing pending · 1 card' }));
+    await user().click(await screen.findByRole('button', { name: 'Undo' }));
+    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId: 's-paid' } } });
+    await vi.waitFor(() => expect(showToast).toHaveBeenCalledWith('Payment mark removed'));
+  });
+
+  it('a failed undo says what failed', async () => {
+    seed([paidManually]);
+    vi.mocked(api.DELETE).mockRejectedValue(new ApiError(500, { code: 'X', message: 'Nope' }));
+    render();
+    await user().click(await screen.findByRole('button', { name: 'Nothing pending · 1 card' }));
+    await user().click(await screen.findByRole('button', { name: 'Undo' }));
+    await vi.waitFor(() => expect(showToast).toHaveBeenCalledWith('Nope', { tone: 'danger' }));
+  });
+
+  it('one card (accountId): asks the server for that card only; no bill says so', async () => {
+    seed([]);
+    render({ accountId: 'a1' });
+    expect(await screen.findByText('No current bill for this card')).toBeInTheDocument();
+    expect(vi.mocked(api.GET).mock.calls[0][1]).toMatchObject({ params: { query: { accountId: 'a1' } } });
+  });
+
+  it('no cards at all: an empty state that goes to accounts', async () => {
+    seed([]);
+    render();
+    expect(await screen.findByText('No credit cards yet')).toBeInTheDocument();
+    await user().click(screen.getByRole('button', { name: 'Go to accounts' }));
+    expect(push).toHaveBeenCalledWith(expect.stringMatching(/\/accounts$/));
+  });
+
+  it('a link from elsewhere (?card=) highlights that card and opens the group holding it', async () => {
+    search.value = 'card=a-quiet';
+    seed([quiet, open]);
+    render();
+    await screen.findAllByTestId('bill-row');
+    await vi.waitFor(() => expect(screen.getAllByTestId('bill-row')).toHaveLength(2));
+    expect(screen.getAllByTestId('bill-row').find((r) => r.getAttribute('data-account-id') === 'a-quiet')).toBeDefined();
+  });
+
+  it('a failure names it and offers Retry', async () => {
+    vi.mocked(api.GET).mockRejectedValue(new ApiError(500, { code: 'X', message: 'Bills are down' }));
+    render();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Bills are down');
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+});

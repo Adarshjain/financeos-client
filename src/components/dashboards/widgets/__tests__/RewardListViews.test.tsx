@@ -10,12 +10,12 @@ vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
   ),
 }));
 
-import { capTone } from '@/components/dashboards/widgets/cap_headroom/capHeadroom.model';
 import { CapHeadroomView } from '@/components/dashboards/widgets/cap_headroom/CapHeadroomView';
-import { nearestPerCard } from '@/components/dashboards/widgets/milestone_progress/milestoneProgress.model';
 import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone_progress/MilestoneProgressView';
-import { buildRewardsEarned } from '@/components/dashboards/widgets/rewards_earned/rewardsEarned.model';
-import { nativeText, RewardsEarnedView,rewardsRequest } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
+import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
+import { capTone } from '@/features/dashboards/builtins/cap_headroom/capHeadroom.model';
+import { nearestPerCard } from '@/features/dashboards/builtins/milestone_progress/milestoneProgress.model';
+import { buildRewardsEarned, nativeText, rewardsRequest } from '@/features/dashboards/builtins/rewards_earned/rewardsEarned.model';
 import type { ReportData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

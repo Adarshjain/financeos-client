@@ -15,12 +15,12 @@ vi.mock('../InboxBillDialogs', async () => {
   };
 });
 
+import { INBOX_WIDGET_ROW_LIMIT, inboxItemHref, inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRows';
 import { api } from '@/lib/api/client';
 import type { InboxItemResponse, InboxResponse } from '@/lib/api/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { INBOX_WIDGET_ROW_LIMIT, InboxWidget, inboxWidgetRows } from '../InboxWidget';
-import { inboxItemHref } from '../InboxWidgetRow';
+import { InboxWidget } from '../InboxWidget';
 import { action, DISMISS, item, SNOOZE } from './fixtures';
 
 function seed(items: InboxItemResponse[], summary?: InboxResponse['summary']) {

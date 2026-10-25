@@ -51,6 +51,19 @@ export function todayInAppZone(now: Date = new Date()): string {
   }).format(now);
 }
 
+/** The hour of day (0-23) in the app zone. */
+export function hourInAppZone(now: Date = new Date()): number {
+  const hour = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', hour12: false }).format(now);
+  return Number(hour) % 24;
+}
+
+/** "Tuesday 13 Oct": the weekday, day and month of `now` in the app zone. */
+export function weekdayDayMonthInAppZone(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, weekday: 'long', day: 'numeric', month: 'short' }).formatToParts(now);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('weekday')} ${get('day')} ${get('month')}`;
+}
+
 /** The last day a range covers, honouring `endExclusive`. */
 function lastDay(to: DateInput, options?: DateRangeOptions): Date | null {
   const end = toDay(to);

@@ -1,0 +1,148 @@
+'use client';
+
+// The writes of a dashboard page, confirmed the Dinero way (a toast): save the draft (create or update), save one
+// widget's settings straight away, and set or clear the default. Each caches what the server returned, so the
+// page and the list show the saved dashboard before any refetch.
+
+import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { showToast } from '@/components/ds';
+import { api } from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
+import { putWidgets, setDefaultDashboard, storeSavedDashboard, useRestoreHomeDashboard } from '@/lib/query/hooks/useDashboards';
+import { keys } from '@/lib/query/keys';
+
+import type { saveBody } from '../editor/editorState';
+import type { WidgetSettingsChange } from '../frame/WidgetSettingsDialog';
+
+type SaveBody = ReturnType<typeof saveBody>;
+
+/** Refetches the list, the one dashboard and the summary; never the widgets' data or the built-ins catalog. */
+function invalidateDashboardLists(queryClient: QueryClient, id?: string) {
+  void queryClient.invalidateQueries({ queryKey: keys.dashboards.list() });
+  void queryClient.invalidateQueries({ queryKey: keys.dashboards.summary() });
+  if (id) void queryClient.invalidateQueries({ queryKey: keys.dashboards.byId(id) });
+}
+
+export const SAVE_FAILED = "Couldn't save the dashboard. Fix the fields marked in red.";
+
+/** Creates the dashboard (no `id`) or updates it; resolves with the saved one. */
+export function useSaveDashboard() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, body }: { id?: string; body: SaveBody }): Promise<DashboardResponse> => {
+      const res = id
+        ? await api.PUT('/api/v1/dashboards/{id}', { params: { path: { id } }, body })
+        : await api.POST('/api/v1/dashboards', { body });
+      return res.data as DashboardResponse;
+    },
+    onSuccess: (saved, { id }) => {
+      if (id) storeSavedDashboard(queryClient, saved);
+      invalidateDashboardLists(queryClient, saved.id);
+      showToast(id ? 'Dashboard saved' : 'Dashboard created');
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't save the dashboard. Try again."), { tone: 'danger' }),
+  });
+}
+
+/** Saves one widget's params and title as they are shown: the dashboard with only that widget changed. */
+export function useSaveWidgetSettings(dashboard: DashboardResponse | undefined, onSaved: (saved: DashboardResponse) => void) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: ({ widgetId, change }: { widgetId: string; change: WidgetSettingsChange }) => {
+      if (!dashboard) throw new Error('Dashboard not found');
+      const widgets: WidgetResponse[] = dashboard.widgets.map((w) =>
+        w.id === widgetId ? { ...w, ...(change.params ? { params: change.params } : {}), title: change.title } : w,
+      );
+      return putWidgets(dashboard, widgets);
+    },
+    onSuccess: (saved) => {
+      storeSavedDashboard(queryClient, saved);
+      onSaved(saved);
+    },
+  });
+  // Rejects on failure: the settings dialog reports it and stays open.
+  return (widgetId: string, change: WidgetSettingsChange) => mutation.mutateAsync({ widgetId, change }).then(() => undefined);
+}
+
+/** Sets this dashboard as the default, or clears it when it already is. */
+export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setDefaultDashboard,
+    onSuccess: (res, vars) => {
+      invalidateDashboardLists(queryClient, (res.data as DashboardResponse | undefined)?.id ?? vars.id);
+      if (res.data) onSaved(res.data as DashboardResponse);
+      showToast(vars.makeDefault ? 'Set as default' : 'Default cleared');
+    },
+    onError: (e) =>
+      showToast(e instanceof Error ? e.message : 'Could not change the default dashboard. Try again.', { tone: 'danger' }),
+  });
+}
+
+/** Deletes a dashboard (the page confirms first); its saved reports stay. */
+export function useDeleteDashboard() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } }),
+    onSuccess: (_res, id) => {
+      invalidateDashboardLists(queryClient, id);
+      showToast('Dashboard deleted');
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't delete the dashboard. Try again."), { tone: 'danger' }),
+  });
+}
+
+/** Brings back the seeded Home dashboard as the default; a failure's toast offers Retry. */
+export function useRestoreHome(onRestored?: () => void) {
+  const restore = useRestoreHomeDashboard();
+  const run = () =>
+    restore.mutate(undefined, {
+      onSuccess: () => {
+        showToast('Home dashboard restored');
+        onRestored?.();
+      },
+      onError: () => showToast("Couldn't restore Home. Try again.", { tone: 'danger', action: { label: 'Retry', onSelect: run } }),
+    });
+  return { restore: run, pending: restore.isPending };
+}
+
+function readLatestDashboard(queryClient: QueryClient, id: string): DashboardResponse | undefined {
+  return (
+    queryClient.getQueryData<DashboardResponse[]>(keys.dashboards.list())?.find((d) => d.id === id) ??
+    queryClient.getQueryData<DashboardResponse>(keys.dashboards.byId(id))
+  );
+}
+
+/** Adds a widget to a dashboard and saves it straight away; the toast's Undo removes that widget and saves again. */
+export function useAddWidgetNow() {
+  const queryClient = useQueryClient();
+  const removeWidget = useMutation({
+    mutationFn: ({ dashboardId, widgetIds }: { dashboardId: string; widgetIds: string[] }) => {
+      const latest = readLatestDashboard(queryClient, dashboardId);
+      if (!latest) throw new Error('Dashboard not found');
+      return putWidgets(latest, latest.widgets.filter((w) => !widgetIds.includes(w.id)));
+    },
+    onSuccess: (saved) => storeSavedDashboard(queryClient, saved),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't remove the widget. Try again."), { tone: 'danger' }),
+  });
+  return useMutation({
+    mutationFn: async ({ dashboard, widget }: { dashboard: DashboardResponse; widget: WidgetResponse }) => {
+      // The latest saved dashboard, not the snapshot the click saw (a quick second add or a settings save may have landed since).
+      const latest = readLatestDashboard(queryClient, dashboard.id) ?? dashboard;
+      const saved = await putWidgets(latest, [...latest.widgets, widget]);
+      return { saved, before: latest.widgets.map((w) => w.id) };
+    },
+    onSuccess: ({ saved, before: beforeIds }) => {
+      storeSavedDashboard(queryClient, saved);
+      // The widgets that were not there before (by id, in case the server numbered the new one itself).
+      const before = new Set(beforeIds);
+      const widgetIds = saved.widgets.filter((w) => !before.has(w.id)).map((w) => w.id);
+      showToast(`Widget added to ${saved.name}`, {
+        action: { label: 'Undo', onSelect: () => removeWidget.mutate({ dashboardId: saved.id, widgetIds }) },
+      });
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't add the widget. Try again."), { tone: 'danger' }),
+  });
+}

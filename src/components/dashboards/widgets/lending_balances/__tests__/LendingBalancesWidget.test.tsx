@@ -20,11 +20,12 @@ vi.mock('@/components/shortcuts/actions', () => ({
   useActionLauncher: () => ({ ...launcher, dialog: <div data-testid="launcher-dialog" /> }),
 }));
 
+import { LENDING_BALANCES_TOP } from '@/features/dashboards/builtins/lending_balances/lendingBalances';
 import { api } from '@/lib/api/client';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { LENDING_BALANCES_TOP, LendingBalancesWidget } from '../LendingBalancesWidget';
+import { LendingBalancesWidget } from '../LendingBalancesWidget';
 
 const person = (id: string, name: string, netPosition: number): CounterpartyResponse => ({
   id, name, netPosition, entryCount: 2, linkedEntryCount: 0, totalLent: 0, totalBorrowed: 0, repaidByYou: 0, repaidToYou: 0,

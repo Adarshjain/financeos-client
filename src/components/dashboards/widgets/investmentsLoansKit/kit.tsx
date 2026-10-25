@@ -11,17 +11,9 @@ import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { FilterClause, RunReportRequest } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 // ------------------------------------------------------------------ numbers & dates
-
-/** A wire number (number or decimal string) as a number; null when absent or not a number. */
-export function num(value: number | string | null | undefined): number | null {
-  if (value === null || value === undefined || value === '') return null;
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-}
 
 const WHOLE_RUPEES = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 
@@ -61,39 +53,8 @@ export function dayMonth(iso: string | null | undefined): string {
   return isoToDisplay(iso).slice(0, 5);
 }
 
-// ------------------------------------------------------------------ drills
-
-/** Open holdings' current value as a KPI: the portfolio value, or one asset class's share of it. */
-export function positionsValueRequest(extra: FilterClause[] = []): RunReportRequest {
-  return {
-    type: 'KPI',
-    datasource: 'positions',
-    definition: {
-      measure: 'currentValue',
-      aggregation: 'sum',
-      // Same filter as the allocation template: open holdings only.
-      filters: [{ field: 'isOpen', operator: 'is', value: true }, ...extra],
-      comparison: { enabled: false },
-    },
-  };
-}
-
-/** Equity-oriented gains booked this financial year for one term ('short' | 'long'). */
-export function bookedGainsRequest(term: 'short' | 'long'): RunReportRequest {
-  return {
-    type: 'KPI',
-    datasource: 'realized_lots',
-    definition: {
-      measure: 'realizedPnl',
-      aggregation: 'sum',
-      filters: [
-        { field: 'sellDate', operator: 'current_fy' },
-        { field: 'term', operator: 'is', value: term },
-        { field: 'taxClass', operator: 'is', value: 'EQUITY_ORIENTED' },
-      ],
-    },
-  };
-}
+// Drill requests and `num` live in the features area; re-exported so the Legacy widgets keep their imports.
+export { bookedGainsRequest, num, positionsValueRequest } from '@/features/dashboards/builtins/investmentsLoansData';
 
 // ------------------------------------------------------------------ pieces
 
