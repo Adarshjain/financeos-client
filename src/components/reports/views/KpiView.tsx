@@ -18,9 +18,9 @@
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { formatComparedRange, formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import type { KpiData } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 import { cn } from '@/lib/utils';
 
 const directionIcons = {

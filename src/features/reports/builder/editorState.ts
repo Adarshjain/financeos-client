@@ -46,7 +46,7 @@ export function initialEditorState({ catalog, report, templateId }: EditorInit):
   const fromTemplate = template ? templateState(template, catalog) : null;
   if (fromTemplate) return fromTemplate;
   const first = catalog.datasources[0]?.name ?? 'transactions';
-  return prefillSoleMeasure(initialBuilderState('KPI', workingCatalog(catalog, first), first), workingCatalog(catalog, first));
+  return prefillSoleMeasure(initialBuilderState('KPI', workingCatalog(catalog, first), first, false), workingCatalog(catalog, first));
 }
 
 type Measure = { field?: string; aggregation?: Aggregation };
@@ -93,6 +93,8 @@ export function makeEditorReducer(catalog: ReportCatalog) {
       const rest = next.chart.columns.filter((c) => c !== 'change');
       next = { ...next, chart: { ...next.chart, columns: rest.length > 0 ? rest : undefined } };
     }
+    // A datasource change restarts the KPI; the /ds editor's restart has its comparison off (Comparison: None).
+    if (action.type === 'SET_DATASOURCE' && next !== state) next = { ...next, kpi: { ...next.kpi, comparisonEnabled: false } };
     return action.type === 'SET_TYPE' || action.type === 'SET_DATASOURCE'
       ? prefillSoleMeasure(next, workingCatalog(catalog, next.datasource))
       : next;

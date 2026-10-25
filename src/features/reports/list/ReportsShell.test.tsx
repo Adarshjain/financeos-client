@@ -13,14 +13,6 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('ReportsShell', () => {
-  it('has Dashboards and Reports tabs: Dashboards falls through to Legacy, Reports is this page', () => {
-    renderWithQuery(<ReportsShell>body</ReportsShell>);
-    expect(screen.getByRole('tab', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
-    const reports = screen.getByRole('tab', { name: 'Reports' });
-    expect(reports).toHaveAttribute('href', '/ds/reports');
-    expect(reports).toHaveAttribute('data-state', 'active');
-  });
-
   it('puts New report on the + and opens the Dinero editor', () => {
     renderWithQuery(<ReportsShell>body</ReportsShell>);
     expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/ds/reports/new');

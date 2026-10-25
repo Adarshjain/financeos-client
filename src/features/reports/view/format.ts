@@ -2,7 +2,3 @@
 export const PAGE_SIZES = [10, 25, 50, 100];
 export const DEFAULT_PAGE_SIZE = 50;
 
-/** "+₹6,100" / "-₹6,100": a change with its sign always shown. */
-export function signed(text: string, value: number): string {
-  return value > 0 ? `+${text}` : text;
-}

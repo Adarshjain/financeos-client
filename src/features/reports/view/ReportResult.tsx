@@ -6,7 +6,6 @@ import React from 'react';
 import { createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
 import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
 import type {
@@ -20,10 +19,11 @@ import type {
   TableColumn,
   TableData,
 } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
+import { signed } from '@/lib/reports/signed';
 
-import { BreakdownView } from './BreakdownView';
 import { formatCell } from './cells';
-import { PAGE_SIZES, signed } from './format';
+import { PAGE_SIZES } from './format';
 
 /** A raw table cell as the preview prints it: numbers as {@link previewValue}, everything else as the table does. */
 function cellText(value: unknown, column: TableColumn, catalog: DatasourceCatalog | undefined): string {
@@ -278,21 +278,18 @@ function ChartResult({
 }) {
   // A count is never money, even a count of an amount field.
   const money = data.measure?.aggregation === 'count' ? false : moneyOf(catalog, data.measure?.field ?? '');
-  if (data.chartType === 'breakdown') {
-    return (
-      <BreakdownView
-        data={data}
-        money={money}
-        columns={definition?.columns}
-        bars={definition?.bars}
-        higherIsBetter={definition?.comparison?.higherIsBetter}
-        rowsLabel={fieldOf(catalog, data.dimension)?.label}
-        onOpenRow={onOpenBreakdownRow}
-        canOpenRow={canOpenBreakdownRow}
-      />
-    );
-  }
-  return <Chart data={data} money={money} />;
+  return (
+    <Chart
+      data={data}
+      money={money}
+      columns={definition?.columns}
+      bars={definition?.bars}
+      higherIsBetter={definition?.comparison?.higherIsBetter}
+      rowsLabel={fieldOf(catalog, data.dimension)?.label}
+      onOpenRow={onOpenBreakdownRow}
+      canOpenRow={canOpenBreakdownRow}
+    />
+  );
 }
 
 /** A report's result as the preview shows it: KPI tile, chart, breakdown list or table, by the data's type. */

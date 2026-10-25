@@ -4,13 +4,13 @@ import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 import {
   areaOf,
-  datasourceOptions,
   filterRows,
   parseReportsType,
   reportRow,
   reportRows,
   reportsUrl,
   templateHref,
+  typeCounts,
 } from './reportsList';
 
 const report = (over: Partial<ReportSummaryResponse> = {}): ReportSummaryResponse => ({
@@ -32,6 +32,11 @@ describe('type filter in the URL', () => {
     expect(parseReportsType({ type: 'CHART' })).toBe('CHART');
     expect(parseReportsType({ type: 'chart' })).toBeUndefined();
     expect(parseReportsType({})).toBeUndefined();
+  });
+
+  it('reads Breakdown, which is a chart subtype but its own chip', () => {
+    expect(parseReportsType({ type: 'BREAKDOWN' })).toBe('BREAKDOWN');
+    expect(reportsUrl('BREAKDOWN')).toMatch(/\?type=BREAKDOWN$/);
   });
 
   it('keeps All out of the query string', () => {
@@ -76,18 +81,28 @@ describe('reportRow', () => {
     expect(reportRow(report({ updatedAt: yesterday.toISOString() }), labels).updated).toBe('yesterday');
   });
 
-  it('falls back to the datasource name and an em dash when nothing is known', () => {
+  it('falls back to the datasource name and None when nothing is known', () => {
     const row = reportRow(report({ datasource: 'mystery' }), {});
     expect(row.datasourceLabel).toBe('mystery');
-    expect(row.onDashboards).toBe('—');
+    expect(row.onDashboards).toBe('None');
   });
 
-  it('writes the phone line as datasource then where it is used', () => {
-    expect(reportRow(report(), labels).phoneSub).toBe('Transactions');
-    expect(reportRow(report({ dashboards: [{ id: 'd1', name: 'Home' }] }), labels).phoneSub).toBe('Transactions · on Home');
-    expect(
-      reportRow(report({ dashboards: [{ id: 'd1', name: 'Home' }, { id: 'd2', name: 'Money' }] }), labels).phoneSub,
-    ).toBe('Transactions · on 2 dashboards');
+  it('writes the phone line as type, datasource, where it is used, then the updated day', () => {
+    const now = new Date().toISOString();
+    const line = (over: Partial<ReportSummaryResponse>) => reportRow(report({ updatedAt: now, ...over }), labels).phoneSub;
+    expect(line({})).toBe('KPI · Transactions · updated today');
+    expect(line({ dashboards: [{ id: 'd1', name: 'Home' }] })).toBe('KPI · Transactions · on Home · updated today');
+    expect(line({ type: 'CHART', chartType: 'bar', dashboards: [{ id: 'd1', name: 'Home' }, { id: 'd2', name: 'Money' }] })).toBe(
+      'Bar · Transactions · on 2 dashboards · updated today',
+    );
+  });
+
+  it('puts a breakdown under its own kind, apart from other charts', () => {
+    expect(reportRow(report({ type: 'CHART', chartType: 'breakdown' }), labels).kind).toBe('BREAKDOWN');
+    expect(reportRow(report({ type: 'CHART', chartType: 'bar' }), labels).kind).toBe('CHART');
+    expect(reportRow(report({ type: 'CHART', chartType: null }), labels).kind).toBe('CHART');
+    expect(reportRow(report({ type: 'KPI' }), labels).kind).toBe('KPI');
+    expect(reportRow(report({ type: 'TABLE' }), labels).kind).toBe('TABLE');
   });
 
   it('keeps a description only when it has text', () => {
@@ -122,24 +137,45 @@ describe('filters', () => {
     labels,
   );
 
-  it('lists the datasources in use, by label', () => {
-    expect(datasourceOptions(rows)).toEqual([
-      { value: 'net_worth', label: 'Net worth' },
-      { value: 'positions', label: 'Positions' },
-      { value: 'transactions', label: 'Transactions' },
-    ]);
-  });
-
   it('searches every word over name, description and datasource', () => {
-    expect(filterRows(rows, 'dining', []).map((r) => r.id)).toEqual(['a']);
-    expect(filterRows(rows, 'spend  CATEGORY', []).map((r) => r.id)).toEqual(['a']);
-    expect(filterRows(rows, 'positions', []).map((r) => r.id)).toEqual(['c']);
-    expect(filterRows(rows, 'nothing here', [])).toEqual([]);
+    expect(filterRows(rows, 'dining').map((r) => r.id)).toEqual(['a']);
+    expect(filterRows(rows, 'spend  CATEGORY').map((r) => r.id)).toEqual(['a']);
+    expect(filterRows(rows, 'positions').map((r) => r.id)).toEqual(['c']);
+    expect(filterRows(rows, 'nothing here')).toEqual([]);
   });
 
-  it('narrows to the chosen datasources, together with the search', () => {
-    expect(filterRows(rows, '', ['net_worth', 'positions']).map((r) => r.id)).toEqual(['b', 'c']);
-    expect(filterRows(rows, 'worth', ['positions'])).toEqual([]);
+  it('narrows to the chosen type, together with the search', () => {
+    const typed = reportRows(
+      [
+        report({ id: 'k', name: 'Spend KPI' }),
+        report({ id: 'c', name: 'Spend chart', type: 'CHART', chartType: 'bar' }),
+        report({ id: 'b', name: 'Spend breakdown', type: 'CHART', chartType: 'breakdown' }),
+        report({ id: 't', name: 'Spend table', type: 'TABLE' }),
+      ],
+      labels,
+    );
+    expect(filterRows(typed, '', 'CHART').map((r) => r.id)).toEqual(['c']);
+    expect(filterRows(typed, '', 'BREAKDOWN').map((r) => r.id)).toEqual(['b']);
+    expect(filterRows(typed, 'table', 'TABLE').map((r) => r.id)).toEqual(['t']);
+    expect(filterRows(typed, 'table', 'KPI')).toEqual([]);
+    expect(filterRows(typed, '').map((r) => r.id)).toEqual(['b', 'c', 'k', 't']);
+  });
+});
+
+describe('typeCounts', () => {
+  it('counts every report under its chip, Breakdown apart from Chart', () => {
+    const rows = reportRows(
+      [
+        report({ id: 'k1' }),
+        report({ id: 'k2' }),
+        report({ id: 'c', type: 'CHART', chartType: 'line' }),
+        report({ id: 'b', type: 'CHART', chartType: 'breakdown' }),
+        report({ id: 't', type: 'TABLE' }),
+      ],
+      labels,
+    );
+    expect(typeCounts(rows)).toEqual({ KPI: 2, CHART: 1, BREAKDOWN: 1, TABLE: 1 });
+    expect(typeCounts([])).toEqual({ KPI: 0, CHART: 0, BREAKDOWN: 0, TABLE: 0 });
   });
 });
 

@@ -49,9 +49,21 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     await expect(page.getByRole('tab', { name: 'Reports' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'New report' })).toBeVisible();
 
-    // A type chip is a URL, answered by the server.
-    await page.getByRole('button', { name: 'Table', exact: true }).click();
+    // The tabs and the type chips carry counts over every report.
+    // (A new user also gets a starter report, so the totals are not hard-coded.)
+    const reportsTab = page.getByRole('tab', { name: /^Reports\s*·\s*\d+$/ });
+    await expect(reportsTab).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Dashboards\s*·\s*\d+$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^KPI\s*1$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Table\s*1$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Datasource/ })).toHaveCount(0);
+
+    // A type chip is a URL, applied to the loaded list.
+    await page.getByRole('button', { name: /^Table\s*1$/ }).click();
     await expect(page).toHaveURL(/\/ds\/reports\?type=TABLE/);
+    // The counts do not change with the chip.
+    await expect(page.getByRole('button', { name: /^KPI\s*1$/ })).toBeVisible();
+    await expect(reportsTab).toBeVisible();
     await expect(
       table.getByText('Ds Spend Table', { exact: true })
     ).toBeVisible();
@@ -62,6 +74,11 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     await expect(
       table.getByText('Ds Spend KPI', { exact: true })
     ).toBeVisible();
+
+    // Ask the data lives in the Ask instead card (the rail's link of the same name comes first).
+    const ask = page.getByRole('link', { name: 'Ask the data' }).last();
+    await expect(page.getByText('Ask instead', { exact: true })).toBeVisible();
+    await expect(ask).toHaveAttribute('href', /\/chat$/);
 
     // Search narrows the loaded list.
     await page.getByPlaceholder('Search reports').fill('KPI');

@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import {
@@ -16,22 +15,22 @@ import {
   Icon,
   Menu,
   MenuItem,
-  Select,
   Text,
   TextField,
 } from '@/components/ds';
-import type { ReportType } from '@/lib/reports.types';
 
 import { AddToDashboardDialog } from './AddToDashboardDialog';
 import { ReportsAside } from './ReportsAside';
 import {
-  CHAT_HREF,
-  datasourceOptions,
   filterRows,
+  parseReportsType,
+  type ReportKind,
   type ReportRow,
   reportsUrl,
   TYPE_CHIPS,
+  typeCounts,
 } from './reportsList';
+import { ReportsTabs } from './ReportsTabs';
 import { useReportActions } from './useReportActions';
 
 /** A press on a control inside a row must not also open the row. */
@@ -49,7 +48,7 @@ interface RowActions {
   duplicating: boolean;
 }
 
-/** The ⋯ menu of a report: on a desktop row it is the last cell, on a phone row it sits under the lines. */
+/** The ⋯ menu of a report: the last cell of the row, at the trailing edge on desktop and phone. */
 function RowMenu({ row, actions }: { row: ReportRow; actions: RowActions }) {
   return (
     <Menu
@@ -90,15 +89,20 @@ function makeColumns(actions: RowActions) {
               </Text>
             </div>
           ) : null}
+          <div className="desk:hidden min-w-0">
+            <Text variant="caption" tone="ink-3" truncate>
+              {row.original.phoneSub}
+            </Text>
+          </div>
         </div>
       ),
     }),
     ch.display({
       id: 'type',
       header: 'Type',
-      meta: { size: 'sm', phone: 'status' },
+      meta: { size: 'md', phone: 'hidden' },
       cell: ({ row }) => (
-        <Badge variant="outline" tone="neutral" size="sm">
+        <Badge tone="neutral" size="md">
           {row.original.typeLabel}
         </Badge>
       ),
@@ -108,7 +112,7 @@ function makeColumns(actions: RowActions) {
       header: 'Datasource',
       meta: { size: 'lg', phone: 'hidden' },
       cell: ({ row }) => (
-        <Text variant="body" tone="ink-3" truncate>
+        <Text variant="body" tone="ink-2" truncate>
           {row.original.datasourceLabel}
         </Text>
       ),
@@ -136,9 +140,15 @@ function makeColumns(actions: RowActions) {
     ch.display({
       id: 'actions',
       header: '',
-      meta: { size: 'xs', align: 'end', phone: 'hidden' },
+      meta: { size: 'xs', align: 'end', phone: 'amount' },
       cell: ({ row }) => (
-        <div className="flex justify-end" onPointerDown={stop} onPointerUp={stop} onClick={stop} onKeyDown={stop}>
+        <div
+          className="flex h-full items-center justify-end"
+          onPointerDown={stop}
+          onPointerUp={stop}
+          onClick={stop}
+          onKeyDown={stop}
+        >
           <RowMenu row={row.original} actions={actions} />
         </div>
       ),
@@ -147,24 +157,39 @@ function makeColumns(actions: RowActions) {
 }
 
 export interface ReportsScreenProps {
-  /** The type filter from the URL (`?type=`), already applied by the server. */
-  type?: ReportType;
+  /** The type filter from the URL (`?type=`) at load. It is client state after that: the chips change it and the URL without a server round trip. */
+  type?: ReportKind;
+  /** How many dashboards there are (loaded with the list); the tab shows no count when unknown. */
+  dashboards?: number;
   /** The reports in board order: grouped by area. */
   rows: ReportRow[];
 }
 
-/** The Reports list: type chips, search and the Datasource filter over the grouped table, then templates and Ask instead. */
-export function ReportsScreen({ type, rows }: ReportsScreenProps) {
+/** The Reports list: tabs, then search and the type chips in one row over the grouped table, then templates and Ask instead. */
+export function ReportsScreen({ type: initialType, dashboards, rows }: ReportsScreenProps) {
   const router = useRouter();
   const actions = useReportActions();
   const [search, setSearch] = React.useState('');
-  const [datasources, setDatasources] = React.useState<string[]>([]);
+  const [type, setTypeState] = React.useState<ReportKind | undefined>(initialType);
+  // Back/forward (or any other URL change) after load brings the chip with it.
+  const urlType = useSearchParams()?.get('type') ?? undefined;
+  const seenUrlType = React.useRef(urlType);
+  React.useEffect(() => {
+    if (seenUrlType.current === urlType) return;
+    seenUrlType.current = urlType;
+    setTypeState(parseReportsType({ type: urlType }));
+  }, [urlType]);
+  /** Filtering is client-side: set the chip and the URL (shareable, reload-safe) without asking the server again. */
+  const setType = (next?: ReportKind) => {
+    setTypeState(next);
+    window.history.replaceState(null, '', reportsUrl(next));
+  };
   const [deleting, setDeleting] = React.useState<ReportRow | null>(null);
   const [adding, setAdding] = React.useState<ReportRow | null>(null);
 
-  const visible = React.useMemo(() => filterRows(rows, search, datasources), [rows, search, datasources]);
-  const filtered = search.trim() !== '' || datasources.length > 0;
-  const options = React.useMemo(() => datasourceOptions(rows), [rows]);
+  const visible = React.useMemo(() => filterRows(rows, search, type), [rows, search, type]);
+  const counts = React.useMemo(() => typeCounts(rows), [rows]);
+  const filtered = search.trim() !== '';
 
   const rowActions = React.useMemo<RowActions>(
     () => ({
@@ -180,8 +205,7 @@ export function ReportsScreen({ type, rows }: ReportsScreenProps) {
 
   const clearFilters = () => {
     setSearch('');
-    setDatasources([]);
-    if (type) router.push(reportsUrl(), { scroll: false });
+    if (type) setType(undefined);
   };
 
   const emptyDescription = rows.length === 0 && !type
@@ -190,19 +214,13 @@ export function ReportsScreen({ type, rows }: ReportsScreenProps) {
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex desk:justify-end">
-        <Button asChild variant="secondary" className="max-desk:w-full">
-          <Link href={CHAT_HREF} prefetch={false}>
-            Ask the data
-          </Link>
-        </Button>
-      </div>
+      <ReportsTabs dashboards={dashboards} reports={rows.length} />
 
-      <div className="flex flex-col gap-space-8 desk:flex-row desk:items-center">
+      <div className="-mx-space-16 -mt-space-4 -mb-space-8 flex gap-space-8 overflow-x-auto px-space-16 py-space-4 scrollbar-none desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4">
         <TextField
           type="search"
           size="md"
-          className="desk:w-container-xs"
+          className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
           prefix={<Icon name="search" size="sm" />}
           clearable
           clearLabel="Clear search"
@@ -210,41 +228,27 @@ export function ReportsScreen({ type, rows }: ReportsScreenProps) {
           value={search}
           onValueChange={setSearch}
         />
-        <div className="flex gap-space-8 overflow-x-auto">
-          <div className="shrink-0">
-            <FilterChip selected={!type} onSelectedChange={() => router.push(reportsUrl(), { scroll: false })}>
-              All
-            </FilterChip>
-          </div>
+        <div className="flex shrink-0 gap-space-8">
+          <FilterChip
+            size="md"
+            shape="rounded"
+            selected={!type}
+            onSelectedChange={() => setType(undefined)}
+          >
+            All
+          </FilterChip>
           {TYPE_CHIPS.map((chip) => (
-            <div key={chip.type} className="shrink-0">
-              <FilterChip
-                selected={type === chip.type}
-                onSelectedChange={() => router.push(reportsUrl(chip.type), { scroll: false })}
-              >
-                {chip.label}
-              </FilterChip>
-            </div>
+            <FilterChip
+              key={chip.type}
+              size="md"
+              shape="rounded"
+              selected={type === chip.type}
+              count={counts[chip.type]}
+              onSelectedChange={() => setType(chip.type)}
+            >
+              {chip.label}
+            </FilterChip>
           ))}
-          <div className="shrink-0">
-            <Select
-              multiple
-              searchable
-              searchPlaceholder="Search datasources"
-              options={options}
-              value={datasources}
-              onValueChange={(v) => setDatasources(v as string[])}
-              trigger={
-                <FilterChip
-                  hasDropdown
-                  selected={datasources.length > 0}
-                  count={datasources.length > 0 ? datasources.length : undefined}
-                >
-                  Datasource
-                </FilterChip>
-              }
-            />
-          </div>
         </div>
       </div>
 
@@ -254,8 +258,6 @@ export function ReportsScreen({ type, rows }: ReportsScreenProps) {
           data={visible}
           getRowId={(row) => row.id}
           band={(row) => ({ key: row.areaId, label: row.areaLabel })}
-          phoneSub={(row) => row.phoneSub}
-          phoneActions={(row) => <RowMenu row={row} actions={rowActions} />}
           onRowSelect={(row) => router.push(row.href)}
           empty={
             <EmptyState
@@ -310,8 +312,11 @@ export function ReportsScreen({ type, rows }: ReportsScreenProps) {
 /** The list while the page loads. */
 export function ReportsListSkeleton() {
   return (
-    <Card>
+    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <ReportsTabs />
+      <Card>
       <DataTable columns={makeColumns({ onEdit: noop, onDuplicate: noop, onAddToDashboard: noop, onDelete: noop, duplicating: false })} data={[]} getRowId={(row) => row.id} loading skeletonRows={6} />
-    </Card>
+      </Card>
+    </div>
   );
 }

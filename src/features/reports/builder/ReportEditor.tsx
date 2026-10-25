@@ -1,17 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, ConfirmDialog, Icon, Menu, MenuItem, showToast, Text, TextField } from '@/components/ds';
-import { NEW_REPORT_HREF, reportHref, REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { ConfirmDialog, showToast } from '@/components/ds';
+import { reportHref, REPORTS_HREF } from '@/features/reports/list/reportsList';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { ReportCatalog, ReportData, ReportResponse } from '@/lib/reports.types';
 
+import type { BuilderAction } from './builderReducer';
+import { EditorActions } from './EditorActions';
 import { initialEditorState, makeEditorReducer, snapshot, workingCatalog } from './editorState';
-import { FORMAT_NAMES } from './options';
 import { ReportConfigCard } from './ReportConfigCard';
 import { ReportPreviewCard } from './ReportPreviewCard';
 import { buildCreateRequest, buildRunRequest, buildUpdateRequest, validationIssues } from './serialize';
@@ -129,6 +129,15 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     if (ready()) createCopy('Saved as a new report');
   };
 
+  /** Changing the report type starts the preview over: the old result belongs to the old type. */
+  const dispatchDraft = (action: BuilderAction) => {
+    dispatch(action);
+    if (action.type === 'SET_TYPE') {
+      preview.clear();
+      setShowIssues(false);
+    }
+  };
+
   const title = edit ? savedName : 'New report';
   const missing = showIssues ? issues.map((i) => i.message) : [];
 
@@ -137,73 +146,33 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
       crumb="Insights / Reports"
       title={title}
       backHref={REPORTS_HREF}
-      addHref={NEW_REPORT_HREF}
-      addLabel="New report"
     >
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
-        <div className="flex flex-col gap-space-12 desk:flex-row desk:items-start desk:justify-between">
-          <div className="flex flex-col gap-space-4 desk:flex-1 desk:max-w-container-md">
-            <TextField
-              size="xl"
-              aria-label="Report name"
-              placeholder="Report name"
-              value={state.name}
-              error={nameTried && state.name.trim() === '' ? 'Give the report a name.' : undefined}
-              onValueChange={(value) => dispatch({ type: 'SET_NAME', value })}
-            />
-            <div className="flex flex-wrap items-center gap-x-space-8">
-              <Text variant="caption" tone="ink-3">
-                {FORMAT_NAMES[state.type]} · {allDatasources.datasources.find((d) => d.name === state.datasource)?.label ?? state.datasource}
-              </Text>
-              {dirty ? (
-                <Text variant="caption" tone="warning">
-                  Unsaved changes
-                </Text>
-              ) : null}
-            </div>
-          </div>
-          <div className="flex items-center gap-space-8">
-            <Button asChild variant="secondary" className="flex-1 desk:flex-none">
-              <Link href={REPORTS_HREF}>Cancel</Link>
-            </Button>
-            <Button variant="primary" className="flex-1 desk:flex-none" loading={saving} onClick={save}>
-              Save report
-            </Button>
-            {edit ? (
-              <Menu
-                align="end"
-                trigger={
-                  <Button variant="secondary" iconOnly aria-label="More actions">
-                    <Icon name="more" size="sm" />
-                  </Button>
-                }
-              >
-                <MenuItem disabled={saving} onSelect={saveAsNew}>
-                  Save as new
-                </MenuItem>
-                <MenuItem disabled={actions.duplicate.isPending} onSelect={() => actions.duplicate.mutate(state.reportId as string)}>
-                  Duplicate
-                </MenuItem>
-                <MenuItem destructive onSelect={() => setDeleting(true)}>
-                  Delete
-                </MenuItem>
-              </Menu>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col pb-space-48">
+        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-space-24 desk:gap-space-16">
           <ReportConfigCard
             allDatasources={allDatasources}
             catalog={catalog}
             dynamicOptions={dynamicOptions}
             state={state}
-            dispatch={dispatch}
+            dispatch={dispatchDraft}
             issues={showIssues ? firstPerKey(issues) : {}}
+            nameError={nameTried && state.name.trim() === '' ? 'Give the report a name.' : undefined}
           />
           <ReportPreviewCard preview={preview} catalog={catalog} missing={missing} onPreview={runPreview} />
         </div>
       </div>
+
+      <EditorActions
+        dirty={dirty}
+        edit={edit}
+        saving={saving}
+        duplicating={actions.duplicate.isPending}
+        onCancel={() => guard.requestLeave(REPORTS_HREF)}
+        onSave={save}
+        onSaveAsNew={saveAsNew}
+        onDuplicate={() => actions.duplicate.mutate(state.reportId as string)}
+        onDelete={() => setDeleting(true)}
+      />
 
       {guard.pendingHref ? (
         <ConfirmDialog

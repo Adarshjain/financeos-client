@@ -14,14 +14,6 @@ export const FORMAT_OPTIONS: { value: ReportType; label: string }[] = [
   { value: 'TABLE', label: 'Table' },
 ];
 
-export const FORMAT_HINTS: Record<ReportType, string> = {
-  KPI: 'One figure, optionally compared with the previous period.',
-  CHART: 'A measure over a dimension, as a chart or a ranked breakdown.',
-  TABLE: 'Rows of data, as they are or grouped and pivoted.',
-};
-
-export const FORMAT_NAMES: Record<ReportType, string> = { KPI: 'KPI', CHART: 'Chart', TABLE: 'Table' };
-
 /** Every chart subtype, in the order the Chart type select lists them. */
 export const CHART_TYPE_ALL: Record<ChartDefinition['chartType'], string> = { ...CHART_TYPE_LABELS, breakdown: 'Breakdown' };
 

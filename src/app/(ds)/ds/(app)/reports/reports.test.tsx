@@ -21,11 +21,12 @@ vi.mock('@/lib/query/hooks/useDashboards', () => ({
   storeSavedDashboard: vi.fn(),
 }));
 
-const loadReportsList = vi.fn<(type?: string) => Promise<Loaded<ReportsListData>>>();
-vi.mock('@/features/reports/list/reportsListData', () => ({ loadReportsList: (t?: string) => loadReportsList(t) }));
+const loadReportsList = vi.fn<() => Promise<Loaded<ReportsListData>>>();
+vi.mock('@/features/reports/list/reportsListData', () => ({ loadReportsList: () => loadReportsList() }));
 
 const data: ReportsListData = {
   datasourceLabels: { transactions: 'Transactions' },
+  dashboardCount: 4,
   reports: [
     {
       id: 'r1',
@@ -43,18 +44,27 @@ const data: ReportsListData = {
 beforeEach(() => vi.clearAllMocks());
 
 describe('/ds/reports', () => {
-  it('asks the server for the type in the URL, before the first render', async () => {
+  it('loads every report once, before the first render, and applies the type in the URL to it', async () => {
     loadReportsList.mockResolvedValue({ ok: true, data });
     renderWithQuery(await ReportsPage({ searchParams: Promise.resolve({ type: 'KPI' }) }));
     expect(loadReportsList).toHaveBeenCalledTimes(1);
-    expect(loadReportsList).toHaveBeenCalledWith('KPI');
+    expect(loadReportsList).toHaveBeenCalledWith();
     expect(screen.getByText('Spend this month')).toBeInTheDocument();
+    // The dashboards count comes with the list, not from a client fetch.
+    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*4$/ })).toBeInTheDocument();
+  });
+
+  it('shows no report of another type than the one in the URL', async () => {
+    loadReportsList.mockResolvedValue({ ok: true, data });
+    renderWithQuery(await ReportsPage({ searchParams: Promise.resolve({ type: 'TABLE' }) }));
+    expect(screen.queryByText('Spend this month')).toBeNull();
+    expect(screen.getByText('No reports match.')).toBeInTheDocument();
   });
 
   it('treats an unknown type as All', async () => {
     loadReportsList.mockResolvedValue({ ok: true, data });
-    await ReportsPage({ searchParams: Promise.resolve({ type: 'bogus' }) });
-    expect(loadReportsList).toHaveBeenCalledWith(undefined);
+    renderWithQuery(await ReportsPage({ searchParams: Promise.resolve({ type: 'bogus' }) }));
+    expect(screen.getByText('Spend this month')).toBeInTheDocument();
   });
 
   it('says what failed and offers Try again when the list does not load', async () => {
@@ -65,14 +75,15 @@ describe('/ds/reports', () => {
     expect(screen.getByText(/req-42/)).toBeInTheDocument();
   });
 
-  it('wraps the page in the Reports frame with its tabs', () => {
+  it('wraps the page in the Reports frame with the New report +', () => {
     renderWithQuery(<Layout>body</Layout>);
-    expect(screen.getByRole('tab', { name: 'Reports' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'New report' })).toBeInTheDocument();
     expect(screen.getByText('body')).toBeInTheDocument();
   });
 
-  it('shows the table frame while loading', () => {
+  it('shows the tabs and the table frame while loading', () => {
     renderWithQuery(<Loading />);
+    expect(screen.getByRole('tab', { name: 'Reports' })).toBeInTheDocument();
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
 });

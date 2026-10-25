@@ -2,15 +2,17 @@
 
 import React from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, ProgressBar, Text } from '@/components/ds';
-import { formatMeasureValue } from '@/features/reports/formatMeasureValue';
+import { Button, createDataTableColumnHelper, DataTable, ProgressBar, type ProgressBarColor, Text } from '@/components/ds';
 import { labelChartData, valueLabel } from '@/lib/reports.helpers';
-import type { BreakdownBars, BreakdownColumn, BreakdownSubRow, ChartData } from '@/lib/reports.types';
+import type { BreakdownBars, BreakdownColumn, BreakdownSubRow } from '@/lib/reports.types';
+import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
+import { signed } from '@/lib/reports/signed';
 
-import { signed } from './format';
+import type { ChartInput } from './Chart';
 
-export interface BreakdownViewProps {
-  data: ChartData;
+
+export interface ChartBreakdownProps {
+  data: ChartInput;
   /** Whether the measure is money; omitted, its name decides. */
   money?: boolean;
   /** The definition's value columns; absent = amount, share, and change when the data compares. */
@@ -42,6 +44,8 @@ interface Row {
   change: number | null;
   /** Bar fill, 0 to 100. */
   bar: number;
+  /** The bar's chart colour: chart-1…chart-5 by rank, chart-rest for the Other row. */
+  color: ProgressBarColor;
   subRows: BreakdownSubRow[];
 }
 
@@ -53,9 +57,10 @@ const HEADERS: Record<BreakdownColumn, string> = { amount: 'Amount', share: 'Sha
 
 const txns = (n: number) => `${n} ${n === 1 ? 'txn' : 'txns'}`;
 const percent = (n: number) => `${Math.round(n)}%`;
+const SERIES: ProgressBarColor[] = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
-export function BreakdownView({ data, money, columns: wanted, bars, higherIsBetter, rowsLabel, onOpenRow, canOpenRow }: BreakdownViewProps) {
+export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBetter, rowsLabel, onOpenRow, canOpenRow }: ChartBreakdownProps) {
   const labelled = labelChartData(data);
   const field = data.measure?.field;
   const aggregation = data.measure?.aggregation;
@@ -88,6 +93,7 @@ export function BreakdownView({ data, money, columns: wanted, bars, higherIsBett
         share: value !== null && total ? (value / total) * 100 : null,
         change: value !== null && prev !== null && prev !== 0 ? ((value - prev) / Math.abs(prev)) * 100 : null,
         bar: value !== null && denominator ? clamp((value / denominator) * 100) : 0,
+        color: isOther ? 'chart-rest' : SERIES[(rank - 1) % SERIES.length],
         subRows: isOther ? [] : (detail?.subRows ?? []),
       };
     });
@@ -130,7 +136,7 @@ export function BreakdownView({ data, money, columns: wanted, bars, higherIsBett
             <Text variant="body-strong" tone={row.original.isOther ? 'ink-2' : 'ink'} truncate>
               {row.original.label}
             </Text>
-            <ProgressBar value={row.original.bar} />
+            <ProgressBar value={row.original.bar} color={row.original.color} />
           </div>
         ),
       }),

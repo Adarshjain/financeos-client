@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button, Card, CardRow, ListRow, Text } from '@/components/ds';
 
-import { REPORT_TEMPLATES, templateHref } from './reportsList';
+import { CHAT_HREF, REPORT_TEMPLATES, templateHref } from './reportsList';
 
 /** "Start from a template" and "Ask instead", under the list. */
 export function ReportsAside() {
@@ -26,7 +26,7 @@ export function ReportsAside() {
       </Card>
       <Card title="Ask instead" subtitle="Chat turns a question into a saved report">
         <CardRow>
-          <div className="flex flex-col gap-space-8 min-w-0">
+          <div className="flex flex-col gap-space-8 min-w-0 flex-1">
             <Text variant="body" tone="ink-3">
               &ldquo;dining spend per month on Regalia, this year&rdquo;
             </Text>
@@ -37,6 +37,11 @@ export function ReportsAside() {
               </Text>{' '}
               button.
             </Text>
+            <Button asChild variant="secondary" className="max-desk:w-full desk:self-start">
+              <Link href={CHAT_HREF} prefetch={false}>
+                Ask the data
+              </Link>
+            </Button>
           </div>
         </CardRow>
       </Card>

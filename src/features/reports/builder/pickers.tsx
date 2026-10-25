@@ -2,15 +2,31 @@
 
 import React from 'react';
 
-import { Button, Icon, Select, type SelectOption, Text, TextField } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { Button, Icon, Reveal, Select, type SelectOption, Text, TextField } from '@/components/ds';
 import type { Aggregation, ComparisonDisplay, DatasourceCatalog, DimensionRef, Granularity, ReportType } from '@/lib/reports.types';
 
 import { fieldByName, isDateFieldName } from './catalog';
 import { aggregationOptions, dimensionOptions, granularityOptions, measureOptions, NONE, parseCount } from './options';
 
-/** The grid of a row of two fields: stacked on phone, side by side from `desk`. */
-export const PAIR = 'grid grid-cols-1 desk:grid-cols-2 gap-space-12';
+/** The grid of a row of two fields, side by side at every width. */
+export const PAIR = 'grid grid-cols-2 items-start gap-space-12';
+
+/**
+ * A row where the second field slides in (from the right, in its half) only while `open`; the first field takes
+ * the whole row otherwise. The 6px each side add up to the 12px gap between the two halves.
+ */
+export function RevealPair({ open, first, second }: { open: boolean; first: React.ReactNode; second: React.ReactNode }) {
+  return (
+    <div className="flex items-start">
+      <div className="grow basis-0 min-w-0">
+        <div className={`transition-all duration-base ${open ? 'pr-space-6' : ''}`}>{first}</div>
+      </div>
+      <Reveal axis="x" open={open} className={open ? 'grow basis-0 min-w-0' : 'grow-0 basis-0 h-0'}>
+        <div className="pl-space-6">{second}</div>
+      </Reveal>
+    </div>
+  );
+}
 
 /** A single-choice dropdown with an optional "nothing chosen" entry. */
 export function PickSelect({
@@ -21,6 +37,7 @@ export function PickSelect({
   placeholder,
   noneLabel,
   error,
+  helper,
   disabled,
   searchable,
 }: {
@@ -31,6 +48,7 @@ export function PickSelect({
   placeholder?: string;
   noneLabel?: string;
   error?: string;
+  helper?: string;
   disabled?: boolean;
   searchable?: boolean;
 }) {
@@ -44,6 +62,7 @@ export function PickSelect({
       searchable={searchable ?? all.length > 8}
       disabled={disabled}
       error={error}
+      helper={helper}
       onValueChange={(v) => {
         const next = Array.isArray(v) ? v[0] : v;
         onValueChange(next === NONE || next === '' ? undefined : next);
@@ -199,36 +218,42 @@ export function DimensionPicker({
 }) {
   const isDate = isDateFieldName(catalog, value.field);
   return (
-    <div className={isDate ? PAIR : 'grid grid-cols-1 gap-space-12'}>
-      <PickSelect
-        label={label}
-        value={value.field}
-        options={dimensionOptions(catalog, type, exclude, value.field)}
-        placeholder={placeholder}
-        noneLabel={noneLabel}
-        error={isDate ? undefined : error}
-        onValueChange={(field) =>
-          // A date dimension starts at month; any other has no granularity.
-          onChange({ field, granularity: isDateFieldName(catalog, field) ? (value.granularity ?? 'month') : undefined })
-        }
-      />
-      {isDate ? (
+    <RevealPair
+      open={isDate}
+      first={
+        <PickSelect
+          label={label}
+          value={value.field}
+          options={dimensionOptions(catalog, type, exclude, value.field)}
+          placeholder={placeholder}
+          noneLabel={noneLabel}
+          error={isDate ? undefined : error}
+          onValueChange={(field) =>
+            // A date dimension starts at month; any other has no granularity.
+            onChange({ field, granularity: isDateFieldName(catalog, field) ? (value.granularity ?? 'month') : undefined })
+          }
+        />
+      }
+      second={
         <PickSelect
           label="Group by"
           value={value.granularity}
           options={granularityOptions()}
           placeholder="Select granularity"
-          error={error}
+          error={isDate ? error : undefined}
           onValueChange={(granularity) => onChange({ field: value.field, granularity: granularity as Granularity | undefined })}
         />
-      ) : null}
-    </div>
+      }
+    />
   );
 }
 
 // ---- Comparison -------------------------------------------------------------
 
-const DISPLAY_OPTIONS: { value: ComparisonDisplay; label: string }[] = [
+type Show = 'none' | ComparisonDisplay;
+
+const SHOW_OPTIONS: { value: Show; label: string }[] = [
+  { value: 'none', label: 'None' },
   { value: 'change', label: 'Change vs previous period' },
   { value: 'previous_value', label: 'Previous period value' },
 ];
@@ -242,51 +267,46 @@ const PERCEPTION_OPTIONS: SelectOption[] = [
 const perceptionOf = (higherIsBetter: boolean | undefined): string =>
   higherIsBetter === true ? 'higher' : higherIsBetter === false ? 'lower' : 'neutral';
 
-/** "Compare to previous period", and once on, what the comparison shows and which direction reads as good. */
+/** "Comparison" (None, the change, or the previous value) and, once something is shown, which direction reads as good. */
 export function CompareFields({
   enabled,
-  onEnabledChange,
   disabledReason,
   display,
-  onDisplayChange,
+  onShowChange,
   higherIsBetter,
   onHigherIsBetterChange,
 }: {
   enabled: boolean;
-  onEnabledChange: (enabled: boolean) => void;
-  /** Why the toggle is off and cannot be changed (no date field, a date dimension…). */
+  /** Why the comparison cannot be turned on (no date field, a date dimension…). */
   disabledReason?: string;
   display: ComparisonDisplay | undefined;
-  onDisplayChange: (display: ComparisonDisplay | undefined) => void;
+  /** None turns the comparison off; the others turn it on with that display (`change` = the default). */
+  onShowChange: (show: Show) => void;
   higherIsBetter: boolean | undefined;
   onHigherIsBetterChange: (higherIsBetter: boolean | undefined) => void;
 }) {
-  const on = enabled && !disabledReason;
+  const show: Show = enabled && !disabledReason ? (display === 'previous_value' ? 'previous_value' : 'change') : 'none';
   return (
-    <div className="flex flex-col gap-space-12">
-      <SettingsToggle
-        label="Compare to previous period"
-        description={disabledReason}
-        checked={on}
-        disabled={!!disabledReason}
-        onCheckedChange={onEnabledChange}
-      />
-      {on ? (
-        <div className={PAIR}>
-          <PickSelect
-            label="Show"
-            value={display ?? 'change'}
-            options={DISPLAY_OPTIONS}
-            onValueChange={(v) => onDisplayChange(v === 'previous_value' ? 'previous_value' : undefined)}
-          />
-          <PickSelect
-            label="Change perception"
-            value={perceptionOf(higherIsBetter)}
-            options={PERCEPTION_OPTIONS}
-            onValueChange={(v) => onHigherIsBetterChange(v === 'higher' ? true : v === 'lower' ? false : undefined)}
-          />
-        </div>
-      ) : null}
-    </div>
+    <RevealPair
+      open={show !== 'none'}
+      first={
+        <PickSelect
+          label="Comparison"
+          value={show}
+          options={SHOW_OPTIONS}
+          disabled={!!disabledReason}
+          helper={disabledReason}
+          onValueChange={(v) => onShowChange(v === 'previous_value' ? 'previous_value' : v === 'change' ? 'change' : 'none')}
+        />
+      }
+      second={
+        <PickSelect
+          label="Change perception"
+          value={perceptionOf(higherIsBetter)}
+          options={PERCEPTION_OPTIONS}
+          onValueChange={(v) => onHigherIsBetterChange(v === 'higher' ? true : v === 'lower' ? false : undefined)}
+        />
+      }
+    />
   );
 }

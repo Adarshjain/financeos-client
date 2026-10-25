@@ -29,7 +29,7 @@ import { defaultExcludedFilter } from './catalog';
 export interface KpiDraft {
   measure?: string;
   aggregation?: Aggregation;
-  comparisonEnabled: boolean; // on by default; serialized to { enabled: false } when off
+  comparisonEnabled: boolean; // on by default here (the /ds editor starts it off); serialized to { enabled: false } when off
   /** undefined = no preference (neutral); true/false drive the delta sentiment. */
   higherIsBetter?: boolean;
   /** undefined = the default (`change`); only `previous_value` is serialized. */
@@ -145,6 +145,8 @@ export function initialBuilderState(
   type: ReportType = 'KPI',
   catalog?: DatasourceCatalog,
   datasource = 'transactions',
+  /** The KPI's comparison on a new draft: on for the Legacy builder, off (Show: None) for the /ds editor. */
+  kpiComparison = true,
 ): BuilderState {
   // New reports on transactions default to hiding excluded transactions.
   // Other datasources start with no filters. Edit mode passes no catalog.
@@ -156,7 +158,7 @@ export function initialBuilderState(
     datasource,
     type,
     filters: seedFilter ? [seedFilter] : [],
-    kpi: { comparisonEnabled: true },
+    kpi: { comparisonEnabled: kpiComparison },
     chart: { chartType: 'bar' },
     table: {
       tableMode: 'raw',

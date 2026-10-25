@@ -98,11 +98,43 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
     await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
     await expect(underlying.getByText('Breakdown fuel one')).toHaveCount(0);
+    // Opened from a row, the dropdown is on that row's category (not All).
+    await expect(underlying.getByRole('button', { name: `Category: Bd Food ${tag}` })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(underlying).toHaveCount(0);
 
-    // Save creates the report and opens it at its own address.
-    await page.getByRole('button', { name: 'Save report' }).click();
+    // From the preview header the dialog covers every row; its dropdown narrows them to one category.
+    await page.getByRole('button', { name: 'Underlying data' }).first().click();
+    await expect(underlying.getByText('4 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
+    await expect(underlying.getByText('Breakdown fuel one').first()).toBeVisible();
+    await underlying.getByRole('button', { name: 'Category: All' }).click();
+    await page.getByRole('option', { name: `Bd Food ${tag}` }).click();
+    await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
+    await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
+    await expect(underlying.getByText('Breakdown fuel one')).toHaveCount(0);
+    // Escape closes the dialog right after an entry was picked, once the popover is gone.
+    await underlying.getByRole('button', { name: `Category: Bd Food ${tag}` }).click();
+    await page.getByRole('option', { name: `Bd Fuel ${tag}` }).click();
+    await expect(page.getByRole('option', { name: `Bd Fuel ${tag}` })).toHaveCount(0);
+    await expect(underlying.getByText('Breakdown fuel one').first()).toBeVisible({ timeout: 45_000 });
+    await page.keyboard.press('Escape');
+    await expect(underlying).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Underlying data' }).first().click();
+    await expect(underlying.getByText('4 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
+    await underlying.getByRole('button', { name: 'Close', exact: true }).last().click();
+    await expect(underlying).toHaveCount(0);
+
+    // Changing the report type starts the preview over; the chart settings are still there on the way back.
+    await page.getByRole('radio', { name: 'KPI' }).click();
+    await expect(page.getByText('Click Preview to run this report.')).toBeVisible();
+    await expect(page.getByText(`Bd Food ${tag}`)).toHaveCount(0);
+    await expect(page.getByText('Configuration changed since this result.')).toHaveCount(0);
+    await page.getByRole('radio', { name: 'Chart' }).click();
+    await expect(page.getByLabel('Show top')).toHaveValue('5');
+
+    // Create writes the report and opens it at its own address.
+    await page.getByRole('button', { name: 'Create report' }).click();
     await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/, { timeout: 45_000 });
     await expect(page.getByLabel('Report name')).toHaveValue(
       'Ds editor spend by category'
@@ -133,7 +165,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // Change something: the label appears, and leaving asks first.
     await page.getByLabel('Show top').fill('8');
     await expect(page.getByText('Unsaved changes')).toBeVisible();
-    await page.getByRole('link', { name: 'Cancel' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Leave without saving?')).toBeVisible();
     await dialog.getByRole('button', { name: 'Keep editing' }).click();
@@ -143,7 +175,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // Saving clears the label and the question.
     await page.getByRole('button', { name: 'Save report' }).click();
     await expect(page.getByText('Unsaved changes')).toHaveCount(0);
-    await page.getByRole('link', { name: 'Cancel' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
     await page.waitForURL(/\/ds\/reports$/);
 
     // The saved Top N stuck.
@@ -181,7 +213,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(
       page.getByRole('combobox', { name: 'Datasource' })
     ).toContainText('Dividends');
-    await page.getByRole('button', { name: 'Save report' }).click();
+    await page.getByRole('button', { name: 'Create report' }).click();
     await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/, { timeout: 45_000 });
   });
 
