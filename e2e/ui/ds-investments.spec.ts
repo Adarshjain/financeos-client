@@ -4,6 +4,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { istToday } from '../fixtures/dates';
 import { type SeededHoldings, seedHoldings } from '../fixtures/seed/holdings';
 import { expect, test } from '../fixtures/test';
 
@@ -14,6 +15,12 @@ const VIEWPORTS = [
 
 /** The copy of a figure drawn once for the phone and once for the desktop: the one on screen. */
 const shown = (locator: Locator) => locator.locator('visible=true').first();
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "2026-10-03" as the date field types it ("03/10/2026"), the server message ("3 Oct 2026") and a history row ("3 Oct 26"). */
+const asField = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+const asLong = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+const asShort = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(2, 4)}`;
 
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Investments, ${viewport.name} (@ui)`, () => {
@@ -177,6 +184,33 @@ for (const viewport of VIEWPORTS) {
       await confirm.getByRole('button', { name: 'Delete price' }).click();
       await expect(page.getByText('Price entry deleted')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(1);
+    });
+
+    test("Holding page: a manual price's date can change, and a date that already has a price is refused", async ({ page }) => {
+      // Each test has its own user: infy's two seeded manual prices are today (newer) and three days before (older).
+      const older = istToday(-3);
+      const free = istToday(-8);
+      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await expect(page.getByText('Price history')).toBeVisible();
+
+      // Edit is newest first: the first one is today's price.
+      await page.getByRole('button', { name: 'Edit' }).first().click();
+      const dialog = page.getByRole('dialog', { name: 'Edit manual price' });
+      await expect(dialog.getByLabel('As of')).toBeEnabled();
+      await expect(dialog.getByLabel('As of')).toHaveValue(asField(istToday()));
+
+      await dialog.getByLabel('As of').fill(asField(older));
+      await dialog.getByRole('button', { name: 'Save price' }).click();
+      await expect(dialog.getByText(`A price for ${asLong(older)} already exists. Edit that one instead.`)).toBeVisible();
+      await expect(dialog).toBeVisible();
+
+      await dialog.getByLabel('As of').fill(asField(free));
+      await dialog.getByRole('button', { name: 'Save price' }).click();
+      await expect(page.getByText('Price updated', { exact: true })).toBeVisible();
+      await expect(dialog).toBeHidden();
+      await expect(shown(page.getByText(asShort(free), { exact: true }))).toBeVisible();
+      await expect(page.getByText(asShort(istToday()), { exact: true })).toHaveCount(0);
+      await expect(shown(page.getByText(asShort(older), { exact: true }))).toBeVisible();
     });
 
     test('Holding page: a tab shows only its section, paged through the URL', async ({ page }) => {

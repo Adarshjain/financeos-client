@@ -45,6 +45,8 @@ export interface HoldingsHeader {
   unrealisedPct: number | null;
   xirr: number | null;
   priceAsOf: string | null;
+  /** When the newest price was struck (ISO, +05:30); null for date-only prices. */
+  priceAt?: string | null;
 }
 
 export interface HoldingsGroup {
@@ -62,6 +64,8 @@ export interface HoldingRow {
   avgCost: number;
   ltp: number | null;
   priceAsOf: string | null;
+  /** When the price was struck (ISO, +05:30); null for date-only prices (AMFI, manual). */
+  priceAt?: string | null;
   /** ltp is the user's own price. */
   manualPrice: boolean;
   /** An open holding without any price: valued at cost. */
@@ -312,6 +316,8 @@ export interface PricePoint {
   asOf: string;
   close: number;
   source: string;
+  /** When the price was struck (ISO, +05:30); null for date-only prices. */
+  priceAt?: string | null;
   /** True only for the signed-in user's own manual prices. */
   editable: boolean;
 }

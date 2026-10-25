@@ -20,10 +20,10 @@ export function usePriceMutations(instrumentId: string) {
   });
 
   const updatePrice = useMutation({
-    mutationFn: (vars: { priceId: string; price: number }) =>
+    mutationFn: (vars: { priceId: string; price: number; asOf?: string }) =>
       api.PUT('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
         params: { path: { instrumentId, priceId: vars.priceId } },
-        body: { price: vars.price },
+        body: vars.asOf ? { price: vars.price, asOf: vars.asOf } : { price: vars.price },
       }),
     onSuccess,
   });

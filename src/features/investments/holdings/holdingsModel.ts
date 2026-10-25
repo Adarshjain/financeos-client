@@ -3,7 +3,7 @@ import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, Holdings
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
-import { fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
+import { dayWithTime, fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------
@@ -101,7 +101,7 @@ export interface HoldingsHeroModel {
   unrealised: { text: string; tone: Tone };
   /** "+29.4% · XIRR 24.1%". */
   unrealisedSub: string | null;
-  /** "Prices as of 13 Oct", or null with no price at all. */
+  /** "13 Oct" or "13 Oct, 15:30" (the date only when the price has no time), or null with no price at all. */
   priceAsOf: string | null;
 }
 
@@ -123,7 +123,7 @@ export function heroModel(header: HoldingsHeader): HoldingsHeroModel {
     invested: rupees(header.invested),
     unrealised: { text: signedRupees(header.unrealised), tone: moveTone(header.unrealised) },
     unrealisedSub: sub.length > 0 ? sub.join(' · ') : null,
-    priceAsOf: header.priceAsOf ? formatDayMonth(header.priceAsOf) : null,
+    priceAsOf: header.priceAsOf ? dayWithTime(formatDayMonth(header.priceAsOf), header.priceAt) : null,
   };
 }
 

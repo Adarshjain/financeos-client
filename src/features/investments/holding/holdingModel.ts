@@ -3,7 +3,7 @@ import type { HoldingDetail, PricePoint, SellEstimate } from '@/lib/investments.
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 import { ratioText } from '../corporate-actions/corporateActionRatio';
-import { moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
+import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref } from '../investmentsTabs';
 
 // ---- Tabs ----------------------------------------------------------------------
@@ -106,7 +106,7 @@ export function sourceWord(source: string | null | undefined): string {
 export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number): HoldingFigure[] {
   const unit = unitWord(holding.assetType, holding.quantity);
   const source = holding.manualPrice ? 'manual price' : sourceWord(instrument?.lastPriceSource);
-  const asOf = holding.priceAsOf ? formatDayMonth(holding.priceAsOf) : '';
+  const asOf = holding.priceAsOf ? dayWithTime(formatDayMonth(holding.priceAsOf), holding.priceAt) : '';
   return [
     { id: 'quantity', label: 'Quantity', value: quantity(holding.quantity) },
     { id: 'avgCost', label: 'Avg cost', value: unitPrice(holding.avgCost) },
@@ -260,6 +260,8 @@ export interface PriceRowModel {
   id: string | null;
   asOf: string;
   date: string;
+  /** "15:30" IST when the price has a time, else ''. */
+  time: string;
   source: string;
   amount: string;
   /** The raw price, for the edit field. */
@@ -272,6 +274,7 @@ export function priceRow(p: PricePoint): PriceRowModel {
     id: p.id,
     asOf: p.asOf,
     date: shortDate(p.asOf),
+    time: istTime(p.priceAt),
     source: sourceWord(p.source),
     amount: unitPrice(p.close),
     close: p.close,

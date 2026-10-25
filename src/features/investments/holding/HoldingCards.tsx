@@ -303,7 +303,7 @@ export function PriceHistoryCard({ instrumentId, name, tab, rows, position }: Pr
         {rows.map((r) => (
           <ListRow
             key={r.id ?? `${r.asOf}-${r.source}`}
-            title={r.date}
+            title={r.time ? `${r.date}, ${r.time}` : r.date}
             subtitle={r.source}
             trailing={
               <span className="flex items-center gap-space-8">
