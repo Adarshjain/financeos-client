@@ -47,6 +47,8 @@ export interface HoldingViewProps {
   tab: HoldingTab;
   /** Today's calendar date in the app zone (YYYY-MM-DD), the default date of a manual price. */
   today: string;
+  /** The server's clock (ISO), so Live/Close wording matches the render; defaults to now. */
+  now?: string;
 }
 
 type HoldingDialog = 'trade' | 'dividend' | 'corporate-action' | 'edit-instrument' | 'reset-instrument';
@@ -54,7 +56,7 @@ type HoldingDialog = 'trade' | 'dividend' | 'corporate-action' | 'edit-instrumen
 const EMPTY_POSITION = { page: 0, size: 1, totalElements: 0, totalPages: 0 };
 
 /** One holding: its figures, then (Overview) every section or (a tab) that section's full list. */
-export function HoldingView({ data, tab, today }: HoldingViewProps) {
+export function HoldingView({ data, tab, today, now }: HoldingViewProps) {
   const { holding, instrument, estimate, trades, dividends, corporateActions, prices, history } = data;
   const router = useRouter();
   const [overriding, setOverriding] = React.useState(false);
@@ -129,7 +131,7 @@ export function HoldingView({ data, tab, today }: HoldingViewProps) {
               <HoldingFigures
                 header={header}
                 hero={holdingHero(holding)}
-                figures={holdingFigures(holding, instrument, tradePosition.totalElements)}
+                figures={holdingFigures(holding, instrument, tradePosition.totalElements, now ? new Date(now) : new Date())}
                 onOverride={() => setOverriding(true)}
                 onRecordDividend={() => setDialog('dividend')}
                 onRecordCorporateAction={() => setDialog('corporate-action')}

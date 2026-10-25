@@ -3,7 +3,7 @@ import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, Holdings
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
-import { dayWithTime, fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
+import { dayWithTime, fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------
@@ -103,9 +103,11 @@ export interface HoldingsHeroModel {
   unrealisedSub: string | null;
   /** "13 Oct" or "13 Oct, 15:30" (the date only when the price has no time), or null with no price at all. */
   priceAsOf: string | null;
+  /** The line's wording: "Live · 11:45", "Close · 13 Oct, 15:30", or "Prices as of 13 Oct" when the price has no time; null with no price. */
+  priceLine: string | null;
 }
 
-export function heroModel(header: HoldingsHeader): HoldingsHeroModel {
+export function heroModel(header: HoldingsHeader, now: Date = new Date()): HoldingsHeroModel {
   const day =
     header.dayChange == null
       ? null
@@ -124,6 +126,9 @@ export function heroModel(header: HoldingsHeader): HoldingsHeroModel {
     unrealised: { text: signedRupees(header.unrealised), tone: moveTone(header.unrealised) },
     unrealisedSub: sub.length > 0 ? sub.join(' · ') : null,
     priceAsOf: header.priceAsOf ? dayWithTime(formatDayMonth(header.priceAsOf), header.priceAt) : null,
+    priceLine: header.priceAsOf
+      ? priceTimeLabel(formatDayMonth(header.priceAsOf), header.priceAt, now) || `Prices as of ${formatDayMonth(header.priceAsOf)}`
+      : null,
   };
 }
 

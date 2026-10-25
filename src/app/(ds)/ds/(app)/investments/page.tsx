@@ -20,6 +20,7 @@ import {
   fetchLatestPriceJobId,
   fetchTaxHarvest,
 } from '@/features/investments/investmentsServerApi';
+import { LivePriceRefresh } from '@/features/investments/LivePriceRefresh';
 import { LoansLoadError } from '@/features/loans/LoansLoadError';
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 
@@ -62,12 +63,13 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
   const movers = topMovers(scan);
   const allocation = allocationModel(portfolioGroups);
   const counts = Object.fromEntries(portfolioGroups.map((g) => [g.assetType, g.count]));
-  const hero = heroModel(header);
+  const hero = heroModel(header, new Date());
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <LivePriceRefresh />
       <HoldingsHero hero={hero} />
-      <PricesLine asOf={hero.priceAsOf} latestJobId={latestJobId} />
+      <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} latestJobId={latestJobId} />
       <HoldingsTiles tiles={holdingsTiles(header, groups.reduce((n, g) => n + g.count, 0), tax)} failedLabels={TILE_LABELS} />
       <HoldingsListCard
         state={state}
