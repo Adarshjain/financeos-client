@@ -1,11 +1,10 @@
 'use client';
 
-// The trailing end of a widget's header: the "Open ›" link of a built-in with a page of its own, then the ⋮ menu.
+// The trailing end of a widget's header: the ⋮ menu.
 
-import Link from 'next/link';
 import React from 'react';
 
-import { Button, Icon, Menu, MenuItem, Text } from '@/components/ds';
+import { Button, Icon, Menu, MenuItem } from '@/components/ds';
 
 import type { WidgetMenuItemId } from './widgetFrame.model';
 
@@ -18,30 +17,18 @@ const LABELS: Record<WidgetMenuItemId, string> = {
 };
 
 export interface WidgetHeaderActionsProps {
-  /** Where "Open ›" goes (an app path); none = no link. */
-  openHref?: string | null;
   items: WidgetMenuItemId[];
   /** A duplicate is being saved: that item waits. */
   duplicating?: boolean;
   onSelect: (item: WidgetMenuItemId) => void;
 }
 
-export function WidgetHeaderActions({ openHref, items, duplicating, onSelect }: WidgetHeaderActionsProps) {
+export function WidgetHeaderActions({ items, duplicating, onSelect }: WidgetHeaderActionsProps) {
   // An item that opens a dialog runs once the menu has closed: opening a modal while the menu's own modal layer is
   // still going leaves the page with pointer events off after the dialog closes.
   const chosen = React.useRef<WidgetMenuItemId | null>(null);
   return (
     <div className="flex items-center gap-space-8">
-      {openHref ? (
-        <Text variant="label" as="span">
-          <Button variant="link" asChild>
-            <Link href={openHref}>
-              Open
-              <Icon name="chevron-right" size="xs" />
-            </Link>
-          </Button>
-        </Text>
-      ) : null}
       {items.length > 0 ? (
         <Menu
           align="end"

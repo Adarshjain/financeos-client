@@ -40,6 +40,15 @@ describe('UpcomingView', () => {
     expect(list[1]).toHaveTextContent('Priya Nair');
   });
 
+  it('rows are tightened around the date tile (smaller gap and vertical padding than a default row)', () => {
+    renderWithQuery(<UpcomingView {...view(rawTable(COLUMNS, rows))} />);
+    for (const row of screen.getAllByTestId('upcoming-row')) {
+      expect(row.className).toMatch(/gap-space-8/);
+      expect(row.className).toMatch(/py-space-8/);
+      expect(row.className).not.toMatch(/gap-space-12|py-space-10/);
+    }
+  });
+
   it('a row without an amount shows none', () => {
     renderWithQuery(<UpcomingView {...view(rawTable(COLUMNS, rows))} />);
     const last = screen.getAllByTestId('upcoming-row')[2];

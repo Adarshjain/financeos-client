@@ -1,11 +1,12 @@
 'use client';
 
-// One widget on a dashboard: the Dinero Widget (title, subtitle, "Open ›" and ⋮ menu) around the widget's content.
+// One widget on a dashboard: the Dinero Widget (title, subtitle and ⋮ menu) around the widget's content.
 //   - a saved report renders with ReportResult (KPI tile, Chart, breakdown, table);
 //   - a component built-in renders its own body (it fetches for itself and draws its own failed state);
 //   - a template built-in renders its view with the report data the frame loaded, or ReportResult when it has none.
 // Loading shows the built-in's own skeleton; a failed load shows "Couldn't load this widget" with Retry; a deleted
-// report or an unknown built-in says so. One widget failing never touches the others.
+// report or an unknown built-in says so. One widget failing never touches the others. A widget loads (and a
+// component built-in mounts its body) only once it is near the viewport; until then it shows its loading state.
 
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -17,6 +18,7 @@ import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 
 import { builtinPieces } from '../builtins/registry';
+import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
 import { useDuplicateBuiltinReport } from './useDuplicateBuiltinReport';
 import { useReportWidget } from './useReportWidget';
@@ -47,7 +49,8 @@ type Overlay = 'full' | 'underlying' | 'settings' | null;
 
 export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing = false, issue, onSaveSettings }: DashboardWidgetFrameProps) {
   const router = useRouter();
-  const state = useReportWidget(widget);
+  const { ref, inView } = useInView();
+  const state = useReportWidget(widget, inView);
   const duplicate = useDuplicateBuiltinReport();
   const [overlay, setOverlay] = React.useState<Overlay>(null);
   const close = React.useCallback(() => setOverlay(null), []);
@@ -64,7 +67,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
 
   // A component built-in fetches for itself; every other widget is loaded here.
   const loadsHere = available && (builtin ? widget.builtin?.kind === 'template' : Boolean(widget.reportId));
-  const loading = loadsHere && !state.data && !state.error;
+  // Out of view: the loading state, and nothing fetched (a component built-in's body is not mounted).
+  const loading = available && (!inView || (loadsHere && !state.data && !state.error));
   const failed = loadsHere && state.error ? state.error : undefined;
 
   const select = (item: WidgetMenuItemId) => {
@@ -110,6 +114,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   return (
     <>
       <Widget
+        ref={ref}
         data-testid="dashboard-widget"
         data-widget-id={widget.id}
         title={widgetTitle(widget)}
@@ -117,7 +122,6 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         menu={
           editing ? undefined : (
             <WidgetHeaderActions
-              openHref={href ? appHref(href) : null}
               items={items}
               duplicating={duplicate.isPending}
               onSelect={select}

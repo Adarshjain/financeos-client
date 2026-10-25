@@ -54,3 +54,54 @@ export function useNavigationShowing(): boolean {
     () => false,
   );
 }
+
+/**
+ * This tab's in-app history, by pathname: `entries` with the `cursor` on the current page. Back may
+ * use browser history only while an in-app entry sits behind the cursor (cursor > 0); a direct
+ * landing starts at 0. Search-param-only commits and repeated effects (strict mode) are ignored.
+ */
+let entries: string[] = [];
+let cursor = -1;
+let popPending = false;
+
+/** A popstate fired: the next commit is a back or forward move, not a push. */
+export function markPopNavigation() {
+  popPending = true;
+}
+
+/** A route committed at this pathname. */
+export function commitRoute(pathname: string) {
+  const isPop = popPending;
+  popPending = false;
+  if (cursor >= 0 && entries[cursor] === pathname) return;
+  if (cursor < 0) {
+    entries = [pathname];
+    cursor = 0;
+  } else if (isPop) {
+    if (cursor > 0 && entries[cursor - 1] === pathname) cursor -= 1;
+    else if (entries[cursor + 1] === pathname) cursor += 1;
+    else {
+      const at = entries.lastIndexOf(pathname);
+      if (at >= 0) cursor = at;
+      else {
+        entries = entries.slice(0, cursor + 1).concat(pathname);
+        cursor += 1;
+      }
+    }
+  } else {
+    entries = entries.slice(0, cursor + 1).concat(pathname);
+    cursor += 1;
+  }
+}
+
+/** True when the entry behind the current page is in-app. Not reactive: read it when Back is clicked. */
+export function hasInAppHistory(): boolean {
+  return cursor > 0;
+}
+
+/** Test helper: forgets the in-app history. */
+export function resetInAppNavigation() {
+  entries = [];
+  cursor = -1;
+  popPending = false;
+}

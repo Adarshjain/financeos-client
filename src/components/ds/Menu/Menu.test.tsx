@@ -219,3 +219,28 @@ describe('MenuItem asChild', () => {
     expect(row).toHaveAttribute('href', '/somewhere');
   });
 });
+
+describe('Menu focus return', () => {
+  it('does not steal focus back when another control took it before the menu unmounted', async () => {
+    const { Menu } = await import('./Menu');
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { render, screen, waitFor } = await import('@testing-library/react');
+    const React = await import('react');
+    const user = userEvent.setup();
+    render(
+      <>
+        <Menu trigger={<button type="button">Actions</button>}>
+          <Menu.Item>One</Menu.Item>
+        </Menu>
+        <button type="button">Other</button>
+      </>,
+    );
+    await user.click(screen.getByText('Actions'));
+    await screen.findByText('One');
+    await user.keyboard('{Escape}');
+    screen.getByText('Other').focus();
+    await waitFor(() => expect(screen.queryByText('One')).toBeNull());
+    expect(document.activeElement).toBe(screen.getByText('Other'));
+    void React;
+  });
+});

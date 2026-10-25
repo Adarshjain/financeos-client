@@ -13,12 +13,6 @@ const VIEWPORTS = [
   { name: 'phone 390px', width: 390, height: 844 },
 ];
 
-/** The greeting the app should show right now: by the hour in IST, never the browser's zone. */
-function istGreeting(): string {
-  const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false }).format(new Date())) % 24;
-  return hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-}
-
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Dashboards list and Home, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
@@ -40,16 +34,18 @@ for (const viewport of VIEWPORTS) {
         widgets: keys.map((key, i) => builtinWidget(`${name.replace(/\s/g, '-')}-${i}`, key, 100, undefined, { x: 0, y: i * 10, h: 10 })),
       });
 
-    const rowOf = (page: Page, name: string) => page.locator('[data-testid="dashboard-row"]').filter({ hasText: name });
+    // The list is a table like Reports: a row is a button whose text starts with the dashboard's name.
+    const rowOf = (page: Page, name: string) => page.getByRole('table').getByRole('button').filter({ hasText: new RegExp(`^${name}`) });
     const openMenu = async (page: Page, name: string) => {
-      await rowOf(page, name).getByRole('button', { name: 'More options', exact: true }).click();
+      await page.getByRole('button', { name: `Options for ${name}`, exact: true }).click();
     };
+    /** The Default badge (desktop column) or the phone row's "Default ·" line: whichever is visible. */
+    const defaultMark = (page: Page, name: string) => rowOf(page, name).getByText(/^Default( ·.*)?$/).filter({ visible: true });
     const dashboardCount = async () => ((await makeApi(currentUser.cookie).GET('/api/v1/dashboards')).data ?? []).length;
 
     // ---- The list ----------------------------------------------------------------------------------------------
 
-    test('list: rows with Default badge and the board’s line, the tabs with counts, and the built-in widgets', async ({ page }) => {
-      const catalog = (await makeApi(currentUser.cookie).GET('/api/v1/dashboards/builtins')).data ?? [];
+    test('list: a table of dashboards with Default marked, the tabs with counts, search, and no built-in widgets card', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
       await board('Ds money', false, ['net_worth']);
       await page.goto('/ds/dashboards');
@@ -57,15 +53,28 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('tab', { name: /^Dashboards\s*·\s*2$/ })).toBeVisible({ timeout: 45_000 });
       await expect(page.getByRole('tab', { name: /^Reports/ })).toBeVisible();
       await expect(rowOf(page, 'Ds home')).toHaveCount(1);
-      await expect(rowOf(page, 'Ds home').getByText('Default')).toBeVisible();
-      await expect(rowOf(page, 'Ds home').getByText(/^No description · 2 widgets · Updated \d{1,2} \w{3}$/)).toBeVisible();
-      await expect(rowOf(page, 'Ds money').getByText('Default')).toHaveCount(0);
-      await expect(rowOf(page, 'Ds money').getByText(/^No description · 1 widget · Updated \d{1,2} \w{3}$/)).toBeVisible();
+      await expect(defaultMark(page, 'Ds home')).toHaveCount(1);
+      await expect(defaultMark(page, 'Ds money')).toHaveCount(0);
+      if (viewport.width >= 1024) {
+        for (const column of ['Dashboard', 'Widgets', 'Default', 'Updated']) await expect(page.getByRole('table').getByText(column, { exact: true }).first()).toBeVisible();
+        await expect(rowOf(page, 'Ds home').getByText('2', { exact: true })).toBeVisible();
+        await expect(rowOf(page, 'Ds money').getByText('1', { exact: true })).toBeVisible();
+      } else {
+        await expect(rowOf(page, 'Ds home').getByText(/^Default · 2 widgets · updated /)).toBeVisible();
+        await expect(rowOf(page, 'Ds money').getByText(/^1 widget · updated /)).toBeVisible();
+      }
+      await expect(page.getByText('Built-in widgets')).toHaveCount(0);
+      await expect(page.getByText(/available · add to any board/)).toHaveCount(0);
 
-      await expect(page.getByText(`${catalog.length} available · add to any board`)).toBeVisible();
-      // The board's name-only chips: every built-in by name, no descriptions.
-      for (const b of catalog) await expect(page.getByText(b.label, { exact: true }).filter({ visible: true }).last()).toBeVisible();
-      await expect(page.getByText(catalog[0].description, { exact: true })).toHaveCount(0);
+      // Search narrows the rows.
+      await page.getByPlaceholder('Search dashboards').fill('money');
+      await expect(rowOf(page, 'Ds home')).toHaveCount(0);
+      await expect(rowOf(page, 'Ds money')).toHaveCount(1);
+      await page.getByPlaceholder('Search dashboards').fill('zzz');
+      await expect(page.getByText('No dashboards match.')).toBeVisible();
+      // The empty state's action (the field has its own clear button too).
+      await page.getByText('Clear search', { exact: true }).click();
+      await expect(rowOf(page, 'Ds home')).toHaveCount(1);
 
       // The Reports tab is the Dinero Reports list, and its Dashboards tab comes back here.
       await page.getByRole('tab', { name: /^Reports/ }).click();
@@ -93,7 +102,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds money', { timeout: 45_000 });
 
       await page.goto('/ds/dashboards');
-      await rowOf(page, 'Ds home').getByRole('link', { name: 'Ds home' }).click();
+      await rowOf(page, 'Ds home').click();
       await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${home.id}$`));
     });
 
@@ -106,14 +115,15 @@ for (const viewport of VIEWPORTS) {
       await openMenu(page, 'Ds money');
       await page.getByRole('menuitem', { name: 'Set as default' }).click();
       await expect(page.getByText('Set as default', { exact: true })).toBeVisible();
-      await expect(rowOf(page, 'Ds money').getByText('Default')).toBeVisible();
-      await expect(rowOf(page, 'Ds home').getByText('Default')).toHaveCount(0);
+      await expect(defaultMark(page, 'Ds money')).toHaveCount(1);
+      await expect(defaultMark(page, 'Ds home')).toHaveCount(0);
 
       await openMenu(page, 'Ds money');
       await expect(page.getByRole('menuitem', { name: 'Clear default' })).toBeVisible();
       await page.getByRole('menuitem', { name: 'Clear default' }).click();
       await expect(page.getByText('Default cleared')).toBeVisible();
-      await expect(page.locator('[data-testid="dashboard-row"]').getByText('Default', { exact: true })).toHaveCount(0);
+      await expect(defaultMark(page, 'Ds money')).toHaveCount(0);
+      await expect(defaultMark(page, 'Ds home')).toHaveCount(0);
     });
 
     test('list: Delete asks first, Cancel keeps it, Delete dashboard removes it and says so', async ({ page }) => {
@@ -146,7 +156,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Restore default Home' }).click();
       await expect(page.getByText('Home dashboard restored')).toBeVisible();
       await expect(rowOf(page, 'Home')).toBeVisible();
-      await expect(rowOf(page, 'Home').getByText('Default')).toBeVisible();
+      await expect(defaultMark(page, 'Home')).toHaveCount(1);
       // Home exists now: there is nothing to restore.
       await expect(page.getByRole('button', { name: 'Restore default Home' })).toHaveCount(0);
     });
@@ -161,14 +171,62 @@ for (const viewport of VIEWPORTS) {
 
     // ---- Home --------------------------------------------------------------------------------------------------
 
-    test('Home: the greeting by the hour in IST, the day, and the default dashboard’s widgets under it', async ({ page }) => {
+    test('Home: no greeting or page title; the switcher and ⋯ menu sit in the top bar and the widgets start the page', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
       await page.goto('/ds/dashboard');
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(istGreeting(), { timeout: 45_000 });
-      const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'short' }).formatToParts(new Date());
-      const get = (t: string) => day.find((p) => p.type === t)!.value;
-      await expect(page.getByText(new RegExp(`^${get('weekday')} ${get('day')} ${get('month')}`))).toBeVisible();
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
+      await expect(page.getByText(/^Good (morning|afternoon|evening)/)).toHaveCount(0);
+      await expect(page.getByText(/synced|things? needs? you/)).toHaveCount(0);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0);
+      const bar = page.getByRole('banner');
+      await expect(bar.getByTestId('home-switch')).toBeVisible();
+      await expect(bar.getByRole('button', { name: 'Dashboard actions' })).toBeVisible();
+      // Nothing above the widgets in the page body.
+      await expect(page.getByRole('main').locator(':scope > *').first().getByTestId('dashboard-widget').first()).toBeVisible();
+    });
+
+    test('Home: no widget has an "Open ›" link; the ⋮ menu is the way to its page', async ({ page }) => {
+      await board('Ds home', true, ['net_worth', 'upcoming']);
+      await page.goto('/ds/dashboard');
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
+      await expect(page.getByRole('main').getByRole('link', { name: /^Open/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Widget options' }).first()).toBeVisible();
+    });
+
+    test('Home: the widgets stack in one column on a phone', async ({ page }) => {
+      test.skip(viewport.width >= 1024, 'phone only');
+      await board('Ds home', true, ['net_worth', 'upcoming']);
+      await page.goto('/ds/dashboard');
+      const widgets = page.getByTestId('dashboard-widget');
+      await expect(widgets).toHaveCount(2, { timeout: 45_000 });
+      const [a, b] = [await widgets.nth(0).boundingBox(), await widgets.nth(1).boundingBox()];
+      expect(Math.abs(a!.x - b!.x)).toBeLessThan(2);
+      expect(b!.y).toBeGreaterThan(a!.y);
+    });
+
+    test('Home: the default dashboard’s ⋯ menu has no Set as default', async ({ page }) => {
+      await board('Ds home', true, ['net_worth']);
+      await page.goto('/ds/dashboard');
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
+      await page.getByRole('button', { name: 'Dashboard actions' }).click();
+      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard']);
+    });
+
+    test('Home: ⋯ offers Set as default on a dashboard that is not the default, and it becomes the default', async ({ page }) => {
+      await board('Ds home', true, ['net_worth']);
+      const money = await board('Ds money', false, ['net_worth']);
+      await page.goto('/ds/dashboard');
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
+
+      await page.getByTestId('home-switch').click();
+      await page.getByRole('option', { name: 'Ds money' }).click();
+      await page.getByRole('button', { name: 'Dashboard actions' }).click();
+      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard']);
+      await page.getByRole('menuitem', { name: 'Set as default' }).click();
+      await expect(page.getByText('Set as default', { exact: true })).toBeVisible();
+      await expect
+        .poll(async () => ((await makeApi(currentUser.cookie).GET('/api/v1/dashboards/{id}', { params: { path: { id: money.id } } })).data ?? { isDefault: false }).isDefault)
+        .toBe(true);
     });
 
     test('Home: the switcher lists the dashboards, shows the one picked, and ends with View all dashboards', async ({ page }) => {
@@ -246,7 +304,8 @@ for (const viewport of VIEWPORTS) {
 
       await main.getByRole('button', { name: 'Restore default Home' }).click();
       await expect(page.getByText('Home dashboard restored')).toBeVisible();
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(istGreeting(), { timeout: 45_000 });
+      // The restored Home brings its own widgets.
+      await expect(page.getByTestId('dashboard-widget').first()).toBeVisible({ timeout: 45_000 });
       await expect(page.getByText('No default dashboard')).toHaveCount(0);
     });
   });

@@ -3,6 +3,7 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import React, { forwardRef } from 'react';
 
+import { guardCloseAutoFocus } from '../closeAutoFocus';
 import { cn } from '../cn';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 import { useControllableState } from '../useControllableState';
@@ -23,7 +24,7 @@ export interface MenuContentProps
 export const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   MenuContentProps
->(({ className, sideOffset = 4, children, ...props }, ref) => {
+>(({ className, sideOffset = 4, children, onCloseAutoFocus, ...props }, ref) => {
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
@@ -36,6 +37,7 @@ export const MenuContent = forwardRef<
           className,
         )}
         {...props}
+        onCloseAutoFocus={guardCloseAutoFocus(onCloseAutoFocus)}
       >
         {children}
       </DropdownMenuPrimitive.Content>

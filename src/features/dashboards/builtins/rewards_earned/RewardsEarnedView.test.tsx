@@ -33,16 +33,26 @@ describe('RewardsEarnedView', () => {
     expect(screen.getByTestId('rewards-unvalued')).toHaveTextContent('+ 18,000 points not valued');
     const [atlas, millennia, regalia] = screen.getAllByTestId('rewards-row');
     expect(atlas).toHaveTextContent('Atlas');
-    expect(atlas).toHaveTextContent('42,300 pts ≈ ₹14,100');
+    expect(atlas).toHaveTextContent('42,300 pts');
+    expect(atlas).not.toHaveTextContent('≈');
     expect(millennia).toHaveTextContent('₹3,240');
     expect(regalia).toHaveTextContent('18,000 pts');
   });
 
-  it('a card with unvalued points links to set the value and its points are not tappable', () => {
+  it('a card with unvalued points has no Set value link and its points are not tappable', () => {
     renderWithQuery(<RewardsEarnedView {...view(data)} />);
     const regalia = screen.getAllByTestId('rewards-row')[2];
-    expect(within(regalia).getByRole('link', { name: 'Set value' })).toHaveAttribute('href', expect.stringMatching(/\/rewards\/rules\?account=c3$/));
+    expect(within(regalia).queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByText('Set value')).not.toBeInTheDocument();
     expect(within(regalia).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('rows have no divider lines and sit at the header inset (no padding of their own)', () => {
+    renderWithQuery(<RewardsEarnedView {...view(data)} />);
+    for (const row of screen.getAllByTestId('rewards-row')) {
+      expect(row.className).not.toMatch(/border-t\b(?!-)/);
+      expect(row.className).toMatch(/px-0/);
+    }
   });
 
   it('the headline opens the underlying data of the whole year; a card figure opens that card only', async () => {

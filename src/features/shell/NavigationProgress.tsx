@@ -6,7 +6,9 @@ import React, { useEffect } from 'react';
 import { ProgressBar } from '@/components/ds';
 
 import {
+  commitRoute,
   endNavigation,
+  markPopNavigation,
   showNavigation,
   startNavigation,
   useNavigationShowing,
@@ -65,8 +67,10 @@ export function NavigationProgress() {
       giveUp = window.setTimeout(endNavigation, NAVIGATION_PROGRESS_TIMEOUT_MS);
     };
     document.addEventListener('click', onClick, true);
+    window.addEventListener('popstate', markPopNavigation);
     return () => {
       document.removeEventListener('click', onClick, true);
+      window.removeEventListener('popstate', markPopNavigation);
       clear();
     };
   }, []);
@@ -75,6 +79,11 @@ export function NavigationProgress() {
   useEffect(() => {
     endNavigation();
   }, [pathname, search]);
+
+  // Keeps the in-app history behind Back (pathname only: search-only commits are the same entry).
+  useEffect(() => {
+    commitRoute(pathname);
+  }, [pathname]);
 
   if (!showing) return null;
   return (

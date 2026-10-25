@@ -85,6 +85,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // under icon + gap + text; text-decoration would stop at the SVG.
     const isIconLink = isLink && !iconOnly && hasIconContent;
     const isStacked = layout === 'stacked';
+    // The underline hugs this wrapper (icon + gap + text), so a stretched button never underlines its empty space.
+    const withUnderline = (content: React.ReactNode) =>
+      isIconLink ? (
+        <span
+          data-underline=""
+          className="relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-line-heavy group-hover/link:after:hidden"
+        >
+          {content}
+        </span>
+      ) : (
+        content
+      );
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
 
@@ -110,8 +122,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         : 'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer font-semibold',
       sizeClasses,
       variantStyles[variant],
-      isIconLink &&
-        'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-line-heavy hover:after:hidden',
+      isIconLink && 'group/link no-underline inline-flex items-center justify-center',
+      // Link icons follow the surrounding text: always 2px under its font size, whatever size the Icon was given.
+      isLink && '[&_svg]:size-icon-inline',
       dot && 'relative',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
@@ -137,12 +150,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {icon ? (
-              <span className="inline-flex items-center justify-center shrink-0">
-                {icon}
-              </span>
-            ) : null}
-            {child.props.children}
+            {withUnderline(
+              <>
+                {icon ? (
+                  <span className="inline-flex items-center justify-center shrink-0">
+                    {icon}
+                  </span>
+                ) : null}
+                {child.props.children}
+              </>,
+            )}
             {count !== undefined && count !== null ? (
               <Badge
                 variant="solid"
@@ -217,12 +234,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {icon ? (
-              <span className="inline-flex items-center justify-center shrink-0">
-                {icon}
-              </span>
-            ) : null}
-            {children}
+            {withUnderline(
+              <>
+                {icon ? (
+                  <span className="inline-flex items-center justify-center shrink-0">
+                    {icon}
+                  </span>
+                ) : null}
+                {children}
+              </>,
+            )}
             {count !== undefined && count !== null ? (
               <Badge
                 variant="solid"

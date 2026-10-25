@@ -3,7 +3,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NAVIGATION_PROGRESS_DELAY_MS, NAVIGATION_PROGRESS_TIMEOUT_MS, NavigationProgress } from '../NavigationProgress';
-import { endNavigation, usePendingPath } from '../navigationStore';
+import { endNavigation, hasInAppHistory, resetInAppNavigation, usePendingPath } from '../navigationStore';
 
 const CURRENT = '/ds/accounts';
 let pathname = '/ds/accounts';
@@ -138,5 +138,28 @@ describe('NavigationProgress', () => {
     wait(NAVIGATION_PROGRESS_TIMEOUT_MS);
     expect(bar()).toBeNull();
     expect(screen.getByTestId('pending')).toHaveTextContent('none');
+  });
+
+  it('tracks in-app history depth across push, back and search-only commits', () => {
+    resetInAppNavigation();
+    pathname = '/ds/dashboards/1';
+    const view = setup();
+    expect(hasInAppHistory()).toBe(false);
+    const go = (path: string, pop = false) => {
+      pathname = path;
+      if (pop) act(() => { window.dispatchEvent(new PopStateEvent('popstate')); });
+      view.rerender(<NavigationProgress />);
+    };
+    search = 'a=1';
+    go('/ds/dashboards/1');
+    expect(hasInAppHistory()).toBe(false);
+    go('/ds/inbox');
+    expect(hasInAppHistory()).toBe(true);
+    go('/ds/dashboards/1', true);
+    // back on the landing page: the entry behind it is outside the app
+    expect(hasInAppHistory()).toBe(false);
+    go('/ds/inbox', true);
+    expect(hasInAppHistory()).toBe(true);
+    pathname = '/ds/accounts';
   });
 });

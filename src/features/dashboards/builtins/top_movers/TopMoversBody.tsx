@@ -74,7 +74,7 @@ export function TopMoversBody({ n }: { n: number }) {
   if (movers.gainers.length + movers.losers.length === 0) {
     return (
       <EmptyState
-        compact
+        size="sm"
         title="No price moves yet"
         description="Moves show up once your holdings have two evening prices."
       />

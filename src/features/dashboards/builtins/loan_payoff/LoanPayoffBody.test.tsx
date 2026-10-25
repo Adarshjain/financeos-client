@@ -85,7 +85,7 @@ describe('LoanPayoffBody', () => {
     expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/loans'));
   });
 
-  it('per loan: outstanding, % principal repaid, payoff month, interest to go and next EMI; the amount left opens the loan breakdown', async () => {
+  it('per loan: name, amount left and a repaid bar only; the amount left opens the loan breakdown', async () => {
     respond([loan(), loan({ id: 'l2', name: 'Car loan', nextDueDate: null, projectedEndDate: null })]);
     renderWithQuery(<LoanPayoffBody loanId={null} />);
     const rows = within(await screen.findByRole('list', { name: 'Loans' })).getAllByRole('listitem');
@@ -93,8 +93,11 @@ describe('LoanPayoffBody', () => {
     expect(rows[0]).toHaveTextContent('Home loan');
     expect(rows[0]).toHaveTextContent('₹34,50,000 left');
     expect(within(rows[0]).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '31');
-    expect(rows[0]).toHaveTextContent('31% of principal repaid · paid off by Mar 41');
-    expect(rows[0]).toHaveTextContent('₹21,60,000 interest to go · Next EMI ₹43,391 on 5 Nov');
+    // No second or third text line.
+    expect(rows[0]).not.toHaveTextContent('of principal repaid');
+    expect(rows[0]).not.toHaveTextContent('paid off by');
+    expect(rows[0]).not.toHaveTextContent('interest to go');
+    expect(rows[0]).not.toHaveTextContent('Next EMI');
     expect(within(rows[0]).queryByRole('link')).not.toBeInTheDocument();
     await userEvent.click(within(rows[0]).getByRole('button', { name: '₹34,50,000 left' }));
     const dialog = screen.getByTestId('breakdown');
@@ -103,10 +106,7 @@ describe('LoanPayoffBody', () => {
     expect(dialog).toHaveAttribute('data-title', 'Home loan');
     await userEvent.click(dialog);
     expect(screen.queryByTestId('breakdown')).not.toBeInTheDocument();
-    // Without a schedule date the parts are left out.
-    expect(rows[1]).toHaveTextContent('31% of principal repaid');
-    expect(rows[1]).not.toHaveTextContent('paid off by');
-    expect(rows[1]).not.toHaveTextContent('Next EMI');
+    expect(within(rows[1]).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '31');
   });
 
   it('a picked loan shows only that loan; a closed or missing one says so', async () => {

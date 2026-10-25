@@ -1,16 +1,14 @@
 'use client';
 
-// loan_payoff: for each active loan (or the one picked in the widget's params) what's left, how much principal
-// is repaid, the expected payoff date, the interest still to pay and the next EMI. The amount left opens the loan's breakdown.
+// loan_payoff: for each active loan (or the one picked in the widget's params) its name, what's left and a thin bar
+// of how much principal is repaid. The amount left opens the loan's breakdown.
 // Content only; the dashboard frame draws the card.
 
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, ProgressBar, Skeleton } from '@/components/ds';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { rupees } from '@/features/investments/investmentsFormat';
-import { monthYearShort } from '@/features/loans/loanFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { appHref } from '@/features/shell/routes';
 import type { LoanResponse } from '@/lib/loan.types';
@@ -19,7 +17,7 @@ import { useActiveLoans } from '@/lib/query/hooks/useLoans';
 import { BodyError } from '../investmentsLoansParts';
 import { principalRepaidPct } from './loanPayoff';
 
-/** The widget's loading skeleton: two loans, each a name and figure over a bar and a line. */
+/** The widget's loading skeleton: two loans, each a name and figure over a bar. */
 export function LoanPayoffSkeleton() {
   return (
     <div data-testid="loan-payoff-loading">
@@ -30,7 +28,6 @@ export function LoanPayoffSkeleton() {
             <Skeleton width="25%" />
           </div>
           <Skeleton width="100%" height={6} />
-          <Skeleton width="60%" />
         </div>
       ))}
     </div>
@@ -39,21 +36,10 @@ export function LoanPayoffSkeleton() {
 
 function LoanRow({ loan, onOpen }: { loan: LoanResponse; onOpen: (loan: LoanResponse) => void }) {
   const pct = principalRepaidPct(loan);
-  const facts = [
-    `${Math.round(pct)}% of principal repaid`,
-    loan.projectedEndDate ? `paid off by ${monthYearShort(loan.projectedEndDate)}` : null,
-  ].filter(Boolean);
-  const nextEmi = loan.nextDueDate ? `Next EMI ${rupees(loan.currentEmi)} on ${formatDayMonth(loan.nextDueDate)}` : null;
   return (
     <ListRow
       wrap
       title={loan.name}
-      subtitle={
-        <>
-          <div>{facts.join(' · ')}</div>
-          <div>{`${rupees(loan.totalInterestRemaining)} interest to go${nextEmi ? ` · ${nextEmi}` : ''}`}</div>
-        </>
-      }
       trailing={
         <Button variant="link" onClick={() => onOpen(loan)}>
           {`${rupees(loan.outstandingPrincipal)} left`}

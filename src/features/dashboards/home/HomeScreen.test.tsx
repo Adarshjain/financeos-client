@@ -47,24 +47,19 @@ import { HomeScreen } from './HomeScreen';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
-// 12:30 in IST on Tuesday 13 Oct 2026.
-const NOW = '2026-10-13T07:00:00Z';
-
 const widget = (id: string) => ({ id, kind: 'builtin', builtinKey: 'upcoming', params: {}, title: null, reportId: null, layout: { x: 0, y: 0, w: 50, h: 24 }, builtin: { key: 'upcoming', label: 'Upcoming', minW: 50, kind: 'template', category: 'money' } });
 const home: DashboardResponse = { id: 'home', name: 'Home', description: null, isDefault: true, updatedAt: '2026-10-13T08:00:00Z', createdAt: '2026-10-01T00:00:00Z', widgets: [widget('w1')] as unknown as DashboardResponse['widgets'] };
 const money: DashboardResponse = { id: 'money', name: 'Money overview', description: 'Spend and portfolio', isDefault: false, updatedAt: '2026-10-09T08:00:00Z', createdAt: '2026-10-01T00:00:00Z', widgets: [widget('m1'), widget('m2')] as unknown as DashboardResponse['widgets'] };
 
-function render(dashboards: DashboardResponse[], props: Partial<React.ComponentProps<typeof HomeScreen>> = {}, badge: number | null = 2) {
+function render(dashboards: DashboardResponse[]) {
   const queryClient = createTestQueryClient();
   queryClient.setQueryData(keys.dashboards.list(), dashboards);
   queryClient.setQueryData(keys.dashboards.builtins(), []);
-  if (badge !== null) queryClient.setQueryData(keys.inbox.summary(), { actNow: 1, needsLook: 1, info: 0, badge });
   api.GET.mockImplementation(async (url: string) => {
     if (url === '/api/v1/dashboards') return { data: dashboards };
-    if (url === '/api/v1/inbox/summary') return { data: { actNow: 1, needsLook: 1, info: 0, badge: badge ?? 0 } };
     return { data: [] };
   });
-  return renderWithQuery(<HomeScreen displayName="Arjun Mehta" lastSyncedAt="2026-10-13T06:56:00Z" nowIso={NOW} {...props} />, { queryClient });
+  return renderWithQuery(<HomeScreen />, { queryClient });
 }
 
 beforeEach(() => {
@@ -72,24 +67,19 @@ beforeEach(() => {
 });
 
 describe('HomeScreen', () => {
-  it('greets by first name for the hour in IST, and says what needs you and when it last synced', () => {
+  it('has no greeting, status line or page title: the switcher and the ⋯ menu are the top bar\'s title', () => {
     render([home, money]);
-    expect(screen.getByRole('heading', { name: 'Good afternoon, Arjun' })).toBeInTheDocument();
-    expect(screen.getByText('Tuesday 13 Oct · 2 things need you · synced 4 min ago')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Good/ })).toBeNull();
+    expect(screen.queryByText(/things? needs? you|synced/)).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Home' })).toBeNull();
+    const bar = screen.getByRole('banner');
+    expect(within(bar).getByTestId('home-switch')).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: 'Dashboard actions' })).toBeInTheDocument();
+    // Nothing above the widgets in the body.
+    expect(screen.getByRole('main').firstElementChild).toBe(screen.getByTestId('widgets'));
   });
 
-  it('the first render says what needs you from the server count when the cache has none yet (same as the server markup)', () => {
-    render([home], { needsYou: 3 }, null);
-    expect(screen.getByText('Tuesday 13 Oct · 3 things need you · synced 4 min ago')).toBeInTheDocument();
-  });
-
-  it('leaves out the parts that have no data', () => {
-    render([home], { displayName: null, lastSyncedAt: undefined }, null);
-    expect(screen.getByRole('heading', { name: 'Good afternoon' })).toBeInTheDocument();
-    expect(screen.getByText('Tuesday 13 Oct')).toBeInTheDocument();
-  });
-
-  it('shows the default dashboard under the greeting', () => {
+  it('shows the default dashboard', () => {
     render([money, home]);
     expect(screen.getByTestId('widgets')).toHaveAttribute('data-dashboard', 'Home');
     expect(screen.getByTestId('widgets')).toHaveTextContent('w1');
@@ -111,12 +101,26 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/ds/dashboards');
   });
 
-  it('the ⋯ menu has Add widget, Edit dashboard and New dashboard', async () => {
+  it('the ⋯ menu of the default dashboard has Add widget, Edit dashboard and New dashboard, with no Set as default', async () => {
     render([home]);
     await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Edit dashboard', 'New dashboard']);
     await user.click(screen.getByRole('menuitem', { name: 'Edit dashboard' }));
     expect(router.push).toHaveBeenCalledWith('/ds/dashboards/home?edit=1');
+  });
+
+  it('the ⋯ menu of a dashboard that is not the default offers Set as default, which saves it as the default', async () => {
+    api.PUT.mockResolvedValue({ data: { ...money, isDefault: true } });
+    render([home, money]);
+    // The default toggle re-reads the dashboard before it writes.
+    api.GET.mockImplementation(async (url: string) => ({ data: url === '/api/v1/dashboards/{id}' ? money : [] }));
+    await user.click(screen.getByTestId('home-switch'));
+    await user.click(screen.getByRole('option', { name: 'Money overview' }));
+    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard']);
+    await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Set as default'));
+    expect(api.PUT.mock.calls[0][1].body).toMatchObject({ name: 'Money overview', isDefault: true });
   });
 
   it('New dashboard goes to the create page', async () => {
@@ -173,7 +177,6 @@ describe('HomeScreen', () => {
       expect(screen.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/ds/dashboards/new');
       expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/ds/dashboards');
       expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
-      expect(screen.queryByRole('heading', { name: /Good/ })).toBeNull();
     });
 
     it('Restore default Home restores it, says so and reloads the page', async () => {

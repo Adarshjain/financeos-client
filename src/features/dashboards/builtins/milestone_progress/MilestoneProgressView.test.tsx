@@ -24,30 +24,31 @@ describe('MilestoneProgressView', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('a row per card: progress, days left, daily pace, payout hint, linking to the card on Rewards', () => {
+  it('a row per card: card · milestone, percent and a bar, linking to the card on Rewards', () => {
     renderWithQuery(<MilestoneProgressView {...view(milestones)} />);
     const rows = screen.getAllByTestId('milestone-row');
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveTextContent('Atlas · ₹3L quarterly');
     expect(rows[0]).toHaveTextContent('54%');
-    expect(rows[0]).toHaveTextContent('₹1,62,000.00 of ₹3,00,000.00 · 10 days left · ₹13,800.00/day to hit it · Pays points');
+    expect(within(rows[0]).getByRole('progressbar')).toBeInTheDocument();
+    for (const row of rows) {
+      expect(row).not.toHaveTextContent(/days? left|\/day|Pays|Reached| of ₹/);
+    }
     expect(rows[0].closest('a') ?? within(rows[0]).getByRole('link')).toHaveAttribute('href', expect.stringMatching(/\/rewards\?account=c1$/));
-    expect(rows[1]).toHaveTextContent('1 day left');
-    expect(rows[1]).toHaveTextContent('Pays cash');
   });
 
-  it('transaction-count milestones read as counts; a reached one has no pace; a known payout shows its amount', () => {
+  it('transaction-count milestones and reached ones show the same card, name and percent only', () => {
     const t = rawTable([...COLS, 'basis', 'payoutValue'], [
       { id: 'c', card: 'C', cardId: 'c', milestone: '20 txns', windowEnd: '2026-10-19', rewardType: 'POINTS', basis: 'TXN_COUNT', threshold: 20, progress: 9, progressPct: 45, payoutValue: 5000 },
       { id: 'd', card: 'D', cardId: 'd', milestone: 'Spend', windowEnd: '2026-10-19', rewardType: 'CASH', threshold: 1000, progress: 1000, progressPct: 100, payoutValue: 250 },
     ]);
     renderWithQuery(<MilestoneProgressView {...view(t)} />);
     const [c, d] = screen.getAllByTestId('milestone-row');
-    expect(c).toHaveTextContent('9 of 20 txns · 10 days left · 2 txn/day to hit it');
-    expect(c).toHaveTextContent('Pays 5,000 pts');
-    expect(d).toHaveTextContent('Reached');
-    expect(d).not.toHaveTextContent('/day');
-    expect(d).toHaveTextContent('Pays ₹250.00');
+    expect(c).toHaveTextContent('C · 20 txns');
+    expect(c).toHaveTextContent('45%');
+    expect(c).not.toHaveTextContent(/txn\/day|Pays|days left/);
+    expect(d).toHaveTextContent('100%');
+    expect(d).not.toHaveTextContent(/Reached|Pays/);
   });
 
   it('empty: no milestones in progress', () => {

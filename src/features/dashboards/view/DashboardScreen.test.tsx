@@ -184,17 +184,23 @@ describe('viewing a dashboard', () => {
   });
 });
 
+/** The top bar's + opens its menu; Add header is its second row. */
+const addHeaderFromTopBar = async () => {
+  await user.click(screen.getByRole('button', { name: /^Add$/ }));
+  await user.click(screen.getByRole('menuitem', { name: 'Add header' }));
+};
+
 describe('editing a dashboard', () => {
   const edit = async () => {
     show(<DashboardScreen dashboard={dashboard({ description: 'Everything' })} />);
     await user.click(screen.getByRole('button', { name: 'Edit' }));
   };
 
-  it('Edit shows the name and description, Add header, the bottom bar and the arranged widgets', async () => {
+  it('Edit shows the name and description, the bottom bar and the arranged widgets, with no Add header button by the name', async () => {
     await edit();
     expect(screen.getByLabelText('Dashboard name')).toHaveValue('Money overview');
     expect(screen.getAllByLabelText(/Description/)[0]).toHaveValue('Everything');
-    expect(screen.getByRole('button', { name: 'Add header' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add header' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
     expect(screen.getByTestId('grid')).toHaveAttribute('data-editing', 'true');
@@ -318,7 +324,7 @@ describe('editing a dashboard', () => {
 
   it('Add header puts an untitled header on top with its title field focused; typing titles it', async () => {
     await edit();
-    await user.click(screen.getByRole('button', { name: 'Add header' }));
+    await addHeaderFromTopBar();
     const field = screen.getAllByLabelText('Header')[0];
     await waitFor(() => expect(field).toHaveFocus());
     expect(screen.getAllByTestId('grid-item')).toHaveLength(4);
@@ -331,7 +337,7 @@ describe('editing a dashboard', () => {
 
   it('an untitled header blocks Save and marks its field', async () => {
     await edit();
-    await user.click(screen.getByRole('button', { name: 'Add header' }));
+    await addHeaderFromTopBar();
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByText('Give this header a title.')).toBeInTheDocument();
     expect(api.PUT).not.toHaveBeenCalled();
@@ -390,9 +396,25 @@ describe('a new dashboard', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/ds/dashboards/new-id'));
   });
 
-  it('the top bar + adds a widget', async () => {
+  it('the top bar + opens a menu with Add widget and Add header; Add widget opens the picker', async () => {
     show(<DashboardScreen />);
     await user.click(screen.getByRole('button', { name: /^Add$/ }));
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Add header']);
+    await user.click(screen.getByRole('menuitem', { name: 'Add widget' }));
     expect(await screen.findByRole('dialog', { name: /Add widget/ })).toBeInTheDocument();
+  });
+
+  it('the top bar + Add header adds an untitled header', async () => {
+    show(<DashboardScreen />);
+    await addHeaderFromTopBar();
+    expect(screen.getAllByLabelText('Header')).toHaveLength(1);
+  });
+
+  it('the Discard confirmation is not red: it confirms with the default tone', async () => {
+    show(<DashboardScreen />);
+    await user.type(screen.getByLabelText('Dashboard name'), 'Cards');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    const confirm = within(await screen.findByRole('dialog')).getByRole('button', { name: 'Discard' });
+    expect(confirm.className).not.toMatch(/danger/);
   });
 });

@@ -66,23 +66,26 @@ function mockRects(c: HTMLElement, rects: Record<string, [number, number, number
 }
 
 describe('WidgetGrid layout', () => {
-  it('maps each width to desktop and phone column classes', () => {
+  it('maps each width to a desktop span and stacks everything in one phone column', () => {
     const all: WidgetGridItem[] = (
       ['quarter', 'third', 'half', 'two-thirds', 'three-quarters', 'full'] as const
     ).map((width) => ({ id: width, width, children: <p>{width}</p> }));
     const { container } = render(<WidgetGrid items={all} />);
-    const expected: Record<string, [string, string]> = {
-      quarter: ['desk:col-span-3', 'max-desk:col-span-1'],
-      third: ['desk:col-span-4', 'max-desk:col-span-1'],
-      half: ['desk:col-span-6', 'max-desk:col-span-1'],
-      'two-thirds': ['desk:col-span-8', 'max-desk:col-span-2'],
-      'three-quarters': ['desk:col-span-9', 'max-desk:col-span-2'],
-      full: ['desk:col-span-12', 'max-desk:col-span-2'],
+    const expected: Record<string, string> = {
+      quarter: 'desk:col-span-3',
+      third: 'desk:col-span-4',
+      half: 'desk:col-span-6',
+      'two-thirds': 'desk:col-span-8',
+      'three-quarters': 'desk:col-span-9',
+      full: 'desk:col-span-12',
     };
-    for (const [id, [desk, phone]] of Object.entries(expected)) {
-      expect(itemEl(container, id)).toHaveClass(desk, phone);
+    for (const [id, desk] of Object.entries(expected)) {
+      expect(itemEl(container, id)).toHaveClass(desk);
+      // phone: no span classes, so every widget takes the single column
+      expect(itemEl(container, id).className).not.toContain('max-desk:col-span');
     }
-    expect(container.firstElementChild).toHaveClass('grid-cols-2', 'desk:grid-cols-12');
+    expect(container.firstElementChild).toHaveClass('grid-cols-1', 'desk:grid-cols-12');
+    expect(container.firstElementChild?.className).not.toContain('grid-cols-2');
   });
 
   it('exports the width helpers', () => {
@@ -188,6 +191,24 @@ describe('WidgetGrid drag to reorder', () => {
     mockRects(utils.container, rects);
     return { ...utils, onLayoutChange };
   }
+
+  it('keeps every item its own stacking context and lifts only the dragged one', () => {
+    const { container } = setup();
+    for (const id of ['a', 'b', 'c']) expect(itemEl(container, id)).toHaveClass('isolate');
+    const grip = screen.getByRole('button', { name: 'Drag to reorder Alpha' });
+    fireEvent.pointerDown(grip, { clientX: 10, clientY: 10, pointerId: 1 });
+    expect(itemEl(container, 'a')).toHaveClass('z-sticky', 'shadow-level-3');
+    expect(itemEl(container, 'b').className).not.toContain('z-');
+    expect(itemEl(container, 'c').className).not.toContain('z-');
+    // the item's own grip stays inside it (z-floating is local to the isolated item)
+    expect(itemEl(container, 'b').contains(screen.getByRole('button', { name: 'Drag to reorder Beta' }))).toBe(true);
+  });
+
+  it('uses zero-min tracks so wide content cannot widen the page', () => {
+    const { container } = render(<WidgetGrid items={items} editing />);
+    expect(container.firstElementChild).toHaveClass('min-w-0', 'max-w-full', 'grid-cols-1');
+    expect(itemEl(container, 'a').firstElementChild).toHaveClass('grid-cols-1', 'min-w-0');
+  });
 
   it('previews the new order while dragging and commits on release', () => {
     const { container, onLayoutChange } = setup();

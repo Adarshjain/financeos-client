@@ -24,17 +24,16 @@ beforeEach(() => {
 });
 
 describe('loadDashboardsList', () => {
-  it('reads the dashboards, the catalog and the reports once, for the browser cache', async () => {
+  it('reads the dashboards and the reports once, for the browser cache, and not the built-in catalog the list no longer shows', async () => {
     const result = await loadDashboardsList();
     if (!result.ok) throw new Error('expected ok');
-    expect(queries(result.data)).toEqual(
-      expect.arrayContaining([JSON.stringify(keys.dashboards.list()), JSON.stringify(keys.dashboards.builtins()), JSON.stringify(keys.reports.list())]),
-    );
+    expect(queries(result.data)).toEqual(expect.arrayContaining([JSON.stringify(keys.dashboards.list()), JSON.stringify(keys.reports.list())]));
+    expect(queries(result.data)).not.toContain(JSON.stringify(keys.dashboards.builtins()));
     expect(dashboardsApi.list).toHaveBeenCalledTimes(1);
+    expect(dashboardsApi.builtins).not.toHaveBeenCalled();
   });
 
-  it('only leaves the catalog and the reports count to the browser when they fail', async () => {
-    dashboardsApi.builtins.mockRejectedValue(new Error('down'));
+  it('only leaves the reports count to the browser when it fails', async () => {
     reportsApi.list.mockRejectedValue(new Error('down'));
     const result = await loadDashboardsList();
     if (!result.ok) throw new Error('expected ok');

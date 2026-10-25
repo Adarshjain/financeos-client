@@ -143,9 +143,10 @@ describe('DashboardWidgetFrame states', () => {
 });
 
 describe('DashboardWidgetFrame header', () => {
-  it('a built-in with a page has "Open ›" to it; a report widget has none', () => {
+  it('has no "Open ›" link on any widget; the ⋮ menu is the way to the full page', () => {
     const { unmount } = renderWithQuery(<DashboardWidgetFrame widget={builtin('upcoming', 'template')} />);
-    expect(screen.getByRole('link', { name: /Open/ })).toHaveAttribute('href', '/ds/upcoming');
+    expect(screen.queryByRole('link', { name: /Open/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Widget options' })).toBeInTheDocument();
     unmount();
     renderWithQuery(<DashboardWidgetFrame widget={report()} />);
     expect(screen.queryByRole('link', { name: /Open/ })).toBeNull();

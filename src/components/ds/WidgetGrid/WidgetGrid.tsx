@@ -98,16 +98,6 @@ const DESK_SPAN_CLASS: Record<WidgetGridWidth, string> = {
   full: 'desk:col-span-12',
 };
 
-/** Phone grid has 2 columns: half and narrower take one, wider takes both. */
-const PHONE_SPAN_CLASS: Record<WidgetGridWidth, string> = {
-  quarter: 'max-desk:col-span-1',
-  third: 'max-desk:col-span-1',
-  half: 'max-desk:col-span-1',
-  'two-thirds': 'max-desk:col-span-2',
-  'three-quarters': 'max-desk:col-span-2',
-  full: 'max-desk:col-span-2',
-};
-
 interface Rect {
   left: number;
   top: number;
@@ -217,9 +207,11 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
       if (!el) return;
       el.style.transform = '';
       const r = el.getBoundingClientRect();
-      el.style.transform = `translate(${drag.x - grab.current.x - r.left}px, ${
-        drag.y - grab.current.y - r.top
-      }px)`;
+      let dx = drag.x - grab.current.x - r.left;
+      // Keep the item inside the grid sideways: a transform widens the page's scrollable area.
+      const g = gridRef.current?.getBoundingClientRect();
+      if (g) dx = Math.min(Math.max(dx, g.left - r.left), g.right - r.right);
+      el.style.transform = `translate(${dx}px, ${drag.y - grab.current.y - r.top}px)`;
     }, [drag]);
 
     useEffect(
@@ -387,7 +379,7 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
         ref={setGrid}
         data-editing={editing ? 'true' : undefined}
         className={cn(
-          'grid grid-cols-2 desk:grid-cols-12 grid-flow-row auto-rows-auto items-stretch gap-space-12 desk:gap-space-16',
+          'grid min-w-0 max-w-full grid-cols-1 desk:grid-cols-12 grid-flow-row auto-rows-auto items-stretch gap-space-12 desk:gap-space-16',
           className,
         )}
         {...props}
@@ -409,14 +401,15 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
               data-width={width}
               data-dragging={dragging ? 'true' : undefined}
               className={cn(
-                'relative flex min-w-0 flex-col',
+                // isolate: the item's own grip, handle and actions (z-floating) stack inside it, so they never draw over a dragged item.
+                'relative isolate flex min-w-0 flex-col',
                 DESK_SPAN_CLASS[width],
-                PHONE_SPAN_CLASS[width],
                 editing && 'rounded-ds-lg ring-1 ring-line-strong',
+                // Above the other items (which are z-auto), below the sticky bar and tab bar.
                 dragging && 'z-sticky shadow-level-3',
               )}
             >
-              <div className="grid min-w-0 flex-1" inert={editing && !item.interactive}>
+              <div className="grid min-w-0 flex-1 grid-cols-1" inert={editing && !item.interactive}>
                 {item.children}
               </div>
               {editing && (

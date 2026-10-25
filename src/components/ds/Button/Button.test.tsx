@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { Icon } from '../Icon/Icon';
 import { Button } from './Button';
 
+const underlineEl = () => document.querySelector('[data-underline]') as HTMLElement;
+
 describe('Button component', () => {
   it('renders children correctly', () => {
     render(<Button>Save changes</Button>);
@@ -73,7 +75,8 @@ describe('Button component', () => {
         Delete
       </Button>,
     );
-    expect(screen.getByRole('button')).toHaveClass('no-underline', 'after:bg-line-heavy');
+    expect(screen.getByRole('button')).toHaveClass('no-underline');
+    expect(underlineEl()).toHaveClass('after:bg-line-heavy');
   });
 
   it('handles link variant clicks and disabled state', () => {
@@ -299,12 +302,39 @@ describe('Button type size (UAT)', () => {
           Add
         </Button>,
       );
-      const cls = screen.getByRole('button').className;
+      const cls = underlineEl().className;
       expect(cls).toContain('after:absolute');
       expect(cls).toContain('after:inset-x-0');
       expect(cls).toContain('after:bg-line-heavy');
-      expect(cls).toContain('no-underline');
       expect(cls).toContain('relative');
+      expect(screen.getByRole('button').className).toContain('no-underline');
+    });
+
+    it('puts the underline on a content-width wrapper, not the stretched button', () => {
+      render(
+        <Button variant="link" fullWidth icon={<Icon name="download" />}>
+          Download CSV
+        </Button>,
+      );
+      const btn = screen.getByRole('button');
+      const wrap = underlineEl();
+      expect(btn.className).not.toContain('after:');
+      expect(btn.className).toContain('justify-center');
+      expect(btn.className).toContain('group/link');
+      expect(wrap.className).toContain('group-hover/link:after:hidden');
+      expect(wrap.className).toContain('inline-flex');
+      expect(wrap.className).not.toContain('w-full');
+      expect(wrap).toHaveTextContent('Download CSV');
+      expect(btn.contains(wrap)).toBe(true);
+    });
+
+    it('sizes link icons 2px under the text via icon-inline, for any Icon size', () => {
+      render(
+        <Button variant="link" icon={<Icon name="add" size="lg" />}>
+          Add
+        </Button>,
+      );
+      expect(screen.getByRole('button').className).toContain('[&_svg]:size-icon-inline');
     });
 
     it('works through the icon prop and asChild', () => {
@@ -316,7 +346,7 @@ describe('Button type size (UAT)', () => {
           </a>
         </Button>,
       );
-      expect(screen.getByRole('link').className).toContain('after:inset-x-0');
+      expect(underlineEl().className).toContain('after:inset-x-0');
     });
 
     it('keeps text-decoration for text-only links and none for icon-only', () => {
@@ -337,7 +367,7 @@ describe('Button type size (UAT)', () => {
           Add bank account
         </Button>
       );
-      expect(screen.getByRole('button').className).toContain('gap-space-2');
+      expect(underlineEl().className).toContain('gap-space-2');
     });
   });
 });

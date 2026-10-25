@@ -1,46 +1,162 @@
 'use client';
 
-// The Dashboards list: the Dashboards · Reports tabs, "Restore default Home" while there is no Home, a card per
-// dashboard (name, Default badge, description · widgets · updated, a ⋯ menu), then the built-in widgets as a
-// reference. Delete confirms first; set and clear default confirm with a toast.
+// The Dashboards list, built like the Reports list: the Dashboards · Reports tabs, "Restore default Home" while
+// there is no Home, a search, then a table (name and description, widgets, Default badge, updated, a ⋯ menu).
+// A row opens the dashboard. Delete confirms first; set and clear default confirm with a toast.
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Button, Card, ConfirmDialog, EmptyState, Icon, type ListRowAction, MenuContent, MenuItem, MenuRoot, MenuTrigger, Skeleton } from '@/components/ds';
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  createDataTableColumnHelper,
+  DataTable,
+  EmptyState,
+  Icon,
+  Menu,
+  MenuItem,
+  Text,
+  TextField,
+} from '@/components/ds';
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
 import type { DashboardResponse } from '@/lib/dashboards.types';
-import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 
 import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '../data/useDashboardActions';
-import { dashboardHref, editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
-import { builtinsSubtitle, canRestoreHome, dashboardSubtitle } from './dashboardsList';
+import { editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
+import { canRestoreHome, type DashboardRow, dashboardRows, filterDashboardRows } from './dashboardsList';
+
+/** A press on a control inside a row must not also open the row. */
+const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
 const noop = () => undefined;
+
+const ch = createDataTableColumnHelper<DashboardRow>();
+
+interface RowActions {
+  onEdit: (row: DashboardRow) => void;
+  onToggleDefault: (row: DashboardRow) => void;
+  onDelete: (row: DashboardRow) => void;
+}
+
+/** The ⋯ menu of a dashboard: the last cell of the row, at the trailing edge on desktop and phone. */
+function RowMenu({ row, actions }: { row: DashboardRow; actions: RowActions }) {
+  return (
+    <Menu
+      align="end"
+      trigger={
+        <Button variant="ghost" size="sm" iconOnly aria-label={`Options for ${row.name}`}>
+          <Icon name="more" size="sm" />
+        </Button>
+      }
+    >
+      <MenuItem onSelect={() => actions.onEdit(row)}>Edit</MenuItem>
+      <MenuItem onSelect={() => actions.onToggleDefault(row)}>{row.isDefault ? 'Clear default' : 'Set as default'}</MenuItem>
+      <MenuItem destructive onSelect={() => actions.onDelete(row)}>
+        Delete dashboard
+      </MenuItem>
+    </Menu>
+  );
+}
+
+function makeColumns(actions: RowActions) {
+  return [
+    ch.display({
+      id: 'dashboard',
+      header: 'Dashboard',
+      meta: { size: 'fill', grow: 1.6, phone: 'main', wrap: true },
+      cell: ({ row }) => (
+        <div className="flex flex-col min-w-0">
+          <Text variant="body-strong" truncate>
+            {row.original.name}
+          </Text>
+          {row.original.description ? (
+            <div className="max-desk:hidden min-w-0">
+              <Text variant="caption" tone="ink-3" truncate>
+                {row.original.description}
+              </Text>
+            </div>
+          ) : null}
+          <div className="desk:hidden min-w-0">
+            <Text variant="caption" tone="ink-3" truncate>
+              {row.original.phoneSub}
+            </Text>
+          </div>
+        </div>
+      ),
+    }),
+    ch.display({
+      id: 'widgets',
+      header: 'Widgets',
+      meta: { size: 'sm', phone: 'hidden' },
+      cell: ({ row }) => (
+        <Text variant="body" tone="ink-2">
+          {row.original.widgets}
+        </Text>
+      ),
+    }),
+    ch.display({
+      id: 'default',
+      header: 'Default',
+      meta: { size: 'md', phone: 'hidden' },
+      cell: ({ row }) => (row.original.isDefault ? <Badge tone="success">Default</Badge> : null),
+    }),
+    ch.display({
+      id: 'updated',
+      header: 'Updated',
+      meta: { size: 'sm', phone: 'hidden' },
+      cell: ({ row }) => (
+        <Text variant="body" tone="ink-3">
+          {row.original.updated}
+        </Text>
+      ),
+    }),
+    ch.display({
+      id: 'actions',
+      header: '',
+      meta: { size: 'xs', align: 'end', phone: 'amount' },
+      cell: ({ row }) => (
+        <div
+          className="flex h-full items-center justify-end"
+          onPointerDown={stop}
+          onPointerUp={stop}
+          onClick={stop}
+          onKeyDown={stop}
+        >
+          <RowMenu row={row.original} actions={actions} />
+        </div>
+      ),
+    }),
+  ];
+}
 
 export function DashboardsScreen() {
   const router = useRouter();
   const { data: dashboards = [] } = useDashboards();
-  const { data: builtins = [] } = useBuiltins();
   const { data: reports } = useReportsList();
   const toggleDefault = useToggleDefault(noop);
   const remove = useDeleteDashboard();
   const home = useRestoreHome();
+  const [search, setSearch] = React.useState('');
   const [deleting, setDeleting] = React.useState<DashboardResponse | null>(null);
 
-  const actionsFor = (d: DashboardResponse): ListRowAction[] => [
-    { id: 'edit', label: 'Edit', onSelect: () => router.push(editDashboardHref(d.id)) },
-    {
-      id: 'default',
-      label: d.isDefault ? 'Clear default' : 'Set as default',
+  const rows = React.useMemo(() => dashboardRows(dashboards), [dashboards]);
+  const visible = React.useMemo(() => filterDashboardRows(rows, search), [rows, search]);
+
+  const rowActions = React.useMemo<RowActions>(
+    () => ({
+      onEdit: (row) => router.push(editDashboardHref(row.id)),
       // Refuses rather than overwrite a dashboard that changed since this list was read.
-      onSelect: () => toggleDefault.mutate({ id: d.id, makeDefault: !d.isDefault, updatedAt: d.updatedAt }),
-    },
-    { id: 'delete', label: 'Delete dashboard', destructive: true, onSelect: () => setDeleting(d) },
-  ];
+      onToggleDefault: (row) => toggleDefault.mutate({ id: row.id, makeDefault: !row.isDefault, updatedAt: row.updatedAt }),
+      onDelete: (row) => setDeleting(dashboards.find((d) => d.id === row.id) ?? null),
+    }),
+    [router, toggleDefault, dashboards],
+  );
+  const columns = React.useMemo(() => makeColumns(rowActions), [rowActions]);
 
   const restore = (
     <Button variant="secondary" className="max-desk:w-full desk:self-end" loading={home.pending} onClick={home.restore}>
@@ -64,50 +180,39 @@ export function DashboardsScreen() {
       ) : (
         <>
           {canRestoreHome(dashboards) ? restore : null}
-          <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-3 desk:gap-space-16 desk:items-start">
-            {dashboards.map((d) => (
-              <Card
-                key={d.id}
-                data-testid="dashboard-row"
-                data-dashboard-id={d.id}
-                title={
-                  <span className="flex items-center gap-space-8">
-                    <Button variant="link" asChild className="min-w-0 truncate">
-                      <Link href={dashboardHref(d.id)}>{d.name}</Link>
-                    </Button>
-                    {d.isDefault ? <Badge tone="success">Default</Badge> : null}
-                  </span>
-                }
-                subtitle={dashboardSubtitle(d)}
-                action={
-                  <MenuRoot>
-                    <MenuTrigger asChild>
-                      <Button type="button" variant="ghost" size="sm" iconOnly aria-label="More options" icon={<Icon name="more" size="sm" />} />
-                    </MenuTrigger>
-                    <MenuContent align="end">
-                      {actionsFor(d).map((act) => (
-                        <MenuItem key={act.id} destructive={act.destructive} onSelect={() => act.onSelect()}>
-                          {act.label}
-                        </MenuItem>
-                      ))}
-                    </MenuContent>
-                  </MenuRoot>
-                }
-              />
-            ))}
+
+          <div className="-mx-space-16 -mt-space-4 -mb-space-8 flex gap-space-8 overflow-x-auto px-space-16 py-space-4 scrollbar-none desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4">
+            <TextField
+              type="search"
+              size="md"
+              className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
+              prefix={<Icon name="search" size="sm" />}
+              clearable
+              clearLabel="Clear search"
+              placeholder="Search dashboards"
+              value={search}
+              onValueChange={setSearch}
+            />
           </div>
+
+          <Card>
+            <DataTable
+              columns={columns}
+              data={visible}
+              getRowId={(row) => row.id}
+              onRowSelect={(row) => router.push(row.href)}
+              empty={
+                <EmptyState
+                  compact
+                  description="No dashboards match."
+                  action={{ label: 'Clear search', variant: 'link', onSelect: () => setSearch('') }}
+                />
+              }
+              stickyHeader={false}
+            />
+          </Card>
         </>
       )}
-
-      <Card title="Built-in widgets" subtitle={builtinsSubtitle(builtins.length)}>
-        <div className="flex flex-wrap gap-space-6 px-space-16 pb-space-14">
-          {builtins.map((b) => (
-            <Badge key={b.key} variant="outline" shape="rounded" size="md" tone="neutral">
-              {b.label}
-            </Badge>
-          ))}
-        </div>
-      </Card>
 
       {deleting ? (
         <ConfirmDialog
@@ -131,12 +236,15 @@ export function DashboardsListSkeleton() {
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <ReportsTabs active="dashboards" />
-      <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-3 desk:gap-space-16">
-        <Skeleton height={64} />
-        <Skeleton height={64} />
-        <Skeleton height={64} />
-      </div>
-      <Skeleton height={240} />
+      <Card>
+        <DataTable
+          columns={makeColumns({ onEdit: noop, onToggleDefault: noop, onDelete: noop })}
+          data={[]}
+          getRowId={(row) => row.id}
+          loading
+          skeletonRows={6}
+        />
+      </Card>
     </div>
   );
 }
