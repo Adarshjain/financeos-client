@@ -9,6 +9,8 @@ import {
 } from '@/lib/reports.helpers';
 import type {
   Aggregation,
+  BreakdownBars,
+  BreakdownColumn,
   ChartDefinition,
   ChartOrder,
   ComparisonDisplay,
@@ -59,6 +61,10 @@ export interface ChartDraft {
   subDimensionGranularity?: Granularity;
   /** Breakdown only: sub-rows per row (1..10); undefined = the server default (3). */
   subLimit?: number;
+  /** Breakdown only: the value columns; undefined = the default (amount, share, and change when comparing). */
+  columns?: BreakdownColumn[];
+  /** Breakdown only: undefined = relative to the largest row. */
+  bars?: BreakdownBars;
 }
 
 export interface RawTableDraft {
@@ -211,6 +217,16 @@ export function builderReducer(
         chart.subDimensionField = undefined;
         chart.subDimensionGranularity = undefined;
       }
+      // Columns and bars belong to a breakdown only.
+      if (chart.chartType !== 'breakdown') {
+        chart.columns = undefined;
+        chart.bars = undefined;
+      }
+      // "Change" needs a comparison: turning it off drops the column, and an emptied list is the default again.
+      if (!chart.comparisonEnabled && chart.columns?.includes('change')) {
+        const rest = chart.columns.filter((c) => c !== 'change');
+        chart.columns = rest.length > 0 ? rest : undefined;
+      }
       return { ...state, chart };
     }
     case 'TABLE_SET':
@@ -286,6 +302,8 @@ export function hydrateState(report: ReportResponse): BuilderState {
       subDimensionField: d.subDimension?.field,
       subDimensionGranularity: d.subDimension?.granularity,
       subLimit: d.subLimit,
+      columns: d.columns ?? undefined,
+      bars: d.bars ?? undefined,
     };
   } else {
     if (!isTableDefinition(def)) {

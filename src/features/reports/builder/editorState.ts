@@ -1,7 +1,7 @@
 import type { Aggregation, DatasourceCatalog, ReportCatalog, ReportResponse, ReportType } from '@/lib/reports.types';
 
 import { type BuilderAction, builderReducer, type BuilderState, hydrateState, initialBuilderState } from './builderReducer';
-import { aggsFor, fieldsFor } from './catalog';
+import { aggsFor, fieldsFor, isDateFieldName } from './catalog';
 import { findTemplate, type TemplateDefinition,templateFits } from './templates';
 
 /** The catalog of one datasource, in the shape the builder's selectors take. */
@@ -87,7 +87,12 @@ export function prefillSoleMeasure(state: BuilderState, catalog: DatasourceCatal
 /** The editor's reducer: the builder's, plus the sole-measure choice when the format or datasource changes. */
 export function makeEditorReducer(catalog: ReportCatalog) {
   return (state: BuilderState, action: BuilderAction): BuilderState => {
-    const next = builderReducer(state, action);
+    let next = builderReducer(state, action);
+    // "Change" needs a comparison, which a date dimension never has: the column goes with it.
+    if (action.type === 'CHART_SET' && next.chart.columns?.includes('change') && isDateFieldName(workingCatalog(catalog, next.datasource), next.chart.dimensionField)) {
+      const rest = next.chart.columns.filter((c) => c !== 'change');
+      next = { ...next, chart: { ...next.chart, columns: rest.length > 0 ? rest : undefined } };
+    }
     return action.type === 'SET_TYPE' || action.type === 'SET_DATASOURCE'
       ? prefillSoleMeasure(next, workingCatalog(catalog, next.datasource))
       : next;

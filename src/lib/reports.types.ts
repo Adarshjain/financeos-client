@@ -202,6 +202,12 @@ export interface KpiDefinition {
 /** How a chart's categories are ordered: by the dimension itself, or by the measure (high to low, low to high). */
 export type ChartOrder = 'dimension' | 'value_desc' | 'value_asc';
 
+/** A breakdown's value columns, in the order they are drawn. */
+export type BreakdownColumn = 'amount' | 'share' | 'count' | 'avg' | 'change';
+
+/** What a breakdown row's bar is measured against: the largest row, or the total. */
+export type BreakdownBars = 'relative_to_largest' | 'share_of_total';
+
 /** CHART comparison: the previous period beside the current one. Not offered on a date dimension. */
 export interface ChartComparison {
   enabled?: boolean;
@@ -232,6 +238,10 @@ export interface ChartDefinition {
   subDimension?: DimensionRef;
   /** Breakdown only: sub-rows kept per row (1..10, default 3). */
   subLimit?: number;
+  /** Breakdown only: the value columns shown; absent = the client default (amount, share, and change when comparing). `change` needs `comparison.enabled`. */
+  columns?: BreakdownColumn[];
+  /** Breakdown only: what the bars are relative to; absent = `relative_to_largest`. */
+  bars?: BreakdownBars;
 }
 
 /** TABLE (raw): per-transaction rows for the selected columns. */

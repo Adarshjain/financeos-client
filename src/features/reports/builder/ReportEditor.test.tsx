@@ -342,6 +342,45 @@ describe('Chart options', () => {
   });
 });
 
+describe('Breakdown display options', () => {
+  async function toChart() {
+    setup();
+    await user.click(screen.getByRole('radio', { name: 'Chart' }));
+  }
+
+  it('offers Columns and Bars for a breakdown only, and saves the picks', async () => {
+    await toChart();
+    expect(screen.queryByRole('combobox', { name: 'Columns' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Bars' })).not.toBeInTheDocument();
+    await type('Report name', 'Where the money went');
+    await pick('Chart type', 'Breakdown');
+    await pick('Rows', 'Category');
+    await pick('Measure', 'Spend');
+    await pick('Aggregation', 'Sum');
+    expect(screen.getByRole('combobox', { name: 'Bars' })).toHaveTextContent('Relative to largest');
+    await user.click(screen.getByRole('combobox', { name: 'Columns' }));
+    await user.click(await screen.findByRole('option', { name: 'Transactions' }));
+    await user.keyboard('{Escape}');
+    await pick('Bars', 'Share of total');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(writeCalls()).toHaveLength(1));
+    expect(body().definition).toMatchObject({ columns: ['amount', 'share', 'count'], bars: 'share_of_total' });
+  });
+
+  it('sends neither while they are left at the default', async () => {
+    await toChart();
+    await type('Report name', 'Where the money went');
+    await pick('Chart type', 'Breakdown');
+    await pick('Rows', 'Category');
+    await pick('Measure', 'Spend');
+    await pick('Aggregation', 'Sum');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(writeCalls()).toHaveLength(1));
+    expect(body().definition).not.toHaveProperty('columns');
+    expect(body().definition).not.toHaveProperty('bars');
+  });
+});
+
 describe('Table options', () => {
   async function toTable() {
     setup();
