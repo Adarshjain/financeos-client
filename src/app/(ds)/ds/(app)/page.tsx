@@ -7,8 +7,6 @@ import { ShellPage } from '@/features/shell/ShellPage';
 /** Boards in design-system/screens that have no /ds page yet: [page, area]. */
 const TO_BUILD: [string, string][] = [
   ['Search', 'Home & dashboards'],
-  ['Report view and breakdown', 'Reports'],
-  ['Underlying data', 'Reports'],
   ['Ask the data', 'Reports'],
 ];
 
@@ -106,6 +104,10 @@ export default function DsIndexPage() {
           </ListRow>
           <ListRow asChild title="New report" subtitle="/ds/reports/new" chevron>
             <Link href="/ds/reports/new" />
+          </ListRow>
+          {/* A report's page needs a real id: open one from Reports (breakdown and underlying data live there). */}
+          <ListRow asChild title="Report" subtitle="/ds/reports/[id]" chevron>
+            <Link href="/ds/reports" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />
