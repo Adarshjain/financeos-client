@@ -14,12 +14,15 @@ import {
   Icon,
   Pager,
   Select,
+  type SelectOption,
   showToast,
   StatusWord,
   Text,
 } from '@/components/ds';
+import { AccountPicker } from '@/components/organisms';
 import { watchSession } from '@/lib/authExpiry';
 import type { DividendFilters } from '@/lib/investments.types';
+import { AccountType } from '@/lib/types';
 
 import { downloadCsv } from '../downloadCsv';
 import { exportDividendsCsv } from './dividendsActions';
@@ -33,6 +36,9 @@ import {
   RECEIPT_LABEL,
   TYPE_OPTIONS,
 } from './dividendsModel';
+
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
+const ALL_BROKERS: SelectOption[] = [{ value: '', label: 'All brokers' }];
 
 const ch = createDataTableColumnHelper<DividendListRow>();
 
@@ -179,7 +185,7 @@ export function DividendsListCard({
     }
   };
 
-  const brokerOptions = [{ value: '', label: 'All brokers' }, ...brokers.map((b) => ({ value: b.id, label: b.name }))];
+  const brokerAccounts = React.useMemo(() => brokers.map((b) => ({ id: b.id, name: b.name, type: AccountType.BROKER })), [brokers]);
   const receiptOptions = RECEIPT_FILTER_OPTIONS.map((o) => ({ value: o.value === 'all' ? '' : o.value, label: o.label }));
   const typeOptions = [{ value: '', label: 'All types' }, ...TYPE_OPTIONS];
   const fyLabel = fyOptions.find((o) => o.value === fyValue)?.label ?? 'FY';
@@ -236,10 +242,12 @@ export function DividendsListCard({
           }
         />
         {brokers.length > 0 ? (
-          <Select
+          <AccountPicker
+            accounts={brokerAccounts}
+            types={BROKER_TYPES}
+            leadingOptions={ALL_BROKERS}
             value={state.broker}
-            options={brokerOptions}
-            onValueChange={(v) => go({ broker: v as string, page: 0 })}
+            onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
             trigger={
               <FilterChip hasDropdown selected={state.broker !== ''} className="shrink-0">
                 {brokers.find((b) => b.id === state.broker)?.name ?? 'All brokers'}

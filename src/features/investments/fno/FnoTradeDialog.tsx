@@ -16,16 +16,15 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { AccountPicker, AmountField } from '@/components/organisms';
 import type { Broker } from '@/lib/account.types';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
-import type { FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
+import { AccountType, type FnoContractType, type FnoTradeResponse, type OptionType } from '@/lib/types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
-  brokerLabel,
   emptyForm,
   type FnoTradeErrors,
   type FnoTradeForm,
@@ -35,6 +34,8 @@ import {
   validateForm,
 } from './fnoTradeForm';
 import { useCreateFnoTrade, useDeleteFnoTrade, useUpdateFnoTrade } from './useFnoTradeMutations';
+
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
 
 const FORM_ID = 'fno-trade-form';
 
@@ -63,6 +64,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
   const remove = useDeleteFnoTrade();
   const today = React.useMemo(() => todayInAppZone(), []);
   const [form, setForm] = React.useState<FnoTradeForm>(() => (trade ? formFromTrade(trade) : emptyForm(brokers, today)));
+  const brokerAccounts = React.useMemo(() => brokers.map((b) => ({ ...b, type: AccountType.BROKER })), [brokers]);
   const [errors, setErrors] = React.useState<FnoTradeErrors>({});
   const [confirming, setConfirming] = React.useState(false);
   const saving = create.isPending || update.isPending;
@@ -144,12 +146,13 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
                 value={form.contractType}
                 onValueChange={(v) => set('contractType', v)}
               />
-              <Select
+              <AccountPicker
                 label="Broker account"
                 placeholder="Select a broker"
                 value={form.brokerAccountId}
-                options={brokers.map((b) => ({ value: b.id, label: brokerLabel(b) }))}
-                onValueChange={(v) => set('brokerAccountId', v as string)}
+                accounts={brokerAccounts}
+                types={BROKER_TYPES}
+                onValueChange={(v) => set('brokerAccountId', v ?? '')}
                 error={errors.brokerAccountId}
               />
               <TextField

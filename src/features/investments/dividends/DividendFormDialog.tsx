@@ -14,19 +14,21 @@ import {
   Skeleton,
   TextField,
 } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { AccountPicker, AmountField } from '@/components/organisms';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
 import { keys } from '@/lib/query/keys';
-import type { Dividend, DividendType } from '@/lib/types';
+import { AccountType, type Dividend, type DividendType } from '@/lib/types';
 
 import { rupees } from '../investmentsFormat';
 import { DividendReceiptSection } from './DividendReceiptSection';
 import { type DividendFormOptions, loadDividendFormOptions } from './dividendsActions';
 import { toDecimal,TYPE_OPTIONS } from './dividendsModel';
 import { useDividendMutations } from './useDividendMutations';
+
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
 
 const FORM_ID = 'dividend-form';
 
@@ -167,14 +169,15 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
                   {editing ? (
                     <TextField label="Account" value={dividend?.brokerName ?? ''} disabled readOnly />
                   ) : (
-                    <Select
+                    <AccountPicker
                       label="Account"
-                      options={(options?.brokers ?? []).map((b) => ({ value: b.id, label: b.name }))}
-                      value={brokerId}
+                      accounts={(options?.brokers ?? []).map((b) => ({ ...b, type: AccountType.BROKER }))}
+                      types={BROKER_TYPES}
+                      value={brokerId || null}
                       placeholder="Choose an account"
                       error={errors.broker}
                       onValueChange={(v) => {
-                        setBrokerId(v as string);
+                        setBrokerId(v ?? '');
                         setInstrumentId('');
                         setErrors((e) => ({ ...e, broker: undefined }));
                       }}

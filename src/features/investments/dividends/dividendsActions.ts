@@ -10,7 +10,7 @@ import { AccountType } from '@/lib/types';
 import { fetchPositions } from './dividendsServerApi';
 
 export interface DividendFormOptions {
-  brokers: Pick<Broker, 'id' | 'name'>[];
+  brokers: Pick<Broker, 'id' | 'name' | 'clientId'>[];
   positions: Position[];
 }
 
@@ -20,7 +20,7 @@ export const loadDividendFormOptions = createDomainAction(
   async (): Promise<DividendFormOptions> => {
     const [accounts, positions] = await Promise.all([accountsApi.list(), fetchPositions()]);
     return {
-      brokers: accounts.filter((a) => a.type === AccountType.BROKER).map((a) => ({ id: a.id, name: a.name })),
+      brokers: accounts.filter((a) => a.type === AccountType.BROKER).map((a) => ({ id: a.id, name: a.name, clientId: (a as Broker).clientId })),
       positions,
     };
   },

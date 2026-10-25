@@ -75,7 +75,7 @@ async function pickOption(label: RegExp | string, option: RegExp | string) {
 }
 
 async function chooseAccount() {
-  await pickOption(/Target broker account/, 'Zerodha main (Zerodha)');
+  await pickOption(/Target broker account/, 'Zerodha main');
 }
 
 async function uploadZerodha() {

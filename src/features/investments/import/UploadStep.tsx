@@ -3,10 +3,11 @@
 import React from 'react';
 
 import { Banner, Card, DropZone, Select, TextField } from '@/components/ds';
-import type { Broker } from '@/lib/account.types';
+import { AccountPicker } from '@/components/organisms';
+import { type Broker, isAccountClosed } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 
 import {
-  brokerOptions,
   CAS_ACCEPT,
   HOLDINGS_ACCEPT,
   isFnoOnly,
@@ -19,6 +20,8 @@ import {
 } from './importModel';
 import type { ImportAssetScope, ImportMode } from './types';
 import type { useImportWizard } from './useImportWizard';
+
+const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
 
 export const UPLOAD_FORM_ID = 'import-step1-form';
 
@@ -50,12 +53,13 @@ export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broke
               onValueChange={(v) => wizard.setMode(v as ImportMode)}
               disabled={isPreviewing}
             />
-            <Select
+            <AccountPicker
               label="Target broker account"
               placeholder="Select target account…"
-              options={brokerOptions(brokers, brokerAccountId)}
-              value={brokerAccountId}
-              onValueChange={(v) => wizard.setBrokerAccountId(v as string)}
+              accounts={brokers.filter((b) => !isAccountClosed(b) || b.id === brokerAccountId)}
+              types={BROKER_TYPES}
+              value={brokerAccountId || null}
+              onValueChange={(v) => wizard.setBrokerAccountId(v ?? '')}
               disabled={isPreviewing}
             />
             {mode === 'reconcile_zerodha' ? (

@@ -1,8 +1,7 @@
-import type { SelectGroup, SelectOption } from '@/components/ds';
-import { accountTypeLabel } from '@/features/accounts/form/ds/accountFormModel';
+import type { SelectOption } from '@/components/ds';
 import { formatAmount } from '@/features/accounts/list/accountsList';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
-import { type Account, isAccountClosed } from '@/lib/account.types';
+import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import { AccountType } from '@/lib/types';
 
@@ -102,19 +101,17 @@ export function amountLabel(amount: AmountCondition): string {
   return `${rupees(amount.from ?? 0)} – ${rupees(amount.to ?? 0)}`;
 }
 
-const ACCOUNT_GROUP_ORDER = [AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD, AccountType.GENERIC, AccountType.BROKER];
+/** The account types the Account filter can list, in picker order. */
+export const FILTER_ACCOUNT_TYPES: readonly AccountType[] = [
+  AccountType.BANK_ACCOUNT,
+  AccountType.CREDIT_CARD,
+  AccountType.GENERIC,
+  AccountType.BROKER,
+];
 
-/**
- * The Account dropdown's groups: accounts under their type, closed ones marked, brokers left out unless one is
- * already picked. Empty groups are not listed.
- */
-export function accountGroups(accounts: readonly Account[], picked: readonly string[]): SelectGroup[] {
-  return ACCOUNT_GROUP_ORDER.map((type) => ({
-    name: accountTypeLabel(type),
-    options: accounts
-      .filter((a) => a.type === type && (type !== AccountType.BROKER || picked.includes(a.id)))
-      .map((a): SelectOption => ({ value: a.id, label: a.name, hint: isAccountClosed(a) ? 'Closed' : undefined })),
-  })).filter((g) => g.options.length > 0);
+/** The accounts the Account filter lists: every bank, card and wallet account, and only the brokers already picked. */
+export function filterAccounts(picked: readonly string[], accounts: readonly Account[]): Account[] {
+  return accounts.filter((a) => a.type !== AccountType.BROKER || picked.includes(a.id));
 }
 
 /** The Category dropdown: the server filters on the category name. */

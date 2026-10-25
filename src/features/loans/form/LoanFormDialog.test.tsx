@@ -133,10 +133,10 @@ describe('LoanFormDialog', () => {
     render(<LoanFormDialog onClose={onClose} />);
     await user.click(screen.getByRole('combobox', { name: /^Payment bank account/ }));
     expect(screen.getByRole('option', { name: 'None' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'HDFC Savings' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /HDFC Savings$/ })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Old Bank' })).toBeNull();
     expect(screen.queryByRole('option', { name: 'Axis Magnus' })).toBeNull();
-    await user.click(screen.getByRole('option', { name: 'HDFC Savings' }));
+    await user.click(screen.getByRole('option', { name: /HDFC Savings$/ }));
     fillRequired();
     create();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());

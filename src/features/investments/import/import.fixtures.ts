@@ -2,7 +2,7 @@ import type { Broker } from '@/lib/account.types';
 import type { FnoTradePreview, ImportPreview, ReconciledExecution, ReconcilePreview } from '@/lib/types';
 
 export const broker = (over: Partial<Broker> = {}) =>
-  ({ id: 'b1', name: 'Zerodha main', type: 'BROKER', provider: 'Zerodha', ...over }) as Broker;
+  ({ id: 'b1', name: 'Zerodha main', type: 'broker', provider: 'Zerodha', ...over }) as Broker;
 
 export const execution = (over: Partial<ReconciledExecution> = {}): ReconciledExecution => ({
   rowIndex: 1,

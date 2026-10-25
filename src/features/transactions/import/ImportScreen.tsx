@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, DropZone, Pager, Select, type SelectOption, Text } from '@/components/ds';
-import { BankLogo, JobsHistory } from '@/components/organisms';
-import { accountNeedsBank } from '@/features/accounts/accountBank';
+import { Button, Card, DropZone, Pager, Text } from '@/components/ds';
+import { AccountPicker, JobsHistory } from '@/components/organisms';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
@@ -15,11 +14,14 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import type { Account } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
+import { AccountType } from '@/lib/types';
 
 import { formatFileSize, MAX_REQUEST_MB } from './fileLimits';
 import { IMPORT_ACTIVITY_HREF, IMPORT_JOB_TYPE, importJobHref, importUrl, RECENT_IMPORTS_SIZE } from './importModel';
 import { ImportTabs } from './ImportTabs';
 import { useIngestForm } from './useIngestForm';
+
+const IMPORT_ACCOUNT_TYPES: readonly AccountType[] = [AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD];
 
 export interface ImportScreenProps {
   initialAccounts: Account[];
@@ -66,17 +68,6 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
     />
   );
 
-  const accountOptions: SelectOption[] = form.uploadableAccounts.map((a) => ({
-    value: a.id,
-    label: a.name,
-    icon: (
-      <BankLogo
-        bankId={'bank' in a ? (a.bank ?? null) : null}
-        name={a.name}
-        warning={accountNeedsBank(a.type) && !('bank' in a && a.bank)}
-      />
-    ),
-  }));
   const queued = form.files.map((f, i) => ({ id: `${i}-${f.name}`, name: f.name, size: formatFileSize(f.size) }));
   const count = form.files.length;
   const label = locked
@@ -104,12 +95,13 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
               className="flex flex-col gap-space-16 p-space-16 desk:p-space-20"
               data-testid="import-form"
             >
-              <Select
+              <AccountPicker
                 label="Account"
                 placeholder="Choose an account…"
-                options={accountOptions}
-                value={form.selectedAccountId}
-                onValueChange={(v) => form.setSelectedAccountId(v as string)}
+                accounts={form.uploadableAccounts}
+                types={IMPORT_ACCOUNT_TYPES}
+                value={form.selectedAccountId || null}
+                onValueChange={(v) => form.setSelectedAccountId(v ?? '')}
                 disabled={locked}
               />
               <DropZone
