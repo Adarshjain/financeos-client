@@ -8,7 +8,7 @@ import { categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } f
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { formatDateRange } from '@/lib/date-range';
 import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
-import type { DatasourceCatalog, ReportData, RunReportRequest } from '@/lib/reports.types';
+import type { ChartDefinition, DatasourceCatalog, ReportData, RunReportRequest } from '@/lib/reports.types';
 
 import type { PreviewState } from './useReportPreview';
 
@@ -57,9 +57,11 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
           </div>
           <div className="flex items-center gap-space-12">
             {shown && hasUnderlying(shown.request) ? (
-              <Button size="sm" variant="link" onClick={() => open(wholeReportRequest(shown.request))}>
-                Underlying data
-              </Button>
+              <Text variant="label" as="span">
+                <Button size="sm" variant="link" onClick={() => open(wholeReportRequest(shown.request))}>
+                  Underlying data
+                </Button>
+              </Text>
             ) : null}
             <Button size="sm" variant="secondary" loading={loading} onClick={onPreview}>
               Preview
@@ -94,8 +96,10 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
             onSortChange={preview.changeSort}
             onPageChange={preview.changePage}
             onSizeChange={preview.changeSize}
+            definition={chart ? (shown.request.definition as ChartDefinition) : undefined}
             onOpenBreakdownRow={chart ? (index) => open(categoryRequest(shown.request, chart, index, catalog)) : undefined}
             onOpenTableRow={pivot ? (key) => open(tableRowRequest(shown.request, pivot, key, catalog)) : undefined}
+            canOpenBreakdownRow={chart ? (index) => categoryRequest(shown.request, chart, index, catalog) !== null : undefined}
             canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
           />
         ) : loading ? (

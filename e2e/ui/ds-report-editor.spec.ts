@@ -4,7 +4,7 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { createReport } from '../fixtures/seed/reports';
-import { createTransaction } from '../fixtures/seed/transactions';
+import { createCategory, createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
 /** Opens the dropdown named `field` and picks `option`. */
@@ -30,6 +30,22 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     page,
   }) => {
     test.slow();
+    // Two categories with two transactions each, on one account (the sub-rows).
+    const api = makeApi(currentUser.cookie);
+    const accountName = `Breakdown Bank ${Date.now()}`;
+    const account = await createBankAccount(api, { name: accountName });
+    const tag = Date.now();
+    const food = await createCategory(api, `Bd Food ${tag}`);
+    const fuel = await createCategory(api, `Bd Fuel ${tag}`);
+    for (const [categoryId, description, amount] of [
+      [food.id, 'Breakdown food one', -300],
+      [food.id, 'Breakdown food two', -100],
+      [fuel.id, 'Breakdown fuel one', -150],
+      [fuel.id, 'Breakdown fuel two', -50],
+    ] as const) {
+      await createTransaction(api, account.id, { amount, description, categoryIds: [categoryId] });
+    }
+
     await page.goto('/ds/reports/new');
     await expect(page.getByLabel('Report name')).toBeVisible({
       timeout: 45_000,
@@ -58,10 +74,32 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await pick(page, 'Sub-rows', 'Account');
     await page.getByLabel('Sub-rows per row').fill('3');
 
-    // Preview runs on demand and shows the result.
+    // Columns is a multi-select: add Transactions to the default amount and share.
+    await page.getByRole('combobox', { name: 'Columns', exact: true }).click();
+    await page.getByRole('option', { name: 'Transactions', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('combobox', { name: 'Columns', exact: true })).toContainText('Transactions');
+
+    // Preview runs on demand and shows the ranked rows with their share.
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Preview' })).toBeVisible();
     await expect(page.getByText('Could not run the report')).toHaveCount(0);
+    await expect(page.getByRole('columnheader', { name: 'Txns' })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('columnheader', { name: 'Share' })).toBeVisible();
+    await expect(page.getByText(`Bd Food ${tag}`).first()).toBeVisible();
+    await expect(page.getByText(`Bd Fuel ${tag}`).first()).toBeVisible();
+    await expect(page.getByText('67%').first()).toBeVisible();
+
+    // A press on a row expands its sub-rows; the underlying data opens from the link inside.
+    await page.getByText(`Bd Food ${tag}`).first().click();
+    await expect(page.getByText(`${accountName} · 2 txns`)).toBeVisible();
+    await page.getByRole('button', { name: 'Underlying data' }).last().click();
+    const underlying = page.getByRole('dialog', { name: /^Underlying data/ });
+    await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
+    await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
+    await expect(underlying.getByText('Breakdown fuel one')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(underlying).toHaveCount(0);
 
     // Save creates the report and opens it at its own address.
     await page.getByRole('button', { name: 'Save report' }).click();
@@ -87,6 +125,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     ).toContainText('Breakdown');
     await expect(page.getByLabel('Show top')).toHaveValue('5');
     await expect(page.getByLabel('Sub-rows per row')).toHaveValue('3');
+    await expect(page.getByRole('combobox', { name: 'Columns', exact: true })).toContainText('Transactions');
     // The saved result is already there, run on the server before the first render.
     await expect(page.getByText('Click Preview to run this report.')).toHaveCount(0);
     await expect(page.getByText('Could not run the report')).toHaveCount(0);

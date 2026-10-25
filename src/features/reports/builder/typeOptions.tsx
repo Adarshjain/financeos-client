@@ -4,8 +4,9 @@ import React from 'react';
 
 import { Button, ReorderList, SegmentedControl, Select } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
-import type { DatasourceCatalog, SortClause } from '@/lib/reports.types';
+import type { BreakdownBars, BreakdownColumn, DatasourceCatalog, SortClause } from '@/lib/reports.types';
 
+import { defaultBreakdownColumns } from './breakdownColumns';
 import {
   type AggTableDraft,
   type BuilderAction,
@@ -74,6 +75,19 @@ const ORDER_OPTIONS = [
   { value: 'value_asc', label: 'Value, low to high' },
 ];
 
+const BREAKDOWN_COLUMN_OPTIONS: { value: BreakdownColumn; label: string }[] = [
+  { value: 'amount', label: 'Amount' },
+  { value: 'share', label: 'Share of total' },
+  { value: 'count', label: 'Transactions' },
+  { value: 'avg', label: 'Average' },
+  { value: 'change', label: 'vs previous' },
+];
+
+const BREAKDOWN_BAR_OPTIONS = [
+  { value: 'relative_to_largest', label: 'Relative to largest' },
+  { value: 'share_of_total', label: 'Share of total' },
+];
+
 export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps) {
   const c = state.chart;
   const set = (value: Partial<typeof c>) => dispatch({ type: 'CHART_SET', value });
@@ -85,6 +99,9 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
   const isSlices = c.chartType === 'pie' || c.chartType === 'donut';
   const dimensionLabel = isBreakdown ? 'Rows' : isSlices ? 'Slices' : 'Dimension (X-axis)';
   const isDateDimension = isDateFieldName(catalog, c.dimensionField);
+  // A comparison is meaningless (and dropped) on a date dimension, so "vs previous" is not on offer there.
+  const comparing = !!c.comparisonEnabled && !isDateDimension;
+  const columnOptions = BREAKDOWN_COLUMN_OPTIONS.filter((o) => o.value !== 'change' || comparing);
   return (
     <div className={STACK}>
       <PickSelect
@@ -125,6 +142,25 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
             value={{ field: c.subDimensionField, granularity: c.subDimensionGranularity }}
             error={issues.subDimension}
             onChange={(v) => set({ subDimensionField: v.field, subDimensionGranularity: v.granularity })}
+          />
+          <Select
+            multiple
+            label="Columns"
+            placeholder="Amount, share"
+            options={columnOptions}
+            value={(c.columns ?? defaultBreakdownColumns(comparing)).filter((v) => columnOptions.some((o) => o.value === v))}
+            error={issues.breakdownColumns}
+            onValueChange={(v) => {
+              // Keep the display order whatever order they were picked in.
+              const picked = v as BreakdownColumn[];
+              set({ columns: BREAKDOWN_COLUMN_OPTIONS.map((o) => o.value).filter((o) => picked.includes(o)) });
+            }}
+          />
+          <PickSelect
+            label="Bars"
+            value={c.bars ?? 'relative_to_largest'}
+            options={BREAKDOWN_BAR_OPTIONS}
+            onValueChange={(bars) => bars && set({ bars: bars as BreakdownBars })}
           />
           {c.subDimensionField ? (
             <CountField

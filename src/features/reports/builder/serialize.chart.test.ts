@@ -4,7 +4,7 @@ import type { ChartDefinition, ReportResponse } from '@/lib/reports.types';
 
 import { builderReducer, type BuilderState, hydrateState, initialBuilderState } from './builderReducer';
 import { catalogFixture, savedChart } from './editor.fixtures';
-import { workingCatalog } from './editorState';
+import { makeEditorReducer, workingCatalog } from './editorState';
 import { serializeDefinition, validationErrors, validationIssues } from './serialize';
 
 const catalog = workingCatalog(catalogFixture, 'transactions');
@@ -109,6 +109,98 @@ describe('chart definition: breakdown', () => {
     expect(validationIssues(chartState({ chartType: 'breakdown', subDimensionField: 'description', subLimit: 11 }), catalog)).toEqual([
       { key: 'subLimit', message: 'Sub-rows must be a whole number from 1 to 10.' },
     ]);
+  });
+});
+
+describe('chart definition: breakdown columns and bars', () => {
+  const comparing = { comparisonEnabled: true };
+
+  it('sends columns and bars only when set off the default, and nothing for old reports', () => {
+    const plain = chartDef({ chartType: 'breakdown' });
+    expect(plain).not.toHaveProperty('columns');
+    expect(plain).not.toHaveProperty('bars');
+    expect(chartDef({ chartType: 'breakdown', bars: 'relative_to_largest' })).not.toHaveProperty('bars');
+    expect(chartDef({ chartType: 'breakdown', columns: ['amount', 'count'], bars: 'share_of_total' })).toMatchObject({
+      columns: ['amount', 'count'],
+      bars: 'share_of_total',
+    });
+  });
+
+  it('keeps columns and bars off every other chart type', () => {
+    const d = chartDef({ chartType: 'bar', columns: ['amount'], bars: 'share_of_total' });
+    expect(d).not.toHaveProperty('columns');
+    expect(d).not.toHaveProperty('bars');
+  });
+
+  it('drops change when no comparison goes out, and the whole list when that empties it', () => {
+    expect(chartDef({ chartType: 'breakdown', columns: ['amount', 'change'] })).toMatchObject({ columns: ['amount'] });
+    expect(chartDef({ chartType: 'breakdown', columns: ['change'] })).not.toHaveProperty('columns');
+    expect(chartDef({ chartType: 'breakdown', columns: ['amount', 'change'], ...comparing })).toMatchObject({ columns: ['amount', 'change'] });
+  });
+
+  it('omits columns equal to the default for the comparison sent, in any order', () => {
+    expect(chartDef({ chartType: 'breakdown', columns: ['share', 'amount'] })).not.toHaveProperty('columns');
+    expect(chartDef({ chartType: 'breakdown', columns: ['change', 'amount', 'share'], ...comparing })).not.toHaveProperty('columns');
+    // Without a comparison the default has no change, so [amount, share] is the default and [amount, share, change] sends nothing extra.
+    expect(chartDef({ chartType: 'breakdown', columns: ['amount', 'share', 'change'] })).not.toHaveProperty('columns');
+    expect(chartDef({ chartType: 'breakdown', columns: ['amount'], ...comparing })).toMatchObject({ columns: ['amount'] });
+  });
+
+  it('serializes a date dimension without the change column', () => {
+    const d = chartDef({ chartType: 'breakdown', dimensionField: 'date', dimensionGranularity: 'month', columns: ['change', 'amount', 'count'], ...comparing });
+    expect(d).not.toHaveProperty('comparison');
+    expect(d).toMatchObject({ columns: ['amount', 'count'] });
+  });
+
+  it('drops change from the draft when the dimension becomes a date, through the editor reducer', () => {
+    const reduce = makeEditorReducer(catalogFixture);
+    const state = chartState({ chartType: 'breakdown', columns: ['change', 'amount'], ...comparing });
+    const next = reduce(state, { type: 'CHART_SET', value: { dimensionField: 'date', dimensionGranularity: 'month' } });
+    expect(next.chart.columns).toEqual(['amount']);
+    const only = reduce(chartState({ chartType: 'breakdown', columns: ['change'], ...comparing }), { type: 'CHART_SET', value: { dimensionField: 'date', dimensionGranularity: 'month' } });
+    expect(only.chart.columns).toBeUndefined();
+  });
+
+  it('asks for at least one column', () => {
+    expect(validationIssues(chartState({ chartType: 'breakdown', columns: [] }), catalog)).toEqual([
+      { key: 'breakdownColumns', message: 'Select at least one column.' },
+    ]);
+    expect(validationIssues(chartState({ chartType: 'breakdown', columns: ['count'] }), catalog)).toEqual([]);
+    expect(validationIssues(chartState({ chartType: 'breakdown' }), catalog)).toEqual([]);
+  });
+
+  it('clears both when the chart type leaves breakdown', () => {
+    const state = chartState({ chartType: 'breakdown', columns: ['amount', 'count'], bars: 'share_of_total' });
+    const next = builderReducer(state, { type: 'CHART_SET', value: { chartType: 'bar' } });
+    expect(next.chart.columns).toBeUndefined();
+    expect(next.chart.bars).toBeUndefined();
+    const same = builderReducer(state, { type: 'CHART_SET', value: { limit: 5 } });
+    expect(same.chart.columns).toEqual(['amount', 'count']);
+  });
+
+  it('drops change when the comparison is turned off, and falls back to the default when none is left', () => {
+    const state = chartState({ chartType: 'breakdown', ...comparing, columns: ['amount', 'change'] });
+    const off = builderReducer(state, { type: 'CHART_SET', value: { comparisonEnabled: false } });
+    expect(off.chart.columns).toEqual(['amount']);
+    const only = builderReducer(chartState({ chartType: 'breakdown', ...comparing, columns: ['change'] }), {
+      type: 'CHART_SET',
+      value: { comparisonEnabled: false },
+    });
+    expect(only.chart.columns).toBeUndefined();
+  });
+
+  it('loads saved columns and bars back into the draft', () => {
+    const definition: ChartDefinition = {
+      chartType: 'breakdown',
+      dimension: { field: 'category' },
+      measure: { field: 'spend', aggregation: 'sum' },
+      filters: [],
+      columns: ['amount', 'avg'],
+      bars: 'share_of_total',
+    };
+    const state = hydrateState({ ...savedChart, definition });
+    expect(state.chart).toMatchObject({ columns: ['amount', 'avg'], bars: 'share_of_total' });
+    expect(serializeDefinition(state, catalog)).toEqual(definition);
   });
 });
 

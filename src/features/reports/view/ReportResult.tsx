@@ -11,6 +11,7 @@ import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
 import type {
   ChartData,
+  ChartDefinition,
   DatasourceCatalog,
   KpiData,
   PivotTableData,
@@ -44,8 +45,12 @@ export interface ReportResultProps {
   onSortChange?: (sort: SortClause | null) => void;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** Breakdown only: the chart definition the data was run with (its columns, bars and comparison preference). */
+  definition?: ChartDefinition;
   /** Breakdown only: a press on row `index`. */
   onOpenBreakdownRow?: (index: number) => void;
+  /** Breakdown only: whether row `index` can open its underlying data; without it every row can. */
+  canOpenBreakdownRow?: (index: number) => boolean;
   /** Aggregated table only: a press on the row with this `key`. */
   onOpenTableRow?: (key: string) => void;
   /** Aggregated table only: whether the row with this `key` can be opened; without it every row can. */
@@ -261,15 +266,32 @@ function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChang
 function ChartResult({
   data,
   catalog,
+  definition,
   onOpenBreakdownRow,
+  canOpenBreakdownRow,
 }: {
   data: ChartData;
   catalog?: DatasourceCatalog;
+  definition?: ChartDefinition;
   onOpenBreakdownRow?: (index: number) => void;
+  canOpenBreakdownRow?: (index: number) => boolean;
 }) {
   // A count is never money, even a count of an amount field.
   const money = data.measure?.aggregation === 'count' ? false : moneyOf(catalog, data.measure?.field ?? '');
-  if (data.chartType === 'breakdown') return <BreakdownView data={data} money={money} onOpenRow={onOpenBreakdownRow} />;
+  if (data.chartType === 'breakdown') {
+    return (
+      <BreakdownView
+        data={data}
+        money={money}
+        columns={definition?.columns}
+        bars={definition?.bars}
+        higherIsBetter={definition?.comparison?.higherIsBetter}
+        rowsLabel={fieldOf(catalog, data.dimension)?.label}
+        onOpenRow={onOpenBreakdownRow}
+        canOpenRow={canOpenBreakdownRow}
+      />
+    );
+  }
   return <Chart data={data} money={money} />;
 }
 
@@ -277,7 +299,17 @@ function ChartResult({
 export function ReportResult(props: ReportResultProps) {
   const { data, catalog } = props;
   if (isKpiData(data)) return <KpiResult data={data} catalog={catalog} />;
-  if (isChartData(data)) return <ChartResult data={data} catalog={catalog} onOpenBreakdownRow={props.onOpenBreakdownRow} />;
+  if (isChartData(data)) {
+    return (
+      <ChartResult
+        data={data}
+        catalog={catalog}
+        definition={props.definition}
+        onOpenBreakdownRow={props.onOpenBreakdownRow}
+        canOpenBreakdownRow={props.canOpenBreakdownRow}
+      />
+    );
+  }
   if (isRawTableData(data)) return <RawTableResult {...props} data={data} />;
   if (isPivotTableData(data)) return <PivotTableResult {...props} data={data} />;
   return null;

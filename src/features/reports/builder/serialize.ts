@@ -23,6 +23,7 @@ import type {
   UpdateReportRequest,
 } from '@/lib/reports.types';
 
+import { defaultBreakdownColumns, sameColumns } from './breakdownColumns';
 import type { BuilderState } from './builderReducer';
 import { fieldByName, isDateFieldName, valueKind } from './catalog';
 
@@ -143,6 +144,14 @@ export function serializeDefinition(
       def.subDimension = dimRef(catalog, c.subDimensionField, c.subDimensionGranularity);
       if (c.subLimit !== undefined) def.subLimit = c.subLimit;
     }
+    // Columns and bars go out only when they differ from the default, so older reports stay as they were.
+    // "Change" is dropped when no comparison goes out (the server rejects it then).
+    const columns = isBreakdown ? c.columns?.filter((col) => col !== 'change' || def.comparison?.enabled) : undefined;
+    // Equal to the default for the comparison actually sent (as a set) means "unset", so older reports stay as they were.
+    if (columns && columns.length > 0 && !sameColumns(columns, defaultBreakdownColumns(!!def.comparison?.enabled))) {
+      def.columns = columns;
+    }
+    if (isBreakdown && c.bars && c.bars !== 'relative_to_largest') def.bars = c.bars;
     return def;
   }
 
@@ -233,6 +242,7 @@ export type IssueKey =
   | 'subDimension'
   | 'subLimit'
   | 'columns'
+  | 'breakdownColumns'
   | 'rows'
   | 'tableColumns'
   | 'measures'
@@ -330,6 +340,7 @@ export function validationIssues(
         add('subLimit', `Sub-rows must be a whole number from 1 to ${SUB_LIMIT_MAX}.`);
       }
     }
+    if (c.chartType === 'breakdown' && c.columns && c.columns.length === 0) add('breakdownColumns', 'Select at least one column.');
   }
 
   for (const message of billingCycleErrors(state, catalog)) add('filters', message);
