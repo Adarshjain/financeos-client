@@ -258,4 +258,46 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(dialog).toHaveCount(0);
 
   });
+
+  test('tapping a bar of a chart report opens the rows of that bar\'s category', async ({ page }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const account = await createBankAccount(api, { name: `Bar Bank ${Date.now()}` });
+    const tag = Date.now();
+    const food = await createCategory(api, `Bar Food ${tag}`);
+    const fuel = await createCategory(api, `Bar Fuel ${tag}`);
+    const rowOf = new Map<string, string>([
+      [`Bar Food ${tag}`, `Bar food row ${tag}`],
+      [`Bar Fuel ${tag}`, `Bar fuel row ${tag}`],
+    ]);
+    await createTransaction(api, account.id, { amount: -300, description: `Bar food row ${tag}`, categoryIds: [food.id] });
+    await createTransaction(api, account.id, { amount: -100, description: `Bar fuel row ${tag}`, categoryIds: [fuel.id] });
+    const report = await createReport(api, {
+      name: `Ds bars ${tag}`,
+      type: 'CHART',
+      datasource: 'transactions',
+      definition: {
+        chartType: 'bar',
+        dimension: { field: 'category' },
+        measure: { field: 'spend', aggregation: 'sum' },
+        filters: [{ field: 'date', operator: 'this_month' }],
+      },
+    } as never);
+
+    await page.goto(`/ds/reports/${report.id}`);
+    const bars = page.locator('.recharts-bar-rectangle');
+    await expect(bars).toHaveCount(2, { timeout: 45_000 });
+
+    // The bar order is the report's; read which category the first bar is from the dialog's entry chip.
+    await bars.first().click();
+    const dialog = page.getByRole('dialog', { name: /^Underlying data/ });
+    const chip = dialog.getByRole('button', { name: /^Category: / });
+    await expect(chip).toBeVisible({ timeout: 45_000 });
+    const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).replace(/^Category: /, '').trim();
+    expect(rowOf.has(tapped)).toBe(true);
+    const other = [...rowOf.keys()].find((name) => name !== tapped)!;
+    await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });
+    await expect(dialog.getByText(rowOf.get(tapped)!).first()).toBeVisible();
+    await expect(dialog.getByText(rowOf.get(other)!)).toHaveCount(0);
+  });
 });

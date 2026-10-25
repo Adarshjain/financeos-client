@@ -225,6 +225,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-25 · **Dashboards + Holding open questions** (owner, artifact 1HJKvjbcXqxVebQ9i7G1pN): empty dashboard = one Add a widget link; Add widget saves to the dashboard Home shows; Restore default Home only while no Home; no phone Chat button; holding: server sends price times (to build), missing details left out, Overview/tabs kept, manual price date editable (server, to build), Tax this FY fine.
 - 2026-10-25 · **Ghost actions** (owner): Dialog footer secondary/tertiary and Select actions are ghost buttons (was link).
 - 2026-10-25 · **Dashboards review 2** (owner): Home switcher fills the top bar; phone resize: none (phone stays one column); dragged widget opaque; browser Back with unsaved edits asks Discard; KPI figure tap opens View underlying data; no measure line in report widgets.
 - 2026-10-25 · **Dashboards review 1** (owner): Home has no greeting or title; switcher + ⋯ (with Set as default) sit in the top bar; no "Open ›" widget links; phone = one column (replaces "phone 2 columns"); widgets load only when in view; header widget = plain full-width Text; edit + = menu (Add widget, Add header); Discard not red; Upcoming tighter; Rewards earned no dividers/inset/≈/Set value; Loan payoff, Bills due, Milestone = name + figure + bar; empty states stacked; link icons = text size − 2px (`icon-inline`); icon-link underline hugs its content; Back = browser back (parent when landed directly); list = Reports-style table, no Built-in widgets card.
@@ -433,29 +434,12 @@ Only the owner adds to this list. Each entry has a date and the decision.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
-- 2026-10-25 · Phase 3 · Dashboards core (view, edit, new, picker, settings), for the owner:
-  1. Widget settings board also has Width: left out (width changes by the corner resize in edit mode).
-  2. Footer "Drop here · or add a widget": Legacy has no drop-from-picker, so it is one link, Add a widget.
-  3. Done: spend_heatmap draws Chart `heatmap` (owner round 2).
-  4. View underlying data is for report widgets only (the dialog takes a request, not a built-in key); a raw table has no figure to list and says so.
-  5. Edit cards show the same frame as view (title, subtitle, live content) with the grid's grip, Settings and remove; the board's "Built-in · 2 columns" line is not drawn.
-  6. Home and Dashboards list, Add widget: the picker saves to the dashboard Home is showing (the default unless another is picked in the switcher), and the toast names it ("Widget added to Home").
-  7. Dashboards list: "Restore default Home" shows only while no dashboard is named Home (Legacy rule; the server mints a second Home otherwise), so the board's always-visible button is not drawn. The empty state lists New dashboard (primary) before Restore, EmptyState's order.
-  8. Home: the Legacy mobile "Chat" button beside the switcher is dropped (the top bar already has Ask the data); "0 things need you" and a missing sync time leave their part of the line out; a user without a name is greeted without one.
-  9. Dashboards list Built-in widgets: name-only chips as on the board, drawn with Badge outline rounded md (20px), shorter than the board's chips; no taller static chip exists.
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
-- 2026-10-23 · Phase 3 · Investments Holdings + holding (step 1), for the owner:
-  3. Done: the top-bar + opens each tab's add dialog; Record trade, Dividend, Corporate action, Edit instrument and "record a merger" open Dinero dialogs.
-  6. The server sends dates, not times: "Prices as of 13 Oct" and the LTP line carry no "15:30".
-  7. Not in the data, so left out: "30 bought + 30 bonus", "₹1,420 pre-bonus", "long term since 11 Mar 25" (reads "long term"), the Bonus row inside Trades, "Received to HDFC Savings", "30 → 60 shares · cost halves". The Invested tile says "N holdings" where the board says "38 trades · first 9 Jan 24".
-  8. The holding board's Overview already shows every section and also has tabs Trades, Dividends, Corporate actions, Prices: built so Overview shows the newest few of each (10 prices, 10 trades, 5 dividends) and a tab shows only that section, full and paged (25).
-  9. Editing a manual price: the server changes the amount only, so the date shows disabled (a new date = delete and add).
-  11. Tax this FY: "Realised gains" is booked long and short term net of losses; the symbols under Harvestable gains and Loss to offset come from the 50 open lots with the biggest gains. Top movers look at up to 200 holdings of the filter.
-  12. /ds index: "Holding detail" links to Holdings (a holding's page needs an id).
-
 ## Log
 
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-25 · Phase 3 · Claude (Opus + implementer) · Tap-to-underlying: chart entries (bar, slice, point, heatmap day), pivot and Breakdown rows open View underlying data pinned to that entry on the report page and dashboard report widgets (not in edit; only with the ⋮ underlying item); raw rows stay plain; "Other"/unpinnable entries not pressable via new Chart `canSelectEntry` + `ChartEntry.index`. Built-in templates already open theirs (allocation, spend_heatmap, rewards_earned). Chart.press.test edited (forced: `index`). Checks: tsc, vitest, eslint, check-ui, E2E ds-dashboards + ds-report-editor + full ds suite. Deviations: none.
 
 - 2026-10-25 · Phase 3 · Claude · **Dashboards review 2** built: TopBar node title grows; WidgetGrid edit frame `bg-surface`; useLeaveGuard cancels Back via the Navigation API `navigate` event (Next 16/React 19 apply popstate before later listeners), popstate fallback; Button `danger-ghost`; Dialog footer + Select actions ghost; ReportResult `hideMeasure`/`onOpenKpi` (concealed); Rewards earned link figures concealed. Deviations: none.
 - 2026-10-25 · Phase 3 · Claude · **Dashboards review 1** built: Dinero Button (`icon-inline`, underline wrapper, `group/link`), TopBar node title + back via onBack, WidgetGrid (phone 1 col, drag z, no overflow), Menu/Popover close-focus guard (Menu→Select dismissal), shell back history; dashboards Home/list/edit/built-ins per owner decision; lazy widget data (`useInView`). Deviations: none. Open: Bills due status words chosen as "Overdue" / "Statement late".

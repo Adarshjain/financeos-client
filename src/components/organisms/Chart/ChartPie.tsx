@@ -35,6 +35,8 @@ interface Slice {
   name: string;
   value: number;
   color: string;
+  /** The category's index in `data.categories`. */
+  index?: number;
   /** Names folded into an "Other" slice. */
   folded?: string[];
 }
@@ -45,12 +47,14 @@ export function ChartPie({
   money,
   donut,
   onSelectEntry,
+  canSelectEntry,
 }: {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   donut: boolean;
   onSelectEntry?: (entry: ChartEntry) => void;
+  canSelectEntry?: (entry: ChartEntry) => boolean;
 }) {
   const [frameRef, { width, height }] = useElementSize<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
@@ -60,6 +64,7 @@ export function ChartPie({
   const all = data.categories.map((name, i) => ({
     name,
     value: first.data[i] ?? 0,
+    index: i,
   }));
   // A pie can only show parts of a whole: zero/negative values have no slice.
   const positive = all
@@ -94,13 +99,18 @@ export function ChartPie({
   const measured = width > 0;
   const stacked = measured && width < STACK_BELOW_PX;
   const pieSize = Math.floor(Math.min(height, width * 0.45));
-  const press = (s: Slice) =>
-    onSelectEntry?.({
-      key: s.name,
-      label: s.folded ? `Other (${s.folded.length})` : s.name,
-      seriesKey: seriesLabel(first.name),
-      value: s.value,
-    });
+  const entryOf = (s: Slice): ChartEntry => ({
+    key: s.name,
+    label: s.folded ? `Other (${s.folded.length})` : s.name,
+    seriesKey: seriesLabel(first.name),
+    value: s.value,
+    index: s.folded ? undefined : s.index,
+  });
+  const pressable = (s: Slice) =>
+    !!onSelectEntry && (canSelectEntry?.(entryOf(s)) ?? true);
+  const press = (s: Slice) => {
+    if (pressable(s)) onSelectEntry?.(entryOf(s));
+  };
   const focus = active !== null ? slices[active] : null;
 
   return (
@@ -108,8 +118,6 @@ export function ChartPie({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0',
-        onSelectEntry &&
-          '[&_.recharts-pie-sector]:cursor-pointer [&_.recharts-pie-sector:active]:opacity-80',
         stacked ? 'flex-col gap-space-12' : 'items-center gap-space-24',
         fill
           ? 'h-full min-h-0'
@@ -157,6 +165,9 @@ export function ChartPie({
                   <Cell
                     key={s.name}
                     fill={s.color}
+                    className={
+                      pressable(s) ? 'cursor-pointer active:opacity-80' : undefined
+                    }
                     fillOpacity={active === null || active === i ? 1 : 0.35}
                   />
                 ))}
@@ -235,7 +246,7 @@ export function ChartPie({
               );
               const rowClass =
                 'flex w-full items-center gap-space-8 rounded-ds-sm px-space-8 py-space-4';
-              return onSelectEntry ? (
+              return pressable(s) ? (
                 <button
                   type="button"
                   onClick={() => press(s)}

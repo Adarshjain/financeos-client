@@ -6,6 +6,7 @@ import React from 'react';
 import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
 import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
+import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
 import type {
@@ -57,6 +58,10 @@ export interface ReportResultProps {
   onOpenBreakdownRow?: (index: number) => void;
   /** Breakdown only: whether row `index` can open its underlying data; without it every row can. */
   canOpenBreakdownRow?: (index: number) => boolean;
+  /** Chart only (needs `definition`): a press on a bar, point or slice, as the category's index and, on a multi-series chart, the series' stored name; "Other" and what cannot be found press nothing. */
+  onOpenChartEntry?: (index: number, seriesName?: string) => void;
+  /** Chart only: whether the entry at `index` (and series) can open its underlying data; without it every entry the data resolves can. */
+  canOpenChartEntry?: (index: number, seriesName?: string) => boolean;
   /** Aggregated table only: a press on the row with this `key`. */
   onOpenTableRow?: (key: string) => void;
   /** Aggregated table only: whether the row with this `key` can be opened; without it every row can. */
@@ -296,12 +301,16 @@ function ChartResult({
   definition,
   onOpenBreakdownRow,
   canOpenBreakdownRow,
+  onOpenChartEntry,
+  canOpenChartEntry,
 }: {
   data: ChartData;
   catalog?: DatasourceCatalog;
   definition?: ChartDefinition;
   onOpenBreakdownRow?: (index: number) => void;
   canOpenBreakdownRow?: (index: number) => boolean;
+  onOpenChartEntry?: (index: number, seriesName?: string) => void;
+  canOpenChartEntry?: (index: number, seriesName?: string) => boolean;
 }) {
   // A count is never money, even a count of an amount field.
   const money = data.measure?.aggregation === 'count' ? false : moneyOf(catalog, data.measure?.field ?? '');
@@ -315,6 +324,22 @@ function ChartResult({
       rowsLabel={fieldOf(catalog, data.dimension)?.label}
       onOpenRow={onOpenBreakdownRow}
       canOpenRow={canOpenBreakdownRow}
+      canSelectEntry={
+        onOpenChartEntry && definition
+          ? (entry) => {
+              const pick = resolveChartEntry(data, definition, entry);
+              return pick !== null && (canOpenChartEntry?.(pick.index, pick.seriesName) ?? true);
+            }
+          : undefined
+      }
+      onSelectEntry={
+        onOpenChartEntry && definition
+          ? (entry) => {
+              const pick = resolveChartEntry(data, definition, entry);
+              if (pick) onOpenChartEntry(pick.index, pick.seriesName);
+            }
+          : undefined
+      }
     />
   );
 }
@@ -331,6 +356,8 @@ export function ReportResult(props: ReportResultProps) {
         definition={props.definition}
         onOpenBreakdownRow={props.onOpenBreakdownRow}
         canOpenBreakdownRow={props.canOpenBreakdownRow}
+        onOpenChartEntry={props.onOpenChartEntry}
+        canOpenChartEntry={props.canOpenChartEntry}
       />
     );
   }

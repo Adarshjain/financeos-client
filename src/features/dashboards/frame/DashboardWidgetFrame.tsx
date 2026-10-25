@@ -13,6 +13,7 @@ import React from 'react';
 
 import { Text, Widget } from '@/components/ds';
 import { reportHref } from '@/features/reports/list/reportsList';
+import type { UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { appHref } from '@/features/shell/routes';
 import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
@@ -53,6 +54,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const state = useReportWidget(widget, inView);
   const duplicate = useDuplicateBuiltinReport();
   const [overlay, setOverlay] = React.useState<Overlay>(null);
+  // What the underlying dialog opens on: a chart entry or row's request; null = the whole report.
+  const [target, setTarget] = React.useState<UnderlyingTarget | null>(null);
   const close = React.useCallback(() => setOverlay(null), []);
 
   const builtin = isBuiltinWidget(widget);
@@ -64,7 +67,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const href = widgetHref(widget);
   const canEditSettings = !editing && onSaveSettings != null && def != null;
   const items = editing ? [] : widgetMenuItems(widget, { canEditSettings });
-  // The KPI figure opens the same underlying data as the ⋮ menu's item.
+  // The KPI figure, chart entries and rows open the same underlying data as the ⋮ menu's item.
   const canOpenUnderlying = items.includes('underlying');
 
   // A component built-in fetches for itself; every other widget is loaded here.
@@ -73,6 +76,11 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const loading = available && (!inView || (loadsHere && !state.data && !state.error));
   const failed = loadsHere && state.error ? state.error : undefined;
 
+  const openUnderlying = (next: UnderlyingTarget | null = null) => {
+    setTarget(next);
+    setOverlay('underlying');
+  };
+
   const select = (item: WidgetMenuItemId) => {
     if (item === 'edit-report' && widget.reportId) router.push(reportHref(widget.reportId));
     else if (item === 'settings') setOverlay('settings');
@@ -80,7 +88,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
     else if (item === 'full-page') {
       if (builtin && href) router.push(appHref(href));
       else setOverlay('full');
-    } else if (item === 'underlying') setOverlay('underlying');
+    } else if (item === 'underlying') openUnderlying();
   };
 
   const content = (() => {
@@ -102,7 +110,14 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         );
       }
     }
-    return <ReportWidgetBody widget={widget} state={state} onOpenUnderlying={canOpenUnderlying ? () => setOverlay('underlying') : undefined} />;
+    return (
+      <ReportWidgetBody
+        widget={widget}
+        state={state}
+        onOpenUnderlying={canOpenUnderlying ? () => openUnderlying() : undefined}
+        onOpenUnderlyingTarget={canOpenUnderlying ? openUnderlying : undefined}
+      />
+    );
   })();
 
   const subtitle = issue ? (
@@ -142,7 +157,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         {content}
       </Widget>
       {overlay === 'full' ? <WidgetFullPage widget={widget} onClose={close} /> : null}
-      {overlay === 'underlying' ? <WidgetUnderlying widget={widget} data={state.data} onClose={close} /> : null}
+      {overlay === 'underlying' ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
       {overlay === 'settings' && def && onSaveSettings ? (
         <WidgetSettingsDialog widget={widget} def={def} dashboardName={dashboardName} onSave={onSaveSettings} onClose={close} />
       ) : null}

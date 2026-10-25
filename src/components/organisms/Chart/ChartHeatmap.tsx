@@ -148,12 +148,14 @@ export function ChartHeatmap({
   money,
   months = HEATMAP_DEFAULT_MONTHS,
   onSelectEntry,
+  canSelectEntry,
 }: {
   data: ChartInput;
   money: boolean;
   /** How many months the calendar covers (default 6). */
   months?: number;
   onSelectEntry?: (entry: ChartEntry) => void;
+  canSelectEntry?: (entry: ChartEntry) => boolean;
 }) {
   const [frameRef, { width }] = useElementSize<HTMLDivElement>();
   const format = valueFormat(money);
@@ -214,6 +216,10 @@ export function ChartHeatmap({
               const text = day
                 ? `${displayDate(day.date)}: ${day.amount > 0 ? format.full(day.amount) : 'no value'}`
                 : '';
+              const entry: ChartEntry | null =
+                day && day.amount > 0
+                  ? { key: day.date, label: displayDate(day.date), value: day.amount }
+                  : null;
               return (
                 <HeatCellView
                   key={day?.date ?? `${week.start}-${i}`}
@@ -221,13 +227,8 @@ export function ChartHeatmap({
                   size={cell}
                   text={text}
                   onPress={
-                    onSelectEntry && day && day.amount > 0
-                      ? () =>
-                          onSelectEntry({
-                            key: day.date,
-                            label: displayDate(day.date),
-                            value: day.amount,
-                          })
+                    onSelectEntry && entry && (canSelectEntry?.(entry) ?? true)
+                      ? () => onSelectEntry(entry)
                       : undefined
                   }
                 />

@@ -4,6 +4,8 @@
 // ad-hoc KPI underlying endpoint. A row that cannot be pinned exactly (the "Other" slot, a missing value, a
 // date bucket without a known window, a date row of a table) has no underlying: the builders return null.
 
+import { parseDayLabel } from '@/components/organisms/Chart/heatmap.model';
+import { seriesLabel } from '@/lib/charts/chart-series';
 import { labelChartData } from '@/lib/reports.helpers';
 import type {
   Aggregation,
@@ -173,4 +175,63 @@ export function tableRowRequest(
     filters.push(clause);
   }
   return kpiRequest(request, measure, filters);
+}
+
+/** Where a chart press landed: the category's index in the data and, on a multi-series chart, the series' stored name. */
+export interface ChartEntryPick {
+  index: number;
+  seriesName?: string;
+}
+
+/**
+ * The data behind a pressed chart entry (the Chart reports labels, not stored values). A pie's folded "Other" slice
+ * (its label differs from its key), a folded "Other" series and anything not found resolve to null; a pie or a
+ * chart without a series names the category only.
+ */
+export function resolveChartEntry(
+  data: ChartData,
+  definition: ChartDefinition,
+  entry: { key: string; label: string; seriesKey?: string; index?: number; value?: number },
+): ChartEntryPick | null {
+  // A heatmap day sums every category and series of its day: pin the day's window only, through the first bucket of it.
+  if (data.chartType === 'heatmap') {
+    const day = data.categories.findIndex((c) => parseDayLabel(c) === entry.key);
+    return day < 0 ? null : { index: day };
+  }
+  if (entry.label !== entry.key) return null;
+  const labelled = labelChartData(data);
+  // The Chart reports the category's index; labels can repeat, so the label is only the fallback.
+  const index = entry.index !== undefined && labelled.categories[entry.index] === entry.key ? entry.index : labelled.categories.indexOf(entry.key);
+  if (index < 0) return null;
+  if (!definition.series || definition.chartType === 'pie' || definition.chartType === 'donut') return { index };
+  const at = labelled.series.findIndex((s) => seriesLabel(s.name) === entry.seriesKey);
+  return at < 0 ? null : { index, seriesName: data.series[at].name };
+}
+
+/** What the Underlying data dialog opens on: a request and, for a category of the whole report, its dropdown entry. */
+export interface UnderlyingTarget {
+  request: RunReportRequest;
+  /** Index into `data.categories`: the dialog keeps its entries dropdown and opens on this category. Absent = the request is final. */
+  category?: number;
+  /** With `category`: the category's own pinned request, opened when the dropdown has no such entry. */
+  pinned?: RunReportRequest;
+}
+
+/**
+ * The dialog target of a pressed category (a chart entry or a breakdown row); null when it cannot be pinned ("Other",
+ * a missing value). A category alone opens the whole report on its dropdown entry; with a series the pin is final,
+ * since the dropdown's entries do not carry the series.
+ */
+export function categoryTarget(
+  request: RunReportRequest,
+  data: ChartData,
+  index: number,
+  catalog: DatasourceCatalog,
+  seriesName?: string,
+): UnderlyingTarget | null {
+  const pinned = categoryRequest(request, data, index, catalog, seriesName);
+  if (!pinned) return null;
+  if (seriesName !== undefined) return { request: pinned };
+  const whole = wholeReportRequest(request);
+  return whole ? { request: whole, category: index, pinned } : null;
 }

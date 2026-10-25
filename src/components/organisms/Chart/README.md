@@ -18,11 +18,12 @@ A report chart over Recharts, drawn in Dinero tokens. Renders a report's chart d
 - `fill?: boolean`: fill the parent's height instead of the default frame
 - `money?: boolean`: whether values are money; when given it wins over the measure-name inference, when omitted behaviour is unchanged
 - `yDomain?: 'zero' | 'data'`: value axis includes 0 (default) or fits the data range
-- `onSelectEntry?: (entry: ChartEntry) => void`: `ChartEntry` = `{ key, label, seriesKey?, value }` (category and series label for a bar or point, slice name for a slice, the day as `key` YYYY-MM-DD and `label` dd/mm/yyyy for a heatmap cell); breakdown rows keep `onOpenRow`
+- `onSelectEntry?: (entry: ChartEntry) => void`: `ChartEntry` = `{ key, label, seriesKey?, value, index? }` (`index` = the category's index in `data.categories` for a bar, point or non-folded slice; labels can repeat, the index cannot) (category and series label for a bar or point, slice name for a slice, the day as `key` YYYY-MM-DD and `label` dd/mm/yyyy for a heatmap cell); breakdown rows keep `onOpenRow`
+- `canSelectEntry?: (entry: ChartEntry) => boolean`: with `onSelectEntry`, an entry it rejects has no press affordance (no cursor, hover or press state, its legend row or heatmap day is plain) and presses nothing; absent = every entry is pressable. A breakdown's Other row is never openable.
 - Breakdown only: `columns?: BreakdownColumn[]` (default amount, share, and change when the data compares), `bars?: 'relative_to_largest' | 'share_of_total'`, `higherIsBetter?: boolean` (colours the change), `rowsLabel?: string` (label column heading, default "Category"), `onOpenRow?: (index) => void` (makes rows open underlying data), `canOpenRow?: (index) => boolean`
 
 ## Variants
-One story per chart type (Bar, Line, Area, StackedBar, Pie, Donut) plus PriceChart (fill, data-fitted axis), and the breakdown: BreakdownRelativeBars, BreakdownShareBars, BreakdownWithSubRows, BreakdownWithOtherRow; Sparkline, Heatmap, Pressable, PressableDonut, PressableHeatmap.
+One story per chart type (Bar, Line, Area, StackedBar, Pie, Donut) plus PriceChart (fill, data-fitted axis), and the breakdown: BreakdownRelativeBars, BreakdownShareBars, BreakdownWithSubRows, BreakdownWithOtherRow; Sparkline, Heatmap, Pressable, PressableSomeEntries, PressableDonut, PressableHeatmap.
 
 ## Built from
 Text, DataTable, ProgressBar, Button. Logic lives in `src/lib/charts/` (formatting, ticks, series folding, element size).

@@ -10,7 +10,7 @@ import type {
   TableDefinitionAggregated,
 } from '@/lib/reports.types';
 
-import { categoryEntries, categoryRequest, hasUnderlying, tableRowRequest, wholeReportRequest } from './underlyingRequest';
+import { categoryEntries, categoryRequest, categoryTarget, hasUnderlying, resolveChartEntry, tableRowRequest, wholeReportRequest } from './underlyingRequest';
 
 const ds = catalogFixture.datasources[0];
 const catalog: DatasourceCatalog = { fields: ds.fields, operators: catalogFixture.operators };
@@ -251,5 +251,104 @@ describe('tableRowRequest', () => {
     expect(tableRowRequest(req(['date']), data(['date'], rows), 'd', catalog)).toBeNull();
     expect(tableRowRequest(req(['category']), data(['category'], rows), 'n', catalog)).toBeNull();
     expect(tableRowRequest(req(['category']), data(['category'], rows), 'zzz', catalog)).toBeNull();
+  });
+});
+
+describe('resolveChartEntry', () => {
+  const multi = chartData({
+    categories: ['Food', 'Rent'],
+    series: [
+      { name: 'DEBIT', data: [1, 2] },
+      { name: 'CREDIT', data: [3, 4] },
+    ],
+    seriesValueLabels: { DEBIT: 'Debit', CREDIT: 'Credit' },
+  });
+  const press = (key: string, seriesKey?: string, label = key) => ({ key, label, seriesKey });
+
+  it('names the category index and, on a chart with a series, the stored series name behind its label', () => {
+    const def = chartDef({ series: { field: 'type' } });
+    expect(resolveChartEntry(multi, def, press('Rent', 'Credit'))).toEqual({ index: 1, seriesName: 'CREDIT' });
+  });
+
+  it('names the category only when the chart has no series', () => {
+    expect(resolveChartEntry(chartData(), chartDef(), press('Rent', 'Spend'))).toEqual({ index: 1 });
+  });
+
+  it('names the category only for a pie or donut', () => {
+    expect(resolveChartEntry(chartData(), chartDef({ chartType: 'pie', series: { field: 'type' } }), press('Rent', 'Spend'))).toEqual({ index: 1 });
+  });
+
+  it('reads an enum category by its label', () => {
+    const labelled = chartData({ categories: ['DEBIT'], series: [{ name: 'spend', data: [1] }], valueLabels: { DEBIT: 'Debit' } });
+    expect(resolveChartEntry(labelled, chartDef(), press('Debit', 'Spend'))).toEqual({ index: 0 });
+  });
+
+  it('has none for a pie\'s folded Other slice, a folded Other series or an unknown entry', () => {
+    const def = chartDef({ series: { field: 'type' } });
+    expect(resolveChartEntry(chartData(), chartDef({ chartType: 'pie' }), press('Other', 'Spend', 'Other (3)'))).toBeNull();
+    expect(resolveChartEntry(multi, def, press('Rent', 'Other'))).toBeNull();
+    expect(resolveChartEntry(multi, def, press('Gone', 'Debit'))).toBeNull();
+  });
+});
+
+describe('categoryTarget', () => {
+  it('opens the whole report on the category\'s dropdown entry', () => {
+    const target = categoryTarget(chartReq(chartDef()), chartData(), 1, catalog);
+    expect(target).toEqual({
+      request: wholeReportRequest(chartReq(chartDef())),
+      category: 1,
+      pinned: categoryRequest(chartReq(chartDef()), chartData(), 1, catalog),
+    });
+  });
+
+  it('makes a series pin final: the pinned request and no dropdown entry', () => {
+    const def = chartDef({ series: { field: 'type' } });
+    const target = categoryTarget(chartReq(def), chartData(), 0, catalog, 'DEBIT');
+    expect(target?.category).toBeUndefined();
+    expect(target?.request).toEqual(categoryRequest(chartReq(def), chartData(), 0, catalog, 'DEBIT'));
+  });
+
+  it('has none for the Other slot, a (none) category or an unpinnable series', () => {
+    expect(categoryTarget(chartReq(chartDef()), chartData({ other: { index: 3, foldedCount: 2 } }), 3, catalog)).toBeNull();
+    expect(categoryTarget(chartReq(chartDef()), chartData(), 2, catalog)).toBeNull();
+    expect(categoryTarget(chartReq(chartDef({ series: { field: 'type' } })), chartData(), 0, catalog, '(none)')).toBeNull();
+  });
+});
+
+describe('resolveChartEntry for a heatmap and for repeated labels', () => {
+  const heat = chartData({
+    chartType: 'heatmap',
+    dimension: 'date',
+    categories: ['08 Oct 26', '09 Oct 26', '09 Oct 26'],
+    categoryRanges: [
+      { from: '2026-10-08', to: '2026-10-08' },
+      { from: '2026-10-09', to: '2026-10-09' },
+      { from: '2026-10-09', to: '2026-10-09' },
+    ],
+    series: [{ name: 'Spend', data: [1, 2, 3] }],
+  });
+  const heatDef = chartDef({ dimension: { field: 'date', granularity: 'day' } });
+
+  it('finds a heatmap day by its ISO date among "dd Mon yy" categories, without a series', () => {
+    const pick = resolveChartEntry(heat, heatDef, { key: '2026-10-09', label: '09/10/2026', value: 5 });
+    expect(pick).toEqual({ index: 1 });
+    expect(resolveChartEntry(heat, heatDef, { key: '2026-10-01', label: '01/10/2026', value: 5 })).toBeNull();
+  });
+
+  it('pins only the day\'s date window for a heatmap day, replacing the report\'s date filters', () => {
+    const request = chartReq(heatDef);
+    const target = categoryTarget(request, heat, 1, catalog);
+    const filters = (target?.pinned?.definition as { filters: unknown[] }).filters;
+    expect(filters).toEqual([hide, { field: 'date', operator: 'between', value: { from: '2026-10-09', to: '2026-10-09' } }]);
+  });
+
+  it('uses the entry\'s index over the label when labels repeat', () => {
+    const dup = chartData({ categories: ['Food', 'Food'], series: [{ name: 'spend', data: [1, 2] }] });
+    expect(resolveChartEntry(dup, chartDef(), { key: 'Food', label: 'Food', seriesKey: 'Spend', index: 1, value: 2 })).toEqual({ index: 1 });
+    expect(resolveChartEntry(dup, chartDef(), { key: 'Food', label: 'Food', seriesKey: 'Spend', value: 2 })).toEqual({ index: 0 });
+  });
+
+  it('ignores an index that does not match the entry\'s key', () => {
+    expect(resolveChartEntry(chartData(), chartDef(), { key: 'Rent', label: 'Rent', index: 0, value: 2 })).toEqual({ index: 1 });
   });
 });

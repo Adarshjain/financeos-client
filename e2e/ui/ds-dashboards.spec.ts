@@ -4,7 +4,9 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { createBankAccount } from '../fixtures/seed/accounts';
 import { createDashboard, createReport, widget } from '../fixtures/seed/reports';
+import { createCategory, createTransaction } from '../fixtures/seed/transactions';
 import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
 
@@ -300,6 +302,78 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Dashboard saved')).toBeVisible();
       await page.reload();
       await expect(page.getByText('1 widget', { exact: true })).toBeVisible({ timeout: 45_000 });
+    });
+
+    /** Two categories with one transaction each, and a dashboard of one saved report ("wr") over them. */
+    async function seedSplitBoard(type: 'bar' | 'table') {
+      const api = makeApi(currentUser.cookie);
+      const account = await createBankAccount(api, { name: `Split Bank ${Date.now()}` });
+      const tag = Date.now();
+      const food = await createCategory(api, `Split Food ${tag}`);
+      const fuel = await createCategory(api, `Split Fuel ${tag}`);
+      await createTransaction(api, account.id, { amount: -300, description: `Split food row ${tag}`, categoryIds: [food.id] });
+      await createTransaction(api, account.id, { amount: -100, description: `Split fuel row ${tag}`, categoryIds: [fuel.id] });
+      const filters = [{ field: 'date', operator: 'this_month' }];
+      const measure = { field: 'spend', aggregation: 'sum' };
+      const name = `Ds split ${type} ${tag}`;
+      const report = await createReport(
+        api,
+        (type === 'bar'
+          ? { name, type: 'CHART', datasource: 'transactions', definition: { chartType: 'bar', dimension: { field: 'category' }, measure, filters } }
+          : { name, type: 'TABLE', datasource: 'transactions', definition: { mode: 'aggregated', rows: [{ field: 'category' }], columns: [], measures: [measure], filters } }) as never,
+      );
+      const dashboard = await createDashboard(api, { name: `Ds split board ${tag}`, isDefault: false, widgets: [widget(report.id, { x: 0, y: 0, w: 100, h: 24 }, null, 'wr')] });
+      return { dashboard, name, categories: [`Split Food ${tag}`, `Split Fuel ${tag}`], rows: { [`Split Food ${tag}`]: `Split food row ${tag}`, [`Split Fuel ${tag}`]: `Split fuel row ${tag}` } as Record<string, string> };
+    }
+
+    test('chart widget: tapping a bar opens "Underlying data · <widget>" filtered to that bar', async ({ page }) => {
+      test.slow();
+      const { dashboard, name, categories, rows } = await seedSplitBoard('bar');
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
+      await expect(bars).toHaveCount(2, { timeout: 45_000 });
+      await bars.first().click();
+      const dialog = page.getByRole('dialog', { name: `Underlying data · ${name}` });
+      const chip = dialog.getByRole('button', { name: /^Category: / });
+      await expect(chip).toBeVisible({ timeout: 45_000 });
+      const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).replace(/^Category: /, '').trim();
+      expect(categories).toContain(tapped);
+      const other = categories.find((c) => c !== tapped)!;
+      await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });
+      await expect(dialog.getByText(rows[tapped]).first()).toBeVisible();
+      await expect(dialog.getByText(rows[other])).toHaveCount(0);
+    });
+
+    test('pivot table widget: tapping a row opens the rows of that row only', async ({ page }) => {
+      test.slow();
+      const { dashboard, name, categories, rows } = await seedSplitBoard('table');
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      const card = widgetCard(page, 'wr');
+      await expect(card.getByText(categories[0], { exact: true }).first()).toBeVisible({ timeout: 45_000 });
+      await card.getByText(categories[0], { exact: true }).first().click();
+      const dialog = page.getByRole('dialog', { name: `Underlying data · ${name}` });
+      await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });
+      await expect(dialog.getByText(rows[categories[0]]).first()).toBeVisible();
+      await expect(dialog.getByText(rows[categories[1]])).toHaveCount(0);
+    });
+
+    test('edit: tapping a bar opens nothing', async ({ page }) => {
+      test.slow();
+      const { dashboard } = await seedSplitBoard('bar');
+      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await expect(page.getByLabel('Dashboard name')).toBeVisible({ timeout: 45_000 });
+      const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
+      await expect(bars).toHaveCount(2, { timeout: 45_000 });
+      // Edit mode makes widget content inert, so a tap on the bar reaches nothing.
+      await expect.poll(() => bars.first().evaluate((el) => !!el.closest('[inert]')), { timeout: 15_000 }).toBe(true);
+      // The chart redraws as the edit grid settles, so measure once the bar stays put.
+      let at: Point = { x: 0, y: 0 };
+      await expect(async () => {
+        at = await centerOf(bars.first());
+      }).toPass({ timeout: 15_000 });
+      await page.mouse.click(at.x, at.y);
+      await page.waitForTimeout(500);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
     });
 
     if (!phone) {
