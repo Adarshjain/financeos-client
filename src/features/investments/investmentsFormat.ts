@@ -48,6 +48,21 @@ export function shortDate(iso: string): string {
   return day ? `${day} ${iso.slice(2, 4)}` : '';
 }
 
+/** "15:30" (24h, IST) from an ISO timestamp with an offset; '' when missing or unparseable. */
+export function istTime(at: string | null | undefined): string {
+  if (!at) return '';
+  const ms = new Date(at).getTime();
+  if (Number.isNaN(ms)) return '';
+  const d = new Date(ms + 330 * 60_000);
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}
+
+/** "13 Oct, 15:30" when the price has a time, else just "13 Oct". */
+export function dayWithTime(day: string, at: string | null | undefined): string {
+  const time = istTime(at);
+  return day && time ? `${day}, ${time}` : day;
+}
+
 /** Tone of a signed figure: green up, red down, plain at zero. */
 export function moveTone(value: number | null | undefined): 'positive' | 'danger' | undefined {
   if (value == null || Math.round(value * 100) === 0) return undefined;

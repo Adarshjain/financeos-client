@@ -6,6 +6,7 @@ import React from 'react';
 import { DateField, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
+import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { usePriceMutations } from '../usePriceMutations';
@@ -26,7 +27,7 @@ export interface PriceDialogProps {
   onClose: () => void;
 }
 
-/** A manual price: its date and amount. An existing price keeps its date (only the amount can change). */
+/** A manual price: its date and amount. Both can be changed on an existing price; a date already taken by another of your prices is shown on the date field. */
 export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialogProps) {
   const router = useRouter();
   const { setPrice, updatePrice } = usePriceMutations(instrumentId);
@@ -34,6 +35,7 @@ export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialog
   const [date, setDate] = React.useState(editing ? target.row.asOf : target.today);
   const [amount, setAmount] = React.useState(editing ? String(target.row.close) : target.price != null ? String(target.price) : '');
   const [error, setError] = React.useState<string | undefined>();
+  const [dateError, setDateError] = React.useState<string | undefined>();
   const submitting = setPrice.isPending || updatePrice.isPending;
 
   const submit = async () => {
@@ -46,7 +48,11 @@ export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialog
     }
     try {
       if (target.kind === 'edit') {
-        await updatePrice.mutateAsync({ priceId: target.row.id!, price });
+        await updatePrice.mutateAsync({
+          priceId: target.row.id!,
+          price,
+          ...(date && date !== target.row.asOf ? { asOf: date } : {}),
+        });
         showToast('Price updated');
       } else {
         await setPrice.mutateAsync({ price, asOf: date });
@@ -55,6 +61,10 @@ export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialog
       router.refresh();
       onClose();
     } catch (e) {
+      if (e instanceof ApiError && e.status === 409 && e.response.code === 'DUPLICATE') {
+        setDateError(e.response.message);
+        return;
+      }
       showToast(getErrorMessage(e, 'Failed to update the price'), { tone: 'danger' });
     }
   };
@@ -83,8 +93,11 @@ export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialog
               label="As of"
               today={editing ? target.row.asOf : target.today}
               value={date}
-              disabled={editing}
-              onValueChange={(v) => setDate(typeof v === 'string' ? v : '')}
+              error={dateError}
+              onValueChange={(v) => {
+                setDate(typeof v === 'string' ? v : '');
+                setDateError(undefined);
+              }}
             />
             <AmountField
               label="Price"

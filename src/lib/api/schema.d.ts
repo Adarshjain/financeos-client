@@ -5443,6 +5443,8 @@ export interface components {
             invested: number;
             /** Format: date */
             priceAsOf?: string | null;
+            /** Format: date-time */
+            priceAt?: string | null;
             unrealised: number;
             unrealisedPct?: number | null;
             /** Format: double */
@@ -5471,6 +5473,8 @@ export interface components {
             noPrice: boolean;
             /** Format: date */
             priceAsOf?: string | null;
+            /** Format: date-time */
+            priceAt?: string | null;
             quantity: number;
             realisedPnl: number;
             symbol?: string | null;
@@ -5671,6 +5675,8 @@ export interface components {
             editable: boolean;
             /** Format: uuid */
             id: string;
+            /** Format: date-time */
+            priceAt?: string | null;
             /** @enum {string} */
             source: "AMFI" | "YAHOO" | "MANUAL";
         };
@@ -6708,6 +6714,8 @@ export interface components {
             lastPrice?: number | null;
             /** Format: date */
             lastPriceAsOf?: string | null;
+            /** Format: date-time */
+            lastPriceAt?: string | null;
             /** @enum {string|null} */
             lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | null;
             /** Format: date */
@@ -6718,6 +6726,8 @@ export interface components {
             previousClose?: number | null;
             /** Format: date */
             previousCloseAsOf?: string | null;
+            /** Format: date-time */
+            previousCloseAt?: string | null;
             provider: string;
             quantity: number;
             realizedGainLoss?: number | null;
@@ -7369,6 +7379,8 @@ export interface components {
             noPrice: boolean;
             /** Format: date */
             priceAsOf?: string | null;
+            /** Format: date-time */
+            priceAt?: string | null;
             quantity: number;
             symbol?: string | null;
             unrealised: number;
@@ -7769,8 +7781,12 @@ export interface components {
             dayChangePct?: number | null;
             /** Format: date */
             previousPriceAsOf?: string | null;
+            /** Format: date-time */
+            previousPriceAt?: string | null;
             /** Format: date */
             priceAsOf?: string | null;
+            /** Format: date-time */
+            priceAt?: string | null;
             totalCharges: number;
             totalCurrentValue: number;
             totalDividends: number;
@@ -8119,6 +8135,8 @@ export interface components {
             sendHour?: number | null;
         };
         UpdatePriceRequest: {
+            /** Format: date */
+            asOf?: string;
             price: number;
         };
         UpdateReportRequest: {
