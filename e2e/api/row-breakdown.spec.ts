@@ -24,11 +24,11 @@ import {
 import { newUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
-/** The net_worth rows as the KPI's underlying data lists them, by name. */
-async function netWorthRows(api: ApiClient): Promise<Record<string, { id: string; value: number; side: string }>> {
+/** The net_worth rows as the KPI's underlying data lists them (name, value, group), by name. */
+async function netWorthRows(api: ApiClient): Promise<Record<string, { id: string; value: number; group: string }>> {
   const res = await underlyingAdHoc(api, kpiBody('net_worth', { measure: 'value', aggregation: 'sum', filters: [] }), { size: 1000 });
   return Object.fromEntries(
-    tableOf(res).rows.map((r) => [String(r.name), { id: String(r.id), value: Number(r.value), side: String(r.side) }])
+    tableOf(res).rows.map((r) => [String(r.name), { id: String(r.id), value: Number(r.value), group: String(r.group) }])
   );
 }
 
@@ -66,7 +66,7 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     });
 
     const row = (await netWorthRows(api))['BD Bank'];
-    expect(row).toMatchObject({ id: bank.id, value: 11000, side: 'asset' });
+    expect(row).toMatchObject({ id: bank.id, value: 11000, group: 'assets' });
 
     const b = await rowBreakdown(api, 'net_worth', bank.id);
     expect(b).toMatchObject({
@@ -182,7 +182,7 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     await createTransaction(api, bank.id, { amount: -600, date: istToday(-2), description: 'Big spend' });
 
     const row = (await netWorthRows(api))['BD Overdrawn'];
-    expect(row).toMatchObject({ value: 500, side: 'liability' });
+    expect(row).toMatchObject({ value: 500, group: 'liabilities' });
     const b = await rowBreakdown(api, 'net_worth', bank.id);
     expect(b).toMatchObject({ subtitle: 'Liability', total: 500, totalLabel: 'Balance' });
     expect(b.notes).toEqual([]);
@@ -218,7 +218,7 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     const payment = await createTransaction(api, card.id, { amount: 300, date: istToday(-2), description: 'Payment' });
 
     const row = (await netWorthRows(api))['BD Card'];
-    expect(row).toMatchObject({ value: 2200, side: 'liability' });
+    expect(row).toMatchObject({ value: 2200, group: 'liabilities' });
     const b = await rowBreakdown(api, 'net_worth', card.id);
     expect(b).toMatchObject({ title: 'BD Card', subtitle: 'Liability', kindLabel: 'Credit card', total: 2200, totalLabel: 'Outstanding' });
     expect(stepsOf(b)).toEqual([
@@ -247,7 +247,7 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     const since = ddmmyyyy(istToday(-3));
 
     const row = (await netWorthRows(api))['BD Anchored Card'];
-    expect(row).toMatchObject({ value: 5700, side: 'liability' });
+    expect(row).toMatchObject({ value: 5700, group: 'liabilities' });
     const b = await rowBreakdown(api, 'net_worth', card.id);
     expect(b).toMatchObject({ subtitle: 'Liability', kindLabel: 'Credit card', total: 5700, totalLabel: 'Outstanding' });
     expect(stepsOf(b)).toEqual([
@@ -316,7 +316,7 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
 
     // Priced: 12 open × 999.99 (WireMock Yahoo) = 11999.88; unpriced at cost 4 × 250 = 1000.
     const row = (await netWorthRows(api))['BD Broker'];
-    expect(row).toMatchObject({ id: broker.id, value: 17999.88, side: 'asset' });
+    expect(row).toMatchObject({ id: broker.id, value: 17999.88, group: 'investments' });
     const b = await rowBreakdown(api, 'net_worth', broker.id);
     expect(b).toMatchObject({ title: 'BD Broker', kindLabel: 'Broker', subtitle: 'Asset', total: 17999.88, totalLabel: 'Balance' });
     expect(stepsOf(b)).toEqual([
@@ -445,7 +445,7 @@ test.describe('net_worth row breakdown: loans and lendings (@api)', () => {
     const outstanding = Number((await getLoan(api, loan.id)).loan.outstandingPrincipal);
 
     const row = (await netWorthRows(api))['BD Loan'];
-    expect(row).toMatchObject({ id: loan.id, side: 'liability' });
+    expect(row).toMatchObject({ id: loan.id, group: 'liabilities' });
     expect(row.value).toBe(Number(last.closingBalance));
     expect(row.value).toBe(outstanding);
 
@@ -490,8 +490,8 @@ test.describe('net_worth row breakdown: loans and lendings (@api)', () => {
     await addLending(api, { counterpartyId: creditor.id, direction: 'borrowed', amount: 800, entryDate: istToday(-7) });
 
     const rows = await netWorthRows(api);
-    expect(rows['BD Debtor']).toMatchObject({ value: 3500, side: 'asset' });
-    expect(rows['BD Creditor']).toMatchObject({ value: 800, side: 'liability' });
+    expect(rows['BD Debtor']).toMatchObject({ value: 3500, group: 'assets' });
+    expect(rows['BD Creditor']).toMatchObject({ value: 800, group: 'liabilities' });
 
     const d = await rowBreakdown(api, 'net_worth', debtor.id);
     expect(d).toMatchObject({ title: 'BD Debtor', kindLabel: 'Lending', subtitle: 'Asset', total: 3500, totalLabel: 'They owe you' });
