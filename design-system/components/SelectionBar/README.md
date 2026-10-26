@@ -9,7 +9,7 @@ The bar that appears while items are selected: the count, a one-line summary, an
 - Page actions: without `count` it is a plain page-action bar (no count, no ×, always open while mounted), same docking: phone full width over the tab bar, desktop floating pill. The leading slot (`summary`) holds a note and a Menu; actions carry a Button `variant` and `loading`.
 - Same component everywhere: transactions (Link · Merge · Approve · Delete) and rules (Approve).
 
-- **Glass** (default, phone dock and desktop pill, also as the dashboard/report-editor action bars): `bg-surface` fallback; `glass:bg-glass glass:backdrop-blur-glass glass:backdrop-saturate-glass` where backdrop-filter is supported, so list rows scrolling under it show through blurred.
+- **Glass** (default, phone dock and desktop pill, also as the dashboard/report-editor action bars): `bg-surface` fallback; `glass:bg-glass-strong glass:backdrop-blur-glass glass:backdrop-saturate-glass` where backdrop-filter is supported, so list rows scrolling under it show through blurred.
 
 ## Selection model (phone)
 Long-press a row to start, tap to add or remove, the eye icon opens the item's detail without leaving selection, × or back to finish. No checkboxes on phone. Desktop uses checkboxes.
