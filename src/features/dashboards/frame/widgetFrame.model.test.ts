@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { REPORT_SUBTITLE, widgetHref, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
+import { widgetHref, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
 
 const report = (over: Partial<WidgetResponse> = {}): WidgetResponse => ({
   id: 'w1',
@@ -61,8 +61,8 @@ describe('widgetHref and widgetSubtitle', () => {
     expect(widgetHref({ ...builtin('template'), builtin: undefined })).toBeNull();
   });
 
-  it('a report says "Report"; a built-in uses the server subtitle', () => {
-    expect(widgetSubtitle(report())).toBe(REPORT_SUBTITLE);
+  it('a saved report widget has no subtitle; a built-in uses the server subtitle', () => {
+    expect(widgetSubtitle(report())).toBeNull();
     expect(widgetSubtitle(builtin('component', { subtitle: 'Next 14 days', key: 'unknown_key' }))).toBe('Next 14 days');
   });
 });

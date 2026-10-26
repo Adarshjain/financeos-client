@@ -25,9 +25,3 @@ export const LazyReportUnderlyingDialog = dynamic(
   () => import('@/features/reports/underlying/ReportUnderlyingDialog').then((m) => m.ReportUnderlyingDialog),
   { ssr: false },
 );
-
-/** Settle up with one person. */
-export const LazySettleDialog = dynamic(
-  () => import('@/features/lendings/SettleDialog').then((m) => m.SettleDialog),
-  { ssr: false },
-);

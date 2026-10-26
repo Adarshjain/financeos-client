@@ -13,9 +13,6 @@ vi.mock('../investmentsLoansParts', async () => {
     LazyReportUnderlyingDialog: (p: { request: unknown; title?: string; onClose: () => void }) => (
       <button type="button" data-testid="underlying" data-request={JSON.stringify(p.request)} data-title={p.title} onClick={p.onClose} />
     ),
-    LazySettleDialog: (p: { counterpartyId: string; name: string; direction: string; balance: number; onOpenChange: (o: boolean) => void }) => (
-      <button type="button" data-testid="settle" data-id={p.counterpartyId} data-name={p.name} data-direction={p.direction} data-balance={p.balance} onClick={() => p.onOpenChange(false)} />
-    ),
   };
 });
 

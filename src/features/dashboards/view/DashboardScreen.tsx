@@ -173,7 +173,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
       }
     >
       {editing ? (
-        <div ref={body} className="flex flex-col gap-space-16 pb-space-48">
+        <div ref={body} className="flex flex-col gap-space-16 desk:pb-space-48">
           <div className="flex flex-col gap-space-8 desk:max-w-container-md">
             <TextField
               label="Dashboard name"
