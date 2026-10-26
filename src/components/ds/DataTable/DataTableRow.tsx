@@ -123,11 +123,10 @@ export function DataTableRow<Row extends RowData>({
             : 'grid-cols-fill-auto',
         'grid gap-x-space-10 px-space-14 py-space-10',
         'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
-        isHighlighted
-          ? 'border-l-brand-strong bg-brand-tint'
-          : isSelected
-            ? 'border-l-brand bg-brand-tint'
-            : isWarning
+        // Highlighted and selected rows are the brand-tint ground only; only the warning tone keeps a stripe (owner, 2026-10-26).
+        isHighlighted || isSelected
+          ? 'border-l-transparent bg-brand-tint'
+          : isWarning
               ? 'border-l-attention bg-attention-tint'
               : 'border-l-transparent bg-surface',
         rowState?.disabled && 'opacity-60 pointer-events-none',

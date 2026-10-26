@@ -760,7 +760,7 @@ describe('DataTable', () => {
 
       const rows = screen.getAllByRole('row');
       // rows[1] is row 1 (highlighted)
-      expect(rows[1]).toHaveClass('border-l-brand-strong', 'bg-brand-tint');
+      expect(rows[1]).toHaveClass('border-l-transparent', 'bg-brand-tint');
       expect(scrollMock).toHaveBeenCalledTimes(1);
 
       // rows[2] is row 2 (warning)

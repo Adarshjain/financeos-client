@@ -34,7 +34,7 @@ export interface ListRowProps
   chevron?: boolean;
   /** Actions rendered in a trailing kebab (More options) menu */
   actions?: ListRowAction[];
-  /** Highlighted row (opened from notification): 4px brand-strong stripe on brand-tint */
+  /** Highlighted row (current, or opened from a notification): the brand-tint ground, no stripe (owner, 2026-10-26) */
   highlighted?: boolean;
   /** Disabled row state: dim opacity and disable pointer interactions */
   disabled?: boolean;
@@ -87,9 +87,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
     const classes = cn(
       'flex items-center gap-space-12 px-space-16 py-space-10 text-body relative transition-colors font-text no-underline text-inherit',
       borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-      isHighlighted
-        ? 'border-l-4 border-l-brand-strong bg-brand-tint'
-        : 'border-l-4 border-l-transparent',
+      // The transparent 4px left border keeps rows aligned with DataTable rows, whose warning tone has a stripe.
+      'border-l-4 border-l-transparent',
+      isHighlighted && 'bg-brand-tint',
       disabled && 'opacity-50 pointer-events-none',
       isInteractive &&
         'cursor-pointer hover:bg-hover active-self:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',

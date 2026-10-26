@@ -303,9 +303,9 @@ describe('InboxPage', () => {
     await screen.findByText('Car loan EMI');
     await waitFor(() => expect(scroll).toHaveBeenCalled());
     const row = screen.getByText('Car loan EMI').closest('[data-testid="inbox-row"]') as HTMLElement;
-    expect(row.className).toContain('border-l-brand-strong');
+    expect(row.className).toContain('bg-brand-tint');
     const other = screen.getByText('Amex bill').closest('[data-testid="inbox-row"]') as HTMLElement;
-    expect(other.className).not.toContain('border-l-brand-strong');
+    expect(other.className).not.toContain('bg-brand-tint');
     expect(screen.queryByText('That item is already handled.')).not.toBeInTheDocument();
   });
 

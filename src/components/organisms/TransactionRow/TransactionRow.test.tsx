@@ -278,7 +278,8 @@ describe('TransactionRow', () => {
     expect(container.firstChild).toHaveClass('bg-attention-tint');
     expect(container.firstChild).not.toHaveClass('bg-brand-tint');
     rerender(<TransactionRow description="Open tx" amount="100.00" highlighted selectable selected />);
-    expect(container.firstChild).toHaveClass('bg-brand-tint', 'desk:border-l-brand');
+    expect(container.firstChild).toHaveClass('bg-brand-tint');
+    expect(container.firstChild).not.toHaveClass('desk:border-l-brand');
   });
 
   it('muted dims the row but keeps it pressable and selectable', () => {
@@ -329,7 +330,7 @@ describe('TransactionRow', () => {
     expect(descEl).not.toHaveClass('font-bold');
   });
 
-  it('renders 4px stripes for selected and warning tone rows', () => {
+  it('renders a 4px stripe only for warning tone rows; selected rows have none', () => {
     const { container: selContainer } = render(
       <TransactionRow
         description="Selected tx"
@@ -337,8 +338,7 @@ describe('TransactionRow', () => {
         selected
       />,
     );
-    const selStripe = selContainer.querySelector('.bg-brand');
-    expect(selStripe).toHaveClass('w-space-4');
+    expect(selContainer.querySelector('.w-space-4')).toBeNull();
 
     const { container: monContainer } = render(
       <TransactionRow

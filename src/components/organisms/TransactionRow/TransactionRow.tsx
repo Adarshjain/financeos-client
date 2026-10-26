@@ -378,7 +378,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
           'desk:grid desk:grid-cols-template desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          selected && 'bg-brand-tint desk:border-l-brand',
+          selected && 'bg-brand-tint',
           isWarning && 'bg-attention-tint desk:border-l-attention',
           disabled && 'opacity-60 pointer-events-none',
           muted && !disabled && 'opacity-60',
@@ -389,12 +389,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         )}
         {...mergeProps(props, itemProps)}
       >
-        {selected && (
-          <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none desk:hidden"
-            aria-hidden="true"
-          />
-        )}
         {isWarning && (
           <span
             className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none desk:hidden"

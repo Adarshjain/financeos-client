@@ -34,7 +34,7 @@ The list frame for every table of records: column headers with sort, a selection
   - **Phone:** long-press starts selection (touch or mouse, while still held), then tap toggles. The eye opens the row's detail without leaving selection. Selection mode is on whenever at least one row is selected.
   - Selection is a set of row ids. It survives paging; the page clears it when filters change.
   - **Select all across pages:** when the page passes `allSelected`, every row shows as selected. Unticking one row turns it off and reports the page's other ids as the selection. SelectionBar's "Select all 182" sets it.
-  - A selected row uses TransactionRow's selected look (`brand-tint` with the 4px `brand` stripe on the left). A highlighted row uses ListRow's highlighted look (`brand-strong` stripe). The page shows SelectionBar from the selection.
+  - Selected and highlighted rows are the `brand-tint` ground, with no stripe (owner, 2026-10-26). Only the warning tone keeps its 4px `attention` stripe. The page shows SelectionBar from the selection.
 - **First row border:** every row, the first included, draws a top border by default (it is the line under a Card header or the column header). `firstRowBorder={false}` makes dividers sit between rows only: use it when a SectionHeader above already draws the line (grouped tables in a dialog). The column header then draws its own bottom border on desktop.
 - **Row click** opens the record's detail when the page passes `onRowSelect`. Without it, rows aren't clickable. In selection mode a tap toggles selection instead.
 - **Expandable rows:** with `renderExpanded(row)`, a leading chevron column opens a detail block under the row, at full width. For example, a breakdown's sub-rows, a loan year's EMIs or a job's result.
