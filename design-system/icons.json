@@ -213,5 +213,20 @@
   "name": "resize-corner",
   "phosphor": "arrow-down-right",
   "use": "Corner resize handle (WidgetGrid)"
+ },
+ {
+  "name": "arrow-up",
+  "phosphor": "arrow-up",
+  "use": "Send (PromptField)"
+ },
+ {
+  "name": "stop",
+  "phosphor": "stop",
+  "use": "Stop a running answer (PromptField)"
+ },
+ {
+  "name": "copy",
+  "phosphor": "copy",
+  "use": "Copy to clipboard"
  }
 ]

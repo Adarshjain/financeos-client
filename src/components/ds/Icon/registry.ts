@@ -2,6 +2,7 @@ import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import {
   ArrowClockwise,
   ArrowDownRight,
+  ArrowUp,
   Backspace,
   Bell,
   CalendarBlank,
@@ -15,6 +16,7 @@ import {
   Check,
   CircleNotch,
   Clock,
+  Copy,
   DotsSixVertical,
   DotsThreeVertical,
   DownloadSimple,
@@ -36,6 +38,7 @@ import {
   PencilSimple,
   Plus,
   SquaresFour,
+  Stop,
   Sun,
   Trash,
   Tray,
@@ -89,6 +92,9 @@ export const iconRegistry = {
   backspace: Backspace,
   grip: DotsSixVertical,
   'resize-corner': ArrowDownRight,
+  'arrow-up': ArrowUp,
+  stop: Stop,
+  copy: Copy,
 } as const satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof iconRegistry;
