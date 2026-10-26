@@ -325,6 +325,25 @@ for (const viewport of VIEWPORTS) {
         await expect(reportRow(page, 'Draft home KPI')).toHaveCount(0);
       });
 
+      test('report draft: Add to Home without a default dashboard creates Home with the report widget', async ({ page }) => {
+        test.slow();
+        const api = makeApi(currentUser.cookie);
+        // Opening Home seeds it; delete every dashboard so the user has no default.
+        await page.goto('/ds/dashboard');
+        await expect(page.getByTestId('dashboard-widget').first()).toBeVisible();
+        const list = await api.GET('/api/v1/dashboards');
+        for (const d of list.data ?? []) await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id: d.id } } });
+
+        await askForDraft(page, { mode: 'create', name: 'Draft first KPI' });
+        await page.getByRole('button', { name: 'Add to Home' }).click();
+        await expect(page.getByText('Saved as report and added to Home').first()).toBeVisible();
+
+        await page.goto('/ds/dashboard');
+        const widgets = page.getByTestId('dashboard-widget');
+        await expect(widgets).toHaveCount(1);
+        await expect(widgets.first()).toContainText('Draft first KPI');
+      });
+
       test('report draft: Update report changes the saved report, and Undo puts the earlier one back', async ({ page }) => {
         test.slow();
         const report = await createReport(makeApi(currentUser.cookie), { name: 'Old name KPI', type: 'KPI', datasource: 'transactions', definition: kpiDefinition } as never);

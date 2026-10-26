@@ -4,14 +4,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import React from 'react';
 
-import { runAdHocReport } from '@/actions/reports';
 import { Banner, Button, Card, CardFooter, CardHeader, CardRow, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
 import { ApiError } from '@/lib/api/client';
 import { storeSavedDashboard,useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
-import type { ReportData, ReportDefinition, ReportResponse, ReportType } from '@/lib/reports.types';
+import type { ReportData, ReportResponse } from '@/lib/reports.types';
 
 import type { ChatReportDraft } from './chat.types';
 import type { DraftResult } from './conversation.types';
@@ -19,11 +18,14 @@ import { saveDraftResult } from './conversationActions';
 import {
   addReportWidget,
   applyDraftUpdate,
+  createHomeWithReport,
   getReport,
   getReportSummary,
+  removeDashboard,
   removeReport,
   removeWidgetFrom,
   restoreReport,
+  runDraftPreview,
   saveDraftAsReport,
 } from './draftActions';
 import { activeResult, draftCaption, isMalformedDraft } from './draftModel';
@@ -69,19 +71,27 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   const isDelete = draft.mode === 'delete';
   const malformed = isMalformedDraft(draft);
 
-  // The live preview of a create or update.
+  // The live preview of a create or update; the effect is keyed on the draft's content, not its identity.
   const [preview, setPreview] = React.useState<{ data: ReportData | null; error: string | null; loading: boolean }>({ data: null, error: null, loading: !isDelete && !malformed });
+  const [previewTry, setPreviewTry] = React.useState(0);
+  const draftKey = JSON.stringify([draft.type, draft.datasource, draft.definition]);
   React.useEffect(() => {
     if (isDelete || malformed) return;
     let active = true;
-    void runAdHocReport({ type: draft.type as ReportType, datasource: draft.datasource!, definition: draft.definition as ReportDefinition }).then((res) => {
-      if (!active) return;
-      setPreview(res.success ? { data: res.data, error: null, loading: false } : { data: null, error: res.error.message, loading: false });
-    });
+    setPreview((p) => ({ data: p.data, error: null, loading: true }));
+    const [type, datasource, definition] = JSON.parse(draftKey) as [ChatReportDraft['type'], ChatReportDraft['datasource'], ChatReportDraft['definition']];
+    runDraftPreview({ mode: 'create', type, datasource, definition }).then(
+      (data) => {
+        if (active) setPreview({ data, error: null, loading: false });
+      },
+      () => {
+        if (active) setPreview({ data: null, error: "Couldn't load the preview.", loading: false });
+      },
+    );
     return () => {
       active = false;
     };
-  }, [isDelete, malformed, draft.type, draft.datasource, draft.definition]);
+  }, [isDelete, malformed, draftKey, previewTry]);
 
   // A delete says how many dashboards its widget leaves.
   React.useEffect(() => {
@@ -130,7 +140,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
     setBusyTo('undo');
     setError(null);
     try {
-      if (done.action === 'saved-home' && done.dashboardId && done.widgetId) {
+      if (done.action === 'saved-home' && done.createdDashboard && done.dashboardId) {
+        await removeDashboard(done.dashboardId).catch(ignoreGone);
+      } else if (done.action === 'saved-home' && done.dashboardId && done.widgetId) {
         const saved = await removeWidgetFrom(done.dashboardId, done.widgetId).catch(ignoreGone);
         if (saved) storeSavedDashboard(queryClient, saved);
       }
@@ -154,11 +166,11 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
       return fail(e, "Couldn't save the report. Try again.");
     }
     let done: DraftResult = { action: 'saved', reportId: report.id, reportName: report.name };
-    if (toHome && home) {
+    if (toHome) {
       try {
-        const { saved, widgetId } = await addReportWidget(home.id, report);
+        const { saved, widgetId } = home ? await addReportWidget(home.id, report) : await createHomeWithReport(report);
         storeSavedDashboard(queryClient, saved);
-        done = { action: 'saved-home', reportId: report.id, reportName: report.name, widgetId, dashboardId: home.id };
+        done = { action: 'saved-home', reportId: report.id, reportName: report.name, widgetId, dashboardId: saved.id ?? home?.id, ...(home ? {} : { createdDashboard: true }) };
       } catch {
         showToast('Saved the report, but could not add it to Home.', { tone: 'danger' });
       }
@@ -242,7 +254,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
         {!isDelete ? (
           <CardRow className="block">
             {preview.loading ? <Skeleton height={160} /> : null}
-            {preview.error ? <Banner tone="danger">{preview.error}</Banner> : null}
+            {preview.error ? <Banner tone="danger" action={{ label: 'Retry', onSelect: () => setPreviewTry((n) => n + 1) }}>{preview.error}</Banner> : null}
             {preview.data ? <ReportResult data={preview.data} /> : null}
           </CardRow>
         ) : null}
@@ -280,8 +292,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
                 {`Updates “${title}”`}
               </Text>
             ) : null}
-            {isCreate && home ? (
-              <Button variant="secondary" size="sm" loading={busy === 'home'} disabled={Boolean(busy) || previewBlocks} onClick={() => void save(true)}>
+            {isCreate ? (
+              // Off until the dashboards list is in: before that "no default" can't be told apart, and a second Home would be made.
+              <Button variant="secondary" size="sm" loading={busy === 'home'} disabled={Boolean(busy) || previewBlocks || !dashboards.isSuccess} onClick={() => void save(true)}>
                 Add to Home
               </Button>
             ) : null}

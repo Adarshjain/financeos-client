@@ -14,11 +14,10 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 vi.mock('@/features/reports/view/ReportResult', () => ({ ReportResult: () => <div>preview result</div> }));
 
-const adHoc = vi.hoisted(() => vi.fn());
-vi.mock('@/actions/reports', () => ({ runAdHocReport: adHoc }));
 const remember = vi.hoisted(() => vi.fn());
 vi.mock('./conversationActions', () => ({ saveDraftResult: remember }));
 const actions = vi.hoisted(() => ({
+  runDraftPreview: vi.fn(),
   saveDraftAsReport: vi.fn(),
   getReport: vi.fn(),
   getReportSummary: vi.fn(),
@@ -26,11 +25,17 @@ const actions = vi.hoisted(() => ({
   restoreReport: vi.fn(),
   removeReport: vi.fn(),
   addReportWidget: vi.fn(),
+  createHomeWithReport: vi.fn(),
+  removeDashboard: vi.fn(),
   removeWidgetFrom: vi.fn(),
 }));
 vi.mock('./draftActions', () => actions);
-const dash = vi.hoisted(() => ({ list: [] as { id: string; isDefault: boolean }[] }));
-vi.mock('@/lib/query/hooks/useDashboards', () => ({ useDashboards: () => ({ data: dash.list }), storeSavedDashboard: vi.fn() }));
+// list null = the dashboards query has not loaded yet.
+const dash = vi.hoisted(() => ({ list: [] as { id: string; isDefault: boolean }[] | null }));
+vi.mock('@/lib/query/hooks/useDashboards', () => ({
+  useDashboards: () => ({ data: dash.list ?? undefined, isSuccess: dash.list !== null }),
+  storeSavedDashboard: vi.fn(),
+}));
 
 const create: ChatReportDraft = {
   mode: 'create',
@@ -51,11 +56,13 @@ beforeEach(() => {
   vi.clearAllMocks();
   remember.mockResolvedValue({ success: true, data: undefined });
   dash.list = [{ id: 'd1', isDefault: true }];
-  adHoc.mockResolvedValue({ success: true, data: { type: 'CHART' } });
+  actions.runDraftPreview.mockResolvedValue({ type: 'CHART' });
   actions.saveDraftAsReport.mockResolvedValue({ id: 'r1', name: 'Monthly spend by category', type: 'CHART' });
   actions.addReportWidget.mockResolvedValue({ saved: { id: 'd1' }, widgetId: 'w1' });
   actions.removeWidgetFrom.mockResolvedValue({ id: 'd1' });
   actions.removeReport.mockResolvedValue(undefined);
+  actions.createHomeWithReport.mockResolvedValue({ saved: { id: 'h1' }, widgetId: 'w9' });
+  actions.removeDashboard.mockResolvedValue(undefined);
   actions.getReport.mockResolvedValue({ id: 'r1', name: 'Old name', description: null, type: 'CHART', definition: { old: true } });
   actions.applyDraftUpdate.mockResolvedValue(undefined);
   actions.restoreReport.mockResolvedValue(undefined);
@@ -69,25 +76,68 @@ describe('create draft', () => {
     expect(screen.getByText('Monthly spend by category')).toBeInTheDocument();
     expect(screen.getByText('Chart · Transactions · last 12 months, top 5 categories and the rest')).toBeInTheDocument();
     expect(await screen.findByText('preview result')).toBeInTheDocument();
-    expect(adHoc).toHaveBeenCalledWith({ type: 'CHART', datasource: 'transactions', definition: { x: 1 } });
+    expect(actions.runDraftPreview).toHaveBeenCalledWith(expect.objectContaining({ type: 'CHART', datasource: 'transactions', definition: { x: 1 } }));
     expect(screen.getByRole('button', { name: 'Add to Home' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Save as report' })).toBeEnabled();
   });
 
   it('keeps the actions off while the preview runs and when it fails, and says why', async () => {
-    adHoc.mockResolvedValue({ success: false, error: { message: 'Unknown field x' } });
+    actions.runDraftPreview.mockRejectedValue(new Error('x'));
     setup();
     expect(screen.getByRole('button', { name: 'Save as report' })).toBeDisabled();
-    expect(await screen.findByText('Unknown field x')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the preview.")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save as report' })).toBeDisabled();
   });
 
-  it('hides Add to Home when there is no default dashboard', async () => {
+  it('Retry re-runs a failed preview and enables Save', async () => {
+    actions.runDraftPreview.mockRejectedValueOnce(new Error('x'));
+    setup();
+    await screen.findByText("Couldn't load the preview.");
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('preview result')).toBeInTheDocument();
+    expect(actions.runDraftPreview).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Save as report' })).toBeEnabled();
+  });
+
+  it('does not re-run the preview when only the draft object changes', async () => {
+    const { rerender } = setup();
+    await screen.findByText('preview result');
+    rerender(<ChatReportDraftCard draft={{ ...create, definition: { x: 1 } }} conversationId="c1" messageId="m1" />);
+    expect(actions.runDraftPreview).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Add to Home without a default dashboard and creates Home with just the widget', async () => {
     dash.list = [{ id: 'd2', isDefault: false }];
     setup();
     await screen.findByText('preview result');
-    expect(screen.queryByRole('button', { name: 'Add to Home' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Save as report' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
+    expect(await screen.findByText(/^Saved as report and added to Home/)).toBeInTheDocument();
+    expect(actions.createHomeWithReport).toHaveBeenCalledWith(expect.objectContaining({ id: 'r1' }));
+    expect(actions.addReportWidget).not.toHaveBeenCalled();
+    expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'saved-home', reportId: 'r1', reportName: 'Monthly spend by category', widgetId: 'w9', dashboardId: 'h1', createdDashboard: true });
+    expect(toast).toHaveBeenCalledWith('Saved as report and added to Home', expect.anything());
+  });
+
+  it('keeps Add to Home off until the dashboards list has loaded, so no second Home is made', async () => {
+    dash.list = null;
+    setup();
+    await screen.findByText('preview result');
+    expect(screen.getByRole('button', { name: 'Add to Home' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save as report' })).toBeEnabled();
+  });
+
+  it('Undo of a created Home deletes the dashboard and the report', async () => {
+    dash.list = [];
+    setup();
+    await screen.findByText('preview result');
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
+    await screen.findByText(/^Saved as report and added to Home/);
+    undoToast().onSelect();
+    expect(await screen.findByRole('button', { name: 'Add to Home' })).toBeInTheDocument();
+    expect(actions.removeDashboard).toHaveBeenCalledWith('h1');
+    expect(actions.removeWidgetFrom).not.toHaveBeenCalled();
+    expect(actions.removeReport).toHaveBeenCalledWith('r1');
+    expect(remember).toHaveBeenLastCalledWith('c1', 'm1', { action: 'undone' });
   });
 
   it('draws nothing for a draft without its definition', () => {
@@ -125,6 +175,7 @@ describe('create draft', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
     expect(await screen.findByText(/^Saved as report and added to Home/)).toBeInTheDocument();
     expect(actions.addReportWidget).toHaveBeenCalledWith('d1', expect.objectContaining({ id: 'r1' }));
+    expect(actions.createHomeWithReport).not.toHaveBeenCalled();
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'saved-home', reportId: 'r1', reportName: 'Monthly spend by category', widgetId: 'w1', dashboardId: 'd1' });
     expect(toast).toHaveBeenCalledWith('Saved as report and added to Home', expect.anything());
   });
@@ -288,7 +339,7 @@ describe('delete draft', () => {
     expect(screen.getByText('Delete report', { selector: 'p' })).toBeInTheDocument();
     expect(screen.getByText('Swiggy in October')).toBeInTheDocument();
     expect(await screen.findByText('It is on 1 dashboard. Its widget goes with it.')).toBeInTheDocument();
-    expect(adHoc).not.toHaveBeenCalled();
+    expect(actions.runDraftPreview).not.toHaveBeenCalled();
   });
 
   it('asks first, says what goes and what stays, and deletes only on confirm', async () => {
