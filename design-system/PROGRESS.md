@@ -225,6 +225,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-26: select dropdowns are container-xs wide, grow to their content, capped at the viewport inset.
 - 2026-10-25 · **Dashboards + Holding open questions** (owner, artifact 1HJKvjbcXqxVebQ9i7G1pN): empty dashboard = one Add a widget link; Add widget saves to the dashboard Home shows; Restore default Home only while no Home; no phone Chat button; holding: server sends price times (to build), missing details left out, Overview/tabs kept, manual price date editable (server, to build), Tax this FY fine.
 - 2026-10-25 · **Ghost actions** (owner): Dialog footer secondary/tertiary and Select actions are ghost buttons (was link).
 - 2026-10-25 · **Dashboards review 2** (owner): Home switcher fills the top bar; phone resize: none (phone stays one column); dragged widget opaque; browser Back with unsaved edits asks Discard; KPI figure tap opens View underlying data; no measure line in report widgets.
@@ -433,11 +434,16 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-23 · Import tradebook (owner): its own page (/ds/investments/import), every Legacy feature ported, boards as redrawn; uses the Dinero Stepper (Upload files · Review · Result); CAS review shows the statement's transactions (Legacy renders none); include/skip rows = selection mode already on (desktop checkboxes, phone selected rows); older investments boards updated to the rules (link secondaries, words not pills).
 
 ## Open questions
+
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
+- 2026-10-26 · Measure labels: when one report aggregates the same field twice (Amount sum + Amount average) the pivot column and the table sort option keep the server's "Amount (Sum)" to tell them apart. Plain "Amount" would give two identical columns; OK or another wording?
+- 2026-10-26 · Net worth underlying data (Dinero dialog): Legacy folds the `kind` column into the name and shows filter chips above the rows; Dinero keeps `kind` as a column and shows no chips. Fold it into the name (ListRow-style cell) and add chips? Left out until answered.
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 ## Log
 
+
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+- 2026-10-26 · Phase 3 · Claude · Net worth underlying (grouped tables + totals, row opens breakdown in place with Back; helpers + BreakdownFrameView moved to features/reports/underlying, Legacy imports them), no measure labels ("Amount (Sum)"/"Sum · Amount"/KPI "· sum" now plain field name), report Save/Create goes back to where it was opened from (+ refresh), Breakdown list drops the # column and the label column fills the rest. Checks: tsc, vitest reports/organisms/dashboards, check-ui, E2E ds-dashboards/report-editor/reports. Deviations: Net worth underlying keeps `kind` as a column and shows no filter chips (Legacy folds `kind` into the name and shows chips); open question logged.
 
 - 2026-10-26 · Phase 3 · Claude (Opus + implementers) · Owner asks 10-26: 12-hour clock on every Dinero time (src/lib/clock12.ts; Legacy-only formatters untouched); "Closed · 13 Oct, 3:30 pm" label; Refresh prices + price-job UI removed from /ds investments; Net worth built-in opens its underlying data from the value and the ⋮ menu (builtin source on ReportUnderlyingDialog). Checks: tsc, vitest, eslint, check-ui, E2E ds investments/dashboards/reports/shell/import/app-lock/hide-amounts/inbox. Open: Top movers / Portfolio snapshot "evening" copy, Upcoming row tap. Deviations: none.
 

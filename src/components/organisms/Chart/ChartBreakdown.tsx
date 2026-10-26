@@ -32,7 +32,6 @@ export interface ChartBreakdownProps {
 interface Row {
   id: string;
   index: number;
-  rank: number | null;
   label: string;
   isOther: boolean;
   value: number | null;
@@ -75,6 +74,7 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
     let rank = 0;
     return labelled.categories.map((category, index) => {
       const isOther = index === otherIndex;
+      if (!isOther) rank += 1;
       const value = values[index] ?? null;
       const prev = previous?.[index] ?? null;
       const detail = data.breakdown?.rows[index];
@@ -82,7 +82,6 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
       return {
         id: String(index),
         index,
-        rank: isOther ? null : ++rank,
         label: isOther
           ? `Other · ${data.other?.foldedCount ?? 0} ${data.other?.foldedCount === 1 ? 'category' : 'categories'}`
           : category,
@@ -118,19 +117,9 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
   const tableColumns = React.useMemo(
     () => [
       ch.display({
-        id: 'rank',
-        header: '#',
-        meta: { size: 'fill', grow: 1, phone: 'hidden' },
-        cell: ({ row }) => (
-          <Text variant="body" tone="ink-3">
-            {row.original.rank ?? ''}
-          </Text>
-        ),
-      }),
-      ch.display({
         id: 'label',
         header: rowsLabel ?? 'Category',
-        meta: { size: 'fill', grow: 4, phone: 'main' },
+        meta: { size: 'fill', phone: 'main' },
         cell: ({ row }) => (
           <div className="flex flex-col gap-space-4 min-w-0">
             <Text variant="body-strong" tone={row.original.isOther ? 'ink-2' : 'ink'} truncate>
@@ -144,7 +133,7 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
         ch.display({
           id: column,
           header: HEADERS[column],
-          meta: { size: 'fill', grow: column === 'amount' || column === 'avg' ? 2 : 1.5, align: 'end', phone: column === 'amount' ? 'amount' : 'hidden' },
+          meta: { size: column === 'amount' || column === 'avg' ? 'md' : 'sm', align: 'end', phone: column === 'amount' ? 'amount' : 'hidden' },
           cell: ({ row }) => {
             const r = row.original;
             switch (column) {

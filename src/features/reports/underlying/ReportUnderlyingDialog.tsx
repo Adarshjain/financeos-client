@@ -2,7 +2,9 @@
 
 // "Underlying data" of the report editor: the rows behind one figure (the whole report's, a chart category's,
 // an aggregated-table row's), for this period or the previous one, server-sorted and server-paged with the
-// Pager above and below. The request is an ad-hoc KPI definition built by underlyingRequest.ts. A phone gets
+// Pager above and below. A built-in listing with a `groupField` (net worth: Asset / Liability) is one table per group,
+// each headed by the group's total, sharing the sort and one pager; its rows open the row's breakdown inside the
+// dialog (Back returns to the list). Transaction rows are not pressable (owner decision, 2026-10-25). The request is an ad-hoc KPI definition built by underlyingRequest.ts. A phone gets
 // the Dialog's bottom sheet by itself. Period, sort and page are local to one opening.
 
 import React from 'react';
@@ -17,42 +19,41 @@ import {
   EmptyState,
   FilterChip,
   Pager,
+  SectionHeader,
   Select,
   Skeleton,
   Tabs,
   Text,
 } from '@/components/ds';
-import { formatCell } from '@/features/reports/view/cells';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
-import type { RunReportRequest, SortClause, TableColumn } from '@/lib/reports.types';
+import type { RunReportRequest, SortClause, TableRow } from '@/lib/reports.types';
 import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
-import { asFormat, saveBlob, UNDERLYING_PAGE_SIZE, underlyingCsvFilename } from './underlying.helpers';
+import { BreakdownFrameView } from './BreakdownFrameView';
+import {
+  asFormat,
+  cellText,
+  groupLabel,
+  groupTotal,
+  mainIndexOf,
+  partitionByGroup,
+  saveBlob,
+  shortDate,
+  UNDERLYING_PAGE_SIZE,
+  underlyingCsvFilename,
+} from './underlying.helpers';
 import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
 import type { UnderlyingEntry } from './underlyingRequest';
+import { useBreakdownStack } from './useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** "2026-10-13" as "13 Oct"; anything else as it came. */
-export function shortDate(value: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]}` : value;
-}
+// Kept importable from here: the helpers moved to underlying.helpers.ts.
+export { shortDate };
 
 type Row = Record<string, unknown> & { __row: string };
 const ch = createDataTableColumnHelper<Row>();
-
-/** A cell as this table prints it: dates as "13 Oct", everything else as every report table does. */
-export function cellText(value: unknown, column: TableColumn): string {
-  if (column.type === 'date' && typeof value === 'string' && value !== '') return shortDate(value);
-  return formatCell(value, column);
-}
-
-/** The column that names the row (the first that is not a date or a number); the first column otherwise. */
-export const mainIndexOf = (columns: TableColumn[]) => Math.max(columns.findIndex((c) => c.type !== 'date' && c.type !== 'number'), 0);
 
 /** "Excluded from this figure: Old card (Closed account), …" from what the figure leaves out; null when nothing. */
 function excludedLine(items: UnderlyingExcludedItem[]): string | null {
@@ -112,6 +113,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
   const [page, setPage] = React.useState(0);
   const [downloading, setDownloading] = React.useState(false);
   const [csvError, setCsvError] = React.useState<string | null>(null);
+  const nav = useBreakdownStack();
 
   const query = useKpiUnderlying(source, { period, page, size: UNDERLYING_PAGE_SIZE, sort });
   const shown = query.data;
@@ -123,7 +125,8 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
   const columns = React.useMemo(() => {
     if (!raw || !data) return [];
     const mainIndex = mainIndexOf(raw.columns);
-    return raw.columns.map((c, i) =>
+    // The group is the table: its column goes.
+    return raw.columns.flatMap((c, i) => (c.key === data.groupField ? [] : [[c, i] as const])).map(([c, i]) =>
       ch.accessor((row: Row) => row[c.key] as unknown, {
         id: c.key,
         header: c.label,
@@ -151,7 +154,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
     if (!raw || !data) return '';
     const mainIndex = mainIndexOf(raw.columns);
     return raw.columns
-      .filter((c, i) => i !== mainIndex && c.key !== data.measure)
+      .filter((c, i) => i !== mainIndex && c.key !== data.measure && c.key !== data.groupField)
       .map((c) => cellText(row[c.key], c))
       .filter((t) => t !== '—')
       .join(' · ');
@@ -170,6 +173,16 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
         .filter(Boolean)
         .join(' · ')
     : undefined;
+
+  // A row of a built-in listing opens its breakdown in place; transaction rows are not pressable.
+  const rowId = (row: Row) => (row.id == null ? null : String(row.id));
+  const openRow = builtin && data?.rowAction === 'breakdown'
+    ? (row: Row) => {
+        const id = rowId(row);
+        if (id !== null) nav.push({ datasource: data.datasource, rowId: id });
+      }
+    : undefined;
+  const top = nav.top;
 
   const changePeriod = (next: string) => {
     setPeriod(next as UnderlyingPeriod);
@@ -207,7 +220,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
 
   const sortOptions = [
     { value: DEFAULT_SORT, label: 'Default order' },
-    ...(raw?.columns ?? []).flatMap((c) => [
+    ...(raw?.columns ?? []).filter((c) => c.key !== data?.groupField).flatMap((c) => [
       { value: `${c.key},desc`, label: `${c.label} (descending)` },
       { value: `${c.key},asc`, label: `${c.label} (ascending)` },
     ]),
@@ -222,16 +235,60 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
   const sortedColumn = sort ? raw?.columns.find((c) => c.key === sort.key) : null;
   const footer = data ? excludedLine(data.notCounted) : null;
 
+  const groupColumn = raw?.columns.find((c) => c.key === data?.groupField);
+  const valueColumn = raw?.columns.find((c) => c.key === data?.measure);
+  const groups = React.useMemo(
+    () => (raw && data?.groupField ? partitionByGroup(rows as TableRow[], data.groupField, data.groupTotals).map((g) => ({ value: g.value, rows: g.rows as Row[] })) : null),
+    [raw, data, rows],
+  );
+  const pager = raw ? (
+    <Pager
+      variant="compact"
+      page={raw.page.number}
+      size={raw.page.size}
+      totalElements={raw.page.totalElements}
+      totalPages={raw.page.totalPages}
+      unit="rows"
+      onPageChange={changePage}
+    />
+  ) : null;
+  const renderTable = (tableRows: Row[], tablePager: React.ReactNode) => (
+    <DataTable
+      columns={columns}
+      data={tableRows}
+      getRowId={(row) => row.__row}
+      busy={query.isFetching}
+      phoneSub={phoneSub}
+      onRowSelect={openRow}
+      pager={tablePager ?? undefined}
+      footer={tablePager && footer ? <Text variant="caption" tone="ink-3">{footer}</Text> : undefined}
+      empty={<EmptyState compact description="No rows make up this figure." />}
+    />
+  );
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         size="xl"
         title={customTitle ?? (figure ? `Underlying data · ${figure}` : 'Underlying data')}
         description={description}
-        tertiary={{ label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
+        // The CSV is the listing's rows, not the open breakdown's: inside one, only Close.
+        tertiary={top ? undefined : { label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
         secondary={{ label: 'Close', onSelect: onClose }}
       >
         <DialogBody>
+          {top ? (
+            <BreakdownFrameView
+              key={`${nav.stack.length}:${top.rowId}`}
+              datasource={top.datasource}
+              rowId={top.rowId}
+              onBack={nav.pop}
+              onOpenTransaction={() => undefined}
+              onOpenBreakdown={nav.push}
+              transactionsOpen={false}
+            />
+          ) : (
+            <>
           {shown?.previousAvailable ? (
             <Tabs
               value={period}
@@ -287,28 +344,31 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                   }
                 />
               </div>
-              <DataTable
-                columns={columns}
-                data={rows}
-                getRowId={(row) => row.__row}
-                busy={query.isFetching}
-                phoneSub={phoneSub}
-                pager={
-                  <Pager
-                    variant="compact"
-                    page={raw.page.number}
-                    size={raw.page.size}
-                    totalElements={raw.page.totalElements}
-                    totalPages={raw.page.totalPages}
-                    unit="rows"
-                    onPageChange={changePage}
-                  />
-                }
-                footer={footer ? <Text variant="caption" tone="ink-3">{footer}</Text> : undefined}
-                empty={<EmptyState compact description="No rows make up this figure." />}
-              />
+              {groups && groups.length === 0 ? (
+                <EmptyState compact description="No rows make up this figure." />
+              ) : groups ? (
+                <div className="flex flex-col gap-space-16" data-testid="underlying-groups">
+                  {groups.map((group) => {
+                    const total = groupTotal(data.groupTotals, group.value);
+                    return (
+                      <section key={String(group.value ?? '')} className="flex flex-col gap-space-8" aria-label={groupLabel(group.value, groupColumn?.valueLabels)}>
+                        <SectionHeader as="h3" variant="strong" sticky={false} borderTop={false} meta={total !== undefined && valueColumn ? cellText(total, valueColumn) : undefined}>
+                          {groupLabel(group.value, groupColumn?.valueLabels)}
+                        </SectionHeader>
+                        {renderTable(group.rows, undefined)}
+                      </section>
+                    );
+                  })}
+                  {raw.page.totalPages > 1 ? pager : null}
+                  {footer ? <Text variant="caption" tone="ink-3">{footer}</Text> : null}
+                </div>
+              ) : (
+                renderTable(rows, pager)
+              )}
             </>
           ) : null}
+            </>
+          )}
         </DialogBody>
       </DialogContent>
     </Dialog>

@@ -5,7 +5,6 @@ import React from 'react';
 
 import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
-import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
 import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
@@ -14,6 +13,7 @@ import type {
   ChartDefinition,
   DatasourceCatalog,
   KpiData,
+  PivotMeasureInfo,
   PivotTableData,
   ReportData,
   SortClause,
@@ -111,7 +111,8 @@ function KpiResult({
 }) {
   const format = data.format ?? fieldOf(catalog, data.measure)?.format ?? null;
   const fmt = (n: number | null) => previewValue(n, { field: data.measure, aggregation: data.aggregation, format }, catalog);
-  const label = `${fieldOf(catalog, data.measure)?.label ?? data.measure} · ${AGGREGATION_LABELS[data.aggregation].toLowerCase()}`;
+  // The plain field name: the aggregation ("sum", "count") is never shown (owner, 2026-10-26).
+  const label = fieldOf(catalog, data.measure)?.label ?? data.measure;
   const range = data.meta.dateRange;
   const c = data.comparison;
   let delta: React.ComponentProps<typeof KpiTile>['delta'];
@@ -223,6 +224,15 @@ function RawTableResult({ data, catalog, busy, sort, onSortChange, onPageChange,
   );
 }
 
+/**
+ * A pivot measure's column name: the plain field name ("Amount"), never the server's "Amount (Sum)". Only when the
+ * same field is aggregated twice does the server's label stay, since the columns would otherwise be identical.
+ */
+export function measureName(m: PivotMeasureInfo, measures: PivotMeasureInfo[], catalog?: DatasourceCatalog): string {
+  if (measures.filter((o) => o.field === m.field).length > 1) return m.label;
+  return fieldOf(catalog, m.field)?.label ?? m.label.replace(/\s*\([^)]*\)$/, '');
+}
+
 function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChange, onSizeChange, onOpenTableRow, canOpenTableRow }: ReportResultProps & { data: PivotTableData }) {
   const { rowDimensions, columnDimensions, measures, columns: pivotColumns, rows: raw, page } = data;
   const hasColumnDims = columnDimensions.length > 0;
@@ -253,7 +263,8 @@ function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChang
           })
           .filter(Boolean)
           .join(' · ');
-        const header = hasColumnDims ? (measures.length > 1 ? `${colLabel} · ${m.label}` : colLabel) : m.label;
+        const name = measureName(m, measures, catalog);
+        const header = hasColumnDims ? (measures.length > 1 ? `${colLabel} · ${name}` : colLabel) : name;
         // The server sorts measures only when there are no column dimensions.
         return ch.accessor((row: Row) => (row.cells as Record<string, Record<string, number>>)[pc.key]?.[m.key] as unknown, {
           id: hasColumnDims ? `${pc.key}|${m.key}` : m.key,

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { groupLabel, groupTotal } from '@/features/reports/underlying/underlying.helpers';
 import { formatCell } from '@/features/reports/view/cells';
 import type { SortClause, TableColumn, TableData, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
@@ -25,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { cardLayout, cardMetaLine } from './tableCards.helpers';
 import { TitleCell } from './tableCells';
 import { TablePagination } from './TablePagination';
-import { groupLabel, groupTotal, subtitleText } from './TableView';
+import { subtitleText } from './TableView';
 
 /** The sort select's value for the report's own order. */
 const DEFAULT_ORDER = '__default__';

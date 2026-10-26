@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { groupLabel, groupTotal } from '@/features/reports/underlying/underlying.helpers';
 import { formatCell } from '@/features/reports/view/cells';
 import type {
   SortClause,
@@ -95,19 +96,6 @@ export function SortableTableHead({
   );
 }
 
-/**
- * A group header's label: the group column's server label for the value when it has one,
- * else the value title-cased, underscores as spaces ("credit_card" → "Credit Card").
- */
-export function groupLabel(value: unknown, labels: Record<string, string> | null | undefined): string {
-  if (value === null || value === undefined || value === '') return '—';
-  const label = labels?.[String(value)];
-  if (label !== undefined) return label;
-  return String(value)
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (ch) => ch.toUpperCase());
-}
-
 interface TableViewProps {
   data: TableData;
   /**
@@ -150,13 +138,6 @@ interface TableViewProps {
   subtitleKey?: string | null;
   /** Leaves the pager out altogether: the parent draws one for several tables sharing a page. */
   hidePagination?: boolean;
-}
-
-/** The group total for a group value, or undefined when there is none. */
-export function groupTotal(totals: Record<string, number> | null | undefined, value: unknown): number | undefined {
-  if (!totals || value === null || value === undefined) return undefined;
-  const total = totals[String(value)];
-  return typeof total === 'number' ? total : undefined;
 }
 
 export function TableView({

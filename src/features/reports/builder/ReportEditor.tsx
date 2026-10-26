@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ConfirmDialog, showToast } from '@/components/ds';
-import { reportHref, REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStore';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { ReportCatalog, ReportData, ReportResponse } from '@/lib/reports.types';
@@ -83,6 +84,26 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
   const saving = actions.create.isPending || actions.update.isPending;
   const edit = state.mode === 'edit' && !!state.reportId;
 
+  // A save takes the visitor back to where they came from (the list, a dashboard, the report's page). It waits for the
+  // draft to be marked clean, so the unsaved-changes guard does not ask; the page it lands on is refreshed.
+  const [leaving, setLeaving] = React.useState(false);
+  React.useEffect(() => {
+    if (!leaving || dirty) return;
+    setLeaving(false);
+    if (hasInAppHistory()) router.back();
+    else router.push(REPORTS_HREF);
+    // Once the page it opens has committed (history.back is async), so that page, not this one, is refetched
+    // instead of coming from Next's router cache.
+    afterNextRoute(() => router.refresh());
+  }, [leaving, dirty, router]);
+
+  // The draft as it is now, for a save that finishes later: leaving only when nothing was edited meanwhile.
+  const latest = React.useRef(state);
+  latest.current = state;
+  const leaveIfUnchanged = (saved: string) => {
+    if (snapshot(latest.current) === saved) setLeaving(true);
+  };
+
   const runPreview = () => {
     if (issues.length > 0) {
       setShowIssues(true);
@@ -101,13 +122,15 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
   const save = () => {
     if (!ready()) return;
     if (edit) {
+      const saved = snapshot(state);
       actions.update.mutate(
         { id: state.reportId as string, body: buildUpdateRequest(state, catalog) },
         {
           onSuccess: () => {
-            setBaseline(snapshot(state));
+            setBaseline(saved);
             setSavedName(state.name.trim());
             showToast('Report saved');
+            leaveIfUnchanged(saved);
           },
         },
       );
@@ -116,14 +139,16 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     createCopy('Report created');
   };
 
-  const createCopy = (message: string) =>
+  const createCopy = (message: string) => {
+    const saved = snapshot(state);
     actions.create.mutate(buildCreateRequest(state, catalog), {
-      onSuccess: (saved) => {
-        setBaseline(snapshot(state));
+      onSuccess: () => {
+        setBaseline(saved);
         showToast(message);
-        router.replace(reportHref(saved.id));
+        leaveIfUnchanged(saved);
       },
     });
+  };
 
   const saveAsNew = () => {
     if (ready()) createCopy('Saved as a new report');
