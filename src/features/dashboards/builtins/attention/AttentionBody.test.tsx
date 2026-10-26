@@ -1,14 +1,10 @@
-import { screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
-vi.mock('@/features/inbox/InboxBillHost', () => ({
-  InboxBillHost: ({ pending }: { pending: unknown }) => <div data-testid="bill-host" data-pending={JSON.stringify(pending)} />,
-}));
 
 import { action, inbox, item } from '@/features/inbox/inboxTestUtils';
 import { api, ApiError } from '@/lib/api/client';
@@ -55,23 +51,19 @@ describe('AttentionBody', () => {
     expect(screen.getByTestId('inbox-widget-loading')).toBeInTheDocument();
   });
 
-  it('each row with its title, context and single primary action', async () => {
+  it('each row is one link to its item in the Inbox, with its title and context and no buttons', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: inbox([bill, review]) } as never);
     render();
     const rows = await screen.findAllByTestId('inbox-widget-row');
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveTextContent('Amex bill');
     expect(rows[0]).toHaveTextContent('₹33,900 · 15 Oct');
-    expect(within(rows[0]).getByRole('link', { name: 'Amex bill' })).toHaveAttribute('href', expect.stringContaining('/inbox?item=bill%3As1'));
-    expect(within(rows[0]).getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
-    expect(within(rows[1]).getByRole('link', { name: 'Review' })).toHaveAttribute('href', expect.stringContaining('/transactions'));
-  });
-
-  it('a bill action opens the bill dialogs for that statement', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: inbox([bill]) } as never);
-    render();
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Mark paid' }));
-    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending') ?? 'null')).toEqual({ type: 'mark_paid', statementId: 's1' });
+    expect(rows[0]).toHaveAttribute('href', expect.stringContaining('/inbox?item=bill%3As1'));
+    expect(rows[1]).toHaveAttribute('href', expect.stringContaining('/inbox?item=review'));
+    expect(screen.getAllByRole('link')).toHaveLength(2);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByText('Mark paid')).not.toBeInTheDocument();
+    expect(screen.queryByText('Review')).not.toBeInTheDocument();
   });
 
   it('shows at most the row limit and no link of its own: the header link opens the Inbox', async () => {
