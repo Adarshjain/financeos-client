@@ -43,10 +43,11 @@ for (const viewport of VIEWPORTS) {
       }).toPass({ timeout: 45_000 });
     }
 
-    test('the entry point opens the palette, and the text field is focused', async ({ page }) => {
+    test('the entry point opens the palette, the text field is focused and nothing shows before any text', async ({ page }) => {
       test.slow();
       await openSearch(page);
       await expect(page.getByRole('searchbox')).toBeFocused();
+      await expect(palette(page).getByRole('option')).toHaveCount(0);
     });
 
     test('shows pages and actions from one character and sends no search under 3 characters', async ({ page }) => {
@@ -186,6 +187,7 @@ for (const viewport of VIEWPORTS) {
     test('a Quick add action opens its dialog without leaving the page', async ({ page }) => {
       test.slow();
       await openSearch(page);
+      await page.getByRole('searchbox').fill('tr');
       await palette(page).getByRole('option', { name: 'Transaction', exact: true }).click();
       await expect(palette(page)).toHaveCount(0);
       await expect(page).toHaveURL(/\/ds\/accounts$/);

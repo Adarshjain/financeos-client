@@ -59,10 +59,9 @@ describe('buildSearchGroups', () => {
     ]);
   });
 
-  it('shows every page and action for empty text, and no Ask row', () => {
-    const { groups } = build('');
-    expect(ids(groups)).toEqual(['actions', 'pages']);
-    expect(group(groups, 'pages').items).toHaveLength(2);
+  it('shows nothing for empty or blank text', () => {
+    expect(ids(build('').groups)).toEqual([]);
+    expect(ids(build('   ').groups)).toEqual([]);
   });
 
   it('filters Pages and Actions from the first character, case-insensitively', () => {

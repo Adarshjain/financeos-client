@@ -163,4 +163,38 @@ describe('SearchPalette', () => {
     render(<SearchPalette defaultOpen groups={makeGroups()} />);
     expect(screen.queryByText('Type 3 or more characters')).toBeNull();
   });
+
+  it('marks every match of the search text in string titles, and leaves node titles alone', () => {
+    const groups: SearchPaletteGroup[] = [
+      {
+        id: 'g',
+        label: 'Accounts',
+        items: [
+          { id: 'a', title: 'HDFC Regalia Gold', onSelect: vi.fn() },
+          { id: 'b', title: <b>Regalia node</b>, onSelect: vi.fn() },
+        ],
+      },
+    ];
+    render(<SearchPalette defaultOpen defaultValue="regalia" groups={groups} />);
+    const marks = document.querySelectorAll('mark');
+    expect([...marks].map((m) => m.textContent)).toEqual(['Regalia']);
+    expect(row('HDFC Regalia Gold')).toContainElement(marks[0] as HTMLElement);
+    expect(screen.getByRole('option', { name: 'HDFC Regalia Gold' })).toBeInTheDocument();
+  });
+
+  it('draws the leading column only for rows that have a mark', () => {
+    const groups: SearchPaletteGroup[] = [
+      {
+        id: 'g',
+        label: 'Pages',
+        items: [
+          { id: 'a', title: 'With icon', leading: <i data-testid="mark" />, onSelect: vi.fn() },
+          { id: 'b', title: 'Without icon', onSelect: vi.fn() },
+        ],
+      },
+    ];
+    render(<SearchPalette defaultOpen groups={groups} />);
+    expect(row('With icon').querySelector('.w-space-20')).toContainElement(screen.getByTestId('mark'));
+    expect(row('Without icon').querySelector('.w-space-20')).toBeNull();
+  });
 });
