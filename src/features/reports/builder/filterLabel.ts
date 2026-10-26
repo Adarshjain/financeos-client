@@ -2,6 +2,7 @@ import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
 import { type DynamicOptions, enumOptionsFor, fieldByName, valueKind } from './catalog';
 import { humanizeToken } from './labels';
+import { staleLabelFor } from './staleDynamicValue';
 
 const lower = (token: string): string => humanizeToken(token).toLowerCase();
 
@@ -18,7 +19,7 @@ export function describeFilter(catalog: DatasourceCatalog, clause: FilterClause,
   const v = clause.value;
   const optionName = (stored: string): string => {
     const option = enumOptionsFor(field, dynamic).find((o) => o.id === stored || o.name === stored);
-    return option?.name ?? stored;
+    return option?.name ?? staleLabelFor(field, dynamic, stored) ?? stored;
   };
   let text: string;
   switch (kind) {

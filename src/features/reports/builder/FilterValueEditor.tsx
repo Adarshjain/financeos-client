@@ -9,6 +9,7 @@ import type { FieldDefinition, FilterValue } from '@/lib/reports.types';
 
 import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions, enumOptionsFor, type valueKind } from './catalog';
 import { PAIR } from './pickers';
+import { staleOptions } from './staleDynamicValue';
 
 export interface FilterValueEditorProps {
   kind: ReturnType<typeof valueKind>;
@@ -34,8 +35,19 @@ export function FilterValueEditor({ kind, field, dynamicOptions, value, onChange
   // Fields with a stable id store the id and show the label; static enums store the stored value.
   const byId = field.valueKey === 'id' || !!field.idField;
   const storesId = byId || (field.type === 'enum' && !field.dynamic);
-  const options = () =>
-    enumOptionsFor(field, dynamicOptions).map((o) => ({ value: storesId ? (o.id ?? o.name) : o.name, label: o.name }));
+  // A stored value that matches no loaded option stays selectable, labelled as stale.
+  const options = () => {
+    const real = enumOptionsFor(field, dynamicOptions).map((o) => ({ value: storesId ? (o.id ?? o.name) : o.name, label: o.name }));
+    return [
+      ...real,
+      ...staleOptions(
+        field,
+        dynamicOptions,
+        value,
+        real.map((o) => o.value),
+      ),
+    ];
+  };
 
   switch (kind) {
     case 'scalar':

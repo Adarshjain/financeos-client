@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import type { DynamicOptions } from '@/features/reports/builder/catalog';
 import { DYNAMIC_OPTIONS_FAILED, enumOptionsFor, valueKind } from '@/features/reports/builder/catalog';
+import { staleOptions } from '@/features/reports/builder/staleDynamicValue';
 import {
   dateBetween,
   numberBetween,
@@ -56,6 +57,23 @@ export function ValueEditor({
   // Static enum options carry the stored value as their id (their name may be a display label).
   const storesId = byId || (field.type === 'enum' && !field.dynamic);
 
+  // A stored value that matches no loaded option stays selectable, labelled as stale.
+  const optionsWithStale = () => {
+    const real = enumOptionsFor(field, dynamicOptions).map((o) => ({
+      value: storesId ? (o.id ?? o.name) : o.name,
+      label: o.name,
+    }));
+    return [
+      ...real,
+      ...staleOptions(
+        field,
+        dynamicOptions,
+        value,
+        real.map((o) => o.value),
+      ),
+    ];
+  };
+
   switch (kind) {
     case 'scalar':
       return (
@@ -83,12 +101,7 @@ export function ValueEditor({
       );
 
     case 'scalarEnum': {
-      const options = [
-        ...enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: storesId ? (o.id ?? o.name) : o.name,
-          label: o.name,
-        })),
-      ];
+      const options = optionsWithStale();
       return (
         <Select
           value={typeof value === 'string' ? value : ''}
@@ -118,10 +131,7 @@ export function ValueEditor({
     case 'multi': {
       const selected = Array.isArray(value) ? (value as string[]) : [];
       if (field.type === 'enum') {
-        const options = enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: storesId ? (o.id ?? o.name) : o.name,
-          label: o.name,
-        }));
+        const options = optionsWithStale();
         return (
           <MultiSelect
             options={options}
