@@ -82,6 +82,7 @@ export function ShellPage({
     <>
       <TopBar
         data-view-transition="header"
+        className="sticky top-0 z-sticky"
         title={title}
         crumb={crumb}
         leading={backHref ? undefined : <Logo variant="mark" />}
@@ -130,8 +131,9 @@ export function ShellPage({
             : []),
         ]}
       />
+      {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included). */}
       <main
-        className={`flex-1 p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
+        className={`flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
       >
         {children}
       </main>

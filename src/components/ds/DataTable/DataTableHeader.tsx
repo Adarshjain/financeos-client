@@ -30,7 +30,7 @@ export function DataTableHeader<Row extends RowData>({
           role="row"
           className={cn(
             'hidden desk:grid desk:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
-            stickyHeader && 'desk:sticky desk:top-0 desk:z-sticky',
+            stickyHeader && 'desk:sticky desk:top-[var(--ds-sticky-top,0px)] desk:z-sticky',
           )}
         >
           {headerGroup.headers.map((header) => {

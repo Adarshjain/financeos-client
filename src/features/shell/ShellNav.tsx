@@ -8,6 +8,7 @@ import {
   Avatar,
   Button,
   Card,
+  cn,
   Dialog,
   DialogContent,
   Icon,
@@ -34,6 +35,7 @@ import {
 } from './navigation';
 import { usePendingPath } from './navigationStore';
 import { appHref, DS_HOME_HREF } from './routes';
+import { useHideOnScroll } from './useHideOnScroll';
 
 const subscribeNever = () => () => undefined;
 
@@ -87,6 +89,7 @@ export function ShellTabBar({
   const { hidden, setHidden } = useHideAmounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const scrolledAway = useHideOnScroll();
 
   // Close sheet on route change
   if (prevPathname !== pathname) {
@@ -257,6 +260,11 @@ export function ShellTabBar({
 
       <TabBar
         data-view-transition="tab-bar"
+        // Scrolling down slides the pill below the screen edge (its height plus its bottom offset); up brings it back.
+        className={cn(
+          'transition-transform duration-base motion-reduce:transition-none',
+          scrolledAway && !moreOpen && 'translate-y-[calc(100%+var(--ds-space-12)+env(safe-area-inset-bottom))]',
+        )}
         items={shellTabBarItems.map((item) =>
           item.href
             ? {
