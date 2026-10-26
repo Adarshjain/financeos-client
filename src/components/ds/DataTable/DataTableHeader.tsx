@@ -14,6 +14,8 @@ export interface DataTableHeaderProps<Row extends RowData> {
   allSelected?: boolean;
   onHeaderCheckboxChange: (checked: boolean | 'indeterminate') => void;
   stickyHeader?: boolean;
+  /** Draws a bottom border: the line under the header when the first row has none. */
+  closed?: boolean;
 }
 
 export function DataTableHeader<Row extends RowData>({
@@ -21,6 +23,7 @@ export function DataTableHeader<Row extends RowData>({
   allSelected = false,
   onHeaderCheckboxChange,
   stickyHeader = true,
+  closed = false,
 }: DataTableHeaderProps<Row>) {
   return (
     <>
@@ -30,7 +33,9 @@ export function DataTableHeader<Row extends RowData>({
           role="row"
           className={cn(
             'hidden desk:grid desk:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
-            stickyHeader && 'desk:sticky desk:top-[var(--ds-sticky-top,0px)] desk:z-sticky',
+            // With no top border on the first row, the header carries the line under it.
+            closed && 'border-b border-line-soft',
+            stickyHeader && 'desk:sticky desk:top-sticky-offset desk:z-sticky',
           )}
         >
           {headerGroup.headers.map((header) => {

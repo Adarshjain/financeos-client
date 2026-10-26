@@ -25,6 +25,7 @@ const SPACING_KEYS = {
   'safe-left': true,
   'safe-right': true,
   'safe-56': true,
+  'sticky-offset': true,
   'bottom-clearance': true,
 };
 

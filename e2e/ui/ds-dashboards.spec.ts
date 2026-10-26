@@ -5,6 +5,7 @@ import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { createBankAccount } from '../fixtures/seed/accounts';
+import { addLending, createCounterparty, createLoan } from '../fixtures/seed/loans';
 import { createDashboard, createReport, widget } from '../fixtures/seed/reports';
 import { createCategory, createTransaction } from '../fixtures/seed/transactions';
 import { builtinWidget } from '../fixtures/seed/widgets';
@@ -199,16 +200,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
 
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
-      await expect(page.getByRole('menuitem')).toHaveText(['Edit report', 'View full page', 'View underlying data']);
-      await page.getByRole('menuitem', { name: 'View full page' }).click();
-      const full = page.getByRole('dialog');
-      await expect(full).toBeVisible();
-      await expect(full.getByText('Ds Dash KPI')).toBeVisible();
+      // A KPI report's menu is Edit report only; its value tap opens the underlying data.
+      await expect(page.getByRole('menuitem')).toHaveText(['Edit report']);
       await page.keyboard.press('Escape');
-      await expect(page.getByRole('dialog')).toHaveCount(0);
-
-      await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
-      await page.getByRole('menuitem', { name: 'View underlying data' }).click();
+      await widgetCard(page, 'wr').getByRole('button', { name: /₹/ }).click();
       await expect(page.getByRole('dialog').getByText(/Underlying data/).first()).toBeVisible({ timeout: 30_000 });
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -217,8 +212,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('menuitem', { name: 'Widget settings' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Duplicate as my report' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Edit report' })).toHaveCount(0);
-      // Net worth is a KPI built-in, so it lists its underlying data too (owner 2026-10-26).
-      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toBeVisible();
+      // Net worth's underlying data is its value tap only (owner 2026-10-26).
+      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toHaveCount(0);
       await page.getByRole('menuitem', { name: 'Duplicate as my report' }).click();
       await expect(page.getByText(/Saved "Net worth" to your reports/)).toBeVisible({ timeout: 30_000 });
 
@@ -368,6 +363,26 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Back' }).click();
       await expect(groups).toBeVisible();
       await expect(dialog.getByRole('button', { name: 'Download CSV' })).toBeVisible();
+    });
+
+    test('Net worth underlying: an active loan and a lending you are owed are listed', async ({ page }) => {
+      test.slow();
+      const api = makeApi(currentUser.cookie);
+      const tag = Date.now();
+      const loanName = `NW Loan ${tag}`;
+      const personName = `NW Person ${tag}`;
+      await createLoan(api, { name: loanName });
+      const person = await createCounterparty(api, { name: personName });
+      await addLending(api, { counterpartyId: person.id, direction: 'lent', amount: 4000 });
+      const { dashboard } = await seedBoard();
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
+      const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
+      const groups = dialog.getByTestId('underlying-groups');
+      await expect(groups).toBeVisible({ timeout: 45_000 });
+      // A loan is a liability; money lent out is an asset.
+      await expect(groups.getByRole('region', { name: 'Liabilities' }).getByRole('button').filter({ hasText: loanName })).toContainText('Loan');
+      await expect(groups.getByRole('region', { name: 'Assets' }).getByRole('button').filter({ hasText: personName })).toContainText('Lending');
     });
 
     test('chart widget: tapping a bar opens "Underlying data · <widget>" filtered to that bar', async ({ page }) => {

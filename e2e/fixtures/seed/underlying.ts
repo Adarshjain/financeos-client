@@ -43,6 +43,8 @@ export const NET_WORTH_KIND_LABELS: Record<string, string> = {
   lending: 'Lending',
 };
 export const NET_WORTH_SIDE_LABELS: Record<string, string> = { asset: 'Asset', liability: 'Liability' };
+/** The net_worth underlying-only `group` labels, in the order the listing shows them. */
+export const NET_WORTH_GROUP_LABELS: Record<string, string> = { assets: 'Assets', liabilities: 'Liabilities', investments: 'Investments' };
 
 /** A filter clause as the report definitions take it. */
 export type Filter = { field: string; operator: string; value?: unknown };

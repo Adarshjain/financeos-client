@@ -111,4 +111,16 @@ describe('Popover', () => {
     );
     warnSpy.mockRestore();
   });
+
+  it('list: container-xs wide, grows to content, capped at the viewport inset', () => {
+    render(
+      <Popover defaultOpen list trigger={<button type="button">Trigger</button>}>
+        <div data-testid="list-inner">Choice</div>
+      </Popover>,
+    );
+    const content = screen.getByTestId('list-inner').parentElement;
+    expect(content).toHaveClass('w-max', 'min-w-container-xs', 'max-w-container-viewport-inset', 'desk:max-w-container-viewport-inset');
+    expect(content).not.toHaveClass('min-w-popover-trigger');
+    expect(content).not.toHaveClass('desk:max-w-container-sm');
+  });
 });

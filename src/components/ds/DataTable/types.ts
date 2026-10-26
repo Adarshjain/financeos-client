@@ -113,6 +113,8 @@ export interface DataTableProps<Row extends RowData>
   skeletonRows?: number;
 
   stickyHeader?: boolean;
+  /** A top border above the first row (default). `false` for a table that sits right under a SectionHeader that already draws the line: dividers then sit between rows only. */
+  firstRowBorder?: boolean;
   /** No header row on desktop, for a single-column list where it would only repeat the column's name. */
   hideHeader?: boolean;
 }

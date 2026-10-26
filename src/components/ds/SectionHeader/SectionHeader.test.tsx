@@ -17,7 +17,7 @@ describe('SectionHeader', () => {
       'bg-subtle',
       'border-b',
       'sticky',
-      'top-0',
+      'top-sticky-offset',
       'z-sticky',
     );
   });

@@ -95,6 +95,30 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     };
 
+    if (phone) {
+      test('sticky day headers stop under the top bar', async ({ page }) => {
+        const { api, bank } = await seedList();
+        for (let i = 5; i <= 30; i++) {
+          await createTransaction(api, bank.id, { amount: -100 - i, date: todayString(-i), description: `Filler ${i}` });
+        }
+        await open(page, '?period=last_90_days');
+        await page.evaluate(() => window.scrollTo(0, 700));
+        await page.waitForTimeout(600);
+        const r = await page.evaluate(() => {
+          const bar = document.querySelector('main')!.previousElementSibling as HTMLElement;
+          const bb = bar.getBoundingClientRect();
+          const tops = Array.from(document.querySelectorAll('main *'))
+            .filter((e) => getComputedStyle(e).position === 'sticky' && e.getBoundingClientRect().height > 0)
+            .map((e) => e.getBoundingClientRect().top);
+          const hit = document.elementFromPoint(bb.left + bb.width / 2, bb.top + bb.height / 2);
+          return { barBottom: bb.bottom, tops, onTop: !!hit && bar.contains(hit) };
+        });
+        expect(r.tops.length).toBeGreaterThan(0);
+        expect(Math.min(...r.tops)).toBeGreaterThanOrEqual(r.barBottom - 0.5);
+        expect(r.onTop).toBe(true);
+      });
+    }
+
     test('Filters dialog: nothing reaches the URL until Show, and Cancel drops the draft', async ({ page }) => {
       await seedList();
       await open(page);

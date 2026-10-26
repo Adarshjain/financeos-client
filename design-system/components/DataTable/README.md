@@ -35,6 +35,7 @@ The list frame for every table of records: column headers with sort, a selection
   - Selection is a set of row ids. It survives paging; the page clears it when filters change.
   - **Select all across pages:** when the page passes `allSelected`, every row shows as selected. Unticking one row turns it off and reports the page's other ids as the selection. SelectionBar's "Select all 182" sets it.
   - A selected row uses TransactionRow's selected look (`brand-tint` with the 4px `brand` stripe on the left). A highlighted row uses ListRow's highlighted look (`brand-strong` stripe). The page shows SelectionBar from the selection.
+- **First row border:** every row, the first included, draws a top border by default (it is the line under a Card header or the column header). `firstRowBorder={false}` makes dividers sit between rows only: use it when a SectionHeader above already draws the line (grouped tables in a dialog). The column header then draws its own bottom border on desktop.
 - **Row click** opens the record's detail when the page passes `onRowSelect`. Without it, rows aren't clickable. In selection mode a tap toggles selection instead.
 - **Expandable rows:** with `renderExpanded(row)`, a leading chevron column opens a detail block under the row, at full width. For example, a breakdown's sub-rows, a loan year's EMIs or a job's result.
 - **Row states:** `rowState(row)` returns `{ tone?: 'warning', disabled?: boolean, muted?: boolean, pressable?: boolean }`. `warning` gives the same look as TransactionRow's warning tone: the `attention-tint` ground (a transaction being watched); `disabled` dims the row and stops clicks (an excluded transaction); `muted` dims the row like `disabled` but keeps it clickable (a closed account); `pressable: false` makes one row skip `onRowSelect` (no button role, no hover) while it looks normal and its inner buttons work. `highlightedRowId` shows ListRow's highlighted look on that row and scrolls it into view once (a row opened from a notification).
@@ -63,6 +64,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `phoneSub?: (row) => ReactNode`, `phoneActions?: (row) => ReactNode`.
 - `band?: (row) => { key: string; label: ReactNode; action?: ReactNode } | null`, `dayHeader?: (row) => { key: string; label: ReactNode; sublabel?: ReactNode } | null`.
 - `rowState?: (row) => { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean }` (`pressable` defaults to true), `highlightedRowId?: string`.
+- `firstRowBorder?: boolean` (default `true`).
 - `wrapRow?: (row, node: ReactNode) => ReactNode`.
 - `renderRow?: (row, rowProps) => ReactNode`. `rowProps` carries `selectable`, `selected`, `onSelectedChange`, `selectionMode`, `onSelect`, `highlighted`, `expanded` and `onExpandedChange`.
 - `pager?: ReactNode`, `footer?: ReactNode`.

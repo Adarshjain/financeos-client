@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 describe('a report widget\'s KPI figure', () => {
-  it('opens the same underlying data as the ⋮ menu item', async () => {
+  it('opens the underlying data', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={report} />);
     await userEvent.click(screen.getByRole('button', { name: 'figure' }));
     expect(screen.getByTestId('underlying')).toBeInTheDocument();

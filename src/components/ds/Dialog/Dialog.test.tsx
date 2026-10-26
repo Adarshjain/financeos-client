@@ -804,3 +804,11 @@ describe('Dialog size full', () => {
     expect(container.querySelector('.cursor-grab')).toBeNull();
   });
 });
+
+describe('Dialog.Bleed', () => {
+  it('cancels the body side padding at both widths and renders its children', () => {
+    render(<Dialog.Bleed data-testid="bleed"><span>Band</span></Dialog.Bleed>);
+    expect(screen.getByTestId('bleed')).toHaveClass('-mx-space-16', 'desk:-mx-space-20');
+    expect(screen.getByText('Band')).toBeInTheDocument();
+  });
+});

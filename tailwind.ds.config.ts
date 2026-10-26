@@ -152,6 +152,8 @@ const config: Config = {
         'safe-left': 'env(safe-area-inset-left)',
         'safe-right': 'env(safe-area-inset-right)',
         'safe-56': 'calc(var(--ds-space-56) + var(--ds-safe-top, env(safe-area-inset-top)))',
+        // Where in-page sticky content stops: just under the sticky top bar. The page content sets --ds-sticky-top; elsewhere (dialogs) it is 0.
+        'sticky-offset': 'var(--ds-sticky-top, 0px)',
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       maxHeight: {

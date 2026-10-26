@@ -32,6 +32,8 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean };
   highlighted?: boolean;
   busy?: boolean;
+  /** The first row of the table draws no top border (DataTable `firstRowBorder={false}`). */
+  first?: boolean;
 }
 
 /** A cell's content; a string holding a ₹ amount is hidden while amounts are hidden. */
@@ -56,6 +58,7 @@ export function DataTableRow<Row extends RowData>({
   rowState,
   highlighted = false,
   busy = false,
+  first = false,
 }: DataTableRowComponentProps<Row>) {
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -108,7 +111,8 @@ export function DataTableRow<Row extends RowData>({
       aria-selected={selectable ? isSelected : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={cn(
-        'border-t border-line-soft border-l-4 text-body font-text transition-colors',
+        !first && 'border-t border-line-soft',
+        'border-l-4 text-body font-text transition-colors',
         selectable && 'select-none touch-callout-none',
         hasLead
           ? hasThirdCol

@@ -256,6 +256,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
     <DataTable
       columns={columns}
       data={tableRows}
+      firstRowBorder={!groups}
       getRowId={(row) => row.__row}
       busy={query.isFetching}
       phoneSub={phoneSub}
@@ -351,12 +352,14 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                   {groups.map((group) => {
                     const total = groupTotal(data.groupTotals, group.value);
                     return (
-                      <section key={String(group.value ?? '')} className="flex flex-col gap-space-8" aria-label={groupLabel(group.value, groupColumn?.valueLabels)}>
+                      <Dialog.Bleed key={String(group.value ?? '')}>
+                        <section className="flex flex-col" aria-label={groupLabel(group.value, groupColumn?.valueLabels)}>
                         <SectionHeader as="h3" variant="strong" sticky={false} borderTop={false} meta={total !== undefined && valueColumn ? cellText(total, valueColumn) : undefined}>
                           {groupLabel(group.value, groupColumn?.valueLabels)}
                         </SectionHeader>
                         {renderTable(group.rows, undefined)}
-                      </section>
+                        </section>
+                      </Dialog.Bleed>
                     );
                   })}
                   {raw.page.totalPages > 1 ? pager : null}
