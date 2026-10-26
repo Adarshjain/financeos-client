@@ -25,7 +25,7 @@ describe('describeFilter', () => {
   });
 
   it('shows enum values by their label, and says when nothing is chosen yet', () => {
-    expect(label({ field: 'category', operator: 'in', value: ['Food & dining', 'x'] })).toBe('Category · in Food & dining, x');
+    expect(label({ field: 'category', operator: 'in', value: ['Food & dining', 'x'] })).toBe('Category · in Food & dining, x (not found)');
     expect(label({ field: 'category', operator: 'in', value: [] })).toBe('Category · in …');
     expect(label({ field: 'type', operator: 'is', value: 'DEBIT' })).toBe('Type · is DEBIT');
   });
@@ -43,5 +43,13 @@ describe('describeFilter', () => {
   it('is not thrown by failed dynamic options', () => {
     const failed = { [DYNAMIC_OPTIONS_FAILED]: true } as DynamicOptions;
     expect(describeFilter(catalog, { field: 'category', operator: 'is', value: 'c1' }, failed)).toBe('Category · is c1');
+  });
+
+  it('flags a dynamic value that matches no loaded option, but not while options load', () => {
+    const uuid = '3f2c1a9e-0b1d-4c55-9a1e-123456789abc';
+    expect(label({ field: 'category', operator: 'is', value: 'Old name' })).toBe('Category · is Old name (not found)');
+    expect(label({ field: 'category', operator: 'is', value: uuid })).toBe('Category · is Unknown category');
+    expect(label({ field: 'category', operator: 'is', value: 'c1' })).toBe('Category · is Food & dining');
+    expect(describeFilter(catalog, { field: 'category', operator: 'is', value: 'Old name' }, {} as DynamicOptions)).toBe('Category · is Old name');
   });
 });
