@@ -2,7 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 
-import { ChatTrace, formatActionLabel, formatTotalDuration } from './chat.types';
+import { ChatTrace, formatActionLabel, formatTotalDuration } from '@/features/chat/chat.types';
 
 interface TracePanelProps {
   traces: ChatTrace[];

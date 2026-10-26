@@ -75,15 +75,13 @@ describe('DsIndexPage', () => {
     for (const route of routes) expect(hrefs, `${route} is missing from /ds`).toContain(route);
   });
 
-  it('lists the pages still to build, without links', () => {
+  it('links Ask the data and has no to-build list left', () => {
     render(<DsIndexPage />);
 
-    expect(screen.getByText('To build')).toBeDefined();
-    expect(screen.getByText('Import tradebook')).toBeDefined();
-    expect(screen.getByText('Rewards overview')).toBeDefined();
-    expect(screen.getByText('Ask the data')).toBeDefined();
+    expect(screen.queryByText('To build')).toBeNull();
+    expect(screen.getByText('/ds/chat')).toBeDefined();
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    expect(hrefs.some((h) => h?.includes('import-tradebook'))).toBe(false);
+    expect(hrefs).toContain('/ds/chat');
   });
 
   it('lists the built report page (via Reports) and no longer lists it as to build', () => {

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getActiveNavItem,
+  hidesTabBar,
   shellFooterItems,
   shellMoreGroups,
   shellQuickAddItems,
@@ -116,6 +117,18 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/unknown')).toBeUndefined();
   });
 
+  it('hides the phone tab bar on the Ask the data pages only', () => {
+    expect(hidesTabBar('/ds/chat')).toBe(true);
+    expect(hidesTabBar('/ds/chat/c-1')).toBe(true);
+    expect(hidesTabBar('/ds/chatter')).toBe(false);
+    expect(hidesTabBar('/ds/reports')).toBe(false);
+    expect(hidesTabBar(null)).toBe(false);
+    mockPathname = '/ds/chat/c-1';
+    const { container } = render(<ShellTabBar user={{ email: 'a@example.test' }} />);
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole('tab', { name: /Menu/i })).toBeNull();
+  });
+
   it('has no Upcoming entry in the rail or the tab bar; Inbox owns /upcoming', () => {
     const rail = shellRailGroups.flatMap((g) => g.items);
     expect(rail.some((i) => i.id === 'upcoming')).toBe(false);
@@ -221,7 +234,7 @@ describe('shell navigation', () => {
     expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/ds/loans/lendings');
     expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/ds/dashboards');
     expect(screen.getByRole('link', { name: /Reports/i })).toHaveAttribute('href', '/ds/reports');
-    expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/chat');
+    expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/ds/chat');
 
     // Verify Profile row
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });

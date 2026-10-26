@@ -1,6 +1,6 @@
 'use client';
 
-import { SUGGESTIONS } from './chat.types';
+import { SUGGESTIONS } from './suggestions';
 
 interface EmptyStateProps {
   onSelectPrompt: (prompt: string) => void;

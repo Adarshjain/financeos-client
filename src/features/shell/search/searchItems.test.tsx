@@ -120,7 +120,7 @@ describe('buildSearchGroups', () => {
       '/ds/reports/r1',
       '/ds/dashboards/d1',
       '/ds/accounts',
-      '/chat',
+      '/ds/chat?q=Acc',
     ]);
   });
 

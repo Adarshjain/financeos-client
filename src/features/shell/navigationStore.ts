@@ -107,6 +107,11 @@ function commitEntry(pathname: string) {
   }
 }
 
+/** The current page's URL was rewritten in place (history.replaceState): the entry takes the new pathname, and the route commit that follows adds nothing. */
+export function replaceCurrentRoute(pathname: string) {
+  if (cursor >= 0) entries[cursor] = pathname;
+}
+
 /** True when the entry behind the current page is in-app. Not reactive: read it when Back is clicked. */
 export function hasInAppHistory(): boolean {
   return cursor > 0;

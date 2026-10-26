@@ -35,12 +35,6 @@ export async function POST(req: Request) {
         );
       }
       if (upstream.status === 429) {
-        if (chatErrorHeader === 'CHAT_QUOTA_EXCEEDED') {
-          return NextResponse.json(
-            { code: 'CHAT_QUOTA_EXCEEDED', message: 'You have reached your daily chat message limit. Please try again tomorrow.' },
-            { status: 429 },
-          );
-        }
         return NextResponse.json(
           { code: 'CHAT_BUSY', message: 'The chat system is currently busy processing other requests. Please try again in a moment.' },
           { status: 429 },

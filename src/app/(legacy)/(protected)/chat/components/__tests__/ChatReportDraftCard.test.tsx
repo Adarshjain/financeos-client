@@ -3,11 +3,9 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as reportsActions from '@/actions/reports';
+import type { ChatReportDraft } from '@/features/chat/chat.types';
 
-import {
-  ChatReportDraft,
-  ChatReportDraftCard,
-} from '../ChatReportDraftCard';
+import { ChatReportDraftCard } from '../ChatReportDraftCard';
 
 vi.mock('@/actions/reports', () => ({
   createReport: vi.fn(),

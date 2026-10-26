@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button, Card, CardRow, ListRow, Text } from '@/components/ds';
 
-import { CHAT_HREF, REPORT_TEMPLATES, templateHref } from './reportsList';
+import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reportsList';
 
 /** "Start from a template" and "Ask instead", under the list. */
 export function ReportsAside() {
@@ -28,7 +28,7 @@ export function ReportsAside() {
         <CardRow>
           <div className="flex flex-col gap-space-8 min-w-0 flex-1">
             <Text variant="body" tone="ink-3">
-              &ldquo;dining spend per month on Regalia, this year&rdquo;
+              &ldquo;{ASK_EXAMPLE}&rdquo;
             </Text>
             <Text variant="caption" tone="ink-3">
               The answer comes back with a{' '}
@@ -38,7 +38,7 @@ export function ReportsAside() {
               button.
             </Text>
             <Button asChild variant="secondary" className="max-desk:w-full desk:self-start">
-              <Link href={CHAT_HREF} prefetch={false}>
+              <Link href={ASK_HREF} prefetch={false}>
                 Ask the data
               </Link>
             </Button>

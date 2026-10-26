@@ -192,7 +192,7 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       id: 'ask',
       label: 'Ask',
       items: text
-        ? [{ ...link('ask', `Ask the data: ${text}`, '/chat'), leading: <Icon name="chat" /> }]
+        ? [{ ...link('ask', `Ask the data: ${text}`, `/chat?q=${encodeURIComponent(text)}`), leading: <Icon name="chat" /> }]
         : [],
     },
   ];

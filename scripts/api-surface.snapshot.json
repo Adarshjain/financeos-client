@@ -8,6 +8,7 @@
     "billsApi",
     "cardholdersApi",
     "categoriesApi",
+    "chatApi",
     "corporateActionsApi",
     "counterpartiesApi",
     "dashboardsApi",
@@ -370,6 +371,13 @@
     ],
     "notificationsApi": [
       "getSettings"
+    ],
+    "chatApi": [
+      "deleteConversation",
+      "getConversation",
+      "listConversations",
+      "renameConversation",
+      "saveDraftResult"
     ],
     "llmKeysApi": [
       "create",

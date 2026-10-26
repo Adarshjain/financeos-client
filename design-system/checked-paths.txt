@@ -60,3 +60,5 @@ src/app/(ds)/ds/(app)/dashboards/
 src/features/dashboards/home/
 src/features/dashboards/list/
 src/app/(ds)/ds/(app)/dashboard/
+src/features/chat/
+src/app/(ds)/ds/(app)/chat/

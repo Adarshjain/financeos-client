@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { ChatTrace, Message } from '@/features/chat/chat.types';
+import { notifyChatComplete } from '@/features/chat/chatNotifications';
+import { createSseParser } from '@/features/chat/sseParser';
+import { buildTranscript } from '@/features/chat/transcript';
 import { ensureNotificationPermission } from '@/lib/browserNotifications';
-
-import { ChatTrace, Message } from '../components/chat.types';
-import { notifyChatComplete } from './chatNotifications';
-import { buildTranscript } from './transcript';
 
 export function useChatStream() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -122,101 +122,70 @@ export function useChatStream() {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = '';
+      const parser = createSseParser();
       let currentStatus = 'Thinking…';
       const accumulatedTraces: ChatTrace[] = [];
-      let eventName = 'message';
       let sawTerminalEvent = false;
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) {
-            eventName = 'message';
-            continue;
-          }
-          if (trimmed.startsWith(':')) continue;
-
-          if (trimmed.startsWith('event:')) {
-            eventName = trimmed.substring(6).trim();
-            continue;
-          }
-
-          if (trimmed.startsWith('data:')) {
-            const dataStr = trimmed.substring(5).trim();
-            try {
-              const data = JSON.parse(dataStr);
-
-              if (eventName === 'status') {
-                currentStatus = data.status || currentStatus;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[assistantMsgIndex] = {
-                    ...updated[assistantMsgIndex],
-                    status: currentStatus,
-                    traces: [...accumulatedTraces],
-                    startTime,
-                  };
-                  return updated;
-                });
-              } else if (eventName === 'trace') {
-                accumulatedTraces.push(data);
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[assistantMsgIndex] = {
-                    ...updated[assistantMsgIndex],
-                    traces: [...accumulatedTraces],
-                    startTime,
-                  };
-                  return updated;
-                });
-              } else if (eventName === 'final') {
-                sawTerminalEvent = true;
-                notifyChatComplete({
-                  answer: data.answer,
-                  clarify: data.clarify,
-                });
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[assistantMsgIndex] = {
-                    role: 'assistant',
-                    content: data.answer,
-                    clarify: data.clarify,
-                    clarifyOptions: data.clarifyOptions,
-                    blocks: data.blocks,
-                    traces: accumulatedTraces,
-                    isStreaming: false,
-                    startTime,
-                  };
-                  return updated;
-                });
-              } else if (eventName === 'error') {
-                sawTerminalEvent = true;
-                notifyChatComplete({
-                  error: data.message || 'Error occurred during processing',
-                });
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[assistantMsgIndex] = {
-                    role: 'assistant',
-                    error: data.message || 'Error occurred during processing',
-                    traces: accumulatedTraces,
-                    isStreaming: false,
-                    startTime,
-                  };
-                  return updated;
-                });
-              }
-            } catch (err) {
-              console.error('Failed to parse SSE event data', err);
-            }
+        for (const { event: eventName, data } of parser.feed(decoder.decode(value, { stream: true }))) {
+          if (eventName === 'status') {
+            currentStatus = data.status || currentStatus;
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[assistantMsgIndex] = {
+                ...updated[assistantMsgIndex],
+                status: currentStatus,
+                traces: [...accumulatedTraces],
+                startTime,
+              };
+              return updated;
+            });
+          } else if (eventName === 'trace') {
+            accumulatedTraces.push(data);
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[assistantMsgIndex] = {
+                ...updated[assistantMsgIndex],
+                traces: [...accumulatedTraces],
+                startTime,
+              };
+              return updated;
+            });
+          } else if (eventName === 'final') {
+            sawTerminalEvent = true;
+            notifyChatComplete({ answer: data.answer, clarify: data.clarify });
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[assistantMsgIndex] = {
+                role: 'assistant',
+                content: data.answer,
+                clarify: data.clarify,
+                clarifyOptions: data.clarifyOptions,
+                blocks: data.blocks,
+                traces: accumulatedTraces,
+                isStreaming: false,
+                startTime,
+              };
+              return updated;
+            });
+          } else if (eventName === 'error') {
+            sawTerminalEvent = true;
+            notifyChatComplete({ error: data.message || 'Error occurred during processing' });
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[assistantMsgIndex] = {
+                role: 'assistant',
+                error: data.message || 'Error occurred during processing',
+                traces: accumulatedTraces,
+                isStreaming: false,
+                startTime,
+              };
+              return updated;
+            });
           }
         }
       }

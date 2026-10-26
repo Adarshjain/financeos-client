@@ -3,8 +3,7 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-
-import { ChatReportDraft } from './ChatReportDraftCard';
+import type { ChatReportDraft } from '@/features/chat/chat.types';
 
 interface DraftActionsProps {
   draft: ChatReportDraft;

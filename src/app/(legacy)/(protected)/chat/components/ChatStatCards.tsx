@@ -2,12 +2,7 @@
 
 import React from 'react';
 
-export interface ChatStat {
-  label: string;
-  value: string;
-  delta?: string;
-  sentiment?: 'good' | 'bad' | 'neutral';
-}
+import type { ChatStat } from '@/features/chat/chat.types';
 
 interface ChatStatCardsProps {
   stats: ChatStat[];

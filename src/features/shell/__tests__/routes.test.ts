@@ -26,6 +26,9 @@ describe('appHref', () => {
     ['/settings/ai', '/ds/settings/ai'],
     ['/settings/notifications', '/ds/settings/notifications'],
     ['/settings/debug', '/ds/settings/debug'],
+    ['/chat', '/ds/chat'],
+    ['/chat?q=hello%20there', '/ds/chat?q=hello%20there'],
+    ['/chat/c-1', '/ds/chat/c-1'],
     ['/reports', '/ds/reports'],
     ['/reports/new', '/ds/reports/new'],
     ['/reports/abc-123', '/ds/reports/abc-123'],
@@ -60,7 +63,6 @@ describe('appHref', () => {
     for (const p of [
       '/transactions/review',
       '/loans/calendar',
-      '/chat',
       '/settings/ingest',
       '/storybook',
       '/',

@@ -78,7 +78,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     // Ask the data lives in the Ask instead card (the rail's link of the same name comes first).
     const ask = page.getByRole('link', { name: 'Ask the data' }).last();
     await expect(page.getByText('Ask instead', { exact: true })).toBeVisible();
-    await expect(ask).toHaveAttribute('href', /\/chat$/);
+    await expect(ask).toHaveAttribute('href', /\/chat\?q=/);
 
     // Search narrows the loaded list.
     await page.getByPlaceholder('Search reports').fill('KPI');

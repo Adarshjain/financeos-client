@@ -3,13 +3,7 @@
 import React from 'react';
 
 import { ChartView } from '@/components/reports/views/ChartView';
-
-export interface ChatChartBlock {
-  chartType: 'bar' | 'stackedBar' | 'line' | 'area' | 'pie' | 'donut';
-  title?: string;
-  categories: string[];
-  series: { name: string; data: (number | null)[] }[];
-}
+import type { ChatChartBlock } from '@/features/chat/chat.types';
 
 interface ChatChartCardProps {
   chart: ChatChartBlock;

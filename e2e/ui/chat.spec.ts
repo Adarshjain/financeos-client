@@ -136,33 +136,6 @@ test.describe('Chat UI (@ui)', () => {
     await expect(page.getByText('Monthly Dining Spends KPI')).toBeVisible();
   });
 
-  test('Daily quota error banner in UI', async ({
-    page,
-  }) => {
-    test.slow();
-    const api = makeApi(currentUser.cookie);
-
-    await page.goto('/chat');
-    await page.waitForLoadState('networkidle');
-
-    // Send 3 successful messages
-    for (let i = 1; i <= 3; i++) {
-      await scriptChat(api, [{ action: 'final_answer', answer: `Answer ${i}` }]);
-      await page.getByPlaceholder('Ask anything about your data…').fill(`Question ${i}`);
-      await page.getByRole('button', { name: 'Send message' }).click();
-      await expect(page.getByText(`Answer ${i}`)).toBeVisible();
-    }
-
-    // 4th message hits quota limit
-    await page.getByPlaceholder('Ask anything about your data…').fill('Question 4');
-    await page.getByRole('button', { name: 'Send message' }).click();
-
-    // Client proxy displays quota error message
-    await expect(
-      page.getByText('You have reached your daily chat message limit. Please try again tomorrow.')
-    ).toBeVisible();
-  });
-
   test('Completion browser notification when tab is unfocused/hidden', async ({
     context,
     page,

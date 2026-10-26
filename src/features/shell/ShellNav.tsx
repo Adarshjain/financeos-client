@@ -26,6 +26,7 @@ import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { useHideAmounts } from './hideAmounts';
 import {
   getActiveNavItem,
+  hidesTabBar,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
@@ -105,6 +106,9 @@ export function ShellTabBar({
 
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
+
+  // The Ask the data pages dock their own composer where the bar floats.
+  if (hidesTabBar(pathname)) return null;
 
   return (
     <>

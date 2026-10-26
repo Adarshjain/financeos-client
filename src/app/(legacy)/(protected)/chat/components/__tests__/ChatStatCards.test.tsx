@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import {
-  ChatStat,
-  ChatStatCards,
-} from '../ChatStatCards';
+import type { ChatStat } from '@/features/chat/chat.types';
+
+import { ChatStatCards } from '../ChatStatCards';
 
 describe('ChatStatCards', () => {
   it('renders stat labels, values, and deltas with sentiment classes', () => {
