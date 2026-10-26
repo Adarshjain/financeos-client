@@ -226,6 +226,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-26: Report measure labels: a field aggregated twice keeps "Amount (Sum)" / "Amount (Average)" wording. Net worth underlying `kind` stays a column, no chips ("let Legacy be"). Dev server: Turbopack dev FS cache off (ffc2b8d4).
 - 2026-10-26: Top bar + phone tab bar: frosted glass (new generic tokens `bg-glass` = surface at 40% alpha (tuned from 85%, owner picked 40 over 55 after shots), `bg-glass-strong` 85% for SelectionBar, `blur-glass` 24px, `saturate-glass` 1.8; `glass:` variant falls back to solid `bg-surface` without backdrop-filter; default look, no prop) + sticky SectionHeader, SelectionBar (incl. dashboard/report edit action bars, both built from it); phone sheet footer not done (it is not overlaid by content, so glass would not show).
 - 2026-10-26: Dashboards, Reports, Rewards APPROVED (owner raises issues separately). /ds index is a temp page, not reviewed. Settings links Legacy beside Storybook. Hide amounts in RSC payload: declined, not an exposure.
 - 2026-10-26: Select, Menu and every dropdown list are container-xs wide, grow to their content, capped at the viewport inset, never tied to the trigger width (Popover `list` prop).
@@ -442,12 +443,11 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
-- 2026-10-26 · Measure labels: when one report aggregates the same field twice (Amount sum + Amount average) the pivot column and the table sort option keep the server's "Amount (Sum)" to tell them apart. Plain "Amount" would give two identical columns; OK or another wording?
-- 2026-10-26 · Net worth underlying data (Dinero dialog): Legacy folds the `kind` column into the name and shows filter chips above the rows; Dinero keeps `kind` as a column and shows no chips. Fold it into the name (ListRow-style cell) and add chips? Left out until answered.
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude · Glass tuned to 40% (owner picked from shots; e333f066) + `bg-glass-strong` 85% for SelectionBar; dev FS cache off (ffc2b8d4). Measure-label and NW kind-chips Qs closed. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Glass (bg-glass 40% + bg-glass-strong 85% for SelectionBar, blur-glass 24px, saturate-glass 1.8; glass: variant) on TopBar, TabBar, sticky SectionHeader, SelectionBar; Attention rows one link (a343a1eb); Settings Legacy link. Phone sheet footer left solid (not overlaid).
 - 2026-10-26 · Phase 3 · Claude · Owner round: sticky under top bar, menu width rule, Net worth VUD groups Assets/Liabilities/Investments full width (server 9c1a543), widget ⋮ trimmed, Bills due rows read-only (client 00f2acdc). Open: Attention row actions (owner Q); server bills_due description still says "Mark paid".
 - 2026-10-26 · Phase 3 · Claude · Sticky fix (owner bug): in-page sticky (SectionHeader, DataTable header) was `top-0`, so day headers stuck under/over the top bar. New generic spacing step `sticky-offset` (= `--ds-sticky-top`, set by ShellPage main to the bar height, 0 elsewhere) used as `top-sticky-offset`; ShellPage main is `isolate` so page z-sticky stays below the bar's. Forced test edit: SectionHeader.test top-0 class. Deviations: none.
