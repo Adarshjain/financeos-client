@@ -5,6 +5,8 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Banner, Button, Card, CardFooter, CardHeader, CardRow, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
+import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
+import { workingCatalog } from '@/features/reports/builder/editorState';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
 import { ApiError } from '@/lib/api/client';
@@ -51,6 +53,12 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   const queryClient = useQueryClient();
   const dashboards = useDashboards();
   const home = dashboards.data?.find((d) => d.isDefault);
+  // Field labels and number formats, as the report editor and dashboard widgets show them.
+  const catalog = useReportCatalog();
+  const datasourceCatalog = React.useMemo(
+    () => (catalog.data && draft.datasource ? workingCatalog(catalog.data, draft.datasource) : undefined),
+    [catalog.data, draft.datasource],
+  );
 
   const [result, setResult] = React.useState<DraftResult | null>(activeResult(draftResult));
   const [busy, setBusy] = React.useState<'save' | 'home' | 'update' | 'delete' | 'undo' | null>(null);
@@ -253,9 +261,10 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
 
         {!isDelete ? (
           <CardRow className="block">
-            {preview.loading ? <Skeleton height={160} /> : null}
+            {/* Wait for the catalog (or its failure) too, rather than flash raw field names. */}
+            {preview.loading || (preview.data && catalog.isPending) ? <Skeleton height={160} /> : null}
             {preview.error ? <Banner tone="danger" action={{ label: 'Retry', onSelect: () => setPreviewTry((n) => n + 1) }}>{preview.error}</Banner> : null}
-            {preview.data ? <ReportResult data={preview.data} /> : null}
+            {preview.data && !catalog.isPending ? <ReportResult data={preview.data} catalog={datasourceCatalog} /> : null}
           </CardRow>
         ) : null}
 

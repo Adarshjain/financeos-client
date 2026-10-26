@@ -12,7 +12,24 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
   showToast: (...args: unknown[]) => toast(...args),
 }));
-vi.mock('@/features/reports/view/ReportResult', () => ({ ReportResult: () => <div>preview result</div> }));
+vi.mock('@/features/reports/view/ReportResult', () => ({
+  ReportResult: ({ catalog }: { catalog?: { fields: { label: string }[] } }) => (
+    <>
+      <div>preview result</div>
+      {catalog ? <div>{`labels: ${catalog.fields.map((f) => f.label).join(', ')}`}</div> : null}
+    </>
+  ),
+}));
+// The report catalog: where the preview's field labels and formats come from.
+const catalog = vi.hoisted(() => ({ state: { data: undefined as unknown, isPending: false } }));
+vi.mock('@/features/dashboards/frame/useReportCatalog', () => ({ useReportCatalog: () => catalog.state }));
+const CATALOG = {
+  datasources: [
+    { name: 'accounts', label: 'Accounts', fields: [{ name: 'accountType', label: 'Account Type' }] },
+    { name: 'transactions', label: 'Transactions', fields: [{ name: 'category', label: 'Category' }, { name: 'amount', label: 'Amount' }] },
+  ],
+  operators: {},
+};
 
 const remember = vi.hoisted(() => vi.fn());
 vi.mock('./conversationActions', () => ({ saveDraftResult: remember }));
@@ -56,6 +73,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   remember.mockResolvedValue({ success: true, data: undefined });
   dash.list = [{ id: 'd1', isDefault: true }];
+  catalog.state = { data: CATALOG, isPending: false };
   actions.runDraftPreview.mockResolvedValue({ type: 'CHART' });
   actions.saveDraftAsReport.mockResolvedValue({ id: 'r1', name: 'Monthly spend by category', type: 'CHART' });
   actions.addReportWidget.mockResolvedValue({ saved: { id: 'd1' }, widgetId: 'w1' });
@@ -70,6 +88,30 @@ beforeEach(() => {
 });
 
 describe('create draft', () => {
+  it("labels the preview with the draft's datasource fields from the report catalog", async () => {
+    setup();
+    expect(await screen.findByText('labels: Category, Amount')).toBeInTheDocument();
+  });
+
+  it('shows a skeleton, not raw field names, until the catalog is in', async () => {
+    catalog.state = { data: undefined, isPending: true };
+    const { container, rerender } = setup();
+    await waitFor(() => expect(actions.runDraftPreview).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByText('preview result')).not.toBeInTheDocument();
+    expect(container.querySelector('.animate-pulse')).not.toBeNull();
+    catalog.state = { data: CATALOG, isPending: false };
+    rerender(<ChatReportDraftCard draft={create} conversationId="c1" messageId="m1" />);
+    expect(await screen.findByText('labels: Category, Amount')).toBeInTheDocument();
+  });
+
+  it('still shows the preview, unlabelled, when the catalog could not load', async () => {
+    catalog.state = { data: undefined, isPending: false };
+    setup();
+    expect(await screen.findByText('preview result')).toBeInTheDocument();
+    expect(screen.queryByText(/^labels:/)).not.toBeInTheDocument();
+  });
+
   it('shows Report draft, the title, the caption, the preview and both actions', async () => {
     setup();
     expect(screen.getByText('Report draft')).toBeInTheDocument();
