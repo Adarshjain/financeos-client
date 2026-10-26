@@ -8,15 +8,6 @@ vi.mock('@/lib/api/client', async () => {
 });
 const nav = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: nav.push }) }));
-vi.mock('../investmentsLoansParts', async () => {
-  const actual = await vi.importActual<typeof import('../investmentsLoansParts')>('../investmentsLoansParts');
-  return {
-    ...actual,
-    LazySettleDialog: (p: { counterpartyId: string; name: string; direction: string; balance: number; onOpenChange: (o: boolean) => void }) => (
-      <button type="button" data-testid="settle" data-id={p.counterpartyId} data-name={p.name} data-direction={p.direction} data-balance={p.balance} onClick={() => p.onOpenChange(false)} />
-    ),
-  };
-});
 
 vi.mock('@/features/reports/underlying/LazyReportUnderlyingDialogs', () => ({
   LazyReportRowBreakdownDialog: (p: { datasource: string; rowId: string; title: string; onClose: () => void }) => (
@@ -86,20 +77,11 @@ describe('LendingBalancesBody', () => {
     expect(screen.queryByRole('link', { name: 'View all' })).not.toBeInTheDocument();
   });
 
-  it('Settle up opens the sheet for that person with the balance and its direction, both ways', async () => {
+  it('rows have no Settle up button', async () => {
     respond([person('p1', 'Rahul', 12000), person('p2', 'Priya', -2500)]);
     renderWithQuery(<LendingBalancesBody />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Settle up with Rahul' }));
-    expect(screen.getByTestId('settle')).toMatchObject({});
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-id', 'p1');
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-direction', 'lent');
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-balance', '12000');
-    await userEvent.click(screen.getByTestId('settle'));
-    expect(screen.queryByTestId('settle')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Settle up with Priya' }));
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-direction', 'borrowed');
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-balance', '2500');
-    expect(screen.getByTestId('settle')).toHaveAttribute('data-name', 'Priya');
+    await screen.findByText('Rahul');
+    expect(screen.queryByRole('button', { name: /settle up/i })).not.toBeInTheDocument();
   });
 
   it('skeleton while loading, Retry on failure', async () => {

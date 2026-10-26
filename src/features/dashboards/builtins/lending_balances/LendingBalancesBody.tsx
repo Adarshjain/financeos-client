@@ -1,7 +1,7 @@
 'use client';
 
 // lending_balances: the people with a nonzero balance, biggest first (one server page), each with what they owe
-// you / you owe and Settle up. Settle up opens the Settle up sheet for that person; the name opens their page.
+// you / you owe. The amount opens that person's breakdown (no Settle up here; settling happens on Lendings).
 // "View all" goes to the Lendings page when more people have balances. Content only; the frame draws the card.
 
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { appHref } from '@/features/shell/routes';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 import { useOutstandingCounterparties } from '@/lib/query/hooks/useCounterparties';
 
-import { BodyError, LazySettleDialog } from '../investmentsLoansParts';
+import { BodyError } from '../investmentsLoansParts';
 import { LENDING_BALANCES_TOP } from './lendingBalances';
 
 /** The widget's loading skeleton: three people, each a name over a line and a figure. */
@@ -38,7 +38,6 @@ export function LendingBalancesSkeleton() {
 export function LendingBalancesBody() {
   const { data, isLoading, error, refetch } = useOutstandingCounterparties(LENDING_BALANCES_TOP);
   const router = useRouter();
-  const [settling, setSettling] = React.useState<CounterpartyResponse | null>(null);
   const [opened, setOpened] = React.useState<CounterpartyResponse | null>(null);
   const people = data?.content ?? [];
   const more = (data?.totalElements ?? 0) > people.length;
@@ -66,14 +65,9 @@ export function LendingBalancesBody() {
                 title={p.name}
                 subtitle={owesYou ? 'Owes you' : 'You owe'}
                 trailing={
-                  <>
-                    <Button variant="link" onClick={() => setOpened(p)}>
-                      {rupees(Math.abs(p.netPosition))}
-                    </Button>
-                    <Button size="sm" aria-label={`Settle up with ${p.name}`} onClick={() => setSettling(p)}>
-                      Settle up
-                    </Button>
-                  </>
+                  <Button variant="link" onClick={() => setOpened(p)}>
+                    {rupees(Math.abs(p.netPosition))}
+                  </Button>
                 }
               />
             </div>
@@ -90,16 +84,6 @@ export function LendingBalancesBody() {
       {opened ? (
         <LazyReportRowBreakdownDialog datasource="net_worth" rowId={opened.id} title={opened.name} onClose={() => setOpened(null)} />
       ) : null}
-      {settling && (
-        <LazySettleDialog
-          open
-          onOpenChange={(o) => !o && setSettling(null)}
-          counterpartyId={settling.id}
-          name={settling.name}
-          direction={settling.netPosition > 0 ? 'lent' : 'borrowed'}
-          balance={Math.abs(settling.netPosition)}
-        />
-      )}
     </div>
   );
 }

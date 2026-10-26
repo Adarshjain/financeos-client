@@ -8,9 +8,6 @@ import { builtinPieces } from '../builtins/registry';
 
 export type WidgetMenuItemId = 'edit-report' | 'settings' | 'duplicate' | 'full-page' | 'underlying';
 
-/** The subtitle a saved report widget carries. */
-export const REPORT_SUBTITLE = 'Report';
-
 export const BUILTIN_GONE = 'This widget is no longer available.';
 
 /** A built-in's key (the ref's key when the top-level one is absent). */
@@ -18,9 +15,9 @@ export function widgetBuiltinKey(widget: Pick<WidgetResponse, 'builtinKey' | 'bu
   return widget.builtinKey ?? widget.builtin?.key ?? null;
 }
 
-/** The line under a widget's title: the built-in's param-aware subtitle, else the server's; "Report" for a saved report. */
+/** The line under a widget's title: the built-in's param-aware subtitle, else the server's; none for a saved report. */
 export function widgetSubtitle(widget: WidgetResponse) {
-  if (!isBuiltinWidget(widget)) return REPORT_SUBTITLE;
+  if (!isBuiltinWidget(widget)) return null;
   return builtinPieces(widgetBuiltinKey(widget))?.subtitle?.(widget) ?? widget.builtin?.subtitle ?? null;
 }
 
