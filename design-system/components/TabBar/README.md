@@ -3,7 +3,7 @@
 The phone bottom navigation: a floating pill. This is the only mobile navigation format. It draws the items the app gives it, in the order given; FinanceOS passes Home · Inbox · Upcoming · Transactions · More.
 
 ## Look
-- A pill floating 12px in from the left, right and bottom edges (above the safe area): `bg-surface`, a `line` border, `radius-pill`, `shadow-dock`, padding 8px top and bottom and 4px at the sides.
+- A pill floating 12px in from the left, right and bottom edges (above the safe area): frosted glass (`bg-surface` fallback; `glass:bg-glass`, `glass:backdrop-blur-glass`, `glass:backdrop-saturate-glass`, so content scrolling under it shows through blurred), a `line` border, `radius-pill`, `shadow-dock`, padding 8px top and bottom and 4px at the sides.
 - Each item is the icon (`lg`, 20px) over its label (`tab-label`), 2px apart, centred in an equal-width slot.
 - Inactive items are `ink-faint`. The current item is `ink` with its label at weight 800. There is no background, indicator, dot or underline behind the current item.
 - Counts are Badge `variant="solid" shape="rounded" size="sm"` pinned to the icon's top-right corner, with a 2px `bg-surface` ring so they read cleanly over the icon: `danger` for things that need you now (Inbox), `warning` for the review count (Transactions). Over 99 shows "99+".

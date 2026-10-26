@@ -19,7 +19,7 @@ const L = [
 ];
 for (const t of T.color.tokens) L.push(`  --ds-${t.name}: ${ref(pick(t.value, 'light'))};`);
 for (const t of T.shadow.tokens) L.push(`  --ds-${t.name}: ${pick(t.value, 'light')};`);
-for (const fam of ['spacing', 'radius', 'size', 'zIndex', 'duration'])
+for (const fam of ['spacing', 'radius', 'size', 'zIndex', 'duration', 'effect'])
   for (const t of T[fam].tokens) L.push(`  --ds-${t.name}: ${t.value};`);
 // text and display come from next/font/local; mono is a system stack, so it is a plain variable.
 L.push(`  --ds-font-mono: ${T.type.families.mono};`);

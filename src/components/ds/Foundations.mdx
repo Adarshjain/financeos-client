@@ -111,6 +111,14 @@ Dinero design system foundations and design tokens loaded directly from `tokens.
   </div>
 ))}
 
+## Glass
+
+{tokens.effect.tokens.map(g => (
+  <div key={g.name} style={{ marginBottom: '0.5rem' }}>
+    <strong>{g.name}</strong> ({g.value}): {g.usage}
+  </div>
+))}
+
 ## Layers
 
 {tokens.zIndex.tokens.map(z => (
