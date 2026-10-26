@@ -40,9 +40,10 @@ describe('ListRow', () => {
     expect(amountEl).toHaveClass('text-positive', 'tabular-nums');
   });
 
-  it('applies highlighted styling with 4px stripe on brand-tint', () => {
+  it('applies highlighted styling: brand-tint ground, no dark stripe', () => {
     const { container: c1 } = render(<ListRow title="Row 1" highlighted />);
-    expect(c1.firstChild).toHaveClass('border-l-4', 'border-l-brand-strong', 'bg-brand-tint');
+    expect(c1.firstChild).toHaveClass('border-l-4', 'border-l-transparent', 'bg-brand-tint');
+    expect(c1.firstChild).not.toHaveClass('border-l-brand-strong');
   });
 
   it('applies disabled styling and aria-disabled attribute', () => {

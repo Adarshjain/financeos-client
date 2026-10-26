@@ -67,7 +67,7 @@ describe('ReorderList', () => {
 
   it('shows the moved row selected until another row moves', () => {
     render(<ReorderList items={items} defaultValue={['a', 'b', 'c']} />);
-    const row = (t: string) => screen.getByText(t).closest('.border-l-brand-strong');
+    const row = (t: string) => screen.getByText(t).closest('.bg-brand-tint');
     expect(row('Beta')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Move down Beta' }));
     expect(row('Beta')).not.toBeNull();
@@ -79,7 +79,7 @@ describe('ReorderList', () => {
 
   it('drops a move the parent ignored when value later changes another way', () => {
     const { rerender } = render(<ReorderList items={items} value={['a', 'b', 'c']} onValueChange={vi.fn()} />);
-    const row = (t: string) => screen.getByText(t).closest('.border-l-brand-strong');
+    const row = (t: string) => screen.getByText(t).closest('.bg-brand-tint');
     fireEvent.click(screen.getByRole('button', { name: 'Move down Alpha' }));
     rerender(<ReorderList items={items} value={['c', 'b', 'a']} onValueChange={vi.fn()} />);
     expect(row('Alpha')).toBeNull();

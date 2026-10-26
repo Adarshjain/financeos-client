@@ -82,7 +82,7 @@ const meta: Meta<typeof TransactionRow> = {
     },
     selected: {
       control: 'boolean',
-      description: 'Selected row state with 4px stripe',
+      description: 'Selected row state (brand-tint ground)',
     },
     selectable: {
       control: 'boolean',
