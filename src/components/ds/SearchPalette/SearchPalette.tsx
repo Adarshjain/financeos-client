@@ -198,8 +198,6 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                         <ListRow
                           key={item.id}
                           role="option"
-                          // Highlight's marks split the text into pieces the browser names apart ("Tr ansaction").
-                          aria-label={typeof item.title === 'string' ? item.title : undefined}
                           aria-selected={item.id === active}
                           data-item-id={item.id}
                           tabIndex={-1}
