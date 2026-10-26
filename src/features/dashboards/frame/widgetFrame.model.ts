@@ -31,10 +31,19 @@ export function isTemplateWidget(widget: WidgetResponse): boolean {
   return isBuiltinWidget(widget) && widget.builtin?.kind === 'template';
 }
 
+/** Template built-ins whose view is a KPI figure: the figure and the ⋮ menu open the built-in's underlying data. */
+export const KPI_BUILTIN_KEYS: readonly string[] = ['net_worth'];
+
+/** Whether a widget is a template built-in with a KPI figure (Net worth). */
+export function isKpiBuiltinWidget(widget: WidgetResponse): boolean {
+  const key = widgetBuiltinKey(widget);
+  return isTemplateWidget(widget) && key != null && KPI_BUILTIN_KEYS.includes(key);
+}
+
 /**
  * The ⋮ menu's items, in order. A report widget: Edit report, View full page, View underlying data (every report
  * widget). A built-in: Widget settings (when the dashboard can save them), Duplicate as my report (templates only),
- * View full page (a built-in with a page of its own).
+ * View full page (a built-in with a page of its own), View underlying data (KPI built-ins: Net worth).
  */
 export function widgetMenuItems(widget: WidgetResponse, { canEditSettings }: { canEditSettings: boolean }): WidgetMenuItemId[] {
   if (!isWidgetAvailable(widget)) return [];
@@ -43,5 +52,6 @@ export function widgetMenuItems(widget: WidgetResponse, { canEditSettings }: { c
   if (canEditSettings) items.push('settings');
   if (isTemplateWidget(widget)) items.push('duplicate');
   if (widgetHref(widget)) items.push('full-page');
+  if (isKpiBuiltinWidget(widget)) items.push('underlying');
   return items;
 }

@@ -13,6 +13,7 @@ import React from 'react';
 
 import { Text, Widget } from '@/components/ds';
 import { reportHref } from '@/features/reports/list/reportsList';
+import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import type { UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { appHref } from '@/features/shell/routes';
 import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
@@ -23,7 +24,7 @@ import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
 import { useDuplicateBuiltinReport } from './useDuplicateBuiltinReport';
 import { useReportWidget } from './useReportWidget';
-import { BUILTIN_GONE, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
+import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
 import { WidgetFullPage } from './WidgetFullPage';
 import { WidgetHeaderActions } from './WidgetHeaderActions';
 import { type WidgetSettingsChange, WidgetSettingsDialog } from './WidgetSettingsDialog';
@@ -69,6 +70,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const items = editing ? [] : widgetMenuItems(widget, { canEditSettings });
   // The KPI figure, chart entries and rows open the same underlying data as the ⋮ menu's item.
   const canOpenUnderlying = items.includes('underlying');
+  // A KPI built-in lists its rows from the built-in's own endpoint (key + params), not a saved report.
+  const kpiBuiltin = isKpiBuiltinWidget(widget);
 
   // A component built-in fetches for itself; every other widget is loaded here.
   const loadsHere = available && (builtin ? widget.builtin?.kind === 'template' : Boolean(widget.reportId));
@@ -106,6 +109,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
             onSizeChange={state.setSize}
             sort={state.sort}
             onSortChange={state.setSort}
+            onKpiValueClick={canOpenUnderlying && kpiBuiltin ? () => openUnderlying() : undefined}
           />
         );
       }
@@ -157,7 +161,14 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         {content}
       </Widget>
       {overlay === 'full' ? <WidgetFullPage widget={widget} onClose={close} /> : null}
-      {overlay === 'underlying' ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
+      {overlay === 'underlying' && kpiBuiltin && key ? (
+        <LazyReportUnderlyingDialog
+          builtin={{ kind: 'builtin', key, params: widgetParams(widget) }}
+          title={`Underlying data · ${widgetTitle(widget)}`}
+          onClose={close}
+        />
+      ) : null}
+      {overlay === 'underlying' && !kpiBuiltin ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
       {overlay === 'settings' && def && onSaveSettings ? (
         <WidgetSettingsDialog widget={widget} def={def} dashboardName={dashboardName} onSave={onSaveSettings} onClose={close} />
       ) : null}

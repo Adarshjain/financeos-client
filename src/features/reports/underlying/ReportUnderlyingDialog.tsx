@@ -30,7 +30,7 @@ import type { RunReportRequest, SortClause, TableColumn } from '@/lib/reports.ty
 import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import { asFormat, saveBlob, UNDERLYING_PAGE_SIZE, underlyingCsvFilename } from './underlying.helpers';
-import type { UnderlyingExcludedItem, UnderlyingPeriod } from './underlying.types';
+import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
 import type { UnderlyingEntry } from './underlyingRequest';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
@@ -69,9 +69,7 @@ const ALL_ENTRIES = 'all';
 const DEFAULT_SORT = 'default';
 const sortValue = (s: SortClause | null) => (s ? `${s.key},${s.direction}` : DEFAULT_SORT);
 
-export interface ReportUnderlyingDialogProps {
-  /** The ad-hoc KPI request whose rows are listed (see underlyingRequest.ts); with `entries`, the whole report's, which "All" returns to. */
-  request: RunReportRequest;
+interface UnderlyingDialogBaseProps {
   /** A chart or breakdown's categories, each with its own request: shown as a dropdown that narrows the rows to one. */
   entries?: UnderlyingEntry[];
   /** The dimension's label: the dropdown's chip reads "<dimension label>: <entry>", its default entry "All". */
@@ -83,14 +81,32 @@ export interface ReportUnderlyingDialogProps {
   onClose: () => void;
 }
 
+/** Lists either an ad-hoc KPI request's rows or a built-in template's, never neither. */
+export type ReportUnderlyingDialogProps = UnderlyingDialogBaseProps &
+  (
+    | {
+        /** The ad-hoc KPI request whose rows are listed (see underlyingRequest.ts); with `entries`, the whole report's, which "All" returns to. */
+        request: RunReportRequest;
+        builtin?: undefined;
+      }
+    | {
+        request?: undefined;
+        /** A built-in template's source (key + params), listed instead of an ad-hoc `request`. */
+        builtin: Extract<UnderlyingSource, { kind: 'builtin' }>;
+      }
+  );
+
 /** The dialog is open while it is mounted: the page mounts it for one opening and unmounts it on close. */
-export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensionLabel, initialEntry, title: customTitle, onClose }: ReportUnderlyingDialogProps) {
+export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries, dimensionLabel, initialEntry, title: customTitle, onClose }: ReportUnderlyingDialogProps) {
   // The rows of the whole figure, or of the one category picked in the dropdown (a number as text).
   const [entry, setEntry] = React.useState(() =>
     initialEntry !== undefined && entries?.[initialEntry] ? String(initialEntry) : ALL_ENTRIES,
   );
   const request = entries?.[Number(entry)]?.request ?? wholeRequest;
-  const source = React.useMemo(() => ({ kind: 'adhoc' as const, request }), [request]);
+  const source = React.useMemo<UnderlyingSource>(
+    () => (builtin && !request ? builtin : { kind: 'adhoc', request: request! }),
+    [builtin, request],
+  );
   const [period, setPeriod] = React.useState<UnderlyingPeriod>('current');
   const [sort, setSort] = React.useState<SortClause | null>(null);
   const [page, setPage] = React.useState(0);
@@ -149,7 +165,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, entries, dimensi
     ? [
         `${data.rowCount} ${data.rowCount === 1 ? unit[0] : unit[1]} ${data.rowCount === 1 ? 'makes' : 'make'} up this figure`,
         data.range ? formatDateRange(data.range.from, data.range.to) : null,
-        hidesExcluded(request) ? 'excluded rows hidden' : null,
+        request && hidesExcluded(request) ? 'excluded rows hidden' : null,
       ]
         .filter(Boolean)
         .join(' · ')

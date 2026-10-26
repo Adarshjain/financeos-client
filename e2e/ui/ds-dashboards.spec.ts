@@ -217,7 +217,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('menuitem', { name: 'Widget settings' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Duplicate as my report' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Edit report' })).toHaveCount(0);
-      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toHaveCount(0);
+      // Net worth is a KPI built-in, so it lists its underlying data too (owner 2026-10-26).
+      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toBeVisible();
       await page.getByRole('menuitem', { name: 'Duplicate as my report' }).click();
       await expect(page.getByText(/Saved "Net worth" to your reports/)).toBeVisible({ timeout: 30_000 });
 
@@ -325,6 +326,16 @@ for (const viewport of VIEWPORTS) {
       const dashboard = await createDashboard(api, { name: `Ds split board ${tag}`, isDefault: false, widgets: [widget(report.id, { x: 0, y: 0, w: 100, h: 24 }, null, 'wr')] });
       return { dashboard, name, categories: [`Split Food ${tag}`, `Split Fuel ${tag}`], rows: { [`Split Food ${tag}`]: `Split food row ${tag}`, [`Split Fuel ${tag}`]: `Split fuel row ${tag}` } as Record<string, string> };
     }
+
+    test('Net worth: tapping the value opens its underlying data', async ({ page }) => {
+      test.slow();
+      const { dashboard } = await seedBoard();
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
+      const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
+      await expect(dialog).toBeVisible({ timeout: 45_000 });
+      await expect(dialog.getByText(/make(s)? up this figure|No (rows|transactions)/i).first()).toBeVisible({ timeout: 45_000 });
+    });
 
     test('chart widget: tapping a bar opens "Underlying data · <widget>" filtered to that bar', async ({ page }) => {
       test.slow();
