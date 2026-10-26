@@ -24,22 +24,11 @@ const server = vi.hoisted(() => ({
   fetchHoldings: vi.fn(),
   fetchTaxHarvest: vi.fn(),
   fetchBrokers: vi.fn(),
-  fetchLatestPriceJobId: vi.fn(),
 }));
 vi.mock('@/features/investments/investmentsServerApi', () => server);
 
 // The record-a-merger dialog is tested on its own: here it only shows the props the list gives it.
 vi.mock('@/features/investments/corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('action-dialog', 'CorporateActionDialog'));
-
-const refresh = vi.hoisted(() => vi.fn());
-const refreshOptions = vi.hoisted(() => ({ onSettled: undefined as undefined | (() => void) }));
-const refreshState = vi.hoisted(() => ({ busy: false, jobId: null as string | null }));
-vi.mock('@/features/investments/useRefreshPrices', () => ({
-  useRefreshPrices: (options: { onSettled?: () => void }) => {
-    refreshOptions.onSettled = options.onSettled;
-    return { refresh, busy: refreshState.busy, jobId: refreshState.jobId };
-  },
-}));
 
 const tax = {
   fy: 2026,
@@ -68,15 +57,12 @@ async function renderPage(params: Record<string, string> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  refreshState.busy = false;
-  refreshState.jobId = null;
   server.fetchHoldings.mockResolvedValue(holdingsResponse(rows));
   server.fetchTaxHarvest.mockResolvedValue(tax);
   server.fetchBrokers.mockResolvedValue([
     { id: 'b1', name: 'Zerodha Main' },
     { id: 'b2', name: 'Groww Demat' },
   ]);
-  server.fetchLatestPriceJobId.mockResolvedValue('job-9');
 });
 
 afterEach(() => {
@@ -165,35 +151,11 @@ describe('/ds/investments Holdings: figures', () => {
 });
 
 describe('/ds/investments Holdings: prices line', () => {
-  it('says when the prices are from and starts a refresh', async () => {
+  it('says when the prices are from, with no refresh button or job link', async () => {
     await renderPage();
     expect(screen.getByText(/Prices as of 13 Oct/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    expect(refresh).toHaveBeenCalledTimes(1);
-  });
-
-  it('links View job to the exact latest job in Settings → Activity', async () => {
-    await renderPage();
-    expect(screen.getByRole('link', { name: 'View job' })).toHaveAttribute('href', '/ds/settings/activity?job=job-9');
-  });
-
-  it('links View job to the job this visit started, once there is one', async () => {
-    refreshState.jobId = 'job-new';
-    await renderPage();
-    expect(screen.getByRole('link', { name: 'View job' })).toHaveAttribute('href', '/ds/settings/activity?job=job-new');
-  });
-
-  it('has no View job link when no price refresh ever ran', async () => {
-    server.fetchLatestPriceJobId.mockResolvedValue(null);
-    await renderPage();
+    expect(screen.queryByRole('button', { name: /Refresh/ })).toBeNull();
     expect(screen.queryByRole('link', { name: 'View job' })).toBeNull();
-  });
-
-  it('still renders when the job lookup fails', async () => {
-    server.fetchLatestPriceJobId.mockRejectedValue(new Error('down'));
-    await renderPage();
-    expect(screen.queryByRole('link', { name: 'View job' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
   });
 });
 
@@ -387,14 +349,5 @@ describe('/ds/investments Holdings: a page past the end', () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { groups: [], totalElements: 0, totalPages: 0 }));
     await renderPage({ page: '2' });
     expect(redirect).not.toHaveBeenCalled();
-  });
-});
-
-describe('/ds/investments Holdings: refresh settles', () => {
-  it('reloads the page data when the price job ends', async () => {
-    await renderPage();
-    expect(router.refresh).not.toHaveBeenCalled();
-    act(() => refreshOptions.onSettled!());
-    expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 });

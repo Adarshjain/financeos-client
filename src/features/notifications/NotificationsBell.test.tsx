@@ -89,7 +89,7 @@ describe('Notifications bell', () => {
     fireEvent.click(bell());
     const pop = await screen.findByText('Import failed');
     expect(screen.getByText('Notifications', { selector: 'div' })).toBeInTheDocument();
-    expect(screen.getByText('Body a · 14:05')).toBeInTheDocument();
+    expect(screen.getByText('Body a · 2:05 pm')).toBeInTheDocument();
     expect(screen.getByText('Body b · 13 Oct')).toBeInTheDocument();
     expect(pop.closest('a')).toHaveAttribute('href', '/ds/settings/activity?job=j1');
     expect(screen.getByText('Cap reached').closest('a')).toBeNull();

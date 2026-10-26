@@ -4,13 +4,13 @@ import type { DiagnosticRecord } from '@/lib/diagnostics/errorLog';
 
 import { asRefType, failureLine, formatClock, formatWhen, formatWhenFull, requestUser, statusTone, timelineDepth } from './debugModel';
 
-const at = '2026-10-13T08:08:49.101Z'; // 13:38:49 IST
+const at = '2026-10-13T08:08:49.101Z'; // 1:38:49 pm IST
 
 describe('debugModel', () => {
   it('formats times in the app zone', () => {
-    expect(formatWhen(at)).toBe('13 Oct 13:38');
-    expect(formatWhenFull(at)).toBe('13 Oct 13:38:49 IST');
-    expect(formatClock(at)).toBe('13:38:49.101');
+    expect(formatWhen(at)).toBe('13 Oct 1:38 pm');
+    expect(formatWhenFull(at)).toBe('13 Oct 1:38:49 pm IST');
+    expect(formatClock(at)).toBe('1:38:49.101 pm');
     expect(formatWhen('nope')).toBe('');
   });
 
@@ -45,7 +45,7 @@ describe('debugModel', () => {
 
   it('builds the failure line with method, route, status and time', () => {
     const rec = { at, ref: 'R', status: 400, code: 'C', message: 'm', route: '/r', endpoint: '/api/v1/reports', method: 'POST', source: 'api' } as DiagnosticRecord;
-    expect(failureLine(rec)).toBe('POST /api/v1/reports · 400 · 13 Oct 13:38');
-    expect(failureLine({ ...rec, status: 0, method: undefined, endpoint: undefined })).toBe('GET /r · Network · 13 Oct 13:38');
+    expect(failureLine(rec)).toBe('POST /api/v1/reports · 400 · 13 Oct 1:38 pm');
+    expect(failureLine({ ...rec, status: 0, method: undefined, endpoint: undefined })).toBe('GET /r · Network · 13 Oct 1:38 pm');
   });
 });

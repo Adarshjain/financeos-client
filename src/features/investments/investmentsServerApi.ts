@@ -1,5 +1,5 @@
 import type { Account, Broker } from '@/lib/account.types';
-import { accountsApi, corporateActionsApi, dividendsApi, fnoApi, instrumentsApi, investmentsApi, jobsApi } from '@/lib/apiClient';
+import { accountsApi, corporateActionsApi, dividendsApi, fnoApi, instrumentsApi, investmentsApi } from '@/lib/apiClient';
 import type {
   HoldingDetail,
   HoldingsQuery,
@@ -8,7 +8,6 @@ import type {
   PricePage,
   SellEstimate,
 } from '@/lib/investments.types';
-import type { PagedJobResponse } from '@/lib/jobs.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { CorporateAction, Instrument, PagedDividendResponse, PagedInvestmentTransactionResponse,PriceHistoryPoint } from '@/lib/types';
 import { AccountType } from '@/lib/types';
@@ -61,12 +60,6 @@ export function fetchInstrumentCorporateActions(instrumentId: string): Promise<C
 export async function fetchBrokers(): Promise<Broker[]> {
   const accounts: Account[] = await accountsApi.list();
   return accounts.filter((a): a is Broker => a.type === AccountType.BROKER);
-}
-
-/** The newest price-refresh job, for the "View job" link; null when none ran. */
-export async function fetchLatestPriceJobId(): Promise<string | null> {
-  const page: PagedJobResponse = await jobsApi.list({ type: 'PRICE_REFRESH', page: 0, size: 1 });
-  return page.content[0]?.id ?? null;
 }
 
 /** Tab counts: one request per tab, `size=1`, only the total is read. */

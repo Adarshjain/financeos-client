@@ -21,9 +21,9 @@ const job = (over: Partial<JobResponse>): JobResponse =>
 describe('startedLabel', () => {
   const now = new Date('2026-10-20T10:00:00Z');
   it('says today, yesterday, then the date', () => {
-    expect(startedLabel('2026-10-20T08:36:00Z', now)).toBe('today 14:06');
-    expect(startedLabel('2026-10-19T12:42:00Z', now)).toBe('yesterday 18:12');
-    expect(startedLabel('2026-10-01T16:10:00Z', now)).toBe('1 Oct 21:40');
+    expect(startedLabel('2026-10-20T08:36:00Z', now)).toBe('today 2:06 pm');
+    expect(startedLabel('2026-10-19T12:42:00Z', now)).toBe('yesterday 6:12 pm');
+    expect(startedLabel('2026-10-01T16:10:00Z', now)).toBe('1 Oct 9:40 pm');
   });
   it('is a dash for a bad date', () => {
     expect(startedLabel('nope', now)).toBe('—');
@@ -166,10 +166,10 @@ describe('phoneLine and startedByLabel', () => {
   it('joins when it started with the result', () => {
     const now = new Date();
     const j = job({ createdAt: now.toISOString(), type: 'PRICE_REFRESH', result: { refreshed: 11, skipped: 0, failed: [] } });
-    expect(phoneLine(j)).toMatch(/^today \d{2}:\d{2} · 11 updated$/);
+    expect(phoneLine(j)).toMatch(/^today \d{1,2}:\d{2} (am|pm) · 11 updated$/);
   });
   it('uses the progress note for an active job', () => {
     const j = job({ createdAt: new Date().toISOString(), status: 'RUNNING', progressNote: 'Parsing page 2 of 3' });
-    expect(phoneLine(j)).toMatch(/^today \d{2}:\d{2} · Parsing page 2 of 3$/);
+    expect(phoneLine(j)).toMatch(/^today \d{1,2}:\d{2} (am|pm) · Parsing page 2 of 3$/);
   });
 });

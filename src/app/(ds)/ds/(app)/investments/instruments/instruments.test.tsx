@@ -26,20 +26,8 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   showToast: (...args: unknown[]) => toast(...args),
 }));
 
-const server = vi.hoisted(() => ({ fetchLatestPriceJobId: vi.fn() }));
-vi.mock('@/features/investments/investmentsServerApi', () => server);
-
 const list = vi.hoisted(() => ({ fetchInstrumentsPage: vi.fn(), fetchInstrumentTypeCounts: vi.fn() }));
 vi.mock('@/features/investments/instruments/instrumentsServerApi', () => list);
-
-const refresh = vi.hoisted(() => vi.fn());
-const refreshState = vi.hoisted(() => ({ busy: false, jobId: null as string | null, onSettled: undefined as undefined | (() => void) }));
-vi.mock('@/features/investments/useRefreshPrices', () => ({
-  useRefreshPrices: (options: { onSettled?: () => void }) => {
-    refreshState.onSettled = options.onSettled;
-    return { refresh, busy: refreshState.busy, jobId: refreshState.jobId };
-  },
-}));
 
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
@@ -51,11 +39,8 @@ async function renderPage(params: Record<string, string> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  refreshState.busy = false;
-  refreshState.jobId = null;
   list.fetchInstrumentsPage.mockResolvedValue(instrumentPage());
   list.fetchInstrumentTypeCounts.mockResolvedValue({ stock: 6, mutual_fund: 3, etf: 2 });
-  server.fetchLatestPriceJobId.mockResolvedValue('job-9');
   api.GET.mockResolvedValue({ data: [] });
   api.POST.mockResolvedValue({ data: instrument({ id: 'new', name: 'Bajaj Housing Finance' }) });
   api.PUT.mockResolvedValue({ data: instrument() });
@@ -205,27 +190,10 @@ describe('/ds/investments/instruments: filters go to the URL', () => {
 });
 
 describe('/ds/investments/instruments: prices line', () => {
-  it('starts a refresh and reloads the page when the job ends', async () => {
+  it('names the price sources with no refresh button or job link', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh prices' }));
-    expect(refresh).toHaveBeenCalled();
-    act(() => refreshState.onSettled?.());
-    expect(router.refresh).toHaveBeenCalled();
-  });
-
-  it('links View job to the newest price job in Settings → Activity', async () => {
-    await renderPage();
-    expect(screen.getByRole('link', { name: 'View job' })).toHaveAttribute('href', '/ds/settings/activity?job=job-9');
-  });
-
-  it('links the job this session started, and hides View job when none ever ran', async () => {
-    refreshState.jobId = 'job-new';
-    const { unmount } = await renderPage();
-    expect(screen.getByRole('link', { name: 'View job' })).toHaveAttribute('href', '/ds/settings/activity?job=job-new');
-    unmount();
-    refreshState.jobId = null;
-    server.fetchLatestPriceJobId.mockResolvedValue(null);
-    await renderPage();
+    expect(screen.getByText('Prices from Yahoo (stocks, ETFs) and AMFI (funds)')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Refresh prices' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'View job' })).toBeNull();
   });
 });

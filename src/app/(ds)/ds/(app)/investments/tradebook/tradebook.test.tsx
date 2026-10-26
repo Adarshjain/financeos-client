@@ -165,8 +165,8 @@ describe('/ds/investments/tradebook: rows', () => {
 describe('/ds/investments/tradebook: the jobs line', () => {
   it('links each View job to that exact job in Settings → Activity', async () => {
     await renderPage();
-    expect(screen.getByText(/Last import 13 Oct, 11:02 · 14 trades/)).toBeTruthy();
-    expect(screen.getByText(/Last reconcile 13 Oct, 11:02/)).toBeTruthy();
+    expect(screen.getByText(/Last import 13 Oct, 11:02 am · 14 trades/)).toBeTruthy();
+    expect(screen.getByText(/Last reconcile 13 Oct, 11:02 am/)).toBeTruthy();
     const links = screen.getAllByRole('link', { name: 'View job' });
     expect(links.map((l) => l.getAttribute('href'))).toEqual(['/ds/settings/activity?job=job-1', '/ds/settings/activity?job=job-2']);
   });

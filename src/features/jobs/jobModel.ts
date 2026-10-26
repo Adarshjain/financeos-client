@@ -17,7 +17,7 @@ export function isActiveJob(status: JobStatus): boolean {
   return status === 'PENDING' || status === 'RUNNING';
 }
 
-/** "14:02" for a job started today, "12 Oct 09:00" for an older one. */
+/** "2:02 pm" for a job started today, "12 Oct 9:00 am" for an older one. */
 export function jobTimeLabel(createdAt: string, now: Date = new Date()): string {
   const created = new Date(createdAt);
   if (Number.isNaN(created.getTime())) return '—';

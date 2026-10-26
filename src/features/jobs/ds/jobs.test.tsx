@@ -39,7 +39,7 @@ describe('JobBox', () => {
     const onExpandedChange = vi.fn();
     render(<JobBox job={job()} expanded={false} onExpandedChange={onExpandedChange} />);
     expect(screen.getByText('Succeeded')).toBeInTheDocument();
-    expect(screen.getByTestId('job-time').textContent).toMatch(/^\d{2}:\d{2}$/);
+    expect(screen.getByTestId('job-time').textContent).toMatch(/^\d{1,2}:\d{2} (am|pm)$/);
     expect(screen.getByTestId('job-duration')).toHaveTextContent('6s');
     fireEvent.click(screen.getByRole('button', { name: 'Expand details' }));
     expect(onExpandedChange).toHaveBeenCalledWith(true);
@@ -54,7 +54,7 @@ describe('JobBox', () => {
     render(<JobBox job={job({ status: 'RUNNING', createdAt: '2025-01-12T09:00:00Z' })} expanded={false} onExpandedChange={vi.fn()} />);
     expect(screen.queryByRole('button', { name: /details/ })).toBeNull();
     expect(screen.getByText('Running')).toBeInTheDocument();
-    expect(screen.getByTestId('job-time').textContent).toMatch(/^12 Jan \d{2}:\d{2}$/);
+    expect(screen.getByTestId('job-time').textContent).toMatch(/^12 Jan \d{1,2}:\d{2} (am|pm)$/);
   });
 });
 
@@ -170,7 +170,7 @@ describe('GmailSyncResult', () => {
     render(<GmailSyncResult result={fullResult} />);
     expect(screen.getByText('Gmail sync summary')).toBeInTheDocument();
     expect(screen.getByText('arjun.mehta@gmail.test')).toBeInTheDocument();
-    expect(screen.getByText(/New mail since 12\/10\/2026, 09:00 · backfilled to 01\/10\/2026/)).toBeInTheDocument();
+    expect(screen.getByText(/New mail since 12\/10\/2026, 9:00 am · backfilled to 01\/10\/2026/)).toBeInTheDocument();
     expect(screen.getByText('Gmail returned 14 emails, 14 new')).toBeInTheDocument();
     expect(screen.queryByText('a@x.test')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /Senders checked \(2\)/ }));
@@ -222,7 +222,7 @@ describe('GmailSyncResult', () => {
     render(<GmailSyncResult result={fullResult} />);
     const failed = group('failed');
     expect(failed).toHaveTextContent('Could not open the PDF');
-    expect(failed).toHaveTextContent('Attempt 2 · next retry 20/10/2026, 15:00');
+    expect(failed).toHaveTextContent('Attempt 2 · next retry 20/10/2026, 3:00 pm');
     expect(failed).toHaveTextContent('File: statement.pdf');
     expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/ds/settings/connections');
     expect(screen.getByRole('link', { name: 'Import manually' })).toBeInTheDocument();

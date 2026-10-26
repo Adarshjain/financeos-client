@@ -4,7 +4,7 @@ import { Badge, Card, CardHeader, CardSubtitle, CardTitle, ListRow, Text } from 
 
 import { type HealthRow, maskedKey } from './aiModel';
 
-/** Model health: Ready, No key, or "Cooldown until hh:mm". */
+/** Model health: Ready, No key, or "Cooldown until 3:30 pm". */
 export function HealthCard({ rows }: { rows: HealthRow[] }) {
   return (
     <Card>
