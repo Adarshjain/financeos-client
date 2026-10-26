@@ -1,8 +1,9 @@
 // Pure helpers for the "View underlying data" dialog: query params, labels,
 // value formatting and the CSV file name.
 
+import { formatCell } from '@/features/reports/view/cells';
 import { formatDateRangeForFilename, todayInAppZone } from '@/lib/date-range';
-import type { SortClause, TableRow } from '@/lib/reports.types';
+import type { SortClause, TableColumn, TableRow } from '@/lib/reports.types';
 import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import type { UnderlyingSource } from './underlying.types';
@@ -127,3 +128,40 @@ export function saveBlob(blob: Blob, filename: string): void {
   // Revoked on the next tick: some browsers still read the URL after click() returns.
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
+
+/**
+ * A group header's label: the group column's server label for the value when it has one,
+ * else the value title-cased, underscores as spaces ("credit_card" → "Credit Card").
+ */
+export function groupLabel(value: unknown, labels: Record<string, string> | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '—';
+  const label = labels?.[String(value)];
+  if (label !== undefined) return label;
+  return String(value)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+/** The group total for a group value, or undefined when there is none. */
+export function groupTotal(totals: Record<string, number> | null | undefined, value: unknown): number | undefined {
+  if (!totals || value === null || value === undefined) return undefined;
+  const total = totals[String(value)];
+  return typeof total === 'number' ? total : undefined;
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-10-13" as "13 Oct"; anything else as it came. */
+export function shortDate(value: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]}` : value;
+}
+
+/** A cell as this table prints it: dates as "13 Oct", everything else as every report table does. */
+export function cellText(value: unknown, column: TableColumn): string {
+  if (column.type === 'date' && typeof value === 'string' && value !== '') return shortDate(value);
+  return formatCell(value, column);
+}
+
+/** The column that names the row (the first that is not a date or a number); the first column otherwise. */
+export const mainIndexOf = (columns: TableColumn[]) => Math.max(columns.findIndex((c) => c.type !== 'date' && c.type !== 'number'), 0);

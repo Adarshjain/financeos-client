@@ -69,8 +69,21 @@ export function markPopNavigation() {
   popPending = true;
 }
 
+const routeCallbacks: Array<() => void> = [];
+
+/** Runs `fn` once, after the next route commit that lands on a different page. Survives the caller unmounting. */
+export function afterNextRoute(fn: () => void) {
+  routeCallbacks.push(fn);
+}
+
 /** A route committed at this pathname. */
 export function commitRoute(pathname: string) {
+  const before = cursor >= 0 ? entries[cursor] : null;
+  commitEntry(pathname);
+  if (entries[cursor] !== before) routeCallbacks.splice(0).forEach((fn) => fn());
+}
+
+function commitEntry(pathname: string) {
   const isPop = popPending;
   popPending = false;
   if (cursor >= 0 && entries[cursor] === pathname) return;
@@ -101,6 +114,7 @@ export function hasInAppHistory(): boolean {
 
 /** Test helper: forgets the in-app history. */
 export function resetInAppNavigation() {
+  routeCallbacks.length = 0;
   entries = [];
   cursor = -1;
   popPending = false;

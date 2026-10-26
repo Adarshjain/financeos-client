@@ -67,18 +67,19 @@ const kpi = (over: Partial<KpiData> = {}): KpiData => ({
 });
 
 describe('KPI result', () => {
-  it('shows the figure as whole rupees under its field label and aggregation', () => {
+  it('shows the figure as whole rupees under its plain field label, with no aggregation', () => {
     render(<ReportResult data={kpi()} catalog={catalog} />);
-    expect(screen.getByText('Spend · sum')).toBeInTheDocument();
+    expect(screen.getByText('Spend')).toBeInTheDocument();
+    expect(screen.queryByText(/sum|count/i)).toBeNull();
     expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
   });
 
   it('leaves the measure overline out for a widget (hideMeasure) and keeps it otherwise', () => {
     const { rerender } = render(<ReportResult data={kpi()} catalog={catalog} hideMeasure />);
-    expect(screen.queryByText('Spend · sum')).toBeNull();
+    expect(screen.queryByText('Spend')).toBeNull();
     expect(screen.getByText('₹1,84,320')).toBeInTheDocument();
     rerender(<ReportResult data={kpi()} catalog={catalog} />);
-    expect(screen.getByText('Spend · sum')).toBeInTheDocument();
+    expect(screen.getByText('Spend')).toBeInTheDocument();
   });
 
   it('the figure is a button that calls onOpenKpi when given one, and plain text otherwise', async () => {
@@ -255,8 +256,27 @@ describe('aggregated table result', () => {
   it('sorts by a measure when there are no pivot columns', async () => {
     const onSortChange = vi.fn();
     render(<ReportResult data={pivot(false)} catalog={catalog} onSortChange={onSortChange} sort={null} />);
-    await user.click(within(screen.getByRole('columnheader', { name: /Sum of Spend/ })).getByRole('button'));
+    await user.click(within(screen.getByRole('columnheader', { name: /Spend/ })).getByRole('button'));
     expect(onSortChange).toHaveBeenCalledWith({ key: 'spend_sum', direction: 'asc' });
+  });
+
+  it('names a measure column by its plain field, never "(Sum)" or "Sum of"', () => {
+    const data = pivot(false);
+    data.measures = [{ ...data.measures[0], label: 'Spend (Sum)' }];
+    render(<ReportResult data={data} catalog={catalog} />);
+    expect(screen.getByRole('columnheader', { name: 'Spend' })).toBeInTheDocument();
+    expect(screen.queryByText(/sum/i)).toBeNull();
+  });
+
+  it('keeps the server label only when the same field is aggregated twice', () => {
+    const data = pivot(false);
+    data.measures = [
+      { key: 'spend_sum', field: 'spend', aggregation: 'sum', label: 'Spend (Sum)', format: 'currency' },
+      { key: 'spend_avg', field: 'spend', aggregation: 'avg', label: 'Spend (Average)', format: 'currency' },
+    ];
+    render(<ReportResult data={data} catalog={catalog} />);
+    expect(screen.getByRole('columnheader', { name: 'Spend (Sum)' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Spend (Average)' })).toBeInTheDocument();
   });
 
   it('shows one column per pivot value and sorts only by the group-by when pivoted', async () => {

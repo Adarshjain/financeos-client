@@ -3,13 +3,14 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { commitRoute, resetInAppNavigation } from '@/features/shell/navigationStore';
 import type { KpiData, ReportData, ReportResponse, TableData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { catalogFixture, savedChart } from './editor.fixtures';
 import { ReportEditor, type ReportEditorProps } from './ReportEditor';
 
-const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
+const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), back: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/reports/new', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
@@ -62,6 +63,7 @@ const tableResult: TableData = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  resetInAppNavigation();
   api.GET.mockResolvedValue({ data: undefined });
   api.POST.mockImplementation(async (path: string) => {
     if (path === RUN) return { data: kpiResult };
@@ -163,7 +165,7 @@ describe('KPI options and save', () => {
       datasource: 'transactions',
       definition: { measure: 'spend', aggregation: 'sum', filters: [{ field: 'isExcluded', operator: 'is', value: false }], comparison: { enabled: false } },
     });
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/ds/reports/new1'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
     expect(router.refresh).toHaveBeenCalled();
     expect(toast).toHaveBeenCalledWith('Report created');
   });
@@ -664,7 +666,7 @@ describe('A saved report', () => {
     expect(screen.getByRole('combobox', { name: 'Datasource' })).toBeDisabled();
   });
 
-  it('saves changes in place, then clears the unsaved label', async () => {
+  it('saves changes, then goes back to the list on a direct load', async () => {
     setup(props());
     await type('Report name', 'Spend by category v2');
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
@@ -677,7 +679,60 @@ describe('A saved report', () => {
     });
     await waitFor(() => expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument());
     expect(toast).toHaveBeenCalledWith('Report saved');
-    expect(router.replace).not.toHaveBeenCalled();
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
+    expect(router.back).not.toHaveBeenCalled();
+    expect(router.refresh).toHaveBeenCalled();
+  });
+
+  it('goes back to where it was opened from (a dashboard) after a save, refreshing it', async () => {
+    commitRoute('/ds/dashboards');
+    commitRoute('/ds/reports/r1');
+    setup(props());
+    await type('Report name', 'From the dashboard');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(router.push).not.toHaveBeenCalled();
+    expect(router.refresh).toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith('Report saved');
+  });
+
+  it('refreshes the page it lands on after going back, not the editor', async () => {
+    commitRoute('/ds/reports');
+    commitRoute('/ds/reports/r1');
+    setup(props());
+    await type('Report name', 'Fresh landing');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    const before = router.refresh.mock.calls.length;
+    act(() => commitRoute('/ds/reports'));
+    expect(router.refresh.mock.calls.length).toBe(before + 1);
+  });
+
+  it('stays on the editor when the draft is edited while the save is in flight', async () => {
+    commitRoute('/ds/reports');
+    commitRoute('/ds/reports/r1');
+    let finish: (v: unknown) => void = () => undefined;
+    api.PUT.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    setup(props());
+    await type('Report name', 'First name');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(api.PUT).toHaveBeenCalledTimes(1));
+    await type('Report name', ' and more');
+    await act(async () => finish({ data: savedChart }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Report saved'));
+    expect(router.back).not.toHaveBeenCalled();
+    expect(router.push).not.toHaveBeenCalled();
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+  });
+
+  it('does not ask about unsaved changes when a save leaves the page', async () => {
+    commitRoute('/ds/reports');
+    commitRoute('/ds/reports/r1');
+    setup(props());
+    await type('Report name', 'Quiet leave');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(screen.queryByText('Leave without saving?')).not.toBeInTheDocument();
   });
 
   it('shows the new name in the title after saving', async () => {
@@ -704,7 +759,7 @@ describe('A saved report', () => {
     await waitFor(() => expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument());
   });
 
-  it('saves as a new report and goes to it', async () => {
+  it('saves as a new report and goes back', async () => {
     setup(props());
     await type('Report name', 'Copy of it');
     await user.click(screen.getByRole('button', { name: 'More actions' }));
@@ -712,7 +767,7 @@ describe('A saved report', () => {
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body()).toMatchObject({ name: 'Copy of it', type: 'CHART', datasource: 'transactions' });
     expect(api.PUT).not.toHaveBeenCalled();
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/ds/reports/new1'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
   });
 
   it('duplicates the saved report and offers Undo, which deletes the copy', async () => {

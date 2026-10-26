@@ -335,7 +335,9 @@ function aggSortKeys(catalog: DatasourceCatalog, rows: DimensionDraft[], columns
   if (fieldNames(columns).length === 0) {
     for (const m of measures) {
       if (!m.field || !m.aggregation) continue;
-      keys.push({ key: aggregatedColumnKey(m.field, m.aggregation), label: `${AGGREGATION_LABELS[m.aggregation]} · ${label(m.field)}` });
+      // The plain field name; the aggregation shows only when the same field is aggregated twice (else two identical options).
+      const twice = measures.filter((o) => o.field === m.field).length > 1;
+      keys.push({ key: aggregatedColumnKey(m.field, m.aggregation), label: twice ? `${AGGREGATION_LABELS[m.aggregation]} · ${label(m.field)}` : label(m.field) });
     }
   }
   return keys;

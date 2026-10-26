@@ -133,13 +133,10 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await page.getByRole('radio', { name: 'Chart' }).click();
     await expect(page.getByLabel('Show top')).toHaveValue('5');
 
-    // Create writes the report and opens it at its own address.
+    // Create writes the report and takes the visitor back to the list it was opened from, which shows it.
     await page.getByRole('button', { name: 'Create report' }).click();
-    await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/, { timeout: 45_000 });
-    await expect(page.getByLabel('Report name')).toHaveValue(
-      'Ds editor spend by category'
-    );
-    await expect(page.getByText('Unsaved changes')).toHaveCount(0);
+    await page.waitForURL(/\/ds\/reports$/, { timeout: 45_000 });
+    await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Reopened from the list: format and datasource are fixed, the saved settings are back.
     await page.goto('/ds/reports');
@@ -172,11 +169,10 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/ds\/reports\/[0-9a-f-]{36}$/);
 
-    // Saving clears the label and the question.
+    // Saving goes back to the list without asking about unsaved changes.
     await page.getByRole('button', { name: 'Save report' }).click();
-    await expect(page.getByText('Unsaved changes')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Cancel' }).click();
     await page.waitForURL(/\/ds\/reports$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // The saved Top N stuck.
     await page
@@ -184,6 +180,15 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       .getByText('Ds editor spend by category', { exact: true })
       .click();
     await expect(page.getByLabel('Show top')).toHaveValue('8');
+
+    // Opened from the list by a click, a rename saved here shows on the list it goes back to (fresh, not cached).
+    await page.getByLabel('Report name').fill('Ds editor renamed report');
+    await page.getByRole('button', { name: 'Save report' }).click();
+    await page.waitForURL(/\/ds\/reports$/);
+    await expect(page.getByRole('table').getByText('Ds editor renamed report', { exact: true })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toHaveCount(0);
+    await page.getByRole('table').getByText('Ds editor renamed report', { exact: true }).click();
+    await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/);
 
     // Delete asks first; afterwards the list (not a cached copy of it) no longer shows the report.
     await page.getByRole('button', { name: 'More actions' }).click();
@@ -214,7 +219,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       page.getByRole('combobox', { name: 'Datasource' })
     ).toContainText('Dividends');
     await page.getByRole('button', { name: 'Create report' }).click();
-    await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/, { timeout: 45_000 });
+    await page.waitForURL(/\/ds\/reports$/, { timeout: 45_000 });
   });
 
   test('opens the rows behind a KPI from the Underlying data link', async ({

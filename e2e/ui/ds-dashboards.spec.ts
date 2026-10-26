@@ -225,6 +225,15 @@ for (const viewport of VIEWPORTS) {
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
       await page.getByRole('menuitem', { name: 'Edit report' }).click();
       await expect(page).toHaveURL(new RegExp(`/ds/reports/${report.id}`));
+
+      // Saving from there goes back to the dashboard it was opened from, not to the list.
+      const renamed = `Ds Dash KPI renamed ${Date.now()}`;
+      await page.getByLabel('Report name').fill(renamed);
+      await page.getByRole('button', { name: 'Save report' }).click();
+      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}`), { timeout: 45_000 });
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      // The dashboard it lands on is fresh: the widget shows the new name.
+      await expect(widgetCard(page, 'wr').getByText(renamed)).toBeVisible({ timeout: 45_000 });
     });
 
     test('Set as default makes it the default, and the button then clears it', async ({ page }) => {
@@ -337,6 +346,30 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(/make(s)? up this figure|No (rows|transactions)/i).first()).toBeVisible({ timeout: 45_000 });
     });
 
+    test('Net worth underlying: grouped tables with totals, a row opens its breakdown, Back returns', async ({ page }) => {
+      test.slow();
+      const api = makeApi(currentUser.cookie);
+      const accountName = `NW Group Bank ${Date.now()}`;
+      const account = await createBankAccount(api, { name: accountName });
+      await createTransaction(api, account.id, { amount: 5000, description: 'NW group credit' });
+      const { dashboard } = await seedBoard();
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
+      const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
+      await expect(dialog).toBeVisible({ timeout: 45_000 });
+      const groups = dialog.getByTestId('underlying-groups');
+      await expect(groups).toBeVisible({ timeout: 45_000 });
+      await expect(groups.getByRole('region').first()).toBeVisible();
+      // Each group's heading carries its total.
+      await expect(groups.getByRole('region').first().getByRole('heading')).toContainText('₹');
+      await groups.getByText(accountName).first().click();
+      await expect(dialog.getByRole('button', { name: 'Back' })).toBeVisible({ timeout: 45_000 });
+      await expect(dialog.getByRole('button', { name: 'Download CSV' })).toHaveCount(0);
+      await dialog.getByRole('button', { name: 'Back' }).click();
+      await expect(groups).toBeVisible();
+      await expect(dialog.getByRole('button', { name: 'Download CSV' })).toBeVisible();
+    });
+
     test('chart widget: tapping a bar opens "Underlying data · <widget>" filtered to that bar', async ({ page }) => {
       test.slow();
       const { dashboard, name, categories, rows } = await seedSplitBoard('bar');
@@ -366,6 +399,28 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });
       await expect(dialog.getByText(rows[categories[0]]).first()).toBeVisible();
       await expect(dialog.getByText(rows[categories[1]])).toHaveCount(0);
+    });
+
+    /** Space under the last widget: what the page content leaves below it, plus the page's bottom padding. */
+    const spaceBelowLast = (page: Page) =>
+      page.evaluate(() => {
+        const items = [...document.querySelectorAll('[data-widget-grid-item]')];
+        const last = items[items.length - 1];
+        const wrapper = last.parentElement!.parentElement!;
+        const main = document.querySelector('main')!;
+        return Math.round(wrapper.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom + parseFloat(getComputedStyle(main).paddingBottom));
+      });
+
+    test('the page ends a normal gutter below the last widget, viewing and editing (phone keeps the tab bar clearance)', async ({ page }) => {
+      const { dashboard } = await seedBoard();
+      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
+      // Phone: the tab bar clearance (88px); desktop: the 24px page gutter.
+      expect(await spaceBelowLast(page)).toBeLessThanOrEqual(phone ? 96 : 32);
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await expect(page.locator('[data-widget-grid-grip]').first()).toBeVisible();
+      // Editing adds the "Add a widget" row (about 56px) and, on desktop, room above the floating Save bar; no double clearance on a phone.
+      expect(await spaceBelowLast(page)).toBeLessThanOrEqual(phone ? 150 : 135);
     });
 
     test('edit: tapping a bar opens nothing', async ({ page }) => {

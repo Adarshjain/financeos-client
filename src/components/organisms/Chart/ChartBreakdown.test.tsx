@@ -42,21 +42,21 @@ const headers = () => screen.getAllByRole('columnheader').map((h) => h.textConte
 const cell = (text: string) => screen.getAllByText(text)[0];
 
 describe('ChartBreakdown columns', () => {
-  it('shows rank, label, amount and share by default, with no change without a comparison', () => {
+  it('shows label, amount and share by default, with no change without a comparison', () => {
     view();
-    expect(headers()).toEqual(['#', 'Category', 'Amount', 'Share']);
+    expect(headers()).toEqual(['Category', 'Amount', 'Share']);
     expect(screen.getByText('₹400')).toBeInTheDocument();
     expect(cell('57%')).toBeInTheDocument();
   });
 
   it('adds the change column by default when the data compares', () => {
     view({}, compared());
-    expect(headers()).toEqual(['#', 'Category', 'Amount', 'Share', 'vs prev']);
+    expect(headers()).toEqual(['Category', 'Amount', 'Share', 'vs prev']);
   });
 
   it('shows the chosen columns in the fixed order whatever order they are given', () => {
     view({ columns: ['avg', 'count', 'amount'] });
-    expect(headers()).toEqual(['#', 'Category', 'Amount', 'Txns', 'Avg']);
+    expect(headers()).toEqual(['Category', 'Amount', 'Txns', 'Avg']);
     expect(screen.getByText('20')).toBeInTheDocument();
     expect(screen.getByText('₹33')).toBeInTheDocument();
   });
@@ -65,7 +65,7 @@ describe('ChartBreakdown columns', () => {
     const d = data();
     d.breakdown = { ...d.breakdown!, total: null };
     view({ columns: ['amount', 'share'] }, d);
-    expect(headers()).toEqual(['#', 'Category', 'Amount']);
+    expect(headers()).toEqual(['Category', 'Amount']);
     expect(screen.queryByText('Total', { exact: false })).not.toBeInTheDocument();
   });
 
@@ -73,13 +73,13 @@ describe('ChartBreakdown columns', () => {
     const d = data();
     d.breakdown = { ...d.breakdown!, total: 0 };
     view({ columns: ['amount', 'share'], bars: 'share_of_total' }, d);
-    expect(headers()).toEqual(['#', 'Category', 'Amount']);
+    expect(headers()).toEqual(['Category', 'Amount']);
     expect(screen.getAllByRole('progressbar').map((b) => Number(b.getAttribute('aria-valuenow')))).toEqual([100, 50, 25]);
   });
 
   it('labels the first column with the rows’ dimension', () => {
     view({ rowsLabel: 'Merchant' });
-    expect(headers()[1]).toBe('Merchant');
+    expect(headers()[0]).toBe('Merchant');
   });
 
   it('shows the total in the footer', () => {
@@ -214,11 +214,12 @@ describe('ChartBreakdown Other row', () => {
     expect(screen.queryByText('Other thing · 4 txns')).not.toBeInTheDocument();
   });
 
-  it('numbers the rows above it from 1', () => {
+  it('has no rank column: the label column leads and takes the remaining width', () => {
     view();
-    expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.queryByText('3')).not.toBeInTheDocument();
+    expect(headers()).not.toContain('#');
+    expect(screen.queryByText('1')).not.toBeInTheDocument();
+    const grid = document.querySelector<HTMLElement>('[style*="--grid-template"]')!;
+    expect(grid.style.getPropertyValue('--grid-template')).toMatch(/^var\(--ds-control-md\) minmax\(0, 1fr\) /);
   });
 });
 
