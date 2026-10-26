@@ -38,6 +38,8 @@ export interface DraftResult {
   reportName?: string;
   widgetId?: string;
   dashboardId?: string;
+  /** The Home dashboard was made by this save (the user had no default), so Undo deletes it. */
+  createdDashboard?: boolean;
 }
 
 /** A message as the server stores and returns it. */

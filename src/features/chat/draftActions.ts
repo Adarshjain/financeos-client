@@ -1,8 +1,8 @@
 import { api } from '@/lib/api/client';
-import { reportWidgetResponse } from '@/lib/dashboards.helpers';
+import { reportWidgetResponse, toDashboardWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { putWidgets } from '@/lib/query/hooks/useDashboards';
-import type { ReportDefinition, ReportResponse, ReportSummaryResponse, ReportType } from '@/lib/reports.types';
+import type { ReportData, ReportDefinition, ReportResponse, ReportSummaryResponse, ReportType } from '@/lib/reports.types';
 
 import type { ChatReportDraft } from './chat.types';
 
@@ -23,6 +23,16 @@ export async function saveDraftAsReport(draft: ChatReportDraft): Promise<ReportR
   });
   if (!data) throw new Error("Couldn't save the report. Try again.");
   return data as unknown as ReportResponse;
+}
+
+/** Runs the draft's definition for the card's preview (the browser client, like the writes: a server action here could hang). */
+export async function runDraftPreview(draft: ChatReportDraft): Promise<ReportData> {
+  const { data } = await api.POST('/api/v1/reports/data', {
+    params: { query: {} },
+    body: { type: draft.type as ReportType, datasource: draft.datasource!, definition: { ...(draft.definition as ReportDefinition) } } as never,
+  });
+  if (!data) throw new Error("Couldn't load the preview.");
+  return data as unknown as ReportData;
 }
 
 export async function getReport(id: string): Promise<ReportResponse> {
@@ -74,4 +84,18 @@ export async function removeWidgetFrom(dashboardId: string, widgetId: string): P
   const current = await freshDashboard(dashboardId);
   if (!current.widgets.some((w) => w.id === widgetId)) return null;
   return putWidgets(current, current.widgets.filter((w) => w.id !== widgetId));
+}
+
+/** Creates the default dashboard "Home" holding just this report's widget (for a user with no default). */
+export async function createHomeWithReport(report: Pick<ReportResponse, 'id' | 'name' | 'type'>): Promise<{ saved: DashboardResponse; widgetId: string }> {
+  const widget = reportWidgetResponse([], report);
+  const { data } = await api.POST('/api/v1/dashboards', { body: { name: 'Home', isDefault: true, widgets: [toDashboardWidget(widget)] } });
+  if (!data) throw new Error("Couldn't create the dashboard.");
+  const saved = data as DashboardResponse;
+  const added = saved.widgets.find((w) => w.reportId === report.id) ?? saved.widgets[0];
+  return { saved, widgetId: (added ?? widget).id };
+}
+
+export async function removeDashboard(id: string): Promise<void> {
+  await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } });
 }
