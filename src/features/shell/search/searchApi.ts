@@ -10,12 +10,22 @@ import { notifyIfSessionExpired } from '@/lib/authExpiry';
 export const SEARCH_MIN_CHARS = 3;
 export const SEARCH_MAX_CHARS = 100;
 
+/** A credit card's unpaid bill. */
+export interface SearchOpenBill {
+  statementId: string;
+  remainingAmount: number;
+  /** Calendar date, YYYY-MM-DD. */
+  paymentDueDate: string | null;
+}
+
 export interface SearchAccount {
   id: string;
   name: string;
   bank: string | null;
   type: string;
   last4: string | null;
+  /** Credit cards only; null (or absent) when nothing is unpaid. */
+  openBill?: SearchOpenBill | null;
 }
 
 export interface SearchTransaction {

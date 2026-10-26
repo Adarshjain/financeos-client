@@ -448,6 +448,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude + implementers · Search round 2: `?txn=<id>` opens a transaction on Transactions (closes on 404/403 only); account actions (Add transaction on X, Upload X statement, Mark X bill paid via server 7aac55a openBill); 1–2 char nudge (SearchPalette `hint`); TopBarAction `phoneOnly`; cache reset on open; Add transaction applies defaultAccountId once accounts load; ListRow asChild resolves lazy server children. Deviations: card row shows the bare amount (no "you owe" string exists).
 - 2026-10-26 · Phase 3 · Claude + implementers · App-wide search round 1: server 2e9e58c (GET /api/v1/search, V112 idx_txn_user_date; 50k txns ≈10 ms); client SearchProvider (Rail field, phone TopBar button, ⌘K), useGlobalSearch (200 ms debounce, abort, cache), Quick add handlers moved to quickAdd.ts; ListRow trailing tabular-nums. Next: ?txn deep link, account actions, nudge, TopBar phone-only. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Glass tuned to 40% (owner picked from shots; e333f066) + `bg-glass-strong` 85% for SelectionBar; dev FS cache off (ffc2b8d4). Measure-label and NW kind-chips Qs closed. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Glass (bg-glass 40% + bg-glass-strong 85% for SelectionBar, blur-glass 24px, saturate-glass 1.8; glass: variant) on TopBar, TabBar, sticky SectionHeader, SelectionBar; Attention rows one link (a343a1eb); Settings Legacy link. Phone sheet footer left solid (not overlaid).

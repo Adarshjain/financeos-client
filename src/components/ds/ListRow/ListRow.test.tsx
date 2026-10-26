@@ -192,4 +192,20 @@ describe('ListField', () => {
       expect(screen.getByTestId('t').parentElement).toHaveClass('shrink-0', 'items-center');
     });
   });
+
+  it('renders asChild when the child arrives as a resolved React lazy reference (server page streaming)', () => {
+    const lazyChild = {
+      $$typeof: Symbol.for('react.lazy'),
+      _payload: { status: 'fulfilled', value: <a href="#" data-testid="lazy-link" /> },
+      _init: (payload: { value: React.ReactNode }) => payload.value,
+    } as unknown as React.ReactNode;
+    render(
+      <ListRow asChild title="Offline" subtitle="/ds/offline">
+        {lazyChild}
+      </ListRow>,
+    );
+    const link = screen.getByTestId('lazy-link');
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveTextContent('Offline');
+  });
 });

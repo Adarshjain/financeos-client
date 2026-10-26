@@ -17,6 +17,7 @@ The ⌘K search over everything: accounts, actions, transactions, pages and Ask 
 - `value`, `defaultValue`, `onValueChange`: the search text.
 - `groups: { id, label, meta?, items: { id, title, leading?, trailing?, disabled?, onSelect }[] }[]`.
 - `loading?: boolean`.
+- `hint?: ReactNode`: a muted `caption` line (ink-3) above the results, shown whatever the results are (the app uses it to nudge a too-short search). The words come from the app.
 - `shortcutKey?: string`: ⌘ / Ctrl + this key toggles the palette anywhere on the page (the app passes `"k"`).
 - Overridable words: `placeholder` ("Search…"), `emptyLabel` (`(query) => …`), `cancelLabel` ("Cancel"), `moveLabel` ("move"), `openLabel` ("open"), `srTitle` ("Search").
 

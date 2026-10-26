@@ -48,6 +48,8 @@ export interface SearchPaletteProps {
   /** ⌘ / Ctrl + this key toggles the palette from anywhere on the page. */
   shortcutKey?: string;
   placeholder?: string;
+  /** A muted line above the results (a nudge from the app), shown whatever the results are. */
+  hint?: React.ReactNode;
   /** Shown when there is search text and no results. Default: No results for "xyz". */
   emptyLabel?: (query: string) => React.ReactNode;
   cancelLabel?: React.ReactNode;
@@ -72,6 +74,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
       defaultValue = '',
       onValueChange,
       groups,
+      hint,
       loading = false,
       shortcutKey,
       placeholder = 'Search…',
@@ -166,6 +169,11 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
             </div>
 
             <DialogBody className="gap-0 p-space-6">
+              {hint && (
+                <Text as="p" variant="caption" tone="ink-3" className="px-space-16 py-space-8">
+                  {hint}
+                </Text>
+              )}
               <div ref={listRef} role="listbox">
                 {loading ? (
                   <div data-loading="" className="flex flex-col gap-space-12 px-space-16 py-space-12">

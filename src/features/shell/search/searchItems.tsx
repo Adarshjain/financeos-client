@@ -4,6 +4,8 @@ import { Icon, type SearchPaletteGroup, type SearchPaletteItem } from '@/compone
 import type { IconName } from '@/components/ds/Icon/Icon';
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { ALL_TIME, DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
+import { supportsIngestion } from '@/lib/account.types';
+import type { AccountType } from '@/lib/types';
 
 import { appHref } from '../routes';
 import { SearchAmount } from './SearchAmount';
@@ -33,6 +35,23 @@ export interface SearchItemsInput {
   actions: SearchAction[];
   /** Goes to an app URL (already resolved through appHref). */
   go: (href: string) => void;
+  /** Opens Add transaction with this account picked. */
+  onAddTransaction: (accountId: string) => void;
+  /** Opens Mark paid for a card's unpaid bill. */
+  onMarkBillPaid: (bill: { statementId: string; cardName: string; remaining: number }) => void;
+}
+
+/** The Transactions page with this transaction's detail open. */
+export function transactionHref(id: string): string {
+  return transactionsUrl({ ...DEFAULT_QUERY, txn: id });
+}
+
+/** The nudge while the text is 1 or 2 characters long: server groups wait for 3. */
+export const SEARCH_HINT = 'Type 3 or more characters to search accounts, transactions and more';
+
+export function searchHint(query: string): string | undefined {
+  const length = query.trim().length;
+  return length > 0 && length < SEARCH_MIN_CHARS ? SEARCH_HINT : undefined;
 }
 
 /** The Transactions page for `q` over all time. */
@@ -51,7 +70,7 @@ const matches = (label: string, needle: string) => !needle || label.toLowerCase(
  * Dashboards, Pages, Ask. Pages and Actions filter on the text from its first character; the server
  * groups show only once the text has SEARCH_MIN_CHARS characters and an answer has arrived.
  */
-export function buildSearchGroups({ query, result, pages, actions, go }: SearchItemsInput): SearchPaletteGroup[] {
+export function buildSearchGroups({ query, result, pages, actions, go, onAddTransaction, onMarkBillPaid }: SearchItemsInput): SearchPaletteGroup[] {
   const text = query.trim();
   const needle = text.toLowerCase();
   const server = text.length >= SEARCH_MIN_CHARS ? result : null;
@@ -65,7 +84,7 @@ export function buildSearchGroups({ query, result, pages, actions, go }: SearchI
     id: `transactions:${t.id}`,
     title: joinTitle([t.description, formatDayMonth(t.date)]),
     trailing: <SearchAmount amount={t.amount} />,
-    onSelect: () => go(transactionsSearchHref(t.description)),
+    onSelect: () => go(transactionHref(t.id)),
   }));
   if (transactions.length > 0) {
     transactions.push({
@@ -75,20 +94,63 @@ export function buildSearchGroups({ query, result, pages, actions, go }: SearchI
     });
   }
 
+  // The first matched account gets its own actions at the top of Actions, before the Quick add ones.
+  const first = server?.accounts[0];
+  const accountActions: SearchPaletteItem[] = first
+    ? [
+        {
+          id: `actions:add-on:${first.id}`,
+          title: `Add transaction on ${first.name}`,
+          leading: <Icon name="add" />,
+          onSelect: () => onAddTransaction(first.id),
+        },
+        ...(supportsIngestion(first.type.toLowerCase() as AccountType)
+          ? [
+              {
+                id: `actions:upload:${first.id}`,
+                title: `Upload a ${first.name} statement`,
+                leading: <Icon name="upload" />,
+                onSelect: () => go(appHref(`/transactions/import?account=${first.id}`)),
+              },
+            ]
+          : []),
+        ...(first.openBill
+          ? [
+              {
+                id: `actions:mark-paid:${first.id}`,
+                title: `Mark ${first.name} bill paid`,
+                leading: <Icon name="check" />,
+                onSelect: () =>
+                  onMarkBillPaid({
+                    statementId: first.openBill!.statementId,
+                    cardName: first.name,
+                    remaining: first.openBill!.remainingAmount,
+                  }),
+              },
+            ]
+          : []),
+      ]
+    : [];
+
   return [
     {
       id: 'accounts',
       label: 'Accounts',
-      items: (server?.accounts ?? []).map((a) =>
-        link(`accounts:${a.id}`, joinTitle([a.name, a.last4 ? `••${a.last4}` : null]), `/accounts/${a.id}`),
-      ),
+      items: (server?.accounts ?? []).map((a) => ({
+        ...link(`accounts:${a.id}`, joinTitle([a.name, a.last4 ? `••${a.last4}` : null]), `/accounts/${a.id}`),
+        // What is owed on a card with an unpaid bill, as a debit amount.
+        trailing: a.openBill ? <SearchAmount amount={-a.openBill.remainingAmount} /> : undefined,
+      })),
     },
     {
       id: 'actions',
       label: 'Actions',
-      items: actions
+      items: [
+        ...accountActions,
+        ...actions
         .filter((a) => matches(a.label, needle))
         .map((a) => ({ id: `actions:${a.id}`, title: a.label, leading: <Icon name={a.icon} />, disabled: a.disabled, onSelect: a.onSelect })),
+      ],
     },
     { id: 'transactions', label: 'Transactions', items: transactions },
     {

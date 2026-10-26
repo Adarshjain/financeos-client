@@ -69,6 +69,16 @@ export const WithPrimaryAction: Story = {
   },
 };
 
+export const PhoneOnlyAction: Story = {
+  args: {
+    title: 'Home',
+    actions: [
+      { id: 'search', icon: 'search', label: 'Search', phoneOnly: true, onSelect: fn() },
+      ...defaultActions.filter((a) => a.id !== 'search'),
+    ],
+  },
+};
+
 export const WithNotifications: Story = {
   args: {
     title: 'Home',

@@ -32,6 +32,8 @@ export interface TopBarAction {
   labelIconSize?: IconSize;
   asChild?: boolean;
   children?: React.ReactNode;
+  /** Shows the action in the phone layout only (hidden from `desk`), e.g. a button whose desktop twin is in the Rail. */
+  phoneOnly?: boolean;
   /** Draws a danger dot on the button (something unread). */
   dot?: boolean;
   /** Opens a dropdown from the button; never asChild. */
@@ -199,6 +201,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
 
               const buttonClasses = cn(
                 'shrink-0',
+                action.phoneOnly && 'desk:hidden',
                 hasLabel
                   ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,

@@ -27,6 +27,8 @@ export interface MarkPaidDialogProps {
   cardName: string;
   /** What is left to pay; null when the statement carries no amount. */
   remaining: number | null;
+  /** The bill was marked paid, or that was undone: what the caller holds about it is stale. */
+  onMarked?: () => void;
 }
 
 type Mode = 'full' | 'part';
@@ -46,6 +48,7 @@ export function MarkPaidDialog({
   statementId,
   cardName,
   remaining,
+  onMarked,
 }: MarkPaidDialogProps) {
   const router = useRouter();
   const { markPaid, unmarkPaid } = useBillMutations();
@@ -70,6 +73,7 @@ export function MarkPaidDialog({
       await unmarkPaid.mutateAsync(statementId);
       showToast('Payment mark removed');
       router.refresh();
+      onMarked?.();
     } catch (e) {
       showToast(getErrorMessage(e, 'Could not undo the payment mark'), { tone: 'danger' });
     }
@@ -106,6 +110,7 @@ export function MarkPaidDialog({
         action: { label: 'Undo', onSelect: undo },
       });
       router.refresh();
+      onMarked?.();
     } catch (e) {
       showToast(getErrorMessage(e, 'Could not mark the bill as paid'), { tone: 'danger' });
     }

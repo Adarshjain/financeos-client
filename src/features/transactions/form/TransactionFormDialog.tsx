@@ -77,6 +77,18 @@ export function TransactionFormDialog({
     };
   });
   const [errors, setErrors] = React.useState<FormErrors>({});
+  // The accounts may still be loading when Add opens from somewhere that does not have them (search, the shell):
+  // start on the wanted account once they arrive, unless one was picked meanwhile.
+  const [defaultPending, setDefaultPending] = React.useState(!transaction && defaultAccountId !== '' && values.accountId === '');
+  if (defaultPending) {
+    const start = getSelectableAccounts(accounts, undefined, today).find((a) => a.id === defaultAccountId);
+    if (start) {
+      setDefaultPending(false);
+      setValues((v) =>
+        v.accountId === '' ? { ...v, accountId: start.id, cardId: getDefaultCardIdForAccount(start) ?? NO_CARD } : v,
+      );
+    }
+  }
 
   const {
     localCategories,

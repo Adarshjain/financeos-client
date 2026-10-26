@@ -111,6 +111,7 @@ export function TransactionsView({
       router.push(
         transactionsUrl({
           ...query,
+          txn: null,
           ...(resetPage ? { page: 0 } : {}),
           ...patch,
         }),

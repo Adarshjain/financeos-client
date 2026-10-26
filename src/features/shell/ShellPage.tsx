@@ -89,7 +89,7 @@ export function ShellPage({
         onBack={onBack}
         actions={[
           notifications,
-          { id: 'search', icon: 'search' as const, label: 'Search', onSelect: openSearch },
+          { id: 'search', icon: 'search' as const, label: 'Search', phoneOnly: true, onSelect: openSearch },
           ...shellTopBarActions,
           ...(addMenu
             ? [
