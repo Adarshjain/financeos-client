@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogContent,
   Icon,
+  Kbd,
   ListRow,
   Rail,
   Switch,
@@ -19,9 +20,6 @@ import {
   Text,
 } from '@/components/ds';
 import { Logo } from '@/components/organisms';
-import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
-import { useAddTrade } from '@/features/shell/AddTradeProvider';
-import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
@@ -34,7 +32,9 @@ import {
   shellTabBarItems,
 } from './navigation';
 import { usePendingPath } from './navigationStore';
+import { useOpenQuickAddDialog } from './quickAdd';
 import { appHref, DS_HOME_HREF } from './routes';
+import { useSearch } from './search/SearchProvider';
 import { useHideOnScroll } from './useHideOnScroll';
 
 const subscribeNever = () => () => undefined;
@@ -83,9 +83,7 @@ export function ShellTabBar({
   const pendingPath = usePendingPath();
   const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
   const counts = useNavCounts();
-  const addLending = useAddLending();
-  const addTransaction = useAddTransaction();
-  const addTrade = useAddTrade();
+  const openQuickAdd = useOpenQuickAddDialog();
   const { hidden, setHidden } = useHideAmounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -129,7 +127,7 @@ export function ShellTabBar({
               </div>
               <div className="grid grid-cols-4 gap-space-8">
                 {shellQuickAddItems.map((item) =>
-                  item.dialog === 'transaction' ? (
+                  item.dialog ? (
                     <Button
                       key={item.id}
                       variant="secondary"
@@ -137,33 +135,7 @@ export function ShellTabBar({
                       icon={<Icon name={item.icon} size="lg" />}
                       onClick={() => {
                         setMoreOpen(false);
-                        addTransaction.open();
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  ) : item.dialog === 'lending' ? (
-                    <Button
-                      key={item.id}
-                      variant="secondary"
-                      layout="stacked"
-                      icon={<Icon name={item.icon} size="lg" />}
-                      onClick={() => {
-                        setMoreOpen(false);
-                        addLending.open();
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  ) : item.dialog === 'trade' ? (
-                    <Button
-                      key={item.id}
-                      variant="secondary"
-                      layout="stacked"
-                      icon={<Icon name={item.icon} size="lg" />}
-                      onClick={() => {
-                        setMoreOpen(false);
-                        addTrade.open();
+                        openQuickAdd(item.dialog!);
                       }}
                     >
                       {item.label}
@@ -296,6 +268,7 @@ export function ShellRail({
   const counts = useNavCounts();
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
+  const { open: openSearch } = useSearch();
 
   return (
     <Rail
@@ -310,6 +283,21 @@ export function ShellRail({
         })),
       }))}
       value={current}
+      search={
+        <Button
+          type="button"
+          variant="secondary"
+          size="md"
+          fullWidth
+          icon={<Icon name="search" size="md" />}
+          onClick={openSearch}
+        >
+          <span>Search</span>
+          <span className="ml-auto">
+            <Kbd>⌘K</Kbd>
+          </span>
+        </Button>
+      }
       brand={
         <Link href={DS_HOME_HREF}>
           <Logo variant="full" size="sm" />

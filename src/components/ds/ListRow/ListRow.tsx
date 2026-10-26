@@ -100,7 +100,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       const hasActions = actions && actions.length > 0;
       if (!trailing && !chevron && !hasActions) return null;
       return (
-        <div className="shrink-0 flex items-center gap-space-8 ml-auto">
+        <div className="shrink-0 flex items-center gap-space-8 ml-auto tabular-nums">
           {concealMoney(trailing)}
           {hasActions && (
             <MenuRoot>

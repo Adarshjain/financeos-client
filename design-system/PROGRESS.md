@@ -226,6 +226,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-26: App-wide search: groups Accounts, Actions, Transactions (5 newest over all time + See all), Holdings, Lending, Loans, Reports, Dashboards, Pages, Ask; server from 3 chars with a nudge to type more, Pages/Actions from 1 char; browser GET via /api/v1 proxy with abort (exception to server actions); `?txn=<id>` opens a transaction on Transactions (URL param approved); account-specific actions yes; ⌘J on Ask and "Type > for commands" dropped; TopBar gets a phone-only action option.
 - 2026-10-26: Report measure labels: a field aggregated twice keeps "Amount (Sum)" / "Amount (Average)" wording. Net worth underlying `kind` stays a column, no chips ("let Legacy be"). Dev server: Turbopack dev FS cache off (ffc2b8d4).
 - 2026-10-26: Top bar + phone tab bar: frosted glass (new generic tokens `bg-glass` = surface at 40% alpha (tuned from 85%, owner picked 40 over 55 after shots), `bg-glass-strong` 85% for SelectionBar, `blur-glass` 24px, `saturate-glass` 1.8; `glass:` variant falls back to solid `bg-surface` without backdrop-filter; default look, no prop) + sticky SectionHeader, SelectionBar (incl. dashboard/report edit action bars, both built from it); phone sheet footer not done (it is not overlaid by content, so glass would not show).
 - 2026-10-26: Dashboards, Reports, Rewards APPROVED (owner raises issues separately). /ds index is a temp page, not reviewed. Settings links Legacy beside Storybook. Hide amounts in RSC payload: declined, not an exposure.
@@ -447,6 +448,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude + implementers · App-wide search round 1: server 2e9e58c (GET /api/v1/search, V112 idx_txn_user_date; 50k txns ≈10 ms); client SearchProvider (Rail field, phone TopBar button, ⌘K), useGlobalSearch (200 ms debounce, abort, cache), Quick add handlers moved to quickAdd.ts; ListRow trailing tabular-nums. Next: ?txn deep link, account actions, nudge, TopBar phone-only. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Glass tuned to 40% (owner picked from shots; e333f066) + `bg-glass-strong` 85% for SelectionBar; dev FS cache off (ffc2b8d4). Measure-label and NW kind-chips Qs closed. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Glass (bg-glass 40% + bg-glass-strong 85% for SelectionBar, blur-glass 24px, saturate-glass 1.8; glass: variant) on TopBar, TabBar, sticky SectionHeader, SelectionBar; Attention rows one link (a343a1eb); Settings Legacy link. Phone sheet footer left solid (not overlaid).
 - 2026-10-26 · Phase 3 · Claude · Owner round: sticky under top bar, menu width rule, Net worth VUD groups Assets/Liabilities/Investments full width (server 9c1a543), widget ⋮ trimmed, Bills due rows read-only (client 00f2acdc). Open: Attention row actions (owner Q); server bills_due description still says "Mark paid".

@@ -6,7 +6,6 @@ import { ShellPage } from '@/features/shell/ShellPage';
 
 /** Boards in design-system/screens that have no /ds page yet: [page, area]. */
 const TO_BUILD: [string, string][] = [
-  ['Search', 'Home & dashboards'],
   ['Ask the data', 'Reports'],
 ];
 
