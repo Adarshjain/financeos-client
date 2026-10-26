@@ -56,6 +56,7 @@ function DataTableInner<Row extends RowData>(
     empty,
     skeletonRows,
     stickyHeader = true,
+    firstRowBorder = true,
     hideHeader = false,
     className,
     style,
@@ -101,6 +102,7 @@ function DataTableInner<Row extends RowData>(
           allSelected={allSelected}
           onHeaderCheckboxChange={handleHeaderCheckboxChange}
           stickyHeader={stickyHeader}
+          closed={!firstRowBorder}
         />
       )}
 
@@ -108,7 +110,10 @@ function DataTableInner<Row extends RowData>(
         Array.from({ length: skeletonRows ?? 5 }).map((_, i) => (
           <div
             key={`skeleton-${i}`}
-            className="border-t border-line-soft border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center"
+            className={cn(
+              (i > 0 || firstRowBorder) && 'border-t border-line-soft',
+              'border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
+            )}
           >
             <div className="flex flex-col gap-space-8 desk:hidden">
               <Skeleton className="w-1/2 h-space-12" />
@@ -125,7 +130,7 @@ function DataTableInner<Row extends RowData>(
           </div>
         ))
       ) : pageRows.length === 0 && empty ? (
-        <div className="border-t border-line-soft bg-surface">{empty}</div>
+        <div className={cn(firstRowBorder && 'border-t border-line-soft', 'bg-surface')}>{empty}</div>
       ) : (
         pageRows.map((row, i) => {
           const prevRow = i > 0 ? pageRows[i - 1] : null;
@@ -173,7 +178,7 @@ function DataTableInner<Row extends RowData>(
                   }
                 }}
                 className={cn(
-                  'border-t border-line-soft',
+                  (i > 0 || firstRowBorder) && 'border-t border-line-soft',
                   busy && 'opacity-60',
                 )}
               >
@@ -199,6 +204,7 @@ function DataTableInner<Row extends RowData>(
                 rowState={rowState ? rowState(row.original) : undefined}
                 highlighted={isHighlighted}
                 busy={busy}
+                first={i === 0 && !firstRowBorder}
               />
             );
             rowNode = wrapRow ? wrapRow(row.original, rowElement) : rowElement;

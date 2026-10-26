@@ -225,7 +225,9 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
-- 2026-10-26: select dropdowns are container-xs wide, grow to their content, capped at the viewport inset.
+- 2026-10-26: Select, Menu and every dropdown list are container-xs wide, grow to their content, capped at the viewport inset, never tied to the trigger width (Popover `list` prop).
+- 2026-10-26: Widget ⋮ trimmed: saved KPI = Edit only; chart/table/breakdown drop Full page; Net worth drops Underlying; built-ins with a body page link drop Full page.
+- 2026-10-26: Bills due widget: no per-entry actions (Mark paid / Set details / Undo removed).
 - 2026-10-25 · **Dashboards + Holding open questions** (owner, artifact 1HJKvjbcXqxVebQ9i7G1pN): empty dashboard = one Add a widget link; Add widget saves to the dashboard Home shows; Restore default Home only while no Home; no phone Chat button; holding: server sends price times (to build), missing details left out, Overview/tabs kept, manual price date editable (server, to build), Tax this FY fine.
 - 2026-10-25 · **Ghost actions** (owner): Dialog footer secondary/tertiary and Select actions are ghost buttons (was link).
 - 2026-10-25 · **Dashboards review 2** (owner): Home switcher fills the top bar; phone resize: none (phone stays one column); dragged widget opaque; browser Back with unsaved edits asks Discard; KPI figure tap opens View underlying data; no measure line in report widgets.
@@ -442,6 +444,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude · Sticky fix (owner bug): in-page sticky (SectionHeader, DataTable header) was `top-0`, so day headers stuck under/over the top bar. New generic spacing step `sticky-offset` (= `--ds-sticky-top`, set by ShellPage main to the bar height, 0 elsewhere) used as `top-sticky-offset`; ShellPage main is `isolate` so page z-sticky stays below the bar's. Forced test edit: SectionHeader.test top-0 class. Deviations: none.
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 - 2026-10-26 · Phase 3 · Claude · Net worth underlying (grouped tables + totals, row opens breakdown in place with Back; helpers + BreakdownFrameView moved to features/reports/underlying, Legacy imports them), no measure labels ("Amount (Sum)"/"Sum · Amount"/KPI "· sum" now plain field name), report Save/Create goes back to where it was opened from (+ refresh), Breakdown list drops the # column and the label column fills the rest. Checks: tsc, vitest reports/organisms/dashboards, check-ui, E2E ds-dashboards/report-editor/reports. Deviations: Net worth underlying keeps `kind` as a column and shows no filter chips (Legacy folds `kind` into the name and shows chips); open question logged.
 

@@ -131,9 +131,10 @@ export function ShellPage({
             : []),
         ]}
       />
-      {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included). */}
+      {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included);
+          isolate keeps their z-sticky inside the content, so the bar always draws above them. */}
       <main
-        className={`flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
+        className={`isolate flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
       >
         {children}
       </main>

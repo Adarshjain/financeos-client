@@ -24,8 +24,7 @@ import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
 import { useDuplicateBuiltinReport } from './useDuplicateBuiltinReport';
 import { useReportWidget } from './useReportWidget';
-import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
-import { WidgetFullPage } from './WidgetFullPage';
+import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrame.model';
 import { WidgetHeaderActions } from './WidgetHeaderActions';
 import { type WidgetSettingsChange, WidgetSettingsDialog } from './WidgetSettingsDialog';
 import { WidgetUnderlying } from './WidgetUnderlying';
@@ -47,7 +46,7 @@ export interface DashboardWidgetFrameProps {
   onSaveSettings?: (change: WidgetSettingsChange) => Promise<void>;
 }
 
-type Overlay = 'full' | 'underlying' | 'settings' | null;
+type Overlay = 'underlying' | 'settings' | null;
 
 export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing = false, issue, onSaveSettings }: DashboardWidgetFrameProps) {
   const router = useRouter();
@@ -68,8 +67,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const href = widgetHref(widget);
   const canEditSettings = !editing && onSaveSettings != null && def != null;
   const items = editing ? [] : widgetMenuItems(widget, { canEditSettings });
-  // The KPI figure, chart entries and rows open the same underlying data as the ⋮ menu's item.
-  const canOpenUnderlying = items.includes('underlying');
+  // The KPI figure, chart entries and rows open the underlying data (a KPI's only way in; the ⋮ menu has it for the rest).
+  const canOpenUnderlying = !editing && widgetOpensUnderlying(widget);
   // A KPI built-in lists its rows from the built-in's own endpoint (key + params), not a saved report.
   const kpiBuiltin = isKpiBuiltinWidget(widget);
 
@@ -89,8 +88,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
     else if (item === 'settings') setOverlay('settings');
     else if (item === 'duplicate' && key) duplicate.mutate({ builtinKey: key, params: widgetParams(widget) });
     else if (item === 'full-page') {
-      if (builtin && href) router.push(appHref(href));
-      else setOverlay('full');
+      if (href) router.push(appHref(href));
     } else if (item === 'underlying') openUnderlying();
   };
 
@@ -160,7 +158,6 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
       >
         {content}
       </Widget>
-      {overlay === 'full' ? <WidgetFullPage widget={widget} onClose={close} /> : null}
       {overlay === 'underlying' && kpiBuiltin && key ? (
         <LazyReportUnderlyingDialog
           builtin={{ kind: 'builtin', key, params: widgetParams(widget) }}

@@ -17,6 +17,9 @@ Title and optional description, a body that is the only scroller, and a footer f
 ## Dialog.Section
 `Dialog.Section` (`DialogSection`): a section band inside `DialogBody` that spans the dialog edge to edge (it cancels the body's side padding), with its text aligned to the body text and its children below at the body padding. Props: `title`, `children`, `collapsible?: boolean`, `open?` / `defaultOpen?` (default `true`) / `onOpenChange?` (collapsible only, through `useControllableState`). When collapsible the whole band is the toggle with a chevron (`chevron-up` open, `chevron-down` closed) and the content folds with Reveal.
 
+## Dialog.Bleed
+`Dialog.Bleed` (`DialogBleed`): a wrapper inside `DialogBody` that runs its content edge to edge (it cancels the body's side padding, the same amount as `Dialog.Section`); the content keeps its own inner padding. Use it for a band and its table, e.g. grouped tables in a dialog. Props: native div props.
+
 ## Footer Actions API
 - `DialogAction`: `{ label: React.ReactNode; icon?: IconName; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean; tone?: 'danger' }`. `icon` is an Icon registry name drawn before the label at `md` (the normal button icon), e.g. `download` on "Download CSV" (owner, 2026-10-25).
 - `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
@@ -33,6 +36,7 @@ The preset for destructive or hard-to-undo actions (delete a transaction, statem
 ## Props
 - `Dialog`: `variant` (`modal` | `side-panel`; `side-panel` makes it non-modal), plus `open`, `defaultOpen`, `onOpenChange`.
 - `DialogShell`: `variant` (`modal` | `side-panel`), `size` (`sm` | `md` | `lg` | `xl` | `full`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`. `DialogContent` takes the same props except `variant`, which it reads from `Dialog`.
+- `Dialog.Bleed`: native div props.
 - `Dialog.Section`: `title`, `collapsible`, `open`, `defaultOpen`, `onOpenChange`.
 - `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 

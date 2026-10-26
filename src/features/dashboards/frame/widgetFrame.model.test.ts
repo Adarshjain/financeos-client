@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { widgetHref, widgetMenuItems, widgetSubtitle } from './widgetFrame.model';
+import { widgetHref, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrame.model';
 
 const report = (over: Partial<WidgetResponse> = {}): WidgetResponse => ({
   id: 'w1',
@@ -26,18 +26,30 @@ const builtin = (kind: 'template' | 'component', over: Partial<NonNullable<Widge
 });
 
 describe('widgetMenuItems', () => {
-  it('a report widget: Edit report, View full page and View underlying data (every report widget, any report type)', () => {
-    for (const type of ['KPI', 'CHART', 'TABLE'] as const) {
-      expect(widgetMenuItems(report({ report: { name: 'x', type, available: true } }), { canEditSettings: false })).toEqual([
-        'edit-report',
-        'full-page',
-        'underlying',
-      ]);
+  it('a KPI report widget: Edit report only (the value tap opens the underlying data)', () => {
+    expect(widgetMenuItems(report(), { canEditSettings: false })).toEqual(['edit-report']);
+  });
+
+  it('a chart, table or breakdown report widget: Edit report and View underlying data, no View full page', () => {
+    for (const type of ['CHART', 'TABLE'] as const) {
+      expect(widgetMenuItems(report({ report: { name: 'x', type, available: true } }), { canEditSettings: false })).toEqual(['edit-report', 'underlying']);
     }
   });
 
-  it('a template built-in: Widget settings, Duplicate as my report, View full page', () => {
+  it('a template built-in with a page its body does not link to: Widget settings, Duplicate as my report, View full page', () => {
     expect(widgetMenuItems(builtin('template'), { canEditSettings: true })).toEqual(['settings', 'duplicate', 'full-page']);
+  });
+
+  it('a built-in whose body links to its page has no View full page', () => {
+    for (const key of ['attention', 'milestone_progress', 'cap_headroom', 'portfolio_snapshot', 'lending_balances']) {
+      const w = builtin('component', { key, href: '/investments' });
+      expect(widgetMenuItems({ ...w, builtinKey: key }, { canEditSettings: true })).toEqual(['settings']);
+    }
+  });
+
+  it('Net worth: Widget settings and Duplicate as my report, no View underlying data', () => {
+    const w = { ...builtin('template', { key: 'net_worth', href: '/accounts' }), builtinKey: 'net_worth' };
+    expect(widgetMenuItems(w, { canEditSettings: true })).toEqual(['settings', 'duplicate', 'full-page']);
   });
 
   it('a component built-in has no Duplicate', () => {
@@ -64,5 +76,14 @@ describe('widgetHref and widgetSubtitle', () => {
   it('a saved report widget has no subtitle; a built-in uses the server subtitle', () => {
     expect(widgetSubtitle(report())).toBeNull();
     expect(widgetSubtitle(builtin('component', { subtitle: 'Next 14 days', key: 'unknown_key' }))).toBe('Next 14 days');
+  });
+});
+
+describe('widgetOpensUnderlying', () => {
+  it('a saved report and Net worth open it from the figure; other built-ins and unavailable widgets do not', () => {
+    expect(widgetOpensUnderlying(report())).toBe(true);
+    expect(widgetOpensUnderlying({ ...builtin('template', { key: 'net_worth' }), builtinKey: 'net_worth' })).toBe(true);
+    expect(widgetOpensUnderlying(builtin('template'))).toBe(false);
+    expect(widgetOpensUnderlying(report({ report: { available: false } }))).toBe(false);
   });
 });

@@ -28,7 +28,7 @@ export function isTemplateWidget(widget: WidgetResponse): boolean {
   return isBuiltinWidget(widget) && widget.builtin?.kind === 'template';
 }
 
-/** Template built-ins whose view is a KPI figure: the figure and the ⋮ menu open the built-in's underlying data. */
+/** Template built-ins whose view is a KPI figure: the figure opens the built-in's underlying data. */
 export const KPI_BUILTIN_KEYS: readonly string[] = ['net_worth'];
 
 /** Whether a widget is a template built-in with a KPI figure (Net worth). */
@@ -38,17 +38,33 @@ export function isKpiBuiltinWidget(widget: WidgetResponse): boolean {
 }
 
 /**
- * The ⋮ menu's items, in order. A report widget: Edit report, View full page, View underlying data (every report
- * widget). A built-in: Widget settings (when the dashboard can save them), Duplicate as my report (templates only),
- * View full page (a built-in with a page of its own), View underlying data (KPI built-ins: Net worth).
+ * Built-ins whose body already links to their page (an item, a row or a "View all"), so the ⋮ menu has no "View full
+ * page" for them. A built-in with a page whose body has no such link keeps it.
+ */
+export const BODY_LINKED_BUILTIN_KEYS: readonly string[] = ['attention', 'milestone_progress', 'cap_headroom', 'portfolio_snapshot', 'lending_balances'];
+
+/** Whether the figure, chart entries and rows of a widget open its underlying data (a saved report, or Net worth). */
+export function widgetOpensUnderlying(widget: WidgetResponse): boolean {
+  if (!isWidgetAvailable(widget)) return false;
+  return isBuiltinWidget(widget) ? isKpiBuiltinWidget(widget) : Boolean(widget.reportId);
+}
+
+/**
+ * The ⋮ menu's items, in order. A saved report: Edit report, plus View underlying data unless it is a KPI (its value
+ * tap opens it). A built-in: Widget settings (when the dashboard can save them), Duplicate as my report (templates
+ * only), View full page (a built-in with a page of its own that its body does not already link to). Net worth's
+ * underlying data is its value tap only.
  */
 export function widgetMenuItems(widget: WidgetResponse, { canEditSettings }: { canEditSettings: boolean }): WidgetMenuItemId[] {
   if (!isWidgetAvailable(widget)) return [];
-  if (!isBuiltinWidget(widget)) return widget.reportId ? ['edit-report', 'full-page', 'underlying'] : [];
+  if (!isBuiltinWidget(widget)) {
+    if (!widget.reportId) return [];
+    return widget.report?.type === 'KPI' ? ['edit-report'] : ['edit-report', 'underlying'];
+  }
   const items: WidgetMenuItemId[] = [];
   if (canEditSettings) items.push('settings');
   if (isTemplateWidget(widget)) items.push('duplicate');
-  if (widgetHref(widget)) items.push('full-page');
-  if (isKpiBuiltinWidget(widget)) items.push('underlying');
+  const key = widgetBuiltinKey(widget);
+  if (widgetHref(widget) && !(key && BODY_LINKED_BUILTIN_KEYS.includes(key))) items.push('full-page');
   return items;
 }

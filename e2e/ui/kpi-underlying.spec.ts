@@ -321,24 +321,32 @@ test.describe('KPI underlying data dialog (@ui)', () => {
 
     const vud = page.getByRole('dialog', { name: 'Net worth' });
     await expect(vud.getByText('₹25,799.90', { exact: true })).toBeVisible();
-    // One table per side, assets first, largest first within a side. Each table's heading carries
-    // the side's total (all rows, not just the page); the side is the table and the kind sits
-    // beside the name, so neither has a column.
-    const assets = vud.getByRole('region', { name: 'Asset' });
-    const liabilities = vud.getByRole('region', { name: 'Liability' });
-    await expect(assets.getByRole('heading', { level: 3 })).toHaveText('Asset');
-    await expect(assets.getByText('₹26,299.90', { exact: true })).toBeVisible();
-    await expect(liabilities.getByRole('heading', { level: 3 })).toHaveText('Liability');
+    // One table per group (Assets, Liabilities, Investments), largest first within a group. Each
+    // table's heading carries the group's total (all rows, not just the page); the group is the
+    // table and the kind sits beside the name, so neither has a column.
+    const assets = vud.getByRole('region', { name: 'Assets' });
+    const liabilities = vud.getByRole('region', { name: 'Liabilities' });
+    const investments = vud.getByRole('region', { name: 'Investments' });
+    await expect(assets.getByRole('heading', { level: 3 })).toHaveText('Assets');
+    // One asset row, so its value matches the total: read the total from the heading line.
+    const assetHeadingLine = assets.getByRole('heading', { level: 3 }).locator('xpath=..');
+    await expect(assetHeadingLine.getByText('₹11,300.00', { exact: true })).toBeVisible();
+    await expect(liabilities.getByRole('heading', { level: 3 })).toHaveText('Liabilities');
+    await expect(investments.getByRole('heading', { level: 3 })).toHaveText('Investments');
+    const investmentHeadingLine = investments.getByRole('heading', { level: 3 }).locator('xpath=..');
+    await expect(investmentHeadingLine.getByText('₹14,999.90', { exact: true })).toBeVisible();
     // One liability row, so its value matches the total: read the total from the heading line.
     const liabilityHeadingLine = liabilities.getByRole('heading', { level: 3 }).locator('xpath=..');
     await expect(liabilityHeadingLine.getByText('-₹500.00', { exact: true })).toBeVisible();
     const rows = bodyRows(vud);
-    const grouped = [/NW Broker/, /NW Savings/, /NW Overdrawn/];
+    const grouped = [/NW Savings/, /NW Overdrawn/, /NW Broker/];
     await expect(rows).toHaveText(grouped);
-    await expect(bodyRows(assets)).toHaveText([/NW Broker/, /NW Savings/]);
+    await expect(bodyRows(assets)).toHaveText([/NW Savings/]);
     await expect(bodyRows(liabilities)).toHaveText([/NW Overdrawn/]);
+    await expect(bodyRows(investments)).toHaveText([/NW Broker/]);
     await expect(assets.getByRole('columnheader')).toHaveText(['Name', 'Net value']);
     await expect(liabilities.getByRole('columnheader')).toHaveText(['Name', 'Net value']);
+    await expect(investments.getByRole('columnheader')).toHaveText(['Name', 'Net value']);
     // The kind reads as its label beside the name, never the stored value.
     await expect(rows.filter({ hasText: 'NW Savings' }).getByRole('cell').first()).toHaveText('NW Savings Bank account');
     await expect(rows.filter({ hasText: 'NW Broker' }).getByRole('cell').first()).toHaveText('NW Broker Broker');
@@ -411,14 +419,16 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(vud.getByRole('heading', { name: 'NW Broker', level: 3 })).toBeVisible();
     await vud.getByRole('button', { name: 'Back' }).click();
 
-    // A user sort keeps one table per side: every table marks it, each sorted the same way.
+    // A user sort keeps one table per group: every table marks it, each sorted the same way.
     await liabilities.getByRole('button', { name: 'Net value', exact: true }).click();
     await expect(assets.getByRole('columnheader', { name: 'Net value' })).toHaveAttribute('aria-sort', 'ascending');
     await expect(liabilities.getByRole('columnheader', { name: 'Net value' })).toHaveAttribute('aria-sort', 'ascending');
-    await expect(bodyRows(assets)).toHaveText([/NW Savings/, /NW Broker/]);
+    await expect(investments.getByRole('columnheader', { name: 'Net value' })).toHaveAttribute('aria-sort', 'ascending');
+    await expect(bodyRows(assets)).toHaveText([/NW Savings/]);
     await expect(bodyRows(liabilities)).toHaveText([/NW Overdrawn/]);
-    await expect(assets.getByText('₹26,299.90', { exact: true })).toBeVisible();
-    await expect(vud.getByRole('columnheader', { name: 'Side' })).toHaveCount(0);
+    await expect(bodyRows(investments)).toHaveText([/NW Broker/]);
+    await expect(assetHeadingLine.getByText('₹11,300.00', { exact: true })).toBeVisible();
+    await expect(vud.getByRole('columnheader', { name: 'Group' })).toHaveCount(0);
 
     // Net worth has no date range: the CSV is named for today.
     const [download] = await Promise.all([
@@ -426,13 +436,13 @@ test.describe('KPI underlying data dialog (@ui)', () => {
       vud.getByRole('button', { name: 'Download CSV' }).click(),
     ]);
     expect(download.suggestedFilename()).toBe(`Net worth ${todayFileLabel()}.csv`);
-    // The file prints kind and side by their labels, in the sorted order.
+    // The file prints kind and group by their labels, in the sorted order (a user sort replaces the grouped order).
     const csvBody = fs.readFileSync((await download.path())!).subarray(3).toString('utf8');
     expect(csvBody.split('\r\n').filter(Boolean)).toEqual([
-      'Name,Kind,Side,Net value',
-      'NW Overdrawn,Bank account,Liability,-500.00',
-      'NW Savings,Bank account,Asset,11300.00',
-      'NW Broker,Broker,Asset,14999.90',
+      'Name,Kind,Group,Net value',
+      'NW Overdrawn,Bank account,Liabilities,-500.00',
+      'NW Savings,Bank account,Assets,11300.00',
+      'NW Broker,Broker,Investments,14999.90',
     ]);
   });
 

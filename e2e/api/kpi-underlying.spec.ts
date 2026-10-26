@@ -17,6 +17,7 @@ import {
   kpiBody,
   kpiFigures,
   monthBefore,
+  NET_WORTH_GROUP_LABELS,
   NET_WORTH_KIND_LABELS,
   NET_WORTH_SIDE_LABELS,
   PREVIOUS_PERIOD,
@@ -545,7 +546,7 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       rowCount: 4,
       winnerOnly: false,
       rowAction: 'breakdown',
-      groupField: 'side',
+      groupField: 'group',
       sortKey: null,
       filters: [],
       range: null,
@@ -554,28 +555,30 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
     expect(res.summaryLines).toEqual([
       { label: 'Assets', value: 17300, format: 'currency' },
       { label: 'Liabilities', value: 2000, format: 'currency' },
+      { label: 'Investments', value: 0, format: 'currency' },
     ]);
-    // Each side's figure for its group header: the KPI's own sum of signedValue over that side.
-    expect(res.groupTotals).toEqual({ asset: 17300, liability: -2000 });
+    // Each group's figure for its header: the KPI's own sum of signedValue over that group, in declared order.
+    expect(res.groupTotals).toEqual({ assets: 17300, liabilities: -2000 });
+    expect(Object.keys(res.groupTotals as object)).toEqual(['assets', 'liabilities']);
     expect([...res.notCounted].sort((a, b) => a.name.localeCompare(b.name))).toEqual([
       { id: closed.id, name: 'NWU Closed', kind: 'bank_account', reason: 'closed', reasonLabel: `Closed on ${ddmmyyyy(istToday(-1))}`, value: 400 },
       { id: hidden.id, name: 'NWU Hidden', kind: 'bank_account', reason: 'excluded', reasonLabel: 'Excluded from net worth', value: 777 },
     ]);
     const table = tableOf(res);
-    expect(table.columns.map((c) => c.key)).toEqual(['name', 'kind', 'side', 'signedValue']);
-    // Kind and side carry their display labels; the rows below keep the stored values.
-    expect(table.columns.map((c) => c.valueLabels ?? null)).toEqual([null, NET_WORTH_KIND_LABELS, NET_WORTH_SIDE_LABELS, null]);
-    // Assets first, largest first; then liabilities.
+    expect(table.columns.map((c) => c.key)).toEqual(['name', 'kind', 'group', 'signedValue']);
+    // Kind and group carry their display labels; the rows below keep the stored values.
+    expect(table.columns.map((c) => c.valueLabels ?? null)).toEqual([null, NET_WORTH_KIND_LABELS, NET_WORTH_GROUP_LABELS, null]);
+    // Assets first, largest first; then liabilities (investments, if any, last).
     expect(table.rows).toEqual([
-      { id: bank.id, name: 'NWU Bank', kind: 'bank_account', side: 'asset', signedValue: 12000 },
-      { id: asha.id, name: 'NWU Asha', kind: 'lending', side: 'asset', signedValue: 5000 },
-      { id: wallet.id, name: 'NWU Wallet', kind: 'generic', side: 'asset', signedValue: 300 },
-      { id: card.id, name: 'NWU Card', kind: 'credit_card', side: 'liability', signedValue: -2000 },
+      { id: bank.id, name: 'NWU Bank', kind: 'bank_account', group: 'assets', signedValue: 12000 },
+      { id: asha.id, name: 'NWU Asha', kind: 'lending', group: 'assets', signedValue: 5000 },
+      { id: wallet.id, name: 'NWU Wallet', kind: 'generic', group: 'assets', signedValue: 300 },
+      { id: card.id, name: 'NWU Card', kind: 'credit_card', group: 'liabilities', signedValue: -2000 },
     ]);
 
     // A user sort replaces the grouped order and is echoed (the client stops grouping on it).
     const sorted = await underlyingBuiltin(api, 'net_worth', undefined, { sort: 'signedValue,asc' });
-    expect(sorted).toMatchObject({ sortKey: 'signedValue', sortDirection: 'asc', groupField: 'side' });
+    expect(sorted).toMatchObject({ sortKey: 'signedValue', sortDirection: 'asc', groupField: 'group' });
     expect(sorted.groupTotals).toEqual(res.groupTotals);
     expect(tableOf(sorted).rows.map((r) => r.name)).toEqual(['NWU Card', 'NWU Wallet', 'NWU Asha', 'NWU Bank']);
     // Summary lines cover every listed row, not just the page.
@@ -601,9 +604,10 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
     expect(liabilities.summaryLines).toEqual([
       { label: 'Assets', value: 0, format: 'currency' },
       { label: 'Liabilities', value: 2000, format: 'currency' },
+      { label: 'Investments', value: 0, format: 'currency' },
     ]);
     // Only groups with listed rows have a total, in the KPI's measure (value: positive).
-    expect(liabilities.groupTotals).toEqual({ liability: 2000 });
+    expect(liabilities.groupTotals).toEqual({ liabilities: 2000 });
     const kinds = await underlyingAdHoc(
       api,
       kpiBody('net_worth', {
@@ -618,11 +622,11 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
     // The CSV prints every enum cell by its label.
     const file = await underlyingBuiltinCsv(api, 'net_worth');
     expect(csvLines(file)).toEqual([
-      'Name,Kind,Side,Net value',
-      'NWU Bank,Bank account,Asset,12000.00',
-      'NWU Asha,Lending,Asset,5000.00',
-      'NWU Wallet,Wallet/Cash,Asset,300.00',
-      'NWU Card,Credit card,Liability,-2000.00',
+      'Name,Kind,Group,Net value',
+      'NWU Bank,Bank account,Assets,12000.00',
+      'NWU Asha,Lending,Assets,5000.00',
+      'NWU Wallet,Wallet/Cash,Assets,300.00',
+      'NWU Card,Credit card,Liabilities,-2000.00',
     ]);
   });
 
@@ -900,7 +904,7 @@ test.describe('KPI underlying data: CSV (@api)', () => {
     const nw = await underlyingBuiltinCsv(api, 'net_worth');
     expect(nw.status).toBe(200);
     expect(nw.contentType).toBe('text/csv;charset=UTF-8');
-    expect(csvLines(nw)).toEqual(['Name,Kind,Side,Net value', `${bank},Bank account,Asset,12700.00`]);
+    expect(csvLines(nw)).toEqual(['Name,Kind,Group,Net value', `${bank},Bank account,Assets,12700.00`]);
     expect(csvLines(await underlyingBuiltinCsv(api, 'net_worth', {}, { sort: 'name,asc' }))).toEqual(csvLines(nw));
   });
 

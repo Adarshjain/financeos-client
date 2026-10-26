@@ -131,7 +131,7 @@ describe('Menu', () => {
     expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
-  it('applies min-w-menu-trigger, shadow-level-2, and directional slide animation', () => {
+  it('applies shadow-level-2, and directional slide animation', () => {
     render(
       <Menu
         defaultOpen
@@ -142,8 +142,19 @@ describe('Menu', () => {
     );
 
     const content = screen.getByTestId('menu-body').parentElement;
-    expect(content).toHaveClass('min-w-menu-trigger', 'shadow-level-2', 'rounded-ds-lg');
+    expect(content).toHaveClass('shadow-level-2', 'rounded-ds-lg');
     expect(content).toHaveClass('data-side-bottom:slide-in-from-top-1', 'data-side-top:slide-in-from-bottom-1');
+  });
+
+  it('is container-xs wide, grows to content, capped at the viewport inset, not tied to the trigger', () => {
+    render(
+      <Menu defaultOpen trigger={<button type="button">Trigger</button>}>
+        <div data-testid="menu-width">Content</div>
+      </Menu>,
+    );
+    const content = screen.getByTestId('menu-width').parentElement;
+    expect(content).toHaveClass('w-max', 'min-w-container-xs', 'max-w-container-viewport-inset', 'desk:max-w-container-viewport-inset');
+    expect(content).not.toHaveClass('min-w-menu-trigger');
   });
 
   it('closes on Escape key press', () => {

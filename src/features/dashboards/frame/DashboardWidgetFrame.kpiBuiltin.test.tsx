@@ -67,11 +67,10 @@ describe('Net worth built-in underlying data', () => {
     expect(api.POST).not.toHaveBeenCalled();
   });
 
-  it('the ⋮ menu has View underlying data and opens the same dialog', async () => {
+  it('the ⋮ menu has no View underlying data', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={builtin('net_worth', 'template')} />);
     await userEvent.click(screen.getByRole('button', { name: 'Widget options' }));
-    await userEvent.click(await screen.findByText('View underlying data'));
-    expect(dialog.mock.calls[0][0]).toMatchObject({ builtin: { key: 'net_worth' } });
+    expect(screen.queryByText('View underlying data')).not.toBeInTheDocument();
   });
 
   it('is not a link while editing', () => {

@@ -12,14 +12,6 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, refresh: vi.fn() }),
   useSearchParams: () => new URLSearchParams(search.value),
 }));
-const showToast = vi.hoisted(() => vi.fn());
-vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
-  showToast: (...args: unknown[]) => showToast(...args),
-}));
-vi.mock('@/features/inbox/InboxBillHost', () => ({
-  InboxBillHost: ({ pending }: { pending: unknown }) => <div data-testid="bill-host" data-pending={JSON.stringify(pending)} />,
-}));
 
 import { api, ApiError } from '@/lib/api/client';
 import type { CardBillResponse } from '@/lib/api/types';
@@ -85,7 +77,7 @@ describe('BillsDueBody', () => {
     expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800.00');
   });
 
-  it('an arrived card: name and amount due only (no due line, minimum or spent-since line), and Mark paid', async () => {
+  it('an arrived card: name and amount due only (no due line, minimum or spent-since line)', async () => {
     seed([open]);
     render();
     const row = await screen.findByTestId('bill-row');
@@ -94,7 +86,6 @@ describe('BillsDueBody', () => {
     expect(row).not.toHaveTextContent('spent since this statement');
     expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000.00');
     expect(row).not.toHaveTextContent('Min ₹200.00');
-    expect(within(row).getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
   });
 
   it('an overdue card says Overdue in colour beside its amount', async () => {
@@ -116,15 +107,13 @@ describe('BillsDueBody', () => {
     expect(within(lateRow).getByTestId('bill-status')).toHaveTextContent('Statement late');
   });
 
-  it('Mark paid and Set details open the bill dialogs for that statement', async () => {
-    seed([bill({ accountId: 'x', statementId: 's-x', status: 'DUE_UNKNOWN', remainingAmount: 900, totalAmountDue: 900 }), open]);
+  it('rows are read-only: no buttons on any row, whatever the bill state', async () => {
+    seed([overdue, open, awaiting, bill({ accountId: 'x', statementId: 's-x', status: 'DUE_UNKNOWN', remainingAmount: 900, totalAmountDue: 900 })]);
     render();
     const rows = await screen.findAllByTestId('bill-row');
-    const rowOf = (id: string) => rows.find((r) => r.getAttribute('data-statement-id') === id) as HTMLElement;
-    await user().click(within(rowOf('s-x')).getByRole('button', { name: 'Set details' }));
-    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending') ?? 'null')).toEqual({ type: 'set_details', statementId: 's-x' });
-    await user().click(within(rowOf('s-open')).getByRole('button', { name: 'Mark paid' }));
-    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending') ?? 'null')).toEqual({ type: 'mark_paid', statementId: 's-open' });
+    expect(rows).toHaveLength(4);
+    for (const r of rows) expect(within(r).queryAllByRole('button')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: /Mark paid|Set details|Undo/ })).toBeNull();
   });
 
   it('cards with nothing to pay and nothing unbilled collapse into one group that expands', async () => {
@@ -138,23 +127,12 @@ describe('BillsDueBody', () => {
     expect(screen.queryByText('Paid on 8 Oct')).toBeNull();
   });
 
-  it('Undo takes back a manual payment mark and says so', async () => {
+  it('a manually paid card in the Nothing pending group has no Undo', async () => {
     seed([paidManually]);
-    vi.mocked(api.DELETE).mockResolvedValue({ data: paidManually } as never);
     render();
     await user().click(await screen.findByRole('button', { name: 'Nothing pending · 1 card' }));
-    await user().click(await screen.findByRole('button', { name: 'Undo' }));
-    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId: 's-paid' } } });
-    await vi.waitFor(() => expect(showToast).toHaveBeenCalledWith('Payment mark removed'));
-  });
-
-  it('a failed undo says what failed', async () => {
-    seed([paidManually]);
-    vi.mocked(api.DELETE).mockRejectedValue(new ApiError(500, { code: 'X', message: 'Nope' }));
-    render();
-    await user().click(await screen.findByRole('button', { name: 'Nothing pending · 1 card' }));
-    await user().click(await screen.findByRole('button', { name: 'Undo' }));
-    await vi.waitFor(() => expect(showToast).toHaveBeenCalledWith('Nope', { tone: 'danger' }));
+    expect(await screen.findByText('Paid Card ••6')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
   });
 
   it('one card (accountId): asks the server for that card only; no bill says so', async () => {

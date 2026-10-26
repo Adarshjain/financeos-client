@@ -59,6 +59,48 @@ const adv = (ms: number) => {
 };
 
 describe('DataTable', () => {
+  describe('Dividers', () => {
+    const dataRows = () => screen.getAllByRole('row').filter((r) => /Alpha|Beta|Gamma/.test(r.textContent ?? ''));
+    const headerRow = () => screen.getAllByRole('row').find((r) => r.textContent?.includes('Name'))!;
+
+    it('by default every row, the first included, has a top border', () => {
+      render(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} />);
+      dataRows().forEach((r) => expect(r).toHaveClass('border-t'));
+      expect(headerRow()).not.toHaveClass('border-b');
+    });
+
+    it('firstRowBorder={false}: dividers sit between rows only and the header closes with a bottom border', () => {
+      render(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} firstRowBorder={false} />);
+      const rows = dataRows();
+      expect(rows).toHaveLength(3);
+      expect(rows[0]).not.toHaveClass('border-t');
+      expect(rows[1]).toHaveClass('border-t');
+      expect(rows[2]).toHaveClass('border-t');
+      expect(headerRow()).toHaveClass('border-b');
+    });
+
+    it('a custom renderRow row follows the same rule', () => {
+      render(
+        <DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} firstRowBorder={false} renderRow={(row) => <div data-testid="custom">{row.name}</div>} />,
+      );
+      const wrappers = screen.getAllByTestId('custom').map((n) => n.parentElement!);
+      expect(wrappers[0]).not.toHaveClass('border-t');
+      expect(wrappers[1]).toHaveClass('border-t');
+    });
+
+    it('firstRowBorder={false} also drops the top border of the first skeleton row and of the empty slot', () => {
+      const { container, rerender } = render(
+        <DataTable columns={testColumns} data={[]} getRowId={(r) => r.id} firstRowBorder={false} loading skeletonRows={2} />,
+      );
+      const skeletons = Array.from(container.querySelectorAll('.border-l-transparent'));
+      expect(skeletons).toHaveLength(2);
+      expect(skeletons[0]).not.toHaveClass('border-t');
+      expect(skeletons[1]).toHaveClass('border-t');
+      rerender(<DataTable columns={testColumns} data={[]} getRowId={(r) => r.id} firstRowBorder={false} empty={<span>Nothing here</span>} />);
+      expect(screen.getByText('Nothing here').parentElement).not.toHaveClass('border-t');
+    });
+  });
+
   describe('Structure', () => {
     it('the header renders the column labels', () => {
       render(

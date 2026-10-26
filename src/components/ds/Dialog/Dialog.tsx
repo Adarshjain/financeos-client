@@ -155,6 +155,22 @@ export const DialogSection = forwardRef<HTMLDivElement, DialogSectionProps>(
 
 DialogSection.displayName = 'DialogSection';
 
+export interface DialogBleedProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+/**
+ * Dialog.Bleed: wraps content that runs edge to edge inside DialogBody (a band and its table). It
+ * cancels the body's side padding, the same amount as Dialog.Section; the content keeps its own inner padding.
+ */
+export const DialogBleed = forwardRef<HTMLDivElement, DialogBleedProps>(
+  ({ className, children, ...props }, ref) => (
+    <div ref={ref} className={cn('-mx-space-16 desk:-mx-space-20 flex flex-col', className)} {...props}>
+      {children}
+    </div>
+  )
+);
+
+DialogBleed.displayName = 'DialogBleed';
+
 export interface DialogAction {
   label: React.ReactNode;
   onSelect?: () => void;
@@ -503,6 +519,7 @@ export const Dialog = ({
   );
 };
 Dialog.Section = DialogSection;
+Dialog.Bleed = DialogBleed;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;

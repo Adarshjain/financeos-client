@@ -1,40 +1,25 @@
 'use client';
 
 // bills_due: one row per open credit card, the card's name and one figure: the amount to pay, or the unbilled
-// spend while the statement is expected (an overdue bill or a late statement says so in colour). Mark paid and
-// Set details open the same dialogs as the Inbox; Undo removes a manual payment mark.
+// spend while the statement is expected (an overdue bill or a late statement says so in colour). Rows are
+// read-only: marking paid and setting details live on the Inbox.
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, ListRow, showToast, StatusWord, Text } from '@/components/ds';
+import { Button, EmptyState, ListRow, StatusWord, Text } from '@/components/ds';
 import { type BillCardState, buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
 import { billCardLabel } from '@/features/bills/bills.helpers';
-import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
-import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { CardBillResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
-import { useBillMutations, useBills } from '@/lib/query/hooks/useBills';
+import { useBills } from '@/lib/query/hooks/useBills';
 import { formatMoney } from '@/lib/utils';
 
 import { BuiltinError } from '../BuiltinParts';
 import { stringParam } from '../subtitles';
 import type { BuiltinBodyProps } from '../types';
 import { BillsDueSkeleton } from './BillsDueSkeleton';
-
-/** A manual payment mark on the statement can be taken back. */
-export function canUndoPaid(bill: CardBillResponse): boolean {
-  return bill.status === 'PAID' && bill.paidSource === 'MANUAL' && !!bill.statementId;
-}
-
-interface Actions {
-  busy: boolean;
-  onMarkPaid: (bill: CardBillResponse) => void;
-  onSetDetails: (bill: CardBillResponse) => void;
-  onUnmarkPaid: (bill: CardBillResponse) => void;
-}
 
 /** The one word beside the figure: unbilled while the statement is expected (warning when it is late), overdue when the bill is. */
 function statusWord(state: BillCardState): React.ReactNode {
@@ -44,11 +29,10 @@ function statusWord(state: BillCardState): React.ReactNode {
   return state.phase === 'overdue' ? <StatusWord tone="warning">Overdue</StatusWord> : null;
 }
 
-function BillRow({ state, highlighted, actions }: { state: BillCardState; highlighted: boolean; actions: Actions }) {
+function BillRow({ state, highlighted }: { state: BillCardState; highlighted: boolean }) {
   const { bill, phase } = state;
   const awaiting = phase === 'awaiting';
   const headline = awaiting ? state.unbilled : state.toPay;
-  const canUndo = awaiting ? canUndoPaid(bill) : bill.paidSource === 'MANUAL' && (bill.paidAmount ?? 0) > 0;
   return (
     <ListRow
       wrap
@@ -59,36 +43,14 @@ function BillRow({ state, highlighted, actions }: { state: BillCardState; highli
       data-account-id={bill.accountId}
       title={billCardLabel(bill)}
       trailing={
-        <>
-          <div className="flex items-baseline gap-space-6">
+        <div className="flex items-baseline gap-space-6">
             <Text variant="caption" tone="ink-3" as="span" data-testid="bill-status">
               {statusWord(state)}
             </Text>
             <Text variant="body-strong" tone={phase === 'overdue' ? 'danger' : 'ink'} fraction="small" data-testid="bill-headline">
               {headline != null ? formatMoney(headline) : '—'}
             </Text>
-          </div>
-          {!awaiting && bill.statementId && bill.status === 'DUE_UNKNOWN' ? (
-            <Button variant="link" size="sm" disabled={actions.busy} onClick={() => actions.onSetDetails(bill)}>
-              Set details
-            </Button>
-          ) : null}
-          {!awaiting && bill.statementId ? (
-            <Button
-              variant={phase === 'overdue' ? 'primary' : 'secondary'}
-              size="sm"
-              disabled={actions.busy}
-              onClick={() => actions.onMarkPaid(bill)}
-            >
-              Mark paid
-            </Button>
-          ) : null}
-          {canUndo && bill.statementId ? (
-            <Button variant="link" size="sm" disabled={actions.busy} onClick={() => actions.onUnmarkPaid(bill)}>
-              Undo
-            </Button>
-          ) : null}
-        </>
+        </div>
       }
     />
   );
@@ -100,10 +62,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
   const { data: bills = [], isLoading, error, refetch } = useBills(undefined, { accountId });
   const searchParams = useSearchParams();
   const highlight = { statementId: searchParams?.get('bill') ?? null, accountId: searchParams?.get('card') ?? null };
-  const { unmarkPaid } = useBillMutations();
-  const [pending, setPending] = React.useState<PendingBillAction | null>(null);
   const [showSettled, setShowSettled] = React.useState(false);
-  const closePending = () => setPending(null);
 
   const today = todayInAppZone();
   const model = React.useMemo(() => buildBillsWidgetModel(bills, today), [bills, today]);
@@ -122,22 +81,6 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
     });
     return () => cancelAnimationFrame(id);
   }, [highlightedAccountId, bills.length]);
-
-  const actions: Actions = {
-    busy: unmarkPaid.isPending,
-    onMarkPaid: (bill) => bill.statementId && setPending({ type: 'mark_paid', statementId: bill.statementId }),
-    onSetDetails: (bill) => bill.statementId && setPending({ type: 'set_details', statementId: bill.statementId }),
-    onUnmarkPaid: async (bill) => {
-      if (!bill.statementId) return;
-      try {
-        await unmarkPaid.mutateAsync(bill.statementId);
-        router.refresh();
-        showToast('Payment mark removed');
-      } catch (e) {
-        showToast(getErrorMessage(e, 'Could not undo the payment mark'), { tone: 'danger' });
-      }
-    },
-  };
 
   let body: React.ReactNode;
   if (isLoading) {
@@ -170,7 +113,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
           </Text>
         </Text>
         {model.rows.map((s) => (
-          <BillRow key={s.bill.accountId} state={s} highlighted={s.bill.accountId === highlightedAccountId} actions={actions} />
+          <BillRow key={s.bill.accountId} state={s} highlighted={s.bill.accountId === highlightedAccountId} />
         ))}
         {n > 0 ? (
           <div data-testid="bills-nothing-pending">
@@ -181,12 +124,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
             </div>
             {showSettled
               ? model.nothingPending.map((s) => (
-                  <BillRow
-                    key={s.bill.accountId}
-                    state={s}
-                    highlighted={s.bill.accountId === highlightedAccountId}
-                    actions={actions}
-                  />
+                  <BillRow key={s.bill.accountId} state={s} highlighted={s.bill.accountId === highlightedAccountId} />
                 ))
               : null}
           </div>
@@ -197,7 +135,6 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
   return (
     <div className={className} data-testid="bills-due-widget">
       {body}
-      <InboxBillHost pending={pending} onClose={closePending} />
     </div>
   );
 }

@@ -65,6 +65,7 @@ export function InboxSnoozeMenu({ title, onSnooze }: InboxSnoozeMenuProps) {
     <Popover
       open={open}
       onOpenChange={onOpenChange}
+      list
       align="end"
       trigger={
         <Button

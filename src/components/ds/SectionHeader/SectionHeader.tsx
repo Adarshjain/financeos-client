@@ -73,7 +73,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
               ? 'text-danger'
               : 'text-ink-4',
           isStrong ? !borderTop && 'border-t-0' : borderTop && 'border-t',
-          isSticky && 'sticky top-0 z-sticky',
+          isSticky && 'sticky top-sticky-offset z-sticky',
           className,
         )}
         {...props}

@@ -166,18 +166,15 @@ describe('DashboardWidgetFrame menus', () => {
   it('a report widget: Edit report goes to the report editor', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={report()} />);
     await open();
-    expect(items()).toEqual(['Edit report', 'View full page', 'View underlying data']);
+    expect(items()).toEqual(['Edit report']);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Edit report' }));
     expect(push).toHaveBeenCalledWith('/ds/reports/r1');
   });
 
-  it('View full page opens the same content in a full-size dialog', async () => {
-    renderWithQuery(<DashboardWidgetFrame widget={report()} />);
+  it('a chart report widget: Edit report, View underlying data', async () => {
+    renderWithQuery(<DashboardWidgetFrame widget={report({ report: { name: 'Chart', type: 'CHART', available: true } })} />);
     await open();
-    await userEvent.click(screen.getByRole('menuitem', { name: 'View full page' }));
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Spend this month')).toBeInTheDocument();
-    expect(within(dialog).getByTestId('report-body')).toBeInTheDocument();
+    expect(items()).toEqual(['Edit report', 'View underlying data']);
   });
 
   it('View underlying data opens it for the report widget', async () => {
@@ -187,7 +184,7 @@ describe('DashboardWidgetFrame menus', () => {
     expect(screen.getByTestId('underlying')).toBeInTheDocument();
   });
 
-  it('a template built-in: Widget settings, Duplicate as my report, View full page', async () => {
+  it('a template built-in whose body has no page link: Widget settings, Duplicate as my report, View full page', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={builtin('upcoming', 'template')} catalog={catalog} onSaveSettings={vi.fn()} />);
     await open();
     expect(items()).toEqual(['Widget settings', 'Duplicate as my report', 'View full page']);
@@ -213,10 +210,9 @@ describe('DashboardWidgetFrame menus', () => {
     expect(push).toHaveBeenCalledWith('/ds/reports/rep-9');
   });
 
-  it('a component built-in has no Duplicate', async () => {
+  it('a component built-in whose body links to its page has no View full page (here, no menu at all)', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={builtin('attention', 'component')} />);
-    await open();
-    expect(items()).toEqual(['View full page']);
+    expect(screen.queryByRole('button', { name: 'Widget options' })).toBeNull();
   });
 
   it('Widget settings opens the settings dialog and Save hands the change on', async () => {
