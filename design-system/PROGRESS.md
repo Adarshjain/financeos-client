@@ -228,6 +228,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-26: Select, Menu and every dropdown list are container-xs wide, grow to their content, capped at the viewport inset, never tied to the trigger width (Popover `list` prop).
 - 2026-10-26: Widget ⋮ trimmed: saved KPI = Edit only; chart/table/breakdown drop Full page; Net worth drops Underlying; built-ins with a body page link drop Full page.
 - 2026-10-26: Bills due widget: no per-entry actions (Mark paid / Set details / Undo removed).
+- 2026-10-26: Attention widget: no per-row actions; the whole row opens the item in the Inbox.
 - 2026-10-25 · **Dashboards + Holding open questions** (owner, artifact 1HJKvjbcXqxVebQ9i7G1pN): empty dashboard = one Add a widget link; Add widget saves to the dashboard Home shows; Restore default Home only while no Home; no phone Chat button; holding: server sends price times (to build), missing details left out, Overview/tabs kept, manual price date editable (server, to build), Tax this FY fine.
 - 2026-10-25 · **Ghost actions** (owner): Dialog footer secondary/tertiary and Select actions are ghost buttons (was link).
 - 2026-10-25 · **Dashboards review 2** (owner): Home switcher fills the top bar; phone resize: none (phone stays one column); dragged widget opaque; browser Back with unsaved edits asks Discard; KPI figure tap opens View underlying data; no measure line in report widgets.

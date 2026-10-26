@@ -4,6 +4,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { seedDueSoonLoan } from '../fixtures/seed/obligations';
 import { createDashboard } from '../fixtures/seed/reports';
 import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
@@ -285,6 +286,20 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Dashboard actions' }).click();
       await page.getByRole('menuitem', { name: 'New dashboard' }).click();
       await expect(page).toHaveURL(/\/ds\/dashboards\/new/);
+    });
+
+    test('Home: an Attention row is one link; tapping it opens that item in the Inbox', async ({ page }) => {
+      test.slow();
+      const loan = await seedDueSoonLoan(makeApi(currentUser.cookie), 'Ds Attn Loan');
+      await board('Ds home', true, ['attention']);
+      await page.goto('/ds/dashboard');
+      const row = page.getByTestId('inbox-widget-row').first();
+      await expect(row).toBeVisible({ timeout: 45_000 });
+      await expect(row).toHaveAttribute('href', new RegExp(`/inbox\\?item=emi%3A${loan.id}`));
+      await expect(page.getByTestId('inbox-widget').getByRole('button')).toHaveCount(0);
+      await row.click();
+      await expect(page).toHaveURL(/\/ds\/inbox\?item=emi/);
+      await expect(page.locator(`[data-inbox-key="emi:${loan.id}:1"]`)).toBeVisible({ timeout: 45_000 });
     });
 
     test('Home: a default dashboard with nothing on it says so and offers Add widget', async ({ page }) => {
