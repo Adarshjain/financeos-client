@@ -2,7 +2,6 @@
 
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
-import { Button } from '../Button/Button';
 import { Dialog, DialogBody, DialogContent, DialogFooter } from '../Dialog/Dialog';
 import { Highlight } from '../Highlight/Highlight';
 import { Icon } from '../Icon/Icon';
@@ -53,7 +52,8 @@ export interface SearchPaletteProps {
   hint?: React.ReactNode;
   /** Shown when there is search text and no results. Default: No results for "xyz". */
   emptyLabel?: (query: string) => React.ReactNode;
-  cancelLabel?: React.ReactNode;
+  /** The clear (×) button's label in the field. Default: Clear. */
+  clearLabel?: string;
   moveLabel?: React.ReactNode;
   openLabel?: React.ReactNode;
   /** Screen-reader dialog title. */
@@ -80,7 +80,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
       shortcutKey,
       placeholder = 'Search…',
       emptyLabel = (query) => `No results for "${query}"`,
-      cancelLabel = 'Cancel',
+      clearLabel = 'Clear',
       moveLabel = 'move',
       openLabel = 'open',
       srTitle = 'Search',
@@ -151,7 +151,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
           showClose={false}
           className="desk:mb-auto desk:mt-space-40"
         >
-          <div onKeyDown={onKeyDown} className="flex min-h-0 flex-1 flex-col">
+          <div onKeyDown={onKeyDown} className="flex min-h-container-sm flex-1 flex-col">
             <div className="flex shrink-0 items-center gap-space-8 border-b border-line-soft px-space-16 pb-space-12 desk:pt-space-12">
               <TextField
                 type="search"
@@ -161,12 +161,11 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                 placeholder={placeholder}
                 value={query}
                 onValueChange={setQuery}
+                clearable
+                clearLabel={clearLabel}
                 prefix={<Icon name="search" />}
                 suffix={<Kbd className="hidden desk:inline-flex">esc</Kbd>}
               />
-              <Button variant="ghost" size="sm" className="desk:hidden" onClick={() => setOpen(false)}>
-                {cancelLabel}
-              </Button>
             </div>
 
             <DialogBody className="gap-0 p-space-6">

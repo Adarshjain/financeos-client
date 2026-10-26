@@ -130,17 +130,30 @@ describe('SearchPalette', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('Escape and the phone Cancel button close it', () => {
+  it('Escape closes it; there is no Cancel button', () => {
     const onOpenChange = vi.fn();
-    const { rerender } = render(<SearchPalette open groups={makeGroups()} onOpenChange={onOpenChange} />);
+    render(<SearchPalette open groups={makeGroups()} onOpenChange={onOpenChange} />);
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
     fireEvent.keyDown(input(), { key: 'Escape' });
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    onOpenChange.mockClear();
-    rerender(<SearchPalette open groups={makeGroups()} onOpenChange={onOpenChange} cancelLabel="Back" />);
-    const cancel = screen.getByRole('button', { name: 'Back' });
-    expect(cancel).toHaveClass('desk:hidden');
-    fireEvent.click(cancel);
-    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('the clear button in the field empties the text, keeps the palette open and focuses the field', () => {
+    const onValueChange = vi.fn();
+    const onOpenChange = vi.fn();
+    render(<SearchPalette open groups={makeGroups()} onOpenChange={onOpenChange} onValueChange={onValueChange} clearLabel="Erase" />);
+    expect(screen.queryByRole('button', { name: 'Erase' })).toBeNull();
+    fireEvent.change(input(), { target: { value: 'regalia' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }));
+    expect(input()).toHaveValue('');
+    expect(onValueChange).toHaveBeenLastCalledWith('');
+    expect(input()).toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('has a minimum height so it does not collapse with few results', () => {
+    render(<SearchPalette open groups={[]} />);
+    expect(document.querySelector('.min-h-container-sm')).toContainElement(input());
   });
 
   it('desktop shows an esc key and move / open hints with overridable words', () => {

@@ -106,7 +106,7 @@ const meta: Meta<StoryArgs> = {
       source: { type: 'code' },
       description: {
         component:
-          'The ⌘K search over everything. Click Search or press ⌘K / Ctrl+K, then type (try "regalia", "swiggy" or "zomato"). Arrow keys move the highlight, Enter or a click opens the row and closes the palette; Esc closes it. On phone it is a sheet with Cancel. The page runs the search and passes the grouped results; the palette never filters.',
+          'The ⌘K search over everything. Click Search or press ⌘K / Ctrl+K, then type (try "regalia", "swiggy" or "zomato"). Arrow keys move the highlight, Enter or a click opens the row and closes the palette; Esc closes it. On phone it is a sheet. The × in the field clears the text. The page runs the search and passes the grouped results; the palette never filters.',
       },
     },
   },
@@ -125,7 +125,7 @@ const meta: Meta<StoryArgs> = {
     hint: { control: 'text' },
     shortcutKey: { control: 'text' },
     placeholder: { control: 'text' },
-    cancelLabel: { control: 'text' },
+    clearLabel: { control: 'text' },
     moveLabel: { control: 'text' },
     openLabel: { control: 'text' },
     srTitle: { control: 'text' },
