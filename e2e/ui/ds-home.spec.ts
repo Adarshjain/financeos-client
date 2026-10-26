@@ -199,6 +199,8 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/ds/dashboard');
       const widgets = page.getByTestId('dashboard-widget');
       await expect(widgets).toHaveCount(2, { timeout: 45_000 });
+      // Streaming renders them hidden behind loading.tsx first; measure once they are revealed.
+      await expect(widgets.nth(1)).toBeVisible();
       const [a, b] = [await widgets.nth(0).boundingBox(), await widgets.nth(1).boundingBox()];
       expect(Math.abs(a!.x - b!.x)).toBeLessThan(2);
       expect(b!.y).toBeGreaterThan(a!.y);
