@@ -2,18 +2,7 @@
 
 import React from 'react';
 
-export interface ChatTableColumn {
-  key: string;
-  label: string;
-  align?: 'left' | 'right';
-  format?: 'inr' | 'number' | 'text';
-}
-
-export interface ChatTableBlock {
-  title?: string;
-  columns: ChatTableColumn[];
-  rows: Record<string, string | number | boolean | null>[];
-}
+import type { ChatTableBlock } from '@/features/chat/chat.types';
 
 interface ChatDataTableProps {
   table: ChatTableBlock;

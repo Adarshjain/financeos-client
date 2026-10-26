@@ -2,10 +2,9 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import {
-  ChatChartBlock,
-  ChatChartCard,
-} from '../ChatChartCard';
+import type { ChatChartBlock } from '@/features/chat/chat.types';
+
+import { ChatChartCard } from '../ChatChartCard';
 
 describe('ChatChartCard', () => {
   it('mounts ChartView without crashing for a pie chart block', () => {

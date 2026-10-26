@@ -10,8 +10,11 @@ export const REPORTS_HREF = appHref('/reports');
 /** The Dashboards tab. */
 export const DASHBOARDS_HREF = appHref('/dashboards');
 
-/** The Ask the data page. */
-export const CHAT_HREF = appHref('/chat');
+/** The example question on the Ask instead card. */
+export const ASK_EXAMPLE = 'dining spend per month on Regalia, this year';
+
+/** Opens a new chat that sends the example question at once. */
+export const ASK_HREF = appHref(`/chat?q=${encodeURIComponent(ASK_EXAMPLE)}`);
 
 /** A report's editor: opening a report from the list opens it. */
 export const reportHref = (id: string): string => appHref(`/reports/${id}`);

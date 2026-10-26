@@ -1,14 +1,43 @@
-import {
-  BarChart3,
-  CreditCard,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react';
+export interface ChatStat {
+  label: string;
+  value: string;
+  delta?: string;
+  sentiment?: 'good' | 'bad' | 'neutral';
+}
 
-import { ChatChartBlock } from './ChatChartCard';
-import { ChatTableBlock } from './ChatDataTable';
-import { ChatReportDraft } from './ChatReportDraftCard';
-import { ChatStat } from './ChatStatCards';
+export interface ChatChartBlock {
+  chartType: 'bar' | 'stackedBar' | 'line' | 'area' | 'pie' | 'donut';
+  title?: string;
+  categories: string[];
+  series: { name: string; data: (number | null)[] }[];
+}
+
+export interface ChatTableColumn {
+  key: string;
+  label: string;
+  align?: 'left' | 'right';
+  format?: 'inr' | 'number' | 'text';
+}
+
+export interface ChatTableBlock {
+  title?: string;
+  columns: ChatTableColumn[];
+  rows: Record<string, string | number | boolean | null>[];
+}
+
+export interface ChatReportDraft {
+  mode: 'create' | 'update' | 'delete';
+  name?: string;
+  description?: string;
+  type?: 'KPI' | 'CHART' | 'TABLE';
+  datasource?: string;
+  /** Shape depends on `type` (KPI/CHART/TABLE); the LLM's draft JSON isn't validated until save, so this stays untyped until cast at the point of use. */
+  definition?: unknown;
+  reportId?: string;
+  status?: 'saved' | 'updated' | 'deleted' | 'failed';
+  savedReportId?: string;
+  errorMessage?: string;
+}
 
 export interface ChatBlocks {
   stats?: ChatStat[];
@@ -28,6 +57,7 @@ export interface ChatTrace {
   success?: boolean;
   error?: string;
   resultPreview?: string;
+  label?: string;
 }
 
 export interface Message {
@@ -42,29 +72,6 @@ export interface Message {
   error?: string;
   startTime?: number;
 }
-
-export const SUGGESTIONS = [
-  {
-    title: 'Spend Analysis',
-    prompt: 'What was my total spend last month by category?',
-    icon: BarChart3,
-  },
-  {
-    title: 'Card Recommendation',
-    prompt: 'Which credit card gives the best rewards for ₹5,000 dining?',
-    icon: CreditCard,
-  },
-  {
-    title: 'Net Worth Summary',
-    prompt: 'Show my current net worth breakdown across all accounts.',
-    icon: Wallet,
-  },
-  {
-    title: 'Portfolio Holdings',
-    prompt: 'Summarize my top investment holdings and total valuation.',
-    icon: TrendingUp,
-  },
-];
 
 export function formatActionLabel(action: string): string {
   if (action === 'run_sql') return 'Query';

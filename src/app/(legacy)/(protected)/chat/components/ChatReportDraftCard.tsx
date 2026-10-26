@@ -9,6 +9,8 @@ import {
   updateReport,
 } from '@/actions/reports';
 import { ReportDataView } from '@/components/reports/views/ReportDataView';
+import type { ChatReportDraft } from '@/features/chat/chat.types';
+import { isMalformedDraft } from '@/features/chat/draftModel';
 import type {
   ReportData,
   ReportDefinition,
@@ -17,20 +19,6 @@ import type {
 
 import { DraftActions } from './DraftActions';
 import { PixelGridLoader } from './PixelGridLoader';
-
-export interface ChatReportDraft {
-  mode: 'create' | 'update' | 'delete';
-  name?: string;
-  description?: string;
-  type?: 'KPI' | 'CHART' | 'TABLE';
-  datasource?: string;
-  /** Shape depends on `type` (KPI/CHART/TABLE); the LLM's draft JSON isn't validated until save, so this stays untyped until cast at the point of use. */
-  definition?: unknown;
-  reportId?: string;
-  status?: 'saved' | 'updated' | 'deleted' | 'failed';
-  savedReportId?: string;
-  errorMessage?: string;
-}
 
 interface ChatReportDraftCardProps {
   draft: ChatReportDraft;
@@ -49,12 +37,7 @@ export function ChatReportDraftCard({
   const isCreate = draft?.mode === 'create';
   const isUpdate = draft?.mode === 'update';
 
-  const isMalformed =
-    !draft ||
-    !draft.mode ||
-    ((draft.mode === 'create' || draft.mode === 'update') &&
-      (!draft.name || !draft.type || !draft.datasource || !draft.definition)) ||
-    (draft.mode === 'delete' && !draft.reportId);
+  const isMalformed = isMalformedDraft(draft);
 
   const shouldFetchPreview =
     !isDelete &&

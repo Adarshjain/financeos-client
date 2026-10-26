@@ -3,7 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { ChatTrace, formatActionLabel } from './chat.types';
+import { ChatTrace, formatActionLabel } from '@/features/chat/chat.types';
 
 export function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
   const [expandedIndices, setExpandedIndices] = useState<Record<number, boolean>>({});

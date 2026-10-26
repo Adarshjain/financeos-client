@@ -189,7 +189,7 @@ describe('HomeScreen', () => {
       expect(screen.getByRole('button', { name: 'Restore default Home' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/ds/dashboards/new');
       expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/ds/dashboards');
-      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
+      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/ds/chat');
     });
 
     it('Restore default Home restores it, says so and reloads the page', async () => {

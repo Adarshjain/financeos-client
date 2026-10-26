@@ -52,6 +52,8 @@ const BUILT_ROUTES: RegExp[] = [
   // Home (the default dashboard), the Dashboards list, New dashboard and a dashboard's page (view and edit).
   /^\/dashboard$/,
   /^\/dashboards(\/[^/]+)?$/,
+  // Ask the data: a new chat and one conversation.
+  /^\/chat(\/[^/]+)?$/,
 ];
 
 /** Splits '/a/b?x=1#h' into the pathname and the rest ('?x=1#h'). */

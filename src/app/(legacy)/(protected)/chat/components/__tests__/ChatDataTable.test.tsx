@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import {
-  ChatDataTable,
-  ChatTableBlock,
-} from '../ChatDataTable';
+import type { ChatTableBlock } from '@/features/chat/chat.types';
+
+import { ChatDataTable } from '../ChatDataTable';
 
 describe('ChatDataTable', () => {
   it('renders table headers and rows with column alignments and INR formatting', () => {

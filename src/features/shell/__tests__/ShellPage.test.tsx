@@ -19,7 +19,7 @@ describe('ShellPage top-bar actions', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);
     expect(screen.getByRole('link', { name: 'Ask the data' })).toHaveAttribute(
       'href',
-      '/chat',
+      '/ds/chat',
     );
     expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
   });
@@ -116,5 +116,17 @@ describe('ShellPage back', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Back' }));
     expect(router.push).toHaveBeenCalledWith('/ds/accounts');
     expect(router.back).not.toHaveBeenCalled();
+  });
+});
+
+describe('ShellPage on the Ask the data pages', () => {
+  it('leaves the Ask the data shortcut out of the bar (it is the current page)', async () => {
+    vi.resetModules();
+    vi.doMock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }), usePathname: () => '/ds/chat/c1' }));
+    const { ShellPage: Page } = await import('../ShellPage');
+    render(<Page title="Spend">content</Page>);
+    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    vi.doUnmock('next/navigation');
   });
 });

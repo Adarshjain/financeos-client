@@ -51,6 +51,15 @@ export function todayInAppZone(now: Date = new Date()): string {
   }).format(now);
 }
 
+/** The clock time (HH:mm, 24-hour) of an instant in the app zone. */
+export function timeInAppZone(instant: string | Date): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(
+    typeof instant === 'string' ? new Date(instant) : instant,
+  );
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${String(Number(get('hour')) % 24).padStart(2, '0')}:${get('minute')}`;
+}
+
 /** The hour of day (0-23) in the app zone. */
 export function hourInAppZone(now: Date = new Date()): number {
   const hour = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', hour12: false }).format(now);

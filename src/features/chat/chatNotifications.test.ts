@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as browserNotifications from '@/lib/browserNotifications';
 
-import { buildChatNotification, notifyChatComplete } from '../chatNotifications';
+import { buildChatNotification, notifyChatComplete } from './chatNotifications';
 
 describe('buildChatNotification', () => {
   it('prefers the error over answer and clarify', () => {

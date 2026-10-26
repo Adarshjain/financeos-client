@@ -172,3 +172,12 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
 
   return undefined;
 }
+
+/** True on the Ask the data pages (a new chat and one conversation). */
+export function isChatPath(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  return /^\/chat(\/|$)/.test(normalisePathname(pathname));
+}
+
+/** Routes with no phone tab bar: the Ask the data pages dock their own composer at the bottom. */
+export const hidesTabBar = isChatPath;

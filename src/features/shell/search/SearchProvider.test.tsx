@@ -139,7 +139,7 @@ describe('SearchProvider', () => {
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
     fireEvent.change(field(), { target: { value: 'regalia spend' } });
     fireEvent.click(await screen.findByRole('option', { name: 'Ask the data: regalia spend' }));
-    expect(router.push).toHaveBeenCalledWith('/chat');
+    expect(router.push).toHaveBeenCalledWith('/ds/chat?q=regalia%20spend');
   });
 
   it('asks again when the palette is opened again, since what it cached may have changed elsewhere', async () => {

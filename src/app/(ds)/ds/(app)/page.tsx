@@ -4,11 +4,6 @@ import React from 'react';
 import { Card, ListRow, SectionHeader } from '@/components/ds';
 import { ShellPage } from '@/features/shell/ShellPage';
 
-/** Boards in design-system/screens that have no /ds page yet: [page, area]. */
-const TO_BUILD: [string, string][] = [
-  ['Ask the data', 'Reports'],
-];
-
 export default function DsIndexPage() {
   return (
     <ShellPage title="New design">
@@ -108,6 +103,9 @@ export default function DsIndexPage() {
           <ListRow asChild title="Report" subtitle="/ds/reports/[id]" chevron>
             <Link href="/ds/reports" />
           </ListRow>
+          <ListRow asChild title="Ask the data" subtitle="/ds/chat" chevron>
+            <Link href="/ds/chat" />
+          </ListRow>
           <ListRow asChild title="Settings" subtitle="/ds/settings" chevron>
             <Link href="/ds/settings" />
           </ListRow>
@@ -120,14 +118,6 @@ export default function DsIndexPage() {
           <ListRow asChild title="Notifications" subtitle="/ds/notifications" chevron>
             <Link href="/ds/notifications" />
           </ListRow>
-        </Card>
-
-        {/* Pages still to build: no route yet, so no link */}
-        <Card>
-          <SectionHeader borderTop={false}>To build</SectionHeader>
-          {TO_BUILD.map(([title, area]) => (
-            <ListRow key={`${area} ${title}`} title={title} subtitle={area} />
-          ))}
         </Card>
       </div>
     </ShellPage>

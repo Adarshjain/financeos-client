@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { CHAT_HREF, reportRows } from './reportsList';
+import { ASK_HREF, reportRows } from './reportsList';
 import { ReportsScreen, type ReportsScreenProps } from './ReportsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
@@ -152,7 +152,8 @@ describe('toolbar', () => {
     expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'All' }).closest('div[class*="overflow-x-auto"]'));
     const asks = screen.getAllByRole('link', { name: 'Ask the data' });
     expect(asks).toHaveLength(1);
-    expect(asks[0]).toHaveAttribute('href', CHAT_HREF);
+    expect(asks[0]).toHaveAttribute('href', ASK_HREF);
+    expect(ASK_HREF).toBe('/ds/chat?q=dining%20spend%20per%20month%20on%20Regalia%2C%20this%20year');
     const card = asks[0].closest('div[class*="rounded"]') as HTMLElement;
     expect(within(card).getByText('Ask instead')).toBeInTheDocument();
     expect(within(card).getByText('Chat turns a question into a saved report')).toBeInTheDocument();

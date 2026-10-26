@@ -884,6 +884,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/chat/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch: operations["rename"];
+        trace?: never;
+    };
+    "/api/v1/chat/conversations/{id}/messages/{messageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["setDraftResult"];
+        trace?: never;
+    };
     "/api/v1/chat/stream": {
         parameters: {
             query?: never;
@@ -3594,6 +3642,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["globalSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/statements/{statementId}": {
         parameters: {
             query?: never;
@@ -4345,7 +4409,12 @@ export interface components {
             traces: components["schemas"]["ChatTraceEntry"][];
         };
         ChatStreamRequest: {
+            /** Format: uuid */
+            conversationId?: string;
             messages?: components["schemas"]["ChatMessage"][];
+            newConversation?: boolean;
+            persisted?: boolean;
+            retry?: boolean;
         };
         ChatTraceEntry: {
             action: string;
@@ -4353,6 +4422,7 @@ export interface components {
             /** Format: int64 */
             durationMs: number;
             error: string;
+            label: string;
             resultPreview: string;
             /** Format: int32 */
             rowCount: number;
@@ -4471,6 +4541,27 @@ export interface components {
         ConfirmDividendMatchesResponse: {
             linked: components["schemas"]["DividendResponse"][];
             skipped: components["schemas"]["SkippedDividendMatch"][];
+        };
+        ConversationDetail: {
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            messages: components["schemas"]["MessageView"][];
+            title: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ConversationSummary: {
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            questionCount: number;
+            title: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         CorporateActionPage: {
             items: components["schemas"]["CorporateActionRowResponse"][];
@@ -5110,6 +5201,9 @@ export interface components {
             id: string;
             signedAmount: number;
         };
+        DraftResultRequest: {
+            draftResult?: unknown;
+        };
         EmergencyFundResponse: {
             accounts: components["schemas"]["LiquidAccount"][];
             band?: string | null;
@@ -5293,6 +5387,15 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             warnings: string[];
+        };
+        GlobalSearchResponse: {
+            accounts: components["schemas"]["SearchAccountHit"][];
+            dashboards: components["schemas"]["SearchDashboardHit"][];
+            holdings: components["schemas"]["SearchHoldingHit"][];
+            loans: components["schemas"]["SearchLoanHit"][];
+            people: components["schemas"]["SearchPersonHit"][];
+            reports: components["schemas"]["SearchReportHit"][];
+            transactions: components["schemas"]["SearchTransactionHit"][];
         };
         GmailAttentionItemResponse: {
             /** Format: uuid */
@@ -6198,6 +6301,16 @@ export interface components {
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
         };
+        MessageView: {
+            answer: unknown;
+            /** Format: date-time */
+            createdAt: string;
+            draftResult: unknown;
+            /** Format: uuid */
+            id: string;
+            role: string;
+            text: string;
+        };
         MilestoneStatus: {
             achieved: boolean;
             /** @enum {string} */
@@ -6895,6 +7008,9 @@ export interface components {
         RemovePushSubscriptionRequest: {
             endpoint: string;
         };
+        RenameRequest: {
+            title?: string;
+        };
         ReorderRewardRulesRequest: {
             /** Format: uuid */
             accountId: string;
@@ -7473,6 +7589,64 @@ export interface components {
             definition: unknown;
             /** @enum {string} */
             type: "KPI" | "CHART" | "TABLE";
+        };
+        SearchAccountHit: {
+            bank: string;
+            /** Format: uuid */
+            id: string;
+            last4: string;
+            name: string;
+            openBill: components["schemas"]["SearchOpenBill"];
+            /** @enum {string} */
+            type: "bank_account" | "credit_card" | "broker" | "generic";
+        };
+        SearchDashboardHit: {
+            /** Format: uuid */
+            id: string;
+            isDefault: boolean;
+            name: string;
+        };
+        SearchHoldingHit: {
+            /** Format: uuid */
+            instrumentId: string;
+            name: string;
+            symbol: string;
+        };
+        SearchLoanHit: {
+            /** Format: uuid */
+            id: string;
+            lender: string;
+            name: string;
+        };
+        SearchOpenBill: {
+            /** Format: date */
+            paymentDueDate: string;
+            remainingAmount: number;
+            /** Format: uuid */
+            statementId: string;
+        };
+        SearchPersonHit: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        SearchReportHit: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            type: "KPI" | "CHART" | "TABLE";
+        };
+        SearchTransactionHit: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description: string;
+            /** Format: uuid */
+            id: string;
         };
         SellEstimateResponse: {
             bookedEquityLongTermGain?: number | null;
@@ -10328,6 +10502,164 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["ChatResponseDto"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationSummary"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rename: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationSummary"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setDraftResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftResultRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {
@@ -17316,6 +17648,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["VerifyRuleResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    globalSearch: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GlobalSearchResponse"];
                 };
             };
             /** @description Error response */

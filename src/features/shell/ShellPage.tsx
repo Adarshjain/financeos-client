@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
 
+import { isChatPath } from './navigation';
 import { hasInAppHistory } from './navigationStore';
 import { appHref } from './routes';
 import { useSearch } from './search/SearchProvider';
@@ -62,6 +63,16 @@ function useBack(backHref?: string) {
   };
 }
 
+/** The current pathname; null outside an app router (tests, Storybook). */
+function useCurrentPath(): string | null {
+  try {
+     
+    return usePathname();
+  } catch {
+    return null;
+  }
+}
+
 /** One signed-in page: the top bar with this page's title and +, then the content area. */
 export function ShellPage({
   title,
@@ -77,6 +88,8 @@ export function ShellPage({
   const notifications = useNotificationsAction();
   const onBack = useBack(backHref);
   const { open: openSearch } = useSearch();
+  // The Ask the data shortcut is left out of the bar on the Ask the data pages themselves.
+  const onChatPage = isChatPath(useCurrentPath());
   return (
     <>
       <TopBar
@@ -90,7 +103,7 @@ export function ShellPage({
         actions={[
           notifications,
           { id: 'search', icon: 'search' as const, label: 'Search', phoneOnly: true, onSelect: openSearch },
-          ...shellTopBarActions,
+          ...shellTopBarActions.filter((a) => !(onChatPage && a.id === 'chat')),
           ...(addMenu
             ? [
                 {

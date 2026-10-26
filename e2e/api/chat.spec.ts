@@ -496,35 +496,21 @@ test.describe('Chat API & Orchestrator', () => {
     expect(finalEvent?.data.answer).toContain('This request took longer than expected and I had to stop before finishing');
   });
 
-  test('10. Quota: 3 messages succeed, 4th message returns 429 CHAT_QUOTA_EXCEEDED', async ({
-    request,
-  }) => {
-    const user = await newUser(request, 'chat-quota');
+  test('10. No daily limit: many messages in a row all succeed', async ({ request }) => {
+    const user = await newUser(request, 'chat-nolimit');
     await resetLlm(user.api);
 
-    // Message 1
-    await scriptChat(user.api, [{ action: 'final_answer', answer: 'Answer 1' }]);
-    const res1 = await streamChat(user.cookie, [{ role: 'user', content: 'Msg 1' }]);
-    expect(res1.status).toBe(200);
+    for (let i = 1; i <= 6; i++) {
+      await scriptChat(user.api, [{ action: 'final_answer', answer: `Answer ${i}` }]);
+      const res = await streamChat(user.cookie, [{ role: 'user', content: `Msg ${i}` }]);
+      expect(res.status).toBe(200);
+      expect(res.header).toBeNull();
+      expect(res.events.find((e) => e.event === 'final')?.data.answer).toBe(`Answer ${i}`);
+    }
 
-    // Message 2
-    await scriptChat(user.api, [{ action: 'final_answer', answer: 'Answer 2' }]);
-    const res2 = await streamChat(user.cookie, [{ role: 'user', content: 'Msg 2' }]);
-    expect(res2.status).toBe(200);
-
-    // Message 3
-    await scriptChat(user.api, [{ action: 'final_answer', answer: 'Answer 3' }]);
-    const res3 = await streamChat(user.cookie, [{ role: 'user', content: 'Msg 3' }]);
-    expect(res3.status).toBe(200);
-
-    // Message 4 on stream -> 429 with X-Chat-Error: CHAT_QUOTA_EXCEEDED
-    const res4 = await streamChat(user.cookie, [{ role: 'user', content: 'Msg 4' }]);
-    expect(res4.status).toBe(429);
-    expect(res4.header).toBe('CHAT_QUOTA_EXCEEDED');
-
-    // Sync endpoint also returns 429 (without X-Chat-Error header)
-    const syncRes = await syncChat(user.api, [{ role: 'user', content: 'Msg 4 sync' }]);
-    expectStatus(syncRes, 429);
+    await scriptChat(user.api, [{ action: 'final_answer', answer: 'Sync answer' }]);
+    const syncRes = await syncChat(user.api, [{ role: 'user', content: 'Msg sync' }]);
+    expectStatus(syncRes, 200);
   });
 
   test('11. Concurrency: 2 concurrent streams hold semaphore, 3rd stream returns 429 CHAT_BUSY', async ({

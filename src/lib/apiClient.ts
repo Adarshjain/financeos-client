@@ -1,6 +1,7 @@
 import { cookies, headers as nextHeaders } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 
+import type { Conversation, ConversationSummary, DraftResult } from '@/features/chat/conversation.types';
 import type {
   Account,
   AccountRequest,
@@ -1624,6 +1625,30 @@ export const notificationsApi = {
   getSettings: async (): Promise<NotificationSettingsResponse> => {
     const { data } = await serverApi.GET('/api/v1/notifications/settings');
     return data! as NotificationSettingsResponse;
+  },
+};
+
+export const chatApi = {
+  listConversations: async (): Promise<ConversationSummary[]> => {
+    const { data } = await serverApi.GET('/api/v1/chat/conversations');
+    return (data as ConversationSummary[]) || [];
+  },
+  getConversation: async (id: string): Promise<Conversation> => {
+    const { data } = await serverApi.GET('/api/v1/chat/conversations/{id}', { params: { path: { id } } });
+    return data! as unknown as Conversation;
+  },
+  renameConversation: async (id: string, title: string): Promise<ConversationSummary> => {
+    const { data } = await serverApi.PATCH('/api/v1/chat/conversations/{id}', { params: { path: { id } }, body: { title } });
+    return data! as ConversationSummary;
+  },
+  deleteConversation: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/chat/conversations/{id}', { params: { path: { id } } });
+  },
+  saveDraftResult: async (conversationId: string, messageId: string, draftResult: DraftResult): Promise<void> => {
+    await serverApi.PATCH('/api/v1/chat/conversations/{id}/messages/{messageId}', {
+      params: { path: { id: conversationId, messageId } },
+      body: { draftResult },
+    });
   },
 };
 

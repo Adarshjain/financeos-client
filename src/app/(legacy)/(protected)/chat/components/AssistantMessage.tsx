@@ -3,7 +3,8 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { Message } from './chat.types';
+import { Message } from '@/features/chat/chat.types';
+
 import { ChatChartCard } from './ChatChartCard';
 import { ChatDataTable } from './ChatDataTable';
 import { ChatReportDraftCard } from './ChatReportDraftCard';
