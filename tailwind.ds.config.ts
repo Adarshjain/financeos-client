@@ -68,6 +68,7 @@ const config: Config = {
       backgroundColor: {
         canvas: 'var(--ds-bg-canvas)',
         surface: 'var(--ds-bg-surface)',
+        glass: 'var(--ds-bg-glass)',
         sunken: 'var(--ds-bg-sunken)',
         subtle: 'var(--ds-bg-subtle)',
         hover: 'var(--ds-bg-hover)',
@@ -173,6 +174,9 @@ const config: Config = {
       ringColor: {
         surface: 'var(--ds-bg-surface)',
       },
+      // Frosted glass (bg-glass + backdrop-blur-glass + backdrop-saturate-glass), behind the `glass:` variant.
+      backdropBlur: { glass: 'var(--ds-blur-glass)' },
+      backdropSaturate: { glass: 'var(--ds-saturate-glass)' },
       boxShadow: {
         'level-1': 'var(--ds-shadow-level-1)',
         'level-2': 'var(--ds-shadow-level-2)',
@@ -287,6 +291,7 @@ const config: Config = {
   plugins: [
     // `with-selection-bar:` is true while a SelectionBar is mounted anywhere in the document (the phone tab bar hides under it).
     plugin(({ addVariant }) => {
+      addVariant('glass', '@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))');
       addVariant('with-selection-bar', ':is(body:has([data-selection-bar]) &)');
     }),
     // Search-match marker stroke (Highlight): gradient, size, rough ends and tilt can't be token classes.

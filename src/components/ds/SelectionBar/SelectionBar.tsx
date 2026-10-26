@@ -146,7 +146,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       >
         <div
           className={cn(
-            'bg-surface border-line-strong shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto desk:border desk:rounded-ds-lg',
+            'bg-surface glass:bg-glass glass:backdrop-blur-glass glass:backdrop-saturate-glass border-line-strong shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto desk:border desk:rounded-ds-lg',
             'border-t rounded-t-ds-2xl',
             counted
               ? 'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-safe-12 desk:p-0'

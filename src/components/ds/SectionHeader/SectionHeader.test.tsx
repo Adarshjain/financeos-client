@@ -22,6 +22,15 @@ describe('SectionHeader', () => {
     );
   });
 
+  it('sticky header is frosted glass, a non-sticky one is not', () => {
+    const { container, rerender } = render(<SectionHeader variant="strong">Today</SectionHeader>);
+    expect(container.firstChild).toHaveClass('glass:bg-glass', 'glass:backdrop-blur-glass', 'glass:backdrop-saturate-glass');
+    rerender(<SectionHeader variant="strong" sticky={false}>Today</SectionHeader>);
+    expect(container.firstChild).not.toHaveClass('glass:bg-glass');
+    rerender(<SectionHeader>Section</SectionHeader>);
+    expect(container.firstChild).not.toHaveClass('glass:bg-glass');
+  });
+
   it('renders strong variant with sticky=false', () => {
     const { container } = render(
       <SectionHeader variant="strong" sticky={false}>

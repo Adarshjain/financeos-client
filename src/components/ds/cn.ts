@@ -145,6 +145,7 @@ const customTwMerge = extendTailwindMerge({
       spacing: [...CN_SPACING],
       radius: [...CN_RADIUS],
       shadow: [...CN_SHADOW],
+      blur: ['glass'],
     },
     classGroups: {
       'font-size': [{ text: [...CN_FONT_SIZE] }],

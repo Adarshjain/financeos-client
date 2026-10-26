@@ -99,6 +99,16 @@ describe('TabBar', () => {
     expect(txBadge).toBeInTheDocument();
   });
 
+  it('is frosted glass: solid surface fallback plus glass: blur classes', () => {
+    render(<TabBar items={sampleItems} current="home" />);
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toHaveClass(
+      'bg-surface',
+      'glass:bg-glass',
+      'glass:backdrop-blur-glass',
+      'glass:backdrop-saturate-glass',
+    );
+  });
+
   it('renders 99+ when count exceeds 99 via formatCount', () => {
     const highCountItems: TabBarItem[] = [
       { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 150, countTone: 'danger' },

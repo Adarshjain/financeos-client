@@ -37,6 +37,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `width` and `height` also take `icon-sm` (14), `icon-md` (16), `icon-lg` (20) for Icon sizes, and `icon-inline` (`calc(1em - 2px)`, 2px under the surrounding text; link-button icons). `size-icon-inline` too.
    - `width` and `minWidth` also take `popover-trigger` and `menu-trigger` (the trigger width Radix exposes) for Popover `match` and Menu minimum width.
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
+   - Frosted glass (2026-10-26): `backgroundColor` `glass` (token `bg-glass`), `backdropBlur` `glass` (`blur-glass`), `backdropSaturate` `glass` (`saturate-glass`), and the variant `glass:` (true where backdrop-filter is supported; the base class stays solid `bg-surface`).
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - Breakpoint: `lg` (1024px, Tailwind's default) is the only phone→desktop switch inside components (RULES §5c.2).
    - Radix state variants: `data-open:`, `data-closed:`, `data-checked:`, `data-unchecked:`, `data-indeterminate:`, `data-active:`, `data-inactive:`, `data-on:`, `data-highlighted:`, `data-disabled:`, `data-side-top:` / `-bottom:` / `-left:` / `-right:`. Use these instead of `data-[state=…]:`, which is an arbitrary value.
@@ -225,6 +226,8 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-26: Top bar + phone tab bar: frosted glass (new generic tokens `bg-glass` = surface at 85% alpha, `blur-glass` 16px, `saturate-glass` 1.6; `glass:` variant falls back to solid `bg-surface` without backdrop-filter; default look, no prop) + sticky SectionHeader, SelectionBar (incl. dashboard/report edit action bars, both built from it); phone sheet footer not done (it is not overlaid by content, so glass would not show).
+- 2026-10-26: Dashboards, Reports, Rewards APPROVED (owner raises issues separately). /ds index is a temp page, not reviewed. Settings links Legacy beside Storybook. Hide amounts in RSC payload: declined, not an exposure.
 - 2026-10-26: Select, Menu and every dropdown list are container-xs wide, grow to their content, capped at the viewport inset, never tied to the trigger width (Popover `list` prop).
 - 2026-10-26: Widget ⋮ trimmed: saved KPI = Edit only; chart/table/breakdown drop Full page; Net worth drops Underlying; built-ins with a body page link drop Full page.
 - 2026-10-26: Bills due widget: no per-entry actions (Mark paid / Set details / Undo removed).
@@ -445,6 +448,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude · Glass (bg-glass 85%, blur-glass, saturate-glass; glass: variant) on TopBar, TabBar, sticky SectionHeader, SelectionBar; Attention rows one link (a343a1eb); Settings Legacy link. Phone sheet footer left solid (not overlaid).
 - 2026-10-26 · Phase 3 · Claude · Owner round: sticky under top bar, menu width rule, Net worth VUD groups Assets/Liabilities/Investments full width (server 9c1a543), widget ⋮ trimmed, Bills due rows read-only (client 00f2acdc). Open: Attention row actions (owner Q); server bills_due description still says "Mark paid".
 - 2026-10-26 · Phase 3 · Claude · Sticky fix (owner bug): in-page sticky (SectionHeader, DataTable header) was `top-0`, so day headers stuck under/over the top bar. New generic spacing step `sticky-offset` (= `--ds-sticky-top`, set by ShellPage main to the bar height, 0 elsewhere) used as `top-sticky-offset`; ShellPage main is `isolate` so page z-sticky stays below the bar's. Forced test edit: SectionHeader.test top-0 class. Deviations: none.
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.

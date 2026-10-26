@@ -11,6 +11,16 @@ describe('TopBar component', () => {
     expect(screen.getByText('Profile')).toBeInTheDocument();
   });
 
+  it('is frosted glass: solid surface fallback plus glass: blur classes', () => {
+    render(<TopBar title="Home" />);
+    expect(screen.getByRole('banner')).toHaveClass(
+      'bg-surface',
+      'glass:bg-glass',
+      'glass:backdrop-blur-glass',
+      'glass:backdrop-saturate-glass',
+    );
+  });
+
   it('renders custom leading slot on phone', () => {
     render(
       <TopBar

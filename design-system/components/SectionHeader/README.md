@@ -4,6 +4,7 @@ The header that starts a section inside a list, card or sheet. One component for
 
 ## Variants
 - **strong**: prominent group or day header (e.g. sticky list header, `text-label font-extrabold text-ink` on `bg-subtle`, `z-sticky`).
+- **strong, sticky** (default for strong) is frosted glass: `bg-subtle` fallback, `glass:bg-glass glass:backdrop-blur-glass glass:backdrop-saturate-glass` where backdrop-filter is supported, so rows scrolling under it show through blurred. Non-sticky and band stay solid.
 - **band**: a form section in a sheet or card, `overline` caption in `ink-4` on `bg-sunken`, bleeding to the edges.
 
 - **With action**: a control (e.g. a link Button) at the right end of the row, after `meta`.
