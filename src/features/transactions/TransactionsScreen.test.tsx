@@ -12,10 +12,11 @@ import { DEFAULT_QUERY } from './list/transactionsUrl';
 import { TransactionsScreen, type TransactionsScreenProps } from './TransactionsScreen';
 
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
+const urlParams = vi.hoisted(() => ({ current: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
   usePathname: () => '/ds/transactions',
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => urlParams.current,
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationSummary: () => ({ data: { unread: 0 } }),
@@ -97,7 +98,10 @@ function setup(over: Partial<TransactionsScreenProps> = {}) {
 
 const spacer = () => document.querySelector('[aria-hidden="true"].max-w-container-sm');
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  urlParams.current = new URLSearchParams();
+});
 
 describe('TransactionsScreen', () => {
   it('opens the detail from a row, reserving room beside the list, without touching the address', () => {
@@ -150,5 +154,90 @@ describe('TransactionsScreen', () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
     expect(screen.queryByRole('button', { name: 'Review' })).toBeNull();
+  });
+
+  describe('deep link ?txn', () => {
+    const ID = '11111111-2222-3333-4444-555555555555';
+
+    it('opens the detail of a transaction that is not on the page, fetched by id, and drops ?txn on close without navigating', async () => {
+      const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      vi.mocked(fetchTransaction).mockResolvedValue(
+        txn({ id: ID, description: 'Old purchase', sourcedDescription: 'UPI/OLD', date: '2024-01-05' }),
+      );
+      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      const replaceState = vi.spyOn(window.history, 'replaceState');
+      setup({ query: { ...DEFAULT_QUERY, txn: ID } });
+
+      expect(await screen.findByText('UPI/OLD')).toBeInTheDocument();
+      expect(fetchTransaction).toHaveBeenCalledWith(ID);
+      expect(replaceState).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
+      await waitFor(() => expect(spacer()).toBeNull());
+      expect(replaceState.mock.calls.at(-1)?.[2]).toBe('/ds/transactions');
+      expect(router.push).not.toHaveBeenCalled();
+      expect(router.replace).not.toHaveBeenCalled();
+      replaceState.mockRestore();
+    });
+
+    it('shows no dialog for an unknown or foreign id and cleans the address', async () => {
+      const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Not found'), { status: 404 }));
+      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      setup({ query: { ...DEFAULT_QUERY, txn: ID } });
+
+      await waitFor(() => expect(window.location.search).toBe(''));
+      expect(screen.queryByText('Could not load this transaction.')).toBeNull();
+      expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
+    });
+
+    it('opens one already on the page without fetching it', async () => {
+      const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      setup({ query: { ...DEFAULT_QUERY, txn: 't1' } });
+      expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
+      expect(fetchTransaction).not.toHaveBeenCalled();
+    });
+
+    it('keeps the panel, its Retry and the address when the load fails for another reason than not found', async () => {
+      const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Server error'), { status: 500 }));
+      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      setup({ query: { ...DEFAULT_QUERY, txn: ID } });
+
+      expect(await screen.findByText('Could not load this transaction.')).toBeInTheDocument();
+      expect(window.location.search).toBe(`?txn=${ID}`);
+    });
+
+    it('opens a transaction when the address changes to ?txn while the page stays mounted, and again after a close', async () => {
+      window.history.replaceState(null, '', '/ds/transactions');
+      const ui = () => (
+        <AddTransactionProvider today="2026-10-21">
+          <TransactionsScreen
+            query={DEFAULT_QUERY}
+            today="2026-10-21"
+            list={{ ok: true, rows: transactionRows(transactions, { accounts, showSource: false }) as TransactionListRow[], totalElements: 2, totalPages: 1 }}
+            transactions={transactions}
+            accounts={accounts}
+            categories={[]}
+            needsReviewCount={null}
+          />
+        </AddTransactionProvider>
+      );
+      const view = setup();
+      expect(spacer()).toBeNull();
+
+      urlParams.current = new URLSearchParams(`txn=t2`);
+      view.rerender(ui());
+      expect(await screen.findByText('UBER INDIA')).toBeInTheDocument();
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
+      await waitFor(() => expect(spacer()).toBeNull());
+      urlParams.current = new URLSearchParams();
+      view.rerender(ui());
+
+      urlParams.current = new URLSearchParams(`txn=t1`);
+      view.rerender(ui());
+      expect(await screen.findByText('UPI/BIGBASKET')).toBeInTheDocument();
+    });
   });
 });

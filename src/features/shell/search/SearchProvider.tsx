@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { SearchPalette } from '@/components/ds';
+import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
+import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
 
 import { shellFooterItems, shellQuickAddItems, shellRailGroups } from '../navigation';
 import { useOpenQuickAddDialog } from '../quickAdd';
 import { appHref } from '../routes';
-import { buildSearchGroups, type SearchAction, type SearchPage } from './searchItems';
+import { buildSearchGroups, type SearchAction, searchHint, type SearchPage } from './searchItems';
 import { useGlobalSearch } from './useGlobalSearch';
 
 interface SearchValue {
@@ -28,9 +30,11 @@ const PAGES: SearchPage[] = [...shellRailGroups.flatMap((g) => g.items), ...shel
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const openQuickAdd = useOpenQuickAddDialog();
+  const addTransaction = useAddTransaction();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
-  const { result, loading } = useGlobalSearch(query);
+  const { result, loading, reset } = useGlobalSearch(query);
+  const [markPaid, setMarkPaid] = React.useState<{ statementId: string; cardName: string; remaining: number } | null>(null);
 
   const actions: SearchAction[] = shellQuickAddItems.map((item) => ({
     id: item.id,
@@ -42,22 +46,42 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       else if (item.href) router.push(appHref(item.href));
     },
   }));
-  const groups = buildSearchGroups({ query, result, pages: PAGES, actions, go: (href) => router.push(href) });
+  const groups = buildSearchGroups({ query, result, pages: PAGES, actions, go: (href) => router.push(href),
+    onMarkBillPaid: setMarkPaid,
+    onAddTransaction: (accountId) => addTransaction.open({ defaultAccountId: accountId }),
+  });
 
-  const value = React.useMemo<SearchValue>(() => ({ open: () => setOpen(true) }), []);
+  // Opening starts fresh: a bill paid or a transaction added elsewhere since would leave cached answers stale.
+  const value: SearchValue = {
+    open: () => {
+      reset();
+      setOpen(true);
+    },
+  };
 
   return (
     <SearchContext.Provider value={value}>
       {children}
+      <MarkPaidDialog
+        open={markPaid !== null}
+        onOpenChange={(next) => !next && setMarkPaid(null)}
+        statementId={markPaid?.statementId ?? ''}
+        cardName={markPaid?.cardName ?? ''}
+        remaining={markPaid?.remaining ?? null}
+        // The cached answers still show this bill as unpaid (or paid, after an undo).
+        onMarked={reset}
+      />
       <SearchPalette
         open={open}
         onOpenChange={(next) => {
+          if (next) reset();
           setOpen(next);
           if (!next) setQuery('');
         }}
         value={query}
         onValueChange={setQuery}
         groups={groups}
+        hint={searchHint(query)}
         // The previous answer stays on screen while a newer one loads; the skeleton is only for the first.
         loading={loading && !result}
         shortcutKey="k"

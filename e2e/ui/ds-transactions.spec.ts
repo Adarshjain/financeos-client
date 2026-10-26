@@ -95,6 +95,28 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     };
 
+    test('?txn opens a transaction outside the filters in its detail, and closing drops it from the address', async ({ page }) => {
+      const { old } = await seedList();
+      await open(page, `?q=Swiggy&txn=${old.id}`);
+      const detail = page.getByRole('dialog', { name: 'Old Furniture' });
+      await expect(detail).toBeVisible({ timeout: 30_000 });
+      await expect(row(page, 'Old Furniture')).toHaveCount(0);
+
+      await page.keyboard.press('Escape');
+      await expect(detail).toHaveCount(0);
+      await expect(page).not.toHaveURL(/txn=/);
+      await expect(page).toHaveURL(/q=Swiggy/);
+      await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+    });
+
+    test('?txn with an unknown id opens no dialog and the list renders', async ({ page }) => {
+      await seedList();
+      await open(page, '?txn=00000000-0000-4000-8000-000000000000');
+      await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await expect(page).not.toHaveURL(/txn=/);
+    });
+
     if (phone) {
       test('sticky day headers stop under the top bar', async ({ page }) => {
         const { api, bank } = await seedList();

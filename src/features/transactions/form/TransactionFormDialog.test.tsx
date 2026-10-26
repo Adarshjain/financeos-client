@@ -117,6 +117,15 @@ describe('Add transaction', () => {
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Savings');
   });
 
+  it('starts on the wanted account once the accounts arrive, when Add opened before they loaded', () => {
+    accountList = [];
+    const ui = (list: Account[]) => <TransactionFormDialog today="2026-10-13" accounts={list} defaultAccountId="b1" onClose={onClose} />;
+    const view = renderWithQuery(ui([]));
+    accountList = [bank, card];
+    view.rerender(ui(accountList));
+    expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Savings');
+  });
+
   it('starts on a filtered credit card with its default card, and sends it', async () => {
     setup({ defaultAccountId: 'cc1' });
     expect(screen.getByRole('combobox', { name: /^Card/ })).toHaveTextContent('Meera (•••• 7742)');

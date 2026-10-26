@@ -272,3 +272,19 @@ describe('TopBar title node and back click', () => {
     expect(onBack).not.toHaveBeenCalled();
   });
 });
+
+describe('TopBar phoneOnly actions', () => {
+  it('hides a phoneOnly action from the desktop layout with CSS and keeps others', () => {
+    render(
+      <TopBar
+        title="Home"
+        actions={[
+          { id: 's', icon: 'search', label: 'Search', phoneOnly: true },
+          { id: 'c', icon: 'chat', label: 'Ask' },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Search' })).toHaveClass('desk:hidden');
+    expect(screen.getByRole('button', { name: 'Ask' })).not.toHaveClass('desk:hidden');
+  });
+});

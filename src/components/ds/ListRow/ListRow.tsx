@@ -142,8 +142,12 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       );
     };
 
-    if (asChild && React.isValidElement(children)) {
-      const child = children as React.ReactElement<{ children?: React.ReactNode }>;
+    // A server page's element can arrive as a React lazy reference (dev RSC streaming), which isValidElement
+    // rejects; Children.toArray resolves it to the element.
+    const only = asChild ? React.Children.toArray(children) : [];
+    const asChildElement = only.length === 1 && React.isValidElement(only[0]) ? only[0] : null;
+    if (asChildElement) {
+      const child = asChildElement as React.ReactElement<{ children?: React.ReactNode }>;
       const innerContent = (
         <>
           {leading && <div className="shrink-0 flex items-center">{leading}</div>}

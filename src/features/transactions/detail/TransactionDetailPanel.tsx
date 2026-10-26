@@ -60,6 +60,8 @@ export interface TransactionDetailPanelProps {
   /** A linked transaction's name was pressed: the panel swaps to it. */
   onOpenTransaction: (id: string) => void;
   onClose: () => void;
+  /** The transaction could not be loaded; the caller may close the panel (it decides from the error's status). */
+  onLoadFailed?: (error: unknown) => void;
   onEdit: (transaction: Transaction) => void;
   /** The transaction was deleted; the panel closes and the page refreshes. */
   onDeleted: () => void;
@@ -76,6 +78,7 @@ export function TransactionDetailPanel({
   accounts,
   onOpenTransaction,
   onClose,
+  onLoadFailed,
   ...rest
 }: TransactionDetailPanelProps) {
   // The last one opened stays up while the panel slides away.
@@ -83,6 +86,9 @@ export function TransactionDetailPanel({
   if (transactionId !== null && transactionId !== shownId) setShownId(transactionId);
   const found = useDetailTransaction(shownId, transactionId !== null, pageTransactions);
   const { loading, failed, retry } = found;
+  React.useEffect(() => {
+    if (failed) onLoadFailed?.(found.error);
+  }, [failed, found.error, onLoadFailed]);
   // While it slides shut the last one stays up, even when a refresh has taken it off the page (it was deleted).
   const [last, setLast] = React.useState<Transaction | undefined>(found.transaction);
   if (found.transaction && found.transaction !== last) setLast(found.transaction);

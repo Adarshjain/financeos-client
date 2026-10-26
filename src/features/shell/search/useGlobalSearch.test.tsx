@@ -29,7 +29,7 @@ describe('useGlobalSearch', () => {
     const { result } = renderHook(({ q }) => useGlobalSearch(q), { initialProps: { q: '  ab ' } });
     await flush();
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.current).toEqual({ result: null, loading: false });
+    expect(result.current).toMatchObject({ result: null, loading: false });
   });
 
   it('waits for a pause in typing, then requests the trimmed text once', async () => {
@@ -102,20 +102,31 @@ describe('useGlobalSearch', () => {
     fetchMock.mockRejectedValueOnce(new Error('Search failed (500)'));
     const { result } = renderHook(() => useGlobalSearch('abc'));
     await flush();
-    expect(result.current).toEqual({ result: EMPTY_SEARCH_RESULT, loading: false });
+    expect(result.current).toMatchObject({ result: EMPTY_SEARCH_RESULT, loading: false });
   });
 
   it('sends no request over 100 characters and shows no server results', async () => {
     const { result } = renderHook(() => useGlobalSearch('x'.repeat(101)));
     await flush();
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.current).toEqual({ result: null, loading: false });
+    expect(result.current).toMatchObject({ result: null, loading: false });
   });
 
   it('clears the results when the text drops under 3 characters', async () => {
     const { result, rerender } = renderHook(({ q }) => useGlobalSearch(q), { initialProps: { q: 'abc' } });
     await flush();
     rerender({ q: 'ab' });
-    expect(result.current).toEqual({ result: null, loading: false });
+    expect(result.current).toMatchObject({ result: null, loading: false });
+  });
+
+  it('reset forgets the cached answers and searches the current text again', async () => {
+    const { result } = renderHook(() => useGlobalSearch('abc'));
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fetchMock.mockImplementation(async () => answer('fresh'));
+    act(() => result.current.reset());
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.result?.accounts[0].name).toBe('fresh');
   });
 });

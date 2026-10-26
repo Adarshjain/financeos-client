@@ -150,4 +150,17 @@ describe('SearchPalette', () => {
     expect(footer).toHaveClass('hidden');
     expect(footer).toHaveTextContent(/go.*Enter.*pick/);
   });
+
+  it('shows the hint above the groups, and also when there are none', () => {
+    const { rerender } = render(<SearchPalette defaultOpen groups={makeGroups()} hint="Type 3 or more characters" />);
+    const hint = screen.getByText('Type 3 or more characters');
+    expect(hint.compareDocumentPosition(rows()[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    rerender(<SearchPalette defaultOpen groups={[]} hint="Type 3 or more characters" />);
+    expect(screen.getByText('Type 3 or more characters')).toBeInTheDocument();
+  });
+
+  it('shows no hint by default', () => {
+    render(<SearchPalette defaultOpen groups={makeGroups()} />);
+    expect(screen.queryByText('Type 3 or more characters')).toBeNull();
+  });
 });

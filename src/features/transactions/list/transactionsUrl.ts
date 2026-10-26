@@ -100,6 +100,8 @@ export interface TransactionsQuery {
   excluded: boolean;
   source: TransactionSource | null;
   sort: SortId;
+  /** A transaction to open in the detail panel (a link, e.g. from search); never written by the list itself. */
+  txn: string | null;
   /** 0-based. */
   page: number;
   size: number;
@@ -119,6 +121,7 @@ export const DEFAULT_QUERY: TransactionsQuery = {
   upToStatement: false,
   excluded: false,
   source: null,
+  txn: null,
   sort: 'newest',
   page: 0,
   size: TRANSACTIONS_DEFAULT_SIZE,
@@ -126,6 +129,7 @@ export const DEFAULT_QUERY: TransactionsQuery = {
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
+const TXN_ID = /^[\w-]{1,64}$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function one(value: string | string[] | undefined): string {
@@ -172,6 +176,12 @@ function parseAmount(params: RawSearchParams): AmountCondition | null {
   return { op, from: Math.min(from, to), to: Math.max(from, to) };
 }
 
+/** A transaction id from ?txn; anything that is not a plain id (letters, digits, - and _) is no link. */
+export function parseTxn(value: string | null | undefined): string | null {
+  const id = (value ?? '').trim();
+  return TXN_ID.test(id) ? id : null;
+}
+
 /** The query a set of URL params stands for; anything missing or invalid falls back to its default. */
 export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery {
   const page = Math.floor(Number(one(params.page)));
@@ -195,6 +205,7 @@ export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery
     upToStatement: one(params.statement) === '1',
     excluded: one(params.excluded) === '1',
     source: SOURCES.includes(source) ? source : null,
+    txn: parseTxn(one(params.txn)),
     sort: sort?.id ?? 'newest',
     page: Number.isFinite(page) && page > 0 ? page : 0,
     size: TRANSACTIONS_SIZE_OPTIONS.includes(size) ? size : TRANSACTIONS_DEFAULT_SIZE,
@@ -213,6 +224,7 @@ function samePeriod(a: Period, b: Period): boolean {
 export function transactionsSearch(query: TransactionsQuery): string {
   const out = new URLSearchParams();
   if (query.q) out.set('q', query.q);
+  if (query.txn) out.set('txn', query.txn);
   const { period } = query;
   if (period.kind === 'date') out.set('date', period.date);
   else if (period.kind === 'range') {

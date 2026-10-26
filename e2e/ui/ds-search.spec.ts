@@ -3,6 +3,7 @@ import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { seedHoldings } from '../fixtures/seed/holdings';
+import { ingestCardStatement } from '../fixtures/seed/nav';
 import { type SeededSearch, seedSearch } from '../fixtures/seed/search';
 import { expect, test } from '../fixtures/test';
 
@@ -30,8 +31,8 @@ for (const viewport of VIEWPORTS) {
     const palette = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Search' });
 
     /** The way in on this width: the phone's top-bar button, the desktop Rail's Search field. */
-    async function openSearch(page: import('@playwright/test').Page) {
-      await page.goto('/ds/accounts');
+    async function openSearch(page: import('@playwright/test').Page, path = '/ds/accounts') {
+      await page.goto(path);
       const trigger = phone
         ? page.getByRole('button', { name: 'Search', exact: true })
         : page.locator('nav.w-container-xs').getByRole('button', { name: /Search/ });
@@ -107,6 +108,68 @@ for (const viewport of VIEWPORTS) {
         await expect(page).toHaveURL(new RegExp(`${c.url}$`), { timeout: 45_000 });
         await expect(palette(page)).toHaveCount(0);
       }
+    });
+
+    test('picking a transaction opens its detail on the Transactions page', async ({ page }) => {
+      test.slow();
+      await openSearch(page);
+      await page.getByRole('searchbox').fill(WORD);
+      await palette(page).getByRole('option', { name: `${WORD} purchase 1 ·`, exact: false }).click({ timeout: 30_000 });
+      await expect(page).toHaveURL(/\/ds\/transactions\?txn=[0-9a-f-]{36}/, { timeout: 45_000 });
+      await expect(page.getByRole('dialog', { name: `${WORD} purchase 1` })).toBeVisible({ timeout: 30_000 });
+    });
+
+    test('picking a transaction while already on Transactions opens its detail there', async ({ page }) => {
+      test.slow();
+      await openSearch(page, '/ds/transactions');
+      await page.getByRole('searchbox').fill(WORD);
+      await palette(page).getByRole('option', { name: `${WORD} purchase 2 ·`, exact: false }).click({ timeout: 30_000 });
+      await expect(page).toHaveURL(/\/ds\/transactions\?txn=/, { timeout: 45_000 });
+      await expect(page.getByRole('dialog', { name: `${WORD} purchase 2` })).toBeVisible({ timeout: 30_000 });
+    });
+
+    test('a matched account offers Add transaction on it, with that account picked', async ({ page }) => {
+      test.slow();
+      await openSearch(page);
+      await page.getByRole('searchbox').fill(`${WORD} Savings`);
+      const dialog = palette(page);
+      await expect(dialog.getByRole('option', { name: `Add transaction on ${WORD} Savings` })).toBeVisible({ timeout: 30_000 });
+      await expect(dialog.getByRole('option', { name: `Upload a ${WORD} Savings statement` })).toBeVisible();
+      await dialog.getByRole('option', { name: `Add transaction on ${WORD} Savings` }).click();
+      const add = page.getByRole('dialog', { name: 'Add transaction' });
+      await expect(add).toBeVisible();
+      await expect(add.getByRole('combobox', { name: /^Account/ })).toContainText(`${WORD} Savings`);
+    });
+
+    test('a card with an unpaid bill shows what it owes and offers Mark bill paid, which disappears once paid', async ({ page }) => {
+      test.slow();
+      await ingestCardStatement(makeApi(currentUser.cookie), seeded.card.id, '7741');
+      await openSearch(page);
+      await page.getByRole('searchbox').fill(`${WORD} Card`);
+      const dialog = palette(page);
+      const markPaid = dialog.getByRole('option', { name: `Mark ${WORD} Card bill paid` });
+      await expect(markPaid).toBeVisible({ timeout: 30_000 });
+      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} Card · ••7741`) })).toContainText('₹6,000');
+
+      await markPaid.click();
+      const mark = page.getByRole('dialog', { name: 'Mark bill as paid' });
+      await expect(mark).toBeVisible();
+      await mark.getByRole('button', { name: 'Mark paid' }).click();
+      await expect(mark).toHaveCount(0);
+
+      await page.keyboard.press('ControlOrMeta+k');
+      await page.getByRole('searchbox').fill(`${WORD} Card`);
+      await expect(palette(page).getByRole('option', { name: `Add transaction on ${WORD} Card` })).toBeVisible({ timeout: 30_000 });
+      await expect(palette(page).getByRole('option', { name: `Mark ${WORD} Card bill paid` })).toHaveCount(0);
+    });
+
+    test('1 or 2 characters show the nudge, 3 remove it', async ({ page }) => {
+      test.slow();
+      await openSearch(page);
+      await page.getByRole('searchbox').fill('ze');
+      await expect(palette(page).getByText('Type 3 or more characters to search accounts, transactions and more')).toBeVisible();
+      await page.getByRole('searchbox').fill('zep');
+      await expect(palette(page).getByText(/Type 3 or more characters/)).toHaveCount(0);
     });
 
     test('the text is cleared after the palette closes', async ({ page }) => {

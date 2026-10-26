@@ -158,4 +158,15 @@ describe('MarkPaidDialog amount arithmetic', () => {
       expect(markPaid).toHaveBeenCalledWith({ statementId: 's1', body: { amount: 165, paidOn: '2026-10-13' } }),
     );
   });
+
+  it('tells the caller once the bill is marked paid, and not when marking fails', async () => {
+    const onMarked = vi.fn();
+    render(<MarkPaidDialog open onOpenChange={vi.fn()} statementId="s1" cardName="Card" remaining={10} onMarked={onMarked} />);
+    markPaid.mockRejectedValueOnce(new Error('no'));
+    submit();
+    await waitFor(() => expect(showToast).toHaveBeenCalled());
+    expect(onMarked).not.toHaveBeenCalled();
+    submit();
+    await waitFor(() => expect(onMarked).toHaveBeenCalledTimes(1));
+  });
 });

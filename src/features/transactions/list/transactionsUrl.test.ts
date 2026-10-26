@@ -102,6 +102,7 @@ describe('transactionsUrl', () => {
       upToStatement: true,
       excluded: true,
       source: 'gmail_statement',
+      txn: null,
       sort: 'highest',
       page: 2,
       size: 100,
@@ -132,5 +133,22 @@ describe('clearedQuery and isUnfiltered', () => {
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME })).toBe(true);
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME, page: 4, sort: 'lowest' })).toBe(true);
     expect(isUnfiltered({ ...DEFAULT_QUERY, period: ALL_TIME, q: 'a' })).toBe(false);
+  });
+});
+
+describe('txn deep link', () => {
+  const ID = '11111111-2222-3333-4444-555555555555';
+
+  it('parses a transaction id and drops anything that is not one', () => {
+    expect(parseTransactionsUrl({ txn: ID }).txn).toBe(ID);
+    expect(parseTransactionsUrl({ txn: ` ${ID} ` }).txn).toBe(ID);
+    expect(parseTransactionsUrl({ txn: 'a b/c' }).txn).toBeNull();
+    expect(parseTransactionsUrl({ txn: 'x'.repeat(65) }).txn).toBeNull();
+    expect(parseTransactionsUrl({}).txn).toBeNull();
+  });
+
+  it('builds the link, and writes nothing without one', () => {
+    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: ID })).toBe(`/ds/transactions?txn=${ID}`);
+    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: null })).toBe('/ds/transactions');
   });
 });
