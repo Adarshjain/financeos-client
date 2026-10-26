@@ -889,8 +889,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           open={isOpen}
           onOpenChange={setOpen}
           trigger={effectiveTrigger}
-          // The field's own list is exactly its width; a custom trigger (a small chip) keeps the popover's natural width.
-          contentClassName={cn('p-0 overflow-hidden', !trigger && 'w-popover-trigger desk:max-w-container-viewport-inset', menuClassName)}
+          // One width rule for every select (owner, 2026-10-26): container-xs wide, grows to its content, capped at the viewport inset; never follows the trigger.
+          contentClassName={cn('p-0 overflow-hidden w-max min-w-container-xs max-w-container-viewport-inset desk:max-w-container-viewport-inset', menuClassName)}
         >
           <SelectMenu
             id={id}

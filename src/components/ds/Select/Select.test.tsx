@@ -136,20 +136,30 @@ describe('Select', () => {
     expect(root).not.toHaveClass('w-full');
   });
 
-  it('opens Popover exactly as wide as the trigger, capped by the viewport inset', () => {
+  it('opens at container-xs, grows to its content and is capped at the viewport inset', () => {
+    render(<Select defaultOpen options={sampleOptions} defaultValue="hdfc" />);
+
+    const option = screen.getByText('ICICI Bank');
+    const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
+    expect(popoverContent).toHaveClass('w-max', 'min-w-container-xs', 'max-w-container-viewport-inset', 'desk:max-w-container-viewport-inset');
+    expect(popoverContent).not.toHaveClass('w-popover-trigger');
+    expect(popoverContent).not.toHaveClass('min-w-popover-trigger');
+  });
+
+  it('uses the same width rule with a custom trigger', () => {
     render(
       <Select
         defaultOpen
         options={sampleOptions}
         defaultValue="hdfc"
+        trigger={<button type="button">Pick</button>}
       />,
     );
 
     const option = screen.getByText('ICICI Bank');
     const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
-    expect(popoverContent).toHaveClass('min-w-popover-trigger');
-    expect(popoverContent).toHaveClass('w-popover-trigger');
-    expect(popoverContent).toHaveClass('desk:max-w-container-viewport-inset');
+    expect(popoverContent).toHaveClass('w-max', 'min-w-container-xs', 'max-w-container-viewport-inset', 'desk:max-w-container-viewport-inset');
+    expect(popoverContent).not.toHaveClass('min-w-popover-trigger');
   });
 
   it('updates value and calls onValueChange in uncontrolled mode', () => {
