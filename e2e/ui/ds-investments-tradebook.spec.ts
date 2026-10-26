@@ -184,8 +184,8 @@ for (const viewport of VIEWPORTS) {
       const jobs = await seedImportJobs(makeApi(currentUser.cookie), seeded.zerodha.id);
       await page.goto('/ds/investments/tradebook');
 
-      await expect(page.getByText(/Last import \d+ \w+, \d\d:\d\d · 0 trades/)).toBeVisible();
-      await expect(page.getByText(/Last reconcile \d+ \w+, \d\d:\d\d/)).toBeVisible();
+      await expect(page.getByText(/Last import \d+ \w+, \d{1,2}:\d\d [ap]m · 0 trades/)).toBeVisible();
+      await expect(page.getByText(/Last reconcile \d+ \w+, \d{1,2}:\d\d [ap]m/)).toBeVisible();
       const links = page.getByRole('link', { name: 'View job' });
       await expect(links).toHaveCount(2);
       await expect(links.nth(0)).toHaveAttribute('href', `/ds/settings/activity?job=${jobs.importJobId}`);

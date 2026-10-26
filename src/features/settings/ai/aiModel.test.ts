@@ -34,8 +34,8 @@ describe('formatLastUsed', () => {
 });
 
 describe('formatCooldownTime', () => {
-  it('is hh:mm in the app zone', () => {
-    expect(formatCooldownTime('2026-10-20T08:50:00Z')).toBe('14:20');
+  it('is 12-hour in the app zone', () => {
+    expect(formatCooldownTime('2026-10-20T08:50:00Z')).toBe('2:20 pm');
   });
 });
 
@@ -118,7 +118,7 @@ describe('buildHealthRows', () => {
     );
     expect(rows.map((r) => [r.label, r.last4, r.providerName, r.status, r.cooldownTime])).toEqual([
       ['Gemini 3.5 Flash Lite', 'k3Qa', null, 'ready', null],
-      ['Claude Haiku 5.5', '9f2c', 'OpenRouter', 'cooldown', '14:20'],
+      ['Claude Haiku 5.5', '9f2c', 'OpenRouter', 'cooldown', '2:20 pm'],
       ['Groq Llama', null, null, 'no-key', null],
     ]);
   });

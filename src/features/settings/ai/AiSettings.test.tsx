@@ -341,9 +341,9 @@ describe('Add key dialog', () => {
 });
 
 describe('Health', () => {
-  it('shows Ready, Cooldown until hh:mm, and No key rows', () => {
+  it('shows Ready, Cooldown until h:mm am/pm, and No key rows', () => {
     setup();
-    expect(screen.getByText('Cooldown until 14:20')).toBeInTheDocument();
+    expect(screen.getByText('Cooldown until 2:20 pm')).toBeInTheDocument();
     expect(screen.getAllByText('Ready')).toHaveLength(1);
     const noKey = screen.getByText('Groq Llama', { selector: 'span' });
     expect(noKey).toBeInTheDocument();

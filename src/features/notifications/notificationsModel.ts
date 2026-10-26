@@ -1,5 +1,6 @@
 import { appHref } from '@/features/shell/routes';
 import type { AppNotification } from '@/lib/api/types';
+import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
 
 export const NOTIFICATIONS_PAGE_SIZE = 20;
@@ -78,16 +79,9 @@ export function groupByDay(items: AppNotification[], now: Date = new Date()): No
   return groups;
 }
 
-const TIME_FORMAT = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Asia/Kolkata',
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
-
-/** "14:05" (24-hour, IST). */
+/** "2:05 pm" (12-hour, IST). */
 export function timeLabel(createdAt: string): string {
-  return TIME_FORMAT.format(new Date(createdAt));
+  return clock12(new Date(createdAt));
 }
 
 /** Time when it arrived today, else the date ("13 Oct"): the dropdown's subtitle tail. */

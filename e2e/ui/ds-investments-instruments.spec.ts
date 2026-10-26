@@ -39,7 +39,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByRole('tab', { name: /^Instruments/ })).toBeVisible();
       await expect(page.getByText('Prices from Yahoo (stocks, ETFs) and AMFI (funds)')).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Refresh prices' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Refresh prices' })).toHaveCount(0);
 
       await expect(shown(page.getByText(seeded.held.name))).toBeVisible();
       await expect(shown(page.getByText(new RegExp(`AMFI ${seeded.fund.amfiCode}`)))).toBeVisible();
@@ -191,20 +191,6 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText('No matches. Enter it by hand.')).toBeVisible();
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
-    });
-
-    test('Refresh prices starts a job and View job links to that exact job in Settings → Activity', async ({ page }) => {
-      test.setTimeout(90_000); // the Activity page compiles on first visit in a dev client
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
-      await page.getByRole('button', { name: 'Refresh prices' }).click();
-      await expect(page.getByText('Price refresh started in background.')).toBeVisible();
-      const viewJob = page.getByRole('link', { name: 'View job' });
-      await expect(viewJob).toHaveAttribute('href', /\/ds\/settings\/activity\?job=[\w-]+/);
-      const href = await viewJob.getAttribute('href');
-      await expect(async () => {
-        await viewJob.click();
-        await page.waitForURL((url) => url.pathname + url.search === href, { timeout: 5_000 });
-      }).toPass({ timeout: 60_000 });
     });
   });
 }

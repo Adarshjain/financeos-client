@@ -142,7 +142,7 @@ describe('list', () => {
     for (const h of ['Job', 'Started', 'Took', 'Result', 'Status']) expect(screen.getByText(h)).toBeInTheDocument();
     expect(screen.getAllByText('Gmail sync').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/arjun@gmail.test/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/^today \d{2}:\d{2}$/)).toBeInTheDocument();
+    expect(screen.getByText(/^today \d{1,2}:\d{2} (am|pm)$/)).toBeInTheDocument();
     expect(screen.getByText('6.1 s')).toBeInTheDocument();
     expect(screen.getByText('4 emails · 3 transactions · 1 needs attention')).toBeInTheDocument();
     expect(screen.getByText('Succeeded')).toBeInTheDocument();
@@ -262,7 +262,7 @@ describe('job result card', () => {
     totalElements = 1;
     render(<ActivityPage {...props} jobId="abc" />);
     const card = screen.getByTestId('job-result-card');
-    expect(within(card).getByText(/^Job result · Gmail sync · today \d{2}:\d{2}$/)).toBeInTheDocument();
+    expect(within(card).getByText(/^Job result · Gmail sync · today \d{1,2}:\d{2} (am|pm)$/)).toBeInTheDocument();
     expect(within(card).getByText('Started by you · took 6.1 s')).toBeInTheDocument();
     expect(within(card).getByTestId('gmail-sync-result')).toBeInTheDocument();
     expect(polled.every((id) => id === null)).toBe(true);

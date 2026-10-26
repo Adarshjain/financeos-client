@@ -1,4 +1,5 @@
 import { formatAmount, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
+import { hm12 } from '@/lib/clock12';
 import type { InstrumentType } from '@/lib/types';
 
 import { isLivePrice } from './marketHours';
@@ -50,16 +51,16 @@ export function shortDate(iso: string): string {
   return day ? `${day} ${iso.slice(2, 4)}` : '';
 }
 
-/** "15:30" (24h, IST) from an ISO timestamp with an offset; '' when missing or unparseable. */
+/** "3:30 pm" (12h, IST) from an ISO timestamp with an offset; '' when missing or unparseable. */
 export function istTime(at: string | null | undefined): string {
   if (!at) return '';
   const ms = new Date(at).getTime();
   if (Number.isNaN(ms)) return '';
   const d = new Date(ms + 330 * 60_000);
-  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+  return hm12(d.getUTCHours(), d.getUTCMinutes());
 }
 
-/** "13 Oct, 15:30" when the price has a time, else just "13 Oct". */
+/** "13 Oct, 3:30 pm" when the price has a time, else just "13 Oct". */
 export function dayWithTime(day: string, at: string | null | undefined): string {
   const time = istTime(at);
   return day && time ? `${day}, ${time}` : day;
@@ -107,8 +108,8 @@ export function unitWord(type: InstrumentType, qty: number): string {
   return qty === 1 ? 'share' : 'shares';
 }
 
-/** "Live · 11:45" while the market is open and the price is from today, else "Close · 13 Oct, 15:30"; '' when the price has no time. */
+/** "Live · 11:45 am" while the market is open and the price is from today, else "Closed · 13 Oct, 3:30 pm"; '' when the price has no time. */
 export function priceTimeLabel(day: string, at: string | null | undefined, now: Date): string {
   if (!istTime(at)) return '';
-  return isLivePrice(at, now) ? `Live · ${istTime(at)}` : `Close · ${dayWithTime(day, at)}`;
+  return isLivePrice(at, now) ? `Live · ${istTime(at)}` : `Closed · ${dayWithTime(day, at)}`;
 }

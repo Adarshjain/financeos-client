@@ -1,3 +1,4 @@
+import { hm12 } from '@/lib/clock12';
 import { parseCalendarDate } from '@/lib/utils';
 
 const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -22,13 +23,13 @@ export function dayMonthYear(value: string | Date | null | undefined): string {
   return d ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 }
 
-/** "09:00", 24-hour. */
+/** "9:00 am", 12-hour. */
 export function clockTime(value: string | Date | null | undefined): string {
   const d = toDate(value);
-  return d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : '—';
+  return d ? hm12(d.getHours(), d.getMinutes()) : '—';
 }
 
-/** "10 Oct 2026, 21:14". */
+/** "10 Oct 2026, 9:14 pm". */
 export function longDateTime(value: string | Date | null | undefined): string {
   const d = toDate(value);
   return d ? `${dayMonthYear(d)}, ${clockTime(d)}` : '—';
@@ -40,7 +41,7 @@ export function numericDate(value: string | Date | null | undefined): string {
   return d ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}` : '—';
 }
 
-/** "20/10/2026, 15:00". */
+/** "20/10/2026, 3:00 pm". */
 export function numericDateTime(value: string | Date | null | undefined): string {
   const d = toDate(value);
   return d ? `${numericDate(d)}, ${clockTime(d)}` : '—';

@@ -42,9 +42,10 @@ describe('notificationHref', () => {
 });
 
 describe('days and times (IST)', () => {
-  it('timeLabel is 24-hour IST', () => {
-    expect(timeLabel('2026-10-21T08:35:00Z')).toBe('14:05');
-    expect(timeLabel('2026-10-20T18:35:00Z')).toBe('00:05');
+  it('timeLabel is 12-hour IST', () => {
+    expect(timeLabel('2026-10-21T08:35:00Z')).toBe('2:05 pm');
+    expect(timeLabel('2026-10-20T18:35:00Z')).toBe('12:05 am');
+    expect(timeLabel('2026-10-21T06:30:00Z')).toBe('12:00 pm');
   });
 
   it('dayHeading: Today, Yesterday, then the date, with the year only when not current', () => {
@@ -72,7 +73,7 @@ describe('days and times (IST)', () => {
   });
 
   it('timeOrDateLabel: time today, date otherwise', () => {
-    expect(timeOrDateLabel('2026-10-21T08:35:00Z', NOW)).toBe('14:05');
+    expect(timeOrDateLabel('2026-10-21T08:35:00Z', NOW)).toBe('2:05 pm');
     expect(timeOrDateLabel('2026-10-13T10:00:00Z', NOW)).toBe('13 Oct');
     expect(timeOrDateLabel('2025-10-13T10:00:00Z', NOW)).toBe('13 Oct 2025');
   });

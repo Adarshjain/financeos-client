@@ -1,4 +1,5 @@
 import type { LlmBucketHealthDto, LlmKeyDto, LlmRoutingDto, RoutingOptionDto, Schemas } from '@/lib/api/types';
+import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
 
 import { type ProviderConfig, PROVIDERS } from './providers';
@@ -26,14 +27,9 @@ export function formatLastUsed(iso: string | null | undefined, today: string = t
   return `${d} ${MONTHS[m - 1]}`;
 }
 
-/** hh:mm (24h) in the app zone. */
+/** "3:30 pm" (12h) in the app zone. */
 export function formatCooldownTime(iso: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).format(new Date(iso));
+  return clock12(new Date(iso));
 }
 
 export interface KeyRow {

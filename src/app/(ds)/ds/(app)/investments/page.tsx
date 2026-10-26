@@ -17,7 +17,6 @@ import { PricesLine } from '@/features/investments/holdings/PricesLine';
 import {
   fetchBrokers,
   fetchHoldings,
-  fetchLatestPriceJobId,
   fetchTaxHarvest,
 } from '@/features/investments/investmentsServerApi';
 import { LivePriceRefresh } from '@/features/investments/LivePriceRefresh';
@@ -39,12 +38,11 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
   const query = holdingsQuery(state);
   // With a type filter the server's groups hold only that type; the chip counts and Allocation cover the whole portfolio (broker filter kept).
   const wholeQuery = { brokerAccountId: query.brokerAccountId, sort: 'name' as const, page: 0, size: 1 };
-  const [list, whole, tax, brokers, latestJobId] = await Promise.all([
+  const [list, whole, tax, brokers] = await Promise.all([
     loaded(fetchHoldings(query)),
     state.type ? orNull(fetchHoldings(wholeQuery)) : Promise.resolve(null),
     orNull(fetchTaxHarvest(TAX_LOTS)),
     orNull(fetchBrokers()),
-    orNull(fetchLatestPriceJobId()),
   ]);
 
   if (!list.ok) return <LoansLoadError what="holdings" reference={list.reference} />;
@@ -69,7 +67,7 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <LivePriceRefresh />
       <HoldingsHero hero={hero} />
-      <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} latestJobId={latestJobId} />
+      <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} />
       <HoldingsTiles tiles={holdingsTiles(header, groups.reduce((n, g) => n + g.count, 0), tax)} failedLabels={TILE_LABELS} />
       <HoldingsListCard
         state={state}

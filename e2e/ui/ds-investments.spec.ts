@@ -48,7 +48,8 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('Current value', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('Unrealised P&L', { exact: true }))).toBeVisible();
       await expect(page.getByText(/Prices as of \d+ \w+/)).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Refresh' })).toBeVisible();
+      // Prices are live, so there is no manual Refresh (owner 2026-10-26).
+      await expect(page.getByRole('button', { name: 'Refresh' })).toHaveCount(0);
 
       // Rows: priced by hand, held at cost, merged away.
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
@@ -100,21 +101,6 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('data-state', 'active');
       // A holding's page has its own tabs, not the Investments ones.
       await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveCount(0);
-    });
-
-    test('Holdings: Refresh starts a price job and View job links to that exact job in Settings → Activity', async ({ page }) => {
-      test.setTimeout(90_000); // the Activity page compiles on first visit in a dev client
-      await page.goto('/ds/investments');
-      await page.getByRole('button', { name: 'Refresh' }).click();
-      await expect(page.getByText('Price refresh started in background.')).toBeVisible();
-      const viewJob = page.getByRole('link', { name: 'View job' });
-      await expect(viewJob).toHaveAttribute('href', /\/ds\/settings\/activity\?job=[\w-]+/);
-      const href = await viewJob.getAttribute('href');
-      // The page refreshes when the job ends, which can swallow a press that lands on that moment: press again.
-      await expect(async () => {
-        await viewJob.click();
-        await page.waitForURL((url) => url.pathname + url.search === href, { timeout: 5_000 });
-      }).toPass({ timeout: 60_000 });
     });
 
     test('Holding page: figures, sections and the broker split', async ({ page }) => {

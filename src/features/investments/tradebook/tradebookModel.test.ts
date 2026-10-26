@@ -136,20 +136,20 @@ describe('tradebookRow', () => {
 });
 
 describe('the jobs line', () => {
-  it('formats the time in the app zone, 24-hour', () => {
-    expect(jobTime('2026-10-13T05:32:10Z')).toBe('13 Oct, 11:02');
+  it('formats the time in the app zone, 12-hour', () => {
+    expect(jobTime('2026-10-13T05:32:10Z')).toBe('13 Oct, 11:02 am');
     expect(jobTime('nope')).toBe('');
   });
 
   it('says when the last import ran and how many trades it wrote', () => {
-    expect(jobLine('Last import', job(), true)).toEqual({ text: 'Last import 13 Oct, 11:02 · 14 trades', jobId: 'job-1' });
+    expect(jobLine('Last import', job(), true)).toEqual({ text: 'Last import 13 Oct, 11:02 am · 14 trades', jobId: 'job-1' });
     expect(jobLine('Last import', job({ result: { committed: 1, skipped: 0, failed: [], skippedItems: [] } }), true)?.text).toMatch(/· 1 trade$/);
   });
 
   it('shows no count for a reconcile, a failed or an unfinished job', () => {
-    expect(jobLine('Last reconcile', job({ id: 'job-2', type: 'BROKER_RECONCILE_COMMIT' }), false)).toEqual({ text: 'Last reconcile 13 Oct, 11:02', jobId: 'job-2' });
-    expect(jobLine('Last import', job({ status: 'FAILED', result: null }), true)?.text).toBe('Last import 13 Oct, 11:02');
-    expect(jobLine('Last import', job({ status: 'RUNNING', finishedAt: null, result: null }), true)?.text).toBe('Last import 13 Oct, 11:01');
+    expect(jobLine('Last reconcile', job({ id: 'job-2', type: 'BROKER_RECONCILE_COMMIT' }), false)).toEqual({ text: 'Last reconcile 13 Oct, 11:02 am', jobId: 'job-2' });
+    expect(jobLine('Last import', job({ status: 'FAILED', result: null }), true)?.text).toBe('Last import 13 Oct, 11:02 am');
+    expect(jobLine('Last import', job({ status: 'RUNNING', finishedAt: null, result: null }), true)?.text).toBe('Last import 13 Oct, 11:01 am');
   });
 
   it('draws nothing without a job', () => {

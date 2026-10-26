@@ -1,6 +1,7 @@
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear } from '@/features/loans/detail/financialYear';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
 import type { TradesQuery } from '@/lib/investments.types';
 import type { JobResponse } from '@/lib/jobs.types';
@@ -177,7 +178,7 @@ export interface TradebookJobLine {
   jobId: string;
 }
 
-/** "13 Oct, 11:02" in the app's zone (24-hour). */
+/** "13 Oct, 11:02 am" in the app's zone (12-hour). */
 export function jobTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
@@ -185,12 +186,9 @@ export function jobTime(iso: string): string {
     timeZone: 'Asia/Kolkata',
     day: 'numeric',
     month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
   }).formatToParts(d);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${get('day')} ${get('month')}, ${get('hour')}:${get('minute')}`;
+  return `${get('day')} ${get('month')}, ${clock12(d)}`;
 }
 
 /** The line for the newest job of a kind; null when none ran. The trade count shows for a finished import. */

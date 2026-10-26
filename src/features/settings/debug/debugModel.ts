@@ -1,4 +1,5 @@
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
+import { hm12 } from '@/lib/clock12';
 import type { DiagnosticRecord } from '@/lib/diagnostics/errorLog';
 
 const APP_ZONE = 'Asia/Kolkata';
@@ -28,24 +29,30 @@ function parts(iso: string, opts: Intl.DateTimeFormatOptions) {
   return map;
 }
 
-/** "13 Oct 13:38" in the app zone; empty when the timestamp is unreadable. */
+/** "1:38:49 pm" from formatted 24-hour hour/minute/second parts; `fraction` goes before the am/pm. */
+function withSeconds12(p: Record<string, string>, fraction = ''): string {
+  const [time, suffix] = hm12(Number(p.hour), Number(p.minute)).split(' ');
+  return `${time}:${p.second}${fraction} ${suffix}`;
+}
+
+/** "13 Oct 1:38 pm" in the app zone; empty when the timestamp is unreadable. */
 export function formatWhen(iso: string): string {
   const p = parts(iso, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  return p ? `${p.day} ${p.month} ${p.hour}:${p.minute}` : '';
+  return p ? `${p.day} ${p.month} ${hm12(Number(p.hour), Number(p.minute))}` : '';
 }
 
-/** "13 Oct 13:38:49 IST" for the Request card. */
+/** "13 Oct 1:38:49 pm IST" for the Request card. */
 export function formatWhenFull(iso: string): string {
   const p = parts(iso, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  return p ? `${p.day} ${p.month} ${p.hour}:${p.minute}:${p.second} IST` : '';
+  return p ? `${p.day} ${p.month} ${withSeconds12(p)} IST` : '';
 }
 
-/** "13:38:49.101" in the app zone. */
+/** "1:38:49.101 pm" in the app zone. */
 export function formatClock(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const p = parts(iso, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  return p ? `${p.hour}:${p.minute}:${p.second}.${String(d.getUTCMilliseconds()).padStart(3, '0')}` : '';
+  return p ? withSeconds12(p, `.${String(d.getUTCMilliseconds()).padStart(3, '0')}`) : '';
 }
 
 export type StatusTone = 'success' | 'info' | 'warning' | 'danger';

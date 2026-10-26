@@ -51,7 +51,7 @@ describe('NotificationsPage', () => {
     await screen.findByText('Import failed');
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Today', 'Yesterday', '13 Oct']);
     expect(screen.getByText('Amex PDF')).toBeInTheDocument();
-    expect(screen.getByText('14:05')).toBeInTheDocument();
+    expect(screen.getByText('2:05 pm')).toBeInTheDocument();
     expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 0, size: 20 } } });
   });
 

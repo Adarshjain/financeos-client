@@ -113,7 +113,7 @@ describe('DebugView lookup', () => {
     expect(screen.getByText('f80e0834c4af440681b0')).toBeInTheDocument();
     expect(screen.getByText('400')).toBeInTheDocument();
     expect(screen.getByText('Slow')).toBeInTheDocument();
-    expect(screen.getByText('13 Oct 13:38:49 IST')).toBeInTheDocument();
+    expect(screen.getByText('13 Oct 1:38:49 pm IST')).toBeInTheDocument();
     expect(screen.getAllByText('POST /api/v1/reports').length).toBeGreaterThan(0);
     expect(screen.getByText('arjun@example.test')).toBeInTheDocument();
     expect(screen.getByText('1.0.0-ec1bc48')).toBeInTheDocument();
