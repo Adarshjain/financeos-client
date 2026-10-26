@@ -34,7 +34,7 @@ describe('SelectionBar', () => {
   it('is frosted glass: solid surface fallback plus glass: blur classes', () => {
     const { container } = render(<SelectionBar count={1} actions={defaultActions} onClear={() => {}} />);
     const panel = container.querySelector('[data-selection-bar] > div');
-    expect(panel).toHaveClass('bg-surface', 'glass:bg-glass', 'glass:backdrop-blur-glass', 'glass:backdrop-saturate-glass');
+    expect(panel).toHaveClass('bg-surface', 'glass:bg-glass-strong', 'glass:backdrop-blur-glass', 'glass:backdrop-saturate-glass');
   });
 
   it('triggers action onSelect callback', () => {
