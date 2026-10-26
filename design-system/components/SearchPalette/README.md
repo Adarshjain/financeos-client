@@ -6,7 +6,7 @@ The ⌘K search over everything: accounts, actions, transactions, pages and Ask 
 - A Dialog, size `md`, with no header (`srTitle` "Search"). On desktop it sits `space-40` from the top; on phone it is the bottom sheet (§5.6).
 - Top row: the search TextField (`type="search"`, search Icon prefix). Desktop shows an `esc` Kbd in the field; phone shows a ghost **Cancel** button instead.
 - Results come from the page, grouped, in the page's order. The palette never filters or sorts. Groups with no rows are not shown. Each group starts with a SectionHeader (band) with the group's label and optional `meta` ("8 on Regalia").
-- Each row is a ListRow: a fixed-width leading column (an Icon, or empty so text lines up), the row text in `body` (`ink`; the page bolds a name with `Text body-strong`), and an optional trailing node (count, amount, Kbd shortcut).
+- Each row is a ListRow: a fixed-width leading column when the row has a mark (an Icon; rows without one start at the edge, owner 2026-10-26), the row text in `body` (`ink`; the page bolds a name with `Text body-strong`), and an optional trailing node (count, amount, Kbd shortcut). A string title marks every match of the search text with Highlight (owner, 2026-10-26).
 - The first enabled row is highlighted when the results change. ↑ and ↓ move the highlight (wrapping), skipping disabled rows; the highlighted row has ListRow's highlighted look. Enter or a click opens it: the row's `onSelect` runs and the palette closes. Esc, the backdrop, swipe-down (phone) and Cancel close it.
 - `loading`: four Skeleton lines replace the results.
 - Search text with no results: `No results for "zomato"` in `ink-3`, centred. Empty search text with no results: nothing.
@@ -25,4 +25,4 @@ The ⌘K search over everything: accounts, actions, transactions, pages and Ask 
 None.
 
 ## Built from
-Dialog (DialogContent, DialogBody, DialogFooter), TextField, Button, Kbd, Icon, SectionHeader, ListRow, Skeleton, Text. The highlight and ↑/↓/Enter are the palette's own (about 20 lines; no cmdk needed).
+Dialog (DialogContent, DialogBody, DialogFooter), TextField, Button, Kbd, Icon, Highlight, SectionHeader, ListRow, Skeleton, Text. The highlight and ↑/↓/Enter are the palette's own (about 20 lines; no cmdk needed).

@@ -63,7 +63,8 @@ function joinTitle(parts: Array<string | null | undefined>): string {
   return parts.filter(Boolean).join(' · ');
 }
 
-const matches = (label: string, needle: string) => !needle || label.toLowerCase().includes(needle);
+// No text shows nothing (owner, 2026-10-26): every row comes from what was typed.
+const matches = (label: string, needle: string) => needle.length > 0 && label.toLowerCase().includes(needle);
 
 /**
  * The palette's groups, in order: Accounts, Actions, Transactions, Holdings, Lending, Loans, Reports,

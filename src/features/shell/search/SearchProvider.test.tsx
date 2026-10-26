@@ -85,17 +85,17 @@ describe('SearchProvider', () => {
     expect(palette()).toBeInTheDocument();
   });
 
-  it('lists the pages and actions before any text, and no Ask row', () => {
+  it('shows nothing before any text', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    expect(screen.getByRole('option', { name: 'Transactions' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Lending' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: /Ask the data:/ })).toBeNull();
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('lists the footer page Settings too', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.change(field(), { target: { value: 'se' } });
     fireEvent.click(screen.getByRole('option', { name: 'Settings' }));
     expect(router.push).toHaveBeenCalledWith('/ds/settings');
   });
@@ -103,6 +103,7 @@ describe('SearchProvider', () => {
   it('goes to a page and closes when its row is picked', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.change(field(), { target: { value: 'tr' } });
     fireEvent.click(screen.getByRole('option', { name: 'Transactions' }));
     expect(router.push).toHaveBeenCalledWith('/ds/transactions');
     expect(palette()).toBeNull();
@@ -111,6 +112,7 @@ describe('SearchProvider', () => {
   it('runs a Quick add action, opening its dialog, and closes', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.change(field(), { target: { value: 'tr' } });
     fireEvent.click(screen.getByRole('option', { name: 'Trade' }));
     expect(openDialog).toHaveBeenCalledWith('trade');
     expect(router.push).not.toHaveBeenCalled();

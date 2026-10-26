@@ -4,6 +4,7 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { Dialog, DialogBody, DialogContent, DialogFooter } from '../Dialog/Dialog';
+import { Highlight } from '../Highlight/Highlight';
 import { Icon } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
 import { ListRow } from '../ListRow/ListRow';
@@ -17,7 +18,7 @@ export interface SearchPaletteItem {
   id: string;
   /** Row text; pass a Text body-strong span to bold a name inside it. */
   title: React.ReactNode;
-  /** Mark in the fixed leading column (usually an Icon). */
+  /** Mark in the leading column (usually an Icon); rows without one start at the edge. */
   leading?: React.ReactNode;
   /** Right side: count, amount or Kbd shortcut. */
   trailing?: React.ReactNode;
@@ -197,6 +198,8 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                         <ListRow
                           key={item.id}
                           role="option"
+                          // Highlight's marks split the text into pieces the browser names apart ("Tr ansaction").
+                          aria-label={typeof item.title === 'string' ? item.title : undefined}
                           aria-selected={item.id === active}
                           data-item-id={item.id}
                           tabIndex={-1}
@@ -205,10 +208,14 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                           disabled={item.disabled}
                           onClick={() => pick(item)}
                           onMouseMove={() => setActive(item.id)}
-                          leading={<span className="flex w-space-20 justify-center text-ink-3">{item.leading}</span>}
+                          leading={
+                            item.leading ? <span className="flex w-space-20 justify-center text-ink-3">{item.leading}</span> : undefined
+                          }
                           trailing={item.trailing}
                         >
-                          <span className="min-w-0 flex-1 truncate text-body text-ink">{item.title}</span>
+                          <span className="min-w-0 flex-1 truncate text-body text-ink">
+                            {typeof item.title === 'string' ? <Highlight text={item.title} query={query} /> : item.title}
+                          </span>
                         </ListRow>
                       ))}
                     </div>
