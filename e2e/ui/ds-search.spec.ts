@@ -176,12 +176,24 @@ for (const viewport of VIEWPORTS) {
       await expect(palette(page).getByText(/Type 3 or more characters/)).toHaveCount(0);
     });
 
+    test('the clear button empties the text and shows nothing; there is no Cancel', async ({ page }) => {
+      test.slow();
+      await openSearch(page);
+      await expect(palette(page).getByRole('button', { name: 'Cancel' })).toHaveCount(0);
+      await page.getByRole('searchbox').fill('tr');
+      await expect(palette(page).getByRole('option').first()).toBeVisible();
+      await palette(page).getByRole('button', { name: 'Clear' }).click();
+      await expect(page.getByRole('searchbox')).toHaveValue('');
+      await expect(page.getByRole('searchbox')).toBeFocused();
+      await expect(palette(page).getByRole('option')).toHaveCount(0);
+      await expect(palette(page)).toBeVisible();
+    });
+
     test('the text is cleared after the palette closes', async ({ page }) => {
       test.slow();
       await openSearch(page);
       await page.getByRole('searchbox').fill(WORD);
-      if (phone) await palette(page).getByRole('button', { name: 'Cancel' }).click();
-      else await page.keyboard.press('ControlOrMeta+k');
+      await page.keyboard.press(phone ? 'Escape' : 'ControlOrMeta+k');
       await expect(palette(page)).toHaveCount(0);
       await page.keyboard.press('ControlOrMeta+k');
       await expect(page.getByRole('searchbox')).toHaveValue('');

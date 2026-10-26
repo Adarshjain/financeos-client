@@ -204,6 +204,7 @@ const config: Config = {
         'control-xl': 'var(--ds-control-xl)',
       },
       minHeight: {
+        'container-sm': 'var(--ds-container-sm)',
         'control-sm': 'var(--ds-control-sm)',
         'control-md': 'var(--ds-control-md)',
         'control-lg': 'var(--ds-control-lg)',
