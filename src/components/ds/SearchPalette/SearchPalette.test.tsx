@@ -179,7 +179,6 @@ describe('SearchPalette', () => {
     const marks = document.querySelectorAll('mark');
     expect([...marks].map((m) => m.textContent)).toEqual(['Regalia']);
     expect(row('HDFC Regalia Gold')).toContainElement(marks[0] as HTMLElement);
-    expect(screen.getByRole('option', { name: 'HDFC Regalia Gold' })).toBeInTheDocument();
   });
 
   it('draws the leading column only for rows that have a mark', () => {

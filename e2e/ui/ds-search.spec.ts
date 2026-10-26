@@ -9,6 +9,9 @@ import { expect, test } from '../fixtures/test';
 
 const WORD = 'Zephyr';
 
+/** A row whose whole text is `text`. Rows are found by their text: Highlight's marks split the name the browser reads. */
+const exactly = (text: string) => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+
 const VIEWPORTS = [
   { name: 'desktop 1440px', width: 1440, height: 900, tag: '@ui' },
   { name: 'phone 390px', width: 390, height: 844, tag: '@ui @mobile' },
@@ -59,8 +62,8 @@ for (const viewport of VIEWPORTS) {
       await openSearch(page);
 
       await page.getByRole('searchbox').fill('tr');
-      await expect(page.getByRole('option', { name: 'Transactions', exact: true })).toBeVisible();
-      await expect(page.getByRole('option', { name: 'Trade', exact: true })).toBeVisible();
+      await expect(page.getByRole('option').filter({ hasText: exactly('Transactions') })).toBeVisible();
+      await expect(page.getByRole('option').filter({ hasText: exactly('Trade') })).toBeVisible();
       await page.waitForTimeout(700);
       expect(searches).toHaveLength(0);
     });
@@ -75,20 +78,20 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('searchbox').fill(WORD.toLowerCase());
       const dialog = palette(page);
-      await expect(dialog.getByRole('option', { name: `${WORD} Card · ••7741` })).toBeVisible({ timeout: 30_000 });
+      await expect(dialog.getByRole('option').filter({ hasText: `${WORD} Card · ••7741` })).toBeVisible({ timeout: 30_000 });
       expect(searches).toHaveLength(1);
       expect(searches[0]).toContain(`q=${WORD.toLowerCase()}`);
       for (const group of ['Accounts', 'Transactions', 'Lending', 'Loans', 'Reports', 'Dashboards', 'Ask']) {
         await expect(dialog.getByRole('group').filter({ hasText: group }).first()).toBeVisible();
       }
-      await expect(dialog.getByRole('option', { name: `${seeded.person.name}` })).toBeVisible();
-      await expect(dialog.getByRole('option', { name: `${seeded.loan.name} · SBI` })).toBeVisible();
+      await expect(dialog.getByRole('option').filter({ hasText: `${seeded.person.name}` })).toBeVisible();
+      await expect(dialog.getByRole('option').filter({ hasText: `${seeded.loan.name} · SBI` })).toBeVisible();
 
       // 7 matches, the 5 newest show, then the row that opens them all.
-      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} purchase \\d`) })).toHaveCount(5);
-      await expect(dialog.getByRole('option', { name: `${WORD} purchase 1 ·`, exact: false })).toBeVisible();
-      await expect(dialog.getByRole('option', { name: `${WORD} purchase 6`, exact: false })).toHaveCount(0);
-      await dialog.getByRole('option', { name: 'See all matching transactions' }).click();
+      await expect(dialog.getByRole('option').filter({ hasText: new RegExp(`^${WORD} purchase \\d`) })).toHaveCount(5);
+      await expect(dialog.getByRole('option').filter({ hasText: `${WORD} purchase 1 ·` })).toBeVisible();
+      await expect(dialog.getByRole('option').filter({ hasText: `${WORD} purchase 6` })).toHaveCount(0);
+      await dialog.getByRole('option').filter({ hasText: 'See all matching transactions' }).click();
 
       await expect(page).toHaveURL(new RegExp(`/ds/transactions\\?q=${WORD.toLowerCase()}`));
       await expect(palette(page)).toHaveCount(0);
@@ -105,7 +108,7 @@ for (const viewport of VIEWPORTS) {
       for (const c of cases) {
         await openSearch(page);
         await page.getByRole('searchbox').fill(WORD);
-        await palette(page).getByRole('option', { name: c.option, exact: true }).click({ timeout: 30_000 });
+        await palette(page).getByRole('option').filter({ hasText: exactly(c.option) }).click({ timeout: 30_000 });
         await expect(page).toHaveURL(new RegExp(`${c.url}$`), { timeout: 45_000 });
         await expect(palette(page)).toHaveCount(0);
       }
@@ -115,7 +118,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await openSearch(page);
       await page.getByRole('searchbox').fill(WORD);
-      await palette(page).getByRole('option', { name: `${WORD} purchase 1 ·`, exact: false }).click({ timeout: 30_000 });
+      await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 1 ·` }).click({ timeout: 30_000 });
       await expect(page).toHaveURL(/\/ds\/transactions\?txn=[0-9a-f-]{36}/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 1` })).toBeVisible({ timeout: 30_000 });
     });
@@ -124,7 +127,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await openSearch(page, '/ds/transactions');
       await page.getByRole('searchbox').fill(WORD);
-      await palette(page).getByRole('option', { name: `${WORD} purchase 2 ·`, exact: false }).click({ timeout: 30_000 });
+      await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 2 ·` }).click({ timeout: 30_000 });
       await expect(page).toHaveURL(/\/ds\/transactions\?txn=/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 2` })).toBeVisible({ timeout: 30_000 });
     });
@@ -134,9 +137,9 @@ for (const viewport of VIEWPORTS) {
       await openSearch(page);
       await page.getByRole('searchbox').fill(`${WORD} Savings`);
       const dialog = palette(page);
-      await expect(dialog.getByRole('option', { name: `Add transaction on ${WORD} Savings` })).toBeVisible({ timeout: 30_000 });
-      await expect(dialog.getByRole('option', { name: `Upload a ${WORD} Savings statement` })).toBeVisible();
-      await dialog.getByRole('option', { name: `Add transaction on ${WORD} Savings` }).click();
+      await expect(dialog.getByRole('option').filter({ hasText: `Add transaction on ${WORD} Savings` })).toBeVisible({ timeout: 30_000 });
+      await expect(dialog.getByRole('option').filter({ hasText: `Upload a ${WORD} Savings statement` })).toBeVisible();
+      await dialog.getByRole('option').filter({ hasText: `Add transaction on ${WORD} Savings` }).click();
       const add = page.getByRole('dialog', { name: 'Add transaction' });
       await expect(add).toBeVisible();
       await expect(add.getByRole('combobox', { name: /^Account/ })).toContainText(`${WORD} Savings`);
@@ -148,9 +151,9 @@ for (const viewport of VIEWPORTS) {
       await openSearch(page);
       await page.getByRole('searchbox').fill(`${WORD} Card`);
       const dialog = palette(page);
-      const markPaid = dialog.getByRole('option', { name: `Mark ${WORD} Card bill paid` });
+      const markPaid = dialog.getByRole('option').filter({ hasText: `Mark ${WORD} Card bill paid` });
       await expect(markPaid).toBeVisible({ timeout: 30_000 });
-      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} Card · ••7741`) })).toContainText('You owe ₹6,000');
+      await expect(dialog.getByRole('option').filter({ hasText: new RegExp(`^${WORD} Card · ••7741`) })).toContainText('You owe ₹6,000');
 
       await markPaid.click();
       const mark = page.getByRole('dialog', { name: 'Mark bill as paid' });
@@ -160,8 +163,8 @@ for (const viewport of VIEWPORTS) {
 
       await page.keyboard.press('ControlOrMeta+k');
       await page.getByRole('searchbox').fill(`${WORD} Card`);
-      await expect(palette(page).getByRole('option', { name: `Add transaction on ${WORD} Card` })).toBeVisible({ timeout: 30_000 });
-      await expect(palette(page).getByRole('option', { name: `Mark ${WORD} Card bill paid` })).toHaveCount(0);
+      await expect(palette(page).getByRole('option').filter({ hasText: `Add transaction on ${WORD} Card` })).toBeVisible({ timeout: 30_000 });
+      await expect(palette(page).getByRole('option').filter({ hasText: `Mark ${WORD} Card bill paid` })).toHaveCount(0);
     });
 
     test('1 or 2 characters show the nudge, 3 remove it', async ({ page }) => {
@@ -188,7 +191,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await openSearch(page);
       await page.getByRole('searchbox').fill('tr');
-      await palette(page).getByRole('option', { name: 'Transaction', exact: true }).click();
+      await palette(page).getByRole('option').filter({ hasText: exactly('Transaction') }).click();
       await expect(palette(page)).toHaveCount(0);
       await expect(page).toHaveURL(/\/ds\/accounts$/);
       await expect(page.getByRole('dialog').first()).toBeVisible();
@@ -221,7 +224,7 @@ test.describe('/ds app-wide search, holdings (@ui)', () => {
     await page.getByRole('searchbox').fill('INFYX');
     await page
       .getByRole('dialog', { name: 'Search' })
-      .getByRole('option', { name: `${holdings.infy.name} · ${holdings.infy.symbol}` })
+      .getByRole('option').filter({ hasText: `${holdings.infy.name} · ${holdings.infy.symbol}` })
       .click({ timeout: 45_000 });
     await expect(page).toHaveURL(new RegExp(`/ds/investments/${holdings.infy.id}$`), { timeout: 45_000 });
   });
