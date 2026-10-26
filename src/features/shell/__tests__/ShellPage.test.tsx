@@ -24,10 +24,10 @@ describe('ShellPage top-bar actions', () => {
     expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
   });
 
-  it('has no Search action (the live app has no global search)', () => {
+  it('has a Search button (it opens the app-wide search), not a link', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Search' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
   });
 
   it('has no hide-amounts eye (the choice lives in the More sheet and Settings)', () => {

@@ -7,6 +7,7 @@ import { HideAmountsProvider } from '@/features/shell/hideAmounts';
 import { readHideAmounts } from '@/features/shell/hideAmountsCookie';
 import { NavigationProgress } from '@/features/shell/NavigationProgress';
 import { NewVersionWatcher } from '@/features/shell/NewVersionWatcher';
+import { SearchProvider } from '@/features/shell/search/SearchProvider';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
@@ -27,6 +28,7 @@ export default async function DsAppLayout({
     <AddLendingProvider>
     <AddTradeProvider>
       <AddTransactionProvider today={todayInAppZone()}>
+      <SearchProvider>
       <SessionExpiredDialog email={user.email} />
       <NewVersionWatcher loadedVersion={buildVersion()} />
       {/* While the new-version banner shows above, it owns the notch inset (safe-top). */}
@@ -57,6 +59,7 @@ export default async function DsAppLayout({
           }}
         />
       </div>
+      </SearchProvider>
       </AddTransactionProvider>
     </AddTradeProvider>
     </AddLendingProvider>

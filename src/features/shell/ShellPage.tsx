@@ -10,11 +10,9 @@ import { useNotificationsAction } from '@/features/notifications/useNotification
 
 import { hasInAppHistory } from './navigationStore';
 import { appHref } from './routes';
+import { useSearch } from './search/SearchProvider';
 
-/**
- * Top-bar actions every /ds page gets (boards D-accounts, P-accounts), matching the live routes.
- * Search is left out: the live app has no global search to match.
- */
+/** Top-bar actions every /ds page gets after Search (boards D-accounts, P-accounts), matching the live routes. */
 export const shellTopBarActions: TopBarAction[] = [
   {
     id: 'chat',
@@ -78,6 +76,7 @@ export function ShellPage({
 }: ShellPageProps) {
   const notifications = useNotificationsAction();
   const onBack = useBack(backHref);
+  const { open: openSearch } = useSearch();
   return (
     <>
       <TopBar
@@ -90,6 +89,7 @@ export function ShellPage({
         onBack={onBack}
         actions={[
           notifications,
+          { id: 'search', icon: 'search' as const, label: 'Search', onSelect: openSearch },
           ...shellTopBarActions,
           ...(addMenu
             ? [
