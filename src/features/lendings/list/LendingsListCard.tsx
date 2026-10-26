@@ -142,7 +142,6 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
           className="desk:w-container-xs"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Search people"
           value={text}
           onValueChange={setText}

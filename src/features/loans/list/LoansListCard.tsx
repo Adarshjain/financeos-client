@@ -168,7 +168,6 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
         className="desk:w-container-xs"
         prefix={<Icon name="search" size="sm" />}
         clearable
-        clearLabel="Clear search"
         placeholder="Search loans"
         value={text}
         onValueChange={setText}

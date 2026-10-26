@@ -287,7 +287,6 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           className="shrink-0 w-container-xs"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Symbol or name"
           value={text}
           onValueChange={setText}

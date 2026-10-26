@@ -75,7 +75,6 @@ export function CatalogSearch({ type, autoFocus, placeholder = 'Search by name o
         autoFocus={autoFocus}
         prefix={<Icon name="search" size="sm" />}
         clearable
-        clearLabel="Clear search"
         placeholder={placeholder}
         value={query}
         onValueChange={setQuery}

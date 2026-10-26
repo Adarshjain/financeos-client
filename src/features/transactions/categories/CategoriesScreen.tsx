@@ -108,7 +108,6 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
               className="desk:max-w-container-sm"
               prefix={<Icon name="search" size="sm" />}
               clearable
-              clearLabel="Clear search"
               placeholder="Search categories"
               value={text}
               onValueChange={setText}

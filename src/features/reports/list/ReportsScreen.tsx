@@ -223,7 +223,6 @@ export function ReportsScreen({ type: initialType, dashboards, rows }: ReportsSc
           className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Search reports"
           value={search}
           onValueChange={setSearch}

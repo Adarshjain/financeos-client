@@ -14,8 +14,8 @@ Standard text input for forms, logins, and values.
 - `helper?: React.ReactNode`: helpful hint text below the input.
 - `error?: React.ReactNode`: error message below the input.
 - `optional?: boolean`: shows "(Optional)" next to the label.
-- `clearable?: boolean`: shows an integrated clear button when text is present.
-- `clearLabel?: string`: aria-label for clear button (default `'Clear'`).
+- `clearable?: boolean`: shows a ghost `sm` **Clear** text button at the end when text is present (owner, 2026-10-26; was a × icon). Buttons in the field (Clear, a suffix button such as DateField's calendar) pull out by their own padding, so their label or glyph sits on the field padding.
+- `clearLabel?: string`: the clear button's text (default `'Clear'`).
 - `onClear?: () => void`: callback when cleared.
 - `prefix?: React.ReactNode`: leading glyph, icon, or currency sign (e.g. "₹" or search icon).
 - `suffix?: React.ReactNode`: trailing content.
@@ -42,4 +42,4 @@ When `type="search"`, browser search cancel buttons are hidden, and `clearable` 
 - Success tone (`tone="success"`): value text in `positive`, for an amount that is money in.
 
 ## Built from
-The shared field frame (`FieldFrame`) that TextArea, DateField and Select also use; Button (password toggle, clear button); Icon.
+The shared field frame (`FieldFrame`) that TextArea, DateField and Select also use; Button (password toggle, clear button).

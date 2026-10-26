@@ -89,7 +89,6 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
             size="md"
             prefix={<Icon name="search" size="sm" />}
             clearable
-            clearLabel="Clear search"
             placeholder="Search widgets"
             value={query}
             onValueChange={setQuery}

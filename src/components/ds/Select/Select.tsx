@@ -374,7 +374,6 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               variant="embedded"
               prefix={<Icon name="search" size="sm" />}
               clearable
-              clearLabel="Clear search"
               value={searchQuery}
               placeholder={searchPlaceholder}
               onValueChange={handleSearchChange}

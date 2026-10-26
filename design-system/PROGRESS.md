@@ -230,6 +230,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-26: Search card row with an unpaid bill reads "You owe ₹X"; excluded transactions stay searchable.
 - 2026-10-26: Search shows nothing until text is typed; rows without an icon start at the edge; titles use Highlight.
 - 2026-10-26: Search palette at least `container-sm` tall; no Cancel button; the field has a clear (×) button.
+- 2026-10-26: TextField clear button is the text "Clear" (was ×); field buttons sit on the field padding.
 - 2026-10-26: Report measure labels: a field aggregated twice keeps "Amount (Sum)" / "Amount (Average)" wording. Net worth underlying `kind` stays a column, no chips ("let Legacy be"). Dev server: Turbopack dev FS cache off (ffc2b8d4).
 - 2026-10-26: Top bar + phone tab bar: frosted glass (new generic tokens `bg-glass` = surface at 40% alpha (tuned from 85%, owner picked 40 over 55 after shots), `bg-glass-strong` 85% for SelectionBar, `blur-glass` 24px, `saturate-glass` 1.8; `glass:` variant falls back to solid `bg-surface` without backdrop-filter; default look, no prop) + sticky SectionHeader, SelectionBar (incl. dashboard/report edit action bars, both built from it); phone sheet footer not done (it is not overlaid by content, so glass would not show).
 - 2026-10-26: Dashboards, Reports, Rewards APPROVED (owner raises issues separately). /ds index is a temp page, not reviewed. Settings links Legacy beside Storybook. Hide amounts in RSC payload: declined, not an exposure.
@@ -451,6 +452,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 
 
+- 2026-10-26 · Phase 3 · Claude · TextField: in-field buttons double-padded (button padding + field padding) → clear `-mx-space-8`, suffix buttons `[&_button]:-mx-space-6` (fixes DateField calendar too); clear is a ghost sm "Clear" text button; 16 `clearLabel="Clear search"` call sites dropped so all read "Clear"; cn min-h list gets container-sm. Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · SearchPalette: min-h-container-sm (new minHeight entry for the existing container-sm token), Cancel + `cancelLabel` removed, field `clearable` with `clearLabel`. Forced test edits: SearchPalette.test (Cancel test), ds-search E2E (phone closes with Escape). Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Search: empty text shows nothing; SearchPalette drops the empty leading column and marks matches with Highlight; ds-search E2E finds rows by visible text (no aria-label). Forced test edits: searchItems.test (empty text), SearchProvider.test (4 tests now type first), ds-search E2E (Quick add types "tr"). Deviations: none.
 - 2026-10-26 · Phase 3 · Claude · Search card row "You owe ₹X" (SearchAmount `prefix`). Forced test edits: searchItems.test (owed amount, concealed). Deviations: none.
