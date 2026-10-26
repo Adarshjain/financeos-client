@@ -161,7 +161,6 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
           type="search"
           size="md"
           clearable
-          clearLabel="Clear search"
           placeholder={searchPlaceholder}
           prefix={<Icon name="search" size="sm" />}
           value={query}

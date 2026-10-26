@@ -260,7 +260,6 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
           className="w-full desk:flex-1 desk:max-w-container-sm"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Search symbol, ISIN, name"
           value={text}
           onValueChange={setText}

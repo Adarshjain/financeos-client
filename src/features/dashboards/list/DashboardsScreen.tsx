@@ -188,7 +188,6 @@ export function DashboardsScreen() {
               className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
               prefix={<Icon name="search" size="sm" />}
               clearable
-              clearLabel="Clear search"
               placeholder="Search dashboards"
               value={search}
               onValueChange={setSearch}

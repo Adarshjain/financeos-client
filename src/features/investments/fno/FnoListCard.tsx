@@ -221,7 +221,6 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
           className="shrink-0 w-container-xs"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Symbol"
           value={text}
           onValueChange={setText}

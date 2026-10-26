@@ -169,7 +169,6 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
           className="shrink-0 w-container-xs"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Instrument"
           value={text}
           onValueChange={setText}

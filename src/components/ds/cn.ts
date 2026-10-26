@@ -78,6 +78,7 @@ export const CN_HEIGHT = [
 ] as const;
 
 export const CN_MIN_HEIGHT = [
+  'container-sm',
   'control-sm',
   'control-md',
   'control-lg',

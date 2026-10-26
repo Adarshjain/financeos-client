@@ -142,7 +142,6 @@ export function RulesScreen({ rules, reference, state, counts, categories }: Rul
             className="min-w-container-xs flex-1"
             prefix={<Icon name="search" size="sm" />}
             clearable
-            clearLabel="Clear search"
             placeholder="Search merchant keys or names…"
             value={text}
             onValueChange={setText}

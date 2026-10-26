@@ -159,7 +159,6 @@ export function TransactionsView({
                   className={`min-w-0 desk:min-w-container-xs transition-all duration-base motion-reduce:transition-none ${searchFocused ? 'max-desk:grow-0 max-desk:shrink-0 max-desk:basis-11/12' : 'flex-1'}`}
                   prefix={<Icon name="search" size="sm" />}
                   clearable
-                  clearLabel="Clear search"
                   placeholder="Search merchant, amount…"
                   value={text}
                   onValueChange={setText}

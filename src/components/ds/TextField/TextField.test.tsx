@@ -168,6 +168,19 @@ describe('TextField component', () => {
       expect(input.value).toBe('');
     });
 
+    it('the clear button is the text Clear (no icon), pulled out by its padding to sit on the field padding', () => {
+      render(<TextField type="search" clearable defaultValue="swiggy" />);
+      const clearButton = screen.getByRole('button', { name: 'Clear' });
+      expect(clearButton).toHaveTextContent(/^Clear$/);
+      expect(clearButton.querySelector('svg')).toBeNull();
+      expect(clearButton).toHaveClass('-mx-space-8');
+    });
+
+    it('a button in the suffix is pulled out by its padding too', () => {
+      render(<TextField suffix={<button type="button">Open</button>} />);
+      expect(screen.getByRole('button', { name: 'Open' }).parentElement).toHaveClass('[&_button]:-mx-space-6');
+    });
+
     it('forwards callback ref and refocuses on clear', () => {
       let inputRef: HTMLInputElement | null = null;
       render(

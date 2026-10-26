@@ -5,7 +5,6 @@ import React, { forwardRef, useCallback, useId, useRef, useState } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { FieldFrame } from '../FieldFrame';
-import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
 
 export type TextFieldSize = 'md' | 'lg' | 'xl';
@@ -176,17 +175,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             {...props}
           />
 
+          {/* Buttons in the field pull out by their own padding, so their label or glyph sits on the field's
+              padding and gaps like the prefix side (owner, 2026-10-26). */}
           {clearable && hasValue && !disabled ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              iconOnly
-              aria-label={clearLabel}
-              onClick={handleClear}
-              className="text-ink-4 hover:text-ink shrink-0"
-            >
-              <Icon name="close" size="sm" />
+            <Button type="button" variant="ghost" size="sm" onClick={handleClear} className="-mx-space-8 shrink-0">
+              {clearLabel}
             </Button>
           ) : null}
 
@@ -204,7 +197,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           ) : null}
 
           {suffix ? (
-            <span className="ml-auto shrink-0 flex items-center text-ink-4">
+            <span className="ml-auto shrink-0 flex items-center text-ink-4 [&_button]:-mx-space-6">
               {suffix}
             </span>
           ) : null}

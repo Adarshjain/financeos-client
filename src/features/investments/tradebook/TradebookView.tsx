@@ -229,7 +229,6 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
           className="desk:flex-1 desk:max-w-container-sm"
           prefix={<Icon name="search" size="sm" />}
           clearable
-          clearLabel="Clear search"
           placeholder="Instrument"
           value={text}
           onValueChange={setText}
