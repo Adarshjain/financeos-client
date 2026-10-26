@@ -56,6 +56,16 @@ export function AppearanceCard() {
         onCheckedChange={setHidden}
       />
       <ListRow
+        title="Legacy"
+        subtitle="The current app, until the switch"
+        trailing={
+          // Legacy has its own root layout: a plain anchor makes it a full page load.
+          <Button variant="link" asChild>
+            <a href="/dashboard">Open</a>
+          </Button>
+        }
+      />
+      <ListRow
         title="Storybook"
         subtitle="Every Dinero component, live"
         trailing={
