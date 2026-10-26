@@ -148,7 +148,9 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Spend by category · 90 days** — `P-report-view.dc.html` · `shots/P-report-view.webp`
 - **Where the money went · 90 days** — `P-report-breakdown.dc.html` · `shots/P-report-breakdown.webp`
 - **Spend this month · underlying data** — `P-report-underlying.dc.html` · `shots/P-report-underlying.webp`
-- **Ask the data** — `P-chat.dc.html` · `shots/P-chat.webp`
+- **Ask the data · home and recent chats** — `P-chat-home.dc.html` · `shots/P-chat-home.webp`
+- **Ask the data · answer** — `P-chat.dc.html` · `shots/P-chat.webp`
+- **Ask the data · states** — `P-chat-states.dc.html` · `shots/P-chat-states.webp`
 
 ### 10 · Rewards
 
@@ -287,7 +289,10 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **Spend by category · 90 days** — `D-report-view.dc.html` · `shots/D-report-view.webp`
 - **Where the money went · 90 days** — `D-report-breakdown.dc.html` · `shots/D-report-breakdown.webp`
 - **Spend this month · underlying data** — `D-report-underlying.dc.html` · `shots/D-report-underlying.webp`
-- **Ask the data** — `D-chat.dc.html` · `shots/D-chat.webp`
+- **Ask the data · new chat** — `D-chat-new.dc.html` · `shots/D-chat-new.webp`
+- **Ask the data · answer** — `D-chat.dc.html` · `shots/D-chat.webp`
+- **Ask the data · answering** — `D-chat-live.dc.html` · `shots/D-chat-live.webp`
+- **Ask the data · states** — `D-chat-states.dc.html` · `shots/D-chat-states.webp`
 
 ### 10 · Rewards
 
