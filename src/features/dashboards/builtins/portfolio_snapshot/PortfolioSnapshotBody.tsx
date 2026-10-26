@@ -1,6 +1,6 @@
 'use client';
 
-// portfolio_snapshot: current value (tap: the open holdings behind it), the move since the previous evening
+// portfolio_snapshot: current value (tap: the open holdings behind it), the move since the last close
 // price update, then invested, unrealised P&L and XIRR, then the three largest holdings (each opens its page).
 // Content only; the dashboard frame draws the card.
 
@@ -120,21 +120,21 @@ export function PortfolioSnapshotBody() {
 }
 
 /**
- * "+₹8,420 (+0.68%) since last update"; nothing until two evening prices exist. Each holding's move runs from
- * its own previous evening price, so no single "since" date is claimed; the tooltip names the newest price date.
+ * "+₹8,420 (+0.68%) since last close"; nothing until a previous close exists. Each holding's move runs from
+ * its own last close, so no single "since" date is claimed; the tooltip names the newest price date.
  */
 function DayChangeLine({ summary }: { summary: InvestmentSummary }) {
   const change = num(summary.dayChange);
   if (change == null) return null;
   const pct = num(summary.dayChangePct);
   const title = summary.priceAsOf
-    ? `Each holding's change since its previous evening price; latest prices from ${shortDate(summary.priceAsOf)}`
+    ? `Each holding's change since its last close; latest prices from ${shortDate(summary.priceAsOf)}`
     : undefined;
   return (
     <Text variant="label" tone={moveTone(change) ?? 'ink'} as="div" title={title} data-testid="day-change">
       {signedRupees(change)}
       {pct != null && ` (${signedPct(pct, 2)})`}{' '}
-      <Text variant="label" tone="ink-3">since last update</Text>
+      <Text variant="label" tone="ink-3">since last close</Text>
     </Text>
   );
 }

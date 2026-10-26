@@ -1,5 +1,5 @@
 // Pure selection behind the top_movers widget: the open holdings that moved
-// most since their previous evening price, split into gainers and losers.
+// most since their last close, split into gainers and losers.
 
 import type { Position } from '@/lib/types';
 
@@ -31,7 +31,7 @@ export interface Movers {
   since: string | null;
   /**
    * The listed movers' windows differ (e.g. fund NAVs a day behind stocks): the
-   * footer says "since last update" and each row shows its own dates.
+   * footer says "since last close" and each row shows its own dates.
    */
   mixed: boolean;
 }

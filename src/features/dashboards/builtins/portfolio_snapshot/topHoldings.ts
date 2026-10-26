@@ -15,7 +15,7 @@ export interface TopHolding {
   /** The symbol, or the name for a fund that has none. */
   label: string;
   quantity: number;
-  /** Move since the previous evening price (%); null without two prices. */
+  /** Move since the last close (%); null without two prices. */
   dayChangePct: number | null;
 }
 

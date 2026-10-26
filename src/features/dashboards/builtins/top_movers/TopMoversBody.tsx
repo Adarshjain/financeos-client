@@ -1,14 +1,13 @@
 'use client';
 
-// top_movers: the open holdings that moved most since the previous evening price, as Gainers / Losers (two
+// top_movers: the open holdings that moved most since their last close, as Gainers / Losers (two
 // short lists don't fit half width). A row opens that holding's breakdown. When the listed holdings' windows differ
-// (fund NAVs land a day after stock prices) the footer says "since last update" and each row shows its own
+// (fund NAVs land a day after stock prices) the footer still says "since last close" and each row shows its own
 // previous close → price dates. Content only; the dashboard frame draws the card.
 
 import React from 'react';
 
 import { EmptyState, ListRow, SegmentedControl, Skeleton, Text } from '@/components/ds';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { moveTone, signedPct, signedRupees, unitPrice } from '@/features/investments/investmentsFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
@@ -76,7 +75,7 @@ export function TopMoversBody({ n }: { n: number }) {
       <EmptyState
         size="sm"
         title="No price moves yet"
-        description="Moves show up once your holdings have two evening prices."
+        description="Moves show up once your holdings have a previous close."
       />
     );
   }
@@ -111,7 +110,7 @@ export function TopMoversBody({ n }: { n: number }) {
       {(movers.since || movers.mixed) && (
         <div className="px-space-16 py-space-8">
           <Text variant="caption" tone="ink-3" as="p">
-            {movers.mixed ? 'Since last update' : `Since ${formatDayMonth(movers.since ?? '')}`}, updated each evening
+            Since last close
           </Text>
         </div>
       )}

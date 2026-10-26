@@ -48,11 +48,11 @@ const respond = (data: InvestmentSummary) => vi.mocked(api.GET).mockResolvedValu
 describe('PortfolioSnapshotBody', () => {
   beforeEach(() => vi.resetAllMocks());
 
-  it('shows the value, the day move since last update, then invested, unrealised P&L and XIRR', async () => {
+  it('shows the value, the day move since last close, then invested, unrealised P&L and XIRR', async () => {
     respond(summary());
     renderWithQuery(<PortfolioSnapshotBody />);
     expect(await screen.findByRole('button', { name: /₹12,48,600/ })).toBeInTheDocument();
-    expect(screen.getByTestId('day-change')).toHaveTextContent('+₹8,420 (+0.68%) since last update');
+    expect(screen.getByTestId('day-change')).toHaveTextContent('+₹8,420 (+0.68%) since last close');
     expect(screen.getByText('Invested').nextSibling).toHaveTextContent('₹10,20,000');
     expect(screen.getByText('Unrealised P&L').nextSibling).toHaveTextContent('+₹2,28,600 (+22.41%)');
     expect(screen.getByText('XIRR').nextSibling).toHaveTextContent('14.2%');
