@@ -139,7 +139,7 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       items: (server?.accounts ?? []).map((a) => ({
         ...link(`accounts:${a.id}`, joinTitle([a.name, a.last4 ? `••${a.last4}` : null]), `/accounts/${a.id}`),
         // What is owed on a card with an unpaid bill, as a debit amount.
-        trailing: a.openBill ? <SearchAmount amount={-a.openBill.remainingAmount} /> : undefined,
+        trailing: a.openBill ? <SearchAmount amount={-a.openBill.remainingAmount} prefix="You owe" /> : undefined,
       })),
     },
     {

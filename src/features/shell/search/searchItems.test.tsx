@@ -273,15 +273,15 @@ describe('buildSearchGroups', () => {
     it('shows the amount owed as the account row trailing, or nothing without a bill', () => {
       const items = group(build('Tran', { ...withBill, accounts: [card, result.accounts[1]] }).groups, 'accounts').items;
       render(<p>{items[0].trailing}</p>);
-      expect(screen.getByText('₹44,319')).toHaveClass('text-ink');
+      expect(screen.getByText('You owe ₹44,319')).toHaveClass('text-ink');
       expect(items[1].trailing).toBeUndefined();
     });
 
     it('hides the amount while amounts are hidden', () => {
       const items = group(build('Tran', withBill).groups, 'accounts').items;
       render(<ConcealProvider concealed>{items[0].trailing}</ConcealProvider>);
-      expect(screen.getByText('₹ —')).toBeInTheDocument();
-      expect(screen.queryByText('₹44,319')).toBeNull();
+      expect(screen.getByText('You owe ₹ —')).toBeInTheDocument();
+      expect(screen.queryByText(/44,319/)).toBeNull();
     });
   });
 });
