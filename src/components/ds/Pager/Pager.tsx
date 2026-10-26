@@ -159,7 +159,6 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                     <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
                   </Button>
                 }
-                menuClassName="min-w-fit"
               />
             ) : (
               <span

@@ -4,7 +4,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 
 ## Use
 - Closed: a field with the value (optionally led by an icon or image, such as a bank logo) and a ChevronDown (`icon-md`) at the right that turns to ChevronUp while open.
-- Open: one Popover surface (never a card inside the popover), at least as wide as the trigger and wider when the options need it (up to `dialog-sm`, 440), so a list opened from a small FilterChip still shows its options in full, with search first when there are more than about eight options and a Check on the current value. Works as a dropdown at every size.
+- Open: one Popover surface (never a card inside the popover), `container-xs` (240) wide, growing to fit its options and never wider than the viewport inset (`container-viewport-inset`); it does not follow the trigger or field width (owner, 2026-10-26), so a list opened from a small FilterChip still shows its options in full, with search first when there are more than about eight options and a Check on the current value. Works as a dropdown at every size.
 - **Custom trigger**: any element can open the list through the `trigger` slot. A FilterChip is the trigger for every dropdown filter, so filter chips get search, multi-select, and sections for free. One dropdown, never a second chip-only dropdown.
 - Options use the shared item row: `body` weight 500 (not bold), the current value on `brand-tint` with a Check; section headers are the SectionHeader `band` variant (owner, 2026-10-25), drawn only for groups with a name; a group named `''` has no header.
 - Multi-select chips wrap to a second line before they truncate; "+n" when they overflow.
@@ -30,7 +30,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `filter`: `'auto' | 'none' | ((option, query) => boolean)`.
 - `emptyText`: `(query: string) => ReactNode`.
 - `size`: `'sm' | 'md'` (default `md`). `sm` is a `control-sm` field with `label` text and `space-8` side padding, for a role or type picker sitting inside a list row. The chevron stays `icon-md`.
-- The list is exactly as wide as the field (capped by the viewport inset); with a custom `trigger` it keeps the popover width.
+- The list is `container-xs` wide, grows to its content and is capped at the viewport inset, with or without a custom `trigger`; it never follows the trigger or field width.
 - `discardLabel`: `ReactNode` (default `Cancel`), multiple only. Restores the value the field had when the popover opened (calling `onValueChange` with it if it changed) and closes. Footer: Cancel (ghost) on the left; Clear (ghost) and Done (primary) on the right. Escape and an outside click keep the selection as it is.
 - Chips (multiple) show as many as fit on one line of the field, measured from the field's width; the rest collapse into a `+n` badge that always fits inside the field. No `maxDisplayChips`.
 - Disabled: no hover, press, focus or open styling; same look as a disabled TextField (`bg-sunken`, faint text, chevron and chips, `opacity-60`).
