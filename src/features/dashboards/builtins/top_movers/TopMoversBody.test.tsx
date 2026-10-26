@@ -85,15 +85,15 @@ describe('TopMoversBody', () => {
     expect(within(await screen.findByRole('list', { name: 'Gainers' })).getAllByRole('listitem')).toHaveLength(3);
   });
 
-  it('footer: one shared window says since its date; differing windows say since last update and rows show their own dates', async () => {
+  it('footer: says since last close; differing windows also show each row\'s own dates', async () => {
     respond([pos('A', 1), pos('B', 2)]);
     const { unmount } = renderWithQuery(<TopMoversBody n={5} />);
-    expect(await screen.findByText('Since 8 Oct, updated each evening')).toBeInTheDocument();
+    expect(await screen.findByText('Since last close')).toBeInTheDocument();
     expect(screen.queryByText(/→/)).not.toBeInTheDocument();
     unmount();
     respond([pos('A', 1), pos('Fund', 2, { previousCloseAsOf: '2026-10-07', lastPriceAsOf: '2026-10-08' })]);
     renderWithQuery(<TopMoversBody n={5} />);
-    expect(await screen.findByText('Since last update, updated each evening')).toBeInTheDocument();
+    expect(await screen.findByText('Since last close')).toBeInTheDocument();
     expect(screen.getByText(/7 Oct → 8 Oct/)).toBeInTheDocument();
   });
 
