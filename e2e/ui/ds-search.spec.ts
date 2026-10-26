@@ -149,7 +149,7 @@ for (const viewport of VIEWPORTS) {
       const dialog = palette(page);
       const markPaid = dialog.getByRole('option', { name: `Mark ${WORD} Card bill paid` });
       await expect(markPaid).toBeVisible({ timeout: 30_000 });
-      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} Card · ••7741`) })).toContainText('₹6,000');
+      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} Card · ••7741`) })).toContainText('You owe ₹6,000');
 
       await markPaid.click();
       const mark = page.getByRole('dialog', { name: 'Mark bill as paid' });
