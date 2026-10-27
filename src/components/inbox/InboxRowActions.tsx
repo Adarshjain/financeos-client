@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { actionHref, canDismiss, canSnooze, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
 import { SnoozeMenu } from './SnoozeMenu';
@@ -48,7 +49,7 @@ export function InboxRowActions({ item, limit, onBillAction }: InboxRowActionsPr
         if (!href) return null;
         return (
           <Button key={`${action.type}-${index}`} asChild variant={variant} size="xs">
-            <Link href={href}>{action.label}</Link>
+            <Link href={legacyHref(href)}>{action.label}</Link>
           </Button>
         );
       })}

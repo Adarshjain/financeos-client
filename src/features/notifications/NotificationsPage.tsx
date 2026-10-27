@@ -28,7 +28,7 @@ import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, parsePage, timeL
 import { NotificationsSkeleton } from './NotificationsSkeleton';
 import { useNotificationActions } from './useNotificationActions';
 
-/** /ds/notifications: the full feed by day, newest first, with clear one, clear all and a pager. */
+/** /notifications: the full feed by day, newest first, with clear one, clear all and a pager. */
 export function NotificationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();

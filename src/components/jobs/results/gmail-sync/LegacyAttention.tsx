@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatFromHeader } from '@/features/jobs/gmailSyncModel';
+import { legacyHref } from '@/features/shell/routes';
 import type { SyncMessageOutcome, SyncSummary } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -22,7 +23,7 @@ export function LegacyAttention({ result }: { result: SyncSummary }) {
     switch (outcome.outcome) {
       case 'ACCOUNT_UNRESOLVED':
         return (
-          <Link href="/accounts" className="underline font-bold text-2xs">
+          <Link href={legacyHref('/accounts')} className="underline font-bold text-2xs">
             {outcome.accountLast4
               ? `Add or fix account ending ${outcome.accountLast4}`
               : 'Add or fix account'}
@@ -30,14 +31,14 @@ export function LegacyAttention({ result }: { result: SyncSummary }) {
         );
       case 'DECRYPT_FAILED':
         return (
-          <Link href="/accounts" className="underline font-bold text-2xs">
+          <Link href={legacyHref('/accounts')} className="underline font-bold text-2xs">
             Set the statement password on the account
           </Link>
         );
       case 'PARSE_FAILED':
       case 'NO_ATTACHMENT':
         return (
-          <Link href="/transactions/import" className="underline font-bold text-2xs">
+          <Link href={legacyHref('/transactions/import')} className="underline font-bold text-2xs">
             Import manually
           </Link>
         );

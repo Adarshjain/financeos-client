@@ -19,6 +19,7 @@ import {
 } from '@/components/layout/navigation';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { legacyHref } from '@/features/shell/routes';
 import { cn } from '@/lib/utils';
 
 import { useKeyboardInset } from './useKeyboardInset';
@@ -149,17 +150,17 @@ export function MobileMenuSheet({ userEmail }: MobileMenuSheetProps) {
  * lists Settings as one entry, and NAV_ITEMS drives longest-prefix highlighting there.
  */
 const SETTINGS_ITEMS: { href: string; label: string }[] = [
-  { href: '/settings', label: 'Profile & appearance' },
-  { href: '/settings/gmail', label: 'Connections' },
-  { href: '/settings/llm-keys', label: 'AI keys' },
-  { href: '/settings/notifications', label: 'Notifications' },
-  { href: '/settings/activity', label: 'Activity' },
-  { href: '/debug', label: 'Debug' },
+  { href: legacyHref('/settings'), label: 'Profile & appearance' },
+  { href: legacyHref('/settings/gmail'), label: 'Connections' },
+  { href: legacyHref('/settings/llm-keys'), label: 'AI keys' },
+  { href: legacyHref('/settings/notifications'), label: 'Notifications' },
+  { href: legacyHref('/settings/activity'), label: 'Activity' },
+  { href: legacyHref('/debug'), label: 'Debug' },
 ];
 
 /** The settings index is active only on itself; every other settings chip also covers its sub-pages. */
 function isSettingsItemActive(pathname: string, href: string): boolean {
-  if (href === '/settings') return pathname === '/settings';
+  if (href === legacyHref('/settings')) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

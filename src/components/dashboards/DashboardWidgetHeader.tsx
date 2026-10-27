@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { nextWidth, widthToggleLabel } from '@/features/dashboards/editor/dashboardEditor.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import { isBuiltinWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 
@@ -66,7 +67,7 @@ export function WidgetViewHeader({
       </div>
       {href && (
         <Button asChild variant="ghost" size="micro" className="shrink-0">
-          <Link href={href} aria-label={`Open ${title}`}>
+          <Link href={legacyHref(href)} aria-label={`Open ${title}`}>
             Open
             <ChevronRight className="text-slate-400" />
           </Link>
@@ -124,7 +125,7 @@ export function WidgetEditHeader({
           title="Edit report"
           aria-label="Edit report"
         >
-          <Link href={`/reports/${reportId}`}>
+          <Link href={legacyHref(`/reports/${reportId}`)}>
             <Pencil className="text-slate-500" />
           </Link>
         </Button>

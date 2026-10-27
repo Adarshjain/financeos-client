@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/dashboards', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboards', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -84,7 +84,7 @@ describe('DashboardsScreen', () => {
   it('pressing a row opens the dashboard', async () => {
     render([home, money]);
     await user.click(screen.getByText('Money overview'));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards/money');
+    expect(router.push).toHaveBeenCalledWith('/dashboards/money');
   });
 
   it('search narrows the rows by name and description, and says so when none match', async () => {
@@ -113,7 +113,7 @@ describe('DashboardsScreen', () => {
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Edit', 'Set as default', 'Delete dashboard']);
     await user.click(screen.getByRole('menuitem', { name: 'Edit' }));
     // Only Edit navigates: the press in the menu is not also a press on the row.
-    expect(router.push.mock.calls).toEqual([['/ds/dashboards/money?edit=1']]);
+    expect(router.push.mock.calls).toEqual([['/dashboards/money?edit=1']]);
   });
 
   it('menu on the default dashboard offers Clear default', async () => {
@@ -198,7 +198,7 @@ describe('DashboardsScreen', () => {
     render([]);
     expect(screen.getByText('No dashboards yet')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'New dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards/new');
+    expect(router.push).toHaveBeenCalledWith('/dashboards/new');
     await user.click(screen.getByRole('button', { name: 'Restore default Home' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
   });

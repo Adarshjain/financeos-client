@@ -12,7 +12,7 @@ const replace = vi.fn();
 let search = '';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace }),
-  usePathname: () => '/ds/settings/connections',
+  usePathname: () => '/settings/connections',
   useSearchParams: () => new URLSearchParams(search),
 }));
 
@@ -79,7 +79,7 @@ describe('ConnectionsPage banners', () => {
     renderWithQuery(<ConnectionsPage oauth={{ kind: 'success', email: 'a@b.test' }} />);
     expect(screen.getByText('Successfully connected')).toBeInTheDocument();
     expect(screen.getByText('a@b.test')).toBeInTheDocument();
-    expect(replace).toHaveBeenCalledWith('/ds/settings/connections?focus=attention');
+    expect(replace).toHaveBeenCalledWith('/settings/connections?focus=attention');
   });
 
   it('shows the error banner with its message, and the fallback without one', () => {
@@ -140,7 +140,7 @@ describe('RecentSyncJobsCard', () => {
     jobsState = { jobs: [], loading: false };
     renderWithQuery(<RecentSyncJobsCard />);
     expect(screen.getByText('No recent sync jobs yet.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/ds/settings/activity?type=GMAIL_SYNC');
+    expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/settings/activity?type=GMAIL_SYNC');
   });
 
   it('shows the Live badge only while a job is pending or running', () => {

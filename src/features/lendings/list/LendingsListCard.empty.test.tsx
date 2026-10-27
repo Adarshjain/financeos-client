@@ -13,7 +13,7 @@ describe('LendingsListCard empty', () => {
     render(<LendingsListCard {...base} state={{ q: 'zz', filter: 'owe', page: 0, size: 25 }} />);
     expect(screen.getByText('No people match.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/loans/lendings', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings', { scroll: false });
   });
 
   it('no lendings at all says so and has no clear action', () => {

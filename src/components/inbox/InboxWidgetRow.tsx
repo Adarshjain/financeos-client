@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { inboxItemHref } from '@/features/dashboards/builtins/attention/attentionRows';
 import { actionHref, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { cn, formatMoney } from '@/lib/utils';
 
@@ -31,7 +32,7 @@ export function InboxWidgetRow({ item, onBillAction }: InboxWidgetRowProps) {
         className={cn('h-2 w-2 shrink-0 rounded-full', severityStripeClass(item.severity))}
       />
       <Link
-        href={inboxItemHref(item.key)}
+        href={legacyHref(inboxItemHref(item.key))}
         className="min-w-0 flex-1 truncate text-xs font-medium text-slate-800 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-400"
         title={title}
       >
@@ -69,7 +70,7 @@ function RowAction({ item, action, onBillAction }: InboxWidgetRowProps & { actio
   if (!href) return null;
   return (
     <Button asChild variant="outline" size="micro" className="shrink-0">
-      <Link href={href}>{action.label}</Link>
+      <Link href={legacyHref(href)}>{action.label}</Link>
     </Button>
   );
 }

@@ -13,6 +13,7 @@ import { SubtitleText } from '@/components/dashboards/builtins/BuiltinSubtitle';
 import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Button } from '@/components/ui/button';
 import { principalRepaidPct } from '@/features/dashboards/builtins/loan_payoff/loanPayoff';
+import { legacyHref } from '@/features/shell/routes';
 import type { LoanResponse } from '@/lib/loan.types';
 import { useActiveLoans } from '@/lib/query/hooks/useLoans';
 
@@ -42,7 +43,7 @@ export function LoanPayoffWidget({ loanId, className }: { loanId: string | null;
         title={loanId ? 'This loan is closed or no longer exists' : 'No active loans'}
         action={
           <Button asChild variant="link" size="xs">
-            <Link href="/loans">Go to loans</Link>
+            <Link href={legacyHref('/loans')}>Go to loans</Link>
           </Button>
         }
       />

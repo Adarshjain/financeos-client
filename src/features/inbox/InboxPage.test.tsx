@@ -121,7 +121,7 @@ describe('InboxPage', () => {
       screen.getByText('Nothing needs you right now. New bills, statements and reviews show up here.'),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Upcoming' }));
-    expect(push).toHaveBeenLastCalledWith('/ds/upcoming');
+    expect(push).toHaveBeenLastCalledWith('/upcoming');
     fireEvent.click(screen.getByRole('button', { name: 'Transactions' }));
     expect(push).toHaveBeenLastCalledWith('/transactions');
   });
@@ -166,9 +166,9 @@ describe('InboxPage', () => {
     renderWithQuery(<InboxPage />);
     await screen.findByText('Amex bill');
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/ds/loans/l1');
-    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions/review');
-    expect(screen.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/ds/accounts/acc-1/rewards');
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/loans/l1');
+    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions?review=needs_review');
+    expect(screen.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/accounts/acc-1/rewards');
   });
 
   it('snooze and dismiss icons follow the server actions', async () => {

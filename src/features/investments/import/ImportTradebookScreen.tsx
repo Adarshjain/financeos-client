@@ -17,7 +17,7 @@ import { UPLOAD_FORM_ID, UploadStep } from './UploadStep';
 import { useImportWizard } from './useImportWizard';
 
 /**
- * /ds/investments/import: the Zerodha, Groww and mutual-fund CAS import as its own page.
+ * /investments/import: the Zerodha, Groww and mutual-fund CAS import as its own page.
  * Upload files, Review (include or skip each row, map instruments), then the Result of the import job.
  */
 export function ImportTradebookScreen({ brokers }: { brokers: Broker[] }) {

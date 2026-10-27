@@ -7,7 +7,7 @@ import { AddTransactionProvider } from '@/features/transactions/form/AddTransact
 import { ShellTabBar } from '../ShellNav';
 
 const router = { push: vi.fn() };
-vi.mock('next/navigation', () => ({ usePathname: () => '/ds/accounts', useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => router }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));
 vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: 0 }) }));
 const formProps = vi.fn();

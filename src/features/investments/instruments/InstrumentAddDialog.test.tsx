@@ -6,7 +6,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { InstrumentAddDialog } from './InstrumentAddDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/investments/instruments', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/investments/instruments', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({

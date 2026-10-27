@@ -7,7 +7,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { useRewardsAdd } from './RewardsAdd';
 import { RewardsShell } from './RewardsShell';
 
-let pathname = '/ds/rewards/rules';
+let pathname = '/rewards/rules';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => pathname,
@@ -22,7 +22,7 @@ function Tab({ enabled = true }: { enabled?: boolean }) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  pathname = '/ds/rewards/rules';
+  pathname = '/rewards/rules';
 });
 
 describe('RewardsShell +', () => {
@@ -37,7 +37,7 @@ describe('RewardsShell +', () => {
   });
 
   it('has no + on the other tabs, even if a page registers one', () => {
-    pathname = '/ds/rewards';
+    pathname = '/rewards';
     renderWithQuery(
       <RewardsShell>
         <Tab />

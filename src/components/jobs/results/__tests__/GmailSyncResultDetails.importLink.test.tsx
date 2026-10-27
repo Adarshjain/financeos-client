@@ -27,7 +27,7 @@ describe('GmailSyncResultDetails manual import link', () => {
     renderWith(o);
     const links = screen.getAllByRole('link', { name: 'Import manually', hidden: true });
     expect(links.length).toBeGreaterThan(0);
-    links.forEach((l) => expect(l).toHaveAttribute('href', '/transactions/import'));
+    links.forEach((l) => expect(l).toHaveAttribute('href', '/legacy/transactions/import'));
   });
 
   it.each(['EXTRACTION_FAILED', 'ERROR'] as const)('%s has no import link', (o) => {

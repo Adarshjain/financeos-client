@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
 import { useBillsWidgetActions } from '@/features/bills/useBillsWidgetActions';
+import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBills } from '@/lib/query/hooks/useBills';
@@ -83,7 +84,7 @@ export function BillsDueWidget({ accountId, highlightStatementId, className }: B
         className="m-4"
         action={
           <Button asChild variant="link" size="xs">
-            <Link href="/accounts">Go to accounts</Link>
+            <Link href={legacyHref('/accounts')}>Go to accounts</Link>
           </Button>
         }
       />

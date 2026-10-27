@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { legacyHref } from '@/features/shell/routes';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { cn } from '@/lib/utils';
 
@@ -61,7 +62,7 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
               ))}
             </div>
             <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800/80 my-1.5" />
-            <Link href="/dashboards">
+            <Link href={legacyHref('/dashboards')}>
               <DropdownMenuItem className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium cursor-pointer text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
                 <Eye className="w-4 h-4 text-slate-400" />
                 <span>View All Dashboards</span>
@@ -73,7 +74,7 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
       {actions}
       {/* Desktop has Chat in the sidebar header; keep this shortcut for smaller screens. */}
       <Button variant="outline" asChild aria-label="Chat with your data" className="h-10 shrink-0 lg:hidden">
-        <Link href="/chat">
+        <Link href={legacyHref('/chat')}>
           <MessageCircle className="w-4 h-4 text-slate-400" /> Chat
         </Link>
       </Button>

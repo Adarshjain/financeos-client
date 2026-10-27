@@ -75,17 +75,17 @@ describe('PageTransition', () => {
       updates.push(update);
       return <>{children}</>;
     }
-    let pathname = '/ds/transactions';
+    let pathname = '/transactions';
     vi.doMock('react', async (importOriginal) => ({ ...(await importOriginal<object>()), ViewTransition: FakeViewTransition }));
     vi.doMock('next/navigation', () => ({ usePathname: () => pathname }));
     const { PageTransition } = await import('./viewTransition');
 
     const { rerender } = render(<PageTransition><p>Transactions</p></PageTransition>);
     expect(updates.at(-1)).toBe('none');
-    pathname = '/ds/inbox';
+    pathname = '/inbox';
     rerender(<PageTransition><p>Inbox</p></PageTransition>);
     expect(updates.at(-1)).toBe('ds-page');
-    pathname = '/ds/transactions';
+    pathname = '/transactions';
     rerender(<PageTransition><p>Transactions</p></PageTransition>);
     expect(updates.at(-1)).toBe('ds-page');
     expect(screen.getByText('Transactions')).toBeInTheDocument();

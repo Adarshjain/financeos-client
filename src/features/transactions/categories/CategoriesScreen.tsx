@@ -52,7 +52,7 @@ type Dialogs =
   | { kind: 'delete'; category: Category }
   | null;
 
-/** /ds/transactions/categories: the Categories tab. Add from the top bar's +, rename and delete from a row. */
+/** /transactions/categories: the Categories tab. Add from the top bar's +, rename and delete from a row. */
 export function CategoriesScreen({ categories, reference, state, uncategorized }: CategoriesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);

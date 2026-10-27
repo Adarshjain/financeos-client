@@ -79,7 +79,7 @@ describe('parseTransactionsUrl', () => {
 describe('transactionsUrl', () => {
   it('leaves defaults out', () => {
     expect(transactionsSearch(DEFAULT_QUERY)).toBe('');
-    expect(transactionsUrl(DEFAULT_QUERY)).toBe('/ds/transactions');
+    expect(transactionsUrl(DEFAULT_QUERY)).toBe('/transactions');
   });
 
   it('leaves all time out and writes Last 14 days explicitly', () => {
@@ -148,7 +148,7 @@ describe('txn deep link', () => {
   });
 
   it('builds the link, and writes nothing without one', () => {
-    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: ID })).toBe(`/ds/transactions?txn=${ID}`);
-    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: null })).toBe('/ds/transactions');
+    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: ID })).toBe(`/transactions?txn=${ID}`);
+    expect(transactionsUrl({ ...DEFAULT_QUERY, txn: null })).toBe('/transactions');
   });
 });

@@ -14,6 +14,7 @@ import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnde
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { buildUtilisationModel, type UtilisationRow } from '@/features/dashboards/builtins/card_utilisation/cardUtilisation.model';
+import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -124,7 +125,7 @@ export function CardUtilisationWidget({ accountId = null, className }: CardUtili
         className="m-4"
         action={
           <Button asChild variant="link" size="xs">
-            <Link href="/accounts">Go to accounts</Link>
+            <Link href={legacyHref('/accounts')}>Go to accounts</Link>
           </Button>
         }
       />

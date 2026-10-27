@@ -36,6 +36,9 @@ const reportRow = { id: REP, name: 'Monthly spend' } as ReportSummaryResponse;
 const dashboard = { id: DASH, name: 'Investments' } as DashboardResponse;
 const entities: ShortcutEntities = { accounts: [account], reports: [reportRow], dashboards: [dashboard] };
 
+/** The Legacy nav hrefs are `/legacy/...`; the shared catalog keeps the plain path (the widget prefixes it on render). */
+const plainHref = (href: string) => href.replace(/^\/legacy/, '');
+
 describe('parseShortcutId', () => {
   it('splits kind and value at the first colon', () => {
     expect(parseShortcutId('page:/transactions/review')).toEqual({ kind: 'page', value: '/transactions/review' });
@@ -55,7 +58,7 @@ describe('catalog lists', () => {
   it('pages: every nav href once, in nav order, with the nav label (Rewards for its overview)', () => {
     const hrefs = PAGE_SHORTCUTS.map((p) => p.href);
     expect(new Set(hrefs).size).toBe(hrefs.length);
-    expect(hrefs).toEqual([...new Set(Object.values(NAV_ITEMS).map((n) => n.href))]);
+    expect(hrefs).toEqual([...new Set(Object.values(NAV_ITEMS).map((n) => n.href))].map(plainHref));
     expect(PAGE_SHORTCUTS.find((p) => p.href === '/rewards')?.label).toBe('Rewards');
     expect(PAGE_SHORTCUTS.find((p) => p.href === '/upcoming')).toMatchObject({
       id: 'page:/upcoming', kind: 'page', label: 'Upcoming', actionId: null,

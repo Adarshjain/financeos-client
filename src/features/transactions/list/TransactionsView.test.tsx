@@ -14,7 +14,7 @@ import { TransactionsView, type TransactionsViewProps } from './TransactionsView
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/transactions',
+  usePathname: () => '/transactions',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -75,7 +75,7 @@ describe('TransactionsView', () => {
   it('shows the tabs, the search, the chips and the rows', () => {
     setup();
     expect(screen.getByRole('tab', { name: 'All' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/ds/transactions/import');
+    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
     expect(screen.getByPlaceholderText('Search merchant, amount…')).toBeInTheDocument();
     expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
     expect(screen.getByText('Needs review · 25')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('TransactionsView', () => {
   it('writes a toggle chip to the address, back on page one', () => {
     setup({ query: { ...DEFAULT_QUERY, page: 2 } });
     fireEvent.click(screen.getByRole('button', { name: 'Monitoring' }));
-    expect(lastUrl()).toBe('/ds/transactions?monitoring=1');
+    expect(lastUrl()).toBe('/transactions?monitoring=1');
     fireEvent.click(screen.getByRole('button', { name: 'Up to statement' }));
     expect(lastUrl()).toContain('statement=1');
     fireEvent.click(screen.getByRole('button', { name: 'Needs review · 25' }));
@@ -96,13 +96,13 @@ describe('TransactionsView', () => {
   it('turns a switched-on toggle off', () => {
     setup({ query: { ...DEFAULT_QUERY, review: 'NEEDS_REVIEW' } });
     fireEvent.click(screen.getByRole('button', { name: 'Needs review · 25' }));
-    expect(lastUrl()).toBe('/ds/transactions');
+    expect(lastUrl()).toBe('/transactions');
   });
 
   it('removing the period chip means all time, which leaves the address bare', () => {
     setup({ query: { ...DEFAULT_QUERY, period: LAST_14_DAYS } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Remove filter' })[0]);
-    expect(lastUrl()).toBe('/ds/transactions');
+    expect(lastUrl()).toBe('/transactions');
   });
 
   it('the Period chip opens a dropdown on the page; Apply writes the picked period', async () => {
@@ -110,7 +110,7 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Period' }));
     expect(screen.queryByText('Every filter combines with the others')).not.toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: 'Apply' }));
-    expect(lastUrl()).toBe('/ds/transactions');
+    expect(lastUrl()).toBe('/transactions');
   });
 
   it('shows only the amount fields the condition needs, in the Filters dialog', async () => {
@@ -141,7 +141,7 @@ describe('TransactionsView', () => {
       await openDialog();
       type('From', '100');
       show();
-      expect(lastUrl()).toBe('/ds/transactions?amount=gt&amountFrom=100');
+      expect(lastUrl()).toBe('/transactions?amount=gt&amountFrom=100');
     });
 
     it('less than applies only To, and the From typed before is dropped', async () => {
@@ -150,7 +150,7 @@ describe('TransactionsView', () => {
       pickCondition('Greater than', 'Less than');
       type('To', '500');
       show();
-      expect(lastUrl()).toBe('/ds/transactions?amount=lt&amountTo=500');
+      expect(lastUrl()).toBe('/transactions?amount=lt&amountTo=500');
     });
 
     it('between applies both', async () => {
@@ -159,7 +159,7 @@ describe('TransactionsView', () => {
       type('From', '100');
       type('To', '500');
       show();
-      expect(lastUrl()).toBe('/ds/transactions?amount=between&amountFrom=100&amountTo=500');
+      expect(lastUrl()).toBe('/transactions?amount=between&amountFrom=100&amountTo=500');
     });
 
     it('a field hidden by a condition change is emptied: back on between it is not applied', async () => {
@@ -197,7 +197,7 @@ describe('TransactionsView', () => {
     expect(router.push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: /Done/ }));
     expect(router.push).toHaveBeenCalledTimes(1);
-    expect(lastUrl()).toBe('/ds/transactions?account=a1&account=a2');
+    expect(lastUrl()).toBe('/transactions?account=a1&account=a2');
   });
 
   it('debounces search into the address and goes back to page one', () => {
@@ -207,13 +207,13 @@ describe('TransactionsView', () => {
     expect(router.push).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS + 10));
     expect(router.push).toHaveBeenCalledTimes(1);
-    expect(lastUrl()).toBe('/ds/transactions?q=swig');
+    expect(lastUrl()).toBe('/transactions?q=swig');
   });
 
   it('pages and sizes through the address', () => {
     setup();
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 2' })[0]);
-    expect(lastUrl()).toBe('/ds/transactions?page=1');
+    expect(lastUrl()).toBe('/transactions?page=1');
   });
 
   it('opens the Filters dialog from + More and shows the live count; Show writes the address', async () => {
@@ -227,7 +227,7 @@ describe('TransactionsView', () => {
     expect(show.querySelector('.max-desk\\:hidden')?.textContent).toBe('transactions');
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
-    expect(lastUrl()).toBe('/ds/transactions?excluded=1');
+    expect(lastUrl()).toBe('/transactions?excluded=1');
   });
 
   it('Cancel drops the draft and closes the dialog without touching the address', async () => {
@@ -247,7 +247,7 @@ describe('TransactionsView', () => {
     expect(screen.getByText('Account and category')).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Monitoring', { selector: '[role="switch"]' }));
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
-    expect(lastUrl()).toBe('/ds/transactions?account=a1&monitoring=1');
+    expect(lastUrl()).toBe('/transactions?account=a1&monitoring=1');
   });
 
   it('puts a count of the active filters on All filters, which opens the dialog', () => {
@@ -279,7 +279,7 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     fireEvent.click(await screen.findByRole('button', { name: /Show/ }));
-    expect(lastUrl()).toBe('/ds/transactions');
+    expect(lastUrl()).toBe('/transactions');
   });
 
   it('shows active dialog-only filters as removable chips', () => {
@@ -345,7 +345,7 @@ describe('TransactionsView', () => {
     expect(screen.getByText('No transactions match')).toBeInTheDocument();
     expect(screen.getByText('Last 14 days · manual')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear all filters' }));
-    expect(lastUrl()).toBe('/ds/transactions');
+    expect(lastUrl()).toBe('/transactions');
   });
 
   it('shows No transactions yet with Add account and Import when nothing is filtered', () => {
@@ -353,7 +353,7 @@ describe('TransactionsView', () => {
     expect(screen.getByText('No transactions yet')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add account' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    expect(lastUrl()).toBe('/ds/transactions/import');
+    expect(lastUrl()).toBe('/transactions/import');
   });
 
   it('shows the first-run state under filters when there is no account at all', () => {

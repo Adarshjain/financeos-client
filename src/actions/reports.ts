@@ -1,5 +1,6 @@
 'use server';
 
+import { legacyHref } from '@/features/shell/routes';
 import { reportsApi } from '@/lib/apiClient';
 import { createDomainAction } from '@/lib/domainApi';
 import type {
@@ -9,7 +10,7 @@ import type {
   UpdateReportRequest,
 } from '@/lib/reports.types';
 
-const REPORT_PATHS = ['/reports'];
+const REPORT_PATHS = [legacyHref('/reports')];
 
 export const createReport = createDomainAction(
   { fallbackError: 'Failed to create report', revalidatePaths: REPORT_PATHS },

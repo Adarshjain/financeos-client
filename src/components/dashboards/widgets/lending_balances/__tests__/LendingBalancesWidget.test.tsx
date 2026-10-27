@@ -64,7 +64,7 @@ describe('LendingBalancesWidget', () => {
     respond([]);
     renderWithQuery(<LendingBalancesWidget />);
     expect(await screen.findByText('All square')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', '/loans/lendings');
+    expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', '/legacy/loans/lendings');
   });
 
   it('rows read who owes whom with the amount; View all only when more people have balances', async () => {
@@ -76,7 +76,7 @@ describe('LendingBalancesWidget', () => {
     expect(rows[0]).toHaveTextContent('₹12,000');
     expect(rows[1]).toHaveTextContent('You owe');
     expect(rows[1]).toHaveTextContent('₹2,500');
-    expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/loans/lendings');
+    expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/legacy/loans/lendings');
   });
 
   it('no View all when every person is shown', async () => {

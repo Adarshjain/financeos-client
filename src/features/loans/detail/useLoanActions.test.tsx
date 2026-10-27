@@ -318,7 +318,7 @@ describe('the loan itself', () => {
     });
     expect(m.deleteLoan.mutateAsync).toHaveBeenCalled();
     expect(toast).toHaveBeenCalledWith('Loan deleted');
-    expect(router.push).toHaveBeenCalledWith('/ds/loans');
+    expect(router.push).toHaveBeenCalledWith('/loans');
   });
 
   it('stays on the page when the delete fails', async () => {

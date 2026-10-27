@@ -6,7 +6,7 @@ import { NavigationProgress } from '../NavigationProgress';
 import { endNavigation } from '../navigationStore';
 import { ShellRail } from '../ShellNav';
 
-let pathname = '/ds/accounts';
+let pathname = '/accounts';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useSearchParams: () => new URLSearchParams(),
@@ -26,19 +26,19 @@ const currentLabel = () => screen.getByRole('link', { current: 'page' }).textCon
 describe('ShellRail optimistic current item', () => {
   afterEach(() => {
     act(() => endNavigation());
-    pathname = '/ds/accounts';
+    pathname = '/accounts';
   });
 
   it('marks the clicked item current before the pathname changes, and follows the pathname after the commit', () => {
-    window.history.replaceState({}, '', '/ds/accounts');
+    window.history.replaceState({}, '', '/accounts');
     const { rerender } = render(tree());
     expect(currentLabel()).toMatch(/Accounts/);
     fireEvent.click(screen.getByRole('link', { name: /Inbox/ }));
     expect(currentLabel()).toMatch(/Inbox/);
-    pathname = '/ds/inbox';
+    pathname = '/inbox';
     rerender(tree());
     expect(currentLabel()).toMatch(/Inbox/);
-    pathname = '/ds/accounts';
+    pathname = '/accounts';
     rerender(tree());
     expect(currentLabel()).toMatch(/Accounts/);
   });

@@ -37,7 +37,7 @@ function Triggers() {
 
 const click = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
 
-beforeEach(() => window.history.replaceState(null, '', '/ds/accounts'));
+beforeEach(() => window.history.replaceState(null, '', '/accounts'));
 
 describe('AccountDialogs', () => {
   it('renders no dialog until opened', () => {

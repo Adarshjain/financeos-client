@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JobResponse } from '@/lib/types';
 
 const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => '/ds/transactions/import' }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => '/transactions/import' }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock('@/features/shell/ShellPage', () => ({
   ShellPage: ({ children, onAdd, addLabel }: { children: React.ReactNode; onAdd?: () => void; addLabel?: string }) => (
@@ -93,8 +93,8 @@ describe('ImportScreen', () => {
     jobs = [{ ...running, status: 'SUCCEEDED', result: { filesProcessed: 1, totalCreated: 1, totalDuplicatesFound: 0, fileDetails: [{ filename: 'a.pdf', status: 'SUCCESS', linesParsed: 1, created: 1, duplicates: 0, errorMessage: null }] } }];
     render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
     expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('link', { name: 'Activity' })).toHaveAttribute('href', '/ds/settings/activity?type=STATEMENT_INGEST');
-    expect(screen.getAllByRole('link', { name: 'View' })[0]).toHaveAttribute('href', '/ds/transactions/import/j9');
+    expect(screen.getByRole('link', { name: 'Activity' })).toHaveAttribute('href', '/settings/activity?type=STATEMENT_INGEST');
+    expect(screen.getAllByRole('link', { name: 'View' })[0]).toHaveAttribute('href', '/transactions/import/j9');
   });
 
   it('stays locked when the history already has a running import (reload, second tab)', () => {
@@ -132,7 +132,7 @@ describe('ImportScreen', () => {
     render(<ImportScreen initialAccounts={accounts} initialAccountId="a1" since="2026-09-22T18:30:00.000Z" page={1} />);
     expect(screen.getAllByRole('button', { name: 'Page 3' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 3' })[0]);
-    expect(push).toHaveBeenCalledWith('/ds/transactions/import?account=a1&page=2', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/transactions/import?account=a1&page=2', { scroll: false });
   });
 
   it('draws no pager for a single page', () => {

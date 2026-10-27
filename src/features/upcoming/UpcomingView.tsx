@@ -25,7 +25,7 @@ import { UpcomingTotals } from './UpcomingTotals';
 import { useUrlState } from './useUrlState';
 
 /**
- * The Upcoming list tab of /ds/upcoming. Kind and range live in the URL (`?kind=`, `?months=`);
+ * The Upcoming list tab of /upcoming. Kind and range live in the URL (`?kind=`, `?months=`);
  * the kind filters the loaded rows in place, the range refetches. `?bill=<statementId>` outlines
  * and scrolls to that card bill.
  */

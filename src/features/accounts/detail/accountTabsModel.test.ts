@@ -19,15 +19,15 @@ describe('accountTabsFor', () => {
 
 describe('activeTabId', () => {
   it('reads the tab from the pathname', () => {
-    expect(activeTabId('/ds/accounts/a1', 'a1')).toBe('overview');
-    expect(activeTabId('/ds/accounts/a1/statements', 'a1')).toBe('statements');
-    expect(activeTabId('/ds/accounts/a1/cards', 'a1')).toBe('cards');
-    expect(activeTabId('/ds/accounts/a1/rewards', 'a1')).toBe('rewards');
+    expect(activeTabId('/accounts/a1', 'a1')).toBe('overview');
+    expect(activeTabId('/accounts/a1/statements', 'a1')).toBe('statements');
+    expect(activeTabId('/accounts/a1/cards', 'a1')).toBe('cards');
+    expect(activeTabId('/accounts/a1/rewards', 'a1')).toBe('rewards');
   });
 
   it('keeps a sub-route on its tab and an unknown one on Overview', () => {
-    expect(activeTabId('/ds/accounts/a1/statements/s9', 'a1')).toBe('statements');
-    expect(activeTabId('/ds/accounts/a1/other', 'a1')).toBe('overview');
+    expect(activeTabId('/accounts/a1/statements/s9', 'a1')).toBe('statements');
+    expect(activeTabId('/accounts/a1/other', 'a1')).toBe('overview');
   });
 });
 

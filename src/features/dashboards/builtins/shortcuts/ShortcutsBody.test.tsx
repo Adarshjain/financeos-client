@@ -31,12 +31,12 @@ describe('ShortcutsBody', () => {
     expect(links[0]).toHaveAttribute('href', expect.stringContaining('/upcoming'));
   });
 
-  it('a page built in Dinero opens its /ds page; one that is not keeps its current route', () => {
+  it('a page built in Dinero opens it; Needs Review opens as the Transactions filter', () => {
     state.items = [page('page:/upcoming', 'Upcoming', '/upcoming'), page('page:/transactions/review', 'Needs Review', '/transactions/review')];
     render(<ShortcutsBody ids={['x']} />);
     const links = screen.getAllByRole('link');
-    expect(links[0]).toHaveAttribute('href', '/ds/upcoming');
-    expect(links[1]).toHaveAttribute('href', '/transactions/review');
+    expect(links[0]).toHaveAttribute('href', '/upcoming');
+    expect(links[1]).toHaveAttribute('href', '/transactions?review=needs_review');
   });
 
   it('dialog actions are buttons that open their dialog from state', async () => {

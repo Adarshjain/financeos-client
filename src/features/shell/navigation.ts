@@ -146,8 +146,8 @@ export const shellMoreGroups: ShellMoreGroup[] = [
 
 /**
  * Computes current active navigation item ID from pathname. Item hrefs are Legacy-shaped, so a Dinero
- * pathname is normalised first (/ds/accounts/1 matches Accounts). Returns undefined for the Dinero
- * index, /ds/notifications and unknown routes (no item selected).
+ * pathname is normalised first (/accounts/1 matches Accounts). Returns undefined for the Dinero
+ * index, /notifications and unknown routes (no item selected).
  */
 export function getActiveNavItem(pathname: string | null | undefined): string | undefined {
   if (!pathname) return undefined;

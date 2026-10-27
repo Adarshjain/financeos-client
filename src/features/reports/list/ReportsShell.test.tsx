@@ -8,13 +8,13 @@ import { ReportsShell } from './ReportsShell';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => '/ds/reports',
+  usePathname: () => '/reports',
   useSearchParams: () => new URLSearchParams(),
 }));
 
 describe('ReportsShell', () => {
   it('puts New report on the + and opens the Dinero editor', () => {
     renderWithQuery(<ReportsShell>body</ReportsShell>);
-    expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/ds/reports/new');
+    expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/reports/new');
   });
 });

@@ -69,7 +69,7 @@ export interface TransactionsViewProps {
 const noop = () => {};
 
 /**
- * /ds/transactions: the tabs, the search and filter chips, and the list. Every change writes the
+ * /transactions: the tabs, the search and filter chips, and the list. Every change writes the
  * address; the server page then reads it and fetches once. The client never fetches the list itself.
  */
 export function TransactionsView({

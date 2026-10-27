@@ -47,18 +47,18 @@ describe('filters', () => {
 describe('activityUrl', () => {
   const base = { statusFilter: '', typeFilter: '', size: 25 };
   it('is bare at the defaults (size 25)', () => {
-    expect(activityUrl(base)).toBe('/ds/settings/activity');
+    expect(activityUrl(base)).toBe('/settings/activity');
   });
   it('keeps status, type, page, size and job', () => {
     expect(activityUrl({ statusFilter: 'FAILED', typeFilter: 'GMAIL_SYNC', size: 50 }, { newPage: 2, job: 'abc' })).toBe(
-      '/ds/settings/activity?status=FAILED&type=GMAIL_SYNC&page=2&size=50&job=abc',
+      '/settings/activity?status=FAILED&type=GMAIL_SYNC&page=2&size=50&job=abc',
     );
   });
   it('a filter change resets the page and drops the job', () => {
-    expect(activityUrl(base, { newStatus: 'active' })).toBe('/ds/settings/activity?status=active');
+    expect(activityUrl(base, { newStatus: 'active' })).toBe('/settings/activity?status=active');
   });
   it('adds the job to a bare url', () => {
-    expect(activityUrl(base, { job: 'x' })).toBe('/ds/settings/activity?job=x');
+    expect(activityUrl(base, { job: 'x' })).toBe('/settings/activity?job=x');
   });
 });
 

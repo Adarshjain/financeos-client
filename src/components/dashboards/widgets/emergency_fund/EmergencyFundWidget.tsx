@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { formatRupees } from '@/features/dashboards/builtins/builtin.helpers';
 import { formatMonthsCovered, monthName, noFigureReason } from '@/features/dashboards/builtins/emergency_fund/emergencyFund.model';
 import { liquidBalanceRequest, monthOutflowRequest } from '@/features/dashboards/builtins/emergency_fund/emergencyFund.requests';
+import { legacyHref } from '@/features/shell/routes';
 import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -102,7 +103,7 @@ function NoLiquidAccounts() {
       className="m-4"
       action={
         <Button asChild variant="link" size="xs">
-          <Link href="/accounts">Go to accounts</Link>
+          <Link href={legacyHref('/accounts')}>Go to accounts</Link>
         </Button>
       }
     />

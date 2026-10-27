@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let mockPath = '/dashboard';
+let mockPath = '/legacy/dashboard';
 let mockSummary: { badge: number } | undefined;
 vi.mock('next/navigation', () => ({ usePathname: () => mockPath }));
 vi.mock('@/actions/auth', () => ({ logout: vi.fn() }));
@@ -15,7 +15,7 @@ function bar() {
 }
 
 beforeEach(() => {
-  mockPath = '/dashboard';
+  mockPath = '/legacy/dashboard';
   mockSummary = undefined;
 });
 
@@ -23,17 +23,17 @@ describe('MobileNav default bar', () => {
   it('shows Home, Inbox, Upcoming, Transactions and a menu button, without the close X', () => {
     render(<MobileNav userEmail="u@x.com" />);
     expect(bar().getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual([
-      '/dashboard',
-      '/inbox',
-      '/upcoming',
-      '/transactions',
+      '/legacy/dashboard',
+      '/legacy/inbox',
+      '/legacy/upcoming',
+      '/legacy/transactions',
     ]);
     expect(bar().queryByLabelText('Return to Home')).not.toBeInTheDocument();
     expect(bar().getByRole('button', { name: 'Open navigation menu' })).toBeInTheDocument();
   });
 
   it('marks the current item active', () => {
-    mockPath = '/upcoming';
+    mockPath = '/legacy/upcoming';
     render(<MobileNav />);
     expect(bar().getByRole('link', { name: 'Upcoming' }).className).toContain('from-emerald-600');
     expect(bar().getByRole('link', { name: 'Home' }).className).not.toContain('from-emerald-600');
@@ -42,12 +42,12 @@ describe('MobileNav default bar', () => {
 
 describe('MobileNav context bars', () => {
   it.each([
-    ['/transactions/review', ['Transactions', 'Review', 'Rules', 'Categories', 'Import']],
-    ['/reports', ['Dashboards', 'Reports', 'Chat']],
-    ['/chat', ['Dashboards', 'Reports', 'Chat']],
-    ['/rewards', ['Overview', 'Card Picker', 'Earning rules']],
-    ['/investments', ['Holdings', 'Tradebook', 'Dividends', 'FnO', 'Corporate Actions']],
-    ['/loans', ['Loans', 'Lendings']],
+    ['/legacy/transactions/review', ['Transactions', 'Review', 'Rules', 'Categories', 'Import']],
+    ['/legacy/reports', ['Dashboards', 'Reports', 'Chat']],
+    ['/legacy/chat', ['Dashboards', 'Reports', 'Chat']],
+    ['/legacy/rewards', ['Overview', 'Card Picker', 'Earning rules']],
+    ['/legacy/investments', ['Holdings', 'Tradebook', 'Dividends', 'FnO', 'Corporate Actions']],
+    ['/legacy/loans', ['Loans', 'Lendings']],
   ])('on %s shows the module items and the Return to Home link', (path, labels) => {
     mockPath = path;
     render(<MobileNav />);
@@ -56,7 +56,7 @@ describe('MobileNav context bars', () => {
       .filter((l) => l.getAttribute('aria-label') !== 'Return to Home')
       .map((l) => l.textContent);
     expect(names).toEqual(labels);
-    expect(bar().getByLabelText('Return to Home')).toHaveAttribute('href', '/dashboard');
+    expect(bar().getByLabelText('Return to Home')).toHaveAttribute('href', '/legacy/dashboard');
   });
 });
 
@@ -91,7 +91,7 @@ describe('MobileNav inbox badge', () => {
   });
 
   it('does not show the badge on other items in a context bar without Inbox', () => {
-    mockPath = '/transactions';
+    mockPath = '/legacy/transactions';
     mockSummary = { badge: 3 };
     render(<MobileNav />);
     expect(screen.queryByTestId('inbox-nav-badge')).not.toBeInTheDocument();

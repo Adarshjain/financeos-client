@@ -6,7 +6,7 @@ const nextConfig = {
   // Two root layouts ((legacy), (ds)) means no app/layout.tsx; app/global-not-found.tsx serves unmatched URLs.
   // viewTransition: React <ViewTransition> for the Dinero page fades and list/row motion (src/lib/viewTransition.tsx).
   // staleTimes.dynamic: revisiting a page within 30s reuses the client router cache. Legacy stays fresh via
-  // LegacyMutationRefresh (src/lib/LegacyMutationRefresh.tsx); /ds pages router.refresh() after their mutations.
+  // LegacyMutationRefresh (src/lib/LegacyMutationRefresh.tsx); Dinero pages router.refresh() after their mutations.
   // turbopackFileSystemCacheForDev off: the on-disk dev cache grew to 23 GB in a day and pinned the dev server.
   experimental: { globalNotFound: true, viewTransition: true, staleTimes: { dynamic: 30 }, turbopackFileSystemCacheForDev: false },
   // Next 16 blocks cross-origin requests to dev-server internals (/_next/*) by

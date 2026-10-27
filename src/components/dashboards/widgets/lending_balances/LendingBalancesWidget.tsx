@@ -14,6 +14,7 @@ import { LazyRowBreakdownDialog } from '@/components/reports/underlying/LazyUnde
 import { useActionLauncher } from '@/components/shortcuts/actions';
 import { Button } from '@/components/ui/button';
 import { LENDING_BALANCES_TOP } from '@/features/dashboards/builtins/lending_balances/lendingBalances';
+import { legacyHref } from '@/features/shell/routes';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 import { settleUpEntry } from '@/lib/lendingEntry';
 import { useOutstandingCounterparties } from '@/lib/query/hooks/useCounterparties';
@@ -60,7 +61,7 @@ export function LendingBalancesWidget({ className }: { className?: string }) {
         description="Nobody owes you and you owe nobody."
         action={
           <Button asChild variant="link" size="xs">
-            <Link href="/loans/lendings">Go to lendings</Link>
+            <Link href={legacyHref('/loans/lendings')}>Go to lendings</Link>
           </Button>
         }
       />
@@ -87,7 +88,7 @@ export function LendingBalancesWidget({ className }: { className?: string }) {
       {body}
       {more && !error && (
         <Link
-          href="/loans/lendings"
+          href={legacyHref('/loans/lendings')}
           className="flex shrink-0 items-center justify-center gap-1 border-t border-slate-100 py-2 text-xs font-medium text-emerald-700 hover:bg-slate-50 dark:border-slate-800 dark:text-emerald-400 dark:hover:bg-slate-800/50"
         >
           View all

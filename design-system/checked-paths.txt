@@ -20,10 +20,10 @@ src/features/investments/
 src/features/rewards/overview/
 src/features/rewards/which-card/
 src/features/rewards/rules-page/
-src/app/(ds)/ds/(app)/rewards/(tabs)/rules/
-src/app/(ds)/ds/(app)/rewards/(tabs)/which-card/
+src/app/(ds)/(app)/rewards/(tabs)/rules/
+src/app/(ds)/(app)/rewards/(tabs)/which-card/
 src/features/reports/
-src/app/(ds)/ds/(app)/reports/
+src/app/(ds)/(app)/reports/
 src/features/dashboards/builtins/builtin.helpers.ts
 src/features/dashboards/builtins/BuiltinParts.tsx
 src/features/dashboards/builtins/types.ts
@@ -56,9 +56,9 @@ src/features/dashboards/picker/
 src/features/dashboards/view/
 src/features/dashboards/routes.ts
 src/features/dashboards/dashboardData.ts
-src/app/(ds)/ds/(app)/dashboards/
+src/app/(ds)/(app)/dashboards/
 src/features/dashboards/home/
 src/features/dashboards/list/
-src/app/(ds)/ds/(app)/dashboard/
+src/app/(ds)/(app)/dashboard/
 src/features/chat/
-src/app/(ds)/ds/(app)/chat/
+src/app/(ds)/(app)/chat/

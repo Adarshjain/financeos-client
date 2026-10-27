@@ -1,4 +1,4 @@
-/** The three tabs of Rewards, each a Dinero page under `/ds/rewards`. */
+/** The three tabs of Rewards, each a Dinero page under `/rewards`. */
 import { appHref } from '@/features/shell/routes';
 
 export type RewardsTabId = 'overview' | 'which-card' | 'rules';

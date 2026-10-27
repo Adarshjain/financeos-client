@@ -94,7 +94,7 @@ describe('InboxWidget', () => {
     renderWithQuery(<InboxWidget />);
     expect(await screen.findByTestId('inbox-widget-clear')).toBeInTheDocument();
     // The info row is not shown, so more items exist than rows: the footer points at the Inbox.
-    expect(screen.getByRole('link', { name: /View all in Inbox/ })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByRole('link', { name: /View all in Inbox/ })).toHaveAttribute('href', '/legacy/inbox');
   });
 
   it('counts strip uses the server summary; act-now pill is rose only when something is due', async () => {
@@ -104,8 +104,8 @@ describe('InboxWidget', () => {
     expect(strip).toHaveTextContent('Act now 1');
     expect(strip).toHaveTextContent('Needs a look 2');
     expect(within(strip).getByRole('link', { name: /Act now/ }).className).toMatch(/rose/);
-    expect(within(strip).getByRole('link', { name: /Act now/ })).toHaveAttribute('href', '/inbox');
-    expect(within(strip).getByRole('link', { name: /Needs a look/ })).toHaveAttribute('href', '/inbox');
+    expect(within(strip).getByRole('link', { name: /Act now/ })).toHaveAttribute('href', '/legacy/inbox');
+    expect(within(strip).getByRole('link', { name: /Needs a look/ })).toHaveAttribute('href', '/legacy/inbox');
     unmount();
 
     seed([mk('n1', 'needs_look')]);
@@ -123,7 +123,7 @@ describe('InboxWidget', () => {
     const rows = await screen.findAllByTestId('inbox-widget-row');
     expect(rows).toHaveLength(4);
     expect(rows.map((r) => within(r).getByRole('link', { name: /T-/ }).textContent)).toEqual(['T-a1', 'T-a2', 'T-a3', 'T-n1']);
-    expect(screen.getByRole('link', { name: /View all in Inbox/ })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByRole('link', { name: /View all in Inbox/ })).toHaveAttribute('href', '/legacy/inbox');
   });
 
   it('no footer when every row fits', async () => {
@@ -149,7 +149,7 @@ describe('InboxWidget', () => {
     seed([mk('card_bill:s1:OVERDUE', 'act_now', { title: 'HDFC', subtitle: 'due soon' })]);
     renderWithQuery(<InboxWidget />);
     const link = await screen.findByRole('link', { name: 'HDFC' });
-    expect(link).toHaveAttribute('href', '/inbox?item=card_bill%3As1%3AOVERDUE');
+    expect(link).toHaveAttribute('href', '/legacy/inbox?item=card_bill%3As1%3AOVERDUE');
     expect(link).toHaveAttribute('title', 'HDFC · due soon');
     expect(screen.queryByText('due soon')).not.toBeInTheDocument();
   });
@@ -176,7 +176,7 @@ describe('InboxWidget', () => {
       }),
     ]);
     renderWithQuery(<InboxWidget />);
-    expect(await screen.findByRole('link', { name: 'Open' })).toHaveAttribute('href', '/x');
+    expect(await screen.findByRole('link', { name: 'Open' })).toHaveAttribute('href', '/legacy/x');
     expect(screen.queryByRole('link', { name: 'Second' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Snooze|Dismiss/ })).not.toBeInTheDocument();
   });
@@ -189,7 +189,7 @@ describe('InboxWidget', () => {
     ]);
     renderWithQuery(<InboxWidget />);
     await screen.findAllByTestId('inbox-widget-row');
-    expect(screen.getByRole('link', { name: 'Go' })).toHaveAttribute('href', '/row');
+    expect(screen.getByRole('link', { name: 'Go' })).toHaveAttribute('href', '/legacy/row');
     expect(screen.queryByRole('link', { name: 'Dead' })).not.toBeInTheDocument();
   });
 

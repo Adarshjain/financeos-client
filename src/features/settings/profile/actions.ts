@@ -16,5 +16,5 @@ export async function deleteAccount(input: DeleteAccountRequest, toDinero = fals
   )(input);
   if (!result.success) return result;
   await clearSessionCookie();
-  redirect(toDinero ? appHref('/login?deleted=1') : '/login?deleted=1');
+  redirect(toDinero ? appHref('/login?deleted=1') : '/legacy/login?deleted=1');
 }

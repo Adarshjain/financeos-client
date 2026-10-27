@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let mockPath = '/dashboard';
+let mockPath = '/legacy/dashboard';
 vi.mock('next/navigation', () => ({ usePathname: () => mockPath }));
 vi.mock('@/actions/auth', () => ({ logout: vi.fn() }));
 
@@ -15,7 +15,7 @@ function openSheet(email?: string) {
 }
 
 beforeEach(() => {
-  mockPath = '/dashboard';
+  mockPath = '/legacy/dashboard';
 });
 
 describe('MobileMenuSheet', () => {
@@ -27,9 +27,9 @@ describe('MobileMenuSheet', () => {
 
   it('opens a dialog with Chat and Accounts rows and a Settings group', () => {
     const d = openSheet();
-    expect(within(d).getByRole('link', { name: /Ask your data/ })).toHaveAttribute('href', '/chat');
+    expect(within(d).getByRole('link', { name: /Ask your data/ })).toHaveAttribute('href', '/legacy/chat');
     expect(within(d).getByText('Ask your data')).toBeInTheDocument();
-    expect(within(d).getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+    expect(within(d).getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/legacy/accounts');
     expect(within(d).getByText('Settings')).toBeInTheDocument();
     expect(within(d).queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
   });
@@ -37,12 +37,12 @@ describe('MobileMenuSheet', () => {
   it('lists every settings page as a chip in the Settings group', () => {
     const d = openSheet();
     const expected: Record<string, string> = {
-      'Profile & appearance': '/settings',
-      Connections: '/settings/gmail',
-      'AI keys': '/settings/llm-keys',
-      Notifications: '/settings/notifications',
-      Activity: '/settings/activity',
-      Debug: '/debug',
+      'Profile & appearance': '/legacy/settings',
+      Connections: '/legacy/settings/gmail',
+      'AI keys': '/legacy/settings/llm-keys',
+      Notifications: '/legacy/settings/notifications',
+      Activity: '/legacy/settings/activity',
+      Debug: '/legacy/debug',
     };
     for (const [label, href] of Object.entries(expected)) {
       expect(within(d).getByRole('link', { name: label })).toHaveAttribute('href', href);
@@ -50,20 +50,20 @@ describe('MobileMenuSheet', () => {
   });
 
   it('activates Profile & appearance only on the settings index', () => {
-    mockPath = '/settings';
+    mockPath = '/legacy/settings';
     let d = openSheet();
     expect(within(d).getByRole('link', { name: 'Profile & appearance' })).toHaveAttribute('aria-current', 'page');
     expect(within(d).getByRole('link', { name: 'Connections' })).not.toHaveAttribute('aria-current');
     cleanup();
 
-    mockPath = '/settings/notifications';
+    mockPath = '/legacy/settings/notifications';
     d = openSheet();
     expect(within(d).getByRole('link', { name: 'Profile & appearance' })).not.toHaveAttribute('aria-current');
     expect(within(d).getByRole('link', { name: 'Notifications' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('keeps a settings chip active on its sub-pages and only that chip', () => {
-    mockPath = '/settings/gmail/senders';
+    mockPath = '/legacy/settings/gmail/senders';
     const d = openSheet();
     expect(within(d).getByRole('link', { name: 'Connections' })).toHaveAttribute('aria-current', 'page');
     for (const other of ['Profile & appearance', 'AI keys', 'Notifications', 'Activity', 'Debug']) {
@@ -72,7 +72,7 @@ describe('MobileMenuSheet', () => {
   });
 
   it('activates the Debug chip on /debug', () => {
-    mockPath = '/debug';
+    mockPath = '/legacy/debug';
     const d = openSheet();
     expect(within(d).getByRole('link', { name: 'Debug' })).toHaveAttribute('aria-current', 'page');
   });
@@ -83,23 +83,23 @@ describe('MobileMenuSheet', () => {
       expect(within(d).getByText(g)).toBeInTheDocument();
     }
     const expected: Record<string, string> = {
-      All: '/transactions',
-      Review: '/transactions/review',
-      Rules: '/rules',
-      Categories: '/rules/categories',
-      Import: '/transactions/import',
-      Holdings: '/investments',
-      Tradebook: '/investments/tradebook',
-      Dividends: '/investments/dividends',
-      FnO: '/investments/fno',
-      'Corporate Actions': '/investments/corporate-actions',
-      Loans: '/loans',
-      Lendings: '/loans/lendings',
-      Overview: '/rewards',
-      'Card Picker': '/rewards/recommend',
-      'Earning rules': '/rewards/rules',
-      Dashboards: '/dashboards',
-      Reports: '/reports',
+      All: '/legacy/transactions',
+      Review: '/legacy/transactions/review',
+      Rules: '/legacy/rules',
+      Categories: '/legacy/rules/categories',
+      Import: '/legacy/transactions/import',
+      Holdings: '/legacy/investments',
+      Tradebook: '/legacy/investments/tradebook',
+      Dividends: '/legacy/investments/dividends',
+      FnO: '/legacy/investments/fno',
+      'Corporate Actions': '/legacy/investments/corporate-actions',
+      Loans: '/legacy/loans',
+      Lendings: '/legacy/loans/lendings',
+      Overview: '/legacy/rewards',
+      'Card Picker': '/legacy/rewards/recommend',
+      'Earning rules': '/legacy/rewards/rules',
+      Dashboards: '/legacy/dashboards',
+      Reports: '/legacy/reports',
     };
     for (const [label, href] of Object.entries(expected)) {
       expect(within(d).getByRole('link', { name: label })).toHaveAttribute('href', href);
@@ -114,7 +114,7 @@ describe('MobileMenuSheet', () => {
   });
 
   it('marks the current row active with aria-current and the gradient', () => {
-    mockPath = '/accounts';
+    mockPath = '/legacy/accounts';
     const d = openSheet();
     const accounts = within(d).getByRole('link', { name: 'Accounts' });
     expect(accounts).toHaveAttribute('aria-current', 'page');
@@ -123,20 +123,20 @@ describe('MobileMenuSheet', () => {
   });
 
   it('marks the Activity chip active on /settings/activity', () => {
-    mockPath = '/settings/activity';
+    mockPath = '/legacy/settings/activity';
     const d = openSheet();
     expect(within(d).getByRole('link', { name: 'Activity' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('activates only the Import chip on /transactions/import', () => {
-    mockPath = '/transactions/import';
+    mockPath = '/legacy/transactions/import';
     const d = openSheet();
     expect(within(d).getByRole('link', { name: 'Import' }).className).toContain('from-emerald-600');
     expect(within(d).getByRole('link', { name: 'All' }).className).not.toContain('from-emerald-600');
   });
 
   it('activates the Chat row on /chat', () => {
-    mockPath = '/chat';
+    mockPath = '/legacy/chat';
     const d = openSheet();
     expect(within(d).getByRole('link', { name: /Ask your data/ })).toHaveAttribute('aria-current', 'page');
   });

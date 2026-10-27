@@ -28,9 +28,9 @@ describe('URL state', () => {
   });
 
   it('builds the person URL on the Dinero page with defaults left out', () => {
-    expect(personHref('p1')).toBe('/ds/loans/lendings/p1');
-    expect(personUrl('p1', { page: 0, size: 25 })).toBe('/ds/loans/lendings/p1');
-    expect(personUrl('p1', { page: 2, size: 10 })).toBe('/ds/loans/lendings/p1?page=2&size=10');
+    expect(personHref('p1')).toBe('/loans/lendings/p1');
+    expect(personUrl('p1', { page: 0, size: 25 })).toBe('/loans/lendings/p1');
+    expect(personUrl('p1', { page: 2, size: 10 })).toBe('/loans/lendings/p1?page=2&size=10');
   });
 });
 

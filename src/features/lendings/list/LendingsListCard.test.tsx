@@ -25,7 +25,7 @@ describe('LendingsListCard paging', () => {
     );
     await user.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
     await user.click(screen.getByRole('option', { name: '10 / page' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/loans/lendings?q=pri&filter=owe&size=10', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings?q=pri&filter=owe&size=10', { scroll: false });
   });
 
   it('a search typed right after a chip keeps the chip that was just chosen', async () => {
@@ -38,11 +38,11 @@ describe('LendingsListCard paging', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'All' }));
-    expect(router.push).toHaveBeenLastCalledWith('/ds/loans/lendings', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/loans/lendings', { scroll: false });
     // The page still carries filter=settled: the push has not landed yet.
     await user.type(screen.getByPlaceholderText('Search people'), 'priya');
     await waitFor(() =>
-      expect(router.push).toHaveBeenLastCalledWith('/ds/loans/lendings?q=priya', { scroll: false }),
+      expect(router.push).toHaveBeenLastCalledWith('/loans/lendings?q=priya', { scroll: false }),
     );
   });
 });

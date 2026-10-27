@@ -38,7 +38,7 @@ describe('InboxItemRow', () => {
     refs: { statementId: 's1' },
     actions: [
       action({ type: 'mark_paid', label: 'Mark paid', payload: { statementId: 's1' } }),
-      action({ type: 'open', label: 'Open bill', href: '/upcoming?bill=s1' }),
+      action({ type: 'open', label: 'Open bill', href: '/legacy/upcoming?bill=s1' }),
       SNOOZE,
       DISMISS,
     ],
@@ -76,7 +76,7 @@ describe('InboxItemRow', () => {
     render(<ul><InboxItemRow item={bill} highlighted={false} {...h} /></ul>);
     fireEvent.click(screen.getByRole('button', { name: 'Mark paid' }));
     expect(h.onBillAction).toHaveBeenCalledWith(bill, bill.actions[0]);
-    expect(screen.getByRole('link', { name: 'Open bill' })).toHaveAttribute('href', '/upcoming?bill=s1');
+    expect(screen.getByRole('link', { name: 'Open bill' })).toHaveAttribute('href', '/legacy/upcoming?bill=s1');
   });
 
   it('a bill action without a statementId payload is disabled', () => {
@@ -90,9 +90,9 @@ describe('InboxItemRow', () => {
     const { unmount } = render(<ul><InboxItemRow item={noHref} highlighted={false} {...handlers()} /></ul>);
     expect(screen.queryByRole('link', { name: 'Open' })).not.toBeInTheDocument();
     unmount();
-    const rowHref = item({ key: 'b', href: '/loans/1', actions: [action({ type: 'open', label: 'Open' })] });
+    const rowHref = item({ key: 'b', href: '/legacy/loans/1', actions: [action({ type: 'open', label: 'Open' })] });
     render(<ul><InboxItemRow item={rowHref} highlighted={false} {...handlers()} /></ul>);
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/loans/1');
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/legacy/loans/1');
   });
 
   it('dismiss button calls onDismiss; snooze and dismiss are not rendered as primary action buttons', () => {
@@ -141,7 +141,7 @@ describe('InboxSummaryRow', () => {
     section: 'needs_look',
     title: 'Transactions to review',
     count: 42,
-    href: '/transactions/review',
+    href: '/legacy/transactions/review',
     actions: [
       action({ type: 'review', label: 'Review' }),
       action({ type: 'open', label: 'Second', href: '/never' }),
@@ -154,7 +154,7 @@ describe('InboxSummaryRow', () => {
     render(<ul><InboxSummaryRow item={summary} highlighted={false} {...handlers()} /></ul>);
     expect(screen.getByTestId('inbox-summary-row')).toHaveAttribute('data-inbox-key', 'review_queue');
     expect(screen.getByText('42')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions/review');
+    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/legacy/transactions/review');
     expect(screen.queryByRole('link', { name: 'Second' })).not.toBeInTheDocument();
   });
 

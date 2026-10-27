@@ -27,7 +27,7 @@ describe('PageNotFound', () => {
     render(<PageNotFound what="Account" backPath="/accounts" backLabel="Back to accounts" />);
     expect(screen.getByText('Account not found')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Back to accounts' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/accounts');
+    expect(router.push).toHaveBeenCalledWith('/accounts');
   });
 
   it('keeps the app bar when given a shell', () => {

@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditor.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import type { BuiltinWidgetResponse, DashboardResponse, WidgetParams } from '@/lib/dashboards.types';
 import { useAddDashboardWidget, useSetDefaultDashboard } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
@@ -87,7 +88,7 @@ export function DashboardHomeMenu({ dashboard, onEdit }: DashboardHomeMenuProps)
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild className="text-xs">
-            <Link href="/dashboards/new">
+            <Link href={legacyHref('/dashboards/new')}>
               <LayoutDashboard className={itemIconClass} />
               New dashboard
             </Link>

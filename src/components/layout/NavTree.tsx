@@ -17,6 +17,7 @@ import {
   TRANSACTIONS_MODULE,
 } from '@/components/layout/navigation';
 import { formatBadge } from '@/features/inbox/inbox.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 
@@ -33,23 +34,23 @@ export function NavTree({ inboxCount, onItemClick, renderItemWrapper }: NavTreeP
   const inboxBadge = inboxCount ?? inboxSummary?.badge;
 
   const [openTransactions, setOpenTransactions] = useState(
-    pathname.startsWith('/transactions') ||
-      pathname.startsWith('/rules') ||
-      pathname.startsWith('/categories'),
+    pathname.startsWith(legacyHref('/transactions')) ||
+      pathname.startsWith(legacyHref('/rules')) ||
+      pathname.startsWith(legacyHref('/categories')),
   );
   const [openRewards, setOpenRewards] = useState(
-    pathname.startsWith('/rewards'),
+    pathname.startsWith(legacyHref('/rewards')),
   );
   const [openReports, setOpenReports] = useState(
-    pathname.startsWith('/reports') ||
-      pathname.startsWith('/dashboards') ||
-      pathname.startsWith('/chat'),
+    pathname.startsWith(legacyHref('/reports')) ||
+      pathname.startsWith(legacyHref('/dashboards')) ||
+      pathname.startsWith(legacyHref('/chat')),
   );
   const [openInvestments, setOpenInvestments] = useState(
-    pathname.startsWith('/investments'),
+    pathname.startsWith(legacyHref('/investments')),
   );
   const [openLoans, setOpenLoans] = useState(
-    pathname.startsWith('/loans'),
+    pathname.startsWith(legacyHref('/loans')),
   );
 
   const renderLink = (item: NavItem, isTopLevel = false) => {

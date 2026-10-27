@@ -142,7 +142,7 @@ describe('CardUtilisationWidget', () => {
     vi.mocked(api.GET).mockResolvedValue({ data: [account({})] } as never);
     renderWithQuery(<CardUtilisationWidget />);
     expect(await screen.findByText('No open credit cards')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/legacy/accounts');
   });
 
   it("tapping a card's owed opens its net-worth breakdown", async () => {

@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/dashboard', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/features/notifications/useNotificationsAction', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 const toast = vi.fn();
@@ -111,7 +111,7 @@ describe('HomeScreen', () => {
     render([home, money]);
     await user.click(screen.getByTestId('home-switch'));
     await user.click(screen.getByRole('button', { name: 'View all dashboards' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards');
+    expect(router.push).toHaveBeenCalledWith('/dashboards');
   });
 
   it('the ⋯ menu of the default dashboard has Add widget, Edit dashboard and New dashboard, with no Set as default', async () => {
@@ -119,7 +119,7 @@ describe('HomeScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Edit dashboard', 'New dashboard']);
     await user.click(screen.getByRole('menuitem', { name: 'Edit dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards/home?edit=1');
+    expect(router.push).toHaveBeenCalledWith('/dashboards/home?edit=1');
   });
 
   it('the ⋯ menu of a dashboard that is not the default offers Set as default, which saves it as the default', async () => {
@@ -140,7 +140,7 @@ describe('HomeScreen', () => {
     render([home]);
     await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
     await user.click(screen.getByRole('menuitem', { name: 'New dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards/new');
+    expect(router.push).toHaveBeenCalledWith('/dashboards/new');
   });
 
   it('Add widget saves the pick straight to the dashboard and the toast Undo removes it again', async () => {
@@ -187,9 +187,9 @@ describe('HomeScreen', () => {
       render([{ ...money }]);
       expect(screen.getByText('No default dashboard')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Restore default Home' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/ds/dashboards/new');
-      expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/ds/dashboards');
-      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/ds/chat');
+      expect(screen.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/dashboards/new');
+      expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/dashboards');
+      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
     });
 
     it('Restore default Home restores it, says so and reloads the page', async () => {

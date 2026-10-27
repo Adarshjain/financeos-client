@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
+import { legacyHref } from '@/features/shell/routes';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 const rowClass =
@@ -28,7 +29,7 @@ interface ReportRowsProps {
 
 export const sectionTitle = 'text-2xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500';
 
-const NEW_REPORT = '/reports/new';
+const NEW_REPORT = legacyHref('/reports/new');
 const linkClass = 'text-emerald-600 underline';
 
 /** "Create one": a plain link, or — with unsaved changes — a confirm before leaving. */

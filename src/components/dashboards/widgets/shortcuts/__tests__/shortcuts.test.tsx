@@ -84,9 +84,9 @@ describe('ShortcutsWidget', () => {
     const tiles = within(screen.getByRole('list', { name: 'Shortcuts' })).getAllByRole('listitem');
     expect(tiles.map((t) => t.textContent)).toEqual(['Add transaction', expect.any(String), expect.any(String), expect.any(String)]);
     expect(within(tiles[0]).getByRole('button', { name: 'Add transaction' })).toBeInTheDocument();
-    expect(within(tiles[1]).getByRole('link')).toHaveAttribute('href', '/transactions/review');
-    expect(within(tiles[2]).getByRole('link')).toHaveAttribute('href', '/transactions/import');
-    expect(within(tiles[3]).getByRole('link')).toHaveAttribute('href', '/upcoming');
+    expect(within(tiles[1]).getByRole('link')).toHaveAttribute('href', '/legacy/transactions/review');
+    expect(within(tiles[2]).getByRole('link')).toHaveAttribute('href', '/legacy/transactions/import');
+    expect(within(tiles[3]).getByRole('link')).toHaveAttribute('href', '/legacy/upcoming');
     // Nothing is fetched for pages and actions.
     expect(api.GET).not.toHaveBeenCalled();
   });
@@ -95,11 +95,11 @@ describe('ShortcutsWidget', () => {
     renderWithQuery(
       <ShortcutsWidget ids={[`account:${ACC}`, `report:${REP}`, `dashboard:${DASH}`, 'page:/nope', 'bogus', 'action:import-statement']} />,
     );
-    expect(await screen.findByRole('link', { name: 'HDFC Savings' })).toHaveAttribute('href', `/accounts/${ACC}`);
-    expect(screen.getByRole('link', { name: 'Monthly spend' })).toHaveAttribute('href', `/reports/${REP}`);
-    expect(screen.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', `/dashboards/${DASH}`);
+    expect(await screen.findByRole('link', { name: 'HDFC Savings' })).toHaveAttribute('href', `/legacy/accounts/${ACC}`);
+    expect(screen.getByRole('link', { name: 'Monthly spend' })).toHaveAttribute('href', `/legacy/reports/${REP}`);
+    expect(screen.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', `/legacy/dashboards/${DASH}`);
     // A page action is a link too.
-    expect(screen.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.getByRole('link', { name: 'Import statement' })).toHaveAttribute('href', '/legacy/transactions/import');
     expect(within(screen.getByRole('list', { name: 'Shortcuts' })).getAllByRole('listitem')).toHaveLength(4);
   });
 

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SettingsShell } from './SettingsShell';
 
-let pathname = '/ds/settings';
+let pathname = '/settings';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 vi.mock('@/features/shell/ShellPage', () => ({
   ShellPage: ({ title, crumb, flushTop, children }: { title: string; crumb?: string; flushTop?: boolean; children: React.ReactNode }) => (
@@ -17,12 +17,12 @@ vi.mock('@/features/shell/ShellPage', () => ({
 }));
 
 beforeEach(() => {
-  pathname = '/ds/settings';
+  pathname = '/settings';
 });
 
 describe('SettingsShell', () => {
   it('renders the six tabs as links in order with the active one marked', () => {
-    pathname = '/ds/settings/ai';
+    pathname = '/settings/ai';
     render(<SettingsShell>body</SettingsShell>);
     const tabs = screen.getAllByRole('tab');
     expect(tabs.map((t) => t.textContent)).toEqual([
@@ -34,12 +34,12 @@ describe('SettingsShell', () => {
       'Debug',
     ]);
     expect(tabs.map((t) => t.getAttribute('href'))).toEqual([
-      '/ds/settings',
-      '/ds/settings/connections',
-      '/ds/settings/ai',
-      '/ds/settings/notifications',
-      '/ds/settings/activity',
-      '/ds/settings/debug',
+      '/settings',
+      '/settings/connections',
+      '/settings/ai',
+      '/settings/notifications',
+      '/settings/activity',
+      '/settings/debug',
     ]);
     expect(tabs.map((t) => t.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true', 'false', 'false', 'false']);
   });
@@ -53,11 +53,11 @@ describe('SettingsShell', () => {
   });
 
   it.each([
-    ['/ds/settings/connections', 'Connections'],
-    ['/ds/settings/ai', 'AI'],
-    ['/ds/settings/notifications', 'Notifications'],
-    ['/ds/settings/activity', 'Activity'],
-    ['/ds/settings/debug', 'Debug'],
+    ['/settings/connections', 'Connections'],
+    ['/settings/ai', 'AI'],
+    ['/settings/notifications', 'Notifications'],
+    ['/settings/activity', 'Activity'],
+    ['/settings/debug', 'Debug'],
   ])('titles %s "%s" with the Settings crumb', (path, title) => {
     pathname = path;
     render(<SettingsShell>body</SettingsShell>);

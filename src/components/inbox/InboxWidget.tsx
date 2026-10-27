@@ -7,6 +7,7 @@ import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRows';
 import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
+import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
@@ -81,7 +82,7 @@ export function InboxWidget({ className }: { className?: string }) {
       {body}
       {hasMore && !error && (
         <Link
-          href="/inbox"
+          href={legacyHref('/inbox')}
           className="flex shrink-0 items-center justify-center gap-1 border-t border-slate-100 py-2 text-xs font-medium text-emerald-700 hover:bg-slate-50 dark:border-slate-800 dark:text-emerald-400 dark:hover:bg-slate-800/50"
         >
           View all in Inbox
@@ -104,7 +105,7 @@ function InboxCounts({ summary }: { summary: InboxSummaryResponse }) {
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-1.5 px-3 pb-2" data-testid="inbox-widget-counts">
       <Link
-        href="/inbox"
+        href={legacyHref('/inbox')}
         className={cn(
           countPillClass,
           urgent
@@ -114,7 +115,7 @@ function InboxCounts({ summary }: { summary: InboxSummaryResponse }) {
       >
         Act now <span className="text-xs font-bold tabular-nums">{summary.actNow}</span>
       </Link>
-      <Link href="/inbox" className={cn(countPillClass, calmPillClass)}>
+      <Link href={legacyHref('/inbox')} className={cn(countPillClass, calmPillClass)}>
         Needs a look <span className="text-xs font-bold tabular-nums">{summary.needsLook}</span>
       </Link>
     </div>

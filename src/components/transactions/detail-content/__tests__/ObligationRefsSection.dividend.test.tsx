@@ -32,7 +32,7 @@ describe('ObligationRefsSection DIVIDEND', () => {
     renderSection([ref]);
     expect(screen.getByRole('link', { name: /Open/ })).toHaveAttribute(
       'href',
-      '/investments/dividends?instrumentId=inst-9',
+      '/legacy/investments/dividends?instrumentId=inst-9',
     );
   });
 

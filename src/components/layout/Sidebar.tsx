@@ -7,17 +7,18 @@ import { logout } from '@/actions/auth';
 import { NavTree } from '@/components/layout/NavTree';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 
 export function Sidebar({ userEmail }: { userEmail: string }) {
   return (
     <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
       {/* App Logo */}
       <div className="h-16 flex items-center justify-between gap-2 px-6 border-b border-slate-100 dark:border-slate-800/60">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href={legacyHref('/dashboard')} className="flex items-center gap-2">
           <Logo size="md" />
         </Link>
         <Button asChild variant="outline" size="sm">
-          <Link href="/chat" aria-label="Chat">
+          <Link href={legacyHref('/chat')} aria-label="Chat">
             <MessageSquare className="h-4 w-4" />
             Chat
           </Link>

@@ -29,9 +29,9 @@ describe('holding tabs', () => {
   });
 
   it('keeps Overview and the first page out of the address', () => {
-    expect(holdingTabHref('i1', 'overview')).toBe('/ds/investments/i1');
-    expect(holdingTabHref('i1', 'trades')).toBe('/ds/investments/i1?tab=trades');
-    expect(holdingTabHref('i1', 'prices', 2)).toBe('/ds/investments/i1?tab=prices&page=2');
+    expect(holdingTabHref('i1', 'overview')).toBe('/investments/i1');
+    expect(holdingTabHref('i1', 'trades')).toBe('/investments/i1?tab=trades');
+    expect(holdingTabHref('i1', 'prices', 2)).toBe('/investments/i1?tab=prices&page=2');
   });
 });
 

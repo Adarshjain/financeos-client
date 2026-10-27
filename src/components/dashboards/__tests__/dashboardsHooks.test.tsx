@@ -73,7 +73,7 @@ describe('useDuplicateBuiltin', () => {
     expect(toast.success).toHaveBeenCalledWith('Saved "Upcoming" to your reports', { action: expect.anything() });
     const action = toast.success.mock.calls[0][1].action;
     action.onClick();
-    expect(router.push).toHaveBeenCalledWith('/reports/rep-new');
+    expect(router.push).toHaveBeenCalledWith('/legacy/reports/rep-new');
   });
 
   it('a copy fixed to a reward window says so (dd/mm/yyyy) in the toast', async () => {
@@ -147,7 +147,7 @@ describe('RestoreHomeButton', () => {
 const L = { x: 0, y: 0, w: 100, h: 24 };
 const builtinWidget: WidgetResponse = {
   id: 'b1', kind: 'builtin', reportId: null, builtinKey: 'upcoming', params: { days: 7, z: null }, title: ' T ', layout: L,
-  builtin: { category: 'overview', key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/upcoming' },
+  builtin: { category: 'overview', key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/legacy/upcoming' },
 };
 const reportWidget: WidgetResponse = {
   id: 'r1', kind: 'report', reportId: 'rep', title: null, layout: { x: 0, y: 24, w: 50, h: 10 },
@@ -213,7 +213,7 @@ describe('useDashboardEditor save', () => {
     expect(api.POST).toHaveBeenCalledWith('/api/v1/dashboards', {
       body: { name: 'Mine', description: undefined, isDefault: false, widgets: [] },
     });
-    expect(router.push).toHaveBeenCalledWith('/dashboards/new');
+    expect(router.push).toHaveBeenCalledWith('/legacy/dashboards/new');
   });
 
   it('adding a built-in twice dirties the editor and saves both', async () => {

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { APP_LOCK_CHANGED_EVENT, APP_LOCKED_EVENT } from '@/lib/appLock';
 
-let pathname = '/ds/accounts';
+let pathname = '/accounts';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
 import { AppLockWatcher } from './AppLockWatcher';
@@ -24,7 +24,7 @@ const calls = (url: string) => fetchMock.mock.calls.filter((c) => c[0] === url).
 
 beforeEach(() => {
   vi.useFakeTimers();
-  pathname = '/ds/accounts';
+  pathname = '/accounts';
   visibility = 'visible';
   focused = true;
   fetchMock.mockReset();
@@ -36,7 +36,7 @@ beforeEach(() => {
   vi.spyOn(document, 'hasFocus').mockImplementation(() => focused);
   Object.defineProperty(window, 'location', {
     configurable: true,
-    value: { pathname: '/ds/accounts', search: '?q=1', replace },
+    value: { pathname: '/accounts', search: '?q=1', replace },
   });
 });
 
@@ -143,7 +143,7 @@ describe('AppLockWatcher', () => {
   it('goes to the lock screen, returning here, when the status says locked', async () => {
     fetchMock.mockResolvedValue(status({ locked: true }));
     await mount();
-    expect(replace).toHaveBeenCalledWith(`/ds/locked?from=${encodeURIComponent('/ds/accounts?q=1')}`);
+    expect(replace).toHaveBeenCalledWith(`/locked?from=${encodeURIComponent('/accounts?q=1')}`);
     expect(calls('/api/v1/app-lock/heartbeat')).toBe(0);
   });
 
@@ -173,7 +173,7 @@ describe('AppLockWatcher', () => {
   });
 
   it('does nothing on the lock screen or the sign-in pages', async () => {
-    for (const path of ['/ds/locked', '/ds/login', '/login']) {
+    for (const path of ['/locked', '/login', '/login']) {
       pathname = path;
       (window.location as { pathname: string }).pathname = path;
       await mount();
@@ -183,8 +183,8 @@ describe('AppLockWatcher', () => {
 
   it('starts after a soft navigation from sign-in into the app, and listens to later changes', async () => {
     fetchMock.mockImplementation(async (url: string) => (url.endsWith('/status') ? status() : { status: 204, ok: true }));
-    pathname = '/ds/login';
-    (window.location as { pathname: string }).pathname = '/ds/login';
+    pathname = '/login';
+    (window.location as { pathname: string }).pathname = '/login';
     const r = await mount();
     expect(fetchMock).not.toHaveBeenCalled();
 
@@ -212,8 +212,8 @@ describe('AppLockWatcher', () => {
     fetchMock.mockImplementation(async (url: string) => (url.endsWith('/status') ? status() : { status: 204, ok: true }));
     const r = await mount();
     const before = calls('/api/v1/app-lock/heartbeat');
-    pathname = '/ds/locked';
-    (window.location as { pathname: string }).pathname = '/ds/locked';
+    pathname = '/locked';
+    (window.location as { pathname: string }).pathname = '/locked';
     r.rerender(<AppLockWatcher />);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(60_000);

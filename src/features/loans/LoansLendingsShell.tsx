@@ -13,7 +13,7 @@ import { activeLoansLendingsTab, isLoanDetailPath, isPersonDetailPath, loansLend
 import { useLoansLendingsCounts } from './useLoansLendingsCounts';
 
 /**
- * The frame shared by `/ds/loans` and `/ds/loans/lendings`, applied by the route layout: the top bar
+ * The frame shared by `/loans` and `/loans/lendings`, applied by the route layout: the top bar
  * (title follows the tab; its + adds a lending or a loan in place), then the Lendings · Loans route
  * tabs, then the tab's page. The counts load on their own after the page renders.
  */

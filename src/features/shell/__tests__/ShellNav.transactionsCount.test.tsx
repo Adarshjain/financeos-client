@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ShellRail, ShellTabBar } from '../ShellNav';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/ds/transactions', useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/transactions', useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));
 let review = 25;
 vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: review }) }));

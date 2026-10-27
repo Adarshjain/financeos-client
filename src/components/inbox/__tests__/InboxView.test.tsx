@@ -82,8 +82,8 @@ describe('InboxView', () => {
     seed(inbox([]));
     renderWithQuery(<InboxView />);
     expect(await screen.findByText('All clear')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Upcoming' })).toHaveAttribute('href', '/upcoming');
-    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
+    expect(screen.getByRole('link', { name: 'Upcoming' })).toHaveAttribute('href', '/legacy/upcoming');
+    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/legacy/transactions');
     expect(screen.queryByTestId('inbox-counts')).not.toBeInTheDocument();
   });
 

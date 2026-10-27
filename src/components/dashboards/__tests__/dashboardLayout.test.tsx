@@ -192,7 +192,7 @@ describe('DashboardSelector', () => {
     expect(trigger).toHaveClass('w-full');
     expect(trigger.parentElement).toHaveClass('flex-1');
     const chat = screen.getByRole('link', { name: 'Chat with your data' });
-    expect(chat).toHaveAttribute('href', '/chat');
+    expect(chat).toHaveAttribute('href', '/legacy/chat');
     expect(chat).toHaveClass('shrink-0');
     expect(chat).toHaveClass('lg:hidden');
   });
@@ -203,7 +203,7 @@ describe('DashboardSelector', () => {
     render(<DashboardSelector dashboards={list} currentDashboard={list[0]} onSelectDashboard={onSelect} />);
     await user.click(screen.getByRole('button', { name: /switch dashboard/i }));
     expect(await screen.findByRole('menuitem', { name: 'Investing' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /view all dashboards/i })).toHaveAttribute('href', '/dashboards');
+    expect(screen.getByRole('link', { name: /view all dashboards/i })).toHaveAttribute('href', '/legacy/dashboards');
     await user.click(screen.getByRole('menuitem', { name: 'Investing' }));
     expect(onSelect).toHaveBeenCalledWith(list[1]);
   });

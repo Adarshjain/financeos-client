@@ -12,7 +12,7 @@ import { activeSettingsTab, settingsTabs } from './settingsTabs';
 /**
  * The Settings page frame, applied once by the settings route layout: top bar (title and crumb follow
  * the route), then the route tab strip, then the tab's page as `children`. A tab adds only its own
- * `page.tsx` (and `loading.tsx`) under `/ds/settings/<tab>`; it never renders the top bar or tabs.
+ * `page.tsx` (and `loading.tsx`) under `/settings/<tab>`; it never renders the top bar or tabs.
  */
 export function SettingsShell({ children }: { children: React.ReactNode }) {
   const tab = activeSettingsTab(usePathname());

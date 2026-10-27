@@ -52,7 +52,7 @@ describe('ObligationRefBadges', () => {
 
   it('links a LENDING ref to /loans/lendings/{parentId}', () => {
     render(<ObligationRefBadges refs={[lendingRef]} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/loans/lendings/cp-1');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/legacy/loans/lendings/cp-1');
   });
 
   it.each([
@@ -61,7 +61,7 @@ describe('ObligationRefBadges', () => {
     ['LOAN_CHARGE', loanChargeRef],
   ])('links a %s ref to /loans/{parentId}', (_kind, ref) => {
     render(<ObligationRefBadges refs={[ref]} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', `/loans/${ref.parentId}`);
+    expect(screen.getByRole('link')).toHaveAttribute('href', `/legacy/loans/${ref.parentId}`);
   });
 
   it('renders the badge without a link when parentId is missing', () => {

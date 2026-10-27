@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import { obligationRefHref } from '@/lib/obligationRefHref';
 import type { ObligationRef } from '@/lib/transaction.types';
 import { formatMoney } from '@/lib/utils';
@@ -61,7 +62,7 @@ export function ObligationRefsSection({
             <div className="flex items-center gap-1 shrink-0">
               {href && (
                 <Link
-                  href={href}
+                  href={legacyHref(href)}
                   className="inline-flex items-center gap-1 h-6 rounded-md px-2 text-2xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
                 >
                   <ExternalLink className="h-3 w-3" />

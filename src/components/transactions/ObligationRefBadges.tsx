@@ -2,6 +2,7 @@ import { Coins, HandCoins, Landmark } from 'lucide-react';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
+import { legacyHref } from '@/features/shell/routes';
 import { obligationRefHref } from '@/lib/obligationRefHref';
 import type { ObligationRef } from '@/lib/transaction.types';
 
@@ -38,7 +39,7 @@ export function ObligationRefBadges({ refs }: ObligationRefBadgesProps) {
           return <span key={`${ref.kind}-${ref.id}`}>{badge}</span>;
         }
 
-        const href = obligationRefHref(ref.kind, ref.parentId);
+        const href = legacyHref(obligationRefHref(ref.kind, ref.parentId));
 
         return (
           <Link

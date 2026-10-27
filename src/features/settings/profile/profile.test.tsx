@@ -88,11 +88,11 @@ describe('AppearanceCard', () => {
     expect(links.map((l) => l.getAttribute('href'))).toContain('/storybook');
   });
 
-  it('links Legacy, before Storybook, as a plain page load', () => {
+  it('has an Open Legacy row that links /legacy/dashboard', () => {
     render(<AppearanceCard />);
-    expect(screen.getByText('Legacy')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open Legacy' })).toHaveAttribute('href', '/legacy/dashboard');
     const hrefs = screen.getAllByRole('link', { name: 'Open' }).map((l) => l.getAttribute('href'));
-    expect(hrefs).toEqual(['/dashboard', '/storybook']);
+    expect(hrefs).toEqual(['/storybook']);
   });
 });
 

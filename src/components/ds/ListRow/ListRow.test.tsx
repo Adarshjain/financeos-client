@@ -201,7 +201,7 @@ describe('ListField', () => {
       _init: (payload: { value: React.ReactNode }) => payload.value,
     } as unknown as React.ReactNode;
     render(
-      <ListRow asChild title="Offline" subtitle="/ds/offline">
+      <ListRow asChild title="Offline" subtitle="/offline">
         {lazyChild}
       </ListRow>,
     );

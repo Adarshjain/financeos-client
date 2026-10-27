@@ -22,7 +22,7 @@ const ingest = (over: Partial<JobResponse>, files: object[] = [{ filename: 'HDFC
     ...over,
   }) as JobResponse;
 
-const base = { openHref: (j: JobResponse) => `/ds/transactions/import/${j.id}` };
+const base = { openHref: (j: JobResponse) => `/transactions/import/${j.id}` };
 
 describe('JobsHistory header row', () => {
   it('the compact list has none, the full list keeps it', () => {
@@ -40,7 +40,7 @@ describe('JobsHistory compact', () => {
     expect(screen.getAllByText('HDFC-savings.pdf').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Done').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/12 rows · 12 new/).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: 'View' })[0]).toHaveAttribute('href', '/ds/transactions/import/j1');
+    expect(screen.getAllByRole('link', { name: 'View' })[0]).toHaveAttribute('href', '/transactions/import/j1');
   });
 
   it('says how many warnings a finished import has, and Failed for a failed one', () => {

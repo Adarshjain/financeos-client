@@ -5,7 +5,7 @@ const redirect = vi.fn((url: string) => {
 });
 vi.mock('next/navigation', () => ({ redirect: (u: string) => redirect(u), unstable_rethrow: () => undefined }));
 
-let pathname: string | null = '/ds/loans';
+let pathname: string | null = '/loans';
 let inAction = false;
 let device: string | undefined;
 vi.mock('next/headers', () => ({
@@ -32,7 +32,7 @@ const locked = () =>
 beforeEach(() => {
   redirect.mockClear();
   sent.length = 0;
-  pathname = '/ds/loans';
+  pathname = '/loans';
   inAction = false;
   device = undefined;
   vi.stubGlobal(
@@ -46,12 +46,12 @@ beforeEach(() => {
 
 describe('serverApi when the app is locked (423)', () => {
   it('redirects a page render to the lock screen, returning to the page', async () => {
-    await expect(serverApi.GET('/api/v1/accounts')).rejects.toThrow('REDIRECT:/ds/locked?from=%2Fds%2Floans');
+    await expect(serverApi.GET('/api/v1/accounts')).rejects.toThrow('REDIRECT:/locked?from=%2Floans');
   });
 
   it('redirects a Legacy page render to the lock screen too', async () => {
     pathname = '/transactions';
-    await expect(serverApi.GET('/api/v1/accounts')).rejects.toThrow('REDIRECT:/ds/locked?from=%2Ftransactions');
+    await expect(serverApi.GET('/api/v1/accounts')).rejects.toThrow('REDIRECT:/locked?from=%2Ftransactions');
   });
 
   it('throws an ApiError(423) inside a server action so the result carries it as data', async () => {
@@ -61,7 +61,7 @@ describe('serverApi when the app is locked (423)', () => {
   });
 
   it('does not loop when it is the lock screen itself that is rendering', async () => {
-    pathname = '/ds/locked';
+    pathname = '/locked';
     await expect(serverApi.GET('/api/v1/accounts')).rejects.toBeInstanceOf(ApiError);
     expect(redirect).not.toHaveBeenCalled();
   });

@@ -113,21 +113,21 @@ describe('buildSearchGroups', () => {
     pick('pages', 0);
     pick('ask');
     expect(go.mock.calls.map((c) => c[0])).toEqual([
-      '/ds/accounts/a1',
-      '/ds/investments/i1',
-      '/ds/loans/lendings/p1',
-      '/ds/loans/l1',
-      '/ds/reports/r1',
-      '/ds/dashboards/d1',
-      '/ds/accounts',
-      '/ds/chat?q=Acc',
+      '/accounts/a1',
+      '/investments/i1',
+      '/loans/lendings/p1',
+      '/loans/l1',
+      '/reports/r1',
+      '/dashboards/d1',
+      '/accounts',
+      '/chat?q=Acc',
     ]);
   });
 
   it('opens a transaction through the Transactions page deep link', () => {
     const { groups, go } = build('Croma');
     group(groups, 'transactions').items[0].onSelect();
-    expect(go).toHaveBeenCalledWith('/ds/transactions?txn=t1');
+    expect(go).toHaveBeenCalledWith('/transactions?txn=t1');
   });
 
   it('ends the transactions with "See all matching transactions" for the typed text', () => {
@@ -136,7 +136,7 @@ describe('buildSearchGroups', () => {
     expect(items).toHaveLength(3);
     expect(items[2].title).toBe('See all matching transactions');
     items[2].onSelect();
-    expect(go).toHaveBeenCalledWith('/ds/transactions?q=Croma');
+    expect(go).toHaveBeenCalledWith('/transactions?q=Croma');
   });
 
   it('has no See all row when no transaction matches', () => {
@@ -208,7 +208,7 @@ describe('buildSearchGroups', () => {
       add.onSelect();
       expect(addOn).toHaveBeenCalledWith('a1');
       upload.onSelect();
-      expect(go).toHaveBeenCalledWith('/ds/transactions/import?account=a1');
+      expect(go).toHaveBeenCalledWith('/transactions/import?account=a1');
     });
 
     it('offers no statement upload for an account type without statements', () => {

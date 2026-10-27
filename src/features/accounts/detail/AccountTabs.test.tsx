@@ -7,7 +7,7 @@ import { AccountType } from '@/lib/types';
 
 import { AccountTabs } from './AccountTabs';
 
-let pathname = '/ds/accounts/a1';
+let pathname = '/accounts/a1';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -27,7 +27,7 @@ function renderTabs(type: AccountType) {
 
 describe('AccountTabs', () => {
   beforeEach(() => {
-    pathname = '/ds/accounts/a1';
+    pathname = '/accounts/a1';
     get.mockReset();
     get.mockResolvedValue({ data: { statements: 3, cards: 2, transactions: 142 } });
   });
@@ -42,10 +42,10 @@ describe('AccountTabs', () => {
       'Rewards',
     ]);
     expect(tabs.map((t) => t.getAttribute('href'))).toEqual([
-      '/ds/accounts/a1',
-      '/ds/accounts/a1/statements',
-      '/ds/accounts/a1/cards',
-      '/ds/accounts/a1/rewards',
+      '/accounts/a1',
+      '/accounts/a1/statements',
+      '/accounts/a1/cards',
+      '/accounts/a1/rewards',
     ]);
     await screen.findByText('· 3');
   });
@@ -75,7 +75,7 @@ describe('AccountTabs', () => {
   });
 
   it('marks the tab the route is on', () => {
-    pathname = '/ds/accounts/a1/statements';
+    pathname = '/accounts/a1/statements';
     renderTabs(AccountType.BANK_ACCOUNT);
     expect(screen.getByRole('tab', { name: /Statements/ })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'false');

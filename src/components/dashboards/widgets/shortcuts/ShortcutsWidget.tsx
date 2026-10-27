@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useActionLauncher } from '@/components/shortcuts/actions';
 import { type ShortcutItem, useShortcuts } from '@/components/shortcuts/catalog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { legacyHref } from '@/features/shell/routes';
 import { cn } from '@/lib/utils';
 
 import { WidgetBody, WidgetEmpty } from '../investmentsLoansKit/kit';
@@ -84,7 +85,7 @@ function Tile({
 }) {
   if (item.href) {
     return (
-      <Link href={item.href} className={TILE} title={item.label}>
+      <Link href={legacyHref(item.href)} className={TILE} title={item.label}>
         <TileFace item={item} />
       </Link>
     );

@@ -9,7 +9,7 @@ import { ActivityPage } from './ActivityPage';
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
-  usePathname: () => '/ds/settings/activity',
+  usePathname: () => '/settings/activity',
 }));
 
 let jobs: JobResponse[] = [];
@@ -93,7 +93,7 @@ describe('filters', () => {
     const options = screen.getAllByRole('option');
     expect(options.map((o) => o.textContent)).toEqual(['All statuses', 'Running0', 'Succeeded', 'Failed1', 'Cancelled']);
     fireEvent.click(screen.getByRole('option', { name: /Failed/ }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?status=FAILED', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=FAILED', { scroll: false });
   });
 
   it('lists all six types and navigates on pick, keeping the status and resetting the page', () => {
@@ -109,14 +109,14 @@ describe('filters', () => {
       'Rule apply',
     ]);
     fireEvent.click(screen.getByRole('option', { name: 'Price refresh' }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?status=SUCCEEDED&type=PRICE_REFRESH', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&type=PRICE_REFRESH', { scroll: false });
   });
 
   it('choosing all statuses clears the filter', () => {
     render(<ActivityPage {...props} statusFilter="FAILED" />);
     fireEvent.click(screen.getByRole('button', { name: /Status: Failed/ }));
     fireEvent.click(screen.getByRole('option', { name: 'All statuses' }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity', { scroll: false });
   });
 });
 
@@ -132,7 +132,7 @@ describe('list', () => {
     unmount();
     render(<ActivityPage {...props} statusFilter="FAILED" typeFilter="GMAIL_SYNC" />);
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity', { scroll: false });
   });
 
   it('shows Job with its subject, Started, Took, Result and Status', () => {
@@ -209,7 +209,7 @@ describe('list', () => {
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" page={1} />);
     expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
       'href',
-      '/ds/settings/activity?status=SUCCEEDED&page=1&job=abc',
+      '/settings/activity?status=SUCCEEDED&page=1&job=abc',
     );
   });
 
@@ -218,7 +218,7 @@ describe('list', () => {
     totalElements = 1;
     render(<ActivityPage {...props} />);
     fireEvent.click(screen.getByText('6.1 s'));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?job=abc', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?job=abc', { scroll: false });
   });
 });
 
@@ -240,13 +240,13 @@ describe('pager', () => {
     render(<ActivityPage {...props} page={2} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
     fireEvent.click(screen.getByRole('option', { name: /50/ }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?size=50', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?size=50', { scroll: false });
   });
 
   it('paging keeps the filters and the open job', () => {
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" jobId="abc" />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?status=SUCCEEDED&page=1&job=abc', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=1&job=abc', { scroll: false });
   });
 });
 
@@ -296,7 +296,7 @@ describe('job result card', () => {
     jobs = [job({ id: 'abc' })];
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" page={1} jobId="abc" />);
     fireEvent.click(within(screen.getByTestId('job-result-card')).getByRole('button', { name: 'Close' }));
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?status=SUCCEEDED&page=1', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=1', { scroll: false });
   });
 
   it('a running job has Cancel and its progress', () => {

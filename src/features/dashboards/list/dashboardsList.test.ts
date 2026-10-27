@@ -17,7 +17,7 @@ describe('widgetCount', () => {
 describe('dashboardRow', () => {
   it('reads name, description, widget count, default flag, update day and where a row opens', () => {
     const row = dashboardRow(board({ id: 'abc', description: ' Net worth and spend ', isDefault: true, widgets: [widget('report'), widget('report')] as DashboardResponse['widgets'] }));
-    expect(row).toMatchObject({ id: 'abc', name: 'Money', description: 'Net worth and spend', widgets: 2, widgetsLabel: '2 widgets', isDefault: true, updated: '13 Oct', href: '/ds/dashboards/abc' });
+    expect(row).toMatchObject({ id: 'abc', name: 'Money', description: 'Net worth and spend', widgets: 2, widgetsLabel: '2 widgets', isDefault: true, updated: '13 Oct', href: '/dashboards/abc' });
     expect(row.phoneSub).toBe('Default · 2 widgets · updated 13 Oct');
   });
 

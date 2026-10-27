@@ -98,14 +98,14 @@ describe('ObligationRow', () => {
 
   it('Open chevron links to the resolved href; absent without one', () => {
     const { rerender } = render(<ObligationRow item={item({ title: 'T', loanId: 'L1', installmentSeq: 2 })} />);
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/loans/L1?installment=2');
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/legacy/loans/L1?installment=2');
     rerender(<ObligationRow item={item({ title: 'T', type: 'card_bill' })} />);
     expect(screen.queryByRole('link', { name: 'Open' })).toBeNull();
   });
 
   it('statement_expected shows an Upload link with ?account= only when it has an account', () => {
     const { rerender } = render(<ObligationRow item={item({ title: 'T', type: 'statement_expected', accountId: 'A1' })} />);
-    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
+    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/legacy/transactions/import?account=A1');
     rerender(<ObligationRow item={item({ title: 'T', type: 'statement_expected' })} />);
     expect(screen.queryByRole('link', { name: 'Upload' })).toBeNull();
     rerender(<ObligationRow item={item({ title: 'T', type: 'emi', accountId: 'A1' })} />);

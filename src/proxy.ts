@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { isDsPath, loginHrefFor } from '@/features/shell/routes';
+import { loginHrefFor, rootRedirectFor } from '@/features/shell/routes';
 
 // `/serwist` serves the compiled service worker, `/offline` is its document
 // fallback, and `/manifest.webmanifest` plus the `/icons` it references are
@@ -20,14 +20,22 @@ const publicPaths = [
   // `/handbook` is the static system reference (public/handbook/*), deliberately
   // readable without a session.
   '/handbook',
-  // Phase 3 design system public review pages
-  '/ds/login',
-  '/ds/signup',
-  '/ds/offline',
+  // The Legacy app's own public pages (Dinero's are the plain ones above).
+  '/legacy/login',
+  '/legacy/signup',
+  '/legacy/offline',
 ];
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
+
+  // Temporary redirects, before the auth check. Old Dinero URLs (bookmarks, push links): /ds/<rest> is /<rest>
+  // (/ds itself stays the review index). Legacy paths that moved go to their Dinero page, Legacy-only pages
+  // to /legacy.
+  const redirectTo = pathname.startsWith('/ds/') ? `/${pathname.slice(4).replace(/^\/+/, '')}${search}` : rootRedirectFor(pathname, search);
+  if (redirectTo) {
+    return NextResponse.redirect(new URL(redirectTo, request.url));
+  }
 
   // Check if the path is public
   const isPublicPath = publicPaths.some(
@@ -40,14 +48,7 @@ export function proxy(request: NextRequest) {
 
   // Redirect to login if not authenticated and accessing protected route
   if (!isPublicPath && !hasSession) {
-    if (isDsPath(pathname)) {
-      return NextResponse.redirect(new URL(loginHrefFor(pathname), request.url));
-    }
-    const loginUrl = new URL('/login', request.url);
-    if (pathname !== '/') {
-      loginUrl.searchParams.set('from', pathname);
-    }
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL(loginHrefFor(pathname), request.url));
   }
 
   // Don't redirect from login to dashboard here - let the page handle it

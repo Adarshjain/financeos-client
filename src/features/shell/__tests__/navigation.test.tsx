@@ -71,35 +71,35 @@ describe('shell navigation', () => {
   });
 
   it('Lendings tab is active on the loans pages', () => {
-    for (const p of ['/ds/loans', '/ds/loans/lendings', '/ds/loans/people/1', '/ds/loans/7']) {
+    for (const p of ['/loans', '/loans/lendings', '/loans/people/1', '/loans/7']) {
       expect(getActiveNavItem(p)).toBe('loans');
     }
   });
 
   it('getActiveNavItem follows Dinero pages: /ds paths light the same item as their Legacy twin', () => {
-    expect(getActiveNavItem('/ds/inbox')).toBe('inbox');
-    expect(getActiveNavItem('/ds/upcoming')).toBe('inbox');
-    expect(getActiveNavItem('/ds/upcoming/calendar')).toBe('inbox');
-    expect(getActiveNavItem('/ds/accounts')).toBe('accounts');
-    expect(getActiveNavItem('/ds/accounts/a1')).toBe('accounts');
-    expect(getActiveNavItem('/ds/accounts/a1/rewards')).toBe('accounts');
-    expect(getActiveNavItem('/ds/settings')).toBe('settings');
-    expect(getActiveNavItem('/ds/settings/ai')).toBe('settings');
-    expect(getActiveNavItem('/ds/notifications')).toBeUndefined();
+    expect(getActiveNavItem('/inbox')).toBe('inbox');
+    expect(getActiveNavItem('/upcoming')).toBe('inbox');
+    expect(getActiveNavItem('/upcoming/calendar')).toBe('inbox');
+    expect(getActiveNavItem('/accounts')).toBe('accounts');
+    expect(getActiveNavItem('/accounts/a1')).toBe('accounts');
+    expect(getActiveNavItem('/accounts/a1/rewards')).toBe('accounts');
+    expect(getActiveNavItem('/settings')).toBe('settings');
+    expect(getActiveNavItem('/settings/ai')).toBe('settings');
+    expect(getActiveNavItem('/notifications')).toBeUndefined();
     expect(getActiveNavItem('/dsx/inbox')).toBeUndefined();
   });
 
   it('shell links go to the Dinero page when built, Legacy otherwise', () => {
-    mockPathname = '/ds/inbox';
+    mockPathname = '/inbox';
     render(<ShellRail user={{ email: 'a@b.test' }} />);
-    expect(screen.getByRole('link', { name: /Inbox/i })).toHaveAttribute('href', '/ds/inbox');
-    expect(screen.getByRole('link', { name: /a@b.test/i })).toHaveAttribute('href', '/ds/settings');
-    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/ds/transactions');
+    expect(screen.getByRole('link', { name: /Inbox/i })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByRole('link', { name: /a@b.test/i })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
   });
 
   it('getActiveNavItem computes current item correctly and returns undefined for /ds', () => {
     expect(getActiveNavItem('/ds')).toBeUndefined();
-    expect(getActiveNavItem('/ds/')).toBeUndefined();
+    expect(getActiveNavItem('/')).toBeUndefined();
     expect(getActiveNavItem('/dashboard')).toBe('home');
     expect(getActiveNavItem('/inbox')).toBe('inbox');
     expect(getActiveNavItem('/upcoming')).toBe('inbox');
@@ -118,12 +118,12 @@ describe('shell navigation', () => {
   });
 
   it('hides the phone tab bar on the Ask the data pages only', () => {
-    expect(hidesTabBar('/ds/chat')).toBe(true);
-    expect(hidesTabBar('/ds/chat/c-1')).toBe(true);
-    expect(hidesTabBar('/ds/chatter')).toBe(false);
-    expect(hidesTabBar('/ds/reports')).toBe(false);
+    expect(hidesTabBar('/chat')).toBe(true);
+    expect(hidesTabBar('/chat/c-1')).toBe(true);
+    expect(hidesTabBar('/chatter')).toBe(false);
+    expect(hidesTabBar('/reports')).toBe(false);
     expect(hidesTabBar(null)).toBe(false);
-    mockPathname = '/ds/chat/c-1';
+    mockPathname = '/chat/c-1';
     const { container } = render(<ShellTabBar user={{ email: 'a@example.test' }} />);
     expect(container).toBeEmptyDOMElement();
     expect(screen.queryByRole('tab', { name: /Menu/i })).toBeNull();
@@ -166,7 +166,7 @@ describe('shell navigation', () => {
     mockPathname = '/accounts';
     render(<ShellRail user={{ email: 'arjun@example.test' }} />);
     expect(screen.getByText('Accounts')).toBeDefined();
-    expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/ds/settings');
+    expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/settings');
     expect(screen.getByText('AR')).toBeDefined();
   });
 
@@ -224,21 +224,21 @@ describe('shell navigation', () => {
     expect(screen.getByRole('button', { name: /Transaction/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Lending/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Trade/i })).toBeEnabled();
-    expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/ds/transactions/import');
+    expect(screen.getByRole('link', { name: /Import/i })).toHaveAttribute('href', '/transactions/import');
 
     // Verify Section links
-    expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/ds/accounts');
-    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/ds/transactions');
-    expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/ds/investments');
-    expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/ds/rewards');
-    expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/ds/loans/lendings');
-    expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/ds/dashboards');
-    expect(screen.getByRole('link', { name: /Reports/i })).toHaveAttribute('href', '/ds/reports');
-    expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/ds/chat');
+    expect(screen.getByRole('link', { name: /Accounts/i })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
+    expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
+    expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
+    expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/loans/lendings');
+    expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/dashboards');
+    expect(screen.getByRole('link', { name: /Reports/i })).toHaveAttribute('href', '/reports');
+    expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/chat');
 
     // Verify Profile row
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });
-    expect(profileLink).toHaveAttribute('href', '/ds/settings');
+    expect(profileLink).toHaveAttribute('href', '/settings');
 
     // Tap an item to close the sheet
     const accountsLink = screen.getByRole('link', { name: /Accounts/i });

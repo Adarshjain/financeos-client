@@ -12,6 +12,7 @@ import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatCount } from '@/features/dashboards/builtins/builtin.helpers';
 import { type CapItem, capItems, type CapTone } from '@/features/dashboards/builtins/cap_headroom/capHeadroom.model';
+import { legacyHref } from '@/features/shell/routes';
 import { isRawTableData } from '@/lib/reports.helpers';
 import { cn, formatMoney } from '@/lib/utils';
 
@@ -37,7 +38,7 @@ function CapRow({ it }: { it: CapItem }) {
   return (
     <li data-testid="cap-row" data-tone={it.tone}>
       <Link
-        href={`/rewards?account=${encodeURIComponent(it.cardId)}`}
+        href={legacyHref(`/rewards?account=${encodeURIComponent(it.cardId)}`)}
         className="block space-y-1.5 px-4 py-2.5 transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none dark:hover:bg-slate-800/50 dark:focus-visible:bg-slate-800/50"
       >
         <div className="flex items-center justify-between gap-2">

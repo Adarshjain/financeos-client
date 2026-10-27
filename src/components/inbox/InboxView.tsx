@@ -11,6 +11,7 @@ import { headerCounts, INBOX_SECTIONS } from '@/features/inbox/inbox.helpers';
 import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
 import { useInboxActions } from '@/features/inbox/useInboxActions';
 import { useInboxDeepLink } from '@/features/inbox/useInboxDeepLink';
+import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
@@ -85,10 +86,10 @@ export function InboxView({ highlightKey = null }: InboxViewProps) {
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href="/upcoming">Upcoming</Link>
+                <Link href={legacyHref('/upcoming')}>Upcoming</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link href="/transactions">Transactions</Link>
+                <Link href={legacyHref('/transactions')}>Transactions</Link>
               </Button>
             </div>
           }

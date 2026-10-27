@@ -110,7 +110,7 @@ describe('BillsDueWidget', () => {
   it('empty with no accountId: "No credit cards yet" with a link to accounts', async () => {
     renderWithQuery(<BillsDueWidget />);
     expect(await screen.findByText('No credit cards yet')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/legacy/accounts');
     expect(api.GET).toHaveBeenCalledWith('/api/v1/bills', { params: { query: {} } });
   });
 

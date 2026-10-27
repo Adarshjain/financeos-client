@@ -30,7 +30,7 @@ describe('AddWidgetDialog — leaving for the report builder', () => {
 
   it('no saved reports and nothing unsaved: "Create one" is a plain link to the builder', async () => {
     await open(false);
-    expect(await screen.findByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/reports/new');
+    expect(await screen.findByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/legacy/reports/new');
   });
 
   it('with unsaved changes "Create one" asks first; Cancel stays, Leave goes to the builder', async () => {
@@ -45,6 +45,6 @@ describe('AddWidgetDialog — leaving for the report builder', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create one' }));
     await user.click(within(await screen.findByRole('dialog', { name: 'Leave without saving?' })).getByRole('button', { name: 'Leave' }));
-    expect(router.push).toHaveBeenCalledWith('/reports/new');
+    expect(router.push).toHaveBeenCalledWith('/legacy/reports/new');
   });
 });

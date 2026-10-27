@@ -31,10 +31,10 @@ describe('Instruments URL state', () => {
   });
 
   it('keeps defaults out of the address and round-trips the rest', () => {
-    expect(instrumentsUrl(defaults)).toBe('/ds/investments/instruments');
+    expect(instrumentsUrl(defaults)).toBe('/investments/instruments');
     const state = { q: 'tata', type: 'stock' as const, stale: true, sort: 'desc' as const, page: 2, size: 25 };
     const url = instrumentsUrl(state);
-    expect(url).toBe('/ds/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=2&size=25');
+    expect(url).toBe('/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=2&size=25');
     expect(parseInstrumentsUrl(Object.fromEntries(new URL(url, 'http://x').searchParams))).toEqual(state);
   });
 

@@ -35,7 +35,7 @@ describe('notifyIfAppLocked', () => {
 
 describe('lockHref', () => {
   it('carries a same-origin path as from', () => {
-    expect(lockHref('/ds/loans?x=1')).toBe(`${LOCK_ROUTE}?from=${encodeURIComponent('/ds/loans?x=1')}`);
+    expect(lockHref('/loans?x=1')).toBe(`${LOCK_ROUTE}?from=${encodeURIComponent('/loans?x=1')}`);
     expect(lockHref('/dashboard')).toBe(`${LOCK_ROUTE}?from=%2Fdashboard`);
   });
 
@@ -48,8 +48,8 @@ describe('lockHref', () => {
   });
 
   it('knows the lock route', () => {
-    expect(isLockRoute('/ds/locked')).toBe(true);
-    expect(isLockRoute('/ds/lockedness')).toBe(false);
+    expect(isLockRoute('/locked')).toBe(true);
+    expect(isLockRoute('/lockedness')).toBe(false);
     expect(isLockRoute(null)).toBe(false);
   });
 });

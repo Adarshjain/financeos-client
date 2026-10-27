@@ -7,7 +7,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { RecordTradeDialog } from './TradeDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/investments', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/investments', useSearchParams: () => new URLSearchParams() }));
 
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),
@@ -290,7 +290,7 @@ describe('Record trade', () => {
     accounts.list = [{ id: 'a-1', type: 'bank_account', name: 'HDFC' }];
     open();
     expect(await screen.findByText('You need at least one broker account to record trades.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Add a broker account' }).getAttribute('href')).toBe('/ds/accounts');
+    expect(screen.getByRole('link', { name: 'Add a broker account' }).getAttribute('href')).toBe('/accounts');
     expect(screen.queryByLabelText('Qty')).toBeNull();
   });
 });

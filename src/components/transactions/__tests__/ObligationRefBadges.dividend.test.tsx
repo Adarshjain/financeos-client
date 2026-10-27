@@ -18,7 +18,7 @@ describe('ObligationRefBadges DIVIDEND', () => {
     expect(screen.getByText('Dividend · INFY')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      '/investments/dividends?instrumentId=inst-9',
+      '/legacy/investments/dividends?instrumentId=inst-9',
     );
     expect(container.querySelector('svg.lucide-coins')).not.toBeNull();
   });

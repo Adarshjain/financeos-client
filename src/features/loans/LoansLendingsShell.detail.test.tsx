@@ -7,7 +7,7 @@ import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider'
 
 import { LoansLendingsShell } from './LoansLendingsShell';
 
-let pathname = '/ds/loans/l1';
+let pathname = '/loans/l1';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -37,7 +37,7 @@ function renderShell() {
 }
 
 beforeEach(() => {
-  pathname = '/ds/loans/l1';
+  pathname = '/loans/l1';
   loadTabCounts.mockReset();
   loadTabCounts.mockResolvedValue({ success: true, data: { lendings: 4, loans: 3 } });
 });
@@ -52,13 +52,13 @@ describe('LoansLendingsShell on a loan page', () => {
   });
 
   it('still frames the two tabs', () => {
-    pathname = '/ds/loans';
+    pathname = '/loans';
     renderShell();
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
   });
 
   it("shows a person's page alone too: no tabs, no counts requested", () => {
-    pathname = '/ds/loans/lendings/p1';
+    pathname = '/loans/lendings/p1';
     renderShell();
     expect(screen.getByText('loan page')).toBeInTheDocument();
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
@@ -66,7 +66,7 @@ describe('LoansLendingsShell on a loan page', () => {
   });
 
   it('still frames the Lendings tab', () => {
-    pathname = '/ds/loans/lendings';
+    pathname = '/loans/lendings';
     renderShell();
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
   });

@@ -85,7 +85,7 @@ describe('Home dashboard menu', () => {
     await openMenu(user);
     expect(screen.getByRole('menuitem', { name: 'Edit dashboard' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Set as default' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'New dashboard' })).toHaveAttribute('href', '/dashboards/new');
+    expect(screen.getByRole('menuitem', { name: 'New dashboard' })).toHaveAttribute('href', '/legacy/dashboards/new');
   });
 
   it('hides Set as default when the shown dashboard is already the default', async () => {
