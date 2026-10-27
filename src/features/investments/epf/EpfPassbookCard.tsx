@@ -215,9 +215,11 @@ export function EpfPassbookCard({
         title="Passbook"
         subtitle={subtitle}
         action={
-          <Button variant="link" size="sm" asChild>
-            <Link href={EPF_UPLOAD_HREF}>Upload passbook</Link>
-          </Button>
+          <Text variant="label" as="span">
+            <Button variant="link" size="sm" asChild>
+              <Link href={EPF_UPLOAD_HREF}>Upload passbook</Link>
+            </Button>
+          </Text>
         }
       >
         {stale ? (

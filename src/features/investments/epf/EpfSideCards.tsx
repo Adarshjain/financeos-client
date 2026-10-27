@@ -17,9 +17,11 @@ export function EpfEmployersCard({ rows, onAdd, onEdit }: EpfEmployersCardProps)
     <Card
       title="Employers"
       action={
-        <Button variant="link" size="sm" onClick={onAdd}>
-          Add employer
-        </Button>
+        <Text variant="label" as="span">
+          <Button variant="link" size="sm" onClick={onAdd}>
+            Add employer
+          </Button>
+        </Text>
       }
     >
       {rows.length === 0 ? <EmptyState compact description="No employers yet." /> : null}
