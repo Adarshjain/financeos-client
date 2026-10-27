@@ -39,7 +39,7 @@ export function EpfAddDialog({ onClose, initialType }: EpfAddDialogProps) {
         >
           <DialogBody>
             {query.isError ? null : (
-              <div className="flex flex-col gap-space-12">
+              <div className="flex flex-col gap-space-8 desk:gap-space-12">
                 <Skeleton height={32} />
                 <Skeleton height={32} />
                 <Skeleton height={32} />

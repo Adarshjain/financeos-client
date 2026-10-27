@@ -120,7 +120,7 @@ function NewWithdrawalFields({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
           error={epf.pensionError}
         />
       ) : (
-        <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+        <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
           <AmountField
             label="Your share"
             prefix="₹"

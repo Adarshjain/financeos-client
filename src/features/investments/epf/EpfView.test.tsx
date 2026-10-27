@@ -213,21 +213,22 @@ describe('EpfView: the stale banner', () => {
 describe('EpfView: the FY and employer choices and the pager', () => {
   it('changes the FY in the address and goes back to the first page', async () => {
     renderWithQuery(<EpfView {...props({}, base, [employer()], parseEpfUrl({ page: '1' }))} />);
-    fireEvent.click(screen.getAllByRole('combobox')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'FY 2026-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 2025-26' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2025', { scroll: false });
   });
 
   it('offers every year', async () => {
     renderWithQuery(<EpfView {...props()} />);
-    fireEvent.click(screen.getAllByRole('combobox')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'FY 2026-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'All years' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=all', { scroll: false });
   });
 
   it('has no employer select with a single employer', () => {
     renderWithQuery(<EpfView {...props()} />);
-    expect(screen.getAllByRole('combobox')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'All employers' })).not.toBeInTheDocument();
   });
 
   it('has an employer select with more than one employer, and a change is one URL change', async () => {
@@ -245,9 +246,8 @@ describe('EpfView: the FY and employer choices and the pager', () => {
         )}
       />,
     );
-    const selects = screen.getAllByRole('combobox');
-    expect(selects).toHaveLength(2);
-    fireEvent.click(selects[0]);
+    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
     fireEvent.click(await screen.findByRole('option', { name: 'Contoso Systems' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?employer=e2', { scroll: false });
   });

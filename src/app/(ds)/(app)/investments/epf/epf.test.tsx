@@ -72,7 +72,7 @@ describe('/investments/epf: data', () => {
     expect(screen.getAllByText('Interest · FY 2025-26').length).toBeGreaterThan(0);
     expect(screen.getByText('Contoso Systems')).toBeInTheDocument();
     expect(screen.getByText('Pension (EPS)')).toBeInTheDocument();
-    expect(screen.getAllByRole('combobox')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
   });
 
   it('shows the stale banner with the months missing', async () => {

@@ -71,9 +71,9 @@ export function EpfReviewStep({ epf, mode, onModeChange }: { epf: ReturnType<typ
   const isNew = !preview.employer.existingId;
   const busy = isCommitting || isPreviewing;
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Card title="What are you importing?">
-        <div className="flex flex-col gap-space-12 p-space-16 desk:p-space-20">
+        <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16 desk:p-space-20">
           <Select label="Type" options={MODE_OPTIONS} value={mode} onValueChange={(v) => onModeChange(v as ImportMode)} disabled={busy} />
           <div className="flex items-center justify-between gap-space-12">
             <Text variant="body-strong" as="span" className="min-w-0 break-all">
