@@ -110,8 +110,9 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
   } = useImportWizardMutations();
 
   // Step 1: Preview Submission
-  const handlePreviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /** The upload form's submit, or the action bar's Preview (no event). */
+  const handlePreviewSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!brokerAccountId) {
       notify.error('Please select a target broker account.');
       return;

@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, Stepper } from '@/components/ds';
+import { Card, SelectionBar, Stepper } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Broker } from '@/lib/account.types';
@@ -14,13 +13,13 @@ import { TRADEBOOK_HREF } from '../tradebook/tradebookModel';
 import { importableTotal } from './epfImportModel';
 import { EpfResultStep } from './EpfResultStep';
 import { EpfReviewStep } from './EpfReviewStep';
-import { EPF_UPLOAD_FORM_ID, EpfUploadStep } from './EpfUploadStep';
+import { EpfUploadStep } from './EpfUploadStep';
 import { IMPORT_STEPS } from './importModel';
 import { dineroImportNotify } from './notify';
 import { ResultStep } from './ResultStep';
 import { ReviewStep } from './ReviewStep';
 import type { ImportMode } from './types';
-import { UPLOAD_FORM_ID, UploadStep } from './UploadStep';
+import { UploadStep } from './UploadStep';
 import { useEpfImport } from './useEpfImport';
 import { useImportWizard } from './useImportWizard';
 
@@ -55,9 +54,10 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
   const importable = preview ? importableTotal(preview.sections) : 0;
   const nothingNew = importable === 0;
   const several = epf.files.length > 1;
+  const router = useRouter();
   return (
     <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-12 desk:gap-space-16">
+      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16 pb-space-48">
         <Card title="Investment bulk import">
           <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
             <Stepper steps={IMPORT_STEPS} current={step - 1} />
@@ -73,52 +73,39 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
           </>
         ) : null}
 
-        <div className="flex justify-end gap-space-8">
-          {step === 1 ? (
-            <>
-              <Button asChild variant="link" className="max-desk:flex-1" disabled={isPreviewing}>
-                <Link href={TRADEBOOK_HREF}>Cancel</Link>
-              </Button>
-              <Button
-                type="submit"
-                form={EPF_UPLOAD_FORM_ID}
-                variant="primary"
-                className="max-desk:flex-1"
-                loading={isPreviewing}
-                disabled={isPreviewing || epf.files.length === 0}
-              >
-                {isPreviewing ? (several ? 'Reading passbooks…' : 'Reading passbook…') : several ? 'Preview passbooks' : 'Preview passbook'}
-              </Button>
-            </>
-          ) : null}
-          {step === 2 ? (
-            <>
-              <Button type="button" variant="link" className="max-desk:flex-1" disabled={isCommitting || isPreviewing} onClick={() => epf.setStep(1)}>
-                Back
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                className="max-desk:flex-1"
-                loading={isCommitting}
-                disabled={isCommitting || isPreviewing || nothingNew}
-                onClick={epf.commit}
-              >
-                {isCommitting ? 'Importing entries…' : `Import ${importable} entries`}
-              </Button>
-            </>
-          ) : null}
-          {step === 3 ? (
-            <>
-              <Button type="button" variant="secondary" className="max-desk:flex-1" onClick={epf.reset}>
-                Import another
-              </Button>
-              <Button asChild variant="primary" className="max-desk:flex-1">
-                <Link href={EPF_HREF}>Open EPF</Link>
-              </Button>
-            </>
-          ) : null}
-        </div>
+        <SelectionBar
+          className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
+          actions={
+            step === 1
+              ? [
+                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, onSelect: () => router.push(TRADEBOOK_HREF) },
+                  {
+                    id: 'preview',
+                    label: isPreviewing ? (several ? 'Reading passbooks…' : 'Reading passbook…') : several ? 'Preview passbooks' : 'Preview passbook',
+                    variant: 'primary',
+                    loading: isPreviewing,
+                    disabled: isPreviewing || epf.files.length === 0,
+                    onSelect: () => epf.handlePreviewSubmit(),
+                  },
+                ]
+              : step === 2
+                ? [
+                    { id: 'back', label: 'Back', variant: 'link', disabled: isCommitting || isPreviewing, onSelect: () => epf.setStep(1) },
+                    {
+                      id: 'import',
+                      label: isCommitting ? 'Importing entries…' : `Import ${importable} entries`,
+                      variant: 'primary',
+                      loading: isCommitting,
+                      disabled: isCommitting || isPreviewing || nothingNew,
+                      onSelect: () => void epf.commit(),
+                    },
+                  ]
+                : [
+                    { id: 'another', label: 'Import another', variant: 'secondary', onSelect: epf.reset },
+                    { id: 'open', label: 'Open EPF', variant: 'primary', onSelect: () => router.push(EPF_HREF) },
+                  ]
+          }
+        />
       </div>
     </ShellPage>
   );
@@ -127,10 +114,11 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
 function TradebookScreen({ brokers, wizard }: { brokers: Broker[]; wizard: Wizard }) {
   const { step, mode, isPreviewing, isCommitting, commitResult } = wizard;
   const blocked = (mode === 'mf_cas' ? wizard.casUnresolvedCount : wizard.unresolvedCount) > 0;
+  const router = useRouter();
 
   return (
     <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16">
+      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16 pb-space-48">
         <Card title="Investment bulk import">
           <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
             <Stepper steps={IMPORT_STEPS} current={step - 1} />
@@ -141,47 +129,36 @@ function TradebookScreen({ brokers, wizard }: { brokers: Broker[]; wizard: Wizar
         {step === 2 ? <ReviewStep wizard={wizard} /> : null}
         {step === 3 && commitResult ? <ResultStep result={commitResult} brokerName={wizard.selectedBrokerName} /> : null}
 
-        <div className="flex justify-end gap-space-8">
-          {step === 1 ? (
-            <>
-              <Button asChild variant="link" className="max-desk:flex-1" disabled={isPreviewing}>
-                <Link href={TRADEBOOK_HREF}>Cancel</Link>
-              </Button>
-              <Button
-                type="submit"
-                form={UPLOAD_FORM_ID}
-                variant="primary"
-                className="max-desk:flex-1"
-                loading={isPreviewing}
-                disabled={isPreviewing}
-              >
-                {isPreviewing ? 'Reconciling & parsing files…' : 'Preview reconciliation'}
-              </Button>
-            </>
-          ) : null}
-          {step === 2 ? (
-            <>
-              <Button type="button" variant="link" className="max-desk:flex-1" disabled={isCommitting} onClick={() => wizard.setStep(1)}>
-                Back
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                className="max-desk:flex-1"
-                loading={isCommitting}
-                disabled={isCommitting || blocked}
-                onClick={wizard.handleCommitSubmit}
-              >
-                {isCommitting ? 'Importing reconciled executions…' : `Import trades (${wizard.confirmableCount})`}
-              </Button>
-            </>
-          ) : null}
-          {step === 3 ? (
-            <Button asChild variant="primary" className="max-desk:flex-1">
-              <Link href={HOLDINGS_HREF}>Done & view portfolio</Link>
-            </Button>
-          ) : null}
-        </div>
+        <SelectionBar
+          className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
+          actions={
+            step === 1
+              ? [
+                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, onSelect: () => router.push(TRADEBOOK_HREF) },
+                  {
+                    id: 'preview',
+                    label: isPreviewing ? 'Reconciling & parsing files…' : 'Preview reconciliation',
+                    variant: 'primary',
+                    loading: isPreviewing,
+                    disabled: isPreviewing,
+                    onSelect: () => void wizard.handlePreviewSubmit(),
+                  },
+                ]
+              : step === 2
+                ? [
+                    { id: 'back', label: 'Back', variant: 'link', disabled: isCommitting, onSelect: () => wizard.setStep(1) },
+                    {
+                      id: 'import',
+                      label: isCommitting ? 'Importing reconciled executions…' : `Import trades (${wizard.confirmableCount})`,
+                      variant: 'primary',
+                      loading: isCommitting,
+                      disabled: isCommitting || blocked,
+                      onSelect: () => void wizard.handleCommitSubmit(),
+                    },
+                  ]
+                : [{ id: 'done', label: 'Done & view portfolio', variant: 'primary', onSelect: () => router.push(HOLDINGS_HREF) }]
+          }
+        />
       </div>
     </ShellPage>
   );
