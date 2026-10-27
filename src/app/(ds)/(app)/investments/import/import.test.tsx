@@ -26,7 +26,7 @@ beforeEach(() => server.fetchBrokers.mockResolvedValue([{ id: 'b1', name: 'Zerod
 
 describe('/investments/import', () => {
   it('reads the broker accounts on the server and hands them to the screen', async () => {
-    render(await DsInvestmentsImportPage());
+    render(await DsInvestmentsImportPage({ searchParams: Promise.resolve({}) }));
     expect(screen.getByText('screen: Zerodha main')).toBeInTheDocument();
   });
 
