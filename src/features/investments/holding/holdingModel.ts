@@ -18,31 +18,15 @@ export interface HoldingSection<R> {
 
 // ---- Header ----------------------------------------------------------------------
 
-
-const TERM_WORDS: Record<string, string> = {
-  long: 'long term',
-  short: 'short term',
-  slab: 'taxed at slab rate',
-  mixed: 'long and short term',
-};
-
 export interface HoldingHeaderModel {
   /** "INFY · Infosys", or the name alone. */
   title: string;
   badge: string;
-  /** "NSE · INE009A01021 · 2 brokers · long term". */
-  meta: string;
 }
 
-export function holdingHeader(holding: HoldingDetail, instrument: Instrument | null): HoldingHeaderModel {
+export function holdingHeader(holding: HoldingDetail): HoldingHeaderModel {
   const title = holding.symbol && holding.symbol !== holding.name ? `${holding.symbol} · ${holding.name}` : holding.name;
-  const brokers = holding.brokers.length;
-  const parts = [
-    [instrument?.exchange, instrument?.isin].filter(Boolean).join(' · '),
-    brokers > 0 ? `${brokers} ${brokers === 1 ? 'broker' : 'brokers'}` : '',
-    holding.term ? TERM_WORDS[holding.term] : '',
-  ].filter(Boolean);
-  return { title, badge: TYPE_WORDS[holding.assetType], meta: parts.join(' · ') };
+  return { title, badge: TYPE_WORDS[holding.assetType] };
 }
 
 export interface HoldingHeroModel {
@@ -265,9 +249,10 @@ export interface InstrumentRow {
   value: string;
 }
 
-/** ISIN, Yahoo symbol, price source, overrides: the rows of the Instrument card. */
+/** Exchange, ISIN, Yahoo symbol, price source, overrides: the rows of the Instrument card. */
 export function instrumentRows(instrument: Instrument): InstrumentRow[] {
   const rows: InstrumentRow[] = [];
+  if (instrument.exchange) rows.push({ label: 'Exchange', value: instrument.exchange });
   if (instrument.isin) rows.push({ label: 'ISIN', value: instrument.isin });
   if (instrument.yahooSymbol) rows.push({ label: 'Yahoo symbol', value: instrument.yahooSymbol });
   if (instrument.amfiCode) rows.push({ label: 'AMFI code', value: instrument.amfiCode });

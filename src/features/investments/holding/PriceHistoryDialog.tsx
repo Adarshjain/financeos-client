@@ -81,7 +81,7 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
           description={`${name} · newest first · only your manual prices can change`}
           secondary={{ label: 'Close', onSelect: onClose }}
         >
-          <DialogBody>
+          <DialogBody className="p-0 gap-0 desk:gap-0">
             {section === null && !failed ? <Skeleton height={48} /> : null}
             {section === null && failed ? (
               <EmptyState compact description="The price history could not be loaded." action={{ label: 'Try again', onSelect: () => void load(0), variant: 'link' }} />

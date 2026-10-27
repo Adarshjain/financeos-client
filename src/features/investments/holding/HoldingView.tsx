@@ -54,7 +54,7 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
   const [dialog, setDialog] = React.useState<HoldingDialog | null>(null);
   const closeDialog = () => setDialog(null);
 
-  const header = holdingHeader(holding, instrument);
+  const header = holdingHeader(holding);
   const brokerRows: BrokerRowModel[] = holding.brokers.map((b) => ({
     id: b.brokerAccountId,
     name: b.accountName,

@@ -7,6 +7,7 @@ Standard text input for forms, logins, and values.
 
 ## Props
 - `size?: 'md' | 'lg' | 'xl'`: `md` and `lg` are `control-md` (32px) and differ in padding only (default `'lg'` 12px side padding, `'md'` 10px). `xl` is `control-xl` high with the input text in the `figure` type style and `lg` padding.
+- `shape?: 'default' | 'pill'`: default `'default'`. `pill` matches a FilterChip: 28px high (`space-28`), 10px side padding, `ds-pill` radius, 6px gap, `label` text. FilterBar uses it for its search; use it for any search field placed beside filter chips.
 - `align?: 'left' | 'right'`: input text alignment, default `'left'`. `right` end-aligns the text; prefix stays at the start, suffix and clear at the end.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
 - `tone?: 'neutral' | 'success'`: default `'neutral'`. `success` colours the input's value text with `positive`, the money-in green.

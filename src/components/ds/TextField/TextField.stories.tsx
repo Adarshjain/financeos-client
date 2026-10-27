@@ -191,6 +191,17 @@ export const SearchSmall: Story = {
   },
 };
 
+export const Pill: Story = {
+  args: {
+    type: 'search',
+    shape: 'pill',
+    prefix: <Icon name="search" size="sm" />,
+    clearable: true,
+    clearLabel: 'Clear search',
+    placeholder: 'Search',
+  },
+};
+
 export const Embedded: Story = {
   args: {
     type: 'search',
