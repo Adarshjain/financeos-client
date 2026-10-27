@@ -87,12 +87,6 @@ export function monthYear(iso: string | null | undefined): string {
   return month >= 1 && month <= 12 ? `${MONTHS[month - 1]} ${iso.slice(0, 4)}` : '';
 }
 
-/** "15 Oct", with the year when it is not the current one: "11 Oct 2023". */
-export function dayLabel(iso: string, today: string): string {
-  const day = formatDayMonth(iso);
-  return iso.slice(0, 4) === today.slice(0, 4) ? day : `${day} ${iso.slice(0, 4)}`;
-}
-
 /** "15 Oct 2026" */
 export function fullDay(iso: string): string {
   return `${formatDayMonth(iso)} ${iso.slice(0, 4)}`;
@@ -217,10 +211,8 @@ export function pensionCard(pension: NonNullable<EpfSummary['pension']>) {
 export interface EpfRow {
   id: string;
   wageMonth: string;
-  credited: string;
-  /** Desktop particulars: the title and its muted line. */
+  /** Desktop particulars, one line. */
   title: string;
-  sub: string;
   /** Phone title and line. */
   phoneTitle: string;
   phoneSub: string;
@@ -241,15 +233,13 @@ function sharesOf(e: EpfEntry): number {
   return e.type === 'WITHDRAWAL' && e.withdrawalKind === 'PENSION' ? e.pensionAmount : e.employeeAmount + e.employerAmount;
 }
 
-export function epfRow(e: EpfEntry, today: string): EpfRow {
-  const credited = dayLabel(e.creditedOn, today);
-  const sub = e.source === 'PASSBOOK' ? 'Passbook' : 'Added by you';
+export function epfRow(e: EpfEntry): EpfRow {
+  const source = e.source === 'PASSBOOK' ? 'Passbook' : 'Added by you';
   const dash = '—';
   const money = (n: number, sign: '+' | '−' | '') => (sign === '' ? rupees(n) : sign === '+' ? PLUS(n) : `−${rupees(n)}`);
   const base = {
     id: e.id,
     wageMonth: monthYear(e.wageMonth) || dash,
-    credited,
     balance: rupees(e.runningBalance),
     amountSub: rupees(e.runningBalance),
     pension: dash,
@@ -259,10 +249,9 @@ export function epfRow(e: EpfEntry, today: string): EpfRow {
       const pension = e.pensionAmount > 0 ? rupees(e.pensionAmount) : dash;
       return {
         ...base,
-        title: 'Contribution',
-        sub,
-        phoneTitle: e.wageMonth ? `${monthYear(e.wageMonth)} · contribution` : 'Contribution',
-        phoneSub: `Credited ${formatDayMonth(e.creditedOn)}${e.pensionAmount > 0 ? ` · pension ${rupees(e.pensionAmount)}` : ''}`,
+        title: source,
+        phoneTitle: monthYear(e.wageMonth) || source,
+        phoneSub: `${source}${e.pensionAmount > 0 ? ` · pension ${rupees(e.pensionAmount)}` : ''}`,
         employee: money(e.employeeAmount, '+'),
         employer: money(e.employerAmount, '+'),
         pension,
@@ -272,12 +261,12 @@ export function epfRow(e: EpfEntry, today: string): EpfRow {
     }
     case 'INTEREST': {
       const title = e.interestFy != null ? `Interest · ${epfFyLabel(e.interestFy)}` : 'Interest';
+      const rate = e.interestRate != null ? ` · ${rateText(e.interestRate)}` : '';
       return {
         ...base,
-        title,
-        sub: e.interestRate != null ? `${sub} · ${rateText(e.interestRate)}` : sub,
+        title: `${title}${rate}`,
         phoneTitle: title,
-        phoneSub: `Credited ${formatDayMonth(e.creditedOn)}`,
+        phoneSub: `${source}${rate}`,
         employee: money(e.employeeAmount, '+'),
         employer: money(e.employerAmount, '+'),
         amount: PLUS(sharesOf(e)),
@@ -288,9 +277,8 @@ export function epfRow(e: EpfEntry, today: string): EpfRow {
       return {
         ...base,
         title: 'Opening balance',
-        sub,
         phoneTitle: 'Opening balance',
-        phoneSub: `As of ${formatDayMonth(e.creditedOn)}`,
+        phoneSub: source,
         employee: money(e.employeeAmount, ''),
         employer: money(e.employerAmount, ''),
         amount: rupees(sharesOf(e)),
@@ -300,13 +288,11 @@ export function epfRow(e: EpfEntry, today: string): EpfRow {
       const out = e.type === 'TRANSFER_OUT';
       const other = e.counterpartEmployerName ?? '';
       const title = other ? (out ? `${e.employerName} → ${other}` : `${other} → ${e.employerName}`) : e.employerName;
-      const line = `${TYPE_LABEL[e.type]} · ${fullDay(e.creditedOn)}`;
       return {
         ...base,
-        title,
-        sub: line,
+        title: `${TYPE_LABEL[e.type]} · ${title}`,
         phoneTitle: title,
-        phoneSub: line,
+        phoneSub: TYPE_LABEL[e.type],
         employee: money(e.employeeAmount, out ? '−' : '+'),
         employer: money(e.employerAmount, out ? '−' : '+'),
         amount: out ? money(sharesOf(e), '−') : PLUS(sharesOf(e)),
@@ -316,14 +302,12 @@ export function epfRow(e: EpfEntry, today: string): EpfRow {
     case 'WITHDRAWAL': {
       const kind = e.withdrawalKind ?? 'PARTIAL';
       const title = `${e.note || KIND_NAME[kind]} (${FORM_OF[kind]})`;
-      const line = `Withdrawal · ${fullDay(e.creditedOn)}`;
       const pensionKind = kind === 'PENSION';
       return {
         ...base,
         title,
-        sub: line,
         phoneTitle: title,
-        phoneSub: pensionKind ? line : `${line} · You ${rupees(e.employeeAmount)} · employer ${rupees(e.employerAmount)}`,
+        phoneSub: pensionKind ? 'Withdrawal' : `Withdrawal · You ${rupees(e.employeeAmount)} · employer ${rupees(e.employerAmount)}`,
         employee: pensionKind ? dash : money(e.employeeAmount, '−'),
         employer: pensionKind ? dash : money(e.employerAmount, '−'),
         pension: pensionKind ? rupees(e.pensionAmount) : dash,

@@ -50,7 +50,7 @@ export default async function DsEpfPage({ searchParams }: { searchParams: Promis
       summary={summary.data}
       figures={epfFigures(summary.data)}
       entries={page.content}
-      rows={page.content.map((e) => epfRow(e, today))}
+      rows={page.content.map((e) => epfRow(e))}
       totalElements={page.totalElements}
       totalPages={page.totalPages}
       subtitle={passbookSubtitle(employer, summary.data.uanLast4, employers.data.length)}

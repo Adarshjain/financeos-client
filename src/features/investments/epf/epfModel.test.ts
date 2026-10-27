@@ -107,50 +107,63 @@ describe('figures', () => {
 });
 
 describe('passbook rows', () => {
-  it('draws a contribution with both shares, the pension and the balance', () => {
-    const r = epfRow(entry(), today);
+  it('draws a contribution on one line: no "contribution" word and no credited date', () => {
+    const r = epfRow(entry());
     expect(r).toMatchObject({
       wageMonth: 'Sep 2026',
-      credited: '15 Oct',
-      title: 'Contribution',
-      sub: 'Passbook',
+      title: 'Passbook',
       employee: '+₹7,200',
       employer: '+₹5,950',
       pension: '₹1,250',
       balance: '₹8,43,210',
-      phoneTitle: 'Sep 2026 · contribution',
-      phoneSub: 'Credited 15 Oct · pension ₹1,250',
+      phoneTitle: 'Sep 2026',
+      phoneSub: 'Passbook · pension ₹1,250',
       amount: '+₹13,150',
       amountSub: '₹8,43,210',
     });
-    expect(epfRow(manualContribution(), today).sub).toBe('Added by you');
-    expect(epfRow(entry({ pensionAmount: 0 }), today)).toMatchObject({ pension: '—', phoneSub: 'Credited 15 Oct' });
+    expect(r).not.toHaveProperty('credited');
+    expect(epfRow(manualContribution())).toMatchObject({ title: 'Added by you', phoneSub: 'Added by you · pension ₹1,250' });
+    expect(epfRow(entry({ pensionAmount: 0 }))).toMatchObject({ pension: '—', phoneSub: 'Passbook' });
+    expect(epfRow(entry({ wageMonth: null }))).toMatchObject({ wageMonth: '—', phoneTitle: 'Passbook' });
   });
 
-  it('draws interest with its year and no wage month or pension', () => {
-    expect(epfRow(interest(), today)).toMatchObject({ wageMonth: '—', title: 'Interest · FY 2025-26', sub: 'Passbook · 8.25%', employee: '+₹32,410', pension: '—', amount: '+₹56,180' });
+  it('draws interest with its year and rate and no wage month or pension', () => {
+    expect(epfRow(interest())).toMatchObject({
+      wageMonth: '—',
+      title: 'Interest · FY 2025-26 · 8.25%',
+      phoneTitle: 'Interest · FY 2025-26',
+      phoneSub: 'Passbook · 8.25%',
+      employee: '+₹32,410',
+      pension: '—',
+      amount: '+₹56,180',
+    });
+    expect(epfRow({ ...interest(), interestRate: null })).toMatchObject({ title: 'Interest · FY 2025-26', phoneSub: 'Passbook' });
   });
 
-  it('draws an opening balance unsigned', () => {
-    expect(epfRow(opening(), today)).toMatchObject({ title: 'Opening balance', employee: '₹4,10,920', employer: '₹2,97,210', credited: '1 Apr' });
+  it('draws an opening balance unsigned, with no as-of date', () => {
+    expect(epfRow(opening())).toMatchObject({ title: 'Opening balance', employee: '₹4,10,920', employer: '₹2,97,210', phoneSub: 'Passbook' });
   });
 
-  it('draws a transfer between employers that leaves the total unchanged, with the year when it is not this one', () => {
-    const inRow = epfRow(transferIn(), today);
-    expect(inRow).toMatchObject({ title: 'Contoso Systems → Northwind Labs', sub: 'Transfer in · 11 Oct 2023', credited: '11 Oct 2023', amount: '+₹3,12,400', amountSub: 'Total unchanged' });
-    expect(epfRow(transferOut(), today)).toMatchObject({ title: 'Contoso Systems → Northwind Labs', employee: '−₹1,71,300', amount: '−₹3,12,400' });
+  it('draws a transfer between employers that leaves the total unchanged, with no date', () => {
+    expect(epfRow(transferIn())).toMatchObject({
+      title: 'Transfer in · Contoso Systems → Northwind Labs',
+      phoneTitle: 'Contoso Systems → Northwind Labs',
+      phoneSub: 'Transfer in',
+      amount: '+₹3,12,400',
+      amountSub: 'Total unchanged',
+    });
+    expect(epfRow(transferOut())).toMatchObject({ title: 'Transfer out · Contoso Systems → Northwind Labs', employee: '−₹1,71,300', amount: '−₹3,12,400' });
   });
 
   it('draws a withdrawal lowering the balance, and a pension withdrawal in the pension column', () => {
-    expect(epfRow(withdrawal(), today)).toMatchObject({
+    expect(epfRow(withdrawal())).toMatchObject({
       title: 'Medical advance (Form 31)',
-      sub: 'Withdrawal · 22 Feb 2025',
       employee: '−₹25,000',
       employer: '−₹15,000',
       amount: '−₹40,000',
-      phoneSub: 'Withdrawal · 22 Feb 2025 · You ₹25,000 · employer ₹15,000',
+      phoneSub: 'Withdrawal · You ₹25,000 · employer ₹15,000',
     });
-    expect(epfRow(pensionWithdrawal(), today)).toMatchObject({ title: 'Pension withdrawal (Form 10C)', employee: '—', pension: '₹28,400', amount: '−₹28,400' });
+    expect(epfRow(pensionWithdrawal())).toMatchObject({ title: 'Pension withdrawal (Form 10C)', employee: '—', pension: '₹28,400', amount: '−₹28,400', phoneSub: 'Withdrawal' });
   });
 });
 

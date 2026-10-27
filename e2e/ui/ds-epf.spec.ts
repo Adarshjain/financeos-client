@@ -49,6 +49,13 @@ for (const viewport of VIEWPORTS) {
   test.describe(`/ds EPF, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
     let api: ReturnType<typeof makeApi>;
+    /** A contribution row by its source: the particulars cell on desktop, the "… · pension" second line on phone. */
+    const contribution = (page: Page, source: 'Added by you' | 'Passbook') =>
+      shown(
+        viewport.width < 641
+          ? page.getByText(new RegExp(`^${source} · pension`))
+          : page.getByRole('cell').getByText(source, { exact: true }),
+      );
 
     test.beforeEach(async ({ context, request, page }) => {
       currentUser = await createUser(request, 'ui-ds-epf');
@@ -124,12 +131,12 @@ for (const viewport of VIEWPORTS) {
       await add.getByRole('button', { name: 'Add entry' }).click();
       await expect(add).toHaveCount(0);
       await expect(shown(page.getByText('₹5,13,150'))).toBeVisible();
-      await expect(shown(page.getByText('Contribution'))).toBeVisible();
+      await expect(contribution(page, 'Added by you')).toBeVisible();
       // Pension is kept, not added to the balance.
       await expect(shown(page.getByText('Contributed this FY'))).toBeVisible();
 
       // Open the contribution (the newest row), delete it: the balance goes back.
-      await shown(page.getByText('Contribution')).click();
+      await contribution(page, 'Added by you').click();
       const entry = page.getByRole('dialog').first();
       await expect(entry.getByText('Added by you. A passbook that has this month replaces it.')).toBeVisible();
       await entry.getByRole('button', { name: 'Delete entry' }).click();
@@ -272,7 +279,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments/epf?fy=all');
 
       // A contribution: read-only, Close only.
-      await shown(page.getByText('Contribution')).click();
+      await contribution(page, 'Passbook').click();
       let dialog = page.getByRole('dialog').first();
       await expect(dialog.getByText(/From the passbook imported on/)).toBeVisible();
       await expect(dialog.getByText('Upload a newer passbook to change it.')).toBeVisible();

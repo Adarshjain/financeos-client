@@ -39,7 +39,7 @@ const money = (value: string, tone?: 'ink-3') => (
   </Text>
 );
 
-/** Desktop shows the particulars and one column per share; phone stacks the title, its line, the amount and the balance. */
+/** Desktop shows one line per entry like Transactions: the wage month, the particulars and one column per share; phone stacks the title, its line, the amount and the balance. */
 const columns = [
   ch.display({
     id: 'wageMonth',
@@ -48,40 +48,16 @@ const columns = [
     cell: ({ row }) => <Text variant="body">{row.original.wageMonth}</Text>,
   }),
   ch.display({
-    id: 'credited',
-    header: 'Credited',
-    meta: { size: 'sm', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3">
-        {row.original.credited}
-      </Text>
-    ),
-  }),
-  ch.display({
     id: 'particulars',
     header: 'Particulars',
-    meta: { size: 'fill', grow: 2, phone: 'main', wrap: true },
+    meta: { size: 'fill', grow: 2, phone: 'main' },
     cell: ({ row }) => (
       <>
         <Text variant="body-strong" as="div" className="desk:hidden" truncate>
           {row.original.phoneTitle}
         </Text>
-        <Text
-          variant="body-strong"
-          as="div"
-          className="max-desk:hidden"
-          truncate
-        >
+        <Text variant="body" as="div" className="max-desk:hidden" truncate>
           {row.original.title}
-        </Text>
-        <Text
-          variant="caption"
-          tone="ink-3"
-          as="div"
-          className="max-desk:hidden"
-          truncate
-        >
-          {row.original.sub}
         </Text>
       </>
     ),
@@ -89,8 +65,23 @@ const columns = [
   ch.display({
     id: 'employee',
     header: 'Your share',
-    meta: { size: 'sm', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => money(row.original.employee),
+    // On phone this cell is the row's amount, beside the title.
+    meta: { size: 'sm', align: 'end', phone: 'amount' },
+    cell: ({ row }) => (
+      <>
+        <Text
+          variant="body-strong"
+          tone={row.original.amountTone}
+          as="div"
+          className="desk:hidden"
+        >
+          <Conceal whole>{row.original.amount}</Conceal>
+        </Text>
+        <Text variant="body" as="div" className="max-desk:hidden">
+          <Conceal whole>{row.original.employee}</Conceal>
+        </Text>
+      </>
+    ),
   }),
   ch.display({
     id: 'employer',
@@ -107,17 +98,10 @@ const columns = [
   ch.display({
     id: 'balance',
     header: 'Balance',
-    meta: { size: 'sm', align: 'end', phone: 'amount' },
+    // On phone the balance sits on the second line, under the amount, like Transactions.
+    meta: { size: 'sm', align: 'end', phone: 'status' },
     cell: ({ row }) => (
       <>
-        <Text
-          variant="body-strong"
-          tone={row.original.amountTone}
-          as="div"
-          className="desk:hidden"
-        >
-          <Conceal whole>{row.original.amount}</Conceal>
-        </Text>
         <Text variant="caption" tone="ink-3" as="div" className="desk:hidden">
           <Conceal whole>{row.original.amountSub}</Conceal>
         </Text>
@@ -250,6 +234,7 @@ export function EpfPassbookCard({
             <EmptyState compact description="No entries in this period." />
           }
           stickyHeader={false}
+          size="sm"
         />
       </Card>
     </div>
@@ -264,6 +249,7 @@ export function EpfPassbookSkeleton() {
         columns={columns}
         data={[]}
         getRowId={(row) => row.id}
+        size="sm"
         loading
         skeletonRows={5}
       />
