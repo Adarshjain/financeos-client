@@ -37,7 +37,7 @@ function props(over: Partial<EpfViewProps> = {}, entries = base, employers = [em
     summary: sum,
     figures: epfFigures(sum),
     entries,
-    rows: entries.map((e) => epfRow(e, today)),
+    rows: entries.map((e) => epfRow(e)),
     totalElements: entries.length,
     totalPages: 1,
     subtitle: passbookSubtitle(employers[0], '4321', employers.length),
@@ -169,14 +169,14 @@ describe('EpfView: the passbook', () => {
 
   it('opens an entry when its row is pressed', async () => {
     renderWithQuery(<EpfView {...props()} />);
-    fireEvent.click(screen.getAllByText('Sep 2026 · contribution')[0]);
+    fireEvent.click(screen.getAllByText('Sep 2026')[0]);
     expect(await screen.findByText('Sep 2026 contribution')).toBeInTheDocument();
     expect(screen.getByText(/From the passbook imported on 16 Oct/)).toBeInTheDocument();
   });
 
   it('follows the fresh row of the open entry, and keeps it when the page no longer lists it', async () => {
     const view = renderWithQuery(<EpfView {...props({}, [manualContribution()])} />);
-    fireEvent.click(screen.getAllByText('Aug 2026 · contribution')[0]);
+    fireEvent.click(screen.getAllByText('Aug 2026')[0]);
     await screen.findByText('Aug 2026 contribution');
     expect((screen.getByLabelText(/^Your share/) as HTMLInputElement).value).toBe('7200');
     view.rerender(<EpfView {...props({}, [{ ...manualContribution(), employeeAmount: 7500 }])} />);
