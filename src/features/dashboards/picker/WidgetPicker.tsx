@@ -80,8 +80,8 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
             value={tab}
             onValueChange={changeTab}
             items={[
-              { value: 'builtin', label: 'Built-in', count: builtins.length },
-              { value: 'reports', label: 'My reports', count: reports.length },
+              { value: 'builtin', label: 'Built-in' },
+              { value: 'reports', label: 'My reports' },
             ]}
           />
           <TextField

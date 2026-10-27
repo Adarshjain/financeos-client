@@ -69,7 +69,6 @@ function props(over: Partial<RulesScreenProps> = {}): RulesScreenProps {
   return {
     rules: { rows: rules, totalElements: 2, totalPages: 1 },
     state: DEFAULT_RULES_STATE,
-    counts: { unverified: 3, verified: 61, all: 64 },
     categories,
     ...over,
   };
@@ -105,12 +104,12 @@ describe('RulesScreen', () => {
     expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1);
   });
 
-  it('shows the three status counts and writes the status to the address', () => {
+  it('shows the three status chips with no counts and writes the status to the address', () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    expect(screen.getByRole('button', { name: 'All · 64' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Unverified · 3' }));
+    expect(screen.getByRole('button', { name: 'All' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Unverified' }));
     expect(router.push).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Verified · 61' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Verified' }));
     expect(router.push).toHaveBeenCalledWith('?status=verified', { scroll: false });
   });
 

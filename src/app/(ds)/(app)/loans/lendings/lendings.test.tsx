@@ -213,7 +213,7 @@ describe('/loans/lendings', () => {
   it('searches the server once typing pauses, from the first page', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '2', filter: 'owed' });
-    fireEvent.change(screen.getByPlaceholderText('Search people'), { target: { value: 'pri' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'pri' } });
     expect(router.push).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);

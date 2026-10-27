@@ -44,8 +44,3 @@ export function useJobsHistory(filters: JobsHistoryFilters) {
   };
 }
 
-/** How many jobs match a status (and type): a one-row page's `totalElements`. Undefined until known. */
-export function useJobsCount(statusFilter: string, typeFilter: string): number | undefined {
-  const { totalElements, isPending } = useJobsHistory({ page: 0, size: 1, statusFilter, typeFilter });
-  return isPending ? undefined : totalElements;
-}

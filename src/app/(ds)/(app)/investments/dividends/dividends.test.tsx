@@ -464,3 +464,12 @@ describe('/investments/dividends: suggestions', () => {
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
   });
 });
+
+describe('/investments/dividends: filter row', () => {
+  it('is a chips-only FilterBar carrying its own bleed, with no search field', async () => {
+    await renderPage();
+    const row = screen.getByRole('button', { name: 'Receipt status' }).closest('div.overflow-x-auto') as HTMLElement;
+    expect(row).toHaveClass('scrollbar-none', '-mx-space-16', 'px-space-16', 'py-space-4');
+    expect(row.querySelector('input')).toBeNull();
+  });
+});

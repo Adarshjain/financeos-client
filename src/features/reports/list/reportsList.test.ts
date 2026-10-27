@@ -10,7 +10,6 @@ import {
   reportRows,
   reportsUrl,
   templateHref,
-  typeCounts,
 } from './reportsList';
 
 const report = (over: Partial<ReportSummaryResponse> = {}): ReportSummaryResponse => ({
@@ -159,23 +158,6 @@ describe('filters', () => {
     expect(filterRows(typed, 'table', 'TABLE').map((r) => r.id)).toEqual(['t']);
     expect(filterRows(typed, 'table', 'KPI')).toEqual([]);
     expect(filterRows(typed, '').map((r) => r.id)).toEqual(['b', 'c', 'k', 't']);
-  });
-});
-
-describe('typeCounts', () => {
-  it('counts every report under its chip, Breakdown apart from Chart', () => {
-    const rows = reportRows(
-      [
-        report({ id: 'k1' }),
-        report({ id: 'k2' }),
-        report({ id: 'c', type: 'CHART', chartType: 'line' }),
-        report({ id: 'b', type: 'CHART', chartType: 'breakdown' }),
-        report({ id: 't', type: 'TABLE' }),
-      ],
-      labels,
-    );
-    expect(typeCounts(rows)).toEqual({ KPI: 2, CHART: 1, BREAKDOWN: 1, TABLE: 1 });
-    expect(typeCounts([])).toEqual({ KPI: 0, CHART: 0, BREAKDOWN: 0, TABLE: 0 });
   });
 });
 

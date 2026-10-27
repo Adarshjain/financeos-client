@@ -195,7 +195,7 @@ describe('/investments/tradebook: filters', () => {
   it('searches after typing pauses, from the first page', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '1' });
-    fireEvent.change(screen.getByPlaceholderText('Instrument'), { target: { value: 'tcs' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'tcs' } });
     expect(router.push).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
@@ -352,5 +352,15 @@ describe('/investments/tradebook: edit and delete', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save trade' }));
     await waitFor(() => expect(api.PUT).toHaveBeenCalled());
     expect(api.PUT.mock.calls[0][1].body.type).toBe('buy');
+  });
+});
+
+describe('/investments/tradebook: filter row', () => {
+  it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
+    await renderPage();
+    const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;
+    expect(row).toHaveClass('scrollbar-none', '-mx-space-16', 'px-space-16', 'py-space-4');
+    expect(row.querySelectorAll('button').length).toBeGreaterThan(0);
+    expect(row.querySelector('input')).toBe(screen.getByPlaceholderText('Search'));
   });
 });

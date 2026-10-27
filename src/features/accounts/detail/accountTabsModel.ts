@@ -41,14 +41,3 @@ export function activeTabId(pathname: string, accountId: string): AccountTabId {
   }
   return 'overview';
 }
-
-/** The count a tab shows once tab-counts has loaded; Overview and Rewards carry none. */
-export function tabCount(
-  id: AccountTabId,
-  counts: { statements: number; cards: number } | undefined
-): number | undefined {
-  if (!counts) return undefined;
-  if (id === 'statements') return counts.statements;
-  if (id === 'cards') return counts.cards;
-  return undefined;
-}

@@ -15,19 +15,15 @@ export const STATUS_OPTIONS = [
   { label: 'Cancelled', value: 'CANCELLED' },
 ];
 
-/** Statuses that carry a count in the menu; the others show none. */
-export const COUNTED_STATUSES = ['active', 'FAILED'];
-
-/** "Status: Failed · 1" once a choice is made, "Status: All" before. */
+/** "Status: Failed" once a choice is made, "Status: All" before. */
 export function filterChipLabel(
   name: 'Status' | 'Type',
   options: { label: string; value: string }[],
   value: string,
-  count?: number,
 ): string {
   if (!value) return `${name}: All`;
   const label = options.find((o) => o.value === value)?.label ?? value;
-  return count !== undefined ? `${name}: ${label} · ${count}` : `${name}: ${label}`;
+  return `${name}: ${label}`;
 }
 
 export interface ActivityUrlState {

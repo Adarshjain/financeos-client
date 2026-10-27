@@ -11,6 +11,7 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
@@ -18,7 +19,6 @@ import {
   type SelectOption,
   showToast,
   Text,
-  TextField,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
 import { useSearchText } from '@/features/shell/useSearchText';
@@ -214,17 +214,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex items-center gap-space-8 overflow-x-auto">
-        <TextField
-          type="search"
-          size="md"
-          className="shrink-0 w-container-xs"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Symbol"
-          value={text}
-          onValueChange={setText}
-        />
+      <FilterBar search={{ value: text, onValueChange: setText }}>
         {CONTRACT_CHIPS.map((chip) => (
           <FilterChip
             key={chip.value || 'all'}
@@ -264,10 +254,10 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
             value={state.sort}
             options={SORT_OPTIONS}
             onValueChange={(v) => go({ sort: v as FnoUrlState['sort'], page: 0 })}
-            trigger={<FilterChip hasDropdown>{sortLabel}</FilterChip>}
+            trigger={<FilterChip hasDropdown className="shrink-0">{sortLabel}</FilterChip>}
           />
         </div>
-      </div>
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

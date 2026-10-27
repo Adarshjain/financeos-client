@@ -11,19 +11,19 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
   Select,
   type SelectOption,
   Text,
-  TextField,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
-import { AccountType, type InstrumentType } from '@/lib/types';
+import { AccountType } from '@/lib/types';
 
 import type { InstrumentRef } from '../investmentsFormat';
 import {
@@ -35,7 +35,9 @@ import {
   type HoldingsUrlState,
   mergedLine,
   SORT_OPTIONS,
-  TYPE_CHIPS,
+  sortFromValue,
+  sortValue,
+  TYPE_OPTIONS,
 } from './holdingsModel';
 
 const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
@@ -238,12 +240,10 @@ export interface HoldingsListCardProps {
   totalPages: number;
   /** The broker accounts for the Broker filter. */
   brokers: { id: string; name: string }[];
-  /** Holdings per type over the filtered set, for the chip counts. */
-  counts: Partial<Record<InstrumentType, number>>;
 }
 
-/** The search, type chips, Broker and sort controls over the grouped holdings table. Every control is one URL change. */
-export function HoldingsListCard({ state, rows, groups, totalElements, totalPages, brokers, counts }: HoldingsListCardProps) {
+/** The search, asset type, Broker and sort controls over the grouped holdings table. Every control is one URL change. */
+export function HoldingsListCard({ state, rows, groups, totalElements, totalPages, brokers }: HoldingsListCardProps) {
   const router = useRouter();
   const go = (next: Partial<HoldingsUrlState>) => router.push(holdingsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
@@ -255,7 +255,8 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
 
   const brokerAccounts = React.useMemo(() => brokers.map((b) => ({ id: b.id, name: b.name, type: AccountType.BROKER })), [brokers]);
   const brokerName = brokers.find((b) => b.id === state.broker)?.name;
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === state.sort)?.label ?? SORT_OPTIONS[0].label;
+  const sortLabel = SORT_OPTIONS.find((o) => o.value === sortValue(state))?.label ?? SORT_OPTIONS[0].label;
+  const typeLabel = TYPE_OPTIONS.find((o) => o.value === state.type && o.value !== '')?.label ?? 'Asset type';
 
   const pager = (
     <Pager
@@ -280,32 +281,17 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   return (
     <RecordMergerContext.Provider value={recordMerger}>
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex items-center gap-space-8 overflow-x-auto">
-        <TextField
-          type="search"
-          size="md"
-          className="shrink-0 w-container-xs"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Symbol or name"
-          value={text}
-          onValueChange={setText}
-        />
-        {TYPE_CHIPS.map((chip) => {
-          const count = chip.value ? counts[chip.value] : undefined;
-          return (
-            <FilterChip
-              key={chip.value || 'all'}
-              className="shrink-0"
-              selected={state.type === chip.value}
-              onClick={() => go({ type: chip.value, page: 0 })}
-            >
-              {chip.label}
-              {chip.value === '' ? <span className="max-desk:hidden">{' assets'}</span> : null}
-              {count != null ? <span className="max-desk:hidden">{` · ${count}`}</span> : null}
+      <FilterBar search={{ value: text, onValueChange: setText }}>
+        <Select
+          value={state.type}
+          options={TYPE_OPTIONS}
+          onValueChange={(v) => go({ type: (v ?? '') as HoldingsUrlState['type'], page: 0 })}
+          trigger={
+            <FilterChip hasDropdown selected={state.type !== ''} className="shrink-0">
+              {typeLabel}
             </FilterChip>
-          );
-        })}
+          }
+        />
         {brokers.length > 0 ? (
           <AccountPicker
             accounts={brokerAccounts}
@@ -322,13 +308,13 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
         ) : null}
         <div className="shrink-0 ml-auto">
           <Select
-            value={state.sort}
+            value={sortValue(state)}
             options={SORT_OPTIONS}
-            onValueChange={(v) => go({ sort: v as HoldingsUrlState['sort'], page: 0 })}
-            trigger={<FilterChip hasDropdown>{sortLabel}</FilterChip>}
+            onValueChange={(v) => go({ ...sortFromValue(String(v)), page: 0 })}
+            trigger={<FilterChip hasDropdown className="shrink-0">{sortLabel}</FilterChip>}
           />
         </div>
-      </div>
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

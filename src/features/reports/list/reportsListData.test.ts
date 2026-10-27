@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const api = vi.hoisted(() => ({ reports: vi.fn(), datasource: vi.fn(), dashboards: vi.fn() }));
+const api = vi.hoisted(() => ({ reports: vi.fn(), datasource: vi.fn() }));
 vi.mock('@/lib/apiClient', () => ({
   reportsApi: { list: api.reports, getDatasource: api.datasource },
-  dashboardsApi: { list: api.dashboards },
 }));
 vi.mock('@/lib/auth', () => ({ redirectToSignIn: vi.fn() }));
 
@@ -16,15 +15,14 @@ beforeEach(() => {
 });
 
 describe('loadReportsList', () => {
-  it('loads the dashboards count with the reports', async () => {
-    api.dashboards.mockResolvedValue([{ id: 'd1' }, { id: 'd2' }]);
+  it('loads the reports and the datasource labels, and nothing for tab counts', async () => {
     const result = await loadReportsList();
-    expect(result).toEqual({ ok: true, data: { reports: [], datasourceLabels: { transactions: 'Transactions' }, dashboardCount: 2 } });
+    expect(result).toEqual({ ok: true, data: { reports: [], datasourceLabels: { transactions: 'Transactions' } } });
   });
 
-  it('has no count when the dashboards request fails, and still lists the reports', async () => {
-    api.dashboards.mockRejectedValue(new Error('boom'));
+  it('still lists the reports when the datasource catalog fails', async () => {
+    api.datasource.mockRejectedValue(new Error('boom'));
     const result = await loadReportsList();
-    expect(result).toMatchObject({ ok: true, data: { dashboardCount: null } });
+    expect(result).toEqual({ ok: true, data: { reports: [], datasourceLabels: {} } });
   });
 });

@@ -6,23 +6,20 @@ import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
 import { ShellPage } from '@/features/shell/ShellPage';
-import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
 import { activeInboxUpcomingTab, inboxUpcomingTabs } from './inboxUpcomingTabs';
 
 /**
  * The frame shared by `/inbox` and `/upcoming/**`, applied by both route layouts: top bar
  * (title follows the tab), then the Inbox · Upcoming · Calendar route tabs, then the tab's page as
- * `children`. The Inbox count (act now + needs a look) loads on its own after the page renders.
+ * `children`.
  */
 export function InboxUpcomingShell({ children }: { children: React.ReactNode }) {
   const tab = activeInboxUpcomingTab(usePathname());
-  const { data: summary } = useInboxSummary();
 
   const items: TabItem[] = inboxUpcomingTabs.map((t) => ({
     value: t.id,
     label: t.label,
-    count: t.id === 'inbox' && summary?.badge ? summary.badge : undefined,
     asChild: true,
     children: <Link href={t.href} />,
   }));

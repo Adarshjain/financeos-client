@@ -1,10 +1,9 @@
 import type { Account, Broker } from '@/lib/account.types';
-import { accountsApi, corporateActionsApi, dividendsApi, fnoApi, instrumentsApi, investmentsApi } from '@/lib/apiClient';
+import { accountsApi, corporateActionsApi, dividendsApi, instrumentsApi, investmentsApi } from '@/lib/apiClient';
 import type {
   HoldingDetail,
   HoldingsQuery,
   HoldingsResponse,
-  ItemsPage,
   PricePage,
   SellEstimate,
 } from '@/lib/investments.types';
@@ -60,22 +59,4 @@ export function fetchInstrumentCorporateActions(instrumentId: string): Promise<C
 export async function fetchBrokers(): Promise<Broker[]> {
   const accounts: Account[] = await accountsApi.list();
   return accounts.filter((a): a is Broker => a.type === AccountType.BROKER);
-}
-
-/** Tab counts: one request per tab, `size=1`, only the total is read. */
-export async function fetchTradebookCount(): Promise<number> {
-  return (await investmentsApi.getTrades({ page: 0, size: 1 })).totalElements;
-}
-
-export async function fetchDividendsCount(): Promise<number> {
-  return (await dividendsApi.list({ page: 0, size: 1 })).totalElements;
-}
-
-export async function fetchFnoCount(): Promise<number> {
-  return (await fnoApi.page({ page: 0, size: 1 })).totalElements;
-}
-
-export async function fetchCorporateActionsCount(): Promise<number> {
-  const page: ItemsPage<unknown> = await corporateActionsApi.page({ page: 0, size: 1 });
-  return page.totalElements;
 }

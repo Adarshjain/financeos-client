@@ -26,7 +26,6 @@ vi.mock('@/features/reports/list/reportsListData', () => ({ loadReportsList: () 
 
 const data: ReportsListData = {
   datasourceLabels: { transactions: 'Transactions' },
-  dashboardCount: 4,
   reports: [
     {
       id: 'r1',
@@ -50,8 +49,7 @@ describe('/reports', () => {
     expect(loadReportsList).toHaveBeenCalledTimes(1);
     expect(loadReportsList).toHaveBeenCalledWith();
     expect(screen.getByText('Spend this month')).toBeInTheDocument();
-    // The dashboards count comes with the list, not from a client fetch.
-    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*4$/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Dashboards$/ })).toBeInTheDocument();
   });
 
   it('shows no report of another type than the one in the URL', async () => {

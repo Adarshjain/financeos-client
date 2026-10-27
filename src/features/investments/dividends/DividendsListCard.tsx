@@ -10,6 +10,7 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
@@ -227,7 +228,7 @@ export function DividendsListCard({
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex items-center gap-space-8 overflow-x-auto">
+      <FilterBar>
         <Select
           value={fyValue}
           options={fyOptions}
@@ -280,7 +281,7 @@ export function DividendsListCard({
             {`Showing ${instrumentLabel}`}
           </FilterChip>
         ) : null}
-      </div>
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

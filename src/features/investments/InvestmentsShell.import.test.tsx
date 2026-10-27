@@ -10,7 +10,6 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('./tabCountsActions', () => ({ loadTabCounts: vi.fn() }));
 
 describe('InvestmentsShell on the Import tradebook page', () => {
   it('renders the page on its own, with no tab strip', () => {

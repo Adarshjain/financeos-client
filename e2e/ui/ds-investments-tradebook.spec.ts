@@ -102,7 +102,7 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL((url) => url.search === '');
       await expectPager(page, '1–2', 2);
 
-      await page.getByPlaceholder('Instrument').fill('zzznothing');
+      await page.getByPlaceholder('Search').fill('zzznothing');
       await page.waitForURL(/q=zzznothing/);
       await expect(page.getByText('No trades match.')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();

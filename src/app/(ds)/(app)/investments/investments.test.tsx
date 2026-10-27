@@ -238,23 +238,26 @@ describe('/investments Holdings: rows', () => {
 });
 
 describe('/investments Holdings: filters go to the URL', () => {
-  it('filters by type from the chips, back to the first page', async () => {
+  it('filters by type from the Asset type dropdown, back to the first page', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
     await renderPage({ page: '2' });
-    fireEvent.click(screen.getByRole('button', { name: /^Funds/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Asset type' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Mutual funds' }));
     expect(router.push).toHaveBeenCalledWith('/investments?type=mutual_fund', { scroll: false });
   });
 
-  it('selects the active type chip and shows each type\'s count', async () => {
+  it('offers All types, Stocks, Mutual funds and ETFs, and names the chosen type on its chip', async () => {
     await renderPage({ type: 'stock' });
-    expect(screen.getByRole('button', { name: /^Stocks/ })).toHaveTextContent('Stocks · 8');
-    expect(screen.getByRole('button', { name: /^Funds/ })).toHaveTextContent('Funds · 3');
-    expect(screen.getByRole('button', { name: /^Stocks/ }).className).not.toBe(screen.getByRole('button', { name: /^Funds/ }).className);
+    expect(screen.queryByRole('button', { name: /^Funds/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Stocks' }));
+    const names = (await screen.findAllByRole('option')).map((o) => o.textContent);
+    expect(names).toEqual(['All types', 'Stocks', 'Mutual funds', 'ETFs']);
   });
 
-  it('clears the type with All', async () => {
+  it('clears the type with All types', async () => {
     await renderPage({ type: 'etf', q: 'gold' });
-    fireEvent.click(screen.getByRole('button', { name: /^All/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'ETFs' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'All types' }));
     expect(router.push).toHaveBeenCalledWith('/investments?q=gold', { scroll: false });
   });
 
@@ -262,7 +265,7 @@ describe('/investments Holdings: filters go to the URL', () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '2' });
-    fireEvent.change(screen.getByPlaceholderText('Symbol or name'), { target: { value: 'infy' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'infy' } });
     expect(router.push).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
@@ -271,11 +274,42 @@ describe('/investments Holdings: filters go to the URL', () => {
     expect(router.push).toHaveBeenCalledWith('/investments?q=infy', { scroll: false });
   });
 
-  it('sorts by return from the sort dropdown, which starts on Name A–Z', async () => {
+  it('sorts by return from the sort dropdown, which starts on Name: A to Z', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
-    fireEvent.click(await screen.findByRole('option', { name: '% return' }));
+    fireEvent.click(screen.getByRole('button', { name: /Name: A to Z/ }));
+    fireEvent.click(await screen.findByRole('option', { name: '% return: high to low' }));
     expect(router.push).toHaveBeenCalledWith('/investments?sort=return_pct', { scroll: false });
+  });
+
+  it('lists every sort with its direction and puts sort and dir in the address', async () => {
+    const cases: [string, string][] = [
+      ['Name: Z to A', '/investments?dir=desc'],
+      ['% return: low to high', '/investments?sort=return_pct&dir=asc'],
+      ['₹ return: high to low', '/investments?sort=return_abs'],
+      ['₹ return: low to high', '/investments?sort=return_abs&dir=asc'],
+    ];
+    for (const [label, url] of cases) {
+      router.push.mockClear();
+      const { unmount } = await renderPage();
+      fireEvent.click(screen.getByRole('button', { name: /Name: A to Z/ }));
+      fireEvent.click(await screen.findByRole('option', { name: label }));
+      expect(router.push, label).toHaveBeenCalledWith(url, { scroll: false });
+      unmount();
+    }
+  });
+
+  it('shows the chosen direction on the sort chip and asks the server for it', async () => {
+    await renderPage({ sort: 'return_abs', dir: 'asc' });
+    expect(screen.getByRole('button', { name: '₹ return: low to high' })).toBeInTheDocument();
+    expect(server.fetchHoldings).toHaveBeenCalledWith(expect.objectContaining({ sort: 'return_abs', dir: 'asc' }));
+  });
+
+  it('sends no dir for a key default and keeps the movers scan and whole-portfolio reads on name order', async () => {
+    server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
+    await renderPage({ sort: 'name', dir: 'desc', type: 'stock' });
+    const calls = server.fetchHoldings.mock.calls.map((c) => c[0]);
+    expect(calls[0]).toMatchObject({ sort: 'name', dir: 'desc' });
+    for (const c of calls.slice(1)) expect(c.dir).toBeUndefined();
   });
 
   it('filters by broker from the Broker dropdown', async () => {
@@ -317,12 +351,9 @@ describe('/investments Holdings: whole-portfolio figures', () => {
     expect(server.fetchHoldings).toHaveBeenCalledWith({ brokerAccountId: 'b2', sort: 'name', page: 0, size: 1 });
   });
 
-  it('keeps every type\'s chip count and the full Allocation while one type is filtered', async () => {
+  it('keeps the full Allocation while one type is filtered', async () => {
     server.fetchHoldings.mockImplementation(async (q: { assetType?: string }) => (q.assetType ? stockOnly : whole));
     await renderPage({ type: 'stock' });
-    expect(screen.getByRole('button', { name: /^Stocks/ })).toHaveTextContent('Stocks · 8');
-    expect(screen.getByRole('button', { name: /^Funds/ })).toHaveTextContent('Funds · 3');
-    expect(screen.getByRole('button', { name: /^ETFs/ })).toHaveTextContent('ETFs · 2');
     expect(screen.getAllByText('Stocks 63%').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Mutual funds 31%').length).toBeGreaterThan(0);
   });
@@ -349,5 +380,15 @@ describe('/investments Holdings: a page past the end', () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { groups: [], totalElements: 0, totalPages: 0 }));
     await renderPage({ page: '2' });
     expect(redirect).not.toHaveBeenCalled();
+  });
+});
+
+describe('/investments Holdings: filter row', () => {
+  it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
+    await renderPage();
+    const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;
+    expect(row).toHaveClass('scrollbar-none', '-mx-space-16', 'px-space-16', 'py-space-4');
+    expect(row.querySelectorAll('button').length).toBeGreaterThan(0);
+    expect(row.querySelector('input')).toBe(screen.getByPlaceholderText('Search'));
   });
 });
