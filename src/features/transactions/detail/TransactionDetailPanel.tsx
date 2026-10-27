@@ -114,7 +114,7 @@ export function TransactionDetailPanel({
                 Could not load this transaction.
               </Banner>
             ) : loading ? (
-              <div className="flex flex-col gap-space-12">
+              <div className="flex flex-col gap-space-8 desk:gap-space-12">
                 <Skeleton height={22} width="40%" />
                 <Skeleton width="70%" />
                 <Skeleton width="55%" />
@@ -232,7 +232,7 @@ function DetailContent({
         onClose={onClose}
         className={PANEL_OFFSET}
       >
-        <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0">
+        <DialogBody className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0 desk:gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
               <Text variant="figure" tone={credit && !concealed ? 'positive' : 'ink'} as="span" fraction="small">

@@ -163,7 +163,7 @@ export function DashboardsScreen() {
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs active="dashboards" />
 
       {dashboards.length === 0 ? (
@@ -222,7 +222,7 @@ export function DashboardsScreen() {
 /** The list while the page loads. */
 export function DashboardsListSkeleton() {
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs active="dashboards" />
       <Card>
         <DataTable

@@ -77,15 +77,15 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
   const assumed = result ? assumptions(result) : null;
 
   return (
-    <div className="flex flex-col gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Text variant="body" tone="ink-3" as="div">
         Ranks your cards by the rupees a purchase would earn, after caps, milestones and fees
       </Text>
 
       <Card>
         <CardRow>
-          <form id={FORM_ID} onSubmit={submit} className="flex w-full flex-col gap-space-12">
-            <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-4">
+          <form id={FORM_ID} onSubmit={submit} className="flex w-full flex-col gap-space-8 desk:gap-space-12">
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-4">
               <AmountField
                 label="Amount"
                 prefix="₹"
@@ -121,8 +121,8 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
               </Button>
             </div>
             <Reveal open={moreOpen}>
-              <div className="flex flex-col gap-space-12">
-                <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+              <div className="flex flex-col gap-space-8 desk:gap-space-12">
+                <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
                   <TextField
                     label="Merchant"
                     optional
@@ -157,7 +157,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
                     emptyText={() => 'No credit cards available'}
                   />
                 </div>
-                <div className="flex flex-wrap gap-space-16">
+                <div className="flex flex-wrap gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
                   <label className="flex items-center gap-space-8">
                     <Checkbox checked={form.isEmi} onCheckedChange={(c) => patch({ isEmi: c === true })} />
                     <Text variant="body">EMI transaction</Text>
@@ -236,7 +236,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
 
       {assumed ? (
         <Card title="Assumptions">
-          <div className="grid grid-cols-1 gap-space-16 p-space-16 desk:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16 p-space-16 desk:grid-cols-2">
             <div className="flex min-w-0 flex-col gap-space-4">
               <Text variant="overline" tone="ink-3" as="div">
                 Point values

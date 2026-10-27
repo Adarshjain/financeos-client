@@ -32,7 +32,7 @@ export function ReviewSummaryDialog({
       >
         <DialogBody>
           {summary ? (
-            <div className="flex flex-col gap-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
               <Card>
                 <ListRow title={succeededLabel} trailing={<Text as="span">{summary.succeededCount}</Text>} />
                 {hideSkipped ? null : (

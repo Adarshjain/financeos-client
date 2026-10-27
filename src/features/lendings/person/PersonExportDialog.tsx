@@ -44,7 +44,7 @@ export function PersonExportDialog({ counterpartyId, entryCount, theirName, defa
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent size="md" title="Export ledger" description="Loading the entries…">
         <DialogBody>
-          <div className="flex flex-col gap-space-12" data-testid="export-loading">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12" data-testid="export-loading">
             <Skeleton className="h-space-24 w-full" />
             <Skeleton className="h-space-24 w-full" />
             <Skeleton className="h-space-24 w-full" />

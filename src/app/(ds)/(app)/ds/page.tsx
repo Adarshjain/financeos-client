@@ -7,7 +7,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 export default function DsIndexPage() {
   return (
     <ShellPage title="New design">
-      <div className="max-w-container-md mx-auto space-y-space-24">
+      <div className="max-w-container-md mx-auto space-y-space-8 desk:space-y-space-24">
         {/* Signed out pages */}
         <Card>
           <SectionHeader borderTop={false}>Signed out</SectionHeader>

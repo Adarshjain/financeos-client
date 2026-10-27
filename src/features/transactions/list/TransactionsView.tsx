@@ -131,7 +131,7 @@ export function TransactionsView({
     <>
       <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
         <div className="flex">
-          <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
+          <div className="flex min-w-0 flex-1 flex-col gap-space-8 desk:gap-space-16">
             {selectionHeader ? (
               <>
                 <div className="desk:hidden">

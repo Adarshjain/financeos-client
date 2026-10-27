@@ -46,7 +46,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
   const entries = React.useMemo(() => (chart && shown ? categoryEntries(shown.request, chart, catalog) : undefined), [chart, shown, catalog]);
   return (
     <Card>
-      <div className="flex flex-col gap-space-12 p-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
         <div className="flex items-start justify-between gap-space-12">
           <div className="flex flex-col min-w-0">
             <Text variant="heading" as="h2">

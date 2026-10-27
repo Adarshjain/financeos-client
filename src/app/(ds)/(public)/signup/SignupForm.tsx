@@ -74,7 +74,7 @@ export function SignupForm() {
 
       {/* Form column */}
       <div className="flex-1 flex items-center justify-center p-space-20 desk:p-space-40">
-        <div className="w-full max-w-sm flex flex-col gap-space-16">
+        <div className="w-full max-w-sm flex flex-col gap-space-8 desk:gap-space-16">
           {/* 1. Title and 2. Subtitle */}
           <div className="flex flex-col gap-space-4">
             <Text as="h1" variant="page-title" family="display">
@@ -89,7 +89,7 @@ export function SignupForm() {
             noValidate
             onSubmit={handleSubmit}
             action={formAction}
-            className="flex flex-col gap-space-16"
+            className="flex flex-col gap-space-8 desk:gap-space-16"
           >
             {/* Account created success banner */}
             {isSuccess && (
@@ -126,7 +126,7 @@ export function SignupForm() {
             {/* 4. Divider "or" */}
             <Divider label="or" />
 
-            <div className="flex flex-col gap-space-12">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
               <TextField
                 id="email"
                 label="Email"
@@ -178,7 +178,7 @@ export function SignupForm() {
               />
             </div>
 
-            <div className="flex flex-col gap-space-12">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
               <Button
                 type="submit"
                 variant="primary"

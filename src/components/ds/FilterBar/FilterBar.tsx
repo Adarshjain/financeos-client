@@ -39,7 +39,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
         ref={ref}
         className={cn(
           'flex items-center gap-space-8 overflow-x-auto scrollbar-none',
-          '-mx-space-16 -mt-space-4 -mb-space-8 px-space-16 py-space-4',
+          '-mx-space-16 -mt-space-4 -mb-space-4 px-space-16 py-space-4',
           'desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4',
           className,
         )}

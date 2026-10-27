@@ -26,7 +26,7 @@ export function AccountHeaderCard({
 
   return (
     <Card>
-      <div className="p-space-16 flex flex-wrap items-center gap-space-16">
+      <div className="p-space-16 flex flex-wrap items-center gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <div className="min-w-0">
           <Text variant="label" tone="ink-3" as="div">
             {model.label}

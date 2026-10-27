@@ -50,15 +50,15 @@ export async function CardOverview({
         accountName={account.name}
         model={buildHeaderModel(account, data.bill, today)}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
-        <div className="desk:col-span-7 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
           <LimitCycleCard model={buildLimitCycle(account, data.summary, data.bill, today)} />
           {data.billHistory ? (
             <BillsCard accountId={account.id} rows={buildBillRows(data.billHistory)} />
           ) : null}
           {rewards ? <RewardsCard accountId={account.id} model={rewards} /> : null}
         </div>
-        <div className="desk:col-span-5 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+        <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
           {data.cardholders ? (
             <CardholdersCard
               accountId={account.id}

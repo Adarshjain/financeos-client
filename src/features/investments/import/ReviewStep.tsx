@@ -13,7 +13,7 @@ type Wizard = ReturnType<typeof useImportWizard>;
 
 function Tiles({ tiles }: { tiles: [string, React.ReactNode][] }) {
   return (
-    <div className="grid grid-cols-2 gap-space-12 desk:grid-cols-4 desk:gap-space-16">
+    <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:grid-cols-4 desk:gap-space-16">
       {tiles.map(([label, value]) => (
         <KpiTile key={label} label={label} value={value} />
       ))}
@@ -44,7 +44,7 @@ export function ReviewStep({ wizard }: { wizard: Wizard }) {
     const warnings = reconcilePreview.warnings;
     const fnoTrades = reconcilePreview.fnoTrades ?? [];
     return (
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tiles
           tiles={[
             ['Executions', stats.totalExecutions],
@@ -103,7 +103,7 @@ export function ReviewStep({ wizard }: { wizard: Wizard }) {
     const unresolved = getCasUnresolvedRows(casPreview, rowStates);
     const names = Array.from(new Set(unresolved.map((r) => r.parsedRow.parsedName || r.parsedRow.parsedSymbol || 'Unnamed row')));
     return (
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tiles
           tiles={[
             ['Rows', summary.total],

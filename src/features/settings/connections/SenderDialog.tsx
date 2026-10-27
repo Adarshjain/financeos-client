@@ -76,7 +76,7 @@ export function SenderDialog({
           }}
         >
           <DialogBody>
-            <form id={FORM_ID} className="flex flex-col gap-space-12" onSubmit={onSubmit}>
+            <form id={FORM_ID} className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={onSubmit}>
               <TextField
                 label="Sender name"
                 optional

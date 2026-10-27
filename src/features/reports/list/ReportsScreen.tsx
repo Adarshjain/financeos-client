@@ -209,7 +209,7 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
     : 'No reports match.';
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs />
 
       <FilterBar
@@ -296,7 +296,7 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
 /** The list while the page loads. */
 export function ReportsListSkeleton() {
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs />
       <Card>
       <DataTable columns={makeColumns({ onEdit: noop, onDuplicate: noop, onAddToDashboard: noop, onDelete: noop, duplicating: false })} data={[]} getRowId={(row) => row.id} loading skeletonRows={6} />

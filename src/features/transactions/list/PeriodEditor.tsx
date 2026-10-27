@@ -29,7 +29,7 @@ export interface PeriodEditorProps {
 /** The Preset / Single date / Range control and the field it shows; shared by the Filters dialog and the Period dropdown. */
 export function PeriodEditor({ draft, today, onChange }: PeriodEditorProps) {
   return (
-    <div className="flex flex-col gap-space-12">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12">
       <SegmentedControl
         aria-label="Period type"
         className="w-fit"

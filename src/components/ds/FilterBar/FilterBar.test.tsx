@@ -85,7 +85,7 @@ describe('FilterBar', () => {
       'px-space-16',
       'py-space-4',
       '-mt-space-4',
-      '-mb-space-8',
+      '-mb-space-4',
       'desk:-mx-space-4',
       'desk:px-space-4',
       'desk:-mb-space-12',

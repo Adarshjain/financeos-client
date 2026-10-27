@@ -118,7 +118,7 @@ function Options({ state }: { state: ExportLedgerState }) {
       : 'Edited.';
   return (
     <>
-      <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+      <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
         <TextField label="Your name" value={myName} onValueChange={setMyName} placeholder="Blank reads as “I / me”" />
         <TextField
           label="Their name"

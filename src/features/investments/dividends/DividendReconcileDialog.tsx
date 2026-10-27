@@ -140,7 +140,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
         secondary={{ label: 'Close', onSelect: onClose }}
       >
         <DialogBody>
-          <div className="flex flex-col gap-space-16">
+          <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <SectionHeader
               variant="band"
               borderTop={false}

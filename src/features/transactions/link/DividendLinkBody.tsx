@@ -156,7 +156,7 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
         onValueChange={(v) => dividend.setType(v as typeof dividend.type)}
         options={TYPE_OPTIONS}
       />
-      <div className="grid grid-cols-2 gap-space-12">
+      <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
         <TextField
           label="Per share"
           optional
@@ -173,7 +173,7 @@ function NewDividendFields({ dividend, today }: { dividend: UseDividendLinkResul
           onValueChange={(v) => change(perShare, v.replace(/\D/g, ''))}
         />
       </div>
-      <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+      <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
         <AmountField
           label="Gross amount"
           prefix="₹"

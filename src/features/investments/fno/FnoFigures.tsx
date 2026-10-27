@@ -7,7 +7,7 @@ import type { FnoFiguresModel, PnlBarRow, UnderlyingRow } from './fnoModel';
 /** The phone's headline: the year's realised P&L, then Win rate and Charges side by side. Desktop shows tiles instead. */
 export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresModel; allYears?: boolean }) {
   return (
-    <div className="desk:hidden flex flex-col gap-space-12">
+    <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
       <div className="flex flex-col gap-space-2">
         <Text variant="label" tone="ink-3" as="div">
           {realisedLabel(allYears)}
@@ -19,7 +19,7 @@ export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresMode
           {figures.realisedSub}
         </Text>
       </div>
-      <div className="grid grid-cols-2 gap-space-16">
+      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <div className="flex flex-col gap-space-2 min-w-0">
           <Text variant="label" tone="ink-3" as="div">
             Win rate
@@ -55,7 +55,7 @@ export function realisedLabel(allYears: boolean): string {
 /** The three desktop tiles. A summary that failed to load (null) says so in each. */
 export function FnoTiles({ figures, allYears = false }: { figures: FnoFiguresModel | null; allYears?: boolean }) {
   return (
-    <div className="max-desk:hidden grid grid-cols-3 gap-space-16">
+    <div className="max-desk:hidden grid grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
       {figures ? (
         <>
           <KpiTile

@@ -26,7 +26,7 @@ export function InboxUpcomingShell({ children }: { children: React.ReactNode }) 
 
   return (
     <ShellPage title={tab.title} flushTop>
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={items} value={tab.id} />
         {children}
       </div>

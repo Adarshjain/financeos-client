@@ -44,7 +44,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
   };
 
   return (
-    <div className="flex flex-col gap-space-12">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12">
       <Divider />
       <div className="flex items-baseline justify-between gap-space-8">
         <Text variant="label" tone="ink-2" as="div">

@@ -83,7 +83,7 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
 
   return (
     <ShellPage crumb="Money" title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })}>
-      <div className="flex min-w-0 flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={tabs} value="categories" />
         {uncategorized ? (
           <UncategorizedCard

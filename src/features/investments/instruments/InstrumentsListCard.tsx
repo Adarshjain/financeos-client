@@ -250,7 +250,7 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar search={{ value: text, onValueChange: setText }}>
         {TYPE_CHIPS.map((chip) => (
           <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>

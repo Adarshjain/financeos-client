@@ -213,7 +213,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
   const filtered = state.q !== '' || state.contract !== '' || state.broker !== '';
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar search={{ value: text, onValueChange: setText }}>
         {CONTRACT_CHIPS.map((chip) => (
           <FilterChip

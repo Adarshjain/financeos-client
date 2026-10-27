@@ -76,21 +76,21 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
   return (
     <>
       <ShellPage crumb="Grow / Investments" title={header.title} backHref={HOLDINGS_HREF} addMenu={addMenu}>
-        <div className="flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <HoldingFigures
             header={header}
             hero={holdingHero(holding)}
             figures={holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date())}
             onOverride={() => setOverriding(true)}
           />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
-            <div className="desk:col-span-8 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+            <div className="desk:col-span-8 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <PriceChartCard history={history} onOpenHistory={() => setDialog('price-history')} />
               <TradesCard instrumentId={id} initial={trades ?? EMPTY_SECTION} subtitle={tradesSubtitle} onRecord={() => setDialog('trade')} />
               {brokerRows.length > 0 ? <BrokersCard rows={brokerRows} /> : null}
               {estimate ? <SellTodayCard estimate={estimate} assetType={holding.assetType} /> : null}
             </div>
-            <div className="desk:col-span-4 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+            <div className="desk:col-span-4 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <DividendsCard instrumentId={id} initial={dividends ?? EMPTY_SECTION} onRecord={() => setDialog('dividend')} />
               <CorporateActionsCard instrumentId={id} initial={corporateActions ?? EMPTY_SECTION} onRecord={() => setDialog('corporate-action')} />
               {instrument ? <InstrumentCard rows={instrumentRows(instrument)} onEdit={() => setDialog('edit-instrument')} /> : null}

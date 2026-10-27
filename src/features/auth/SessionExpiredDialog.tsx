@@ -70,7 +70,7 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
         primary={{ label: 'Sign in', type: 'submit', form: FORM_ID, loading: isPending, disabled: busy }}
       >
         <DialogBody>
-          <form id={FORM_ID} noValidate action={formAction} className="flex flex-col gap-space-12">
+          <form id={FORM_ID} noValidate action={formAction} className="flex flex-col gap-space-8 desk:gap-space-12">
             {error && <Banner tone="danger">{error}</Banner>}
             <TextField
               id="session-expired-email"

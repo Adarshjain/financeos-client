@@ -91,7 +91,7 @@ export function LockScreen({ from }: { from: string }) {
 
   return (
     <div className="min-h-dvh flex items-center justify-center p-space-20 desk:p-space-40">
-      <div className="w-full max-w-sm flex flex-col items-center gap-space-16 text-center">
+      <div className="w-full max-w-sm flex flex-col items-center gap-space-8 desk:gap-space-16 text-center">
         <Logo />
         <div className="flex flex-col gap-space-8">
           <Text as="h1" variant="page-title" family="display" align="center">

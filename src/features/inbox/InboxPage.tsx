@@ -100,7 +100,7 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {deepLink.missing ? <Banner tone="info">That item is already handled.</Banner> : null}
       {body}
       <InboxBillHost pending={pendingBill} onClose={closeBill} />

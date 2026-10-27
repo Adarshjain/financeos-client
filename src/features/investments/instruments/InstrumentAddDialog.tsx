@@ -103,7 +103,7 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
         primary={mode === 'manual' ? { label: 'Add instrument', type: 'submit', form: FORM_ID, loading: submitting } : undefined}
       >
         <DialogBody>
-          <div className="flex flex-col gap-space-16">
+          <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <SegmentedControl
               fullWidth
               aria-label="How to add"
@@ -121,23 +121,23 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
                 id={FORM_ID}
                 noValidate
                 autoComplete="off"
-                className="flex flex-col gap-space-12"
+                className="flex flex-col gap-space-8 desk:gap-space-12"
                 onSubmit={(e) => {
                   e.preventDefault();
                   void submit();
                 }}
               >
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <Select label="Type" value={values.type} options={TYPE_OPTIONS} onValueChange={(v) => changeType(v as InstrumentType)} />
                   <TextField label="Currency" value={values.currency} maxLength={LIMITS.currency} error={errors.fields.currency} onValueChange={(currency) => change({ currency })} />
                 </div>
                 <TextField label="Name" value={values.name} maxLength={LIMITS.name} error={errors.fields.name} onValueChange={(name) => change({ name })} />
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <TextField label="Symbol" value={values.symbol} maxLength={LIMITS.symbol} error={errors.fields.symbol} onValueChange={changeSymbol} />
                   <TextField label="Exchange" value={values.exchange} maxLength={LIMITS.exchange} error={errors.fields.exchange} onValueChange={(exchange) => change({ exchange })} />
                 </div>
                 <TextField label="ISIN" optional value={values.isin} maxLength={LIMITS.isin} error={errors.fields.isin} onValueChange={(isin) => change({ isin })} />
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <TextField
                     label="Yahoo symbol"
                     value={values.yahooSymbol}

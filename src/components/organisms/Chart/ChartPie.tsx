@@ -118,7 +118,7 @@ export function ChartPie({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0',
-        stacked ? 'flex-col gap-space-12' : 'items-center gap-space-24',
+        stacked ? 'flex-col gap-space-8 desk:gap-space-12' : 'items-center gap-space-24',
         fill
           ? 'h-full min-h-0'
           : stacked

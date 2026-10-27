@@ -79,8 +79,8 @@ export function AiSettings() {
 
   return (
     <>
-      {topError ? <Banner tone="danger" className="mb-space-12 desk:mb-space-16">{topError}</Banner> : null}
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+      {topError ? <Banner tone="danger" className="mb-space-8 desk:mb-space-16">{topError}</Banner> : null}
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         <div className="desk:col-span-7">
           <YourKeysCard
             keys={s.keysList}

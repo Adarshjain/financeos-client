@@ -4,7 +4,7 @@ import { UpcomingSkeleton } from '@/features/upcoming/UpcomingSkeleton';
 
 export default function DsUpcomingLoading() {
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <UpcomingSkeleton />
     </div>
   );

@@ -173,7 +173,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
       }
     >
       {editing ? (
-        <div ref={body} className="flex flex-col gap-space-16 desk:pb-space-48">
+        <div ref={body} className="flex flex-col gap-space-8 desk:gap-space-16 desk:pb-space-48">
           <div className="flex flex-col gap-space-8 desk:max-w-container-md">
             <TextField
               label="Dashboard name"
@@ -223,8 +223,8 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           )}
         </div>
       ) : saved ? (
-        <div className="flex flex-col gap-space-16">
-          <div className="flex flex-wrap items-center justify-between gap-space-12">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16">
+          <div className="flex flex-wrap items-center justify-between gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
             <div className="flex flex-col gap-space-2">
               {saved.description ? (
                 <Text variant="body" tone="ink-3" as="p">

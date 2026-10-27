@@ -62,7 +62,7 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
       <PersonSelect value={party} onChange={lending.setParty} />
       {mode === 'new' ? (
         <>
-          <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+          <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
             <Select
               label="Direction"
               disabled
@@ -76,7 +76,7 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
               options={entryTypesForDirection(direction).map((t) => ({ value: t, label: ENTRY_TYPE_LABEL[t] }))}
             />
           </div>
-          <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">
+          <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
             <AmountField
               label="Amount"
               prefix="₹"

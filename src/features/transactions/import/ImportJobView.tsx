@@ -67,7 +67,7 @@ function Body({ job }: { job: JobResponse }) {
   const hasError = Boolean(job.errorCode || job.errorMessage);
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Card
         title={importJobTitle(job)}
         subtitle={[job.accountName, `started ${startedLabel(job.createdAt)}`, took === '—' ? null : `took ${took}`].filter(Boolean).join(' · ')}
@@ -101,7 +101,7 @@ function Body({ job }: { job: JobResponse }) {
       ) : null}
       {totals ? (
         <>
-          <div className="grid grid-cols-2 gap-space-12 desk:grid-cols-4 desk:gap-space-16">
+          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:grid-cols-4 desk:gap-space-16">
             <KpiTile label="Files" value={totals.files} />
             <KpiTile label="Lines read" value={totals.lines} />
             <KpiTile label="Created" value={totals.created} />
