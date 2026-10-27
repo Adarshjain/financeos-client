@@ -107,10 +107,10 @@ export function EpfView({
 
   return (
     <>
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <EpfHero figures={figures} />
         <EpfTiles figures={figures} />
-        <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           <div className="desk:col-span-2 min-w-0">
             <EpfPassbookCard
               state={state}
@@ -128,7 +128,7 @@ export function EpfView({
               }
             />
           </div>
-          <div className="flex flex-col gap-space-12 desk:gap-space-16">
+          <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <EpfEmployersCard
               rows={employerRows}
               onAdd={() => setEmployer('new')}

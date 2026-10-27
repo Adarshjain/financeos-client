@@ -4,10 +4,30 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Pager, Select, Text } from '@/components/ds';
+import {
+  Banner,
+  Button,
+  Card,
+  Conceal,
+  createDataTableColumnHelper,
+  DataTable,
+  EmptyState,
+  FilterBar,
+  FilterChip,
+  Pager,
+  Select,
+  Text,
+} from '@/components/ds';
 
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
-import { EPF_IMPORT_TYPE, EPF_SIZE_OPTIONS, type EpfRow, epfUrl, type EpfUrlState, monthYear } from './epfModel';
+import {
+  EPF_IMPORT_TYPE,
+  EPF_SIZE_OPTIONS,
+  type EpfRow,
+  epfUrl,
+  type EpfUrlState,
+  monthYear,
+} from './epfModel';
 
 export const EPF_UPLOAD_HREF = `${INVESTMENTS_IMPORT_HREF}?type=${EPF_IMPORT_TYPE}`;
 
@@ -46,10 +66,21 @@ const columns = [
         <Text variant="body-strong" as="div" className="desk:hidden" truncate>
           {row.original.phoneTitle}
         </Text>
-        <Text variant="body-strong" as="div" className="max-desk:hidden" truncate>
+        <Text
+          variant="body-strong"
+          as="div"
+          className="max-desk:hidden"
+          truncate
+        >
           {row.original.title}
         </Text>
-        <Text variant="caption" tone="ink-3" as="div" className="max-desk:hidden" truncate>
+        <Text
+          variant="caption"
+          tone="ink-3"
+          as="div"
+          className="max-desk:hidden"
+          truncate
+        >
           {row.original.sub}
         </Text>
       </>
@@ -79,7 +110,12 @@ const columns = [
     meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
       <>
-        <Text variant="body-strong" tone={row.original.amountTone} as="div" className="desk:hidden">
+        <Text
+          variant="body-strong"
+          tone={row.original.amountTone}
+          as="div"
+          className="desk:hidden"
+        >
           <Conceal whole>{row.original.amount}</Conceal>
         </Text>
         <Text variant="caption" tone="ink-3" as="div" className="desk:hidden">
@@ -124,7 +160,8 @@ export function EpfPassbookCard({
   onOpen,
 }: EpfPassbookCardProps) {
   const router = useRouter();
-  const go = (next: Partial<EpfUrlState>) => router.push(epfUrl({ ...state, ...next }), { scroll: false });
+  const go = (next: Partial<EpfUrlState>) =>
+    router.push(epfUrl({ ...state, ...next }), { scroll: false });
 
   const pager = (
     <Pager
@@ -140,52 +177,80 @@ export function EpfPassbookCard({
     />
   );
 
+  const fyLabel = fyOptions.find((o) => o.value === fyValue)?.label ?? 'FY';
+  const employerLabel =
+    employerOptions.find((o) => o.value === employerValue)?.label ?? 'Employer';
+
   return (
-    <Card
-      title="Passbook"
-      subtitle={subtitle}
-      action={
-        <span className="flex items-center gap-space-8">
-          {employerOptions.length > 0 ? (
-            <Select
-              size="sm"
-              options={employerOptions}
-              value={employerValue}
-              onValueChange={(v) => go({ employer: v as string, fy: null, page: 0 })}
-            />
-          ) : null}
-          <Select size="sm" options={fyOptions} value={fyValue} onValueChange={(v) => go({ fy: v === 'all' ? 'all' : Number(v), page: 0 })} />
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterBar>
+        {employerOptions.length > 0 ? (
+          <Select
+            options={employerOptions}
+            value={employerValue}
+            onValueChange={(v) =>
+              go({ employer: v as string, fy: null, page: 0 })
+            }
+            trigger={
+              <FilterChip hasDropdown selected className="shrink-0">
+                {employerLabel}
+              </FilterChip>
+            }
+          />
+        ) : null}
+        <Select
+          options={fyOptions}
+          value={fyValue}
+          onValueChange={(v) =>
+            go({ fy: v === 'all' ? 'all' : Number(v), page: 0 })
+          }
+          trigger={
+            <FilterChip hasDropdown selected className="shrink-0">
+              {fyLabel}
+            </FilterChip>
+          }
+        />
+      </FilterBar>
+      <Card
+        title="Passbook"
+        subtitle={subtitle}
+        action={
           <Button variant="link" size="sm" asChild>
             <Link href={EPF_UPLOAD_HREF}>Upload passbook</Link>
           </Button>
-        </span>
-      }
-    >
-      {stale ? (
-        <Banner
-          tone="warning"
-          rounded="md"
-          className="mx-space-16 mb-space-12"
-          action={{ label: 'Upload passbook', onSelect: () => router.push(EPF_UPLOAD_HREF) }}
-        >
-          {`Your passbook is up to ${monthYear(stale.through)}. Upload a newer one to bring in ${stale.missing || 'the latest months'}.`}
-        </Banner>
-      ) : null}
-      <DataTable
-        columns={columns}
-        data={rows}
-        getRowId={(row) => row.id}
-        pager={pager}
-        phoneSub={(row) => (
-          <Text variant="label" tone="ink-3" as="div">
-            {row.phoneSub}
-          </Text>
-        )}
-        onRowSelect={(row) => onOpen(row.id)}
-        empty={<EmptyState compact description="No entries in this period." />}
-        stickyHeader={false}
-      />
-    </Card>
+        }
+      >
+        {stale ? (
+          <Banner
+            tone="warning"
+            rounded="md"
+            className="mx-space-16 mb-space-12"
+            action={{
+              label: 'Upload passbook',
+              onSelect: () => router.push(EPF_UPLOAD_HREF),
+            }}
+          >
+            {`Your passbook is up to ${monthYear(stale.through)}. Upload a newer one to bring in ${stale.missing || 'the latest months'}.`}
+          </Banner>
+        ) : null}
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+          pager={pager}
+          phoneSub={(row) => (
+            <Text variant="label" tone="ink-3" as="div">
+              {row.phoneSub}
+            </Text>
+          )}
+          onRowSelect={(row) => onOpen(row.id)}
+          empty={
+            <EmptyState compact description="No entries in this period." />
+          }
+          stickyHeader={false}
+        />
+      </Card>
+    </div>
   );
 }
 
@@ -193,7 +258,13 @@ export function EpfPassbookCard({
 export function EpfPassbookSkeleton() {
   return (
     <Card>
-      <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />
+      <DataTable
+        columns={columns}
+        data={[]}
+        getRowId={(row) => row.id}
+        loading
+        skeletonRows={5}
+      />
     </Card>
   );
 }

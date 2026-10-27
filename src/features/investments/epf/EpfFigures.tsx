@@ -14,7 +14,7 @@ export function EpfHero({ figures }: { figures: EpfFigures }) {
     { label: 'Last interest', value: lastInterest.value, context: lastInterest.phoneContext },
   ];
   return (
-    <div className="desk:hidden grid grid-cols-2 gap-space-12">
+    <div className="desk:hidden grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
       {tiles.map((tile) => (
         <KpiTile key={tile.label} label={tile.label} value={tile.value} context={tile.context || undefined} />
       ))}

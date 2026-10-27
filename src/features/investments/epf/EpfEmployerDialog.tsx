@@ -63,7 +63,7 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
             id={FORM_ID}
             noValidate
             autoComplete="off"
-            className="flex flex-col gap-space-16"
+            className="flex flex-col gap-space-8 desk:gap-space-16"
             onSubmit={(e) => {
               e.preventDefault();
               void submit();
@@ -84,7 +84,7 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
               value={memberId}
               onValueChange={setMemberId}
             />
-            <div className="grid grid-cols-2 gap-space-12">
+            <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <DateField label="Joined on" today={today} value={joinedOn} onValueChange={(v) => setJoinedOn(typeof v === 'string' ? v : '')} />
               <DateField label="Left on" today={today} value={leftOn} onValueChange={(v) => setLeftOn(typeof v === 'string' ? v : '')} />
             </div>

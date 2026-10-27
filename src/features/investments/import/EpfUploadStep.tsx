@@ -15,9 +15,9 @@ export const EPF_UPLOAD_FORM_ID = 'import-epf-form';
 export function EpfUploadStep({ epf, mode, onModeChange }: { epf: ReturnType<typeof useEpfImport>; mode: ImportMode; onModeChange: (mode: ImportMode) => void }) {
   const { file, isPreviewing, uploadError } = epf;
   return (
-    <form id={EPF_UPLOAD_FORM_ID} onSubmit={epf.handlePreviewSubmit} className="flex flex-col gap-space-12 desk:gap-space-16">
+    <form id={EPF_UPLOAD_FORM_ID} onSubmit={epf.handlePreviewSubmit} className="flex flex-col gap-space-8 desk:gap-space-16">
       <Card title="What are you importing?">
-        <div className="flex flex-col gap-space-16 p-space-16 desk:p-space-20">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16 p-space-16 desk:p-space-20">
           <Select label="Type" options={MODE_OPTIONS} value={mode} onValueChange={(v) => onModeChange(v as ImportMode)} disabled={isPreviewing} />
           {uploadError ? (
             <Banner tone="danger" action={isPreviewing ? undefined : { label: 'Choose another file', onSelect: () => epf.pickFile(null) }}>

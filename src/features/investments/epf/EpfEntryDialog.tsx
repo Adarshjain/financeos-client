@@ -199,7 +199,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
           primary={footerPrimary}
         >
           <DialogBody>
-            <div className="flex flex-col gap-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
               {imported ? (
                 <Banner tone="info">
                   {`From the passbook${importedOn ? ` imported on ${importedOn}` : ''}. ${
@@ -211,13 +211,13 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                 id={FORM_ID}
                 noValidate
                 autoComplete="off"
-                className="flex flex-col gap-space-16"
+                className="flex flex-col gap-space-8 desk:gap-space-16"
                 onSubmit={(e) => {
                   e.preventDefault();
                   void submit();
                 }}
               >
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <Select
                     label="Type"
                     options={typeOptions}
@@ -236,7 +236,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                   ) : null}
                 </div>
                 {importedWithdrawal ? null : (
-                  <div className="grid grid-cols-2 gap-space-12">
+                  <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                     <Select
                       label={f.employerLabel}
                       options={employerOptions}
@@ -284,7 +284,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                   </div>
                 )}
                 {showShares ? (
-                  <div className="grid grid-cols-2 gap-space-12">
+                  <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                     {amountField('Your share', 'employee', undefined, amountLocked)}
                     {amountField('Employer share', 'employer', lastShareHelper, amountLocked)}
                   </div>

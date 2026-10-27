@@ -5,6 +5,7 @@ import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { istToday } from '../fixtures/dates';
+import { createBankAccount } from '../fixtures/seed/accounts';
 import {
   createEpfEmployer,
   createEpfEntry,
@@ -16,7 +17,6 @@ import {
   seedEpfWithdrawal,
 } from '../fixtures/seed/epf';
 import { createDashboard } from '../fixtures/seed/reports';
-import { createBankAccount } from '../fixtures/seed/accounts';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
@@ -45,11 +45,7 @@ const upload = async (page: Page, lines = passbookLines(), name = 'synthetic-pas
   await preview.click();
 };
 
-/** A withdrawal row of the passbook table, whichever way the viewport draws it. */
-
 for (const viewport of VIEWPORTS) {
-  const phone = viewport.width < 641;
-
   test.describe(`/ds EPF, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
     let api: ReturnType<typeof makeApi>;
@@ -161,13 +157,13 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(page.getByText(/^Interest · FY/)).toHaveCount(0);
 
-      await page.getByRole('combobox').filter({ hasText: /FY 2026-27/ }).click();
+      await page.getByRole('button', { name: 'FY 2026-27', exact: true }).click();
       await page.getByRole('option', { name: 'FY 2025-26' }).click();
       await page.waitForURL(/fy=2025/);
       await expect(shown(page.getByText(/Interest · FY 2025-26/))).toBeVisible();
       await expect(page.getByText('Opening balance')).toHaveCount(0);
 
-      await page.getByRole('combobox').filter({ hasText: /FY 2025-26/ }).click();
+      await page.getByRole('button', { name: 'FY 2025-26', exact: true }).click();
       await page.getByRole('option', { name: 'All years' }).click();
       await page.waitForURL(/fy=all/);
       await expect(shown(page.getByText(/Interest · FY 2025-26/))).toBeVisible();

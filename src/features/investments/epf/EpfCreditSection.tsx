@@ -97,7 +97,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
 
   if (picked) {
     return (
-      <div className="flex flex-col gap-space-12">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12">
         <Text variant="label" tone="ink-2" as="div">
           Bank credit
         </Text>
@@ -134,7 +134,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
 
   if (linked) {
     return (
-      <div className="flex flex-col gap-space-12">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12">
         <Text variant="label" tone="ink-2" as="div">
           Bank credit
         </Text>
@@ -168,7 +168,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
 
   if (suggestion && !picking) {
     return (
-      <div className="flex flex-col gap-space-12">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12">
         <Text variant="label" tone="ink-2" as="div">
           Bank credit
         </Text>
