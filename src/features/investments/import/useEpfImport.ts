@@ -101,8 +101,9 @@ export function useEpfImport(notify: ImportWizardNotify) {
     }
   };
 
-  const handlePreviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  /** The upload form's submit, or the action bar's Preview (no event). */
+  const handlePreviewSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     void runPreview();
   };
 
