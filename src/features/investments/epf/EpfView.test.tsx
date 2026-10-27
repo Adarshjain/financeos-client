@@ -134,6 +134,15 @@ describe('EpfView: no EPF yet', () => {
     expect(await screen.findByText('Add EPF entry')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance'));
   });
+
+  it('keeps Add entry open on Opening balance when the first employer ends the empty state', async () => {
+    const { rerender } = renderWithQuery(<EpfView {...empty()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add opening balance' }));
+    expect(await screen.findByText('Add EPF entry')).toBeInTheDocument();
+    rerender(<EpfView {...props()} />);
+    expect(screen.getByText('Add EPF entry')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance');
+  });
 });
 
 describe('EpfView: the passbook', () => {
