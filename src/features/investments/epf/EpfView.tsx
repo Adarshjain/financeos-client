@@ -65,10 +65,22 @@ export function EpfView({
   const router = useRouter();
   const [opened, setOpened] = React.useState<EpfEntry | null>(null);
   const [adding, setAdding] = React.useState(false);
-  const [employer, setEmployer] = React.useState<EpfEmployer | 'new' | null>(null);
+  const [employer, setEmployer] = React.useState<EpfEmployer | 'new' | null>(
+    null
+  );
 
   // The dialog keeps the entry it was opened on, and follows its fresh row while the page still lists it.
-  const open = opened ? (entries.find((e) => e.id === opened.id) ?? opened) : null;
+  const open = opened
+    ? (entries.find((e) => e.id === opened.id) ?? opened)
+    : null;
+
+  // Add entry sits outside both layouts, so adding the first employer (which ends the empty state) keeps it open.
+  const addDialog = adding ? (
+    <EpfAddDialog
+      initialType="OPENING_BALANCE"
+      onClose={() => setAdding(false)}
+    />
+  ) : null;
 
   if (!summary.hasData) {
     return (
@@ -77,48 +89,75 @@ export function EpfView({
           <EmptyState
             title="No EPF yet"
             description="Upload your EPFO passbook to bring in every contribution and interest credit, or add your balance by hand."
-            action={{ label: 'Upload passbook', variant: 'primary', onSelect: () => router.push(EPF_UPLOAD_HREF) }}
-            secondaryAction={{ label: 'Add opening balance', onSelect: () => setAdding(true) }}
+            action={{
+              label: 'Upload passbook',
+              variant: 'primary',
+              onSelect: () => router.push(EPF_UPLOAD_HREF),
+            }}
+            secondaryAction={{
+              label: 'Add opening balance',
+              onSelect: () => setAdding(true),
+            }}
           />
         </Card>
-        {adding ? <EpfAddDialog initialType="OPENING_BALANCE" onClose={() => setAdding(false)} /> : null}
+        {addDialog}
       </>
     );
   }
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <EpfHero figures={figures} />
-      <EpfTiles figures={figures} />
-      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-space-12 desk:gap-space-16">
-        <div className="desk:col-span-2 min-w-0">
-        <EpfPassbookCard
-          state={state}
-          rows={rows}
-          totalElements={totalElements}
-          totalPages={totalPages}
-          subtitle={subtitle}
-          fyOptions={fyOptions}
-          fyValue={fyValue}
-          employerOptions={employerOptions}
-          employerValue={employerValue}
-          stale={stale}
-          onOpen={(id) => setOpened(entries.find((e) => e.id === id) ?? null)}
-        />
+    <>
+      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+        <EpfHero figures={figures} />
+        <EpfTiles figures={figures} />
+        <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-space-12 desk:gap-space-16">
+          <div className="desk:col-span-2 min-w-0">
+            <EpfPassbookCard
+              state={state}
+              rows={rows}
+              totalElements={totalElements}
+              totalPages={totalPages}
+              subtitle={subtitle}
+              fyOptions={fyOptions}
+              fyValue={fyValue}
+              employerOptions={employerOptions}
+              employerValue={employerValue}
+              stale={stale}
+              onOpen={(id) =>
+                setOpened(entries.find((e) => e.id === id) ?? null)
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-space-12 desk:gap-space-16">
+            <EpfEmployersCard
+              rows={employerRows}
+              onAdd={() => setEmployer('new')}
+              onEdit={(id) =>
+                setEmployer(employers.find((e) => e.id === id) ?? null)
+              }
+            />
+            {summary.pension ? (
+              <EpfPensionCard pension={summary.pension} />
+            ) : null}
+          </div>
         </div>
-        <div className="flex flex-col gap-space-12 desk:gap-space-16">
-          <EpfEmployersCard
-            rows={employerRows}
-            onAdd={() => setEmployer('new')}
-            onEdit={(id) => setEmployer(employers.find((e) => e.id === id) ?? null)}
-          />
-          {summary.pension ? <EpfPensionCard pension={summary.pension} /> : null}
-        </div>
-      </div>
 
-      {open ? <EpfEntryDialog entry={open} employers={employers} latestContribution={latestContribution} onClose={() => setOpened(null)} /> : null}
-      {employer ? <EpfEmployerDialog employer={employer === 'new' ? null : employer} onClose={() => setEmployer(null)} /> : null}
-      {adding ? <EpfAddDialog onClose={() => setAdding(false)} /> : null}
-    </div>
+        {open ? (
+          <EpfEntryDialog
+            entry={open}
+            employers={employers}
+            latestContribution={latestContribution}
+            onClose={() => setOpened(null)}
+          />
+        ) : null}
+        {employer ? (
+          <EpfEmployerDialog
+            employer={employer === 'new' ? null : employer}
+            onClose={() => setEmployer(null)}
+          />
+        ) : null}
+      </div>
+      {addDialog}
+    </>
   );
 }
