@@ -69,7 +69,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('No EPF yet')).toBeVisible();
       await page.getByRole('button', { name: 'Upload passbook' }).click();
       await page.waitForURL(/\/investments\/import\?type=epf/);
-      await expect(page.getByText('Drop your EPFO passbook PDF')).toBeVisible();
+      await expect(page.getByText('Drop your EPFO passbook PDFs')).toBeVisible();
     });
 
     // The first employer ends the empty state; the open Add dialog must survive that switch.
@@ -211,7 +211,55 @@ for (const viewport of VIEWPORTS) {
     test('a file that is not a passbook is refused with the server message', async ({ page }) => {
       await page.goto('/investments/import?type=epf');
       await upload(page, ['Just some text', 'Not an EPFO passbook at all'], 'notes.pdf');
-      await expect(page.getByRole('button', { name: 'Choose another file' })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByRole('button', { name: 'Choose other files' })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByText(/notes\.pdf: /)).toBeVisible();
+    });
+
+    test('several passbooks at once: two years of one member merge, a second member gets its own section, a non-passbook file is listed as not imported', async ({ page }) => {
+      test.slow();
+      await page.goto('/investments/import?type=epf');
+      const yearOne = await passbookPdf(passbookLines());
+      // A later year of the same member: other wage months, interest and closing date.
+      const yearTwo = await passbookPdf(
+        passbookLines().map((l) =>
+          l
+            .replace('Apr-2025 15-05-2025', 'Apr-2026 15-05-2026')
+            .replace('May-2025 15-06-2025', 'May-2026 15-06-2026')
+            .replace('OB Int. Updated upto 31/03/2025', 'OB Int. Updated upto 31/03/2026')
+            .replace('Int. Updated upto 31/03/2026 32,410', 'Int. Updated upto 31/03/2027 33,410')
+            .replace('Closing Balance as on 31/03/2026', 'Closing Balance as on 31/03/2027')
+            .replace(/Due-Month 05(2025)/, 'Due-Month 052026')
+            .replace(/Due-Month 06(2025)/, 'Due-Month 062026'),
+        ),
+      );
+      const otherMember = await passbookPdf(
+        passbookLines({ memberId: 'MHBAN00999990000011111', uan: '100123454321' }).map((l) => l.replace('NORTHWIND LABS PRIVATE LIMITED', 'FABRIKAM TRADING LIMITED')),
+      );
+      const notes = await passbookPdf(['Just some text', 'Not an EPFO passbook at all']);
+      const files = [
+        { name: 'year-one.pdf', mimeType: 'application/pdf', buffer: yearOne },
+        { name: 'year-two.pdf', mimeType: 'application/pdf', buffer: yearTwo },
+        { name: 'other-member.pdf', mimeType: 'application/pdf', buffer: otherMember },
+        { name: 'notes.pdf', mimeType: 'application/pdf', buffer: notes },
+      ];
+      const preview = page.getByRole('button', { name: 'Preview passbooks' });
+      await expect(async () => {
+        await page.getByTestId('epf-zone').locator('input[type="file"]').setInputFiles(files);
+        await expect(preview).toBeEnabled({ timeout: 2_000 });
+      }).toPass({ timeout: 30_000 });
+      await preview.click();
+
+      await expect(page.getByText('Not imported: notes.pdf (', { exact: false })).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByText('From year-one.pdf, year-two.pdf')).toBeVisible();
+      await expect(page.getByText(/Member ID …67890/)).toBeVisible();
+      await expect(page.getByText(/Member ID …11111/)).toBeVisible();
+      await expect(page.getByRole('button', { name: /^Import \d+ entries$/ })).toBeEnabled();
+      await page.getByRole('button', { name: /^Import \d+ entries$/ }).click();
+
+      await expect(page.getByText(/across 2 employers/)).toBeVisible({ timeout: 45_000 });
+      await page.getByRole('link', { name: 'Open EPF' }).click();
+      await page.waitForURL('**/investments/epf');
+      await expect(shown(page.getByText('NORTHWIND LABS PRIVATE LIMITED'))).toBeVisible();
     });
 
     test('an imported entry is locked; an imported withdrawal keeps its TDS editable', async ({ page }) => {

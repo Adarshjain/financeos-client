@@ -14,25 +14,33 @@ const queryWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={createTestQueryClient()}>{children}</QueryClientProvider>
 );
 const file = new File(['%PDF'], 'p.pdf');
+const file2 = new File(['%PDF2'], 'q.pdf');
 beforeEach(() => post.mockReset());
 
 describe('useEpfImportMutations', () => {
-  it('posts the PDF to the preview endpoint with the employer as a query parameter', async () => {
-    post.mockResolvedValue({ data: { rows: [] } });
+  it('posts every PDF as a repeated files part to the batch preview, with each employer pick as an assign query value', async () => {
+    post.mockResolvedValue({ data: { sections: [], refused: [] } });
     const { result } = renderHook(() => useEpfImportMutations(), { wrapper: queryWrapper });
-    await result.current.previewMutation.mutateAsync({ file, employerId: 'e1' });
+    await result.current.previewMutation.mutateAsync({ files: [file, file2], assign: ['k1=e1', 'k2=e2'] });
     await waitFor(() => expect(post).toHaveBeenCalled());
     const [path, init] = post.mock.calls[0];
-    expect(path).toBe('/api/v1/epf/import/preview');
-    expect(init.params.query).toEqual({ employerId: 'e1' });
-    expect((init.bodySerializer(init.body) as FormData).get('file')).toBe(file);
+    expect(path).toBe('/api/v1/epf/import/batch/preview');
+    expect(init.params.query).toEqual({ assign: ['k1=e1', 'k2=e2'] });
+    expect((init.bodySerializer(init.body) as FormData).getAll('files')).toEqual([file, file2]);
   });
 
-  it('posts the same to the commit endpoint', async () => {
+  it('sends no assign parameter when nothing was picked', async () => {
+    post.mockResolvedValue({ data: { sections: [], refused: [] } });
+    const { result } = renderHook(() => useEpfImportMutations(), { wrapper: queryWrapper });
+    await result.current.previewMutation.mutateAsync({ files: [file], assign: [] });
+    expect(post.mock.calls[0][1].params.query).toEqual({ assign: undefined });
+  });
+
+  it('posts the same to the batch commit endpoint', async () => {
     post.mockResolvedValue({ data: { imported: 1 } });
     const { result } = renderHook(() => useEpfImportMutations(), { wrapper: queryWrapper });
-    await result.current.commitMutation.mutateAsync({ file });
-    expect(post.mock.calls[0][0]).toBe('/api/v1/epf/import/commit');
-    expect(post.mock.calls[0][1].params.query).toEqual({ employerId: undefined });
+    await result.current.commitMutation.mutateAsync({ files: [file], assign: ['k1=e1'] });
+    expect(post.mock.calls[0][0]).toBe('/api/v1/epf/import/batch/commit');
+    expect(post.mock.calls[0][1].params.query).toEqual({ assign: ['k1=e1'] });
   });
 });

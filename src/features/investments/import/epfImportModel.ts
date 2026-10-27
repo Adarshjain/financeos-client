@@ -1,3 +1,4 @@
+import { formatFileSize, MAX_REQUEST_BYTES, MAX_REQUEST_MB } from '@/features/transactions/import/fileLimits';
 import type { Schemas } from '@/lib/api/types';
 
 import { rupees } from '../investmentsFormat';
@@ -5,6 +6,34 @@ import { rupees } from '../investmentsFormat';
 export type EpfPreview = Schemas['EpfImportPreviewResponse'];
 export type EpfPreviewRow = Schemas['EpfImportRow'];
 export type EpfImportResult = Schemas['EpfImportResultResponse'];
+export type EpfBatchPreview = Schemas['EpfImportBatchPreviewResponse'];
+export type EpfSection = Schemas['EpfImportSection'];
+export type EpfRefusedFile = Schemas['EpfImportRefusedFile'];
+export type EpfBatchResult = Schemas['EpfImportBatchResultResponse'];
+
+/** Most passbooks one import takes. */
+export const EPF_MAX_FILES = 12;
+
+/** Adds files to the queue, skipping an exact name + size repeat and anything past the file or size cap; `error` says what was left out. */
+export function addEpfFiles(current: File[], added: File[]): { files: File[]; error: string | null } {
+  const files = [...current];
+  let total = files.reduce((sum, f) => sum + f.size, 0);
+  let error: string | null = null;
+  for (const f of added) {
+    if (files.some((c) => c.name === f.name && c.size === f.size)) continue;
+    if (files.length >= EPF_MAX_FILES) {
+      error = `You can import up to ${EPF_MAX_FILES} passbooks at a time. Remove some files and try again.`;
+      continue;
+    }
+    if (total + f.size > MAX_REQUEST_BYTES) {
+      error = `Upload would be ${formatFileSize(total + f.size)}; the limit is ${MAX_REQUEST_MB}MB per upload. Remove some files and try again.`;
+      continue;
+    }
+    files.push(f);
+    total += f.size;
+  }
+  return { files, error };
+}
 
 export const EPF_ACCEPT = '.pdf';
 /** The Employer select's value for "the employer in this passbook is new". */
@@ -93,6 +122,23 @@ export const PENSION_NOTE = 'Pension figures are kept but not added to the balan
 
 export const importableCount = (p: EpfPreview) => p.newCount + p.replacesCount;
 
+/** Entries the import would add or replace across every section. */
+export const importableTotal = (sections: EpfSection[]) => sections.reduce((sum, s) => sum + importableCount(s.preview), 0);
+
+/** "fy1.pdf (This is not an EPFO passbook.)" */
+export const refusedItem = (r: EpfRefusedFile) => `${r.fileName} (${r.message})`;
+
+/** The `assign` query values ("<sectionKey>=<employerId>") for every section whose employer was picked, with `override` swapped in for one. */
+export function assignParams(sections: EpfSection[], choices: Record<string, EpfEmployerChoices>, override?: { key: string; value: string }): string[] {
+  const out: string[] = [];
+  for (const s of sections) {
+    if (!choices[s.key]) continue;
+    const value = override?.key === s.key ? override.value : (s.preview.employer.existingId ?? NEW_EMPLOYER);
+    if (value !== NEW_EMPLOYER) out.push(`${s.key}=${value}`);
+  }
+  return out;
+}
+
 /** "Northwind Labs · FY 2026-27"-style sub line: "Member ID …67890 · UAN …4321 · up to Sep 2026". */
 export function employerSub(p: EpfPreview): string {
   const last = p.employer.throughMonth;
@@ -123,15 +169,16 @@ export const employerOptionsOf = (c: EpfEmployerChoices) => [
   ...c.options.map((o) => ({ value: o.id, label: o.name })),
 ];
 
-export const resultTitle = (r: EpfImportResult) => {
+export const resultTitle = (r: EpfBatchResult) => {
   const n = r.imported + r.replaced;
   return `Imported ${n} ${n === 1 ? 'entry' : 'entries'}`;
 };
 
-/** "2 new and 1 replaced. EPF balance is now ₹8,43,210, up to Sep 2026." */
-export const resultLine = (r: EpfImportResult) => {
+/** "2 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to Sep 2026." */
+export const resultLine = (r: EpfBatchResult) => {
   const parts = [`${r.imported} new`, ...(r.replaced > 0 ? [`${r.replaced} replaced`] : [])];
-  const head = parts.join(' and ');
-  const balance = `EPF balance is now ${rupees(r.balance)}${r.throughMonth ? `, up to ${monthYear(r.throughMonth)}` : ''}.`;
+  const head = `${parts.join(' and ')}${r.results.length > 1 ? ` across ${r.results.length} employers` : ''}`;
+  const through = r.results.reduce<string>((latest, x) => (x.throughMonth && x.throughMonth > latest ? x.throughMonth : latest), '');
+  const balance = `EPF balance is now ${rupees(r.balance)}${through ? `, up to ${monthYear(through)}` : ''}.`;
   return `${head.charAt(0).toUpperCase()}${head.slice(1)}. ${balance}`;
 };
