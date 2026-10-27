@@ -96,7 +96,7 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: 'Save', onSelect: () => void save(), loading: saving }}
       >
-        <DialogBody className="flex flex-col gap-space-12">
+        <DialogBody className="flex flex-col gap-space-8 desk:gap-space-12">
           {error ? <Banner tone="danger">{error}</Banner> : null}
           <CategoriesField
             categories={localCategories}

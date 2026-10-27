@@ -162,7 +162,7 @@ export function SettleDialog({
               setSegment(next);
             }}
           />
-          <div className="grid grid-cols-2 gap-space-12">
+          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
             <AmountField
               ref={amountRef}
               label="Amount"

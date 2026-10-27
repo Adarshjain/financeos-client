@@ -130,7 +130,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
 
   return (
     <ShellPage crumb="Money / Transactions" title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
-      <div className="flex min-w-0 flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={tabs} value="rules" />
         <FilterBar
           search={{ value: text, onValueChange: setText }}
@@ -199,7 +199,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
         ) : (
           <>
             {pager}
-            <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-3">
               {rules.rows.map((rule) => {
                 const line = ruleMatchLine(rule);
                 return (

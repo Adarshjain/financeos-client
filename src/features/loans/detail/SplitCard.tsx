@@ -11,7 +11,7 @@ export function SplitCard({ splits }: { splits: FySplit[] }) {
   if (splits.length === 0) return null;
   return (
     <Card title="Interest vs principal" subtitle="Per financial year">
-      <div className="flex flex-col gap-space-12 px-space-16 pb-space-14">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 pb-space-14">
         {splits.map((s) => (
           <div key={s.label} className="flex flex-col gap-space-4">
             <div className="flex items-baseline justify-between gap-space-8">

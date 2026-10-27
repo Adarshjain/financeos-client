@@ -161,7 +161,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar
         search={{ value: text, onValueChange: setText }}
       />

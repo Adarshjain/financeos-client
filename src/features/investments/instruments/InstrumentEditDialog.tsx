@@ -91,32 +91,32 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
         primary={{ label: 'Save instrument', type: 'submit', form: FORM_ID, loading: submitting }}
       >
         <DialogBody>
-          <div className="flex flex-col gap-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12">
             <CatalogSearch type={values.type} hint={false} placeholder="Search AMFI or Yahoo to fix or fill identifiers…" onPick={picked} />
             <form
               id={FORM_ID}
               noValidate
               autoComplete="off"
-              className="flex flex-col gap-space-12"
+              className="flex flex-col gap-space-8 desk:gap-space-12"
               onSubmit={(e) => {
                 e.preventDefault();
                 void submit();
               }}
             >
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <Select label="Type" value={values.type} options={TYPE_OPTIONS} onValueChange={(v) => change({ type: v as InstrumentType })} />
                 <Select label="Asset class" value={values.assetClass} options={ASSET_CLASS_CHOICES} onValueChange={(v) => change({ assetClass: v as string })} />
               </div>
               <TextField label="Name" value={values.name} maxLength={LIMITS.name} error={errors.fields.name} onValueChange={(name) => change({ name })} />
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <TextField label="Symbol" placeholder="Optional" value={values.symbol} maxLength={LIMITS.symbol} error={errors.fields.symbol} onValueChange={(symbol) => change({ symbol })} />
                 <TextField label="Exchange" placeholder="e.g. NSE, BSE" value={values.exchange} maxLength={LIMITS.exchange} error={errors.fields.exchange} onValueChange={(exchange) => change({ exchange })} />
               </div>
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <TextField label="ISIN" value={values.isin} maxLength={LIMITS.isin} error={errors.fields.isin} onValueChange={(isin) => change({ isin })} />
                 <TextField label="Currency" value={values.currency} maxLength={LIMITS.currency} error={errors.fields.currency} onValueChange={(currency) => change({ currency })} />
               </div>
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <TextField label="Yahoo symbol" placeholder="Stocks and ETFs" value={values.yahooSymbol} maxLength={LIMITS.yahooSymbol} error={errors.fields.yahooSymbol} onValueChange={(yahooSymbol) => change({ yahooSymbol })} />
                 <TextField label="AMFI code" value={values.amfiCode} maxLength={LIMITS.amfiCode} error={errors.fields.amfiCode} onValueChange={(amfiCode) => change({ amfiCode })} />
               </div>

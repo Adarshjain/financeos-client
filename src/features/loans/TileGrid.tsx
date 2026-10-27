@@ -15,7 +15,7 @@ export function TileGrid({
   error: string;
 }) {
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
       {tiles
         ? tiles.map((tile) => (
             <KpiTile
@@ -40,7 +40,7 @@ export function TileGrid({
 
 export function TileGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
       <KpiTile loading />
       <KpiTile loading />
       <KpiTile loading />

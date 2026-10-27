@@ -9,9 +9,9 @@ import { DASHBOARDS_CRUMB, DASHBOARDS_HREF } from '../routes';
 export function DashboardSkeleton({ title }: { title: string }) {
   return (
     <ShellPage crumb={DASHBOARDS_CRUMB} title={title} backHref={DASHBOARDS_HREF}>
-      <div className="flex flex-col gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton height={16} width="20%" />
-        <div className="grid grid-cols-2 desk:grid-cols-12 gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-2 desk:grid-cols-12 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           <Skeleton height={120} className="col-span-2 desk:col-span-6" />
           <Skeleton height={120} className="col-span-1 desk:col-span-3" />
           <Skeleton height={120} className="col-span-1 desk:col-span-3" />

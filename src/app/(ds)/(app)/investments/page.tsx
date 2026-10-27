@@ -63,7 +63,7 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
   const hero = heroModel(header, new Date());
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <LivePriceRefresh />
       <HoldingsHero hero={hero} />
       <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} />
@@ -76,7 +76,7 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
         totalPages={totalPages}
         brokers={(brokers ?? []).map((b) => ({ id: b.id, name: b.name }))}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         {allocation.length > 0 ? <AllocationCard segments={allocation} /> : null}
         {tax ? (
           <div className="desk:order-3">

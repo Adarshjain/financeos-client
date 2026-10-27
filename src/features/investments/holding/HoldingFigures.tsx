@@ -37,8 +37,8 @@ export interface HoldingFiguresProps {
  */
 export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFiguresProps) {
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex flex-col gap-space-12 desk:flex-row desk:items-end desk:justify-between">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 desk:flex-row desk:items-end desk:justify-between">
         <div className="min-w-0 flex flex-wrap items-center gap-space-8">
           <Badge tone="neutral">{header.badge}</Badge>
           <Text variant="body" tone="ink-3" as="span">
@@ -59,7 +59,7 @@ export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFig
         </div>
       </div>
 
-      <div className="desk:hidden grid grid-cols-2 gap-x-space-16 gap-y-space-12">
+      <div className="desk:hidden grid grid-cols-2 gap-x-space-16 gap-y-space-8">
         {figures.map((f) => (
           <div key={f.id} className="min-w-0 flex flex-col gap-space-2">
             <Text variant="label" tone="ink-3" as="div">
@@ -73,7 +73,7 @@ export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFig
         ))}
       </div>
 
-      <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
+      <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         {figures.map((f) => (
           <KpiTile
             key={f.id}

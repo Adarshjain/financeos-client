@@ -119,15 +119,15 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
         secondary={{ label: 'Clear all', onSelect: clearAll }}
         primary={{ label: showLabel, onSelect: () => onApply(draftQuery) }}
       >
-        <DialogBody className="p-0 gap-0">
+        <DialogBody className="p-0 gap-0 desk:gap-0">
           <SectionHeader borderTop={false}>Date</SectionHeader>
           <div className="px-space-16 desk:px-space-20 py-space-12">
             <PeriodEditor draft={draft} today={today} onChange={set} />
           </div>
 
           <SectionHeader>Account and category</SectionHeader>
-          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
-            <div className="grid grid-cols-2 gap-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
+            <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <AccountPicker
                 multiple
                 label="Account"
@@ -159,7 +159,7 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
           </div>
 
           <SectionHeader>Amount</SectionHeader>
-          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
             <Select
               label="Condition"
               options={AMOUNT_OP_OPTIONS}
@@ -201,8 +201,8 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
           </div>
 
           <SectionHeader>Status and source</SectionHeader>
-          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
-            <div className="grid grid-cols-2 gap-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
+            <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <Select
                 label="Review status"
                 options={REVIEW_OPTIONS}
@@ -264,7 +264,7 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
           </div>
 
           <SectionHeader>Sort</SectionHeader>
-          <div className="flex flex-col gap-space-12 px-space-16 desk:px-space-20 py-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
             <Select
               label="Order"
               options={SORT_ORDER_OPTIONS}

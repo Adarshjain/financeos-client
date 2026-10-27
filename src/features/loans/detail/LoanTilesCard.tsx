@@ -8,7 +8,7 @@ import type { LoanTilesModel } from './loanDetailModel';
 export function LoanTilesCard({ model }: { model: LoanTilesModel }) {
   return (
     <Card>
-      <div className="px-space-16 pt-space-16 pb-space-12 grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+      <div className="px-space-16 pt-space-16 pb-space-12 grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         {model.tiles.map((tile) => (
           <div key={tile.label} className="min-w-0 flex flex-col gap-space-2">
             <Text variant="overline" tone="ink-3" as="div">

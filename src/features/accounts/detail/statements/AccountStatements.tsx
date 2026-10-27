@@ -37,9 +37,9 @@ export async function AccountStatements({
   const selected = view.selectedId;
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {data.markPaid ? <MarkPaidAction accountName={account.name} target={data.markPaid} /> : null}
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         <div className="desk:col-span-5 min-w-0">
           <StatementsListCard
             accountId={account.id}

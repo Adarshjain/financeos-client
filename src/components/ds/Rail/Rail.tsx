@@ -159,10 +159,10 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
         ) : null}
 
         {/* Search slot */}
-        {search ? <div className="mb-space-12">{search}</div> : null}
+        {search ? <div className="mb-space-8 desk:mb-space-12">{search}</div> : null}
 
         {/* Grouped navigation items */}
-        <div className="flex-1 space-y-space-12 overflow-y-auto">
+        <div className="flex-1 space-y-space-8 desk:space-y-space-12 overflow-y-auto">
           {groups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-space-2">
               {group.label ? (

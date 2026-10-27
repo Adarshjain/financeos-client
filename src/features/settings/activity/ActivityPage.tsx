@@ -28,7 +28,7 @@ export function ActivityPage({ statusFilter, typeFilter, page, size, jobId }: Ac
     router.push(activityUrl({ statusFilter, typeFilter, size }, { newPage: page }), { scroll: false });
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ActivityFilters statusFilter={statusFilter} typeFilter={typeFilter} size={size} />
       <ActivityJobsCard
         statusFilter={statusFilter}

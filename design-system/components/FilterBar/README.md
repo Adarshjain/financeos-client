@@ -7,7 +7,7 @@ The search and filter row of a list page (owner, 2026-10-27): the search field f
 - `children`: FilterChips (default `pill` shape, never `rounded`) and dropdown chips.
 
 ## Bleed
-The row carries its own padding and negative margins (phone: `-mx-space-16 px-space-16`, desktop: `-mx-space-4 px-space-4`, `py-space-4` with `-mt-space-4 -mb-space-8` / `desk:-mb-space-12`) and hides its scrollbar, so the search field's focus ring is not clipped by the row's horizontal scroll while the row stays in place on the page. Pages pass no class for this.
+The row carries its own padding and negative margins (phone: `-mx-space-16 px-space-16`, desktop: `-mx-space-4 px-space-4`, `py-space-4` with `-mt-space-4 -mb-space-4` / `desk:-mb-space-12`, so on phone the row nets 8px to its neighbours under the 8px parent gap) and hides its scrollbar, so the search field's focus ring is not clipped by the row's horizontal scroll while the row stays in place on the page. Pages pass no class for this.
 
 ## Variants
 - With search, empty (phone: narrow `space-96` field).

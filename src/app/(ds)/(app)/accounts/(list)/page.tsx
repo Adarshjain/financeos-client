@@ -51,8 +51,8 @@ export default async function DsAccountsPage() {
       cards.map((a) => streamedCardRow(cardBaseRow(a, today), streams, today));
 
     body = (
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
-        <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           <KpiTile
             label={cash.label}
             value={cash.value}
@@ -87,7 +87,7 @@ export default async function DsAccountsPage() {
           closedLine={closedLineFor(sections.cards.closed)}
         />
 
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           <BrokersSection
             rows={sections.brokers.open.map((a) => brokerRow(a, today))}
             closedRows={sections.brokers.closed.map((a) => brokerRow(a, today))}

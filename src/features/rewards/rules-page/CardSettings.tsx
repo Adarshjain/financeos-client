@@ -51,7 +51,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
         </Text>
       }
     >
-      <div className="grid grid-cols-2 gap-space-16 p-space-16 desk:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16 p-space-16 desk:grid-cols-3">
         <Fact label="Reward type">
           <Text variant="body-strong">{rewardTypeWord(config?.defaultRewardType)}</Text>
         </Fact>

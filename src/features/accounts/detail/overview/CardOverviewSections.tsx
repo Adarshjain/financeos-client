@@ -58,7 +58,7 @@ export function LimitCycleCard({ model }: { model: LimitCycleModel }) {
       subtitle={model.subtitle ?? undefined}
       action={model.anchored ? <Badge tone="success">Anchored to statement</Badge> : undefined}
     >
-      <div className="px-space-16 pt-space-4 pb-space-16 grid grid-cols-2 desk:grid-cols-3 gap-space-16">
+      <div className="px-space-16 pt-space-4 pb-space-16 grid grid-cols-2 desk:grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <Stat
           label="Used"
           value={model.used.value}

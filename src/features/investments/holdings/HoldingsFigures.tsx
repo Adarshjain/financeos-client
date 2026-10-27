@@ -7,7 +7,7 @@ import { type HoldingsHeroModel, type HoldingsTile, type Mover, type TaxCardMode
 /** The phone's headline: current value (no label), today's move, then Invested and Unrealised P&L side by side. Desktop shows tiles instead. */
 export function HoldingsHero({ hero }: { hero: HoldingsHeroModel }) {
   return (
-    <div className="desk:hidden flex flex-col gap-space-12">
+    <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
       <div className="flex flex-col gap-space-2">
         <Text variant="hero-figure" family="display" as="div">
           {hero.value}
@@ -18,7 +18,7 @@ export function HoldingsHero({ hero }: { hero: HoldingsHeroModel }) {
           </Text>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 gap-space-16">
+      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <div className="flex flex-col gap-space-2 min-w-0">
           <Text variant="label" tone="ink-3" as="div">
             Invested
@@ -48,7 +48,7 @@ export function HoldingsHero({ hero }: { hero: HoldingsHeroModel }) {
 /** The four desktop tiles. A tile that failed to load (null) says so under its label. */
 export function HoldingsTiles({ tiles, failedLabels }: { tiles: (HoldingsTile | null)[]; failedLabels: string[] }) {
   return (
-    <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
+    <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
       {tiles.map((tile, i) =>
         tile ? (
           <KpiTile
@@ -77,7 +77,7 @@ export function HoldingsTiles({ tiles, failedLabels }: { tiles: (HoldingsTile | 
 export function AllocationCard({ segments }: { segments: { value: number; label: string; color: 'chart-1' | 'chart-2' | 'chart-3' }[] }) {
   return (
     <Card title="Allocation" subtitle="By asset type">
-      <div className="px-space-16 pb-space-16 flex flex-col gap-space-12">
+      <div className="px-space-16 pb-space-16 flex flex-col gap-space-8 desk:gap-space-12">
         <ProgressBar segments={segments.map((s) => ({ value: s.value, label: s.label, color: s.color }))} />
         <ProgressBar.Legend items={segments.map((s) => ({ label: s.label, color: s.color }))} />
       </div>

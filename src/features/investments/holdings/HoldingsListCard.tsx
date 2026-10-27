@@ -280,7 +280,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
 
   return (
     <RecordMergerContext.Provider value={recordMerger}>
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar search={{ value: text, onValueChange: setText }}>
         <Select
           value={state.type}

@@ -204,7 +204,7 @@ function PeriodChip({
         </FilterChip>
       }
     >
-      <div className="flex flex-col gap-space-12 p-space-12">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-12">
         <PeriodEditor
           draft={draft}
           today={today}

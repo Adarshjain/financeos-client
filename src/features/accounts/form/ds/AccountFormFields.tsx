@@ -47,7 +47,7 @@ const BANK_OPTIONS: SelectOption[] = BANKS.map((b) => ({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-space-12">
+    <section className="flex flex-col gap-space-8 desk:gap-space-12">
       <Text variant="overline" tone="ink-3" as="h3">
         {title}
       </Text>
@@ -57,7 +57,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Pair({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">{children}</div>;
+  return <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">{children}</div>;
 }
 
 function AmountField({
@@ -147,7 +147,7 @@ export function AccountFormFields({
   );
 
   return (
-    <div className="flex flex-col gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Section title="Basics">
         <TextField
           label="Account name"
@@ -266,7 +266,7 @@ export function AccountFormFields({
             onValueChange={(v) => onLimitPoolChoice(v as string)}
           />
           {pooled ? (
-            <div className="flex flex-col gap-space-12">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
               <Pair>
                 <TextField
                   label="Shared limit name"

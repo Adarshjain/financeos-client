@@ -30,7 +30,7 @@ export function RewardsShell({ children }: { children: React.ReactNode }) {
       onAdd={tab === 'rules' ? (adder ?? undefined) : undefined}
       addLabel="New rule"
     >
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={items} value={tab} />
         <RewardsAddProvider value={register}>{children}</RewardsAddProvider>
       </div>

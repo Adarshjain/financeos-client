@@ -42,7 +42,7 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
           }}
         >
           <DialogBody>
-            <div className="flex flex-col gap-space-12">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
               {error ? <Banner tone="danger">{error}</Banner> : null}
               <ReorderList
                 items={group.draft.map((item, idx) => {

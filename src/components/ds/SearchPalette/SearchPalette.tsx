@@ -168,7 +168,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
               />
             </div>
 
-            <DialogBody className="gap-0 p-space-6">
+            <DialogBody className="gap-0 desk:gap-0 p-space-6">
               {hint && (
                 <Text as="p" variant="caption" tone="ink-3" className="px-space-16 py-space-8">
                   {hint}
@@ -176,7 +176,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
               )}
               <div ref={listRef} role="listbox">
                 {loading ? (
-                  <div data-loading="" className="flex flex-col gap-space-12 px-space-16 py-space-12">
+                  <div data-loading="" className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 py-space-12">
                     {[60, 80, 45, 70].map((w) => (
                       <Skeleton key={w} width={`${w}%`} />
                     ))}

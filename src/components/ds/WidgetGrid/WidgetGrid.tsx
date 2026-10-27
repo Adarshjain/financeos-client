@@ -379,7 +379,7 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
         ref={setGrid}
         data-editing={editing ? 'true' : undefined}
         className={cn(
-          'grid min-w-0 max-w-full grid-cols-1 desk:grid-cols-12 grid-flow-row auto-rows-auto items-stretch gap-space-12 desk:gap-space-16',
+          'grid min-w-0 max-w-full grid-cols-1 desk:grid-cols-12 grid-flow-row auto-rows-auto items-stretch gap-x-space-12 gap-y-space-8 desk:gap-space-16',
           className,
         )}
         {...props}

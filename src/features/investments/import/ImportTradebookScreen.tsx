@@ -27,7 +27,7 @@ export function ImportTradebookScreen({ brokers }: { brokers: Broker[] }) {
 
   return (
     <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-12 desk:gap-space-16">
+      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16">
         <Card title="Investment bulk import">
           <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
             <Stepper steps={IMPORT_STEPS} current={step - 1} />

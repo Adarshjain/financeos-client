@@ -23,14 +23,14 @@ export interface PersonHeaderProps {
 /** Who they are and, on the right, what stands between you with Settle up and the menu. */
 export function PersonHeader({ name, header, canSettle, canExport, onSettle, onEdit, onExport, onDelete }: PersonHeaderProps) {
   return (
-    <div className="flex flex-col gap-space-12 desk:flex-row desk:items-end desk:justify-between">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12 desk:flex-row desk:items-end desk:justify-between">
       <div className="min-w-0 flex items-center gap-space-12">
         <Avatar variant="circle" tone={avatarToneFor(name)} size="lg" initials={header.initials} />
         <Text variant="body" tone="ink-3" as="span">
           {header.meta}
         </Text>
       </div>
-      <div className="flex flex-col gap-space-12 desk:flex-row desk:items-center desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:flex-row desk:items-center desk:gap-space-16">
         <div className="flex flex-col gap-space-2">
           <Text variant="overline" tone="ink-3" as="div">
             {header.eyebrow}

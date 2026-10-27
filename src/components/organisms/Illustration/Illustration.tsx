@@ -240,7 +240,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
                   <div className="text-caption text-ink-3">8 rows · bill ₹44,319</div>
                 </div>
               </div>
-              <div className="h-space-4 w-full bg-line-soft rounded-ds-pill overflow-hidden mt-space-10">
+              <div className="h-space-4 w-full bg-line-soft rounded-ds-pill overflow-hidden mt-space-8 desk:mt-space-10">
                 <div className="h-full w-full bg-positive rounded-ds-pill" />
               </div>
               <div className="text-caption text-positive-strong font-bold mt-space-6 flex items-center gap-space-4">
@@ -281,7 +281,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
             <h1 className="text-page-title font-extrabold tracking-tight text-ink max-w-md leading-tight">
               Set up takes about ten minutes.
             </h1>
-            <div className="mt-space-16 flex flex-col gap-space-10">
+            <div className="mt-space-8 desk:mt-space-16 flex flex-col gap-space-8 desk:gap-space-10">
               <div className="flex items-start gap-space-10 text-body text-neutral-ink">
                 <b className="w-6 h-6 rounded-ds-pill bg-brand text-on-brand inline-flex items-center justify-center text-caption font-bold shrink-0">
                   1
@@ -403,10 +403,10 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           <h1 className="text-page-title font-extrabold tracking-tight text-ink max-w-md leading-tight">
             Every rupee, every card, every loan. One calm ledger.
           </h1>
-          <p className="mt-space-10 text-heading text-neutral-ink max-w-md font-medium leading-normal">
+          <p className="mt-space-8 desk:mt-space-10 text-heading text-neutral-ink max-w-md font-medium leading-normal">
             Statements, bank alerts and brokers flow in. You see what needs you today and where the rest went.
           </p>
-          <div className="mt-space-16 flex items-center gap-space-14 text-label text-ink-3 flex-wrap">
+          <div className="mt-space-8 desk:mt-space-16 flex items-center gap-x-space-14 gap-y-space-8 desk:gap-y-space-14 text-label text-ink-3 flex-wrap">
             <span>Encrypted at rest</span>
             <span>·</span>
             <span>Read-only Gmail</span>

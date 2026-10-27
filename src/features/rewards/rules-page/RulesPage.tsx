@@ -36,7 +36,7 @@ export function RulesPage({ accountId, usage, today }: RulesPageProps) {
 
   return (
     <RulesRefreshProvider value={() => router.refresh()}>
-    <div className="flex flex-col gap-space-12">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12">
       <AccountPicker
         className="desk:w-container-xs"
         aria-label="Account"
@@ -48,7 +48,7 @@ export function RulesPage({ accountId, usage, today }: RulesPageProps) {
         }}
       />
       <RulesSection accountId={accountId} today={today} usage={usage?.earned} />
-      <div className="grid grid-cols-1 items-start gap-space-12 desk:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
         <CapsSection accountId={accountId} usage={usage?.caps} />
         <MilestonesSection accountId={accountId} usage={usage?.milestones} />
       </div>

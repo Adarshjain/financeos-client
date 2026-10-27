@@ -21,7 +21,7 @@ export function RewardsOverview({ data }: { data: RewardsOverviewData }) {
     );
   }
   return (
-    <div className="flex flex-col gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <div className="flex flex-col gap-space-2">
         <Text variant="overline" tone="ink-3" as="div">
           Earned this year

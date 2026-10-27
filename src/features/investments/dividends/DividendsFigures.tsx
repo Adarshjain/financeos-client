@@ -8,7 +8,7 @@ import { type DividendsFigures, type DividendsTile, UNAVAILABLE } from './divide
 export function DividendsHero({ figures }: { figures: DividendsFigures }) {
   const { received, declared, notReceived, tds } = figures;
   return (
-    <div className="desk:hidden flex flex-col gap-space-12">
+    <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
       <div className="flex flex-col gap-space-2">
         <Text variant="label" tone="ink-3" as="div">
           {figures.fy ? 'Received this FY' : 'Received'}
@@ -22,7 +22,7 @@ export function DividendsHero({ figures }: { figures: DividendsFigures }) {
           </Text>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 gap-space-16">
+      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <div className="flex flex-col gap-space-2 min-w-0">
           <Text variant="label" tone="ink-3" as="div">
             {figures.fy ? 'Declared · FY' : 'Declared'}
@@ -63,7 +63,7 @@ export function DividendsHero({ figures }: { figures: DividendsFigures }) {
 /** The four desktop tiles: Declared, Received, TDS, Not received. */
 export function DividendsTiles({ tiles }: { tiles: DividendsTile[] }) {
   return (
-    <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
+    <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
       {tiles.map((tile) => (
         <KpiTile
           key={tile.label}

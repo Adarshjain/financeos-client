@@ -24,7 +24,7 @@ export default async function DsInstrumentsPage({ searchParams }: { searchParams
   const filtered = state.q !== '' || state.type !== '' || state.stale;
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Text variant="caption" tone="ink-3" as="div">
         Prices from Yahoo (stocks, ETFs) and AMFI (funds)
       </Text>

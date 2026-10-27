@@ -176,7 +176,7 @@ export function MarkPaidDialog({
               error={errors.transaction}
             />
           ) : null}
-          <div className="grid grid-cols-2 gap-space-12">
+          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
             <TextField
               label="Amount paid"
               prefix="₹"
