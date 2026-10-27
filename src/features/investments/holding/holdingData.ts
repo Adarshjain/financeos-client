@@ -6,9 +6,10 @@ import { ApiError } from '@/lib/api/client';
 import type { HoldingDetail, SellEstimate } from '@/lib/investments.types';
 import type { Instrument, PriceHistoryPoint } from '@/lib/types';
 
-import { fetchHolding, fetchInstrument, fetchPriceHistory, fetchSellEstimate } from '../investmentsServerApi';
+import { fetchHolding, fetchInstrument, fetchInstrumentCorporateActions, fetchPriceHistory, fetchSellEstimate } from '../investmentsServerApi';
 import type { CorporateActionRowModel, DividendRowModel, HoldingSection, TradeRow } from './holdingModel';
-import { corporateActionsSection, dividendsSection, tradesSection } from './holdingSections';
+import { corporateActionsPage, dividendsSection, tradesSection } from './holdingSections';
+import { type PriceSplit, splitsOf } from './priceChart';
 
 export interface HoldingPageData {
   holding: HoldingDetail;
@@ -19,6 +20,8 @@ export interface HoldingPageData {
   trades: HoldingSection<TradeRow> | null;
   dividends: HoldingSection<DividendRowModel> | null;
   corporateActions: HoldingSection<CorporateActionRowModel> | null;
+  /** Every split and bonus, for the chart's adjusted prices; empty when the corporate actions could not be read. */
+  splits: PriceSplit[];
   /** Every stored price, for the chart; null when it could not be read. */
   history: PriceHistoryPoint[] | null;
 }
@@ -29,7 +32,7 @@ export interface HoldingPageData {
  * secondary: when one fails the page still shows the rest. Later pages come from holdingActions.
  */
 export const loadHoldingPage = cache(async (instrumentId: string): Promise<HoldingPageData> => {
-  const [holding, instrument, estimate, trades, dividends, corporateActions, history] = await Promise.all([
+  const [holding, instrument, estimate, trades, dividends, actions, history] = await Promise.all([
     fetchHolding(instrumentId).catch(async (e: unknown) => {
       await signInIfSessionEnded(e);
       if (e instanceof ApiError && (e.status === 404 || e.status === 400)) return null;
@@ -39,9 +42,9 @@ export const loadHoldingPage = cache(async (instrumentId: string): Promise<Holdi
     orNull(fetchSellEstimate(instrumentId)),
     orNull(tradesSection(instrumentId, 0)),
     orNull(dividendsSection(instrumentId, 0)),
-    orNull(corporateActionsSection(instrumentId, 0)),
+    orNull(fetchInstrumentCorporateActions(instrumentId)),
     orNull(fetchPriceHistory(instrumentId)),
   ]);
   if (!holding) notFound();
-  return { holding, instrument, estimate, trades, dividends, corporateActions, history };
+  return { holding, instrument, estimate, trades, dividends, corporateActions: actions && corporateActionsPage(actions, 0), splits: actions ? splitsOf(actions) : [], history };
 });

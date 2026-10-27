@@ -1,4 +1,4 @@
-import type { PriceHistoryPoint } from '@/lib/types';
+import type { CorporateAction, PriceHistoryPoint } from '@/lib/types';
 
 import { shortDate } from '../investmentsFormat';
 
@@ -20,6 +20,41 @@ function monthsBefore(iso: string, months: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCMonth(d.getUTCMonth() - months);
   return d.toISOString().slice(0, 10);
+}
+
+/** A share-count change on `exDate`: one old share became `factor` shares (split 1:2 and bonus 1:1 are both 2). */
+export interface PriceSplit {
+  exDate: string;
+  factor: number;
+}
+
+/**
+ * The splits among a holding's corporate actions, as the quantities treat them: a split and a bonus multiply
+ * the share count by ratioTo / ratioFrom (the server stores held → held after for both). Demergers and mergers
+ * move value between instruments, so they do not adjust the price; neither do draft, reverted or cancelled actions.
+ */
+export function splitsOf(actions: readonly CorporateAction[]): PriceSplit[] {
+  const out: PriceSplit[] = [];
+  for (const a of actions) {
+    const kind = String(a.type ?? a.actionType ?? '').toLowerCase();
+    if (kind !== 'split' && kind !== 'bonus') continue;
+    if (a.status && a.status !== 'APPLIED') continue;
+    if (!a.exDate || !a.ratioFrom || !a.ratioTo || a.ratioFrom <= 0 || a.ratioTo <= 0) continue;
+    out.push({ exDate: a.exDate, factor: a.ratioTo / a.ratioFrom });
+  }
+  return out;
+}
+
+/**
+ * Split-adjusted prices, like brokers and Google show: every price dated before a split's ex-date is divided by
+ * that split's factor, across all later splits. A price on the ex-date is already post-split. Stored prices stay real.
+ */
+export function adjustForSplits(history: readonly PriceHistoryPoint[], splits: readonly PriceSplit[]): PriceHistoryPoint[] {
+  if (splits.length === 0) return [...history];
+  return history.map((p) => {
+    const factor = splits.reduce((f, s) => (p.asOf < s.exDate ? f * s.factor : f), 1);
+    return factor === 1 ? p : { ...p, close: Number(p.close) / factor };
+  });
 }
 
 /** The prices of a range, oldest first, counted back from the newest stored price. */

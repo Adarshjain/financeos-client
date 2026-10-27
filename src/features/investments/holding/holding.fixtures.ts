@@ -149,6 +149,7 @@ export function pageData(over: Partial<HoldingPageData> = {}): HoldingPageData {
     estimate,
     trades: { rows: trades.content.map(tradeRow), position: { page: 0, size: 10, totalElements: 2, totalPages: 1 } },
     dividends: { rows: [dividendRow(dividend as never)], position: { page: 0, size: 10, totalElements: 1, totalPages: 1 } },
+    splits: [{ exDate: '2025-06-10', factor: 2 }],
     corporateActions: { rows: [corporateActionRow(bonus as never)], position: { page: 0, size: 10, totalElements: 1, totalPages: 1 } },
     history: priceHistory,
     ...over,
