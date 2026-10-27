@@ -219,3 +219,8 @@ html.ds-theme-vt::view-transition-old(root) {
 html.ds-theme-vt::view-transition-new(root) {
   z-index: 2;
 }
+
+/* While a SelectionBar is mounted, desktop toasts sit above it instead of over its buttons (Toaster reads this). */
+body:has([data-selection-bar]) {
+  --ds-docked-bottom: var(--ds-space-64);
+}
