@@ -269,7 +269,7 @@ export function FilterChips({
   const activeCount = activeFilterCount(query);
 
   return (
-    <FilterBar
+    <FilterBar size="md"
       search={search}
     >
       <PeriodChip query={query} today={today} onChange={onChange} />

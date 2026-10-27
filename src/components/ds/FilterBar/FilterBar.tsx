@@ -18,6 +18,8 @@ export interface FilterBarProps extends React.HTMLAttributes<HTMLDivElement> {
   search?: FilterBarSearch;
   /** The filter chips and dropdown chips (FilterChip, default pill shape), after the search field. */
   children?: React.ReactNode;
+  /** Matches the chips' `size`: the search field is as tall as they are. sm is 28px (default), md is 32px. */
+  size?: 'sm' | 'md';
 }
 
 /**
@@ -30,7 +32,7 @@ export interface FilterBarProps extends React.HTMLAttributes<HTMLDivElement> {
  * negative margins (the phone page gutter on phone, space-4 on desktop), so the row sits where it would without it.
  */
 export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
-  ({ search, children, className, ...props }, ref) => {
+  ({ search, children, size = 'sm', className, ...props }, ref) => {
     const [focused, setFocused] = useState(false);
     const expanded = focused || (search?.value ?? '') !== '';
 
@@ -54,7 +56,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
           >
             <TextField
               type="search"
-              size="md"
+              size={size === 'md' ? 'lg' : 'md'}
               shape="pill"
               prefix={<Icon name="search" size="sm" />}
               clearable

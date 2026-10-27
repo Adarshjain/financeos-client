@@ -23,6 +23,7 @@ const meta: Meta<StoryArgs> = {
   argTypes: {
     text: { control: 'text', description: 'The search text (`search.value`)' },
     placeholder: { control: 'text', description: '`search.placeholder`' },
+    size: { control: 'inline-radio', options: ['sm', 'md'], description: "Match the chips' size: sm 28px (default), md 32px" },
     withSearch: { control: 'boolean', description: 'Off: the row is just the chips' },
     search: { control: false },
     children: { control: false },
@@ -34,13 +35,13 @@ type Story = StoryObj<StoryArgs>;
 
 const CHIPS = ['All', 'Stocks', 'Mutual funds', 'Bonds', 'Gold', 'ETFs'];
 
-function Row({ text, placeholder, withSearch, onText }: { text: string; placeholder: string; withSearch: boolean; onText: (v: string) => void }) {
+function Row({ text, placeholder, withSearch, onText, size }: { text: string; placeholder: string; withSearch: boolean; onText: (v: string) => void; size?: 'sm' | 'md' }) {
   const [selected, setSelected] = React.useState('All');
   const [sort, setSort] = React.useState('value');
   return (
-    <FilterBar search={withSearch ? { value: text, onValueChange: onText, placeholder } : undefined}>
+    <FilterBar size={size} search={withSearch ? { value: text, onValueChange: onText, placeholder } : undefined}>
       {CHIPS.map((c) => (
-        <FilterChip key={c} className="shrink-0" selected={selected === c} onClick={() => setSelected(c)}>
+        <FilterChip key={c} size={size} className="shrink-0" selected={selected === c} onClick={() => setSelected(c)}>
           {c}
         </FilterChip>
       ))}
@@ -52,7 +53,7 @@ function Row({ text, placeholder, withSearch, onText }: { text: string; placehol
         ]}
         onValueChange={(v) => setSort(String(v))}
         trigger={
-          <FilterChip hasDropdown className="shrink-0">
+          <FilterChip hasDropdown size={size} className="shrink-0">
             {sort === 'value' ? 'Value' : 'Name'}
           </FilterChip>
         }
@@ -64,13 +65,18 @@ function Row({ text, placeholder, withSearch, onText }: { text: string; placehol
 export const Playground: Story = {
   render: function Render(args) {
     const [, updateArgs] = useArgs();
-    return <Row text={args.text} placeholder={args.placeholder} withSearch={args.withSearch} onText={(text) => updateArgs({ text })} />;
+    return <Row size={args.size} text={args.text} placeholder={args.placeholder} withSearch={args.withSearch} onText={(text) => updateArgs({ text })} />;
   },
 };
 
 export const WithText: Story = {
   args: { text: 'hdfc' },
   render: (args) => <Row text={args.text} placeholder={args.placeholder} withSearch onText={fn()} />,
+};
+
+export const Medium: Story = {
+  args: { size: 'md' },
+  render: (args) => <Row size="md" text={args.text} placeholder={args.placeholder} withSearch onText={fn()} />,
 };
 
 export const ChipsOnly: Story = {

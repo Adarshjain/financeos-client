@@ -2,9 +2,9 @@
 
 import React from 'react';
 
-import { Badge, Button, Conceal, KpiTile, Text } from '@/components/ds';
+import { Button, Conceal, KpiTile, Text } from '@/components/ds';
 
-import type { HoldingFigure, HoldingHeaderModel, HoldingHeroModel } from './holdingModel';
+import type { HoldingFigure, HoldingHeroModel } from './holdingModel';
 
 /** The context line of a figure; the LTP figure ends with an "override" link. */
 function Context({ figure, onOverride }: { figure: HoldingFigure; onOverride: () => void }) {
@@ -25,7 +25,6 @@ function Context({ figure, onOverride }: { figure: HoldingFigure; onOverride: ()
 }
 
 export interface HoldingFiguresProps {
-  header: HoldingHeaderModel;
   hero: HoldingHeroModel;
   figures: HoldingFigure[];
   onOverride: () => void;
@@ -35,13 +34,10 @@ export interface HoldingFiguresProps {
  * The top of a holding: its particulars, the current value with its move, and eight figures. The phone shows
  * the value as the hero and the figures as pairs; the desktop shows the figures as tiles.
  */
-export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFiguresProps) {
+export function HoldingFigures({ hero, figures, onOverride }: HoldingFiguresProps) {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <div className="flex flex-col gap-space-8 desk:gap-space-12 desk:flex-row desk:items-end desk:justify-between">
-        <div className="min-w-0 flex flex-wrap items-center gap-space-8">
-          <Badge tone="neutral">{header.badge}</Badge>
-        </div>
         <div className="flex items-end gap-space-16">
           <div className="flex flex-col gap-space-2">
             <Text variant="hero-figure" family="display" as="div">

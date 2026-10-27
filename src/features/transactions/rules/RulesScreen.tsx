@@ -132,7 +132,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
     <ShellPage crumb="Money / Transactions" title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={tabs} value="rules" />
-        <FilterBar
+        <FilterBar size="md"
           search={{ value: text, onValueChange: setText }}
         >
           {STATUS_CHIPS.map((chip) => (

@@ -195,11 +195,16 @@ export const Pill: Story = {
   args: {
     type: 'search',
     shape: 'pill',
+    size: 'md',
     prefix: <Icon name="search" size="sm" />,
     clearable: true,
     clearLabel: 'Clear search',
     placeholder: 'Search',
   },
+};
+
+export const PillLarge: Story = {
+  args: { ...Pill.args, size: 'lg' },
 };
 
 export const Embedded: Story = {
