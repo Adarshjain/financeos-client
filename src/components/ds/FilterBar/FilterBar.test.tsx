@@ -22,6 +22,15 @@ describe('FilterBar', () => {
     expect(row.children[1]).toHaveTextContent('All');
   });
 
+  it('sizes the search field to the chips: sm is 28px by default, md is 32px', () => {
+    const { container, rerender } = render(<FilterBar search={search()} />);
+    expect(container.querySelector('.h-space-28')).toBeInTheDocument();
+    expect(container.querySelector('.h-control-md')).not.toBeInTheDocument();
+    rerender(<FilterBar size="md" search={search()} />);
+    expect(container.querySelector('.h-control-md')).toBeInTheDocument();
+    expect(container.querySelector('.h-space-28')).not.toBeInTheDocument();
+  });
+
   it('shows just "Search" as the placeholder by default and takes an override', () => {
     const { rerender } = render(<FilterBar search={search()} />);
     expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();

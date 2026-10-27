@@ -16,13 +16,13 @@ import {
 } from './holdingModel';
 
 describe('holdingHeader and holdingHero', () => {
-  it('writes the title and the badge', () => {
-    expect(holdingHeader(holding)).toEqual({ title: 'INFY · Infosys', badge: 'Stock' });
+  it('writes the title', () => {
+    expect(holdingHeader(holding)).toEqual({ title: 'INFY · Infosys' });
   });
 
-  it('titles a fund by its name and says so in the badge', () => {
+  it('titles a fund by its name', () => {
     const fund: HoldingDetail = { ...holding, symbol: null, name: 'Mirae Asset Large Cap', assetType: 'mutual_fund', brokers: holding.brokers.slice(0, 1), term: null };
-    expect(holdingHeader(fund)).toEqual({ title: 'Mirae Asset Large Cap', badge: 'Fund' });
+    expect(holdingHeader(fund)).toEqual({ title: 'Mirae Asset Large Cap' });
   });
 
   it('writes the move line with the return, its percent and today', () => {

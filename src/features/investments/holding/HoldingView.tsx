@@ -78,7 +78,6 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
       <ShellPage crumb="Grow / Investments" title={header.title} backHref={HOLDINGS_HREF} addMenu={addMenu}>
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <HoldingFigures
-            header={header}
             hero={holdingHero(holding)}
             figures={holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date())}
             onOverride={() => setOverriding(true)}

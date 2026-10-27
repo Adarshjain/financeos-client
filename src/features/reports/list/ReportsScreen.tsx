@@ -212,7 +212,7 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs />
 
-      <FilterBar
+      <FilterBar size="md"
         search={{ value: search, onValueChange: setSearch }}
       >
         <FilterChip

@@ -23,7 +23,7 @@ export interface TextFieldProps
   variant?: TextFieldVariant;
   /** `success` colours the value text with the money-in green (`positive`). */
   tone?: TextFieldTone;
-  /** `pill` matches a FilterChip: 28px high, 10px side padding, full radius, label text. Use beside filter chips. */
+  /** `pill` matches a FilterChip of the same size: `size="md"` is the sm chip (28px, 10px side padding, like the md field's padding), `lg` (default) is the md chip (32px, 12px); full radius, label text. Use beside filter chips. */
   shape?: TextFieldShape;
   label?: React.ReactNode;
   helper?: React.ReactNode;
@@ -133,7 +133,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         <div
           className={cn(
             'flex items-center w-full border bg-surface font-text font-medium text-ink transition-colors duration-fast',
-            isPill ? 'gap-space-6 h-space-28 px-space-10 rounded-ds-pill text-label' : 'gap-space-8 rounded-ds-md text-body',
+            isPill ? ['gap-space-6 rounded-ds-pill text-label', isMd ? 'h-space-28 px-space-10' : 'h-control-md px-space-12'] : 'gap-space-8 rounded-ds-md text-body',
             !isPill && (isXl ? 'h-control-xl' : 'h-control-md'),
             !isPill && (isMd ? 'px-space-10' : 'px-space-12'),
             disabled

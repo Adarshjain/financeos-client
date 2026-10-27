@@ -3,7 +3,7 @@ import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/li
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 import { ratioText } from '../corporate-actions/corporateActionRatio';
-import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
+import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
 
 // ---- Sections ------------------------------------------------------------------
 
@@ -21,12 +21,11 @@ export interface HoldingSection<R> {
 export interface HoldingHeaderModel {
   /** "INFY · Infosys", or the name alone. */
   title: string;
-  badge: string;
 }
 
 export function holdingHeader(holding: HoldingDetail): HoldingHeaderModel {
   const title = holding.symbol && holding.symbol !== holding.name ? `${holding.symbol} · ${holding.name}` : holding.name;
-  return { title, badge: TYPE_WORDS[holding.assetType] };
+  return { title };
 }
 
 export interface HoldingHeroModel {
