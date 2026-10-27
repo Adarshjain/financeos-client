@@ -32,6 +32,8 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean };
   highlighted?: boolean;
   busy?: boolean;
+  /** DataTable `size`: `sm` rows hug one line of text. */
+  size?: 'sm' | 'md';
   /** The first row of the table draws no top border (DataTable `firstRowBorder={false}`). */
   first?: boolean;
 }
@@ -58,6 +60,7 @@ export function DataTableRow<Row extends RowData>({
   rowState,
   highlighted = false,
   busy = false,
+  size = 'md',
   first = false,
 }: DataTableRowComponentProps<Row>) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -121,8 +124,9 @@ export function DataTableRow<Row extends RowData>({
           : hasThirdCol
             ? 'grid-cols-fill-auto-auto'
             : 'grid-cols-fill-auto',
-        'grid gap-x-space-10 px-space-14 py-space-10',
-        'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
+        'grid gap-x-space-10 px-space-14',
+        size === 'sm' ? 'py-space-8' : 'py-space-10 desk:min-h-space-40',
+        'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:items-center',
         // Highlighted and selected rows are the brand-tint ground only; only the warning tone keeps a stripe (owner, 2026-10-26).
         isHighlighted || isSelected
           ? 'border-l-transparent bg-brand-tint'

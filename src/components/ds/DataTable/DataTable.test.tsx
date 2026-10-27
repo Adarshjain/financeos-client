@@ -149,6 +149,29 @@ describe('DataTable', () => {
     });
   });
 
+  describe('Row size', () => {
+    const dataRows = () => screen.getAllByRole('row').filter((r) => /Alpha|Beta|Gamma/.test(r.textContent ?? ''));
+
+    it('md (default): rows keep the 40px minimum on desktop and 10px padding on phone', () => {
+      render(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} />);
+      dataRows().forEach((r) => {
+        expect(r).toHaveClass('desk:min-h-space-40', 'py-space-10');
+        expect(r).not.toHaveClass('py-space-8');
+      });
+    });
+
+    it('sm: rows hug one line on desktop and take 8px padding on phone', () => {
+      render(<DataTable columns={testColumns} data={testData} getRowId={(r) => r.id} size="sm" />);
+      const rows = dataRows();
+      expect(rows).toHaveLength(3);
+      rows.forEach((r) => {
+        expect(r).toHaveClass('py-space-8', 'desk:py-0');
+        expect(r).not.toHaveClass('desk:min-h-space-40');
+        expect(r).not.toHaveClass('py-space-10');
+      });
+    });
+  });
+
   describe('Sorting', () => {
     it('Server: clicking a sortable number header calls onSortChange with asc, desc, then null (sortDescFirst: false)', () => {
       const handleSortChange = vi.fn();

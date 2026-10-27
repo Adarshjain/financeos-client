@@ -70,6 +70,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `pager?: ReactNode`, `footer?: ReactNode`.
 - `loading?: boolean`, `busy?: boolean`, `empty?: ReactNode`, `skeletonRows?: number`.
 - `stickyHeader?: boolean` (default `true`).
+- `size?: 'sm' | 'md'` (default `'md'`): `md` rows are at least `space-40` tall on desktop; `sm` rows hug one line of text (TransactionRow's height) and use `space-8` vertical padding on phone, for a dense ledger like the EPF passbook (owner, 2026-10-27).
 - `hideHeader?: boolean` (default `false`): no header row on desktop, for a single-column list whose header would only repeat the column name (owner, 2026-10-23). Sorting and select-all live in the header, so use it only on tables that have neither.
 - Native props, `ref` and `className` (layout only) on the root.
 
@@ -87,6 +88,7 @@ TanStack Table v9 (`@tanstack/react-table`, pinned 9.2.4; state only: sorting, s
 - Expandable rows.
 - Row states: warning, disabled, muted, highlighted.
 - With footer.
+- Small rows (`size="sm"`).
 - Row component (TransactionRow).
 - Loading, Busy, Empty.
 - In a dialog body (no Card, scrolls inside, sticky header).
