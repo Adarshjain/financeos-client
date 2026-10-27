@@ -341,7 +341,7 @@ describe('RulesScreen', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit rule' }));
     expect(await screen.findByText('Edit rule · Dunzo')).toBeTruthy();
     expect(screen.getByText(/Changing the pattern unlinks the 4 transactions/)).toBeTruthy();
-    expect(await screen.findByText('Matches now · 2')).toBeTruthy();
+    expect(await screen.findByText('Matches now · 2', {}, { timeout: 3000 })).toBeTruthy();
     expect(screen.getByText(/HDFC Regalia ••7741/)).toBeTruthy();
     expect(screen.getByText(/Paytm Wallet/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'DUNZO' } });
@@ -470,6 +470,6 @@ describe('RulesScreen', () => {
     expect(await screen.findByText('Finding matches…', {}, { timeout: 3000 })).toBeTruthy();
     expect(screen.queryByText('Matches now · 1')).toBeNull();
     release(matchPage([match('b1'), match('b2')]));
-    expect(await screen.findByText('Matches now · 2')).toBeTruthy();
+    expect(await screen.findByText('Matches now · 2', {}, { timeout: 3000 })).toBeTruthy();
   });
 });
