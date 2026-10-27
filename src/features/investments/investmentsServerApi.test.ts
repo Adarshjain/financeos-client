@@ -14,7 +14,7 @@ vi.mock('@/lib/apiClient', () => ({
   jobsApi: {},
 }));
 
-import { fetchInstrumentTrades } from './investmentsServerApi';
+import { fetchHoldings, fetchInstrumentTrades } from './investmentsServerApi';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -23,5 +23,19 @@ describe('fetchInstrumentTrades', () => {
     api.getTrades.mockResolvedValue({ content: [] });
     await fetchInstrumentTrades('i1', 2, 25);
     expect(api.getTrades).toHaveBeenCalledWith({ instrumentId: 'i1', page: 2, size: 25, sort: 'tradeDate,desc' });
+  });
+});
+
+describe('fetchHoldings', () => {
+  it('hands the sort and its direction to the holdings endpoint', async () => {
+    api.getHoldings.mockResolvedValue({ holdings: [] });
+    await fetchHoldings({ sort: 'return_pct', dir: 'asc', page: 0, size: 50 });
+    expect(api.getHoldings).toHaveBeenCalledWith({ sort: 'return_pct', dir: 'asc', page: 0, size: 50 });
+  });
+
+  it('sends no direction when the query has none', async () => {
+    api.getHoldings.mockResolvedValue({ holdings: [] });
+    await fetchHoldings({ sort: 'name', page: 0, size: 50 });
+    expect(api.getHoldings.mock.calls[0][0]).not.toHaveProperty('dir');
   });
 });

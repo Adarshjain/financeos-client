@@ -24,7 +24,7 @@ export function DebugView({ initialRef = '', initialType = 'auto', admin }: Debu
   const { data, isLoading, isError, error } = useDiagnosticsLookup(currentRef, currentType, admin);
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <LookupCard
         key={`${currentRef}|${currentType}`}
         admin={admin}
@@ -36,7 +36,7 @@ export function DebugView({ initialRef = '', initialType = 'auto', admin }: Debu
 
       {admin && isLoading ? (
         <Card title="Querying logs" subtitle="Correlating the request timeline">
-          <div className="flex flex-col gap-space-12 px-space-16 pb-space-16">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 pb-space-16">
             <Skeleton height={16} />
             <Skeleton height={16} />
             <Skeleton height={16} width="60%" />
@@ -51,8 +51,8 @@ export function DebugView({ initialRef = '', initialType = 'auto', admin }: Debu
       ) : null}
 
       {admin && data && !isLoading ? (
-        <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
-          <div className="desk:col-span-5 flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+          <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16">
             {data.request ? (
               <RequestCard
                 request={data.request}

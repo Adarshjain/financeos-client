@@ -144,13 +144,6 @@ export function reportRows(reports: ReportSummaryResponse[], datasourceLabels: R
     .sort((a, b) => areaOrder(a.areaId) - areaOrder(b.areaId) || a.name.localeCompare(b.name));
 }
 
-/** How many reports each type chip holds, over every report (so a chip's count does not change with the filter). */
-export function typeCounts(rows: ReportRow[]): Record<ReportKind, number> {
-  const counts: Record<ReportKind, number> = { KPI: 0, CHART: 0, BREAKDOWN: 0, TABLE: 0 };
-  for (const r of rows) counts[r.kind] += 1;
-  return counts;
-}
-
 /** Rows of the chosen type (all when none) matching the search (every word, against name, description and datasource). */
 export function filterRows(rows: ReportRow[], search: string, kind?: ReportKind): ReportRow[] {
   const words = search.trim().toLowerCase().split(/\s+/).filter(Boolean);

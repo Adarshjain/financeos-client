@@ -153,18 +153,18 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           primary={{ label: editing ? 'Save dividend' : 'Record dividend', type: 'submit', form: FORM_ID, loading: submitting }}
         >
           <DialogBody>
-            <div className="flex flex-col gap-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
               <form
                 id={FORM_ID}
                 noValidate
                 autoComplete="off"
-                className="flex flex-col gap-space-16"
+                className="flex flex-col gap-space-8 desk:gap-space-16"
                 onSubmit={(e) => {
                   e.preventDefault();
                   void submit();
                 }}
               >
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <Select label="Type" options={TYPE_OPTIONS} value={type} onValueChange={(v) => setType(v as DividendType)} />
                   {editing ? (
                     <TextField label="Account" value={dividend?.brokerName ?? ''} disabled readOnly />
@@ -198,11 +198,11 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
                     }}
                   />
                 )}
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <DateField label="Ex-date" today={today} value={exDate} onValueChange={(v) => setExDate(typeof v === 'string' ? v : '')} />
                   <DateField label="Pay date" today={today} value={payDate} onValueChange={(v) => setPayDate(typeof v === 'string' ? v : '')} />
                 </div>
-                <div className="grid grid-cols-3 gap-space-12">
+                <div className="grid grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <TextField
                     label="Per unit"
                     inputMode="decimal"
@@ -278,7 +278,7 @@ export function DividendAddDialog({ onClose, prefill, onSaved }: DividendAddDial
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <DialogContent size="sm" title="Record dividend" secondary={{ label: 'Cancel', onSelect: onClose }}>
           <DialogBody>
-            <div className="flex flex-col gap-space-12">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
               <Skeleton height={32} />
               <Skeleton height={32} />
               <Skeleton height={32} />

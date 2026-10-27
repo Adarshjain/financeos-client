@@ -30,7 +30,7 @@ function FilterForm({
   const field = fieldByName(catalog, clause.field);
   const kind = field ? valueKind(catalog, field, clause.operator) : 'none';
   return (
-    <div className="flex flex-col gap-space-12 p-space-12 w-container-xs max-w-full">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-12 w-container-xs max-w-full">
       <div className={PAIR}>
         <PickSelect
           label="Field"

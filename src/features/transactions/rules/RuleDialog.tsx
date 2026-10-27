@@ -100,13 +100,13 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
         <DialogBody>
           <form
             id={FORM_ID}
-            className="flex flex-col gap-space-12"
+            className="flex flex-col gap-space-8 desk:gap-space-12"
             onSubmit={(e) => {
               e.preventDefault();
               if (!saving) submit();
             }}
           >
-            <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
               <TextField
                 label="Pattern"
                 name="pattern"
@@ -122,7 +122,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
                 onValueChange={(v) => setMatchType(v as MatchType)}
               />
             </div>
-            <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
               <CategoriesField
                 categories={localCategories}
                 selectedCategoryIds={selectedCategories.map((c) => c.id)}

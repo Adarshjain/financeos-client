@@ -12,6 +12,7 @@ import {
   DialogBody,
   DialogContent,
   EmptyState,
+  FilterBar,
   Icon,
   ListRow,
   Menu,
@@ -20,7 +21,6 @@ import {
   type TabItem,
   Tabs,
   Text,
-  TextField,
 } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
@@ -83,7 +83,7 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
 
   return (
     <ShellPage crumb="Money" title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })}>
-      <div className="flex min-w-0 flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={tabs} value="categories" />
         {uncategorized ? (
           <UncategorizedCard
@@ -102,15 +102,8 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
           />
         ) : (
           <>
-            <TextField
-              type="search"
-              size="md"
-              className="desk:max-w-container-sm"
-              prefix={<Icon name="search" size="sm" />}
-              clearable
-              placeholder="Search categories"
-              value={text}
-              onValueChange={setText}
+            <FilterBar
+              search={{ value: text, onValueChange: setText }}
             />
             {categories.rows.length === 0 ? (
               <EmptyState

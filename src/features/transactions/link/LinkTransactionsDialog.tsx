@@ -171,7 +171,7 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
         primary={primary}
       >
         <DialogBody>
-          <div className="flex flex-col gap-space-16">
+          <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <Select label="Type" groups={groups} value={kind} onValueChange={(v) => setKind(v as LinkKind)} />
             {kind === 'LENDING' ? (
               <LendingLinkBody

@@ -32,10 +32,10 @@ describe('AccountTabs', () => {
     get.mockResolvedValue({ data: { statements: 3, cards: 2, transactions: 142 } });
   });
 
-  it('links the four tabs of a credit card to their routes', async () => {
+  it('links the four tabs of a credit card to their routes', () => {
     renderTabs(AccountType.CREDIT_CARD);
     const tabs = screen.getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent?.replace(/ · \d+$/, ''))).toEqual([
+    expect(tabs.map((t) => t.textContent)).toEqual([
       'Overview',
       'Statements',
       'Cards',
@@ -47,7 +47,6 @@ describe('AccountTabs', () => {
       '/accounts/a1/cards',
       '/accounts/a1/rewards',
     ]);
-    await screen.findByText('· 3');
   });
 
   it('shows two tabs for a wallet and no strip for a broker', () => {
@@ -59,21 +58,6 @@ describe('AccountTabs', () => {
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
   });
 
-  it('adds the counts only after tab-counts arrives', async () => {
-    let resolve!: (v: unknown) => void;
-    get.mockReturnValue(new Promise((r) => (resolve = r)));
-    renderTabs(AccountType.CREDIT_CARD);
-
-    expect(screen.queryByText('· 3')).toBeNull();
-    resolve({ data: { statements: 3, cards: 2, transactions: 142 } });
-
-    expect(await screen.findByText('· 3')).toBeInTheDocument();
-    expect(screen.getByText('· 2')).toBeInTheDocument();
-    expect(get).toHaveBeenCalledWith('/api/v1/accounts/{id}/tab-counts', {
-      params: { path: { id: 'a1' } },
-    });
-  });
-
   it('marks the tab the route is on', () => {
     pathname = '/accounts/a1/statements';
     renderTabs(AccountType.BANK_ACCOUNT);
@@ -81,10 +65,9 @@ describe('AccountTabs', () => {
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('shows no counts when tab-counts fails', async () => {
-    get.mockRejectedValue(new Error('down'));
+  it('shows no counts and never calls tab-counts', () => {
     renderTabs(AccountType.CREDIT_CARD);
-    await vi.waitFor(() => expect(get).toHaveBeenCalled());
+    expect(get).not.toHaveBeenCalled();
     expect(screen.queryByText(/^· \d/)).toBeNull();
   });
 });

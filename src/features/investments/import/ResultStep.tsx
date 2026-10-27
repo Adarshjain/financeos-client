@@ -13,7 +13,7 @@ export function ResultStep({ result, brokerName }: { result: ImportCommitResult;
   const failed = result.failed ?? [];
   const skipped = result.skippedItems ?? [];
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <Card>
         <div className="flex flex-col items-center gap-space-4 p-space-20 text-center">
           <Text variant="title" as="h2">
@@ -24,7 +24,7 @@ export function ResultStep({ result, brokerName }: { result: ImportCommitResult;
           </Text>
         </div>
       </Card>
-      <div className="grid grid-cols-3 gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         <KpiTile label="Committed" value={result.committed} />
         <KpiTile label="Skipped" value={result.skipped} />
         <KpiTile label="Failed" value={failed.length} />

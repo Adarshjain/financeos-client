@@ -13,13 +13,16 @@ import {
   holdingsUrl,
   mergedLine,
   parseHoldingsUrl,
+  SORT_OPTIONS,
+  sortFromValue,
+  sortValue,
   taxCardModel,
   topMovers,
 } from './holdingsModel';
 
 describe('Holdings URL state', () => {
   it('reads defaults from an empty query', () => {
-    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', page: 0, size: 50 });
+    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', dir: 'asc', page: 0, size: 50 });
   });
 
   it('reads every filter and ignores values it does not know', () => {
@@ -28,6 +31,7 @@ describe('Holdings URL state', () => {
       type: 'etf',
       broker: 'b1',
       sort: 'return_abs',
+      dir: 'desc',
       page: 2,
       size: 25,
     });
@@ -36,6 +40,7 @@ describe('Holdings URL state', () => {
       type: '',
       broker: '',
       sort: 'name',
+      dir: 'asc',
       page: 0,
       size: 50,
     });
@@ -43,13 +48,13 @@ describe('Holdings URL state', () => {
 
   it('keeps defaults out of the address', () => {
     expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments');
-    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', page: 1, size: 25 })).toBe(
+    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 25 })).toBe(
       '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=1&size=25',
     );
   });
 
   it('turns the state into the server request', () => {
-    expect(holdingsQuery({ q: 'tcs', type: 'mutual_fund', broker: 'b1', sort: 'return_pct', page: 1, size: 25 })).toEqual({
+    expect(holdingsQuery({ q: 'tcs', type: 'mutual_fund', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 25 })).toEqual({
       search: 'tcs',
       assetType: 'mutual_fund',
       brokerAccountId: 'b1',
@@ -58,6 +63,54 @@ describe('Holdings URL state', () => {
       size: 25,
     });
     expect(holdingsQuery(parseHoldingsUrl({}))).toMatchObject({ search: undefined, assetType: undefined, brokerAccountId: undefined, sort: 'name' });
+  });
+});
+
+describe('Holdings sort direction', () => {
+  it('defaults each key to its own order: name A to Z, returns high to low', () => {
+    expect(parseHoldingsUrl({ sort: 'name' }).dir).toBe('asc');
+    expect(parseHoldingsUrl({ sort: 'return_pct' }).dir).toBe('desc');
+    expect(parseHoldingsUrl({ sort: 'return_abs' }).dir).toBe('desc');
+  });
+
+  it('reads dir case-sensitively as asc or desc and falls back to the default for anything else', () => {
+    expect(parseHoldingsUrl({ sort: 'name', dir: 'desc' }).dir).toBe('desc');
+    expect(parseHoldingsUrl({ sort: 'return_pct', dir: 'asc' }).dir).toBe('asc');
+    expect(parseHoldingsUrl({ sort: 'return_pct', dir: 'up' }).dir).toBe('desc');
+    expect(parseHoldingsUrl({ dir: 'sideways' }).dir).toBe('asc');
+  });
+
+  it('writes dir to the address only when it differs from the key default', () => {
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'asc' }))).toBe('/investments');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'desc' }))).toBe('/investments?dir=desc');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_pct', dir: 'desc' }))).toBe('/investments?sort=return_pct');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_abs', dir: 'asc' }))).toBe('/investments?sort=return_abs&dir=asc');
+  });
+
+  it('sends dir to the server only when it differs from the key default', () => {
+    expect(holdingsQuery(parseHoldingsUrl({ sort: 'name' })).dir).toBeUndefined();
+    expect(holdingsQuery(parseHoldingsUrl({ sort: 'return_pct' })).dir).toBeUndefined();
+    expect(holdingsQuery(parseHoldingsUrl({ sort: 'name', dir: 'desc' }))).toMatchObject({ sort: 'name', dir: 'desc' });
+    expect(holdingsQuery(parseHoldingsUrl({ sort: 'return_abs', dir: 'asc' }))).toMatchObject({ sort: 'return_abs', dir: 'asc' });
+  });
+
+  it('offers six options, each with its direction in words', () => {
+    expect(SORT_OPTIONS.map((o) => o.label)).toEqual([
+      'Name: A to Z',
+      'Name: Z to A',
+      '% return: high to low',
+      '% return: low to high',
+      '₹ return: high to low',
+      '₹ return: low to high',
+    ]);
+  });
+
+  it('maps every option to its sort and dir and back', () => {
+    for (const o of SORT_OPTIONS) {
+      expect(sortFromValue(o.value)).toEqual({ sort: o.sort, dir: o.dir });
+      expect(sortValue({ sort: o.sort, dir: o.dir })).toBe(o.value);
+    }
+    expect(sortFromValue('nonsense')).toEqual({ sort: 'name', dir: 'asc' });
   });
 });
 

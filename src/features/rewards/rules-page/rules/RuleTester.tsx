@@ -18,8 +18,8 @@ const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [
 export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRuleForm>; categories: Category[] }) {
   const reading = f.preview ? readRuleTest(f.preview, f) : null;
   return (
-    <div className="flex flex-col gap-space-12">
-      <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12">
+      <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
         <TextField
           label="Amount ₹"
           inputMode="decimal"
@@ -32,7 +32,7 @@ export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRu
           value={f.previewDescription}
           onValueChange={f.setPreviewDescription}
         />
-        <div className="grid grid-cols-2 gap-space-12 desk:col-span-2">
+        <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:col-span-2">
             <TextField
               label="MCC"
               inputMode="numeric"
@@ -59,7 +59,7 @@ export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRu
           onValueChange={(v) => f.setPreviewCategories(asList(v).flatMap((id) => categories.find((c) => c.id === id) ?? []))}
         />
       </div>
-      <div className="flex flex-wrap gap-space-16">
+      <div className="flex flex-wrap gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <label className="flex items-center gap-space-8">
           <Checkbox checked={f.previewEmi} onCheckedChange={(c) => f.setPreviewEmi(c === true)} />
           <Text variant="body">EMI</Text>

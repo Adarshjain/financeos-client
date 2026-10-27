@@ -9,7 +9,7 @@ import { fieldByName, isDateFieldName } from './catalog';
 import { aggregationOptions, dimensionOptions, granularityOptions, measureOptions, NONE, parseCount } from './options';
 
 /** The grid of a row of two fields, side by side at every width. */
-export const PAIR = 'grid grid-cols-2 items-start gap-space-12';
+export const PAIR = 'grid grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-y-space-12';
 
 /**
  * A row where the second field slides in (from the right, in its half) only while `open`; the first field takes

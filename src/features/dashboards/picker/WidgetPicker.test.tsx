@@ -72,11 +72,11 @@ beforeEach(() => {
 });
 
 describe('WidgetPicker', () => {
-  it('lists the built-ins and the reports in tabs with their counts', async () => {
+  it('lists the built-ins and the reports in tabs, without counts', async () => {
     open();
     const dialog = await screen.findByRole('dialog', { name: /Add widget/ });
-    expect(within(dialog).getByRole('tab', { name: /Built-in\s*·\s*4/ })).toBeInTheDocument();
-    expect(within(dialog).getByRole('tab', { name: /My reports\s*·\s*2/ })).toBeInTheDocument();
+    expect(within(dialog).getByRole('tab', { name: /^Built-in$/ })).toBeInTheDocument();
+    expect(within(dialog).getByRole('tab', { name: /^My reports$/ })).toBeInTheDocument();
     expect(within(dialog).getByRole('radio', { name: /Card utilisation/ })).toBeInTheDocument();
     expect(within(dialog).getByText('Half width · needs: card')).toBeInTheDocument();
     expect(within(dialog).getByText('Half width · n = 5')).toBeInTheDocument();

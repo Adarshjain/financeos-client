@@ -89,7 +89,7 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
         backHref={appHref('/loans')}
         onAdd={() => setEventType('rate_change')}
       >
-        <div className="flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <LoanHeader
             header={header}
             canPrepay={!closed}
@@ -101,7 +101,7 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
             onDelete={() => setDeleting(true)}
           />
           <LoanTilesCard model={tiles} />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
             <div className="desk:col-span-9 min-w-0">
               <ScheduleCard
                 rows={rows}
@@ -113,7 +113,7 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
                 onOpenRow={openRow}
               />
             </div>
-            <div className="desk:col-span-3 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+            <div className="desk:col-span-3 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <SplitCard splits={splits} />
               <EntriesCard
                 rows={entries}

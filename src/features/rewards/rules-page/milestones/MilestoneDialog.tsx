@@ -114,7 +114,7 @@ export function MilestoneDialog({
         primary={{ label: 'Save milestone', onSelect: f.onSubmit, loading: pending }}
       >
         <DialogBody>
-          <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <TextField label="Name" placeholder="e.g. ₹50k quarterly voucher" value={f.name} onValueChange={f.setName} />
             <Select
               label="Window"
@@ -206,7 +206,7 @@ export function MilestoneDialog({
           <SectionHeader variant="band">
             Eligible spend — independent from earn rules; leave empty to count everything
           </SectionHeader>
-          <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <Select
               label="Count only these categories"
               multiple

@@ -25,7 +25,7 @@ export default async function DsLoansPage({ searchParams }: { searchParams: Prom
   ]);
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <TileGrid
         tiles={summary ? loanTiles(summary, today) : null}
         labels={TILE_LABELS}

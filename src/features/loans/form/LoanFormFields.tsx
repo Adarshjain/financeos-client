@@ -28,7 +28,7 @@ export type LoanFormErrors = Partial<Record<LoanFormField, string>>;
 const NO_PAYMENT_OPTION: SelectOption[] = [{ value: NO_PAYMENT_ACCOUNT, label: 'None' }];
 
 function Pair({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12">{children}</div>;
+  return <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">{children}</div>;
 }
 
 export interface LoanFormFieldsProps {
@@ -95,7 +95,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 onValueChange={(v) => change({ paymentAccountId: v ?? '' })}
               />
             </Pair>
-            <div className="grid grid-cols-1 desk:grid-cols-3 gap-space-12">
+            <div className="grid grid-cols-1 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <AmountField
                 label="Principal"
                 disabled={termsLocked}
@@ -127,7 +127,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
                 error={errors.tenureMonths}
               />
             </div>
-            <div className="grid grid-cols-1 desk:grid-cols-3 gap-space-12">
+            <div className="grid grid-cols-1 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <DateField
                 label="Disbursal date"
                 disabled={termsLocked}

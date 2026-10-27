@@ -80,8 +80,8 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
             value={tab}
             onValueChange={changeTab}
             items={[
-              { value: 'builtin', label: 'Built-in', count: builtins.length },
-              { value: 'reports', label: 'My reports', count: reports.length },
+              { value: 'builtin', label: 'Built-in' },
+              { value: 'reports', label: 'My reports' },
             ]}
           />
           <TextField
@@ -101,7 +101,7 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
             ) : shownBuiltins.length === 0 ? (
               <EmptyState compact description="No widgets match." />
             ) : (
-              <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8">
+              <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8">
                 {shownBuiltins.map((b) => (
                   <ChoiceCard
                     key={b.key}
@@ -119,7 +119,7 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
           ) : shownReports.length === 0 ? (
             <EmptyState compact description="No reports match." />
           ) : (
-            <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8">
+            <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8">
               {shownReports.map((r) => (
                 <ChoiceCard key={r.id} value={r.id} title={r.name} description={reportDescription(r)} meta={reportMeta(r.id === selected)} />
               ))}

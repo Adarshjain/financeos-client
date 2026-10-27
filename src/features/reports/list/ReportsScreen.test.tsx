@@ -108,21 +108,18 @@ const breakdown = report({ id: 'r5', name: 'Where the money went', type: 'CHART'
 const tableR = report({ id: 'r6', name: 'Recent transactions', type: 'TABLE' });
 const mixed = rowsFor([spend, worth, kpi2, rewards, breakdown, tableR]);
 
-describe('counts', () => {
-  it('counts each type chip (Breakdown apart from Chart), with no count on All', () => {
+describe('chip labels', () => {
+  it('shows each type chip (Breakdown apart from Chart) with no count', () => {
     renderWithQuery(<ReportsScreen {...props({ rows: mixed })} />);
-    expect(screen.getByRole('button', { name: /^KPI\s*3$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Chart\s*1$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Breakdown\s*1$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Table\s*1$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
+    for (const name of ['All', 'KPI', 'Chart', 'Breakdown', 'Table']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
   });
 
-  it('keeps the chip counts and the Reports tab count when a type is chosen, and lists only that type', () => {
+  it('lists only the chosen type, with no counts on the chips or the tabs', () => {
     renderWithQuery(<ReportsScreen {...props({ rows: mixed, type: 'KPI' })} />);
-    expect(screen.getByRole('button', { name: /^KPI\s*3$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Chart\s*1$/ })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /^Reports\s*·\s*6$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'KPI' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Reports$/ })).toBeInTheDocument();
     const table = screen.getByRole('table');
     expect(within(table).getByText('Spend last month')).toBeInTheDocument();
     expect(within(table).queryByText('Recent transactions')).toBeNull();
@@ -136,10 +133,10 @@ describe('counts', () => {
     expect(within(table).queryByText('Rewards earned by card')).toBeNull();
   });
 
-  it('shows the dashboards count on its tab', () => {
-    renderWithQuery(<ReportsScreen {...props({ dashboards: 3 })} />);
-    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/dashboards');
-    const reports = screen.getByRole('tab', { name: /^Reports\s*·\s*3$/ });
+  it('links the two tabs, with Reports active', () => {
+    renderWithQuery(<ReportsScreen {...props()} />);
+    expect(screen.getByRole('tab', { name: /^Dashboards$/ })).toHaveAttribute('href', '/dashboards');
+    const reports = screen.getByRole('tab', { name: /^Reports$/ });
     expect(reports).toHaveAttribute('href', '/reports');
     expect(reports).toHaveAttribute('data-state', 'active');
   });
@@ -148,7 +145,7 @@ describe('counts', () => {
 describe('toolbar', () => {
   it('has search and the type chips in one row, and Ask the data only in the Ask instead card', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
-    const search = screen.getByPlaceholderText('Search reports');
+    const search = screen.getByPlaceholderText('Search');
     expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'All' }).closest('div[class*="overflow-x-auto"]'));
     const asks = screen.getAllByRole('link', { name: 'Ask the data' });
     expect(asks).toHaveLength(1);
@@ -205,7 +202,7 @@ describe('type chips', () => {
 describe('search', () => {
   it('searches the loaded list without asking the server', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
-    await user.type(screen.getByPlaceholderText('Search reports'), 'rewards');
+    await user.type(screen.getByPlaceholderText('Search'), 'rewards');
     const table = screen.getByRole('table');
     expect(within(table).getByText('Rewards earned by card')).toBeInTheDocument();
     expect(within(table).queryByText('Net worth over time')).toBeNull();
@@ -214,7 +211,7 @@ describe('search', () => {
 
   it('Clear filters empties the search', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
-    await user.type(screen.getByPlaceholderText('Search reports'), 'zzz');
+    await user.type(screen.getByPlaceholderText('Search'), 'zzz');
     expect(screen.getByText('No reports match.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(within(screen.getByRole('table')).getByText('Net worth over time')).toBeInTheDocument();

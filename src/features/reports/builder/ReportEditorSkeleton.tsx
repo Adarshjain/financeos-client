@@ -8,11 +8,11 @@ import { ShellPage } from '@/features/shell/ShellPage';
 export function ReportEditorSkeleton({ title }: { title: string }) {
   return (
     <ShellPage crumb="Insights / Reports" title={title} backHref={REPORTS_HREF}>
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton height={44} width="60%" />
-        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           <Card>
-            <div className="flex flex-col gap-space-12 p-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton height={12} width="30%" />
               <Skeleton height={32} />
               <Skeleton height={12} width="30%" />
@@ -22,7 +22,7 @@ export function ReportEditorSkeleton({ title }: { title: string }) {
             </div>
           </Card>
           <Card>
-            <div className="flex flex-col gap-space-12 p-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton height={16} width="20%" />
               <Skeleton height={200} />
             </div>

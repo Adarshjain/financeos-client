@@ -678,7 +678,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
 
         {/* Months view body */}
         {view === 'months' && (
-          <div className="grid grid-cols-3 p-space-6 gap-y-space-16">
+          <div className="grid grid-cols-3 p-space-6 gap-y-space-8 desk:gap-y-space-16">
             {shortMonthNames.map((name, idx) => {
               const isSelected = browseYear === currentYear && idx === currentMonth;
               const isToday = browseYear === todayYear && idx === todayMonth;
@@ -713,7 +713,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
 
         {/* Years view body */}
         {view === 'years' && (
-          <div className="grid grid-cols-3 p-space-6 gap-y-space-16">
+          <div className="grid grid-cols-3 p-space-6 gap-y-space-8 desk:gap-y-space-16">
             {Array.from({ length: 12 }, (_, i) => pageStart + i).map((y) => {
               const isSelected = y === currentYear;
               const isToday = y === todayYear;

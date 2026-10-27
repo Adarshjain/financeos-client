@@ -26,6 +26,8 @@ export interface FilterBarProps extends React.HTMLAttributes<HTMLDivElement> {
  * Phone: the search field rests narrow (space-96) and, while focused or holding text, grows to the
  * viewport inset width (the chips scroll away) and shrinks back when blurred and empty.
  * Desktop: a fixed container-xs field, the same row as every list page had before.
+ * The row carries its own bleed: padding that lets the focus ring show inside the scroll area, cancelled by
+ * negative margins (the phone page gutter on phone, space-4 on desktop), so the row sits where it would without it.
  */
 export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
   ({ search, children, className, ...props }, ref) => {
@@ -35,7 +37,12 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
     return (
       <div
         ref={ref}
-        className={cn('flex items-center gap-space-8 overflow-x-auto', className)}
+        className={cn(
+          'flex items-center gap-space-8 overflow-x-auto scrollbar-none',
+          '-mx-space-16 -mt-space-4 -mb-space-4 px-space-16 py-space-4',
+          'desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4',
+          className,
+        )}
         {...props}
       >
         {search ? (

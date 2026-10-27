@@ -20,18 +20,12 @@ export default async function DsSettingsActivityPage({
   const statusFilter = params.status || '';
   const typeFilter = params.type || '';
 
-  // The list and the two menu counts, under the keys the client hooks read, so first paint needs no refetch.
-  const requests = [
-    { page, size, statusFilter, typeFilter },
-    { page: 0, size: 1, statusFilter: 'active', typeFilter },
-    { page: 0, size: 1, statusFilter: 'FAILED', typeFilter },
-  ].map((filters) => buildJobsQueryParams(filters));
-  const [list, running, failed] = await Promise.all(requests.map((q) => jobsApi.list(q)));
+  // The list, under the key the client hook reads, so first paint needs no refetch.
+  const request = buildJobsQueryParams({ page, size, statusFilter, typeFilter });
+  const list = await jobsApi.list(request);
 
   const queryClient = getQueryClient();
-  queryClient.setQueryData(keys.jobs.list(requests[0]), list);
-  queryClient.setQueryData(keys.jobs.list(requests[1]), running);
-  queryClient.setQueryData(keys.jobs.list(requests[2]), failed);
+  queryClient.setQueryData(keys.jobs.list(request), list);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

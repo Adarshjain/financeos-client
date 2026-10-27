@@ -8,15 +8,15 @@ import { ShellPage } from '@/features/shell/ShellPage';
 export default function DsInvestmentsImportLoading() {
   return (
     <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-12 desk:gap-space-16">
+      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16">
         <Card>
-          <div className="flex flex-col gap-space-12 p-space-16 desk:p-space-20">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16 desk:p-space-20">
             <Skeleton width="40%" height={16} />
             <Skeleton height={24} />
           </div>
         </Card>
         <Card>
-          <div className="flex flex-col gap-space-12 p-space-16 desk:p-space-20">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16 desk:p-space-20">
             <Skeleton height={36} />
             <Skeleton height={160} />
           </div>

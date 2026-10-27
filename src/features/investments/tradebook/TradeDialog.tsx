@@ -116,7 +116,7 @@ function TradeForm(p: FormProps) {
             id={FORM_ID}
             noValidate
             autoComplete="off"
-            className="flex flex-col gap-space-16"
+            className="flex flex-col gap-space-8 desk:gap-space-16"
             onSubmit={(e) => {
               e.preventDefault();
               if (!p.holdSubmit) p.onSubmit();
@@ -124,7 +124,7 @@ function TradeForm(p: FormProps) {
           >
             <SegmentedControl aria-label="Buy or sell" options={SIDES} value={p.side} onValueChange={(v) => p.onSideChange(v as TradeSide)} fullWidth />
             {p.top}
-            <div className="grid grid-cols-2 desk:grid-cols-3 gap-space-12">
+            <div className="grid grid-cols-2 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
               <TextField
                 label="Qty"
                 inputMode="decimal"
@@ -152,7 +152,7 @@ function TradeForm(p: FormProps) {
                 <Text variant="body-strong" as="div">
                   Itemised charges
                 </Text>
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   {CHARGE_FIELDS.map((f) => (
                     <TextField
                       key={f.key}
@@ -256,7 +256,7 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <DialogContent size="sm" title="Record trade" secondary={{ label: 'Cancel', onSelect: onClose }}>
           <DialogBody>
-            <div className="flex flex-col gap-space-12 items-start">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12 items-start">
               <Text variant="body" tone="ink-2" as="p">
                 You need at least one broker account to record trades.
               </Text>

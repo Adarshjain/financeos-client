@@ -8,7 +8,6 @@ import {
   hasRuleFilters,
   matchPlastic,
   parseRulesUrl,
-  ruleCounts,
   ruleLinkLabel,
   ruleMatchLine,
   rulesFilterKey,
@@ -79,10 +78,6 @@ describe('rules address', () => {
     expect(hasRuleFilters({ ...DEFAULT_RULES_STATE, status: 'all' })).toBe(false);
     expect(hasRuleFilters({ ...DEFAULT_RULES_STATE, q: 'x' })).toBe(true);
     expect(hasRuleFilters({ ...DEFAULT_RULES_STATE, categoryId: 'c1' })).toBe(true);
-  });
-
-  it('All is the two counts added', () => {
-    expect(ruleCounts(3, 61)).toEqual({ unverified: 3, verified: 61, all: 64 });
   });
 });
 

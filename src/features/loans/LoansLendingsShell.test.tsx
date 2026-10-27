@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -28,9 +28,6 @@ vi.mock('./form/LoanFormDialog', () => ({
   ),
 }));
 
-const loadTabCounts = vi.fn();
-vi.mock('./tabCountsActions', () => ({ loadTabCounts: () => loadTabCounts() }));
-
 function renderShell() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -48,26 +45,16 @@ const add = () => screen.getAllByRole('button', { name: 'Add' })[0];
 
 beforeEach(() => {
   pathname = '/loans/lendings';
-  loadTabCounts.mockReset();
-  loadTabCounts.mockResolvedValue({ success: true, data: { lendings: 4, loans: 3 } });
 });
 
 describe('LoansLendingsShell', () => {
-  it('shows Lendings then Loans as route tabs, with the counts once they load', async () => {
+  it('shows Lendings then Loans as route tabs, with no counts', () => {
     renderShell();
     const tabs = screen.getAllByRole('tab');
     expect(tabs.map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
     expect(tabs[0]).toHaveAttribute('href', '/loans/lendings');
     expect(tabs[1]).toHaveAttribute('href', '/loans');
     expect(screen.getByText('tab body')).toBeInTheDocument();
-    await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings · 4', 'Loans · 3']));
-  });
-
-  it('keeps the tabs without counts when the counts fail', async () => {
-    loadTabCounts.mockResolvedValue({ success: false, error: { message: 'down' } });
-    renderShell();
-    await waitFor(() => expect(loadTabCounts).toHaveBeenCalled());
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
   });
 
   it('marks the tab of the current route', () => {

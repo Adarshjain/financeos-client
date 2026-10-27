@@ -173,7 +173,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
       backHref={REPORTS_HREF}
     >
       <div className="flex flex-col pb-space-48">
-        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-space-24 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-x-space-24 gap-y-space-8 desk:gap-space-16">
           <ReportConfigCard
             allDatasources={allDatasources}
             catalog={catalog}

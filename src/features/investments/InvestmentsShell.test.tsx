@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -25,9 +25,6 @@ vi.mock('./fno/FnoAddDialog', async () => (await import('@/test/fakeDialog')).fa
 vi.mock('./corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-action', 'CorporateActionDialog'));
 vi.mock('./instruments/InstrumentAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-instrument', 'InstrumentAddDialog'));
 
-const loadTabCounts = vi.fn();
-vi.mock('./tabCountsActions', () => ({ loadTabCounts: () => loadTabCounts() }));
-
 const tabTexts = () => screen.getAllByRole('tab').map((t) => t.textContent);
 
 function renderShell() {
@@ -43,11 +40,6 @@ function renderShell() {
 
 beforeEach(() => {
   pathname = '/investments';
-  loadTabCounts.mockReset();
-  loadTabCounts.mockResolvedValue({
-    success: true,
-    data: { tradebook: 38, dividends: 5, fno: 5, 'corporate-actions': 2 },
-  });
 });
 
 describe('InvestmentsShell', () => {
@@ -56,8 +48,8 @@ describe('InvestmentsShell', () => {
     expect(tabTexts()).toEqual([
       'Holdings',
       'EPF',
-      'Tradebook',
       'Dividends',
+      'Tradebook',
       'F&O',
       'Corporate actions',
       'Instruments',
@@ -66,10 +58,9 @@ describe('InvestmentsShell', () => {
     expect(screen.getByText('tab body')).toBeInTheDocument();
   });
 
-  it('puts the counts on Tradebook, Dividends, F&O and Corporate actions once they load, and none on Holdings, EPF or Instruments', async () => {
+  it('shows no counts on any tab', () => {
     renderShell();
-    await waitFor(() => expect(tabTexts()).toContain('Tradebook · 38'));
-    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'Tradebook · 38', 'Dividends · 5', 'F&O · 5', 'Corporate actions · 2', 'Instruments']);
+    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
   });
 
   it('links every tab to its Dinero page', () => {
@@ -99,13 +90,6 @@ describe('InvestmentsShell', () => {
       expect(screen.getByRole('tab', { name: new RegExp(`^${label}`) }), path).toHaveAttribute('data-state', 'active');
       unmount();
     }
-  });
-
-  it('keeps the tabs without counts when the counts fail', async () => {
-    loadTabCounts.mockResolvedValue({ success: false, error: { message: 'down' } });
-    renderShell();
-    await waitFor(() => expect(loadTabCounts).toHaveBeenCalled());
-    expect(screen.getByRole('tab', { name: 'Tradebook' })).toBeInTheDocument();
   });
 
   it('has the title Investments with its crumb and an Add button', () => {
@@ -164,6 +148,5 @@ describe('InvestmentsShell', () => {
     renderShell();
     expect(screen.getByText('tab body')).toBeInTheDocument();
     expect(screen.queryByRole('tab')).toBeNull();
-    expect(loadTabCounts).not.toHaveBeenCalled();
   });
 });

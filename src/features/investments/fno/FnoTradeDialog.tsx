@@ -133,7 +133,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
               id={FORM_ID}
               noValidate
               autoComplete="off"
-              className="flex flex-col gap-space-12"
+              className="flex flex-col gap-space-8 desk:gap-space-12"
               onSubmit={(e) => {
                 e.preventDefault();
                 void submit();
@@ -162,7 +162,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
                 onValueChange={(v) => set('tradingSymbol', v)}
                 error={errors.tradingSymbol}
               />
-              <div className={isOption ? 'grid grid-cols-3 gap-space-12' : 'flex flex-col'}>
+              <div className={isOption ? 'grid grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12' : 'flex flex-col'}>
                 <TextField
                   label="Underlying"
                   placeholder="NIFTY"
@@ -189,7 +189,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
                   </>
                 ) : null}
               </div>
-              <div className="grid grid-cols-3 gap-space-12">
+              <div className="grid grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <DateField
                   label="Expiry"
                   today={today}
@@ -212,7 +212,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
                   error={errors.exitDate}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-space-12">
+              <div className="grid grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <TextField
                   label="Qty / lot size"
                   inputMode="decimal"

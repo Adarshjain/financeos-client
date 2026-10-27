@@ -42,10 +42,10 @@ export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broke
   const note = reconcileNote(fnoOnly);
 
   return (
-    <form id={UPLOAD_FORM_ID} onSubmit={wizard.handlePreviewSubmit} className="flex flex-col gap-space-12 desk:gap-space-16">
+    <form id={UPLOAD_FORM_ID} onSubmit={wizard.handlePreviewSubmit} className="flex flex-col gap-space-8 desk:gap-space-16">
       <Card>
-        <div className="flex flex-col gap-space-16 p-space-16 desk:p-space-20">
-          <div className={`grid grid-cols-1 gap-space-12 desk:gap-space-16 ${mode === 'reconcile_zerodha' ? 'desk:grid-cols-3' : 'desk:grid-cols-2'}`}>
+        <div className="flex flex-col gap-space-8 desk:gap-space-16 p-space-16 desk:p-space-20">
+          <div className={`grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-space-16 ${mode === 'reconcile_zerodha' ? 'desk:grid-cols-3' : 'desk:grid-cols-2'}`}>
             <Select
               label="Broker / import type"
               options={MODE_OPTIONS}
@@ -80,8 +80,8 @@ export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broke
           ) : null}
 
           {reconcile ? (
-            <div className="flex flex-col gap-space-12 desk:gap-space-16">
-              <div className={`grid grid-cols-1 items-start gap-space-12 desk:gap-space-16 ${fnoOnly ? '' : 'desk:grid-cols-2'}`}>
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
+              <div className={`grid grid-cols-1 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16 ${fnoOnly ? '' : 'desk:grid-cols-2'}`}>
                 <Card variant="inset" title={copy.taxTitle} subtitle="Per FY files" data-testid="taxpnl-zone">
                   <div className="p-space-10">
                     <DropZone
@@ -139,7 +139,7 @@ export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broke
               )}
             </div>
           ) : (
-            <div className="flex flex-col gap-space-12 desk:gap-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
               <TextField
                 type="password"
                 label="CAS PDF password"

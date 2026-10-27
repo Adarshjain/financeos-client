@@ -32,7 +32,7 @@ interface SectionProps {
   issues: Issues;
 }
 
-const STACK = 'flex flex-col gap-space-12';
+const STACK = 'flex flex-col gap-space-8 desk:gap-space-12';
 
 // ---- KPI ---------------------------------------------------------------------
 

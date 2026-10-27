@@ -22,9 +22,9 @@ import { BookedGains, ExemptionBar, HarvestLines, LotRow } from './TaxHarvestPar
 export function TaxHarvestSkeleton() {
   return (
     <div data-testid="tax-harvest-loading">
-      <div className="flex flex-col gap-space-12 px-space-16 pb-space-12">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 pb-space-12">
         <Skeleton width="100%" height={22} />
-        <div className="grid grid-cols-2 gap-space-12">
+        <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
           <Skeleton height={32} />
           <Skeleton height={32} />
         </div>
@@ -53,7 +53,7 @@ export function TaxHarvestBody() {
   const keys = lotKeys(lots);
   return (
     <div data-testid="tax-harvest-widget">
-      <div className="flex flex-col gap-space-12 px-space-16 pb-space-8">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 pb-space-8">
         <ExemptionBar realised={data.realised} />
         <BookedGains realised={data.realised} onOpen={setBooked} />
       </div>

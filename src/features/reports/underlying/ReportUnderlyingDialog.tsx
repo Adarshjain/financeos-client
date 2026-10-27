@@ -348,7 +348,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
               {groups && groups.length === 0 ? (
                 <EmptyState compact description="No rows make up this figure." />
               ) : groups ? (
-                <div className="flex flex-col gap-space-16" data-testid="underlying-groups">
+                <div className="flex flex-col gap-space-8 desk:gap-space-16" data-testid="underlying-groups">
                   {groups.map((group) => {
                     const total = groupTotal(data.groupTotals, group.value);
                     return (

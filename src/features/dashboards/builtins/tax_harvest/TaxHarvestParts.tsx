@@ -44,7 +44,7 @@ export function BookedGains({
   onOpen: (term: 'short' | 'long') => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-space-12">
+    <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
       <Booked label="Short-term P&L" value={realised.stcg - realised.stcl} onClick={() => onOpen('short')} />
       <Booked label="Long-term P&L" value={realised.ltcg - realised.ltcl} onClick={() => onOpen('long')} />
     </div>

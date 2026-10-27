@@ -60,7 +60,7 @@ const CHANNEL_OPTIONS: SelectOption[] = [
 
 /** Two fields side by side on every width; `stack` lets them stack on phone instead. */
 function Pair({ children, stack = false }: { children: React.ReactNode; stack?: boolean }) {
-  return <div className={stack ? 'grid grid-cols-1 desk:grid-cols-2 gap-space-12' : 'grid grid-cols-2 gap-space-12'}>{children}</div>;
+  return <div className={stack ? 'grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12' : 'grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12'}>{children}</div>;
 }
 
 export interface TransactionFormFieldsProps {
@@ -144,7 +144,7 @@ export function TransactionFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-5 gap-space-12">
+      <div className="grid grid-cols-5 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
         <DateField
           label="Date"
           today={today}

@@ -194,13 +194,13 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
               id={FORM_ID}
               noValidate
               autoComplete="off"
-              className="flex flex-col gap-space-12"
+              className="flex flex-col gap-space-8 desk:gap-space-12"
               onSubmit={(e) => {
                 e.preventDefault();
                 void submit();
               }}
             >
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <InstrumentSelect
                   label="Instrument"
                   value={form.instrument}
@@ -218,7 +218,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                   onValueChange={(v) => change({ type: v as CorporateActionKind })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-space-12">
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <DateField
                   label="Ex-date"
                   today={today}
@@ -242,7 +242,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                 <Text variant="label" tone="ink-3" as="div">
                   {copy.heading}
                 </Text>
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   <TextField
                     label={copy.from}
                     inputMode="numeric"
@@ -261,7 +261,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                 </div>
               </div>
               {merging ? (
-                <div className="grid grid-cols-2 gap-space-12">
+                <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   {form.type === 'demerger' ? (
                     <TextField
                       label="Cost allocation % (Sec 49(2C))"

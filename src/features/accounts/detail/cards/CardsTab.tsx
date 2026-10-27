@@ -111,7 +111,7 @@ export function CardsTab({
   const name = holder ? holderName(holder, isBank) : '';
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {model.intro ? (
         <Text variant="body" tone="ink-2" as="p">
           {model.intro}
@@ -142,7 +142,7 @@ export function CardsTab({
       ) : null}
 
       {model.open.length > 0 ? (
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           {model.open.map((m) => (
             <HolderCard
               key={m.id}

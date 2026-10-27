@@ -146,7 +146,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page).toHaveURL(/contract=PE/);
 
       await page.goto('/investments/fno');
-      await page.getByPlaceholder('Symbol').fill('NIFTY');
+      await page.getByPlaceholder('Search').fill('NIFTY');
       await expect(page).toHaveURL(/q=NIFTY/);
 
       await page.goto('/investments/fno');

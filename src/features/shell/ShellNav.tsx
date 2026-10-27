@@ -121,7 +121,7 @@ export function ShellTabBar({
           onClose={() => setMoreOpen(false)}
           className="desk:hidden"
         >
-          <div className="px-space-16 pt-space-8 pb-safe-24 overflow-y-auto space-y-space-12">
+          <div className="px-space-16 pt-space-8 pb-safe-24 overflow-y-auto space-y-space-8 desk:space-y-space-12">
             {/* Quick add */}
             <div>
               <div className="px-space-2 pt-space-4 pb-space-4">
@@ -199,7 +199,7 @@ export function ShellTabBar({
             ))}
 
             {/* Hide amounts */}
-            <Card className="mt-space-16">
+            <Card className="mt-space-8 desk:mt-space-16">
               <ListRow
                 title="Hide amounts"
                 subtitle="Show ₹ — instead of amounts"
@@ -209,7 +209,7 @@ export function ShellTabBar({
             </Card>
 
             {/* Profile row */}
-            <Card className="mt-space-16">
+            <Card className="mt-space-8 desk:mt-space-16">
               <ListRow
                 asChild
                 leading={

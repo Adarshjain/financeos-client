@@ -25,7 +25,7 @@ export function ConnectionsPage({
   const { banner, dismiss } = useOauthReturn(oauth);
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {banner?.kind === 'success' ? (
         <Banner tone="success" title="Successfully connected" onDismiss={dismiss}>
           Your Gmail account <strong>{banner.email}</strong> has been successfully linked. We will now process
@@ -43,8 +43,8 @@ export function ConnectionsPage({
         </Banner>
       ) : null}
 
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
-        <div className="desk:col-span-7 flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
           <MailboxesCard
             connections={g.connections}
             loading={g.loading}

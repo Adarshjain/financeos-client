@@ -76,13 +76,13 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
         }}
       >
         <DialogBody>
-          <div className="flex flex-col gap-space-12">
+          <div className="flex flex-col gap-space-8 desk:gap-space-12">
             {warning ? (
               <Banner tone={warning.kind === 'blocked' ? 'danger' : 'warning'} title={warning.title}>
                 {warning.text}
               </Banner>
             ) : null}
-            <div className="grid grid-cols-1 gap-space-10 desk:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-space-10 gap-y-space-8 desk:gap-y-space-10 desk:grid-cols-2">
               {card(a)}
               {card(b)}
             </div>

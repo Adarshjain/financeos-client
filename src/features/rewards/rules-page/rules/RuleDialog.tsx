@@ -67,11 +67,11 @@ export interface RuleDialogProps {
 }
 
 /** A pair of fields: side by side on desktop, stacked on phone. */
-const PAIR = 'grid grid-cols-1 gap-space-12 desk:grid-cols-2';
+const PAIR = 'grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2';
 /** Two fields in one row at every width. */
-const ROW = 'grid grid-cols-2 gap-space-12';
+const ROW = 'grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12';
 /** Match type and merchant pattern: exactly 35/65 (7fr/13fr). */
-const MATCH_ROW = 'grid grid-cols-[minmax(0,7fr)_minmax(0,13fr)] gap-space-12';
+const MATCH_ROW = 'grid grid-cols-[minmax(0,7fr)_minmax(0,13fr)] gap-x-space-12 gap-y-space-8 desk:gap-y-space-12';
 const ALL = 'ALL';
 const NONE = 'NONE';
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);
@@ -396,7 +396,7 @@ export function RuleDialog({
               <Text variant="body">Tiered rate</Text>
             </label>
             {f.isTiered ? (
-              <div className="flex flex-col gap-space-12">
+              <div className="flex flex-col gap-space-8 desk:gap-space-12">
                 <Select
                   label="Spend window"
                   options={CAP_WINDOW_OPTIONS}
@@ -406,7 +406,7 @@ export function RuleDialog({
                 {f.tierRows.map((tier, index) => {
                   const last = index === f.tierRows.length - 1;
                   return (
-                    <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-space-12">
+                    <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                       {last ? (
                         <Text variant="body-strong" tone="ink-3" as="div">
                           {index === 0 ? 'First' : 'Above'} · everything beyond

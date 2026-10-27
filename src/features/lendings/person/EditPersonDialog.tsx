@@ -42,7 +42,7 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
             id={FORM_ID}
             noValidate
             autoComplete="off"
-            className="flex flex-col gap-space-16"
+            className="flex flex-col gap-space-8 desk:gap-space-16"
             onSubmit={(e) => {
               e.preventDefault();
               void submit();
