@@ -161,6 +161,17 @@ describe('Toast', () => {
     expect(getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
+  it('lifts the desktop toasts by the docked bottom bar, keeping its own phone offset', async () => {
+    render(<Toaster />);
+    act(() => {
+      showToast('Saved');
+    });
+    await screen.findByText('Saved');
+    const list = document.querySelector('[data-sonner-toaster]') as HTMLElement;
+    expect(list.style.getPropertyValue('--offset-bottom')).toBe('calc(var(--ds-space-24) + var(--ds-docked-bottom, 0px))');
+    expect(list.style.getPropertyValue('--mobile-offset-bottom')).toContain('var(--ds-space-64)');
+  });
+
   it('renders a showToast call inside the ds toaster and not in an untargeted root toaster', async () => {
     render(
       <>

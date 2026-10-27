@@ -77,12 +77,14 @@ const DEFAULT_POSITION = ('bottom' + '-center') as NonNullable<SonnerToasterProp
 
 /**
  * The mount point for new-system toasts: bottom centre, above the TabBar on phone,
+ * above a docked SelectionBar on desktop (`--ds-docked-bottom`, set in ds.css while one is mounted),
  * a single toast at a time, isolated from the root app toaster via id="ds".
  */
 export function Toaster({
   id = 'ds',
   position = DEFAULT_POSITION,
   visibleToasts = 1,
+  offset,
   mobileOffset,
   ...props
 }: ToasterProps) {
@@ -92,6 +94,7 @@ export function Toaster({
       id={id}
       position={position}
       visibleToasts={visibleToasts}
+      offset={offset ?? { bottom: 'calc(var(--ds-space-24) + var(--ds-docked-bottom, 0px))' }}
       mobileOffset={
         mobileOffset ?? {
           bottom: 'calc(var(--ds-space-12) + var(--ds-space-64) + env(safe-area-inset-bottom, 0px))',
