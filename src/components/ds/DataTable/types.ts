@@ -117,4 +117,6 @@ export interface DataTableProps<Row extends RowData>
   firstRowBorder?: boolean;
   /** No header row on desktop, for a single-column list where it would only repeat the column's name. */
   hideHeader?: boolean;
+  /** Row height: `md` (default) keeps a `space-40` minimum on desktop; `sm` rows hug one line of text, like TransactionRow. */
+  size?: 'sm' | 'md';
 }

@@ -58,6 +58,7 @@ function DataTableInner<Row extends RowData>(
     stickyHeader = true,
     firstRowBorder = true,
     hideHeader = false,
+    size = 'md',
     className,
     style,
     ...restProps
@@ -204,6 +205,7 @@ function DataTableInner<Row extends RowData>(
                 rowState={rowState ? rowState(row.original) : undefined}
                 highlighted={isHighlighted}
                 busy={busy}
+                size={size}
                 first={i === 0 && !firstRowBorder}
               />
             );

@@ -585,6 +585,14 @@ export const WithFooter: Story = {
   render: interactiveRender(),
 };
 
+export const SmallRows: Story = {
+  name: 'Small rows',
+  args: {
+    size: 'sm',
+  },
+  render: interactiveRender(),
+};
+
 export const Loading: Story = {
   args: {
     loading: true,
