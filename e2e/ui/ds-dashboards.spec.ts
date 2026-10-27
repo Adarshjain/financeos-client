@@ -79,7 +79,7 @@ for (const viewport of VIEWPORTS) {
 
     test('view: the widgets show in the saved order, with the count and the page actions', async ({ page }) => {
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       expect(await itemIds(page)).toEqual(['wr', 'wb']);
       await expect(page.getByText('2 widgets', { exact: true })).toBeVisible();
@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
 
     test('edit: reordering by the grip and saving keeps the new order after a reload', async ({ page }) => {
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds board', { timeout: 45_000 });
       await expect(page.getByText('Unsaved changes')).toHaveCount(0);
       // The flag is taken off the address once the page is open.
@@ -118,7 +118,7 @@ for (const viewport of VIEWPORTS) {
     test('create: a name is required, widgets are added from the picker and the new dashboard opens', async ({ page }) => {
       test.slow();
       await seedKpiReport();
-      await page.goto('/ds/dashboards/new');
+      await page.goto('/dashboards/new');
       await expect(page.getByLabel('Dashboard name')).toBeVisible({ timeout: 45_000 });
       await expect(page.getByText('Nothing on this dashboard yet')).toBeVisible();
 
@@ -127,7 +127,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Name the dashboard.')).toBeVisible();
       await expect(page.getByText("Couldn't save the dashboard. Fix the fields marked in red.")).toBeVisible();
       await expect(page.getByLabel('Dashboard name')).toBeFocused();
-      await expect(page).toHaveURL(/\/ds\/dashboards\/new/);
+      await expect(page).toHaveURL(/\/dashboards\/new/);
 
       await page.getByLabel('Dashboard name').fill('Ds created board');
 
@@ -155,14 +155,14 @@ for (const viewport of VIEWPORTS) {
       const before = await gridState(page);
       await page.getByRole('button', { name: 'Create', exact: true }).click();
       await expect(page.getByText('Dashboard created')).toBeVisible();
-      await expect(page).toHaveURL(/\/ds\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       expect((await gridState(page)).map((s) => s.split(':')[1])).toEqual(before.map((s) => s.split(':')[1]));
       await expect(page.getByText('2 widgets', { exact: true })).toBeVisible();
     });
 
     test('Add header puts a titled section header on top, edited inline, and Save keeps it', async ({ page }) => {
-      await page.goto('/ds/dashboards/new');
+      await page.goto('/dashboards/new');
       await page.getByLabel('Dashboard name').fill('Ds headed board');
       // The top bar's + opens Add widget and Add header; Add header is the second row.
       await page.getByRole('button', { name: 'Add', exact: true }).click();
@@ -173,7 +173,7 @@ for (const viewport of VIEWPORTS) {
       await expect(title).toBeFocused();
       await title.fill('This month');
       await page.getByRole('button', { name: 'Create', exact: true }).click();
-      await expect(page).toHaveURL(/\/ds\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
       await expect(page.getByRole('heading', { name: 'This month' })).toBeVisible({ timeout: 45_000 });
       // A header is full width and not a widget.
       await expect(page.locator('[data-widget-grid-item][data-width="full"]')).toHaveCount(1);
@@ -184,7 +184,7 @@ for (const viewport of VIEWPORTS) {
 
     test('edit: no Add header button by the name; the confirm to discard is not red', async ({ page }) => {
       const { dashboard } = await seedBoard('Ds plain discard');
-      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds plain discard', { timeout: 45_000 });
       await expect(page.getByRole('button', { name: 'Add header' })).toHaveCount(0);
       await page.getByLabel('Dashboard name').fill('Ds changed');
@@ -196,7 +196,7 @@ for (const viewport of VIEWPORTS) {
 
     test('widget menus: a report widget and a built-in offer their own items', async ({ page }) => {
       const { dashboard, report } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
 
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
@@ -219,13 +219,13 @@ for (const viewport of VIEWPORTS) {
 
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
       await page.getByRole('menuitem', { name: 'Edit report' }).click();
-      await expect(page).toHaveURL(new RegExp(`/ds/reports/${report.id}`));
+      await expect(page).toHaveURL(new RegExp(`/reports/${report.id}`));
 
       // Saving from there goes back to the dashboard it was opened from, not to the list.
       const renamed = `Ds Dash KPI renamed ${Date.now()}`;
       await page.getByLabel('Report name').fill(renamed);
       await page.getByRole('button', { name: 'Save report' }).click();
-      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}`), { timeout: 45_000 });
+      await expect(page).toHaveURL(new RegExp(`/dashboards/${dashboard.id}`), { timeout: 45_000 });
       await expect(page.getByRole('dialog')).toHaveCount(0);
       // The dashboard it lands on is fresh: the widget shows the new name.
       await expect(widgetCard(page, 'wr').getByText(renamed)).toBeVisible({ timeout: 45_000 });
@@ -233,7 +233,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Set as default makes it the default, and the button then clears it', async ({ page }) => {
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await page.getByRole('button', { name: 'Set as default', exact: true }).click();
       await expect(page.getByText('Set as default', { exact: true }).first()).toBeVisible();
       await expect(page.getByRole('button', { name: 'Clear default', exact: true })).toBeVisible();
@@ -243,7 +243,7 @@ for (const viewport of VIEWPORTS) {
 
     test('unsaved changes are guarded: Discard asks, Keep editing stays, Discard restores the saved dashboard', async ({ page }) => {
       const { dashboard } = await seedBoard('Ds guarded');
-      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       const name = page.getByLabel('Dashboard name');
       await expect(name).toHaveValue('Ds guarded', { timeout: 45_000 });
 
@@ -275,9 +275,9 @@ for (const viewport of VIEWPORTS) {
     test('browser Back with unsaved changes asks first: Keep editing stays with the edits, Discard goes back', async ({ page }) => {
       const { dashboard } = await seedBoard('Ds back guarded');
       // Arrive by an in-app navigation, so Back stays in the app.
-      await page.goto('/ds/dashboards');
+      await page.goto('/dashboards');
       await page.getByRole('main').getByText('Ds back guarded', { exact: true }).first().click();
-      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}$`));
+      await expect(page).toHaveURL(new RegExp(`/dashboards/${dashboard.id}$`));
       await page.getByRole('button', { name: 'Edit', exact: true }).click();
       const name = page.getByLabel('Dashboard name');
       await name.fill('Ds back renamed');
@@ -288,17 +288,17 @@ for (const viewport of VIEWPORTS) {
       const confirm = page.getByRole('dialog', { name: 'Discard changes?' });
       await expect(confirm).toBeVisible();
       await confirm.getByRole('button', { name: 'Keep editing' }).click();
-      await expect(page).toHaveURL(new RegExp(`/ds/dashboards/${dashboard.id}$`));
+      await expect(page).toHaveURL(new RegExp(`/dashboards/${dashboard.id}$`));
       await expect(name).toHaveValue('Ds back renamed');
 
       await page.evaluate(() => window.history.back());
       await page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', { name: 'Discard', exact: true }).click();
-      await expect(page).toHaveURL(/\/ds\/dashboards$/);
+      await expect(page).toHaveURL(/\/dashboards$/);
     });
 
     test('remove a widget and rename, then Save writes it', async ({ page }) => {
       const { dashboard } = await seedBoard('Ds trimmed');
-      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds trimmed', { timeout: 45_000 });
       await page.getByRole('button', { name: /Remove widget/ }).first().click();
       await expect(page.locator('[data-widget-grid-item]')).toHaveCount(1);
@@ -334,7 +334,7 @@ for (const viewport of VIEWPORTS) {
     test('Net worth: tapping the value opens its underlying data', async ({ page }) => {
       test.slow();
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
       const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
       await expect(dialog).toBeVisible({ timeout: 45_000 });
@@ -348,7 +348,7 @@ for (const viewport of VIEWPORTS) {
       const account = await createBankAccount(api, { name: accountName });
       await createTransaction(api, account.id, { amount: 5000, description: 'NW group credit' });
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
       const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
       await expect(dialog).toBeVisible({ timeout: 45_000 });
@@ -375,7 +375,7 @@ for (const viewport of VIEWPORTS) {
       const person = await createCounterparty(api, { name: personName });
       await addLending(api, { counterpartyId: person.id, direction: 'lent', amount: 4000 });
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await widgetCard(page, 'wb').getByTestId('net-worth-value').getByRole('button').click({ timeout: 45_000 });
       const dialog = page.getByRole('dialog', { name: 'Underlying data · Net worth' });
       const groups = dialog.getByTestId('underlying-groups');
@@ -388,7 +388,7 @@ for (const viewport of VIEWPORTS) {
     test('chart widget: tapping a bar opens "Underlying data · <widget>" filtered to that bar', async ({ page }) => {
       test.slow();
       const { dashboard, name, categories, rows } = await seedSplitBoard('bar');
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
       await expect(bars).toHaveCount(2, { timeout: 45_000 });
       await bars.first().click();
@@ -406,7 +406,7 @@ for (const viewport of VIEWPORTS) {
     test('pivot table widget: tapping a row opens the rows of that row only', async ({ page }) => {
       test.slow();
       const { dashboard, name, categories, rows } = await seedSplitBoard('table');
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       const card = widgetCard(page, 'wr');
       await expect(card.getByText(categories[0], { exact: true }).first()).toBeVisible({ timeout: 45_000 });
       await card.getByText(categories[0], { exact: true }).first().click();
@@ -428,7 +428,7 @@ for (const viewport of VIEWPORTS) {
 
     test('the page ends a normal gutter below the last widget, viewing and editing (phone keeps the tab bar clearance)', async ({ page }) => {
       const { dashboard } = await seedBoard();
-      await page.goto(`/ds/dashboards/${dashboard.id}`);
+      await page.goto(`/dashboards/${dashboard.id}`);
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       // Phone: the tab bar clearance (88px); desktop: the 24px page gutter.
       expect(await spaceBelowLast(page)).toBeLessThanOrEqual(phone ? 96 : 32);
@@ -441,7 +441,7 @@ for (const viewport of VIEWPORTS) {
     test('edit: tapping a bar opens nothing', async ({ page }) => {
       test.slow();
       const { dashboard } = await seedSplitBoard('bar');
-      await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+      await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       await expect(page.getByLabel('Dashboard name')).toBeVisible({ timeout: 45_000 });
       const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
       await expect(bars).toHaveCount(2, { timeout: 45_000 });
@@ -460,7 +460,7 @@ for (const viewport of VIEWPORTS) {
     if (!phone) {
       test('resizing by the corner snaps to a width step and Save keeps it', async ({ page }) => {
         const { dashboard } = await seedBoard();
-        await page.goto(`/ds/dashboards/${dashboard.id}?edit=1`);
+        await page.goto(`/dashboards/${dashboard.id}?edit=1`);
         await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds board', { timeout: 45_000 });
         const grid = page.locator('[data-editing="true"]');
         await expect(grid).toBeVisible();

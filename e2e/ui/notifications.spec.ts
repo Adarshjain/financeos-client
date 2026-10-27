@@ -29,7 +29,7 @@ test.describe('Notification settings UI (@ui)', () => {
   });
 
   test('switch groups, a kind toggle, an offset, and card/loan mutes persist across a reload', async ({ page }) => {
-    await page.goto('/settings/notifications');
+    await page.goto('/legacy/settings/notifications');
     await expect(page.getByRole('heading', { name: 'Notifications', exact: true })).toBeVisible();
 
     // Every module has its own group of switches.

@@ -20,7 +20,7 @@ test.describe('Rules & Categories UI (@ui)', () => {
     // Seed an initial category
     await createCategory(api, 'Initial Seeded Cat');
 
-    await page.goto('/rules/categories');
+    await page.goto('/legacy/rules/categories');
 
     // 1. Check page title and existing category
     await expect(
@@ -118,7 +118,7 @@ test.describe('Rules & Categories UI (@ui)', () => {
     // Pre-create category for rule creation
     await createCategory(api, 'Coffee & Drinks');
 
-    await page.goto('/rules');
+    await page.goto('/legacy/rules');
 
     // 1. Verify header
     await expect(

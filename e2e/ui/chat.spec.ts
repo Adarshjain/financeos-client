@@ -32,7 +32,7 @@ test.describe('Chat UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
 
     // 1. Visit /chat and check empty state
-    await page.goto('/chat');
+    await page.goto('/legacy/chat');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'How can I help with your finances today?' })).toBeVisible();
@@ -131,7 +131,7 @@ test.describe('Chat UI (@ui)', () => {
     await expect(page.getByRole('heading', { name: 'How can I help with your finances today?' })).toBeVisible();
 
     // Verify saved report exists by navigating to /reports
-    await page.goto('/reports');
+    await page.goto('/legacy/reports');
     await page.waitForLoadState('networkidle');
     await expect(page.getByText('Monthly Dining Spends KPI')).toBeVisible();
   });
@@ -168,7 +168,7 @@ test.describe('Chat UI (@ui)', () => {
       (window as unknown as { Notification: typeof MockNotification }).Notification = MockNotification;
     });
 
-    await page.goto('/chat');
+    await page.goto('/legacy/chat');
     await page.waitForLoadState('networkidle');
 
     await scriptChat(api, [
@@ -201,7 +201,7 @@ test.describe('Chat UI (@ui)', () => {
   }) => {
     const api = makeApi(currentUser.cookie);
 
-    await page.goto('/chat');
+    await page.goto('/legacy/chat');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'How can I help with your finances today?' })).toBeVisible();

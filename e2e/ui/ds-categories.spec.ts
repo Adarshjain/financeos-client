@@ -28,7 +28,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('lists, searches, adds, renames (duplicate is a toast) and deletes', async ({ page }) => {
-      await page.goto('/ds/transactions/categories');
+      await page.goto('/transactions/categories');
       await expect(page.getByText('Dining out')).toBeVisible();
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
 
@@ -73,7 +73,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('a row opens the actions dialog; the ⋯ menu does not also open it', async ({ page }) => {
-      await page.goto('/ds/transactions/categories');
+      await page.goto('/transactions/categories');
       await page.getByText('Rent', { exact: true }).click();
       const dialog = page.getByRole('dialog', { name: 'Rent' });
       await expect(dialog).toBeVisible();
@@ -96,11 +96,11 @@ for (const viewport of VIEWPORTS) {
       for (let i = 1; i <= 4; i++) {
         await createTransaction(api, bank.id, { amount: -100 * i, date: todayString(-i), description: `Untagged ${i}` });
       }
-      await page.goto('/ds/transactions/categories');
+      await page.goto('/transactions/categories');
       await expect(page.getByText('Uncategorized · 4')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Tag', exact: true })).toHaveCount(3);
       await page.getByRole('link', { name: /Review/ }).click();
-      await expect(page).toHaveURL(/\/ds\/transactions\?uncategorized=1/);
+      await expect(page).toHaveURL(/\/transactions\?uncategorized=1/);
       await expect(page.getByRole('button', { name: 'Uncategorized' })).toBeVisible();
       await expect(page.getByText('Untagged 4').first()).toBeVisible();
       // The chip's remove button takes the filter off the address.
@@ -111,7 +111,7 @@ for (const viewport of VIEWPORTS) {
     test('pages the categories, 20 to a page', async ({ page }) => {
       const api = makeApi(user.cookie);
       for (let i = 10; i < 32; i++) await createCategory(api, `Cat ${i}`);
-      await page.goto('/ds/transactions/categories');
+      await page.goto('/transactions/categories');
       await expect(page.getByText('Cat 10')).toBeVisible();
       await page.getByRole('button', { name: 'Page 2' }).first().click();
       await expect(page).toHaveURL(/page=1/);
@@ -123,7 +123,7 @@ for (const viewport of VIEWPORTS) {
       const api = makeApi(user.cookie);
       for (let i = 10; i < 49; i++) await createCategory(api, `Cat ${i}`);
       // 2 seeded + 39 = 41 categories: the third page holds exactly one (Rent).
-      await page.goto('/ds/transactions/categories?page=2');
+      await page.goto('/transactions/categories?page=2');
       await expect(page.getByRole('button', { name: /^Actions for / })).toHaveCount(phone ? 0 : 1);
       if (phone) {
         await page.getByText('Rent', { exact: true }).click();
@@ -139,15 +139,15 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('a page past the end goes to the last page', async ({ page }) => {
-      await page.goto('/ds/transactions/categories?page=9');
+      await page.goto('/transactions/categories?page=9');
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
       await expect(page).not.toHaveURL(/page=9/);
     });
 
     test('the Transactions tabs link to this page', async ({ page }) => {
-      await page.goto('/ds/transactions');
+      await page.goto('/transactions');
       await page.getByRole('tab', { name: 'Categories' }).click();
-      await expect(page).toHaveURL(/\/ds\/transactions\/categories/);
+      await expect(page).toHaveURL(/\/transactions\/categories/);
     });
   });
 }

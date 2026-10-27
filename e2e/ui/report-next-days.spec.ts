@@ -16,7 +16,7 @@ test.describe('Reports: next N days preset and duplicate (@ui)', () => {
     test.slow();
     const api = makeApi(currentUser.cookie);
 
-    await page.goto('/reports/new');
+    await page.goto('/legacy/reports/new');
     await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
     await page.getByPlaceholder('Report name').fill('Next days spend');
     await page.getByRole('combobox').filter({ hasText: /None|Select measure/i }).first().click();
@@ -39,7 +39,7 @@ test.describe('Reports: next N days preset and duplicate (@ui)', () => {
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Preview' })).toBeVisible();
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL('**/reports');
+    await page.waitForURL('**/legacy/reports');
 
     const summary = ((await api.GET('/api/v1/reports')).data ?? []).find((r) => r.name === 'Next days spend');
     expect(summary).toBeTruthy();
@@ -60,7 +60,7 @@ test.describe('Reports: next N days preset and duplicate (@ui)', () => {
     });
     expect(created.response.status).toBe(201);
 
-    await page.goto('/reports');
+    await page.goto('/legacy/reports');
     await expect(page.getByText('Copy me', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Duplicate report' }).first().click();
     await expect(page.getByText('Copy me (copy)')).toBeVisible();

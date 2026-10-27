@@ -7,7 +7,7 @@ import { E2E_CLIENT_URL } from './config';
  * Navigate to the Accounts page and ensure it has finished loading.
  */
 export async function openAccounts(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/accounts`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/accounts`);
   await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
 }
 
@@ -15,7 +15,7 @@ export async function openAccounts(page: Page): Promise<void> {
  * Navigate to the Transactions page and ensure it has finished loading.
  */
 export async function openTransactions(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/transactions`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/transactions`);
   await expect(page.getByRole('heading', { name: 'Transactions', level: 1 })).toBeVisible();
 }
 
@@ -39,32 +39,32 @@ export async function expectToast(page: Page, text: string | RegExp): Promise<vo
 }
 
 export async function openInvestments(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments`);
   await expect(page.getByRole('heading', { name: /Portfolio Holdings/i, level: 1 })).toBeVisible();
 }
 
 export async function openInstruments(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments/instruments`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/instruments`);
   await expect(page.getByRole('heading', { name: /Instruments/i, level: 1 })).toBeVisible();
 }
 
 export async function openTradebook(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments/tradebook`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/tradebook`);
   await expect(page.getByRole('heading', { name: /Tradebook & Actions/i, level: 1 })).toBeVisible();
 }
 
 export async function openDividends(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments/dividends`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/dividends`);
   await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
 }
 
 export async function openCorporateActions(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments/corporate-actions`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/corporate-actions`);
   await expect(page.getByRole('heading', { name: /Corporate Actions/i, level: 1 })).toBeVisible();
 }
 
 export async function openFno(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/investments/fno`);
+  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/fno`);
   await expect(page.getByRole('heading', { name: /Futures & Options/i, level: 1 })).toBeVisible();
 }
 
@@ -76,7 +76,7 @@ export async function openFno(page: Page): Promise<void> {
  */
 export async function openAccountEditor(page: Page, name: string | RegExp): Promise<void> {
   await page.getByRole('link', { name }).first().click();
-  await expect(page).toHaveURL(/\/accounts\/[^/?#]+$/);
+  await expect(page).toHaveURL(/\/legacy\/accounts\/[^/?#]+$/);
   const trigger = page.getByRole('button', { name: 'Edit', exact: true });
   await expect(async () => {
     await trigger.click();

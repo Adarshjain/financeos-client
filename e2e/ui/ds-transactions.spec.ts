@@ -91,7 +91,7 @@ for (const viewport of VIEWPORTS) {
     }
 
     const open = async (page: Page, search = '') => {
-      await page.goto(`/ds/transactions${search}`);
+      await page.goto(`/transactions${search}`);
       await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     };
 
@@ -771,7 +771,7 @@ test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
       (await searchAll(api)).filter((t) => t.reviewType === 'NEEDS_REVIEW' && t.reviewReasons?.includes('CATEGORY_UNVERIFIED'));
     expect(await flagged()).toHaveLength(2);
 
-    await page.goto('/ds/transactions');
+    await page.goto('/transactions');
     await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     await expect(needsReviewChip(page, 2)).toBeVisible();
 

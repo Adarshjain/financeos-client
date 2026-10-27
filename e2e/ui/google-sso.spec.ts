@@ -25,14 +25,14 @@ test.describe('Google SSO UI (@ui)', () => {
     test.slow();
     identity = await registerIdentity({ browserSso: true });
 
-    await page.goto('/login');
+    await page.goto('/legacy/login');
     await page.getByRole('button', { name: 'Sign in with Google' }).click();
 
     // Consent stub → client callback page → exchange → hard navigation to the dashboard.
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });
     await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
 
-    await page.goto('/settings');
+    await page.goto('/legacy/settings');
     // Shown in the sidebar and in the profile card, hence .first().
     await expect(page.getByText(identity.email).first()).toBeVisible();
     await expect(page.getByText(identity.name).first()).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Google SSO UI (@ui)', () => {
     test.slow();
     identity = await registerIdentity({ browserSso: true, tokenStatus: 401 });
 
-    await page.goto('/login');
+    await page.goto('/legacy/login');
     await page.getByRole('button', { name: 'Sign in with Google' }).click();
 
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });

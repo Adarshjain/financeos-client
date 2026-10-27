@@ -16,7 +16,7 @@ test.describe('Upcoming UI (@ui)', () => {
   });
 
   test('@mobile with nothing scheduled the list says so and the totals read zero', async ({ page }) => {
-    await page.goto('/upcoming');
+    await page.goto('/legacy/upcoming');
     await expect(page.getByRole('heading', { name: 'Upcoming', level: 1 })).toBeVisible();
     await expect(page.getByText('Nothing scheduled within the next 3 months.')).toBeVisible();
     await expect(page.getByText('Due next 7 days')).toBeVisible();
@@ -32,7 +32,7 @@ test.describe('Upcoming UI (@ui)', () => {
     const bill = await seedCardBill(api, { name: 'Upcoming Card', last4: '7201', dueInDays: 2 });
     const billRow = page.locator(`[data-bill-row="${bill.statementId}"]`);
 
-    await page.goto('/upcoming');
+    await page.goto('/legacy/upcoming');
     await expect(page.getByRole('heading', { name: 'Upcoming', level: 1 })).toBeVisible();
 
     // List view: the three kinds of obligation, grouped by when they fall due.
@@ -82,7 +82,7 @@ test.describe('Upcoming UI (@ui)', () => {
     await expect(page.getByText('Nothing due on this day.')).toBeVisible();
     await page.getByRole('button', { name: String(Number(loanDue.slice(8))), exact: true }).click();
     await expect(page.getByText('Upcoming Car Loan EMI #1')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Open' })).toHaveAttribute('href', `/loans/${loan.id}?installment=1`);
+    await expect(page.getByRole('link', { name: 'Open' })).toHaveAttribute('href', `/legacy/loans/${loan.id}?installment=1`);
     await page.getByRole('button', { name: 'Previous month' }).click();
     await page.getByRole('button', { name: 'Next month' }).click();
     await page.getByRole('tab', { name: 'List' }).click();
@@ -101,7 +101,7 @@ test.describe('Upcoming UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const bill = await seedCardBill(api, { name: 'Linked Card', last4: '7202', dueInDays: 3 });
 
-    await page.goto(`/upcoming?bill=${bill.statementId}`);
+    await page.goto(`/legacy/upcoming?bill=${bill.statementId}`);
     const billRow = page.locator(`[data-bill-row="${bill.statementId}"]`);
     await expect(billRow).toBeVisible();
     await expect(billRow).toHaveClass(/ring-emerald-300/);

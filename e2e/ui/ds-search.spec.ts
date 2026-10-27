@@ -34,7 +34,7 @@ for (const viewport of VIEWPORTS) {
     const palette = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Search' });
 
     /** The way in on this width: the phone's top-bar button, the desktop Rail's Search field. */
-    async function openSearch(page: import('@playwright/test').Page, path = '/ds/accounts') {
+    async function openSearch(page: import('@playwright/test').Page, path = '/accounts') {
       await page.goto(path);
       const trigger = phone
         ? page.getByRole('button', { name: 'Search', exact: true })
@@ -93,7 +93,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByRole('option').filter({ hasText: `${WORD} purchase 6` })).toHaveCount(0);
       await dialog.getByRole('option').filter({ hasText: 'See all matching transactions' }).click();
 
-      await expect(page).toHaveURL(new RegExp(`/ds/transactions\\?q=${WORD.toLowerCase()}`));
+      await expect(page).toHaveURL(new RegExp(`/transactions\\?q=${WORD.toLowerCase()}`));
       await expect(palette(page)).toHaveCount(0);
       await expect(page.getByText(`${WORD} purchase 6`).first()).toBeVisible({ timeout: 30_000 });
     });
@@ -101,9 +101,9 @@ for (const viewport of VIEWPORTS) {
     test('picking an account, a loan and a report opens its page', async ({ page }) => {
       test.slow();
       const cases = [
-        { option: `${WORD} Card · ••7741`, url: `/ds/accounts/${seeded.card.id}` },
-        { option: `${seeded.loan.name} · SBI`, url: `/ds/loans/${seeded.loan.id}` },
-        { option: seeded.report.name, url: `/ds/reports/${seeded.report.id}` },
+        { option: `${WORD} Card · ••7741`, url: `/accounts/${seeded.card.id}` },
+        { option: `${seeded.loan.name} · SBI`, url: `/loans/${seeded.loan.id}` },
+        { option: seeded.report.name, url: `/reports/${seeded.report.id}` },
       ];
       for (const c of cases) {
         await openSearch(page);
@@ -119,16 +119,16 @@ for (const viewport of VIEWPORTS) {
       await openSearch(page);
       await page.getByRole('searchbox').fill(WORD);
       await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 1 ·` }).click({ timeout: 30_000 });
-      await expect(page).toHaveURL(/\/ds\/transactions\?txn=[0-9a-f-]{36}/, { timeout: 45_000 });
+      await expect(page).toHaveURL(/\/transactions\?txn=[0-9a-f-]{36}/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 1` })).toBeVisible({ timeout: 30_000 });
     });
 
     test('picking a transaction while already on Transactions opens its detail there', async ({ page }) => {
       test.slow();
-      await openSearch(page, '/ds/transactions');
+      await openSearch(page, '/transactions');
       await page.getByRole('searchbox').fill(WORD);
       await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 2 ·` }).click({ timeout: 30_000 });
-      await expect(page).toHaveURL(/\/ds\/transactions\?txn=/, { timeout: 45_000 });
+      await expect(page).toHaveURL(/\/transactions\?txn=/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 2` })).toBeVisible({ timeout: 30_000 });
     });
 
@@ -205,14 +205,14 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('searchbox').fill('tr');
       await palette(page).getByRole('option').filter({ hasText: exactly('Transaction') }).click();
       await expect(palette(page)).toHaveCount(0);
-      await expect(page).toHaveURL(/\/ds\/accounts$/);
+      await expect(page).toHaveURL(/\/accounts$/);
       await expect(page.getByRole('dialog').first()).toBeVisible();
     });
 
     if (!phone) {
       test('⌘K / Ctrl+K opens and closes the palette from any page', async ({ page }) => {
         test.slow();
-        await page.goto('/ds/accounts');
+        await page.goto('/accounts');
         await page.locator('nav.w-container-xs').waitFor();
         await page.keyboard.press('ControlOrMeta+k');
         await expect(palette(page)).toBeVisible({ timeout: 45_000 });
@@ -231,13 +231,13 @@ test.describe('/ds app-wide search, holdings (@ui)', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const holdings = await seedHoldings(makeApi(user.cookie));
 
-    await page.goto('/ds/accounts');
+    await page.goto('/accounts');
     await page.keyboard.press('ControlOrMeta+k');
     await page.getByRole('searchbox').fill('INFYX');
     await page
       .getByRole('dialog', { name: 'Search' })
       .getByRole('option').filter({ hasText: `${holdings.infy.name} · ${holdings.infy.symbol}` })
       .click({ timeout: 45_000 });
-    await expect(page).toHaveURL(new RegExp(`/ds/investments/${holdings.infy.id}$`), { timeout: 45_000 });
+    await expect(page).toHaveURL(new RegExp(`/investments/${holdings.infy.id}$`), { timeout: 45_000 });
   });
 });

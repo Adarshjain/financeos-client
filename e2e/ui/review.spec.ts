@@ -80,7 +80,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
   test('/transactions/review: review browser header, filter bar, and empty state', async ({
     page,
   }) => {
-    await page.goto('/transactions/review');
+    await page.goto('/legacy/transactions/review');
 
     // 1. Verify header
     await expect(
@@ -102,7 +102,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
 
     await uploadAndIngest(api, account.id, await seedFiles('review-ui-stmt'));
 
-    await page.goto('/transactions/review');
+    await page.goto('/legacy/transactions/review');
 
     // 1. Header & reason badges visible
     await expect(
@@ -186,7 +186,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
 
     await uploadAndIngest(api, account.id, await seedFiles('review-mobile-stmt'));
 
-    await page.goto('/transactions/review');
+    await page.goto('/legacy/transactions/review');
 
     await expect(
       page.getByRole('heading', { name: 'Review Transactions' })
@@ -221,7 +221,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
 
     await uploadAndIngest(api, account.id, await seedFiles('review-swipe-stmt'));
 
-    await page.goto('/transactions/review');
+    await page.goto('/legacy/transactions/review');
     await expect(
       page.getByRole('heading', { name: 'Review Transactions' })
     ).toBeVisible();
@@ -271,7 +271,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
       page.getByRole('button', { name, exact: true }).and(page.locator('[aria-haspopup="dialog"]'));
     const pickReason = (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }).click();
 
-    await page.goto('/transactions/review');
+    await page.goto('/legacy/transactions/review');
     await expect(page.getByText('UBER TRIP AIRPORT')).toHaveCount(1);
     await expect(page.getByText('SWIGGY ORDER BANGALORE')).toHaveCount(2);
 
@@ -307,7 +307,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
       description: 'Transfer In from Alpha',
     });
 
-    await page.goto('/transactions');
+    await page.goto('/legacy/transactions');
 
     // Click on the debit transaction card to open detail sheet
     await page.getByText('Transfer Out to Beta').click();

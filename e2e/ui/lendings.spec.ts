@@ -16,7 +16,7 @@ test.describe('Lendings UI (@ui)', () => {
   test('Lendings Ledger and Person Detail: create person and entry, edit entry, edit person, delete cascade', async ({
     page,
   }) => {
-    await page.goto('/loans/lendings');
+    await page.goto('/legacy/loans/lendings');
     await page.waitForLoadState('networkidle');
 
     // Page title
@@ -120,7 +120,7 @@ test.describe('Lendings UI (@ui)', () => {
   test('Lendings Ledger: summary cards (lent / borrowed / net) update after Save Entry without a reload', async ({
     page,
   }) => {
-    await page.goto('/loans/lendings');
+    await page.goto('/legacy/loans/lendings');
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: /Lendings Ledger/i })).toBeVisible();
 
@@ -163,7 +163,7 @@ test.describe('Lendings UI (@ui)', () => {
     await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', amount: 2000, entryDate: monthsAgo(2) });
     await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 1000, entryDate: monthsAgo(1) });
 
-    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.goto(`/legacy/loans/lendings/${cp.id}`);
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: 'Rahul Export' })).toBeVisible();
 

@@ -131,7 +131,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     const report = await spendKpi(api, 'VUD Spend', seed);
     const board = await dashboardWith(api, 'VUD Board', [report.id]);
 
-    await page.goto(`/dashboards/${board.id}`);
+    await page.goto(`/legacy/dashboards/${board.id}`);
     const card = widgetCard(page, 'VUD Spend');
     const value = card.getByRole('button', { name: 'View underlying data' });
     // 100 + 110 + … + 360 = 6210.
@@ -231,7 +231,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     const report = await spendKpi(api, 'VUD Menu', seed);
     const board = await dashboardWith(api, 'VUD Menu Board', [report.id]);
 
-    await page.goto(`/dashboards/${board.id}`);
+    await page.goto(`/legacy/dashboards/${board.id}`);
     const card = widgetCard(page, 'VUD Menu');
     // 220 + 290 + 360.
     await expect(card.getByRole('button', { name: 'View underlying data' })).toHaveText('₹870.00');
@@ -264,7 +264,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     } as never);
     const board = await dashboardWith(api, 'VUD Month Board', [report.id]);
 
-    await page.goto(`/dashboards/${board.id}`);
+    await page.goto(`/legacy/dashboards/${board.id}`);
     await widgetCard(page, 'VUD This Month').getByRole('button', { name: 'View underlying data' }).click();
     const vud = page.getByRole('dialog', { name: 'VUD This Month' });
     await expect(vud.getByText('No rows in this period')).toBeVisible();
@@ -314,7 +314,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // 11300 + (5000 + 10 × 999.99) − 500; wait for the trade's price fetch to land.
     await expect.poll(async () => (await underlyingBuiltin(api, 'net_worth')).value).toBe(25799.9);
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const value = widgetCard(page, 'Net worth').getByRole('button', { name: 'View underlying data' });
     await expect(value).toHaveText('₹25,799.90');
     await value.click();
@@ -472,7 +472,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     } as never);
     const board = await dashboardWith(api, 'Sort Board', [report.id]);
 
-    await page.goto(`/dashboards/${board.id}`);
+    await page.goto(`/legacy/dashboards/${board.id}`);
     const card = widgetCard(page, 'Sort Table');
     const rows = bodyRows(card);
     // The saved order (description asc), 50 to a page.
@@ -511,7 +511,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     const seed = await seedSpend(api, 3);
     const report = await spendKpi(api, 'VUD Builder', seed);
 
-    await page.goto(`/reports/${report.id}`);
+    await page.goto(`/legacy/reports/${report.id}`);
     await expect(page.getByRole('heading', { name: 'Edit Report' })).toBeVisible();
     // A saved report's preview runs on mount.
     const value = page.getByRole('button', { name: 'View underlying data' });
@@ -533,7 +533,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     const report = await spendKpi(api, 'VUD Phone', seed);
     const board = await dashboardWith(api, 'VUD Phone Board', [report.id]);
 
-    await page.goto(`/dashboards/${board.id}`);
+    await page.goto(`/legacy/dashboards/${board.id}`);
     await widgetCard(page, 'VUD Phone').getByRole('button', { name: 'View underlying data' }).click();
     const vud = page.getByRole('dialog', { name: 'VUD Phone' });
     await expect(vud.getByText('₹870.00', { exact: true })).toBeVisible();

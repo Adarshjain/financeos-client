@@ -36,7 +36,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     const openTransactions = async (page: Page) => {
-      await page.goto('/ds/transactions');
+      await page.goto('/transactions');
       await expect(row(page, 'Uber Ride')).toBeVisible({ timeout: 45_000 });
     };
 
@@ -45,7 +45,7 @@ for (const viewport of VIEWPORTS) {
 
     /** Sets the Hide amounts switch in Settings (it persists in the cookie). */
     const setHidden = async (page: Page, hidden: boolean) => {
-      await page.goto('/ds/settings');
+      await page.goto('/settings');
       const toggle = hideSwitch(page, 'main', 'balances and amounts');
       await expect(toggle).toBeVisible({ timeout: 45_000 });
       if ((await toggle.getAttribute('aria-checked')) !== String(hidden)) await toggle.click();
@@ -76,7 +76,7 @@ for (const viewport of VIEWPORTS) {
       await expect(row(page, 'Uber Ride')).toContainText(SHOWN);
 
       // The server renders from the cookie: strip scripts so only the painted markup is left.
-      const response = await page.request.get('/ds/transactions');
+      const response = await page.request.get('/transactions');
       const markup = (await response.text()).replace(/<script[\s\S]*?<\/script>/g, '');
       expect(markup).toContain('Uber Ride');
       expect(markup).not.toContain('1,250');
@@ -88,19 +88,19 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Accounts: balances read "₹ —" while hidden', async ({ page }) => {
-      await page.goto('/ds/accounts');
+      await page.goto('/accounts');
       await expect(page.getByText('Main Bank').first()).toBeVisible({ timeout: 45_000 });
       await expect(page.locator('main')).toContainText('56,404');
 
       await setHidden(page, true);
-      await page.goto('/ds/accounts');
+      await page.goto('/accounts');
       await expect(page.getByText('Main Bank').first()).toBeVisible({ timeout: 45_000 });
       await expect(page.locator('main')).not.toContainText('56,404');
       await expect(page.locator('main')).toContainText(SHOWN);
     });
 
     test('Settings: the switch hides amounts and persists', async ({ page }) => {
-      await page.goto('/ds/settings');
+      await page.goto('/settings');
       const toggle = hideSwitch(page, 'main', 'balances and amounts');
       await expect(toggle).toHaveAttribute('aria-checked', 'false');
       await toggle.click();
@@ -112,7 +112,7 @@ for (const viewport of VIEWPORTS) {
       await openTransactions(page);
       await expect(row(page, 'Uber Ride')).toContainText(SHOWN);
 
-      await page.goto('/ds/settings');
+      await page.goto('/settings');
       await hideSwitch(page, 'main', 'balances and amounts').click();
       await openTransactions(page);
       await expect(row(page, 'Uber Ride')).toContainText('1,250');

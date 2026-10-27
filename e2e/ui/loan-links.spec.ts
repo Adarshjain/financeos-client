@@ -61,7 +61,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: debitDescription,
     });
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: loanName })).toBeVisible();
 
@@ -113,7 +113,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: debitDescription,
     });
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: /Add Charge/i }).first().click();
@@ -161,7 +161,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
 
     const before = await getSchedule(api, loan.id);
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: /Add Event/i }).first().click();
@@ -226,7 +226,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: `${marker} Fresh Debit`,
     });
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: 'Mark Paid' }).first().click();
@@ -253,7 +253,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: creditDescription,
     });
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: /Add Event/i }).first().click();
@@ -302,7 +302,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
     await page.getByRole('dialog').last().getByRole('button', { name: 'Unlink', exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('button', { name: 'Unlink' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Mark Paid' }).first()).toBeVisible();

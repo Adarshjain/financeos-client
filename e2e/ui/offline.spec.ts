@@ -7,7 +7,7 @@ import { expect, test } from '../fixtures/test';
  */
 test.describe('Offline page (@ui)', () => {
   test('renders the offline notice without a session', async ({ page }) => {
-    await page.goto('/offline');
+    await page.goto('/legacy/offline');
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
     await expect(page.getByText(/FinanceOS needs a connection/)).toBeVisible();
   });

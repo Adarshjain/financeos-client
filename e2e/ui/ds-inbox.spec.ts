@@ -42,7 +42,7 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const loan = await seedDueSoonLoan(api, 'Ds Inbox Loan');
     const emiKey = `emi:${loan.id}:1`;
-    await page.goto('/ds/inbox');
+    await page.goto('/inbox');
     await expect(row(page, emiKey)).toBeVisible({ timeout: 45_000 });
 
     await row(page, emiKey).click({ button: 'right' });
@@ -64,7 +64,7 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     const bank = await createBankAccount(api, { name: 'Ds Inbox Bank', openingBalance: reviewSeedSpec.opening });
     await uploadAndIngest(api, bank.id, [{ filename: 'ds-inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) }]);
 
-    await page.goto('/ds/inbox');
+    await page.goto('/inbox');
     await expect(row(page, 'review')).toBeVisible({ timeout: 45_000 });
 
     await row(page, 'review').click({ button: 'right' });

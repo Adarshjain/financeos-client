@@ -44,7 +44,7 @@ for (const viewport of VIEWPORTS) {
         await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
         await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: 'Loans & lendings' }).click();
       }
-      await page.waitForURL('**/ds/loans/lendings');
+      await page.waitForURL('**/loans/lendings');
 
       const tabs = page.getByRole('tab');
       await expect(tabs.first()).toContainText('Lendings');
@@ -53,13 +53,13 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('tab', { name: 'Lendings · 3' })).toBeVisible();
 
       await page.getByRole('tab', { name: /^Loans/ }).click();
-      await page.waitForURL(/\/ds\/loans$/);
+      await page.waitForURL(/\/loans$/);
       await expect(page.getByRole('tab', { name: /^Loans/ })).toHaveAttribute('data-state', 'active');
     });
 
     test('Lendings: tiles show the seeded totals, chips filter on the server and search narrows', async ({ page }) => {
       await seedPeople();
-      await page.goto('/ds/loans/lendings');
+      await page.goto('/loans/lendings');
 
       await expect(page.getByText('₹15,000').first()).toBeVisible(); // Owed to you
       await expect(page.getByText('₹12,000').first()).toBeVisible(); // You owe
@@ -93,16 +93,16 @@ for (const viewport of VIEWPORTS) {
 
     test('Lendings: a person row links to the Dinero person page', async ({ page }) => {
       const { rahul } = await seedPeople();
-      await page.goto('/ds/loans/lendings');
+      await page.goto('/loans/lendings');
       if (viewport.width >= 1024) {
         await expect(page.getByRole('link', { name: 'Open Rahul Sharma' })).toHaveAttribute(
           'href',
-          `/ds/loans/lendings/${rahul.id}`,
+          `/loans/lendings/${rahul.id}`,
         );
       } else {
         // On phone the whole row opens the person.
         await page.getByText('Rahul Sharma').first().click();
-        await page.waitForURL(`**/ds/loans/lendings/${rahul.id}`);
+        await page.waitForURL(`**/loans/lendings/${rahul.id}`);
       }
     });
 
@@ -115,11 +115,11 @@ for (const viewport of VIEWPORTS) {
       return { api, rahul };
     }
 
-    const personPath = (id: string) => `/ds/loans/lendings/${id}`;
+    const personPath = (id: string) => `/loans/lendings/${id}`;
 
     test('Person: opening a person from the list shows the ledger with the running balance, outside the tabs', async ({ page }) => {
       const { rahul } = await seedPeople();
-      await page.goto('/ds/loans/lendings');
+      await page.goto('/loans/lendings');
       if (viewport.width >= 1024) await page.getByRole('link', { name: 'Open Rahul Sharma' }).click();
       else await page.getByText('Rahul Sharma').first().click();
       await page.waitForURL(`**${personPath(rahul.id)}`);
@@ -130,7 +130,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Opening ₹0 · lent ₹15,000 · received ₹0 · closing ₹15,000')).toBeVisible();
       // The Lendings · Loans tabs belong to the two lists, not to a person's page.
       await expect(page.locator('main').getByRole('tab', { name: /^(Lendings|Loans)$/ })).toHaveCount(0);
-      await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/ds/loans/lendings');
+      await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/loans/lendings');
     });
 
     test('Person: entries show Lent, Received and the balance after each', async ({ page }) => {
@@ -249,13 +249,13 @@ for (const viewport of VIEWPORTS) {
       await expect(confirm.getByText('Their whole ledger goes (2 entries).')).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete person' }).click();
 
-      await page.waitForURL((u) => u.pathname === '/ds/loans/lendings');
+      await page.waitForURL((u) => u.pathname === '/loans/lendings');
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
     });
 
     test('the + opens Add ledger entry; saving a new person adds a row', async ({ page }) => {
       await seedPeople();
-      await page.goto('/ds/loans/lendings');
+      await page.goto('/loans/lendings');
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
 
       const dialog = page.getByRole('dialog', { name: 'Add ledger entry' });
@@ -270,7 +270,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText(name).first()).toBeVisible();
       await expect(page.getByText('+40,000').first()).toBeVisible();
-      expect(new URL(page.url()).pathname).toBe('/ds/loans/lendings');
+      expect(new URL(page.url()).pathname).toBe('/loans/lendings');
     });
 
     test('Loans: tiles, search by lender, Closed · n · Show, and row links', async ({ page }) => {
@@ -280,7 +280,7 @@ for (const viewport of VIEWPORTS) {
       const old = await createLoan(api, { name: 'Old Bike Loan', lender: 'Bajaj Finserv', loanType: 'two_wheeler', principal: 60000, tenureMonths: 12 });
       await closeLoan(api, old.id);
 
-      await page.goto('/ds/loans');
+      await page.goto('/loans');
       for (const label of ['Outstanding', 'EMIs per month', 'Overdue', 'Interest this FY']) {
         await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
       }
@@ -289,7 +289,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Car Loan').first()).toBeVisible();
       await expect(page.getByText('Old Bike Loan')).toHaveCount(0);
       if (viewport.width >= 1024) {
-        await expect(page.getByRole('link', { name: 'Open Home Loan' })).toHaveAttribute('href', `/ds/loans/${home.id}`);
+        await expect(page.getByRole('link', { name: 'Open Home Loan' })).toHaveAttribute('href', `/loans/${home.id}`);
       }
 
       await page.getByPlaceholder('Search loans').fill('SBI');
@@ -318,7 +318,7 @@ for (const viewport of VIEWPORTS) {
       const bank = await createBankAccount(api, { name: 'Settle Bank' });
       await createTransaction(api, bank.id, { amount: 2000, date: todayString(-1), description: 'UPI from Asha Verma' });
 
-      await page.goto('/ds/loans/lendings');
+      await page.goto('/loans/lendings');
       const row = page.getByText('Received from Asha Verma · ₹2,000');
       await expect(row).toBeVisible();
       await expect(page.getByText('+2,000')).toBeVisible();
@@ -335,7 +335,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('the + on Loans opens Add loan; creating one adds a row', async ({ page }) => {
-      await page.goto('/ds/loans');
+      await page.goto('/loans');
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
 
       const dialog = page.getByRole('dialog', { name: 'Add loan' });
@@ -352,7 +352,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Scooter Loan UI').first()).toBeVisible();
-      expect(new URL(page.url()).pathname).toBe('/ds/loans');
+      expect(new URL(page.url()).pathname).toBe('/loans');
     });
   });
 }

@@ -18,55 +18,55 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const account = await createBankAccount(api, { name: 'Redirect Bank' });
 
-    await page.goto(`/settings/ingest?account=${account.id}`);
-    await page.waitForURL(`**/transactions/import?account=${account.id}`);
+    await page.goto(`/legacy/settings/ingest?account=${account.id}`);
+    await page.waitForURL(`**/legacy/transactions/import?account=${account.id}`);
     await expect(page.getByRole('heading', { name: 'Import statements', exact: true })).toBeVisible();
     await expect(page.getByLabel('Select Financial Account')).toContainText('Redirect Bank');
 
     // Without a query the redirect carries none.
-    await page.goto('/settings/ingest');
-    await page.waitForURL('**/transactions/import');
+    await page.goto('/legacy/settings/ingest');
+    await page.waitForURL('**/legacy/transactions/import');
     expect(new URL(page.url()).search).toBe('');
     await expect(page.getByRole('heading', { name: 'Import statements', exact: true })).toBeVisible();
   });
 
   test('legacy /settings/jobs redirects to /settings/activity and keeps the filters', async ({ page }) => {
-    await page.goto('/settings/jobs?status=FAILED&type=GMAIL_SYNC');
-    await page.waitForURL('**/settings/activity?**');
+    await page.goto('/legacy/settings/jobs?status=FAILED&type=GMAIL_SYNC');
+    await page.waitForURL('**/legacy/settings/activity?**');
     const url = new URL(page.url());
-    expect(url.pathname).toBe('/settings/activity');
+    expect(url.pathname).toBe('/legacy/settings/activity');
     expect(url.searchParams.get('status')).toBe('FAILED');
     expect(url.searchParams.get('type')).toBe('GMAIL_SYNC');
     await expect(page.getByRole('heading', { name: 'Activity', exact: true })).toBeVisible();
 
-    await page.goto('/settings/jobs');
-    await page.waitForURL('**/settings/activity');
+    await page.goto('/legacy/settings/jobs');
+    await page.waitForURL('**/legacy/settings/activity');
     await expect(page.getByRole('heading', { name: 'Activity', exact: true })).toBeVisible();
   });
 
   test('legacy /loans/calendar redirects to /upcoming', async ({ page }) => {
-    await page.goto('/loans/calendar');
-    await page.waitForURL('**/upcoming');
+    await page.goto('/legacy/loans/calendar');
+    await page.waitForURL('**/legacy/upcoming');
     await expect(page.getByRole('heading', { name: 'Upcoming', level: 1 })).toBeVisible();
   });
 
   test('Settings links to Activity, and the statement import page links back to Transactions', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('/legacy/settings');
     await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
     await page.locator('main').getByRole('link', { name: 'Activity' }).click();
-    await page.waitForURL('**/settings/activity');
+    await page.waitForURL('**/legacy/settings/activity');
     await expect(page.getByRole('heading', { name: 'Activity', exact: true })).toBeVisible();
 
-    await page.goto('/transactions/import');
+    await page.goto('/legacy/transactions/import');
     await expect(page.getByRole('heading', { name: 'Import statements', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Recent statement ingestion jobs' })).toBeVisible();
   });
 
   test('Holdings links to Instruments', async ({ page }) => {
-    await page.goto('/investments');
+    await page.goto('/legacy/investments');
     await expect(page.getByRole('heading', { name: /Portfolio Holdings/i, level: 1 })).toBeVisible();
     await page.getByRole('link', { name: 'Instruments', exact: true }).first().click();
-    await page.waitForURL('**/investments/instruments');
+    await page.waitForURL('**/legacy/investments/instruments');
     await expect(page.getByRole('heading', { name: /Instruments/i, level: 1 })).toBeVisible();
   });
 
@@ -74,20 +74,20 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await seedDueSoonLoan(api, 'Sidebar Loan');
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const sidebar = page.locator('aside');
     await expect(sidebar).toBeVisible();
 
     for (const [name, href] of [
-      ['Home', '/dashboard'],
-      ['Inbox', '/inbox'],
-      ['Upcoming', '/upcoming'],
-      ['Accounts', '/accounts'],
+      ['Home', '/legacy/dashboard'],
+      ['Inbox', '/legacy/inbox'],
+      ['Upcoming', '/legacy/upcoming'],
+      ['Accounts', '/legacy/accounts'],
     ] as const) {
       await expect(sidebar.getByRole('link', { name: new RegExp(`^${name}`) })).toHaveAttribute('href', href);
     }
-    await expect(sidebar.getByRole('link', { name: 'Chat', exact: true })).toHaveAttribute('href', '/chat');
-    await expect(sidebar.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings');
+    await expect(sidebar.getByRole('link', { name: 'Chat', exact: true })).toHaveAttribute('href', '/legacy/chat');
+    await expect(sidebar.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/legacy/settings');
 
     // The EMI due in three days is one act-now row, so the badge reads at least 1.
     await expect(sidebar.getByTestId('inbox-nav-badge')).toHaveText(/^[1-9]\d*\+?$/);
@@ -95,32 +95,32 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     // Modules: Transactions groups Import with the other transaction pages.
     await sidebar.getByRole('button', { name: 'Transactions', exact: true }).click();
     await sidebar.getByRole('link', { name: 'Import', exact: true }).click();
-    await page.waitForURL('**/transactions/import');
+    await page.waitForURL('**/legacy/transactions/import');
     await expect(sidebar.getByRole('link', { name: 'Import', exact: true })).toBeVisible();
 
     // Navigate through the top-level links.
     await sidebar.getByRole('link', { name: /^Inbox/ }).click();
-    await page.waitForURL('**/inbox');
+    await page.waitForURL('**/legacy/inbox');
     await expect(page.getByRole('heading', { name: 'Inbox', level: 1 })).toBeVisible();
     await sidebar.getByRole('link', { name: 'Upcoming' }).click();
-    await page.waitForURL('**/upcoming');
+    await page.waitForURL('**/legacy/upcoming');
     await sidebar.getByRole('link', { name: 'Accounts' }).click();
-    await page.waitForURL('**/accounts');
+    await page.waitForURL('**/legacy/accounts');
     await sidebar.getByRole('link', { name: 'Chat', exact: true }).click();
-    await page.waitForURL('**/chat');
+    await page.waitForURL('**/legacy/chat');
   });
 
   test('@mobile-only bottom bar: Home, Inbox, Upcoming, Transactions and the contextual bar', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     await seedDueSoonLoan(api, 'Bar Loan');
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const bar = page.locator('nav').filter({ has: page.getByLabel('Open navigation menu') });
     for (const [name, href] of [
-      ['Home', '/dashboard'],
-      ['Inbox', '/inbox'],
-      ['Upcoming', '/upcoming'],
-      ['Transactions', '/transactions'],
+      ['Home', '/legacy/dashboard'],
+      ['Inbox', '/legacy/inbox'],
+      ['Upcoming', '/legacy/upcoming'],
+      ['Transactions', '/legacy/transactions'],
     ] as const) {
       await expect(bar.getByRole('link', { name: new RegExp(`^${name}`) })).toHaveAttribute('href', href);
     }
@@ -128,33 +128,33 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await expect(bar.getByTestId('inbox-nav-badge')).toHaveText(/^[1-9]\d*\+?$/);
 
     await bar.getByRole('link', { name: /^Inbox/ }).click();
-    await page.waitForURL('**/inbox');
+    await page.waitForURL('**/legacy/inbox');
     await expect(page.getByRole('heading', { name: 'Inbox', level: 1 })).toBeVisible();
 
     // Inside Transactions the bar switches to that module's pages and offers a way back Home.
     await bar.getByRole('link', { name: 'Transactions', exact: true }).click();
-    await page.waitForURL('**/transactions');
+    await page.waitForURL('**/legacy/transactions');
     await expect(bar.getByRole('link', { name: 'Review', exact: true })).toBeVisible();
     await expect(bar.getByRole('link', { name: 'Import', exact: true })).toBeVisible();
     await bar.getByRole('link', { name: 'Return to Home' }).click();
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/legacy/dashboard');
   });
 
   test('@mobile-only menu sheet: Accounts, grouped pages incl. Settings, signed-in email and Sign out', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
 
     await page.getByLabel('Open navigation menu').click();
     const sheet = page.getByRole('dialog');
-    await expect(sheet.getByRole('link', { name: /Chat/ }).first()).toHaveAttribute('href', '/chat');
-    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+    await expect(sheet.getByRole('link', { name: /Chat/ }).first()).toHaveAttribute('href', '/legacy/chat');
+    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/legacy/accounts');
     // Settings is a group of chips like the others.
     const settingsChips: Record<string, string> = {
-      'Profile & appearance': '/settings',
-      Connections: '/settings/gmail',
-      'AI keys': '/settings/llm-keys',
-      Notifications: '/settings/notifications',
-      Activity: '/settings/activity',
-      Debug: '/debug',
+      'Profile & appearance': '/legacy/settings',
+      Connections: '/legacy/settings/gmail',
+      'AI keys': '/legacy/settings/llm-keys',
+      Notifications: '/legacy/settings/notifications',
+      Activity: '/legacy/settings/activity',
+      Debug: '/legacy/debug',
     };
     for (const [chip, href] of Object.entries(settingsChips)) {
       await expect(sheet.getByRole('link', { name: chip, exact: true })).toHaveAttribute('href', href);
@@ -170,7 +170,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
       await expect(sheet.getByRole('link', { name: chip, exact: true }).first()).toBeVisible();
     }
     await sheet.getByRole('link', { name: 'Import', exact: true }).click();
-    await page.waitForURL('**/transactions/import');
+    await page.waitForURL('**/legacy/transactions/import');
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // Reopen from another page: the current page is marked active, and Sign out is a button in the sheet.

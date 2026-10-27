@@ -13,7 +13,7 @@ test.describe('/ds Auth UI (@ui)', () => {
 
   test('signup flow: fill form, submit -> dashboard; wrong invite shows error', async ({ page }) => {
     // 1. Wrong invite shows user-readable error message
-    await page.goto(`${E2E_CLIENT_URL}/ds/signup`);
+    await page.goto(`${E2E_CLIENT_URL}/signup`);
     await page.getByLabel('Email').fill(nextEmail('bad-invite'));
     await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
     await page.getByLabel('Invite code', { exact: true }).fill('wrong-code-xyz');
@@ -35,12 +35,12 @@ test.describe('/ds Auth UI (@ui)', () => {
     await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    await page.waitForURL('**/ds/dashboard', { timeout: 15000 });
-    expect(page.url()).toContain('/ds/dashboard');
+    await page.waitForURL('**/dashboard', { timeout: 15000 });
+    expect(page.url()).toContain('/dashboard');
   });
 
   test('signup password under 8 characters shows danger banner before submit', async ({ page }) => {
-    await page.goto(`${E2E_CLIENT_URL}/ds/signup`);
+    await page.goto(`${E2E_CLIENT_URL}/signup`);
     await page.getByLabel('Email').fill(nextEmail('short-pwd'));
     await page.getByLabel('Password', { exact: true }).fill('12345');
     await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
@@ -49,19 +49,19 @@ test.describe('/ds Auth UI (@ui)', () => {
     const alert = page.locator('form [role="alert"]');
     await expect(alert).toBeVisible();
     await expect(alert).toContainText('Password must be at least 8 characters.');
-    expect(page.url()).toContain('/ds/signup');
+    expect(page.url()).toContain('/signup');
   });
 
-  test('login from= redirect: visit /ds/login?from=/accounts -> login -> lands on the Dinero /ds/accounts', async ({
+  test('login from= redirect: visit /login?from=/accounts -> login -> lands on the Dinero /accounts', async ({
     page,
     request,
   }) => {
     // Create user via API first
     const u = await createUser(request, 'from-redirect-ds');
 
-    // Visit /ds/login with from parameter
-    await page.goto(`${E2E_CLIENT_URL}/ds/login?from=/accounts`);
-    expect(page.url()).toContain('/ds/login');
+    // Visit /login with from parameter
+    await page.goto(`${E2E_CLIENT_URL}/login?from=/accounts`);
+    expect(page.url()).toContain('/login');
     expect(page.url()).toContain('from=');
 
     // Fill login form
@@ -70,22 +70,22 @@ test.describe('/ds Auth UI (@ui)', () => {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Lands on the Dinero accounts page: Dinero links go to built Dinero pages (owner 2026-10-21)
-    await page.waitForURL((url) => url.pathname === '/ds/accounts', { timeout: 15000 });
-    expect(new URL(page.url()).pathname).toBe('/ds/accounts');
+    await page.waitForURL((url) => url.pathname === '/accounts', { timeout: 15000 });
+    expect(new URL(page.url()).pathname).toBe('/accounts');
   });
 
   test('login empty submit shows danger banner without navigating', async ({ page }) => {
-    await page.goto(`${E2E_CLIENT_URL}/ds/login`);
+    await page.goto(`${E2E_CLIENT_URL}/login`);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     const alert = page.locator('form [role="alert"]');
     await expect(alert).toBeVisible();
     await expect(alert).toContainText('Email and password are required.');
-    expect(page.url()).toContain('/ds/login');
+    expect(page.url()).toContain('/login');
   });
 
   test('login with ?deleted=1 shows account deleted success notice', async ({ page }) => {
-    await page.goto(`${E2E_CLIENT_URL}/ds/login?deleted=1`);
+    await page.goto(`${E2E_CLIENT_URL}/login?deleted=1`);
     await expect(page.getByText('Your account has been deleted.')).toBeVisible();
   });
 

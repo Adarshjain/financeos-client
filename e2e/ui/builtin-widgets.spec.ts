@@ -36,7 +36,7 @@ function monthLabel(offset: number): string {
 /** A dashboard of built-ins, opened in view mode at /dashboards/{id}. */
 async function openBoard(page: Page, api: ApiClient, name: string, widgets: ReturnType<typeof builtinWidget>[]): Promise<string> {
   const dash = await createDashboard(api, { name, isDefault: false, widgets } as never);
-  await page.goto(`/dashboards/${dash.id}`);
+  await page.goto(`/legacy/dashboards/${dash.id}`);
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
   return dash.id;
 }
@@ -146,9 +146,9 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     });
 
     // Links go where they say.
-    await expect(widget.getByRole('link', { name: 'Shortcut Bank' })).toHaveAttribute('href', `/accounts/${bank.id}`);
+    await expect(widget.getByRole('link', { name: 'Shortcut Bank' })).toHaveAttribute('href', `/legacy/accounts/${bank.id}`);
     await widget.getByRole('link', { name: 'Upcoming' }).click();
-    await page.waitForURL('**/upcoming');
+    await page.waitForURL('**/legacy/upcoming');
     await page.goBack();
     await expect(viewCard(page, 'Shortcuts')).toBeVisible();
 
@@ -300,11 +300,11 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     const card = await createCreditCard(api, { name: 'Util UI Card', creditLimit: 50000 });
     await createTransaction(api, card.id, { amount: -20000, date: istToday(-2), description: 'Util UI spend' });
 
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
     await expect(page.locator('main').getByText('40.0%').first()).toBeVisible();
 
-    await page.goto(`/accounts/${card.id}`);
+    await page.goto(`/legacy/accounts/${card.id}`);
     const main = page.locator('main');
     await expect(main.getByText('Utilisation 40.0%')).toBeVisible();
     await expect(main.getByText('₹50,000.00').first()).toBeVisible();
@@ -313,7 +313,7 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     await createTransaction(api, card.id, { amount: 30000, date: istToday(-1), description: 'Util UI overpay' });
     await page.reload();
     await expect(main.getByText('Utilisation 0.0%')).toBeVisible();
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.locator('main').getByText('0.0%', { exact: true }).first()).toBeVisible();
 
     // The Statements dialog's cycle summary shows the same live figure as the account.
@@ -322,7 +322,7 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     const account = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: bill.cardId } } });
     expectStatus(account, 200);
     const pct = Number((account.data as unknown as { utilizationPct: number }).utilizationPct);
-    await page.goto(`/accounts/${bill.cardId}`);
+    await page.goto(`/legacy/accounts/${bill.cardId}`);
     const dialog = page.getByRole('dialog').filter({ hasText: 'Card Cycle Summary' });
     await expect(async () => {
       await page.locator('main').getByRole('button', { name: 'Statements', exact: true }).click();

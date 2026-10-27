@@ -15,7 +15,7 @@ test.describe('LLM Settings UI (@ui)', () => {
     page,
   }) => {
     // 1. Navigate to /settings/llm-keys
-    await page.goto('/settings/llm-keys');
+    await page.goto('/legacy/settings/llm-keys');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'API Keys', exact: true })).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('LLM Settings UI (@ui)', () => {
   test('Custom model row: type a model, Test & add probes it, it persists in the order, and can be removed', async ({
     page,
   }) => {
-    await page.goto('/settings/llm-keys');
+    await page.goto('/legacy/settings/llm-keys');
     await page.waitForLoadState('networkidle');
 
     // Without a key the add row only hints; add a Gemini key first

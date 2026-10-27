@@ -19,7 +19,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(page.getByRole('link', { name: /Sign in/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Sign up/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Offline/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Accounts.*\/ds\/accounts/ })).toHaveAttribute('href', '/ds/accounts');
+    await expect(page.getByRole('link', { name: /Accounts.*\/accounts/ })).toHaveAttribute('href', '/accounts');
 
     // Verify Rail navigation is visible
     const rail = page.locator('nav.w-container-xs');
@@ -53,7 +53,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('link', { name: 'Ask the data' })).toBeVisible();
 
     // Footer: Settings
-    const settingsLink = rail.locator('a[href="/ds/settings"]');
+    const settingsLink = rail.locator('a[href="/settings"]');
     await expect(settingsLink).toBeVisible();
     await expect(settingsLink).toContainText(currentUser.email);
 
@@ -110,7 +110,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     }
   });
 
-  test('phone 390px: tab bar order is Home, Transactions, Lendings, Inbox, Menu and Lendings opens /ds/loans/lendings', async ({ page }) => {
+  test('phone 390px: tab bar order is Home, Transactions, Lendings, Inbox, Menu and Lendings opens /loans/lendings', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
 
@@ -118,7 +118,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(tabBar.getByRole('tab')).toHaveText(['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu']);
 
     await tabBar.getByRole('tab', { name: 'Lendings' }).click();
-    await expect(page).toHaveURL(/\/ds\/loans\/lendings/);
+    await expect(page).toHaveURL(/\/loans\/lendings/);
   });
 
   test('phone 390px: Menu tab opens More sheet, links live routes, and closes all 3 ways', async ({ page }) => {
@@ -141,22 +141,22 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('button', { name: 'Trade' })).toBeEnabled();
     const importLink = sheet.getByRole('link', { name: 'Import' });
     await expect(importLink).toBeVisible();
-    await expect(importLink).toHaveAttribute('href', '/ds/transactions/import');
+    await expect(importLink).toHaveAttribute('href', '/transactions/import');
 
     // Verify Section tiles in groups
-    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/ds/accounts');
-    await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/ds/transactions');
-    await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/ds/investments');
-    await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/ds/rewards');
-    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/ds/loans/lendings');
-    await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/ds/dashboards');
-    await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/ds/reports');
+    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+    await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
+    await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
+    await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
+    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/loans/lendings');
+    await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
+    await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     await expect(sheet.getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
 
     // Verify Profile row
     const profileRow = sheet.getByRole('link', { name: /Settings · connections · notifications/i });
     await expect(profileRow).toBeVisible();
-    await expect(profileRow).toHaveAttribute('href', '/ds/settings');
+    await expect(profileRow).toHaveAttribute('href', '/settings');
 
     // Closing Way 1: Tapping the scrim above the sheet
     await page.mouse.click(200, 50);
@@ -234,11 +234,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const tabBar = page.locator('nav.desk\\:hidden');
     const txTab = tabBar.getByRole('tab', { name: 'Transactions' });
     await expect(txTab).toBeVisible();
-    await expect(txTab).toHaveAttribute('href', '/ds/transactions');
+    await expect(txTab).toHaveAttribute('href', '/transactions');
 
     // Click Transactions tab and ensure it navigates directly as a link
     await txTab.click();
-    await page.waitForURL('**/ds/transactions');
-    expect(new URL(page.url()).pathname).toBe('/ds/transactions');
+    await page.waitForURL('**/transactions');
+    expect(new URL(page.url()).pathname).toBe('/transactions');
   });
 });

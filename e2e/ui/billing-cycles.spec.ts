@@ -24,7 +24,7 @@ test.describe('Billing-cycle reports UI (@ui)', () => {
     const bank = await createBankAccount(api, { name: 'UI Cycle Bank' });
     await createTransaction(api, bank.id, { amount: -800, date: today, description: 'Bank spend' });
 
-    await page.goto('/reports/new');
+    await page.goto('/legacy/reports/new');
     await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
     await page.getByPlaceholder('Report name').fill('Card spend this cycle');
 

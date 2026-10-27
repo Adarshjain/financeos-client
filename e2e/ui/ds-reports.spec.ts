@@ -37,7 +37,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
       },
     });
 
-    await page.goto('/ds/reports');
+    await page.goto('/reports');
     const table = page.getByRole('table');
     await expect(table.getByText('Ds Spend KPI', { exact: true })).toBeVisible({
       timeout: 45_000,
@@ -60,7 +60,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
 
     // A type chip is a URL, applied to the loaded list.
     await page.getByRole('button', { name: /^Table\s*1$/ }).click();
-    await expect(page).toHaveURL(/\/ds\/reports\?type=TABLE/);
+    await expect(page).toHaveURL(/\/reports\?type=TABLE/);
     // The counts do not change with the chip.
     await expect(page.getByRole('button', { name: /^KPI\s*1$/ })).toBeVisible();
     await expect(reportsTab).toBeVisible();

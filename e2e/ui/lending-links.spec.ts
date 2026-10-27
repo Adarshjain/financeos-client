@@ -26,7 +26,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: `Picker Debit ${Date.now()}`,
     });
 
-    await page.goto('/loans/lendings');
+    await page.goto('/legacy/loans/lendings');
     await expect(page.getByRole('heading', { name: /Lendings Ledger/i })).toBeVisible();
 
     await page.getByRole('button', { name: /Add Lending/i }).filter({ visible: true }).first().click();
@@ -90,7 +90,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       notes: 'LEDGER_PLAIN_ROW_MARKER',
     });
 
-    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.goto(`/legacy/loans/lendings/${cp.id}`);
     await expect(page.getByRole('heading', { name: cp.name })).toBeVisible();
 
     const linkedRow = page.locator('tr').filter({ hasText: 'LEDGER_LINKED_ROW_MARKER' });
@@ -298,7 +298,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: candidateDescription,
     });
 
-    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.goto(`/legacy/loans/lendings/${cp.id}`);
     await expect(page.getByRole('heading', { name: cp.name })).toBeVisible();
     await expect(page.getByText('Transaction Matching')).toBeVisible();
 

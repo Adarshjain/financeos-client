@@ -14,15 +14,15 @@ const VIEWPORTS = [
 
 /** Each tab, and the dialog its top-bar + opens. Holdings and Tradebook both record a trade. */
 const TABS = [
-  { path: '/ds/investments', dialog: 'Record trade' },
-  { path: '/ds/investments/tradebook', dialog: 'Record trade' },
-  { path: '/ds/investments/dividends', dialog: 'Record dividend' },
-  { path: '/ds/investments/fno', dialog: 'Add F&O trade' },
-  { path: '/ds/investments/corporate-actions', dialog: 'Record corporate action' },
-  { path: '/ds/investments/instruments', dialog: 'Add instrument' },
+  { path: '/investments', dialog: 'Record trade' },
+  { path: '/investments/tradebook', dialog: 'Record trade' },
+  { path: '/investments/dividends', dialog: 'Record dividend' },
+  { path: '/investments/fno', dialog: 'Add F&O trade' },
+  { path: '/investments/corporate-actions', dialog: 'Record corporate action' },
+  { path: '/investments/instruments', dialog: 'Add instrument' },
 ];
 
-const MENU_TABS = new Set(['/ds/investments/tradebook', '/ds/investments/fno']);
+const MENU_TABS = new Set(['/investments/tradebook', '/investments/fno']);
 
 const plus = (page: Page) => page.getByRole('button', { name: 'Add', exact: true }).first();
 
@@ -51,7 +51,7 @@ for (const viewport of VIEWPORTS) {
     }
 
     test('records a trade from Holdings + and finds it in the Tradebook', async ({ page }) => {
-      await page.goto('/ds/investments');
+      await page.goto('/investments');
       await plus(page).click();
       const dialog = page.getByRole('dialog', { name: 'Record trade' });
       await dialog.getByRole('combobox', { name: /Instrument/ }).click();
@@ -63,13 +63,13 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Record buy' }).click();
       await expect(dialog).toHaveCount(0);
 
-      await page.goto('/ds/investments/tradebook');
+      await page.goto('/investments/tradebook');
       await expect(page.getByText(seeded.tcs.symbol, { exact: true }).locator('visible=true').first()).toBeVisible();
       await expect(page.getByText(/2,247/).locator('visible=true').first()).toBeVisible();
     });
 
     test('a holding page records a trade, a dividend and a corporate action for that instrument', async ({ page }) => {
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
       await page.getByRole('button', { name: 'Record trade' }).click();
       const trade = page.getByRole('dialog', { name: 'Record trade' });
       await expect(trade.getByRole('combobox', { name: /Instrument/ })).toContainText(seeded.infy.symbol);

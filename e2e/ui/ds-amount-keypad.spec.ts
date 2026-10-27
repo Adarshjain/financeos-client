@@ -8,7 +8,7 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { expect, test } from '../fixtures/test';
 
 async function openAddTransaction(page: Page) {
-  await page.goto('/ds/transactions');
+  await page.goto('/transactions');
   await page.getByRole('button', { name: 'Add', exact: true }).first().click();
   const form = page.getByRole('dialog', { name: 'Add transaction' });
   await expect(form).toBeVisible({ timeout: 45_000 });

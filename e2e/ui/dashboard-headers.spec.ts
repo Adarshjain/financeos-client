@@ -33,7 +33,7 @@ test.describe('Dashboard section headers UI (@ui)', () => {
 
   test('add a header with a description, save, reload, then remove it', async ({ page }) => {
     const dashboard = await seedDashboard('Headers journey');
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -68,7 +68,7 @@ test.describe('Dashboard section headers UI (@ui)', () => {
 
   test('a new header lands on top and pushes the existing widgets down', async ({ page }) => {
     const dashboard = await seedDashboard('Header on top');
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -90,7 +90,7 @@ test.describe('Dashboard section headers UI (@ui)', () => {
 
   test('saving with an untitled header is blocked', async ({ page }) => {
     const dashboard = await seedDashboard('Untitled header');
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -103,7 +103,7 @@ test.describe('Dashboard section headers UI (@ui)', () => {
 
   test('@mobile an existing header title and description can be edited by tapping into them', async ({ page, isMobile }) => {
     const dashboard = await seedDashboard('Header edit', true);
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await page.waitForLoadState('networkidle');
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
 
@@ -133,7 +133,7 @@ test.describe('Dashboard section headers UI (@ui)', () => {
 
   test('@mobile a saved header renders as a full-width heading above the widgets', async ({ page, isMobile }) => {
     const dashboard = await seedDashboard('Header view', true);
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await page.waitForLoadState('networkidle');
 
     const header = page.getByTestId('dashboard-header');

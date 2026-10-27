@@ -30,7 +30,7 @@ test.describe('Dashboards UI (@ui)', () => {
     });
 
     // 1. Dashboards list: a first visit seeds the default Home dashboard, so it is never empty
-    await page.goto('/dashboards');
+    await page.goto('/legacy/dashboards');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Dashboards', exact: true })).toBeVisible();
@@ -40,7 +40,7 @@ test.describe('Dashboards UI (@ui)', () => {
 
     // 2. Click "New dashboard"
     await page.getByRole('button', { name: /New dashboard/i }).click();
-    await page.waitForURL('**/dashboards/new');
+    await page.waitForURL('**/legacy/dashboards/new');
 
     // 3. Name the dashboard
     await page.getByPlaceholder('Dashboard name').fill('Executive Dashboard');
@@ -54,7 +54,7 @@ test.describe('Dashboards UI (@ui)', () => {
 
     // 5. Click "Create"
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/dashboards\/[a-f0-9-]+/);
+    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+/);
     await page.waitForLoadState('networkidle');
 
     // 6. View mode: dashboard rendered with title and widget
@@ -93,7 +93,7 @@ test.describe('Dashboards UI (@ui)', () => {
 
     // Click back from view mode to return to /dashboards list
     await backBtn.click();
-    await page.waitForURL('**/dashboards');
+    await page.waitForURL('**/legacy/dashboards');
 
     // 9. Set as default dashboard from list (Home already holds the default, so target our card)
     const executiveCard = page.locator('div.flex-col.gap-3', {
@@ -104,7 +104,7 @@ test.describe('Dashboards UI (@ui)', () => {
     await expect(executiveCard.getByTitle('Clear default')).toBeVisible();
 
     // 10. Visit `/dashboard` (landing home) -> renders the default dashboard
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByText('Executive Dashboard').first()).toBeVisible();
@@ -119,7 +119,7 @@ test.describe('Dashboards UI (@ui)', () => {
       await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id: d.id } } });
     }
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();

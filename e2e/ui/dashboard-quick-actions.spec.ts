@@ -38,7 +38,7 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
       definition: { measure: 'amount', aggregation: 'sum', filters: [] },
     });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await openHomeMenu(page);
     await page.getByRole('menuitem', { name: 'Add widget' }).click();
     const dialog = page.getByRole('dialog');
@@ -47,7 +47,7 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
     await expectToast(page, 'Widget added to Home');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Quick KPI', level: 3 })).toBeVisible();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/legacy\/dashboard$/);
 
     const after = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: home.id } } });
     expectStatus(after, 200);
@@ -61,12 +61,12 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
   test('@mobile Edit dashboard edits Home in place; a new header lands on top; Save returns to the Home view', async ({ page }) => {
     const { api, home } = await seededHome();
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await openHomeMenu(page);
     await page.getByRole('menuitem', { name: 'Edit dashboard' }).click();
     await expect(page.getByPlaceholder('Dashboard name')).toHaveValue('Home');
     await expect(page.getByRole('button', { name: /Switch dashboard/ })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/legacy\/dashboard$/);
 
     await page.getByRole('button', { name: 'Add header', exact: true }).click();
     const title = page.getByLabel('Header title');
@@ -77,7 +77,7 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
 
     await expect(page.getByRole('button', { name: 'Switch dashboard, current: Home' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Top header' })).toBeVisible();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/legacy\/dashboard$/);
 
     const after = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: home.id } } });
     expectStatus(after, 200);
@@ -102,11 +102,11 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
       widgets: [widget(report.id, { x: 0, y: 0, w: 100, h: 4 }, null)],
     });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await openHomeMenu(page);
     // Home is already the default.
     await expect(page.getByRole('menuitem', { name: 'Set as default' })).toHaveCount(0);
-    await expect(page.getByRole('menuitem', { name: 'New dashboard' })).toHaveAttribute('href', '/dashboards/new');
+    await expect(page.getByRole('menuitem', { name: 'New dashboard' })).toHaveAttribute('href', '/legacy/dashboards/new');
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /Switch dashboard, current: Home/ }).click();
@@ -121,31 +121,31 @@ test.describe('Dashboard quick actions: Home menu and the dashboards list (@ui)'
     await expect(page.getByRole('button', { name: 'Switch dashboard, current: Second board' })).toBeVisible();
     await openHomeMenu(page);
     await page.getByRole('menuitem', { name: 'New dashboard' }).click();
-    await page.waitForURL('**/dashboards/new');
+    await page.waitForURL('**/legacy/dashboards/new');
   });
 
   test('Dashboards list: clicking a card opens the dashboard, Edit opens it in edit mode, the star stays on the list', async ({ page }) => {
     const { home } = await seededHome();
     const card = () => page.locator('div.flex-col.gap-3', { has: page.getByRole('link', { name: 'Home', exact: true }) });
 
-    await page.goto('/dashboards');
+    await page.goto('/legacy/dashboards');
     // Anywhere on the card, not just the title: click where the "widgets · Updated" line is, as a person would
     // (the title link's overlay covers the card, so a locator click on the text is reported as intercepted).
     const meta = (await card().getByText(/widgets · Updated/).boundingBox())!;
     await page.mouse.click(meta.x + meta.width / 2, meta.y + meta.height / 2);
-    await page.waitForURL(`**/dashboards/${home.id}`);
+    await page.waitForURL(`**/legacy/dashboards/${home.id}`);
     await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
 
-    await page.goto('/dashboards');
+    await page.goto('/legacy/dashboards');
     await card().getByTitle('Clear default').click();
     await expectToast(page, 'Default cleared');
-    await expect(page).toHaveURL(/\/dashboards$/);
+    await expect(page).toHaveURL(/\/legacy\/dashboards$/);
 
     await card().getByRole('link', { name: 'Edit' }).click();
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
     await expect(page.getByPlaceholder('Dashboard name')).toHaveValue('Home');
     // The ?edit flag is dropped once the editor opens, so a reload shows the dashboard.
-    await expect(page).toHaveURL(new RegExp(`/dashboards/${home.id}$`));
+    await expect(page).toHaveURL(new RegExp(`/legacy/dashboards/${home.id}$`));
   });
 });

@@ -45,12 +45,12 @@ test.describe('Inbox UI (@ui)', () => {
   });
 
   test('@mobile a user with nothing pending sees All clear with links onward', async ({ page }) => {
-    await page.goto('/inbox');
+    await page.goto('/legacy/inbox');
     await expect(page.getByRole('heading', { name: 'Inbox', level: 1 })).toBeVisible();
     await expect(page.getByText('All clear')).toBeVisible();
     await expect(page.getByTestId('inbox-counts')).toHaveCount(0);
-    await expect(page.locator('main').getByRole('link', { name: 'Upcoming', exact: true })).toHaveAttribute('href', '/upcoming');
-    await expect(page.locator('main').getByRole('link', { name: 'Transactions', exact: true })).toHaveAttribute('href', '/transactions');
+    await expect(page.locator('main').getByRole('link', { name: 'Upcoming', exact: true })).toHaveAttribute('href', '/legacy/upcoming');
+    await expect(page.locator('main').getByRole('link', { name: 'Transactions', exact: true })).toHaveAttribute('href', '/legacy/transactions');
   });
 
   test('sections, item vs summary rows, snooze + undo, custom date, dismiss + undo, mark paid, deep links', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('Inbox UI (@ui)', () => {
     const inboxKeys = async () => (await api.GET('/api/v1/inbox')).data!.items.map((i) => i.key);
 
     try {
-      await page.goto('/inbox');
+      await page.goto('/legacy/inbox');
       await expect(page.getByRole('heading', { name: 'Inbox', level: 1 })).toBeVisible();
 
       // Sections: act now holds the EMI and the bill, needs a look holds the review summary, info the job.
@@ -94,7 +94,7 @@ test.describe('Inbox UI (@ui)', () => {
       const emiRow = row(page, emiKey);
       await expect(emiRow).toHaveAttribute('data-testid', 'inbox-item-row');
       await expect(emiRow).toContainText('Inbox Home Loan: EMI #1');
-      await expect(emiRow.getByRole('link', { name: 'Open' })).toHaveAttribute('href', `/loans/${loan.id}?installment=1`);
+      await expect(emiRow.getByRole('link', { name: 'Open' })).toHaveAttribute('href', `/legacy/loans/${loan.id}?installment=1`);
       await expect(emiRow.getByRole('button', { name: /^Snooze / })).toBeVisible();
       await expect(emiRow.getByRole('button', { name: /^Dismiss / })).toHaveCount(0);
 
@@ -106,7 +106,7 @@ test.describe('Inbox UI (@ui)', () => {
       const reviewRow = row(page, 'review');
       await expect(reviewRow).toHaveAttribute('data-testid', 'inbox-summary-row');
       await expect(reviewRow).toContainText('Transactions to review');
-      await expect(reviewRow.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions/review');
+      await expect(reviewRow.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/legacy/transactions/review');
       await expect(reviewRow.getByRole('button', { name: /^Snooze / })).toHaveCount(0);
 
       // Job row: dismissable, not snoozable.
@@ -162,19 +162,19 @@ test.describe('Inbox UI (@ui)', () => {
       await expect.poll(inboxKeys).not.toContain(billKey);
 
       // Deep link: ?item=<key> rings and scrolls to a listed row...
-      await page.goto(`/inbox?item=${emiKey}`);
+      await page.goto(`/legacy/inbox?item=${emiKey}`);
       await expect(row(page, emiKey)).toBeVisible();
       await expect(row(page, emiKey).locator('[class~="ring-emerald-500/40"]')).toHaveCount(1);
       await expect(row(page, 'review').locator('[class~="ring-emerald-500/40"]')).toHaveCount(0);
       await expect(page.getByTestId('inbox-handled-note')).toHaveCount(0);
 
       // ...and says so when the item is no longer listed.
-      await page.goto(`/inbox?item=${billKey}`);
+      await page.goto(`/legacy/inbox?item=${billKey}`);
       await expect(page.getByTestId('inbox-handled-note')).toHaveText(/That item is already handled/);
 
       // The EMI row's Open action goes to the loan, on that installment.
       await row(page, emiKey).getByRole('link', { name: 'Open' }).click();
-      await page.waitForURL(`**/loans/${loan.id}?installment=1`);
+      await page.waitForURL(`**/legacy/loans/${loan.id}?installment=1`);
     } finally {
       await resetLlm(api);
       await setLlmMode(api, 'SCHEMA_DEFAULT');

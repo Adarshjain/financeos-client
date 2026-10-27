@@ -36,7 +36,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await seedDueSoonLoan(api, 'Home Loan');
     const bill = await seedCardBill(api, { name: 'Home Card', last4: '7401', dueInDays: 2 });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await expect(page.getByRole('button', { name: /Switch dashboard, current: Home/ })).toBeVisible();
     for (const title of HOME_WIDGETS) {
       await expect(page.getByRole('heading', { name: title, level: 3, exact: true })).toBeVisible();
@@ -90,13 +90,13 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const bank = await createBankAccount(api, { name: 'Chrome Bank', openingBalance: 1000 });
     await createTransaction(api, bank.id, { amount: -100 });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await expect(page.getByRole('heading', { name: 'Net worth', level: 3, exact: true })).toBeVisible();
 
     // "Open" drills through to a built-in's own page; Bills due and saved reports have none.
-    await expect(page.getByRole('link', { name: 'Open Net worth' })).toHaveAttribute('href', '/accounts');
-    await expect(page.getByRole('link', { name: 'Open Inbox' })).toHaveAttribute('href', '/inbox');
-    await expect(page.getByRole('link', { name: 'Open Upcoming' })).toHaveAttribute('href', '/upcoming');
+    await expect(page.getByRole('link', { name: 'Open Net worth' })).toHaveAttribute('href', '/legacy/accounts');
+    await expect(page.getByRole('link', { name: 'Open Inbox' })).toHaveAttribute('href', '/legacy/inbox');
+    await expect(page.getByRole('link', { name: 'Open Upcoming' })).toHaveAttribute('href', '/legacy/upcoming');
     await expect(page.getByRole('link', { name: 'Open Bills due' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Open Spend this month' })).toHaveCount(0);
 
@@ -129,7 +129,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
 
     // The Inbox's Open goes to the Inbox page.
     await page.getByRole('link', { name: 'Open Inbox' }).click();
-    await page.waitForURL('**/inbox');
+    await page.waitForURL('**/legacy/inbox');
   });
 
   test('full-width dashboard switcher: fills the row, lists dashboards and switches between them', async ({ page, isMobile }) => {
@@ -148,7 +148,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
       widgets: [widget(report.id, { x: 0, y: 0, w: 100, h: 4 }, null)],
     });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const trigger = page.getByRole('button', { name: /Switch dashboard, current: Home/ });
     await expect(trigger).toBeVisible();
 
@@ -186,7 +186,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await expect.poll(async () => Math.abs((await menu.boundingBox())!.width - t.width)).toBeLessThan(6);
     await expect(menu.getByRole('menuitem', { name: 'Home' })).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: 'Second board' })).toBeVisible();
-    await expect(menu.getByRole('link', { name: 'View All Dashboards' })).toHaveAttribute('href', '/dashboards');
+    await expect(menu.getByRole('link', { name: 'View All Dashboards' })).toHaveAttribute('href', '/legacy/dashboards');
 
     await menu.getByRole('menuitem', { name: 'Second board' }).click();
     await expect(page.getByRole('button', { name: /Switch dashboard, current: Second board/ })).toBeVisible();
@@ -198,7 +198,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const bill = await seedCardBill(api, { name: 'Pay Card', last4: '7402', dueInDays: 5 });
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const bills = widgetCard(page, 'Bills due').getByTestId('bills-due-widget');
     const cardRow = bills.locator(`[data-account-id="${bill.cardId}"]`);
     await expect(cardRow).toHaveAttribute('data-phase', 'arrived');
@@ -232,10 +232,10 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
   });
 
   test('Bills due widget with no credit cards says so and links to accounts', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     const bills = widgetCard(page, 'Bills due');
     await expect(bills.getByText('No credit cards yet')).toBeVisible();
-    await expect(bills.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
+    await expect(bills.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/legacy/accounts');
   });
 
   test('restore default Home: re-creates Home and reuses the Spend this month report', async ({ page }) => {
@@ -253,7 +253,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await deleteAll();
     expect(await spendReports()).toBe(1);
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await expect(page.getByText("You don't have a default dashboard yet")).toBeVisible();
     await page.getByRole('button', { name: 'Restore default Home' }).click();
     await expectToast(page, 'Home dashboard restored');
@@ -264,7 +264,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     expect(await spendReports(), 'restore reuses the report instead of piling up copies').toBe(1);
 
     // On the list, Restore is offered only while Home is missing.
-    await page.goto('/dashboards');
+    await page.goto('/legacy/dashboards');
     await expect(page.getByRole('button', { name: 'Restore default Home' })).toHaveCount(0);
     await deleteAll();
     await page.reload();
@@ -280,7 +280,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const card = await seedCardBill(api, { name: 'Editor Card', last4: '7403', dueInDays: 6 });
 
-    await page.goto('/dashboards/new');
+    await page.goto('/legacy/dashboards/new');
     await page.getByPlaceholder('Dashboard name').fill('Built-in board');
 
     const addDialog = () => page.getByRole('dialog');
@@ -345,7 +345,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await expect(page.getByLabel('Widget title')).toHaveCount(3);
 
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/dashboards\/[a-f0-9-]+$/);
+    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+$/);
 
     // The saved dashboard shows each built-in with its params in the subtitle.
     await expect(page.getByRole('heading', { name: 'Built-in board', level: 1 })).toBeVisible();

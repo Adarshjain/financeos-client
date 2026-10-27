@@ -62,7 +62,7 @@ async function ask(page: Page, text: string) {
 for (const viewport of VIEWPORTS) {
   const phone = viewport.width < 641;
 
-  test.describe(`/ds/chat, ${viewport.name} (${viewport.tag})`, () => {
+  test.describe(`/chat, ${viewport.name} (${viewport.tag})`, () => {
     let currentUser: CreatedUser;
 
     test.beforeEach(async ({ context, request, page }) => {
@@ -86,7 +86,7 @@ for (const viewport of VIEWPORTS) {
         { action: 'run_sql', sql: 'SELECT description, amount FROM V_CHAT_TRANSACTIONS' },
         { delayMs: 2500, action: 'final_answer', answer: 'You are owed **₹12,500** in total.', blocks },
       ]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
       await expect(page.getByText('Spending', { exact: true })).toBeVisible();
 
@@ -118,10 +118,10 @@ for (const viewport of VIEWPORTS) {
         { action: 'run_sql', sql: 'SELECT 1 FROM V_CHAT_TRANSACTIONS' },
         { action: 'final_answer', answer: 'First answer here.', blocks },
       ]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'Who owes me?');
       await answer(page, 'First answer here.');
-      await expect(page).toHaveURL(/\/ds\/chat\/[0-9a-f-]{36}$/);
+      await expect(page).toHaveURL(/\/chat\/[0-9a-f-]{36}$/);
       const url = page.url();
 
       // The title arrives and shows in the top bar.
@@ -148,9 +148,9 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       const api = makeApi(currentUser.cookie);
       await scriptChat(api, [{ action: 'final_answer', answer: 'Answer to the search text.' }]);
-      await page.goto(`/ds/chat?q=${encodeURIComponent('spend this month')}`);
+      await page.goto(`/chat?q=${encodeURIComponent('spend this month')}`);
       await answer(page, 'Answer to the search text.');
-      await expect(page).toHaveURL(/\/ds\/chat\/[0-9a-f-]{36}$/);
+      await expect(page).toHaveURL(/\/chat\/[0-9a-f-]{36}$/);
       await expect(page.getByText('spend this month', { exact: true })).toHaveCount(1);
     });
 
@@ -158,7 +158,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
       await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Here is the table.', blocks }]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'Show the table');
       await page.getByRole('button', { name: 'Copy table' }).click();
       await expect(page.getByText('Table copied')).toBeVisible();
@@ -172,7 +172,7 @@ for (const viewport of VIEWPORTS) {
         { action: 'run_sql', sql: 'SELECT 1 FROM V_CHAT_TRANSACTIONS' },
         { delayMs: 5000, action: 'final_answer', answer: 'Too late to show.' },
       ]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'A slow question');
       await page.getByRole('button', { name: 'Stop' }).click();
       await expect(page.getByRole('button', { name: 'Send' })).toBeVisible();
@@ -199,7 +199,7 @@ for (const viewport of VIEWPORTS) {
         const first = (await res.text()).split(/\r?\n\r?\n/)[0] + '\n\n';
         await route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: first });
       });
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'A question that fails');
       const failed = page.getByText('The answer did not finish. Your question is kept.');
       for (let i = 0; i < 8 && !(await failed.isVisible()); i++) {
@@ -220,7 +220,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       const api = makeApi(currentUser.cookie);
       await scriptChat(api, [{ action: 'clarify', question: 'Which period do you mean?', options: '["This month", "Last 90 days"]' }]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'Show my spend on food');
       await answer(page, 'Which period do you mean?');
       await scriptChat(api, [{ action: 'final_answer', answer: 'Food spend for this month.' }]);
@@ -232,7 +232,7 @@ for (const viewport of VIEWPORTS) {
       test('Rename and Delete chat from the pane menu', async ({ page }) => {
         test.slow();
         await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Answer to rename.' }]);
-        await page.goto('/ds/chat');
+        await page.goto('/chat');
         await ask(page, 'Rename me');
         await expect(page.locator('aside').getByText(TITLE)).toBeVisible();
 
@@ -247,7 +247,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('Delete “Renamed chat”?')).toBeVisible();
         await expect(page.getByText('The chat and its answers go. Reports you saved from it stay.')).toBeVisible();
         await page.getByRole('button', { name: 'Delete chat' }).click();
-        await expect(page).toHaveURL(/\/ds\/chat$/);
+        await expect(page).toHaveURL(/\/chat$/);
         await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
         await expect(page.locator('aside').getByText('Renamed chat')).toHaveCount(0);
       });
@@ -259,7 +259,7 @@ for (const viewport of VIEWPORTS) {
     /** Opens a new chat whose answer carries `draft`, and waits for its card. */
     async function askForDraft(page: Page, draft: Record<string, unknown>) {
       await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Here is a draft.', blocks: draftBlocks(draft) }]);
-      await page.goto('/ds/chat');
+      await page.goto('/chat');
       await ask(page, 'Make this a report');
       await answer(page, 'Here is a draft.');
     }
@@ -275,7 +275,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Report saved')).toBeVisible();
       await expect(page.getByText(/^Saved as report/)).toBeVisible();
       await page.getByRole('link', { name: 'Open report' }).click();
-      await expect(page).toHaveURL(/\/ds\/reports\/[0-9a-f-]{36}/);
+      await expect(page).toHaveURL(/\/reports\/[0-9a-f-]{36}/);
     });
 
     test('report draft: Undo (toast) deletes the saved report and brings the actions back', async ({ page }) => {
@@ -285,7 +285,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Report saved')).toBeVisible();
       await page.getByRole('button', { name: 'Undo' }).first().click();
       await expect(page.getByRole('button', { name: 'Save as report' })).toBeVisible();
-      await page.goto('/ds/reports');
+      await page.goto('/reports');
       await expect(reportRow(page, 'Draft undo KPI')).toHaveCount(0);
     });
 
@@ -303,7 +303,7 @@ for (const viewport of VIEWPORTS) {
       test('report draft: Add to Home saves the report and puts a widget on the default dashboard; the card Undo takes both away', async ({ page }) => {
         test.slow();
         // Home exists once it has been opened; count its widgets before and after.
-        await page.goto('/ds/dashboard');
+        await page.goto('/dashboard');
         const widgets = page.getByTestId('dashboard-widget');
         await expect(widgets.first()).toBeVisible();
         const before = await widgets.count();
@@ -313,15 +313,15 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('Saved as report and added to Home').first()).toBeVisible();
 
         const url = page.url();
-        await page.goto('/ds/dashboard');
+        await page.goto('/dashboard');
         await expect(widgets).toHaveCount(before + 1);
 
         await page.goto(url);
         await page.getByRole('button', { name: 'Undo' }).click();
         await expect(page.getByRole('button', { name: 'Add to Home' })).toBeVisible();
-        await page.goto('/ds/dashboard');
+        await page.goto('/dashboard');
         await expect(widgets).toHaveCount(before);
-        await page.goto('/ds/reports');
+        await page.goto('/reports');
         await expect(reportRow(page, 'Draft home KPI')).toHaveCount(0);
       });
 
@@ -329,7 +329,7 @@ for (const viewport of VIEWPORTS) {
         test.slow();
         const api = makeApi(currentUser.cookie);
         // Opening Home seeds it; delete every dashboard so the user has no default.
-        await page.goto('/ds/dashboard');
+        await page.goto('/dashboard');
         await expect(page.getByTestId('dashboard-widget').first()).toBeVisible();
         const list = await api.GET('/api/v1/dashboards');
         for (const d of list.data ?? []) await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id: d.id } } });
@@ -338,7 +338,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('button', { name: 'Add to Home' }).click();
         await expect(page.getByText('Saved as report and added to Home').first()).toBeVisible();
 
-        await page.goto('/ds/dashboard');
+        await page.goto('/dashboard');
         const widgets = page.getByTestId('dashboard-widget');
         await expect(widgets).toHaveCount(1);
         await expect(widgets.first()).toContainText('Draft first KPI');
@@ -353,7 +353,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('Report updated').first()).toBeVisible();
         await page.getByRole('button', { name: 'Undo' }).first().click();
         await expect(page.getByRole('button', { name: 'Update report' })).toBeVisible();
-        await page.goto('/ds/reports');
+        await page.goto('/reports');
         await expect(reportRow(page, 'Old name KPI')).toBeVisible();
         await expect(reportRow(page, 'New name KPI')).toHaveCount(0);
       });
@@ -367,7 +367,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('The report and its widget on Home go. Your transactions stay.')).toBeVisible();
         await page.getByRole('button', { name: 'Delete report' }).last().click();
         await expect(page.getByText('Report deleted')).toBeVisible();
-        await page.goto('/ds/reports');
+        await page.goto('/reports');
         await expect(reportRow(page, 'Doomed KPI')).toHaveCount(0);
       });
     }
@@ -376,7 +376,7 @@ for (const viewport of VIEWPORTS) {
       test('phone: home, a conversation without the tab bar, and back', async ({ page }) => {
         test.slow();
         await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Phone answer.' }]);
-        await page.goto('/ds/chat');
+        await page.goto('/chat');
         await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
         await expect(page.getByRole('tab', { name: /Menu/ })).toHaveCount(0);
         await ask(page, 'Phone question');

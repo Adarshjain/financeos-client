@@ -66,7 +66,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('opens on Unverified with the counts; filters live in the address and survive a reload', async ({ page }) => {
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'All · 3' })).toBeVisible();
       for (const name of ['Third Wave', 'Ola Cabs', 'Zepto']) await expect(page.getByText(name, { exact: true })).toBeVisible();
@@ -86,7 +86,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('+ adds a rule (a category created inline); Edit loads its matches with the account and follows the pattern', async ({ page }) => {
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       await page.getByRole('button', { name: /^Add$/ }).first().click();
       const add = page.getByRole('dialog', { name: 'Add rule' });
       await expect(add).toBeVisible();
@@ -110,7 +110,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Find matches starts with nothing ticked and applies the rule; Delete confirms first', async ({ page }) => {
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       await menuOf(page, 'Ola Cabs').click();
       await page.getByRole('menuitem', { name: 'Find matches' }).click();
       const dialog = page.getByRole('dialog', { name: /Matching transactions/ });
@@ -129,7 +129,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Approve verifies one rule; selected rules approve together from the bar', async ({ page }) => {
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       const approveOne = page.getByRole('button', { name: 'Approve', exact: true }).first();
       await approveOne.click();
       await expect(page.getByText(/1 rule verified|Rule verified/)).toBeVisible();
@@ -153,7 +153,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Undo on the approve toast un-verifies the rule, single and bulk', async ({ page }) => {
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       expect(await inReview(user.cookie)).toBe(3);
       await page.getByRole('button', { name: 'Approve', exact: true }).first().click();
       await expect(page.getByRole('button', { name: 'Unverified · 2' })).toBeVisible();
@@ -178,7 +178,7 @@ for (const viewport of VIEWPORTS) {
 
     test('deleting a ticked rule drops it from the selection; Approve still works for the rest', async ({ page }) => {
       test.skip(phone, 'On phone the ⋮ is replaced by the eye while rules are selected.');
-      await page.goto('/ds/transactions/rules');
+      await page.goto('/transactions/rules');
       await page.getByLabel('Select Ola Cabs').click();
       await page.getByLabel('Select Zepto').click();
       await expect(page.getByText('2 selected')).toBeVisible();
@@ -197,7 +197,7 @@ for (const viewport of VIEWPORTS) {
         page.on('console', (m) => m.type() === 'error' && console.log('CONSOLE', m.text().replace(/\n/g, ' ').slice(-700)));
         await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
         const tag = `${viewport.width}-${theme}`;
-        await page.goto('/ds/transactions/rules');
+        await page.goto('/transactions/rules');
         await expect(page.getByText('Zepto', { exact: true })).toBeVisible();
         // caret: 'initial' keeps Playwright from rewriting inline styles before React has hydrated (a false hydration warning).
         await page.screenshot({ path: test.info().outputPath(`list-${tag}.png`), caret: 'initial' });
@@ -205,7 +205,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Edit rule' }).click();
         await expect(page.getByText('Matches now · 1')).toBeVisible();
         await page.screenshot({ path: test.info().outputPath(`edit-${tag}.png`) });
-        await page.goto('/ds/transactions/rules');
+        await page.goto('/transactions/rules');
         await menuOf(page, 'Third Wave').click();
         await page.getByRole('menuitem', { name: 'Find matches' }).click();
         await expect(page.getByRole('dialog').getByRole('checkbox').first()).toBeVisible();
