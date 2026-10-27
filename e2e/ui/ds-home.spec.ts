@@ -51,7 +51,7 @@ for (const viewport of VIEWPORTS) {
       await board('Ds money', false, ['net_worth']);
       await page.goto('/dashboards');
 
-      await expect(page.getByRole('tab', { name: /^Dashboards\s*·\s*2$/ })).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByRole('tab', { name: /^Dashboards$/ })).toBeVisible({ timeout: 45_000 });
       await expect(page.getByRole('tab', { name: /^Reports/ })).toBeVisible();
       await expect(rowOf(page, 'Ds home')).toHaveCount(1);
       await expect(defaultMark(page, 'Ds home')).toHaveCount(1);
@@ -68,10 +68,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/available · add to any board/)).toHaveCount(0);
 
       // Search narrows the rows.
-      await page.getByPlaceholder('Search dashboards').fill('money');
+      await page.getByPlaceholder('Search').fill('money');
       await expect(rowOf(page, 'Ds home')).toHaveCount(0);
       await expect(rowOf(page, 'Ds money')).toHaveCount(1);
-      await page.getByPlaceholder('Search dashboards').fill('zzz');
+      await page.getByPlaceholder('Search').fill('zzz');
       await expect(page.getByText('No dashboards match.')).toBeVisible();
       // The empty state's action (the field has its own clear button too).
       await page.getByText('Clear search', { exact: true }).click();
@@ -146,7 +146,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('dialog', { name: 'Delete Ds money?' }).getByRole('button', { name: 'Delete dashboard' }).click();
       await expect(page.getByText('Dashboard deleted')).toBeVisible();
       await expect(rowOf(page, 'Ds money')).toHaveCount(0);
-      await expect(page.getByRole('tab', { name: /^Dashboards\s*·\s*1$/ })).toBeVisible();
+      await expect(page.getByRole('tab', { name: /^Dashboards$/ })).toBeVisible();
       expect(await dashboardCount()).toBe(1);
     });
 

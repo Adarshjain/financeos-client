@@ -11,12 +11,12 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Menu,
   MenuItem,
   Text,
-  TextField,
 } from '@/components/ds';
 
 import { AddToDashboardDialog } from './AddToDashboardDialog';
@@ -28,7 +28,6 @@ import {
   type ReportRow,
   reportsUrl,
   TYPE_CHIPS,
-  typeCounts,
 } from './reportsList';
 import { ReportsTabs } from './ReportsTabs';
 import { useReportActions } from './useReportActions';
@@ -159,14 +158,12 @@ function makeColumns(actions: RowActions) {
 export interface ReportsScreenProps {
   /** The type filter from the URL (`?type=`) at load. It is client state after that: the chips change it and the URL without a server round trip. */
   type?: ReportKind;
-  /** How many dashboards there are (loaded with the list); the tab shows no count when unknown. */
-  dashboards?: number;
   /** The reports in board order: grouped by area. */
   rows: ReportRow[];
 }
 
 /** The Reports list: tabs, then search and the type chips in one row over the grouped table, then templates and Ask instead. */
-export function ReportsScreen({ type: initialType, dashboards, rows }: ReportsScreenProps) {
+export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
   const router = useRouter();
   const actions = useReportActions();
   const [search, setSearch] = React.useState('');
@@ -188,7 +185,6 @@ export function ReportsScreen({ type: initialType, dashboards, rows }: ReportsSc
   const [adding, setAdding] = React.useState<ReportRow | null>(null);
 
   const visible = React.useMemo(() => filterRows(rows, search, type), [rows, search, type]);
-  const counts = React.useMemo(() => typeCounts(rows), [rows]);
   const filtered = search.trim() !== '';
 
   const rowActions = React.useMemo<RowActions>(
@@ -214,42 +210,31 @@ export function ReportsScreen({ type: initialType, dashboards, rows }: ReportsSc
 
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <ReportsTabs dashboards={dashboards} reports={rows.length} />
+      <ReportsTabs />
 
-      <div className="-mx-space-16 -mt-space-4 -mb-space-8 flex gap-space-8 overflow-x-auto px-space-16 py-space-4 scrollbar-none desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4">
-        <TextField
-          type="search"
+      <FilterBar
+        search={{ value: search, onValueChange: setSearch }}
+      >
+        <FilterChip
           size="md"
-          className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Search reports"
-          value={search}
-          onValueChange={setSearch}
-        />
-        <div className="flex shrink-0 gap-space-8">
+          className="shrink-0"
+          selected={!type}
+          onSelectedChange={() => setType(undefined)}
+        >
+          All
+        </FilterChip>
+        {TYPE_CHIPS.map((chip) => (
           <FilterChip
+            key={chip.type}
             size="md"
-            shape="rounded"
-            selected={!type}
-            onSelectedChange={() => setType(undefined)}
+            className="shrink-0"
+            selected={type === chip.type}
+            onSelectedChange={() => setType(chip.type)}
           >
-            All
+            {chip.label}
           </FilterChip>
-          {TYPE_CHIPS.map((chip) => (
-            <FilterChip
-              key={chip.type}
-              size="md"
-              shape="rounded"
-              selected={type === chip.type}
-              count={counts[chip.type]}
-              onSelectedChange={() => setType(chip.type)}
-            >
-              {chip.label}
-            </FilterChip>
-          ))}
-        </div>
-      </div>
+        ))}
+      </FilterBar>
 
       <Card>
         <DataTable

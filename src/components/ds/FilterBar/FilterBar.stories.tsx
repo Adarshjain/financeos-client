@@ -16,7 +16,7 @@ const meta: Meta<StoryArgs> = {
     docs: {
       description: {
         component:
-          'The search and filter row of a list page: the search field first, then the chips, one row that scrolls sideways. On phone the field rests narrow and grows to the viewport inset width while focused or holding text, then shrinks back; on desktop it is a fixed container-xs field. Chips are FilterChips in the default pill shape.',
+          'The search and filter row of a list page: the search field first, then the chips, one row that scrolls sideways and carries its own bleed so the focus ring is not clipped. On phone the field rests narrow and grows to the viewport inset width while focused or holding text, then shrinks back; on desktop it is a fixed container-xs field. Chips are FilterChips in the default pill shape.',
       },
     },
   },

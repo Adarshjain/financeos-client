@@ -12,6 +12,7 @@ import {
   DialogBody,
   DialogContent,
   EmptyState,
+  FilterBar,
   Icon,
   ListRow,
   Menu,
@@ -20,7 +21,6 @@ import {
   type TabItem,
   Tabs,
   Text,
-  TextField,
 } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
@@ -102,15 +102,8 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
           />
         ) : (
           <>
-            <TextField
-              type="search"
-              size="md"
-              className="desk:max-w-container-sm"
-              prefix={<Icon name="search" size="sm" />}
-              clearable
-              placeholder="Search categories"
-              value={text}
-              onValueChange={setText}
+            <FilterBar
+              search={{ value: text, onValueChange: setText }}
             />
             {categories.rows.length === 0 ? (
               <EmptyState

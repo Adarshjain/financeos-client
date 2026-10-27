@@ -13,11 +13,10 @@ import { FnoAddDialog } from './fno/FnoAddDialog';
 import { InstrumentAddDialog } from './instruments/InstrumentAddDialog';
 import { activeInvestmentsTab, INVESTMENTS_IMPORT_HREF, investmentsTabHref, type InvestmentsTabId, investmentsTabs, isHoldingDetailPath, isImportPath } from './investmentsTabs';
 import { RecordTradeDialog } from './tradebook/TradeDialog';
-import { useInvestmentsCounts } from './useInvestmentsCounts';
 
 /**
  * The frame of `/investments`, applied by the route layout: the top bar, then the tab strip, then the
- * tab's page. The counts load on their own after the page renders. The top bar's + adds what the open tab
+ * tab's page. The top bar's + adds what the open tab
  * lists, in a dialog that refreshes the page after saving. A holding's own page and the Import tradebook page render on their own, without the strip.
  */
 export function InvestmentsShell({ children }: { children: React.ReactNode }) {
@@ -28,7 +27,6 @@ export function InvestmentsShell({ children }: { children: React.ReactNode }) {
 
 function InvestmentsFrame({ children }: { children: React.ReactNode }) {
   const tab = activeInvestmentsTab(usePathname());
-  const { data: counts } = useInvestmentsCounts();
   const [adding, setAdding] = React.useState(false);
   const close = () => setAdding(false);
 
@@ -49,7 +47,6 @@ function InvestmentsFrame({ children }: { children: React.ReactNode }) {
   const items: TabItem[] = investmentsTabs.map((t) => ({
     value: t.id,
     label: t.label,
-    count: t.counted ? counts?.[t.id as keyof typeof counts] : undefined,
     asChild: true,
     children: <Link href={investmentsTabHref(t)} />,
   }));

@@ -3,19 +3,19 @@ import { describe, expect, it } from 'vitest';
 import { activeInvestmentsTab, holdingHref, HOLDINGS_HREF, investmentsTabHref, investmentsTabs, isHoldingDetailPath } from './investmentsTabs';
 
 describe('investments tabs', () => {
-  it('lists the six tabs in board order', () => {
+  it('lists the six tabs in owner order', () => {
     expect(investmentsTabs.map((t) => t.label)).toEqual([
       'Holdings',
-      'Tradebook',
       'Dividends',
+      'Tradebook',
       'F&O',
       'Corporate actions',
       'Instruments',
     ]);
   });
 
-  it('counts Tradebook, Dividends, F&O and Corporate actions; not Holdings or Instruments', () => {
-    expect(investmentsTabs.filter((t) => t.counted).map((t) => t.id)).toEqual(['tradebook', 'dividends', 'fno', 'corporate-actions']);
+  it('carries no counts', () => {
+    for (const t of investmentsTabs) expect(t).not.toHaveProperty('counted');
   });
 
   it('sends every tab to its Dinero page', () => {

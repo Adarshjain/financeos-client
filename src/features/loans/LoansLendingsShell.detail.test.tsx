@@ -20,9 +20,6 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 }));
 vi.mock('@/features/lendings/form/AddLendingDialog', () => ({ AddLendingDialog: () => null }));
 
-const loadTabCounts = vi.fn();
-vi.mock('./tabCountsActions', () => ({ loadTabCounts: () => loadTabCounts() }));
-
 function renderShell() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -38,17 +35,14 @@ function renderShell() {
 
 beforeEach(() => {
   pathname = '/loans/l1';
-  loadTabCounts.mockReset();
-  loadTabCounts.mockResolvedValue({ success: true, data: { lendings: 4, loans: 3 } });
 });
 
 describe('LoansLendingsShell on a loan page', () => {
-  it('shows the page alone: no tabs, no top bar of its own, no counts requested', () => {
+  it('shows the page alone: no tabs, no top bar of its own', () => {
     renderShell();
     expect(screen.getByText('loan page')).toBeInTheDocument();
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
     expect(screen.queryByRole('banner')).toBeNull();
-    expect(loadTabCounts).not.toHaveBeenCalled();
   });
 
   it('still frames the two tabs', () => {
@@ -57,12 +51,11 @@ describe('LoansLendingsShell on a loan page', () => {
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
   });
 
-  it("shows a person's page alone too: no tabs, no counts requested", () => {
+  it("shows a person's page alone too: no tabs", () => {
     pathname = '/loans/lendings/p1';
     renderShell();
     expect(screen.getByText('loan page')).toBeInTheDocument();
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
-    expect(loadTabCounts).not.toHaveBeenCalled();
   });
 
   it('still frames the Lendings tab', () => {

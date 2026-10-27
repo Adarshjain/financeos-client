@@ -50,7 +50,7 @@ for (const viewport of VIEWPORTS) {
     test('search, type and sort are one URL change each and answered by the server', async ({ page }) => {
       await page.goto('/investments/corporate-actions');
 
-      await page.getByPlaceholder('Instrument').fill('INFYX');
+      await page.getByPlaceholder('Search').fill('INFYX');
       await page.waitForURL(/q=INFYX/);
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: false }))).toBeVisible();
       await expect(page.getByText(seeded.itc.symbol, { exact: false })).toHaveCount(0);

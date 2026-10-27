@@ -59,7 +59,7 @@ for (const viewport of VIEWPORTS) {
     test('search, type, Stale price and name order are one URL change each, answered by the server', async ({ page }) => {
       await page.goto('/investments/instruments');
 
-      await page.getByPlaceholder('Search symbol, ISIN, name').fill(seeded.tag);
+      await page.getByPlaceholder('Search').fill(seeded.tag);
       await page.waitForURL(new RegExp(`q=${seeded.tag}`));
       await expect(shown(page.getByText(seeded.held.name))).toBeVisible();
 

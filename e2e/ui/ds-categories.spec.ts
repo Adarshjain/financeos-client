@@ -32,10 +32,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Dining out')).toBeVisible();
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
 
-      await page.getByPlaceholder('Search categories').fill('din');
+      await page.getByPlaceholder('Search').fill('din');
       await expect(page.getByText('Rent', { exact: true })).toHaveCount(0);
       await expect(page).toHaveURL(/q=din/);
-      await page.getByPlaceholder('Search categories').fill('');
+      await page.getByPlaceholder('Search').fill('');
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
 
       await page.getByRole('button', { name: /^Add$/ }).first().click();

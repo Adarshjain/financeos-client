@@ -7,6 +7,7 @@ import React from 'react';
 import {
   ConfirmDialog,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
@@ -14,7 +15,6 @@ import {
   type SelectOption,
   type TabItem,
   Tabs,
-  TextField,
 } from '@/components/ds';
 import { ErrorState, RuleCard } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
@@ -34,7 +34,6 @@ import {
   hasRuleFilters,
   MATCH_FILTER_OPTIONS,
   MATCH_TYPE_LABEL,
-  type RuleCounts,
   ruleMatchLine,
   ruleName,
   RULES_SIZE_OPTIONS,
@@ -59,8 +58,6 @@ export interface RulesScreenProps {
   rules: RulesPage | null;
   reference?: string;
   state: RulesUrlState;
-  /** How many rules each status chip holds; null when unknown. */
-  counts: RuleCounts | null;
   /** Null when they could not be loaded: the Category chip is then off. */
   categories: Category[] | null;
 }
@@ -79,7 +76,7 @@ const STATUS_CHIPS: { id: RuleStatus; label: string }[] = [
 ];
 
 /** /transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
-export function RulesScreen({ rules, reference, state, counts, categories }: RulesScreenProps) {
+export function RulesScreen({ rules, reference, state, categories }: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
   const [picked, setPicked] = React.useState<{ key: string; ids: string[] }>({ key: '', ids: [] });
@@ -135,31 +132,22 @@ export function RulesScreen({ rules, reference, state, counts, categories }: Rul
     <ShellPage crumb="Money / Transactions" title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
       <div className="flex min-w-0 flex-col gap-space-12 desk:gap-space-16">
         <Tabs items={tabs} value="rules" />
-        <div className="-mx-space-16 -mt-space-4 -mb-space-8 flex gap-space-8 overflow-x-auto px-space-16 py-space-4 scrollbar-none desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4">
-          <TextField
-            type="search"
-            size="md"
-            className="min-w-container-xs flex-1"
-            prefix={<Icon name="search" size="sm" />}
-            clearable
-            placeholder="Search merchant keys or names…"
-            value={text}
-            onValueChange={setText}
-          />
-          <div className="flex shrink-0 gap-space-8">
-            {STATUS_CHIPS.map((chip) => (
-              <FilterChip
-                key={chip.id}
-                size="md"
-                shape="rounded"
-                selected={state.status === chip.id}
-                onSelectedChange={(on) => {
-                  if (on) go({ status: chip.id });
-                }}
-              >
-                {counts ? `${chip.label} · ${counts[chip.id]}` : chip.label}
-              </FilterChip>
-            ))}
+        <FilterBar
+          search={{ value: text, onValueChange: setText }}
+        >
+          {STATUS_CHIPS.map((chip) => (
+            <FilterChip
+              key={chip.id}
+              size="md"
+              className="shrink-0"
+              selected={state.status === chip.id}
+              onSelectedChange={(on) => {
+                if (on) go({ status: chip.id });
+              }}
+            >
+              {chip.label}
+            </FilterChip>
+          ))}
             <ChoiceChip
               label={categoryName ? `Category · ${categoryName}` : 'Category'}
               value={state.categoryId ?? ANY}
@@ -182,8 +170,7 @@ export function RulesScreen({ rules, reference, state, counts, categories }: Rul
               selected={state.matchType !== null}
               onCommit={(v) => go({ matchType: v === ANY ? null : (v as RulesUrlState['matchType']) })}
             />
-          </div>
-        </div>
+        </FilterBar>
         {rules === null ? (
           <ErrorState
             title="Could not load rules"

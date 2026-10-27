@@ -26,7 +26,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   showToast: (...args: unknown[]) => toast(...args),
 }));
 
-const list = vi.hoisted(() => ({ fetchInstrumentsPage: vi.fn(), fetchInstrumentTypeCounts: vi.fn() }));
+const list = vi.hoisted(() => ({ fetchInstrumentsPage: vi.fn() }));
 vi.mock('@/features/investments/instruments/instrumentsServerApi', () => list);
 
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }));
@@ -40,7 +40,6 @@ async function renderPage(params: Record<string, string> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   list.fetchInstrumentsPage.mockResolvedValue(instrumentPage());
-  list.fetchInstrumentTypeCounts.mockResolvedValue({ stock: 6, mutual_fund: 3, etf: 2 });
   api.GET.mockResolvedValue({ data: [] });
   api.POST.mockResolvedValue({ data: instrument({ id: 'new', name: 'Bajaj Housing Finance' }) });
   api.PUT.mockResolvedValue({ data: instrument() });
@@ -53,10 +52,9 @@ afterEach(() => {
 });
 
 describe('/investments/instruments: data', () => {
-  it('asks the server for the first page by name and the type counts', async () => {
+  it('asks the server for the first page by name', async () => {
     await renderPage();
     expect(list.fetchInstrumentsPage).toHaveBeenCalledWith({ page: 0, size: 50 });
-    expect(list.fetchInstrumentTypeCounts).toHaveBeenCalledWith(expect.objectContaining({ q: '', type: '', stale: false, page: 0 }));
   });
 
   it('passes search, type, stale, order, page and size from the URL to the server', async () => {
@@ -71,13 +69,6 @@ describe('/investments/instruments: data', () => {
     expect(screen.getByText('Could not load instruments')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(router.refresh).toHaveBeenCalled();
-  });
-
-  it('still shows the list when the type counts fail', async () => {
-    list.fetchInstrumentTypeCounts.mockRejectedValue(new Error('down'));
-    await renderPage();
-    expect(screen.getAllByText('Infosys').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Stocks' })).toBeInTheDocument();
   });
 
   it('sends the visitor to the last page when the address is past the end', async () => {
@@ -142,12 +133,12 @@ describe('/investments/instruments: rows', () => {
 });
 
 describe('/investments/instruments: filters go to the URL', () => {
-  it('filters by type from the chips, back to the first page, with counts', async () => {
+  it('filters by type from the chips, back to the first page, with no counts on them', async () => {
     list.fetchInstrumentsPage.mockResolvedValue(instrumentPage(sampleInstruments, { totalElements: 120, totalPages: 3 }));
     await renderPage({ page: '2' });
-    expect(screen.getByRole('button', { name: /^Stocks/ })).toHaveTextContent('Stocks · 6');
-    expect(screen.getByRole('button', { name: /^Funds/ })).toHaveTextContent('Funds · 3');
-    expect(screen.getByRole('button', { name: /^ETFs/ })).toHaveTextContent('ETFs · 2');
+    expect(screen.getByRole('button', { name: /^Stocks/ })).toHaveTextContent(/^Stocks$/);
+    expect(screen.getByRole('button', { name: /^Funds/ })).toHaveTextContent(/^Funds$/);
+    expect(screen.getByRole('button', { name: /^ETFs/ })).toHaveTextContent(/^ETFs$/);
     fireEvent.click(screen.getByRole('button', { name: /^Funds/ }));
     expect(router.push).toHaveBeenCalledWith('/investments/instruments?type=mutual_fund', { scroll: false });
   });
@@ -172,7 +163,7 @@ describe('/investments/instruments: filters go to the URL', () => {
     list.fetchInstrumentsPage.mockResolvedValue(instrumentPage(sampleInstruments, { totalElements: 120, totalPages: 3 }));
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '2' });
-    fireEvent.change(screen.getByPlaceholderText('Search symbol, ISIN, name'), { target: { value: 'tata' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'tata' } });
     expect(router.push).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
@@ -442,4 +433,14 @@ describe('/investments/instruments: add', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add instrument' }));
     return screen.findByRole('dialog', { name: 'Add instrument' });
   }
+});
+
+describe('/investments/instruments: filter row', () => {
+  it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
+    await renderPage();
+    const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;
+    expect(row).toHaveClass('scrollbar-none', '-mx-space-16', 'px-space-16', 'py-space-4');
+    expect(row.querySelectorAll('button').length).toBeGreaterThan(0);
+    expect(row.querySelector('input')).toBe(screen.getByPlaceholderText('Search'));
+  });
 });

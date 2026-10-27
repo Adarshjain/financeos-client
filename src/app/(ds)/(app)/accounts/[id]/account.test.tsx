@@ -152,7 +152,7 @@ describe('/accounts/[id] layout', () => {
     notFound.mockClear();
   });
 
-  it('titles the page with the account and renders the tab strip around the page', async () => {
+  it('titles the page with the account and renders the tab strip (no counts) around the page', async () => {
     loadAccount.mockResolvedValue(card);
     const ui = await DsAccountLayout({
       params: Promise.resolve({ id: 'c1' }),
@@ -164,7 +164,7 @@ describe('/accounts/[id] layout', () => {
     expect(screen.getAllByRole('tab')).toHaveLength(4);
     expect(screen.getByText('page body')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/accounts');
-    expect(await screen.findByText('· 3')).toBeInTheDocument();
+    expect(screen.queryByText(/^· \d/)).toBeNull();
   });
 
   it('shows no tab strip for a broker', async () => {

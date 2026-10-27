@@ -1,5 +1,5 @@
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, HoldingsSort } from '@/lib/investments.types';
+import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
@@ -18,28 +18,39 @@ export interface HoldingsUrlState {
   /** A broker account id; '' = every broker. */
   broker: string;
   sort: HoldingsSort;
+  /** Always resolved: the key's default when the URL has none. */
+  dir: HoldingsSortDir;
   page: number;
   size: number;
 }
 
 const TYPES: InstrumentType[] = ['stock', 'mutual_fund', 'etf'];
 const SORTS: HoldingsSort[] = ['name', 'return_pct', 'return_abs'];
+const DIRS: HoldingsSortDir[] = ['asc', 'desc'];
+
+/** Name runs A to Z; the returns run high to low. */
+export function defaultSortDir(sort: HoldingsSort): HoldingsSortDir {
+  return sort === 'name' ? 'asc' : 'desc';
+}
 
 export function parseHoldingsUrl(params: {
   q?: string;
   type?: string;
   broker?: string;
   sort?: string;
+  dir?: string;
   page?: string;
   size?: string;
 }): HoldingsUrlState {
   const page = Math.floor(Number(params.page));
   const size = Number(params.size);
+  const sort = SORTS.includes(params.sort as HoldingsSort) ? (params.sort as HoldingsSort) : 'name';
   return {
     q: (params.q ?? '').trim(),
     type: TYPES.includes(params.type as InstrumentType) ? (params.type as InstrumentType) : '',
     broker: (params.broker ?? '').trim(),
-    sort: SORTS.includes(params.sort as HoldingsSort) ? (params.sort as HoldingsSort) : 'name',
+    sort,
+    dir: DIRS.includes(params.dir as HoldingsSortDir) ? (params.dir as HoldingsSortDir) : defaultSortDir(sort),
     page: Number.isFinite(page) && page > 0 ? page : 0,
     size: HOLDINGS_SIZE_OPTIONS.includes(size) ? size : HOLDINGS_DEFAULT_SIZE,
   };
@@ -52,6 +63,7 @@ export function holdingsUrl(state: HoldingsUrlState): string {
   if (state.type) query.set('type', state.type);
   if (state.broker) query.set('broker', state.broker);
   if (state.sort !== 'name') query.set('sort', state.sort);
+  if (state.dir !== defaultSortDir(state.sort)) query.set('dir', state.dir);
   if (state.page > 0) query.set('page', String(state.page));
   if (state.size !== HOLDINGS_DEFAULT_SIZE) query.set('size', String(state.size));
   const text = query.toString();
@@ -65,23 +77,39 @@ export function holdingsQuery(state: HoldingsUrlState): HoldingsQuery {
     assetType: state.type || undefined,
     brokerAccountId: state.broker || undefined,
     sort: state.sort,
+    dir: state.dir !== defaultSortDir(state.sort) ? state.dir : undefined,
     page: state.page,
     size: state.size,
   };
 }
 
-export const TYPE_CHIPS: { value: InstrumentType | ''; label: string }[] = [
-  { value: '', label: 'All' },
+export const TYPE_OPTIONS: { value: InstrumentType | ''; label: string }[] = [
+  { value: '', label: 'All types' },
   { value: 'stock', label: 'Stocks' },
-  { value: 'mutual_fund', label: 'Funds' },
+  { value: 'mutual_fund', label: 'Mutual funds' },
   { value: 'etf', label: 'ETFs' },
 ];
 
-export const SORT_OPTIONS: { value: HoldingsSort; label: string }[] = [
-  { value: 'name', label: 'Name A–Z' },
-  { value: 'return_pct', label: '% return' },
-  { value: 'return_abs', label: '₹ return' },
+/** One Sort option: the key and its direction, encoded as `key:dir` for the Select. */
+export const SORT_OPTIONS: { value: string; label: string; sort: HoldingsSort; dir: HoldingsSortDir }[] = [
+  { value: 'name:asc', label: 'Name: A to Z', sort: 'name', dir: 'asc' },
+  { value: 'name:desc', label: 'Name: Z to A', sort: 'name', dir: 'desc' },
+  { value: 'return_pct:desc', label: '% return: high to low', sort: 'return_pct', dir: 'desc' },
+  { value: 'return_pct:asc', label: '% return: low to high', sort: 'return_pct', dir: 'asc' },
+  { value: 'return_abs:desc', label: '₹ return: high to low', sort: 'return_abs', dir: 'desc' },
+  { value: 'return_abs:asc', label: '₹ return: low to high', sort: 'return_abs', dir: 'asc' },
 ];
+
+/** The Select value of a state's sort and direction. */
+export function sortValue(state: Pick<HoldingsUrlState, 'sort' | 'dir'>): string {
+  return `${state.sort}:${state.dir}`;
+}
+
+/** The sort and direction a Select value stands for. */
+export function sortFromValue(value: string): { sort: HoldingsSort; dir: HoldingsSortDir } {
+  const option = SORT_OPTIONS.find((o) => o.value === value) ?? SORT_OPTIONS[0];
+  return { sort: option.sort, dir: option.dir };
+}
 
 export const GROUP_NAMES: Record<InstrumentType, string> = {
   stock: 'Stocks',

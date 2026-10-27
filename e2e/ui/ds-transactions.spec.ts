@@ -22,11 +22,10 @@ const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'Ju
 const dayMonth = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
 const monthYear = (iso: string) => `${LONG_MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 
-const SEARCH = 'Search merchant, amount…';
+const SEARCH = 'Search';
 
 const row = (page: Page, text: string | RegExp) => page.getByRole('row').filter({ hasText: text });
-const needsReviewChip = (page: Page, count?: number) =>
-  page.getByRole('button', { name: count === undefined ? /^Needs review/ : `Needs review · ${count}` });
+const needsReviewChip = (page: Page) => page.getByRole('button', { name: 'Needs review', exact: true });
 
 /** Puts a transaction in Needs review with the given reasons. */
 async function flag(api: ApiClient, t: TransactionResponse, reasons: Reason[]) {
@@ -209,17 +208,17 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
 
-      test('the Needs review chip toggles the URL, keeps its count and narrows the list', async ({ page }) => {
+      test('the Needs review chip (no count) toggles the URL and narrows the list', async ({ page }) => {
         await seedList();
         await open(page);
-        await expect(needsReviewChip(page, 2)).toBeVisible();
+        await expect(needsReviewChip(page)).toBeVisible();
 
         await needsReviewChip(page).click();
         await page.waitForURL(/[?&]review=needs_review/);
         await expect(row(page, 'Uber Ride')).toHaveCount(1);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
-        await expect(needsReviewChip(page, 2)).toBeVisible();
+        await expect(needsReviewChip(page)).toBeVisible();
 
         await needsReviewChip(page).click();
         await page.waitForURL((u) => !u.search.includes('review='));
@@ -462,7 +461,7 @@ for (const viewport of VIEWPORTS) {
       test('select rows needing review, Approve clears them', async ({ page }) => {
         await seedList();
         await open(page);
-        await expect(needsReviewChip(page, 2)).toBeVisible();
+        await expect(needsReviewChip(page)).toBeVisible();
 
         await page.getByRole('checkbox', { name: 'Select Swiggy Dinner' }).click();
         await page.getByRole('checkbox', { name: 'Select Uber Ride' }).click();
@@ -474,8 +473,12 @@ for (const viewport of VIEWPORTS) {
         await dialog.getByRole('button', { name: 'Approve 2' }).click();
 
         await expect(dialog).not.toBeVisible();
-        await expect(needsReviewChip(page, 0)).toBeVisible();
         await expect(page.getByText('2 selected')).toHaveCount(0);
+        // Nothing is left in review: the Needs review view lists neither row.
+        await needsReviewChip(page).click();
+        await page.waitForURL(/[?&]review=needs_review/);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
+        await expect(row(page, 'Uber Ride')).toHaveCount(0);
       });
 
       test('detail Review on a one-reason row opens the approve dialog; approving clears it with an Approved toast', async ({ page }) => {
@@ -492,10 +495,13 @@ for (const viewport of VIEWPORTS) {
 
         // A clean run through the dialog ends in the "Approved" toast, which offers Undo.
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
-        await expect(needsReviewChip(page, 1)).toBeVisible();
+        await needsReviewChip(page).click();
+        await page.waitForURL(/[?&]review=needs_review/);
+        await expect(row(page, 'Uber Ride')).toHaveCount(0);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
 
         await page.getByRole('button', { name: 'Undo' }).click();
-        await expect(needsReviewChip(page, 2)).toBeVisible();
+        await expect(row(page, 'Uber Ride')).toHaveCount(1);
       });
     }
 
@@ -660,15 +666,20 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
 
-      test('the filter row does not scroll by default and scrolls once the search is focused', async ({ page }) => {
+      test('the search rests narrow and widens to most of the screen while focused or filled', async ({ page }) => {
         await seedList();
         await open(page);
         const search = page.getByPlaceholder(SEARCH);
-        const scroller = search.locator('xpath=ancestor::div[contains(@class,"overflow-x-auto")][1]');
-        const overflow = () => scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
-        expect(await overflow()).toBeLessThanOrEqual(0);
+        const width = async () => (await search.boundingBox())?.width ?? 0;
+        expect(await width()).toBeLessThanOrEqual(100);
         await search.focus();
-        await expect.poll(overflow).toBeGreaterThan(0);
+        await expect.poll(width).toBeGreaterThan(250);
+        await search.fill('rent');
+        await search.blur();
+        await expect.poll(width).toBeGreaterThan(250);
+        await search.fill('');
+        await search.blur();
+        await expect.poll(width).toBeLessThanOrEqual(100);
       });
 
       test('the page tabs stay visible while a row is selected', async ({ page }) => {
@@ -773,18 +784,18 @@ test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
 
     await page.goto('/transactions');
     await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
-    await expect(needsReviewChip(page, 2)).toBeVisible();
+    await expect(needsReviewChip(page)).toBeVisible();
 
     await page.getByRole('checkbox', { name: /^Select .*Ola/i }).first().click();
     await page.getByRole('button', { name: 'Approve 1' }).click();
     const dialog = page.getByRole('dialog').filter({ hasText: 'Tick the reasons to clear' });
     await dialog.getByRole('button', { name: 'Approve 1' }).click();
     // The rule is verified, so the other Ola row is cleared as well.
-    await expect(needsReviewChip(page, 0)).toBeVisible();
+    await expect(needsReviewChip(page)).toBeVisible();
     await expect.poll(async () => (await flagged()).length).toBe(0);
 
     await page.getByRole('button', { name: 'Undo' }).click();
-    await expect(needsReviewChip(page, 2)).toBeVisible();
+    await expect(needsReviewChip(page)).toBeVisible();
     await expect.poll(async () => (await flagged()).length).toBe(2);
   });
 });

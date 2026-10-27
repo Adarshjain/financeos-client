@@ -65,19 +65,19 @@ for (const viewport of VIEWPORTS) {
       expect(job.status).toBe('SUCCEEDED');
     });
 
-    test('opens on Unverified with the counts; filters live in the address and survive a reload', async ({ page }) => {
+    test('opens on Unverified (chips carry no counts); filters live in the address and survive a reload', async ({ page }) => {
       await page.goto('/transactions/rules');
-      await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'All · 3' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Unverified', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'All', exact: true })).toBeVisible();
       for (const name of ['Third Wave', 'Ola Cabs', 'Zepto']) await expect(page.getByText(name, { exact: true })).toBeVisible();
       await expect(page.getByText(/last used|last active/i)).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Verified · 0' }).click();
+      await page.getByRole('button', { name: 'Verified', exact: true }).click();
       await expect(page).toHaveURL(/status=verified/);
       await expect(page.getByText('No rules found')).toBeVisible();
 
-      await page.getByRole('button', { name: 'All · 3' }).click();
-      await page.getByPlaceholder('Search merchant keys or names…').fill('ola');
+      await page.getByRole('button', { name: 'All', exact: true }).click();
+      await page.getByPlaceholder('Search').fill('ola');
       await expect(page).toHaveURL(/q=ola/);
       await expect(page.getByText('Zepto', { exact: true })).toHaveCount(0);
       await page.reload();
@@ -133,7 +133,7 @@ for (const viewport of VIEWPORTS) {
       const approveOne = page.getByRole('button', { name: 'Approve', exact: true }).first();
       await approveOne.click();
       await expect(page.getByText(/1 rule verified|Rule verified/)).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Unverified · 2' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(2);
 
       if (phone) {
         // Long-press starts selection; a tap then toggles.
@@ -149,18 +149,17 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('1 selected')).toBeVisible();
       await page.getByText('1 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
       await expect(page.getByText(/1 rule verified/)).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(1);
     });
 
     test('Undo on the approve toast un-verifies the rule, single and bulk', async ({ page }) => {
       await page.goto('/transactions/rules');
       expect(await inReview(user.cookie)).toBe(3);
       await page.getByRole('button', { name: 'Approve', exact: true }).first().click();
-      await expect(page.getByRole('button', { name: 'Unverified · 2' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(2);
       await expect.poll(() => inReview(user.cookie)).toBe(2);
       await page.getByRole('button', { name: 'Undo' }).click();
-      await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Verified · 0' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(3);
       // The transaction the approve cleared is back in review.
       await expect.poll(() => inReview(user.cookie)).toBe(3);
 
@@ -168,10 +167,10 @@ for (const viewport of VIEWPORTS) {
         await page.getByLabel('Select Ola Cabs').click();
         await page.getByLabel('Select Zepto').click();
         await page.getByText('2 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
-        await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(1);
         await expect.poll(() => inReview(user.cookie)).toBe(1);
         await page.getByRole('button', { name: 'Undo' }).click();
-        await expect(page.getByRole('button', { name: 'Unverified · 3' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(3);
         await expect.poll(() => inReview(user.cookie)).toBe(3);
       }
     });
@@ -189,7 +188,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('1 selected')).toBeVisible();
       await page.getByText('1 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
       await expect(page.getByText(/1 rule verified/)).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Unverified · 1' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(1);
     });
 
     for (const theme of ['light', 'dark']) {

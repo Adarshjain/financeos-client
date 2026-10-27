@@ -74,7 +74,7 @@ describe('/investments/corporate-actions', () => {
 
   it('puts the search in the address once typing has paused', async () => {
     await renderPage();
-    fireEvent.change(screen.getByPlaceholderText('Instrument'), { target: { value: 'itc' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'itc' } });
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?q=itc', { scroll: false }));
   });
 
@@ -116,5 +116,15 @@ describe('/investments/corporate-actions', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getAllByText('ITC')[0]);
     expect(await screen.findByText('Edit corporate action')).toBeInTheDocument();
+  });
+});
+
+describe('/investments/corporate-actions: filter row', () => {
+  it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
+    await renderPage();
+    const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;
+    expect(row).toHaveClass('scrollbar-none', '-mx-space-16', 'px-space-16', 'py-space-4');
+    expect(row.querySelectorAll('button').length).toBeGreaterThan(0);
+    expect(row.querySelector('input')).toBe(screen.getByPlaceholderText('Search'));
   });
 });

@@ -37,8 +37,8 @@ describe('filters', () => {
 
   it('labels the chip with the choice and its count', () => {
     expect(filterChipLabel('Status', STATUS_OPTIONS, '')).toBe('Status: All');
-    expect(filterChipLabel('Status', STATUS_OPTIONS, 'FAILED', 1)).toBe('Status: Failed · 1');
-    expect(filterChipLabel('Status', STATUS_OPTIONS, 'active', 0)).toBe('Status: Running · 0');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, 'FAILED')).toBe('Status: Failed');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, 'active')).toBe('Status: Running');
     expect(filterChipLabel('Status', STATUS_OPTIONS, 'SUCCEEDED')).toBe('Status: Succeeded');
     expect(filterChipLabel('Type', TYPE_OPTIONS, 'GMAIL_SYNC')).toBe('Type: Gmail sync');
   });

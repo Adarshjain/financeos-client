@@ -790,6 +790,8 @@ export const investmentsApi = {
           assetType: params?.assetType,
           search: params?.search,
           sort: params?.sort,
+          // `dir` is not in the generated schema until it is synced from the server.
+          ...(params?.dir ? { dir: params.dir } : {}),
           page: params?.page ?? 0,
           size: params?.size ?? 50,
         },

@@ -50,7 +50,7 @@ for (const viewport of VIEWPORTS) {
       await expect(tabs.first()).toContainText('Lendings');
       await expect(tabs.first()).toHaveAttribute('data-state', 'active');
       await expect(tabs.nth(1)).toContainText('Loans');
-      await expect(page.getByRole('tab', { name: 'Lendings · 3' })).toBeVisible();
+      await expect(page.locator('main').getByRole('tab', { name: 'Lendings', exact: true })).toBeVisible();
 
       await page.getByRole('tab', { name: /^Loans/ }).click();
       await page.waitForURL(/\/loans$/);
@@ -85,7 +85,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Priya Nair')).toHaveCount(0);
 
       await page.getByRole('button', { name: 'All', exact: true }).click();
-      await page.getByPlaceholder('Search people').fill('priya');
+      await page.getByPlaceholder('Search').fill('priya');
       await page.waitForURL(/q=priya/);
       await expect(page.getByText('Priya Nair').first()).toBeVisible();
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
@@ -292,12 +292,12 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('link', { name: 'Open Home Loan' })).toHaveAttribute('href', `/loans/${home.id}`);
       }
 
-      await page.getByPlaceholder('Search loans').fill('SBI');
+      await page.getByPlaceholder('Search').fill('SBI');
       await page.waitForURL(/q=SBI/);
       await expect(page.getByText('Home Loan').first()).toBeVisible();
       await expect(page.getByText('Car Loan')).toHaveCount(0);
 
-      await page.getByPlaceholder('Search loans').fill('');
+      await page.getByPlaceholder('Search').fill('');
       await page.waitForURL((u) => !u.search.includes('q='));
       await expect(page.getByText('Car Loan').first()).toBeVisible();
       await expect(page.getByText('Closed · 1')).toBeVisible();

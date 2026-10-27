@@ -40,7 +40,7 @@ describe('LendingsListCard paging', () => {
     await user.click(screen.getByRole('button', { name: 'All' }));
     expect(router.push).toHaveBeenLastCalledWith('/loans/lendings', { scroll: false });
     // The page still carries filter=settled: the push has not landed yet.
-    await user.type(screen.getByPlaceholderText('Search people'), 'priya');
+    await user.type(screen.getByPlaceholderText('Search'), 'priya');
     await waitFor(() =>
       expect(router.push).toHaveBeenLastCalledWith('/loans/lendings?q=priya', { scroll: false }),
     );

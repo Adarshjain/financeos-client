@@ -15,14 +15,12 @@ vi.mock('next/navigation', () => ({
 let jobs: JobResponse[] = [];
 let totalElements = 0;
 let pending = false;
-const counts: Record<string, number | undefined> = { active: 0, FAILED: 1 };
 const historyArgs: unknown[] = [];
 vi.mock('@/features/jobs/useJobsHistory', () => ({
   useJobsHistory: (f: unknown) => {
     historyArgs.push(f);
     return { jobs, totalPages: Math.ceil(totalElements / 25), totalElements, isPending: pending };
   },
-  useJobsCount: (status: string) => counts[status],
 }));
 
 let fetched: JobResponse | null = null;
@@ -68,8 +66,6 @@ beforeEach(() => {
   pending = false;
   fetched = null;
   fetchError = null;
-  counts.active = 0;
-  counts.FAILED = 1;
   historyArgs.length = 0;
   polled.length = 0;
 });
@@ -81,17 +77,17 @@ describe('filters', () => {
     expect(screen.getByRole('button', { name: /Type: All/ })).toBeInTheDocument();
   });
 
-  it('shows the choice and its count on the chip', () => {
+  it('shows the choice on the chip, with no count', () => {
     render(<ActivityPage {...props} statusFilter="FAILED" typeFilter="GMAIL_SYNC" />);
-    expect(screen.getByRole('button', { name: /Status: Failed · 1/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Status: Failed$/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Type: Gmail sync/ })).toBeInTheDocument();
   });
 
-  it('lists every status with Running and Failed counts, and navigates on pick', () => {
+  it('lists every status without counts, and navigates on pick', () => {
     render(<ActivityPage {...props} />);
     fireEvent.click(screen.getByRole('button', { name: /Status: All/ }));
     const options = screen.getAllByRole('option');
-    expect(options.map((o) => o.textContent)).toEqual(['All statuses', 'Running0', 'Succeeded', 'Failed1', 'Cancelled']);
+    expect(options.map((o) => o.textContent)).toEqual(['All statuses', 'Running', 'Succeeded', 'Failed', 'Cancelled']);
     fireEvent.click(screen.getByRole('option', { name: /Failed/ }));
     expect(push).toHaveBeenCalledWith('/settings/activity?status=FAILED', { scroll: false });
   });
