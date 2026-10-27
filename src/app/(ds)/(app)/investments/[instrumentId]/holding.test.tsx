@@ -1,7 +1,8 @@
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { buy, pageData, prices } from '@/features/investments/holding/holding.fixtures';
+import { bonus, buy, dividend, pageData, priceHistory, prices, rawDividends, rawPricePage, rawTrades } from '@/features/investments/holding/holding.fixtures';
+import { corporateActionsSection, dividendsSection, pricesSection, tradesSection } from '@/features/investments/holding/holdingSections';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import DsHoldingPage from './page';
@@ -45,6 +46,16 @@ const server = vi.hoisted(() => ({
 }));
 vi.mock('@/features/investments/investmentsServerApi', () => server);
 
+// The pager's server actions: the real section readers over the mocked server api, in the action's result shape.
+const wrap = <T,>(read: Promise<T>) => read.then((data) => ({ success: true as const, data }));
+const actions = vi.hoisted(() => ({
+  loadTradesPage: vi.fn(),
+  loadDividendsPage: vi.fn(),
+  loadCorporateActionsPage: vi.fn(),
+  loadPricesPage: vi.fn(),
+}));
+vi.mock('@/features/investments/holding/holdingActions', () => actions);
+
 vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: ({ data }: { data: { categories: string[]; series: { data: number[] }[] } }) => (
     <div data-testid="chart">{`${data.categories.join(',')}|${data.series[0].data.join(',')}`}</div>
@@ -74,9 +85,11 @@ const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }))
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 
 const data = pageData();
+const bonusAction = bonus as never;
 
 async function renderPage(query: { tab?: string; page?: string } = {}) {
-  const ui = await DsHoldingPage({
+  // The page takes only its params: an old `?tab=` or `?page=` address is ignored.
+  const ui = await (DsHoldingPage as (props: unknown) => Promise<React.ReactElement>)({
     params: Promise.resolve({ instrumentId: 'i-infy' }),
     searchParams: Promise.resolve(query),
   });
@@ -88,32 +101,43 @@ beforeEach(() => {
   server.fetchHolding.mockResolvedValue(data.holding);
   server.fetchInstrument.mockResolvedValue(data.instrument);
   server.fetchSellEstimate.mockResolvedValue(data.estimate);
-  server.fetchInstrumentTrades.mockResolvedValue(data.trades);
-  server.fetchInstrumentDividends.mockResolvedValue(data.dividends);
-  server.fetchInstrumentCorporateActions.mockResolvedValue(data.corporateActions);
-  server.fetchPricesPage.mockResolvedValue(data.prices);
-  server.fetchPriceHistory.mockResolvedValue(data.history);
+  server.fetchInstrumentTrades.mockResolvedValue(rawTrades());
+  server.fetchInstrumentDividends.mockResolvedValue(rawDividends());
+  server.fetchInstrumentCorporateActions.mockResolvedValue([bonusAction]);
+  server.fetchPricesPage.mockResolvedValue(rawPricePage());
+  server.fetchPriceHistory.mockResolvedValue(priceHistory);
+  actions.loadTradesPage.mockImplementation((id: string, page: number) => wrap(tradesSection(id, page)));
+  actions.loadDividendsPage.mockImplementation((id: string, page: number) => wrap(dividendsSection(id, page)));
+  actions.loadCorporateActionsPage.mockImplementation((id: string, page: number) => wrap(corporateActionsSection(id, page)));
+  actions.loadPricesPage.mockImplementation((id: string, page: number) => wrap(pricesSection(id, page)));
   api.POST.mockResolvedValue({ data: {} });
   api.PUT.mockResolvedValue({ data: {} });
   api.DELETE.mockResolvedValue({});
 });
 
 describe('/investments/[instrumentId]: data', () => {
-  it('reads Overview with the newest few of each section, once', async () => {
+  it('reads the first page of each list once, and the price history only when its dialog opens', async () => {
     await renderPage();
     expect(server.fetchHolding).toHaveBeenCalledWith('i-infy');
     expect(server.fetchSellEstimate).toHaveBeenCalledWith('i-infy');
+    expect(server.fetchInstrumentTrades).toHaveBeenCalledTimes(1);
     expect(server.fetchInstrumentTrades).toHaveBeenCalledWith('i-infy', 0, 10);
-    expect(server.fetchInstrumentDividends).toHaveBeenCalledWith('i-infy', 0, 5);
-    expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 10);
+    expect(server.fetchInstrumentDividends).toHaveBeenCalledWith('i-infy', 0, 10);
+    expect(server.fetchInstrumentCorporateActions).toHaveBeenCalledTimes(1);
+    expect(server.fetchPriceHistory).toHaveBeenCalledTimes(1);
+    expect(server.fetchPricesPage).not.toHaveBeenCalled();
+    // No second read when the cards mount.
+    expect(actions.loadTradesPage).not.toHaveBeenCalled();
+    expect(actions.loadDividendsPage).not.toHaveBeenCalled();
+    expect(actions.loadCorporateActionsPage).not.toHaveBeenCalled();
   });
 
-  it("reads a tab's own list a page at a time and only the count of the others", async () => {
-    server.fetchInstrumentTrades.mockResolvedValue({ ...data.trades, number: 2, totalElements: 60, totalPages: 3 });
-    await renderPage({ tab: 'trades', page: '2' });
-    expect(server.fetchInstrumentTrades).toHaveBeenCalledWith('i-infy', 2, 25);
-    expect(server.fetchInstrumentDividends).toHaveBeenCalledWith('i-infy', 0, 1);
-    expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 1);
+  it('renders the same page for an old ?tab= or ?page= address', async () => {
+    await renderPage({ tab: 'prices', page: '5' });
+    expect(screen.getByText('If you sell today')).toBeInTheDocument();
+    expect(screen.getByText('Corporate actions')).toBeInTheDocument();
+    expect(server.fetchInstrumentTrades).toHaveBeenCalledWith('i-infy', 0, 10);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it('is a 404 for a holding the user has never held', async () => {
@@ -151,15 +175,20 @@ describe('/investments/[instrumentId]: Overview', () => {
     expect(screen.getAllByText('across 2 trades')).toHaveLength(2);
   });
 
-  it('lists the tabs as links with their counts and no count on Overview or Prices', async () => {
+  it('has no tabs: every card is on the one page', async () => {
     await renderPage();
-    const tabs = screen.getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent)).toEqual(['Overview', 'Trades · 2', 'Dividends · 1', 'Corporate actions · 1', 'Prices']);
-    expect(screen.getByRole('tab', { name: /^Trades/ }).closest('a') ?? screen.getByRole('link', { name: /^Trades/ })).toHaveAttribute(
-      'href',
-      '/investments/i-infy?tab=trades',
-    );
-    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('data-state', 'active');
+    expect(screen.queryAllByRole('tab')).toHaveLength(0);
+    for (const title of ['Trades', 'Dividends', 'Corporate actions', 'By broker', 'If you sell today', 'Instrument']) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(screen.queryByText('Price history')).toBeNull();
+  });
+
+  it('has no "Current value" label, no Dividend or Corporate action button in the hero', async () => {
+    await renderPage();
+    expect(screen.queryByText('Current value')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Dividend' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Corporate action' })).toBeNull();
   });
 
   it('shows Trades with their broker, side and value, and the lots line', async () => {
@@ -236,16 +265,42 @@ describe('/investments/[instrumentId]: Overview', () => {
       expect(api.POST).not.toHaveBeenCalled();
     });
 
-    it('names the limit and shows no estimate for an empty, zero, over-large or non-numeric quantity', async () => {
+    it('names the limit and shows no estimate for an empty, zero or over-large quantity', async () => {
       await renderPage();
       expect(screen.queryByText(/^Up to 60 shares/)).toBeNull();
-      for (const bad of ['0', '61', 'abc', '-2']) {
+      for (const bad of ['0', '61']) {
         type(bad);
         expect(screen.getByText('Up to 60 shares')).toBeInTheDocument();
         expect(screen.queryByText(/^Sell \d+:/)).toBeNull();
       }
       type('');
       expect(screen.queryByText('Up to 60 shares')).toBeNull();
+    });
+
+    it('keeps only digits for a stock: letters, signs, commas and a decimal point are dropped', async () => {
+      await renderPage();
+      const box = screen.getByPlaceholderText('Quantity');
+      type('a1b2');
+      expect(box).toHaveValue('12');
+      type('2.5');
+      expect(box).toHaveValue('25');
+      type('-2');
+      expect(box).toHaveValue('2');
+      type('abc');
+      expect(box).toHaveValue('');
+      expect(screen.queryByText(/^Up to 60 shares/)).toBeNull();
+    });
+
+    it('keeps digits and one decimal point for a fund', async () => {
+      server.fetchHolding.mockResolvedValue({ ...data.holding, assetType: 'mutual_fund' });
+      await renderPage();
+      const box = screen.getByPlaceholderText('Quantity');
+      type('12.5ab');
+      expect(box).toHaveValue('12.5');
+      type('1.2.3');
+      expect(box).toHaveValue('1.23');
+      type('x');
+      expect(box).toHaveValue('');
     });
   });
 
@@ -265,7 +320,7 @@ describe('/investments/[instrumentId]: Overview', () => {
     for (const text of ['Shared catalog entry', 'INE009A01021', 'INFY.NS', 'Yahoo', 'none']) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
-    expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(1);
+    expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
   });
 });
 
@@ -284,10 +339,45 @@ describe('/investments/[instrumentId]: record and edit dialogs', () => {
     expect(props('trade-dialog')).toEqual({ initialInstrument: instrument });
   });
 
-  it('opens Record trade from the top bar +', async () => {
+  const openMenu = async () => {
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
+    return screen.findByRole('menu');
+  };
+
+  it('opens a menu from the top bar + with every record option', async () => {
     await renderPage();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0]);
+    const menu = await openMenu();
+    expect(within(menu).getAllByRole('menuitem').map((i) => i.textContent)).toEqual([
+      'Record trade',
+      'Record dividend',
+      'Record corporate action',
+      'Record price',
+    ]);
+  });
+
+  it('opens Record trade from the + menu', async () => {
+    await renderPage();
+    fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record trade' }));
     expect(props('trade-dialog').initialInstrument).toEqual(instrument);
+  });
+
+  it('opens Record dividend from the + menu', async () => {
+    await renderPage();
+    fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record dividend' }));
+    expect((props('dividend-dialog').prefill as { instrumentId: string }).instrumentId).toBe('i-infy');
+  });
+
+  it('opens Record corporate action from the + menu', async () => {
+    await renderPage();
+    fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record corporate action' }));
+    expect(props('action-dialog')).toEqual({ instrument });
+  });
+
+  it('opens the manual price dialog, dated today, from the + menu', async () => {
+    await renderPage();
+    fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record price' }));
+    const dialog = await screen.findByRole('dialog', { name: /Set manual price/ });
+    expect(within(dialog).getByDisplayValue('13/10/2026')).toBeInTheDocument();
   });
 
   it('starts Record trade on the broker when only one holds the instrument', async () => {
@@ -297,24 +387,13 @@ describe('/investments/[instrumentId]: record and edit dialogs', () => {
     expect(props('trade-dialog').initialBrokerAccountId).toBe(data.holding.brokers[0].brokerAccountId);
   });
 
-  it('opens Record dividend prefilled with the instrument from the Dividend button and the Dividends card', async () => {
+  it('opens Record dividend prefilled with the instrument from the Dividends card', async () => {
     await renderPage();
-    for (const trigger of [
-      () => screen.getAllByRole('button', { name: 'Dividend' })[0],
-      () => screen.getAllByRole('button', { name: 'Record' })[0],
-    ]) {
-      fireEvent.click(trigger());
-      expect((props('dividend-dialog').prefill as { instrumentId: string }).instrumentId).toBe('i-infy');
-      cleanup();
-      await renderPage();
-    }
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record' })[0]);
+    expect((props('dividend-dialog').prefill as { instrumentId: string }).instrumentId).toBe('i-infy');
   });
 
-  it('opens Record corporate action for the instrument from the button and the card', async () => {
-    await renderPage();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Corporate action' })[0]);
-    expect(props('action-dialog')).toEqual({ instrument });
-    cleanup();
+  it('opens Record corporate action for the instrument from the card', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'Record' })[1]);
     expect(props('action-dialog')).toEqual({ instrument });
@@ -322,7 +401,6 @@ describe('/investments/[instrumentId]: record and edit dialogs', () => {
 
   it('opens the instrument edit dialog from the Instrument card', async () => {
     await renderPage();
-    // The Instrument card is the last section of Overview, after the price rows' own Edit buttons.
     fireEvent.click(screen.getAllByRole('button', { name: 'Edit' }).at(-1)!);
     expect((props('edit-dialog').instrument as { id: string }).id).toBe(data.instrument?.id);
   });
@@ -382,43 +460,82 @@ describe('/investments/[instrumentId]: Price chart', () => {
     expect(screen.queryByTestId('chart')).toBeNull();
   });
 
-  it('leaves the chart out when the history cannot be read, and on the other tabs', async () => {
+  it('says the chart could not load, and still offers the Price history button, when the history cannot be read', async () => {
     server.fetchPriceHistory.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.queryByText(/^Price · /)).toBeNull();
-    server.fetchPriceHistory.mockClear();
-    await renderPage({ tab: 'trades' });
-    expect(server.fetchPriceHistory).not.toHaveBeenCalled();
+    expect(screen.getByText('The price chart could not be loaded.')).toBeInTheDocument();
+    expect(screen.queryByTestId('chart')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Price history' })).toBeInTheDocument();
   });
 });
 
-describe('/investments/[instrumentId]: Price history', () => {
-  it('lists the newest prices with their source', async () => {
+/** Opens the Price history dialog from the chart card's icon button. */
+async function openHistory() {
+  fireEvent.click(screen.getByRole('button', { name: 'Price history' }));
+  return screen.findByRole('dialog', { name: 'Price history' });
+}
+
+describe('/investments/[instrumentId]: Price history dialog', () => {
+  it('is opened by the icon button in the chart card header, and reads its first page then', async () => {
     await renderPage();
-    expect(screen.getByText('Price history')).toBeInTheDocument();
-    expect(screen.getByText('13 Oct 26')).toBeInTheDocument();
-    expect(screen.getAllByText('Yahoo').length).toBeGreaterThan(0);
-    expect(screen.getByText('manual price')).toBeInTheDocument();
-    expect(screen.getByText('₹1,470.00')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Price history' })).toBeNull();
+    const dialog = await openHistory();
+    expect(await within(dialog).findByText('13 Oct 26')).toBeInTheDocument();
+    expect(server.fetchPricesPage).toHaveBeenCalledTimes(1);
+    expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 10);
+    expect(within(dialog).getAllByText('Yahoo').length).toBeGreaterThan(0);
+    expect(within(dialog).getByText('manual price')).toBeInTheDocument();
+    expect(within(dialog).getByText('₹1,470.00')).toBeInTheDocument();
   });
 
-  // The Prices tab: on Overview the Instrument card has an Edit button too.
-  it('puts Edit and Delete only on the user\'s own manual price', async () => {
-    await renderPage({ tab: 'prices' });
-    expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(1);
+  it("puts Edit and Delete only on the user's own manual price", async () => {
+    await renderPage();
+    const dialog = await openHistory();
+    await within(dialog).findByText('13 Oct 26');
+    expect(within(dialog).getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
+    expect(within(dialog).getAllByRole('button', { name: 'Delete' })).toHaveLength(1);
   });
 
   it('shows no Edit or Delete when every price is from a feed', async () => {
-    server.fetchPricesPage.mockResolvedValue({ ...data.prices, items: prices.filter((p) => !p.editable) });
-    await renderPage({ tab: 'prices' });
-    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
+    server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), items: prices.filter((p) => !p.editable) });
+    await renderPage();
+    const dialog = await openHistory();
+    await within(dialog).findByText('13 Oct 26');
+    expect(within(dialog).queryByRole('button', { name: 'Edit' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Delete' })).toBeNull();
+  });
+
+  it('pages server-side: a page press asks the server for that page', async () => {
+    server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), totalElements: 40, totalPages: 4 });
+    await renderPage();
+    const dialog = await openHistory();
+    await within(dialog).findByText('13 Oct 26');
+    server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), page: 1, totalElements: 40, totalPages: 4, items: [{ id: null, asOf: '2026-09-01', close: 1300, source: 'YAHOO', editable: false }] });
+    fireEvent.click(within(dialog).getAllByRole('button', { name: /next/i })[0]);
+    expect(await within(dialog).findByText('1 Sep 26')).toBeInTheDocument();
+    expect(server.fetchPricesPage).toHaveBeenLastCalledWith('i-infy', 1, 10);
+  });
+
+  it('says so and offers Try again when the first page cannot be read', async () => {
+    actions.loadPricesPage.mockResolvedValueOnce({ success: false, error: { message: 'Failed to load the price history' } });
+    await renderPage();
+    const dialog = await openHistory();
+    expect(await within(dialog).findByText('The price history could not be loaded.')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
+    expect(await within(dialog).findByText('13 Oct 26')).toBeInTheDocument();
+  });
+
+  it('says so when there are no prices', async () => {
+    server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), items: [], totalElements: 0, totalPages: 0 });
+    await renderPage();
+    const dialog = await openHistory();
+    expect(await within(dialog).findByText('No prices recorded yet.')).toBeInTheDocument();
   });
 
   it('edits the amount of a manual price: the date is shown, can change, and is sent only when changed', async () => {
-    await renderPage({ tab: 'prices' });
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    await renderPage();
+    const history = await openHistory();
+    fireEvent.click(await within(history).findByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     expect(within(dialog).getByDisplayValue('10/10/2026')).toBeEnabled();
     const amount = within(dialog).getByLabelText('Price');
@@ -432,11 +549,14 @@ describe('/investments/[instrumentId]: Price history', () => {
     });
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Price updated');
+    // The list is read again for the page being shown.
+    await waitFor(() => expect(server.fetchPricesPage).toHaveBeenCalledTimes(2));
   });
 
   it('refuses a price that is not above zero', async () => {
-    await renderPage({ tab: 'prices' });
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    await renderPage();
+    const history = await openHistory();
+    fireEvent.click(await within(history).findByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '0' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
@@ -446,7 +566,8 @@ describe('/investments/[instrumentId]: Price history', () => {
 
   it('confirms before deleting, says what goes and what stays, then deletes', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    const history = await openHistory();
+    fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete manual price' });
     expect(within(dialog).getByText('Delete your manual price of ₹1,470.00 on 10 Oct 26?')).toBeInTheDocument();
     expect(within(dialog).getByText('Only this price is deleted.')).toBeInTheDocument();
@@ -464,13 +585,29 @@ describe('/investments/[instrumentId]: Price history', () => {
   it('keeps the price and says so when the delete fails', async () => {
     api.DELETE.mockRejectedValue(new Error('Could not delete'));
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    const history = await openHistory();
+    fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete manual price' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete price' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to delete the price', { tone: 'danger' }));
     expect(router.refresh).not.toHaveBeenCalled();
   });
 
+  it('keeps the Edit dialog open and says so when the server refuses the new amount', async () => {
+    api.PUT.mockRejectedValue(new Error('refused'));
+    await renderPage();
+    const history = await openHistory();
+    fireEvent.click(await within(history).findByRole('button', { name: 'Edit' }));
+    const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
+    fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1480' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the price', { tone: 'danger' }));
+    expect(screen.getByRole('dialog', { name: /Edit manual price/ })).toBeInTheDocument();
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe('/investments/[instrumentId]: manual price from the LTP override', () => {
   it('sets a manual price from the LTP "override" link, dated today', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'override' })[0]);
@@ -486,84 +623,6 @@ describe('/investments/[instrumentId]: Price history', () => {
     });
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Price updated for Infosys'));
   });
-});
-
-describe('/investments/[instrumentId]: tabs', () => {
-  it("shows only that section on a tab, with its own Pager above and below", async () => {
-    server.fetchInstrumentTrades.mockResolvedValue({ ...data.trades, totalElements: 60, totalPages: 3, size: 25 });
-    await renderPage({ tab: 'trades' });
-    expect(screen.getByRole('tab', { name: /^Trades/ })).toHaveAttribute('data-state', 'active');
-    expect(screen.queryByText('Price history')).toBeNull();
-    expect(screen.queryByText('By broker')).toBeNull();
-    expect(screen.getAllByText('/ 60').length).toBeGreaterThanOrEqual(2);
-    fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/i-infy?tab=trades&page=1', { scroll: false });
-  });
-
-  it('pages the Prices tab, which keeps Edit and Delete', async () => {
-    server.fetchPricesPage.mockResolvedValue({ ...data.prices, totalElements: 40, totalPages: 4, size: 10 });
-    await renderPage({ tab: 'prices' });
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/i-infy?tab=prices&page=1', { scroll: false });
-  });
-
-  it('shows the Dividends tab and the Corporate actions tab on their own', async () => {
-    await renderPage({ tab: 'dividends' });
-    expect(screen.getByText('Dividend ₹22 / share')).toBeInTheDocument();
-    expect(screen.queryByText('Bonus 1:1')).toBeNull();
-  });
-
-  it('shows the Corporate actions tab on its own', async () => {
-    await renderPage({ tab: 'corporate-actions' });
-    expect(screen.getByText('Bonus 1:1')).toBeInTheDocument();
-    expect(screen.queryByText('Dividend ₹22 / share')).toBeNull();
-  });
-});
-
-describe('/investments/[instrumentId]: trades table figures', () => {
-  it('has plain figures on desktop and ₹ on phone: no ₹ in the Price column or the P&L caption', async () => {
-    server.fetchInstrumentTrades.mockResolvedValue({
-      ...data.trades,
-      content: [buy({ id: 's1', type: 'sell', quantity: 10, price: 1500, realisedPnl: 800 })],
-    });
-    await renderPage();
-    expect(screen.getByText('1,500.00')).toBeInTheDocument();
-    expect(screen.getByText('15,000')).toBeInTheDocument();
-    expect(screen.getByText('₹15,000')).toBeInTheDocument();
-    expect(screen.getByText('P&L +800')).toBeInTheDocument();
-  });
-});
-
-describe('/investments/[instrumentId]: a page past the end', () => {
-  it('sends a Prices tab page past the end to the last page', async () => {
-    server.fetchPricesPage.mockResolvedValue({ ...data.prices, items: [], page: 5, totalElements: 20, totalPages: 2 });
-    await expect(renderPage({ tab: 'prices', page: '5' })).rejects.toThrow('REDIRECT /investments/i-infy?tab=prices&page=1');
-  });
-
-  it('sends a Trades tab page past the end to the last page, and leaves page 0 and in-range pages alone', async () => {
-    server.fetchInstrumentTrades.mockResolvedValue({ ...data.trades, totalElements: 30, totalPages: 2, number: 3 });
-    await expect(renderPage({ tab: 'trades', page: '3' })).rejects.toThrow('REDIRECT /investments/i-infy?tab=trades&page=1');
-    redirect.mockClear();
-    await renderPage({ tab: 'trades', page: '1' });
-    server.fetchPricesPage.mockResolvedValue({ ...data.prices, items: [], totalElements: 0, totalPages: 0 });
-    await renderPage({ tab: 'prices' });
-    expect(redirect).not.toHaveBeenCalled();
-  });
-});
-
-describe('/investments/[instrumentId]: failures in the price dialogs', () => {
-  it('keeps the Edit dialog open and says so when the server refuses the new amount', async () => {
-    api.PUT.mockRejectedValue(new Error('refused'));
-    await renderPage({ tab: 'prices' });
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
-    fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1480' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the price', { tone: 'danger' }));
-    expect(screen.getByRole('dialog', { name: /Edit manual price/ })).toBeInTheDocument();
-    expect(router.refresh).not.toHaveBeenCalled();
-  });
 
   it('keeps the Set-price dialog open and says so when the server refuses the price', async () => {
     api.POST.mockRejectedValue(new Error('refused'));
@@ -575,5 +634,91 @@ describe('/investments/[instrumentId]: failures in the price dialogs', () => {
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the price', { tone: 'danger' }));
     expect(screen.getByRole('dialog', { name: /Set manual price/ })).toBeInTheDocument();
     expect(router.refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe('/investments/[instrumentId]: each list pages on its own', () => {
+  it('Trades: a page press reads that page from the server and shows its rows', async () => {
+    server.fetchInstrumentTrades.mockResolvedValue({ ...rawTrades(), totalElements: 30, totalPages: 3 });
+    await renderPage();
+    server.fetchInstrumentTrades.mockResolvedValue({
+      ...rawTrades(),
+      number: 1,
+      totalElements: 30,
+      totalPages: 3,
+      content: [buy({ id: 't9', brokerName: 'Kite', quantity: 7 })],
+    });
+    fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
+    await waitFor(() => expect(actions.loadTradesPage).toHaveBeenCalledWith('i-infy', 1));
+    expect((await screen.findAllByText('Kite')).length).toBeGreaterThan(0);
+  });
+
+  it('Dividends: pager above and below, a page press calls the dividends action', async () => {
+    server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 25, totalPages: 3 });
+    await renderPage();
+    const next = screen.getAllByRole('button', { name: /next/i });
+    expect(next.length).toBeGreaterThanOrEqual(2);
+    fireEvent.click(next[next.length - 1]);
+    await waitFor(() => expect(actions.loadDividendsPage).toHaveBeenCalledWith('i-infy', 1));
+  });
+
+  it('Corporate actions: pages are cut on the server, never in the browser', async () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({ ...(bonus as object), id: `ca${i}` })) as never[];
+    server.fetchInstrumentCorporateActions.mockResolvedValue(many);
+    await renderPage();
+    expect(screen.getAllByText('Bonus 1:1')).toHaveLength(10);
+    const next = screen.getAllByRole('button', { name: /next/i });
+    fireEvent.click(next[next.length - 1]);
+    await waitFor(() => expect(actions.loadCorporateActionsPage).toHaveBeenCalledWith('i-infy', 1));
+    await waitFor(() => expect(screen.getAllByText('Bonus 1:1')).toHaveLength(2));
+  });
+
+  it('keeps the page the user is on when the route refreshes with the same data, and resets when the data changed', async () => {
+    server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 25, totalPages: 3 });
+    const view = await renderPage();
+    server.fetchInstrumentDividends.mockResolvedValue({
+      ...rawDividends(),
+      number: 1,
+      totalElements: 25,
+      totalPages: 3,
+      content: [{ ...dividend, id: 'd2', perUnit: 9, amount: 540 }],
+    });
+    const next = screen.getAllByRole('button', { name: /next/i });
+    fireEvent.click(next[next.length - 1]);
+    expect(await screen.findByText('Dividend ₹9 / share')).toBeInTheDocument();
+
+    // A refresh (live prices, focus) renders the server's page 0 again, unchanged: the user stays on page 1.
+    server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 25, totalPages: 3 });
+    const ui = await (DsHoldingPage as (props: unknown) => Promise<React.ReactElement>)({ params: Promise.resolve({ instrumentId: 'i-infy' }) });
+    view.rerender(ui);
+    expect(screen.getByText('Dividend ₹9 / share')).toBeInTheDocument();
+
+    // A record that changes page 0 shows page 0.
+    server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 26, totalPages: 3, content: [{ ...dividend, id: 'd3', perUnit: 30, amount: 1800 }] });
+    const changed = await (DsHoldingPage as (props: unknown) => Promise<React.ReactElement>)({ params: Promise.resolve({ instrumentId: 'i-infy' }) });
+    view.rerender(changed);
+    expect(await screen.findByText('Dividend ₹30 / share')).toBeInTheDocument();
+  });
+
+  it('shows a toast and keeps the rows when a page cannot be read', async () => {
+    server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 25, totalPages: 3 });
+    await renderPage();
+    actions.loadDividendsPage.mockResolvedValue({ success: false, error: { message: 'Failed to load the dividends' } });
+    const next = screen.getAllByRole('button', { name: /next/i });
+    fireEvent.click(next[next.length - 1]);
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to load the dividends', { tone: 'danger' }));
+    expect(screen.getByText('Dividend ₹22 / share')).toBeInTheDocument();
+  });
+
+  it('has plain figures on desktop and ₹ on phone: no ₹ in the Price column or the P&L caption', async () => {
+    server.fetchInstrumentTrades.mockResolvedValue({
+      ...rawTrades(),
+      content: [buy({ id: 's1', type: 'sell', quantity: 10, price: 1500, realisedPnl: 800 })],
+    });
+    await renderPage();
+    expect(screen.getByText('1,500.00')).toBeInTheDocument();
+    expect(screen.getByText('15,000')).toBeInTheDocument();
+    expect(screen.getByText('₹15,000')).toBeInTheDocument();
+    expect(screen.getByText('P&L +800')).toBeInTheDocument();
   });
 });

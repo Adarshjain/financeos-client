@@ -54,7 +54,7 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('Sell', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('Buy', { exact: true }))).toBeVisible();
       if (viewport.phone) {
-        await expect(shown(page.getByText(/realised \+₹[\d,]+/))).toBeVisible();
+        await expect(page.getByText(/realised/)).toHaveCount(0);
         await expect(shown(page.getByText(/5 Oct · 50 units @ ₹100/))).toBeVisible();
       } else {
         for (const header of ['Date', 'Instrument', 'Type', 'Settlement', 'Qty', 'Price', 'Value', 'Charges']) {
@@ -168,15 +168,15 @@ for (const viewport of VIEWPORTS) {
     test('the settlement of a sell can be changed', async ({ page }) => {
       await page.goto('/investments/tradebook?type=sell');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.stock.symbol })));
-      await expect(dialog.getByRole('combobox', { name: /Settlement/ })).toContainText('Delivery');
+      await expect(dialog.getByRole('combobox', { name: /Settlement/ })).toContainText('CNC');
       await dialog.getByRole('combobox', { name: /Settlement/ }).click();
-      await page.getByRole('option', { name: 'Intraday' }).click();
+      await page.getByRole('option', { name: 'MIS' }).click();
       await expect(dialog.getByText(/^Net ₹/)).toBeVisible();
       await dialog.getByRole('button', { name: 'Save trade' }).click();
       await expect(page.getByText('Trade updated')).toBeVisible();
       await page.reload();
-      if (viewport.phone) await expect(shown(page.getByText(/· intraday/))).toBeVisible();
-      else await expect(shown(page.getByText('Intraday', { exact: true }))).toBeVisible();
+      await expect(shown(page.getByText('MIS', { exact: true }))).toBeVisible();
+      await expect(page.getByText('Intraday')).toHaveCount(0);
     });
 
     test('View job links the last import and the last reconcile to their exact jobs', async ({ page }) => {

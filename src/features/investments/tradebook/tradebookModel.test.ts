@@ -95,38 +95,39 @@ describe('fyOptions', () => {
 });
 
 describe('tradebookRow', () => {
-  it('draws a stock sell with its realised gain and settlement', () => {
+  it('draws a stock sell with its CNC tag and no realised figure', () => {
     const row = tradebookRow(trade());
     expect(row).toMatchObject({
       date: '1 Oct 26',
       title: 'TATAMOTORS',
       broker: 'Zerodha',
       side: 'Sell',
-      settlement: 'Delivery',
+      settlement: 'CNC',
       quantity: '50',
       pricePlain: '710.00',
       valuePlain: '35,500',
       value: '₹35,500',
       chargesPlain: '42.10',
     });
-    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710 · realised −₹13,500 · delivery');
-    expect(row.sub.realised?.tone).toBe('danger');
+    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710 · CNC');
+    expect(row.sub).toEqual({ date: '1 Oct', position: '50 @ ₹710' });
   });
 
   it('draws a fund buy in units with no settlement and zero charges', () => {
     const row = tradebookRow(fundBuy);
-    expect(row).toMatchObject({ title: 'Parag Parikh Flexi Cap', side: 'Buy', settlement: '—', chargesPlain: '0', valuePlain: '5,000' });
+    expect(row).toMatchObject({ title: 'Parag Parikh Flexi Cap', side: 'Buy', settlement: null, chargesPlain: '0', valuePlain: '5,000' });
     expect(subLineText(row)).toBe('5 Oct · 55.98 units @ ₹89.32');
   });
 
-  it('shows a buy without a realised figure, and a gain in the positive tone', () => {
-    expect(subLineText(tradebookRow(stockBuy))).toBe('21 May · 200 @ ₹62 · delivery');
-    const gain = tradebookRow(trade({ realisedPnl: 2425 }));
-    expect(gain.sub.realised).toEqual({ text: 'realised +₹2,425', tone: 'positive' });
+  it('shows a buy with its CNC tag, and never a realised figure whatever the trade earned', () => {
+    expect(subLineText(tradebookRow(stockBuy))).toBe('21 May · 200 @ ₹62 · CNC');
+    expect(subLineText(tradebookRow(trade({ realisedPnl: 2425 })))).toBe('1 Oct · 50 @ ₹710 · CNC');
   });
 
-  it('reads an intraday trade', () => {
-    expect(tradebookRow(trade({ settlementType: 'intraday' })).settlement).toBe('Intraday');
+  it('reads an intraday trade as MIS', () => {
+    const row = tradebookRow(trade({ settlementType: 'intraday' }));
+    expect(row.settlement).toBe('MIS');
+    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710 · MIS');
   });
 
   it('falls back to the name when there is no symbol, and names a trade for the delete prompt', () => {

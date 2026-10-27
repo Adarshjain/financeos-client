@@ -9,31 +9,11 @@ import {
   holdingFigures,
   holdingHeader,
   holdingHero,
-  holdingTabHref,
   instrumentRows,
-  parseHoldingTab,
-  parsePage,
   priceRow,
   sellLine,
   tradeRow,
 } from './holdingModel';
-
-describe('holding tabs', () => {
-  it('reads the tab and the page, falling back to Overview and the first page', () => {
-    expect(parseHoldingTab('trades')).toBe('trades');
-    expect(parseHoldingTab('nope')).toBe('overview');
-    expect(parseHoldingTab(undefined)).toBe('overview');
-    expect(parsePage('3')).toBe(3);
-    expect(parsePage('-2')).toBe(0);
-    expect(parsePage(undefined)).toBe(0);
-  });
-
-  it('keeps Overview and the first page out of the address', () => {
-    expect(holdingTabHref('i1', 'overview')).toBe('/investments/i1');
-    expect(holdingTabHref('i1', 'trades')).toBe('/investments/i1?tab=trades');
-    expect(holdingTabHref('i1', 'prices', 2)).toBe('/investments/i1?tab=prices&page=2');
-  });
-});
 
 describe('holdingHeader and holdingHero', () => {
   it('writes the title, badge and the particulars line', () => {

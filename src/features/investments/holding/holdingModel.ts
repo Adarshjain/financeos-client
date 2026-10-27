@@ -1,44 +1,20 @@
 import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import type { HoldingDetail, PricePoint, SellEstimate } from '@/lib/investments.types';
+import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 import { ratioText } from '../corporate-actions/corporateActionRatio';
 import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, TYPE_WORDS, unitPrice, unitWord } from '../investmentsFormat';
-import { holdingHref } from '../investmentsTabs';
 
-// ---- Tabs ----------------------------------------------------------------------
+// ---- Sections ------------------------------------------------------------------
 
-export type HoldingTab = 'overview' | 'trades' | 'dividends' | 'corporate-actions' | 'prices';
+/** Rows per page of each list on the holding page (Trades, Dividends, Corporate actions, Price history). */
+export const SECTION_PAGE_SIZE = 10;
 
-export const HOLDING_TABS: { id: HoldingTab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'trades', label: 'Trades' },
-  { id: 'dividends', label: 'Dividends' },
-  { id: 'corporate-actions', label: 'Corporate actions' },
-  { id: 'prices', label: 'Prices' },
-];
-
-export function parseHoldingTab(value: string | undefined): HoldingTab {
-  return HOLDING_TABS.some((t) => t.id === value) ? (value as HoldingTab) : 'overview';
+/** One page of a section's rows and where it stands; the server builds it, the card pages through it. */
+export interface HoldingSection<R> {
+  rows: R[];
+  position: PagePosition;
 }
-
-export function parsePage(value: string | undefined): number {
-  const page = Math.floor(Number(value));
-  return Number.isFinite(page) && page > 0 ? page : 0;
-}
-
-/** A holding's page on a tab: Overview is the plain address. */
-export function holdingTabHref(instrumentId: string, tab: HoldingTab, page = 0): string {
-  const query = new URLSearchParams();
-  if (tab !== 'overview') query.set('tab', tab);
-  if (page > 0) query.set('page', String(page));
-  const text = query.toString();
-  return text ? `${holdingHref(instrumentId)}?${text}` : holdingHref(instrumentId);
-}
-
-/** Rows per page on a tab's own list; Overview shows the newest of each section. */
-export const TAB_PAGE_SIZE = 25;
-export const OVERVIEW_SIZES = { trades: 10, dividends: 5, prices: 10 } as const;
 
 // ---- Header ----------------------------------------------------------------------
 

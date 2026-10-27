@@ -36,24 +36,22 @@ import { EditTradeDialog } from './TradeDialog';
 
 const ch = createDataTableColumnHelper<TradebookRow>();
 
-/** The phone's second line: "1 Oct · 50 @ ₹710 · realised −₹13,500 · delivery". */
+/** "CNC" (neutral) or "MIS" (info) for a stock trade; nothing for a fund. */
+function SettlementTag({ settlement }: { settlement: TradebookRow['settlement'] }) {
+  if (!settlement) return null;
+  return <Badge tone={settlement === 'MIS' ? 'info' : 'neutral'}>{settlement}</Badge>;
+}
+
+/** The phone's second line: "1 Oct · 50 @ ₹710" and the settlement tag. */
 function PhoneSub({ row }: { row: TradebookRow }) {
-  const { date, position, realised, settlement } = row.sub;
+  const { date, position } = row.sub;
   return (
-    <Text variant="label" tone="ink-3" truncate>
-      <Conceal>
-        {`${date} · ${position}`}
-        {realised ? (
-          <>
-            {' · '}
-            <Text variant="label" tone={realised.tone ?? 'ink-3'} as="span">
-              {realised.text}
-            </Text>
-          </>
-        ) : null}
-        {settlement ? ` · ${settlement}` : null}
-      </Conceal>
-    </Text>
+    <span className="flex items-center gap-space-8 min-w-0">
+      <Text variant="label" tone="ink-3" truncate>
+        <Conceal>{`${date} · ${position}`}</Conceal>
+      </Text>
+      <SettlementTag settlement={row.settlement} />
+    </span>
   );
 }
 
@@ -90,11 +88,7 @@ function columnsFor(onEdit: (row: TradebookRow) => void) {
       id: 'settlement',
       header: 'Settlement',
       meta: { size: 'sm', phone: 'hidden' },
-      cell: ({ row }) => (
-        <Text variant="body" tone={row.original.settlement === '—' ? 'ink-3' : undefined}>
-          {row.original.settlement}
-        </Text>
-      ),
+      cell: ({ row }) => <SettlementTag settlement={row.original.settlement} />,
     }),
     ch.display({
       id: 'qty',

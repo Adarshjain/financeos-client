@@ -73,6 +73,25 @@ function useCurrentPath(): string | null {
   }
 }
 
+/** The top bar of a page without backHref: bell, Search and Ask the data, then the page's own add. */
+function MainTopBar({ addActions, ...barProps }: React.ComponentProps<typeof TopBar> & { addActions: TopBarAction[] }) {
+  const notifications = useNotificationsAction();
+  const { open: openSearch } = useSearch();
+  // The Ask the data shortcut is left out of the bar on the Ask the data pages themselves.
+  const onChatPage = isChatPath(useCurrentPath());
+  return (
+    <TopBar
+      {...barProps}
+      actions={[
+        notifications,
+        { id: 'search', icon: 'search' as const, label: 'Search', phoneOnly: true, onSelect: openSearch },
+        ...shellTopBarActions.filter((a) => !(onChatPage && a.id === 'chat')),
+        ...addActions,
+      ]}
+    />
+  );
+}
+
 /** One signed-in page: the top bar with this page's title and +, then the content area. */
 export function ShellPage({
   title,
@@ -85,65 +104,64 @@ export function ShellPage({
   flushTop,
   children,
 }: ShellPageProps) {
-  const notifications = useNotificationsAction();
   const onBack = useBack(backHref);
-  const { open: openSearch } = useSearch();
-  // The Ask the data shortcut is left out of the bar on the Ask the data pages themselves.
-  const onChatPage = isChatPath(useCurrentPath());
+  // Detail pages (backHref) keep only back, title and their own add/menu: no bell, Search or Ask the data.
+  const addActions: TopBarAction[] = [
+    ...(addMenu
+      ? [
+          {
+            id: 'add',
+            icon: 'add' as const,
+            label: addLabel ?? 'Add',
+            variant: 'primary' as const,
+            showLabel: true,
+            labelIconSize: 'xs' as const,
+            menu: addMenu,
+          },
+        ]
+      : onAdd
+      ? [
+          {
+            id: 'add',
+            icon: 'add' as const,
+            label: addLabel ?? 'Add',
+            variant: 'primary' as const,
+            showLabel: true,
+            labelIconSize: 'xs' as const,
+            onSelect: onAdd,
+          },
+        ]
+      : addHref
+      ? [
+          {
+            id: 'add',
+            icon: 'add' as const,
+            label: addLabel ?? 'Add',
+            variant: 'primary' as const,
+            showLabel: true,
+            labelIconSize: 'xs' as const,
+            asChild: true,
+            children: <Link href={addHref} />,
+          },
+        ]
+      : []),
+  ];
+  const barProps = {
+    'data-view-transition': 'header',
+    className: 'sticky top-0 z-sticky',
+    title,
+    crumb,
+    leading: backHref ? undefined : <Logo variant="mark" />,
+    backHref,
+    onBack,
+  };
   return (
     <>
-      <TopBar
-        data-view-transition="header"
-        className="sticky top-0 z-sticky"
-        title={title}
-        crumb={crumb}
-        leading={backHref ? undefined : <Logo variant="mark" />}
-        backHref={backHref}
-        onBack={onBack}
-        actions={[
-          notifications,
-          { id: 'search', icon: 'search' as const, label: 'Search', phoneOnly: true, onSelect: openSearch },
-          ...shellTopBarActions.filter((a) => !(onChatPage && a.id === 'chat')),
-          ...(addMenu
-            ? [
-                {
-                  id: 'add',
-                  icon: 'add' as const,
-                  label: addLabel ?? 'Add',
-                  variant: 'primary' as const,
-                  showLabel: true,
-                  labelIconSize: 'xs' as const,
-                  menu: addMenu,
-                },
-              ]
-            : onAdd
-            ? [
-                {
-                  id: 'add',
-                  icon: 'add' as const,
-                  label: addLabel ?? 'Add',
-                  variant: 'primary' as const,
-                  showLabel: true,
-                  labelIconSize: 'xs' as const,
-                  onSelect: onAdd,
-                },
-              ]
-            : addHref
-            ? [
-                {
-                  id: 'add',
-                  icon: 'add' as const,
-                  label: addLabel ?? 'Add',
-                  variant: 'primary' as const,
-                  showLabel: true,
-                  labelIconSize: 'xs' as const,
-                  asChild: true,
-                  children: <Link href={addHref} />,
-                },
-              ]
-            : []),
-        ]}
-      />
+      {backHref ? (
+        <TopBar {...barProps} actions={addActions} />
+      ) : (
+        <MainTopBar {...barProps} addActions={addActions} />
+      )}
       {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included);
           isolate keeps their z-sticky inside the content, so the bar always draws above them. */}
       <main

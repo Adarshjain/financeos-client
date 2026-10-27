@@ -4,14 +4,11 @@ import { Card, Conceal, KpiTile, ListRow, ProgressBar, Text } from '@/components
 
 import { type HoldingsHeroModel, type HoldingsTile, type Mover, type TaxCardModel } from './holdingsModel';
 
-/** The phone's headline: current value, today's move, then Invested and Unrealised P&L side by side. Desktop shows tiles instead. */
+/** The phone's headline: current value (no label), today's move, then Invested and Unrealised P&L side by side. Desktop shows tiles instead. */
 export function HoldingsHero({ hero }: { hero: HoldingsHeroModel }) {
   return (
     <div className="desk:hidden flex flex-col gap-space-12">
       <div className="flex flex-col gap-space-2">
-        <Text variant="label" tone="ink-3" as="div">
-          Current value
-        </Text>
         <Text variant="hero-figure" family="display" as="div">
           {hero.value}
         </Text>

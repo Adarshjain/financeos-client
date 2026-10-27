@@ -228,5 +228,10 @@
   "name": "copy",
   "phosphor": "copy",
   "use": "Copy to clipboard"
+ },
+ {
+  "name": "clock-counter-clockwise",
+  "phosphor": "clock-counter-clockwise",
+  "use": "Price history (holding price chart card)"
  }
 ]

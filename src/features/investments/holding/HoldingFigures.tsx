@@ -29,16 +29,13 @@ export interface HoldingFiguresProps {
   hero: HoldingHeroModel;
   figures: HoldingFigure[];
   onOverride: () => void;
-  onRecordDividend: () => void;
-  onRecordCorporateAction: () => void;
 }
 
 /**
  * The top of a holding: its particulars, the current value with its move, and eight figures. The phone shows
- * the value as the hero and the figures as pairs; the desktop shows the value at the right with the record
- * links and the figures as tiles.
+ * the value as the hero and the figures as pairs; the desktop shows the figures as tiles.
  */
-export function HoldingFigures({ header, hero, figures, onOverride, onRecordDividend, onRecordCorporateAction }: HoldingFiguresProps) {
+export function HoldingFigures({ header, hero, figures, onOverride }: HoldingFiguresProps) {
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
       <div className="flex flex-col gap-space-12 desk:flex-row desk:items-end desk:justify-between">
@@ -50,12 +47,6 @@ export function HoldingFigures({ header, hero, figures, onOverride, onRecordDivi
         </div>
         <div className="flex items-end gap-space-16">
           <div className="flex flex-col gap-space-2">
-            <Text variant="label" tone="ink-3" as="div" className="desk:hidden">
-              Current value
-            </Text>
-            <Text variant="overline" tone="ink-3" as="div" className="max-desk:hidden">
-              Current value
-            </Text>
             <Text variant="hero-figure" family="display" as="div">
               {hero.value}
             </Text>
@@ -64,14 +55,6 @@ export function HoldingFigures({ header, hero, figures, onOverride, onRecordDivi
                 <Conceal>{hero.line.text}</Conceal>
               </Text>
             ) : null}
-          </div>
-          <div className="max-desk:hidden flex items-center gap-space-8">
-            <Button variant="secondary" onClick={onRecordDividend}>
-              Dividend
-            </Button>
-            <Button variant="secondary" onClick={onRecordCorporateAction}>
-              Corporate action
-            </Button>
           </div>
         </div>
       </div>
@@ -89,9 +72,6 @@ export function HoldingFigures({ header, hero, figures, onOverride, onRecordDivi
           </div>
         ))}
       </div>
-      <Button variant="secondary" fullWidth className="desk:hidden" onClick={onRecordDividend}>
-        Dividend
-      </Button>
 
       <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
         {figures.map((f) => (

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, EmptyState, SegmentedControl } from '@/components/ds';
+import { Button, Card, EmptyState, Icon, SegmentedControl } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
 import type { PriceHistoryPoint } from '@/lib/types';
 
@@ -10,17 +10,26 @@ import { CHART_RANGES, type ChartRange, priceChartData, pricesInRange, RANGE_TIT
 
 // The Dinero scale has no chart-height step (h-72 is dropped), so the frame takes the chart's height from its width: 16:9 on the phone, 21:9 on desktop.
 /** "Price · 1 year": the daily close over a range, from the stored price history. */
-export function PriceChartCard({ history }: { history: PriceHistoryPoint[] }) {
+export function PriceChartCard({ history, onOpenHistory }: { history: PriceHistoryPoint[] | null; onOpenHistory: () => void }) {
   const [range, setRange] = React.useState<ChartRange>('1y');
-  const points = React.useMemo(() => pricesInRange(history, range), [history, range]);
+  const points = React.useMemo(() => pricesInRange(history ?? [], range), [history, range]);
   return (
     <Card
       title={`Price · ${RANGE_TITLES[range]}`}
       subtitle="Daily close"
-      action={<SegmentedControl options={CHART_RANGES} value={range} onValueChange={setRange} aria-label="Range" />}
+      action={
+        <span className="flex items-center gap-space-8">
+          <SegmentedControl options={CHART_RANGES} value={range} onValueChange={setRange} aria-label="Range" />
+          <Button variant="ghost" size="sm" iconOnly aria-label="Price history" onClick={onOpenHistory}>
+            <Icon name="clock-counter-clockwise" size="sm" />
+          </Button>
+        </span>
+      }
     >
       <div className="px-space-16 pb-space-16">
-        {points.length < 2 ? (
+        {history === null ? (
+          <EmptyState compact description="The price chart could not be loaded." />
+        ) : points.length < 2 ? (
           <EmptyState compact description="Not enough prices to draw a chart yet." />
         ) : (
           <div className="aspect-video desk:aspect-wide">

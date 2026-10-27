@@ -111,6 +111,15 @@ describe('ShellPage back', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
+  it('detail pages (backHref) have no Notifications, Search or Ask the data in the bar', () => {
+    render(<ShellPage title="Detail" backHref="/accounts" addHref="/x/new" addLabel="Add thing">content</ShellPage>);
+    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Notifications' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Back' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Add thing/ })).toBeInTheDocument();
+  });
+
   it('falls back to the parent route on a direct landing', () => {
     render(<ShellPage title="Detail" backHref="/accounts">content</ShellPage>);
     fireEvent.click(screen.getByRole('link', { name: 'Back' }));

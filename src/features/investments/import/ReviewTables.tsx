@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Badge, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
 
 import { moveTone } from '../investmentsFormat';
@@ -84,10 +84,10 @@ export function ExecutionsTable({ executions, rowStates, setRowStates, locked }:
       header: 'CNC / MIS',
       meta: { size: 'sm', phone: 'status' },
       cell: ({ row }) => (
-        <Text variant="body" tone="ink-3" as="span">
-          <span className="desk:hidden">{`${row.original.side} · `}</span>
-          {row.original.settlement}
-        </Text>
+        <span className="flex items-center gap-space-8">
+          <Text variant="body" tone="ink-3" as="span" className="desk:hidden">{`${row.original.side} ·`}</Text>
+          <Badge tone={row.original.settlement === 'MIS' ? 'info' : 'neutral'}>{row.original.settlement}</Badge>
+        </span>
       ),
     }),
     exec.display({

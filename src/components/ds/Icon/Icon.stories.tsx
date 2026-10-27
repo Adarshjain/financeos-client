@@ -10,7 +10,7 @@ const meta: Meta<typeof Icon> = {
     docs: {
       description: {
         component:
-          'The one way to draw an icon in the new system: a Phosphor icon in the bold weight, picked by its name from the icon registry, at a token size, in currentColor.\n\nSizes: xs (10px) for the + in text links, sm (14px) for chips/carets, md (16px) for buttons/bars/rows, lg (20px) for tab bar/rail/selection bar.',
+          'The one way to draw an icon in the new system: a Phosphor icon in the duotone weight, picked by its name from the icon registry, at a token size, in currentColor.\n\nSizes: xs (10px) for the + in text links, sm (14px) for chips/carets, md (16px) for buttons/bars/rows, lg (20px) for tab bar/rail/selection bar.',
       },
     },
   },

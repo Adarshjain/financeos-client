@@ -16,6 +16,7 @@ export * from './Dialog/Dialog';
 export * from './Divider/Divider';
 export * from './DropZone/DropZone';
 export * from './EmptyState/EmptyState';
+export * from './FilterBar/FilterBar';
 export * from './FilterChip/FilterChip';
 export * from './Highlight/Highlight';
 export * from './Icon/Icon';
