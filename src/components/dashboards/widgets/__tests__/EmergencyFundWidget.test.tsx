@@ -181,7 +181,7 @@ describe('EmergencyFundWidget', () => {
     serve(fund({ accounts: [], liquidBalance: 0, historyMonths: 0, monthsCovered: null, band: null }));
     renderWithQuery(<EmergencyFundWidget />);
     expect(await screen.findByText('No bank or cash accounts')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/legacy/accounts');
   });
 
   it('every open bank / cash account is excluded: says so (not "add one") and links to accounts', async () => {
@@ -200,7 +200,7 @@ describe('EmergencyFundWidget', () => {
     expect(await screen.findByText('Your bank and cash accounts are excluded')).toBeInTheDocument();
     expect(screen.getByText(/Include one to see how long your money would last/)).toBeInTheDocument();
     expect(screen.queryByText('No bank or cash accounts')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/legacy/accounts');
   });
 
   it('the drill requests carry exactly the filters the server sums (liquid = net worth bank + wallet rows; outflow per month)', () => {

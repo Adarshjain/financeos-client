@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { Button } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import { usePortfolioSummary } from '@/lib/query/hooks/useInvestments';
 import type { InvestmentSummary } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -46,7 +47,7 @@ export function PortfolioSnapshotWidget({ className }: { className?: string }) {
         description="Add a trade or import from your broker to see your portfolio here."
         action={
           <Button asChild variant="link" size="xs">
-            <Link href="/investments">Go to investments</Link>
+            <Link href={legacyHref('/investments')}>Go to investments</Link>
           </Button>
         }
       />

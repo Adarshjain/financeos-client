@@ -378,12 +378,12 @@ function selfTest() {
     }
   }
   for (const [file, text, rule, bad] of [
-    ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ui/card';", 'old-import', true],
-    ['src/app/(ds)/ds/transactions/page.tsx', "import { useLoanDetail } from '@/app/(protected)/loans/[id]/components/useLoanDetail';", 'old-import', true],
-    ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
-    ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
-    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
-    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 desk:p-space-40">', 'page-styling', false],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ui/card';", 'old-import', true],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { useLoanDetail } from '@/app/(legacy)/legacy/(protected)/loans/[id]/components/useLoanDetail';", 'old-import', true],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
+    ['src/app/(ds)/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
+    ['src/app/(ds)/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 desk:p-space-40">', 'page-styling', false],
     ['src/components/ds/Dialog/Dialog.tsx', '<div className="hidden lg:flex">', 'breakpoint', true],
     ['src/components/ds/Dialog/Dialog.tsx', '<div className="max-md:hidden">', 'breakpoint', true],
     ['src/components/ds/Dialog/Dialog.tsx', '<div className="hidden desk:flex max-desk:pb-space-8">', 'breakpoint', false],

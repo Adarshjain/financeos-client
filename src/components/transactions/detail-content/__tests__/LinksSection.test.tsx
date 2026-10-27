@@ -129,7 +129,7 @@ describe('LinksSection', () => {
     expect(screen.getByText('₹500.00')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Open/i })).toHaveAttribute(
       'href',
-      '/loans/lendings/cp-1',
+      '/legacy/loans/lendings/cp-1',
     );
   });
 

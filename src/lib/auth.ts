@@ -78,8 +78,8 @@ export async function requireAuth(): Promise<UserResponse> {
 }
 
 /**
- * Sends the visitor to sign in. In the Dinero area they come back to this page afterwards (the proxy sets
- * x-pathname); Legacy keeps the plain /login.
+ * Sends the visitor to sign in (the Dinero login). They come back to this page afterwards, Legacy pages
+ * included (the proxy sets x-pathname).
  */
 export async function redirectToSignIn(): Promise<never> {
   const pathname = (await headers()).get('x-pathname');

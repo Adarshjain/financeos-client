@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/dashboards/d1', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboards/d1', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -209,7 +209,7 @@ describe('editing a dashboard', () => {
   });
 
   it('opens straight into editing with ?edit=1 (startEditing) and takes the flag off the address', () => {
-    window.history.replaceState(null, '', '/ds/dashboards/d1?edit=1');
+    window.history.replaceState(null, '', '/dashboards/d1?edit=1');
     show(<DashboardScreen dashboard={dashboard()} startEditing />);
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
     expect(window.location.search).toBe('');
@@ -358,7 +358,7 @@ describe('a new dashboard', () => {
   it('Cancel with nothing typed goes back to Dashboards', async () => {
     show(<DashboardScreen />);
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/dashboards');
+    expect(router.push).toHaveBeenCalledWith('/dashboards');
   });
 
   it('Cancel after typing asks first; Discard leaves', async () => {
@@ -367,7 +367,7 @@ describe('a new dashboard', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(router.push).not.toHaveBeenCalled();
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Discard' }));
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/dashboards'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/dashboards'));
   });
 
   it('Create without a name says so and creates nothing', async () => {
@@ -393,7 +393,7 @@ describe('a new dashboard', () => {
       isDefault: false,
       widgets: [{ kind: 'builtin', builtinKey: 'net_worth', layout: { x: 0, y: 0, w: 25 } }],
     });
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/ds/dashboards/new-id'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/dashboards/new-id'));
   });
 
   it('the top bar + opens a menu with Add widget and Add header; Add widget opens the picker', async () => {

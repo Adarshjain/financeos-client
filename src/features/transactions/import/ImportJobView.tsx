@@ -47,7 +47,7 @@ function FileSection({ file }: { file: FileSummary }) {
   );
 }
 
-/** /ds/transactions/import/[jobId]: one import: how it went overall, then a section per file. */
+/** /transactions/import/[jobId]: one import: how it went overall, then a section per file. */
 export function ImportJobView({ jobId }: { jobId: string }) {
   const { job, error } = useJobStatusPolling(jobId);
 

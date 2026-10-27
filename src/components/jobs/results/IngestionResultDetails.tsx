@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { legacyHref } from '@/features/shell/routes';
 import type { DuplicateDetail, FileIngestionResult, FileSummary } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
@@ -81,7 +82,7 @@ export function IngestionResultDetails({ result }: { result: FileIngestionResult
             <div>
               We found {result.totalDuplicatesFound} duplicate transaction(s). Markings applied as{' '}
               <Badge variant="warning" className="h-4 py-0 px-1 text-2xs">NEEDS_REVIEW</Badge>. Visit{' '}
-              <Link href="/transactions" className="underline font-bold">Transactions Page</Link> to resolve.
+              <Link href={legacyHref('/transactions')} className="underline font-bold">Transactions Page</Link> to resolve.
             </div>
 
             {result.duplicateDetails && result.duplicateDetails.length > 0 && (

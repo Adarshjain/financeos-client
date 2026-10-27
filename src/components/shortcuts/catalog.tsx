@@ -28,6 +28,7 @@ import {
   useShortcutCatalog as useBaseShortcutCatalog,
   useShortcuts as useBaseShortcuts,
 } from '@/features/dashboards/builtins/shortcuts/shortcutsCatalog';
+import { legacyHref } from '@/features/shell/routes';
 
 import { type DialogActionId, getAction } from './actions';
 
@@ -48,7 +49,7 @@ const iconEl = (icon: LucideIcon) => createElement(icon, { className: 'h-5 w-5' 
 function withIcon(item: BaseShortcutItem): ShortcutItem {
   switch (item.kind) {
     case 'page':
-      return { ...item, icon: Object.values(NAV_ITEMS).find((n) => n.href === item.href)?.icon ?? iconEl(LayoutDashboard) };
+      return { ...item, icon: Object.values(NAV_ITEMS).find((n) => n.href === legacyHref(item.href ?? ''))?.icon ?? iconEl(LayoutDashboard) };
     case 'action':
       return { ...item, icon: iconEl(getAction(item.id.slice('action:'.length))!.icon) };
     case 'account':

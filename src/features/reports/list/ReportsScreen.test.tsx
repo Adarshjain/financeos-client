@@ -94,7 +94,7 @@ describe('ReportsScreen list', () => {
   it('opens the editor on a row tap', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await user.click(within(screen.getByRole('table')).getByText('Net worth over time'));
-    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/reports/r2');
   });
 
   it('shows the empty state for no reports at all', () => {
@@ -138,9 +138,9 @@ describe('counts', () => {
 
   it('shows the dashboards count on its tab', () => {
     renderWithQuery(<ReportsScreen {...props({ dashboards: 3 })} />);
-    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/ds/dashboards');
+    expect(screen.getByRole('tab', { name: /^Dashboards\s*·\s*3$/ })).toHaveAttribute('href', '/dashboards');
     const reports = screen.getByRole('tab', { name: /^Reports\s*·\s*3$/ });
-    expect(reports).toHaveAttribute('href', '/ds/reports');
+    expect(reports).toHaveAttribute('href', '/reports');
     expect(reports).toHaveAttribute('data-state', 'active');
   });
 });
@@ -153,7 +153,7 @@ describe('toolbar', () => {
     const asks = screen.getAllByRole('link', { name: 'Ask the data' });
     expect(asks).toHaveLength(1);
     expect(asks[0]).toHaveAttribute('href', ASK_HREF);
-    expect(ASK_HREF).toBe('/ds/chat?q=dining%20spend%20per%20month%20on%20Regalia%2C%20this%20year');
+    expect(ASK_HREF).toBe('/chat?q=dining%20spend%20per%20month%20on%20Regalia%2C%20this%20year');
     const card = asks[0].closest('div[class*="rounded"]') as HTMLElement;
     expect(within(card).getByText('Ask instead')).toBeInTheDocument();
     expect(within(card).getByText('Chat turns a question into a saved report')).toBeInTheDocument();
@@ -166,12 +166,12 @@ describe('type chips', () => {
     const replace = vi.spyOn(window.history, 'replaceState');
     renderWithQuery(<ReportsScreen {...props({ type: 'KPI' })} />);
     await user.click(screen.getByRole('button', { name: /^Chart/ }));
-    expect(replace).toHaveBeenLastCalledWith(null, '', '/ds/reports?type=CHART');
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/reports?type=CHART');
     const table = screen.getByRole('table');
     expect(within(table).getByText('Rewards earned by card')).toBeInTheDocument();
     expect(within(table).queryByText('Net worth over time')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'All' }));
-    expect(replace).toHaveBeenLastCalledWith(null, '', '/ds/reports');
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/reports');
     expect(within(screen.getByRole('table')).getByText('Net worth over time')).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
     expect(router.refresh).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe('row menu', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await openMenu('Net worth over time');
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/reports/r2');
   });
 
   it('Duplicate copies the report, toasts with Undo, and Undo deletes the copy', async () => {
@@ -351,7 +351,7 @@ describe('row menu', () => {
     expect(router.push).not.toHaveBeenCalled();
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/ds/reports/r2');
+    expect(router.push).toHaveBeenCalledWith('/reports/r2');
   });
 
   it('a phone row reads name, then type, datasource, dashboards and updated on one line', () => {

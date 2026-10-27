@@ -18,7 +18,7 @@ let search = '';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, replace, refresh }),
   useSearchParams: () => new URLSearchParams(search),
-  usePathname: () => '/ds/notifications',
+  usePathname: () => '/notifications',
 }));
 
 import { api } from '@/lib/api/client';
@@ -60,7 +60,7 @@ describe('NotificationsPage', () => {
     renderWithQuery(<NotificationsPage />);
     const rows = await screen.findAllByTestId('notification-row');
     fireEvent.click(rows[0]);
-    expect(push).toHaveBeenCalledWith('/ds/settings/activity?job=j1');
+    expect(push).toHaveBeenCalledWith('/settings/activity?job=j1');
     push.mockClear();
     fireEvent.click(rows[1]);
     expect(push).not.toHaveBeenCalled();
@@ -160,7 +160,7 @@ describe('NotificationsPage', () => {
     await screen.findByText('Sync done');
     serve(mockApi, feedPage([], { totalElements: 20, totalPages: 1 }), 0);
     fireEvent.click(within(screen.getAllByTestId('notification-row')[0]).getByRole('button', { name: 'Clear' }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/ds/notifications', { scroll: false }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/notifications', { scroll: false }));
   });
 
   it('a failed clear of the last row of a later page stays on that page', async () => {
@@ -185,10 +185,10 @@ describe('NotificationsPage', () => {
     expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 1, size: 20 } } });
     expect(screen.getAllByRole('button', { name: 'Next page' })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Previous page' })[0]);
-    expect(push).toHaveBeenCalledWith('/ds/notifications', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/notifications', { scroll: false });
     push.mockClear();
     fireEvent.click((await screen.findAllByRole('button', { name: 'Next page' }))[1]);
-    expect(push).toHaveBeenCalledWith('/ds/notifications?page=1', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/notifications?page=1', { scroll: false });
   });
 
   it('no pager for a single page', async () => {

@@ -67,7 +67,7 @@ describe('auth server actions (WP-3)', () => {
     vi.mocked(authApi.logout).mockResolvedValue(undefined);
     await logout();
     expect(clearSessionCookie).toHaveBeenCalled();
-    expect(mockRedirect).toHaveBeenCalledWith('/login');
+    expect(mockRedirect).toHaveBeenCalledWith('/legacy/login');
   });
 
   it('logoutToDinero clears the cookie and redirects to the Dinero login', async () => {

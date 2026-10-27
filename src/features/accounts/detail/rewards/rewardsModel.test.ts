@@ -135,7 +135,7 @@ describe('parseRewardsQuery / rewardsHref', () => {
     expect(parseRewardsQuery(undefined, [])).toEqual({ ruleId: undefined, page: 0, size: 10 });
   });
   it('writes only non-default params', () => {
-    const base = '/ds/accounts/c1/rewards';
+    const base = '/accounts/c1/rewards';
     expect(rewardsHref(base, { page: 0, size: 10 })).toBe(base);
     expect(rewardsHref(base, { ruleId: 'r1', page: 1, size: 50 })).toBe(`${base}?rule=r1&page=2&size=50`);
   });

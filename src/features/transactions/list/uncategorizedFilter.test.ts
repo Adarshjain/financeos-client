@@ -9,7 +9,7 @@ describe('the Uncategorized filter', () => {
   it('reads uncategorized=1 from the address and writes it back', () => {
     const q = parseTransactionsUrl({ uncategorized: '1' });
     expect(q.uncategorized).toBe(true);
-    expect(transactionsUrl(q)).toBe('/ds/transactions?uncategorized=1');
+    expect(transactionsUrl(q)).toBe('/transactions?uncategorized=1');
     expect(parseTransactionsUrl({}).uncategorized).toBe(false);
   });
   it('sends the valueless is_empty clause on category', () => {

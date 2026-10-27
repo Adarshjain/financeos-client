@@ -10,6 +10,7 @@ import { JobResultDetails } from '@/components/jobs/results';
 import { Button } from '@/components/ui/button';
 import { formatDuration, getJobTypeLabel } from '@/features/jobs/jobUtils';
 import { useJobsListPolling } from '@/features/jobs/useJobsListPolling';
+import { legacyHref } from '@/features/shell/routes';
 import type { JobType } from '@/lib/types';
 
 interface JobsPanelProps {
@@ -23,7 +24,7 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
   const hasLocalActiveJob = jobs.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
 
   const viewAllHref =
-    types.length === 1 ? `/settings/activity?type=${types[0]}` : '/settings/activity';
+    legacyHref(types.length === 1 ? `/settings/activity?type=${types[0]}` : '/settings/activity');
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 space-y-3 shadow-sm">

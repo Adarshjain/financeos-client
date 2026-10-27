@@ -83,7 +83,7 @@ describe('MilestoneProgressView', () => {
     expect(rows[0]).toHaveTextContent('54%');
     expect(rows[0]).toHaveTextContent('₹1,62,000.00 of ₹3,00,000.00 · 10 days left · ₹13,800.00/day to hit it');
     expect(rows[0]).toHaveTextContent('Pays points');
-    expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/rewards?account=c1');
+    expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/legacy/rewards?account=c1');
     expect(rows[1]).toHaveTextContent('1 day left');
     expect(rows[1]).toHaveTextContent('Pays cash');
   });
@@ -153,7 +153,7 @@ describe('cap headroom', () => {
     expect(rows[1]).toHaveTextContent('₹4,600.00 of ₹5,000.00');
     expect(rows[2]).not.toHaveTextContent('All cardholders');
     expect(within(rows[2]).getByText('60%')).toHaveClass('text-slate-600');
-    expect(within(rows[1]).getByRole('link')).toHaveAttribute('href', '/rewards?account=c3');
+    expect(within(rows[1]).getByRole('link')).toHaveAttribute('href', '/legacy/rewards?account=c3');
   });
 
   it('empty: no caps this cycle', () => {
@@ -215,7 +215,7 @@ describe('rewards earned', () => {
     const rows = screen.getAllByTestId('rewards-row');
     expect(rows[0]).toHaveTextContent('Atlas42,300 pts ≈ ₹14,100');
     expect(within(rows[0]).queryByText('Set value')).not.toBeInTheDocument();
-    expect(within(rows[2]).getByRole('link', { name: 'Set value' })).toHaveAttribute('href', '/rewards/rules?account=c4');
+    expect(within(rows[2]).getByRole('link', { name: 'Set value' })).toHaveAttribute('href', '/legacy/rewards/rules?account=c4');
   });
 
   it('the headline opens the FY rewards; a card opens its own', async () => {

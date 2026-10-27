@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChatRecord, Conversation, ConversationSummary } from './conversation.types';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), back: vi.fn() }));
-const nav = vi.hoisted(() => ({ pathname: '/ds/chat' }));
+const nav = vi.hoisted(() => ({ pathname: '/chat' }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => nav.pathname }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationSummary: () => ({ data: { unread: 0 } }),
@@ -48,7 +48,7 @@ const stored: Conversation = { id: 'c1', title: 'Spend', createdAt: '', updatedA
 
 beforeEach(() => {
   vi.clearAllMocks();
-  nav.pathname = '/ds/chat';
+  nav.pathname = '/chat';
   convo.state = { records: [], busy: false, conversationId: null, title: null };
   convo.send.mockResolvedValue(undefined);
   actions.rename.mockResolvedValue({ success: true, data: { title: 'Renamed' } });
@@ -86,7 +86,7 @@ describe('ChatScreen, a new chat', () => {
     render(<ChatScreen {...props} />);
     expect(screen.getByText('Insights')).toBeInTheDocument();
     expect(screen.getAllByText('Ask the data').length).toBeGreaterThan(0);
-    expect(screen.getByRole('link', { name: 'New chat' })).toHaveAttribute('href', '/ds/chat');
+    expect(screen.getByRole('link', { name: 'New chat' })).toHaveAttribute('href', '/chat');
   });
 
   it('sends ?q= once on mount, also when React runs the effect twice', () => {
@@ -116,7 +116,7 @@ describe('ChatScreen, history', () => {
     const replace = vi.spyOn(window.history, 'replaceState');
     const { rerender } = render(<ChatScreen {...props} />);
     act(() => convo.options.onConversationCreated?.('c9'));
-    expect(replace).toHaveBeenCalledWith(null, '', '/ds/chat/c9');
+    expect(replace).toHaveBeenCalledWith(null, '', '/chat/c9');
     convo.state = { ...convo.state, conversationId: 'c9', records: [{ kind: 'user', id: 'u', text: 'hi' }] };
     rerender(<ChatScreen {...props} />);
     expect(screen.getAllByText('New chat').length).toBeGreaterThan(0);
@@ -174,7 +174,7 @@ describe('ChatScreen, history', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete chat' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete chat' }));
     await waitFor(() => expect(actions.remove).toHaveBeenCalledWith('c1'));
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/chat'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/chat'));
   });
 });
 
@@ -201,7 +201,7 @@ describe('ChatScreen, a conversation', () => {
     render(<ChatScreen {...props} initial={stored} />);
     expect(screen.getAllByText('Spend in the last 90 days').length).toBeGreaterThan(1);
     fireEvent.click(screen.getByRole('link', { name: 'Back' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/chat');
+    expect(router.push).toHaveBeenCalledWith('/chat');
   });
 
   it('shows Stop and the hint while answering, and Stop stops', () => {
@@ -241,11 +241,11 @@ describe('ChatScreen, a conversation', () => {
 
   it('starts a fresh session when the path goes back to a new chat', () => {
     convo.state = { ...convo.state, conversationId: 'c1', records };
-    nav.pathname = '/ds/chat/c1';
+    nav.pathname = '/chat/c1';
     const { rerender } = render(<ChatScreen {...props} initial={stored} />);
     expect(screen.getByText('On food.')).toBeInTheDocument();
     convo.state = { ...convo.state, conversationId: null, records: [] };
-    nav.pathname = '/ds/chat';
+    nav.pathname = '/chat';
     rerender(<ChatScreen {...props} />);
     expect(screen.getByRole('heading', { name: 'What do you want to know?' })).toBeInTheDocument();
   });

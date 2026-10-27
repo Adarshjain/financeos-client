@@ -19,7 +19,7 @@ describe('ShellPage top-bar actions', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);
     expect(screen.getByRole('link', { name: 'Ask the data' })).toHaveAttribute(
       'href',
-      '/ds/chat',
+      '/chat',
     );
     expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
   });
@@ -38,7 +38,7 @@ describe('ShellPage top-bar actions', () => {
 
   it('puts the add action after the shared actions, labelled on desktop only', () => {
     render(
-      <ShellPage title="Accounts" addHref="/ds/accounts/new" addLabel="Add account">
+      <ShellPage title="Accounts" addHref="/accounts/new" addLabel="Add account">
         content
       </ShellPage>,
     );
@@ -47,14 +47,14 @@ describe('ShellPage top-bar actions', () => {
       .map((l) => l.getAttribute('aria-label'));
     expect(links).toEqual(['Ask the data', 'Add account']);
     const add = screen.getByRole('link', { name: 'Add account' });
-    expect(add).toHaveAttribute('href', '/ds/accounts/new');
+    expect(add).toHaveAttribute('href', '/accounts/new');
     expect(add.querySelector('span.hidden.desk\\:inline')?.textContent).toBe(
       'Add account',
     );
   });
 
   it('calls onAdd for a same-page add instead of navigating or changing the URL', () => {
-    window.history.replaceState(null, '', '/ds/accounts');
+    window.history.replaceState(null, '', '/accounts');
     const push = vi.spyOn(window.history, 'pushState');
     const onAdd = vi.fn();
     render(
@@ -101,20 +101,20 @@ describe('ShellPage back', () => {
   });
 
   it('goes back in history when the user arrived from inside the app', () => {
-    commitRoute('/ds/accounts');
-    commitRoute('/ds/accounts/1');
-    render(<ShellPage title="Detail" backHref="/ds/accounts">content</ShellPage>);
+    commitRoute('/accounts');
+    commitRoute('/accounts/1');
+    render(<ShellPage title="Detail" backHref="/accounts">content</ShellPage>);
     const back = screen.getByRole('link', { name: 'Back' });
-    expect(back).toHaveAttribute('href', '/ds/accounts');
+    expect(back).toHaveAttribute('href', '/accounts');
     fireEvent.click(back);
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(router.push).not.toHaveBeenCalled();
   });
 
   it('falls back to the parent route on a direct landing', () => {
-    render(<ShellPage title="Detail" backHref="/ds/accounts">content</ShellPage>);
+    render(<ShellPage title="Detail" backHref="/accounts">content</ShellPage>);
     fireEvent.click(screen.getByRole('link', { name: 'Back' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/accounts');
+    expect(router.push).toHaveBeenCalledWith('/accounts');
     expect(router.back).not.toHaveBeenCalled();
   });
 });
@@ -122,7 +122,7 @@ describe('ShellPage back', () => {
 describe('ShellPage on the Ask the data pages', () => {
   it('leaves the Ask the data shortcut out of the bar (it is the current page)', async () => {
     vi.resetModules();
-    vi.doMock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }), usePathname: () => '/ds/chat/c1' }));
+    vi.doMock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }), usePathname: () => '/chat/c1' }));
     const { ShellPage: Page } = await import('../ShellPage');
     render(<Page title="Spend">content</Page>);
     expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();

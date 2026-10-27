@@ -12,11 +12,11 @@ function Page({ active }: { active: boolean }) {
   const guard = useLeaveGuard(active);
   return (
     <div>
-      <Link href="/ds/reports">Reports</Link>
-      <Link href="/ds/reports/new#top">Same page hash</Link>
+      <Link href="/reports">Reports</Link>
+      <Link href="/reports/new#top">Same page hash</Link>
       <a href="https://example.com/x">Outside</a>
-      <Link href="/ds/inbox" target="_blank">New tab</Link>
-      <button onClick={() => guard.requestLeave('/ds/reports')}>Cancel</button>
+      <Link href="/inbox" target="_blank">New tab</Link>
+      <button onClick={() => guard.requestLeave('/reports')}>Cancel</button>
       <output data-testid="pending">{guard.pendingHref ?? ''}</output>
       <button onClick={guard.confirmLeave}>Leave</button>
       <button onClick={guard.cancelLeave}>Stay</button>
@@ -26,7 +26,7 @@ function Page({ active }: { active: boolean }) {
 
 beforeEach(() => {
   push.mockClear();
-  window.history.replaceState(null, '', '/ds/reports/new');
+  window.history.replaceState(null, '', '/reports/new');
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -44,7 +44,7 @@ describe('useLeaveGuard', () => {
     render(<Page active />);
     const notPrevented = fireEvent.click(screen.getByText('Reports'));
     expect(notPrevented).toBe(false);
-    expect(pending()).toBe('/ds/reports');
+    expect(pending()).toBe('/reports');
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -67,7 +67,7 @@ describe('useLeaveGuard', () => {
     expect(push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByText('Reports'));
     fireEvent.click(screen.getByText('Leave'));
-    expect(push).toHaveBeenCalledWith('/ds/reports');
+    expect(push).toHaveBeenCalledWith('/reports');
     expect(pending()).toBe('');
   });
 
@@ -84,12 +84,12 @@ describe('useLeaveGuard', () => {
   it('asks before a button that navigates from code, and goes at once when nothing is unsaved', () => {
     const { rerender } = render(<Page active />);
     fireEvent.click(screen.getByText('Cancel'));
-    expect(pending()).toBe('/ds/reports');
+    expect(pending()).toBe('/reports');
     expect(push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByText('Stay'));
     rerender(<Page active={false} />);
     fireEvent.click(screen.getByText('Cancel'));
-    expect(push).toHaveBeenCalledWith('/ds/reports');
+    expect(push).toHaveBeenCalledWith('/reports');
   });
 
   it('shows the browser prompt on close or reload only while work is unsaved', () => {
@@ -109,12 +109,12 @@ describe('useLeaveGuard', () => {
     window.addEventListener('popstate', reachedRouter);
     render(<Page active />);
     // The browser has moved to the previous page by the time popstate fires.
-    window.history.replaceState(null, '', '/ds/reports');
+    window.history.replaceState(null, '', '/reports');
     act(() => {
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(pending()).toBe('/ds/reports');
-    expect(pushState).toHaveBeenCalledWith(null, '', '/ds/reports/new');
+    expect(pending()).toBe('/reports');
+    expect(pushState).toHaveBeenCalledWith(null, '', '/reports/new');
     expect(reachedRouter).not.toHaveBeenCalled();
     window.removeEventListener('popstate', reachedRouter);
   });
@@ -132,7 +132,7 @@ describe('useLeaveGuard', () => {
 
     const pressBack = () => {
       nav.currentEntry.index = 4;
-      window.history.replaceState({ page: 'previous' }, '', '/ds/reports');
+      window.history.replaceState({ page: 'previous' }, '', '/reports');
       act(() => {
         window.dispatchEvent(new PopStateEvent('popstate'));
       });
@@ -141,21 +141,21 @@ describe('useLeaveGuard', () => {
     };
 
     it('restores the protected page’s own history state, then steps back once with no extra entry', () => {
-      window.history.replaceState({ page: 'protected' }, '', '/ds/reports/new');
+      window.history.replaceState({ page: 'protected' }, '', '/reports/new');
       const pushState = vi.spyOn(window.history, 'pushState');
       const go = vi.spyOn(window.history, 'go').mockImplementation(() => undefined);
       render(<Page active />);
 
       pressBack();
-      expect(pending()).toBe('/ds/reports');
-      expect(pushState).toHaveBeenCalledWith({ page: 'protected' }, '', '/ds/reports/new');
+      expect(pending()).toBe('/reports');
+      expect(pushState).toHaveBeenCalledWith({ page: 'protected' }, '', '/reports/new');
       fireEvent.click(screen.getByText('Stay'));
       expect(pending()).toBe('');
       expect(go).not.toHaveBeenCalled();
 
-      window.history.replaceState({ page: 'protected' }, '', '/ds/reports/new');
+      window.history.replaceState({ page: 'protected' }, '', '/reports/new');
       pressBack();
-      expect(pending()).toBe('/ds/reports');
+      expect(pending()).toBe('/reports');
       fireEvent.click(screen.getByText('Leave'));
       expect(go).toHaveBeenCalledWith(-1);
       expect(push).not.toHaveBeenCalled();
@@ -166,12 +166,12 @@ describe('useLeaveGuard', () => {
       const go = vi.spyOn(window.history, 'go').mockImplementation(() => undefined);
       render(<Page active />);
       nav.currentEntry.index = 6;
-      window.history.replaceState(null, '', '/ds/inbox');
+      window.history.replaceState(null, '', '/inbox');
       act(() => {
         window.dispatchEvent(new PopStateEvent('popstate'));
       });
       fireEvent.click(screen.getByText('Leave'));
-      expect(push).toHaveBeenCalledWith('/ds/inbox');
+      expect(push).toHaveBeenCalledWith('/inbox');
       expect(go).not.toHaveBeenCalled();
     });
   });
@@ -197,7 +197,7 @@ describe('useLeaveGuard', () => {
     const navigate = (init: { type?: string; url?: string; key?: string; sameDocument?: boolean; cancelable?: boolean } = {}) => {
       const event = Object.assign(new Event('navigate', { cancelable: init.cancelable ?? true }), {
         navigationType: init.type ?? 'traverse',
-        destination: { url: `${window.location.origin}${init.url ?? '/ds/reports'}`, key: init.key ?? 'k-list', sameDocument: init.sameDocument ?? true },
+        destination: { url: `${window.location.origin}${init.url ?? '/reports'}`, key: init.key ?? 'k-list', sameDocument: init.sameDocument ?? true },
       });
       act(() => {
         navigation.dispatchEvent(event);
@@ -209,7 +209,7 @@ describe('useLeaveGuard', () => {
       render(<Page active />);
       const event = navigate();
       expect(event.defaultPrevented).toBe(true);
-      expect(pending()).toBe('/ds/reports');
+      expect(pending()).toBe('/reports');
       fireEvent.click(screen.getByText('Leave'));
       expect(navigation.traverseTo).toHaveBeenCalledWith('k-list');
       expect(push).not.toHaveBeenCalled();
@@ -217,8 +217,8 @@ describe('useLeaveGuard', () => {
 
     it('asks even when Back leads to an entry with this same address', () => {
       render(<Page active />);
-      expect(navigate({ url: '/ds/reports/new' }).defaultPrevented).toBe(true);
-      expect(pending()).toBe('/ds/reports/new');
+      expect(navigate({ url: '/reports/new' }).defaultPrevented).toBe(true);
+      expect(pending()).toBe('/reports/new');
     });
 
     it('stays after Stay: nothing moves, and the next Leave answers a new question only', () => {
@@ -230,7 +230,7 @@ describe('useLeaveGuard', () => {
       fireEvent.click(screen.getByText('Cancel'));
       fireEvent.click(screen.getByText('Leave'));
       expect(navigation.traverseTo).not.toHaveBeenCalled();
-      expect(push).toHaveBeenCalledWith('/ds/reports');
+      expect(push).toHaveBeenCalledWith('/reports');
     });
 
     it('lets Back through when nothing is unsaved, and leaves pushes, other documents and uncancellable steps alone', () => {
@@ -257,7 +257,7 @@ describe('useLeaveGuard', () => {
       render(<Page active />);
       navigate();
       fireEvent.click(screen.getByText('Leave'));
-      expect(push).toHaveBeenCalledWith('/ds/reports');
+      expect(push).toHaveBeenCalledWith('/reports');
     });
 
     it('goes by address when the traverse to that entry fails afterwards', async () => {
@@ -266,7 +266,7 @@ describe('useLeaveGuard', () => {
       navigate();
       fireEvent.click(screen.getByText('Leave'));
       await act(async () => undefined);
-      expect(push).toHaveBeenCalledWith('/ds/reports');
+      expect(push).toHaveBeenCalledWith('/reports');
     });
 
     it('a Back answered Stay does not turn a later link Leave into a Back', () => {
@@ -276,7 +276,7 @@ describe('useLeaveGuard', () => {
       fireEvent.click(screen.getByText('Reports'));
       fireEvent.click(screen.getByText('Leave'));
       expect(navigation.traverseTo).not.toHaveBeenCalled();
-      expect(push).toHaveBeenCalledWith('/ds/reports');
+      expect(push).toHaveBeenCalledWith('/reports');
     });
 
     it('stops listening when the page goes away', () => {

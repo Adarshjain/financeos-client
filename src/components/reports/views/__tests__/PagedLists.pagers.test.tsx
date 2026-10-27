@@ -41,9 +41,9 @@ vi.mock(
   async () => (await import('@/test/mockSelect')).selectMock
 );
 
-import { LoansList } from '@/app/(legacy)/(protected)/loans/browser/LoansList';
-import { CounterpartiesList } from '@/app/(legacy)/(protected)/loans/lendings/browser/CounterpartiesList';
-import { JobsHistoryTable } from '@/app/(legacy)/(protected)/settings/activity/components/JobsHistoryTable';
+import { LoansList } from '@/app/(legacy)/legacy/(protected)/loans/browser/LoansList';
+import { CounterpartiesList } from '@/app/(legacy)/legacy/(protected)/loans/lendings/browser/CounterpartiesList';
+import { JobsHistoryTable } from '@/app/(legacy)/legacy/(protected)/settings/activity/components/JobsHistoryTable';
 import { RewardLinesTable } from '@/components/rewards/browser/RewardLinesTable';
 import { api } from '@/lib/api/client';
 import type { JobResponse } from '@/lib/jobs.types';
@@ -244,13 +244,13 @@ describe('Activity (jobs history) pagers', () => {
       within(bottomPager()).getByRole('button', { name: 'Page 4' })
     );
     expect(push).toHaveBeenCalledWith(
-      '/settings/activity?status=FAILED&page=3',
+      '/legacy/settings/activity?status=FAILED&page=3',
       { scroll: false }
     );
 
     const top = screen.getAllByRole('navigation', { name: 'Pagination' })[0];
     fireEvent.click(within(top).getByRole('button', { name: 'Previous page' }));
-    expect(push).toHaveBeenLastCalledWith('/settings/activity?status=FAILED', {
+    expect(push).toHaveBeenLastCalledWith('/legacy/settings/activity?status=FAILED', {
       scroll: false,
     });
   });

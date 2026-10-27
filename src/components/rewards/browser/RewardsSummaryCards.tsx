@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { legacyHref } from '@/features/shell/routes';
 import { RewardReport } from '@/lib/rewards.types';
 import { cn, formatMoney } from '@/lib/utils';
 
@@ -42,7 +43,7 @@ export function RewardsSummaryCards({
               unattributed and could not match card-scoped rules or limits.
             </span>
             <Link
-              href="/accounts"
+              href={legacyHref('/accounts')}
               className="shrink-0 text-xs font-semibold underline text-amber-700 dark:text-amber-400 hover:text-amber-800"
             >
               Manage cards

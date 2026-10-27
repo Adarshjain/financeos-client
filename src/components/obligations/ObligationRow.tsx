@@ -10,6 +10,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import {
   daysText,
   obligationHref,
@@ -52,7 +53,7 @@ export function ObligationRow({ item, highlighted, onMarkPaid }: ObligationRowPr
   const canMarkPaid = item.type === 'card_bill' && Boolean(item.statementId) && onMarkPaid;
   const uploadHref =
     item.type === 'statement_expected' && item.accountId
-      ? `/transactions/import?account=${item.accountId}`
+      ? legacyHref(`/transactions/import?account=${item.accountId}`)
       : null;
 
   return (
@@ -125,7 +126,7 @@ export function ObligationRow({ item, highlighted, onMarkPaid }: ObligationRowPr
         )}
         {href && (
           <Button variant="ghost" size="icon-sm" asChild className="text-slate-400">
-            <Link href={href} aria-label="Open">
+            <Link href={legacyHref(href)} aria-label="Open">
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

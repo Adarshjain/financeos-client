@@ -15,6 +15,7 @@ import {
   updateTextWidget,
   withHeaderOnTop,
 } from '@/features/dashboards/editor/dashboardEditor.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import { api } from '@/lib/api/client';
 import { toDashboardWidget, validateWidgets } from '@/lib/dashboards.helpers';
 import type {
@@ -147,12 +148,12 @@ export function useDashboardEditor({
 
   const discardAndExit = () => {
     if (mode === 'create') {
-      router.push('/dashboards');
+      router.push(legacyHref('/dashboards'));
       return;
     }
     if (!editing) {
       if (onExit) onExit();
-      else router.push('/dashboards');
+      else router.push(legacyHref('/dashboards'));
       return;
     }
     const n = saved?.name ?? '';
@@ -199,7 +200,7 @@ export function useDashboardEditor({
         mode === 'edit' ? 'Dashboard saved' : 'Dashboard created'
       );
       if (mode === 'create') {
-        router.push(`/dashboards/${data.id}`);
+        router.push(legacyHref(`/dashboards/${data.id}`));
       } else {
         setSaved(data);
         setWidgets(data.widgets);

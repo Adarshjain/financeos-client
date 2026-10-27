@@ -144,7 +144,7 @@ describe('GmailSyncResultDetails run detail', () => {
     );
     fireEvent.click(screen.getByText('Statements reconciled (1)'));
 
-    expect(screen.getByRole('link', { name: 'Amex Plat' })).toHaveAttribute('href', '/accounts/acc-1');
+    expect(screen.getByRole('link', { name: 'Amex Plat' })).toHaveAttribute('href', '/legacy/accounts/acc-1');
     expect(screen.getByText('Card / a/c ••1005')).toBeInTheDocument();
     expect(screen.getByText('File: Oct.pdf')).toBeInTheDocument();
     expect(screen.getByText(/7 new transactions, 3 matched to\s+existing alerts/)).toBeInTheDocument();
@@ -167,11 +167,11 @@ describe('GmailSyncResultDetails run detail', () => {
     );
 
     expect(screen.getByText('No single account matches card/account ending 5555')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Assign an account in Gmail settings' })).toHaveAttribute('href', '/settings/gmail');
-    expect(screen.getByRole('link', { name: 'Set ingest date' })).toHaveAttribute('href', '/accounts/acc-9');
-    expect(screen.getByRole('link', { name: 'Set the statement password on the account' })).toHaveAttribute('href', '/accounts');
-    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/settings/gmail');
-    expect(screen.getByRole('link', { name: 'Import manually' })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.getByRole('link', { name: 'Assign an account in Gmail settings' })).toHaveAttribute('href', '/legacy/settings/gmail');
+    expect(screen.getByRole('link', { name: 'Set ingest date' })).toHaveAttribute('href', '/legacy/accounts/acc-9');
+    expect(screen.getByRole('link', { name: 'Set the statement password on the account' })).toHaveAttribute('href', '/legacy/accounts');
+    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/legacy/settings/gmail');
+    expect(screen.getByRole('link', { name: 'Import manually' })).toHaveAttribute('href', '/legacy/transactions/import');
     expect(screen.getByText(/no more automatic retries/)).toBeInTheDocument();
   });
 

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let mockPath = '/dashboard';
+let mockPath = '/legacy/dashboard';
 let mockSummary: { badge: number } | undefined;
 vi.mock('next/navigation', () => ({ usePathname: () => mockPath }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: mockSummary }) }));
@@ -10,7 +10,7 @@ vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: m
 import { NavTree } from '../NavTree';
 
 beforeEach(() => {
-  mockPath = '/dashboard';
+  mockPath = '/legacy/dashboard';
   mockSummary = undefined;
 });
 
@@ -29,21 +29,21 @@ describe('NavTree structure', () => {
     render(<NavTree />);
     expect(screen.queryByRole('link', { name: 'Import' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Transactions' }));
-    expect(screen.getByRole('link', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.getByRole('link', { name: 'Import' })).toHaveAttribute('href', '/legacy/transactions/import');
     fireEvent.click(screen.getByRole('button', { name: 'Transactions' }));
     expect(screen.queryByRole('link', { name: 'Import' })).not.toBeInTheDocument();
   });
 
   it.each([
-    ['/transactions/import', 'Import'],
-    ['/rules', 'Rules'],
-    ['/categories', 'Rules'],
-    ['/rewards', 'Earning rules'],
-    ['/reports', 'Reports'],
-    ['/dashboards', 'Reports'],
-    ['/chat', 'Reports'],
-    ['/investments', 'Tradebook'],
-    ['/loans', 'Lendings'],
+    ['/legacy/transactions/import', 'Import'],
+    ['/legacy/rules', 'Rules'],
+    ['/legacy/categories', 'Rules'],
+    ['/legacy/rewards', 'Earning rules'],
+    ['/legacy/reports', 'Reports'],
+    ['/legacy/dashboards', 'Reports'],
+    ['/legacy/chat', 'Reports'],
+    ['/legacy/investments', 'Tradebook'],
+    ['/legacy/loans', 'Lendings'],
   ])('opens the owning group on %s', (path, child) => {
     mockPath = path;
     render(<NavTree />);
@@ -51,9 +51,9 @@ describe('NavTree structure', () => {
   });
 
   it('lists Chat with Data inside Insights, not as a top-level link', () => {
-    mockPath = '/chat';
+    mockPath = '/legacy/chat';
     render(<NavTree />);
-    expect(screen.getByRole('link', { name: 'Chat with Data' })).toHaveAttribute('href', '/chat');
+    expect(screen.getByRole('link', { name: 'Chat with Data' })).toHaveAttribute('href', '/legacy/chat');
   });
 
   it('calls onItemClick when a link is clicked', () => {
@@ -70,27 +70,27 @@ describe('NavTree structure', () => {
       </div>
     ));
     render(<NavTree renderItemWrapper={wrapper} />);
-    expect(screen.getByTestId('w-/inbox')).toBeInTheDocument();
+    expect(screen.getByTestId('w-/legacy/inbox')).toBeInTheDocument();
     expect(wrapper).toHaveBeenCalled();
   });
 });
 
 describe('NavTree active state', () => {
   it('highlights Upcoming on /upcoming only', () => {
-    mockPath = '/upcoming';
+    mockPath = '/legacy/upcoming';
     render(<NavTree />);
     expect(screen.getByRole('link', { name: 'Upcoming' }).className).toContain('from-emerald-600');
     expect(screen.getByRole('link', { name: 'Home' }).className).not.toContain('from-emerald-600');
   });
 
   it('highlights Settings on /settings/activity', () => {
-    mockPath = '/settings/activity';
+    mockPath = '/legacy/settings/activity';
     render(<NavTree />);
     expect(screen.getByRole('link', { name: 'Settings' }).className).toContain('from-emerald-600');
   });
 
   it('highlights Import but not Transactions on /transactions/import', () => {
-    mockPath = '/transactions/import';
+    mockPath = '/legacy/transactions/import';
     render(<NavTree />);
     expect(screen.getByRole('link', { name: 'Import' }).className).toContain('from-emerald-600');
     expect(screen.getByRole('link', { name: 'Transactions' }).className).not.toContain('from-emerald-600');

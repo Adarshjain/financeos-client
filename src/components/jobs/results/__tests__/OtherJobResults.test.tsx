@@ -101,7 +101,7 @@ describe('Rule apply result', () => {
     );
 
     expect(screen.getByText('Applied to 3 of 6 transactions (all matching)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Cab rides' })).toHaveAttribute('href', '/rules');
+    expect(screen.getByRole('link', { name: 'Cab rides' })).toHaveAttribute('href', '/legacy/rules');
     expect(screen.getByText(/Starts with "UBER" → Food, travel/)).toBeInTheDocument();
     expect(
       screen.getByText("Not applied: 1 reviewed by you (left unchanged) · 1 don't match the pattern · 1 no longer exist"),

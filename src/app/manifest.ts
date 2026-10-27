@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'FinanceOS',
     short_name: 'FinanceOS',
     description: 'Personal finance management system',
-    start_url: '/',
+    start_url: '/dashboard',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',

@@ -9,7 +9,7 @@ describe('UncategorizedCard', () => {
     render(
       <UncategorizedCard
         count={23}
-        reviewHref="/ds/transactions?x=1"
+        reviewHref="/transactions?x=1"
         rows={[
           { id: 'a', description: 'IKEA India', detail: '3 Oct · ₹7,430' },
           { id: 'b', description: 'Croma', detail: '9 Sep · ₹24,990' },
@@ -18,7 +18,7 @@ describe('UncategorizedCard', () => {
       />,
     );
     expect(screen.getByText('Uncategorized · 23')).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Review/ }).getAttribute('href')).toBe('/ds/transactions?x=1');
+    expect(screen.getByRole('link', { name: /Review/ }).getAttribute('href')).toBe('/transactions?x=1');
     fireEvent.click(screen.getAllByRole('button', { name: 'Tag' })[1]);
     expect(onTag).toHaveBeenCalledWith('b');
   });

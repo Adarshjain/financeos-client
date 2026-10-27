@@ -29,7 +29,7 @@ describe('AccountDetailView', () => {
     expect(screen.getByTestId('actions')).toBeInTheDocument();
     expect(screen.getByTestId('overview')).toBeInTheDocument();
     expect(screen.getByTestId('recent')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Accounts/ })).toHaveAttribute('href', '/accounts');
+    expect(screen.getByRole('link', { name: /Accounts/ })).toHaveAttribute('href', '/legacy/accounts');
   });
 
   it('prefers the live (edited) account over the seed', () => {
@@ -41,7 +41,7 @@ describe('AccountDetailView', () => {
   it('open credit card shows the Bills section for that account and Earning rules', () => {
     renderWithQuery(<AccountDetailView account={acct({ type: 'credit_card' }) as never} />);
     expect(screen.getByTestId('bills')).toHaveTextContent('a1');
-    expect(screen.getByRole('link', { name: 'Manage rules' })).toHaveAttribute('href', '/rewards/rules?account=a1');
+    expect(screen.getByRole('link', { name: 'Manage rules' })).toHaveAttribute('href', '/legacy/rewards/rules?account=a1');
   });
 
   it('closed credit card has neither Bills nor Earning rules', () => {

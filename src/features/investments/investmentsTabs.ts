@@ -1,4 +1,4 @@
-/** The six tabs of Investments, each a Dinero page under `/ds/investments`. */
+/** The six tabs of Investments, each a Dinero page under `/investments`. */
 import { appHref } from '@/features/shell/routes';
 
 export type InvestmentsTabId = 'holdings' | 'tradebook' | 'dividends' | 'fno' | 'corporate-actions' | 'instruments';
@@ -47,7 +47,7 @@ const TAB_SEGMENTS = new Set(
   investmentsTabs.filter((t) => t.path !== INVESTMENTS_PATH).map((t) => t.path.slice(INVESTMENTS_PATH.length + 1)),
 );
 
-/** A holding's own page (`/ds/investments/<id>`): it carries its own top bar and tabs, outside the Investments tab strip. */
+/** A holding's own page (`/investments/<id>`): it carries its own top bar and tabs, outside the Investments tab strip. */
 export function isHoldingDetailPath(pathname: string | null | undefined): boolean {
   const path = (pathname ?? '').replace(/\/+$/, '');
   if (!path.startsWith(`${HOLDINGS_HREF}/`)) return false;
@@ -55,12 +55,12 @@ export function isHoldingDetailPath(pathname: string | null | undefined): boolea
   return rest !== '' && !rest.includes('/') && !TAB_SEGMENTS.has(rest) && !OWN_PAGE_SEGMENTS.has(rest);
 }
 
-/** The Import tradebook page (`/ds/investments/import`): it carries its own top bar and no tab strip. */
+/** The Import tradebook page (`/investments/import`): it carries its own top bar and no tab strip. */
 export function isImportPath(pathname: string | null | undefined): boolean {
   return (pathname ?? '').replace(/\/+$/, '') === INVESTMENTS_IMPORT_HREF;
 }
 
-/** The tab a pathname belongs to (`/ds/investments/dividends` is Dividends); anything else is Holdings. */
+/** The tab a pathname belongs to (`/investments/dividends` is Dividends); anything else is Holdings. */
 export function activeInvestmentsTab(pathname: string | null | undefined): InvestmentsTabId {
   const path = (pathname ?? '').replace(/\/+$/, '');
   const segment = path.startsWith(`${HOLDINGS_HREF}/`) ? path.slice(HOLDINGS_HREF.length + 1) : '';

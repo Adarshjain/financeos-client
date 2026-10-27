@@ -15,7 +15,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 const replace = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace, push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => '/ds/rewards/rules',
+  usePathname: () => '/rewards/rules',
 }));
 vi.mock('@/features/accounts/form/ds/AccountFormDialog', () => ({
   AccountFormDialog: ({ account }: { account: { name: string } }) => <div>Edit account dialog for {account.name}</div>,
@@ -93,7 +93,7 @@ describe('RulesPage', () => {
     render(<RulesPage accountId="a1" usage={usage} today="2026-10-24" />);
     fireEvent.click(screen.getByRole('combobox', { name: 'Account' }));
     fireEvent.click(screen.getByRole('option', { name: /Amex Platinum$/ }));
-    expect(replace).toHaveBeenCalledWith('/ds/rewards/rules?account=a2');
+    expect(replace).toHaveBeenCalledWith('/rewards/rules?account=a2');
   });
 
   it('does not navigate when the same card is picked again', () => {

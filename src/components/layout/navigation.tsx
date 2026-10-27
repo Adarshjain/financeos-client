@@ -20,6 +20,7 @@ export {
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from './navigation/navItems';
+import { legacyHref } from '@/features/shell/routes';
 
 export type MobileNavContextMode =
   | 'default'
@@ -33,7 +34,7 @@ export function getMobileNavContext(pathname: string): {
   mode: MobileNavContextMode;
   items: NavItem[];
 } {
-  if (pathname.startsWith('/loans')) {
+  if (pathname.startsWith(legacyHref('/loans'))) {
     return {
       mode: 'loans',
       items: [
@@ -42,7 +43,7 @@ export function getMobileNavContext(pathname: string): {
       ],
     };
   }
-  if (pathname.startsWith('/investments')) {
+  if (pathname.startsWith(legacyHref('/investments'))) {
     return {
       mode: 'investments',
       items: [
@@ -56,9 +57,9 @@ export function getMobileNavContext(pathname: string): {
   }
 
   if (
-    pathname.startsWith('/reports') ||
-    pathname.startsWith('/dashboards') ||
-    pathname.startsWith('/chat')
+    pathname.startsWith(legacyHref('/reports')) ||
+    pathname.startsWith(legacyHref('/dashboards')) ||
+    pathname.startsWith(legacyHref('/chat'))
   ) {
     return {
       mode: 'insights',
@@ -66,7 +67,7 @@ export function getMobileNavContext(pathname: string): {
     };
   }
 
-  if (pathname.startsWith('/rewards')) {
+  if (pathname.startsWith(legacyHref('/rewards'))) {
     return {
       mode: 'rewards',
       items: [
@@ -78,9 +79,9 @@ export function getMobileNavContext(pathname: string): {
   }
 
   if (
-    pathname.startsWith('/transactions') ||
-    pathname.startsWith('/rules') ||
-    pathname.startsWith('/categories')
+    pathname.startsWith(legacyHref('/transactions')) ||
+    pathname.startsWith(legacyHref('/rules')) ||
+    pathname.startsWith(legacyHref('/categories'))
   ) {
     return {
       mode: 'transactions',

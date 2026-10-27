@@ -214,14 +214,14 @@ describe('UpcomingView row trailing', () => {
 
   it('Upload links to the live import page for the account', () => {
     render(<UpcomingView />);
-    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/ds/transactions/import?account=A1');
+    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
   });
 
   it('lending rows get Settle plus a chevron to the person; Settle opens the sheet with direction and balance', () => {
     render(<UpcomingView />);
     expect(screen.getAllByRole('button', { name: 'Settle' })).toHaveLength(2);
     expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toEqual(
-      expect.arrayContaining(['/ds/loans/lendings/C1', '/ds/loans/lendings/C2']),
+      expect.arrayContaining(['/loans/lendings/C1', '/loans/lendings/C2']),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'Settle' })[1]);
     expect(screen.getByTestId('settle')).toHaveTextContent('C1|Rahul Sharma|lent|15000');
@@ -231,7 +231,7 @@ describe('UpcomingView row trailing', () => {
 
   it('EMI rows link to the loan with the installment; card bills have no chevron', () => {
     render(<UpcomingView />);
-    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toContain('/ds/loans/L1?installment=14');
+    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toContain('/loans/L1?installment=14');
     expect(screen.getAllByRole('link', { name: 'Open' })).toHaveLength(4);
   });
 

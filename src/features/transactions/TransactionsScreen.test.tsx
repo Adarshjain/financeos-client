@@ -15,7 +15,7 @@ const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 const urlParams = vi.hoisted(() => ({ current: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/transactions',
+  usePathname: () => '/transactions',
   useSearchParams: () => urlParams.current,
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -164,7 +164,7 @@ describe('TransactionsScreen', () => {
       vi.mocked(fetchTransaction).mockResolvedValue(
         txn({ id: ID, description: 'Old purchase', sourcedDescription: 'UPI/OLD', date: '2024-01-05' }),
       );
-      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      window.history.replaceState(null, '', `/transactions?txn=${ID}`);
       const replaceState = vi.spyOn(window.history, 'replaceState');
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
@@ -174,7 +174,7 @@ describe('TransactionsScreen', () => {
 
       fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
       await waitFor(() => expect(spacer()).toBeNull());
-      expect(replaceState.mock.calls.at(-1)?.[2]).toBe('/ds/transactions');
+      expect(replaceState.mock.calls.at(-1)?.[2]).toBe('/transactions');
       expect(router.push).not.toHaveBeenCalled();
       expect(router.replace).not.toHaveBeenCalled();
       replaceState.mockRestore();
@@ -183,7 +183,7 @@ describe('TransactionsScreen', () => {
     it('shows no dialog for an unknown or foreign id and cleans the address', async () => {
       const { fetchTransaction } = await import('./detail/transactionDetailApi');
       vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Not found'), { status: 404 }));
-      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      window.history.replaceState(null, '', `/transactions?txn=${ID}`);
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
       await waitFor(() => expect(window.location.search).toBe(''));
@@ -201,7 +201,7 @@ describe('TransactionsScreen', () => {
     it('keeps the panel, its Retry and the address when the load fails for another reason than not found', async () => {
       const { fetchTransaction } = await import('./detail/transactionDetailApi');
       vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Server error'), { status: 500 }));
-      window.history.replaceState(null, '', `/ds/transactions?txn=${ID}`);
+      window.history.replaceState(null, '', `/transactions?txn=${ID}`);
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
       expect(await screen.findByText('Could not load this transaction.')).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('TransactionsScreen', () => {
     });
 
     it('opens a transaction when the address changes to ?txn while the page stays mounted, and again after a close', async () => {
-      window.history.replaceState(null, '', '/ds/transactions');
+      window.history.replaceState(null, '', '/transactions');
       const ui = () => (
         <AddTransactionProvider today="2026-10-21">
           <TransactionsScreen

@@ -29,8 +29,8 @@ beforeEach(() => {
 
 describe('requireAuth', () => {
   it('sends a signed-out Dinero visit to the Dinero login with the page to return to', async () => {
-    pathname = '/ds/loans';
-    await expect(requireAuth()).rejects.toThrow('REDIRECT:/ds/login?from=%2Fds%2Floans');
+    pathname = '/loans';
+    await expect(requireAuth()).rejects.toThrow('REDIRECT:/login?from=%2Floans');
   });
 
   it('keeps the plain login for Legacy pages and when the path is unknown', async () => {

@@ -34,7 +34,7 @@ function isGone(error: unknown): boolean {
 type FormState = { transaction: Transaction } | null;
 
 /**
- * /ds/transactions: the list with its detail panel and the Edit dialog (Add is the shell's AddTransactionProvider), all opened from state (the address never changes).
+ * /transactions: the list with its detail panel and the Edit dialog (Add is the shell's AddTransactionProvider), all opened from state (the address never changes).
  * Approve, Set category, Edit and a swiped Delete show at once and save behind it (see optimistic/); bulk actions wait.
  */
 export function TransactionsScreen(props: TransactionsScreenProps) {

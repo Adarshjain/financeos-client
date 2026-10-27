@@ -45,7 +45,7 @@ describe('ImportJobView', () => {
     expect(within(sections[1]).getByText('Wrong password')).toBeInTheDocument();
     expect(within(sections[1]).getByText('Failed')).toBeInTheDocument();
     expect(screen.getByText('1 duplicate found.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/ds/transactions');
+    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
     expect(screen.getByText('2 files')).toBeInTheDocument();
   });
 
@@ -82,7 +82,7 @@ describe('ImportJobView', () => {
     current = job({ status: 'FAILED', result: null, errorMessage: 'x' });
     render(<ImportJobView jobId="j1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    expect(push).toHaveBeenCalledWith('/ds/transactions/import/new-job');
+    expect(push).toHaveBeenCalledWith('/transactions/import/new-job');
   });
 
   it('names the account in the header and keeps same-named files as separate sections', () => {

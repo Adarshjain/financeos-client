@@ -82,6 +82,23 @@ describe('toastError', () => {
     expect(errorLog.getSnapshot()[0].ref).toBe('E2EERR01');
   });
 
+  it('Debug opens the Legacy diagnostics page when the user is inside Legacy', () => {
+    window.history.pushState({}, '', '/legacy/dashboard');
+    try {
+      const error = new ApiError(
+        500,
+        { code: 'INTERNAL_ERROR', message: 'Server failure message', errorId: 'E2EERR02', requestId: 'req-500' },
+        { endpoint: '/api/v1/accounts', method: 'POST', requestId: 'req-500' },
+      );
+      toastError(Object.assign(error, { errorId: 'E2EERR02' }), 'Fallback message');
+      const call = vi.mocked(toast.error).mock.calls[0][1] as { cancel?: { onClick?: (ev: unknown) => void } };
+      call.cancel?.onClick?.({});
+      expect(navigateTo).toHaveBeenCalledWith('/legacy/debug?ref=E2EERR02');
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('handles ApiError with status 400 (duration 5000)', () => {
     const error = new ApiError(
       400,

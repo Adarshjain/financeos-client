@@ -12,7 +12,7 @@ import { AccountFormDialog } from './AccountFormDialog';
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/accounts',
+  usePathname: () => '/accounts',
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -179,7 +179,7 @@ describe('Add account', () => {
       financialPosition: 'liability',
     });
     expect(arg.identifiers).toEqual(['XX7741']);
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/accounts/new1'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/accounts/new1'));
     expect(toast).toHaveBeenCalledWith('Account created successfully!');
   });
 
@@ -516,7 +516,7 @@ describe('Edit account', () => {
     fireEvent.click(confirm);
     await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
     expect(toast).toHaveBeenCalledWith('Account deleted!');
-    expect(router.push).toHaveBeenCalledWith('/ds/accounts');
+    expect(router.push).toHaveBeenCalledWith('/accounts');
   });
 
   it('leaves the close-instead note out of the delete confirm for a closed account', async () => {

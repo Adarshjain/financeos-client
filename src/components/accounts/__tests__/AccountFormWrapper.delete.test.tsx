@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
-let pathname = '/accounts/a1';
+let pathname = '/legacy/accounts/a1';
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => pathname }));
 vi.mock('../AccountForm', () => ({
   AccountForm: ({ onSuccess }: any) => (
@@ -27,19 +27,19 @@ async function openAnd(label: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  pathname = '/accounts/a1';
+  pathname = '/legacy/accounts/a1';
 });
 
 describe('AccountFormWrapper after success', () => {
   it('delete on the account detail page replaces to /accounts (no refresh)', async () => {
     renderWithQuery(<AccountFormWrapper account={account}>open</AccountFormWrapper>);
     await openAnd('delete');
-    expect(router.replace).toHaveBeenCalledWith('/accounts');
+    expect(router.replace).toHaveBeenCalledWith('/legacy/accounts');
     expect(router.refresh).not.toHaveBeenCalled();
   });
 
   it('delete from the list page just refreshes', async () => {
-    pathname = '/accounts';
+    pathname = '/legacy/accounts';
     renderWithQuery(<AccountFormWrapper account={account}>open</AccountFormWrapper>);
     await openAnd('delete');
     expect(router.replace).not.toHaveBeenCalled();

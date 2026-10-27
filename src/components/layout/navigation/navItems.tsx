@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { legacyHref } from '@/features/shell/routes';
+
 export interface NavItem {
   href: string;
   label: string;
@@ -42,31 +44,31 @@ export interface NavModule {
 
 export const NAV_ITEMS = {
   home: {
-    href: '/dashboard',
+    href: legacyHref('/dashboard'),
     label: 'Home',
     shortLabel: 'Home',
     icon: <Home className="h-5 w-5" />,
   },
   inbox: {
-    href: '/inbox',
+    href: legacyHref('/inbox'),
     label: 'Inbox',
     shortLabel: 'Inbox',
     icon: <Inbox className="h-5 w-5" />,
   },
   upcoming: {
-    href: '/upcoming',
+    href: legacyHref('/upcoming'),
     label: 'Upcoming',
     shortLabel: 'Upcoming',
     icon: <CalendarClock className="h-5 w-5" />,
   },
   chat: {
-    href: '/chat',
+    href: legacyHref('/chat'),
     label: 'Chat with Data',
     shortLabel: 'Chat',
     icon: <MessageSquare className="h-5 w-5" />,
   },
   accounts: {
-    href: '/accounts',
+    href: legacyHref('/accounts'),
     label: 'Accounts',
     shortLabel: 'Accounts',
     icon: <Wallet className="h-5 w-5" />,
@@ -74,62 +76,62 @@ export const NAV_ITEMS = {
 
   // Transactions module items
   transactions: {
-    href: '/transactions',
+    href: legacyHref('/transactions'),
     label: 'Transactions',
     shortLabel: 'Transactions',
     icon: <Receipt className="h-5 w-5" />,
   },
   needsReview: {
-    href: '/transactions/review',
+    href: legacyHref('/transactions/review'),
     label: 'Needs Review',
     shortLabel: 'Review',
     icon: <CheckSquare className="h-5 w-5" />,
   },
   transactionsImport: {
-    href: '/transactions/import',
+    href: legacyHref('/transactions/import'),
     label: 'Import',
     shortLabel: 'Import',
     icon: <Import className="h-5 w-5" />,
   },
   dashboards: {
-    href: '/dashboards',
+    href: legacyHref('/dashboards'),
     label: 'Dashboards',
     shortLabel: 'Dashboards',
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   reports: {
-    href: '/reports',
+    href: legacyHref('/reports'),
     label: 'Reports',
     shortLabel: 'Reports',
     icon: <BarChart3 className="h-5 w-5" />,
   },
   rules: {
-    href: '/rules',
+    href: legacyHref('/rules'),
     label: 'Rules',
     shortLabel: 'Rules',
     icon: <Tags className="h-5 w-5" />,
   },
   categories: {
-    href: '/rules/categories',
+    href: legacyHref('/rules/categories'),
     label: 'Category Manager',
     shortLabel: 'Categories',
     icon: <FolderTree className="h-5 w-5" />,
   },
   // Rewards module items
   rewardsOverview: {
-    href: '/rewards',
+    href: legacyHref('/rewards'),
     label: 'Overview',
     shortLabel: 'Overview',
     icon: <Gift className="h-5 w-5" />,
   },
   rewardsRules: {
-    href: '/rewards/rules',
+    href: legacyHref('/rewards/rules'),
     label: 'Earning rules',
     shortLabel: 'Earning rules',
     icon: <Tags className="h-5 w-5" />,
   },
   rewardsRecommend: {
-    href: '/rewards/recommend',
+    href: legacyHref('/rewards/recommend'),
     label: 'Card Picker',
     shortLabel: 'Card Picker',
     icon: <CreditCard className="h-5 w-5" />,
@@ -137,37 +139,37 @@ export const NAV_ITEMS = {
 
   // Investments module items
   investmentsHoldings: {
-    href: '/investments',
+    href: legacyHref('/investments'),
     label: 'Holdings',
     shortLabel: 'Holdings',
     icon: <Briefcase className="h-5 w-5" />,
   },
   investmentsTradebook: {
-    href: '/investments/tradebook',
+    href: legacyHref('/investments/tradebook'),
     label: 'Tradebook',
     shortLabel: 'Tradebook',
     icon: <BookOpen className="h-5 w-5" />,
   },
   investmentsDividends: {
-    href: '/investments/dividends',
+    href: legacyHref('/investments/dividends'),
     label: 'Dividends',
     shortLabel: 'Dividends',
     icon: <DollarSign className="h-5 w-5" />,
   },
   investmentsInstruments: {
-    href: '/investments/instruments',
+    href: legacyHref('/investments/instruments'),
     label: 'Instruments',
     shortLabel: 'Instruments',
     icon: <Layers className="h-5 w-5" />,
   },
   investmentsCorpActions: {
-    href: '/investments/corporate-actions',
+    href: legacyHref('/investments/corporate-actions'),
     label: 'Corporate Actions',
     shortLabel: 'Corporate Actions',
     icon: <Sparkles className="h-5 w-5" />,
   },
   investmentsFno: {
-    href: '/investments/fno',
+    href: legacyHref('/investments/fno'),
     label: 'FnO',
     shortLabel: 'FnO',
     icon: <Activity className="h-5 w-5" />,
@@ -175,13 +177,13 @@ export const NAV_ITEMS = {
 
   // Loans module items
   loansOverview: {
-    href: '/loans',
+    href: legacyHref('/loans'),
     label: 'Loans',
     shortLabel: 'Loans',
     icon: <Landmark className="h-5 w-5" />,
   },
   loansLendings: {
-    href: '/loans/lendings',
+    href: legacyHref('/loans/lendings'),
     label: 'Lendings',
     shortLabel: 'Lendings',
     icon: <DollarSign className="h-5 w-5" />,
@@ -189,7 +191,7 @@ export const NAV_ITEMS = {
 
   // Settings
   settings: {
-    href: '/settings',
+    href: legacyHref('/settings'),
     label: 'Settings',
     shortLabel: 'Settings',
     icon: <SettingsIcon className="h-5 w-5" />,

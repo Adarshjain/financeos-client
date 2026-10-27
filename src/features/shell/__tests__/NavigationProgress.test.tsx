@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NAVIGATION_PROGRESS_DELAY_MS, NAVIGATION_PROGRESS_TIMEOUT_MS, NavigationProgress } from '../NavigationProgress';
 import { endNavigation, hasInAppHistory, resetInAppNavigation, usePendingPath } from '../navigationStore';
 
-const CURRENT = '/ds/accounts';
-let pathname = '/ds/accounts';
+const CURRENT = '/accounts';
+let pathname = '/accounts';
 let search = '';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
@@ -22,15 +22,15 @@ function setup() {
     <>
       <NavigationProgress />
       <Pending />
-      <a href="/ds/inbox">inbox</a>
-      <a href="/ds/transactions?tab=all">withSearch</a>
+      <a href="/inbox">inbox</a>
+      <a href="/transactions?tab=all">withSearch</a>
       <a href="https://example.com/x">external</a>
       <a href={CURRENT}>same</a>
       <a href={`${CURRENT}#top`}>hash</a>
-      <a href="/ds/inbox" target="_blank">blank</a>
-      <a href="/ds/inbox" download>download</a>
-      <a href="/ds/inbox" data-disabled>dataDisabled</a>
-      <a href="/ds/inbox" aria-disabled="true">ariaDisabled</a>
+      <a href="/inbox" target="_blank">blank</a>
+      <a href="/inbox" download>download</a>
+      <a href="/inbox" data-disabled>dataDisabled</a>
+      <a href="/inbox" aria-disabled="true">ariaDisabled</a>
     </>,
   );
   return view;
@@ -45,9 +45,9 @@ const wait = (ms: number) =>
 describe('NavigationProgress', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    pathname = '/ds/accounts';
+    pathname = '/accounts';
     search = '';
-    window.history.replaceState({}, '', '/ds/accounts');
+    window.history.replaceState({}, '', '/accounts');
   });
   afterEach(() => {
     act(() => endNavigation());
@@ -57,7 +57,7 @@ describe('NavigationProgress', () => {
   it('shows the bar after the delay when an in-app link to another page is clicked', () => {
     setup();
     fireEvent.click(screen.getByText('inbox'));
-    expect(screen.getByTestId('pending')).toHaveTextContent('/ds/inbox');
+    expect(screen.getByTestId('pending')).toHaveTextContent('/inbox');
     expect(bar()).toBeNull();
     wait(NAVIGATION_PROGRESS_DELAY_MS);
     expect(bar()).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('NavigationProgress', () => {
     const { rerender } = setup();
     fireEvent.click(screen.getByText('inbox'));
     wait(NAVIGATION_PROGRESS_DELAY_MS - 20);
-    pathname = '/ds/inbox';
+    pathname = '/inbox';
     rerender(<><NavigationProgress /><Pending /></>);
     wait(NAVIGATION_PROGRESS_DELAY_MS);
     expect(bar()).toBeNull();
@@ -106,7 +106,7 @@ describe('NavigationProgress', () => {
     fireEvent.click(screen.getByText('inbox'));
     wait(NAVIGATION_PROGRESS_DELAY_MS);
     expect(bar()).toBeInTheDocument();
-    pathname = '/ds/inbox';
+    pathname = '/inbox';
     rerender(<><NavigationProgress /><Pending /></>);
     expect(bar()).toBeNull();
     expect(screen.getByTestId('pending')).toHaveTextContent('none');
@@ -142,7 +142,7 @@ describe('NavigationProgress', () => {
 
   it('tracks in-app history depth across push, back and search-only commits', () => {
     resetInAppNavigation();
-    pathname = '/ds/dashboards/1';
+    pathname = '/dashboards/1';
     const view = setup();
     expect(hasInAppHistory()).toBe(false);
     const go = (path: string, pop = false) => {
@@ -151,15 +151,15 @@ describe('NavigationProgress', () => {
       view.rerender(<NavigationProgress />);
     };
     search = 'a=1';
-    go('/ds/dashboards/1');
+    go('/dashboards/1');
     expect(hasInAppHistory()).toBe(false);
-    go('/ds/inbox');
+    go('/inbox');
     expect(hasInAppHistory()).toBe(true);
-    go('/ds/dashboards/1', true);
+    go('/dashboards/1', true);
     // back on the landing page: the entry behind it is outside the app
     expect(hasInAppHistory()).toBe(false);
-    go('/ds/inbox', true);
+    go('/inbox', true);
     expect(hasInAppHistory()).toBe(true);
-    pathname = '/ds/accounts';
+    pathname = '/accounts';
   });
 });

@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { legacyHref } from '@/features/shell/routes';
 import { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -34,8 +35,8 @@ export function AccountFormWrapper({ account, triggerClassName, allowedTypes, ch
     setOpen(false);
     // Edit mode reports the saved account; a bare call means the account was deleted. On its own
     // detail page that route is now a 404, so leave for the list.
-    if (account && !saved && pathname?.startsWith('/accounts/')) {
-      router.replace('/accounts');
+    if (account && !saved && pathname?.startsWith('/legacy/accounts/')) {
+      router.replace(legacyHref('/accounts'));
       return;
     }
     router.refresh();

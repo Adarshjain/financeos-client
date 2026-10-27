@@ -38,7 +38,7 @@ const meta: Meta<typeof JobsHistory> = {
   component: JobsHistory,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
-  args: { jobs, openHref: (j) => `/ds/transactions/import/${j.id}`, onOpen: fn() },
+  args: { jobs, openHref: (j) => `/transactions/import/${j.id}`, onOpen: fn() },
   argTypes: {
     jobs: { control: 'object' },
     compact: { control: 'boolean' },

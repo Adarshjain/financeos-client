@@ -87,7 +87,7 @@ async function endSession(): Promise<void> {
 /** Signs out to the Legacy login. Takes no argument: it is also a form action, which passes FormData. */
 export async function logout(): Promise<void> {
   await endSession();
-  redirect('/login');
+  redirect('/legacy/login');
 }
 
 /** Signs out to the Dinero login. */

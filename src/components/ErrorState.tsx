@@ -4,6 +4,7 @@ import { AlertTriangle, Copy, ExternalLink, RotateCcw } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import { useDiagnostics } from '@/lib/diagnostics/DiagnosticsProvider';
 import { navigateTo } from '@/lib/diagnostics/navigate';
 
@@ -42,7 +43,7 @@ export function ErrorState({ error, reset, title = 'Something went wrong' }: Err
   const handleDebug = (e: React.MouseEvent) => {
     e.preventDefault();
     if (ref) {
-      navigateTo('/debug?ref=' + encodeURIComponent(ref));
+      navigateTo(legacyHref('/debug?ref=' + encodeURIComponent(ref)));
     }
   };
 

@@ -33,7 +33,7 @@ import { useUrlState } from './useUrlState';
 const monthTitle = (month: string) => formatMonth(`${month}-01`);
 
 /**
- * The Calendar tab of /ds/upcoming: one month of obligations as chips, the selected day's rows
+ * The Calendar tab of /upcoming: one month of obligations as chips, the selected day's rows
  * below. The shown month lives in the URL (`?month=`, left out for the current month);
  * `?bill=<statementId>` selects that bill's day and outlines its row.
  */

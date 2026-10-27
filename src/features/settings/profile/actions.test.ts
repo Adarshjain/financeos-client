@@ -29,14 +29,14 @@ describe('deleteAccount', () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it('clears the session and redirects to /login?deleted=1 on success', async () => {
+  it('clears the session and redirects to /legacy/login?deleted=1 on success', async () => {
     run.mockResolvedValue({ success: true, data: undefined });
-    await expect(deleteAccount({ password: 'x' })).rejects.toThrow('NEXT_REDIRECT /login?deleted=1');
+    await expect(deleteAccount({ password: 'x' })).rejects.toThrow('NEXT_REDIRECT /legacy/login?deleted=1');
     expect(clearSessionCookie).toHaveBeenCalledTimes(1);
   });
 
   it('redirects to the Dinero login when the Dinero card asks for it', async () => {
     run.mockResolvedValue({ success: true, data: undefined });
-    await expect(deleteAccount({ password: 'x' }, true)).rejects.toThrow('NEXT_REDIRECT /ds/login?deleted=1');
+    await expect(deleteAccount({ password: 'x' }, true)).rejects.toThrow('NEXT_REDIRECT /login?deleted=1');
   });
 });

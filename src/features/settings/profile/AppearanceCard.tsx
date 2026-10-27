@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React from 'react';
 
 import { Button, Card, Icon, ListRow, SegmentedControl, Text } from '@/components/ds';
@@ -55,16 +56,10 @@ export function AppearanceCard() {
         checked={hidden}
         onCheckedChange={setHidden}
       />
-      <ListRow
-        title="Legacy"
-        subtitle="The current app, until the switch"
-        trailing={
-          // Legacy has its own root layout: a plain anchor makes it a full page load.
-          <Button variant="link" asChild>
-            <a href="/dashboard">Open</a>
-          </Button>
-        }
-      />
+      {/* The switch to Legacy: removed together with Legacy. Another root layout, so Next loads it as a full page. */}
+      <ListRow asChild chevron title="Open Legacy">
+        <Link href="/legacy/dashboard" prefetch={false} />
+      </ListRow>
       <ListRow
         title="Storybook"
         subtitle="Every Dinero component, live"

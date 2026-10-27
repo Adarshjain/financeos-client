@@ -224,14 +224,14 @@ describe('GmailSyncResult', () => {
     expect(failed).toHaveTextContent('Could not open the PDF');
     expect(failed).toHaveTextContent('Attempt 2 · next retry 20/10/2026, 3:00 pm');
     expect(failed).toHaveTextContent('File: statement.pdf');
-    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/ds/settings/connections');
+    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/settings/connections');
     expect(screen.getByRole('link', { name: 'Import manually' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Assign an account in Gmail settings' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Created (1)' }));
     const created = group('created');
     expect(created).toHaveTextContent('Card / a/c ••5251');
-    expect(within(created).getByRole('link', { name: 'HDFC Regalia Gold' })).toHaveAttribute('href', '/ds/accounts/acc1');
+    expect(within(created).getByRole('link', { name: 'HDFC Regalia Gold' })).toHaveAttribute('href', '/accounts/acc1');
     expect(created).toHaveTextContent('Swiggy');
     expect(created).toHaveTextContent('+₹899');
     expect(created).toHaveTextContent('…and 1 more');

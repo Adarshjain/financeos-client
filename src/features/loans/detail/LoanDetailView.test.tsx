@@ -11,7 +11,7 @@ vi.mock('@/lib/api/client', async () => {
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/loans/l1',
+  usePathname: () => '/loans/l1',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -480,7 +480,7 @@ describe('Prepay, the top bar + and the menu', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete loan' }));
     await user.click(await screen.findByRole('button', { name: 'Delete loan' }));
     await waitFor(() => expect(m.deleteLoan.mutateAsync).toHaveBeenCalled());
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/loans'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/loans'));
   });
 
   it('Edit opens the loan form, with the core terms locked once a payment or event exists', async () => {

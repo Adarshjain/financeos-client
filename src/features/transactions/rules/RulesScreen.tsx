@@ -78,7 +78,7 @@ const STATUS_CHIPS: { id: RuleStatus; label: string }[] = [
   { id: 'all', label: 'All' },
 ];
 
-/** /ds/transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
+/** /transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
 export function RulesScreen({ rules, reference, state, counts, categories }: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);

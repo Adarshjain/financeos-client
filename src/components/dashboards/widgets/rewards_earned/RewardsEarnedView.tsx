@@ -21,6 +21,7 @@ import {
   type RewardCardRow,
   rewardsRequest,
 } from '@/features/dashboards/builtins/rewards_earned/rewardsEarned.model';
+import { legacyHref } from '@/features/shell/routes';
 import { widgetTitle } from '@/lib/dashboards.helpers';
 import { isPivotTableData } from '@/lib/reports.helpers';
 
@@ -101,7 +102,7 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
                 <>
                   <span className="text-slate-400">·</span>
                   <Link
-                    href={`/rewards/rules?account=${encodeURIComponent(row.cardId)}`}
+                    href={legacyHref(`/rewards/rules?account=${encodeURIComponent(row.cardId)}`)}
                     className="font-medium text-emerald-600 underline-offset-4 hover:underline dark:text-emerald-400"
                   >
                     Set value

@@ -225,7 +225,7 @@ describe('TransactionDetailPanel', () => {
         pageTransactions: [txn({ obligationRefs: [{ kind: 'LENDING', id: 'e1', parentId: 'p1', label: 'Lending · Priya Nair' }] })],
       });
       renderWithQuery(<TransactionDetailPanel {...p} />);
-      expect(screen.getByRole('link', { name: 'Lending · Priya Nair' })).toHaveAttribute('href', '/ds/loans/lendings/p1');
+      expect(screen.getByRole('link', { name: 'Lending · Priya Nair' })).toHaveAttribute('href', '/loans/lendings/p1');
     });
 
     it('unlinks a transaction link at once and Undo links it again', async () => {

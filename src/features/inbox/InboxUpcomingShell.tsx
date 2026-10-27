@@ -11,7 +11,7 @@ import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { activeInboxUpcomingTab, inboxUpcomingTabs } from './inboxUpcomingTabs';
 
 /**
- * The frame shared by `/ds/inbox` and `/ds/upcoming/**`, applied by both route layouts: top bar
+ * The frame shared by `/inbox` and `/upcoming/**`, applied by both route layouts: top bar
  * (title follows the tab), then the Inbox · Upcoming · Calendar route tabs, then the tab's page as
  * `children`. The Inbox count (act now + needs a look) loads on its own after the page renders.
  */

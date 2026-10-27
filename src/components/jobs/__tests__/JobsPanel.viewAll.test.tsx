@@ -10,11 +10,11 @@ import { JobsPanel } from '../JobsPanel';
 describe('JobsPanel view-all link', () => {
   it('filters by type when a single type is shown', () => {
     render(<JobsPanel types={['GMAIL_SYNC']} title="Gmail" />);
-    expect(screen.getByRole('link', { name: /View all/ })).toHaveAttribute('href', '/settings/activity?type=GMAIL_SYNC');
+    expect(screen.getByRole('link', { name: /View all/ })).toHaveAttribute('href', '/legacy/settings/activity?type=GMAIL_SYNC');
   });
 
   it('is unfiltered for multiple types', () => {
     render(<JobsPanel types={['GMAIL_SYNC', 'RULE_APPLY']} title="Jobs" />);
-    expect(screen.getByRole('link', { name: /View all/ })).toHaveAttribute('href', '/settings/activity');
+    expect(screen.getByRole('link', { name: /View all/ })).toHaveAttribute('href', '/legacy/settings/activity');
   });
 });

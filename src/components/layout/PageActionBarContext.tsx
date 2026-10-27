@@ -101,10 +101,13 @@ export function PageActionBarSlot() {
   const [prevContent, setPrevContent] = useState(config?.content);
   const [prevDefaultCollapsed, setPrevDefaultCollapsed] = useState(config?.defaultCollapsed);
   if (config?.content !== prevContent || config?.defaultCollapsed !== prevDefaultCollapsed) {
+    // A page re-declares its bar on every render (new children element): that must not undo the user's
+    // expand/collapse. Reset only when a bar appears or goes away, or its default changes.
+    const barChanged = !config?.content !== !prevContent || config?.defaultCollapsed !== prevDefaultCollapsed;
     setPrevContent(config?.content);
     setPrevDefaultCollapsed(config?.defaultCollapsed);
     setIsVisible(true);
-    setIsCollapsed(config?.defaultCollapsed ?? false);
+    if (barChanged) setIsCollapsed(config?.defaultCollapsed ?? false);
   }
 
   useEffect(() => {

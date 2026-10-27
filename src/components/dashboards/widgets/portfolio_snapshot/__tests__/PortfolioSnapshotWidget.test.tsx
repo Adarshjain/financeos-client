@@ -68,7 +68,7 @@ describe('PortfolioSnapshotWidget', () => {
     respond(summary({ totalInvested: 0, totalCurrentValue: 0 }));
     renderWithQuery(<PortfolioSnapshotWidget />);
     expect(await screen.findByText('No holdings yet')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to investments' })).toHaveAttribute('href', '/investments');
+    expect(screen.getByRole('link', { name: 'Go to investments' })).toHaveAttribute('href', '/legacy/investments');
   });
 
   it('shows value, day change since the previous price date, invested, unrealised P&L and XIRR', async () => {

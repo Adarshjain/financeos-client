@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
+import { legacyHref } from '@/features/shell/routes';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';
 import type { RuleApplyResult } from '@/lib/types';
@@ -31,7 +32,7 @@ export function RuleApplyResultDetails({ result }: { result: RuleApplyResult }) 
       {result.ruleName && (
         <div className="text-slate-600 dark:text-slate-400 break-words">
           Rule{' '}
-          <Link href="/rules" className="underline font-medium text-slate-800 dark:text-slate-200">
+          <Link href={legacyHref('/rules')} className="underline font-medium text-slate-800 dark:text-slate-200">
             {result.ruleName}
           </Link>
           {matchChip && result.pattern && ` · ${matchChip} "${result.pattern}"`}

@@ -8,7 +8,7 @@ import { EMPTY_SEARCH_RESULT, fetchGlobalSearch } from './searchApi';
 import { SearchProvider } from './SearchProvider';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), back: vi.fn() }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/ds/accounts', useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => router }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));
 vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: 0 }) }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -97,7 +97,7 @@ describe('SearchProvider', () => {
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
     fireEvent.change(field(), { target: { value: 'se' } });
     fireEvent.click(screen.getByRole('option', { name: 'Settings' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/settings');
+    expect(router.push).toHaveBeenCalledWith('/settings');
   });
 
   it('goes to a page and closes when its row is picked', () => {
@@ -105,7 +105,7 @@ describe('SearchProvider', () => {
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
     fireEvent.change(field(), { target: { value: 'tr' } });
     fireEvent.click(screen.getByRole('option', { name: 'Transactions' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/transactions');
+    expect(router.push).toHaveBeenCalledWith('/transactions');
     expect(palette()).toBeNull();
   });
 
@@ -130,7 +130,7 @@ describe('SearchProvider', () => {
     const row = await screen.findByRole('option', { name: 'HDFC Regalia Gold · ••7741' });
     expect(fetchMock.mock.calls[0][0]).toBe('hdf');
     fireEvent.click(row);
-    expect(router.push).toHaveBeenCalledWith('/ds/accounts/a1');
+    expect(router.push).toHaveBeenCalledWith('/accounts/a1');
     expect(palette()).toBeNull();
   });
 
@@ -139,7 +139,7 @@ describe('SearchProvider', () => {
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
     fireEvent.change(field(), { target: { value: 'regalia spend' } });
     fireEvent.click(await screen.findByRole('option', { name: 'Ask the data: regalia spend' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/chat?q=regalia%20spend');
+    expect(router.push).toHaveBeenCalledWith('/chat?q=regalia%20spend');
   });
 
   it('asks again when the palette is opened again, since what it cached may have changed elsewhere', async () => {

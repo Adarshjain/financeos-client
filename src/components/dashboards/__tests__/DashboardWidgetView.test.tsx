@@ -50,7 +50,7 @@ describe('DashboardWidgetView', () => {
     renderWithQuery(<DashboardWidgetView widget={sampleWidget} editing={true} />);
 
     const editLink = screen.getByRole('link', { name: /edit report/i });
-    expect(editLink).toHaveAttribute('href', '/reports/rep-123');
+    expect(editLink).toHaveAttribute('href', '/legacy/reports/rep-123');
   });
 
   it('edit mode: drags by the grip only, never by the title input or the controls', () => {

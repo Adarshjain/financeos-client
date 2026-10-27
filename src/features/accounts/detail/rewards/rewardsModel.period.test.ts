@@ -63,7 +63,7 @@ describe('period in the address', () => {
     expect(parseRewardsQuery({ period: 'THIS_MONTH', from: '2026-05-01' }, []).from).toBeUndefined();
   });
   it('writes the period, the custom dates and a reset page', () => {
-    const base = '/ds/rewards/cards/c1';
+    const base = '/rewards/cards/c1';
     expect(rewardsHref(base, { period: 'LAST_MONTH', page: 0, size: 10 })).toBe(`${base}?period=LAST_MONTH`);
     expect(rewardsHref(base, { period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30', page: 2, size: 10 })).toBe(
       `${base}?period=CUSTOM&from=2026-05-01&to=2026-06-30&page=3`,

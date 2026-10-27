@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 
 import { getMobileNavContext, isNavItemActive, NAV_ITEMS } from '@/components/layout/navigation';
 import { formatBadge } from '@/features/inbox/inbox.helpers';
+import { legacyHref } from '@/features/shell/routes';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 
@@ -40,7 +41,7 @@ export function MobileNav({ userEmail, inboxCount }: MobileNavProps) {
       {/* Sticky Left: X (Close to Home) Icon */}
       {mode !== 'default' && (
         <Link
-          href="/dashboard"
+          href={legacyHref('/dashboard')}
           className="sticky left-0 z-10 flex items-center justify-center h-9 w-9 min-w-[36px] rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0 shadow-sm mr-1"
           aria-label="Return to Home"
         >

@@ -61,8 +61,8 @@ describe('URL state', () => {
   });
 
   it('builds the tab URL with only non-default parts', () => {
-    expect(loansUrl({ q: '', page: 0, size: 25 })).toBe('/ds/loans');
-    expect(loansUrl({ q: 'sbi', page: 2, size: 50 })).toBe('/ds/loans?q=sbi&page=2&size=50');
+    expect(loansUrl({ q: '', page: 0, size: 25 })).toBe('/loans');
+    expect(loansUrl({ q: 'sbi', page: 2, size: 50 })).toBe('/loans?q=sbi&page=2&size=50');
   });
 });
 
@@ -123,7 +123,7 @@ describe('nextCell and loanRow', () => {
       next: { kind: 'overdue', label: '#14 overdue' },
       phoneSub: '8.25% · EMI ₹36,603 · 13 of 240 paid',
       closed: false,
-      href: '/ds/loans/l1',
+      href: '/loans/l1',
     });
     expect(loanRow(loan(), TODAY).progressPct).toBeCloseTo(5.42, 1);
   });

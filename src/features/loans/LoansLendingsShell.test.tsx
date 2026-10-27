@@ -7,7 +7,7 @@ import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider'
 
 import { LoansLendingsShell } from './LoansLendingsShell';
 
-let pathname = '/ds/loans/lendings';
+let pathname = '/loans/lendings';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -47,7 +47,7 @@ function renderShell() {
 const add = () => screen.getAllByRole('button', { name: 'Add' })[0];
 
 beforeEach(() => {
-  pathname = '/ds/loans/lendings';
+  pathname = '/loans/lendings';
   loadTabCounts.mockReset();
   loadTabCounts.mockResolvedValue({ success: true, data: { lendings: 4, loans: 3 } });
 });
@@ -57,8 +57,8 @@ describe('LoansLendingsShell', () => {
     renderShell();
     const tabs = screen.getAllByRole('tab');
     expect(tabs.map((t) => t.textContent)).toEqual(['Lendings', 'Loans']);
-    expect(tabs[0]).toHaveAttribute('href', '/ds/loans/lendings');
-    expect(tabs[1]).toHaveAttribute('href', '/ds/loans');
+    expect(tabs[0]).toHaveAttribute('href', '/loans/lendings');
+    expect(tabs[1]).toHaveAttribute('href', '/loans');
     expect(screen.getByText('tab body')).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Lendings · 4', 'Loans · 3']));
   });
@@ -86,7 +86,7 @@ describe('LoansLendingsShell', () => {
   });
 
   it('titles the bar "Loans & lendings" on the Loans tab and its + opens Add loan', () => {
-    pathname = '/ds/loans';
+    pathname = '/loans';
     renderShell();
     expect(screen.getAllByText('Loans & lendings').length).toBeGreaterThan(0);
     expect(screen.getByRole('tab', { name: /Loans/ })).toHaveAttribute('data-state', 'active');

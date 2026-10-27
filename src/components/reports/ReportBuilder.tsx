@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { builderReducer, hydrateState, initialBuilderState } from '@/features/reports/builder/builderReducer';
 import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from '@/features/reports/builder/serialize';
 import { useReportDynamicOptions } from '@/features/reports/builder/useReportDynamicOptions';
+import { legacyHref } from '@/features/shell/routes';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type {
@@ -105,7 +106,7 @@ export function ReportBuilder({
         : await createMutation.mutateAsync(buildCreateRequest(state, activeCatalog));
       qc.invalidateQueries({ queryKey: keys.reports.all });
       toast.success(mode === 'edit' ? 'Report updated' : 'Report created');
-      router.push('/reports');
+      router.push(legacyHref('/reports'));
     } catch (e) {
       toastError(e, mode === 'edit'
             ? 'Failed to update report'
@@ -120,7 +121,7 @@ export function ReportBuilder({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/reports')}
+          onClick={() => router.push(legacyHref('/reports'))}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -135,7 +136,7 @@ export function ReportBuilder({
               dispatch({ type: 'SET_NAME', value: e.currentTarget.value })
             }
           />
-          <Button variant="outline" onClick={() => router.push('/reports')}>
+          <Button variant="outline" onClick={() => router.push(legacyHref('/reports'))}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving}>

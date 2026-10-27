@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import { buttonVariants } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +38,7 @@ export function AccountActions({ account }: { account: Account }) {
       ) : null}
       {ingest && !isAccountClosed(account) ? (
         <Link
-          href={`/transactions/import?account=${account.id}`}
+          href={legacyHref(`/transactions/import?account=${account.id}`)}
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
         >
           <Upload className="w-3.5 h-3.5" />

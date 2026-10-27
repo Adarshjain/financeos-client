@@ -38,7 +38,7 @@ vi.mock('@/features/accounts/form/ds/AccountFormDialog', () => ({
         { id: 'w1', type: AccountType.GENERIC, name: 'Cash wallet', balance: 0, cardholders: [] },
       ]);
       // Without onCreated the real dialog would push to the new account's page.
-      if (!onCreated) navigate('/ds/accounts/w1');
+      if (!onCreated) navigate('/accounts/w1');
       else onCreated({ id: 'w1' } as Account);
       onClose();
     };

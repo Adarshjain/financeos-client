@@ -134,3 +134,41 @@ describe('PageActionBarSlot hide-on-scroll while a field inside has focus', () =
     expect(root()).not.toHaveClass(HIDDEN_CLASS);
   });
 });
+
+describe('PageActionBarSlot expand/collapse', () => {
+  function Page({ tick, show = true, defaultCollapsed = true }: { tick: number; show?: boolean; defaultCollapsed?: boolean }) {
+    return (
+      <PageActionBarProvider>
+        <PageActionBarSlot />
+        {show ? (
+          <PageActionBar defaultCollapsed={defaultCollapsed}>
+            <button type="button">{`Approve ${tick}`}</button>
+          </PageActionBar>
+        ) : null}
+      </PageActionBarProvider>
+    );
+  }
+
+  it("keeps the user's expand when the page re-renders its bar with new children", () => {
+    const { rerender } = render(<Page tick={1} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Expand action bar' }));
+    rerender(<Page tick={2} />);
+    expect(screen.getByRole('button', { name: 'Collapse action bar' })).toBeInTheDocument();
+  });
+
+  it('goes back to the default when the default changes', () => {
+    const { rerender } = render(<Page tick={1} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Expand action bar' }));
+    rerender(<Page tick={1} defaultCollapsed={false} />);
+    rerender(<Page tick={1} defaultCollapsed />);
+    expect(screen.getByRole('button', { name: 'Expand action bar' })).toBeInTheDocument();
+  });
+
+  it('starts from the default again when the bar goes away and comes back', () => {
+    const { rerender } = render(<Page tick={1} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Expand action bar' }));
+    rerender(<Page tick={1} show={false} />);
+    rerender(<Page tick={1} />);
+    expect(screen.getByRole('button', { name: 'Expand action bar' })).toBeInTheDocument();
+  });
+});

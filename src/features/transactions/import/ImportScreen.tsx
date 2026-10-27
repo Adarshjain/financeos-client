@@ -33,7 +33,7 @@ export interface ImportScreenProps {
   page?: number;
 }
 
-/** /ds/transactions/import: upload statements to an account; Recent imports beside it, the running one on top. */
+/** /transactions/import: upload statements to an account; Recent imports beside it, the running one on top. */
 export function ImportScreen({ initialAccounts, initialAccountId, since, page = 0 }: ImportScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();

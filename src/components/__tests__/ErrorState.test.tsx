@@ -105,7 +105,7 @@ describe('ErrorState', () => {
     const debugBtn = screen.getByText('Debug');
     fireEvent.click(debugBtn);
 
-    expect(navigateTo).toHaveBeenCalledWith('/debug?ref=digest-debug-1');
+    expect(navigateTo).toHaveBeenCalledWith('/legacy/debug?ref=digest-debug-1');
   });
 
   it('clicking Try again invokes reset callback', () => {

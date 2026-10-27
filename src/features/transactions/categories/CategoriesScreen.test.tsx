@@ -9,7 +9,7 @@ import { CategoriesScreen } from './CategoriesScreen';
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/transactions/categories',
+  usePathname: () => '/transactions/categories',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -141,7 +141,7 @@ describe('CategoriesScreen', () => {
       <CategoriesScreen
         categories={pageOf(categories)}
         state={state}
-        uncategorized={{ count: 2, transactions: [], rows: [{ id: 't', description: 'Croma', detail: '9 Sep · ₹24,990' }], reviewHref: '/ds/transactions' }}
+        uncategorized={{ count: 2, transactions: [], rows: [{ id: 't', description: 'Croma', detail: '9 Sep · ₹24,990' }], reviewHref: '/transactions' }}
       />,
     );
     expect(screen.getByText('Uncategorized · 2')).toBeTruthy();

@@ -88,7 +88,7 @@ describe('AddWidgetDialog', () => {
 
   it('shows a create-report link when there are no reports', async () => {
     await open(vi.fn(), vi.fn(), []);
-    expect(await screen.findByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/reports/new');
+    expect(await screen.findByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/legacy/reports/new');
   });
 
   it('a param-less built-in opens its details step; Add widget adds it with empty params and closes', async () => {

@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { legacyHref } from '@/features/shell/routes';
 import { isBuiltinWidget, widgetParams } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
@@ -137,7 +138,7 @@ function Menu({ widget, onExpand, onViewUnderlying, duplicate, onSettings }: Men
       <DropdownMenuContent align="end" className="min-w-[11rem]">
         {reportId && (
           <DropdownMenuItem asChild className="text-xs">
-            <Link href={`/reports/${reportId}`}>
+            <Link href={legacyHref(`/reports/${reportId}`)}>
               <Pencil className={itemIconClass} />
               Edit report
             </Link>

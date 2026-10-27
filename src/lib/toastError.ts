@@ -1,3 +1,4 @@
+import { isLegacyPath, legacyHref } from '@/features/shell/routes';
 import { ApiError } from '@/lib/api/client';
 import { AppError } from '@/lib/appError';
 import { errorLog } from '@/lib/diagnostics/errorLog';
@@ -5,6 +6,12 @@ import { navigateTo } from '@/lib/diagnostics/navigate';
 import { refOf } from '@/lib/diagnostics/ref';
 import { notify } from '@/lib/notify';
 import type { ErrorResponse } from '@/lib/types';
+
+/** The diagnostics page for `ref`: the Legacy one when the user is inside Legacy, else the plain path. */
+function debugHref(ref: string): string {
+  const path = '/debug?ref=' + encodeURIComponent(ref);
+  return typeof window !== 'undefined' && isLegacyPath(window.location.pathname) ? legacyHref(path) : path;
+}
 
 function extractErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
@@ -55,7 +62,7 @@ export function toastError(e: unknown, fallback: string): void {
       ? {
           label: 'Debug',
           onClick: () => {
-            navigateTo('/debug?ref=' + encodeURIComponent(ref));
+            navigateTo(debugHref(ref));
           },
         }
       : undefined,
@@ -86,7 +93,7 @@ export function toastErrorResult(error: ErrorResponse, fallback: string): void {
       ? {
           label: 'Debug',
           onClick: () => {
-            navigateTo('/debug?ref=' + encodeURIComponent(ref));
+            navigateTo(debugHref(ref));
           },
         }
       : undefined,

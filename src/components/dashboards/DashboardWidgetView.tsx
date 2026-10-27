@@ -34,6 +34,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { useWidgetData } from '@/features/dashboards/data/useWidgetData';
 import type { UnderlyingSource } from '@/features/reports/underlying/underlying.types';
+import { legacyHref } from '@/features/shell/routes';
 import { widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 import type { KpiData, SortClause } from '@/lib/reports.types';
@@ -218,7 +219,7 @@ export function DashboardWidgetView({
                     title="Edit report"
                     aria-label="Edit report"
                   >
-                    <Link href={`/reports/${editReportId}`}>
+                    <Link href={legacyHref(`/reports/${editReportId}`)}>
                       <Pencil className="h-4 w-4 text-slate-500" />
                     </Link>
                   </Button>

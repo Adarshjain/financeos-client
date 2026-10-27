@@ -19,7 +19,7 @@ export const settingsTabs: SettingsTab[] = [
   { id: 'debug', label: 'Debug', title: 'Debug', href: `${SETTINGS_HREF}/debug` },
 ];
 
-/** The tab a pathname belongs to; unknown paths under /ds/settings count as Profile. */
+/** The tab a pathname belongs to; unknown paths under /settings count as Profile. */
 export function activeSettingsTab(pathname: string | null | undefined): SettingsTab {
   const path = (pathname ?? '').replace(/\/+$/, '');
   return (

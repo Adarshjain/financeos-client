@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useHideOnScroll } from '../useHideOnScroll';
 
-let pathname = '/ds/transactions';
+let pathname = '/transactions';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
 let scrollY = 0;
 
 beforeEach(() => {
-  pathname = '/ds/transactions';
+  pathname = '/transactions';
   scrollY = 0;
   Object.defineProperty(window, 'scrollY', { configurable: true, get: () => scrollY });
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
@@ -79,7 +79,7 @@ describe('useHideOnScroll', () => {
     const { result, rerender } = renderHook(() => useHideOnScroll());
     scrollTo(200);
     expect(result.current).toBe(true);
-    pathname = '/ds/accounts';
+    pathname = '/accounts';
     rerender();
     expect(result.current).toBe(false);
   });

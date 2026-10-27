@@ -10,7 +10,7 @@ import { RulesScreen, type RulesScreenProps } from './RulesScreen';
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/transactions/rules',
+  usePathname: () => '/transactions/rules',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({

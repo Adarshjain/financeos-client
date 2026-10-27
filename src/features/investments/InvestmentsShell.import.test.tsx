@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { InvestmentsShell } from './InvestmentsShell';
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/ds/investments/import',
+  usePathname: () => '/investments/import',
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));

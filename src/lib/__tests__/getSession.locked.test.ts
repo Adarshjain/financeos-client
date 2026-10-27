@@ -5,7 +5,7 @@ const redirect = vi.fn((url: string) => {
 });
 vi.mock('next/navigation', () => ({ redirect: (u: string) => redirect(u), unstable_rethrow: (e: unknown) => { if (String((e as Error).message).startsWith('REDIRECT:')) throw e; } }));
 
-let pathname: string | null = '/ds/loans';
+let pathname: string | null = '/loans';
 vi.mock('next/headers', () => ({
   cookies: async () => ({ get: () => ({ value: 'sess' }) }),
   headers: async () => ({ get: (k: string) => (k === 'x-pathname' ? pathname : null), has: () => false }),
@@ -27,17 +27,17 @@ import { getOptionalSession, getSession } from '../auth';
 
 beforeEach(() => {
   redirect.mockClear();
-  pathname = '/ds/loans';
+  pathname = '/loans';
 });
 
 describe('getSession when locked', () => {
   it('redirects to the lock screen on a 423', async () => {
     me.mockRejectedValue(new (ApiError as unknown as new (status: number) => Error)(423));
-    await expect(getSession()).rejects.toThrow('REDIRECT:/ds/locked?from=%2Fds%2Floans');
+    await expect(getSession()).rejects.toThrow('REDIRECT:/locked?from=%2Floans');
   });
 
   it('keeps the 423 as an error on the lock screen itself', async () => {
-    pathname = '/ds/locked';
+    pathname = '/locked';
     me.mockRejectedValue(new (ApiError as unknown as new (status: number) => Error)(423));
     await expect(getSession()).rejects.toMatchObject({ status: 423 });
     expect(redirect).not.toHaveBeenCalled();
@@ -45,7 +45,7 @@ describe('getSession when locked', () => {
 
   it('lets the optional variant pass the redirect on instead of treating it as signed out', async () => {
     me.mockRejectedValue(new (ApiError as unknown as new (status: number) => Error)(423));
-    await expect(getOptionalSession()).rejects.toThrow('REDIRECT:/ds/locked');
+    await expect(getOptionalSession()).rejects.toThrow('REDIRECT:/locked');
   });
 
   it('still treats a 401 as signed out', async () => {

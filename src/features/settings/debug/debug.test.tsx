@@ -21,7 +21,7 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), info: vi.fn(), error: vi.f
 const replace = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace, push: vi.fn() }),
-  usePathname: () => '/ds/settings/debug',
+  usePathname: () => '/settings/debug',
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -100,7 +100,7 @@ describe('DebugView lookup', () => {
     fireEvent.change(screen.getByLabelText('Reference'), { target: { value: '  HM6HK5G6 ' } });
     fireEvent.click(screen.getByRole('radio', { name: 'Error ID' }));
     fireEvent.click(screen.getByRole('button', { name: 'Look up' }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/ds/settings/debug?ref=HM6HK5G6&type=errorId'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/debug?ref=HM6HK5G6&type=errorId'));
     expect(api.GET).toHaveBeenCalledWith('/api/v1/diagnostics/lookup', {
       params: { query: { ref: 'HM6HK5G6', type: 'errorId' } },
     });
@@ -187,7 +187,7 @@ describe('DebugView lookup', () => {
     errorLog.record('Validation error', { ref: 'HM6HK5G6', status: 400, code: 'VALIDATION_ERROR' });
     renderWithQuery(<DebugView admin />);
     fireEvent.click(screen.getByText('HM6HK5G6'));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/ds/settings/debug?ref=HM6HK5G6'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/debug?ref=HM6HK5G6'));
     expect(screen.getByLabelText('Reference')).toHaveValue('HM6HK5G6');
   });
 

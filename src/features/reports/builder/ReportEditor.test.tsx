@@ -11,7 +11,7 @@ import { catalogFixture, savedChart } from './editor.fixtures';
 import { ReportEditor, type ReportEditorProps } from './ReportEditor';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), back: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/ds/reports/new', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/reports/new', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -100,7 +100,7 @@ describe('New report', () => {
     expect(screen.queryByRole('link', { name: 'New report' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'New report' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/reports');
+    expect(router.push).toHaveBeenCalledWith('/reports');
     expect(screen.getByRole('radio', { name: 'KPI' })).toBeChecked();
     expect(screen.getByRole('combobox', { name: 'Datasource' })).toHaveTextContent('Transactions');
     expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('KPI options and save', () => {
       datasource: 'transactions',
       definition: { measure: 'spend', aggregation: 'sum', filters: [{ field: 'isExcluded', operator: 'is', value: false }], comparison: { enabled: false } },
     });
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
     expect(router.refresh).toHaveBeenCalled();
     expect(toast).toHaveBeenCalledWith('Report created');
   });
@@ -679,14 +679,14 @@ describe('A saved report', () => {
     });
     await waitFor(() => expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument());
     expect(toast).toHaveBeenCalledWith('Report saved');
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
     expect(router.back).not.toHaveBeenCalled();
     expect(router.refresh).toHaveBeenCalled();
   });
 
   it('goes back to where it was opened from (a dashboard) after a save, refreshing it', async () => {
-    commitRoute('/ds/dashboards');
-    commitRoute('/ds/reports/r1');
+    commitRoute('/dashboards');
+    commitRoute('/reports/r1');
     setup(props());
     await type('Report name', 'From the dashboard');
     await user.click(screen.getByRole('button', { name: 'Save report' }));
@@ -697,20 +697,20 @@ describe('A saved report', () => {
   });
 
   it('refreshes the page it lands on after going back, not the editor', async () => {
-    commitRoute('/ds/reports');
-    commitRoute('/ds/reports/r1');
+    commitRoute('/reports');
+    commitRoute('/reports/r1');
     setup(props());
     await type('Report name', 'Fresh landing');
     await user.click(screen.getByRole('button', { name: 'Save report' }));
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     const before = router.refresh.mock.calls.length;
-    act(() => commitRoute('/ds/reports'));
+    act(() => commitRoute('/reports'));
     expect(router.refresh.mock.calls.length).toBe(before + 1);
   });
 
   it('stays on the editor when the draft is edited while the save is in flight', async () => {
-    commitRoute('/ds/reports');
-    commitRoute('/ds/reports/r1');
+    commitRoute('/reports');
+    commitRoute('/reports/r1');
     let finish: (v: unknown) => void = () => undefined;
     api.PUT.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
     setup(props());
@@ -726,8 +726,8 @@ describe('A saved report', () => {
   });
 
   it('does not ask about unsaved changes when a save leaves the page', async () => {
-    commitRoute('/ds/reports');
-    commitRoute('/ds/reports/r1');
+    commitRoute('/reports');
+    commitRoute('/reports/r1');
     setup(props());
     await type('Report name', 'Quiet leave');
     await user.click(screen.getByRole('button', { name: 'Save report' }));
@@ -767,7 +767,7 @@ describe('A saved report', () => {
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body()).toMatchObject({ name: 'Copy of it', type: 'CHART', datasource: 'transactions' });
     expect(api.PUT).not.toHaveBeenCalled();
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
   });
 
   it('duplicates the saved report and offers Undo, which deletes the copy', async () => {
@@ -791,7 +791,7 @@ describe('A saved report', () => {
     expect(api.DELETE).not.toHaveBeenCalled();
     await user.click(within(dialog).getByRole('button', { name: 'Delete report' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/reports/{id}', { params: { path: { id: 'r1' } } }));
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/reports'));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
     // Refresh comes after the navigation, so the list it opens is fresh and the deleted page is never re-rendered.
     expect(router.refresh).toHaveBeenCalledTimes(1);
     expect(router.push.mock.invocationCallOrder[0]).toBeLessThan(router.refresh.mock.invocationCallOrder[0]);
@@ -831,7 +831,7 @@ describe('Leaving with unsaved changes', () => {
     await user.type(screen.getByLabelText('Report name'), 'Spend');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Leave without saving' }));
-    expect(router.push).toHaveBeenCalledWith('/ds/reports');
+    expect(router.push).toHaveBeenCalledWith('/reports');
   });
 
   it('does not ask when nothing changed', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReceiptStatusBadge } from '@/app/(legacy)/(protected)/investments/dividend-receipts/ReceiptStatusBadge';
+import { ReceiptStatusBadge } from '@/app/(legacy)/legacy/(protected)/investments/dividend-receipts/ReceiptStatusBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { expectedNet } from '@/features/transactions/link/dividendLinkHelpers';

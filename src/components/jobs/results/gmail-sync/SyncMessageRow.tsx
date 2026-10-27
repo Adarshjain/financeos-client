@@ -2,6 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { formatDateTime, STATUS_LABELS } from '@/features/jobs/syncLabels';
+import { legacyHref } from '@/features/shell/routes';
 import type { SyncMessageResult } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
@@ -10,13 +11,13 @@ function Action({ message }: { message: SyncMessageResult }) {
   switch (message.status) {
     case 'UNRESOLVED_ACCOUNT':
       return (
-        <Link href="/settings/gmail" className={linkClass}>
+        <Link href={legacyHref('/settings/gmail')} className={linkClass}>
           Assign an account in Gmail settings
         </Link>
       );
     case 'ACCOUNT_NOT_OPTED_IN':
       return (
-        <Link href={message.accountId ? `/accounts/${message.accountId}` : '/accounts'} className={linkClass}>
+        <Link href={legacyHref(message.accountId ? `/accounts/${message.accountId}` : '/accounts')} className={linkClass}>
           Set ingest date
         </Link>
       );
@@ -25,15 +26,15 @@ function Action({ message }: { message: SyncMessageResult }) {
       return (
         <span className="flex flex-wrap gap-x-2">
           {/decrypt/i.test(message.error ?? '') && (
-            <Link href="/accounts" className={linkClass}>
+            <Link href={legacyHref('/accounts')} className={linkClass}>
               Set the statement password on the account
             </Link>
           )}
-          <Link href="/settings/gmail" className={linkClass}>
+          <Link href={legacyHref('/settings/gmail')} className={linkClass}>
             Retry from Gmail settings
           </Link>
           {message.attachmentFilename && (
-            <Link href="/transactions/import" className={linkClass}>
+            <Link href={legacyHref('/transactions/import')} className={linkClass}>
               Import manually
             </Link>
           )}
@@ -88,7 +89,7 @@ export function SyncMessageRow({ message }: { message: SyncMessageResult }) {
         <div className="flex flex-wrap gap-x-2 text-slate-500">
           {message.accountName &&
             (message.accountId ? (
-              <Link href={`/accounts/${message.accountId}`} className="underline text-slate-700 dark:text-slate-300">
+              <Link href={legacyHref(`/accounts/${message.accountId}`)} className="underline text-slate-700 dark:text-slate-300">
                 {message.accountName}
               </Link>
             ) : (

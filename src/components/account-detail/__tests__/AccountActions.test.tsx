@@ -21,7 +21,7 @@ describe('AccountActions', () => {
     expect(screen.getByTestId('edit')).toHaveTextContent('Edit');
     expect(screen.getByTestId('edit').dataset.id).toBe('a1');
     expect(screen.getByRole('button', { name: /Statements/ })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Import/ })).toHaveAttribute('href', '/transactions/import?account=a1');
+    expect(screen.getByRole('link', { name: /Import/ })).toHaveAttribute('href', '/legacy/transactions/import?account=a1');
   });
 
   it('credit card also gets Statements and Import', () => {

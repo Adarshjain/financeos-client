@@ -42,9 +42,9 @@ describe('Holdings URL state', () => {
   });
 
   it('keeps defaults out of the address', () => {
-    expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/ds/investments');
+    expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments');
     expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', page: 1, size: 25 })).toBe(
-      '/ds/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=1&size=25',
+      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=1&size=25',
     );
   });
 
@@ -90,7 +90,7 @@ describe('holdingListRow', () => {
     expect(row.pnl).toEqual({ amount: '+₹6,504', plain: '+6,504', pct: '+10.3%', tone: 'positive' });
     // The desktop columns carry no ₹.
     expect([row.avgCost, row.ltp, row.invested, row.currentPlain]).toEqual(['1,580.00', '1,742.60', '63,200', '69,704']);
-    expect(row.href).toBe('/ds/investments/i-hdfcbank');
+    expect(row.href).toBe('/investments/i-hdfcbank');
   });
 
   it('writes a fund by its name with units', () => {

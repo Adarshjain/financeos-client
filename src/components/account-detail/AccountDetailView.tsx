@@ -4,6 +4,7 @@ import { CreditCard, Gift } from 'lucide-react';
 import Link from 'next/link';
 
 import { buttonVariants } from '@/components/ui/button';
+import { legacyHref } from '@/features/shell/routes';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
@@ -26,7 +27,7 @@ export function AccountDetailView({ account: initial }: { account: Account }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pb-24 md:pb-8">
-      <Link href="/accounts" className="inline-flex text-xs font-medium text-slate-500 hover:text-emerald-600">
+      <Link href={legacyHref('/accounts')} className="inline-flex text-xs font-medium text-slate-500 hover:text-emerald-600">
         &larr; Accounts
       </Link>
       <AccountHeader account={account} actions={<AccountActions account={account} />} />
@@ -49,7 +50,7 @@ export function AccountDetailView({ account: initial }: { account: Account }) {
           subtitle="Reward rules, caps and milestones for this account."
           action={
             <Link
-              href={`/rewards/rules?account=${account.id}`}
+              href={legacyHref(`/rewards/rules?account=${account.id}`)}
               className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
             >
               Manage rules

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InvestmentsShell } from './InvestmentsShell';
 
-let pathname = '/ds/investments';
+let pathname = '/investments';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -41,7 +41,7 @@ function renderShell() {
 }
 
 beforeEach(() => {
-  pathname = '/ds/investments';
+  pathname = '/investments';
   loadTabCounts.mockReset();
   loadTabCounts.mockResolvedValue({
     success: true,
@@ -73,22 +73,22 @@ describe('InvestmentsShell', () => {
   it('links every tab to its Dinero page', () => {
     renderShell();
     const href = (label: RegExp) => screen.getByRole('tab', { name: label }).getAttribute('href');
-    expect(href(/^Holdings/)).toBe('/ds/investments');
-    expect(href(/^Tradebook/)).toBe('/ds/investments/tradebook');
-    expect(href(/^Dividends/)).toBe('/ds/investments/dividends');
-    expect(href(/^F&O/)).toBe('/ds/investments/fno');
-    expect(href(/^Corporate actions/)).toBe('/ds/investments/corporate-actions');
-    expect(href(/^Instruments/)).toBe('/ds/investments/instruments');
+    expect(href(/^Holdings/)).toBe('/investments');
+    expect(href(/^Tradebook/)).toBe('/investments/tradebook');
+    expect(href(/^Dividends/)).toBe('/investments/dividends');
+    expect(href(/^F&O/)).toBe('/investments/fno');
+    expect(href(/^Corporate actions/)).toBe('/investments/corporate-actions');
+    expect(href(/^Instruments/)).toBe('/investments/instruments');
   });
 
   it('marks the tab the pathname is on', () => {
     const cases: [string, string][] = [
-      ['/ds/investments', 'Holdings'],
-      ['/ds/investments/tradebook', 'Tradebook'],
-      ['/ds/investments/dividends', 'Dividends'],
-      ['/ds/investments/fno', 'F&O'],
-      ['/ds/investments/corporate-actions', 'Corporate actions'],
-      ['/ds/investments/instruments', 'Instruments'],
+      ['/investments', 'Holdings'],
+      ['/investments/tradebook', 'Tradebook'],
+      ['/investments/dividends', 'Dividends'],
+      ['/investments/fno', 'F&O'],
+      ['/investments/corporate-actions', 'Corporate actions'],
+      ['/investments/instruments', 'Instruments'],
     ];
     for (const [path, label] of cases) {
       pathname = path;
@@ -118,10 +118,10 @@ describe('InvestmentsShell', () => {
   });
 
   it.each([
-    ['/ds/investments', 'trade'],
-    ['/ds/investments/dividends', 'dividend'],
-    ['/ds/investments/corporate-actions', 'action'],
-    ['/ds/investments/instruments', 'instrument'],
+    ['/investments', 'trade'],
+    ['/investments/dividends', 'dividend'],
+    ['/investments/corporate-actions', 'action'],
+    ['/investments/instruments', 'instrument'],
   ])('opens the dialog of %s with the top bar +', (path, dialog) => {
     pathname = path;
     renderShell();
@@ -133,20 +133,20 @@ describe('InvestmentsShell', () => {
   });
 
   it.each([
-    ['/ds/investments/tradebook', 'trade', 'Record trade', 'Import tradebook'],
-    ['/ds/investments/fno', 'fno', 'Add F&O trade', 'Import statement'],
+    ['/investments/tradebook', 'trade', 'Record trade', 'Import tradebook'],
+    ['/investments/fno', 'fno', 'Add F&O trade', 'Import statement'],
   ])('makes the + on %s a menu with the add and the import', (path, dialog, addLabel, importLabel) => {
     pathname = path;
     renderShell();
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
     expect(screen.queryByTestId(/^dialog-/)).toBeNull();
-    expect(screen.getByRole('menuitem', { name: importLabel })).toHaveAttribute('href', '/ds/investments/import');
+    expect(screen.getByRole('menuitem', { name: importLabel })).toHaveAttribute('href', '/investments/import');
     fireEvent.click(screen.getByRole('menuitem', { name: addLabel }));
     expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
   });
 
   it('keeps the + a plain button on Holdings, Dividends, Corporate actions and Instruments', () => {
-    for (const path of ['/ds/investments', '/ds/investments/dividends', '/ds/investments/corporate-actions', '/ds/investments/instruments']) {
+    for (const path of ['/investments', '/investments/dividends', '/investments/corporate-actions', '/investments/instruments']) {
       pathname = path;
       const { unmount } = renderShell();
       fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
@@ -156,7 +156,7 @@ describe('InvestmentsShell', () => {
   });
 
   it("renders a holding's own page without the tab strip", () => {
-    pathname = '/ds/investments/i1';
+    pathname = '/investments/i1';
     renderShell();
     expect(screen.getByText('tab body')).toBeInTheDocument();
     expect(screen.queryByRole('tab')).toBeNull();

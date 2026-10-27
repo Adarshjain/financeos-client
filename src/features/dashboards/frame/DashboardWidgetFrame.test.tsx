@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, refresh: vi.fn() }),
-  usePathname: () => '/ds/dashboards/d1',
+  usePathname: () => '/dashboards/d1',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/api/client', async () => {
@@ -168,7 +168,7 @@ describe('DashboardWidgetFrame menus', () => {
     await open();
     expect(items()).toEqual(['Edit report']);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Edit report' }));
-    expect(push).toHaveBeenCalledWith('/ds/reports/r1');
+    expect(push).toHaveBeenCalledWith('/reports/r1');
   });
 
   it('a chart report widget: Edit report, View underlying data', async () => {
@@ -194,7 +194,7 @@ describe('DashboardWidgetFrame menus', () => {
     renderWithQuery(<DashboardWidgetFrame widget={builtin('upcoming', 'template')} />);
     await open();
     await userEvent.click(screen.getByRole('menuitem', { name: 'View full page' }));
-    expect(push).toHaveBeenCalledWith('/ds/upcoming');
+    expect(push).toHaveBeenCalledWith('/upcoming');
   });
 
   it('Duplicate as my report saves the template with the widget params and confirms with Open', async () => {
@@ -207,7 +207,7 @@ describe('DashboardWidgetFrame menus', () => {
     expect(vi.mocked(api.POST)).toHaveBeenNthCalledWith(1, '/api/v1/dashboards/builtins/{key}/definition', { params: { path: { key: 'upcoming' } }, body: { params: { days: 30 } } });
     expect(showToast.mock.calls[0][0]).toBe('Saved "Upcoming" to your reports.');
     showToast.mock.calls[0][1].action.onSelect();
-    expect(push).toHaveBeenCalledWith('/ds/reports/rep-9');
+    expect(push).toHaveBeenCalledWith('/reports/rep-9');
   });
 
   it('a component built-in whose body links to its page has no View full page (here, no menu at all)', async () => {

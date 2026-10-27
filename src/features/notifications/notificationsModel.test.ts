@@ -13,25 +13,25 @@ function n(over: Partial<AppNotification> & { kind: string }): AppNotification {
 describe('notificationHref', () => {
   it('job kinds open the job in Activity, or Activity when there is no job', () => {
     for (const kind of ['job_failed', 'job_finished', 'gmail_sync']) {
-      expect(notificationHref(n({ kind, refs: { jobId: 'j1' } as never }))).toBe('/ds/settings/activity?job=j1');
-      expect(notificationHref(n({ kind }))).toBe('/ds/settings/activity');
+      expect(notificationHref(n({ kind, refs: { jobId: 'j1' } as never }))).toBe('/settings/activity?job=j1');
+      expect(notificationHref(n({ kind }))).toBe('/settings/activity');
     }
   });
 
   it('statement_imported opens the account statements', () => {
     expect(notificationHref(n({ kind: 'statement_imported', refs: { accountId: 'a1' } as never }))).toBe(
-      '/ds/accounts/a1/statements',
+      '/accounts/a1/statements',
     );
     expect(notificationHref(n({ kind: 'statement_imported' }))).toBeNull();
   });
 
   it('gmail_disconnected opens Connections', () => {
-    expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/ds/settings/connections');
+    expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/settings/connections');
   });
 
   it('reward kinds open the account rewards, or nothing without an account', () => {
     for (const kind of ['reward_milestone', 'reward_cap']) {
-      expect(notificationHref(n({ kind, refs: { accountId: 'a1' } as never }))).toBe('/ds/accounts/a1/rewards');
+      expect(notificationHref(n({ kind, refs: { accountId: 'a1' } as never }))).toBe('/accounts/a1/rewards');
       expect(notificationHref(n({ kind }))).toBeNull();
     }
   });

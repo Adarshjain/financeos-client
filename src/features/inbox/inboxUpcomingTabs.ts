@@ -18,7 +18,7 @@ export const inboxUpcomingTabs: InboxUpcomingTab[] = [
   { id: 'calendar', label: 'Calendar', title: 'Upcoming', href: CALENDAR_HREF },
 ];
 
-/** The tab a pathname belongs to; anything else under /ds/upcoming counts as Upcoming. */
+/** The tab a pathname belongs to; anything else under /upcoming counts as Upcoming. */
 export function activeInboxUpcomingTab(pathname: string | null | undefined): InboxUpcomingTab {
   const path = (pathname ?? '').replace(/\/+$/, '');
   if (path === CALENDAR_HREF || path.startsWith(`${CALENDAR_HREF}/`)) return inboxUpcomingTabs[2];

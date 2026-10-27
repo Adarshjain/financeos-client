@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltin';
+import { legacyHref } from '@/features/shell/routes';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -22,7 +23,7 @@ export function useDuplicateBuiltin() {
       const note = windowNote(windowAsOf);
       toast.success(`Saved "${report.name}" to your reports`, {
         ...(note ? { description: note } : {}),
-        action: { label: 'Open', onClick: () => router.push(`/reports/${report.id}`) },
+        action: { label: 'Open', onClick: () => router.push(legacyHref(`/reports/${report.id}`)) },
       });
     },
     onError: (e) => toastError(e, 'Failed to duplicate as a report'),

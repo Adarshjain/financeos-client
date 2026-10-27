@@ -13,7 +13,7 @@ import { TransactionsScreen, type TransactionsScreenProps } from './Transactions
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/transactions',
+  usePathname: () => '/transactions',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({

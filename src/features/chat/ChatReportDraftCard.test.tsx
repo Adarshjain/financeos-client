@@ -194,7 +194,7 @@ describe('create draft', () => {
     expect(await screen.findByText(/^Saved as report/)).toBeInTheDocument();
     expect(actions.saveDraftAsReport).toHaveBeenCalledWith(create);
     expect(actions.addReportWidget).not.toHaveBeenCalled();
-    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/ds/reports/r1');
+    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/reports/r1');
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'saved', reportId: 'r1', reportName: 'Monthly spend by category' });
     expect(toast).toHaveBeenCalledWith('Report saved', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }));
     expect(screen.queryByRole('button', { name: 'Save as report' })).toBeNull();
@@ -320,7 +320,7 @@ describe('a stored outcome', () => {
   it('shows the saved state when the conversation is reopened, and Undo still works from the stored ids', async () => {
     setup(create, { draftResult: { action: 'saved-home', reportId: 'r1', widgetId: 'w1', dashboardId: 'd1' } });
     expect(screen.getByText(/^Saved as report and added to Home/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/ds/reports/r1');
+    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/reports/r1');
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(actions.removeWidgetFrom).toHaveBeenCalledWith('d1', 'w1'));
     expect(await screen.findByRole('button', { name: 'Save as report' })).toBeInTheDocument();
@@ -351,7 +351,7 @@ describe('update draft', () => {
     expect(actions.getReport.mock.invocationCallOrder[0]).toBeLessThan(actions.applyDraftUpdate.mock.invocationCallOrder[0]);
     expect(actions.applyDraftUpdate).toHaveBeenCalledWith('r1', update);
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'updated', reportId: 'r1', reportName: 'New name' });
-    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/ds/reports/r1');
+    expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/reports/r1');
     undoToast().onSelect();
     await waitFor(() => expect(actions.restoreReport).toHaveBeenCalledWith(expect.objectContaining({ name: 'Old name' })));
     expect(await screen.findByRole('button', { name: 'Update report' })).toBeInTheDocument();

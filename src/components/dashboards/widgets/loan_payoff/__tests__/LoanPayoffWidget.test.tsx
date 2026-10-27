@@ -78,7 +78,7 @@ describe('LoanPayoffWidget', () => {
     respond([]);
     renderWithQuery(<LoanPayoffWidget loanId={null} />);
     expect(await screen.findByText('No active loans')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to loans' })).toHaveAttribute('href', '/loans');
+    expect(screen.getByRole('link', { name: 'Go to loans' })).toHaveAttribute('href', '/legacy/loans');
   });
 
   it('per loan: outstanding, % principal repaid, payoff date, interest to go and next EMI', async () => {

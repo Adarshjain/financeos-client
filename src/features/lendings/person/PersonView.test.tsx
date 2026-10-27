@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/ds/loans/lendings/p1',
+  usePathname: () => '/loans/lendings/p1',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -112,7 +112,7 @@ describe('header', () => {
     renderView();
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
     expect(screen.getByText('Owe & lend / Lendings')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/ds/loans/lendings');
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
     expect(screen.getByText('College friend · 4 entries since May')).toBeInTheDocument();
     expect(screen.getByText('Owes you')).toBeInTheDocument();
     expect(screen.getByText('₹15,000')).toBeInTheDocument();
@@ -175,7 +175,7 @@ describe('ledger', () => {
     renderView({ ledger: { ...ledgerFixture(all, 3), entries: { ...ledgerFixture(all, 3).entries, totalElements: 60 } } });
     expect(screen.getAllByRole('button', { name: /next/i })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/ds/loans/lendings/p1?page=1', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p1?page=1', { scroll: false });
   });
 
   it('says so when the person has no entries', () => {
@@ -321,7 +321,7 @@ describe('delete person', () => {
     await user.click(screen.getByRole('button', { name: 'Delete person' }));
     await waitFor(() => expect(m.deleteCp.mutateAsync).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Person deleted');
-    expect(router.push).toHaveBeenCalledWith('/ds/loans/lendings');
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings');
   });
 
   it('can be cancelled', async () => {
