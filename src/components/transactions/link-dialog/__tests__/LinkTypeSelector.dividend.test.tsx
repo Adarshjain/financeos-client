@@ -44,4 +44,9 @@ describe('LinkTypeSelector DIVIDEND', () => {
     renderSelector({ kind: 'DIVIDEND' });
     expect(screen.queryByText('Note (Optional)')).not.toBeInTheDocument();
   });
+
+  it('prints no reason for EPF withdrawal: Legacy has no menu item for it', () => {
+    renderSelector({ disabledKinds: { EPF_WITHDRAWAL: 'EPF withdrawals must be money-in (credit) transactions' } });
+    expect(screen.queryByText(/EPF withdrawal/)).not.toBeInTheDocument();
+  });
 });

@@ -31,7 +31,7 @@ export interface InboxPageProps {
 export function InboxPage({ highlightKey = null }: InboxPageProps) {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useInbox();
-  const { snooze, dismiss } = useInboxActions(dsInboxNotifier);
+  const { snooze, dismiss, epfLink, epfDismiss } = useInboxActions(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 
@@ -42,6 +42,8 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
   const shownItems = useDeferredRows(items);
 
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
+    if (button.epf === 'link') return epfLink(item);
+    if (button.epf === 'dismiss') return epfDismiss(item);
     const pending = pendingFor(item, button);
     if (pending) setPendingBill(pending);
   };
@@ -83,7 +85,7 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
                 highlightKey={deepLink.found ? highlightKey : null}
                 onBillButton={onBillButton}
                 onSnooze={(item, until) => snooze(item.key, until)}
-                onDismiss={(item) => dismiss(item.key)}
+                onDismiss={(item) => (item.kind === 'epf_match' ? epfDismiss(item) : dismiss(item.key))}
               />
             ))}
           </Card>

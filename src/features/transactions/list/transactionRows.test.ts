@@ -111,6 +111,14 @@ describe('linkWords', () => {
   it('is empty with none', () => {
     expect(linkWords(t())).toBeUndefined();
   });
+
+  it('says EPF withdrawal and EPF pension in blue words, as records', () => {
+    expect(linkWords(t({ obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'e1', parentId: 'emp', label: 'EPF withdrawal' }] }))).toEqual({
+      label: 'EPF withdrawal',
+      isRecord: true,
+    });
+    expect(linkWords(t({ obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'e2', parentId: 'emp', label: 'EPF pension' }] }))?.label).toBe('EPF pension');
+  });
 });
 
 describe('grouping', () => {

@@ -27,11 +27,12 @@ export function linkTypesFor(subject: Pick<Transaction, 'amount'> | undefined): 
   return subject && subject.amount >= 0 ? all.filter((t) => !DEBIT_ONLY_TYPES.includes(t)) : all;
 }
 
-/** The three records a transaction can be attached to, instead of another transaction. */
+/** The records a transaction can be attached to, instead of another transaction. */
 export const RECORD_KIND_LABELS = {
   LENDING: 'Lending entry',
   LOAN_PAYMENT: 'Loan payment',
   DIVIDEND: 'Dividend',
+  EPF_WITHDRAWAL: 'EPF withdrawal',
 } as const;
 
 export type DisabledKinds = Partial<Record<LinkKind, string>>;
@@ -44,7 +45,7 @@ export function disabledLinkKinds(subject: Transaction | undefined, selectedCoun
   if (!subject) {
     if (selectedCount > 1) {
       const reason = 'Select a single transaction to record a lending, loan payment or dividend';
-      return { LENDING: reason, LOAN_PAYMENT: reason, DIVIDEND: reason };
+      return { LENDING: reason, LOAN_PAYMENT: reason, DIVIDEND: reason, EPF_WITHDRAWAL: reason };
     }
     return {};
   }
@@ -55,6 +56,8 @@ export function disabledLinkKinds(subject: Transaction | undefined, selectedCoun
   else if (subject.amount >= 0) result.LOAN_PAYMENT = 'Loan payments must be money-out (debit) transactions';
   if (refs.length > 0) result.DIVIDEND = 'Already linked to a ledger/loan/dividend record';
   else if (subject.amount < 0) result.DIVIDEND = 'Dividends must be money-in (credit) transactions';
+  if (refs.length > 0) result.EPF_WITHDRAWAL = 'Already linked to a record';
+  else if (subject.amount < 0) result.EPF_WITHDRAWAL = 'EPF withdrawals must be money-in (credit) transactions';
   return result;
 }
 
@@ -220,5 +223,6 @@ export function linkDescription(kind: LinkKind, multi: boolean): string {
   if (kind === 'LENDING') return 'Record it in a lending ledger';
   if (kind === 'LOAN_PAYMENT') return 'Settle a loan installment';
   if (kind === 'DIVIDEND') return 'Record a dividend';
+  if (kind === 'EPF_WITHDRAWAL') return 'Record an EPF withdrawal';
   return multi ? 'Picked from the selection; give each one its role' : 'One place for everything that explains this transaction';
 }

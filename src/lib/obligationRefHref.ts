@@ -4,5 +4,6 @@ import type { ObligationKind } from '@/lib/transaction.types';
 export function obligationRefHref(kind: ObligationKind, parentId: string): string {
   if (kind === 'LENDING') return `/loans/lendings/${parentId}`;
   if (kind === 'DIVIDEND') return `/investments/dividends?instrumentId=${parentId}`;
+  if (kind === 'EPF_WITHDRAWAL') return '/investments/epf';
   return `/loans/${parentId}`;
 }

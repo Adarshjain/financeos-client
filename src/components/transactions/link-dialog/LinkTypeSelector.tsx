@@ -17,6 +17,7 @@ const RECORD_KIND_LABELS: Record<(typeof RECORD_LINK_KINDS)[number], string> = {
   LENDING: 'Lending (person ledger)',
   LOAN_PAYMENT: 'Loan EMI payment',
   DIVIDEND: 'Dividend received',
+  EPF_WITHDRAWAL: 'EPF withdrawal',
 };
 
 interface LinkTypeSelectorProps {
@@ -39,7 +40,9 @@ export function LinkTypeSelector({
   disabledKinds,
 }: LinkTypeSelectorProps) {
   const isRecord = isRecordKind(kind);
-  const disabledRecordReasons = RECORD_LINK_KINDS.filter((k) => disabledKinds[k]);
+  const disabledRecordReasons = RECORD_LINK_KINDS.filter(
+    (k) => k !== 'EPF_WITHDRAWAL' && disabledKinds[k],
+  );
 
   return (
     <>

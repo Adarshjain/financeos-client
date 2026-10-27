@@ -1,6 +1,6 @@
 import { CreateInstrumentRequest, ImportPreview, ImportRow, ReconcilePreview } from '@/lib/types';
 
-export type ImportMode = 'reconcile_zerodha' | 'reconcile_groww' | 'mf_cas';
+export type ImportMode = 'reconcile_zerodha' | 'reconcile_groww' | 'mf_cas' | 'epf_passbook';
 export type ImportAssetScope = 'all' | 'equity' | 'fno';
 
 export interface RowState {

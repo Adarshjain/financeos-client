@@ -20,6 +20,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 // The add dialogs are tested on their own: here each one only says which it is.
 vi.mock('./tradebook/TradeDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-trade', 'RecordTradeDialog'));
 vi.mock('./dividends/DividendFormDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-dividend', 'DividendAddDialog'));
+vi.mock('./epf/EpfAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-epf', 'EpfAddDialog'));
 vi.mock('./fno/FnoAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-fno', 'FnoAddDialog'));
 vi.mock('./corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-action', 'CorporateActionDialog'));
 vi.mock('./instruments/InstrumentAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-instrument', 'InstrumentAddDialog'));
@@ -50,10 +51,11 @@ beforeEach(() => {
 });
 
 describe('InvestmentsShell', () => {
-  it('shows the six tabs with Holdings active and the page below them', () => {
+  it('shows the seven tabs with Holdings active and the page below them', () => {
     renderShell();
     expect(tabTexts()).toEqual([
       'Holdings',
+      'EPF',
       'Tradebook',
       'Dividends',
       'F&O',
@@ -64,16 +66,17 @@ describe('InvestmentsShell', () => {
     expect(screen.getByText('tab body')).toBeInTheDocument();
   });
 
-  it('puts the counts on Tradebook, Dividends, F&O and Corporate actions once they load, and none on Holdings or Instruments', async () => {
+  it('puts the counts on Tradebook, Dividends, F&O and Corporate actions once they load, and none on Holdings, EPF or Instruments', async () => {
     renderShell();
     await waitFor(() => expect(tabTexts()).toContain('Tradebook · 38'));
-    expect(tabTexts()).toEqual(['Holdings', 'Tradebook · 38', 'Dividends · 5', 'F&O · 5', 'Corporate actions · 2', 'Instruments']);
+    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'Tradebook · 38', 'Dividends · 5', 'F&O · 5', 'Corporate actions · 2', 'Instruments']);
   });
 
   it('links every tab to its Dinero page', () => {
     renderShell();
     const href = (label: RegExp) => screen.getByRole('tab', { name: label }).getAttribute('href');
     expect(href(/^Holdings/)).toBe('/investments');
+    expect(href(/^EPF/)).toBe('/investments/epf');
     expect(href(/^Tradebook/)).toBe('/investments/tradebook');
     expect(href(/^Dividends/)).toBe('/investments/dividends');
     expect(href(/^F&O/)).toBe('/investments/fno');
@@ -119,6 +122,7 @@ describe('InvestmentsShell', () => {
 
   it.each([
     ['/investments', 'trade'],
+    ['/investments/epf', 'epf'],
     ['/investments/dividends', 'dividend'],
     ['/investments/corporate-actions', 'action'],
     ['/investments/instruments', 'instrument'],

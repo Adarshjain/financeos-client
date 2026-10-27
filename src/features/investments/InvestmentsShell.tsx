@@ -9,6 +9,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 
 import { CorporateActionDialog } from './corporate-actions/CorporateActionDialog';
 import { DividendAddDialog } from './dividends/DividendFormDialog';
+import { EpfAddDialog } from './epf/EpfAddDialog';
 import { FnoAddDialog } from './fno/FnoAddDialog';
 import { InstrumentAddDialog } from './instruments/InstrumentAddDialog';
 import { activeInvestmentsTab, INVESTMENTS_IMPORT_HREF, investmentsTabHref, type InvestmentsTabId, investmentsTabs, isHoldingDetailPath, isImportPath } from './investmentsTabs';
@@ -72,6 +73,8 @@ function AddDialog({ tab, onClose }: { tab: InvestmentsTabId; onClose: () => voi
   switch (tab) {
     case 'dividends':
       return <DividendAddDialog onClose={onClose} />;
+    case 'epf':
+      return <EpfAddDialog onClose={onClose} />;
     case 'fno':
       return <FnoAddDialog onClose={onClose} />;
     case 'corporate-actions':

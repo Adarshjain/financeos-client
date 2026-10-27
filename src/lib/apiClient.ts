@@ -1011,6 +1011,28 @@ export const dividendsApi = {
   acceptSuggestions: async (body: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> => investmentsApi.acceptDividendSuggestions(body),
 };
 
+type EpfSchemas = import('@/lib/api/schema').components['schemas'];
+
+/** The EPF tab's reads (the writes are made from the browser through the typed `api` client). */
+export const epfApi = {
+  summary: async (): Promise<EpfSchemas['EpfSummaryResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/epf/summary');
+    return data! as EpfSchemas['EpfSummaryResponse'];
+  },
+  employers: async (): Promise<EpfSchemas['EpfEmployerResponse'][]> => {
+    const { data } = await serverApi.GET('/api/v1/epf/employers');
+    return data! as EpfSchemas['EpfEmployerResponse'][];
+  },
+  fys: async (employerId?: string): Promise<number[]> => {
+    const { data } = await serverApi.GET('/api/v1/epf/fys', { params: { query: { employerId } } });
+    return data! as number[];
+  },
+  entries: async (params: { employerId?: string; fy?: number; page?: number; size?: number }): Promise<EpfSchemas['PageEpfEntryResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/epf/entries', { params: { query: params } });
+    return data! as EpfSchemas['PageEpfEntryResponse'];
+  },
+};
+
 export const fnoApi = {
   page: async (params?: FnoPageQuery): Promise<PageFnoTrades> => investmentsApi.getFnoPage(params),
   summary: async (params?: { fy?: number; allYears?: boolean; brokerAccountId?: string }): Promise<FnoSummary> => investmentsApi.getFnoSummary(params),

@@ -26,10 +26,14 @@ describe('disabledLinkKinds', () => {
     expect(d.LENDING).toBe('Select a single transaction to record a lending, loan payment or dividend');
     expect(d.LOAN_PAYMENT).toBe(d.LENDING);
     expect(d.DIVIDEND).toBe(d.LENDING);
+    expect(d.EPF_WITHDRAWAL).toBe(d.LENDING);
   });
 
   it('keeps loan payments to money out and dividends to money in', () => {
-    expect(disabledLinkKinds(tx('d', -100), 1)).toEqual({ DIVIDEND: 'Dividends must be money-in (credit) transactions' });
+    expect(disabledLinkKinds(tx('d', -100), 1)).toEqual({
+      DIVIDEND: 'Dividends must be money-in (credit) transactions',
+      EPF_WITHDRAWAL: 'EPF withdrawals must be money-in (credit) transactions',
+    });
     expect(disabledLinkKinds(tx('c', 100), 1)).toEqual({
       LOAN_PAYMENT: 'Loan payments must be money-out (debit) transactions',
     });
@@ -40,9 +44,17 @@ describe('disabledLinkKinds', () => {
     expect(disabledLinkKinds(lent, 1)).toEqual({
       LOAN_PAYMENT: 'Already linked to a ledger/loan record',
       DIVIDEND: 'Already linked to a ledger/loan/dividend record',
+      EPF_WITHDRAWAL: 'Already linked to a record',
     });
     const loan = tx('d', -100, { obligationRefs: [{ kind: 'LOAN_PAYMENT', id: 'p1' }] } as Partial<Transaction>);
     expect(disabledLinkKinds(loan, 1).LENDING).toBe('Already linked to a loan or dividend record');
+  });
+
+  it('offers an EPF withdrawal for a credit with no record, never for a debit or a linked credit', () => {
+    expect(disabledLinkKinds(tx('c', 100), 1).EPF_WITHDRAWAL).toBeUndefined();
+    expect(disabledLinkKinds(tx('d', -100), 1).EPF_WITHDRAWAL).toBe('EPF withdrawals must be money-in (credit) transactions');
+    const linked = tx('c', 100, { obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'e1', label: 'EPF withdrawal' }] } as Partial<Transaction>);
+    expect(disabledLinkKinds(linked, 1).EPF_WITHDRAWAL).toBe('Already linked to a record');
   });
 
   it('disables nothing without a transaction', () => {

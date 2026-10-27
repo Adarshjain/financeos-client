@@ -51,3 +51,16 @@ export function linkDividendTransaction(dividendId: string, transactionId: strin
     body: { transactionId, updateTds },
   });
 }
+
+/** DELETE /epf/entries/{id}/transaction: detaches the credit from the EPF withdrawal. */
+export function unlinkEpfWithdrawalTransaction(entryId: string) {
+  return api.DELETE('/api/v1/epf/entries/{id}/transaction', { params: { path: { id: entryId } } });
+}
+
+/** PUT /epf/entries/{id}/transaction: attaches a credit to the EPF withdrawal (TDS is not recorded again). */
+export function linkEpfWithdrawalTransaction(entryId: string, transactionId: string) {
+  return api.PUT('/api/v1/epf/entries/{id}/transaction', {
+    params: { path: { id: entryId } },
+    body: { transactionId, recordTds: false },
+  });
+}

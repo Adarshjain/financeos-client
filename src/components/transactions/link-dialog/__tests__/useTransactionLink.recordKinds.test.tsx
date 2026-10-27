@@ -158,6 +158,7 @@ describe('useTransactionLink disabledKinds', () => {
 
     expect(result.current.disabledKinds).toEqual({
       DIVIDEND: 'Dividends must be money-in (credit) transactions',
+      EPF_WITHDRAWAL: 'EPF withdrawals must be money-in (credit) transactions',
     });
   });
 });

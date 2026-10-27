@@ -13,6 +13,7 @@
     "counterpartiesApi",
     "dashboardsApi",
     "dividendsApi",
+    "epfApi",
     "fnoApi",
     "gmailApi",
     "importsApi",
@@ -205,6 +206,12 @@
       "suggestions",
       "summary",
       "update"
+    ],
+    "epfApi": [
+      "employers",
+      "entries",
+      "fys",
+      "summary"
     ],
     "fnoApi": [
       "createTrade",

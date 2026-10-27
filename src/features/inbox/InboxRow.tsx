@@ -91,7 +91,7 @@ export function InboxRow({ item, highlighted, onBillButton, onSnooze, onDismiss 
             {snoozable ? (
               <InboxSnoozeMenu title={item.title} onSnooze={(until) => onSnooze(item, until)} />
             ) : null}
-            {dismissable ? (
+            {dismissable && item.kind !== 'epf_match' ? (
               <Button
                 variant="ghost"
                 size="sm"

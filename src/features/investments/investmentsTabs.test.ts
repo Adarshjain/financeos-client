@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { activeInvestmentsTab, holdingHref, HOLDINGS_HREF, investmentsTabHref, investmentsTabs, isHoldingDetailPath } from './investmentsTabs';
 
 describe('investments tabs', () => {
-  it('lists the six tabs in board order', () => {
+  it('lists the seven tabs in board order', () => {
     expect(investmentsTabs.map((t) => t.label)).toEqual([
       'Holdings',
+      'EPF',
       'Tradebook',
       'Dividends',
       'F&O',
@@ -14,13 +15,14 @@ describe('investments tabs', () => {
     ]);
   });
 
-  it('counts Tradebook, Dividends, F&O and Corporate actions; not Holdings or Instruments', () => {
+  it('counts Tradebook, Dividends, F&O and Corporate actions; not Holdings, EPF or Instruments', () => {
     expect(investmentsTabs.filter((t) => t.counted).map((t) => t.id)).toEqual(['tradebook', 'dividends', 'fno', 'corporate-actions']);
   });
 
   it('sends every tab to its Dinero page', () => {
     const hrefs = Object.fromEntries(investmentsTabs.map((t) => [t.id, investmentsTabHref(t)]));
     expect(hrefs.holdings).toBe('/investments');
+    expect(hrefs.epf).toBe('/investments/epf');
     expect(hrefs.tradebook).toBe('/investments/tradebook');
     expect(hrefs.fno).toBe('/investments/fno');
     expect(hrefs['corporate-actions']).toBe('/investments/corporate-actions');
@@ -28,6 +30,7 @@ describe('investments tabs', () => {
 
   it('finds the active tab from the pathname, Holdings for anything else', () => {
     expect(activeInvestmentsTab('/investments')).toBe('holdings');
+    expect(activeInvestmentsTab('/investments/epf')).toBe('epf');
     expect(activeInvestmentsTab('/investments/')).toBe('holdings');
     expect(activeInvestmentsTab('/investments/dividends')).toBe('dividends');
     expect(activeInvestmentsTab('/investments/corporate-actions/')).toBe('corporate-actions');
@@ -40,6 +43,7 @@ describe('investments tabs', () => {
     expect(isHoldingDetailPath('/investments/i1')).toBe(true);
     expect(isHoldingDetailPath('/investments/i1/')).toBe(true);
     expect(isHoldingDetailPath(HOLDINGS_HREF)).toBe(false);
+    expect(isHoldingDetailPath('/investments/epf')).toBe(false);
     expect(isHoldingDetailPath('/investments/i1/extra')).toBe(false);
     expect(isHoldingDetailPath(null)).toBe(false);
   });

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
 import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
-import { renderWithQuery } from '@/test/renderWithQuery';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 import { TransactionDetailPanel, type TransactionDetailPanelProps } from './TransactionDetailPanel';
 
@@ -25,6 +25,8 @@ const api = vi.hoisted(() => ({
   deleteLoanPayment: vi.fn(),
   unlinkDividendTransaction: vi.fn(),
   linkDividendTransaction: vi.fn(),
+  unlinkEpfWithdrawalTransaction: vi.fn(),
+  linkEpfWithdrawalTransaction: vi.fn(),
 }));
 vi.mock('./transactionDetailApi', () => api);
 
@@ -87,6 +89,8 @@ beforeEach(() => {
   api.deleteLoanPayment.mockResolvedValue({});
   api.unlinkDividendTransaction.mockResolvedValue({});
   api.linkDividendTransaction.mockResolvedValue({});
+  api.unlinkEpfWithdrawalTransaction.mockResolvedValue({});
+  api.linkEpfWithdrawalTransaction.mockResolvedValue({});
   lending.link.mockResolvedValue({});
   lending.unlink.mockResolvedValue({});
 });
@@ -273,6 +277,51 @@ describe('TransactionDetailPanel', () => {
       await waitFor(() => expect(toast).toHaveBeenCalledWith('Unlinked from dividend', expect.anything()));
       toastAction().onSelect();
       await waitFor(() => expect(api.linkDividendTransaction).toHaveBeenCalledWith('d1', 't1'));
+    });
+
+    it('unlinks an EPF withdrawal at once and Undo links the credit again', async () => {
+      renderWithQuery(
+        <TransactionDetailPanel
+          {...props({ pageTransactions: [txn({ amount: 40000, obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'w1', parentId: 'emp1', label: 'EPF withdrawal' }] })] })}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
+      await waitFor(() => expect(api.unlinkEpfWithdrawalTransaction).toHaveBeenCalledWith('w1'));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('Unlinked from the EPF withdrawal', expect.anything()));
+      toastAction().onSelect();
+      await waitFor(() => expect(api.linkEpfWithdrawalTransaction).toHaveBeenCalledWith('w1', 't1'));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('Linked to the EPF withdrawal'));
+    });
+
+    it('refreshes the EPF and Inbox queries after unlinking an EPF withdrawal and after Undo', async () => {
+      const queryClient = createTestQueryClient();
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      renderWithQuery(
+        <TransactionDetailPanel
+          {...props({ pageTransactions: [txn({ amount: 40000, obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'w1', parentId: 'emp1', label: 'EPF withdrawal' }] })] })}
+        />,
+        { queryClient },
+      );
+      const keysOf = () => invalidate.mock.calls.map((c) => JSON.stringify((c[0] as { queryKey: unknown }).queryKey));
+      fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
+      await waitFor(() => expect(keysOf()).toContain('["epf"]'));
+      expect(keysOf()).toContain('["inbox"]');
+      invalidate.mockClear();
+      toastAction().onSelect();
+      await waitFor(() => expect(keysOf()).toContain('["epf"]'));
+      expect(keysOf()).toContain('["inbox"]');
+    });
+
+    it('says so when unlinking an EPF withdrawal fails, and offers no Undo', async () => {
+      api.unlinkEpfWithdrawalTransaction.mockRejectedValue(new Error('nope'));
+      renderWithQuery(
+        <TransactionDetailPanel
+          {...props({ pageTransactions: [txn({ amount: 40000, obligationRefs: [{ kind: 'EPF_WITHDRAWAL', id: 'w1', parentId: 'emp1', label: 'EPF withdrawal' }] })] })}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to unlink EPF withdrawal', { tone: 'danger' }));
+      expect(toast).not.toHaveBeenCalledWith('Unlinked from the EPF withdrawal', expect.anything());
     });
 
     it('asks before removing a loan settlement, and has no Undo (it deletes the payment)', async () => {
