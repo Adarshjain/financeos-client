@@ -7,6 +7,7 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { isRecordKind, type LinkKind, type Transaction } from '@/lib/transaction.types';
 
 import { DividendLinkBody } from './DividendLinkBody';
+import { EpfWithdrawalLinkBody } from './EpfWithdrawalLinkBody';
 import { LendingLinkBody, type LendingMode } from './LendingLinkBody';
 import {
   buildLinkRequest,
@@ -22,6 +23,7 @@ import { LoanPaymentLinkBody } from './LoanPaymentLinkBody';
 import { TransactionsLinkBody } from './TransactionsLinkBody';
 import { useCreateTransactionLink } from './useCreateTransactionLink';
 import { useDividendLink } from './useDividendLink';
+import { useEpfWithdrawalLink } from './useEpfWithdrawalLink';
 import { useLinkMembers } from './useLinkMembers';
 import { useLoanPaymentLink } from './useLoanPaymentLink';
 import { useRecordLending } from './useRecordLending';
@@ -36,7 +38,7 @@ export interface LinkTransactionsDialogProps {
 
 /**
  * The one Link dialog: tie transactions to each other (transfer, card bill payment, refund, reversal, fee,
- * installment), or attach one transaction to a lending entry, a loan installment or a dividend.
+ * installment), or attach one transaction to a lending entry, a loan installment, a dividend or an EPF withdrawal.
  */
 export function LinkTransactionsDialog({ transactions, onClose, onLinked }: LinkTransactionsDialogProps) {
   const multi = transactions.length > 1;
@@ -71,6 +73,12 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
   const dividend = useDividendLink({
     transaction: subject,
     open: kind === 'DIVIDEND',
+    onOpenChange,
+    onSuccess: onLinked,
+  });
+  const epf = useEpfWithdrawalLink({
+    transaction: subject,
+    open: kind === 'EPF_WITHDRAWAL',
     onOpenChange,
     onSuccess: onLinked,
   });
@@ -136,6 +144,14 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
       disabled: !dividend.canSubmit,
       loading: dividend.submitting,
     };
+  } else if (kind === 'EPF_WITHDRAWAL') {
+    busy = epf.submitting;
+    primary = {
+      label: epf.mode === 'new' ? 'Record and link' : 'Link',
+      onSelect: epf.handleSubmit,
+      disabled: !epf.canSubmit,
+      loading: epf.submitting,
+    };
   } else {
     primary = {
       label: multi ? `Link ${state.members.length}` : 'Link transactions',
@@ -169,6 +185,8 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
               <LoanPaymentLinkBody loanPayment={loanPayment} />
             ) : kind === 'DIVIDEND' ? (
               <DividendLinkBody dividend={dividend} />
+            ) : kind === 'EPF_WITHDRAWAL' ? (
+              <EpfWithdrawalLinkBody epf={epf} />
             ) : (
               <TransactionsLinkBody type={kind} state={state} accounts={accounts} multi={multi} />
             )}

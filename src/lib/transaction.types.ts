@@ -60,10 +60,10 @@ export type LinkType = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND' | 'REVERSAL' | 'FEE'
  * fold what used to be a separate "Record as lending" flow (and a new loan-EMI
  * settlement flow) into the same entry point.
  */
-export type LinkKind = LinkType | 'LENDING' | 'LOAN_PAYMENT' | 'DIVIDEND';
+export type LinkKind = LinkType | 'LENDING' | 'LOAN_PAYMENT' | 'DIVIDEND' | 'EPF_WITHDRAWAL';
 
 /** The `LinkKind` values that are not a `LinkType` — they don't hit `/transaction-links`. */
-export const RECORD_LINK_KINDS = ['LENDING', 'LOAN_PAYMENT', 'DIVIDEND'] as const;
+export const RECORD_LINK_KINDS = ['LENDING', 'LOAN_PAYMENT', 'DIVIDEND', 'EPF_WITHDRAWAL'] as const;
 
 export function isRecordKind(kind: LinkKind): kind is (typeof RECORD_LINK_KINDS)[number] {
   return (RECORD_LINK_KINDS as readonly string[]).includes(kind);
@@ -109,7 +109,7 @@ export interface TransactionLinkSummary {
   memberCount: number;
 }
 
-export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE' | 'DIVIDEND';
+export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE' | 'DIVIDEND' | 'EPF_WITHDRAWAL';
 
 /**
  * A direct-FK reference from a lending ledger entry, loan row or dividend row

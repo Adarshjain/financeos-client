@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
+import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import { formatDate } from '@/lib/utils';
 
@@ -21,6 +21,10 @@ export interface InboxNotifier {
   snoozeFailed: (error: unknown) => void;
   dismissFailed: (error: unknown) => void;
   undoFailed: (error: unknown) => void;
+  /** An EPF suggestion was linked, or turned down with "Not this one"; either failing puts the row back. */
+  epfLinked?: () => void;
+  epfDismissed?: () => void;
+  epfFailed?: (error: unknown) => void;
 }
 
 export const sonnerInboxNotifier: InboxNotifier = {
@@ -31,6 +35,9 @@ export const sonnerInboxNotifier: InboxNotifier = {
   snoozeFailed: (e) => toast.error(getErrorMessage(e, 'Could not snooze this item')),
   dismissFailed: (e) => toast.error(getErrorMessage(e, 'Could not dismiss this item')),
   undoFailed: (e) => toast.error(getErrorMessage(e, 'Could not undo')),
+  epfLinked: () => toast.success('Linked to the EPF withdrawal'),
+  epfDismissed: () => toast.success('Dismissed'),
+  epfFailed: (e) => toast.error(getErrorMessage(e, 'Could not update this suggestion')),
 };
 
 const INBOX_ACTION_KEY = ['inbox', 'action'] as const;
@@ -119,7 +126,59 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
     onSettled: settle,
   });
 
+  const epfLink = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: async (item: InboxItemResponse) => {
+      const { epfEntryId, transactionId } = item.refs;
+      if (!epfEntryId || !transactionId) throw new Error('This suggestion has no withdrawal or credit');
+      const res = await api.PUT('/api/v1/epf/entries/{id}/transaction', {
+        params: { path: { id: epfEntryId } },
+        body: { transactionId, recordTds: false },
+      });
+      if (res.error) throw res.error;
+    },
+    onMutate: (item) => hideRow(qc, item.key),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.transactions.all });
+      void qc.invalidateQueries({ queryKey: ['epf'] });
+      notifier.epfLinked?.();
+    },
+    onError: (e, _item, snapshot) => {
+      restore(qc, snapshot);
+      notifier.epfFailed?.(e);
+    },
+    onSettled: settle,
+  });
+
+  // "Not this one": the server stops suggesting this credit, then the row is dismissed like any other.
+  const epfDismiss = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: async (item: InboxItemResponse) => {
+      const { epfEntryId, transactionId } = item.refs;
+      if (epfEntryId && transactionId) {
+        const res = await api.POST('/api/v1/epf/entries/{id}/suggestion/dismiss', {
+          params: { path: { id: epfEntryId } },
+          body: { transactionId },
+        });
+        if (res.error) throw res.error;
+      }
+      await api.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key: item.key } } });
+    },
+    onMutate: (item) => hideRow(qc, item.key),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['epf'] });
+      notifier.epfDismissed?.();
+    },
+    onError: (e, _item, snapshot) => {
+      restore(qc, snapshot);
+      notifier.epfFailed?.(e);
+    },
+    onSettled: settle,
+  });
+
   return {
+    epfLink: (item: InboxItemResponse) => epfLink.mutate(item),
+    epfDismiss: (item: InboxItemResponse) => epfDismiss.mutate(item),
     snooze: (key: string, until: string) => snooze.mutate({ key, until }),
     dismiss: (key: string) => dismiss.mutate(key),
   };

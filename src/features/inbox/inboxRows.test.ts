@@ -91,3 +91,30 @@ describe('rowButtons', () => {
     expect(rowButtons(item({ key: 'a', kind: 'job', actions: [SNOOZE, DISMISS] }))).toEqual([]);
   });
 });
+
+describe('rowButtons, EPF suggestion', () => {
+  const epf = (over: Parameters<typeof item>[0]) =>
+    item({
+      kind: 'epf_match',
+      section: 'needs_look',
+      refs: { epfEntryId: 'e1', transactionId: 't1' },
+      actions: [action({ type: 'epf_link', label: 'Link' }), SNOOZE, action({ type: 'dismiss', label: 'Not this one' })],
+      ...over,
+    });
+
+  it('shows Not this one then Link, both acting in place rather than navigating', () => {
+    expect(rowButtons(epf({ key: 'epf:1' }))).toEqual([
+      { id: 'epf_dismiss', label: 'Not this one', variant: 'link', epf: 'dismiss', disabled: false },
+      { id: 'epf_link', label: 'Link', variant: 'secondary', epf: 'link', disabled: false },
+    ]);
+  });
+
+  it('disables both when the suggestion lacks its withdrawal or credit', () => {
+    const buttons = rowButtons(epf({ key: 'epf:2', refs: { epfEntryId: 'e1' } }));
+    expect(buttons.map((b) => b.disabled)).toEqual([true, true]);
+  });
+
+  it('leaves out a button whose action the server did not send', () => {
+    expect(rowButtons(epf({ key: 'epf:3', actions: [SNOOZE, DISMISS] })).map((b) => b.epf)).toEqual(['dismiss']);
+  });
+});

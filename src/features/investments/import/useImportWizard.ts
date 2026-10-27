@@ -19,7 +19,7 @@ import {
   buildInitialReconcileRowStates,
   buildReconcileCommitRequest,
 } from './importWizardHelpers';
-import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getUnresolvedRows } from './types';
+import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getUnresolvedRows, type ImportMode } from './types';
 import { useImportWizardMutations } from './useImportWizardMutations';
 import { useImportWizardState } from './useImportWizardState';
 
@@ -41,9 +41,11 @@ interface UseImportWizardProps {
   brokerAccounts: BrokerAccount[];
   onSuccess?: () => void;
   notify?: ImportWizardNotify;
+  /** The import type the page opens with. */
+  initialMode?: ImportMode;
 }
 
-export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImportNotify }: UseImportWizardProps) {
+export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImportNotify, initialMode }: UseImportWizardProps) {
   const qc = useQueryClient();
   const {
     open,
@@ -82,7 +84,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
     setActiveJobId,
     commitResult,
     setCommitResult,
-  } = useImportWizardState();
+  } = useImportWizardState(initialMode);
 
   useJobStatusPolling<ImportCommitResult>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED' && job.result) {

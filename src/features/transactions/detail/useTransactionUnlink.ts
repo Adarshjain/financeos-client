@@ -16,11 +16,13 @@ import {
   deleteLoanPayment,
   deleteTransactionLink,
   linkDividendTransaction,
+  linkEpfWithdrawalTransaction,
   unlinkDividendTransaction,
+  unlinkEpfWithdrawalTransaction,
 } from './transactionDetailApi';
 
 /**
- * Unlink from the detail. A transaction link, a lending entry or a dividend unlinks at once and the toast offers
+ * Unlink from the detail. A transaction link, a lending entry, a dividend or an EPF withdrawal unlinks at once and the toast offers
  * Undo, which links it again; a loan settlement is deleted (the caller confirms first), so it has no Undo.
  * Every change refreshes the lists and the page behind the panel.
  */
@@ -39,6 +41,12 @@ export function useTransactionUnlink(transactionId: string) {
       invalidateMoneyQueries(queryClient),
     ]);
     router.refresh();
+  };
+
+  /** EPF dialogs and the Inbox suggestions read their own queries; a link or unlink makes them stale. */
+  const refreshEpf = () => {
+    void queryClient.invalidateQueries({ queryKey: ['epf'] });
+    void queryClient.invalidateQueries({ queryKey: keys.inbox.all });
   };
 
   /** Runs one change under the row's busy mark; true when it worked. The mutation hooks already toast their own failures. */
@@ -104,6 +112,25 @@ export function useTransactionUnlink(transactionId: string) {
               key,
               () => linkDividendTransaction(ref.id, transactionId),
               'Linked to dividend',
+              'Failed to restore the link',
+            ),
+          },
+        });
+      }
+    } else if (ref.kind === 'EPF_WITHDRAWAL') {
+      const ok = await run(key, () => unlinkEpfWithdrawalTransaction(ref.id), 'Failed to unlink EPF withdrawal');
+      if (ok) {
+        refreshEpf();
+        showToast('Unlinked from the EPF withdrawal', {
+          action: {
+            label: 'Undo',
+            onSelect: undoWith(
+              key,
+              async () => {
+                await linkEpfWithdrawalTransaction(ref.id, transactionId);
+                refreshEpf();
+              },
+              'Linked to the EPF withdrawal',
               'Failed to restore the link',
             ),
           },

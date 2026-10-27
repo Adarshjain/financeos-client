@@ -12,4 +12,7 @@ export const dsInboxNotifier: InboxNotifier = {
   snoozeFailed: () => showToast("Couldn't snooze. The row is back.", { tone: 'danger' }),
   dismissFailed: () => showToast("Couldn't dismiss. The row is back.", { tone: 'danger' }),
   undoFailed: (e) => showToast(getErrorMessage(e, 'Could not undo'), { tone: 'danger' }),
+  epfLinked: () => showToast('Linked to the EPF withdrawal'),
+  epfDismissed: () => showToast('Dismissed'),
+  epfFailed: (e) => showToast(getErrorMessage(e, "Couldn't update. The row is back."), { tone: 'danger' }),
 };

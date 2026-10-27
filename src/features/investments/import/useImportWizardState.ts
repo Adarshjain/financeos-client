@@ -9,12 +9,12 @@ import { ImportAssetScope, ImportMode, RowState } from './types';
 // All the wizard's local state (step 1 form fields, step 2 review state, step
 // 3 result), plus the two state-only actions (reset, open/close) that don't
 // need the mutations or job-status wiring living in useImportWizard.ts.
-export function useImportWizardState() {
+export function useImportWizardState(initialMode: ImportMode = 'reconcile_zerodha') {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Step 1 Form State
-  const [mode, setMode] = useState<ImportMode>('reconcile_zerodha');
+  const [mode, setMode] = useState<ImportMode>(initialMode);
   const [assetScope, setAssetScope] = useState<ImportAssetScope>('all');
   const [brokerAccountId, setBrokerAccountId] = useState<string>('');
   const [password, setPassword] = useState('');

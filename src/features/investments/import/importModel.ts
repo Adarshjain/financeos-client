@@ -18,6 +18,7 @@ export const MODE_OPTIONS: SelectOption[] = [
   { value: 'reconcile_zerodha', label: 'Zerodha reconciliation (Tradebook + Tax P&L)' },
   { value: 'reconcile_groww', label: 'Groww reconciliation (Order History + Capital Gains)' },
   { value: 'mf_cas', label: 'Mutual funds CAS (CAMS / KFintech PDF)' },
+  { value: 'epf_passbook', label: 'EPF passbook (EPFO PDF)' },
 ];
 
 export const SCOPE_OPTIONS: SelectOption[] = [

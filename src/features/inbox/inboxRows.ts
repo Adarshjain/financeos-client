@@ -24,6 +24,8 @@ export interface RowButton {
   variant: 'secondary' | 'link';
   href?: string;
   bill?: BillActionType;
+  /** An EPF suggestion's own buttons: attach the credit, or say it is not this one. */
+  epf?: 'link' | 'dismiss';
   disabled?: boolean;
 }
 
@@ -56,8 +58,22 @@ function destination(item: InboxItemResponse, action: InboxActionResponse): Pick
   }
 }
 
+/** "Not this one" then "Link": the suggestion needs both a credit and a withdrawal to act on. */
+function epfButtons(item: InboxItemResponse): RowButton[] {
+  const ready = Boolean(item.refs.epfEntryId && item.refs.transactionId);
+  const buttons: RowButton[] = [];
+  if (item.actions.some((a) => a.type === 'dismiss')) {
+    buttons.push({ id: 'epf_dismiss', label: 'Not this one', variant: 'link', epf: 'dismiss', disabled: !ready });
+  }
+  if (item.actions.some((a) => a.type === 'epf_link')) {
+    buttons.push({ id: 'epf_link', label: 'Link', variant: 'secondary', epf: 'link', disabled: !ready });
+  }
+  return buttons;
+}
+
 /** The row's buttons from the server's actions (snooze and dismiss are separate); a summary row shows one. */
 export function rowButtons(item: InboxItemResponse): RowButton[] {
+  if (item.kind === 'epf_match') return epfButtons(item);
   const actions = primaryActions(item).slice(0, item.rowType === 'summary' ? 1 : undefined);
   const buttons: RowButton[] = [];
   actions.forEach((action, index) => {

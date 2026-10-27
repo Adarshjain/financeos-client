@@ -130,6 +130,7 @@ describe('linkRows', () => {
         { kind: 'DIVIDEND', id: 'd1', parentId: 'i1', label: 'Dividend · TCS', amount: 1200 },
         { kind: 'LOAN_PAYMENT', id: 'pay1', parentId: 'loan1', label: 'EMI #8' },
         { kind: 'LOAN_EVENT', id: 'ev1', parentId: 'loan1', label: 'Prepayment' },
+        { kind: 'EPF_WITHDRAWAL', id: 'w1', parentId: 'emp1', label: 'EPF withdrawal' },
       ],
       () => '',
     );
@@ -138,6 +139,7 @@ describe('linkRows', () => {
       ['/investments/dividends?instrumentId=i1', 'now'],
       ['/loans/loan1', 'confirm'],
       ['/loans/loan1', null],
+      ['/investments/epf', 'now'],
     ]);
     expect(rows[1]).toMatchObject({ subtitle: '₹1,200.00' });
   });

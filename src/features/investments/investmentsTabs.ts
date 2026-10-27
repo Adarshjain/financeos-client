@@ -1,7 +1,7 @@
-/** The six tabs of Investments, each a Dinero page under `/investments`. */
+/** The seven tabs of Investments, each a Dinero page under `/investments`. */
 import { appHref } from '@/features/shell/routes';
 
-export type InvestmentsTabId = 'holdings' | 'tradebook' | 'dividends' | 'fno' | 'corporate-actions' | 'instruments';
+export type InvestmentsTabId = 'holdings' | 'epf' | 'tradebook' | 'dividends' | 'fno' | 'corporate-actions' | 'instruments';
 
 export interface InvestmentsTab {
   id: InvestmentsTabId;
@@ -16,6 +16,7 @@ export const INVESTMENTS_PATH = '/investments';
 
 export const investmentsTabs: InvestmentsTab[] = [
   { id: 'holdings', label: 'Holdings', path: INVESTMENTS_PATH, counted: false },
+  { id: 'epf', label: 'EPF', path: '/investments/epf', counted: false },
   { id: 'tradebook', label: 'Tradebook', path: '/investments/tradebook', counted: true },
   { id: 'dividends', label: 'Dividends', path: '/investments/dividends', counted: true },
   { id: 'fno', label: 'F&O', path: '/investments/fno', counted: true },

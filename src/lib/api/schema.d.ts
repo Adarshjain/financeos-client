@@ -1322,6 +1322,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/epf/employers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEpfEmployers"];
+        put?: never;
+        post: operations["createEpfEmployer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/employers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateEpfEmployer"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEpfEntries"];
+        put?: never;
+        post: operations["createEpfEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/entries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEpfEntry"];
+        put: operations["updateEpfEntry"];
+        post?: never;
+        delete: operations["deleteEpfEntry"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/entries/{id}/suggestion/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissEpfSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/entries/{id}/transaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["linkEpfWithdrawalTransaction"];
+        post?: never;
+        delete: operations["unlinkEpfWithdrawalTransaction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/fys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEpfFinancialYears"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/import/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["commitEpfImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewEpfImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEpfSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/withdrawals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEpfWithdrawals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/attention": {
         parameters: {
             query?: never;
@@ -5226,6 +5402,231 @@ export interface components {
             /** Format: uuid */
             jobId: string;
         };
+        EpfDismissRequest: {
+            /** Format: uuid */
+            transactionId?: string;
+        };
+        EpfEmployerOption: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        EpfEmployerRequest: {
+            /** Format: date */
+            joinedOn?: string | null;
+            /** Format: date */
+            leftOn?: string | null;
+            memberId?: string | null;
+            name: string;
+        };
+        EpfEmployerResponse: {
+            balance: number;
+            employeeBalance: number;
+            employerBalance: number;
+            establishmentId?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            joinedOn?: string | null;
+            /** Format: date */
+            leftOn?: string | null;
+            memberId?: string | null;
+            name: string;
+            pensionWithdrawn: boolean;
+            /** @enum {string} */
+            status: "CURRENT" | "LEFT" | "TRANSFERRED" | "SETTLED";
+            /** Format: date */
+            statusDate?: string | null;
+            transferredOutAmount?: number | null;
+            transferredToEmployerName?: string | null;
+            uan?: string | null;
+        };
+        EpfEntryRequest: {
+            /** Format: date */
+            creditedOn?: string;
+            employeeAmount?: number | null;
+            employerAmount?: number | null;
+            /** Format: uuid */
+            employerId?: string;
+            /** Format: uuid */
+            fromEmployerId?: string | null;
+            /** Format: int32 */
+            interestFy?: number | null;
+            note?: string | null;
+            pensionAmount?: number | null;
+            tdsAmount?: number | null;
+            /** Format: uuid */
+            transactionId?: string | null;
+            /** @enum {string} */
+            type?: "OPENING_BALANCE" | "CONTRIBUTION" | "TRANSFER_IN" | "INTEREST" | "TRANSFER_OUT" | "WITHDRAWAL";
+            /** Format: date */
+            wageMonth?: string | null;
+            /** @enum {string|null} */
+            withdrawalKind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
+        };
+        EpfEntryResponse: {
+            /** Format: uuid */
+            counterpartEmployerId?: string | null;
+            counterpartEmployerName?: string | null;
+            /** Format: date */
+            creditedOn: string;
+            employeeAmount: number;
+            employerAmount: number;
+            /** Format: uuid */
+            employerId: string;
+            employerName: string;
+            grossAmount?: number | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            importedAt?: string | null;
+            /** Format: int32 */
+            interestFy?: number | null;
+            interestRate?: number | null;
+            note?: string | null;
+            particulars?: string | null;
+            pensionAmount: number;
+            receivedAmount?: number | null;
+            runningBalance: number;
+            /** @enum {string} */
+            source: "MANUAL" | "PASSBOOK";
+            suggestion: components["schemas"]["EpfLinkedTransaction"];
+            tdsAmount?: number | null;
+            transaction?: components["schemas"]["EpfLinkedTransaction"];
+            /** @enum {string} */
+            type: "OPENING_BALANCE" | "CONTRIBUTION" | "TRANSFER_IN" | "INTEREST" | "TRANSFER_OUT" | "WITHDRAWAL";
+            /** Format: date */
+            wageMonth?: string | null;
+            /** @enum {string|null} */
+            withdrawalKind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
+        };
+        EpfImportEmployer: {
+            establishmentId?: string | null;
+            /** Format: uuid */
+            existingId?: string | null;
+            memberId?: string | null;
+            name: string;
+            /** Format: date */
+            throughMonth?: string | null;
+            uanLast4?: string | null;
+        };
+        EpfImportPreviewResponse: {
+            employer: components["schemas"]["EpfImportEmployer"];
+            employerOptions: components["schemas"]["EpfEmployerOption"][];
+            /** Format: int32 */
+            existsCount: number;
+            /** Format: int32 */
+            newCount: number;
+            /** Format: int32 */
+            replacesCount: number;
+            rows: components["schemas"]["EpfImportRow"][];
+            /** Format: int32 */
+            unrecognisedLines: number;
+        };
+        EpfImportResultResponse: {
+            balance: number;
+            /** Format: uuid */
+            employerId: string;
+            employerName: string;
+            /** Format: int32 */
+            imported: number;
+            /** Format: int32 */
+            replaced: number;
+            /** Format: int32 */
+            skipped: number;
+            /** Format: date */
+            throughMonth?: string | null;
+        };
+        EpfImportRow: {
+            /** Format: date */
+            creditedOn: string;
+            employeeAmount: number;
+            employerAmount: number;
+            /** Format: int32 */
+            index: number;
+            /** Format: int32 */
+            interestFy?: number | null;
+            particulars?: string | null;
+            pensionAmount: number;
+            /** Format: uuid */
+            replacesEntryId?: string | null;
+            /** @enum {string} */
+            status: "NEW" | "EXISTS" | "REPLACES";
+            /** @enum {string} */
+            type: "OPENING_BALANCE" | "CONTRIBUTION" | "TRANSFER_IN" | "INTEREST" | "TRANSFER_OUT" | "WITHDRAWAL";
+            /** Format: date */
+            wageMonth?: string | null;
+            /** @enum {string|null} */
+            withdrawalKind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
+        };
+        EpfInterestEstimate: {
+            amount: number;
+            /** Format: int32 */
+            fy: number;
+            rate: number;
+            /** Format: int32 */
+            rateFy: number;
+        };
+        EpfLastInterest: {
+            amount: number;
+            /** Format: date */
+            creditedOn: string;
+            /** Format: int32 */
+            fy: number;
+            rate?: number | null;
+        };
+        EpfLatestContribution: {
+            /** Format: date */
+            creditedOn: string;
+            employeeAmount: number;
+            employerAmount: number;
+            /** Format: uuid */
+            employerId: string;
+            pensionAmount: number;
+            /** Format: date */
+            wageMonth: string;
+        };
+        EpfLinkRequest: {
+            recordTds?: boolean;
+            /** Format: uuid */
+            transactionId?: string;
+        };
+        EpfLinkedTransaction: {
+            accountName?: string | null;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+        };
+        EpfPension: {
+            eligible: boolean;
+            estimatedMonthlyPension: number;
+            monthlyContribution: number;
+            /** Format: int32 */
+            serviceMonths: number;
+        };
+        EpfSummaryResponse: {
+            balance: number;
+            fyEmployee: number;
+            fyEmployer: number;
+            hasData: boolean;
+            interestEstimate?: components["schemas"]["EpfInterestEstimate"];
+            lastInterest?: components["schemas"]["EpfLastInterest"];
+            latestContribution?: components["schemas"]["EpfLatestContribution"];
+            pension?: components["schemas"]["EpfPension"];
+            /** Format: date */
+            staleThrough?: string | null;
+            /** Format: date */
+            throughMonth?: string | null;
+            uanLast4?: string | null;
+        };
+        EpfWithdrawalOption: {
+            entry: components["schemas"]["EpfEntryResponse"];
+            suggested: boolean;
+            tdsGap?: number | null;
+        };
         ErrorResponse: {
             code: string;
             details?: {
@@ -5690,11 +6091,15 @@ export interface components {
             /** Format: uuid */
             counterpartyId?: string | null;
             /** Format: uuid */
+            epfEntryId?: string | null;
+            /** Format: uuid */
             jobId?: string | null;
             /** Format: uuid */
             loanId?: string | null;
             /** Format: uuid */
             statementId?: string | null;
+            /** Format: uuid */
+            transactionId?: string | null;
         };
         InboxResponse: {
             /** Format: date-time */
@@ -6435,7 +6840,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND";
+            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND" | "EPF_WITHDRAWAL";
             label: string;
             /** Format: uuid */
             parentId?: string | null;
@@ -6528,6 +6933,24 @@ export interface components {
         };
         PageDividendResponse: {
             content: components["schemas"]["DividendResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageEpfEntryResponse: {
+            content: components["schemas"]["EpfEntryResponse"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -11638,6 +12061,533 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["RawLogEntry"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listEpfEmployers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEmployerResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createEpfEmployer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfEmployerRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEmployerResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateEpfEmployer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfEmployerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEmployerResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listEpfEntries: {
+        parameters: {
+            query?: {
+                employerId?: string;
+                fy?: number;
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageEpfEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createEpfEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfEntryRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getEpfEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateEpfEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfEntryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteEpfEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissEpfSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfDismissRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    linkEpfWithdrawalTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EpfLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlinkEpfWithdrawalTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listEpfFinancialYears: {
+        parameters: {
+            query?: {
+                employerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number[];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    commitEpfImport: {
+        parameters: {
+            query?: {
+                employerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: Blob;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfImportResultResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewEpfImport: {
+        parameters: {
+            query?: {
+                employerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: Blob;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfImportPreviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getEpfSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listEpfWithdrawals: {
+        parameters: {
+            query?: {
+                forTransactionId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfWithdrawalOption"][];
                 };
             };
             /** @description Error response */
