@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { addEpfFiles, assignParams, EPF_MAX_FILES, type EpfBatchResult, type EpfPreviewRow, epfRow, type EpfSection, importableTotal, resultLine, resultTitle } from './epfImportModel';
+import { addEpfFiles, assignParams, countsLine, EPF_MAX_FILES, type EpfBatchResult, type EpfPreview, type EpfPreviewRow, epfRow, type EpfSection, importableTotal, mismatchLine, resultLine, resultTitle } from './epfImportModel';
 
 const pdf = (name: string, size = 10) => new File([new Uint8Array(size)], name, { type: 'application/pdf' });
 
@@ -111,5 +111,44 @@ describe('epfRow shares', () => {
   it('shows an opening balance without a sign', () => {
     const row = epfRow({ ...base, type: 'OPENING_BALANCE', wageMonth: null, employeeAmount: 410920, employerAmount: 297210, pensionAmount: 0 });
     expect(row).toMatchObject({ employee: '₹4,10,920', employer: '₹2,97,210', pension: '—' });
+  });
+});
+
+describe('opening balance mismatch wording', () => {
+  const ob: EpfPreviewRow = {
+    index: 0,
+    type: 'OPENING_BALANCE',
+    withdrawalKind: null,
+    wageMonth: null,
+    creditedOn: '2026-04-01',
+    interestFy: null,
+    employeeAmount: 400000,
+    employerAmount: 300000,
+    pensionAmount: 0,
+    particulars: 'OB',
+    status: 'NEW',
+    replacesEntryId: null,
+  };
+  const mismatched = { ...ob, computedEmployeeAmount: 390000, computedEmployerAmount: 290000 };
+  const prev = (rows: EpfPreviewRow[], matchedOpeningCount = 0) =>
+    ({ newCount: 2, replacesCount: 0, existsCount: 0, matchedOpeningCount, rows }) as unknown as EpfPreview;
+
+  it('epfRow names both figures for a mismatched opening balance only', () => {
+    expect(epfRow(mismatched).mismatch).toBe('Your entries come to ₹6,80,000, EPFO says ₹7,00,000');
+    expect(epfRow(ob).mismatch).toBe('');
+    expect(epfRow({ ...ob, computedEmployeeAmount: null, computedEmployerAmount: null }).mismatch).toBe('');
+    expect(epfRow({ ...mismatched, type: 'CONTRIBUTION', wageMonth: '2026-04-01' }).mismatch).toBe('');
+  });
+
+  it('countsLine adds the matched sentence only when some were left out', () => {
+    expect(countsLine(prev([]))).toBe('2 entries in this passbook: 2 new.');
+    expect(countsLine(prev([], 1))).toBe('2 entries in this passbook: 2 new. 1 opening balance matches your entries, so it is not imported.');
+    expect(countsLine(prev([], 3))).toBe('2 entries in this passbook: 2 new. 3 opening balances match your entries, so they are not imported.');
+  });
+
+  it('mismatchLine counts only opening balances that carry computed figures', () => {
+    expect(mismatchLine(prev([ob]))).toBe('');
+    expect(mismatchLine(prev([mismatched, ob]))).toBe("1 opening balance does not match your entries. Importing keeps EPFO's figure as a correction.");
+    expect(mismatchLine(prev([mismatched, { ...mismatched, index: 1 }]))).toBe("2 opening balances do not match your entries. Importing keeps EPFO's figures as corrections.");
   });
 });

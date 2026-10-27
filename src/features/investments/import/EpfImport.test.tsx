@@ -72,6 +72,7 @@ const preview = (over: Partial<EpfPreview> = {}): EpfPreview => ({
   newCount: 2,
   existsCount: 2,
   replacesCount: 1,
+  matchedOpeningCount: 0,
   unrecognisedLines: 0,
   employerOptions: [],
   ...over,
@@ -171,6 +172,16 @@ describe('EPF passbook import: review', () => {
     await upload();
     await readPassbook();
     expect(await screen.findByText('3 lines in the passbook could not be read and will not be imported.')).toBeInTheDocument();
+  });
+
+  it('flags an opening balance that does not match the entries, on its row and as a section warning', async () => {
+    const ob = row({ index: 5, type: 'OPENING_BALANCE', wageMonth: null, creditedOn: '2026-04-01', employeeAmount: 400000, employerAmount: 300000, status: 'NEW', computedEmployeeAmount: 390000, computedEmployerAmount: 290000 });
+    epfCalls.preview.mockResolvedValue(oneSection(preview({ rows: [ob] })));
+    open();
+    await upload();
+    await readPassbook();
+    expect(await screen.findByText('Your entries come to ₹6,80,000, EPFO says ₹7,00,000')).toBeInTheDocument();
+    expect(screen.getByText("1 opening balance does not match your entries. Importing keeps EPFO's figure as a correction.")).toBeInTheDocument();
   });
 
   it('offers a disabled Import when everything is already here', async () => {
