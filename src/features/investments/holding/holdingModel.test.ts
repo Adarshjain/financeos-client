@@ -16,17 +16,13 @@ import {
 } from './holdingModel';
 
 describe('holdingHeader and holdingHero', () => {
-  it('writes the title, badge and the particulars line', () => {
-    expect(holdingHeader(holding, instrument)).toEqual({
-      title: 'INFY · Infosys',
-      badge: 'Stock',
-      meta: 'NSE · INE009A01021 · 2 brokers · long term',
-    });
+  it('writes the title and the badge', () => {
+    expect(holdingHeader(holding)).toEqual({ title: 'INFY · Infosys', badge: 'Stock' });
   });
 
   it('titles a fund by its name and says so in the badge', () => {
     const fund: HoldingDetail = { ...holding, symbol: null, name: 'Mirae Asset Large Cap', assetType: 'mutual_fund', brokers: holding.brokers.slice(0, 1), term: null };
-    expect(holdingHeader(fund, null)).toEqual({ title: 'Mirae Asset Large Cap', badge: 'Fund', meta: '1 broker' });
+    expect(holdingHeader(fund)).toEqual({ title: 'Mirae Asset Large Cap', badge: 'Fund' });
   });
 
   it('writes the move line with the return, its percent and today', () => {
@@ -115,6 +111,7 @@ describe('section rows', () => {
 
   it('writes the instrument rows', () => {
     expect(instrumentRows(instrument)).toEqual([
+      { label: 'Exchange', value: 'NSE' },
       { label: 'ISIN', value: 'INE009A01021' },
       { label: 'Yahoo symbol', value: 'INFY.NS' },
       { label: 'Price source', value: 'Yahoo' },

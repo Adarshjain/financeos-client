@@ -16,4 +16,4 @@ The row carries its own padding and negative margins (phone: `-mx-space-16 px-sp
 - Desktop: a fixed `container-xs` field, no resizing.
 
 ## Built from
-TextField (search, clearable), Icon, FilterChip.
+TextField (search, clearable, `shape="pill"` so it matches the chips' height and radius), Icon, FilterChip.

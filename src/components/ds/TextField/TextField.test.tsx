@@ -237,6 +237,21 @@ describe('TextField component', () => {
       expect(wrapper).toBeInTheDocument();
     });
 
+    it('shape="pill" uses the chip height, padding and full radius, not the control height', () => {
+      const { container } = render(<TextField shape="pill" size="md" placeholder="Search" />);
+      const box = container.querySelector('.h-space-28')!;
+      expect(box).toBeInTheDocument();
+      expect(box).toHaveClass('px-space-10', 'rounded-ds-pill', 'text-label');
+      expect(box).not.toHaveClass('h-control-md', 'rounded-ds-md');
+    });
+
+    it('default shape keeps the control height and md radius', () => {
+      const { container } = render(<TextField placeholder="x" />);
+      const box = container.querySelector('.h-control-md')!;
+      expect(box).toHaveClass('rounded-ds-md', 'px-space-12');
+      expect(container.querySelector('.rounded-ds-pill')).not.toBeInTheDocument();
+    });
+
     it('applies size="lg" height class by default', () => {
       const { container } = render(
         <TextField placeholder="In sheet" />,

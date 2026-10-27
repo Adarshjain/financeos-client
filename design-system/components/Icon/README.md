@@ -1,6 +1,6 @@
 # Icon
 
-The one way to draw an icon in the new system: a Phosphor icon in the duotone weight, picked by its name from the icon registry, at a token size, in `currentColor`. The old UI keeps Lucide until it is deleted in Phase 4; nothing new uses Lucide.
+The one way to draw an icon in the new system: a Phosphor icon in the bold weight, picked by its name from the icon registry, at a token size, in `currentColor`. The old UI keeps Lucide until it is deleted in Phase 4; nothing new uses Lucide.
 
 ## Registry
 `design-system/icons.json` lists every icon the system may use: our name (`close`, `chevron-down`, `delete`…), the Phosphor icon behind it, and where it is used. Components ask for the name (`<Icon name="close" />`), never a Phosphor or Lucide component, so the set stays small and consistent and a future swap is one file. A new icon is added to the registry with the owner's approval first.
@@ -18,7 +18,7 @@ The one way to draw an icon in the new system: a Phosphor icon in the duotone we
 - Inside a `link` / `danger-link` Button the size is not chosen here: Button sets `icon-inline` (`calc(1em - 2px)`, 2px under the text) on every icon in it.
 
 ## Rules
-- Weight is duotone (owner, 2026-10-27); a second layer at low opacity. `weight="fill"` only for a status mark (owner, 2026-10-20: no-bank `warning`).
+- Weight is bold (owner 2026-10-27: duotone tried and reverted). `weight="fill"` only for a status mark (owner, 2026-10-20: no-bank `warning`).
 - Never type a glyph as an icon (▾ ✕ ✓ › ‹).
 - Every icon in one control is the same size.
 - Icons only where they are a control, navigation or progress (RULES §6).

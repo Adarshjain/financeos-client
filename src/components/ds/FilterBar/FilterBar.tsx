@@ -55,6 +55,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
             <TextField
               type="search"
               size="md"
+              shape="pill"
               prefix={<Icon name="search" size="sm" />}
               clearable
               placeholder={search.placeholder ?? 'Search'}

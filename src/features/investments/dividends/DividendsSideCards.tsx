@@ -134,7 +134,7 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
       title={rows.length > 0 ? `Suggestions · ${rows.length}` : 'Suggestions'}
       subtitle="Paid on shares you held, not recorded yet"
       action={
-        <span className="flex items-center gap-space-12">
+        <Text variant="label" as="div" className="flex items-center gap-space-12">
           <Button variant="link" size="sm" disabled={scan.isFetching || recordingAll} onClick={rescan}>
             Rescan
           </Button>
@@ -143,7 +143,7 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
               {`Record ${rows.length}`}
             </Button>
           ) : null}
-        </span>
+        </Text>
       }
     >
       {!enabled && !scan.data ? null : scan.isPending || (scan.isFetching && !scan.data) ? (

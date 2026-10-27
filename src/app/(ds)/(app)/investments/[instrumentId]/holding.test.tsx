@@ -156,11 +156,11 @@ describe('/investments/[instrumentId]: data', () => {
 });
 
 describe('/investments/[instrumentId]: Overview', () => {
-  it('shows the title, the particulars and the current value with its move', async () => {
+  it('shows the title, no particulars line and the current value with its move', async () => {
     await renderPage();
     expect(screen.getAllByText('INFY · Infosys').length).toBeGreaterThan(0);
     expect(screen.getByText('Stock')).toBeInTheDocument();
-    expect(screen.getByText('NSE · INE009A01021 · 2 brokers · long term')).toBeInTheDocument();
+    expect(screen.queryByText('NSE · INE009A01021 · 2 brokers · long term')).not.toBeInTheDocument();
     expect(screen.getAllByText('+₹48,162 · +113.1% · today +2.1%').length).toBeGreaterThan(0);
   });
 

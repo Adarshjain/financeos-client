@@ -10,6 +10,7 @@ import { useControllableState } from '../useControllableState';
 export type TextFieldSize = 'md' | 'lg' | 'xl';
 export type TextFieldAlign = 'left' | 'right';
 export type TextFieldVariant = 'default' | 'embedded';
+export type TextFieldShape = 'default' | 'pill';
 export type TextFieldTone = 'neutral' | 'success';
 
 export interface TextFieldProps
@@ -22,6 +23,8 @@ export interface TextFieldProps
   variant?: TextFieldVariant;
   /** `success` colours the value text with the money-in green (`positive`). */
   tone?: TextFieldTone;
+  /** `pill` matches a FilterChip: 28px high, 10px side padding, full radius, label text. Use beside filter chips. */
+  shape?: TextFieldShape;
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
@@ -43,6 +46,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       align = 'left',
       variant = 'default',
       tone = 'neutral',
+      shape = 'default',
       type = 'text',
       inputMode,
       label,
@@ -100,6 +104,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 
     const isMd = size === 'md';
     const isXl = size === 'xl';
+    const isPill = shape === 'pill';
     const isEmbedded = variant === 'embedded';
     const hasValue = value.length > 0;
 
@@ -127,9 +132,10 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       >
         <div
           className={cn(
-            'flex items-center gap-space-8 w-full border rounded-ds-md bg-surface font-text font-medium text-body text-ink transition-colors duration-fast',
-            isXl ? 'h-control-xl' : 'h-control-md',
-            isMd ? 'px-space-10' : 'px-space-12',
+            'flex items-center w-full border bg-surface font-text font-medium text-ink transition-colors duration-fast',
+            isPill ? 'gap-space-6 h-space-28 px-space-10 rounded-ds-pill text-label' : 'gap-space-8 rounded-ds-md text-body',
+            !isPill && (isXl ? 'h-control-xl' : 'h-control-md'),
+            !isPill && (isMd ? 'px-space-10' : 'px-space-12'),
             disabled
               ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
               : [
@@ -144,7 +150,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           )}
         >
           {prefix ? (
-            <span className="text-ink-3 font-semibold text-body select-none shrink-0 flex items-center">
+            <span className={cn('text-ink-3 font-semibold select-none shrink-0 flex items-center', isPill ? 'text-label' : 'text-body')}>
               {prefix}
             </span>
           ) : null}
@@ -163,7 +169,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             aria-describedby={hasError || helper ? helperId : undefined}
             className={cn(
               'w-full h-full bg-transparent border-0 p-0 text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-              isXl ? 'text-figure' : 'text-body',
+              isXl ? 'text-figure' : isPill ? 'text-label' : 'text-body',
               align === 'right' && 'text-end',
               type === 'search' &&
                 '[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',
