@@ -99,6 +99,21 @@ beforeEach(() => {
   mutations.commitImport.mockResolvedValue({ jobId: 'job-1' });
 });
 
+describe('ImportTradebookScreen: switching type', () => {
+  it('drops the files picked for the previous type', async () => {
+    renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
+    await uploadZerodha();
+    expect(screen.getByText(taxFile.name)).toBeInTheDocument();
+    await pickOption(/Broker \/ import type/, /Mutual funds CAS/);
+    await user.upload(fileInput('cas-zone'), casFile);
+    await pickOption(/Broker \/ import type/, /Zerodha reconciliation/);
+    expect(screen.queryByText(taxFile.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(tradebookFile.name)).not.toBeInTheDocument();
+    await pickOption(/Broker \/ import type/, /Mutual funds CAS/);
+    expect(screen.queryByText(casFile.name)).not.toBeInTheDocument();
+  });
+});
+
 describe('ImportTradebookScreen: step 1', () => {
   it('is a page with a back link, the Stepper and the Zerodha form', async () => {
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);

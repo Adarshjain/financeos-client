@@ -65,6 +65,7 @@ export function useImportWizardState(initialMode: ImportMode = 'reconcile_zerodh
   return {
     open,
     handleOpenChange,
+    resetWizard,
     step,
     setStep,
     mode,

@@ -134,6 +134,21 @@ describe('EPF passbook import: choosing the type', () => {
   });
 });
 
+describe('EPF passbook import: switching type', () => {
+  it('drops the passbook files and preview, so coming back starts empty', async () => {
+    open();
+    await upload();
+    await readPassbook();
+    await screen.findByText(/in this passbook/);
+    await pickType(/Zerodha reconciliation/);
+    await pickType('EPF passbook (EPFO PDF)');
+    expect(screen.getByText('Drop your EPFO passbook PDFs')).toBeInTheDocument();
+    expect(screen.queryByText(pdf.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(/in this passbook/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Preview passbook' })).toBeDisabled();
+  });
+});
+
 describe('EPF passbook import: review', () => {
   it('reads the PDF and shows the counts, the pension note, the employer and each entry with its status', async () => {
     open();
