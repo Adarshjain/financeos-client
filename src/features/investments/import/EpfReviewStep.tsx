@@ -24,6 +24,9 @@ import type { useEpfImport } from './useEpfImport';
 
 const col = createDataTableColumnHelper<EpfReviewRow>();
 
+const share = (value: string) => <Text variant="body">{value}</Text>;
+
+/** Like the EPF passbook: one column per share on desktop; the phone shows the entry's total. */
 const columns = [
   col.display({
     id: 'period',
@@ -37,9 +40,14 @@ const columns = [
     meta: { size: 'fill', grow: 1, wrap: true, phone: 'main' },
     cell: ({ row }) => (
       <>
-        <Text variant="body-strong" as="div">
-          {row.original.particulars}
-        </Text>
+        <div className="flex flex-wrap items-center gap-space-6">
+          <Text variant="body-strong" as="span">
+            {row.original.particulars}
+          </Text>
+          <Badge tone={statusTone(row.original.status)} variant="soft">
+            {statusWord(row.original.status)}
+          </Badge>
+        </div>
         {row.original.detail ? (
           <Text variant="label" tone="ink-3" as="div">
             {row.original.detail}
@@ -49,20 +57,28 @@ const columns = [
     ),
   }),
   col.display({
-    id: 'amount',
-    header: 'Amount',
-    meta: { size: 'md', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <Text variant="body-strong">{row.original.amount}</Text>,
+    id: 'employee',
+    header: 'Your share',
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
+    cell: ({ row }) => share(row.original.employee),
   }),
   col.display({
-    id: 'status',
-    header: 'Status',
-    meta: { size: 'lg', phone: 'status' },
-    cell: ({ row }) => (
-      <Badge tone={statusTone(row.original.status)} variant="soft">
-        {statusWord(row.original.status)}
-      </Badge>
-    ),
+    id: 'employer',
+    header: 'Employer',
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
+    cell: ({ row }) => share(row.original.employer),
+  }),
+  col.display({
+    id: 'pension',
+    header: 'Pension',
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
+    cell: ({ row }) => <Text variant="body" tone="ink-3">{row.original.pension}</Text>,
+  }),
+  col.display({
+    id: 'amount',
+    header: 'Total',
+    meta: { size: 'md', align: 'end', phone: 'amount' },
+    cell: ({ row }) => <Text variant="body-strong">{row.original.amount}</Text>,
   }),
 ];
 

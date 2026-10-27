@@ -84,7 +84,11 @@ export interface EpfReviewRow {
   period: string;
   particulars: string;
   detail: string;
+  /** The entry's total (phone), then each share as the EPF passbook draws it (desktop). */
   amount: string;
+  employee: string;
+  employer: string;
+  pension: string;
   status: EpfPreviewRow['status'];
 }
 
@@ -97,13 +101,20 @@ export function epfRow(r: EpfPreviewRow): EpfReviewRow {
         : dayMonthYear(r.creditedOn);
   const named = r.type === 'TRANSFER_IN' || r.type === 'TRANSFER_OUT' || r.type === 'WITHDRAWAL';
   const kind = r.type === 'WITHDRAWAL' && r.withdrawalKind ? KIND_WORDS[r.withdrawalKind] : '';
-  const total = r.employeeAmount + r.employerAmount;
+  const pensionOnly = r.type === 'WITHDRAWAL' && r.withdrawalKind === 'PENSION';
+  const out = r.type === 'WITHDRAWAL' || r.type === 'TRANSFER_OUT';
+  const sign = (n: number) => (r.type === 'OPENING_BALANCE' ? rupees(n) : out ? `−${rupees(n)}` : `+${rupees(n)}`);
+  const total = pensionOnly ? r.pensionAmount : r.employeeAmount + r.employerAmount;
+  const dash = '—';
   return {
     id: String(r.index),
     period,
     particulars: (named && r.particulars) || TYPE_WORDS[r.type],
     detail: [kind, named && r.particulars ? TYPE_WORDS[r.type] : ''].filter(Boolean).join(' · '),
-    amount: r.type === 'WITHDRAWAL' || r.type === 'TRANSFER_OUT' ? rupees(-total) : rupees(total),
+    amount: out ? rupees(-total) : rupees(total),
+    employee: pensionOnly ? dash : sign(r.employeeAmount),
+    employer: pensionOnly ? dash : sign(r.employerAmount),
+    pension: pensionOnly || (r.type === 'CONTRIBUTION' && r.pensionAmount > 0) ? rupees(r.pensionAmount) : dash,
     status: r.status,
   };
 }

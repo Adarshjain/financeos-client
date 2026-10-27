@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { addEpfFiles, assignParams, EPF_MAX_FILES, type EpfBatchResult, type EpfSection, importableTotal, resultLine, resultTitle } from './epfImportModel';
+import { addEpfFiles, assignParams, EPF_MAX_FILES, type EpfBatchResult, type EpfPreviewRow, epfRow, type EpfSection, importableTotal, resultLine, resultTitle } from './epfImportModel';
 
 const pdf = (name: string, size = 10) => new File([new Uint8Array(size)], name, { type: 'application/pdf' });
 
@@ -74,5 +74,42 @@ describe('batch result wording', () => {
       ],
     });
     expect(resultLine(two)).toBe('2 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to Sep 2026.');
+  });
+});
+
+describe('epfRow shares', () => {
+  const base: EpfPreviewRow = {
+    index: 0,
+    type: 'CONTRIBUTION',
+    withdrawalKind: null,
+    wageMonth: '2026-04-01',
+    creditedOn: '2026-05-15',
+    interestFy: null,
+    employeeAmount: 7200,
+    employerAmount: 5950,
+    pensionAmount: 1250,
+    particulars: 'Cont. For Due-Month 052026',
+    status: 'NEW',
+    replacesEntryId: null,
+  };
+
+  it('splits a contribution into your share, employer and pension, with the shares as the total', () => {
+    expect(epfRow(base)).toMatchObject({ employee: '+₹7,200', employer: '+₹5,950', pension: '₹1,250', amount: '₹13,150' });
+  });
+
+  it('draws a withdrawal as minus on both shares and no pension', () => {
+    const row = epfRow({ ...base, type: 'WITHDRAWAL', withdrawalKind: 'PARTIAL', wageMonth: null, employeeAmount: 10000, employerAmount: 8000, pensionAmount: 0 });
+    expect(row).toMatchObject({ employee: '−₹10,000', employer: '−₹8,000', pension: '—' });
+  });
+
+  it('draws a pension withdrawal in the pension column only, and its total is the pension', () => {
+    const row = epfRow({ ...base, type: 'WITHDRAWAL', withdrawalKind: 'PENSION', wageMonth: null, employeeAmount: 0, employerAmount: 0, pensionAmount: 40000 });
+    expect(row).toMatchObject({ employee: '—', employer: '—', pension: '₹40,000' });
+    expect(row.amount).toContain('40,000');
+  });
+
+  it('shows an opening balance without a sign', () => {
+    const row = epfRow({ ...base, type: 'OPENING_BALANCE', wageMonth: null, employeeAmount: 410920, employerAmount: 297210, pensionAmount: 0 });
+    expect(row).toMatchObject({ employee: '₹4,10,920', employer: '₹2,97,210', pension: '—' });
   });
 });
