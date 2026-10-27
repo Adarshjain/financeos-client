@@ -4,10 +4,10 @@ import React from 'react';
 
 import { Card, Text } from '@/components/ds';
 
-import { type EpfImportResult, resultLine, resultTitle } from './epfImportModel';
+import { type EpfBatchResult, resultLine, resultTitle } from './epfImportModel';
 
 /** Step 3 for the EPFO passbook: how many entries went in. */
-export function EpfResultStep({ result }: { result: EpfImportResult }) {
+export function EpfResultStep({ result }: { result: EpfBatchResult }) {
   return (
     <Card>
       <div className="flex flex-col items-center gap-space-4 p-space-20 text-center">

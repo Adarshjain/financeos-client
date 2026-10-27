@@ -5,35 +5,35 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 
-import type { EpfImportResult, EpfPreview } from './epfImportModel';
+import type { EpfBatchPreview, EpfBatchResult } from './epfImportModel';
 
 interface EpfImportInput {
-  file: File;
-  /** The employer the passbook is filed under; absent for a new one. */
-  employerId?: string;
+  files: File[];
+  /** "<sectionKey>=<employerId>" for each passbook group filed under an existing employer; absent for new ones. */
+  assign?: string[];
 }
 
-/** The EPF passbook import's two calls: read the PDF, then add its entries. */
+/** The EPF passbook import's two calls: read the PDFs, then add their entries. */
 export function useEpfImportMutations() {
   const previewMutation = useMutation({
     mutationFn: (input: EpfImportInput) =>
       api
-        .POST('/api/v1/epf/import/preview', {
-          params: { query: { employerId: input.employerId } },
-          body: { file: input.file },
+        .POST('/api/v1/epf/import/batch/preview', {
+          params: { query: { assign: input.assign?.length ? input.assign : undefined } },
+          body: { files: input.files },
           bodySerializer: multipartBodySerializer,
         })
-        .then((r) => r.data! as EpfPreview),
+        .then((r) => r.data! as EpfBatchPreview),
   });
   const commitMutation = useMutation({
     mutationFn: (input: EpfImportInput) =>
       api
-        .POST('/api/v1/epf/import/commit', {
-          params: { query: { employerId: input.employerId } },
-          body: { file: input.file },
+        .POST('/api/v1/epf/import/batch/commit', {
+          params: { query: { assign: input.assign?.length ? input.assign : undefined } },
+          body: { files: input.files },
           bodySerializer: multipartBodySerializer,
         })
-        .then((r) => r.data! as EpfImportResult),
+        .then((r) => r.data! as EpfBatchResult),
   });
   return { previewMutation, commitMutation };
 }

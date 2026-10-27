@@ -1434,6 +1434,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/epf/import/batch/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["commitEpfImportBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/import/batch/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewEpfImportBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/epf/import/commit": {
         parameters: {
             query?: never;
@@ -5500,6 +5532,21 @@ export interface components {
             /** @enum {string|null} */
             withdrawalKind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
         };
+        EpfImportBatchPreviewResponse: {
+            refused: components["schemas"]["EpfImportRefusedFile"][];
+            sections: components["schemas"]["EpfImportSection"][];
+        };
+        EpfImportBatchResultResponse: {
+            balance: number;
+            /** Format: int32 */
+            imported: number;
+            refused: components["schemas"]["EpfImportRefusedFile"][];
+            /** Format: int32 */
+            replaced: number;
+            results: components["schemas"]["EpfImportResultResponse"][];
+            /** Format: int32 */
+            skipped: number;
+        };
         EpfImportEmployer: {
             establishmentId?: string | null;
             /** Format: uuid */
@@ -5522,6 +5569,11 @@ export interface components {
             rows: components["schemas"]["EpfImportRow"][];
             /** Format: int32 */
             unrecognisedLines: number;
+        };
+        EpfImportRefusedFile: {
+            code: string;
+            fileName: string;
+            message: string;
         };
         EpfImportResultResponse: {
             balance: number;
@@ -5558,6 +5610,11 @@ export interface components {
             wageMonth?: string | null;
             /** @enum {string|null} */
             withdrawalKind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
+        };
+        EpfImportSection: {
+            fileNames: string[];
+            key: string;
+            preview: components["schemas"]["EpfImportPreviewResponse"];
         };
         EpfInterestEstimate: {
             amount: number;
@@ -12452,6 +12509,80 @@ export interface operations {
                 };
                 content: {
                     "*/*": number[];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    commitEpfImportBatch: {
+        parameters: {
+            query?: {
+                assign?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    files: Blob[];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfImportBatchResultResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewEpfImportBatch: {
+        parameters: {
+            query?: {
+                assign?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    files: Blob[];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfImportBatchPreviewResponse"];
                 };
             };
             /** @description Error response */

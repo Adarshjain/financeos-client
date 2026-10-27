@@ -6,51 +6,91 @@ import React from 'react';
 import { ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 
-import { EPF_UPLOAD_ERROR_CODES, type EpfEmployerChoices, type EpfImportResult, type EpfPreview, NEW_EMPLOYER } from './epfImportModel';
+import {
+  addEpfFiles,
+  assignParams,
+  EPF_UPLOAD_ERROR_CODES,
+  type EpfBatchPreview,
+  type EpfBatchResult,
+  type EpfEmployerChoices,
+  type EpfRefusedFile,
+} from './epfImportModel';
 import { useEpfImportMutations } from './useEpfImportMutations';
 import type { ImportWizardNotify } from './useImportWizard';
 
-/** The EPF passbook import: one PDF, its preview, the employer it files under, and the commit. */
+/** The EPF passbook import: the queued PDFs, their preview in sections, the employer each section files under, and the commit. */
 export function useEpfImport(notify: ImportWizardNotify) {
   const qc = useQueryClient();
   const { previewMutation, commitMutation } = useEpfImportMutations();
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
-  const [file, setFile] = React.useState<File | null>(null);
-  const [preview, setPreview] = React.useState<EpfPreview | null>(null);
-  const [employer, setEmployer] = React.useState(NEW_EMPLOYER);
-  // The employers a new-employer passbook can be filed under; kept after one is picked so the pick can be undone.
-  const [choices, setChoices] = React.useState<EpfEmployerChoices | null>(null);
-  const [result, setResult] = React.useState<EpfImportResult | null>(null);
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [preview, setPreview] = React.useState<EpfBatchPreview | null>(null);
+  // The employers each new-employer section can be filed under; kept after one is picked so the pick can be undone.
+  const [choices, setChoices] = React.useState<Record<string, EpfEmployerChoices>>({});
+  const [result, setResult] = React.useState<EpfBatchResult | null>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
+  const [queueError, setQueueError] = React.useState<string | null>(null);
+  const [refusedAll, setRefusedAll] = React.useState<EpfRefusedFile[] | null>(null);
   const [isPreviewing, setIsPreviewing] = React.useState(false);
   const [isCommitting, setIsCommitting] = React.useState(false);
 
-  const employerId = (value: string) => (value === NEW_EMPLOYER ? undefined : value);
-
-  const pickFile = (next: File | null) => {
-    setFile(next);
-    setChoices(null);
+  const clearMessages = () => {
+    setChoices({});
     setUploadError(null);
+    setQueueError(null);
+    setRefusedAll(null);
   };
 
-  /** Reads the passbook; `value` is the employer chosen in the review step, absent on the first read. */
-  const runPreview = async (value?: string) => {
-    if (!file) {
-      notify.error('Please select your EPFO passbook PDF.');
+  const addFiles = (added: File[]) => {
+    const next = addEpfFiles(files, added);
+    setFiles(next.files);
+    clearMessages();
+    setQueueError(next.error);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index));
+    clearMessages();
+  };
+
+  const clearFiles = () => {
+    setFiles([]);
+    clearMessages();
+  };
+
+  /** Reads the passbooks; `override` is the employer picked for one section in the review step, absent on the first read. */
+  const runPreview = async (override?: { key: string; value: string }) => {
+    if (files.length === 0) {
+      notify.error('Please select your EPFO passbook PDFs.');
       return;
     }
     setIsPreviewing(true);
     setUploadError(null);
+    setRefusedAll(null);
     try {
-      const data = await previewMutation.mutateAsync({ file, employerId: value === undefined ? undefined : employerId(value) });
-      setPreview(data);
-      if (value === undefined) {
-        setChoices(!data.employer.existingId && data.employerOptions.length > 0 ? { newName: data.employer.name, options: data.employerOptions } : null);
+      const data = await previewMutation.mutateAsync({
+        files,
+        assign: preview && override ? assignParams(preview.sections, choices, override) : [],
+      });
+      if (data.sections.length === 0) {
+        setPreview(null);
+        setRefusedAll(data.refused);
+        setStep(1);
+        return;
       }
-      setEmployer(value ?? data.employer.existingId ?? NEW_EMPLOYER);
+      setPreview(data);
+      if (!override) {
+        const next: Record<string, EpfEmployerChoices> = {};
+        for (const s of data.sections) {
+          if (!s.preview.employer.existingId && s.preview.employerOptions.length > 0) {
+            next[s.key] = { newName: s.preview.employer.name, options: s.preview.employerOptions };
+          }
+        }
+        setChoices(next);
+      }
       setStep(2);
     } catch (err) {
-      if (err instanceof ApiError && EPF_UPLOAD_ERROR_CODES.includes(err.response.code)) {
+      if (!override && err instanceof ApiError && EPF_UPLOAD_ERROR_CODES.includes(err.response.code)) {
         setUploadError(err.response.message);
         setStep(1);
       } else {
@@ -67,10 +107,10 @@ export function useEpfImport(notify: ImportWizardNotify) {
   };
 
   const commit = async () => {
-    if (!file) return;
+    if (files.length === 0 || !preview) return;
     setIsCommitting(true);
     try {
-      const data = await commitMutation.mutateAsync({ file, employerId: employerId(employer) });
+      const data = await commitMutation.mutateAsync({ files, assign: assignParams(preview.sections, choices) });
       setResult(data);
       setStep(3);
       invalidateInvestmentQueries(qc);
@@ -84,28 +124,29 @@ export function useEpfImport(notify: ImportWizardNotify) {
 
   const reset = () => {
     setStep(1);
-    setFile(null);
+    setFiles([]);
     setPreview(null);
     setResult(null);
-    setUploadError(null);
-    setChoices(null);
-    setEmployer(NEW_EMPLOYER);
+    clearMessages();
   };
 
   return {
     step,
     setStep,
-    file,
-    pickFile,
+    files,
+    addFiles,
+    removeFile,
+    clearFiles,
     preview,
     choices,
-    employer,
     result,
     uploadError,
+    queueError,
+    refusedAll,
     isPreviewing,
     isCommitting,
     handlePreviewSubmit,
-    changeEmployer: (value: string) => void runPreview(value),
+    changeEmployer: (key: string, value: string) => void runPreview({ key, value }),
     commit,
     reset,
   };

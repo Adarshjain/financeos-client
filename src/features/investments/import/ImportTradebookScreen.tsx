@@ -11,7 +11,7 @@ import type { Broker } from '@/lib/account.types';
 
 import { HOLDINGS_HREF } from '../investmentsTabs';
 import { TRADEBOOK_HREF } from '../tradebook/tradebookModel';
-import { importableCount } from './epfImportModel';
+import { importableTotal } from './epfImportModel';
 import { EpfResultStep } from './EpfResultStep';
 import { EpfReviewStep } from './EpfReviewStep';
 import { EPF_UPLOAD_FORM_ID, EpfUploadStep } from './EpfUploadStep';
@@ -49,10 +49,12 @@ function RefreshWhenDone() {
   return null;
 }
 
-/** The EPFO passbook import: one PDF, its entries, and the result. */
+/** The EPFO passbook import: the PDFs, their entries, and the result. */
 function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof useEpfImport> }) {
   const { step, isPreviewing, isCommitting, preview, result } = epf;
-  const nothingNew = preview ? importableCount(preview) === 0 : true;
+  const importable = preview ? importableTotal(preview.sections) : 0;
+  const nothingNew = importable === 0;
+  const several = epf.files.length > 1;
   return (
     <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
       <div className="mx-auto flex max-w-container-xl flex-col gap-space-12 desk:gap-space-16">
@@ -83,9 +85,9 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
                 variant="primary"
                 className="max-desk:flex-1"
                 loading={isPreviewing}
-                disabled={isPreviewing || !epf.file}
+                disabled={isPreviewing || epf.files.length === 0}
               >
-                {isPreviewing ? 'Reading passbook…' : 'Preview passbook'}
+                {isPreviewing ? (several ? 'Reading passbooks…' : 'Reading passbook…') : several ? 'Preview passbooks' : 'Preview passbook'}
               </Button>
             </>
           ) : null}
@@ -102,7 +104,7 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
                 disabled={isCommitting || isPreviewing || nothingNew}
                 onClick={epf.commit}
               >
-                {isCommitting ? 'Importing entries…' : `Import ${preview ? importableCount(preview) : 0} entries`}
+                {isCommitting ? 'Importing entries…' : `Import ${importable} entries`}
               </Button>
             </>
           ) : null}
