@@ -1,3 +1,5 @@
+import type { CorporateAction } from '@/lib/types';
+
 import {
   fetchInstrumentCorporateActions,
   fetchInstrumentDividends,
@@ -38,7 +40,11 @@ export async function dividendsSection(instrumentId: string, page: number): Prom
 
 /** The server has no paged read of one instrument's corporate actions (a holding has a handful), so the page is cut here, never in the browser. */
 export async function corporateActionsSection(instrumentId: string, page: number): Promise<HoldingSection<CorporateActionRowModel>> {
-  const all = await fetchInstrumentCorporateActions(instrumentId);
+  return corporateActionsPage(await fetchInstrumentCorporateActions(instrumentId), page);
+}
+
+/** One page of already-read corporate actions, so the page load reads them once for both the list and the chart's splits. */
+export function corporateActionsPage(all: CorporateAction[], page: number): HoldingSection<CorporateActionRowModel> {
   const totalPages = Math.ceil(all.length / SECTION_PAGE_SIZE);
   const current = Math.min(Math.max(page, 0), Math.max(totalPages - 1, 0));
   return {

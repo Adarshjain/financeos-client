@@ -48,7 +48,7 @@ const EMPTY_SECTION = { rows: [], position: { page: 0, size: 1, totalElements: 0
 
 /** One holding: its figures, then every section; each list pages on its own. */
 export function HoldingView({ data, today, now }: HoldingViewProps) {
-  const { holding, instrument, estimate, trades, dividends, corporateActions, history } = data;
+  const { holding, instrument, estimate, trades, dividends, corporateActions, splits, history } = data;
   const router = useRouter();
   const [overriding, setOverriding] = React.useState(false);
   const [dialog, setDialog] = React.useState<HoldingDialog | null>(null);
@@ -84,7 +84,7 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
           />
           <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
             <div className="desk:col-span-8 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
-              <PriceChartCard history={history} onOpenHistory={() => setDialog('price-history')} />
+              <PriceChartCard history={history} splits={splits} onOpenHistory={() => setDialog('price-history')} />
               <TradesCard instrumentId={id} initial={trades ?? EMPTY_SECTION} subtitle={tradesSubtitle} onRecord={() => setDialog('trade')} />
               {brokerRows.length > 0 ? <BrokersCard rows={brokerRows} /> : null}
               {estimate ? <SellTodayCard estimate={estimate} assetType={holding.assetType} /> : null}
