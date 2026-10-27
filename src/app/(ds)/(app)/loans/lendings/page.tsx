@@ -34,7 +34,7 @@ export default async function DsLendingsPage({ searchParams }: { searchParams: P
   const unrecordedTransfers = unrecorded ? unrecordedRows(unrecorded, accountNames) : [];
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <TileGrid
         tiles={summary ? lendingTiles(summary) : null}
         labels={TILE_LABELS}

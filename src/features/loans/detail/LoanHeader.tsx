@@ -22,7 +22,7 @@ export interface LoanHeaderProps {
 export function LoanHeader({ header, canPrepay, closed, onPrepay, onEdit, onClose, onReopen, onDelete }: LoanHeaderProps) {
   const { next } = header;
   return (
-    <div className="flex flex-col gap-space-12 desk:flex-row desk:items-end desk:justify-between">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12 desk:flex-row desk:items-end desk:justify-between">
       <div className="min-w-0 flex flex-wrap items-center gap-space-8">
         <Badge tone={header.status.tone}>{header.status.label}</Badge>
         <Badge tone="neutral">{header.rate}</Badge>
@@ -30,7 +30,7 @@ export function LoanHeader({ header, canPrepay, closed, onPrepay, onEdit, onClos
           {header.meta}
         </Text>
       </div>
-      <div className="flex flex-col gap-space-12 desk:flex-row desk:items-center desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:flex-row desk:items-center desk:gap-space-16">
         {next ? (
           <div className="flex flex-col gap-space-2">
             <Text variant="overline" tone="ink-3" as="div">

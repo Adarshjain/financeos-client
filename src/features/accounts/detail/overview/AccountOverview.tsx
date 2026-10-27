@@ -20,7 +20,7 @@ export async function AccountOverview({
 }) {
   const disagreement = reconciliationBanner(account.reconciliationGap);
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {disagreement ? (
         <Banner tone="warning" title={disagreement.title}>
           {disagreement.body}

@@ -42,7 +42,7 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
   const underlyings = summary ? underlyingRows(summary) : [];
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {figures ? <FnoHero figures={figures} allYears={state.fy == null} /> : null}
       <FnoTiles figures={figures} allYears={state.fy == null} />
       <FnoListCard
@@ -54,7 +54,7 @@ export default async function DsFnoPage({ searchParams }: { searchParams: Promis
         summary={summary}
       />
       {months.length > 0 || underlyings.length > 0 ? (
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
           {months.length > 0 ? <MonthCard rows={months} fy={fyLabel(fy!)} /> : null}
           {underlyings.length > 0 ? <UnderlyingCard rows={underlyings} /> : null}
         </div>

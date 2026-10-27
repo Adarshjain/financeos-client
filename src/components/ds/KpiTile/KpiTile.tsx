@@ -122,7 +122,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
       body = (
         <>
           <Skeleton width="40%" height={12} />
-          <Skeleton width="70%" height={22} className="mt-space-10" />
+          <Skeleton width="70%" height={22} className="mt-space-8 desk:mt-space-10" />
           <Skeleton width="50%" height={14} className="mt-space-8" />
         </>
       );
@@ -176,7 +176,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
           {renderDelta()}
 
           {progressBar && (
-            <div className="mt-space-10">
+            <div className="mt-space-8 desk:mt-space-10">
               <ProgressBar
                 value={progressBar.value}
                 max={progressBar.max}

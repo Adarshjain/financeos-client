@@ -10,15 +10,15 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
   Select,
   Text,
-  TextField,
 } from '@/components/ds';
 import { useSearchText } from '@/features/shell/useSearchText';
-import type { Instrument, InstrumentType } from '@/lib/types';
+import type { Instrument } from '@/lib/types';
 
 import { InstrumentAddDialog, type InstrumentAddMode } from './InstrumentAddDialog';
 import { InstrumentEditDialog } from './InstrumentEditDialog';
@@ -212,14 +212,12 @@ export interface InstrumentsListCardProps {
   items: Instrument[];
   totalElements: number;
   totalPages: number;
-  /** Instruments per type over the search and stale filter, for the chip counts. */
-  counts: Partial<Record<InstrumentType, number>>;
   /** True when the whole catalog is empty (no filter applied and nothing on page 1). */
   catalogEmpty: boolean;
 }
 
 /** Search, type chips, Stale price and name order over the instruments table, with the Add, Edit and Reset dialogs. Every control is one URL change. */
-export function InstrumentsListCard({ state, items, totalElements, totalPages, counts, catalogEmpty }: InstrumentsListCardProps) {
+export function InstrumentsListCard({ state, items, totalElements, totalPages, catalogEmpty }: InstrumentsListCardProps) {
   const router = useRouter();
   const go = (next: Partial<InstrumentsUrlState>) => router.push(instrumentsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
@@ -252,40 +250,25 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex flex-col gap-space-8 desk:flex-row desk:items-center desk:gap-space-8">
-        <TextField
-          type="search"
-          size="md"
-          className="w-full desk:flex-1 desk:max-w-container-sm"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Search symbol, ISIN, name"
-          value={text}
-          onValueChange={setText}
-        />
-        <div className="flex items-center gap-space-8 overflow-x-auto">
-          {TYPE_CHIPS.map((chip) => {
-            const count = chip.value ? counts[chip.value] : undefined;
-            return (
-              <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>
-                {count != null ? `${chip.label} · ${count}` : chip.label}
-              </FilterChip>
-            );
-          })}
-          <FilterChip className="shrink-0" selected={state.stale} onClick={() => go({ stale: !state.stale, page: 0 })}>
-            Stale price
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterBar search={{ value: text, onValueChange: setText }}>
+        {TYPE_CHIPS.map((chip) => (
+          <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>
+            {chip.label}
           </FilterChip>
-          <div className="shrink-0">
-            <Select
-              value={state.sort}
-              options={SORT_OPTIONS}
-              onValueChange={(v) => go({ sort: v as InstrumentsUrlState['sort'], page: 0 })}
-              trigger={<FilterChip hasDropdown>{sortLabel}</FilterChip>}
-            />
-          </div>
+        ))}
+        <FilterChip className="shrink-0" selected={state.stale} onClick={() => go({ stale: !state.stale, page: 0 })}>
+          Stale price
+        </FilterChip>
+        <div className="shrink-0">
+          <Select
+            value={state.sort}
+            options={SORT_OPTIONS}
+            onValueChange={(v) => go({ sort: v as InstrumentsUrlState['sort'], page: 0 })}
+            trigger={<FilterChip hasDropdown className="shrink-0">{sortLabel}</FilterChip>}
+          />
         </div>
-      </div>
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

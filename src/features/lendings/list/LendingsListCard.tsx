@@ -12,11 +12,11 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
   Text,
-  TextField,
 } from '@/components/ds';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
@@ -134,31 +134,21 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex flex-col desk:flex-row desk:items-center gap-space-8">
-        <TextField
-          type="search"
-          size="md"
-          className="desk:w-container-xs"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Search people"
-          value={text}
-          onValueChange={setText}
-        />
-        <div className="flex gap-space-8 overflow-x-auto">
-          {LENDING_FILTERS.map((f) => (
-            <FilterChip
-              key={f.value}
-              className="shrink-0"
-              selected={state.filter === f.value}
-              onClick={() => go({ filter: f.value as LendingFilter, page: 0 })}
-            >
-              {f.label}
-            </FilterChip>
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+      >
+        {LENDING_FILTERS.map((f) => (
+          <FilterChip
+            key={f.value}
+            className="shrink-0"
+            selected={state.filter === f.value}
+            onClick={() => go({ filter: f.value as LendingFilter, page: 0 })}
+          >
+            {f.label}
+          </FilterChip>
+        ))}
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

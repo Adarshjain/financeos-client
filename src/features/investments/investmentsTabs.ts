@@ -8,20 +8,18 @@ export interface InvestmentsTab {
   label: string;
   /** The Legacy-shaped path; `appHref` turns it into the Dinero route. */
   path: string;
-  /** Tabs that show a count (the counts load on their own). */
-  counted: boolean;
 }
 
 export const INVESTMENTS_PATH = '/investments';
 
 export const investmentsTabs: InvestmentsTab[] = [
-  { id: 'holdings', label: 'Holdings', path: INVESTMENTS_PATH, counted: false },
-  { id: 'epf', label: 'EPF', path: '/investments/epf', counted: false },
-  { id: 'tradebook', label: 'Tradebook', path: '/investments/tradebook', counted: true },
-  { id: 'dividends', label: 'Dividends', path: '/investments/dividends', counted: true },
-  { id: 'fno', label: 'F&O', path: '/investments/fno', counted: true },
-  { id: 'corporate-actions', label: 'Corporate actions', path: '/investments/corporate-actions', counted: true },
-  { id: 'instruments', label: 'Instruments', path: '/investments/instruments', counted: false },
+  { id: 'holdings', label: 'Holdings', path: INVESTMENTS_PATH },
+  { id: 'epf', label: 'EPF', path: '/investments/epf' },
+  { id: 'dividends', label: 'Dividends', path: '/investments/dividends' },
+  { id: 'tradebook', label: 'Tradebook', path: '/investments/tradebook' },
+  { id: 'fno', label: 'F&O', path: '/investments/fno' },
+  { id: 'corporate-actions', label: 'Corporate actions', path: '/investments/corporate-actions' },
+  { id: 'instruments', label: 'Instruments', path: '/investments/instruments' },
 ];
 
 /** Where a tab goes. */

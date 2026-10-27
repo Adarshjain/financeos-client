@@ -56,7 +56,7 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 desk:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y overscroll-contain',
+          'px-space-16 desk:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-8 desk:gap-space-12 flex-1 touch-pan-y overscroll-contain',
           className
         )}
         {...props}
@@ -143,10 +143,10 @@ export const DialogSection = forwardRef<HTMLDivElement, DialogSectionProps>(
         </SectionHeader>
         {collapsible ? (
           <Reveal open={shown}>
-            <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-12">{children}</div>
+            <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-8 desk:gap-space-12">{children}</div>
           </Reveal>
         ) : (
-          <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-12">{children}</div>
+          <div className="px-space-16 desk:px-space-20 py-space-10 flex flex-col gap-space-8 desk:gap-space-12">{children}</div>
         )}
       </div>
     );
@@ -820,7 +820,7 @@ export const ConfirmDialogShell = forwardRef<
         className={cn('w-full', className)}
         {...props}
       >
-        <DialogBody className="space-y-space-12">
+        <DialogBody className="space-y-space-8 desk:space-y-space-12">
           {isChecking ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
               <Icon
@@ -950,7 +950,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(
           }}
           {...props}
         >
-          <DialogBody className="space-y-space-12">
+          <DialogBody className="space-y-space-8 desk:space-y-space-12">
             {isChecking ? (
               <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
                 <Icon

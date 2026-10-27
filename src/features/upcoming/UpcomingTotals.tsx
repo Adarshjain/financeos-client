@@ -8,7 +8,7 @@ import type { UpcomingTile } from './upcomingModel';
 export function UpcomingTotals({ tiles }: { tiles: UpcomingTile[] }) {
   if (tiles.length === 0) return null;
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
       {tiles.map((t) => (
         <KpiTile
           key={t.id}

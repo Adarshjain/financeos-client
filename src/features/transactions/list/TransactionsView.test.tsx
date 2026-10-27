@@ -76,9 +76,9 @@ describe('TransactionsView', () => {
     setup();
     expect(screen.getByRole('tab', { name: 'All' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
-    expect(screen.getByPlaceholderText('Search merchant, amount…')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
     expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
-    expect(screen.getByText('Needs review · 25')).toBeInTheDocument();
+    expect(screen.getByText('Needs review')).toBeInTheDocument();
     expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Set category').length).toBeGreaterThan(0);
   });
@@ -89,13 +89,13 @@ describe('TransactionsView', () => {
     expect(lastUrl()).toBe('/transactions?monitoring=1');
     fireEvent.click(screen.getByRole('button', { name: 'Up to statement' }));
     expect(lastUrl()).toContain('statement=1');
-    fireEvent.click(screen.getByRole('button', { name: 'Needs review · 25' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Needs review' }));
     expect(lastUrl()).toContain('review=needs_review');
   });
 
   it('turns a switched-on toggle off', () => {
     setup({ query: { ...DEFAULT_QUERY, review: 'NEEDS_REVIEW' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Needs review · 25' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Needs review' }));
     expect(lastUrl()).toBe('/transactions');
   });
 
@@ -203,7 +203,7 @@ describe('TransactionsView', () => {
   it('debounces search into the address and goes back to page one', () => {
     vi.useFakeTimers();
     setup({ query: { ...DEFAULT_QUERY, page: 3 } });
-    fireEvent.change(screen.getByPlaceholderText('Search merchant, amount…'), { target: { value: 'swig' } });
+    fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'swig' } });
     expect(router.push).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS + 10));
     expect(router.push).toHaveBeenCalledTimes(1);
@@ -256,22 +256,6 @@ describe('TransactionsView', () => {
     expect(chip).toHaveTextContent('2');
     fireEvent.click(chip);
     expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
-  });
-
-  it('widens the search on focus and collapses it on blur even while it holds text', () => {
-    setup();
-    const input = screen.getByPlaceholderText('Search merchant, amount…');
-    const frame = () => input.closest('[class*="desk:min-w-container-xs"]') as HTMLElement;
-    expect(frame().className).toContain('flex-1');
-    fireEvent.focus(input);
-    expect(frame().className).toContain('max-desk:basis-11/12');
-    fireEvent.blur(input);
-    expect(frame().className).toContain('flex-1');
-    fireEvent.change(input, { target: { value: 'zz' } });
-    fireEvent.focus(input);
-    fireEvent.blur(input);
-    expect(frame().className).toContain('flex-1');
-    expect(frame().className).not.toContain('basis-11/12');
   });
 
   it('Clear all in the dialog drops every filter to all time', async () => {

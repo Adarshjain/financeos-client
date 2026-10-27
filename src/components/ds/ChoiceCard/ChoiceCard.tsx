@@ -60,7 +60,7 @@ export const ChoiceCardGroup = forwardRef<HTMLDivElement, ChoiceCardGroupProps>(
             else if (ref) ref.current = node;
           }}
           role="radiogroup"
-          className={cn('grid gap-space-10', className)}
+          className={cn('grid gap-x-space-10 gap-y-space-8 desk:gap-y-space-10', className)}
           onKeyDown={handleKeyDown}
           {...props}
         >

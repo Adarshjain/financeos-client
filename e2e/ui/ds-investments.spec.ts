@@ -38,12 +38,9 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments');
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
-      for (const name of [/^Tradebook/, /^Dividends/, /^F&O/, /^Corporate actions/, /^Instruments/]) {
-        await expect(page.getByRole('tab', { name })).toBeVisible();
-      }
-      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveAttribute('href', '/investments/tradebook');
-      // The counts load on their own.
-      await expect(page.getByRole('tab', { name: /^Tradebook · \d+/ })).toBeVisible();
+      // The tab order, and no counts on any tab.
+      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
+      await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('href', '/investments/tradebook');
 
       // The phone hero has no label; the desktop keeps its Current value tile.
       await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(viewport.name.startsWith('phone') ? 0 : 1);
@@ -66,26 +63,34 @@ for (const viewport of VIEWPORTS) {
     test('Holdings: search, type, sort and Broker are one URL change each and answered by the server', async ({ page }) => {
       await page.goto('/investments');
 
-      await page.getByPlaceholder('Symbol or name').fill('TCSX');
+      await page.getByPlaceholder('Search').fill('TCSX');
       await page.waitForURL(/q=TCSX/);
       await expect(shown(page.getByText(seeded.tcs.symbol, { exact: true }))).toBeVisible();
       await expect(page.getByText(seeded.infy.symbol, { exact: true })).toHaveCount(0);
 
-      await page.getByRole('button', { name: /^Funds/ }).click();
+      // Asset type is one dropdown chip, single choice.
+      await page.getByRole('button', { name: 'Asset type' }).click();
+      await page.getByRole('option', { name: 'Mutual funds' }).click();
       await page.waitForURL(/type=mutual_fund/);
       await expect(page.getByText('No holdings match.')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
 
-      await page.getByRole('button', { name: /^Stocks/ }).click();
+      await page.getByRole('button', { name: 'Asset type' }).click();
+      await page.getByRole('option', { name: 'Stocks' }).click();
       await page.waitForURL(/type=stock/);
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
 
-      await page.getByRole('button', { name: /Name A–Z/ }).click();
-      await page.getByRole('option', { name: '₹ return' }).click();
+      // Each sort option carries its direction.
+      await page.getByRole('button', { name: 'Name: A to Z' }).click();
+      await page.getByRole('option', { name: '₹ return: high to low' }).click();
       await page.waitForURL(/sort=return_abs/);
-      await expect(page.getByRole('button', { name: /₹ return/ })).toBeVisible();
+      await expect(page.getByRole('button', { name: '₹ return: high to low' })).toBeVisible();
+      await page.getByRole('button', { name: '₹ return: high to low' }).click();
+      await page.getByRole('option', { name: '₹ return: low to high' }).click();
+      await page.waitForURL(/sort=return_abs&dir=asc/);
+      await expect(page.getByRole('button', { name: '₹ return: low to high' })).toBeVisible();
 
       await page.getByRole('button', { name: 'Broker' }).click();
       await page.getByRole('option', { name: seeded.groww.name }).click();

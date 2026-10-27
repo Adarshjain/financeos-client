@@ -12,12 +12,12 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
   Select,
   Text,
-  TextField,
 } from '@/components/ds';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { CorporateActionItem } from '@/lib/investments.types';
@@ -161,18 +161,8 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <div className="flex items-center gap-space-8 overflow-x-auto">
-        <TextField
-          type="search"
-          size="md"
-          className="shrink-0 w-container-xs"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Instrument"
-          value={text}
-          onValueChange={setText}
-        />
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterBar search={{ value: text, onValueChange: setText }}>
         {TYPE_CHIPS.map((chip) => (
           <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>
             {chip.label}
@@ -188,7 +178,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
             </FilterChip>
           }
         />
-      </div>
+      </FilterBar>
       <Card>
         <DataTable
           columns={tableColumns}

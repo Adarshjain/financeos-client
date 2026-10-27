@@ -126,8 +126,13 @@ function propsFor(over: Partial<TransactionsScreenProps> = {}, rowsFor = transac
   };
 }
 
+// Kept in the cache with nobody watching, so the nav badge's number (the count the page seeds) can be read.
+let badgeClient: QueryClient;
+const badge = () => badgeClient.getQueryData(keys.transactions.needsReviewCount());
+
 function setup(over: Partial<TransactionsScreenProps> = {}, rowsFor = transactions) {
-  return renderWithQuery(<TransactionsScreen {...propsFor(over, rowsFor)} />);
+  badgeClient = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity } } });
+  return renderWithQuery(<TransactionsScreen {...propsFor(over, rowsFor)} />, { queryClient: badgeClient });
 }
 
 function deferred<T>() {
@@ -162,13 +167,13 @@ beforeEach(() => {
 });
 
 describe('TransactionsScreen instant approve', () => {
-  it('swipe approve under Needs review: the row and the count go at once, and stay once the server says yes', async () => {
+  it('swipe approve under Needs review: the row and the nav badge count go at once, and stay once the server says yes', async () => {
     const d = hold();
     setup({ query: needsReviewQuery, needsReviewCount: 2 }, reviewRows);
-    expect(screen.getByText('Needs review · 2')).toBeInTheDocument();
+    expect(badge()).toBe(2);
     swipe('Swiggy', 'swipe-right');
     await waitFor(() => expect(present('Swiggy')).toBe(false));
-    expect(screen.getByText('Needs review · 1')).toBeInTheDocument();
+    expect(badge()).toBe(1);
     expect(showToast).not.toHaveBeenCalled();
     await act(async () => d.resolve(ok(['t2'])));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Approved', expect.objectContaining({ tone: 'success' })));
@@ -184,7 +189,7 @@ describe('TransactionsScreen instant approve', () => {
     await waitFor(() => expect(present('Swiggy')).toBe(false));
     await act(async () => d.reject(new Error('boom')));
     await waitFor(() => expect(present('Swiggy')).toBe(true));
-    expect(screen.getByText('Needs review · 2')).toBeInTheDocument();
+    expect(badge()).toBe(2);
     expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' });
   });
 
@@ -280,15 +285,15 @@ describe('TransactionsScreen instant delete', () => {
     expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' });
   });
 
-  it('the row that leaves also lowers the pager total and the Needs review count', async () => {
+  it('the row that leaves also lowers the pager total and the nav badge count', async () => {
     const d = hold();
     setup({ needsReviewCount: 2 }, transactions);
     swipe('Swiggy', 'swipe-left');
     fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
     await waitFor(() => expect(present('Swiggy')).toBe(false));
-    expect(screen.getByText('Needs review · 1')).toBeInTheDocument();
+    expect(badge()).toBe(1);
     await act(async () => d.reject(new Error('boom')));
-    await waitFor(() => expect(screen.getByText('Needs review · 2')).toBeInTheDocument());
+    await waitFor(() => expect(badge()).toBe(2));
   });
 
   it('bulk delete still waits for the server', async () => {
@@ -396,7 +401,7 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
     const fresh = reviewRows.filter((x) => x.id !== 't2');
     view.rerender(<TransactionsScreen {...propsFor({ query: needsReviewQuery, needsReviewCount: 1 }, fresh)} />);
     expect(present('Swiggy')).toBe(false);
-    expect(screen.getByText('Needs review · 1')).toBeInTheDocument();
+    expect(badge()).toBe(1);
   });
 
   it('after Undo the row comes back with the next page, and is not hidden by the old approve', async () => {
@@ -409,7 +414,7 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
     await waitFor(() => expect(vi.mocked(api.POST)).toHaveBeenCalledTimes(2));
     view.rerender(<TransactionsScreen {...propsFor({ query: needsReviewQuery, needsReviewCount: 2 }, reviewRows)} />);
     await waitFor(() => expect(present('Swiggy')).toBe(true));
-    expect(screen.getByText('Needs review · 2')).toBeInTheDocument();
+    expect(badge()).toBe(2);
   });
 
   const flagged = [

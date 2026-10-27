@@ -46,7 +46,7 @@ export function RewardsTab({
   if (!report) {
     // The period stays on screen, so a range that fails can be changed.
     return (
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <RewardsPeriodControl basePath={basePath} query={query} window={window} today={today} />
         <RewardsLoadError what="rewards" />
       </div>
@@ -65,10 +65,10 @@ export function RewardsTab({
   const words = periodWords(preset, window);
   const pending = currentMilestones(report.milestones, today).filter((m) => !m.achieved);
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <RewardsPeriodControl basePath={basePath} query={query} window={window} today={today} />
       <RewardsBanners accountId={account.id} banners={rewardsBanners(report)} />
-      <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         {kpis.map((k) => (
           <KpiTile
             key={k.key}
@@ -89,7 +89,7 @@ export function RewardsTab({
           />
         ))}
       </div>
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         <div className="desk:col-span-7 min-w-0">
           {lines ? (
             <EarningLines
@@ -104,7 +104,7 @@ export function RewardsTab({
             <RewardsLoadError what="earning lines" />
           )}
         </div>
-        <div className="desk:col-span-5 min-w-0 flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="desk:col-span-5 min-w-0 flex flex-col gap-space-8 desk:gap-space-16">
           {pending.length > 0 || completed ? (
             <MilestonesCard
               items={pending.map((m) => ({ key: `${m.milestoneId}:${m.windowStart}`, model: buildMilestone(m, today) }))}

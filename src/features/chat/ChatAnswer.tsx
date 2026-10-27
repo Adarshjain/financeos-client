@@ -66,9 +66,9 @@ export function ChatAnswer({ record, conversationId, last, busy, onSend, onAskAg
   };
 
   return (
-    <div className="flex flex-col gap-space-12 min-w-0">
+    <div className="flex flex-col gap-space-8 desk:gap-space-12 min-w-0">
       {stats.length > 0 ? (
-        <div className={stats.length >= 4 ? 'grid grid-cols-2 desk:grid-cols-4 gap-space-12' : 'grid grid-cols-2 desk:grid-cols-3 gap-space-12'}>
+        <div className={stats.length >= 4 ? 'grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12' : 'grid grid-cols-2 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12'}>
           {stats.map((s, i) => (
             <KpiTile
               key={i}

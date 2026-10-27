@@ -30,8 +30,8 @@ export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, stat
   const fixed = state.mode === 'edit';
   const section = { catalog, state, dispatch, issues };
   return (
-    <div className="flex flex-col gap-space-16">
-      <div className="flex flex-col gap-space-12">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-12">
         <TextField
           label="Report name"
           placeholder="Report name"

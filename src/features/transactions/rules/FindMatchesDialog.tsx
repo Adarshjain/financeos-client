@@ -111,7 +111,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
           disabled: count === 0 || applying,
         }}
       >
-        <DialogBody className="flex flex-col gap-space-8">
+        <DialogBody className="flex flex-col gap-space-8 desk:gap-space-8">
           {failed ? (
             <ErrorState
               title="Could not load matches"

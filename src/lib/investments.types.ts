@@ -26,11 +26,15 @@ export interface PagePosition {
 
 export type HoldingsSort = 'name' | 'return_pct' | 'return_abs';
 
+/** Sort direction of the holdings list; without it each key keeps its default (name A to Z, returns high to low). */
+export type HoldingsSortDir = 'asc' | 'desc';
+
 export interface HoldingsQuery {
   brokerAccountId?: string;
   assetType?: InstrumentType;
   search?: string;
   sort?: HoldingsSort;
+  dir?: HoldingsSortDir;
   page?: number;
   size?: number;
 }

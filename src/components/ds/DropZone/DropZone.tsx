@@ -140,7 +140,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={cn('flex flex-col gap-space-12', className)}
+        className={cn('flex flex-col gap-space-8 desk:gap-space-12', className)}
         {...props}
       >
         {/* Hidden native file input */}

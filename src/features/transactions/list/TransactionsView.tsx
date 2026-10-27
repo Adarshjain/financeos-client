@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Icon, type TabItem, Tabs, TextField } from '@/components/ds';
+import { type TabItem, Tabs } from '@/components/ds';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -119,8 +119,6 @@ export function TransactionsView({
       );
     });
   const { text, setText } = useSearchText(query.q, (q) => go({ q }));
-  // Phone: the search fills the row beside the chips; while focused it widens and pushes them out of view.
-  const [searchFocused, setSearchFocused] = React.useState(false);
 
   const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
     value: t.value,
@@ -133,7 +131,7 @@ export function TransactionsView({
     <>
       <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
         <div className="flex">
-          <div className="flex min-w-0 flex-1 flex-col gap-space-12 desk:gap-space-16">
+          <div className="flex min-w-0 flex-1 flex-col gap-space-8 desk:gap-space-16">
             {selectionHeader ? (
               <>
                 <div className="desk:hidden">
@@ -149,23 +147,9 @@ export function TransactionsView({
               today={today}
               accounts={accounts}
               categories={categories}
-              needsReviewCount={needsReviewCount}
               onChange={go}
               onOpenFilters={() => setFiltersOpen(true)}
-              search={
-                <TextField
-                  type="search"
-                  size="md"
-                  className={`min-w-0 desk:min-w-container-xs transition-all duration-base motion-reduce:transition-none ${searchFocused ? 'max-desk:grow-0 max-desk:shrink-0 max-desk:basis-11/12' : 'flex-1'}`}
-                  prefix={<Icon name="search" size="sm" />}
-                  clearable
-                  placeholder="Search merchant, amount…"
-                  value={text}
-                  onValueChange={setText}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                />
-              }
+              search={{ value: text, onValueChange: setText }}
             />
             {list.ok ? (
               <TransactionsList

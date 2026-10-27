@@ -86,13 +86,13 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
       onAdd={chooseFiles}
       addLabel="Add statements"
     >
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <ImportTabs />
-        <div className="grid grid-cols-1 items-start gap-space-12 desk:grid-cols-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 items-start gap-x-space-12 gap-y-space-8 desk:grid-cols-12 desk:gap-space-16">
           <Card className="desk:col-span-7">
             <form
               onSubmit={form.handleSubmit}
-              className="flex flex-col gap-space-16 p-space-16 desk:p-space-20"
+              className="flex flex-col gap-space-8 desk:gap-space-16 p-space-16 desk:p-space-20"
               data-testid="import-form"
             >
               <AccountPicker

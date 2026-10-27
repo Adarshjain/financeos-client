@@ -8,7 +8,7 @@ import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reports
 /** "Start from a template" and "Ask instead", under the list. */
 export function ReportsAside() {
   return (
-    <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2 desk:gap-space-16 desk:items-start">
+    <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:grid-cols-2 desk:gap-space-16 desk:items-start">
       <Card title="Start from a template" subtitle="One click, then tweak">
         {REPORT_TEMPLATES.map((t) => (
           <ListRow

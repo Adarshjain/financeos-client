@@ -15,16 +15,15 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   Icon,
   Menu,
   MenuItem,
   Text,
-  TextField,
 } from '@/components/ds';
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
-import { useReportsList } from '@/lib/query/hooks/useReports';
 
 import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '../data/useDashboardActions';
 import { editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
@@ -137,7 +136,6 @@ function makeColumns(actions: RowActions) {
 export function DashboardsScreen() {
   const router = useRouter();
   const { data: dashboards = [] } = useDashboards();
-  const { data: reports } = useReportsList();
   const toggleDefault = useToggleDefault(noop);
   const remove = useDeleteDashboard();
   const home = useRestoreHome();
@@ -165,8 +163,8 @@ export function DashboardsScreen() {
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <ReportsTabs active="dashboards" dashboards={dashboards.length} reports={reports?.length} />
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <ReportsTabs active="dashboards" />
 
       {dashboards.length === 0 ? (
         <Card>
@@ -181,18 +179,9 @@ export function DashboardsScreen() {
         <>
           {canRestoreHome(dashboards) ? restore : null}
 
-          <div className="-mx-space-16 -mt-space-4 -mb-space-8 flex gap-space-8 overflow-x-auto px-space-16 py-space-4 scrollbar-none desk:-mx-space-4 desk:-mb-space-12 desk:min-w-0 desk:px-space-4">
-            <TextField
-              type="search"
-              size="md"
-              className="min-w-container-xs flex-1 desk:w-container-xs desk:flex-none"
-              prefix={<Icon name="search" size="sm" />}
-              clearable
-              placeholder="Search dashboards"
-              value={search}
-              onValueChange={setSearch}
-            />
-          </div>
+          <FilterBar
+            search={{ value: search, onValueChange: setSearch }}
+          />
 
           <Card>
             <DataTable
@@ -233,7 +222,7 @@ export function DashboardsScreen() {
 /** The list while the page loads. */
 export function DashboardsListSkeleton() {
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs active="dashboards" />
       <Card>
         <DataTable

@@ -7,7 +7,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 export default function DsRulesLoading() {
   return (
     <ShellPage crumb="Money / Transactions" title="Rules" flushTop>
-      <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
           <Card key={i}>
             <ListRow title={<Skeleton width="40%" />} subtitle={<Skeleton width="60%" />} />

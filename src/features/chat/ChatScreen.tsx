@@ -160,7 +160,7 @@ function ChatSession({
       addLabel="New chat"
       backHref={started ? CHAT_HREF : REPORTS_HREF}
     >
-      <div className="flex flex-col desk:flex-row desk:items-start gap-space-16 desk:gap-space-24">
+      <div className="flex flex-col desk:flex-row desk:items-start gap-space-8 desk:gap-space-24">
         <aside className={cn('order-3 desk:order-1 desk:w-72 desk:shrink-0 flex flex-col gap-space-8 desk:sticky desk:top-safe-56 desk:self-start desk:max-h-dvh desk:overflow-y-auto', started && 'max-desk:hidden')}>
           <ChatHistoryPane
             conversations={list}
@@ -197,7 +197,7 @@ function ChatSession({
               </div>
             </>
           ) : (
-            <div className={cn(COLUMN, 'order-1 flex flex-col gap-space-20 desk:pb-space-24 max-desk:pb-space-96')}>
+            <div className={cn(COLUMN, 'order-1 flex flex-col gap-space-8 desk:gap-space-20 desk:pb-space-24 max-desk:pb-space-96')}>
               {records.map((r, i) =>
                 r.kind === 'user' ? (
                   <MessageBubble

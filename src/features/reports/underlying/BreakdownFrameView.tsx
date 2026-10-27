@@ -41,7 +41,7 @@ export function BreakdownFrameView({ datasource, rowId, onBack, transactionsOpen
   const data = query.data;
 
   return (
-    <div className="flex flex-col gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {onBack ? (
         <div>
           <Button variant="ghost" size="sm" icon={<Icon name="chevron-left" />} onClick={onBack}>

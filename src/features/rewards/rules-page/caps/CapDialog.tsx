@@ -64,7 +64,7 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
         primary={{ label: 'Save cap', onSelect: save, loading: pending }}
       >
         <DialogBody>
-          <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <TextField
               className="desk:col-span-2"
               label="Name"

@@ -83,7 +83,7 @@ export function DividendsView({
   const banner = unrecordedBanner(unrecorded.items);
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <DividendsHero figures={figures} />
       <DividendsTiles tiles={dividendsTiles(figures)} />
       {banner ? (
@@ -105,7 +105,7 @@ export function DividendsView({
         exportFilters={exportFilters}
         onEdit={(id) => setOpened(dividends.find((d) => d.id === id) ?? null)}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         <ByInstrumentCard
           {...byInstrument}
           onPageChange={(ipage) => router.push(dividendsUrl({ ...state, ipage }), { scroll: false })}

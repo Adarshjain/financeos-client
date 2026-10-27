@@ -14638,6 +14638,7 @@ export interface operations {
                 assetType?: string;
                 search?: string;
                 sort?: string;
+                dir?: string;
                 page?: number;
                 size?: number;
             };

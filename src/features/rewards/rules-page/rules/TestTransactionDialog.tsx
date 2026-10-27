@@ -60,7 +60,7 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
         primary={{ label: 'Run test', onSelect: run, loading: recommend.isPending }}
       >
         <DialogBody>
-          <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <AmountField
               label="Amount"
               prefix="₹"
@@ -96,8 +96,8 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
             </Button>
           </div>
           <Reveal open={moreOpen}>
-            <div className="flex flex-col gap-space-12">
-              <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-2">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12">
+              <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
                 <TextField
                   label="Merchant"
                   optional
@@ -113,7 +113,7 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
                   onValueChange={(mcc) => patch({ mcc })}
                 />
               </div>
-              <div className="flex flex-wrap gap-space-16">
+              <div className="flex flex-wrap gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
                 <label className="flex items-center gap-space-8">
                   <Checkbox checked={form.isEmi} onCheckedChange={(c) => patch({ isEmi: c === true })} />
                   <Text variant="body">EMI transaction</Text>

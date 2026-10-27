@@ -79,7 +79,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
         backHref={LENDINGS_HREF}
         onAdd={() => addLending.openFor(cp)}
       >
-        <div className="flex flex-col gap-space-12 desk:gap-space-16">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <PersonHeader
             name={cp.name}
             header={header}
@@ -90,7 +90,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
             onExport={() => setExporting(true)}
             onDelete={() => setDeletingPerson(true)}
           />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
+          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
             <div className="desk:col-span-7 min-w-0">
               <LedgerCard
                 firstName={firstNameOf(cp.name)}
@@ -106,7 +106,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
                 onExport={() => setExporting(true)}
               />
             </div>
-            <div className="desk:col-span-5 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
+            <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <ExpectedReturnCard
                 date={cp.expectedReturnDate ? formatDayMonthYear(cp.expectedReturnDate) : null}
                 canExport={hasEntries}

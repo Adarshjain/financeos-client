@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Pager, ProgressBar, showToast, Text, TextField } from '@/components/ds';
+import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Icon, Pager, ProgressBar, showToast, Text } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
@@ -161,16 +161,9 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
   );
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      <TextField
-        type="search"
-        size="md"
-        className="desk:w-container-xs"
-        prefix={<Icon name="search" size="sm" />}
-        clearable
-        placeholder="Search loans"
-        value={text}
-        onValueChange={setText}
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
       />
       <Card>
         <DataTable

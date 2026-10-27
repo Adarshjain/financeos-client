@@ -39,7 +39,7 @@ export function CloseAccountSection({
 }) {
   if (closedOn) {
     return (
-      <section className="flex flex-col gap-space-12">
+      <section className="flex flex-col gap-space-8 desk:gap-space-12">
         <Heading>Close account</Heading>
         <div className="flex items-center justify-between gap-space-12">
           <div className="flex flex-col min-w-0">
@@ -56,12 +56,12 @@ export function CloseAccountSection({
     );
   }
   return (
-    <section className="flex flex-col gap-space-12">
+    <section className="flex flex-col gap-space-8 desk:gap-space-12">
       <Heading>Close account</Heading>
       <Text variant="caption" tone="ink-3" as="p">
         {`Closing keeps every transaction and statement; the ${noun} drops out of active lists from this date.`}
       </Text>
-      <div className="grid grid-cols-1 desk:grid-cols-2 gap-space-12 items-end">
+      <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 items-end">
         <DateField label="Closed on" today={today} value={closeDate} onValueChange={(v) => onCloseDateChange(v as string)} />
         <Button variant="secondary" loading={closing} disabled={disabled} onClick={onClose} className="w-full">
           Close account
@@ -73,7 +73,7 @@ export function CloseAccountSection({
 
 export function DeleteAccountSection({ disabled, onDelete }: { disabled: boolean; onDelete: () => void }) {
   return (
-    <section className="flex flex-col gap-space-12">
+    <section className="flex flex-col gap-space-8 desk:gap-space-12">
       <Heading tone="danger">Delete account</Heading>
       <div className="flex items-center gap-space-12">
         <Text variant="caption" tone="ink-3" as="p" className="flex-1">

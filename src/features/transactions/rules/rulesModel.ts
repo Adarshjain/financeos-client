@@ -111,17 +111,6 @@ export function hasRuleFilters(state: RulesUrlState): boolean {
   return Boolean(state.q || state.source || state.matchType || state.categoryId);
 }
 
-export interface RuleCounts {
-  unverified: number;
-  verified: number;
-  all: number;
-}
-
-/** The three status chips' numbers from two counts; the third is their sum. */
-export function ruleCounts(unverified: number, verified: number): RuleCounts {
-  return { unverified, verified, all: unverified + verified };
-}
-
 // ---- Words ---------------------------------------------------------------
 
 export const MATCH_TYPE_LABEL: Record<MatchType, string> = {

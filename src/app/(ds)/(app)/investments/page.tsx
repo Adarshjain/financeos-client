@@ -23,7 +23,7 @@ import { LivePriceRefresh } from '@/features/investments/LivePriceRefresh';
 import { LoansLoadError } from '@/features/loans/LoansLoadError';
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 
-type SearchParams = { q?: string; type?: string; broker?: string; sort?: string; page?: string; size?: string };
+type SearchParams = { q?: string; type?: string; broker?: string; sort?: string; dir?: string; page?: string; size?: string };
 
 /** Open lots read for the "Tax this FY" card's symbols. */
 const TAX_LOTS = 50;
@@ -36,7 +36,7 @@ const TILE_LABELS = ['Current value', 'Invested', 'Unrealised P&L', 'Realised th
 export default async function DsInvestmentsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const state = parseHoldingsUrl(await searchParams);
   const query = holdingsQuery(state);
-  // With a type filter the server's groups hold only that type; the chip counts and Allocation cover the whole portfolio (broker filter kept).
+  // With a type filter the server's groups hold only that type; Allocation covers the whole portfolio (broker filter kept).
   const wholeQuery = { brokerAccountId: query.brokerAccountId, sort: 'name' as const, page: 0, size: 1 };
   const [list, whole, tax, brokers] = await Promise.all([
     loaded(fetchHoldings(query)),
@@ -56,15 +56,14 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
   // Top movers look at every holding of the filter, not only the page on screen.
   const scan =
     totalPages > 1
-      ? ((await orNull(fetchHoldings({ ...query, sort: 'name', page: 0, size: MOVERS_SCAN })))?.holdings ?? holdings)
+      ? ((await orNull(fetchHoldings({ ...query, sort: 'name', dir: undefined, page: 0, size: MOVERS_SCAN })))?.holdings ?? holdings)
       : holdings;
   const movers = topMovers(scan);
   const allocation = allocationModel(portfolioGroups);
-  const counts = Object.fromEntries(portfolioGroups.map((g) => [g.assetType, g.count]));
   const hero = heroModel(header, new Date());
 
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <LivePriceRefresh />
       <HoldingsHero hero={hero} />
       <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} />
@@ -76,9 +75,8 @@ export default async function DsInvestmentsPage({ searchParams }: { searchParams
         totalElements={totalElements}
         totalPages={totalPages}
         brokers={(brokers ?? []).map((b) => ({ id: b.id, name: b.name }))}
-        counts={counts}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-space-12 desk:gap-space-16">
+      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
         {allocation.length > 0 ? <AllocationCard segments={allocation} /> : null}
         {tax ? (
           <div className="desk:order-3">

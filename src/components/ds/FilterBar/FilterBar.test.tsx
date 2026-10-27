@@ -76,4 +76,26 @@ describe('FilterBar', () => {
     );
     expect(screen.getByText('All').closest('button')).toHaveClass('rounded-ds-pill');
   });
+
+  it('carries its own bleed and hides its scrollbar, so pages pass no classes', () => {
+    const { container } = render(<FilterBar search={search()} />);
+    expect(container.firstElementChild).toHaveClass(
+      'scrollbar-none',
+      '-mx-space-16',
+      'px-space-16',
+      'py-space-4',
+      '-mt-space-4',
+      '-mb-space-4',
+      'desk:-mx-space-4',
+      'desk:px-space-4',
+      'desk:-mb-space-12',
+      'desk:min-w-0',
+    );
+  });
+
+  it('lets a page class override part of the bleed', () => {
+    const { container } = render(<FilterBar className="px-space-8" />);
+    expect(container.firstElementChild).toHaveClass('px-space-8');
+    expect(container.firstElementChild).not.toHaveClass('px-space-16');
+  });
 });

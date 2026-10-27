@@ -12,12 +12,12 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
+  FilterBar,
   FilterChip,
   Icon,
   Pager,
   Select,
   Text,
-  TextField,
 } from '@/components/ds';
 import { useSearchText } from '@/features/shell/useSearchText';
 
@@ -214,46 +214,34 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
 
   const filtered = isTradebookFiltered(state);
   return (
-    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <JobsLine lines={jobLines} />
-      <div className="flex flex-col desk:flex-row desk:items-center gap-space-8">
-        <TextField
-          type="search"
-          size="md"
-          className="desk:flex-1 desk:max-w-container-sm"
-          prefix={<Icon name="search" size="sm" />}
-          clearable
-          placeholder="Instrument"
-          value={text}
-          onValueChange={setText}
-        />
-        <div className="flex items-center gap-space-8 overflow-x-auto">
-          <FilterChip className="shrink-0" selected={state.broker === ''} onClick={() => go({ broker: '', page: 0 })}>
-            All brokers
+      <FilterBar search={{ value: text, onValueChange: setText }}>
+        <FilterChip className="shrink-0" selected={state.broker === ''} onClick={() => go({ broker: '', page: 0 })}>
+          All brokers
+        </FilterChip>
+        {brokers.map((b) => (
+          <FilterChip key={b.id} className="shrink-0" selected={state.broker === b.id} onClick={() => go({ broker: b.id, page: 0 })}>
+            {b.name}
           </FilterChip>
-          {brokers.map((b) => (
-            <FilterChip key={b.id} className="shrink-0" selected={state.broker === b.id} onClick={() => go({ broker: b.id, page: 0 })}>
-              {b.name}
+        ))}
+        <FilterChip className="shrink-0" selected={state.type === 'buy'} onClick={() => go({ type: state.type === 'buy' ? '' : 'buy', page: 0 })}>
+          Buy
+        </FilterChip>
+        <FilterChip className="shrink-0" selected={state.type === 'sell'} onClick={() => go({ type: state.type === 'sell' ? '' : 'sell', page: 0 })}>
+          Sell
+        </FilterChip>
+        <Select
+          value={state.fy == null ? '' : String(state.fy)}
+          options={fyChoices}
+          onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
+          trigger={
+            <FilterChip hasDropdown selected={state.fy !== currentFy()} className="shrink-0">
+              {fyText}
             </FilterChip>
-          ))}
-          <FilterChip className="shrink-0" selected={state.type === 'buy'} onClick={() => go({ type: state.type === 'buy' ? '' : 'buy', page: 0 })}>
-            Buy
-          </FilterChip>
-          <FilterChip className="shrink-0" selected={state.type === 'sell'} onClick={() => go({ type: state.type === 'sell' ? '' : 'sell', page: 0 })}>
-            Sell
-          </FilterChip>
-          <Select
-            value={state.fy == null ? '' : String(state.fy)}
-            options={fyChoices}
-            onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
-            trigger={
-              <FilterChip hasDropdown selected={state.fy !== currentFy()} className="shrink-0">
-                {fyText}
-              </FilterChip>
-            }
-          />
-        </div>
-      </div>
+          }
+        />
+      </FilterBar>
       <Card>
         <DataTable
           columns={columns}

@@ -52,10 +52,10 @@ beforeEach(() => {
 const menuOf = (name: string) => screen.getByRole('button', { name: `Options for ${name}` });
 
 describe('DashboardsScreen', () => {
-  it('shows the tabs with their counts and no built-in widgets card', () => {
+  it('shows the tabs without counts and no built-in widgets card', () => {
     render([home, money]);
-    expect(screen.getByRole('tab', { name: /Dashboards/ })).toHaveTextContent('Dashboards · 2');
-    expect(screen.getByRole('tab', { name: /Reports/ })).toHaveTextContent('Reports · 1');
+    expect(screen.getByRole('tab', { name: /Dashboards/ })).toHaveTextContent(/^Dashboards$/);
+    expect(screen.getByRole('tab', { name: /Reports/ })).toHaveTextContent(/^Reports$/);
     expect(screen.queryByText('Built-in widgets')).toBeNull();
     expect(screen.queryByText(/available · add to any board/)).toBeNull();
   });
@@ -89,11 +89,11 @@ describe('DashboardsScreen', () => {
 
   it('search narrows the rows by name and description, and says so when none match', async () => {
     render([home, money]);
-    await user.type(screen.getByPlaceholderText('Search dashboards'), 'glance');
+    await user.type(screen.getByPlaceholderText('Search'), 'glance');
     expect(screen.queryByText('Money overview')).toBeNull();
     expect(screen.getByText('Home')).toBeInTheDocument();
-    await user.clear(screen.getByPlaceholderText('Search dashboards'));
-    await user.type(screen.getByPlaceholderText('Search dashboards'), 'zzz');
+    await user.clear(screen.getByPlaceholderText('Search'));
+    await user.type(screen.getByPlaceholderText('Search'), 'zzz');
     expect(screen.getByText('No dashboards match.')).toBeInTheDocument();
     // The empty state's own action (the field has its own clear button too).
     await user.click(screen.getAllByRole('button', { name: 'Clear search' }).at(-1)!);

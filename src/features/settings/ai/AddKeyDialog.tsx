@@ -48,7 +48,7 @@ export function AddKeyDialog(p: AddKeyDialogProps) {
             id={FORM_ID}
             noValidate
             autoComplete="off"
-            className="flex flex-col gap-space-12"
+            className="flex flex-col gap-space-8 desk:gap-space-12"
             onSubmit={(e) => {
               e.preventDefault();
               p.onSubmit();

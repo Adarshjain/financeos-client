@@ -68,7 +68,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
           }}
         >
           <DialogBody>
-            <div className="flex flex-col gap-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-16">
               {f.loadingSummary ? (
                 <Banner tone="neutral">Calculating data to be deleted…</Banner>
               ) : f.summary ? (
@@ -91,7 +91,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
                 id={FORM_ID}
                 noValidate
                 autoComplete="off"
-                className="flex flex-col gap-space-12"
+                className="flex flex-col gap-space-8 desk:gap-space-12"
                 onSubmit={(e) => {
                   e.preventDefault();
                   void f.handleDelete();

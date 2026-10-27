@@ -8,17 +8,17 @@ import { ImportTabs } from '@/features/transactions/import/ImportTabs';
 export default function DsImportLoading() {
   return (
     <ShellPage crumb="Money / Transactions" title="Import" flushTop>
-      <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <ImportTabs />
-        <div className="grid grid-cols-1 gap-space-12 desk:grid-cols-12 desk:gap-space-16">
+        <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:grid-cols-12 desk:gap-space-16">
           <Card className="desk:col-span-7">
-            <div className="flex flex-col gap-space-12 p-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton height={36} />
               <Skeleton height={160} />
             </div>
           </Card>
           <Card className="desk:col-span-5">
-            <div className="flex flex-col gap-space-12 p-space-16">
+            <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton width="40%" height={16} />
               <Skeleton height={16} />
               <Skeleton height={16} />
