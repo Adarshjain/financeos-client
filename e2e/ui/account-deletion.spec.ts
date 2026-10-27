@@ -19,7 +19,7 @@ test.describe('Account deletion UI (@ui)', () => {
     await createTransactions(api, account.id, 2);
     await loginContext(context, user.cookie);
 
-    await page.goto('/settings');
+    await page.goto('/legacy/settings');
     await expect(page.getByText('Danger Zone')).toBeVisible();
     await page.getByRole('button', { name: 'Delete Account' }).click();
     await expect(page.getByRole('heading', { name: 'Delete Account Permanently' })).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Account deletion UI (@ui)', () => {
       const { cookie, api } = await ssoLogin(identity);
       await loginContext(context, cookie);
 
-      await page.goto('/settings');
+      await page.goto('/legacy/settings');
       await page.getByRole('button', { name: 'Delete Account' }).click();
       await expect(page.getByRole('heading', { name: 'Delete Account Permanently' })).toBeVisible();
       await expect(page.getByLabel('Current Password')).toHaveCount(0);

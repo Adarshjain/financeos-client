@@ -61,7 +61,7 @@ test.describe('Rewards Browser UI (@ui)', () => {
     });
 
     // Navigate to /rewards
-    await page.goto('/rewards');
+    await page.goto('/legacy/rewards');
     await page.waitForLoadState('networkidle');
 
     // Heading "Rewards"

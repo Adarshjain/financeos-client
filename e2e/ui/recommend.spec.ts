@@ -57,7 +57,7 @@ test.describe('Reward Recommendations / Card Picker UI (@ui)', () => {
     });
 
     // Navigate to /rewards/recommend
-    await page.goto('/rewards/recommend');
+    await page.goto('/legacy/rewards/recommend');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Card Picker', exact: true })).toBeVisible();

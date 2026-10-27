@@ -128,7 +128,7 @@ test.describe('Dividend receipt reconciliation UI (@ui)', () => {
 
     // ?instrumentId= deep link shows the chip; the x clears it.
     // Deep-link to the OLDER dividend's instrument (not the newest row) so unfiltered SSR data would be caught.
-    await page.goto(`${E2E_CLIENT_URL}/investments/dividends?instrumentId=${old.inst.id}`);
+    await page.goto(`${E2E_CLIENT_URL}/legacy/investments/dividends?instrumentId=${old.inst.id}`);
     await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
     const chip = page.getByRole('button', { name: 'Clear instrument filter' });
     await expect(chip).toContainText(`Showing ${old.symbol}`);

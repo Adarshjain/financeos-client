@@ -35,7 +35,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('lists the catalog with every row state, under the Investments tabs', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
 
       await expect(page.getByRole('tab', { name: /^Instruments/ })).toBeVisible();
       await expect(page.getByText('Prices from Yahoo (stocks, ETFs) and AMFI (funds)')).toBeVisible();
@@ -57,7 +57,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('search, type, Stale price and name order are one URL change each, answered by the server', async ({ page }) => {
-      await page.goto('/ds/investments/instruments');
+      await page.goto('/investments/instruments');
 
       await page.getByPlaceholder('Search symbol, ISIN, name').fill(seeded.tag);
       await page.waitForURL(new RegExp(`q=${seeded.tag}`));
@@ -88,7 +88,7 @@ for (const viewport of VIEWPORTS) {
     test('pages on the server, above and below, and a page past the end shows the last one', async ({ page }) => {
       const prefix = `PGX${seeded.tag.slice(3)}`;
       await seedManyInstruments(makeApi(currentUser.cookie), prefix, 27);
-      await page.goto(`/ds/investments/instruments?q=${prefix}&size=25`);
+      await page.goto(`/investments/instruments?q=${prefix}&size=25`);
 
       await expect(page.getByRole('navigation', { name: 'Pagination' })).toHaveCount(2);
       await expect(shown(page.getByText(`${prefix} 01`))).toBeVisible();
@@ -99,13 +99,13 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText(`${prefix} 27`))).toBeVisible();
       await expect(page.getByText(`${prefix} 01`)).toHaveCount(0);
 
-      await page.goto(`/ds/investments/instruments?q=${prefix}&size=25&page=9`);
+      await page.goto(`/investments/instruments?q=${prefix}&size=25&page=9`);
       await page.waitForURL(/page=1/);
       await expect(shown(page.getByText(`${prefix} 27`))).toBeVisible();
     });
 
     test('Edit changes the instrument for the account, and Reset to catalog undoes it after a confirmation', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
       const dialog = await openEdit(page, seeded.held.name);
       await expect(dialog).toBeVisible();
       await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(seeded.held.name);
@@ -130,7 +130,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Edit saves an asset class and a Reset in the dialog works too', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
       const dialog = await openEdit(page, seeded.edited.name);
       await expect(dialog.getByRole('button', { name: 'Reset to catalog' })).toBeVisible();
       await dialog.getByRole('combobox', { name: /^Asset class/ }).click();
@@ -148,7 +148,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Edit refuses to clear an identifier and shows a blank name', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
       const dialog = await openEdit(page, seeded.held.name);
       await dialog.getByLabel('Name', { exact: true }).fill('');
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
@@ -160,7 +160,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Add: "enter it by hand" opens the manual form, which creates the instrument', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
       await page.getByRole('button', { name: 'enter it by hand' }).click();
       const dialog = page.getByRole('dialog', { name: 'Add instrument' });
       await expect(dialog.getByLabel('Exchange')).toHaveValue('NSE');
@@ -178,7 +178,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Add: the Catalog tab searches and says when nothing matches', async ({ page }) => {
-      await page.goto(`/ds/investments/instruments?q=${seeded.tag}`);
+      await page.goto(`/investments/instruments?q=${seeded.tag}`);
       await page.getByRole('button', { name: 'enter it by hand' }).click();
       const dialog = page.getByRole('dialog', { name: 'Add instrument' });
       await dialog.getByRole('radio', { name: 'Catalog' }).click();

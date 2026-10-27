@@ -84,7 +84,7 @@ test.describe('Compact date ranges (@ui)', () => {
       ],
     });
 
-    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.goto(`/legacy/dashboards/${dashboard.id}`);
     await expect(page.getByRole('heading', { name: 'Date range board' })).toBeVisible();
 
     // No comparison: the range alone — no stray "vs previous period".
@@ -124,7 +124,7 @@ test.describe('Compact date ranges (@ui)', () => {
       { filename: 'range-stmt.pdf', buffer: await genBankPdf(spec) },
     ]);
 
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.getByText('Range Bank')).toBeVisible();
     const card = page.getByText('Range Bank').locator('xpath=ancestor::div[contains(@class, "group")]');
     await card.getByRole('button', { name: 'Statements' }).first().click();
@@ -155,7 +155,7 @@ test.describe('Compact date ranges (@ui)', () => {
     await createRewardRule(api, account.id, { name: 'Range Until Rule', activeTo: '2025-04-01' });
     await createRewardRule(api, account.id, { name: 'Range Always Rule' });
 
-    await page.goto('/rewards/rules');
+    await page.goto('/legacy/rewards/rules');
     await expect(page.getByRole('heading', { name: 'Reward Rules', exact: true })).toBeVisible();
     await page.locator('button[role="combobox"]').first().click();
     await page.getByRole('option', { name: 'Range Rules Card' }).click();
@@ -182,7 +182,7 @@ test.describe('Compact date ranges (@ui)', () => {
     const { account } = await createRewardCard(api, { name: 'Range Milestone Card' });
     await createMilestone(api, account.id, { name: 'Range Monthly Milestone', windowType: 'CALENDAR_MONTH' });
 
-    await page.goto('/rewards');
+    await page.goto('/legacy/rewards');
     await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible();
     await page.locator('button[role="combobox"]:visible').first().click();
     await page.getByRole('option', { name: 'Range Milestone Card' }).click();
@@ -214,7 +214,7 @@ test.describe('Compact date ranges (@ui)', () => {
     );
     expect(res.response.ok).toBe(true);
 
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.getByText('Range Plastics Card')).toBeVisible();
     await page.getByRole('button', { name: 'Cards' }).click();
 

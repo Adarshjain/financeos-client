@@ -33,12 +33,12 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
 
     await openAccounts(page);
     await page.getByRole('link', { name: /Hub Card/ }).click();
-    await page.waitForURL(`**/accounts/${bill.cardId}`);
+    await page.waitForURL(`**/legacy/accounts/${bill.cardId}`);
 
     const main = page.locator('main');
     await expect(main.getByRole('heading', { name: 'Hub Card', level: 1 })).toBeVisible();
     await expect(main.getByText('Credit card · •••• 7301')).toBeVisible();
-    await expect(main.getByRole('link', { name: /Accounts/ })).toHaveAttribute('href', '/accounts');
+    await expect(main.getByRole('link', { name: /Accounts/ })).toHaveAttribute('href', '/legacy/accounts');
 
     // Overview: limit and utilisation for a card.
     await expect(main.getByText('Overview', { exact: true })).toBeVisible();
@@ -53,7 +53,7 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
 
     // Earning rules and recent transactions.
     await expect(main.getByText('Earning rules')).toBeVisible();
-    await expect(main.getByRole('link', { name: 'Manage rules' })).toHaveAttribute('href', `/rewards/rules?account=${bill.cardId}`);
+    await expect(main.getByRole('link', { name: 'Manage rules' })).toHaveAttribute('href', `/legacy/rewards/rules?account=${bill.cardId}`);
     await expect(main.getByText('Recent transactions')).toBeVisible();
     await expect(main.getByText(/AMAZON/i).first()).toBeVisible();
 
@@ -61,7 +61,7 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
     await expect(main.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
     await expect(main.getByRole('button', { name: 'Statements', exact: true })).toBeVisible();
     await main.getByRole('link', { name: 'Import', exact: true }).click();
-    await page.waitForURL(`**/transactions/import?account=${bill.cardId}`);
+    await page.waitForURL(`**/legacy/transactions/import?account=${bill.cardId}`);
     await expect(page.getByRole('heading', { name: 'Import statements', exact: true })).toBeVisible();
   });
 
@@ -72,7 +72,7 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
 
     await openAccounts(page);
     await page.getByRole('link', { name: /Hub Bank/ }).click();
-    await page.waitForURL(`**/accounts/${bank.id}`);
+    await page.waitForURL(`**/legacy/accounts/${bank.id}`);
 
     const main = page.locator('main');
     await expect(main.getByRole('heading', { name: 'Hub Bank', level: 1 })).toBeVisible();
@@ -93,7 +93,7 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const wallet = await createGenericAccount(api, { name: 'Hub Wallet' });
 
-    await page.goto(`/accounts/${wallet.id}`);
+    await page.goto(`/legacy/accounts/${wallet.id}`);
     const main = page.locator('main');
     await expect(main.getByRole('heading', { name: 'Hub Wallet', level: 1 })).toBeVisible();
     await expect(main.getByRole('button', { name: 'Statements', exact: true })).toHaveCount(0);
@@ -106,12 +106,12 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
     await page.getByRole('button', { name: 'Delete Permanently' }).click();
 
     // The detail route is a 404 once the account is gone, so the page leaves for the list.
-    await page.waitForURL(/\/accounts$/);
+    await page.waitForURL(/\/legacy\/accounts$/);
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
   });
 
   test('an unknown account id is a 404', async ({ page }) => {
-    await page.goto('/accounts/00000000-0000-0000-0000-000000000000');
+    await page.goto('/legacy/accounts/00000000-0000-0000-0000-000000000000');
     await expect(page.getByText('Page not found')).toBeVisible();
   });
 });

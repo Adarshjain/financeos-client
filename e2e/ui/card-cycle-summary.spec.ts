@@ -9,7 +9,7 @@ import { expect, test } from '../fixtures/test';
 
 /** The card page's Statements dialog, scrolled to its Card Cycle Summary. A pre-hydration click is dropped, so retry it. */
 async function openStatements(page: Page, cardId: string): Promise<Locator> {
-  await page.goto(`/accounts/${cardId}`);
+  await page.goto(`/legacy/accounts/${cardId}`);
   const dialog = page.getByRole('dialog').filter({ hasText: 'Card Cycle Summary' });
   await expect(async () => {
     await page.locator('main').getByRole('button', { name: 'Statements', exact: true }).click();

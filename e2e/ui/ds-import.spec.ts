@@ -48,9 +48,9 @@ for (const viewport of VIEWPORTS) {
       const api = makeApi(currentUser.cookie);
       const account = await createBankAccount(api, { name: 'DS Import Bank', openingBalance: SPEC.opening });
 
-      await page.goto('/ds/transactions');
+      await page.goto('/transactions');
       await page.getByRole('tab', { name: 'Import' }).click();
-      await expect(page).toHaveURL(/\/ds\/transactions\/import/, { timeout: 60000 });
+      await expect(page).toHaveURL(/\/transactions\/import/, { timeout: 60000 });
       await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
       await expect(page.getByText('Recent imports')).toBeVisible();
       await expect(page.getByText('Last 30 days')).toBeVisible();
@@ -78,7 +78,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled();
       await view.click();
 
-      await expect(page).toHaveURL(/\/ds\/transactions\/import\/[0-9a-f-]+/);
+      await expect(page).toHaveURL(/\/transactions\/import\/[0-9a-f-]+/);
       await expect(page.getByTestId('import-file')).toHaveCount(1);
       await expect(page.getByTestId('import-file')).toContainText('hdfc-apr-2026.pdf');
       await expect(page.getByText('Lines read').first()).toBeVisible();
@@ -89,16 +89,16 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Import tab: Activity link goes to the imports in Activity; an unknown import is not found', async ({ page }) => {
-      await page.goto('/ds/transactions/import');
+      await page.goto('/transactions/import');
       await page.getByRole('link', { name: 'Activity' }).click();
-      await expect(page).toHaveURL(/\/ds\/settings\/activity\?type=STATEMENT_INGEST/, { timeout: 60000 });
+      await expect(page).toHaveURL(/\/settings\/activity\?type=STATEMENT_INGEST/, { timeout: 60000 });
 
-      await page.goto('/ds/transactions/import/00000000-0000-0000-0000-000000000000');
+      await page.goto('/transactions/import/00000000-0000-0000-0000-000000000000');
       await expect(page.getByText(/not found/i).first()).toBeVisible({ timeout: 30000 });
     });
 
     test('Import tab: the app bar + opens the file picker', async ({ page }) => {
-      await page.goto('/ds/transactions/import');
+      await page.goto('/transactions/import');
       const chooser = page.waitForEvent('filechooser');
       await page.getByRole('button', { name: 'Add statements' }).click();
       await chooser;
@@ -116,12 +116,12 @@ for (const viewport of VIEWPORTS) {
         const asked = Number(new URL(route.request().url()).searchParams.get('page') ?? '0');
         return route.fulfill({ json: { content: [job(asked + 1)], totalElements: 3, totalPages: 3, last: asked === 2 } });
       });
-      await page.goto('/ds/transactions/import');
+      await page.goto('/transactions/import');
       await expect(page.getByText('stmt-1.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
       await expect(page.getByRole('columnheader', { name: 'Job' })).toHaveCount(0);
 
       await page.getByRole('button', { name: 'Page 2' }).first().click();
-      await expect(page).toHaveURL(/\/ds\/transactions\/import\?page=1/);
+      await expect(page).toHaveURL(/\/transactions\/import\?page=1/);
       await expect(page.getByText('stmt-2.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
     });
 
@@ -135,14 +135,14 @@ for (const viewport of VIEWPORTS) {
       await page.route('**/api/v1/jobs?**', (route) =>
         route.fulfill({ json: { content: [running], totalElements: 1, totalPages: 1, last: true } }),
       );
-      await page.goto('/ds/transactions/import');
+      await page.goto('/transactions/import');
       await expect(page.getByRole('button', { name: 'Choose files' })).toBeDisabled({ timeout: 30000 });
       await expect(page.getByText('Reading statement').locator('visible=true').first()).toBeVisible();
       await page.reload();
       await expect(page.getByRole('button', { name: 'Choose files' })).toBeDisabled({ timeout: 30000 });
 
       await page.unroute('**/api/v1/jobs?**');
-      await page.goto('/ds/transactions/import/abc');
+      await page.goto('/transactions/import/abc');
       await expect(page.getByText(/not found/i).first()).toBeVisible({ timeout: 30000 });
     });
   });

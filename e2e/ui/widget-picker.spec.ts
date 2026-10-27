@@ -35,7 +35,7 @@ function viewCard(page: Page, title: string): Locator {
 }
 
 async function newDashboard(page: Page, name: string): Promise<void> {
-  await page.goto('/dashboards/new');
+  await page.goto('/legacy/dashboards/new');
   await page.getByPlaceholder('Dashboard name').fill(name);
 }
 
@@ -216,7 +216,7 @@ test.describe('Add widget picker (@ui)', () => {
 
     await expect(page.getByLabel('Widget title')).toHaveCount(components.length + 1);
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/dashboards\/[a-f0-9-]+$/);
+    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+$/);
     await expect(page.getByRole('heading', { name: 'Every component', level: 1 })).toBeVisible();
 
     const bodies: Record<string, string> = {
@@ -285,7 +285,7 @@ test.describe('Add widget picker (@ui)', () => {
     // Shortcuts to half, then save: the widths persist.
     await shortcuts.getByTitle('Expand to half width').click();
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/dashboards\/[a-f0-9-]+$/);
+    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+$/);
     const saved = (await api.GET('/api/v1/dashboards')).data!.find((d) => d.name === 'Widths')!;
     const width = (key: string) => saved.widgets.find((w) => w.builtinKey === key)!.layout.w;
     expect(width('shortcuts')).toBe(50);

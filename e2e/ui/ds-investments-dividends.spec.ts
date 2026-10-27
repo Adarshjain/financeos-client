@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'phone 390px', width: 390, height: 844 },
 ];
 
-const PAGE = '/ds/investments/dividends';
+const PAGE = '/investments/dividends';
 
 /** The copy of a figure drawn once for the phone and once for the desktop: the one on screen. */
 const shown = (locator: Locator) => locator.locator('visible=true').first();

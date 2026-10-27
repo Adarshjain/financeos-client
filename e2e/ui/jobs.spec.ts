@@ -52,7 +52,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'jobs-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/settings/activity');
+    await page.goto('/legacy/settings/activity');
 
     // 1. Verify Page Heading
     await expect(
@@ -154,7 +154,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       params: { path: { id: ruleJobId } },
     });
 
-    await page.goto('/settings/activity');
+    await page.goto('/legacy/settings/activity');
 
     const ruleRows = page.locator('tbody tr').filter({ hasText: 'Rule Apply' });
     const cancelledRow = ruleRows.filter({ hasText: 'CANCELLED' });
@@ -192,7 +192,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'cancel-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/settings/activity');
+    await page.goto('/legacy/settings/activity');
 
     // Verify RUNNING status or Cancel button is visible
     const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();

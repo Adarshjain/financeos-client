@@ -18,7 +18,7 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     test.slow();
     const api = makeApi(currentUser.cookie);
 
-    await page.goto('/dashboards');
+    await page.goto('/legacy/dashboards');
     await page.waitForLoadState('networkidle');
     const list = await api.GET('/api/v1/dashboards');
     expectStatus(list, 200);
@@ -43,7 +43,7 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     expect(builtins.find((w) => w.builtinKey === 'upcoming')!.params).toEqual({ days: 14 });
     expect(after.data!.widgets).toHaveLength(5);
 
-    await page.goto('/dashboard');
+    await page.goto('/legacy/dashboard');
     await page.waitForLoadState('networkidle');
     await expect(page.getByText('Net worth').first()).toBeVisible();
     await expect(page.getByText('Upcoming').first()).toBeVisible();

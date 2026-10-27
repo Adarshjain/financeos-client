@@ -15,7 +15,7 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     await loginContext(context, admin.cookie);
 
     // 1. Visit /debug with ref=E2EERR01
-    await page.goto(`${E2E_CLIENT_URL}/debug?ref=E2EERR01`);
+    await page.goto(`${E2E_CLIENT_URL}/legacy/debug?ref=E2EERR01`);
     await expect(page.getByRole('heading', { name: 'Diagnostics & Debug', level: 1 })).toBeVisible();
 
     // Verify Admin Mode badge
@@ -77,7 +77,7 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     });
 
     // Visit /debug as non-admin
-    await page.goto(`${E2E_CLIENT_URL}/debug`);
+    await page.goto(`${E2E_CLIENT_URL}/legacy/debug`);
     await expect(page.getByRole('heading', { name: 'Diagnostics & Debug', level: 1 })).toBeVisible();
 
     // Verify developer notice is shown
@@ -147,8 +147,8 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
 
     // Click Debug button in toast -> navigates to /debug?ref=E2EERR01
     await debugBtn.dispatchEvent('click');
-    await page.waitForURL('**/debug?ref=E2EERR01', { timeout: 10000 });
-    expect(page.url()).toContain('/debug?ref=E2EERR01');
+    await page.waitForURL('**/legacy/debug?ref=E2EERR01', { timeout: 10000 });
+    expect(page.url()).toContain('/legacy/debug?ref=E2EERR01');
 
     // Local Errors Section lists the record
     await expect(page.getByText(/Recent Failures on This Device/i)).toBeVisible();
@@ -213,8 +213,8 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
 
     // Click Debug -> lands on /debug?ref=E2EERR01
     await debugBtn.dispatchEvent('click');
-    await page.waitForURL('**/debug?ref=E2EERR01', { timeout: 10000 });
-    expect(page.url()).toContain('/debug?ref=E2EERR01');
+    await page.waitForURL('**/legacy/debug?ref=E2EERR01', { timeout: 10000 });
+    expect(page.url()).toContain('/legacy/debug?ref=E2EERR01');
 
     // Tap local row copies ref and triggers success toast
     const refBadge = page.getByText('E2EERR01').first();

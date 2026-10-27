@@ -47,7 +47,7 @@ const upload = (page: Page, zone: string, file: { name: string; mimeType: string
 const selectedRows = (page: Page) => page.locator('[aria-selected="true"]:visible');
 
 for (const viewport of VIEWPORTS) {
-  test.describe(`/ds/investments/import, ${viewport.name} (@ui)`, () => {
+  test.describe(`/investments/import, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
 
     test.beforeEach(async ({ context, request, page }) => {
@@ -86,7 +86,7 @@ for (const viewport of VIEWPORTS) {
         fno: [{ tradingSymbol: fnoSymbol, quantity: 50, buyValue: 5000.0, sellValue: 6500.0, profit: 1500.0, entryDate: '2026-08-01', exitDate: '2026-08-04' }],
       });
 
-      await page.goto('/ds/investments/import');
+      await page.goto('/investments/import');
       await expect(page.getByText('Investment bulk import')).toBeVisible();
       // Its own page: no Investments tab strip.
       await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveCount(0);
@@ -139,10 +139,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Broker import reconciliation complete')).toBeVisible({ timeout: 30000 });
       await expect(page.getByText('Committed', { exact: true })).toBeVisible();
       await page.getByRole('link', { name: 'Done & view portfolio' }).click();
-      await expect(page).toHaveURL(/\/ds\/investments$/);
+      await expect(page).toHaveURL(/\/investments$/);
       await expect(shown(page.getByText(new RegExp(`${knownName}|${symKnown}`)))).toBeVisible({ timeout: 15000 });
 
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await expect(shown(page.getByText(/NIFTY .*24800 CE/))).toBeVisible({ timeout: 15000 });
     });
 
@@ -158,7 +158,7 @@ for (const viewport of VIEWPORTS) {
         { stockName: 'Unmapped Corp', symbol: `GWUNRES${uniqueSeedSuffix()}`, isin: generateIsin('IN9'), type: 'buy', quantity: 10, price: 50.0, executionDate: '2026-08-01', orderStatus: 'Executed', orderId: 'gw-ui-2' },
       ];
 
-      await page.goto('/ds/investments/import');
+      await page.goto('/investments/import');
       await pick(page, /Broker \/ import type/, /Groww reconciliation/);
       await expect(page.getByRole('combobox', { name: /Asset scope/ })).toHaveCount(0);
       await expect(page.getByText('1. Groww Capital Gains (XLSX)')).toBeVisible();
@@ -199,7 +199,7 @@ for (const viewport of VIEWPORTS) {
         fno: [{ tradingSymbol: fnoSymbol, quantity: 15, buyValue: 3000.0, sellValue: 4500.0, profit: 1500.0, entryDate: '2026-08-01', exitDate: '2026-08-03' }],
       });
 
-      await page.goto('/ds/investments/import');
+      await page.goto('/investments/import');
       await pick(page, /Target broker account/, new RegExp(broker.name));
       await pick(page, /Asset scope/, /F&O only/);
       await expect(page.getByTestId('tradebook-zone')).toHaveCount(0);
@@ -232,7 +232,7 @@ for (const viewport of VIEWPORTS) {
         password: 'CAS_PASSWORD_123',
       };
 
-      await page.goto('/ds/investments/import');
+      await page.goto('/investments/import');
       await pick(page, /Broker \/ import type/, /Mutual funds CAS/);
       await pick(page, /Target broker account/, new RegExp(broker.name));
 

@@ -46,7 +46,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       await createTransaction(api, account.id, { amount, description, categoryIds: [categoryId] });
     }
 
-    await page.goto('/ds/reports/new');
+    await page.goto('/reports/new');
     await expect(page.getByLabel('Report name')).toBeVisible({
       timeout: 45_000,
     });
@@ -135,16 +135,16 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
 
     // Create writes the report and takes the visitor back to the list it was opened from, which shows it.
     await page.getByRole('button', { name: 'Create report' }).click();
-    await page.waitForURL(/\/ds\/reports$/, { timeout: 45_000 });
+    await page.waitForURL(/\/reports$/, { timeout: 45_000 });
     await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Reopened from the list: format and datasource are fixed, the saved settings are back.
-    await page.goto('/ds/reports');
+    await page.goto('/reports');
     await page
       .getByRole('table')
       .getByText('Ds editor spend by category', { exact: true })
       .click();
-    await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/);
+    await page.waitForURL(/\/reports\/[0-9a-f-]{36}$/);
     await expect(page.getByRole('radio', { name: 'Chart' })).toBeDisabled();
     await expect(
       page.getByRole('combobox', { name: 'Datasource' })
@@ -167,11 +167,11 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(dialog.getByText('Leave without saving?')).toBeVisible();
     await dialog.getByRole('button', { name: 'Keep editing' }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page).toHaveURL(/\/ds\/reports\/[0-9a-f-]{36}$/);
+    await expect(page).toHaveURL(/\/reports\/[0-9a-f-]{36}$/);
 
     // Saving goes back to the list without asking about unsaved changes.
     await page.getByRole('button', { name: 'Save report' }).click();
-    await page.waitForURL(/\/ds\/reports$/);
+    await page.waitForURL(/\/reports$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // The saved Top N stuck.
@@ -184,11 +184,11 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // Opened from the list by a click, a rename saved here shows on the list it goes back to (fresh, not cached).
     await page.getByLabel('Report name').fill('Ds editor renamed report');
     await page.getByRole('button', { name: 'Save report' }).click();
-    await page.waitForURL(/\/ds\/reports$/);
+    await page.waitForURL(/\/reports$/);
     await expect(page.getByRole('table').getByText('Ds editor renamed report', { exact: true })).toBeVisible({ timeout: 45_000 });
     await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toHaveCount(0);
     await page.getByRole('table').getByText('Ds editor renamed report', { exact: true }).click();
-    await page.waitForURL(/\/ds\/reports\/[0-9a-f-]{36}$/);
+    await page.waitForURL(/\/reports\/[0-9a-f-]{36}$/);
 
     // Delete asks first; afterwards the list (not a cached copy of it) no longer shows the report.
     await page.getByRole('button', { name: 'More actions' }).click();
@@ -197,7 +197,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       .getByRole('dialog')
       .getByRole('button', { name: 'Delete report' })
       .click();
-    await page.waitForURL(/\/ds\/reports$/);
+    await page.waitForURL(/\/reports$/);
     await expect(page.getByRole('table')).toBeVisible();
     await expect(
       page
@@ -210,7 +210,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     page,
   }) => {
     test.slow();
-    await page.goto('/ds/reports/new?template=dividend-income-by-fy');
+    await page.goto('/reports/new?template=dividend-income-by-fy');
     await expect(page.getByLabel('Report name')).toHaveValue(
       'Dividend income by FY',
       { timeout: 45_000 }
@@ -219,7 +219,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       page.getByRole('combobox', { name: 'Datasource' })
     ).toContainText('Dividends');
     await page.getByRole('button', { name: 'Create report' }).click();
-    await page.waitForURL(/\/ds\/reports$/, { timeout: 45_000 });
+    await page.waitForURL(/\/reports$/, { timeout: 45_000 });
   });
 
   test('opens the rows behind a KPI from the Underlying data link', async ({
@@ -246,7 +246,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       },
     } as never);
 
-    await page.goto(`/ds/reports/${report.id}`);
+    await page.goto(`/reports/${report.id}`);
     const link = page.getByRole('button', { name: 'Underlying data' });
     await expect(link).toBeVisible({ timeout: 45_000 });
 
@@ -289,7 +289,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       },
     } as never);
 
-    await page.goto(`/ds/reports/${report.id}`);
+    await page.goto(`/reports/${report.id}`);
     const bars = page.locator('.recharts-bar-rectangle');
     await expect(bars).toHaveCount(2, { timeout: 45_000 });
 

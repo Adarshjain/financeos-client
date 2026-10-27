@@ -22,7 +22,7 @@ test.describe('Reports UI (@ui)', () => {
     await seedTransactionsDataset(api);
 
     // 1. Empty state
-    await page.goto('/reports');
+    await page.goto('/legacy/reports');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Reports', exact: true })).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Reports UI (@ui)', () => {
 
     // 2. Click "New report"
     await page.getByRole('button', { name: /New report/i }).click();
-    await page.waitForURL('**/reports/new');
+    await page.waitForURL('**/legacy/reports/new');
     await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
 
     // 3. Name the report and configure KPI
@@ -46,7 +46,7 @@ test.describe('Reports UI (@ui)', () => {
 
     // Save report
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL('**/reports');
+    await page.waitForURL('**/legacy/reports');
 
     // 4. Card appeared in list with badges
     await expect(page.getByText('UI Spend KPI')).toBeVisible();
@@ -54,17 +54,17 @@ test.describe('Reports UI (@ui)', () => {
 
     // 5. Open report in edit mode (/reports/[id]) and update description
     await page.getByRole('link', { name: /UI Spend KPI/i }).click();
-    await page.waitForURL(/\/reports\/[a-f0-9-]+/);
+    await page.waitForURL(/\/legacy\/reports\/[a-f0-9-]+/);
     await expect(page.getByRole('heading', { name: 'Edit Report' })).toBeVisible();
 
     await page.getByPlaceholder('Report name').fill('UI Spend KPI Updated');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.waitForURL('**/reports');
+    await page.waitForURL('**/legacy/reports');
     await expect(page.getByText('UI Spend KPI Updated')).toBeVisible();
 
     // 6. Create second report: Table Aggregated with Financial Year
     await page.getByRole('button', { name: /New report/i }).click();
-    await page.waitForURL('**/reports/new');
+    await page.waitForURL('**/legacy/reports/new');
 
     await page.getByPlaceholder('Report name').fill('UI Pivot Table');
     await page.getByRole('tab', { name: 'Table' }).click();
@@ -93,22 +93,22 @@ test.describe('Reports UI (@ui)', () => {
 
     // Save table report
     await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL('**/reports');
+    await page.waitForURL('**/legacy/reports');
     await expect(page.getByText('UI Pivot Table')).toBeVisible();
 
     // 7. Filter pills
     await page.getByRole('link', { name: 'KPI', exact: true }).click();
-    await page.waitForURL('**/reports?type=KPI');
+    await page.waitForURL('**/legacy/reports?type=KPI');
     await expect(page.getByText('UI Spend KPI Updated')).toBeVisible();
     await expect(page.getByText('UI Pivot Table')).not.toBeVisible();
 
     await page.getByRole('link', { name: 'Table', exact: true }).click();
-    await page.waitForURL('**/reports?type=TABLE');
+    await page.waitForURL('**/legacy/reports?type=TABLE');
     await expect(page.getByText('UI Pivot Table')).toBeVisible();
     await expect(page.getByText('UI Spend KPI Updated')).not.toBeVisible();
 
     await page.getByRole('link', { name: 'All', exact: true }).click();
-    await page.waitForURL('**/reports');
+    await page.waitForURL('**/legacy/reports');
     await expect(page.getByText('UI Spend KPI Updated')).toBeVisible();
     await expect(page.getByText('UI Pivot Table')).toBeVisible();
 

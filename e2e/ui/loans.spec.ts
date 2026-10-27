@@ -23,7 +23,7 @@ test.describe('Loans and Obligations UI (@ui)', () => {
   });
 
   test('Loans Browser: create loan, browse list, status filter, and search', async ({ page }) => {
-    await page.goto('/loans');
+    await page.goto('/legacy/loans');
     await page.waitForLoadState('networkidle');
 
     // Page Heading
@@ -101,7 +101,7 @@ test.describe('Loans and Obligations UI (@ui)', () => {
       description: 'SBI Loan EMI Match',
     });
 
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
 
     // Hero title
@@ -193,8 +193,8 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     });
 
     // The old calendar route now lands on the Upcoming page
-    await page.goto('/loans/calendar');
-    await page.waitForURL('**/upcoming');
+    await page.goto('/legacy/loans/calendar');
+    await page.waitForURL('**/legacy/upcoming');
 
     await expect(page.getByRole('heading', { name: 'Upcoming', exact: true })).toBeVisible();
 
@@ -218,7 +218,7 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     const loan = await createLoan(api, { name: 'Desktop Actions Loan' });
 
     // Default 1280-wide viewport: the mobile bar is hidden, the desktop card must carry the actions.
-    await page.goto(`/loans/${loan.id}`);
+    await page.goto(`/legacy/loans/${loan.id}`);
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: 'Desktop Actions Loan' })).toBeVisible();
 

@@ -12,7 +12,7 @@ test.describe('Report filter fields UI (@ui)', () => {
   });
 
   test('the filter field list leaves out grouping-only fields', async ({ page }) => {
-    await page.goto('/reports/new');
+    await page.goto('/legacy/reports/new');
     await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
     await page.getByRole('combobox').filter({ hasText: 'Transactions' }).first().click();
     await page.getByRole('option', { name: 'Reward Earnings' }).click();

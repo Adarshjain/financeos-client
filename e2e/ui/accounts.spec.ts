@@ -169,7 +169,7 @@ test.describe('Accounts UI (@ui)', () => {
 
     // Dialog closes, the page goes back to the list, and the account is gone from it
     await expect(page.getByRole('dialog')).not.toBeVisible();
-    await expect(page).toHaveURL(/\/accounts$/);
+    await expect(page).toHaveURL(/\/legacy\/accounts$/);
     await expect(page.getByRole('link', { name: /Temp Petty Cash/i })).not.toBeVisible();
   });
 });

@@ -65,7 +65,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
 
     const pdfBuffer = await genBankPdf(validBankSpec);
 
-    await page.goto('/transactions/import');
+    await page.goto('/legacy/transactions/import');
 
     // 1. Verify Page Heading and Components
     await expect(
@@ -173,7 +173,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await createBankAccount(api, { name: 'Rejection Bank' });
 
-    await page.goto('/transactions/import');
+    await page.goto('/legacy/transactions/import');
     await expect(
       page.getByRole('heading', { name: 'Import statements', exact: true })
     ).toBeVisible();
@@ -228,7 +228,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     ]);
 
     // 1. Visit /accounts
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.getByText('Archive Bank Account')).toBeVisible();
 
     // 2. Click "Statements" button on the account card

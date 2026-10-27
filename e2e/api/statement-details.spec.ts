@@ -107,7 +107,7 @@ test.describe('Statement details API (@api)', () => {
     expect(items[0]).toMatchObject({
       kind: 'statement_details_missing',
       title: 'Statement details missing',
-      href: `/ds/accounts/${card.id}/statements?statement=${newest.id}`,
+      href: `/accounts/${card.id}/statements?statement=${newest.id}`,
     });
     expect(items[0].actions.map((a) => a.type)).toEqual(['open', 'snooze']);
   });

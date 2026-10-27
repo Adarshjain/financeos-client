@@ -81,7 +81,7 @@ test.describe('Dashboard arranging UI (@ui)', () => {
   }
 
   async function openEditor(page: Page, dashboardId: string) {
-    await page.goto(`/dashboards/${dashboardId}`);
+    await page.goto(`/legacy/dashboards/${dashboardId}`);
     await page.waitForLoadState('networkidle');
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     await expect(page.getByTestId('dashboard-drag-handle').first()).toBeVisible();

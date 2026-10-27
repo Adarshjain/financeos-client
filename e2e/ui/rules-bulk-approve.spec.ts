@@ -59,7 +59,7 @@ test.describe('Rules bulk approve UI (@ui)', () => {
   });
 
   test('select some unverified rules and approve them together @mobile', async ({ page }) => {
-    await page.goto('/rules');
+    await page.goto('/legacy/rules');
 
     // Default tab is Unverified.
     for (const name of ['Third Wave', 'Ola Cabs', 'Zepto']) {
@@ -91,7 +91,7 @@ test.describe('Rules bulk approve UI (@ui)', () => {
   });
 
   test('select all on the page approves every unverified rule', async ({ page }) => {
-    await page.goto('/rules');
+    await page.goto('/legacy/rules');
     await expect(page.getByRole('checkbox', { name: 'Select Zepto' })).toBeVisible();
 
     await check(page.getByRole('checkbox', { name: 'Select All Unverified on Page' }));

@@ -28,7 +28,7 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
     });
 
     // Navigate to /rewards/rules
-    await page.goto('/rewards/rules');
+    await page.goto('/legacy/rewards/rules');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Reward Rules', exact: true })).toBeVisible();

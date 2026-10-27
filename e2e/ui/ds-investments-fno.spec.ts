@@ -74,7 +74,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('the year figures, the trades, the month and underlying cards and the import link', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
 
       await expect(page.getByRole('tab', { name: /^F&O/ })).toBeVisible();
       await expect(shown(page.getByText('Realised · FY', { exact: true }))).toBeVisible();
@@ -100,68 +100,68 @@ for (const viewport of VIEWPORTS) {
 
       // The top bar + is a menu; its Import statement row goes to the Import tradebook page.
       await page.getByRole('button', { name: 'Add' }).first().click();
-      await expect(page.getByRole('menuitem', { name: 'Import statement' })).toHaveAttribute('href', '/ds/investments/import');
+      await expect(page.getByRole('menuitem', { name: 'Import statement' })).toHaveAttribute('href', '/investments/import');
     });
 
     test('contract, search, sort and year are answered by the server from the URL', async ({ page }) => {
-      await page.goto('/ds/investments/fno?contract=PE');
+      await page.goto('/investments/fno?contract=PE');
       await expect(shown(page.getByText('BANKNIFTY 56000 PE'))).toBeVisible();
       await expect(page.getByText('NIFTY 25200 CE')).toHaveCount(0);
 
-      await page.goto('/ds/investments/fno?contract=FUT');
+      await page.goto('/investments/fno?contract=FUT');
       await expect(shown(page.getByText(/^NIFTY [A-Z]{3} FUT/))).toBeVisible();
       await expect(page.getByText('BANKNIFTY 56000 PE')).toHaveCount(0);
 
-      await page.goto('/ds/investments/fno?contract=OPT');
+      await page.goto('/investments/fno?contract=OPT');
       await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
       await expect(shown(page.getByText('BANKNIFTY 56000 PE'))).toBeVisible();
       await expect(page.getByText(/^NIFTY [A-Z]{3} FUT/)).toHaveCount(0);
 
       // The search matches part of a trading symbol.
-      await page.goto('/ds/investments/fno?q=25200');
+      await page.goto('/investments/fno?q=25200');
       await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
       await expect(page.getByText('BANKNIFTY 56000 PE')).toHaveCount(0);
 
-      await page.goto('/ds/investments/fno?q=banknifty');
+      await page.goto('/investments/fno?q=banknifty');
       await expect(shown(page.getByText('BANKNIFTY 56000 PE'))).toBeVisible();
       await expect(page.getByText('NIFTY 25200 CE')).toHaveCount(0);
 
-      await page.goto('/ds/investments/fno?sort=pnl_asc');
+      await page.goto('/investments/fno?sort=pnl_asc');
       await expect(page.getByRole('button', { name: /Lowest P&L/ })).toBeVisible();
       await expect(page.getByRole('button').filter({ hasText: /NIFTY/ }).first()).toContainText('BANKNIFTY');
 
       // A year with no trades says so, with no clear-filters (the year is not a filter).
-      await page.goto('/ds/investments/fno?fy=2019');
+      await page.goto('/investments/fno?fy=2019');
       await expect(page.getByText(/No F&O trades in FY 19-20/)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Clear filters' })).toHaveCount(0);
 
-      await page.goto('/ds/investments/fno?contract=PE&q=zzz');
+      await page.goto('/investments/fno?contract=PE&q=zzz');
       await expect(page.getByText('No trades match.')).toBeVisible();
     });
 
     test('the controls change the URL: contract chip, search, sort, year and clear filters', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
 
       await page.getByRole('button', { name: 'PE', exact: true }).click();
       await expect(page).toHaveURL(/contract=PE/);
 
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await page.getByPlaceholder('Symbol').fill('NIFTY');
       await expect(page).toHaveURL(/q=NIFTY/);
 
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await page.getByRole('button', { name: /Newest/ }).click();
       await page.getByRole('option', { name: 'Highest P&L' }).click();
       await expect(page).toHaveURL(/sort=pnl_desc/);
 
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await page.getByRole('button', { name: /^FY \d\d-\d\d/ }).click();
       await page.getByRole('option').nth(2).click();
       await expect(page).toHaveURL(/fy=\d{4}/);
     });
 
     test('a trade opens from its row, changes and saves, and the figures follow', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await shown(page.getByText('NIFTY 25200 CE')).click();
 
       const dialog = page.getByRole('dialog', { name: 'Edit F&O trade' });
@@ -182,7 +182,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('a trade that is not valid is not sent', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await shown(page.getByText('NIFTY 25200 CE')).click();
       const dialog = page.getByRole('dialog', { name: 'Edit F&O trade' });
       await dialog.getByLabel('Qty / lot size').fill('0');
@@ -192,7 +192,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Delete asks first, says what goes and what stays, then removes the trade', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await shown(page.getByText('BANKNIFTY 56000 PE')).click();
       await page.getByRole('dialog', { name: 'Edit F&O trade' }).getByRole('button', { name: 'Delete' }).click();
 
@@ -233,7 +233,7 @@ for (const viewport of VIEWPORTS) {
         totalCharges: 50,
       });
 
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
       await expect(page.getByText('FINNIFTY 7000 CE')).toHaveCount(0);
       await expect(page.getByText('P&L by month')).toBeVisible();
@@ -259,7 +259,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Export for ITR downloads the year as a CSV', async ({ page }) => {
-      await page.goto('/ds/investments/fno');
+      await page.goto('/investments/fno');
       const download = page.waitForEvent('download');
       await page.getByRole('button', { name: 'Export for ITR' }).click();
       const file = await download;

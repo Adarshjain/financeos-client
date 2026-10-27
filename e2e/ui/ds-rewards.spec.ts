@@ -57,7 +57,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await createRewardRule(api, high.id, { name: 'Ds 5%', percentRate: 5 });
     await spend(api, high.id, { amount: 4000, date: spendDay('11') });
 
-    await page.goto('/ds/rewards');
+    await page.goto('/rewards');
     await expect(page.getByText('Earned this year')).toBeVisible({ timeout: 45_000 });
     // 2% of 1,500 + 5% of 4,000.
     await expect(page.getByText(/₹230/).first()).toBeVisible();
@@ -72,7 +72,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Anniversary year', { exact: true }).first()).toBeVisible();
 
     await page.getByText('Ds High Card', { exact: true }).click();
-    await expect(page).toHaveURL(new RegExp(`/ds/rewards/cards/${high.id}`), { timeout: 45_000 });
+    await expect(page).toHaveURL(new RegExp(`/rewards/cards/${high.id}`), { timeout: 45_000 });
     await expect(page.getByText('Eligible spend')).toBeVisible({ timeout: 45_000 });
   });
 
@@ -84,7 +84,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await spend(api, card.id, { amount: 1500, date: spendDay('10'), description: 'Ds Grocery Line' });
     const month = fixedMonth();
 
-    await page.goto(`/ds/rewards/cards/${card.id}?page=2`);
+    await page.goto(`/rewards/cards/${card.id}?page=2`);
     await expect(page.getByRole('main').getByText('Transactions', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
 
     // A preset change drops ?page=.
@@ -134,7 +134,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     });
     await spend(api, card.id, { amount: 500, date: spendDay('10'), description: 'Ds Cap Spend' });
 
-    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await page.goto(`/rewards/cards/${card.id}`);
     await expect(page.getByText('Rules on this account')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText('Completed · 1')).toBeVisible();
     await expect(page.getByText(/₹250 received/)).toBeVisible();
@@ -155,7 +155,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await createRewardRule(api, card.id, { name: 'Ds Filter Idle', percentRate: 5, mccs: ['9999'] });
     await spend(api, card.id, { amount: 1500, date: spendDay('10'), description: 'Ds Filter Line' });
 
-    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await page.goto(`/rewards/cards/${card.id}`);
     await expect(page.getByRole('main').getByText('Transactions', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText('Ds Filter Line').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Rows per page' }).first()).toContainText('10');
@@ -178,13 +178,13 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await createRewardRule(api, card.id, { name: 'Ds Rename Rule', percentRate: 2 });
     await spend(api, card.id, { amount: 1500, date: spendDay('10'), description: 'Ds Rename Line' });
 
-    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await page.goto(`/rewards/cards/${card.id}`);
     await expect(page.getByText('Rules on this account')).toBeVisible({ timeout: 45_000 });
     await page.getByRole('button', { name: /^Ds Rename Rule/ }).click();
     const edit = page.getByRole('dialog', { name: /Edit rule/ });
     await expect(edit).toBeVisible();
     // In place: still on the card page.
-    await expect(page).toHaveURL(new RegExp(`/ds/rewards/cards/${card.id}`));
+    await expect(page).toHaveURL(new RegExp(`/rewards/cards/${card.id}`));
     await edit.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Renamed Rule');
     await edit.getByRole('button', { name: 'Save & recompute' }).click();
     await expect(toast(page, 'Rule updated')).toBeVisible();
@@ -213,10 +213,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     });
     await spend(api, bank.id, { amount: 500, date: spendDay('12') });
 
-    await page.goto(`/ds/rewards/cards/${card.id}`);
+    await page.goto(`/rewards/cards/${card.id}`);
     await expect(page.getByText(/Some statement-cycle caps fell back to calendar months/)).toBeVisible({ timeout: 45_000 });
 
-    await page.goto(`/ds/rewards/cards/${bank.id}`);
+    await page.goto(`/rewards/cards/${bank.id}`);
     await expect(page.getByText(/Some anniversary-year windows fell back to calendar years/)).toBeVisible({ timeout: 45_000 });
   });
 
@@ -229,7 +229,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     // Started well before today, so End & clone is allowed.
     await createRewardRule(api, cardA.id, { name: 'Ds Ending Rule', percentRate: 1, activeFrom: '2025-01-01' });
 
-    await page.goto(`/ds/rewards/rules?account=${cardA.id}`);
+    await page.goto(`/rewards/rules?account=${cardA.id}`);
     await expect(page.getByText('Ds Ending Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Card switch changes the rules shown.
@@ -306,7 +306,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await createRewardRule(api, card.id, { name: 'Ds First Rule', percentRate: 1, priority: 20 });
     await createRewardRule(api, card.id, { name: 'Ds Second Rule', percentRate: 2, priority: 10 });
 
-    await page.goto(`/ds/rewards/rules?account=${card.id}`);
+    await page.goto(`/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds First Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
     const before = await isAbove(page, 'Ds First Rule', 'Ds Second Rule');
     const [top, bottom] = before ? ['Ds First Rule', 'Ds Second Rule'] : ['Ds Second Rule', 'Ds First Rule'];
@@ -331,7 +331,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     const { account: card } = await createRewardCard(api, { name: 'Ds Settings Card', anniversaryDate: anniversary() });
     await createRewardRule(api, card.id, { name: 'Ds Test Rule', percentRate: 5 });
 
-    await page.goto(`/ds/rewards/rules?account=${card.id}`);
+    await page.goto(`/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Test Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     await page.getByRole('button', { name: 'Test', exact: true }).click();
@@ -366,7 +366,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const { account: card } = await createRewardCard(api, { name: 'Ds Caps Card', anniversaryDate: anniversary() });
     await createRewardRule(api, card.id, { name: 'Ds Base Rule', percentRate: 1 });
-    await page.goto(`/ds/rewards/rules?account=${card.id}`);
+    await page.goto(`/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Base Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Cap: create, edit, delete.
@@ -457,7 +457,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     });
     await createRewardCard(api, { name: 'Ds Bare Card', anniversaryDate: anniversary() });
 
-    await page.goto('/ds/rewards/which-card');
+    await page.goto('/rewards/which-card');
     await expect(page.getByText('Enter the spend details above')).toBeVisible({ timeout: 45_000 });
 
     // More options reveals the extra fields.
@@ -510,7 +510,7 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
     await createRewardRule(api, card.id, { name: 'Ds Phone Rule', percentRate: 2, activeFrom: '2025-01-01' });
     await createRewardRule(api, card.id, { name: 'Ds Phone Rule 2', percentRate: 1, activeFrom: '2025-01-01' });
 
-    await page.goto(`/ds/rewards/rules?account=${card.id}`);
+    await page.goto(`/rewards/rules?account=${card.id}`);
     await expect(page.getByText('Ds Phone Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
     // No ⋮ menu or table header on phone, and no links on the rows: a tap opens the row menu.
     await expect(page.getByRole('button', { name: 'Actions for Ds Phone Rule' })).toHaveCount(0);
@@ -530,7 +530,7 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
     await sheet.getByRole('button', { name: 'Cancel' }).click();
     await expect(sheet).toHaveCount(0);
 
-    await page.goto('/ds/rewards/which-card');
+    await page.goto('/rewards/which-card');
     await expect(page.getByText('Enter the spend details above')).toBeVisible({ timeout: 45_000 });
     await page.getByRole('textbox', { name: /^Amount/ }).fill('1000');
     await page.getByRole('button', { name: 'Rank cards' }).click();

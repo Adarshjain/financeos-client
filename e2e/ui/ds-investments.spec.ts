@@ -35,13 +35,13 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holdings: the six tabs, the figures and every row state', async ({ page }) => {
-      await page.goto('/ds/investments');
+      await page.goto('/investments');
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
       for (const name of [/^Tradebook/, /^Dividends/, /^F&O/, /^Corporate actions/, /^Instruments/]) {
         await expect(page.getByRole('tab', { name })).toBeVisible();
       }
-      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveAttribute('href', '/ds/investments/tradebook');
+      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveAttribute('href', '/investments/tradebook');
       // The counts load on their own.
       await expect(page.getByRole('tab', { name: /^Tradebook · \d+/ })).toBeVisible();
 
@@ -63,7 +63,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holdings: search, type, sort and Broker are one URL change each and answered by the server', async ({ page }) => {
-      await page.goto('/ds/investments');
+      await page.goto('/investments');
 
       await page.getByPlaceholder('Symbol or name').fill('TCSX');
       await page.waitForURL(/q=TCSX/);
@@ -95,16 +95,16 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holdings: a row opens its holding page', async ({ page }) => {
-      await page.goto('/ds/investments');
+      await page.goto('/investments');
       await shown(page.getByText(seeded.tcs.symbol, { exact: true })).click();
-      await page.waitForURL(`**/ds/investments/${seeded.tcs.id}`);
+      await page.waitForURL(`**/investments/${seeded.tcs.id}`);
       await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('data-state', 'active');
       // A holding's page has its own tabs, not the Investments ones.
       await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveCount(0);
     });
 
     test('Holding page: figures, sections and the broker split', async ({ page }) => {
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
 
       await expect(shown(page.getByText(new RegExp(`${seeded.infy.symbol} · `)))).toBeVisible();
       await expect(shown(page.getByText('Current value', { exact: true }))).toBeVisible();
@@ -130,7 +130,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holding page: the sell card offers a tax-free sale and works a typed quantity out in the page', async ({ page }) => {
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
       await expect(page.getByText('If you sell today')).toBeVisible();
 
       // Every lot is long term and the year's exemption is untouched: Sell all itself shows tax ≈ ₹0.
@@ -150,7 +150,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holding page: only manual prices can be edited, and a delete asks first', async ({ page }) => {
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
       await expect(page.getByText('Price history')).toBeVisible();
       // Both seeded prices are the user's own manual prices; the Instrument card has an Edit of its own.
       await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(3);
@@ -176,7 +176,7 @@ for (const viewport of VIEWPORTS) {
       // Each test has its own user: infy's two seeded manual prices are today (newer) and three days before (older).
       const older = istToday(-3);
       const free = istToday(-8);
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
       await expect(page.getByText('Price history')).toBeVisible();
 
       // Edit is newest first: the first one is today's price.
@@ -200,7 +200,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holding page: a tab shows only its section, paged through the URL', async ({ page }) => {
-      await page.goto(`/ds/investments/${seeded.infy.id}`);
+      await page.goto(`/investments/${seeded.infy.id}`);
       await page.getByRole('tab', { name: /^Trades/ }).click();
       await page.waitForURL(/tab=trades/);
       await expect(page.getByRole('tab', { name: /^Trades/ })).toHaveAttribute('data-state', 'active');

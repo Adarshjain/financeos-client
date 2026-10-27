@@ -22,7 +22,7 @@ test.describe('Reward reports UI (@ui)', () => {
     await createRewardRule(api, account.id, { name: 'Stack 2%', stacking: 'ADDITIVE', percentRate: 2, priority: 5 });
     await spend(api, account.id, { amount: 1000, date: `${month.from.slice(0, 7)}-10` });
 
-    await page.goto('/reports/new');
+    await page.goto('/legacy/reports/new');
     await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
     await page.getByPlaceholder('Report name').fill('Base rule rewards');
 
@@ -60,7 +60,7 @@ test.describe('Reward reports UI (@ui)', () => {
     });
     await spend(api, account.id, { amount: 1000, date: istToday() });
 
-    await page.goto('/rewards');
+    await page.goto('/legacy/rewards');
     await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible();
     await page.locator('button[role="combobox"]:visible').first().click();
     await page.getByRole('option', { name: 'UI Valued Points Card' }).click();

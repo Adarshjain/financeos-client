@@ -78,19 +78,21 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('Add Account runs the consent round trip and lands back with Successfully Connected', async ({ page }) => {
     test.slow();
-    await page.goto('/settings/gmail');
+    await page.goto('/legacy/settings/gmail');
     await expect(page.getByRole('heading', { name: 'Gmail Integration' })).toBeVisible();
     await expect(page.getByText('No connected Gmail accounts found.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Connect your first account' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Add Account' }).click();
-    // → WireMock consent (302) → server /api/v1/gmail/oauth/callback (302) → back here with a banner.
-    await page.waitForURL(/\/settings\/gmail\?gmail=success/, { timeout: 30_000 });
-    await expect(page.getByText('Successfully Connected')).toBeVisible();
+    // → WireMock consent (302) → server /api/v1/gmail/oauth/callback (302) → /settings/gmail, which the app
+    // redirects to the Dinero Connections page, back here with a banner.
+    await page.waitForURL(/\/settings\/connections/, { timeout: 30_000 });
+    await expect(page.getByText('Successfully connected')).toBeVisible();
     await expect(page.getByText(identity.email).first()).toBeVisible();
-    await expect(page.getByText('Primary')).toBeVisible();
-    await expect(page.getByText(/Connected:/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Manually Sync Now' })).toBeVisible();
+    // Dinero shows the Primary badge only with several mailboxes; the primary flag is asserted through the API below.
+    await expect(page.getByText('Healthy', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Connected /)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sync now' })).toBeVisible();
 
     const connections = await listConnections(api);
     expect(connections).toHaveLength(1);
@@ -98,7 +100,7 @@ test.describe('Gmail settings UI (@ui)', () => {
   });
 
   test('Add Sender dialog creates an Active sender', async ({ page }) => {
-    await page.goto('/settings/gmail');
+    await page.goto('/legacy/settings/gmail');
     await expect(page.getByText('No allowed senders configured yet')).toBeVisible();
 
     await page.getByRole('button', { name: 'Add Sender' }).click();
@@ -119,7 +121,7 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('Manually Sync Now runs a job, the parked alert appears under Needs Attention, Retry re-queues it', async ({ page }) => {
     test.slow();
-    await page.goto('/settings/gmail');
+    await page.goto('/legacy/settings/gmail');
     await page.getByRole('button', { name: 'Manually Sync Now' }).click();
     await expectToast(page, 'Gmail sync started in background.');
     await expectToast(page, 'Sync completed!');
@@ -199,7 +201,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     });
     await waitForGmailJobsIdle(api);
 
-    await page.goto('/settings/gmail');
+    await page.goto('/legacy/settings/gmail');
     await expect(page.getByRole('heading', { name: 'Gmail Integration' })).toBeVisible();
     await expect(page.getByText(/Needs Attention/)).not.toBeVisible();
     const imported = await searchAll(api, [{ field: 'accountId', operator: 'is', value: late!.id }]);
@@ -217,7 +219,7 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('moving the ingest date later asks to clean up imported alerts and deletes them', async ({ page }) => {
     test.slow();
-    await page.goto('/accounts');
+    await page.goto('/legacy/accounts');
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
     // The tile body opens the account page; the edit dialog sits behind its Edit button.
     await openAccountEditor(page, 'UI Late Account');
@@ -241,7 +243,7 @@ test.describe('Gmail settings UI (@ui)', () => {
   });
 
   test('disconnecting via the trash icon needs the native confirm and marks the row disconnected', async ({ page }) => {
-    await page.goto('/settings/gmail');
+    await page.goto('/legacy/settings/gmail');
     page.once('dialog', (dialog) => {
       expect(dialog.message()).toContain('Are you sure you want to disconnect this Gmail account?');
       dialog.accept();
