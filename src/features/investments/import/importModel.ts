@@ -98,7 +98,7 @@ export interface ExecutionRow {
   rowIndex: number;
   date: string;
   side: 'Buy' | 'Sell';
-  settlement: 'Delivery' | 'Intraday';
+  settlement: 'CNC' | 'MIS';
   symbol: string;
   /** "INE002A01018 • NSE" */
   scrip: string;
@@ -124,7 +124,7 @@ export function executionRow(exec: ReconciledExecution): ExecutionRow {
     rowIndex: exec.rowIndex,
     date: shortDate(exec.tradeDate),
     side: exec.type === 'buy' ? 'Buy' : 'Sell',
-    settlement: exec.settlementType === 'intraday' ? 'Intraday' : 'Delivery',
+    settlement: exec.settlementType === 'intraday' ? 'MIS' : 'CNC',
     symbol: exec.symbol,
     scrip: [exec.isin, exec.exchange].filter(Boolean).join(' • '),
     qtyPrice: `${exec.quantity} × ${money(exec.price)}`,

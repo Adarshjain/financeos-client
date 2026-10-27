@@ -129,14 +129,26 @@ describe('/investments/tradebook: rows', () => {
     expect(first('35,500')).toBeTruthy();
     expect(first('≈42.10')).toBeTruthy();
     expect(first('Parag Parikh Flexi Cap')).toBeTruthy();
-    expect(first('Delivery')).toBeTruthy();
+    expect(first('CNC')).toBeTruthy();
+    expect(screen.queryByText('Delivery')).toBeNull();
   });
 
-  it("draws the phone's second line with the realised gain", async () => {
+  it("draws the phone's second line with the settlement tag and no realised figure", async () => {
     await renderPage();
     expect(first(/1 Oct · 50 @ ₹710/)).toBeTruthy();
-    expect(first('realised −₹13,500')).toBeTruthy();
     expect(first(/5 Oct · 55\.98 units @ ₹89\.32/)).toBeTruthy();
+    expect(screen.queryByText(/realised/)).toBeNull();
+    expect(screen.queryByText(/delivery/)).toBeNull();
+  });
+
+  it('tags an intraday trade MIS and a delivery trade CNC, and a fund with neither', async () => {
+    tradebook.fetchTradebookPage.mockResolvedValue(
+      tradesPage([trade({ id: 'm1', settlementType: 'intraday' }), trade({ id: 'c1' }), fundBuy], { totalElements: 3, totalPages: 1 }),
+    );
+    await renderPage();
+    expect(screen.getAllByText('MIS').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('CNC').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Intraday')).toBeNull();
   });
 
   it('shows Buy and Sell in the Type column', async () => {
@@ -255,6 +267,12 @@ describe('/investments/tradebook: edit and delete', () => {
     expect((within(dialog).getByLabelText(/Notes/) as HTMLInputElement).value).toBe('Sold before the demerger');
     expect(within(dialog).getByText('Value ₹35,500 · charges ₹42.10')).toBeTruthy();
     expect(within(dialog).getByText('Net ₹35,457.90')).toBeTruthy();
+  });
+
+  it('names the settlement choice CNC, with MIS as the other', async () => {
+    const dialog = await openEdit();
+    expect(within(dialog).getByText('CNC')).toBeTruthy();
+    expect(within(dialog).queryByText('Delivery')).toBeNull();
   });
 
   it('a row press opens the same dialog', async () => {

@@ -31,13 +31,21 @@ describe('Icon registry', () => {
 });
 
 describe('Icon component', () => {
-  it('renders a Phosphor icon at md size by default with bold weight, currentColor, and aria-hidden', () => {
+  it('renders a Phosphor icon at md size by default with the duotone weight, currentColor, and aria-hidden', () => {
     const { container } = render(<Icon name="chevron-down" />);
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveClass('w-icon-md', 'h-icon-md');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('fill', 'currentColor');
+  });
+
+  it('draws the default exactly as weight="duotone", and differently from bold', () => {
+    const plain = render(<Icon name="warning" />).container.innerHTML;
+    const duotone = render(<Icon name="warning" weight="duotone" />).container.innerHTML;
+    const bold = render(<Icon name="warning" weight={'bold' as never} />).container.innerHTML;
+    expect(plain).toBe(duotone);
+    expect(plain).not.toBe(bold);
   });
 
   it('draws the solid shape with weight="fill"', () => {

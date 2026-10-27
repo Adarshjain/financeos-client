@@ -3,48 +3,33 @@ import { cache } from 'react';
 
 import { orNull, signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { ApiError } from '@/lib/api/client';
-import type { HoldingDetail, PricePage, SellEstimate } from '@/lib/investments.types';
-import type { CorporateAction, Instrument, PagedDividendResponse, PagedInvestmentTransactionResponse,PriceHistoryPoint } from '@/lib/types';
+import type { HoldingDetail, SellEstimate } from '@/lib/investments.types';
+import type { Instrument, PriceHistoryPoint } from '@/lib/types';
 
-import {
-  fetchHolding,
-  fetchInstrument,
-  fetchInstrumentCorporateActions,
-  fetchInstrumentDividends,
-  fetchInstrumentTrades,
-  fetchPriceHistory,
-  fetchPricesPage,
-  fetchSellEstimate,
-} from '../investmentsServerApi';
-import { type HoldingTab, OVERVIEW_SIZES, TAB_PAGE_SIZE } from './holdingModel';
+import { fetchHolding, fetchInstrument, fetchPriceHistory, fetchSellEstimate } from '../investmentsServerApi';
+import type { CorporateActionRowModel, DividendRowModel, HoldingSection, TradeRow } from './holdingModel';
+import { corporateActionsSection, dividendsSection, tradesSection } from './holdingSections';
 
 export interface HoldingPageData {
   holding: HoldingDetail;
   instrument: Instrument | null;
   /** The sell-all estimate; null when it could not be read. */
   estimate: SellEstimate | null;
-  trades: PagedInvestmentTransactionResponse | null;
-  dividends: PagedDividendResponse | null;
-  corporateActions: CorporateAction[] | null;
-  prices: PricePage | null;
-  /** Every stored price, oldest or newest first; null when it could not be read. */
+  /** Page 0 of each list; null when it could not be read. */
+  trades: HoldingSection<TradeRow> | null;
+  dividends: HoldingSection<DividendRowModel> | null;
+  corporateActions: HoldingSection<CorporateActionRowModel> | null;
+  /** Every stored price, for the chart; null when it could not be read. */
   history: PriceHistoryPoint[] | null;
 }
 
-/** Rows read for one section: the tab's own page, the newest few on Overview, one row (just the count) elsewhere. */
-function sizeFor(section: 'trades' | 'dividends' | 'prices', tab: HoldingTab): number {
-  if (tab === section) return TAB_PAGE_SIZE;
-  return tab === 'overview' ? OVERVIEW_SIZES[section] : 1;
-}
-
 /**
- * The holding and the sections of the tab being shown, one request pass per render. A holding the user has
+ * The holding and the first page of each of its lists, one request pass per render. A holding the user has
  * never held is a 404; any other failure of the holding throws to the route's error state. The sections are
- * secondary: when one fails the page still shows the rest.
+ * secondary: when one fails the page still shows the rest. Later pages come from holdingActions.
  */
-export const loadHoldingPage = cache(async (instrumentId: string, tab: HoldingTab, page: number): Promise<HoldingPageData> => {
-  const pageOf = (section: 'trades' | 'dividends' | 'prices') => (tab === section ? page : 0);
-  const [holding, instrument, estimate, trades, dividends, corporateActions, prices, history] = await Promise.all([
+export const loadHoldingPage = cache(async (instrumentId: string): Promise<HoldingPageData> => {
+  const [holding, instrument, estimate, trades, dividends, corporateActions, history] = await Promise.all([
     fetchHolding(instrumentId).catch(async (e: unknown) => {
       await signInIfSessionEnded(e);
       if (e instanceof ApiError && (e.status === 404 || e.status === 400)) return null;
@@ -52,12 +37,11 @@ export const loadHoldingPage = cache(async (instrumentId: string, tab: HoldingTa
     }),
     orNull(fetchInstrument(instrumentId)),
     orNull(fetchSellEstimate(instrumentId)),
-    orNull(fetchInstrumentTrades(instrumentId, pageOf('trades'), sizeFor('trades', tab))),
-    orNull(fetchInstrumentDividends(instrumentId, pageOf('dividends'), sizeFor('dividends', tab))),
-    orNull(fetchInstrumentCorporateActions(instrumentId)),
-    orNull(fetchPricesPage(instrumentId, pageOf('prices'), sizeFor('prices', tab))),
-    tab === 'overview' ? orNull(fetchPriceHistory(instrumentId)) : Promise.resolve(null),
+    orNull(tradesSection(instrumentId, 0)),
+    orNull(dividendsSection(instrumentId, 0)),
+    orNull(corporateActionsSection(instrumentId, 0)),
+    orNull(fetchPriceHistory(instrumentId)),
   ]);
   if (!holding) notFound();
-  return { holding, instrument, estimate, trades, dividends, corporateActions, prices, history };
+  return { holding, instrument, estimate, trades, dividends, corporateActions, history };
 });

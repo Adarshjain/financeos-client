@@ -248,7 +248,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                     inputMode="numeric"
                     value={form.ratioFrom}
                     error={errors.ratioFrom}
-                    onValueChange={(v) => change({ ratioFrom: v }, 'ratioFrom')}
+                    onValueChange={(v) => change({ ratioFrom: v.replace(/\D/g, '') }, 'ratioFrom')}
                   />
                   <TextField
                     label={copy.to}
@@ -256,7 +256,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                     inputMode="numeric"
                     value={form.ratioTo}
                     error={errors.ratioTo}
-                    onValueChange={(v) => change({ ratioTo: v }, 'ratioTo')}
+                    onValueChange={(v) => change({ ratioTo: v.replace(/\D/g, '') }, 'ratioTo')}
                   />
                 </div>
               </div>
@@ -330,7 +330,7 @@ function AfterSaving({ state, lines, loading }: { state: PreviewState | null; li
       ) : null}
       {state?.status === 'ready'
         ? lines.map((line) => (
-            <ListRow key={line.key} title={line.label} trailing={<Text variant="label" tone="ink-3">{line.text}</Text>} wrap />
+            <ListRow key={line.key} title={line.label} subtitle={line.text} wrap />
           ))
         : null}
     </Card>

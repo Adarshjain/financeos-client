@@ -18,7 +18,7 @@ const history = [
 
 describe('PriceChartCard', () => {
   it('fits the y-axis to the prices and fills its frame', () => {
-    render(<PriceChartCard history={history as never} />);
+    render(<PriceChartCard onOpenHistory={vi.fn()} history={history as never} />);
     expect(screen.getByTestId('chart')).toBeInTheDocument();
     expect(chart).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -29,7 +29,7 @@ describe('PriceChartCard', () => {
   });
 
   it('draws no chart with fewer than two prices', () => {
-    render(<PriceChartCard history={history.slice(0, 1) as never} />);
+    render(<PriceChartCard onOpenHistory={vi.fn()} history={history.slice(0, 1) as never} />);
     expect(screen.queryByTestId('chart')).not.toBeInTheDocument();
   });
 });

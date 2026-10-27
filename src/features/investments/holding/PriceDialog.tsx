@@ -24,11 +24,13 @@ export interface PriceDialogProps {
   instrumentId: string;
   name: string;
   target: PriceDialogTarget;
+  /** Called after the price is saved, before the dialog closes. */
+  onSaved?: () => void;
   onClose: () => void;
 }
 
 /** A manual price: its date and amount. Both can be changed on an existing price; a date already taken by another of your prices is shown on the date field. */
-export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialogProps) {
+export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: PriceDialogProps) {
   const router = useRouter();
   const { setPrice, updatePrice } = usePriceMutations(instrumentId);
   const editing = target.kind === 'edit';
@@ -59,6 +61,7 @@ export function PriceDialog({ instrumentId, name, target, onClose }: PriceDialog
         showToast(`Price updated for ${name}`);
       }
       router.refresh();
+      onSaved?.();
       onClose();
     } catch (e) {
       if (e instanceof ApiError && e.status === 409 && e.response.code === 'DUPLICATE') {

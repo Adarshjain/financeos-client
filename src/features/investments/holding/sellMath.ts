@@ -1,4 +1,5 @@
 import type { SellEstimate, SellEstimateLot } from '@/lib/investments.types';
+import { sanitizeDecimalInput } from '@/lib/utils';
 
 // Mirrors HoldingsService.sellEstimate (server): the oldest lots first, the gain by term, and, for equity-oriented
 // holdings, the tax the sale adds to the financial year (TaxHarvestService.realised before and after, set-off then
@@ -177,6 +178,11 @@ export function taxFreeQuantity(est: SellEstimate, step: number): number {
 /** The step of a holding's quantity: whole units for stocks and ETFs, thousandths for funds. */
 export function quantityStep(assetType: string): number {
   return assetType === 'mutual_fund' ? 0.001 : 1;
+}
+
+/** What a quantity field keeps of the typed text: digits only for stocks and ETFs, digits and one decimal point for funds. */
+export function sanitizeQuantityInput(text: string, assetType: string): string {
+  return quantityStep(assetType) < 1 ? sanitizeDecimalInput(text) : text.replace(/[^0-9]/g, '');
 }
 
 export type QuantityCheck = { ok: true; quantity: number } | { ok: false };

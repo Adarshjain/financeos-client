@@ -45,7 +45,8 @@ for (const viewport of VIEWPORTS) {
       // The counts load on their own.
       await expect(page.getByRole('tab', { name: /^Tradebook · \d+/ })).toBeVisible();
 
-      await expect(shown(page.getByText('Current value', { exact: true }))).toBeVisible();
+      // The phone hero has no label; the desktop keeps its Current value tile.
+      await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(viewport.name.startsWith('phone') ? 0 : 1);
       await expect(shown(page.getByText('Unrealised P&L', { exact: true }))).toBeVisible();
       await expect(page.getByText(/Prices as of \d+ \w+/)).toBeVisible();
       // Prices are live, so there is no manual Refresh (owner 2026-10-26).
@@ -98,22 +99,22 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments');
       await shown(page.getByText(seeded.tcs.symbol, { exact: true })).click();
       await page.waitForURL(`**/investments/${seeded.tcs.id}`);
-      await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('data-state', 'active');
-      // A holding's page has its own tabs, not the Investments ones.
-      await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveCount(0);
+      // A holding's page is one page: no tabs, not even the Investments ones.
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
+      await expect(page.getByText('Trades', { exact: true })).toBeVisible();
     });
 
     test('Holding page: figures, sections and the broker split', async ({ page }) => {
       await page.goto(`/investments/${seeded.infy.id}`);
 
       await expect(shown(page.getByText(new RegExp(`${seeded.infy.symbol} · `)))).toBeVisible();
-      await expect(shown(page.getByText('Current value', { exact: true }))).toBeVisible();
+      await expect(page.getByText('Current value', { exact: true })).toHaveCount(0);
       for (const label of ['Quantity', 'Avg cost', 'LTP', 'XIRR', 'Invested', '₹ return', 'Realised P&L', 'Total charges']) {
         await expect(shown(page.getByText(label, { exact: true }))).toBeVisible();
       }
-      await expect(page.getByRole('tab', { name: /^Trades · \d+/ })).toBeVisible();
-      await expect(page.getByRole('tab', { name: /^Dividends · 1/ })).toBeVisible();
-      await expect(page.getByRole('tab', { name: /^Corporate actions · 1/ })).toBeVisible();
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Dividend', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Corporate action', exact: true })).toHaveCount(0);
 
       // One row per stock on Holdings; the split is here.
       await expect(page.getByText('By broker')).toBeVisible();
@@ -137,6 +138,9 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/tax-free/)).toHaveCount(0);
 
       const box = page.getByPlaceholder('Quantity');
+      // Only digits get in: a stock's quantity is whole.
+      await box.pressSequentially('x2.0a');
+      await expect(box).toHaveValue('20');
       await box.fill('20');
       // 20 shares bought at 1,420 against 1,512.70: ₹1,854 of long-term gain.
       await expect(page.getByText('Sell 20: Gain ₹1,854 · long term · tax ≈ ₹0 · ₹1,23,146 exemption left')).toBeVisible();
@@ -151,25 +155,27 @@ for (const viewport of VIEWPORTS) {
 
     test('Holding page: only manual prices can be edited, and a delete asks first', async ({ page }) => {
       await page.goto(`/investments/${seeded.infy.id}`);
-      await expect(page.getByText('Price history')).toBeVisible();
-      // Both seeded prices are the user's own manual prices; the Instrument card has an Edit of its own.
-      await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(3);
-      await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(2);
+      await expect(page.getByText('Price history', { exact: true })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Price history' }).click();
+      const history = page.getByRole('dialog', { name: 'Price history' });
+      // Both seeded prices are the user's own manual prices.
+      await expect(history.getByRole('button', { name: 'Edit' })).toHaveCount(2);
+      await expect(history.getByRole('button', { name: 'Delete' })).toHaveCount(2);
 
-      await page.getByRole('button', { name: 'Edit' }).first().click();
+      await history.getByRole('button', { name: 'Edit' }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Edit manual price' });
       await expect(dialog).toBeVisible();
       await dialog.getByLabel('Price').fill('1500');
       await dialog.getByRole('button', { name: 'Save price' }).click();
       await expect(page.getByText('Price updated', { exact: true })).toBeVisible();
-      await expect(shown(page.getByText('₹1,500.00'))).toBeVisible();
+      await expect(shown(history.getByText('₹1,500.00'))).toBeVisible();
 
-      await page.getByRole('button', { name: 'Delete' }).first().click();
+      await history.getByRole('button', { name: 'Delete' }).first().click();
       const confirm = page.getByRole('dialog', { name: 'Delete manual price' });
       await expect(confirm.getByText('Only this price is deleted.')).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete price' }).click();
       await expect(page.getByText('Price entry deleted')).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(1);
+      await expect(history.getByRole('button', { name: 'Delete' })).toHaveCount(1);
     });
 
     test("Holding page: a manual price's date can change, and a date that already has a price is refused", async ({ page }) => {
@@ -177,10 +183,12 @@ for (const viewport of VIEWPORTS) {
       const older = istToday(-3);
       const free = istToday(-8);
       await page.goto(`/investments/${seeded.infy.id}`);
-      await expect(page.getByText('Price history')).toBeVisible();
+      await page.getByRole('button', { name: 'Price history' }).click();
+      const history = page.getByRole('dialog', { name: 'Price history' });
+      await expect(history).toBeVisible();
 
       // Edit is newest first: the first one is today's price.
-      await page.getByRole('button', { name: 'Edit' }).first().click();
+      await history.getByRole('button', { name: 'Edit' }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Edit manual price' });
       await expect(dialog.getByLabel('As of')).toBeEnabled();
       await expect(dialog.getByLabel('As of')).toHaveValue(asField(istToday()));
@@ -194,23 +202,22 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Save price' }).click();
       await expect(page.getByText('Price updated', { exact: true })).toBeVisible();
       await expect(dialog).toBeHidden();
-      await expect(shown(page.getByText(asShort(free), { exact: true }))).toBeVisible();
-      await expect(page.getByText(asShort(istToday()), { exact: true })).toHaveCount(0);
-      await expect(shown(page.getByText(asShort(older), { exact: true }))).toBeVisible();
+      await expect(shown(history.getByText(asShort(free), { exact: true }))).toBeVisible();
+      await expect(history.getByText(asShort(istToday()), { exact: true })).toHaveCount(0);
+      await expect(shown(history.getByText(asShort(older), { exact: true }))).toBeVisible();
     });
 
-    test('Holding page: a tab shows only its section, paged through the URL', async ({ page }) => {
-      await page.goto(`/investments/${seeded.infy.id}`);
-      await page.getByRole('tab', { name: /^Trades/ }).click();
-      await page.waitForURL(/tab=trades/);
-      await expect(page.getByRole('tab', { name: /^Trades/ })).toHaveAttribute('data-state', 'active');
-      await expect(page.getByText('Record trade')).toBeVisible();
-      await expect(page.getByText('Price history')).toHaveCount(0);
-
-      await page.getByRole('tab', { name: 'Prices' }).click();
-      await page.waitForURL(/tab=prices/);
-      await expect(page.getByText('Price history')).toBeVisible();
-      await expect(page.getByText('By broker')).toHaveCount(0);
+    test('Holding page: no tabs; old tab addresses show the same page; the + records anything', async ({ page }) => {
+      await page.goto(`/investments/${seeded.infy.id}?tab=prices`);
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
+      await expect(page.getByText('Trades', { exact: true })).toBeVisible();
+      await expect(page.getByText('By broker')).toBeVisible();
+      await expect(page.getByText('Dividends', { exact: true })).toBeVisible();
+      await expect(page.getByText('Corporate actions', { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      for (const name of ['Record trade', 'Record dividend', 'Record corporate action', 'Record price']) {
+        await expect(page.getByRole('menuitem', { name })).toBeVisible();
+      }
     });
   });
 }

@@ -1,7 +1,8 @@
-import type { HoldingDetail, PricePoint, SellEstimate } from '@/lib/investments.types';
-import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
+import type { HoldingDetail, PricePage, PricePoint, SellEstimate } from '@/lib/investments.types';
+import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse, PagedDividendResponse, PagedInvestmentTransactionResponse } from '@/lib/types';
 
 import type { HoldingPageData } from './holdingData';
+import { corporateActionRow, dividendRow, tradeRow } from './holdingModel';
 
 export const holding: HoldingDetail = {
   instrumentId: 'i-infy',
@@ -122,21 +123,34 @@ export const prices: PricePoint[] = [
   { id: null, asOf: '2026-10-09', close: 1466.2, source: 'YAHOO', editable: false },
 ];
 
+export const rawTrades = (): PagedInvestmentTransactionResponse => ({
+  content: [buy(), buy({ id: 't2', brokerName: 'Groww', quantity: 10, tradeDate: '2024-04-02' })],
+  number: 0,
+  size: 10,
+  totalElements: 2,
+  totalPages: 1,
+  first: true,
+  last: true,
+  empty: false,
+});
+export const rawDividends = (): PagedDividendResponse => ({ content: [dividend], number: 0, size: 10, totalElements: 1, totalPages: 1, first: true, last: true, empty: false });
+export const rawPricePage = (): PricePage => ({ items: prices, page: 0, size: 10, totalElements: 4, totalPages: 1 });
+export const priceHistory = [
+  { asOf: '2026-08-01', close: 1400, source: 'YAHOO' },
+  { asOf: '2026-09-20', close: 1450, source: 'YAHOO' },
+  { asOf: '2026-10-13', close: 1512.7, source: 'YAHOO' },
+];
+
 export function pageData(over: Partial<HoldingPageData> = {}): HoldingPageData {
-  const trades = [buy(), buy({ id: 't2', brokerName: 'Groww', quantity: 10, tradeDate: '2024-04-02' })];
+  const trades = rawTrades();
   return {
     holding,
     instrument,
     estimate,
-    trades: { content: trades, number: 0, size: 10, totalElements: 2, totalPages: 1, first: true, last: true, empty: false },
-    dividends: { content: [dividend], number: 0, size: 5, totalElements: 1, totalPages: 1, first: true, last: true, empty: false },
-    corporateActions: [bonus],
-    prices: { items: prices, page: 0, size: 10, totalElements: 4, totalPages: 1 },
-    history: [
-      { asOf: '2026-08-01', close: 1400, source: 'YAHOO' },
-      { asOf: '2026-09-20', close: 1450, source: 'YAHOO' },
-      { asOf: '2026-10-13', close: 1512.7, source: 'YAHOO' },
-    ],
+    trades: { rows: trades.content.map(tradeRow), position: { page: 0, size: 10, totalElements: 2, totalPages: 1 } },
+    dividends: { rows: [dividendRow(dividend as never)], position: { page: 0, size: 10, totalElements: 1, totalPages: 1 } },
+    corporateActions: { rows: [corporateActionRow(bonus as never)], position: { page: 0, size: 10, totalElements: 1, totalPages: 1 } },
+    history: priceHistory,
     ...over,
   };
 }

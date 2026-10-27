@@ -7,7 +7,7 @@ import type { TradesQuery } from '@/lib/investments.types';
 import type { JobResponse } from '@/lib/jobs.types';
 import type { ImportCommitResult, InvestmentTransactionResponse } from '@/lib/types';
 
-import { fyLabel, moveTone, plainPrice, plainRupees, quantity, shortDate, signedRupees, unitPrice } from '../investmentsFormat';
+import { fyLabel, plainPrice, plainRupees, quantity, shortDate, unitPrice } from '../investmentsFormat';
 
 /** The Tradebook page's own address (always the Dinero route, whatever the tab links point at). */
 export const TRADEBOOK_HREF = `${DS_PREFIX}/investments/tradebook`;
@@ -100,8 +100,6 @@ export function fyOptions(today: string, selected: number | null): { value: stri
 
 // ---- Rows --------------------------------------------------------------------
 
-type Tone = 'positive' | 'danger' | undefined;
-
 export interface TradebookRow {
   id: string;
   raw: InvestmentTransactionResponse;
@@ -111,8 +109,8 @@ export interface TradebookRow {
   title: string;
   broker: string;
   side: 'Buy' | 'Sell';
-  /** "Delivery" or "Intraday"; "—" for a fund. */
-  settlement: string;
+  /** "CNC" (delivery) or "MIS" (intraday); null for a fund. */
+  settlement: 'CNC' | 'MIS' | null;
   quantity: string;
   pricePlain: string;
   /** Without the ₹ (desktop column). */
@@ -120,8 +118,8 @@ export interface TradebookRow {
   /** With the ₹ (phone). */
   value: string;
   chargesPlain: string;
-  /** "5 Oct", "55.98 units @ ₹89.32", realised, settlement: the phone's second line, in parts. */
-  sub: { date: string; position: string; realised: { text: string; tone: Tone } | null; settlement: string | null };
+  /** "5 Oct", "55.98 units @ ₹89.32": the phone's second line, in parts (the settlement tag follows). */
+  sub: { date: string; position: string };
 }
 
 /** "89.32" or "710": a unit price with no trailing ".00". */
@@ -134,9 +132,8 @@ export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {
   const price = Number(t.price);
   const fund = t.instrument.type === 'mutual_fund';
   const side = t.type === 'sell' ? 'Sell' : 'Buy';
-  const settlement = fund ? '—' : t.settlementType === 'intraday' ? 'Intraday' : 'Delivery';
+  const settlement = fund ? null : t.settlementType === 'intraday' ? 'MIS' : 'CNC';
   const charges = Number(t.totalCharges ?? 0);
-  const realised = side === 'Sell' && t.realisedPnl != null ? t.realisedPnl : null;
   return {
     id: t.id,
     raw: t,
@@ -153,16 +150,14 @@ export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {
     sub: {
       date: formatDayMonth(t.tradeDate),
       position: `${quantity(qty)}${fund ? ' units' : ''} @ ${looseUnitPrice(price)}`,
-      realised: realised == null ? null : { text: `realised ${signedRupees(realised)}`, tone: moveTone(realised) },
-      settlement: fund ? null : settlement.toLowerCase(),
     },
   };
 }
 
 /** What the phone's second line says as plain text (tests, and the confirm dialog's name). */
 export function subLineText(row: TradebookRow): string {
-  const { date, position, realised, settlement } = row.sub;
-  return [date, position, realised?.text, settlement].filter(Boolean).join(' · ');
+  const { date, position } = row.sub;
+  return [date, position, row.settlement].filter(Boolean).join(' · ');
 }
 
 /** "TATAMOTORS · 1 Oct 26 sell": what the delete confirmation names. */

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
@@ -8,34 +7,28 @@ import {
   Button,
   Card,
   Conceal,
-  ConfirmDialog,
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
   ListRow,
   Pager,
-  showToast,
   Text,
   TextField,
 } from '@/components/ds';
-import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { PagePosition, SellEstimate } from '@/lib/investments.types';
 
 import { fyLabel, quantity } from '../investmentsFormat';
-import { usePriceMutations } from '../usePriceMutations';
+import { loadCorporateActionsPage, loadDividendsPage, loadTradesPage } from './holdingActions';
 import {
   type CorporateActionRowModel,
   type DividendRowModel,
-  type HoldingTab,
-  holdingTabHref,
+  type HoldingSection,
   type InstrumentRow,
-  priceDescription,
-  type PriceRowModel,
   sellLine,
   type TradeRow,
 } from './holdingModel';
-import { PriceDialog, type PriceDialogTarget } from './PriceDialog';
-import { checkQuantity, quantityStep, sellFigures, taxFreeQuantity } from './sellMath';
+import { checkQuantity, quantityStep, sanitizeQuantityInput, sellFigures, taxFreeQuantity } from './sellMath';
+import { useSectionPage } from './useSectionPage';
 
 function LinkAction({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
@@ -47,8 +40,7 @@ function LinkAction({ onClick, children }: { onClick: () => void; children: Reac
   );
 }
 
-function SectionPager({ instrumentId, tab, position }: { instrumentId: string; tab: HoldingTab; position: PagePosition }) {
-  const router = useRouter();
+function SectionPager({ position, onPageChange }: { position: PagePosition; onPageChange: (page: number) => void }) {
   return (
     <Pager
       variant="compact"
@@ -56,7 +48,7 @@ function SectionPager({ instrumentId, tab, position }: { instrumentId: string; t
       size={position.size}
       totalElements={position.totalElements}
       totalPages={position.totalPages}
-      onPageChange={(page) => router.push(holdingTabHref(instrumentId, tab, page), { scroll: false })}
+      onPageChange={onPageChange}
     />
   );
 }
@@ -117,25 +109,23 @@ const tradeColumns = [
 
 export interface TradesCardProps {
   instrumentId: string;
-  tab: HoldingTab;
-  rows: TradeRow[];
-  position: PagePosition;
+  /** The first page, as the server rendered it. */
+  initial: HoldingSection<TradeRow>;
   /** "3 lots · FIFO". */
   subtitle?: string;
   onRecord: () => void;
 }
 
-export function TradesCard({ instrumentId, tab, rows, position, subtitle, onRecord }: TradesCardProps) {
-  const showPager = tab === 'trades';
-  const pager = showPager ? <SectionPager instrumentId={instrumentId} tab="trades" position={position} /> : undefined;
+export function TradesCard({ instrumentId, initial, subtitle, onRecord }: TradesCardProps) {
+  const { section, goTo } = useSectionPage(initial, (page) => loadTradesPage(instrumentId, page));
   return (
     <Card title="Trades" subtitle={subtitle} action={<LinkAction onClick={onRecord}>Record trade</LinkAction>}>
       <DataTable
         columns={tradeColumns}
-        data={rows}
+        data={section.rows}
         getRowId={(row) => row.id}
         phoneSub={(row) => <Text variant="label" tone="ink-3" truncate><Conceal>{row.phoneSub}</Conceal></Text>}
-        pager={pager}
+        pager={<SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />}
         empty={<EmptyState compact description="No trades recorded for this holding." />}
         stickyHeader={false}
       />
@@ -195,7 +185,7 @@ export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate;
             inputMode="decimal"
             placeholder="Quantity"
             value={text}
-            onValueChange={setText}
+            onValueChange={(v) => setText(sanitizeQuantityInput(v, assetType))}
             helper={typed && !typed.ok ? `Up to ${quantity(estimate.quantity)} ${unit}` : undefined}
           />
           {typedEstimate ? (
@@ -213,22 +203,20 @@ export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate;
 
 export function DividendsCard({
   instrumentId,
-  tab,
-  rows,
-  position,
+  initial,
   onRecord,
 }: {
   instrumentId: string;
-  tab: HoldingTab;
-  rows: DividendRowModel[];
-  position: PagePosition;
+  initial: HoldingSection<DividendRowModel>;
   onRecord: () => void;
 }) {
+  const { section, goTo } = useSectionPage(initial, (page) => loadDividendsPage(instrumentId, page));
+  const pager = <SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />;
   return (
     <Card title="Dividends" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
-      {tab === 'dividends' ? <SectionPager instrumentId={instrumentId} tab="dividends" position={position} /> : null}
-      {rows.length === 0 ? <EmptyState compact description="No dividends recorded for this holding." /> : null}
-      {rows.map((r) => (
+      {section.rows.length > 0 ? pager : null}
+      {section.rows.length === 0 ? <EmptyState compact description="No dividends recorded for this holding." /> : null}
+      {section.rows.map((r) => (
         <ListRow
           key={r.id}
           title={r.title}
@@ -237,18 +225,30 @@ export function DividendsCard({
           trailing={<Text variant="body-strong" tone="positive"><Conceal>{r.amount}</Conceal></Text>}
         />
       ))}
-      {tab === 'dividends' && rows.length > 0 ? <SectionPager instrumentId={instrumentId} tab="dividends" position={position} /> : null}
+      {section.rows.length > 0 ? pager : null}
     </Card>
   );
 }
 
-export function CorporateActionsCard({ rows, onRecord }: { rows: CorporateActionRowModel[]; onRecord: () => void }) {
+export function CorporateActionsCard({
+  instrumentId,
+  initial,
+  onRecord,
+}: {
+  instrumentId: string;
+  initial: HoldingSection<CorporateActionRowModel>;
+  onRecord: () => void;
+}) {
+  const { section, goTo } = useSectionPage(initial, (page) => loadCorporateActionsPage(instrumentId, page));
+  const pager = <SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />;
   return (
     <Card title="Corporate actions" subtitle="Recorded for this holding" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
-      {rows.length === 0 ? <EmptyState compact description="No corporate actions recorded for this holding." /> : null}
-      {rows.map((r) => (
+      {section.rows.length > 0 ? pager : null}
+      {section.rows.length === 0 ? <EmptyState compact description="No corporate actions recorded for this holding." /> : null}
+      {section.rows.map((r) => (
         <ListRow key={r.id} title={r.title} subtitle={r.subtitle} wrap />
       ))}
+      {section.rows.length > 0 ? pager : null}
     </Card>
   );
 }
@@ -262,81 +262,5 @@ export function InstrumentCard({ rows, onEdit }: { rows: InstrumentRow[]; onEdit
         <ListRow key={r.label} title={r.label} trailing={<Text variant="body">{r.value}</Text>} />
       ))}
     </Card>
-  );
-}
-
-// ---- Price history ----------------------------------------------------------------------------
-
-export interface PriceHistoryCardProps {
-  instrumentId: string;
-  name: string;
-  tab: HoldingTab;
-  rows: PriceRowModel[];
-  position: PagePosition;
-}
-
-/** The newest prices first. Only the user's own manual prices carry Edit and Delete. */
-export function PriceHistoryCard({ instrumentId, name, tab, rows, position }: PriceHistoryCardProps) {
-  const router = useRouter();
-  const { deletePrice } = usePriceMutations(instrumentId);
-  const [editing, setEditing] = React.useState<PriceDialogTarget | null>(null);
-  const [deleting, setDeleting] = React.useState<PriceRowModel | null>(null);
-
-  const confirmDelete = async () => {
-    const row = deleting;
-    if (!row?.id) return;
-    try {
-      await deletePrice.mutateAsync(row.id);
-      showToast('Price entry deleted');
-      setDeleting(null);
-      router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete the price'), { tone: 'danger' });
-    }
-  };
-
-  return (
-    <>
-      <Card title="Price history" subtitle="Newest first · only your manual prices can change">
-        {tab === 'prices' ? <SectionPager instrumentId={instrumentId} tab="prices" position={position} /> : null}
-        {rows.length === 0 ? <EmptyState compact description="No prices recorded yet." /> : null}
-        {rows.map((r) => (
-          <ListRow
-            key={r.id ?? `${r.asOf}-${r.source}`}
-            title={r.time ? `${r.date}, ${r.time}` : r.date}
-            subtitle={r.source}
-            trailing={
-              <span className="flex items-center gap-space-8">
-                <Text variant="body-strong"><Conceal>{r.amount}</Conceal></Text>
-                {r.editable ? (
-                  <>
-                    <Button variant="secondary" size="sm" onClick={() => setEditing({ kind: 'edit', row: r })}>
-                      Edit
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => setDeleting(r)}>
-                      Delete
-                    </Button>
-                  </>
-                ) : null}
-              </span>
-            }
-          />
-        ))}
-        {tab === 'prices' && rows.length > 0 ? <SectionPager instrumentId={instrumentId} tab="prices" position={position} /> : null}
-      </Card>
-      {editing ? <PriceDialog instrumentId={instrumentId} name={name} target={editing} onClose={() => setEditing(null)} /> : null}
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open && !deletePrice.isPending) setDeleting(null);
-        }}
-        title="Delete manual price"
-        description={deleting ? `Delete your manual price of ${priceDescription(deleting)}?` : ''}
-        impact={['Only this price is deleted.', 'Your trades and the other prices stay.']}
-        confirmLabel="Delete price"
-        confirmLoading={deletePrice.isPending}
-        onConfirm={() => void confirmDelete()}
-      />
-    </>
   );
 }

@@ -83,5 +83,21 @@ for (const viewport of VIEWPORTS) {
       const action = page.getByRole('dialog', { name: 'Record corporate action' });
       await expect(action.getByRole('combobox', { name: /Instrument/ })).toContainText(seeded.infy.symbol);
     });
+
+    test('a holding page + opens a menu with every record option, each opening its dialog', async ({ page }) => {
+      await page.goto(`/investments/${seeded.infy.id}`);
+      for (const [item, dialog] of [
+        ['Record trade', 'Record trade'],
+        ['Record dividend', 'Record dividend'],
+        ['Record corporate action', 'Record corporate action'],
+        ['Record price', 'Set manual price'],
+      ]) {
+        await plus(page).click();
+        await page.getByRole('menuitem', { name: item }).click();
+        await expect(page.getByRole('dialog', { name: dialog })).toBeVisible();
+        await page.getByRole('button', { name: 'Cancel' }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+      }
+    });
   });
 }

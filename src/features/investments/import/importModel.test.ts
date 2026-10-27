@@ -69,9 +69,9 @@ describe('import model: executions', () => {
 
   it('builds the row words and figures', () => {
     const row = executionRow(execution());
-    expect(row).toMatchObject({ id: '1', date: '11 Mar 26', side: 'Buy', settlement: 'Delivery', symbol: 'ZOMATO', scrip: 'INE758T01015 • NSE', qtyPrice: '100 × ₹214.60', total: '₹21,460.00' });
+    expect(row).toMatchObject({ id: '1', date: '11 Mar 26', side: 'Buy', settlement: 'CNC', symbol: 'ZOMATO', scrip: 'INE758T01015 • NSE', qtyPrice: '100 × ₹214.60', total: '₹21,460.00' });
     expect(executionRow(execution({ type: 'sell', settlementType: 'intraday', isin: undefined })).scrip).toBe('NSE');
-    expect(executionRow(execution({ type: 'sell', settlementType: 'intraday' }))).toMatchObject({ side: 'Sell', settlement: 'Intraday' });
+    expect(executionRow(execution({ type: 'sell', settlementType: 'intraday' }))).toMatchObject({ side: 'Sell', settlement: 'MIS' });
   });
 
   it('starts duplicates skipped and everything else included', () => {

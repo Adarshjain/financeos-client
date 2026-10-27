@@ -58,8 +58,8 @@ const SIDES = [
 ];
 
 const SETTLEMENTS: SelectOption[] = [
-  { value: 'delivery', label: 'Delivery' },
-  { value: 'intraday', label: 'Intraday' },
+  { value: 'delivery', label: 'CNC' },
+  { value: 'intraday', label: 'MIS' },
 ];
 
 const FORM_ID = 'trade-form';
