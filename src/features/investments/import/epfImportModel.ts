@@ -84,6 +84,8 @@ export interface EpfReviewRow {
   period: string;
   particulars: string;
   detail: string;
+  /** For an opening balance that disagrees with the user's entries: both figures; '' otherwise. */
+  mismatch: string;
   /** The entry's total (phone), then each share as the EPF passbook draws it (desktop). */
   amount: string;
   employee: string;
@@ -106,11 +108,16 @@ export function epfRow(r: EpfPreviewRow): EpfReviewRow {
   const sign = (n: number) => (r.type === 'OPENING_BALANCE' ? rupees(n) : out ? `−${rupees(n)}` : `+${rupees(n)}`);
   const total = pensionOnly ? r.pensionAmount : r.employeeAmount + r.employerAmount;
   const dash = '—';
+  const mismatch =
+    r.type === 'OPENING_BALANCE' && r.computedEmployeeAmount != null && r.computedEmployerAmount != null
+      ? `Your entries come to ${rupees(r.computedEmployeeAmount + r.computedEmployerAmount)}, EPFO says ${rupees(r.employeeAmount + r.employerAmount)}`
+      : '';
   return {
     id: String(r.index),
     period,
     particulars: (named && r.particulars) || TYPE_WORDS[r.type],
     detail: [kind, named && r.particulars ? TYPE_WORDS[r.type] : ''].filter(Boolean).join(' · '),
+    mismatch,
     amount: out ? rupees(-total) : rupees(total),
     employee: pensionOnly ? dash : sign(r.employeeAmount),
     employer: pensionOnly ? dash : sign(r.employerAmount),
@@ -126,7 +133,19 @@ export function countsLine(p: EpfPreview): string {
   if (p.newCount > 0) parts.push(`${p.newCount} new`);
   if (p.replacesCount > 0) parts.push(p.replacesCount === 1 ? '1 replaces an entry you added' : `${p.replacesCount} replace entries you added`);
   if (p.existsCount > 0) parts.push(p.existsCount === 1 ? '1 is already here' : `${p.existsCount} are already here`);
-  return `${total} ${total === 1 ? 'entry' : 'entries'} in this passbook${parts.length ? `: ${parts.join(', ')}` : ''}.`;
+  const line = `${total} ${total === 1 ? 'entry' : 'entries'} in this passbook${parts.length ? `: ${parts.join(', ')}` : ''}.`;
+  const n = p.matchedOpeningCount;
+  if (n <= 0) return line;
+  return `${line} ${n === 1 ? '1 opening balance matches your entries, so it is not imported.' : `${n} opening balances match your entries, so they are not imported.`}`;
+}
+
+/** The section warning for opening balances that disagree with the user's entries; '' when none do. */
+export function mismatchLine(p: EpfPreview): string {
+  const n = p.rows.filter((r) => r.type === 'OPENING_BALANCE' && r.computedEmployeeAmount != null && r.computedEmployerAmount != null).length;
+  if (n === 0) return '';
+  return n === 1
+    ? "1 opening balance does not match your entries. Importing keeps EPFO's figure as a correction."
+    : `${n} opening balances do not match your entries. Importing keeps EPFO's figures as corrections.`;
 }
 
 export const PENSION_NOTE = 'Pension figures are kept but not added to the balance.';

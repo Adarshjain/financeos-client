@@ -5563,6 +5563,8 @@ export interface components {
             /** Format: int32 */
             existsCount: number;
             /** Format: int32 */
+            matchedOpeningCount: number;
+            /** Format: int32 */
             newCount: number;
             /** Format: int32 */
             replacesCount: number;
@@ -5590,6 +5592,8 @@ export interface components {
             throughMonth?: string | null;
         };
         EpfImportRow: {
+            computedEmployeeAmount?: number | null;
+            computedEmployerAmount?: number | null;
             /** Format: date */
             creditedOn: string;
             employeeAmount: number;

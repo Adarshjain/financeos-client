@@ -12,6 +12,7 @@ import {
   type EpfReviewRow,
   epfRow,
   type EpfSection,
+  mismatchLine,
   NEW_EMPLOYER,
   PENSION_NOTE,
   refusedItem,
@@ -51,6 +52,11 @@ const columns = [
         {row.original.detail ? (
           <Text variant="label" tone="ink-3" as="div">
             {row.original.detail}
+          </Text>
+        ) : null}
+        {row.original.mismatch ? (
+          <Text variant="label" tone="warning" as="div">
+            {row.original.mismatch}
           </Text>
         ) : null}
       </>
@@ -125,6 +131,7 @@ function EpfSectionBlock({ epf, section }: { epf: ReturnType<typeof useEpfImport
           {preview.unrecognisedLines > 0 ? (
             <Banner tone="warning">{`${preview.unrecognisedLines} ${preview.unrecognisedLines === 1 ? 'line' : 'lines'} in the passbook could not be read and will not be imported.`}</Banner>
           ) : null}
+          {mismatchLine(preview) ? <Banner tone="warning">{mismatchLine(preview)}</Banner> : null}
         </div>
       </Card>
       <Card>
