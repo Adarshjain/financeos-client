@@ -31,8 +31,15 @@ export function ImportTradebookScreen({ brokers, initialMode }: { brokers: Broke
   const wizard = useImportWizard({ brokerAccounts: brokers, notify: dineroImportNotify, initialMode });
   const epf = useEpfImport(dineroImportNotify);
   const { mode } = wizard;
-  if (mode === 'epf_passbook') return <EpfScreen wizard={wizard} epf={epf} />;
-  return <TradebookScreen brokers={brokers} wizard={wizard} />;
+  // A new import type starts clean: no files, preview or result from the one before.
+  const changeMode = (next: ImportMode) => {
+    if (next === mode) return;
+    wizard.resetWizard();
+    epf.reset();
+    wizard.setMode(next);
+  };
+  if (mode === 'epf_passbook') return <EpfScreen wizard={wizard} epf={epf} onModeChange={changeMode} />;
+  return <TradebookScreen brokers={brokers} wizard={wizard} onModeChange={changeMode} />;
 }
 
 type Wizard = ReturnType<typeof useImportWizard>;
@@ -49,7 +56,7 @@ function RefreshWhenDone() {
 }
 
 /** The EPFO passbook import: the PDFs, their entries, and the result. */
-function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof useEpfImport> }) {
+function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnType<typeof useEpfImport>; onModeChange: (mode: ImportMode) => void }) {
   const { step, isPreviewing, isCommitting, preview, result } = epf;
   const importable = preview ? importableTotal(preview.sections) : 0;
   const nothingNew = importable === 0;
@@ -64,8 +71,8 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
           </div>
         </Card>
 
-        {step === 1 ? <EpfUploadStep epf={epf} mode={wizard.mode} onModeChange={wizard.setMode} /> : null}
-        {step === 2 ? <EpfReviewStep epf={epf} mode={wizard.mode} onModeChange={wizard.setMode} /> : null}
+        {step === 1 ? <EpfUploadStep epf={epf} mode={wizard.mode} onModeChange={onModeChange} /> : null}
+        {step === 2 ? <EpfReviewStep epf={epf} mode={wizard.mode} onModeChange={onModeChange} /> : null}
         {step === 3 && result ? (
           <>
             <RefreshWhenDone />
@@ -111,7 +118,7 @@ function EpfScreen({ wizard, epf }: { wizard: Wizard; epf: ReturnType<typeof use
   );
 }
 
-function TradebookScreen({ brokers, wizard }: { brokers: Broker[]; wizard: Wizard }) {
+function TradebookScreen({ brokers, wizard, onModeChange }: { brokers: Broker[]; wizard: Wizard; onModeChange: (mode: ImportMode) => void }) {
   const { step, mode, isPreviewing, isCommitting, commitResult } = wizard;
   const blocked = (mode === 'mf_cas' ? wizard.casUnresolvedCount : wizard.unresolvedCount) > 0;
   const router = useRouter();
@@ -125,7 +132,7 @@ function TradebookScreen({ brokers, wizard }: { brokers: Broker[]; wizard: Wizar
           </div>
         </Card>
 
-        {step === 1 ? <UploadStep wizard={wizard} brokers={brokers} /> : null}
+        {step === 1 ? <UploadStep wizard={wizard} brokers={brokers} onModeChange={onModeChange} /> : null}
         {step === 2 ? <ReviewStep wizard={wizard} /> : null}
         {step === 3 && commitResult ? <ResultStep result={commitResult} brokerName={wizard.selectedBrokerName} /> : null}
 

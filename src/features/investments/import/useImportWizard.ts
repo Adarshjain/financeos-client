@@ -50,6 +50,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
   const {
     open,
     handleOpenChange,
+    resetWizard,
     step,
     setStep,
     mode,
@@ -227,6 +228,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
   return {
     open,
     handleOpenChange,
+    resetWizard,
     step,
     setStep,
     mode,

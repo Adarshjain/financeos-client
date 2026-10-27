@@ -34,7 +34,8 @@ const addFiles = (current: File[], added: File[]) => [
 ];
 
 /** Step 1: broker, target account and scope, then the files that kind of import takes. */
-export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broker[] }) {
+/** `onModeChange` switches the import type; the page clears what the previous type left behind. */
+export function UploadStep({ wizard, brokers, onModeChange }: { wizard: Wizard; brokers: Broker[]; onModeChange: (mode: ImportMode) => void }) {
   const { mode, assetScope, brokerAccountId, isPreviewing } = wizard;
   const fnoOnly = isFnoOnly(mode, assetScope);
   const reconcile = mode === 'reconcile_zerodha' || mode === 'reconcile_groww';
@@ -50,7 +51,7 @@ export function UploadStep({ wizard, brokers }: { wizard: Wizard; brokers: Broke
               label="Broker / import type"
               options={MODE_OPTIONS}
               value={mode}
-              onValueChange={(v) => wizard.setMode(v as ImportMode)}
+              onValueChange={(v) => onModeChange(v as ImportMode)}
               disabled={isPreviewing}
             />
             <AccountPicker
