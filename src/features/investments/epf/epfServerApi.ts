@@ -4,9 +4,8 @@ import type { EpfEmployer, EpfEntry, EpfSummary } from './epfModel';
 
 // The fetch helpers of the EPF page. The page imports these (never apiClient directly), so a test replaces one module.
 
-/** The figures for one employer (every employer when none is given) and one FY (every year when none is given). */
-export function fetchEpfSummary(params: { employerId?: string; fy?: number } = {}): Promise<EpfSummary> {
-  return epfApi.summary({ employerId: params.employerId, fy: params.fy, allYears: params.fy === undefined });
+export function fetchEpfSummary(): Promise<EpfSummary> {
+  return epfApi.summary();
 }
 
 export function fetchEpfEmployers(): Promise<EpfEmployer[]> {
