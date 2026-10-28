@@ -49,6 +49,7 @@ export interface UpdateLoanRequest {
   lender?: string;
   loanAccountNumber?: string;
   paymentAccountId?: string;
+  clearPaymentAccount?: boolean;
   principal?: number;
   annualRatePct?: number;
   rateType?: RateType;

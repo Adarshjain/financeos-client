@@ -58,7 +58,7 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
     try {
-      await updateLoan.mutateAsync({ id: loan.id, body: buildUpdateLoanRequest(resolved) });
+      await updateLoan.mutateAsync({ id: loan.id, body: buildUpdateLoanRequest(resolved, !!loan.paymentAccountId) });
       showToast('Loan updated successfully');
       onClose();
       router.refresh();

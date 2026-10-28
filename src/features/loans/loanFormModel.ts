@@ -133,15 +133,20 @@ export function buildCreateLoanRequest(v: LoanFormValues): CreateLoanRequest {
   };
 }
 
-/** The PUT /loans/{id} body: blank figures are left out so the server keeps them. */
-export function buildUpdateLoanRequest(v: LoanFormValues): UpdateLoanRequest {
+/**
+ * The PUT /loans/{id} body: blank figures are left out so the server keeps them.
+ * `hadPaymentAccount` = the loan being edited has one; emptying it then sends `clearPaymentAccount`.
+ */
+export function buildUpdateLoanRequest(v: LoanFormValues, hadPaymentAccount = false): UpdateLoanRequest {
+  const payment = paymentAccount(v.paymentAccountId);
   return {
     name: v.name.trim(),
     lender: v.lender.trim(),
     loanType: v.loanType,
     rateType: v.rateType,
     loanAccountNumber: v.loanAccountNumber.trim() || undefined,
-    paymentAccountId: paymentAccount(v.paymentAccountId),
+    paymentAccountId: payment,
+    clearPaymentAccount: !payment && hadPaymentAccount ? true : undefined,
     principal: v.principal ? Number(v.principal) : undefined,
     annualRatePct: v.annualRatePct ? Number(v.annualRatePct) : undefined,
     tenureMonths: v.tenureMonths ? Number(v.tenureMonths) : undefined,
