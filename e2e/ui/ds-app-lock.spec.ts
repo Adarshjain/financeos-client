@@ -195,6 +195,31 @@ test.describe('/ds app lock (@ui)', () => {
     await expect(page).toHaveURL(/\/loans$/);
   });
 
+  test('turning app lock off asks for Face ID again', async ({ page }) => {
+    await turnOn(page);
+    // The passkey calls go through server actions, so the browser sees no app-lock request to wait for.
+    await toggle(page).click();
+    await expect(toggle(page)).toHaveAttribute('aria-checked', 'false');
+    const status = await page.request.get(`${E2E_CLIENT_URL}/api/v1/app-lock/status`);
+    expect((await status.json()).armed).toBe(false);
+  });
+
+  test('turning off with a Face ID that fails keeps app lock on', async ({ page }) => {
+    await turnOn(page);
+    // The virtual authenticator refuses the prompt itself, like a dismissed Face ID: no toast, still on.
+    await authenticator.setUserVerified(false);
+    await toggle(page).click();
+    await expect(toggle(page)).toBeEnabled();
+    await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
+    await expect(toggle(page)).toBeEnabled();
+    const status = await page.request.get(`${E2E_CLIENT_URL}/api/v1/app-lock/status`);
+    expect((await status.json()).armed).toBe(true);
+
+    await authenticator.setUserVerified(true);
+    await toggle(page).click();
+    await expect(toggle(page)).toHaveAttribute('aria-checked', 'false');
+  });
+
   test('with app lock off there are no heartbeat requests; with it on there are', async ({ page }) => {
     const heartbeats: string[] = [];
     page.on('request', (r) => {

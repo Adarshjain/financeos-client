@@ -6,8 +6,15 @@ import { Card, ListRow, Select, showToast, Switch, Text } from '@/components/ds'
 import type { AppLockStatus } from '@/lib/api/types';
 import { APP_LOCK_CHANGED_EVENT, notifyIfAppLocked } from '@/lib/appLock';
 
-import { disableAppLock, finishEnrolment, startEnrolment, updateLockAfter } from './actions';
-import { credentialToJSON, hostMatchesRp, isCancelled, isPlatformAuthAvailable, toCreationOptions } from './webauthn';
+import { disableAppLock, finishEnrolment, startEnrolment, startUnlock, updateLockAfter } from './actions';
+import {
+  credentialToJSON,
+  hostMatchesRp,
+  isCancelled,
+  isPlatformAuthAvailable,
+  toCreationOptions,
+  toRequestOptions,
+} from './webauthn';
 
 const LOCK_AFTER_OPTIONS = [
   { value: '0', label: 'Immediately' },
@@ -78,10 +85,21 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
   };
 
   const turnOff = async () => {
-    const done = seen(await disableAppLock());
-    if (!done.success) return showToast(done.error.message, { tone: 'danger' });
-    setArmed(false);
-    announce();
+    // Turning the lock off asks for the passkey again, so a borrowed unlocked phone cannot drop it.
+    const started = seen(await startUnlock());
+    if (!started.success) return showToast(started.error.message, { tone: 'danger' });
+    try {
+      const credential = (await navigator.credentials.get({
+        publicKey: toRequestOptions(started.data),
+      })) as PublicKeyCredential | null;
+      if (!credential) return;
+      const done = seen(await disableAppLock(credentialToJSON(credential)));
+      if (!done.success) return showToast(done.error.message, { tone: 'danger' });
+      setArmed(false);
+      announce();
+    } catch (e) {
+      if (!isCancelled(e)) showToast('Could not turn off app lock', { tone: 'danger' });
+    }
   };
 
   const onToggle = async (next: boolean) => {

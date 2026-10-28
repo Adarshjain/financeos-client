@@ -420,8 +420,8 @@ export const appLockApi = {
   updateSettings: async (lockAfterSeconds: number): Promise<void> => {
     await serverApi.PATCH('/api/v1/app-lock/settings', { body: { lockAfterSeconds } });
   },
-  disable: async (): Promise<void> => {
-    await serverApi.DELETE('/api/v1/app-lock');
+  disable: async (credential: unknown): Promise<void> => {
+    await serverApi.POST('/api/v1/app-lock/disable', { body: { credential } });
   },
   unlockOptions: async (): Promise<WebAuthnOptionsJson> => {
     const { data } = await serverApi.POST('/api/v1/app-lock/unlock/options');

@@ -52,8 +52,8 @@ export const updateLockAfter = createDomainAction(
 
 export const disableAppLock = createDomainAction(
   { fallbackError: 'Could not turn off app lock' },
-  async (): Promise<void> => {
-    await appLockApi.disable();
+  async (credential: unknown): Promise<void> => {
+    await appLockApi.disable(credential);
     await clearDeviceCookie();
   },
 );
