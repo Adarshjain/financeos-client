@@ -164,6 +164,22 @@ describe('EpfView: the passbook', () => {
     expect(screen.getAllByText('₹4,10,920').length).toBeGreaterThan(0);
   });
 
+  it("splits a contribution on the phone line between you and the employer, by name", () => {
+    renderWithQuery(<EpfView {...props()} />);
+    expect(screen.getAllByText('You ₹7,200 ·')[0].parentElement).toHaveTextContent(/^You ₹7,200 ·\s*Northwind Labs\s*₹5,950$/);
+  });
+
+  it('hides the amounts on the phone lines when amounts are hidden', () => {
+    renderWithQuery(
+      <ConcealProvider concealed>
+        <EpfView {...props({}, [entry(), withdrawal()])} />
+      </ConcealProvider>,
+    );
+    expect(screen.queryByText('You ₹7,200 ·')).toBeNull();
+    expect(screen.getAllByText('You ₹ — ·').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/^Withdrawal · You ₹25,000/)).toBeNull();
+  });
+
   it('draws transfers and withdrawals in the passbook', () => {
     const list = [withdrawal(), transferIn()];
     renderWithQuery(<EpfView {...props({}, list)} />);

@@ -4,19 +4,24 @@ import { Conceal, KpiTile, Text } from '@/components/ds';
 
 import type { EpfFigures } from './epfModel';
 
-/** The phone's headline, like the other Investments tabs: the balance, then contributed this FY and interest so far side by side, then the last interest line. Desktop shows tiles instead. */
+/** The phone's headline, like the other Investments tabs: the balance (no label), then contributed this FY and interest so far side by side, then the last interest line. Desktop shows tiles instead. */
 export function EpfHero({ figures }: { figures: EpfFigures }) {
   const { balance, contributed, interest, lastInterest } = figures;
   const pair = [
-    { label: 'Contributed this FY', value: contributed.value, context: contributed.phoneContext },
-    { label: 'Interest so far', value: interest.value, context: interest.context.split(' · ')[0] },
+    {
+      label: 'Contributed this FY',
+      value: contributed.value,
+      context: contributed.phoneContext,
+    },
+    {
+      label: 'Interest so far',
+      value: interest.value,
+      context: interest.context.split(' · ')[0],
+    },
   ];
   return (
     <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
       <div className="flex flex-col gap-space-2">
-        <Text variant="label" tone="ink-3" as="div">
-          EPF balance
-        </Text>
         <Text variant="hero-figure" family="display" as="div">
           <Conceal>{balance.value}</Conceal>
         </Text>
@@ -65,7 +70,12 @@ export function EpfTiles({ figures }: { figures: EpfFigures }) {
   return (
     <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
       {tiles.map((tile) => (
-        <KpiTile key={tile.label} label={tile.label} value={tile.value} context={tile.context || undefined} />
+        <KpiTile
+          key={tile.label}
+          label={tile.label}
+          value={tile.value}
+          context={tile.context || undefined}
+        />
       ))}
     </div>
   );

@@ -49,11 +49,11 @@ for (const viewport of VIEWPORTS) {
   test.describe(`/ds EPF, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
     let api: ReturnType<typeof makeApi>;
-    /** A contribution row: its source in the particulars cell on desktop; on phone (no source shown) the month's split line, "You ₹… · employer ₹…". */
+    /** A contribution row: its source in the particulars cell on desktop; on phone (no source shown) the start of the month's split line, "You ₹… · <employer> ₹…". */
     const contribution = (page: Page, source: 'Added by you' | 'Passbook') =>
       shown(
         viewport.width < 641
-          ? page.getByText(/^You ₹[\d,]+ · employer ₹[\d,]+/)
+          ? page.getByText(/^You ₹[\d,]+ ·$/)
           : page.getByRole('cell').getByText(source, { exact: true }),
       );
 
@@ -116,7 +116,8 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toHaveCount(0);
       await expect(toast(page, 'Entry added')).toBeVisible();
 
-      await expect(shown(page.getByText('EPF balance', { exact: true }))).toBeVisible();
+      // The phone hero shows the balance without a label; desktop's tile names it.
+      if (viewport.width >= 641) await expect(shown(page.getByText('EPF balance', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('₹5,00,000'))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(shown(page.getByText('Hand Added Labs'))).toBeVisible();
@@ -133,7 +134,11 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('₹5,13,150'))).toBeVisible();
       await expect(contribution(page, 'Added by you')).toBeVisible();
       // The month's split: one column per share on desktop, one line on phone.
-      await expect(shown(page.getByText(viewport.width < 641 ? 'You ₹7,200 · employer ₹5,950' : '+₹5,950', { exact: true }))).toBeVisible();
+      if (viewport.width < 641) {
+        await expect(shown(page.getByText('You ₹7,200 ·', { exact: true })).locator('..')).toHaveText(/^You ₹7,200 ·\s*Hand Added Labs\s*₹5,950$/);
+      } else {
+        await expect(shown(page.getByText('+₹5,950', { exact: true }))).toBeVisible();
+      }
       // Pension is kept, not added to the balance.
       await expect(shown(page.getByText('Contributed this FY'))).toBeVisible();
 
