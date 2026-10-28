@@ -117,13 +117,14 @@ describe('passbook rows', () => {
       pension: '₹1,250',
       balance: '₹8,43,210',
       phoneTitle: 'Sep 2026',
-      phoneSub: 'You ₹7,200 · employer ₹5,950',
+      phoneSub: 'You ₹7,200 · Northwind Labs ₹5,950',
+      split: { you: '₹7,200', employerName: 'Northwind Labs', employer: '₹5,950' },
       amount: '+₹13,150',
       amountSub: '₹8,43,210',
     });
     expect(r).not.toHaveProperty('credited');
-    expect(epfRow(manualContribution())).toMatchObject({ title: 'Added by you', phoneSub: 'You ₹7,200 · employer ₹5,950' });
-    expect(epfRow(entry({ pensionAmount: 0 }))).toMatchObject({ pension: '—', phoneSub: 'You ₹7,200 · employer ₹5,950' });
+    expect(epfRow(manualContribution())).toMatchObject({ title: 'Added by you', phoneSub: 'You ₹7,200 · Northwind Labs ₹5,950' });
+    expect(epfRow(entry({ pensionAmount: 0 }))).toMatchObject({ pension: '—', phoneSub: 'You ₹7,200 · Northwind Labs ₹5,950' });
     expect(epfRow(entry({ wageMonth: null }))).toMatchObject({ wageMonth: '—', phoneTitle: 'Passbook' });
   });
 

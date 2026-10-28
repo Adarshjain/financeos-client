@@ -216,6 +216,8 @@ export interface EpfRow {
   /** Phone title and line. */
   phoneTitle: string;
   phoneSub: string;
+  /** A contribution's phone line in parts, so a long employer name truncates and the amounts stay: "You ₹7,200 · Acme Labs ₹5,950". */
+  split?: { you: string; employerName: string; employer: string };
   employee: string;
   employer: string;
   pension: string;
@@ -252,7 +254,8 @@ export function epfRow(e: EpfEntry): EpfRow {
         title: source,
         phoneTitle: monthYear(e.wageMonth) || source,
         // The month's split on phone, on one line beside the balance; pension is not in the amount, so it stays on desktop and in the entry.
-        phoneSub: `You ${rupees(e.employeeAmount)} · employer ${rupees(e.employerAmount)}`,
+        phoneSub: `You ${rupees(e.employeeAmount)} · ${e.employerName} ${rupees(e.employerAmount)}`,
+        split: { you: rupees(e.employeeAmount), employerName: e.employerName, employer: rupees(e.employerAmount) },
         employee: money(e.employeeAmount, '+'),
         employer: money(e.employerAmount, '+'),
         pension,

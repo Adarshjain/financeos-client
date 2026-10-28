@@ -229,11 +229,25 @@ export function EpfPassbookCard({
           data={rows}
           getRowId={(row) => row.id}
           pager={pager}
-          phoneSub={(row) => (
-            <Text variant="label" tone="ink-3" as="div">
-              {row.phoneSub}
-            </Text>
-          )}
+          phoneSub={(row) =>
+            row.split ? (
+              <div className="flex min-w-0 gap-space-4">
+                <Text variant="label" tone="ink-3" className="shrink-0">
+                  <Conceal>{`You ${row.split.you} ·`}</Conceal>
+                </Text>
+                <Text variant="label" tone="ink-3" truncate>
+                  {row.split.employerName}
+                </Text>
+                <Text variant="label" tone="ink-3" className="shrink-0">
+                  <Conceal>{row.split.employer}</Conceal>
+                </Text>
+              </div>
+            ) : (
+              <Text variant="label" tone="ink-3" as="div">
+                <Conceal>{row.phoneSub}</Conceal>
+              </Text>
+            )
+          }
           onRowSelect={(row) => onOpen(row.id)}
           empty={
             <EmptyState compact description="No entries in this period." />
