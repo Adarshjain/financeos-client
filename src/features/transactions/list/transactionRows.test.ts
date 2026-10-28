@@ -134,3 +134,15 @@ describe('grouping', () => {
     expect(dayHeader(row, false)).toBeNull();
   });
 });
+
+describe("Doesn't match bank", () => {
+  it('adds the word when bankBalance is set, after the other amber words', () => {
+    expect(transactionRow(t({ bankBalance: 144.86 }), ctx).reviewStatus).toBe("Doesn't match bank");
+    expect(reviewWords(t({ bankBalance: 1, reviewType: 'NEEDS_REVIEW' }))).toBe("Needs review · Doesn't match bank");
+  });
+  it('is absent when bankBalance is null or missing, and on an excluded row', () => {
+    expect(reviewWords(t({ bankBalance: null }))).toBeUndefined();
+    expect(reviewWords(t())).toBeUndefined();
+    expect(reviewWords(t({ bankBalance: 144.86, isTransactionExcluded: true }))).toBeUndefined();
+  });
+});

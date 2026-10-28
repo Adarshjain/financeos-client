@@ -107,6 +107,14 @@ export function balanceAfterWords(t: Transaction): string | null {
   return t.balance != null ? `${t.balance < 0 ? '-' : ''}₹${formatAmount(Math.abs(t.balance), 0)} after` : null;
 }
 
+/** "Bank says ₹144.86 · differs by ₹144.02", or null when the running balance matches the bank's. */
+export function bankBalanceWords(t: Transaction): string | null {
+  if (t.bankBalance == null) return null;
+  const bank = `${t.bankBalance < 0 ? '-' : ''}${rupees(t.bankBalance)}`;
+  const diff = t.balance != null ? ` · differs by ${rupees(t.bankBalance - t.balance)}` : '';
+  return `Bank says ${bank}${diff}`;
+}
+
 // ---- Links ----------------------------------------------------------------
 
 export type LinkRow =

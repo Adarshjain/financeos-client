@@ -4,6 +4,7 @@ import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.typ
 
 import {
   balanceAfterWords,
+  bankBalanceWords,
   cardWords,
   deleteImpact,
   linkRows,
@@ -166,5 +167,21 @@ describe('deleteImpact', () => {
     );
     expect(impact.some((l) => l.startsWith('1 linked record stays'))).toBe(true);
     expect(impact.at(-1)).toBe('This is not a manually created transaction. It is discouraged to delete this.');
+  });
+});
+
+describe('bankBalanceWords', () => {
+  it('is null when the balance matches the bank', () => {
+    expect(bankBalanceWords(txn({ balance: 100, bankBalance: null }))).toBeNull();
+    expect(bankBalanceWords(txn({ balance: 100 }))).toBeNull();
+  });
+
+  it('gives the bank figure and the difference for a bank account', () => {
+    expect(bankBalanceWords(txn({ balance: 288.88, bankBalance: 144.86 }))).toBe('Bank says ₹144.86 · differs by ₹144.02');
+    expect(bankBalanceWords(txn({ balance: 1000, bankBalance: 1234567.5 }))).toBe('Bank says ₹12,34,567.50 · differs by ₹12,33,567.50');
+  });
+
+  it('keeps the ledger sign on a card (owed is negative)', () => {
+    expect(bankBalanceWords(txn({ balance: -5000, bankBalance: -4500.25 }))).toBe('Bank says -₹4,500.25 · differs by ₹499.75');
   });
 });

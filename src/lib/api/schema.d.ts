@@ -8574,6 +8574,7 @@ export interface components {
             /** Format: uuid */
             appliedRuleId?: string | null;
             balance?: number | null;
+            bankBalance?: number | null;
             /** Format: uuid */
             cardId?: string | null;
             cardLabel?: string | null;
