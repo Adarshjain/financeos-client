@@ -147,6 +147,25 @@ describe('buildUpdateLoanRequest and loanValuesFrom', () => {
     });
   });
 
+  it('sends clearPaymentAccount only when a payment account was emptied', () => {
+    const values = loanValuesFrom(loan, '2026-10-21');
+    const cleared = buildUpdateLoanRequest({ ...values, paymentAccountId: '' }, true);
+    expect(cleared.clearPaymentAccount).toBe(true);
+    expect(cleared.paymentAccountId).toBeUndefined();
+    expect(buildUpdateLoanRequest({ ...values, paymentAccountId: NO_PAYMENT_ACCOUNT }, true).clearPaymentAccount).toBe(true);
+    const unchanged = buildUpdateLoanRequest(values, true);
+    expect(unchanged.clearPaymentAccount).toBeUndefined();
+    expect(unchanged.paymentAccountId).toBe('acc1');
+    const changed = buildUpdateLoanRequest({ ...values, paymentAccountId: 'acc2' }, true);
+    expect(changed.clearPaymentAccount).toBeUndefined();
+    expect(changed.paymentAccountId).toBe('acc2');
+    expect(buildUpdateLoanRequest({ ...values, paymentAccountId: '' }, false).clearPaymentAccount).toBeUndefined();
+  });
+
+  it('never sets clearPaymentAccount on create', () => {
+    expect(buildCreateLoanRequest({ ...filled, paymentAccountId: '' })).not.toHaveProperty('clearPaymentAccount');
+  });
+
   it('leaves blank figures out of an update', () => {
     const update = buildUpdateLoanRequest({ ...filled, principal: '', annualRatePct: '', tenureMonths: '' });
     expect(update.principal).toBeUndefined();

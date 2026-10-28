@@ -8778,6 +8778,8 @@ export interface components {
         };
         UpdateLoanRequest: {
             annualRatePct?: number;
+            /** @description true removes the loan's payment account; null/false keeps it. Cannot be combined with paymentAccountId. */
+            clearPaymentAccount?: boolean;
             emiAmount?: number;
             /** Format: date */
             firstEmiDate?: string;
