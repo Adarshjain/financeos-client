@@ -83,8 +83,13 @@ describe('EpfView: the figures', () => {
     expect(screen.getByText('You ₹43,200')).toBeInTheDocument();
     expect(screen.getByText('Interest so far')).toBeInTheDocument();
     expect(screen.getByText('Estimate at 8.25%')).toBeInTheDocument();
-    expect(screen.getByText('Last interest')).toBeInTheDocument();
-    expect(screen.getByText('FY 2025-26')).toBeInTheDocument();
+    expect(screen.getByText('Last interest ₹56,180 · FY 2025-26')).toBeInTheDocument();
+  });
+
+  it('leaves the last interest line out of the phone hero when nothing was credited yet', () => {
+    const sum = summary({ lastInterest: undefined });
+    renderWithQuery(<EpfView {...props({ summary: sum, figures: epfFigures(sum) })} />);
+    expect(screen.queryByText(/^Last interest ₹/)).toBeNull();
   });
 
   it('shows ₹0 and "No balance yet" with no balance', () => {

@@ -49,11 +49,11 @@ for (const viewport of VIEWPORTS) {
   test.describe(`/ds EPF, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
     let api: ReturnType<typeof makeApi>;
-    /** A contribution row by its source: the particulars cell on desktop, the "… · pension" second line on phone. */
+    /** A contribution row: its source in the particulars cell on desktop; on phone (no source shown) the month's split line, "You ₹… · employer ₹…". */
     const contribution = (page: Page, source: 'Added by you' | 'Passbook') =>
       shown(
         viewport.width < 641
-          ? page.getByText(new RegExp(`^${source} · pension`))
+          ? page.getByText(/^You ₹[\d,]+ · employer ₹[\d,]+/)
           : page.getByRole('cell').getByText(source, { exact: true }),
       );
 
@@ -132,6 +132,8 @@ for (const viewport of VIEWPORTS) {
       await expect(add).toHaveCount(0);
       await expect(shown(page.getByText('₹5,13,150'))).toBeVisible();
       await expect(contribution(page, 'Added by you')).toBeVisible();
+      // The month's split: one column per share on desktop, one line on phone.
+      await expect(shown(page.getByText(viewport.width < 641 ? 'You ₹7,200 · employer ₹5,950' : '+₹5,950', { exact: true }))).toBeVisible();
       // Pension is kept, not added to the balance.
       await expect(shown(page.getByText('Contributed this FY'))).toBeVisible();
 

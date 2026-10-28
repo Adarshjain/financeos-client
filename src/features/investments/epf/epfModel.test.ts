@@ -107,7 +107,7 @@ describe('figures', () => {
 });
 
 describe('passbook rows', () => {
-  it('draws a contribution on one line: no "contribution" word and no credited date', () => {
+  it('draws a contribution on one line, with the month split on phone: no "contribution" word and no credited date', () => {
     const r = epfRow(entry());
     expect(r).toMatchObject({
       wageMonth: 'Sep 2026',
@@ -117,13 +117,13 @@ describe('passbook rows', () => {
       pension: '₹1,250',
       balance: '₹8,43,210',
       phoneTitle: 'Sep 2026',
-      phoneSub: 'Passbook · pension ₹1,250',
+      phoneSub: 'You ₹7,200 · employer ₹5,950',
       amount: '+₹13,150',
       amountSub: '₹8,43,210',
     });
     expect(r).not.toHaveProperty('credited');
-    expect(epfRow(manualContribution())).toMatchObject({ title: 'Added by you', phoneSub: 'Added by you · pension ₹1,250' });
-    expect(epfRow(entry({ pensionAmount: 0 }))).toMatchObject({ pension: '—', phoneSub: 'Passbook' });
+    expect(epfRow(manualContribution())).toMatchObject({ title: 'Added by you', phoneSub: 'You ₹7,200 · employer ₹5,950' });
+    expect(epfRow(entry({ pensionAmount: 0 }))).toMatchObject({ pension: '—', phoneSub: 'You ₹7,200 · employer ₹5,950' });
     expect(epfRow(entry({ wageMonth: null }))).toMatchObject({ wageMonth: '—', phoneTitle: 'Passbook' });
   });
 

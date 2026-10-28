@@ -251,7 +251,8 @@ export function epfRow(e: EpfEntry): EpfRow {
         ...base,
         title: source,
         phoneTitle: monthYear(e.wageMonth) || source,
-        phoneSub: `${source}${e.pensionAmount > 0 ? ` · pension ${rupees(e.pensionAmount)}` : ''}`,
+        // The month's split on phone, on one line beside the balance; pension is not in the amount, so it stays on desktop and in the entry.
+        phoneSub: `You ${rupees(e.employeeAmount)} · employer ${rupees(e.employerAmount)}`,
         employee: money(e.employeeAmount, '+'),
         employer: money(e.employerAmount, '+'),
         pension,
