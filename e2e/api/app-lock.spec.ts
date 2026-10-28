@@ -50,6 +50,12 @@ async function unlock(session: Session, soft: SoftAuthenticator, opts?: { userVe
   return call(session, 'POST', '/app-lock/unlock/verify', { credential: soft.get(options.body, opts) });
 }
 
+async function disable(session: Session, soft: SoftAuthenticator, opts?: { userVerified?: boolean; badSignature?: boolean }) {
+  const options = await call(session, 'POST', '/app-lock/unlock/options');
+  expect(options.status).toBe(200);
+  return call(session, 'POST', '/app-lock/disable', { credential: soft.get(options.body, opts) });
+}
+
 test.describe('app lock API', () => {
   test('a session with app lock off is untouched: status unarmed, heartbeat harmless, data readable', async ({ request }) => {
     const user = await createUser(request, 'lock-off');
@@ -157,11 +163,42 @@ test.describe('app lock API', () => {
 
   test('changing Lock after, then turning off', async ({ request }) => {
     const user = await createUser(request, 'lock-settings');
-    await enrol(user, authenticator());
+    const soft = authenticator();
+    await enrol(user, soft);
     expect((await call(user, 'PATCH', '/app-lock/settings', { lockAfterSeconds: 900 })).status).toBe(204);
     expect((await call(user, 'GET', '/app-lock/status')).body.lockAfterSeconds).toBe(900);
     expect((await call(user, 'PATCH', '/app-lock/settings', { lockAfterSeconds: 7 })).status).toBe(400);
-    expect((await call(user, 'DELETE', '/app-lock')).status).toBe(204);
+    expect((await disable(user, soft)).status).toBe(204);
+    expect((await call(user, 'GET', '/app-lock/status')).body).toMatchObject({ armed: false });
+  });
+
+  test('turning off needs a fresh passkey answer: no ceremony, a bad signature or a missing user verification is 403 and the lock stays armed', async ({ request }) => {
+    const user = await createUser(request, 'lock-disable-refused');
+    const soft = authenticator();
+    await enrol(user, soft);
+
+    const bare = await call(user, 'POST', '/app-lock/disable', { credential: {} });
+    expect(bare.status).toBe(403);
+    expect(bare.body.code).toBe('APP_LOCK_UNLOCK_FAILED');
+    const bad = await disable(user, soft, { badSignature: true });
+    expect(bad.status).toBe(403);
+    expect(bad.body.code).toBe('APP_LOCK_UNLOCK_FAILED');
+    expect((await disable(user, soft, { userVerified: false })).status).toBe(403);
+    expect((await call(user, 'GET', '/app-lock/status')).body).toMatchObject({ armed: true });
+    // the old no-passkey route is gone
+    expect((await call(user, 'DELETE', '/app-lock')).status).not.toBe(204);
+    expect((await call(user, 'GET', '/app-lock/status')).body).toMatchObject({ armed: true });
+  });
+
+  test('turning off from a locked session is 423 and the lock stays armed; a good answer after unlocking is 204', async ({ request }) => {
+    const user = await createUser(request, 'lock-disable-locked');
+    const soft = authenticator();
+    await enrol(user, soft);
+    await lockNow(user);
+    expect((await call(user, 'POST', '/app-lock/disable', { credential: {} })).status).toBe(423);
+    expect((await call(user, 'GET', '/app-lock/status')).body).toMatchObject({ armed: true, locked: true });
+    expect((await unlock(user, soft)).status).toBe(204);
+    expect((await disable(user, soft)).status).toBe(204);
     expect((await call(user, 'GET', '/app-lock/status')).body).toMatchObject({ armed: false });
   });
 
@@ -172,10 +209,12 @@ test.describe('app lock API', () => {
     expect((await call(user, 'POST', '/auth/logout')).status).toBe(200);
   });
 
-  test('enrolling again on a device that already has a row returns a new device id', async ({ request }) => {
+  test('enrolling again while app lock is on is 409, so a new passkey cannot replace the one turning off needs', async ({ request }) => {
     const user = await createUser(request, 'lock-reenrol');
-    const first = await enrol(user, authenticator());
-    const second = await enrol(user, authenticator(), 60, `; FINANCEOS_DEVICE=${first}`);
-    expect(second).not.toBe(first);
+    await enrol(user, authenticator());
+    const again = await call(user, 'POST', '/app-lock/registration/options', { lockAfterSeconds: 60 });
+    expect(again.status).toBe(409);
+    expect(again.body.code).toBe('APP_LOCK_ALREADY_ON');
+    expect((await call(user, 'GET', '/app-lock/status')).body.armed).toBe(true);
   });
 });

@@ -7,6 +7,7 @@ const actions = vi.hoisted(() => ({
   finishEnrolment: vi.fn(),
   updateLockAfter: vi.fn(),
   disableAppLock: vi.fn(),
+  startUnlock: vi.fn(),
 }));
 vi.mock('./actions', () => actions);
 
@@ -15,8 +16,15 @@ vi.mock('./webauthn', () => ({
   isPlatformAuthAvailable: async () => web.platform,
   hostMatchesRp: () => web.hostOk,
   toCreationOptions: (o: unknown) => o,
+  toRequestOptions: (o: unknown) => o,
   credentialToJSON: () => ({ id: 'cred' }),
   isCancelled: (e: unknown) => e instanceof DOMException && e.name === 'NotAllowedError',
+}));
+
+const showToast = vi.hoisted(() => vi.fn());
+vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
+  showToast: (...args: unknown[]) => showToast(...args),
 }));
 
 import type { AppLockStatus } from '@/lib/api/types';
@@ -27,13 +35,16 @@ import { AppLockCard } from './AppLockCard';
 const off: AppLockStatus = { armed: false, locked: false, lockAfterSeconds: null, rpId: 'localhost', heartbeatSeconds: 15 };
 const on: AppLockStatus = { ...off, armed: true, lockAfterSeconds: 60 };
 const create = vi.fn();
+const get = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
   web.platform = true;
   web.hostOk = true;
-  Object.defineProperty(navigator, 'credentials', { configurable: true, value: { create } });
+  Object.defineProperty(navigator, 'credentials', { configurable: true, value: { create, get } });
   create.mockResolvedValue({ id: 'cred' });
+  get.mockResolvedValue({ id: 'cred' });
+  actions.startUnlock.mockResolvedValue({ success: true, data: { publicKey: {} } });
   actions.startEnrolment.mockResolvedValue({ success: true, data: { publicKey: {} } });
   actions.finishEnrolment.mockResolvedValue({ success: true, data: { deviceId: 'd' } });
   actions.updateLockAfter.mockResolvedValue({ success: true, data: undefined });
@@ -102,12 +113,56 @@ describe('AppLockCard', () => {
     expect(toggle().getAttribute('aria-checked')).toBe('false');
   });
 
-  it('turns off', async () => {
+  it('turns off after asking for the passkey again and sends it', async () => {
     render(<AppLockCard status={on} />);
     fireEvent.click(toggle());
     await waitFor(() => expect(toggle().getAttribute('aria-checked')).toBe('false'));
-    expect(actions.disableAppLock).toHaveBeenCalled();
+    expect(actions.startUnlock).toHaveBeenCalled();
+    expect(get).toHaveBeenCalled();
+    expect(actions.disableAppLock).toHaveBeenCalledWith({ id: 'cred' });
     expect(screen.queryByText('Lock after')).toBeNull();
+  });
+
+  it('stays on, with no toast, when the passkey prompt is dismissed on turning off', async () => {
+    get.mockRejectedValue(new DOMException('no', 'NotAllowedError'));
+    render(<AppLockCard status={on} />);
+    fireEvent.click(toggle());
+    await waitFor(() => expect(get).toHaveBeenCalled());
+    await waitFor(() => expect((toggle() as HTMLButtonElement).disabled).toBe(false));
+    expect(actions.disableAppLock).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalled();
+    expect(toggle().getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('stays on, with no toast, when no passkey comes back on turning off', async () => {
+    get.mockResolvedValue(null);
+    render(<AppLockCard status={on} />);
+    fireEvent.click(toggle());
+    await waitFor(() => expect(get).toHaveBeenCalled());
+    await waitFor(() => expect((toggle() as HTMLButtonElement).disabled).toBe(false));
+    expect(actions.disableAppLock).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalled();
+    expect(toggle().getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('stays on and shows the message when the server refuses the passkey', async () => {
+    actions.disableAppLock.mockResolvedValue({
+      success: false,
+      error: { code: 'APP_LOCK_UNLOCK_FAILED', message: "Couldn't verify. Try again." },
+    });
+    render(<AppLockCard status={on} />);
+    fireEvent.click(toggle());
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't verify. Try again.", { tone: 'danger' }));
+    expect(toggle().getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('stays on and shows the message when the passkey request cannot start', async () => {
+    actions.startUnlock.mockResolvedValue({ success: false, error: { code: 'X', message: 'Could not start unlock' } });
+    render(<AppLockCard status={on} />);
+    fireEvent.click(toggle());
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Could not start unlock', { tone: 'danger' }));
+    expect(get).not.toHaveBeenCalled();
+    expect(toggle().getAttribute('aria-checked')).toBe('true');
   });
 
   it('can still be turned off on a device that cannot enrol', async () => {

@@ -452,7 +452,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/app-lock": {
+    "/api/v1/app-lock/disable": {
         parameters: {
             query?: never;
             header?: never;
@@ -461,8 +461,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post?: never;
-        delete: operations["disable"];
+        post: operations["disable"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -5293,6 +5293,9 @@ export interface components {
             timeline: components["schemas"]["TimelineEntry"][];
             truncated: boolean;
         };
+        DisableAppLockRequest: {
+            credential: unknown;
+        };
         DividendHoldingHint: {
             /** Format: uuid */
             brokerAccountId: string;
@@ -10060,7 +10063,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisableAppLockRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
