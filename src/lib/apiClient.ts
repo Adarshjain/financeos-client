@@ -1017,8 +1017,8 @@ type EpfSchemas = import('@/lib/api/schema').components['schemas'];
 
 /** The EPF tab's reads (the writes are made from the browser through the typed `api` client). */
 export const epfApi = {
-  summary: async (): Promise<EpfSchemas['EpfSummaryResponse']> => {
-    const { data } = await serverApi.GET('/api/v1/epf/summary');
+  summary: async (params: { employerId?: string; fy?: number; allYears?: boolean } = {}): Promise<EpfSchemas['EpfSummaryResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/epf/summary', { params: { query: params } });
     return data! as EpfSchemas['EpfSummaryResponse'];
   },
   employers: async (): Promise<EpfSchemas['EpfEmployerResponse'][]> => {
