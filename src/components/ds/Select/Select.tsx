@@ -438,20 +438,22 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         {actions && actions.length > 0 ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            {actions.map((a, i) => (
-              <button
-                key={i}
-                type="button"
-                disabled={a.disabled}
-                onClick={() => {
-                  onClose?.();
-                  a.onSelect();
-                }}
-                className={cn(getItemRowClass({ disabled: a.disabled }), 'w-full text-left')}
-              >
-                {a.label}
-              </button>
-            ))}
+            <div className="flex flex-col items-start gap-space-12 px-space-10 py-space-8 text-body text-ink">
+              {actions.map((a, i) => (
+                <Button
+                  key={i}
+                  type="button"
+                  variant="link"
+                  disabled={a.disabled}
+                  onClick={() => {
+                    onClose?.();
+                    a.onSelect();
+                  }}
+                >
+                  {a.label}
+                </Button>
+              ))}
+            </div>
           </>
         ) : null}
 

@@ -454,7 +454,7 @@ describe('Select menu layout (UAT)', () => {
     expect(done.parentElement).toHaveClass('justify-end');
   });
 
-  it('draws action rows stacked, full width, in order', () => {
+  it('draws actions as link buttons, stacked, in order', () => {
     render(
       <SelectMenu
         options={sampleOptions}
@@ -466,7 +466,9 @@ describe('Select menu layout (UAT)', () => {
     );
     const first = screen.getByRole('button', { name: 'First action' });
     const second = screen.getByRole('button', { name: 'Second action' });
-    expect(first).toHaveClass('w-full', 'text-left');
+    expect(first).toHaveClass('underline');
+    expect(first).not.toHaveClass('w-full');
+    expect(first.parentElement).toHaveClass('flex-col', 'items-start');
     expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
