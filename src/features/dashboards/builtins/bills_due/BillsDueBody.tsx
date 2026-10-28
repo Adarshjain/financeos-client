@@ -1,13 +1,14 @@
 'use client';
 
-// bills_due: one row per open credit card, the card's name and one figure: the amount to pay, or the unbilled
-// spend while the statement is expected (an overdue bill or a late statement says so in colour). Rows are
-// read-only: marking paid and setting details live on the Inbox.
+// bills_due: one row per open credit card, the card's name (with the due date once a bill is out) and one figure:
+// the amount to pay, or the unbilled spend while the statement is expected (an overdue bill or a late statement
+// says so in colour). Rows are read-only: marking paid and setting details live on the Inbox.
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, StatusWord, Text } from '@/components/ds';
+import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { type BillCardState, buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
 import { billCardLabel } from '@/features/bills/bills.helpers';
 import { appHref } from '@/features/shell/routes';
@@ -42,6 +43,7 @@ function BillRow({ state, highlighted }: { state: BillCardState; highlighted: bo
       data-statement-id={bill.statementId ?? undefined}
       data-account-id={bill.accountId}
       title={billCardLabel(bill)}
+      subtitle={!awaiting && bill.paymentDueDate ? `Due ${formatDayMonth(bill.paymentDueDate)}` : undefined}
       trailing={
         <div className="flex items-baseline gap-space-6">
             <Text variant="caption" tone="ink-3" as="span" data-testid="bill-status">
@@ -117,11 +119,11 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
         ))}
         {n > 0 ? (
           <div data-testid="bills-nothing-pending">
-            <div className="px-space-16 py-space-8">
+            <Text variant="caption" as="p" className="px-space-16 py-space-8">
               <Button variant="link" aria-expanded={showSettled} onClick={() => setShowSettled((v) => !v)}>
                 Nothing pending · {n} {n === 1 ? 'card' : 'cards'}
               </Button>
-            </div>
+            </Text>
             {showSettled
               ? model.nothingPending.map((s) => (
                   <BillRow key={s.bill.accountId} state={s} highlighted={s.bill.accountId === highlightedAccountId} />
