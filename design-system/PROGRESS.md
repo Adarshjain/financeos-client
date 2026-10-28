@@ -230,6 +230,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-10-28: **Consistency audit answered** (owner; artifact 6L54qWbsezHpjU1fBmiPYJ, 71 findings): all suggestions accepted except: one format function per kind with params, not several helpers (N1, N5); 12-hour time everywhere incl. debug (N4); overdue = danger (N8); "Retry", not "Try again" (W2); look at generic card-header actions (E10); rename file names in one sweep (F6); tidy imports/tests now (F10). Build waits for the owner's go.
 - 2026-10-28: **Report combination guards** (owner: "make the change"): combinations that add up wrong are blocked on save and chat drafts; saved reports already using one keep running with a warning.
 - 2026-10-28: **Running balance drift stays** (owner: drift is how you find a missing entry); the first mismatching row is marked against the bank's printed balance, never corrected.
 - 2026-10-28: **Accounts approved** (owner: "Accounts approved").
@@ -472,6 +473,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 - 2026-10-26 · Ask the data · Open: (1) pane — owner 2026-10-27: keep Card + ListRow. (2) Composer fade — owner 2026-10-27: dropped. (3) The table card has no share-bar column: the server table block has no percent/share type (formats are only inr, number, text), so no bar cells. Resolved by the coordinator 2026-10-26: phone conversation crumb = Ask the data; Ask the data shortcut hidden on chat pages; + labelled New chat on desktop; stopped answer reads Stopped · Show steps with Ask again; follow-ups come from blocks.followUps; a failed first question's Retry re-sends it as a new chat. Report preview labels — owner 2026-10-27: use the catalog (built). Undo of an update only in the same visit — owner OK 2026-10-27.
 ## Log
+- 2026-10-28 · Consistency audit · Claude: 7-pass audit of the new app, 71 findings, owner decisions recorded above; no code changed.
 - 2026-10-28 · Report guards · Claude: catalog guards (server 053dfe2); editor greys out blocked choices with the reason, warning Banner "These numbers don't add up", Create/Save blocked unless only renamed; Preview still runs.
 - 2026-10-28 · Bills due · Claude: rows with a bill out show "Due 12 Oct" under the card name (owner); "Nothing pending" toggle at caption size.
 - 2026-10-28 · Select actions · Claude: dropdown actions (Home switcher, Add account, Add employer, Enter it manually) now render as stacked link buttons in ink; Select README + one test updated.
