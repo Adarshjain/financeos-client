@@ -13,6 +13,7 @@ import {
   epfRow,
   epfUrl,
   fieldsOf,
+  figuresPeriod,
   formFromLatestContribution,
   formToRequest,
   fyOptions,
@@ -95,6 +96,64 @@ describe('figures', () => {
     expect(none.lastInterest.value).toBe('—');
     expect(none.balance.context).toBe('');
     expect(epfFigures(summary({ interestEstimate: undefined })).interest.value).toBe('—');
+  });
+
+  it('names the tiles for the current FY by default', () => {
+    expect(epfFigures(summary()).labels).toEqual({
+      balance: { desk: 'EPF balance', phone: 'EPF balance' },
+      contributed: { desk: 'Contributed this FY', phone: 'Contributed this FY' },
+      interest: { desk: 'Interest so far this FY', phone: 'Interest so far' },
+      lastInterest: { desk: 'Last interest credited', phone: 'Last interest' },
+    });
+  });
+
+  it('a past FY: the balance as of 31 Mar, that year\'s contributions and the interest credited for it', () => {
+    const f = epfFigures(
+      summary({
+        balance: 716910,
+        balanceAsOf: '2026-03-31',
+        periodFy: 2025,
+        interestEstimate: undefined,
+        periodInterest: { fy: 2025, amount: 56180, rate: 8.25, creditedOn: '2026-08-18' },
+      }),
+      2025,
+    );
+    expect(f.balance).toMatchObject({ value: '₹7,16,910', context: 'As of 31 Mar 2026', phoneContext: 'As of 31 Mar 2026' });
+    expect(f.interest).toEqual({ value: '₹56,180', context: 'At 8.25% · credited 18 Aug 2026' });
+    expect(f.labels.contributed).toEqual({ desk: 'Contributed in FY 2025-26', phone: 'Contributed' });
+    expect(f.labels.interest).toEqual({ desk: 'Interest for FY 2025-26', phone: 'Interest' });
+    expect(f.lastInterest.value).toBe('₹56,180');
+  });
+
+  it('a past FY with no interest credited yet shows a dash, never an estimate', () => {
+    const f = epfFigures(summary({ periodFy: 2024, balanceAsOf: '2025-03-31', periodInterest: undefined }), 2024);
+    expect(f.interest).toEqual({ value: '—', context: '' });
+  });
+
+  it('all years: today\'s balance, every contribution and all interest credited', () => {
+    const f = epfFigures(
+      summary({ periodFy: undefined, interestEstimate: undefined, periodInterest: { amount: 98000, creditedOn: '2026-08-18' } }),
+      'all',
+    );
+    expect(f.balance.context).toBe('Passbook up to Sep 2026');
+    expect(f.interest).toEqual({ value: '₹98,000', context: 'Last credited 18 Aug 2026' });
+    expect(f.labels.contributed).toEqual({ desk: 'Contributed, all years', phone: 'Contributed' });
+    expect(f.labels.interest).toEqual({ desk: 'Interest, all years', phone: 'Interest' });
+    expect(epfFigures(summary({ interestEstimate: undefined, periodInterest: undefined }), 'all').interest).toEqual({ value: '—', context: '' });
+  });
+
+  it('the current FY once its interest is credited shows the credit, not the estimate', () => {
+    const f = epfFigures(summary({ interestEstimate: undefined, periodInterest: { fy: 2026, amount: 61000, rate: 8.25, creditedOn: '2027-03-31' } }));
+    expect(f.interest).toEqual({ value: '₹61,000', context: 'At 8.25% · credited 31 Mar 2027' });
+    expect(f.labels.interest).toEqual({ desk: 'Interest this FY', phone: 'Interest' });
+  });
+
+  it('reads the period from the year shown: All years, the current FY (from April) or another year', () => {
+    expect(figuresPeriod(undefined, '2026-10-27')).toBe('all');
+    expect(figuresPeriod(2026, '2026-10-27')).toBe('current');
+    expect(figuresPeriod(2025, '2026-03-31')).toBe('current');
+    expect(figuresPeriod(2026, '2026-04-01')).toBe('current');
+    expect(figuresPeriod(2025, '2026-10-27')).toBe(2025);
   });
 
   it('words the pension card for eligible and not-yet-eligible service', () => {

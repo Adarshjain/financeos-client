@@ -159,20 +159,48 @@ export interface EpfFigures {
   contributed: { value: string; context: string; phoneContext: string };
   interest: { value: string; context: string };
   lastInterest: { value: string; context: string; phoneContext: string };
+  /** The tile names, which follow the year picked: desktop and the shorter phone one. */
+  labels: Record<'balance' | 'contributed' | 'interest' | 'lastInterest', { desk: string; phone: string }>;
 }
 
-/** The four figures: balance, contributed this FY, interest so far (an estimate until credited) and the last interest credited. */
-export function epfFigures(summary: EpfSummary): EpfFigures {
+/** The year the figures are for: the current FY, every year, or another FY's starting year. */
+export type EpfFiguresPeriod = 'current' | 'all' | number;
+
+/** The period for the year the page shows (undefined = All years). */
+export function figuresPeriod(fy: number | undefined, today: string): EpfFiguresPeriod {
+  if (fy === undefined) return 'all';
+  const month = Number(today.slice(5, 7));
+  const currentFy = Number(today.slice(0, 4)) - (month < 4 ? 1 : 0);
+  return fy === currentFy ? 'current' : fy;
+}
+
+/** The four figures for the employer and year picked: balance, contributed, interest (an estimate until credited in the current FY) and the last interest credited. */
+export function epfFigures(summary: EpfSummary, period: EpfFiguresPeriod = 'current'): EpfFigures {
   const passbookThrough = summary.throughMonth ?? null;
-  const { interestEstimate: est, lastInterest: last } = summary;
+  const { interestEstimate: est, lastInterest: last, periodInterest: credited } = summary;
+  const asOf = summary.balanceAsOf ? `As of ${fullDay(summary.balanceAsOf)}` : '';
   const upTo = passbookThrough ? `Passbook up to ${monthYear(passbookThrough)}` : '';
-  const interest = est
-    ? { value: `≈ ${rupees(est.amount)}`, context: `Estimate at ${rateText(est.rate)} · credited after 31 Mar` }
-    : summary.balance <= 0
-      ? { value: '₹0', context: 'No balance yet' }
-      : { value: '—', context: '' };
+  const creditedLine = (p: NonNullable<typeof credited>) =>
+    `${p.rate != null ? `At ${rateText(p.rate)} · ` : ''}credited ${p.creditedOn ? fullDay(p.creditedOn) : ''}`.trim();
+  const interest =
+    period === 'all'
+      ? credited
+        ? { value: rupees(credited.amount), context: credited.creditedOn ? `Last credited ${fullDay(credited.creditedOn)}` : '' }
+        : { value: '—', context: '' }
+      : credited
+        ? { value: rupees(credited.amount), context: creditedLine(credited) }
+        : period === 'current' && est
+          ? { value: `≈ ${rupees(est.amount)}`, context: `Estimate at ${rateText(est.rate)} · credited after 31 Mar` }
+          : period === 'current' && summary.balance <= 0
+            ? { value: '₹0', context: 'No balance yet' }
+            : { value: '—', context: '' };
+  const fyName = typeof period === 'number' ? epfFyLabel(period) : '';
   return {
-    balance: { value: rupees(summary.balance), context: upTo, phoneContext: upTo.replace('Passbook up', 'Up') },
+    balance: {
+      value: rupees(summary.balance),
+      context: asOf || upTo,
+      phoneContext: asOf || upTo.replace('Passbook up', 'Up'),
+    },
     contributed: {
       value: rupees(summary.fyEmployee + summary.fyEmployer),
       context: `You ${rupees(summary.fyEmployee)} · employer ${rupees(summary.fyEmployer)}`,
@@ -186,6 +214,24 @@ export function epfFigures(summary: EpfSummary): EpfFigures {
           phoneContext: epfFyLabel(last.fy),
         }
       : { value: '—', context: '', phoneContext: '' },
+    labels: {
+      balance: { desk: 'EPF balance', phone: 'EPF balance' },
+      contributed:
+        period === 'current'
+          ? { desk: 'Contributed this FY', phone: 'Contributed this FY' }
+          : period === 'all'
+            ? { desk: 'Contributed, all years', phone: 'Contributed' }
+            : { desk: `Contributed in ${fyName}`, phone: 'Contributed' },
+      interest:
+        period === 'current'
+          ? credited
+            ? { desk: 'Interest this FY', phone: 'Interest' }
+            : { desk: 'Interest so far this FY', phone: 'Interest so far' }
+          : period === 'all'
+            ? { desk: 'Interest, all years', phone: 'Interest' }
+            : { desk: `Interest for ${fyName}`, phone: 'Interest' },
+      lastInterest: { desk: 'Last interest credited', phone: 'Last interest' },
+    },
   };
 }
 

@@ -5668,8 +5668,18 @@ export interface components {
             /** Format: int32 */
             serviceMonths: number;
         };
+        EpfPeriodInterest: {
+            amount: number;
+            /** Format: date */
+            creditedOn?: string | null;
+            /** Format: int32 */
+            fy?: number | null;
+            rate?: number | null;
+        };
         EpfSummaryResponse: {
             balance: number;
+            /** Format: date */
+            balanceAsOf?: string | null;
             fyEmployee: number;
             fyEmployer: number;
             hasData: boolean;
@@ -5677,6 +5687,9 @@ export interface components {
             lastInterest?: components["schemas"]["EpfLastInterest"];
             latestContribution?: components["schemas"]["EpfLatestContribution"];
             pension?: components["schemas"]["EpfPension"];
+            /** Format: int32 */
+            periodFy?: number | null;
+            periodInterest?: components["schemas"]["EpfPeriodInterest"];
             /** Format: date */
             staleThrough?: string | null;
             /** Format: date */
@@ -12678,7 +12691,11 @@ export interface operations {
     };
     getEpfSummary: {
         parameters: {
-            query?: never;
+            query?: {
+                employerId?: string;
+                fy?: number;
+                allYears?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
