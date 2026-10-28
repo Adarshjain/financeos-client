@@ -34,6 +34,7 @@ import { isApprovable } from '../bulk/bulkModel';
 import {
   amountWords,
   balanceAfterWords,
+  bankBalanceWords,
   cardWords,
   deleteImpact,
   type LinkRow,
@@ -165,6 +166,7 @@ function DetailContent({
   const card = cardWords(t);
   const rewards = rewardsWords(t);
   const balance = balanceAfterWords(t);
+  const bankBalance = bankBalanceWords(t);
   const title = t.description || t.sourcedDescription || '—';
   const raw = t.description && t.sourcedDescription && t.sourcedDescription !== t.description ? t.sourcedDescription : undefined;
   const categories = t.categories ?? [];
@@ -244,6 +246,11 @@ function DetailContent({
                 </Text>
               ) : null}
             </div>
+            {bankBalance ? (
+              <Text variant="label" tone="warning" as="span">
+                {bankBalance}
+              </Text>
+            ) : null}
             {status.length > 0 ? (
               <StatusWords items={status} />
             ) : null}

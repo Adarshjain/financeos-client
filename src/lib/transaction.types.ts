@@ -132,6 +132,8 @@ export type Transaction = TransactionBase & {
   updatedAt?: string;
   reviewedAt?: string | null;
   balance?: number | null;
+  /** The bank's printed balance, only on the first row where our running balance stops matching it (same sign as balance). */
+  bankBalance?: number | null;
   categories?: Category[];
   sourcedDescription?: string | null;
   reviewReasons?: ReviewReason[];

@@ -67,7 +67,7 @@ export function monthLabel(day: string): string {
   return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : '';
 }
 
-/** The amber words: each review reason (or "Needs review" when there is none), then Watching with its reason. */
+/** The amber words: each review reason (or "Needs review" when there is none), then Watching with its reason, then "Doesn't match bank" on the first row whose running balance stops matching the bank's. */
 export function reviewWords(t: Transaction): string | undefined {
   const words: string[] = [];
   if (t.reviewType === 'NEEDS_REVIEW') {
@@ -78,6 +78,7 @@ export function reviewWords(t: Transaction): string | undefined {
     const reason = t.monitoringReason?.trim();
     words.push(reason ? `Watching: ${reason}` : 'Watching');
   }
+  if (t.bankBalance != null && !t.isTransactionExcluded) words.push("Doesn't match bank");
   return words.length > 0 ? words.join(' · ') : undefined;
 }
 

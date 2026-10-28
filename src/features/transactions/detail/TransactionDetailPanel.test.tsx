@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ConcealProvider } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
@@ -385,6 +386,28 @@ describe('TransactionDetailPanel', () => {
       renderWithQuery(<TransactionDetailPanel {...props({ transactionId: 't2' })} />);
       expect(await screen.findByText('Uber')).toBeInTheDocument();
       expect(screen.queryByText(/after$/)).toBeNull();
+    });
+  });
+
+  describe('bank balance', () => {
+    it('shows the bank line under the balance, with its figures masked when concealed', () => {
+      const p = props({ pageTransactions: [txn({ balance: 288.88, bankBalance: 144.86 })] });
+      const { unmount } = renderWithQuery(<TransactionDetailPanel {...p} />);
+      expect(screen.getByText('Bank says ₹144.86 · differs by ₹144.02')).toBeInTheDocument();
+      unmount();
+      renderWithQuery(
+        <ConcealProvider concealed>
+          <TransactionDetailPanel {...p} />
+        </ConcealProvider>,
+      );
+      // Like the balance line, the figures are masked by Text, the words stay
+      expect(screen.getByText(/Bank says/)).toBeInTheDocument();
+      expect(screen.queryByText(/144\.86/)).toBeNull();
+    });
+
+    it('has no bank line when the balance matches', () => {
+      renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn({ bankBalance: null })] })} />);
+      expect(screen.queryByText(/Bank says/)).toBeNull();
     });
   });
 
