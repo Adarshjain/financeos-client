@@ -77,11 +77,12 @@ describe('BillsDueBody', () => {
     expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800.00');
   });
 
-  it('an arrived card: name and amount due only (no due line, minimum or spent-since line)', async () => {
+  it('an arrived card: name, due date and amount due only (no countdown, minimum or spent-since line)', async () => {
     seed([open]);
     render();
     const row = await screen.findByTestId('bill-row');
     expect(row).toHaveTextContent('Open Card ••2');
+    expect(row).toHaveTextContent('Due 12 Oct');
     expect(row).not.toHaveTextContent('Due in 4 days');
     expect(row).not.toHaveTextContent('spent since this statement');
     expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000.00');
@@ -94,6 +95,20 @@ describe('BillsDueBody', () => {
     const row = await screen.findByTestId('bill-row');
     expect(within(row).getByTestId('bill-status')).toHaveTextContent('Overdue');
     expect(row).not.toHaveTextContent('Overdue by 7 days');
+  });
+
+  it('an overdue card shows the date it was due', async () => {
+    seed([overdue]);
+    render();
+    expect(await screen.findByTestId('bill-row')).toHaveTextContent('Due 1 Oct');
+  });
+
+  it('a bill with no due date set and an awaiting card show no due line', async () => {
+    seed([awaiting, bill({ accountId: 'x', accountName: 'Unknown Card', statementId: 's-x', status: 'DUE_UNKNOWN', remainingAmount: 900 })]);
+    render();
+    const rows = await screen.findAllByTestId('bill-row');
+    expect(rows).toHaveLength(2);
+    for (const r of rows) expect(r).not.toHaveTextContent(/Due/);
   });
 
   it('an awaiting card headlines its unbilled spend with the word unbilled; a late statement says so in colour', async () => {
