@@ -4,7 +4,9 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { seedDueSoonLoan } from '../fixtures/seed/obligations';
+import { istToday } from '../fixtures/dates';
+import { createCreditCard } from '../fixtures/seed/accounts';
+import { seedCardBill, seedDueSoonLoan } from '../fixtures/seed/obligations';
 import { createDashboard } from '../fixtures/seed/reports';
 import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
@@ -216,6 +218,24 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
       await page.getByTestId('home-switch').click();
       await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard', 'View all dashboards']);
+    });
+
+    test('Home: Bills due rows show the due date; Nothing pending is a caption-sized link', async ({ page }) => {
+      const api = makeApi(currentUser.cookie);
+      const bill = await seedCardBill(api, { name: 'Due Card', last4: '7403', dueInDays: 5 });
+      const quiet = await createCreditCard(api, { name: 'Quiet Card', last4: '7404' });
+      await board('Ds bills', true, ['bills_due']);
+      await page.goto('/dashboard');
+      const bills = page.getByTestId('bills-due-widget');
+      const [, m, d] = istToday(5).split('-').map(Number);
+      const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1];
+      await expect(bills.locator(`[data-account-id="${bill.cardId}"]`)).toContainText(`Due ${d} ${month}`, { timeout: 45_000 });
+
+      const toggle = bills.getByTestId('bills-nothing-pending').getByRole('button', { name: 'Nothing pending · 1 card' });
+      const fontSize = (l: typeof toggle) => l.evaluate((el) => getComputedStyle(el).fontSize);
+      expect(await fontSize(toggle)).toBe(await fontSize(bills.getByTestId('bills-widget-totals')));
+      await toggle.click();
+      await expect(bills.locator(`[data-account-id="${quiet.id}"]`)).not.toContainText('Due');
     });
 
     test('Home: the switcher offers Set as default on a dashboard that is not the default, and it becomes the default', async ({ page }) => {
