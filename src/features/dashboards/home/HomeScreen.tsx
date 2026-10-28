@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, Icon, Menu, MenuItem, Select } from '@/components/ds';
+import { Button, EmptyState, Select } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
@@ -80,25 +80,16 @@ export function HomeScreen() {
         value={active.id}
         options={dashboards.map((d) => ({ value: d.id, label: d.name }))}
         onValueChange={(value) => setCurrentId(value as string)}
-        action={{ label: 'View all dashboards', onSelect: () => router.push(DASHBOARDS_HREF) }}
+        actions={[
+          { label: 'Add widget', disabled: add.isPending, onSelect: () => setPicking(true) },
+          ...(active.isDefault
+            ? []
+            : [{ label: 'Set as default', onSelect: () => toggleDefault.mutate({ id: active.id, makeDefault: true, updatedAt: active.updatedAt }) }]),
+          { label: 'Edit dashboard', onSelect: () => router.push(editDashboardHref(active.id)) },
+          { label: 'New dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) },
+          { label: 'View all dashboards', onSelect: () => router.push(DASHBOARDS_HREF) },
+        ]}
       />
-      <Menu
-        align="end"
-        trigger={
-          <Button variant="secondary" iconOnly loading={add.isPending || toggleDefault.isPending} aria-label="Dashboard actions">
-            <Icon name="more" size="sm" />
-          </Button>
-        }
-      >
-        <MenuItem disabled={add.isPending} onSelect={() => setPicking(true)}>
-          Add widget
-        </MenuItem>
-        {active.isDefault ? null : (
-          <MenuItem onSelect={() => toggleDefault.mutate({ id: active.id, makeDefault: true, updatedAt: active.updatedAt })}>Set as default</MenuItem>
-        )}
-        <MenuItem onSelect={() => router.push(editDashboardHref(active.id))}>Edit dashboard</MenuItem>
-        <MenuItem onSelect={() => router.push(NEW_DASHBOARD_HREF)}>New dashboard</MenuItem>
-      </Menu>
     </div>
   );
 

@@ -9,6 +9,9 @@ import { createDashboard } from '../fixtures/seed/reports';
 import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
 
+// The dashboard actions at the foot of the Home switcher's dropdown
+const SWITCHER_ACTIONS = /^(Add widget|Set as default|Edit dashboard|New dashboard|View all dashboards)$/;
+
 const VIEWPORTS = [
   { name: 'desktop 1440px', width: 1440, height: 900 },
   { name: 'phone 390px', width: 390, height: 844 },
@@ -172,7 +175,7 @@ for (const viewport of VIEWPORTS) {
 
     // ---- Home --------------------------------------------------------------------------------------------------
 
-    test('Home: no greeting or page title; the switcher and ⋯ menu sit in the top bar and the widgets start the page', async ({ page }) => {
+    test('Home: no greeting or page title; the switcher sits in the top bar with no ⋯ menu and the widgets start the page', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
@@ -181,7 +184,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0);
       const bar = page.getByRole('banner');
       await expect(bar.getByTestId('home-switch')).toBeVisible();
-      await expect(bar.getByRole('button', { name: 'Dashboard actions' })).toBeVisible();
+      await expect(bar.getByRole('button', { name: 'Dashboard actions' })).toHaveCount(0);
       // Nothing above the widgets in the page body.
       await expect(page.getByRole('main').locator(':scope > *').first().getByTestId('dashboard-widget').first()).toBeVisible();
     });
@@ -207,15 +210,15 @@ for (const viewport of VIEWPORTS) {
       expect(b!.y).toBeGreaterThan(a!.y);
     });
 
-    test('Home: the default dashboard’s ⋯ menu has no Set as default', async ({ page }) => {
+    test('Home: the default dashboard’s switcher has no Set as default', async ({ page }) => {
       await board('Ds home', true, ['net_worth']);
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
-      await page.getByRole('button', { name: 'Dashboard actions' }).click();
-      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard']);
+      await page.getByTestId('home-switch').click();
+      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard', 'View all dashboards']);
     });
 
-    test('Home: ⋯ offers Set as default on a dashboard that is not the default, and it becomes the default', async ({ page }) => {
+    test('Home: the switcher offers Set as default on a dashboard that is not the default, and it becomes the default', async ({ page }) => {
       await board('Ds home', true, ['net_worth']);
       const money = await board('Ds money', false, ['net_worth']);
       await page.goto('/dashboard');
@@ -223,9 +226,9 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByTestId('home-switch').click();
       await page.getByRole('option', { name: 'Ds money' }).click();
-      await page.getByRole('button', { name: 'Dashboard actions' }).click();
-      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard']);
-      await page.getByRole('menuitem', { name: 'Set as default' }).click();
+      await page.getByTestId('home-switch').click();
+      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard', 'View all dashboards']);
+      await page.getByRole('button', { name: 'Set as default', exact: true }).click();
       await expect(page.getByText('Set as default', { exact: true })).toBeVisible();
       await expect
         .poll(async () => ((await makeApi(currentUser.cookie).GET('/api/v1/dashboards/{id}', { params: { path: { id: money.id } } })).data ?? { isDefault: false }).isDefault)
@@ -249,15 +252,14 @@ for (const viewport of VIEWPORTS) {
       await expect(page).toHaveURL(/\/dashboards$/);
     });
 
-    test('Home: ⋯ Add widget saves straight to the dashboard, and Undo takes it off again', async ({ page }) => {
+    test('Home: switcher Add widget saves straight to the dashboard, and Undo takes it off again', async ({ page }) => {
       test.slow();
       const home = await board('Home', true, ['net_worth']);
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
-      await page.getByRole('button', { name: 'Dashboard actions' }).click();
-      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard']);
-      await page.getByRole('menuitem', { name: 'Add widget' }).click();
+      await page.getByTestId('home-switch').click();
+      await page.getByRole('button', { name: 'Add widget', exact: true }).click();
       const picker = page.getByRole('dialog', { name: /Add widget/ });
       await picker.getByRole('radio', { name: /Upcoming/ }).click();
       await picker.getByRole('button', { name: 'Add to board' }).click();
@@ -272,19 +274,19 @@ for (const viewport of VIEWPORTS) {
       await expect.poll(saved).toBe(1);
     });
 
-    test('Home: ⋯ Edit dashboard opens that dashboard editing, and New dashboard opens the create page', async ({ page }) => {
+    test('Home: switcher Edit dashboard opens that dashboard editing, and New dashboard opens the create page', async ({ page }) => {
       const home = await board('Ds home', true);
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
-      await page.getByRole('button', { name: 'Dashboard actions' }).click();
-      await page.getByRole('menuitem', { name: 'Edit dashboard' }).click();
+      await page.getByTestId('home-switch').click();
+      await page.getByRole('button', { name: 'Edit dashboard', exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboards/${home.id}`));
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds home', { timeout: 45_000 });
 
       await page.goto('/dashboard');
-      await page.getByRole('button', { name: 'Dashboard actions' }).click();
-      await page.getByRole('menuitem', { name: 'New dashboard' }).click();
+      await page.getByTestId('home-switch').click();
+      await page.getByRole('button', { name: 'New dashboard', exact: true }).click();
       await expect(page).toHaveURL(/\/dashboards\/new/);
     });
 

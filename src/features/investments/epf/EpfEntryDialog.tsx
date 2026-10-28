@@ -111,7 +111,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
   const employerOptions = allEmployers.map((e) => ({ value: e.id, label: e.name }));
   const typeOptions =
     entry?.type === 'TRANSFER_OUT' ? [...TYPE_OPTIONS, { value: 'TRANSFER_OUT' as const, label: TYPE_LABEL.TRANSFER_OUT }] : TYPE_OPTIONS;
-  const addEmployerAction = locked ? undefined : { label: 'Add employer', onSelect: () => setAddingEmployer(true) };
+  const addEmployerAction = locked ? undefined : [{ label: 'Add employer', onSelect: () => setAddingEmployer(true) }];
 
   const done = async (message: string) => {
     showToast(message);
@@ -242,7 +242,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                       options={employerOptions}
                       value={form.employerId}
                       disabled={locked || form.type === 'TRANSFER_OUT'}
-                      action={addEmployerAction}
+                      actions={addEmployerAction}
                       onValueChange={(v) => set({ employerId: v as string, ...(form.type === 'WITHDRAWAL' && form.kind === 'FINAL_SETTLEMENT' ? settleShares(v as string) : {}) })}
                     />
                     {f.from ? (

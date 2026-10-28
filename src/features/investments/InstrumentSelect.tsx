@@ -129,7 +129,7 @@ export function InstrumentSelect({
       loadingText="Adding…"
       trigger={trigger}
       disabled={disabled}
-      action={onEnterManually ? { label: 'Enter it manually', onSelect: onEnterManually } : undefined}
+      actions={onEnterManually ? [{ label: 'Enter it manually', onSelect: onEnterManually }] : undefined}
       emptyText={() => (searching ? 'Searching…' : typed ? 'No instruments found.' : 'Type at least 2 characters to search.')}
     />
   );

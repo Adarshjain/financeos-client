@@ -3,7 +3,7 @@ import React from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import { Avatar, FilterChip, Icon, Select, type SelectOption } from '@/components/ds';
+import { Avatar, FilterChip, Select, type SelectOption } from '@/components/ds';
 
 const standardOptions: SelectOption[] = [
   { value: 'option-a', label: 'Option A', hint: 'Hint A' },
@@ -136,7 +136,7 @@ const meta: Meta<typeof Select> = {
     groups: { table: { disable: true } },
     icon: { table: { disable: true } },
     trigger: { control: false, table: { disable: true } },
-    action: { table: { disable: true } },
+    actions: { table: { disable: true } },
     emptyText: { table: { disable: true } },
     createLabel: { table: { disable: true } },
     clearLabel: { table: { disable: true } },
@@ -265,13 +265,14 @@ export const SectionedList: Story = {
 
 export const WithAction: Story = {
   args: {
-    label: 'Select with pinned action',
+    label: 'Select with action rows',
     options: standardOptions,
     defaultOpen: true,
-    action: {
-      label: '+ New custom option…',
-      onSelect: fn(),
-    },
+    actions: [
+      { label: 'Add widget', onSelect: fn() },
+      { label: 'Edit dashboard', onSelect: fn() },
+      { label: 'View all dashboards', onSelect: fn() },
+    ],
   },
 };
 
