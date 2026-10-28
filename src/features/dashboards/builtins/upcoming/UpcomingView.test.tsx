@@ -36,7 +36,7 @@ describe('UpcomingView', () => {
     expect(list[0]).toHaveTextContent('15');
     expect(list[0]).toHaveTextContent('OCT');
     expect(list[0]).toHaveTextContent('Amex Platinum bill');
-    expect(list[0]).toHaveTextContent('₹33,900.00');
+    expect(list[0]).toHaveTextContent('₹33,900');
     expect(list[1]).toHaveTextContent('Priya Nair');
   });
 

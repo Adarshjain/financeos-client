@@ -11,8 +11,8 @@ import { ResetInstrumentDialog } from '@/features/investments/instruments/ResetI
 import { holdingHref, HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import { RecordTradeDialog } from '@/features/investments/tradebook/TradeDialog';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { formatMoney, formatQuantity } from '@/lib/format';
 
-import { quantity, rupees, unitPrice } from '../investmentsFormat';
 import {
   type BrokerRowModel,
   BrokersCard,
@@ -58,8 +58,8 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
   const brokerRows: BrokerRowModel[] = holding.brokers.map((b) => ({
     id: b.brokerAccountId,
     name: b.accountName,
-    sub: `${quantity(b.quantity)} ${holding.assetType === 'mutual_fund' ? 'units' : 'shares'} · avg ${unitPrice(b.avgCost)}`,
-    value: rupees(b.currentValue),
+    sub: `${formatQuantity(b.quantity)} ${holding.assetType === 'mutual_fund' ? 'units' : 'shares'} · avg ${formatMoney(b.avgCost, { decimals: 'exact' })}`,
+    value: formatMoney(b.currentValue),
   }));
   const lots = estimate ? estimate.lots.length : 0;
   const tradesSubtitle = estimate && lots > 0 ? `${lots} ${lots === 1 ? 'lot' : 'lots'} · FIFO` : undefined;

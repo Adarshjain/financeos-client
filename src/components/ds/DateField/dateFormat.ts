@@ -1,4 +1,6 @@
-import { formatDate, parseDateInput } from '../utils';
+import { formatDate } from '@/lib/format';
+
+import { parseDateInput } from '../utils';
 
 /**
  * Formats a typed raw input or ISO string into a display dd/mm/yyyy string.

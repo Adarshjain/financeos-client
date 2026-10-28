@@ -52,14 +52,14 @@ describe('corporateActionListRow', () => {
   it('shows a bonus with its symbol, note, ratio and quantities', () => {
     const row = corporateActionListRow(bonus);
     expect(row).toMatchObject({
-      date: '10 Jun 25',
+      date: '10 Jun 2025',
       title: 'INFY · Infosys',
       detail: 'Note: record date 11 Jun 25',
       typeLabel: 'Bonus',
       ratio: '1 : 1',
       effect: '30 → 60',
       cost: 'cost ₹1,420 → ₹710',
-      phoneLine: 'ex 10 Jun 25 · 1:1 · 30 → 60 shares · cost ₹1,420 → ₹710',
+      phoneLine: 'ex 10 Jun 2025 · 1:1 · 30 → 60 shares · cost ₹1,420 → ₹710',
     });
   });
 
@@ -84,7 +84,7 @@ describe('corporateActionListRow', () => {
   it('leaves the effect out when the server has no quantities', () => {
     const row = corporateActionListRow({ ...bonus, quantityBefore: null, quantityAfter: null });
     expect(row.effect).toBe('');
-    expect(row.phoneLine).toBe('ex 10 Jun 25 · 1:1 · cost ₹1,420 → ₹710');
+    expect(row.phoneLine).toBe('ex 10 Jun 2025 · 1:1 · cost ₹1,420 → ₹710');
   });
 
   it('uses just the name when the symbol is the name or missing', () => {

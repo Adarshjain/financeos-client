@@ -111,10 +111,9 @@ export function DividendsView({
           onPageChange={(ipage) => router.push(dividendsUrl({ ...state, ipage }), { scroll: false })}
         />
         <SuggestionsCard
-          thisYear={today.slice(0, 4)}
           brokerAccountId={brokerAccountId}
           onRecord={(s) => {
-            const row = suggestionRow(s, '');
+            const row = suggestionRow(s);
             setRecording({
               suggestionKey: row.key,
               prefill: {

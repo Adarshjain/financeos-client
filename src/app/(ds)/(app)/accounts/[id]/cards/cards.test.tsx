@@ -188,9 +188,9 @@ describe('/accounts/[id]/cards', () => {
       expect(screen.getByText('6.6%')).toBeInTheDocument();
       expect(screen.getAllByText('Plastics')).toHaveLength(2);
       expect(screen.getByText('••7741')).toBeInTheDocument();
-      expect(screen.getByText('issued 2 Jun 25')).toBeInTheDocument();
+      expect(screen.getByText('issued 2 Jun 2025')).toBeInTheDocument();
       expect(screen.getByText('Replaced')).toBeInTheDocument();
-      expect(screen.getByText('15 Mar 24 → 2 Jun 25 · 41 transactions')).toBeInTheDocument();
+      expect(screen.getByText('15 Mar 2024 → 2 Jun 2025 · 41 transactions')).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: 'Replace' })).toHaveLength(2);
       expect(screen.getByRole('button', { name: 'Delete card ••2210' })).toBeInTheDocument();
 

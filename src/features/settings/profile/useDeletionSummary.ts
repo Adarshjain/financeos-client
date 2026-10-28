@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
+import { formatCount } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import type { DeletionSummaryResponse } from '@/lib/types';
 
@@ -24,27 +25,27 @@ export function formatDeletionSummary(summaryData: DeletionSummaryResponse): str
   const counts = summaryData.counts;
 
   if (counts.accounts) {
-    parts.push(`${counts.accounts.toLocaleString()} account${counts.accounts === 1 ? '' : 's'}`);
+    parts.push(formatCount(counts.accounts, ['account', 'accounts']));
   }
   if (counts.transactions) {
-    parts.push(`${counts.transactions.toLocaleString()} transaction${counts.transactions === 1 ? '' : 's'}`);
+    parts.push(formatCount(counts.transactions, ['transaction', 'transactions']));
   }
   if (counts.holdings || counts.investment_transactions) {
     const invCount = (counts.holdings || 0) + (counts.investment_transactions || 0);
-    parts.push(`${invCount.toLocaleString()} investment record${invCount === 1 ? '' : 's'}`);
+    parts.push(formatCount(invCount, ['investment record', 'investment records']));
   }
   if (counts.loans || counts.lendings) {
     const loanCount = (counts.loans || 0) + (counts.lendings || 0);
-    parts.push(`${loanCount.toLocaleString()} loan / lending record${loanCount === 1 ? '' : 's'}`);
+    parts.push(formatCount(loanCount, ['loan / lending record', 'loan / lending records']));
   }
   if (counts.category_rules || counts.reward_rules) {
     const ruleCount = (counts.category_rules || 0) + (counts.reward_rules || 0);
-    parts.push(`${ruleCount.toLocaleString()} rule${ruleCount === 1 ? '' : 's'}`);
+    parts.push(formatCount(ruleCount, ['rule', 'rules']));
   }
 
   if (parts.length === 0) {
     return summaryData.total > 0
-      ? `${summaryData.total.toLocaleString()} total associated records`
+      ? `${formatCount(summaryData.total)} total associated records`
       : 'No financial records found';
   }
 

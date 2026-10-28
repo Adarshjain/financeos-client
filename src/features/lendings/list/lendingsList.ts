@@ -1,7 +1,7 @@
-import { formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
-import { daysBetween, plainAmount, plural, type TileModel } from '@/features/loans/loanFormat';
+import { daysBetween, type TileModel } from '@/features/loans/loanFormat';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { appHref } from '@/features/shell/routes';
+import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
 import type {
   CounterpartyDirectionFilter,
   CounterpartyListItem,
@@ -74,8 +74,8 @@ export function lendingsUrl(state: LendingsUrlState): string {
 
 function bucketContext(bucket: CounterpartySummaryBucket, empty: string): string {
   if (bucket.count === 0) return empty;
-  if (bucket.nextName && bucket.nextDate) return `${bucket.nextName} · ${formatDayMonth(bucket.nextDate)}`;
-  return plural(bucket.count, 'entry', 'entries');
+  if (bucket.nextName && bucket.nextDate) return `${bucket.nextName} · ${formatDate(bucket.nextDate, 'list')}`;
+  return formatCount(bucket.count, ['entry', 'entries']);
 }
 
 /** The four Lendings tiles. A tile with nothing in it reads ₹0 with a plain "Nothing …" line. */
@@ -83,23 +83,23 @@ export function lendingTiles(summary: CounterpartySummary): TileModel[] {
   return [
     {
       label: 'Owed to you',
-      value: formatRupees(summary.owedToYou),
-      context: plural(summary.owedToYouCount, 'person', 'people'),
+      value: formatMoney(summary.owedToYou),
+      context: formatCount(summary.owedToYouCount, ['person', 'people']),
       tone: summary.owedToYou > 0 ? 'positive' : undefined,
     },
     {
       label: 'You owe',
-      value: formatRupees(summary.youOwe),
-      context: plural(summary.youOweCount, 'person', 'people'),
+      value: formatMoney(summary.youOwe),
+      context: formatCount(summary.youOweCount, ['person', 'people']),
     },
     {
       label: 'Due this month',
-      value: formatRupees(summary.dueThisMonth.amount),
+      value: formatMoney(summary.dueThisMonth.amount),
       context: bucketContext(summary.dueThisMonth, 'Nothing due'),
     },
     {
       label: 'Expected back',
-      value: formatRupees(summary.expectedBack.amount),
+      value: formatMoney(summary.expectedBack.amount),
       context: bucketContext(summary.expectedBack, 'Nothing expected'),
       tone: summary.expectedBack.amount > 0 ? 'positive' : undefined,
     },
@@ -133,16 +133,6 @@ export interface LendingRow {
   href: string;
 }
 
-/** "RS" for Rahul Sharma, "D" for Dad: the first letters of the first two words. */
-export function initialsOf(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w.charAt(0).toUpperCase())
-    .join('');
-}
-
 /** A stable colour per person, so a name keeps its tone between visits. */
 export function avatarToneFor(name: string): AvatarToneName {
   let hash = 0;
@@ -172,7 +162,7 @@ export function dueIn(days: number): string {
 export function expectedText(expectedReturnDate: string | null | undefined, today: string): string {
   if (!expectedReturnDate) return 'no date';
   const days = daysBetween(today, expectedReturnDate);
-  const day = formatDayMonth(expectedReturnDate);
+  const day = formatDate(expectedReturnDate, 'list');
   return days === null ? day : `${day} · ${dueIn(days)}`;
 }
 
@@ -183,9 +173,9 @@ export function expectedText(expectedReturnDate: string | null | undefined, toda
  */
 export function lastEntryText(person: CounterpartyListItem): string | null {
   if (!person.lastEntryDate || !person.lastEntryType) return null;
-  const date = formatDayMonth(person.lastEntryDate);
+  const date = formatDate(person.lastEntryDate, 'list');
   if (person.lastEntryKind !== 'settlement') return `${date} · ${person.lastEntryType}`;
-  const amount = person.lastEntryAmount != null ? ` ${formatRupees(person.lastEntryAmount)}` : '';
+  const amount = person.lastEntryAmount != null ? ` ${formatMoney(person.lastEntryAmount)}` : '';
   const word = person.netPosition === 0 ? 'settled' : 'repaid';
   return `${date} · ${word}${amount}`;
 }
@@ -194,9 +184,9 @@ export function lastEntryText(person: CounterpartyListItem): string | null {
 export function phoneSubText(person: CounterpartyListItem): string {
   const parts: string[] = [];
   if (person.expectedReturnDate) {
-    parts.push(`${person.netPosition < 0 ? 'due' : 'expected'} ${formatDayMonth(person.expectedReturnDate)}`);
+    parts.push(`${person.netPosition < 0 ? 'due' : 'expected'} ${formatDate(person.expectedReturnDate, 'list')}`);
   }
-  if (person.lastEntryDate) parts.push(`last entry ${formatDayMonth(person.lastEntryDate)}`);
+  if (person.lastEntryDate) parts.push(`last entry ${formatDate(person.lastEntryDate, 'list')}`);
   if (parts.length === 0 && person.notes) parts.push(person.notes);
   return parts.join(' · ');
 }
@@ -206,9 +196,9 @@ export function lendingRow(person: CounterpartyListItem, today: string): Lending
   const badge = SIDE_BADGE[side];
   const balance =
     side === 'owed'
-      ? `+${plainAmount(person.netPosition)}`
+      ? formatMoney(person.netPosition, { sign: 'always', symbol: false })
       : side === 'owe'
-        ? plainAmount(-person.netPosition)
+        ? formatMoney(-person.netPosition, { symbol: false })
         : '0';
   return {
     id: person.id,
@@ -261,9 +251,9 @@ export function transferRows(
           lendingId: entry.lendingId,
           transactionId: tx.id,
           personName: person.counterpartyName,
-          entryLabel: formatDayMonth(entry.entryDate),
-          title: `${description} · ${formatRupees(Math.abs(tx.amount))}`,
-          subtitle: [formatDayMonth(tx.date), account, notes ? `"${notes}"` : null].filter(Boolean).join(' · '),
+          entryLabel: formatDate(entry.entryDate, 'list'),
+          title: `${description} · ${formatMoney(Math.abs(tx.amount))}`,
+          subtitle: [formatDate(tx.date, 'list'), account, notes ? `"${notes}"` : null].filter(Boolean).join(' · '),
         });
       }
     }
@@ -296,8 +286,8 @@ export function unrecordedRows(
       counterpartyId: t.counterpartyId,
       transactionId: tx.id,
       personName: t.counterpartyName,
-      title: `${word} ${t.counterpartyName} · ${formatRupees(Math.abs(tx.amount))}`,
-      subtitle: [formatDayMonth(tx.date), accountNames.get(tx.accountId)].filter(Boolean).join(' · '),
+      title: `${word} ${t.counterpartyName} · ${formatMoney(Math.abs(tx.amount))}`,
+      subtitle: [formatDate(tx.date, 'list'), accountNames.get(tx.accountId)].filter(Boolean).join(' · '),
     };
   });
 }

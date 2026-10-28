@@ -29,7 +29,7 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   leading?: (row: Row) => React.ReactNode;
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
-  rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean };
+  rowState?: { tone?: 'warning' | 'danger'; disabled?: boolean; muted?: boolean; pressable?: boolean };
   highlighted?: boolean;
   busy?: boolean;
   /** DataTable `size`: `sm` rows hug one line of text. */
@@ -105,7 +105,8 @@ export function DataTableRow<Row extends RowData>({
   const actions = phoneActions?.(row.original);
 
   const isHighlighted = highlighted;
-  const isWarning = rowState?.tone === 'warning';
+  const isDanger = rowState?.tone === 'danger';
+  const isWarning = rowState?.tone === 'warning' || isDanger;
 
   return (
     <div
@@ -130,7 +131,9 @@ export function DataTableRow<Row extends RowData>({
         // Highlighted and selected rows are the brand-tint ground only; only the warning tone keeps a stripe (owner, 2026-10-26).
         isHighlighted || isSelected
           ? 'border-l-transparent bg-brand-tint'
-          : isWarning
+          : isDanger
+            ? 'border-l-danger bg-danger-tint'
+            : isWarning
               ? 'border-l-attention bg-attention-tint'
               : 'border-l-transparent bg-surface',
         rowState?.disabled && 'opacity-60 pointer-events-none',

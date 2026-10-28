@@ -1,5 +1,5 @@
-import { formatAmount, formatCompactRupees, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
-import { daysBetween, plainAmount } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormat';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto, LoanEventResponse, LoanResponse } from '@/lib/loan.types';
 
 import { fyLabel, fyStartYear } from './financialYear';
@@ -79,8 +79,8 @@ export function fySummaryLine(schedule: InstallmentDto[], fy: string): string {
   return [
     fyLabel(Number(fy)),
     `${s.emis} ${s.emis === 1 ? 'EMI' : 'EMIs'}`,
-    `principal ${formatRupees(s.principal)}`,
-    `interest ${formatRupees(s.interest)}`,
+    `principal ${formatMoney(s.principal)}`,
+    `interest ${formatMoney(s.interest)}`,
   ].join(' · ');
 }
 
@@ -120,19 +120,19 @@ export function eventBandLabel(
   emiBefore: number | null,
   emiAfter: number,
 ): string {
-  const date = formatDayMonth(event.effectiveDate);
+  const date = formatDate(event.effectiveDate, 'list');
   const emiNote =
     emiBefore != null && Math.abs(emiAfter - emiBefore) >= 1
-      ? `EMI ${emiAfter < emiBefore ? 'reduced' : 'raised'} to ₹${plainAmount(emiAfter)}`
+      ? `EMI ${emiAfter < emiBefore ? 'reduced' : 'raised'} to ${formatMoney(emiAfter, { decimals: 'auto' })}`
       : null;
   if (event.eventType === 'rate_change') {
     const rate = event.newAnnualRatePct != null ? `Rate ${ratePct(priorRate)} → ${ratePct(event.newAnnualRatePct)}` : 'Rate change';
     return [date, rate, emiNote].filter(Boolean).join(' · ');
   }
   if (event.eventType === 'foreclosure') {
-    return [date, `Foreclosure${event.amount != null ? ` ₹${plainAmount(event.amount)}` : ''}`].join(' · ');
+    return [date, `Foreclosure${event.amount != null ? ` ${formatMoney(event.amount, { decimals: 'auto' })}` : ''}`].join(' · ');
   }
-  const prepay = `Prepayment${event.amount != null ? ` ₹${plainAmount(event.amount)}` : ''}`;
+  const prepay = `Prepayment${event.amount != null ? ` ${formatMoney(event.amount, { decimals: 'auto' })}` : ''}`;
   const effect = event.adjustmentMode === 'reduce_emi' ? (emiNote ?? adjustmentWords('reduce_emi')) : adjustmentWords('reduce_tenure');
   return [date, prepay, effect].join(' · ');
 }
@@ -166,17 +166,17 @@ export function buildScheduleRows(
     return {
       id: String(inst.seq),
       seq: inst.seq,
-      due: formatDayMonth(inst.dueDate),
-      opening: formatAmount(inst.openingBalance, 0),
-      emi: formatAmount(inst.emi, 0),
-      interest: formatAmount(inst.interest, 0),
-      principal: formatAmount(inst.principal, 0),
-      closing: formatAmount(inst.closingBalance, 0),
+      due: formatDate(inst.dueDate, 'list'),
+      opening: formatMoney(inst.openingBalance, { symbol: false }),
+      emi: formatMoney(inst.emi, { symbol: false }),
+      interest: formatMoney(inst.interest, { symbol: false }),
+      principal: formatMoney(inst.principal, { symbol: false }),
+      closing: formatMoney(inst.closingBalance, { symbol: false }),
       status,
       settled: inst.status === 'settled',
       overdue: inst.status === 'overdue',
       payment: inst.payment ?? null,
-      phoneSub: `interest ${formatAmount(inst.interest, 0)} · principal ${formatAmount(inst.principal, 0)}`,
+      phoneSub: `interest ${formatMoney(inst.interest, { symbol: false })} · principal ${formatMoney(inst.principal, { symbol: false })}`,
       fy: String(fyStartYear(inst.dueDate)),
       band:
         happened.length > 0
@@ -218,7 +218,7 @@ export function fySplits(schedule: InstallmentDto[], today: string): FySplit[] {
     const rows = schedule.filter((i) => fyStartYear(i.dueDate) === y);
     out.push({
       label: fyLabel(y),
-      emiTotal: formatCompactRupees(rows.reduce((sum, i) => sum + i.emi, 0)),
+      emiTotal: formatMoney(rows.reduce((sum, i) => sum + i.emi, 0), { compact: true }),
       emis: rows.length,
       interest: rows.reduce((sum, i) => sum + i.interest, 0),
       principal: rows.reduce((sum, i) => sum + i.principal, 0),

@@ -4,8 +4,8 @@ import React from 'react';
 
 import { Button, Card, Dialog, DialogBody, DialogContent, Select, showToast, Text, TextField } from '@/components/ds';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
-import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { formatDate, formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { accountAnniversaryDate, type RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -63,7 +63,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
           </Fact>
         )}
         <Fact label="Anniversary">
-          <Text variant="body-strong">{anniversary ? formatDayMonthYear(anniversary) : 'Not set'}</Text>
+          <Text variant="body-strong">{anniversary ? formatDate(anniversary, 'full') : 'Not set'}</Text>
           {account ? (
             <Text variant="label" as="div">
               <Button variant="link" size="sm" onClick={() => setEditingCard(true)}>
@@ -120,7 +120,7 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
                 : 'Card now defaults to cash'
               : !typeChanged && valueChanged
                 ? num != null
-                  ? `Point value set to ₹${num}/pt`
+                  ? `Point value set to ${formatMoney(num, { decimals: 'auto' })}/pt`
                   : 'Point value reset to default (₹0.25/pt)'
                 : 'Card settings saved',
           );

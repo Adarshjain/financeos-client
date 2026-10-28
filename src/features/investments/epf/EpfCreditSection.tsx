@@ -5,9 +5,9 @@ import React from 'react';
 import { Button, Card, Checkbox, ListRow, showToast, StatusWord, Text } from '@/components/ds';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { formatMoney } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { rupees } from '../investmentsFormat';
 import { creditLine, type EpfEntry, type EpfLinkedTransaction } from './epfModel';
 import type { useEpfMutations } from './useEpfMutations';
 
@@ -31,7 +31,7 @@ function CreditCard({ credit, footer }: { credit: EpfLinkedTransaction; footer: 
         title={credit.description || 'Bank credit'}
         subtitle={creditLine(credit)}
         trailing={
-          <Text variant="body-strong" tone="positive">{`+${rupees(credit.amount)}`}</Text>
+          <Text variant="body-strong" tone="positive">{`+${formatMoney(credit.amount, { decimals: 'auto' })}`}</Text>
         }
       />
       <div className="flex items-center justify-between gap-space-8 px-space-12 pb-space-8">{footer}</div>
@@ -121,7 +121,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
         <ListRow
           className="px-0"
           leading={<Checkbox id="epf-record-tds" checked={recordTds} onCheckedChange={(on) => setRecordTds(on === true)} />}
-          title={<label htmlFor="epf-record-tds">{`Record TDS of ${rupees(picked.gap)}`}</label>}
+          title={<label htmlFor="epf-record-tds">{`Record TDS of ${formatMoney(picked.gap, { decimals: 'auto' })}`}</label>}
         />
         <div>
           <Button type="button" size="sm" disabled={busy} onClick={() => void link(picked.credit.id, recordTds)}>

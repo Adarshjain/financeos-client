@@ -13,11 +13,10 @@ import {
   TextArea,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { PersonSelect } from '@/features/lendings/form/PersonSelect';
-import { plainAmount } from '@/features/loans/loanFormat';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatMoney } from '@/lib/format';
 import { selectionName } from '@/lib/lending.types';
 import { ENTRY_TYPE_LABEL, entryTypesForDirection, isSettlementType, settlementWarning } from '@/lib/lendingEntry';
 
@@ -165,16 +164,16 @@ function ExistingEntries({
             key={entry.id}
             role="radio"
             aria-checked={entryId === entry.id}
-            aria-label={`${formatDayMonth(entry.entryDate)} ₹${plainAmount(entry.amount)}`}
+            aria-label={`${formatDate(entry.entryDate, 'list')} ${formatMoney(entry.amount, { decimals: 'auto' })}`}
             className="px-0"
             wrap
             onClick={() => onEntryChange(entry.id)}
             leading={<Radio checked={entryId === entry.id} tabIndex={-1} aria-hidden="true" />}
             title={entry.notes || DIRECTION_WORDS[direction]}
-            subtitle={formatDayMonth(entry.entryDate)}
+            subtitle={formatDate(entry.entryDate, 'list')}
             trailing={
               <Text variant="body-strong" as="span">
-                {`₹${plainAmount(entry.amount)}`}
+                {formatMoney(entry.amount, { decimals: 'auto' })}
               </Text>
             }
           />

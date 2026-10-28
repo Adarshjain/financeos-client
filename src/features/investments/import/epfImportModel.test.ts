@@ -64,7 +64,7 @@ describe('batch result wording', () => {
   });
   it('keeps the single-employer wording', () => {
     expect(resultTitle(r())).toBe('Imported 3 entries');
-    expect(resultLine(r())).toBe('2 new and 1 replaced. EPF balance is now ₹8,43,210, up to Sep 2026.');
+    expect(resultLine(r())).toBe('2 new and 1 replaced. EPF balance is now ₹8,43,210, up to September 2026.');
   });
   it('names the employers when there are several and uses the latest month', () => {
     const two = r({
@@ -73,7 +73,7 @@ describe('batch result wording', () => {
         { employerId: 'e2', employerName: 'M', imported: 1, replaced: 1, skipped: 0, balance: 1, throughMonth: '2026-09-01' },
       ],
     });
-    expect(resultLine(two)).toBe('2 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to Sep 2026.');
+    expect(resultLine(two)).toBe('2 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to September 2026.');
   });
 });
 

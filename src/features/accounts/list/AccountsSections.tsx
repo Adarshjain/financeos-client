@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
 import {
-  Badge,
   Button,
   Card,
   createDataTableColumnHelper,
@@ -236,11 +235,11 @@ const bankBaseColumns = [
     meta: { size: 'md', align: 'start', phone: 'status', wrap: true },
     cell: ({ row }) => (
       <div className="flex flex-wrap items-center gap-space-4">
-        <Badge tone={row.original.synced ? 'success' : 'neutral'}>
+        <StatusWord tone={row.original.synced ? 'success' : 'neutral'}>
           {row.original.synced ? 'Gmail synced' : 'Manual'}
-        </Badge>
+        </StatusWord>
         {row.original.gapLabel ? (
-          <Badge tone="warning">{row.original.gapLabel}</Badge>
+          <StatusWord tone="warning">{row.original.gapLabel}</StatusWord>
         ) : null}
       </div>
     ),
@@ -342,9 +341,9 @@ function CardBadges({ row }: { row: CardListRow }) {
     <div className="flex flex-wrap items-center justify-end desk:justify-start gap-space-4">
       {row.billSlot}
       {row.extraBadges.map((badge) => (
-        <Badge key={badge.label} tone={badge.tone}>
+        <StatusWord key={badge.label} tone={badge.tone}>
           {badge.label}
-        </Badge>
+        </StatusWord>
       ))}
       {row.closing ? (
         <StatusWord tone="neutral">{row.closing}</StatusWord>

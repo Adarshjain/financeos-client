@@ -1,9 +1,9 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 import { ratioText } from '../corporate-actions/corporateActionRatio';
-import { dayWithTime, istTime, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
+import { moveTone, priceTimeLabel, unitWord } from '../investmentsFormat';
 
 // ---- Sections ------------------------------------------------------------------
 
@@ -35,11 +35,11 @@ export interface HoldingHeroModel {
 }
 
 export function holdingHero(holding: HoldingDetail): HoldingHeroModel {
-  if (holding.noPrice) return { value: rupees(holding.currentValue), line: null };
-  const parts = [signedRupees(holding.unrealised)];
-  if (holding.unrealisedPct != null) parts.push(signedPct(holding.unrealisedPct));
-  if (holding.dayChangePct != null && !holding.manualPrice) parts.push(`today ${signedPct(holding.dayChangePct)}`);
-  return { value: rupees(holding.currentValue), line: { text: parts.join(' · '), tone: moveTone(holding.unrealised) } };
+  if (holding.noPrice) return { value: formatMoney(holding.currentValue), line: null };
+  const parts = [formatMoney(holding.unrealised, { sign: 'always' })];
+  if (holding.unrealisedPct != null) parts.push(formatPercent(holding.unrealisedPct, { sign: 'always' }));
+  if (holding.dayChangePct != null && !holding.manualPrice) parts.push(`today ${formatPercent(holding.dayChangePct, { sign: 'always' })}`);
+  return { value: formatMoney(holding.currentValue), line: { text: parts.join(' · '), tone: moveTone(holding.unrealised) } };
 }
 
 // ---- Figures ---------------------------------------------------------------------
@@ -65,50 +65,50 @@ export function sourceWord(source: string | null | undefined): string {
 export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number, now: Date = new Date()): HoldingFigure[] {
   const unit = unitWord(holding.assetType, holding.quantity);
   const source = holding.manualPrice ? 'manual price' : sourceWord(instrument?.lastPriceSource);
-  const day = holding.priceAsOf ? formatDayMonth(holding.priceAsOf) : '';
+  const day = holding.priceAsOf ? formatDate(holding.priceAsOf, 'list') : '';
   const timed = holding.manualPrice || !day ? '' : priceTimeLabel(day, holding.priceAt, now);
-  const asOf = timed || dayWithTime(day, holding.priceAt);
+  const asOf = timed || (day ? [day, formatTime(holding.priceAt)].filter(Boolean).join(', ') : '');
   return [
-    { id: 'quantity', label: 'Quantity', value: quantity(holding.quantity) },
-    { id: 'avgCost', label: 'Avg cost', value: unitPrice(holding.avgCost) },
+    { id: 'quantity', label: 'Quantity', value: formatQuantity(holding.quantity) },
+    { id: 'avgCost', label: 'Avg cost', value: formatMoney(holding.avgCost, { decimals: 'exact' }) },
     {
       id: 'ltp',
       label: 'LTP',
-      value: holding.ltp != null && !holding.noPrice ? unitPrice(holding.ltp) : '—',
+      value: holding.ltp != null && !holding.noPrice ? formatMoney(holding.ltp, { decimals: 'exact' }) : '—',
       context: (timed ? [asOf] : [source, asOf]).filter(Boolean).join(' · ') || undefined,
       override: true,
     },
     {
       id: 'xirr',
       label: 'XIRR',
-      value: holding.xirr == null ? '—' : plainPct(holding.xirr),
+      value: holding.xirr == null ? '—' : formatPercent(holding.xirr),
       tone: moveTone(holding.xirr),
-      context: holding.firstBuyDate ? `since ${shortDate(holding.firstBuyDate)}` : undefined,
+      context: holding.firstBuyDate ? `since ${formatDate(holding.firstBuyDate, 'list')}` : undefined,
     },
     {
       id: 'invested',
       label: 'Invested',
-      value: rupees(holding.invested),
-      context: holding.quantity > 0 ? `${quantity(holding.quantity)} ${unit} at ${unitPrice(holding.avgCost).replace(/\.00$/, '')} avg` : undefined,
+      value: formatMoney(holding.invested),
+      context: holding.quantity > 0 ? `${formatQuantity(holding.quantity)} ${unit} at ${formatMoney(holding.avgCost, { decimals: 'auto' })} avg` : undefined,
     },
     {
       id: 'return',
       label: '₹ return',
-      value: holding.noPrice ? '—' : signedRupees(holding.unrealised),
+      value: holding.noPrice ? '—' : formatMoney(holding.unrealised, { sign: 'always' }),
       tone: holding.noPrice ? undefined : moveTone(holding.unrealised),
-      context: holding.noPrice ? 'no price' : `unrealised${holding.unrealisedPct == null ? '' : ` · ${signedPct(holding.unrealisedPct)}`}`,
+      context: holding.noPrice ? 'no price' : `unrealised${holding.unrealisedPct == null ? '' : ` · ${formatPercent(holding.unrealisedPct, { sign: 'always' })}`}`,
     },
     {
       id: 'realised',
       label: 'Realised P&L',
-      value: Math.round(holding.realisedPnl) === 0 ? '₹0' : signedRupees(holding.realisedPnl),
+      value: formatMoney(holding.realisedPnl, { sign: 'always' }),
       tone: moveTone(holding.realisedPnl),
       context: Math.round(holding.realisedPnl) === 0 ? 'nothing sold yet' : 'booked on sells',
     },
     {
       id: 'charges',
       label: 'Total charges',
-      value: `₹${plainPrice(holding.totalCharges)}`,
+      value: formatMoney(holding.totalCharges, { decimals: 'exact' }),
       context: tradeCount > 0 ? `across ${tradeCount} ${tradeCount === 1 ? 'trade' : 'trades'}` : undefined,
     },
   ];
@@ -119,14 +119,14 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
 /** "Gain ₹48,162 · long term · tax ≈ ₹0 · ₹1,06,521 exemption left". */
 export function sellLine(est: SellEstimate): string {
   if (est.noPrice) return 'No price to estimate with';
-  const parts = [`${est.gain < 0 ? 'Loss' : 'Gain'} ${rupees(Math.abs(est.gain))}`];
+  const parts = [`${est.gain < 0 ? 'Loss' : 'Gain'} ${formatMoney(Math.abs(est.gain))}`];
   const longTerm = Math.round(est.longTermGain) !== 0;
   const shortTerm = Math.round(est.shortTermGain) !== 0;
   if (longTerm && shortTerm) parts.push('long and short term');
   else if (longTerm) parts.push('long term');
   else if (shortTerm) parts.push('short term');
-  if (est.tax != null) parts.push(`tax ≈ ${rupees(est.tax)}`);
-  if (est.exemptionLeftAfter != null) parts.push(`${rupees(est.exemptionLeftAfter)} exemption left`);
+  if (est.tax != null) parts.push(`tax ≈ ${formatMoney(est.tax)}`);
+  if (est.exemptionLeftAfter != null) parts.push(`${formatMoney(est.exemptionLeftAfter)} exemption left`);
   return parts.join(' · ');
 }
 
@@ -152,20 +152,20 @@ export function tradeRow(t: InvestmentTransactionResponse): TradeRow {
   const qty = Number(t.quantity);
   const price = Number(t.price);
   const side = t.type === 'sell' ? 'Sell' : 'Buy';
-  const pnl = side === 'Sell' && t.realisedPnl != null ? { text: `P&L ${signedRupees(t.realisedPnl)}`, plain: `P&L ${plainSignedRupees(t.realisedPnl)}`, tone: moveTone(t.realisedPnl) } : null;
-  const date = shortDate(t.tradeDate);
+  const pnl = side === 'Sell' && t.realisedPnl != null ? { text: `P&L ${formatMoney(t.realisedPnl, { sign: 'always' })}`, plain: `P&L ${formatMoney(t.realisedPnl, { sign: 'always', symbol: false })}`, tone: moveTone(t.realisedPnl) } : null;
+  const date = formatDate(t.tradeDate, 'list');
   return {
     id: t.id,
     date,
     side,
     broker: t.brokerName,
-    quantity: quantity(qty),
-    price: unitPrice(price),
-    value: rupees(qty * price),
-    pricePlain: plainPrice(price),
-    valuePlain: plainRupees(qty * price),
+    quantity: formatQuantity(qty),
+    price: formatMoney(price, { decimals: 'exact' }),
+    value: formatMoney(qty * price),
+    pricePlain: formatMoney(price, { decimals: 'exact', symbol: false }),
+    valuePlain: formatMoney(qty * price, { symbol: false }),
     pnl,
-    phoneSub: [date, `${quantity(qty)} @ ${unitPrice(price).replace(/\.00$/, '')}`, pnl?.text].filter(Boolean).join(' · '),
+    phoneSub: [date, `${formatQuantity(qty)} @ ${formatMoney(price, { decimals: 'auto' })}`, pnl?.text].filter(Boolean).join(' · '),
   };
 }
 
@@ -183,17 +183,17 @@ export function dividendRow(d: Dividend): DividendRowModel {
   const word = DIVIDEND_WORDS[d.type] ?? 'Dividend';
   const tds = d.tds != null && Number(d.tds) > 0 ? Number(d.tds) : null;
   const subtitle = [
-    d.exDate ? `ex ${shortDate(d.exDate)}` : '',
-    `paid ${shortDate(d.payDate)}`,
-    tds != null ? `TDS ${rupees(tds)}` : '',
+    d.exDate ? `ex ${formatDate(d.exDate, 'list')}` : '',
+    `paid ${formatDate(d.payDate, 'list')}`,
+    tds != null ? `TDS ${formatMoney(tds)}` : '',
   ]
     .filter(Boolean)
     .join(' · ');
   return {
     id: d.id,
-    title: perUnit != null ? `${word} ${unitPrice(perUnit).replace(/\.00$/, '')} / share` : word,
+    title: perUnit != null ? `${word} ${formatMoney(perUnit, { decimals: 'auto' })} / share` : word,
     subtitle,
-    amount: `+${rupees(Number(d.amount))}`,
+    amount: `+${formatMoney(Number(d.amount))}`,
   };
 }
 
@@ -213,7 +213,7 @@ export function corporateActionRow(a: CorporateAction): CorporateActionRowModel 
   return {
     id: a.id,
     title: `${ACTION_WORDS[kind] ?? kind}${ratio}`,
-    subtitle: [a.exDate ? `ex ${shortDate(a.exDate)}` : '', target, a.notes ?? ''].filter(Boolean).join(' · '),
+    subtitle: [a.exDate ? `ex ${formatDate(a.exDate, 'list')}` : '', target, a.notes ?? ''].filter(Boolean).join(' · '),
   };
 }
 
@@ -234,10 +234,10 @@ export function priceRow(p: PricePoint): PriceRowModel {
   return {
     id: p.id,
     asOf: p.asOf,
-    date: shortDate(p.asOf),
-    time: istTime(p.priceAt),
+    date: formatDate(p.asOf, 'list'),
+    time: formatTime(p.priceAt),
     source: sourceWord(p.source),
-    amount: unitPrice(p.close),
+    amount: formatMoney(p.close, { decimals: 'exact' }),
     close: p.close,
     editable: p.editable && Boolean(p.id),
   };

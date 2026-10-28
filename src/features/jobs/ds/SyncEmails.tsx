@@ -4,11 +4,10 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 
 import { Button, Card, CardRow, Icon, Text, useConcealed } from '@/components/ds';
-import { dayMonth, numericDateTime } from '@/features/jobs/format';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabels';
 import { appHref } from '@/features/shell/routes';
+import { formatDate, formatMoney, formatTime } from '@/lib/format';
 import type { SyncMessageResult } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
 
 const CONNECTIONS_HREF = appHref('/settings/connections');
 const ACCOUNTS_HREF = appHref('/accounts');
@@ -60,7 +59,7 @@ function Outcome({ message }: { message: SyncMessageResult }) {
         <Text variant="caption" tone="ink-3" as="p">
           Attempt {message.attemptCount}
           {message.status === 'FAILED_RETRYABLE' && message.nextRetryAt
-            ? ` · next retry ${numericDateTime(message.nextRetryAt)}`
+            ? ` · next retry ${formatDate(message.nextRetryAt, 'input')}, ${formatTime(message.nextRetryAt)}`
             : ''}
           {message.status === 'FAILED_PERMANENT' ? ' · no more automatic retries' : ''}
         </Text>
@@ -99,7 +98,7 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
           </Text>
         </div>
         <Text variant="caption" tone="ink-3" className="shrink-0">
-          {dayMonth(message.receivedAt)}
+          {formatDate(message.receivedAt, 'list')}
         </Text>
       </div>
 
@@ -138,11 +137,10 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
           {message.transactions.map((t) => (
             <li key={t.id} className="flex items-center justify-between gap-space-8">
               <Text variant="caption" tone="ink-2" truncate>
-                {dayMonth(t.date)} {t.description || '—'}
+                {formatDate(t.date, 'list')} {t.description || '—'}
               </Text>
               <Text variant="caption" tone={t.type === 'CREDIT' && !concealed ? 'positive' : 'ink'} className="shrink-0">
-                {t.type === 'CREDIT' ? '+' : ''}
-                {formatCurrency(t.amount)}
+                {formatMoney(t.amount, { decimals: 'exact', sign: t.type === 'CREDIT' ? 'always' : 'auto' }) || '—'}
               </Text>
             </li>
           ))}

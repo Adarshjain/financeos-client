@@ -1,6 +1,7 @@
 import type { Cardholder } from '@/lib/account.types';
+import { formatCount, formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { MilestoneWindow, RewardMilestone, RewardType } from '@/lib/rewards.types';
-import { formatDate, parseCalendarDate, toCalendarDate } from '@/lib/utils';
+import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 export const MILESTONE_WINDOW_LABELS: Record<MilestoneWindow, string> = {
   CALENDAR_MONTH: 'Calendar month',
@@ -45,19 +46,18 @@ const WINDOW_SHORT: Record<MilestoneWindow, string> = {
   ONE_TIME: 'one-time',
 };
 
-const grouped = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-const rupees = (n: number) => `₹${grouped(n)}`;
+const rupees = (n: number) => formatMoney(n, { decimals: 'auto' });
 
 /** "₹50,000 spend / quarter → ₹1,000 on achievement" (the Legacy summary line). */
 export function milestoneSummary(m: RewardMilestone): string {
   const target =
     m.basis === 'SPEND'
       ? `${rupees(m.threshold)} spend`
-      : `${grouped(m.threshold)} txns${m.minTxnAmount ? ` of ${rupees(m.minTxnAmount)}+` : ''}`;
+      : `${formatCount(m.threshold, 'txns')}${m.minTxnAmount ? ` of ${rupees(m.minTxnAmount)}+` : ''}`;
   const value = m.payoutValue ?? 0;
   const payout =
     m.payoutType === 'CASH_VALUE'
-      ? `→ ${m.rewardType === 'POINTS' ? `${grouped(value)} pts` : rupees(value)}${m.payoutTiming === 'ON_ACHIEVEMENT' ? ' on achievement' : ''}`
+      ? `→ ${m.rewardType === 'POINTS' ? `${formatQuantity(value, 2)} pts` : rupees(value)}${m.payoutTiming === 'ON_ACHIEVEMENT' ? ' on achievement' : ''}`
       : '→ tracker';
   return `${target} / ${WINDOW_SHORT[m.windowType]} ${payout}`;
 }
@@ -68,7 +68,7 @@ export function milestoneDetail(m: RewardMilestone): string {
   if (m.includeCategoryIds.length + m.includeMccs.length > 0) parts.push('restricted eligible spend');
   if (m.excludeCategoryIds.length + m.excludeMccs.length > 0) parts.push('has exclusions');
   if (m.activeFrom || m.activeTo) {
-    parts.push(`${m.activeFrom ? formatDate(m.activeFrom) : 'always'} → ${m.activeTo ? formatDate(m.activeTo) : 'open-ended'}`);
+    parts.push(`${m.activeFrom ? formatDate(m.activeFrom, 'list') : 'always'} → ${m.activeTo ? formatDate(m.activeTo, 'list') : 'open-ended'}`);
   }
   return parts.join(' · ');
 }

@@ -104,7 +104,7 @@ describe('/accounts streaming', () => {
     loadMock.mockReturnValue(toStreams({ ...plain, bills: [bill] }));
     await resolved();
 
-    expect(screen.getAllByText('1 Jan').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('1 Jan 2999').length).toBeGreaterThan(0);
     expect(screen.queryByText('Statement missing')).toBeNull();
   });
 

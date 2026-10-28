@@ -52,6 +52,7 @@ vi.mock('./matchActions', () => ({ loadLoanMatches }));
 import { api } from '@/lib/api/client';
 import type { InstallmentDto } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import {
@@ -63,6 +64,8 @@ import {
   TODAY,
 } from './loanDetail.fixtures';
 import { LoanDetailView, type LoanDetailViewProps } from './LoanDetailView';
+
+pinClock();
 
 type Mock = ReturnType<typeof vi.fn>;
 const user = userEvent.setup({ pointerEventsCheck: 0 });
@@ -107,7 +110,7 @@ describe('header', () => {
     expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText('Floating 8.25%')).toBeInTheDocument();
     expect(
-      screen.getByText('State Bank of India · #SBIHL00482913 · started 1 Aug 25 · ends Jan 45 · paid from HDFC Bank Savings'),
+      screen.getByText('State Bank of India · #SBIHL00482913 · started 1 Aug 2025 · ends January 2045 · paid from HDFC Bank Savings'),
     ).toBeInTheDocument();
   });
 
@@ -127,9 +130,9 @@ describe('header', () => {
     expect(screen.getByText('effective APR 8.72%')).toBeInTheDocument();
     expect(screen.getByText('13 / 233')).toBeInTheDocument();
     expect(screen.getByText('7 months saved by prepayment')).toBeInTheDocument();
-    expect(screen.getByText('Aug 25')).toBeInTheDocument();
+    expect(screen.getByText('August 2025')).toBeInTheDocument();
     expect(screen.getByText('Today · EMI 13 settled')).toBeInTheDocument();
-    expect(screen.getByText('Jan 45')).toBeInTheDocument();
+    expect(screen.getByText('January 2045')).toBeInTheDocument();
   });
 
   it('leaves out the words that do not apply', () => {
@@ -287,11 +290,11 @@ describe('events and charges', () => {
     expect(screen.getByText('Events & charges')).toBeInTheDocument();
     expect(screen.getByText('4 entries')).toBeInTheDocument();
     expect(screen.getByText('Rate change · 8.25%')).toBeInTheDocument();
-    expect(screen.getByText('1 Aug 26 · reduce EMI')).toBeInTheDocument();
+    expect(screen.getByText('1 Aug · reduce EMI')).toBeInTheDocument();
     expect(screen.getByText('Prepayment')).toBeInTheDocument();
     expect(screen.getByText('₹2,00,000')).toBeInTheDocument();
     expect(screen.getByText('Insurance premium')).toBeInTheDocument();
-    expect(screen.getByText('1 Aug 25 · SBI Life RiNn Raksha')).toBeInTheDocument();
+    expect(screen.getByText('1 Aug 2025 · SBI Life RiNn Raksha')).toBeInTheDocument();
     expect(screen.getByText('Processing fee')).toBeInTheDocument();
   });
 
@@ -322,13 +325,13 @@ describe('events and charges', () => {
     renderView();
     await user.click(screen.getAllByRole('button', { name: 'More options' })[1]);
     await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
-    expect(await screen.findByText('Removes Prepayment, 1 Jun 26 · reduce tenure.')).toBeInTheDocument();
+    expect(await screen.findByText('Removes Prepayment, 1 Jun · reduce tenure.')).toBeInTheDocument();
     expect(screen.getByText('A linked bank transaction stays; only the link goes.')).toBeInTheDocument();
     expect(m.deleteEvent.mutateAsync).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(m.deleteEvent.mutateAsync).not.toHaveBeenCalled();
-    expect(screen.queryByText('Removes Prepayment, 1 Jun 26 · reduce tenure.')).toBeNull();
+    expect(screen.queryByText('Removes Prepayment, 1 Jun · reduce tenure.')).toBeNull();
   });
 
   it('deletes the event once confirmed', async () => {
@@ -354,7 +357,7 @@ describe('events and charges', () => {
     renderView({ detail: detailFixture({ charges: [chargeFixture()] }) });
     await user.click(screen.getAllByRole('button', { name: 'More options' }).at(-1)!);
     await user.click(await screen.findByRole('menuitem', { name: 'Delete charge' }));
-    expect(await screen.findByText('Removes Insurance premium of ₹24,500, 1 Aug 25 · SBI Life RiNn Raksha.')).toBeInTheDocument();
+    expect(await screen.findByText('Removes Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha.')).toBeInTheDocument();
     expect(m.deleteCharge.mutateAsync).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Delete charge' }));
     await waitFor(() => expect(m.deleteCharge.mutateAsync).toHaveBeenCalledWith('c1'));

@@ -2,70 +2,27 @@
 
 import React from 'react';
 
-import { Badge, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Text, useConcealed } from '@/components/ds';
+import { Card, DataTable, EmptyState } from '@/components/ds';
+import { transactionColumns,TransactionRow, type TransactionRowData } from '@/components/organisms';
 import { appHref } from '@/features/shell/routes';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
 import type { TransactionRowModel } from './overview/cardOverviewModel';
 import { HeaderLink } from './overview/HeaderLink';
 
-function AmountCell({ amount, credit }: { amount: string; credit?: boolean }) {
-  const concealed = useConcealed();
-  return (
-    <Text variant="body-strong" tone={credit && !concealed ? 'positive' : 'ink'} fraction="small">
-      {amount}
-    </Text>
-  );
+/** The model as the Transactions list's row data: the same columns and TransactionRow draw it. */
+function asRowData(row: TransactionRowModel): TransactionRowData {
+  return {
+    id: row.id,
+    date: row.date,
+    description: row.description,
+    category: row.category ?? undefined,
+    amount: row.amount,
+    formattedAmount: row.amount,
+    isCredit: row.credit,
+    balance: row.balanceLabel ?? undefined,
+  };
 }
-
-const ch = createDataTableColumnHelper<TransactionRowModel>();
-const columns = [
-  ch.display({
-    id: 'date',
-    header: 'Date',
-    meta: { size: 'sm', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3">
-        {row.original.date}
-      </Text>
-    ),
-  }),
-  ch.display({
-    id: 'description',
-    header: 'Description',
-    meta: { size: 'fill', phone: 'main' },
-    cell: ({ row }) => <Text variant="body-strong">{row.original.description}</Text>,
-  }),
-  ch.display({
-    id: 'category',
-    header: 'Category',
-    meta: { size: 'md', phone: 'status' },
-    cell: ({ row }) =>
-      row.original.category ? (
-        <Badge tone="neutral">{row.original.category}</Badge>
-      ) : (
-        <Text variant="body" tone="ink-3">
-          —
-        </Text>
-      ),
-  }),
-  ch.display({
-    id: 'amount',
-    header: 'Amount',
-    meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <AmountCell amount={row.original.amount} credit={row.original.credit} />,
-  }),
-  ch.display({
-    id: 'balance',
-    header: 'Balance',
-    meta: { size: 'sm', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Text variant="body" tone="ink-3">
-        {row.original.balance ? <Conceal whole placeholder="">{row.original.balance}</Conceal> : '—'}
-      </Text>
-    ),
-  }),
-];
 
 export function RecentTransactionsCard({
   accountId,
@@ -80,6 +37,7 @@ export function RecentTransactionsCard({
   /** "Recent entries" for a wallet. */
   title?: string;
 }) {
+  const data = React.useMemo(() => rows.map(asRowData), [rows]);
   return (
     <Card
       title={title}
@@ -92,11 +50,22 @@ export function RecentTransactionsCard({
     >
       <ListTransition>
         <DataTable
-          columns={columns}
-          data={rows}
+          columns={transactionColumns}
+          data={data}
           getRowId={(row) => row.id}
           wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
-          phoneSub={(row) => (row.balance ? `${row.date} · bal ₹${row.balance}` : row.date)}
+          dayHeader={(row) => ({ key: row.date, label: row.date, sublabel: '' })}
+          renderRow={(row) => (
+            <TransactionRow
+              key={row.id}
+              date={row.date}
+              description={row.description}
+              amount={row.formattedAmount}
+              isCredit={row.isCredit}
+              balance={row.balance}
+              categories={row.category ? [row.category] : undefined}
+            />
+          )}
           empty={<EmptyState compact description="No transactions yet" />}
         />
       </ListTransition>

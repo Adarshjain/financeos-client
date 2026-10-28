@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { eventFixture, installment, loanFixture, scheduleFixture, TODAY } from './loanDetail.fixtures';
 import {
   emiChange,
@@ -9,13 +11,10 @@ import {
   monthsSaved,
   nextEmi,
   repaidPct,
-  shortDate,
   termsLocked,
 } from './loanDetailModel';
 
-describe('shortDate', () => {
-  it('reads "1 Aug 25"', () => expect(shortDate('2025-08-01')).toBe('1 Aug 25'));
-});
+pinClock();
 
 describe('loanHeader', () => {
   it('says the status and rate in words and lists the particulars in order', () => {
@@ -23,7 +22,7 @@ describe('loanHeader', () => {
     expect(header.status).toEqual({ label: 'Active', tone: 'success' });
     expect(header.rate).toBe('Floating 8.25%');
     expect(header.meta).toBe(
-      'State Bank of India · #SBIHL00482913 · started 1 Aug 25 · ends Jan 45 · paid from HDFC Bank Savings',
+      'State Bank of India · #SBIHL00482913 · started 1 Aug 2025 · ends January 2045 · paid from HDFC Bank Savings',
     );
   });
 
@@ -35,7 +34,7 @@ describe('loanHeader', () => {
       TODAY,
     );
     expect(header.rate).toBe('Fixed 9%');
-    expect(header.meta).toBe('started 1 Aug 25');
+    expect(header.meta).toBe('started 1 Aug 2025');
   });
 
   it('names closed and foreclosed loans', () => {
@@ -144,9 +143,9 @@ describe('tiles', () => {
   it('the bar runs from the start month to the end month with today in the middle', () => {
     expect(loanTiles(loanFixture(), []).timeline).toEqual({
       pct: expect.closeTo(6.837, 2),
-      start: 'Aug 25',
+      start: 'August 2025',
       today: 'Today · EMI 13 settled',
-      end: 'Jan 45',
+      end: 'January 2045',
     });
     expect(loanTiles(loanFixture({ projectedEndDate: null }), []).timeline.end).toBe('—');
   });

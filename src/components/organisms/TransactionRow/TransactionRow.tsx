@@ -97,6 +97,12 @@ export interface TransactionRowProps
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
 
+  /**
+   * The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette):
+   * no table cells, the date joins the grey context line and categories ride it as text.
+   */
+  compact?: boolean;
+
   /** Search text: matches in string description, account, categories, amount, note, plastic and contextLine get the marker stroke */
   query?: string;
 }
@@ -136,6 +142,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       chevron = false,
       borderTop = true,
       query,
+      compact = false,
       className,
       children,
       ...props
@@ -173,6 +180,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       );
     };
 
+    // `compact` keeps the phone layout at every width: every desk: class goes, every desktop-only cell stays hidden.
+    const desk = (classes: string) => (compact ? undefined : classes);
     const isWarning = tone === 'warning';
     const isSelectable = Boolean(selectable);
 
@@ -194,6 +203,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     // account name first, plastic, amber review words, note, blue link/record words, grey provenance
     const contextElements: React.ReactNode[] = [];
     const desktopContextElements: React.ReactNode[] = [];
+
+    if (compact && date) {
+      const el = <span key="date">{mark(date)}</span>;
+      contextElements.push(el);
+    }
 
     if (contextLine) {
       contextElements.push(mark(contextLine));
@@ -373,13 +387,15 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         ref={ref}
         role={isInteractive ? 'row' : undefined}
         aria-selected={isSelectable ? selected : undefined}
+        aria-disabled={disabled || undefined}
         tabIndex={isInteractive && !disabled ? 0 : undefined}
         className={cn(
           'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
-          'desk:grid desk:grid-cols-template desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent',
+          desk('desk:grid desk:grid-cols-template desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent'),
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
           selected && 'bg-brand-tint',
-          isWarning && 'bg-attention-tint desk:border-l-attention',
+          isWarning && 'bg-attention-tint',
+          isWarning && desk('desk:border-l-attention'),
           disabled && 'opacity-60 pointer-events-none',
           muted && !disabled && 'opacity-60',
           highlighted && !selected && !isWarning && 'bg-brand-tint',
@@ -391,14 +407,14 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       >
         {isWarning && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none desk:hidden"
+            className={cn('absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none', desk('desk:hidden'))}
             aria-hidden="true"
           />
         )}
 
-        <div className="flex items-center gap-space-10 min-w-0 w-full desk:contents">
+        <div className={cn('flex items-center gap-space-10 min-w-0 w-full', desk('desk:contents'))}>
           {/* Desktop Checkbox (Cell 1 when selectable) */}
-          {isSelectable && (
+          {isSelectable && !compact && (
             <div
               role="cell"
               {...nestedControlProps}
@@ -418,23 +434,26 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
           {/* Leading Avatar / Mark (phone only) */}
           {leading && (
-            <div className="shrink-0 flex items-center desk:hidden">
+            <div className={cn('shrink-0 flex items-center', desk('desk:hidden'))}>
               {leading}
             </div>
           )}
 
           {/* Desktop Date (Cell 2) */}
-          <div
-            role="cell"
-            className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
-          >
-            {date}
-          </div>
+          {!compact && (
+            <div
+              role="cell"
+              className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
+            >
+              {date}
+            </div>
+          )}
 
           {/* Inner wrapper 2 */}
           <div
             className={cn(
-              'grid min-w-0 w-full flex-1 desk:contents',
+              'grid min-w-0 w-full flex-1',
+              desk('desk:contents'),
               // Eye only: the spacing lives in the amount cell and the Reveal content, so the closed
               // eye (0 wide) leaves no gap. With a chevron the grid gap stays.
               eyeOnly ? 'gap-x-0' : 'gap-x-space-10',
@@ -446,14 +465,17 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {/* Description and context line (Cell 3 on desktop, col 1 row 1 on phone) */}
             <div
               role="cell"
-              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
+              className={cn(
+                'col-start-1 row-start-1 text-heading text-ink break-words min-w-0',
+                desk('desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6'),
+              )}
             >
-              <div className="text-heading font-semibold desk:text-body-strong desk:font-semibold text-ink break-words">
+              <div className={cn('text-heading font-semibold text-ink break-words', desk('desk:text-body-strong desk:font-semibold'))}>
                 {mark(description) ?? children}
               </div>
               {/* Phone context line (starts with the account) */}
               {phoneContextElements.length > 0 && (
-                <div className="flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0 desk:hidden">
+                <div className={cn('flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0', desk('desk:hidden'))}>
                   {phoneContextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
@@ -463,7 +485,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 </div>
               )}
               {/* Desktop context line under description */}
-              {desktopContextElements.length > 0 && (
+              {!compact && desktopContextElements.length > 0 && (
                 <div className="hidden desk:flex flex-wrap items-center gap-x-space-4 text-caption text-ink-3 break-words mt-space-2">
                   {desktopContextElements.map((el, i) => (
                     <React.Fragment key={i}>
@@ -476,6 +498,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             </div>
 
             {/* Categories (Cell 4 on desktop only; on phone they sit in the context line) */}
+            {!compact && (
+              <>
             <div
               role="cell"
               className="hidden desk:flex items-center justify-start gap-space-4 desk:px-space-12 desk:py-space-6 min-w-0 truncate"
@@ -492,6 +516,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               {mark(account)}
               {plastic && <> {mark(plastic)}</>}
             </div>
+              </>
+            )}
 
             {/* Amount (Cell 6 on desktop; on phone col 2 across both rows, top-aligned, so it never pushes the left column apart) */}
             <div
@@ -499,29 +525,31 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               className={cn(
                 eyeOnly && 'pl-space-10',
                 'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
-                'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
+                desk('desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end'),
                 isCredit && !concealed ? 'text-positive' : 'text-ink',
               )}
             >
               {concealed && amount !== undefined ? CONCEAL_PLACEHOLDER : markAmount(amount)}
               {balance && !concealed && (
-                <div className="text-caption font-medium text-ink-3 desk:hidden">
+                <div className={cn('text-caption font-medium text-ink-3', desk('desk:hidden'))}>
                   {balance}
                 </div>
               )}
             </div>
 
             {/* Desktop Balance (Cell 7) */}
+            {!compact && (
             <div
               role="cell"
               className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-end tabular-nums text-ink-2 justify-self-end"
             >
               {concealed ? null : balance}
             </div>
+            )}
 
             {/* Phone Trailing eye icon in selection mode or chevron */}
             {(hasEye || chevron) && (
-              <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 desk:hidden">
+              <div className={cn('col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3', desk('desk:hidden'))}>
                 {hasEye && (
                   <Reveal open={showEye} axis="x">
                     <span {...nestedControlProps} className={cn('block min-w-0', eyeOnly && 'pl-space-10')}>

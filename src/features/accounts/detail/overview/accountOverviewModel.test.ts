@@ -4,6 +4,7 @@ import type { Broker, GenericAccount } from '@/lib/account.types';
 import type { StatementSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   buildBrokerCash,
@@ -11,13 +12,14 @@ import {
   buildGmailCard,
   buildLatestStatement,
   buildLinked,
-  formatMonthYear,
   lastEntryDate,
   ordinal,
 } from './accountOverviewModel';
 import { buildHeaderModel } from './headerModel';
 
-describe('ordinal and formatMonthYear', () => {
+pinClock();
+
+describe('ordinal', () => {
   it.each([
     [1, '1st'],
     [2, '2nd'],
@@ -29,11 +31,6 @@ describe('ordinal and formatMonthYear', () => {
     [21, '21st'],
     [22, '22nd'],
   ])('%i is %s', (n, text) => expect(ordinal(n)).toBe(text));
-
-  it('formats a month', () => {
-    expect(formatMonthYear('2026-09-30')).toBe('Sep 2026');
-    expect(formatMonthYear('nope')).toBe('');
-  });
 });
 
 describe('buildFlowKpis', () => {
@@ -93,7 +90,7 @@ describe('buildLatestStatement', () => {
     );
     expect(row).toEqual({
       id: 's1',
-      title: 'Sep 2026',
+      title: 'September 2026',
       caption: '12 rows · closing ₹1,48,320 · uploaded 13 Oct',
       gap: false,
     });

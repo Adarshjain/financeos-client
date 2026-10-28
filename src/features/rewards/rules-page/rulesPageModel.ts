@@ -1,6 +1,6 @@
 import { capTone, milestonePace } from '@/features/accounts/detail/rewards/rewardsModel';
-import { formatAmount, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import { accrualSummary } from '@/features/rewards/rules/manager/helpers';
+import { formatCount,formatDate, formatMoney } from '@/lib/format';
 import type { RewardCapBucket, RewardReport, RewardRule, RewardType } from '@/lib/rewards.types';
 
 /** One cap's use in the reward year, drawn as a bar on its row. */
@@ -28,7 +28,7 @@ export interface RulesUsage {
   milestones: Record<string, MilestoneUsage>;
 }
 
-const pts = (n: number) => `${formatAmount(n, 0)} pts`;
+const pts = (n: number) => formatCount(n, 'pts');
 
 /** The report's figures keyed by the ids of the rules, caps and milestones listed on the page. */
 export function buildUsage(
@@ -42,7 +42,7 @@ export function buildUsage(
     const b = report.rules.find((r) => r.ruleId === rule.id);
     const cash = b ? b.earnedUnit === 'RUPEES' : rule.rewardType !== 'POINTS';
     const value = b?.earned ?? 0;
-    earned[rule.id] = { text: cash ? formatRupees(value) : pts(value), zero: value === 0 };
+    earned[rule.id] = { text: cash ? formatMoney(value) : pts(value), zero: value === 0 };
   }
 
   const capUsage: RulesUsage['caps'] = {};
@@ -53,12 +53,12 @@ export function buildUsage(
       .find((s) => s != null);
     const perCard = status?.perCard ?? [];
     const used = status?.used ?? (perCard.length > 0 ? Math.max(...perCard.map((c) => c.used)) : 0);
-    const amount = (n: number) => (cap.rewardType === 'POINTS' ? formatAmount(n, 0) : formatRupees(n));
+    const amount = (n: number) => (cap.rewardType === 'POINTS' ? formatCount(n) : formatMoney(n));
     const pct = cap.cap > 0 ? Math.min(100, Math.round((used / cap.cap) * 100)) : 0;
     capUsage[cap.id] = {
       pct,
       tone: capTone(pct),
-      label: `${amount(used)} / ${amount(cap.cap)}${status?.windowEnd ? ` · resets ${formatDayMonth(status.windowEnd)}` : ''}`,
+      label: `${amount(used)} / ${amount(cap.cap)}${status?.windowEnd ? ` · resets ${formatDate(status.windowEnd, 'list')}` : ''}`,
     };
   }
 
@@ -69,7 +69,7 @@ export function buildUsage(
     milestones[m.milestoneId] = {
       pct,
       label: [`${pct}%`, m.achieved ? 'achieved' : left != null ? `${left} d left` : null].filter(Boolean).join(' · '),
-      range: `${formatDayMonth(m.windowStart)} → ${formatDayMonth(m.windowEnd)}`,
+      range: `${formatDate(m.windowStart, 'list')} → ${formatDate(m.windowEnd, 'list')}`,
     };
   }
   return { earned, caps: capUsage, milestones };
@@ -97,7 +97,7 @@ export function appliesTo(rule: RewardRule): string {
   if (rule.merchantPattern) parts.push(`"${rule.merchantPattern}"`);
   if (rule.channels?.length) parts.push(rule.channels.join('/').toLowerCase());
   if (rule.daysOfWeek?.length) parts.push(rule.daysOfWeek.map((d) => d.slice(0, 3).toLowerCase()).join('/'));
-  if (rule.minAmount != null || rule.maxAmount != null) parts.push(`₹${rule.minAmount ?? 0}–${rule.maxAmount ?? '∞'}`);
+  if (rule.minAmount != null || rule.maxAmount != null) parts.push(`${formatMoney(rule.minAmount ?? 0, { decimals: 'auto' })}–${rule.maxAmount != null ? formatMoney(rule.maxAmount, { decimals: 'auto' }) : '∞'}`);
   if (rule.emiTreatment && rule.emiTreatment !== 'INCLUDE') parts.push(rule.emiTreatment === 'EXCLUDE_EMI' ? 'no EMI' : 'EMI only');
   if (rule.intlTreatment && rule.intlTreatment !== 'INCLUDE') parts.push(rule.intlTreatment === 'EXCLUDE_INTL' ? 'no international' : 'international only');
   if (rule.feeTreatment === 'EXCLUDE_FEE') parts.push('fees excluded');
@@ -108,7 +108,7 @@ export function appliesTo(rule: RewardRule): string {
 export function capWords(rule: RewardRule): string | null {
   if (rule.capBucketId != null) return `shared cap “${rule.capBucketName ?? 'bucket'}”`;
   if (rule.periodCap == null) return null;
-  const amount = rule.rewardType === 'POINTS' ? formatAmount(rule.periodCap, 0) : formatRupees(rule.periodCap);
+  const amount = rule.rewardType === 'POINTS' ? formatCount(rule.periodCap) : formatMoney(rule.periodCap);
   return `capped ${amount} / ${CAP_NOUN[rule.capWindow ?? 'CALENDAR_MONTH']}`;
 }
 

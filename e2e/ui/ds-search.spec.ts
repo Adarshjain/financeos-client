@@ -89,7 +89,7 @@ for (const viewport of VIEWPORTS) {
 
       // 7 matches, the 5 newest show, then the row that opens them all.
       await expect(dialog.getByRole('option').filter({ hasText: new RegExp(`^${WORD} purchase \\d`) })).toHaveCount(5);
-      await expect(dialog.getByRole('option').filter({ hasText: `${WORD} purchase 1 ·` })).toBeVisible();
+      await expect(dialog.getByRole('option', { name: new RegExp(`^${WORD} purchase 1 `) })).toBeVisible();
       await expect(dialog.getByRole('option').filter({ hasText: `${WORD} purchase 6` })).toHaveCount(0);
       await dialog.getByRole('option').filter({ hasText: 'See all matching transactions' }).click();
 
@@ -118,7 +118,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await openSearch(page);
       await page.getByRole('searchbox').fill(WORD);
-      await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 1 ·` }).click({ timeout: 30_000 });
+      await palette(page).getByRole('option', { name: new RegExp(`^${WORD} purchase 1 `) }).click({ timeout: 30_000 });
       await expect(page).toHaveURL(/\/transactions\?txn=[0-9a-f-]{36}/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 1` })).toBeVisible({ timeout: 30_000 });
     });
@@ -127,7 +127,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await openSearch(page, '/transactions');
       await page.getByRole('searchbox').fill(WORD);
-      await palette(page).getByRole('option').filter({ hasText: `${WORD} purchase 2 ·` }).click({ timeout: 30_000 });
+      await palette(page).getByRole('option', { name: new RegExp(`^${WORD} purchase 2 `) }).click({ timeout: 30_000 });
       await expect(page).toHaveURL(/\/transactions\?txn=/, { timeout: 45_000 });
       await expect(page.getByRole('dialog', { name: `${WORD} purchase 2` })).toBeVisible({ timeout: 30_000 });
     });

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Badge, Card, CardHeader, CardSubtitle, CardTitle, ListRow, Text } from '@/components/ds';
+import { Card, CardHeader, CardSubtitle, CardTitle, ListRow, StatusWord, Text } from '@/components/ds';
 
 import { type HealthRow, maskedKey } from './aiModel';
 
@@ -41,11 +41,11 @@ export function HealthCard({ rows }: { rows: HealthRow[] }) {
           }
           trailing={
             row.status === 'ready' ? (
-              <Badge tone="success">Ready</Badge>
+              <StatusWord tone="success">Ready</StatusWord>
             ) : row.status === 'no-key' ? (
-              <Badge tone="neutral">No key</Badge>
+              <StatusWord tone="neutral">No key</StatusWord>
             ) : (
-              <Badge tone="warning">Cooldown until {row.cooldownTime}</Badge>
+              <StatusWord tone="warning">Cooldown until {row.cooldownTime}</StatusWord>
             )
           }
         />

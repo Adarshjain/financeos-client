@@ -177,7 +177,7 @@ describe('/investments Holdings: rows', () => {
 
   it('writes a merged holding with what it merged into and no P&L', async () => {
     await renderPage();
-    expect(screen.getAllByText(/Merged into HDFCBANK · 13 Jul 23/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Merged into HDFCBANK · 13 Jul 2023/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/0 shares/).length).toBeGreaterThan(0);
   });
 

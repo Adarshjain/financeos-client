@@ -130,7 +130,7 @@ describe('events', () => {
     render(<UpcomingCalendarView />);
     expect(within(day('2026-10-05')).getByText('Home loan EM… ₹36.6K')).toBeInTheDocument();
     expect(within(day('2026-10-15')).getByText('Amex Platinu… ₹33.9K')).toBeInTheDocument();
-    expect(within(day('2026-10-15')).getByText('Car EMI ₹17.5K')).toBeInTheDocument();
+    expect(within(day('2026-10-15')).getByText('Car EMI ₹17.54K')).toBeInTheDocument();
     expect(within(day('2026-10-28')).getByText('Rahul Sharma… +₹15K')).toBeInTheDocument();
     expect(within(day('2026-10-23')).getByText('You owe Priy… ₹12K')).toBeInTheDocument();
   });

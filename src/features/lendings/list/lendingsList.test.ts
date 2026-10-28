@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { CounterpartyListItem, CounterpartyMatchSuggestions, CounterpartySummary } from '@/lib/lending.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   avatarToneFor,
   directionFor,
   dueIn,
   expectedText,
-  initialsOf,
   lastEntryText,
   lendingRow,
   lendingsUrl,
@@ -18,6 +18,8 @@ import {
   sideOf,
   transferRows,
 } from './lendingsList';
+
+pinClock();
 
 const TODAY = '2026-10-13';
 
@@ -206,9 +208,9 @@ describe('lendingRow', () => {
     expect(row).toMatchObject({ side: 'settled', directionLabel: 'Settled', directionTone: 'neutral', balance: '0', expected: 'no date', hasExpected: false });
   });
 
-  it('keeps paise and groups lakhs', () => {
+  it('rounds to whole rupees and groups lakhs', () => {
     expect(lendingRow(person({ netPosition: 100000 }), TODAY).balance).toBe('+1,00,000');
-    expect(lendingRow(person({ netPosition: -1250.5 }), TODAY).balance).toBe('1,250.50');
+    expect(lendingRow(person({ netPosition: -1250.5 }), TODAY).balance).toBe('1,251');
   });
 
   it('falls back to the notes on phone when there is nothing else to say', () => {
@@ -218,13 +220,6 @@ describe('lendingRow', () => {
 });
 
 describe('people helpers', () => {
-  it('initialsOf takes the first letters of the first two words', () => {
-    expect(initialsOf('Rahul Sharma')).toBe('RS');
-    expect(initialsOf('Dad')).toBe('D');
-    expect(initialsOf('Goa trip pool')).toBe('GT');
-    expect(initialsOf('  priya   nair ')).toBe('PN');
-  });
-
   it('avatarToneFor is stable per name', () => {
     expect(avatarToneFor('Rahul Sharma')).toBe(avatarToneFor('Rahul Sharma'));
     expect(['brand', 'info', 'warning', 'neutral', 'positive']).toContain(avatarToneFor('Priya'));

@@ -5,7 +5,7 @@ import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 
-export type StatusTone = 'neutral' | 'info' | 'warning' | 'success';
+export type StatusTone = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
 
 export interface StatusWordItem {
   tone?: StatusTone;
@@ -30,6 +30,7 @@ const TONE_CLASSES: Record<StatusTone, string> = {
   info: 'text-info font-semibold',
   warning: 'text-warning font-bold',
   success: 'text-positive-strong font-bold',
+  danger: 'text-danger font-bold',
 };
 
 export const StatusWord = forwardRef<HTMLSpanElement, StatusWordProps>(

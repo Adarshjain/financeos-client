@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
+import { pinClock } from '@/test/pinClock';
 
 import { groups, header, holdingRow } from './holdings.fixtures';
 import {
@@ -19,6 +20,8 @@ import {
   taxCardModel,
   topMovers,
 } from './holdingsModel';
+
+pinClock();
 
 describe('Holdings URL state', () => {
   it('reads defaults from an empty query', () => {
@@ -173,7 +176,7 @@ describe('holdingListRow', () => {
       holdingRow({ symbol: 'HDFC', name: 'HDFC Ltd', quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13', currentValue: 0 }),
     );
     expect(row.merged).toEqual({ into: 'HDFCBANK', date: '2023-07-13' });
-    expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 23');
+    expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 2023');
     expect(row.position).toBe('0 shares');
     expect(row.avgCost).toBeNull();
     expect(row.invested).toBeNull();

@@ -3,10 +3,11 @@
 // year). The headline counts rupees only — cashback plus points on cards that
 // have a point value; points on cards without one are listed apart.
 
+import { formatCount, formatMoney } from '@/lib/format';
 import { buildFilter } from '@/lib/reports.helpers';
 import type { PivotRow, PivotTableData, RunReportRequest } from '@/lib/reports.types';
 
-import { adhocKpi, cellNumber, formatCount, formatRupees } from '../builtin.helpers';
+import { adhocKpi, cellNumber } from '../builtin.helpers';
 
 export interface RewardCardRow {
   key: string;
@@ -67,8 +68,8 @@ export function rewardsRequest(cardId: string | null): RunReportRequest {
 export function nativeText(row: RewardCardRow, { withValue = true }: { withValue?: boolean } = {}): string {
   const parts: string[] = [];
   if (row.points > 0) {
-    parts.push(row.unvalued || !withValue ? `${formatCount(row.points)} pts` : `${formatCount(row.points)} pts ≈ ${formatRupees(row.pointsValue)}`);
+    parts.push(row.unvalued || !withValue ? formatCount(row.points, 'pts') : `${formatCount(row.points, 'pts')} ≈ ${formatMoney(row.pointsValue)}`);
   }
-  if (row.cash > 0 || parts.length === 0) parts.push(formatRupees(row.cash));
+  if (row.cash > 0 || parts.length === 0) parts.push(formatMoney(row.cash));
   return parts.join(' + ');
 }

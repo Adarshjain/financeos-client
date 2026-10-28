@@ -1,19 +1,7 @@
-import {
-  formatAmount,
-  formatDayMonth,
-  formatRupees,
-} from '@/features/accounts/list/accountsList';
 import type { Broker } from '@/lib/account.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { StatementSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** "Sep 2026" from a calendar date (YYYY-MM-DD); empty when it is not a date. */
-export function formatMonthYear(iso: string): string {
-  const m = /^(\d{4})-(\d{2})/.exec(iso);
-  return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : '';
-}
 
 /** "5th", "22nd", "11th". */
 export function ordinal(n: number): string {
@@ -29,11 +17,6 @@ export function ordinal(n: number): string {
     default:
       return `${n}th`;
   }
-}
-
-/** "₹1,234" or "₹1,234.50": paise only when there are some. */
-export function formatRupeesExact(value: number): string {
-  return Number.isInteger(value) ? formatRupees(value) : `₹${formatAmount(value, 2)}`;
 }
 
 // ---- 90-day flow ------------------------------------------------------------
@@ -59,20 +42,20 @@ export function buildFlowKpis(flow: FlowInput): KpiModel[] {
   return [
     {
       label: 'In · 90 days',
-      value: `+${formatRupees(flow.moneyIn)}`,
+      value: `+${formatMoney(flow.moneyIn)}`,
       context: joinTop(flow.topInCategories),
     },
     {
       label: 'Out · 90 days',
-      value: formatRupees(flow.moneyOut),
+      value: formatMoney(flow.moneyOut),
       context: joinTop(flow.topOutCategories),
     },
     {
       label: 'Avg daily balance',
-      value: flow.averageDailyBalance != null ? formatRupees(flow.averageDailyBalance) : '—',
+      value: flow.averageDailyBalance != null ? formatMoney(flow.averageDailyBalance) : '—',
       context:
         flow.interestLastQuarter > 0
-          ? `interest ${formatRupees(flow.interestLastQuarter)} last quarter`
+          ? `interest ${formatMoney(flow.interestLastQuarter)} last quarter`
           : undefined,
     },
   ];
@@ -96,12 +79,12 @@ export function buildLatestStatement(
   const latest = [...statements].sort((a, b) => b.periodEnd.localeCompare(a.periodEnd))[0];
   if (!latest) return null;
   const parts = [`${latest.transactionCount} ${latest.transactionCount === 1 ? 'row' : 'rows'}`];
-  if (latest.closingBalance != null) parts.push(`closing ${formatRupeesExact(latest.closingBalance)}`);
-  const uploaded = formatDayMonth(latest.createdAt.slice(0, 10));
+  if (latest.closingBalance != null) parts.push(`closing ${formatMoney(latest.closingBalance, { decimals: 'auto' })}`);
+  const uploaded = formatDate(latest.createdAt.slice(0, 10), 'list');
   if (uploaded) parts.push(`uploaded ${uploaded}`);
   return {
     id: latest.id,
-    title: formatMonthYear(latest.periodEnd),
+    title: formatDate(latest.periodEnd, 'month'),
     caption: parts.join(' · '),
     gap:
       !!account.reconciliationGap &&
@@ -126,7 +109,7 @@ export function buildGmailCard(input: {
   unmatchedCount: number | null | undefined;
   today: string;
 }): GmailCardModel {
-  const since = input.ingestFromDate ? formatDayMonth(input.ingestFromDate) : '';
+  const since = input.ingestFromDate ? formatDate(input.ingestFromDate, 'list') : '';
   const alert = input.lastAlert;
   return {
     subtitle: since ? `Since ${since}` : undefined,
@@ -134,8 +117,8 @@ export function buildGmailCard(input: {
     lastAlert: input.unmatchedCount == null && !alert
       ? '—'
       : alert
-      ? `${alert.description} ${formatRupeesExact(Math.abs(alert.amount))} · ${
-          alert.date === input.today ? 'today' : formatDayMonth(alert.date)
+      ? `${alert.description} ${formatMoney(Math.abs(alert.amount), { decimals: 'auto' })} · ${
+          alert.date === input.today ? 'today' : formatDate(alert.date, 'list')
         }`
       : undefined,
     unmatched: input.unmatchedCount && input.unmatchedCount > 0 ? input.unmatchedCount : undefined,
@@ -160,8 +143,8 @@ export function buildLinked(payments: {
       key: emi.loanId,
       label: emi.name,
       value: Number.isFinite(day)
-        ? `${formatRupees(emi.amount)} on the ${ordinal(day)}`
-        : formatRupees(emi.amount),
+        ? `${formatMoney(emi.amount)} on the ${ordinal(day)}`
+        : formatMoney(emi.amount),
     };
   });
   if (payments.cardBills.length > 0) {
@@ -188,10 +171,10 @@ export function buildBrokerCash(account: Broker, recent: readonly Transaction[] 
     .filter((t) => t.amount > 0 && t.links?.some((l) => l.type === 'TRANSFER'))
     .sort((a, b) => b.date.localeCompare(a.date))[0];
   const parts = credit
-    ? [formatRupeesExact(credit.amount), formatDayMonth(credit.date), credit.description || credit.sourcedDescription]
+    ? [formatMoney(credit.amount, { decimals: 'auto' }), formatDate(credit.date, 'list'), credit.description || credit.sourcedDescription]
     : [];
   return {
-    available: account.cashBalance !== undefined ? formatRupees(account.cashBalance) : '—',
+    available: account.cashBalance !== undefined ? formatMoney(account.cashBalance) : '—',
     lastTransferIn: credit ? parts.filter(Boolean).join(' · ') : undefined,
   };
 }

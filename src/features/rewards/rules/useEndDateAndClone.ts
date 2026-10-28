@@ -2,8 +2,9 @@
 
 import { useUpdateRewardRule } from '@/features/rewards/queries/useRewardRulesQueries';
 import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { formatDate } from '@/lib/format';
 import { RewardRule } from '@/lib/rewards.types';
-import { formatDate, toCalendarDate } from '@/lib/utils';
+import { toCalendarDate } from '@/lib/utils';
 
 /** Ends a rule today (activeTo) and hands the updated rule to onEnded so the caller can open a successor form. */
 export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notify: RewardNotifier = sonnerRewardNotifier) {
@@ -56,7 +57,7 @@ export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notif
       },
       {
         onSuccess: (updated) => {
-          notify.success(`"${rule.name}" ended ${formatDate(today)} — configure its successor`);
+          notify.success(`"${rule.name}" ended ${formatDate(today, 'list')} — configure its successor`);
           onEnded(updated);
         },
         onError: (e) => notify.failure(e, 'Failed to update reward rule'),

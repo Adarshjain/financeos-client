@@ -761,6 +761,18 @@ describe('DataTable', () => {
   });
 
   describe('Row states', () => {
+    it('danger applies bg-danger-tint with the danger stripe', () => {
+      render(
+        <DataTable
+          columns={testColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          rowState={(r) => (r.id === '2' ? { tone: 'danger' } : undefined)}
+        />,
+      );
+      expect(screen.getAllByRole('row')[2]).toHaveClass('border-l-danger', 'bg-danger-tint');
+    });
+
     it('warning applies bg-attention-tint, disabled applies opacity-60, highlighted applies highlighted look and calls scrollIntoView once', () => {
       const scrollMock = vi.fn();
       window.HTMLElement.prototype.scrollIntoView = scrollMock;

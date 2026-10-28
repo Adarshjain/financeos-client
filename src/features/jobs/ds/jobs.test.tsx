@@ -54,7 +54,7 @@ describe('JobBox', () => {
     render(<JobBox job={job({ status: 'RUNNING', createdAt: '2025-01-12T09:00:00Z' })} expanded={false} onExpandedChange={vi.fn()} />);
     expect(screen.queryByRole('button', { name: /details/ })).toBeNull();
     expect(screen.getByText('Running')).toBeInTheDocument();
-    expect(screen.getByTestId('job-time').textContent).toMatch(/^12 Jan \d{1,2}:\d{2} (am|pm)$/);
+    expect(screen.getByTestId('job-time').textContent).toMatch(/^12 Jan 2025 \d{1,2}:\d{2} (am|pm)$/);
   });
 });
 

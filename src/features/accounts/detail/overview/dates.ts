@@ -9,7 +9,3 @@ export function daysBetween(from: string, to: string): number | null {
   const b = toUtc(to);
   return a == null || b == null ? null : Math.round((b - a) / 86_400_000);
 }
-
-export function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
-}

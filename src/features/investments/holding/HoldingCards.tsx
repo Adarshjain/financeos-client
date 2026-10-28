@@ -15,9 +15,10 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { formatQuantity } from '@/lib/format';
 import type { PagePosition, SellEstimate } from '@/lib/investments.types';
 
-import { fyLabel, quantity } from '../investmentsFormat';
+import { fyLabel } from '../investmentsFormat';
 import { loadCorporateActionsPage, loadDividendsPage, loadTradesPage } from './holdingActions';
 import {
   type CorporateActionRowModel,
@@ -170,10 +171,10 @@ export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate;
   const typedEstimate = typed?.ok ? sellFigures(estimate, typed.quantity) : null;
   return (
     <Card title="If you sell today" subtitle={`Estimates · ${fyLabel(estimate.fy)}`}>
-      <ListRow title={`Sell all ${quantity(estimate.quantity)}`} subtitle={<Conceal>{sellLine(estimate)}</Conceal>} wrap />
+      <ListRow title={`Sell all ${formatQuantity(estimate.quantity)}`} subtitle={<Conceal>{sellLine(estimate)}</Conceal>} wrap />
       {free > 0 && !freeAll ? (
         <ListRow
-          title={`Sell up to ${quantity(free)} tax-free`}
+          title={`Sell up to ${formatQuantity(free)} tax-free`}
           subtitle={<Conceal>{sellLine(sellFigures(estimate, free))}</Conceal>}
           wrap
         />
@@ -186,11 +187,11 @@ export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate;
             placeholder="Quantity"
             value={text}
             onValueChange={(v) => setText(sanitizeQuantityInput(v, assetType))}
-            helper={typed && !typed.ok ? `Up to ${quantity(estimate.quantity)} ${unit}` : undefined}
+            helper={typed && !typed.ok ? `Up to ${formatQuantity(estimate.quantity)} ${unit}` : undefined}
           />
           {typedEstimate ? (
             <Text variant="caption" tone="ink-3">
-              <Conceal>{`Sell ${quantity(typedEstimate.quantity)}: ${sellLine(typedEstimate)}`}</Conceal>
+              <Conceal>{`Sell ${formatQuantity(typedEstimate.quantity)}: ${sellLine(typedEstimate)}`}</Conceal>
             </Text>
           ) : null}
         </div>

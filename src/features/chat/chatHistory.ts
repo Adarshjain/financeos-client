@@ -1,5 +1,6 @@
-import { formatDayMonth, relativeDay } from '@/features/accounts/list/accountsList';
-import { timeInAppZone, todayInAppZone } from '@/lib/date-range';
+import { relativeDay } from '@/features/accounts/list/accountsList';
+import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatDate, formatTime } from '@/lib/format';
 
 import type { ConversationSummary } from './conversation.types';
 
@@ -26,7 +27,7 @@ export interface HistoryGroup {
 }
 
 export function questionsLabel(count: number): string {
-  return `${count} ${count === 1 ? 'question' : 'questions'}`;
+  return formatCount(count, ['question', 'questions']);
 }
 
 /** Today / Yesterday / Earlier, in the app zone, newest first within each. */
@@ -40,7 +41,7 @@ export function groupConversations(list: ConversationSummary[], today: string = 
     const day = todayInAppZone(new Date(c.updatedAt));
     const rel = relativeDay(day, today);
     const group = groups[rel === 'today' ? 0 : rel === 'yesterday' ? 1 : 2];
-    const when = group.id === 'earlier' ? formatDayMonth(day) : timeInAppZone(c.updatedAt);
+    const when = group.id === 'earlier' ? formatDate(day, 'list', { today }) : formatTime(c.updatedAt);
     group.rows.push({
       id: c.id,
       title: c.title?.trim() || UNTITLED_CHAT,

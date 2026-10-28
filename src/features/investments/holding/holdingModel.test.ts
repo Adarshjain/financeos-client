@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { HoldingDetail, SellEstimate } from '@/lib/investments.types';
+import { pinClock } from '@/test/pinClock';
 
 import { bonus, buy, dividend, estimate, holding, instrument, manualPrice } from './holding.fixtures';
 import {
@@ -14,6 +15,8 @@ import {
   sellLine,
   tradeRow,
 } from './holdingModel';
+
+pinClock();
 
 describe('holdingHeader and holdingHero', () => {
   it('writes the title', () => {
@@ -44,7 +47,7 @@ describe('holdingFigures', () => {
     expect(f.quantity.value).toBe('60');
     expect(f.avgCost.value).toBe('₹710.00');
     expect(f.ltp).toMatchObject({ value: '₹1,512.70', context: 'Yahoo · 13 Oct', override: true });
-    expect(f.xirr).toMatchObject({ value: '31.4%', tone: 'positive', context: 'since 11 Mar 24' });
+    expect(f.xirr).toMatchObject({ value: '31.4%', tone: 'positive', context: 'since 11 Mar 2024' });
     expect(f.invested).toMatchObject({ value: '₹42,600', context: '60 shares at ₹710 avg' });
     expect(f.return).toMatchObject({ value: '+₹48,162', tone: 'positive', context: 'unrealised · +113.1%' });
     expect(f.realised).toMatchObject({ value: '₹0', context: 'nothing sold yet' });
@@ -81,29 +84,29 @@ describe('sellLine', () => {
 
 describe('section rows', () => {
   it('writes a buy with its broker and value, and a sell with its realised P&L', () => {
-    expect(tradeRow(buy())).toMatchObject({ side: 'Buy', broker: 'Zerodha', quantity: '20', price: '₹1,420.00', value: '₹28,400', pnl: null, date: '11 Mar 24' });
+    expect(tradeRow(buy())).toMatchObject({ side: 'Buy', broker: 'Zerodha', quantity: '20', price: '₹1,420.00', value: '₹28,400', pnl: null, date: '11 Mar 2024' });
     const sell = tradeRow(buy({ id: 't3', type: 'sell', realisedPnl: 1200 }));
     expect(sell.side).toBe('Sell');
     expect(sell.pnl).toEqual({ text: 'P&L +₹1,200', plain: 'P&L +1,200', tone: 'positive' });
     expect([sell.pricePlain, sell.valuePlain]).toEqual(['1,420.00', '28,400']);
-    expect(sell.phoneSub).toBe('11 Mar 24 · 20 @ ₹1,420 · P&L +₹1,200');
+    expect(sell.phoneSub).toBe('11 Mar 2024 · 20 @ ₹1,420 · P&L +₹1,200');
   });
 
   it('writes a dividend per share with its dates and TDS, and no Final or Interim word', () => {
     expect(dividendRow(dividend)).toEqual({
       id: 'd1',
       title: 'Dividend ₹22 / share',
-      subtitle: 'ex 30 May 25 · paid 18 Jun 25 · TDS ₹132',
+      subtitle: 'ex 30 May 2025 · paid 18 Jun 2025 · TDS ₹132',
       amount: '+₹1,320',
     });
   });
 
   it('writes a corporate action with its ratio and ex date, and no "Applied" word', () => {
-    expect(corporateActionRow(bonus)).toEqual({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 25' });
+    expect(corporateActionRow(bonus)).toEqual({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 2025' });
   });
 
   it('lets only the signed-in user\'s own manual prices change', () => {
-    expect(priceRow(manualPrice)).toMatchObject({ id: 'p3', source: 'manual price', amount: '₹1,470.00', date: '10 Oct 26', editable: true });
+    expect(priceRow(manualPrice)).toMatchObject({ id: 'p3', source: 'manual price', amount: '₹1,470.00', date: '10 Oct', editable: true });
     expect(priceRow({ id: null, asOf: '2026-10-13', close: 1512.7, source: 'YAHOO', editable: false })).toMatchObject({ source: 'Yahoo', editable: false });
     // a price flagged editable but without an id has nothing to address
     expect(priceRow({ ...manualPrice, id: null }).editable).toBe(false);

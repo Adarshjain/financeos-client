@@ -1,5 +1,5 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import { firstNameOf, rupeesExact } from '@/features/lendings/settle';
+import { firstNameOf } from '@/features/lendings/settle';
+import { formatDate, formatMoney } from '@/lib/format';
 
 import {
   DEFAULT_OBLIGATION_MONTHS,
@@ -76,7 +76,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'overdue',
       label: 'Overdue',
-      value: rupeesExact(sumAmounts(w.overdue)),
+      value: formatMoney(sumAmounts(w.overdue), { decimals: 'auto' }),
       tone: 'danger',
       caption: countsByType(w.overdue),
     });
@@ -85,7 +85,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'next7',
       label: 'Next 7 days',
-      value: rupeesExact(sumAmounts(w.next7)),
+      value: formatMoney(sumAmounts(w.next7), { decimals: 'auto' }),
       tone: 'ink',
       caption: countsByType(w.next7),
     });
@@ -94,7 +94,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'month',
       label: 'This month',
-      value: rupeesExact(sumAmounts(w.thisMonth)),
+      value: formatMoney(sumAmounts(w.thisMonth), { decimals: 'auto' }),
       tone: 'ink',
       caption: `${w.thisMonth.length} item${w.thisMonth.length === 1 ? '' : 's'}`,
     });
@@ -104,7 +104,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
       .map((i) => i.date)
       .filter((d): d is string => Boolean(d))
       .sort()[0];
-    const when = next ? formatDayMonth(next) : null;
+    const when = next ? formatDate(next, 'list') : null;
     let caption: string;
     if (dueBack.length === 1) {
       const who = firstNameOf(dueBack[0].counterpartyName ?? '');
@@ -115,7 +115,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'dueBack',
       label: 'Due back to you',
-      value: `+${rupeesExact(sumAmounts(dueBack))}`,
+      value: `+${formatMoney(sumAmounts(dueBack), { decimals: 'auto' })}`,
       tone: 'positive',
       caption,
     });
@@ -133,11 +133,11 @@ export interface RowAmount {
 /** The amount cell of a row: danger when overdue, "+" in green when money comes to you, "—" when none. */
 export function rowAmount(item: ObligationItem): RowAmount {
   if (item.amount == null) return { text: '—', tone: 'none' };
-  if (item.status === 'overdue') return { text: rupeesExact(item.amount), tone: 'danger' };
+  if (item.status === 'overdue') return { text: formatMoney(item.amount, { decimals: 'auto' }), tone: 'danger' };
   if (item.type === 'lending_due' && item.direction === 'lent') {
-    return { text: `+${rupeesExact(item.amount)}`, tone: 'positive' };
+    return { text: `+${formatMoney(item.amount, { decimals: 'auto' })}`, tone: 'positive' };
   }
-  return { text: rupeesExact(item.amount), tone: 'ink' };
+  return { text: formatMoney(item.amount, { decimals: 'auto' }), tone: 'ink' };
 }
 
 /** "SBI Cashback ••3356" style context: when it falls due, then the account. */
@@ -163,6 +163,6 @@ export function rowDate(item: ObligationItem): { day: number; monthLabel: string
 
 /** "December · 3 · ₹63,954" (the total only when a row carries an amount). */
 export function foldedMonthLine(label: string, items: ObligationItem[]): string {
-  const total = items.some((i) => i.amount != null) ? rupeesExact(sumAmounts(items)) : null;
+  const total = items.some((i) => i.amount != null) ? formatMoney(sumAmounts(items), { decimals: 'auto' }) : null;
   return [label.split(' ')[0], String(items.length), total].filter(Boolean).join(' · ');
 }

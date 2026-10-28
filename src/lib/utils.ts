@@ -5,6 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatMoney(amount: string | number | null | undefined): string {
   if (amount === undefined || amount === null) return '₹0.00';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -20,10 +21,12 @@ export function formatMoney(amount: string | number | null | undefined): string 
   return formatter.format(num);
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatCurrency(amount: string | number | null | undefined): string {
   return formatMoney(amount);
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatNumber(val: string | number | null | undefined): string {
   if (val === undefined || val === null) return '0';
   const num = typeof val === 'string' ? parseFloat(val) : val;
@@ -31,6 +34,7 @@ export function formatNumber(val: string | number | null | undefined): string {
   return num.toLocaleString('en-IN');
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatNullableMoney(amount: string | number | null | undefined): string {
   if (amount === undefined || amount === null) return '—';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -69,6 +73,7 @@ export function parseCalendarDate(value: string): Date {
   return new Date(year, month - 1, day);
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '—';
   // Calendar dates are timezone-free and must not round-trip through UTC;
@@ -137,6 +142,7 @@ const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
  *
  * `numeric: 'auto'` is what yields "yesterday" rather than "1 day ago".
  */
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatRelativeTime(
   date: string | Date | null | undefined,
   locale = 'en-IN',
@@ -162,6 +168,7 @@ export function getPositionLabel(position: string | undefined): string {
   return position === 'liability' ? 'Liability' : 'Asset';
 }
 
+/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
 export function formatMonthYear(date: Date, locale = 'en-IN') {
   const month = date.toLocaleString(locale, { month: 'short' });
   const year = String(date.getFullYear()).slice(-2);

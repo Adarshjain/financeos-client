@@ -67,7 +67,7 @@ describe('/investments/epf: data', () => {
     server.fetchEpfEmployers.mockResolvedValue([employer(), transferred(), settled()]);
     await renderPage();
     expect(screen.getAllByText('₹8,43,210').length).toBeGreaterThan(0);
-    expect(screen.getByText('Passbook up to Sep 2026')).toBeInTheDocument();
+    expect(screen.getByText('Passbook up to September 2026')).toBeInTheDocument();
     expect(screen.getByText('Northwind Labs · member ID …67890 · UAN …4321')).toBeInTheDocument();
     expect(screen.getAllByText('Interest · FY 2025-26').length).toBeGreaterThan(0);
     expect(screen.getByText('Contoso Systems')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('/investments/epf: data', () => {
   it('shows the stale banner with the months missing', async () => {
     server.fetchEpfSummary.mockResolvedValue(summary({ staleThrough: '2026-07-01' }));
     await renderPage();
-    expect(screen.getByText('Your passbook is up to Jul 2026. Upload a newer one to bring in Aug and Sep.')).toBeInTheDocument();
+    expect(screen.getByText('Your passbook is up to July 2026. Upload a newer one to bring in Aug and Sep.')).toBeInTheDocument();
   });
 
   it('shows the empty state when there is no EPF data', async () => {

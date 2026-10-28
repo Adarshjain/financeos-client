@@ -8,9 +8,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, ProgressBar, Skeleton } from '@/components/ds';
-import { rupees } from '@/features/investments/investmentsFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { appHref } from '@/features/shell/routes';
+import { formatMoney } from '@/lib/format';
 import type { LoanResponse } from '@/lib/loan.types';
 import { useActiveLoans } from '@/lib/query/hooks/useLoans';
 
@@ -42,7 +42,7 @@ function LoanRow({ loan, onOpen }: { loan: LoanResponse; onOpen: (loan: LoanResp
       title={loan.name}
       trailing={
         <Button variant="link" onClick={() => onOpen(loan)}>
-          {`${rupees(loan.outstandingPrincipal)} left`}
+          {`${formatMoney(loan.outstandingPrincipal)} left`}
         </Button>
       }
     >

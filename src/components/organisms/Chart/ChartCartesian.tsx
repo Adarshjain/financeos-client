@@ -21,7 +21,7 @@ import {
 } from 'recharts';
 
 import { cn } from '@/components/ds/cn';
-import { truncateLabel, valueFormat } from '@/lib/charts/chart-format';
+import { truncateLabel } from '@/lib/charts/chart-format';
 import {
   type FoldedSeries,
   foldSeries,
@@ -42,6 +42,7 @@ import {
   CHART_SURFACE_COLOR,
   chartColor,
 } from './chartTokens';
+import { chartValueFormat } from './chartValueFormat';
 
 type ChartRow = Record<string, string | number | null>;
 /** The row's category index: category labels can repeat, so a press reads the index, not the label. */
@@ -69,7 +70,7 @@ export function ChartCartesian({
   const gradientId = useId().replace(/:/g, '');
   const [frameRef, { width }] = useElementSize<HTMLDivElement>();
   const narrow = width > 0 && width < NARROW_PX;
-  const format = valueFormat(money);
+  const format = chartValueFormat(money);
 
   const series = foldSeries(
     data.series,

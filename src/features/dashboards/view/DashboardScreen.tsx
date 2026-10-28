@@ -16,6 +16,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import { isTextWidget } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, DashboardResponse } from '@/lib/dashboards.types';
+import { formatCount } from '@/lib/format';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
@@ -232,7 +233,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
                 </Text>
               ) : null}
               <Text variant="caption" tone="ink-3" as="p">
-                {`${count} ${count === 1 ? 'widget' : 'widgets'}`}
+                {formatCount(count, ['widget', 'widgets'])}
               </Text>
             </div>
             <div className="flex items-center gap-space-8">

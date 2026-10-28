@@ -11,7 +11,6 @@ import { useMemo } from 'react';
 
 import { Text } from '@/components/ds';
 import { cn } from '@/components/ds/cn';
-import { valueFormat } from '@/lib/charts/chart-format';
 import { useElementSize } from '@/lib/charts/useElementSize';
 import { todayInAppZone } from '@/lib/date-range';
 import type { ChartData } from '@/lib/reports.types';
@@ -19,6 +18,7 @@ import type { ChartData } from '@/lib/reports.types';
 import type { ChartEntry, ChartInput } from './Chart';
 import { ChartEmpty } from './ChartParts';
 import { CHART_GRID_COLOR, CHART_OUTLINE_COLOR, chartColor } from './chartTokens';
+import { chartValueFormat } from './chartValueFormat';
 import {
   buildHeatmap,
   type HeatCell,
@@ -158,7 +158,7 @@ export function ChartHeatmap({
   canSelectEntry?: (entry: ChartEntry) => boolean;
 }) {
   const [frameRef, { width }] = useElementSize<HTMLDivElement>();
-  const format = valueFormat(money);
+  const format = chartValueFormat(money);
   const today = todayInAppZone();
   const model = useMemo(
     () => buildHeatmap(data as ChartData, today, months),

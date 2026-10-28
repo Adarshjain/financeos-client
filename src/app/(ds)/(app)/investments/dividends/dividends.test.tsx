@@ -219,7 +219,7 @@ describe('/investments/dividends: the list', () => {
     expect(screen.getAllByText('Awaiting').length).toBeGreaterThan(0);
     expect(screen.getAllByText('792').length).toBeGreaterThan(0);
     expect(screen.getByText('Total net ₹3,605 · TDS ₹370')).toBeInTheDocument();
-    expect(screen.getByText('11 Jul 26')).toBeInTheDocument();
+    expect(screen.getByText('11 Jul')).toBeInTheDocument();
   });
 
   it('draws the phone line with the units, TDS and account', async () => {
@@ -383,7 +383,7 @@ describe('/investments/dividends: suggestions', () => {
     expect(screen.getByText('Paid on shares you held, not recorded yet')).toBeInTheDocument();
     expect(screen.getByText('TCS · ₹10 / share')).toBeInTheDocument();
     expect(screen.getByText('paid 5 Aug · 10 shares · ₹100')).toBeInTheDocument();
-    expect(screen.getByText('paid 28 Oct 25 · 60 shares · ₹1,260')).toBeInTheDocument();
+    expect(screen.getByText('paid 28 Oct 2025 · 60 shares · ₹1,260')).toBeInTheDocument();
     expect(screen.getByText('Checked 4 symbols.')).toBeInTheDocument();
   });
 

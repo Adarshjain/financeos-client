@@ -4,7 +4,6 @@ import {
   firstNameOf,
   halfOf,
   netPositionOf,
-  rupeesExact,
   settleBalanceLine,
   settleEntryType,
   settleSegmentOptions,
@@ -33,11 +32,9 @@ describe('settle model', () => {
     expect(settleBalanceLine('borrowed', 12000, 'Priya')).toBe("Balance ₹12,000 in Priya's favour");
   });
 
-  it('first name, half and rupee formatting', () => {
+  it('first name and half', () => {
     expect(firstNameOf('Rahul Sharma')).toBe('Rahul');
     expect(halfOf(12000)).toBe(6000);
     expect(halfOf(101)).toBe(50.5);
-    expect(rupeesExact(1234567)).toBe('₹12,34,567');
-    expect(rupeesExact(10.5)).toBe('₹10.50');
   });
 });

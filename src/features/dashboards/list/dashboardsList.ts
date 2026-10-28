@@ -1,7 +1,7 @@
-import { formatDayMonthRelative } from '@/features/accounts/list/accountsList';
 import { isTextWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatDate } from '@/lib/format';
 
 import { dashboardHref } from '../routes';
 
@@ -36,8 +36,8 @@ export interface DashboardRow {
 
 export function dashboardRow(d: DashboardResponse): DashboardRow {
   const widgets = widgetCount(d);
-  const widgetsLabel = `${widgets} ${widgets === 1 ? 'widget' : 'widgets'}`;
-  const updated = formatDayMonthRelative(todayInAppZone(new Date(d.updatedAt)), todayInAppZone());
+  const widgetsLabel = formatCount(widgets, ['widget', 'widgets']);
+  const updated = formatDate(todayInAppZone(new Date(d.updatedAt)), 'relative', { today: todayInAppZone(), inline: true });
   return {
     id: d.id,
     name: d.name,

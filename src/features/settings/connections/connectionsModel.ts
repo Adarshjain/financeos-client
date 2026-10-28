@@ -1,7 +1,6 @@
-import { dayMonth, dayMonthYear } from '@/features/jobs/format';
 import { appHref } from '@/features/shell/routes';
 import type { Schemas } from '@/lib/api/types';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 export type GmailConnection = Schemas['GmailConnectionResponse'];
 
@@ -26,17 +25,17 @@ export function oauthReturnFrom(params: { gmail?: string; email?: string; messag
 
 export const OAUTH_ERROR_FALLBACK = 'An unexpected error occurred during Google authorization.';
 
-/** "Connected 15 Jun · last sync 4 minutes ago"; either half is left out when the date is unknown. */
+/** "Connected 15 Jun · last sync 16 Jun, 3:30 pm"; either half is left out when the date is unknown. */
 export function mailboxStatusLine(conn: GmailConnection): string {
   const parts: string[] = [];
-  if (conn.connectedAt) parts.push(`Connected ${dayMonth(conn.connectedAt)}`);
-  if (conn.lastSyncedAt) parts.push(`last sync ${formatRelativeTime(conn.lastSyncedAt)}`);
+  if (conn.connectedAt) parts.push(`Connected ${formatDate(conn.connectedAt, 'list')}`);
+  if (conn.lastSyncedAt) parts.push(`last sync ${formatDateTime(conn.lastSyncedAt)}`);
   return parts.join(' · ');
 }
 
 export function authFailedLine(conn: GmailConnection): string | null {
   if (!conn.needsReconnect || !conn.authFailedAt) return null;
-  return `Google stopped accepting this mailbox on ${dayMonthYear(conn.authFailedAt)}. Imports are paused until you reconnect.`;
+  return `Google stopped accepting this mailbox on ${formatDate(conn.authFailedAt, 'full')}. Imports are paused until you reconnect.`;
 }
 
 export function senderTitle(sender: { name?: string | null }): string {

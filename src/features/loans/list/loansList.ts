@@ -1,7 +1,7 @@
-import { formatAmount, formatCompactRupees, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
-import { fyRangeLabel, monthYearShort, ordinal, plural, type TileModel } from '@/features/loans/loanFormat';
+import { fyRangeLabel, ordinal, type TileModel } from '@/features/loans/loanFormat';
 import { LOANS_HREF } from '@/features/loans/loansLendingsTabs';
 import { appHref } from '@/features/shell/routes';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { BatchLoanPaymentItem, LoanMatchSuggestions, LoanResponse, LoansSummaryDetail } from '@/lib/loan.types';
 
 import { paymentItemFor } from '../loanPaymentsBatch';
@@ -46,27 +46,27 @@ export function loansUrl(state: LoansUrlState): string {
  */
 export function loanTiles(summary: LoansSummaryDetail, today: string): TileModel[] {
   const days = [...new Set(summary.emiDueDays)].sort((a, b) => a - b);
-  const loans = plural(summary.activeLoanCount, 'loan', 'loans');
+  const loans = formatCount(summary.activeLoanCount, ['loan', 'loans']);
   return [
     {
       label: 'Outstanding',
-      value: formatCompactRupees(summary.totalOutstanding),
-      context: `of ${formatCompactRupees(summary.borrowedPrincipal)} borrowed`,
+      value: formatMoney(summary.totalOutstanding, { compact: true }),
+      context: `of ${formatMoney(summary.borrowedPrincipal, { compact: true })} borrowed`,
     },
     {
       label: 'EMIs per month',
-      value: formatRupees(summary.monthlyEmiTotal),
+      value: formatMoney(summary.monthlyEmiTotal),
       context: days.length > 0 ? `${loans} · ${days.map(ordinal).join(', ')}` : loans,
     },
     {
       label: 'Overdue',
-      value: formatRupees(summary.overdueAmount),
-      context: summary.overdueCount > 0 ? `${plural(summary.overdueCount, 'EMI', 'EMIs')} unpaid` : 'Nothing overdue',
+      value: formatMoney(summary.overdueAmount),
+      context: summary.overdueCount > 0 ? `${formatCount(summary.overdueCount, ['EMI', 'EMIs'])} unpaid` : 'Nothing overdue',
       tone: summary.overdueAmount > 0 ? 'danger' : undefined,
     },
     {
       label: 'Interest this FY',
-      value: formatRupees(summary.interestPaidThisFy),
+      value: formatMoney(summary.interestPaidThisFy),
       context: fyRangeLabel(summary.fyStart, today),
     },
   ];
@@ -104,7 +104,7 @@ export interface LoanRow {
 }
 
 function ratePct(pct: number): string {
-  return `${Number(pct.toFixed(2))}%`;
+  return formatPercent(pct, { decimals: 2 });
 }
 
 /** The next cell: "#14 overdue" for an active loan past its due date, else the due day; closed loans say so. */
@@ -114,25 +114,25 @@ export function nextCell(loan: LoanResponse, today: string): NextCell {
   }
   if (!loan.nextDueDate) return { kind: 'none' };
   if (loan.nextDueDate < today) return { kind: 'overdue', label: `#${loan.settledInstallments + 1} overdue` };
-  return { kind: 'date', label: formatDayMonth(loan.nextDueDate) };
+  return { kind: 'date', label: formatDate(loan.nextDueDate, 'list') };
 }
 
 export function loanRow(loan: LoanResponse, today: string): LoanRow {
   const paid = `${loan.settledInstallments} of ${loan.totalInstallments}`;
   const rate = ratePct(loan.currentAnnualRatePct);
-  const ends = loan.projectedEndDate ? ` · ends ${monthYearShort(loan.projectedEndDate)}` : '';
+  const ends = loan.projectedEndDate ? ` · ends ${formatDate(loan.projectedEndDate, 'month')}` : '';
   return {
     id: loan.id,
     name: loan.name,
     lender: loan.lender?.trim() || null,
     kind: loan.loanType.replace(/_/g, ' '),
     rate: `${rate} ${loan.rateType}`,
-    emi: formatAmount(loan.currentEmi, 0),
-    outstanding: formatAmount(loan.outstandingPrincipal, 0),
+    emi: formatMoney(loan.currentEmi, { symbol: false }),
+    outstanding: formatMoney(loan.outstandingPrincipal, { symbol: false }),
     progressPct: loan.totalInstallments > 0 ? Math.min(100, (loan.settledInstallments / loan.totalInstallments) * 100) : 0,
     progressText: `${paid}${ends}`,
     next: nextCell(loan, today),
-    phoneSub: `${rate} · EMI ${formatRupees(loan.currentEmi)} · ${paid} paid`,
+    phoneSub: `${rate} · EMI ${formatMoney(loan.currentEmi)} · ${paid} paid`,
     closed: loan.status !== 'active',
     href: appHref(`/loans/${loan.id}`),
   };
@@ -168,7 +168,7 @@ export function joinDates(dates: readonly string[]): string {
   const labels = sorted.map((d, i) => {
     const day = String(Number(d.slice(8, 10)));
     const sameMonthNext = i + 1 < sorted.length && sorted[i + 1].slice(0, 7) === d.slice(0, 7);
-    return sameMonthNext ? day : formatDayMonth(d);
+    return sameMonthNext ? day : formatDate(d, 'list');
   });
   if (labels.length <= 1) return labels[0] ?? '';
   return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
@@ -228,5 +228,5 @@ export function matchBanner(matches: readonly LoanMatchSuggestions[]): MatchBann
 
 /** The Toast after Link all: "Marked 3 EMIs paid". */
 export function paidToast(count: number): string {
-  return `Marked ${plural(count, 'EMI', 'EMIs')} paid`;
+  return `Marked ${formatCount(count, ['EMI', 'EMIs'])} paid`;
 }

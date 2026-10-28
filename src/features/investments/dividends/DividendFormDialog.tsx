@@ -19,10 +19,10 @@ import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpr
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatMoney } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import { AccountType, type Dividend, type DividendType } from '@/lib/types';
 
-import { rupees } from '../investmentsFormat';
 import { DividendReceiptSection } from './DividendReceiptSection';
 import { type DividendFormOptions, loadDividendFormOptions } from './dividendsActions';
 import { toDecimal,TYPE_OPTIONS } from './dividendsModel';
@@ -242,7 +242,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           onOpenChange={(open) => {
             if (!mutations.remove.isPending) setConfirmingDelete(open);
           }}
-          title={`Delete ${dividend.symbol || dividend.instrumentName || 'dividend'} · ${rupees(Number(dividend.amount || 0) - Number(dividend.tds || 0))}?`}
+          title={`Delete ${dividend.symbol || dividend.instrumentName || 'dividend'} · ${formatMoney(Number(dividend.amount || 0) - Number(dividend.tds || 0), { decimals: 'auto' })}?`}
           description="This payout record goes. A bank credit it was linked to stays in your transactions, unlinked."
           confirmLabel="Delete dividend"
           confirmLoading={mutations.remove.isPending}

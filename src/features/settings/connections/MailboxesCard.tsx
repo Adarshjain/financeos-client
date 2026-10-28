@@ -14,6 +14,7 @@ import {
   CardTitle,
   ConfirmDialog,
   EmptyState,
+  StatusWord,
   Text,
 } from '@/components/ds';
 
@@ -68,11 +69,11 @@ function MailboxRow({
       <div className="flex flex-wrap items-center gap-space-8 shrink-0">
         {showPrimary && conn.isPrimary ? <Badge tone="neutral">Primary</Badge> : null}
         {conn.needsReconnect ? (
-          <Badge tone="warning" data-testid={`needs-reconnect-${conn.id}`}>
+          <StatusWord tone="warning" data-testid={`needs-reconnect-${conn.id}`}>
             Needs reconnect
-          </Badge>
+          </StatusWord>
         ) : (
-          <Badge tone="success">Healthy</Badge>
+          <StatusWord tone="success">Healthy</StatusWord>
         )}
         {conn.needsReconnect ? (
           <Button variant="secondary" size="sm" disabled={busy} onClick={onReconnect}>

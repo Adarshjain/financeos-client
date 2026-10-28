@@ -3,7 +3,6 @@
 import React from 'react';
 
 import {
-  Badge,
   Button,
   Card,
   createDataTableColumnHelper,
@@ -11,6 +10,7 @@ import {
   EmptyState,
   Icon,
   Pager,
+  StatusWord,
   Text,
   useConcealed,
 } from '@/components/ds';
@@ -81,8 +81,8 @@ export function LedgerCard({
             <Text variant="body-strong" as="span">
               {row.original.title}
             </Text>
-            {row.original.linked ? <Badge tone="success">Linked</Badge> : null}
-            {row.original.settled ? <Badge tone="neutral">Settled</Badge> : null}
+            {row.original.linked ? <StatusWord tone="success">Linked</StatusWord> : null}
+            {row.original.settled ? <StatusWord tone="success">Settled</StatusWord> : null}
           </span>
         ),
       }),

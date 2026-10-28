@@ -1,9 +1,9 @@
+import { formatCount, formatMoney, formatQuantity } from '@/lib/format';
 import {
   MilestoneStatus,
   RewardLine,
 } from '@/lib/rewards.types';
 import { anniversaryYearRange } from '@/lib/rewards.types';
-import { formatMoney } from '@/lib/utils';
 
 export function lineDescription(line: RewardLine): string {
   return line.description || line.sourcedDescription || '—';
@@ -12,7 +12,7 @@ export function lineDescription(line: RewardLine): string {
 export function milestoneProgressText(m: MilestoneStatus): string {
   return m.basis === 'SPEND'
     ? `${formatMoney(m.progress)} of ${formatMoney(m.threshold)}`
-    : `${m.progress} of ${m.threshold} txns${
+    : `${formatCount(m.progress)} of ${formatCount(m.threshold, 'txns')}${
         m.minTxnAmount ? ` (${formatMoney(m.minTxnAmount)}+ each)` : ''
       }`;
 }
@@ -27,8 +27,8 @@ export function milestonePayoutTotal(list: MilestoneStatus[]): string {
     .filter((m) => m.rewardType === 'POINTS')
     .reduce((s, m) => s + (m.payoutValue ?? 0), 0);
   return [
-    inr > 0 ? formatMoney(inr) : null,
-    pts > 0 ? `${pts} pts` : null,
+    inr > 0 ? formatMoney(inr, { decimals: 'auto' }) : null,
+    pts > 0 ? `${formatQuantity(pts, 2)} pts` : null,
   ]
     .filter(Boolean)
     .join(' + ');
@@ -73,6 +73,6 @@ export function formatEarned(line: {
   earnedUnit: 'RUPEES' | 'POINTS';
 }): string {
   return line.earnedUnit === 'POINTS'
-    ? `${line.earned} pts`
-    : formatMoney(line.earned);
+    ? `${formatQuantity(line.earned, 2)} pts`
+    : formatMoney(line.earned, { decimals: 'auto' });
 }

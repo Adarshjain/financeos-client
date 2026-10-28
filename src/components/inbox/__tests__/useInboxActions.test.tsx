@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
@@ -22,6 +22,8 @@ vi.mock('next/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/navigation')>()),
   useRouter: () => ({ refresh: routerRefresh }),
 }));
+
+afterEach(() => vi.useRealTimers());
 
 const KEY = 'card_bill:abc-123:OVERDUE';
 
@@ -92,12 +94,14 @@ describe('useInboxActions', () => {
   });
 
   it('snooze success toasts with the formatted date and an Undo action', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-29T06:00:00Z'));
     vi.mocked(api.POST).mockResolvedValue({ data: undefined } as never);
     const { hook } = setup();
     act(() => hook.result.current.snooze(KEY, '2026-10-12'));
     await waitFor(() => expect(toastMock.success).toHaveBeenCalled());
     const [msg, opts] = toastMock.success.mock.calls[0];
-    expect(msg).toBe('Snoozed until 12 Oct 26');
+    expect(msg).toBe('Snoozed until 12 Oct');
     expect(opts.action.label).toBe('Undo');
   });
 

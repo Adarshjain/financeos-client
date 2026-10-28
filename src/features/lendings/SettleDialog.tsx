@@ -19,6 +19,7 @@ import { TransactionPickerField } from '@/features/transactions/TransactionPicke
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatMoney } from '@/lib/format';
 import type { LendingDirection } from '@/lib/lending.types';
 import { directionOf, fromEntryType, settlementWarning } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
@@ -27,7 +28,6 @@ import {
   firstNameOf,
   halfOf,
   netPositionOf,
-  rupeesExact,
   settleBalanceLine,
   settleEntryType,
   type SettleSegment,
@@ -185,7 +185,7 @@ export function SettleDialog({
           {segment === 'settle' ? (
             <div className="flex gap-space-8">
               <FilterChip selected={quick === 'full'} onClick={() => pick('full')}>
-                {`Full ${rupeesExact(balance)}`}
+                {`Full ${formatMoney(balance, { decimals: 'auto' })}`}
               </FilterChip>
               <FilterChip selected={quick === 'half'} onClick={() => pick('half')}>
                 Half

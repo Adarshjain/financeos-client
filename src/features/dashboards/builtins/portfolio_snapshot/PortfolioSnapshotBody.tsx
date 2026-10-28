@@ -9,8 +9,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListField, ListRow, Skeleton, Text } from '@/components/ds';
-import { moveTone, plainPct, quantity, rupees, shortDate, signedPct, signedRupees } from '@/features/investments/investmentsFormat';
+import { moveTone } from '@/features/investments/investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
+import { formatDate, formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 import { usePortfolioSummary, usePositions } from '@/lib/query/hooks/useInvestments';
 import type { InvestmentSummary } from '@/lib/types';
 
@@ -71,21 +72,21 @@ export function PortfolioSnapshotBody() {
       <div className="px-space-16 pb-space-12">
         <Text variant="figure" as="div">
           <Button variant="link" onClick={() => setOpen(true)} title="View underlying data for Portfolio value">
-            {rupees(value)}
+            {formatMoney(value)}
           </Button>
         </Text>
         <DayChangeLine summary={data} />
       </div>
-      <ListField label="Invested" value={rupees(num(data.totalInvested) ?? 0)} />
+      <ListField label="Invested" value={formatMoney(num(data.totalInvested) ?? 0)} />
       <ListField
         label="Unrealised P&L"
         value={
           <Text variant="body-strong" tone={moveTone(unrealised) ?? 'ink'}>
-            {`${signedRupees(unrealised)}${unrealisedPct != null ? ` (${signedPct(unrealisedPct, 2)})` : ''}`}
+            {`${formatMoney(unrealised, { sign: 'always' })}${unrealisedPct != null ? ` (${formatPercent(unrealisedPct, { sign: 'always', decimals: 2 })})` : ''}`}
           </Text>
         }
       />
-      <ListField label="XIRR" value={xirr != null ? plainPct(xirr) : '—'} />
+      <ListField label="XIRR" value={xirr != null ? formatPercent(xirr) : '—'} />
       {holdings.length > 0 && (
         <div role="list" aria-label="Top holdings" data-testid="top-holdings">
           {holdings.map((h) => (
@@ -93,11 +94,11 @@ export function PortfolioSnapshotBody() {
               <ListRow
                 asChild
                 title={h.label}
-                subtitle={`${quantity(h.quantity)} sh`}
+                subtitle={`${formatQuantity(h.quantity)} sh`}
                 trailing={
                   h.dayChangePct != null ? (
                     <Text variant="body-strong" tone={moveTone(h.dayChangePct) ?? 'ink'}>
-                      {signedPct(h.dayChangePct)}
+                      {formatPercent(h.dayChangePct, { sign: 'always' })}
                     </Text>
                   ) : null
                 }
@@ -111,7 +112,7 @@ export function PortfolioSnapshotBody() {
       {open && (
         <LazyReportUnderlyingDialog
           request={VALUE_REQUEST}
-          title={`Portfolio value · ${rupees(value)}`}
+          title={`Portfolio value · ${formatMoney(value)}`}
           onClose={() => setOpen(false)}
         />
       )}
@@ -128,12 +129,12 @@ function DayChangeLine({ summary }: { summary: InvestmentSummary }) {
   if (change == null) return null;
   const pct = num(summary.dayChangePct);
   const title = summary.priceAsOf
-    ? `Each holding's change since its last close; latest prices from ${shortDate(summary.priceAsOf)}`
+    ? `Each holding's change since its last close; latest prices from ${formatDate(summary.priceAsOf, 'list')}`
     : undefined;
   return (
     <Text variant="label" tone={moveTone(change) ?? 'ink'} as="div" title={title} data-testid="day-change">
-      {signedRupees(change)}
-      {pct != null && ` (${signedPct(pct, 2)})`}{' '}
+      {formatMoney(change, { sign: 'always' })}
+      {pct != null && ` (${formatPercent(pct, { sign: 'always', decimals: 2 })})`}{' '}
       <Text variant="label" tone="ink-3">since last close</Text>
     </Text>
   );

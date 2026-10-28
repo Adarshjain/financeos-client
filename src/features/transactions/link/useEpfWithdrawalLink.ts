@@ -3,10 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 
-import { plainAmount } from '@/features/loans/loanFormat';
 import { amountExpressionValue } from '@/lib/amountExpression';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { formatMoney } from '@/lib/format';
 import { notify } from '@/lib/notify';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -182,7 +182,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
   const sharesTotal = isPension ? (numPension ?? 0) : (numEmployee ?? 0) + (numEmployer ?? 0);
   const received = sharesTotal - (numTds ?? 0);
   const receivedCaption =
-    mode === 'new' && sharesTotal > 0 && received >= 0 ? `Received in bank: ₹${plainAmount(received)}.` : null;
+    mode === 'new' && sharesTotal > 0 && received >= 0 ? `Received in bank: ${formatMoney(received, { decimals: 'auto' })}.` : null;
   const newValid =
     Boolean(employerId) &&
     Boolean(creditedOn) &&

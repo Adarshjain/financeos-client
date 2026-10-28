@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
-  Badge,
   Button,
   Card,
   EmptyState,
@@ -98,7 +97,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
             trailing={
               <>
                 {row.verdict ? <StatusWord tone={row.verdict.tone}>{row.verdict.label}</StatusWord> : null}
-                {row.badge ? <Badge tone={row.badge.tone}>{row.badge.label}</Badge> : null}
+                {row.badge ? <StatusWord tone={row.badge.tone}>{row.badge.label}</StatusWord> : null}
               </>
             }
             onClick={() => router.push(`${base}?statement=${row.id}&fy=${fy}`)}

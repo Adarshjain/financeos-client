@@ -158,8 +158,8 @@ describe('EPF passbook import: review', () => {
     expect(screen.getByText(/Pension figures are kept but not added to the balance\./)).toBeInTheDocument();
     expect(epfCalls.preview).toHaveBeenCalledWith({ files: [pdf], assign: [] });
     expect(screen.getByText('Northwind Labs · FY 2026-27')).toBeInTheDocument();
-    expect(screen.getByText('Member ID …67890 · UAN …4321 · up to Sep 2026')).toBeInTheDocument();
-    expect(screen.getAllByText('Sep 2026')[0]).toBeInTheDocument();
+    expect(screen.getByText('Member ID …67890 · UAN …4321 · up to September 2026')).toBeInTheDocument();
+    expect(screen.getAllByText('September 2026')[0]).toBeInTheDocument();
     expect(screen.getAllByText('FY 2025-26')[0]).toBeInTheDocument();
     expect(screen.getAllByText('1 Apr 2026')[0]).toBeInTheDocument();
     expect(screen.getByText('₹56,180')).toBeInTheDocument();
@@ -292,7 +292,7 @@ describe('EPF passbook import: result', () => {
     await user.click(await screen.findByRole('button', { name: 'Import 3 entries' }));
     expect(await screen.findByRole('heading', { name: 'Imported 3 entries' })).toBeInTheDocument();
     expect(epfCalls.commit).toHaveBeenCalledWith({ files: [pdf], assign: [] });
-    expect(screen.getByText('2 new and 1 replaced. EPF balance is now ₹8,43,210, up to Sep 2026.')).toBeInTheDocument();
+    expect(screen.getByText('2 new and 1 replaced. EPF balance is now ₹8,43,210, up to September 2026.')).toBeInTheDocument();
     expect(mockRouter.refresh).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('button', { name: 'Open EPF' }));
     expect(mockRouter.push).toHaveBeenCalledWith('/investments/epf');
@@ -461,7 +461,7 @@ describe('EPF passbook import: several passbooks', () => {
     await readPassbook();
     await user.click(await screen.findByRole('button', { name: 'Import 4 entries' }));
     expect(await screen.findByRole('heading', { name: 'Imported 4 entries' })).toBeInTheDocument();
-    expect(screen.getByText('3 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to Sep 2026.')).toBeInTheDocument();
+    expect(screen.getByText('3 new and 1 replaced across 2 employers. EPF balance is now ₹8,43,210, up to September 2026.')).toBeInTheDocument();
     expect(epfCalls.commit).toHaveBeenCalledWith({ files: [pdf], assign: [] });
   });
 

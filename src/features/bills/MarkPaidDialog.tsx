@@ -12,11 +12,11 @@ import {
   showToast,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { formatRupees } from '@/features/accounts/list/accountsList';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { MarkBillPaidRequest } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatMoney } from '@/lib/format';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
 export interface MarkPaidDialogProps {
@@ -122,7 +122,7 @@ export function MarkPaidDialog({
         size="sm"
         title="Mark bill as paid"
         description={
-          remaining != null ? `${cardName} · ${formatRupees(remaining)} outstanding` : cardName
+          remaining != null ? `${cardName} · ${formatMoney(remaining)} outstanding` : cardName
         }
         secondary={{
           label: 'Cancel',

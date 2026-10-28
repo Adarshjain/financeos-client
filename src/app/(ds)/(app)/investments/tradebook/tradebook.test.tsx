@@ -125,7 +125,7 @@ describe('/investments/tradebook: rows', () => {
     for (const h of ['Date', 'Instrument', 'Type', 'Settlement', 'Qty', 'Price', 'Value', 'Charges']) {
       expect(screen.getAllByText(h).length).toBeGreaterThan(0);
     }
-    expect(first('1 Oct 26')).toBeTruthy();
+    expect(first('1 Oct')).toBeTruthy();
     expect(first('35,500')).toBeTruthy();
     expect(first('≈42.10')).toBeTruthy();
     expect(first('Parag Parikh Flexi Cap')).toBeTruthy();
@@ -323,7 +323,7 @@ describe('/investments/tradebook: edit and delete', () => {
   it('asks before deleting and says what stays', async () => {
     const dialog = await openEdit();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
-    expect(await screen.findByText('Delete TATAMOTORS · 1 Oct 26 sell?')).toBeTruthy();
+    expect(await screen.findByText('Delete TATAMOTORS · 1 Oct sell?')).toBeTruthy();
     expect(screen.getByText(/Other trades, prices and dividends of this instrument stay/)).toBeTruthy();
     expect(api.DELETE).not.toHaveBeenCalled();
   });

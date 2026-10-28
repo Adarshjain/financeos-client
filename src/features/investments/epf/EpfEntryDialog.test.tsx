@@ -57,7 +57,7 @@ describe('EpfEntryDialog: adding', () => {
     expect(screen.getByText('Add EPF entry')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Contribution');
     expect(screen.getByRole('combobox', { name: /^Employer/ })).toHaveTextContent('Northwind Labs');
-    expect(screen.getByRole('combobox', { name: /^Wage month/ })).toHaveTextContent('Oct 2026');
+    expect(screen.getByRole('combobox', { name: /^Wage month/ })).toHaveTextContent('October 2026');
     expect(field('Credited on')).toHaveValue('15/11/2026');
     expect(field('Your share')).toHaveValue('7200');
     expect(field('Employer share')).toHaveValue('5950');
@@ -249,7 +249,7 @@ describe('EpfEntryDialog: an entry you added', () => {
   it('opens with its values and saves a change', async () => {
     const onClose = vi.fn();
     renderWithQuery(<EpfEntryDialog entry={manualContribution()} employers={employers} onClose={onClose} />);
-    expect(screen.getByText('Aug 2026 contribution')).toBeInTheDocument();
+    expect(screen.getByText('August 2026 contribution')).toBeInTheDocument();
     expect(field('Your share')).toHaveValue('7200');
     expect(screen.getByText('Added by you. A passbook that has this month replaces it.')).toBeInTheDocument();
     fireEvent.change(field('Your share'), { target: { value: '7300' } });
@@ -268,7 +268,7 @@ describe('EpfEntryDialog: an entry you added', () => {
     const onClose = vi.fn();
     renderWithQuery(<EpfEntryDialog entry={manualContribution()} employers={employers} onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Delete entry' }));
-    expect(await screen.findByText('Delete the Aug 2026 contribution?')).toBeInTheDocument();
+    expect(await screen.findByText('Delete the August 2026 contribution?')).toBeInTheDocument();
     expect(screen.getByText('This entry you added goes, and the balance drops by ₹13,150. Entries from the passbook stay.')).toBeInTheDocument();
     expect(http.DELETE).not.toHaveBeenCalled();
     const confirm = screen.getAllByRole('button', { name: 'Delete entry' }).at(-1)!;

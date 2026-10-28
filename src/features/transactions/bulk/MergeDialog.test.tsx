@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = { refresh: vi.fn() };
@@ -16,9 +17,12 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 import type { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import type { Transaction } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { MergeDialog } from './MergeDialog';
+
+pinClock();
 
 const accounts = [
   { id: 'a1', name: 'HDFC Regalia' },
@@ -53,8 +57,8 @@ describe('MergeDialog', () => {
     expect(screen.getByText('Merge transactions')).toBeInTheDocument();
     expect(screen.getByText('Keep')).toBeInTheDocument();
     expect(screen.getByText('Delete · merge in')).toBeInTheDocument();
-    expect(screen.getAllByText('₹1,249.00')).toHaveLength(2);
-    expect(screen.getAllByText('11 Oct 2026')).toHaveLength(2);
+    expect(screen.getAllByText('1,249')).toHaveLength(2);
+    expect(screen.getAllByText('11 Oct')).toHaveLength(2);
     expect(screen.getAllByText('HDFC Regalia ••7741')).toHaveLength(2);
     expect(screen.getByText('Food & dining')).toBeInTheDocument();
     expect(screen.getByText('Statement')).toBeInTheDocument();
@@ -80,6 +84,21 @@ describe('MergeDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Merge and resolve' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
     expect(vi.mocked(api.POST).mock.calls[0][1]).toEqual({ body: { keepId: 'alert', deleteId: 'stmt' } });
+  });
+
+  it('a real pointer click on the row text switches the keeper, and the keyboard does too', async () => {
+    merged();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    setup([alert, statement]);
+    await user.click(screen.getByText('Swiggy'));
+    const radios = screen.getAllByRole('radio');
+    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false']);
+    radios[1].focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    await user.click(screen.getByRole('button', { name: 'Merge and resolve' }));
+    await waitFor(() => expect(api.POST).toHaveBeenCalled());
+    expect(vi.mocked(api.POST).mock.calls[0][1]).toEqual({ body: { keepId: 'stmt', deleteId: 'alert' } });
   });
 
   it('says what still needs review when the kept transaction keeps a reason', async () => {

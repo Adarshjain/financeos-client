@@ -5,7 +5,6 @@ import React, { forwardRef } from 'react';
 import {
   Checkbox,
   cn,
-  Highlight,
   Icon,
   ListRow,
   Pager,
@@ -16,6 +15,8 @@ import {
   TextField,
   useControllableState,
 } from '@/components/ds';
+
+import { TransactionRow } from '../TransactionRow/TransactionRow';
 
 export interface TransactionPickerItem {
   id: string;
@@ -199,15 +200,15 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
                 const checked = selectedIds.includes(item.id);
                 const name = item.title;
                 return (
-                  <ListRow
+                  <TransactionRow
                     key={item.id}
+                    compact
                     role={multiple ? 'checkbox' : 'radio'}
                     aria-checked={checked}
                     aria-label={name}
-                    wrap
                     className="px-0"
                     disabled={item.disabled}
-                    onClick={() => select(item.id)}
+                    onClick={item.disabled ? undefined : () => select(item.id)}
                     leading={
                       multiple ? (
                         <Checkbox
@@ -223,29 +224,15 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
                         />
                       )
                     }
-                    title={<Highlight text={item.title} query={query} />}
-                    subtitle={
-                      item.subtitle || (item.disabled && item.disabledReason) ? (
-                        <>
-                          {item.subtitle ? (
-                            <Highlight text={item.subtitle} query={query} />
-                          ) : null}
-                          {item.disabled && item.disabledReason
-                            ? `${item.subtitle ? ' · ' : ''}${item.disabledReason}`
-                            : null}
-                        </>
-                      ) : undefined
+                    description={item.title}
+                    contextLine={
+                      item.subtitle || (item.disabled && item.disabledReason)
+                        ? [item.subtitle, item.disabled ? item.disabledReason : undefined].filter(Boolean).join(' · ')
+                        : undefined
                     }
-                    trailing={
-                      <Text
-                        variant="body-strong"
-                        tone={item.isCredit ? 'positive' : 'ink'}
-                        className="tabular-nums"
-                        fraction="small"
-                      >
-                        {query ? <Highlight text={item.amount} query={query} /> : item.amount}
-                      </Text>
-                    }
+                    amount={item.isCredit && !item.amount.startsWith('+') ? `+${item.amount}` : item.amount}
+                    isCredit={item.isCredit}
+                    query={query}
                   />
                 );
               })}

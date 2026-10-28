@@ -48,6 +48,7 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 - `onDetail?: () => void`: Detail callback when trailing eye button is clicked
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
+- `compact?: boolean`: The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette). No table cells and no checkbox; the `date` joins the grey context line (first) and categories ride it as text. Pass `leading` for a radio or checkbox and `role`/`aria-*` for the picker's semantics.
 - `query?: string`: Search text. Matches in string `description`, `account`, each `categories` label, `amount`, `note`, `plastic` and `contextLine` get the Highlight marker stroke (phone and desktop). ReactNode values are left alone. `createTransactionColumns(query)` gives the DataTable columns the same marks on description, category, account and amount (`transactionColumns` is the same without a query).
 
 ## Gestures

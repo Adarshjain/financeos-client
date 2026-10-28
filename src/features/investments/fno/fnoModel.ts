@@ -1,18 +1,11 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear } from '@/features/loans/detail/financialYear';
 import { appHref } from '@/features/shell/routes';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 import type { FnoPageQuery, FnoSort, FnoSummary } from '@/lib/investments.types';
 import type { FnoTradeResponse } from '@/lib/types';
 
-import {
-  fyLabel,
-  moveTone,
-  plainPrice,
-  plainSignedRupees,
-  rupees,
-  signedRupees,
-} from '../investmentsFormat';
+import { fyLabel, moveTone } from '../investmentsFormat';
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 
 /** The F&O tab. */
@@ -165,18 +158,18 @@ function trades(count: number, word = 'trade'): string {
 export function figuresModel(summary: FnoSummary): FnoFiguresModel {
   const count = summary.tradeCount;
   return {
-    realised: { text: signedRupees(summary.realisedPnl), tone: moveTone(summary.realisedPnl) },
+    realised: { text: formatMoney(summary.realisedPnl, { sign: 'always' }), tone: moveTone(summary.realisedPnl) },
     realisedSub: trades(count),
-    winRate: `${Number(summary.winRate.toFixed(1))}%`,
+    winRate: formatPercent(summary.winRate),
     winSub: `${summary.winCount} of ${count}`,
-    charges: rupees(Math.round(summary.totalCharges)),
+    charges: formatMoney(Math.round(summary.totalCharges)),
     chargesSub: trades(count),
   };
 }
 
 /** "Realised +₹10,456 · taxed as business income": the line under the list. */
 export function realisedLine(summary: FnoSummary): string {
-  return `Realised ${signedRupees(summary.realisedPnl)} · taxed as business income`;
+  return `Realised ${formatMoney(summary.realisedPnl, { sign: 'always' })} · taxed as business income`;
 }
 
 const MONTH_NAMES = [
@@ -211,7 +204,7 @@ export function monthRows(summary: FnoSummary): PnlBarRow[] {
   return active.map((m) => ({
     key: m.month,
     label: MONTH_NAMES[Number(m.month.slice(5, 7)) - 1] ?? m.month,
-    amount: signedRupees(m.pnl),
+    amount: formatMoney(m.pnl, { sign: 'always' }),
     tone: moveTone(m.pnl),
     pct: biggest > 0 ? Math.max(2, Math.round((Math.abs(m.pnl) / biggest) * 100)) : 0,
     barTone: m.pnl < 0 ? 'danger' : 'brand',
@@ -230,7 +223,7 @@ export function underlyingRows(summary: FnoSummary): UnderlyingRow[] {
   return summary.byUnderlying.map((u) => ({
     key: u.underlying,
     label: u.underlying,
-    amount: signedRupees(u.pnl),
+    amount: formatMoney(u.pnl, { sign: 'always' }),
     tone: moveTone(u.pnl),
   }));
 }
@@ -263,25 +256,20 @@ export interface FnoListRow {
   line: string;
 }
 
-/** Up to two decimals, none when whole: "14,500", "88.9", "11,250.5". */
-export function trimmedAmount(value: number): string {
-  return Number(value.toFixed(2)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-}
-
 /** The underlying of a trade: its own field, else the trading symbol. */
 export function underlyingOf(trade: Pick<FnoTradeResponse, 'underlyingSymbol' | 'tradingSymbol'>): string {
   return trade.underlyingSymbol?.trim() || trade.tradingSymbol;
 }
 
 function monthShort(iso: string): string {
-  return formatDayMonth(iso).split(' ')[1]?.toUpperCase() ?? '';
+  return formatDate(iso, 'list').split(' ')[1]?.toUpperCase() ?? '';
 }
 
 /** "RELIANCE 3000 CE" for an option, "NIFTY OCT FUT" for a future (the expiry's month). */
 export function contractName(trade: FnoTradeResponse): string {
   const underlying = underlyingOf(trade);
   if (trade.contractType === 'option') {
-    return [underlying, trade.strikePrice != null ? trimmedAmount(trade.strikePrice).replace(/,/g, '') : null, trade.optionType]
+    return [underlying, trade.strikePrice != null ? formatQuantity(trade.strikePrice, 2).replace(/,/g, '') : null, trade.optionType]
       .filter(Boolean)
       .join(' ');
   }
@@ -292,10 +280,10 @@ export function contractName(trade: FnoTradeResponse): string {
 /** "7 → 10 Oct", "30 Sep → 3 Oct", "10 Oct": the entry and exit of a trade; '' with neither. */
 export function tradeSpan(entry: string | undefined, exit: string | undefined): string {
   if (!entry && !exit) return '';
-  if (!entry) return formatDayMonth(exit!);
-  if (!exit) return formatDayMonth(entry);
+  if (!entry) return formatDate(exit!, 'list');
+  if (!exit) return formatDate(entry, 'list');
   const sameMonth = entry.slice(0, 7) === exit.slice(0, 7);
-  return `${sameMonth ? formatDayMonth(entry).split(' ')[0] : formatDayMonth(entry)} → ${formatDayMonth(exit)}`;
+  return `${sameMonth ? formatDate(entry, 'list').split(' ')[0] : formatDate(entry, 'list')} → ${formatDate(exit, 'list')}`;
 }
 
 export function sourceLabel(source: string | undefined): string {
@@ -307,9 +295,9 @@ export function fnoListRow(trade: FnoTradeResponse): FnoListRow {
   const source = sourceLabel(trade.source);
   const line = [
     tradeSpan(trade.entryDate, trade.exitDate),
-    `${trimmedAmount(trade.quantity)} qty`,
-    `bought ₹${trimmedAmount(trade.buyValue)}`,
-    `sold ₹${trimmedAmount(trade.sellValue)}`,
+    `${formatQuantity(trade.quantity, 2)} qty`,
+    `bought ${formatMoney(trade.buyValue, { decimals: 'auto' })}`,
+    `sold ${formatMoney(trade.sellValue, { decimals: 'auto' })}`,
     source.toLowerCase(),
   ]
     .filter(Boolean)
@@ -317,16 +305,16 @@ export function fnoListRow(trade: FnoTradeResponse): FnoListRow {
   return {
     id: trade.id,
     contract: contractName(trade),
-    expiry: trade.expiryDate ? formatDayMonth(trade.expiryDate) : null,
+    expiry: trade.expiryDate ? formatDate(trade.expiryDate, 'list') : null,
     type: isOption ? (trade.optionType ? `Option · ${trade.optionType}` : 'Option') : 'Future',
     typeTone: isOption ? 'info' : 'neutral',
-    strike: trade.strikePrice != null ? trimmedAmount(trade.strikePrice) : null,
-    qty: trimmedAmount(trade.quantity),
-    bought: trimmedAmount(trade.buyValue),
-    sold: trimmedAmount(trade.sellValue),
-    charges: plainPrice(trade.totalCharges ?? 0),
-    pnlPlain: plainSignedRupees(trade.realizedPnl),
-    pnl: signedRupees(trade.realizedPnl),
+    strike: trade.strikePrice != null ? formatQuantity(trade.strikePrice, 2) : null,
+    qty: formatQuantity(trade.quantity, 2),
+    bought: formatQuantity(trade.buyValue, 2),
+    sold: formatQuantity(trade.sellValue, 2),
+    charges: formatMoney(trade.totalCharges ?? 0, { decimals: 'exact', symbol: false }),
+    pnlPlain: formatMoney(trade.realizedPnl, { sign: 'always', symbol: false }),
+    pnl: formatMoney(trade.realizedPnl, { sign: 'always' }),
     pnlTone: moveTone(trade.realizedPnl),
     source,
     line,

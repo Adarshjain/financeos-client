@@ -1,6 +1,6 @@
-import { formatAmount } from '@/features/accounts/list/accountsList';
 import { deleteImpact } from '@/features/transactions/detail/transactionDetail';
 import { REASON_WORDS } from '@/features/transactions/list/transactionRows';
+import { formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 type Reviewable = Pick<Transaction, 'reviewType' | 'reviewReasons'>;
@@ -19,7 +19,7 @@ export function isApprovable(t: Reviewable): boolean {
 export function selectionSummary(selected: Pick<Transaction, 'amount' | 'reviewType' | 'reviewReasons'>[]): string {
   const total = selected.reduce((sum, t) => sum + Math.abs(t.amount), 0);
   const flagged = selected.filter(isApprovable).length;
-  const money = `₹${formatAmount(total, 0)}`;
+  const money = formatMoney(total);
   return flagged > 0 ? `${money} · ${flagged} need review` : money;
 }
 
@@ -65,7 +65,7 @@ export function deleteCopy(
     const [t] = transactions;
     const name = t.description || t.sourcedDescription || '—';
     return {
-      title: `Delete ${name} · ₹${formatAmount(Math.abs(t.amount), 2)}?`,
+      title: `Delete ${name} · ${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}?`,
       impact: deleteImpact(t as Transaction),
       confirmLabel: 'Delete transaction',
     };

@@ -2,10 +2,9 @@
 
 import { Checkbox, DateField, ListRow, Radio, SegmentedControl, Select, Skeleton, Text, TextField } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
-import { plainAmount } from '@/features/loans/loanFormat';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatMoney } from '@/lib/format';
 
 import {
   EPF_KIND_OPTIONS,
@@ -62,10 +61,10 @@ function ExistingWithdrawals({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
                 onClick={() => epf.setSelectedId(o.entry.id)}
                 leading={<Radio checked={checked} />}
                 title={title}
-                subtitle={[formatDayMonthYear(o.entry.creditedOn), ...epfOptionNotes(o)].join(' · ')}
+                subtitle={[formatDate(o.entry.creditedOn, 'full'), ...epfOptionNotes(o)].join(' · ')}
                 trailing={
                   <Text variant="body-strong" as="span">
-                    {`₹${plainAmount(epfOptionAmount(o.entry))}`}
+                    {formatMoney(epfOptionAmount(o.entry), { decimals: 'auto' })}
                   </Text>
                 }
               />
@@ -78,7 +77,7 @@ function ExistingWithdrawals({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
           className="px-0"
           onClick={() => epf.setRecordTds(!epf.recordTds)}
           leading={<Checkbox checked={epf.recordTds} />}
-          title={`Record TDS of ₹${plainAmount(epf.tdsGap)}`}
+          title={`Record TDS of ${formatMoney(epf.tdsGap, { decimals: 'auto' })}`}
         />
       ) : null}
     </>

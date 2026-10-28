@@ -114,8 +114,8 @@ describe('AddLendingDialog', () => {
   it('shows each person with their balance', async () => {
     render(<AddLendingDialog onClose={onClose} />);
     await user.click(screen.getByRole('combobox', { name: /^Person/ }));
-    expect(screen.getByRole('option', { name: /Rahul Sharma/ })).toHaveTextContent('Owes you ₹1,200.00 · 2 entries');
-    expect(screen.getByRole('option', { name: /Priya Nair/ })).toHaveTextContent('You owe ₹500.00');
+    expect(screen.getByRole('option', { name: /Rahul Sharma/ })).toHaveTextContent('Owes you ₹1,200 · 2 entries');
+    expect(screen.getByRole('option', { name: /Priya Nair/ })).toHaveTextContent('You owe ₹500');
   });
 
   it('saves an entry for an existing person, closes, refreshes and says so', async () => {

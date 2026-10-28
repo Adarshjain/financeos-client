@@ -6,7 +6,7 @@ import React, { forwardRef } from 'react';
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
-import { formatCount } from '../utils';
+import { capCount } from '../utils';
 
 export type ButtonVariant =
   | 'primary'
@@ -170,7 +170,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 size="sm"
                 className={isPrimary ? 'bg-surface text-ink' : undefined}
               >
-                {formatCount(count)}
+                {capCount(count)}
               </Badge>
             ) : null}
             {dot ? (
@@ -254,7 +254,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 size="sm"
                 className={isPrimary ? 'bg-surface text-ink' : undefined}
               >
-                {formatCount(count)}
+                {capCount(count)}
               </Badge>
             ) : null}
             {dot ? (

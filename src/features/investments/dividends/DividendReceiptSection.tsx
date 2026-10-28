@@ -3,12 +3,11 @@
 import React from 'react';
 
 import { Button, Card, Divider, ListRow, Select, showToast, StatusWord, Text } from '@/components/ds';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { Dividend } from '@/lib/types';
 
-import { rupees } from '../investmentsFormat';
 import { RECEIPT_NOTE_OPTIONS, type ReceiptNote, receiptNoteOf, receiptVariance, receiptWord, tdsHint } from './dividendsModel';
 import type { useDividendMutations } from './useDividendMutations';
 
@@ -57,7 +56,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
         <Card variant="inset">
           <ListRow
             title={txn.description || 'Bank credit'}
-            subtitle={`${formatDayMonth(txn.date)} · ${txn.accountName || 'Account'} · +${rupees(txn.signedAmount)}`}
+            subtitle={`${formatDate(txn.date, 'list')} · ${txn.accountName || 'Account'} · +${formatMoney(txn.signedAmount, { decimals: 'auto' })}`}
             trailing={
               <Button
                 type="button"
@@ -89,15 +88,15 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
 
       {hint !== null ? (
         <Text variant="label" tone="ink-3" as="div">
-          {`The credit is ${rupees(hint)} short of the gross amount. `}
+          {`The credit is ${formatMoney(hint, { decimals: 'auto' })} short of the gross amount. `}
           <Button type="button" variant="link" size="sm" onClick={() => onUseTds(String(hint))}>
-            {`Use ${rupees(hint)} as TDS`}
+            {`Use ${formatMoney(hint, { decimals: 'auto' })} as TDS`}
           </Button>
         </Text>
       ) : null}
       {variance !== null ? (
         <Text variant="label" tone="warning" as="div">
-          {`±${rupees(Math.abs(variance))} vs expected`}
+          {`±${formatMoney(Math.abs(variance), { decimals: 'auto' })} vs expected`}
         </Text>
       ) : null}
 

@@ -9,9 +9,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, Skeleton } from '@/components/ds';
-import { rupees } from '@/features/investments/investmentsFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { appHref } from '@/features/shell/routes';
+import { formatMoney } from '@/lib/format';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 import { useOutstandingCounterparties } from '@/lib/query/hooks/useCounterparties';
 
@@ -66,7 +66,7 @@ export function LendingBalancesBody() {
                 subtitle={owesYou ? 'Owes you' : 'You owe'}
                 trailing={
                   <Button variant="link" onClick={() => setOpened(p)}>
-                    {rupees(Math.abs(p.netPosition))}
+                    {formatMoney(Math.abs(p.netPosition))}
                   </Button>
                 }
               />

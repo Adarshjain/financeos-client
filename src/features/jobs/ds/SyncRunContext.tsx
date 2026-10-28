@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { Button, Icon, Text } from '@/components/ds';
-import { numericDate, numericDateTime } from '@/features/jobs/format';
+import { formatDate, formatTime } from '@/lib/format';
 import type { SyncSummary } from '@/lib/types';
 
 function ContextRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -34,8 +34,8 @@ export function SyncRunContext({ result }: { result: SyncSummary }) {
         </ContextRow>
       ) : null}
       <ContextRow label="Searched">
-        {result.searchedSince ? `New mail since ${numericDateTime(result.searchedSince)}` : 'Nothing listed'}
-        {result.backfilledTo ? ` · backfilled to ${numericDate(result.backfilledTo)}` : ''}
+        {result.searchedSince ? `New mail since ${formatDate(result.searchedSince, 'input')}, ${formatTime(result.searchedSince)}` : 'Nothing listed'}
+        {result.backfilledTo ? ` · backfilled to ${formatDate(result.backfilledTo, 'input')}` : ''}
       </ContextRow>
       <ContextRow label="Found">
         Gmail returned {result.listed ?? 0} email{result.listed === 1 ? '' : 's'}, {result.discovered ?? 0} new

@@ -279,8 +279,11 @@ for (const viewport of VIEWPORTS) {
         await expect(dialog).not.toBeVisible();
         await expect(row(page, 'Rent Advance')).toContainText(food.name);
 
-        await open(page);
-        await expect(row(page, 'Rent Advance')).toContainText(food.name);
+        // The row updates optimistically and the save goes out after the dialog closes: reload until it has landed.
+        await expect(async () => {
+          await open(page);
+          await expect(row(page, 'Rent Advance')).toContainText(food.name, { timeout: 3_000 });
+        }).toPass({ timeout: 30_000 });
       });
 
       test('the pager moves to the next page through the URL', async ({ page }) => {
@@ -309,7 +312,7 @@ for (const viewport of VIEWPORTS) {
         await row(page, 'Swiggy Dinner').getByText('Swiggy Dinner').click();
         const panel = page.getByRole('dialog', { name: 'Swiggy Dinner' });
         await expect(panel).toBeVisible();
-        await expect(panel).toContainText('₹450.00');
+        await expect(panel).toContainText('₹450');
         expect(page.url()).toBe(before);
 
         await row(page, 'Uber Ride').getByText('Uber Ride').click();

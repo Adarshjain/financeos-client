@@ -1,7 +1,7 @@
-import { formatDayMonthRelative } from '@/features/accounts/list/accountsList';
 import { chartTypeLabel } from '@/features/reports/chartTypeLabels';
 import { appHref } from '@/features/shell/routes';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatDate } from '@/lib/format';
 import type { ReportDashboardRef, ReportSummaryResponse, ReportType } from '@/lib/reports.types';
 
 /** The Reports list URL. */
@@ -108,7 +108,7 @@ const TYPE_LABELS: Record<ReportType, string> = { KPI: 'KPI', CHART: 'Chart', TA
 /** "on Home" for one dashboard, "on 2 dashboards" for more, nothing for none. */
 function usedOn(dashboards: ReportDashboardRef[]): string | null {
   if (dashboards.length === 0) return null;
-  return dashboards.length === 1 ? `on ${dashboards[0].name}` : `on ${dashboards.length} dashboards`;
+  return dashboards.length === 1 ? `on ${dashboards[0].name}` : `on ${formatCount(dashboards.length, 'dashboards')}`;
 }
 
 export function reportRow(report: ReportSummaryResponse, datasourceLabels: Record<string, string>): ReportRow {
@@ -117,7 +117,7 @@ export function reportRow(report: ReportSummaryResponse, datasourceLabels: Recor
   const dashboards = report.dashboards ?? [];
   const used = usedOn(dashboards);
   const typeLabel = report.chartType ? chartTypeLabel(report.chartType) : TYPE_LABELS[report.type];
-  const updated = formatDayMonthRelative(todayInAppZone(new Date(report.updatedAt)), todayInAppZone());
+  const updated = formatDate(todayInAppZone(new Date(report.updatedAt)), 'relative', { today: todayInAppZone(), inline: true });
   return {
     id: report.id,
     name: report.name,

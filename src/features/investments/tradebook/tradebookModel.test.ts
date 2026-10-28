@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { fundBuy, job, stockBuy, trade } from './tradebook.fixtures';
 import {
   allCharges,
@@ -7,12 +9,10 @@ import {
   chargeTextsOf,
   currentFy,
   EMPTY_CHARGES,
-  exactRupees,
   filledCharges,
   fyOptions,
   isTradebookFiltered,
   jobLine,
-  jobTime,
   parseTradebookUrl,
   priceText,
   quantityText,
@@ -24,6 +24,8 @@ import {
   tradeTotals,
   validateTrade,
 } from './tradebookModel';
+
+pinClock();
 
 describe('tradebook URL state', () => {
   it('defaults to the first page of 25, every broker, both sides, the current FY', () => {
@@ -98,7 +100,7 @@ describe('tradebookRow', () => {
   it('draws a stock sell with its CNC tag and no realised figure', () => {
     const row = tradebookRow(trade());
     expect(row).toMatchObject({
-      date: '1 Oct 26',
+      date: '1 Oct',
       title: 'TATAMOTORS',
       broker: 'Zerodha',
       side: 'Sell',
@@ -131,17 +133,12 @@ describe('tradebookRow', () => {
   });
 
   it('falls back to the name when there is no symbol, and names a trade for the delete prompt', () => {
-    expect(tradeLabel(trade())).toBe('TATAMOTORS · 1 Oct 26 sell');
-    expect(tradeLabel(fundBuy)).toBe('Parag Parikh Flexi Cap · 5 Oct 26 buy');
+    expect(tradeLabel(trade())).toBe('TATAMOTORS · 1 Oct sell');
+    expect(tradeLabel(fundBuy)).toBe('Parag Parikh Flexi Cap · 5 Oct buy');
   });
 });
 
 describe('the jobs line', () => {
-  it('formats the time in the app zone, 12-hour', () => {
-    expect(jobTime('2026-10-13T05:32:10Z')).toBe('13 Oct, 11:02 am');
-    expect(jobTime('nope')).toBe('');
-  });
-
   it('says when the last import ran and how many trades it wrote', () => {
     expect(jobLine('Last import', job(), true)).toEqual({ text: 'Last import 13 Oct, 11:02 am · 14 trades', jobId: 'job-1' });
     expect(jobLine('Last import', job({ result: { committed: 1, skipped: 0, failed: [], skippedItems: [] } }), true)?.text).toMatch(/· 1 trade$/);
@@ -174,12 +171,6 @@ describe('the trade form figures', () => {
 
   it('treats empty or broken text as zero', () => {
     expect(tradeTotals('buy', '', 'abc', EMPTY_CHARGES)).toEqual({ value: 0, charges: 0, total: 0 });
-  });
-
-  it('writes figures with paise only when there are some', () => {
-    expect(exactRupees(30254)).toBe('₹30,254');
-    expect(exactRupees(35457.9)).toBe('₹35,457.90');
-    expect(exactRupees(0)).toBe('₹0');
   });
 
   it('refuses no quantity, a negative price and no date', () => {

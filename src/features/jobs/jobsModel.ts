@@ -1,4 +1,5 @@
 import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatDate, formatTime } from '@/lib/format';
 import type {
   FileIngestionResult,
   ImportCommitResult,
@@ -9,7 +10,6 @@ import type {
   SyncSummary,
 } from '@/lib/types';
 
-import { clockTime, dayMonth } from './format';
 import { isActiveJob } from './jobModel';
 
 export const TYPE_OPTIONS = [
@@ -31,9 +31,9 @@ export function startedLabel(createdAt: string, now: Date = new Date()): string 
   const created = new Date(createdAt);
   if (Number.isNaN(created.getTime())) return '—';
   const day = todayInAppZone(created);
-  if (day === todayInAppZone(now)) return `today ${clockTime(created)}`;
-  if (day === todayInAppZone(new Date(now.getTime() - 86_400_000))) return `yesterday ${clockTime(created)}`;
-  return `${dayMonth(created)} ${clockTime(created)}`;
+  if (day === todayInAppZone(now)) return `today ${formatTime(created)}`;
+  if (day === todayInAppZone(new Date(now.getTime() - 86_400_000))) return `yesterday ${formatTime(created)}`;
+  return `${formatDate(created, 'list', { today: todayInAppZone(now) })} ${formatTime(created)}`;
 }
 
 /** "6.1 s" under a minute, "2 m 5 s" above, "—" while the job has no start or end. */
@@ -45,8 +45,6 @@ export function tookLabel(startedAt?: string | null, finishedAt?: string | null)
   const sec = Math.round(ms / 1000);
   return `${Math.floor(sec / 60)} m ${sec % 60} s`;
 }
-
-const plural = (n: number, one: string, many: string = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 function asRecord(result: unknown): Record<string, unknown> | null {
   return result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
@@ -63,12 +61,12 @@ export function jobSubject(job: Pick<JobResponse, 'type' | 'result'>): string | 
       const files = r.fileDetails ?? [];
       if (files.length === 1) return files[0].filename || null;
       const count = files.length || r.filesProcessed || 0;
-      return count > 1 ? `${count} files` : null;
+      return count > 1 ? formatCount(count, 'files') : null;
     }
     case 'PRICE_REFRESH': {
       const r = job.result as PriceRefreshResult;
       const total = (r.refreshed ?? 0) + (r.skipped ?? 0) + (Array.isArray(r.failed) ? r.failed.length : 0);
-      return total > 0 ? plural(total, 'instrument') : null;
+      return total > 0 ? formatCount(total, ['instrument', 'instruments']) : null;
     }
     case 'RULE_APPLY': {
       const r = job.result as RuleApplyResult;
@@ -88,8 +86,8 @@ export function jobSummary(job: Pick<JobResponse, 'type' | 'result'>): string | 
       const emails = r.processed ?? r.fetched ?? (r.created ?? 0) + (r.reconciled ?? 0) + (r.skipped ?? 0);
       const attention = (r.parked ?? 0) + (r.failedPermanent ?? r.failed ?? 0) + (r.failedRetryable ?? 0);
       return [
-        plural(emails, 'email'),
-        plural(r.created ?? 0, 'transaction'),
+        formatCount(emails, ['email', 'emails']),
+        formatCount(r.created ?? 0, ['transaction', 'transactions']),
         attention > 0 ? `${attention} ${attention === 1 ? 'needs' : 'need'} attention` : null,
       ]
         .filter(Boolean)
@@ -101,10 +99,10 @@ export function jobSummary(job: Pick<JobResponse, 'type' | 'result'>): string | 
       const rows = files.reduce((sum, f) => sum + (f.linesParsed ?? 0), 0);
       const failedFiles = files.filter((f) => f.status === 'FAILED').length;
       return [
-        plural(rows, 'row'),
-        `${r.totalCreated ?? 0} new`,
-        r.totalDuplicatesFound > 0 ? plural(r.totalDuplicatesFound, 'duplicate') : null,
-        failedFiles > 0 ? `${failedFiles} failed` : null,
+        formatCount(rows, ['row', 'rows']),
+        formatCount(r.totalCreated ?? 0, 'new'),
+        r.totalDuplicatesFound > 0 ? formatCount(r.totalDuplicatesFound, ['duplicate', 'duplicates']) : null,
+        failedFiles > 0 ? formatCount(failedFiles, 'failed') : null,
       ]
         .filter(Boolean)
         .join(' · ');
@@ -113,9 +111,9 @@ export function jobSummary(job: Pick<JobResponse, 'type' | 'result'>): string | 
       const r = job.result as PriceRefreshResult;
       const failed = Array.isArray(r.failed) ? r.failed.length : 0;
       return [
-        `${r.refreshed ?? 0} updated`,
-        (r.skipped ?? 0) > 0 ? `${r.skipped} skipped` : null,
-        failed > 0 ? `${failed} failed` : null,
+        formatCount(r.refreshed ?? 0, 'updated'),
+        (r.skipped ?? 0) > 0 ? formatCount(r.skipped, 'skipped') : null,
+        failed > 0 ? formatCount(failed, 'failed') : null,
       ]
         .filter(Boolean)
         .join(' · ');
@@ -126,8 +124,8 @@ export function jobSummary(job: Pick<JobResponse, 'type' | 'result'>): string | 
       const failed = Array.isArray(r.failed) ? r.failed.length : 0;
       return [
         `${r.committed ?? 0} imported`,
-        (r.skipped ?? 0) > 0 ? `${r.skipped} skipped` : null,
-        failed > 0 ? `${failed} failed` : null,
+        (r.skipped ?? 0) > 0 ? formatCount(r.skipped, 'skipped') : null,
+        failed > 0 ? formatCount(failed, 'failed') : null,
       ]
         .filter(Boolean)
         .join(' · ');

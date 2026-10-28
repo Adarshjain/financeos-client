@@ -8,13 +8,13 @@ import {
   type CalendarEvent,
   Card,
   CardHeader,
-  formatDate,
   formatMonth,
   Icon,
   ListRow,
   MonthCalendar,
   Text,
 } from '@/components/ds';
+import { formatDate } from '@/lib/format';
 
 /** A calendar event plus what the page's day list shows for it. */
 interface UpcomingItem extends CalendarEvent {

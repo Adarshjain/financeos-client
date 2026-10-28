@@ -6,7 +6,7 @@ import React, { forwardRef } from 'react';
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon, type IconName } from '../Icon/Icon';
-import { formatCount } from '../utils';
+import { capCount } from '../utils';
 
 export interface TabBarItem {
   id: string;
@@ -67,7 +67,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                     tone={item.countTone}
                     className="absolute -top-space-4 left-space-12 pointer-events-none ring-2 ring-surface"
                   >
-                    {formatCount(item.count)}
+                    {capCount(item.count)}
                   </Badge>
                 ) : null}
               </div>

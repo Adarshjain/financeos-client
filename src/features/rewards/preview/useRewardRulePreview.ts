@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { formatMoney } from '@/lib/utils';
+import { formatMoney, formatQuantity } from '@/lib/format';
 
 import type { RewardRuleFormFields } from '../rules/form/useRewardRuleFormFields';
 
@@ -86,13 +86,13 @@ export function useRewardRulePreview(fields: RewardRuleFormFields): { matched: b
     if (minAmount.trim() && amount < Number(minAmount)) {
       return {
         matched: false,
-        text: `No match — below minimum amount ₹${minAmount}`,
+        text: `No match — below minimum amount ${formatMoney(Number(minAmount), { decimals: 'auto' })}`,
       };
     }
     if (maxAmount.trim() && amount > Number(maxAmount)) {
       return {
         matched: false,
-        text: `No match — above maximum amount ₹${maxAmount}`,
+        text: `No match — above maximum amount ${formatMoney(Number(maxAmount), { decimals: 'auto' })}`,
       };
     }
     if (emiTreatment === 'EXCLUDE_EMI' && previewEmi)
@@ -116,8 +116,8 @@ export function useRewardRulePreview(fields: RewardRuleFormFields): { matched: b
     const paid = (n: number) => {
       const display = Math.round(n * 100) / 100;
       return rewardType === 'POINTS'
-        ? `${display} pts`
-        : `${formatMoney(display)} cashback`;
+        ? `${formatQuantity(display, 2)} pts`
+        : `${formatMoney(display, { decimals: 'auto' })} cashback`;
     };
 
     if (isTiered) {

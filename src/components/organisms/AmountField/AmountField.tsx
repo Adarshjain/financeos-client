@@ -13,6 +13,7 @@ import {
 } from '@/components/ds';
 import { isPhoneLayout } from '@/components/ds/phoneLayout';
 import { evaluateAmountExpression, hasAmountOperator } from '@/lib/amountExpression';
+import { formatMoney } from '@/lib/format';
 
 const OPERATORS = [
   { value: '÷' },
@@ -22,7 +23,7 @@ const OPERATORS = [
 ];
 
 function formatResult(n: number): string {
-  return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  return formatMoney(n, { decimals: 'auto', symbol: false });
 }
 
 /**

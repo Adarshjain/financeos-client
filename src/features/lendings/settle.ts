@@ -1,14 +1,9 @@
-import { formatAmount } from '@/features/accounts/list/accountsList';
+import { formatMoney } from '@/lib/format';
 import type { LendingDirection } from '@/lib/lending.types';
 import { type LendingEntryType } from '@/lib/lendingEntry';
 
 /** What the Settle up sheet records: a repayment against the balance, or a new principal entry. */
 export type SettleSegment = 'settle' | 'more';
-
-/** "₹12,000", with paise only when the figure has them. */
-export function rupeesExact(value: number): string {
-  return `₹${formatAmount(value, Number.isInteger(value) ? 0 : 2)}`;
-}
 
 /** "Rahul" from "Rahul Sharma". */
 export function firstNameOf(name: string): string {
@@ -43,7 +38,7 @@ export function netPositionOf(direction: LendingDirection, balance: number): num
 
 /** "Balance ₹12,000 in your favour" or "Balance ₹12,000 in Priya's favour". */
 export function settleBalanceLine(direction: LendingDirection, balance: number, firstName: string): string {
-  return `Balance ${rupeesExact(balance)} in ${direction === 'lent' ? 'your' : `${firstName}'s`} favour`;
+  return `Balance ${formatMoney(balance, { decimals: 'auto' })} in ${direction === 'lent' ? 'your' : `${firstName}'s`} favour`;
 }
 
 /** Half the balance, to the paisa. */

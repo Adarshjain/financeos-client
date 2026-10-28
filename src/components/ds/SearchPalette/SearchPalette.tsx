@@ -22,6 +22,8 @@ export interface SearchPaletteItem {
   /** Right side: count, amount or Kbd shortcut. */
   trailing?: React.ReactNode;
   disabled?: boolean;
+  /** A ready-made row (a compact TransactionRow) drawn in place of leading, title and trailing; the palette keeps the option role, the active row and the press. */
+  row?: (state: { active: boolean }) => React.ReactNode;
   onSelect: () => void;
 }
 
@@ -193,7 +195,23 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                       <SectionHeader borderTop={false} meta={group.meta}>
                         {group.label}
                       </SectionHeader>
-                      {group.items.map((item) => (
+                      {group.items.map((item) =>
+                        item.row ? (
+                          <div
+                            key={item.id}
+                            role="option"
+                            aria-selected={item.id === active}
+                            aria-disabled={item.disabled ? true : undefined}
+                            data-item-id={item.id}
+                            tabIndex={-1}
+                            className={item.disabled ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}
+                            // Capture: the row inside (a TransactionRow) runs usePress, which can swallow a real mouse click.
+                            onClickCapture={item.disabled ? undefined : () => pick(item)}
+                            onMouseMove={item.disabled ? undefined : () => setActive(item.id)}
+                          >
+                            {item.row({ active: item.id === active })}
+                          </div>
+                        ) : (
                         <ListRow
                           key={item.id}
                           role="option"
@@ -214,7 +232,8 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                             {typeof item.title === 'string' ? <Highlight text={item.title} query={query} /> : item.title}
                           </span>
                         </ListRow>
-                      ))}
+                        ),
+                      )}
                     </div>
                   ))
                 )}

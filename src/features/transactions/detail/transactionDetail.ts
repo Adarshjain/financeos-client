@@ -1,5 +1,5 @@
 import type { StatusWordItem } from '@/components/ds';
-import { formatAmount, formatDayMonth } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney } from '@/lib/format';
 import { obligationRefHref } from '@/lib/obligationRefHref';
 import { getDerivedRoleLabel } from '@/lib/transaction.helpers';
 import type {
@@ -45,7 +45,7 @@ const REVIEW_TYPE_WORDS: Record<Exclude<ReviewType, 'NEEDS_REVIEW'>, string> = {
   NA: 'Not applicable',
 };
 
-const rupees = (value: number) => `₹${formatAmount(Math.abs(value), 2)}`;
+const rupees = (value: number) => formatMoney(Math.abs(value), { decimals: 'auto' });
 
 /** The reasons as words, "Needs review" when it has none. */
 function reasonItems(t: Transaction): StatusWordItem[] {
@@ -88,7 +88,7 @@ export function cardWords(t: Transaction): string | null {
 /** "Settled 14 Oct · UPI · ₹120 discount": only the reward fields that are set; null when none is. */
 export function rewardsWords(t: Transaction): string | null {
   const parts: string[] = [];
-  if (t.settlementDate) parts.push(`Settled ${formatDayMonth(t.settlementDate)}`);
+  if (t.settlementDate) parts.push(`Settled ${formatDate(t.settlementDate, 'list')}`);
   if (t.channel) parts.push(CHANNEL_LABELS[t.channel] ?? t.channel);
   if (t.instantDiscount != null) parts.push(t.instantDiscount > 0 ? `${rupees(t.instantDiscount)} discount` : 'No discount');
   if (t.convenienceFee != null) parts.push(t.convenienceFee > 0 ? `${rupees(t.convenienceFee)} fee` : 'No fee');
@@ -97,20 +97,15 @@ export function rewardsWords(t: Transaction): string | null {
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-/** "₹3,600.00": the amount without its sign; the tone says in or out. */
-export function amountWords(amount: number): string {
-  return rupees(amount);
-}
-
 /** "₹2,95,030 after" (no "bal" prefix), or null when the balance is unknown. */
 export function balanceAfterWords(t: Transaction): string | null {
-  return t.balance != null ? `${t.balance < 0 ? '-' : ''}₹${formatAmount(Math.abs(t.balance), 0)} after` : null;
+  return t.balance != null ? `${formatMoney(t.balance)} after` : null;
 }
 
 /** "Bank says ₹144.86 · differs by ₹144.02", or null when the running balance matches the bank's. */
 export function bankBalanceWords(t: Transaction): string | null {
   if (t.bankBalance == null) return null;
-  const bank = `${t.bankBalance < 0 ? '-' : ''}${rupees(t.bankBalance)}`;
+  const bank = formatMoney(t.bankBalance, { decimals: 'auto' });
   const diff = t.balance != null ? ` · differs by ${rupees(t.bankBalance - t.balance)}` : '';
   return `Bank says ${bank}${diff}`;
 }
@@ -152,13 +147,13 @@ export function linkRows(
     for (const m of link.members) {
       if (m.transactionId === transactionId) continue;
       const role = m.roleLabel || getDerivedRoleLabel(link.type as LinkType, m.isAnchor);
-      const signed = `${m.signedAmount >= 0 ? '+' : ''}${rupees(m.signedAmount)}`;
+      const signed = formatMoney(m.signedAmount, { decimals: 'auto', sign: 'always' });
       rows.push({
         kind: 'transaction',
         key: `${link.id}:${m.transactionId}`,
         title: m.description || 'Transaction',
         otherId: m.transactionId,
-        subtitle: [role, signed, formatDayMonth(m.date), accountName(m.accountId)].join(' · '),
+        subtitle: [role, signed, formatDate(m.date, 'list'), accountName(m.accountId)].join(' · '),
         link,
       });
     }

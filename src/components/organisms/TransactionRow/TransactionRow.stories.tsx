@@ -1021,6 +1021,20 @@ export const Default: Story = {
   },
 };
 
+/** The phone layout at every width, for rows outside a DataTable (dialogs, pickers, the search palette): the date joins the context line. */
+export const Compact: Story = {
+  args: {
+    compact: true,
+    date: '12 Oct',
+    description: 'BigBasket',
+    amount: '3,600.00',
+    account: 'HDFC Bank Savings',
+    plastic: '••7741',
+    provenance: 'Statement',
+    categories: ['Groceries'],
+  },
+};
+
 export const SearchMatch: Story = {
   args: {
     description: 'Adyar Anandha Bhavan',

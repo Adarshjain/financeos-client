@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CardBillResponse } from '@/lib/api/types';
 import type { StatementSummary } from '@/lib/statement.types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   billBadge,
@@ -14,6 +15,8 @@ import {
   signedRupees,
   verdictWord,
 } from './listModel';
+
+pinClock();
 
 function stmt(id: string, periodEnd: string, over: Partial<StatementSummary> = {}): StatementSummary {
   return {
@@ -242,7 +245,7 @@ describe('buildStatementRow missing details', () => {
 
 describe('signedRupees', () => {
   it('puts the minus before the rupee sign', () => {
-    expect(signedRupees(-1200)).toBe('-₹1,200');
+    expect(signedRupees(-1200)).toBe('−₹1,200');
     expect(signedRupees(1200)).toBe('₹1,200');
   });
 });

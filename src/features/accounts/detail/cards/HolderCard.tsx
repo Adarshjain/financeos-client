@@ -207,7 +207,7 @@ export function ClosedHolders({
           title={
             <span className="flex items-center gap-space-6">
               <span>{row.name}</span>
-              <Badge tone="neutral">Closed</Badge>
+              <StatusWord tone="neutral">Closed</StatusWord>
             </span>
           }
           subtitle={row.caption}

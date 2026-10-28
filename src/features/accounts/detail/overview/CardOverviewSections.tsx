@@ -8,6 +8,7 @@ import {
   ListField,
   ListRow,
   ProgressBar,
+  StatusWord,
   Text,
 } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
@@ -111,7 +112,7 @@ export function BillsCard({ accountId, rows }: { accountId: string; rows: BillRo
           subtitle={row.caption ?? undefined}
           trailing={
             <>
-              {row.badge ? <Badge tone={row.badge.tone}>{row.badge.label}</Badge> : null}
+              {row.badge ? <StatusWord tone={row.badge.tone}>{row.badge.label}</StatusWord> : null}
               {row.amount ? (
                 <Text variant="body-strong" tone={row.muted ? 'ink-3' : 'ink'} fraction="small">
                   {row.amount}

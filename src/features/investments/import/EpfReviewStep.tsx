@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Banner, Card, createDataTableColumnHelper, DataTable, Select, Text } from '@/components/ds';
+import { Banner, Card, createDataTableColumnHelper, DataTable, Select, StatusWord, Text } from '@/components/ds';
 
 import {
   countsLine,
@@ -45,9 +45,9 @@ const columns = [
           <Text variant="body-strong" as="span">
             {row.original.particulars}
           </Text>
-          <Badge tone={statusTone(row.original.status)} variant="soft">
+          <StatusWord tone={statusTone(row.original.status)}>
             {statusWord(row.original.status)}
-          </Badge>
+          </StatusWord>
         </div>
         {row.original.detail ? (
           <Text variant="label" tone="ink-3" as="div">

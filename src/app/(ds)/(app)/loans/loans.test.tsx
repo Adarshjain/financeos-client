@@ -152,8 +152,8 @@ describe('/loans', () => {
   it('lists each loan with rate, EMI, outstanding, progress and next', async () => {
     await renderPage();
     for (const text of [
-      'Home Loan · SBI MaxGain', '8.25% floating', '36,603', '41,92,327', '13 of 240 · ends Jan 45', '#14 overdue',
-      'Car Loan · HDFC Bank', '9.25% fixed', '17,748', '7,52,118', '7 of 60 · ends Feb 31', '7 Nov',
+      'Home Loan · SBI MaxGain', '8.25% floating', '36,603', '41,92,327', '13 of 240 · ends January 2045', '#14 overdue',
+      'Car Loan · HDFC Bank', '9.25% fixed', '17,748', '7,52,118', '7 of 60 · ends February 2031', '7 Nov',
     ]) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }

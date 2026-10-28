@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { bankCredit, employer, entry, interest, latestContribution, manualContribution, opening, pensionWithdrawal, settled, summary, transferIn, transferOut, transferred, withdrawal } from './epf.fixtures';
 import {
   addMonths,
@@ -23,6 +25,8 @@ import {
   receivedAmount,
   receivedCaption,
 } from './epfModel';
+
+pinClock();
 
 const today = '2026-10-27';
 
@@ -83,7 +87,7 @@ describe('dates', () => {
 describe('figures', () => {
   it('reads the four figures with the estimate and the last interest captions', () => {
     const f = epfFigures(summary());
-    expect(f.balance).toMatchObject({ value: '₹8,43,210', context: 'Passbook up to Sep 2026', phoneContext: 'Up to Sep 2026' });
+    expect(f.balance).toMatchObject({ value: '₹8,43,210', context: 'Passbook up to September 2026', phoneContext: 'Up to September 2026' });
     expect(f.contributed).toMatchObject({ value: '₹78,900', context: 'You ₹43,200 · employer ₹35,700', phoneContext: 'You ₹43,200' });
     expect(f.interest).toEqual({ value: '≈ ₹32,880', context: 'Estimate at 8.25% · credited after 31 Mar' });
     expect(f.lastInterest).toMatchObject({ value: '₹56,180', context: 'FY 2025-26 at 8.25% · 18 Aug', phoneContext: 'FY 2025-26' });
@@ -110,13 +114,13 @@ describe('passbook rows', () => {
   it('draws a contribution on one line, with the month split on phone: no "contribution" word and no credited date', () => {
     const r = epfRow(entry());
     expect(r).toMatchObject({
-      wageMonth: 'Sep 2026',
+      wageMonth: 'September 2026',
       title: 'Passbook',
       employee: '+₹7,200',
       employer: '+₹5,950',
       pension: '₹1,250',
       balance: '₹8,43,210',
-      phoneTitle: 'Sep 2026',
+      phoneTitle: 'September 2026',
       phoneSub: 'You ₹7,200 · Northwind Labs ₹5,950',
       split: { you: '₹7,200', employerName: 'Northwind Labs', employer: '₹5,950' },
       amount: '+₹13,150',
@@ -170,11 +174,11 @@ describe('passbook rows', () => {
 
 describe('employers', () => {
   it('words each status', () => {
-    expect(employerRow(employer())).toMatchObject({ line: 'Member ID …67890 · since Sep 2023', balance: '₹8,43,210', status: 'Current' });
-    expect(employerRow(transferred())).toMatchObject({ line: 'Jun 2018 – Aug 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023', balance: '₹0', status: 'Transferred' });
-    expect(employerRow(settled())).toMatchObject({ line: 'Apr 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018', status: 'Settled' });
-    expect(employerRow(settled({ pensionWithdrawn: false })).line).toBe('Apr 2016 – May 2018 · final settlement 12 Sep 2018');
-    expect(employerRow(employer({ status: 'LEFT', leftOn: '2024-01-31', statusDate: null })).line).toBe('Sep 2023 – Jan 2024 · left');
+    expect(employerRow(employer())).toMatchObject({ line: 'Member ID …67890 · since September 2023', balance: '₹8,43,210', status: 'Current' });
+    expect(employerRow(transferred())).toMatchObject({ line: 'June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023', balance: '₹0', status: 'Transferred' });
+    expect(employerRow(settled())).toMatchObject({ line: 'April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018', status: 'Settled' });
+    expect(employerRow(settled({ pensionWithdrawn: false })).line).toBe('April 2016 – May 2018 · final settlement 12 Sep 2018');
+    expect(employerRow(employer({ status: 'LEFT', leftOn: '2024-01-31', statusDate: null })).line).toBe('September 2023 – January 2024 · left');
   });
 
   it('writes the passbook subtitle from the employer, member ID and UAN', () => {

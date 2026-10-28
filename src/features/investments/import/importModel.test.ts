@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { broker, casPreview, execution, fnoTrade, reconcilePreview } from './import.fixtures';
 import {
   applySelection,
@@ -16,7 +18,6 @@ import {
   reconcileNote,
   setCreateNew,
   setFnoSkip,
-  signedMoney,
   skipRows,
   sortCasRows,
   sortExecutions,
@@ -24,6 +25,8 @@ import {
 } from './importModel';
 import { buildInitialCasRowStates, buildInitialFnoRowStates, buildInitialReconcileRowStates } from './importWizardHelpers';
 import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getUnresolvedRows } from './types';
+
+pinClock();
 
 describe('import model: choices and copy', () => {
   it('lists open broker accounts, and a closed one only while it is chosen', () => {
@@ -47,12 +50,9 @@ describe('import model: choices and copy', () => {
     expect(reconcileNote(false).lead).toBe('Authoritative intraday & clean FIFO:');
   });
 
-  it('formats money with two decimals and a sign', () => {
+  it('formats money with two decimals', () => {
     expect(money(49000)).toBe('₹49,000.00');
     expect(money('214.6')).toBe('₹214.60');
-    expect(signedMoney(18232.4)).toBe('+₹18,232.40');
-    expect(signedMoney(-1840)).toBe('−₹1,840.00');
-    expect(signedMoney(0)).toBe('₹0.00');
   });
 
   it('words the unmapped count', () => {
@@ -69,7 +69,7 @@ describe('import model: executions', () => {
 
   it('builds the row words and figures', () => {
     const row = executionRow(execution());
-    expect(row).toMatchObject({ id: '1', date: '11 Mar 26', side: 'Buy', settlement: 'CNC', symbol: 'ZOMATO', scrip: 'INE758T01015 • NSE', qtyPrice: '100 × ₹214.60', total: '₹21,460.00' });
+    expect(row).toMatchObject({ id: '1', date: '11 Mar', side: 'Buy', settlement: 'CNC', symbol: 'ZOMATO', scrip: 'INE758T01015 • NSE', qtyPrice: '100 × ₹214.60', total: '₹21,460.00' });
     expect(executionRow(execution({ type: 'sell', settlementType: 'intraday', isin: undefined })).scrip).toBe('NSE');
     expect(executionRow(execution({ type: 'sell', settlementType: 'intraday' }))).toMatchObject({ side: 'Sell', settlement: 'MIS' });
   });
@@ -87,7 +87,7 @@ describe('import model: F&O trades', () => {
       id: '0',
       symbol: 'NIFTY2682824500CE',
       kind: 'OPT',
-      detail: 'Underlying: NIFTY | CE @ 24500 | Exp: 28 Aug 26',
+      detail: 'Underlying: NIFTY | CE @ 24500 | Exp: 28 Aug',
       quantity: '75',
       buy: '₹11,250.00',
       sell: '₹29,625.00',
@@ -96,7 +96,7 @@ describe('import model: F&O trades', () => {
       pnlTone: 'positive',
       figures: 'Qty 75 · Buy ₹11,250.00 · Sell ₹29,625.00',
     });
-    expect(fnoRow(fnoTrade({ contractType: 'future', optionType: undefined, strikePrice: undefined, realizedPnl: -1840 }), 1)).toMatchObject({ kind: 'FUT', detail: 'Underlying: NIFTY | Exp: 28 Aug 26', pnlTone: 'danger' });
+    expect(fnoRow(fnoTrade({ contractType: 'future', optionType: undefined, strikePrice: undefined, realizedPnl: -1840 }), 1)).toMatchObject({ kind: 'FUT', detail: 'Underlying: NIFTY | Exp: 28 Aug', pnlTone: 'danger' });
   });
 
   it('adds up the realized P&L of the included trades only', () => {
@@ -119,7 +119,7 @@ describe('import model: F&O trades', () => {
 describe('import model: statement rows', () => {
   it('builds a row from the parsed statement line', () => {
     const row = casRow(casPreview().rows[0]);
-    expect(row).toMatchObject({ id: '1', date: '1 Aug 26', side: 'Buy', name: 'E2E Bluechip Growth Fund', scrip: 'INF100E2E001', unitsNav: '40.5 × ₹123.46', amount: '₹5,000.00' });
+    expect(row).toMatchObject({ id: '1', date: '1 Aug', side: 'Buy', name: 'E2E Bluechip Growth Fund', scrip: 'INF100E2E001', unitsNav: '40.5 × ₹123.46', amount: '₹5,000.00' });
   });
 
   it('shows a dividend, a sale and an unreadable row', () => {

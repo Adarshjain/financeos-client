@@ -11,8 +11,8 @@ import { Chart } from '@/components/organisms';
 import { heatmapMonths, spendByDay } from '@/components/organisms/Chart/heatmap.model';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { widgetParams } from '@/lib/dashboards.helpers';
+import { formatMoney } from '@/lib/format';
 import { isChartData } from '@/lib/reports.helpers';
-import { formatMoney } from '@/lib/utils';
 
 import { BuiltinNote } from '../BuiltinParts';
 import type { TemplateViewProps } from '../types';

@@ -2,9 +2,10 @@ import React from 'react';
 
 import { Icon, type SearchPaletteGroup, type SearchPaletteItem } from '@/components/ds';
 import type { IconName } from '@/components/ds/Icon/Icon';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
+import { TransactionRow } from '@/components/organisms';
 import { ALL_TIME, DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { supportsIngestion } from '@/lib/account.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { AccountType } from '@/lib/types';
 
 import { appHref } from '../routes';
@@ -59,6 +60,12 @@ export function transactionsSearchHref(q: string): string {
   return transactionsUrl({ ...DEFAULT_QUERY, q, period: ALL_TIME });
 }
 
+/** A transaction amount as the Transactions list writes it: "+46,800.00" for a credit, "24,990.00" for a debit. */
+function transactionAmount(amount: number): string {
+  const text = formatMoney(Math.abs(amount), { decimals: 'exact', symbol: false });
+  return amount > 0 ? `+${text}` : text;
+}
+
 function joinTitle(parts: Array<string | null | undefined>): string {
   return parts.filter(Boolean).join(' · ');
 }
@@ -83,8 +90,20 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
 
   const transactions: SearchPaletteItem[] = (server?.transactions ?? []).map((t) => ({
     id: `transactions:${t.id}`,
-    title: joinTitle([t.description, formatDayMonth(t.date)]),
-    trailing: <SearchAmount amount={t.amount} />,
+    title: joinTitle([t.description, formatDate(t.date, 'list')]),
+    row: ({ active }) => (
+      <TransactionRow
+        compact
+        borderTop={false}
+        highlighted={active}
+        description={t.description}
+        date={formatDate(t.date, 'list')}
+        account={t.accountName}
+        amount={transactionAmount(t.amount)}
+        isCredit={t.amount > 0}
+        query={text}
+      />
+    ),
     onSelect: () => go(transactionHref(t.id)),
   }));
   if (transactions.length > 0) {

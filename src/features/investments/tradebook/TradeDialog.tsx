@@ -24,6 +24,7 @@ import { appHref } from '@/features/shell/routes';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType, type InvestmentTransactionResponse, type SettlementType } from '@/lib/types';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -38,7 +39,6 @@ import {
   type ChargeTexts,
   chargeTextsOf,
   EMPTY_CHARGES,
-  exactRupees,
   filledCharges,
   priceText,
   quantityText,
@@ -170,10 +170,10 @@ function TradeForm(p: FormProps) {
             <Banner tone="neutral" rounded="md">
               <span className="flex items-baseline justify-between gap-space-12">
                 <Text variant="label" tone="ink-3" as="span">
-                  {`Value ${exactRupees(totals.value)} · charges ${exactRupees(totals.charges)}`}
+                  {`Value ${formatMoney(totals.value, { decimals: 'auto' })} · charges ${formatMoney(totals.charges, { decimals: 'auto' })}`}
                 </Text>
                 <Text variant="body-strong" as="span">
-                  {`${p.side === 'buy' ? 'Total' : 'Net'} ${exactRupees(totals.total)}`}
+                  {`${p.side === 'buy' ? 'Total' : 'Net'} ${formatMoney(totals.total, { decimals: 'auto' })}`}
                 </Text>
               </span>
             </Banner>

@@ -25,11 +25,12 @@ import {
   Tabs,
   Text,
 } from '@/components/ds';
+import { formatMeasure } from '@/features/reports/measureFormat';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';
+import { formatCount, pluralize } from '@/lib/format';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { RunReportRequest, SortClause, TableRow } from '@/lib/reports.types';
-import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
 import {
@@ -161,12 +162,12 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
   };
 
   const figure = data
-    ? formatMeasureValue(data.value, { field: data.measure, aggregation: data.aggregation, format: asFormat(data.format), wholeRupees: true })
+    ? formatMeasure(data.value, { field: data.measure, aggregation: data.aggregation, format: asFormat(data.format), wholeRupees: true })
     : null;
   const unit = data?.datasource === 'transactions' ? ['transaction', 'transactions'] : ['row', 'rows'];
   const description = data
     ? [
-        `${data.rowCount} ${data.rowCount === 1 ? unit[0] : unit[1]} ${data.rowCount === 1 ? 'makes' : 'make'} up this figure`,
+        `${formatCount(data.rowCount, [unit[0], unit[1]])} ${pluralize(data.rowCount, 'makes', 'make')} up this figure`,
         data.range ? formatDateRange(data.range.from, data.range.to) : null,
         request && hidesExcluded(request) ? 'excluded rows hidden' : null,
       ]

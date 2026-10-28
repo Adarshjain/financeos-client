@@ -41,7 +41,7 @@ describe('NetWorthView', () => {
 
   it('a fall reads as bad: negative sign, no plus', () => {
     renderWithQuery(<NetWorthView {...view(kpi(1000000, comparison({ change: -20000, changePercent: -2, direction: 'down', sentiment: 'bad' })))} />);
-    expect(screen.getByTestId('net-worth-delta')).toHaveTextContent('-₹20,000 (-2.0%)');
+    expect(screen.getByTestId('net-worth-delta')).toHaveTextContent('−₹20,000 (−2%)');
   });
 
   it('the figure opens the underlying data when the frame offers it, and is plain text otherwise', async () => {

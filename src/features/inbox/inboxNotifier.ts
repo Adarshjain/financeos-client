@@ -1,5 +1,6 @@
-import { formatDate, showToast } from '@/components/ds';
+import { showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { formatDate } from '@/lib/format';
 
 import type { InboxNotifier } from './useInboxActions';
 

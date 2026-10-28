@@ -2,8 +2,10 @@
 
 import React from 'react';
 
-import { Button, Checkbox, Icon, ListRow, Select, Text, TextField, useConcealed } from '@/components/ds';
+import { Button, Checkbox, Icon, ListRow, Select, Text, TextField } from '@/components/ds';
+import { TransactionRow } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { LinkType, Transaction } from '@/lib/transaction.types';
 
 import { pickerListItem } from '../pickerModel';
@@ -28,7 +30,6 @@ const accountOf = (accounts: readonly Account[], id: string) => {
 
 /** Link between transactions: the members with their roles, a search for the other side, the note. */
 export function TransactionsLinkBody({ type, state, accounts, multi }: TransactionsLinkBodyProps) {
-  const concealed = useConcealed();
   const { members, anchorId, add, remove, setRole, note, setNote, alignRefundCategories, setAlignRefundCategories } =
     state;
   const subject = members[0];
@@ -72,40 +73,42 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
         {rows.map((t) => {
           const item = pickerListItem(t, accountOf(accounts, t.accountId));
           const role: LinkRole = t.id === anchorId ? 'anchor' : 'member';
+          const last4 = accountOf(accounts, t.accountId).last4;
+          const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
           return (
-            <ListRow
-              key={t.id}
-              className="px-0"
-              wrap
-              title={item.title}
-              subtitle={multi ? item.subtitle : `${item.subtitle} · ${roleLabel(type, role)}`}
-              trailing={
-                <div className="flex items-center gap-space-8">
-                  {multi ? (
-                    <Select
-                      size="sm"
-                      aria-label={`Role of ${item.title}`}
-                      value={role}
-                      onValueChange={(v) => setRole(t.id, v as LinkRole)}
-                      options={(['anchor', 'member'] as const).map((r) => ({ value: r, label: roleLabel(type, r) }))}
-                    />
-                  ) : null}
-                  <Text variant="body-strong" tone={item.isCredit && !concealed ? 'positive' : 'ink'} as="span">
-                    {item.amount}
-                  </Text>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    iconOnly
-                    aria-label={`Remove ${item.title}`}
-                    onClick={() => remove(t.id)}
-                  >
-                    <Icon name="close" size="sm" />
-                  </Button>
-                </div>
-              }
-            />
+            <div key={t.id} className="flex items-center gap-space-8 border-t border-line-soft first:border-t-0">
+              <TransactionRow
+                compact
+                borderTop={false}
+                className="min-w-0 flex-1 px-0"
+                description={item.title}
+                date={formatDate(t.date, 'list')}
+                account={accountOf(accounts, t.accountId).name}
+                plastic={last4 ? `••${last4}` : undefined}
+                provenance={multi ? undefined : roleLabel(type, role)}
+                amount={item.isCredit ? `+${amount}` : amount}
+                isCredit={item.isCredit}
+              />
+              {multi ? (
+                <Select
+                  size="sm"
+                  aria-label={`Role of ${item.title}`}
+                  value={role}
+                  onValueChange={(v) => setRole(t.id, v as LinkRole)}
+                  options={(['anchor', 'member'] as const).map((r) => ({ value: r, label: roleLabel(type, r) }))}
+                />
+              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                iconOnly
+                aria-label={`Remove ${item.title}`}
+                onClick={() => remove(t.id)}
+              >
+                <Icon name="close" size="sm" />
+              </Button>
+            </div>
           );
         })}
       </div>

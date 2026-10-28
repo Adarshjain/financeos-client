@@ -60,7 +60,7 @@ for (const viewport of VIEWPORTS) {
         for (const header of ['Date', 'Instrument', 'Type', 'Settlement', 'Qty', 'Price', 'Value', 'Charges']) {
           await expect(page.getByText(header, { exact: true }).first()).toBeVisible();
         }
-        await expect(page.getByText('5 Oct 26').first()).toBeVisible();
+        await expect(page.getByText('5 Oct').first()).toBeVisible();
       }
       // No import has run: no jobs line.
       await expect(page.getByText(/Last import/)).toHaveCount(0);
@@ -154,7 +154,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
 
       const confirm = page.getByRole('dialog').last();
-      await expect(confirm.getByText(`Delete ${seeded.stock.symbol} · 1 Oct 26 sell?`)).toBeVisible();
+      await expect(confirm.getByText(`Delete ${seeded.stock.symbol} · 1 Oct sell?`)).toBeVisible();
       await expect(confirm.getByText(/Other trades, prices and dividends of this instrument stay/)).toBeVisible();
       await confirm.getByRole('button', { name: 'Cancel' }).click();
       await expect(page.getByText('Edit trade')).toBeVisible();

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Icon, Pager, ProgressBar, showToast, Text } from '@/components/ds';
+import { Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Icon, Pager, ProgressBar, showToast, StatusWord, Text } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
@@ -76,8 +76,8 @@ const columns = [
     meta: { size: 'md', phone: 'status' },
     cell: ({ row }) => {
       const next = row.original.next;
-      if (next.kind === 'overdue') return <Badge tone="danger">{next.label}</Badge>;
-      if (next.kind === 'status') return <Badge tone="neutral">{next.label}</Badge>;
+      if (next.kind === 'overdue') return <StatusWord tone="danger">{next.label}</StatusWord>;
+      if (next.kind === 'status') return <StatusWord tone="neutral">{next.label}</StatusWord>;
       if (next.kind === 'none') return <Text variant="body" tone="ink-3">—</Text>;
       return <Text variant="body">{next.label}</Text>;
     },

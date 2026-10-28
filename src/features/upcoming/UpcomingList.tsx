@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Button, Card, Icon, ListRow, SectionHeader, Text } from '@/components/ds';
-import { rupeesExact } from '@/features/lendings/settle';
+import { formatMoney } from '@/lib/format';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
 import { bucketObligations, type ObligationItem, sumAmounts } from './obligations';
@@ -109,7 +109,7 @@ export function UpcomingList({
             );
           }
           const total = s.items.some((i) => i.amount != null)
-            ? rupeesExact(sumAmounts(s.items))
+            ? formatMoney(sumAmounts(s.items), { decimals: 'auto' })
             : null;
           const keys = upcomingRowKeys(s.items);
           return (

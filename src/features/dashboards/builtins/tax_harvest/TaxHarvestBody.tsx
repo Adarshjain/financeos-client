@@ -8,8 +8,8 @@
 import React from 'react';
 
 import { EmptyState, Skeleton, Text } from '@/components/ds';
-import { signedRupees } from '@/features/investments/investmentsFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
+import { formatMoney } from '@/lib/format';
 import { useTaxHarvest } from '@/lib/query/hooks/useInvestments';
 import type { TaxHarvestLot } from '@/lib/taxHarvest.types';
 
@@ -74,7 +74,7 @@ export function TaxHarvestBody() {
       {bookedRequest && booked && (
         <LazyReportUnderlyingDialog
           request={bookedRequest}
-          title={`${TERM_TITLE[booked]} · ${signedRupees(bookedFigure(data.realised, booked))}`}
+          title={`${TERM_TITLE[booked]} · ${formatMoney(bookedFigure(data.realised, booked), { sign: 'always' })}`}
           onClose={() => setBooked(null)}
         />
       )}

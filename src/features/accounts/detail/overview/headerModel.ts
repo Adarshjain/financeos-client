@@ -1,13 +1,7 @@
-import {
-  formatAmount,
-  formatDayMonth,
-  formatDayMonthRelative,
-  formatDayMonthYear,
-  formatRupees,
-} from '@/features/accounts/list/accountsList';
 import { deriveBillCardState } from '@/features/bills/billCardState';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
+import { formatDate, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 export interface MarkPaidTarget {
@@ -37,12 +31,12 @@ function cardHeader(
   closed: boolean
 ): Pick<HeaderModel, 'label' | 'figure' | 'badge' | 'caption' | 'markPaid'> {
   const balance = account.balance ?? 0;
-  const owed = formatRupees(Math.max(0, -balance));
+  const owed = formatMoney(Math.max(0, -balance));
   const inCredit = balance > 0;
   if (!bill) {
     return {
       label: inCredit ? 'In credit' : 'You owe',
-      figure: inCredit ? formatRupees(balance) : owed,
+      figure: inCredit ? formatMoney(balance) : owed,
       caption: [],
       markPaid: null,
     };
@@ -53,18 +47,18 @@ function cardHeader(
   if (state.phase === 'awaiting') {
     const caption: string[] = [];
     if (bill.nextStatementExpectedOn) {
-      caption.push(`next statement ${formatDayMonth(bill.nextStatementExpectedOn)}`);
+      caption.push(`next statement ${formatDate(bill.nextStatementExpectedOn, 'list')}`);
     }
     if (bill.status === 'PAID' && bill.totalAmountDue != null) {
       caption.push(
         bill.paidMarkedOn
-          ? `last bill ${formatRupees(bill.totalAmountDue)} paid ${formatDayMonth(bill.paidMarkedOn)}`
-          : `last bill ${formatRupees(bill.totalAmountDue)}`
+          ? `last bill ${formatMoney(bill.totalAmountDue)} paid ${formatDate(bill.paidMarkedOn, 'list')}`
+          : `last bill ${formatMoney(bill.totalAmountDue)}`
       );
     }
     return {
       label: 'Unbilled so far',
-      figure: formatRupees(unbilled ?? 0),
+      figure: formatMoney(unbilled ?? 0),
       badge: 'No bill due',
       caption,
       markPaid: null,
@@ -72,11 +66,11 @@ function cardHeader(
   }
 
   const caption: string[] = [];
-  if (bill.paymentDueDate) caption.push(`due ${formatDayMonth(bill.paymentDueDate)}`);
-  if (unbilled != null) caption.push(`unbilled ${formatRupees(unbilled)}`);
+  if (bill.paymentDueDate) caption.push(`due ${formatDate(bill.paymentDueDate, 'list')}`);
+  if (unbilled != null) caption.push(`unbilled ${formatMoney(unbilled)}`);
   return {
     label: inCredit ? 'In credit' : 'You owe',
-    figure: inCredit ? formatRupees(balance) : owed,
+    figure: inCredit ? formatMoney(balance) : owed,
     caption,
     markPaid:
       !closed && MARKABLE.has(bill.status) && bill.statementId
@@ -96,7 +90,7 @@ export function buildHeaderModel(
   const closed = isAccountClosed(account, today);
   const closedLabel =
     closed && account.closedOn
-      ? `Closed ${formatDayMonthYear(account.closedOn)}`
+      ? `Closed ${formatDate(account.closedOn, 'full')}`
       : undefined;
 
   if (account.type === AccountType.CREDIT_CARD) {
@@ -111,13 +105,13 @@ export function buildHeaderModel(
     // Later transactions are added on top of the statement balance, so the balance is current to the newest one.
     const latest = account.lastTransactionDate;
     const current = latest && latest > account.anchorDate && latest <= today ? latest : null;
-    caption.push(current ? `as of ${formatDayMonthRelative(current, today)}` : `as of statement ${formatDayMonthRelative(account.anchorDate, today)}`);
+    caption.push(current ? `as of ${formatDate(current, 'relative', { today, inline: true })}` : `as of statement ${formatDate(account.anchorDate, 'relative', { today, inline: true })}`);
   }
   if (account.type === AccountType.BROKER) {
-    if (account.cashBalance !== undefined) caption.push(`cash ${formatRupees(account.cashBalance)}`);
+    if (account.cashBalance !== undefined) caption.push(`cash ${formatMoney(account.cashBalance)}`);
     return {
       label: 'Portfolio value',
-      figure: formatRupees(account.balance ?? 0),
+      figure: formatMoney(account.balance ?? 0),
       caption,
       closedLabel,
       markPaid: null,
@@ -127,17 +121,17 @@ export function buildHeaderModel(
     const opening = account.openingBalance != null ? Number(account.openingBalance) : 0;
     return {
       label: 'Balance',
-      figure: formatRupees(account.balance ?? (Number.isFinite(opening) ? opening : 0)),
+      figure: formatMoney(account.balance ?? (Number.isFinite(opening) ? opening : 0)),
       caption,
       closedLabel,
       markPaid: null,
     };
   }
   caption.push('Manual balance');
-  if (lastEntry) caption.push(`last entry ${formatDayMonth(lastEntry)}`);
+  if (lastEntry) caption.push(`last entry ${formatDate(lastEntry, 'list')}`);
   return {
     label: 'Balance',
-    figure: formatRupees(account.balance ?? 0),
+    figure: formatMoney(account.balance ?? 0),
     caption,
     closedLabel,
     markPaid: null,
@@ -154,7 +148,7 @@ export interface DisagreementBanner {
 export function reconciliationBanner(gap: number | null | undefined): DisagreementBanner | null {
   if (gap == null || !Number.isFinite(gap) || gap === 0) return null;
   const abs = Math.abs(gap);
-  const text = Number.isInteger(abs) ? formatRupees(abs) : `₹${formatAmount(abs, 2)}`;
+  const text = formatMoney(abs, { decimals: 'auto' });
   return {
     title: `Statement and ledger disagree by ${text}.`,
     body: 'Usually a missing opening balance or a duplicated transfer.',

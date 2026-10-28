@@ -98,7 +98,7 @@ export interface DataTableProps<Row extends RowData>
     row: Row,
   ) => { key: string; label: React.ReactNode; sublabel?: React.ReactNode } | null;
 
-  rowState?: (row: Row) => { tone?: 'warning'; disabled?: boolean; muted?: boolean; pressable?: boolean } | undefined;
+  rowState?: (row: Row) => { tone?: 'warning' | 'danger'; disabled?: boolean; muted?: boolean; pressable?: boolean } | undefined;
   highlightedRowId?: string;
 
   wrapRow?: (row: Row, node: React.ReactNode) => React.ReactNode;

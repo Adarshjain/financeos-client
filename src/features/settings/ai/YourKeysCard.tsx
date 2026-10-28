@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 
 import {
-  Badge,
   Button,
   Card,
   createDataTableColumnHelper,
@@ -11,6 +10,7 @@ import {
   Icon,
   Menu,
   MenuItem,
+  StatusWord,
   Text,
 } from '@/components/ds';
 import type { LlmKeyDto } from '@/lib/api/types';
@@ -20,8 +20,8 @@ import { buildKeyRows, formatLastUsed, type KeyRow, maskedKey, providerLine } fr
 const ch = createDataTableColumnHelper<KeyRow>();
 
 function KeyStatus({ row }: { row: KeyRow }) {
-  if (!row.key) return <Badge tone="neutral">Not set</Badge>;
-  return row.key.status === 'ACTIVE' ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Invalid</Badge>;
+  if (!row.key) return <StatusWord tone="neutral">Not set</StatusWord>;
+  return row.key.status === 'ACTIVE' ? <StatusWord tone="success">Active</StatusWord> : <StatusWord tone="danger">Invalid</StatusWord>;
 }
 
 interface YourKeysCardProps {

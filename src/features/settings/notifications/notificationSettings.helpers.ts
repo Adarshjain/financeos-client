@@ -1,4 +1,5 @@
 import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { formatDate } from '@/lib/format';
 
 import { describeDevice } from './push';
 
@@ -158,15 +159,7 @@ export function describeBrowser(ua: string = typeof navigator === 'undefined' ? 
   return label.replace(' · ', ' on ');
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 /** "2 Sep": when a device was registered, in the app's zone. Empty when unknown. */
 export function addedOn(addedAt: string | null | undefined): string {
-  if (!addedAt) return '';
-  const d = new Date(addedAt);
-  if (Number.isNaN(d.getTime())) return '';
-  const parts = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'numeric', timeZone: 'Asia/Kolkata' }).formatToParts(d);
-  const day = Number(parts.find((p) => p.type === 'day')?.value);
-  const month = Number(parts.find((p) => p.type === 'month')?.value);
-  return `${day} ${MONTHS[month - 1]}`;
+  return formatDate(addedAt, 'list');
 }

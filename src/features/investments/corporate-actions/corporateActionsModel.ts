@@ -1,4 +1,5 @@
 import { DS_PREFIX } from '@/features/shell/routes';
+import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type {
   CorporateActionItem,
   CorporateActionKind,
@@ -7,7 +8,6 @@ import type {
   CorporateActionSort,
 } from '@/lib/investments.types';
 
-import { quantity, rupees, shortDate, unitPrice } from '../investmentsFormat';
 import { INVESTMENTS_PATH } from '../investmentsTabs';
 import { ratioText } from './corporateActionRatio';
 
@@ -132,7 +132,7 @@ function detailLine(a: CorporateActionItem): string {
     parts.push(`Merged into ${target || 'acquirer'}`);
   }
   if ((a.type === 'demerger' || a.type === 'merger') && a.fractionalCashInLieu) {
-    parts.push(`cash-in-lieu ${rupees(a.fractionalCashInLieu)}`);
+    parts.push(`cash-in-lieu ${formatMoney(a.fractionalCashInLieu)}`);
   }
   if (a.notes) parts.push(`Note: ${a.notes}`);
   return parts.join(' · ');
@@ -140,14 +140,14 @@ function detailLine(a: CorporateActionItem): string {
 
 export function corporateActionListRow(a: CorporateActionItem): CorporateActionListRow {
   const ratio = ratioText(a.type, a.ratioFrom, a.ratioTo) || '—';
-  const effect = a.quantityBefore != null && a.quantityAfter != null ? `${quantity(a.quantityBefore)} → ${quantity(a.quantityAfter)}` : '';
+  const effect = a.quantityBefore != null && a.quantityAfter != null ? `${formatQuantity(a.quantityBefore)} → ${formatQuantity(a.quantityAfter)}` : '';
   const compactRatio = ratioText(a.type, a.ratioFrom, a.ratioTo, true);
-  const money = (v: number) => (Number.isInteger(v) ? rupees(v) : unitPrice(v));
+  const money = (v: number) => (Number.isInteger(v) ? formatMoney(v) : formatMoney(v, { decimals: 'exact' }));
   const cost = a.costPerUnitBefore != null && a.costPerUnitAfter != null ? `cost ${money(a.costPerUnitBefore)} → ${money(a.costPerUnitAfter)}` : '';
   return {
     id: a.id,
     item: a,
-    date: shortDate(a.exDate),
+    date: formatDate(a.exDate, 'list'),
     title: instrumentTitle(a.instrumentSymbol, a.instrumentName),
     detail: detailLine(a),
     kind: a.type,
@@ -155,7 +155,7 @@ export function corporateActionListRow(a: CorporateActionItem): CorporateActionL
     ratio,
     effect,
     cost,
-    phoneLine: [`ex ${shortDate(a.exDate)}`, compactRatio, effect ? `${effect} shares` : '', cost].filter(Boolean).join(' · '),
+    phoneLine: [`ex ${formatDate(a.exDate, 'list')}`, compactRatio, effect ? `${effect} shares` : '', cost].filter(Boolean).join(' · '),
   };
 }
 
@@ -181,21 +181,21 @@ export function previewLines(preview: CorporateActionPreview, instrumentName: st
       label: `${instrumentName}${where}`,
       text:
         h.quantityAfter === h.quantityBefore
-          ? `${quantity(h.quantityAfter)} shares · cost ${rupees(h.openCostBefore)} → ${rupees(h.openCostAfter)}`
-          : `${quantity(h.quantityBefore)} → ${quantity(h.quantityAfter)} shares · cost ${rupees(h.openCostBefore)} → ${rupees(h.openCostAfter)}`,
+          ? `${formatQuantity(h.quantityAfter)} shares · cost ${formatMoney(h.openCostBefore)} → ${formatMoney(h.openCostAfter)}`
+          : `${formatQuantity(h.quantityBefore)} → ${formatQuantity(h.quantityAfter)} shares · cost ${formatMoney(h.openCostBefore)} → ${formatMoney(h.openCostAfter)}`,
     });
     if (h.childInstrumentId && h.childQuantity != null) {
       lines.push({
         key: `${h.brokerAccountId}-child`,
         label: `${childName || 'Child'}${where}`,
-        text: `+${quantity(h.childQuantity)} shares${h.childCost != null ? ` · cost ${rupees(h.childCost)}` : ''}`,
+        text: `+${formatQuantity(h.childQuantity)} shares${h.childCost != null ? ` · cost ${formatMoney(h.childCost)}` : ''}`,
       });
     }
     if (h.fractionalRealized != null && h.fractionalRealized !== 0) {
       lines.push({
         key: `${h.brokerAccountId}-fraction`,
         label: 'Cash-in-lieu gain',
-        text: rupees(h.fractionalRealized),
+        text: formatMoney(h.fractionalRealized),
       });
     }
   }

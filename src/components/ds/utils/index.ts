@@ -45,36 +45,13 @@ export function monthNamesShort(): string[] {
 /**
  * Formats a count with a cap (defaults to 99), e.g. "99+" when above max.
  */
-export function formatCount(n: number | string, max = 99): string {
+export function capCount(n: number | string, max = 99): string {
   const num = typeof n === 'number' ? n : parseInt(n, 10);
   if (isNaN(num)) return String(n);
   if (num > max) {
     return `${max}+`;
   }
   return String(num);
-}
-
-/**
- * Formats an ISO date string (yyyy-mm-dd or ISO timestamp).
- * - 'input': 'dd/mm/yyyy'
- * - 'list': '13 Oct'
- */
-export function formatDate(iso: string, style: 'input' | 'list'): string {
-  if (!iso) return '';
-  const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return '';
-  const [, year, month, day] = match;
-  if (style === 'input') {
-    return `${day}/${month}/${year}`;
-  }
-  if (style === 'list') {
-    const dayNum = parseInt(day, 10);
-    const monthIdx = parseInt(month, 10) - 1;
-    const shortName = MONTH_SHORT[monthIdx];
-    if (!shortName) return '';
-    return `${dayNum} ${shortName}`;
-  }
-  return '';
 }
 
 /**

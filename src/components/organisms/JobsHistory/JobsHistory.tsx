@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Badge, Button, createDataTableColumnHelper, DataTable, Text, type TextProps } from '@/components/ds';
+import { Button, createDataTableColumnHelper, DataTable, StatusWord, Text, type TextProps } from '@/components/ds';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { isActiveJob, JOB_STATUS_BADGE } from '@/features/jobs/jobModel';
 import {
@@ -14,6 +14,7 @@ import {
   tookLabel,
   typeLabel,
 } from '@/features/jobs/jobsModel';
+import { formatCount } from '@/lib/format';
 import type { FileIngestionResult, JobResponse } from '@/lib/types';
 
 export interface JobsHistoryProps {
@@ -33,10 +34,10 @@ export interface JobsHistoryProps {
 
 const ch = createDataTableColumnHelper<JobResponse>();
 
-type StatusWord = { label: string; tone: NonNullable<TextProps['tone']> };
+type StatusLine = { label: string; tone: NonNullable<TextProps['tone']> };
 
 /** The word a compact row leads with: how the job ended, or that it is still going. */
-export function jobStatusWord(job: JobResponse): StatusWord {
+export function jobStatusWord(job: JobResponse): StatusLine {
   if (job.status === 'PENDING') return { label: 'Pending', tone: 'ink-3' };
   if (job.status === 'RUNNING') return { label: 'Running', tone: 'info' };
   if (job.status === 'FAILED') return { label: 'Failed', tone: 'danger' };
@@ -46,7 +47,7 @@ export function jobStatusWord(job: JobResponse): StatusWord {
   if (failed > 0 && failed === files.length) return { label: 'Failed', tone: 'danger' };
   if (failed > 0) return { label: `${failed} failed`, tone: 'warning' };
   const warnings = files.filter((f) => f.warning).length;
-  if (warnings > 0) return { label: `${warnings} ${warnings === 1 ? 'warning' : 'warnings'}`, tone: 'warning' };
+  if (warnings > 0) return { label: formatCount(warnings, ['warning', 'warnings']), tone: 'warning' };
   return { label: 'Done', tone: 'positive' };
 }
 
@@ -170,7 +171,7 @@ export function JobsHistory({ jobs, openHref, onOpen, pager, empty, loading, ske
               meta: { size: 'sm', phone: 'status' },
               cell: ({ row }) => {
                 const badge = JOB_STATUS_BADGE[row.original.status];
-                return <Badge tone={badge.tone}>{badge.label}</Badge>;
+                return <StatusWord tone={badge.tone}>{badge.label}</StatusWord>;
               },
             }),
             ch.display({

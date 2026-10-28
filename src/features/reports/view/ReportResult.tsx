@@ -5,8 +5,10 @@ import React from 'react';
 
 import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
+import { formatMeasure } from '@/features/reports/measureFormat';
 import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
+import { formatPercent } from '@/lib/format';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
 import type {
   ChartData,
@@ -20,7 +22,6 @@ import type {
   TableColumn,
   TableData,
 } from '@/lib/reports.types';
-import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 import { signed } from '@/lib/reports/signed';
 
 import { formatCell } from './cells';
@@ -85,7 +86,7 @@ function previewValue(
   o: { field: string; aggregation?: string; format?: Format | null },
   catalog: DatasourceCatalog | undefined,
 ): string {
-  return formatMeasureValue(value, {
+  return formatMeasure(value, {
     field: o.field,
     aggregation: o.aggregation,
     format: o.format ?? undefined,
@@ -121,7 +122,7 @@ function KpiResult({
     if (c.display === 'previous_value') {
       delta = { value: `prev ${fmt(c.previousValue)}`, period, direction: c.sentiment };
     } else {
-      const percent = c.changePercent !== null ? ` (${signed(`${c.changePercent.toFixed(1)}%`, c.changePercent)})` : '';
+      const percent = c.changePercent !== null ? ` (${formatPercent(c.changePercent, { sign: 'always' })})` : '';
       delta = { value: `${signed(fmt(c.change), c.change)}${percent}`, period, direction: c.sentiment };
     }
   }

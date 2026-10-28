@@ -1,7 +1,7 @@
 import { formatFileSize, MAX_REQUEST_BYTES, MAX_REQUEST_MB } from '@/features/transactions/import/fileLimits';
 import type { Schemas } from '@/lib/api/types';
+import { formatDate, formatMoney } from '@/lib/format';
 
-import { rupees } from '../investmentsFormat';
 
 export type EpfPreview = Schemas['EpfImportPreviewResponse'];
 export type EpfPreviewRow = Schemas['EpfImportRow'];
@@ -40,20 +40,6 @@ export const EPF_ACCEPT = '.pdf';
 export const NEW_EMPLOYER = 'new';
 /** Server error codes the upload step shows as a banner with the server's own message. */
 export const EPF_UPLOAD_ERROR_CODES = ['NOT_A_PASSBOOK', 'PASSWORD_PROTECTED', 'UNREADABLE', 'UAN_MISMATCH', 'VALIDATION_ERROR'];
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** "Sep 2026" from an ISO date. */
-export function monthYear(iso: string): string {
-  const month = MONTHS[Number(iso.slice(5, 7)) - 1];
-  return month ? `${month} ${iso.slice(0, 4)}` : '';
-}
-
-/** "1 Apr 2026" from an ISO date. */
-export function dayMonthYear(iso: string): string {
-  const month = MONTHS[Number(iso.slice(5, 7)) - 1];
-  return month ? `${Number(iso.slice(8, 10))} ${month} ${iso.slice(0, 4)}` : '';
-}
 
 /** "FY 2025-26" from the year the financial year starts in. */
 export function fullFy(startYear: number): string {
@@ -97,20 +83,20 @@ export interface EpfReviewRow {
 export function epfRow(r: EpfPreviewRow): EpfReviewRow {
   const period =
     r.type === 'CONTRIBUTION' && r.wageMonth
-      ? monthYear(r.wageMonth)
+      ? formatDate(r.wageMonth, 'month')
       : r.type === 'INTEREST' && r.interestFy
         ? fullFy(r.interestFy)
-        : dayMonthYear(r.creditedOn);
+        : formatDate(r.creditedOn, 'full');
   const named = r.type === 'TRANSFER_IN' || r.type === 'TRANSFER_OUT' || r.type === 'WITHDRAWAL';
   const kind = r.type === 'WITHDRAWAL' && r.withdrawalKind ? KIND_WORDS[r.withdrawalKind] : '';
   const pensionOnly = r.type === 'WITHDRAWAL' && r.withdrawalKind === 'PENSION';
   const out = r.type === 'WITHDRAWAL' || r.type === 'TRANSFER_OUT';
-  const sign = (n: number) => (r.type === 'OPENING_BALANCE' ? rupees(n) : out ? `−${rupees(n)}` : `+${rupees(n)}`);
+  const sign = (n: number) => (r.type === 'OPENING_BALANCE' ? formatMoney(n, { decimals: 'auto' }) : out ? `−${formatMoney(n, { decimals: 'auto' })}` : `+${formatMoney(n, { decimals: 'auto' })}`);
   const total = pensionOnly ? r.pensionAmount : r.employeeAmount + r.employerAmount;
   const dash = '—';
   const mismatch =
     r.type === 'OPENING_BALANCE' && r.computedEmployeeAmount != null && r.computedEmployerAmount != null
-      ? `Your entries come to ${rupees(r.computedEmployeeAmount + r.computedEmployerAmount)}, EPFO says ${rupees(r.employeeAmount + r.employerAmount)}`
+      ? `Your entries come to ${formatMoney(r.computedEmployeeAmount + r.computedEmployerAmount, { decimals: 'auto' })}, EPFO says ${formatMoney(r.employeeAmount + r.employerAmount, { decimals: 'auto' })}`
       : '';
   return {
     id: String(r.index),
@@ -118,10 +104,10 @@ export function epfRow(r: EpfPreviewRow): EpfReviewRow {
     particulars: (named && r.particulars) || TYPE_WORDS[r.type],
     detail: [kind, named && r.particulars ? TYPE_WORDS[r.type] : ''].filter(Boolean).join(' · '),
     mismatch,
-    amount: out ? rupees(-total) : rupees(total),
+    amount: out ? formatMoney(-total, { decimals: 'auto' }) : formatMoney(total, { decimals: 'auto' }),
     employee: pensionOnly ? dash : sign(r.employeeAmount),
     employer: pensionOnly ? dash : sign(r.employerAmount),
-    pension: pensionOnly || (r.type === 'CONTRIBUTION' && r.pensionAmount > 0) ? rupees(r.pensionAmount) : dash,
+    pension: pensionOnly || (r.type === 'CONTRIBUTION' && r.pensionAmount > 0) ? formatMoney(r.pensionAmount, { decimals: 'auto' }) : dash,
     status: r.status,
   };
 }
@@ -175,7 +161,7 @@ export function employerSub(p: EpfPreview): string {
   return [
     p.employer.memberId ? `Member ID …${p.employer.memberId.slice(-5)}` : '',
     p.employer.uanLast4 ? `UAN …${p.employer.uanLast4}` : '',
-    last ? `up to ${monthYear(last)}` : '',
+    last ? `up to ${formatDate(last, 'month')}` : '',
   ]
     .filter(Boolean)
     .join(' · ');
@@ -209,6 +195,6 @@ export const resultLine = (r: EpfBatchResult) => {
   const parts = [`${r.imported} new`, ...(r.replaced > 0 ? [`${r.replaced} replaced`] : [])];
   const head = `${parts.join(' and ')}${r.results.length > 1 ? ` across ${r.results.length} employers` : ''}`;
   const through = r.results.reduce<string>((latest, x) => (x.throughMonth && x.throughMonth > latest ? x.throughMonth : latest), '');
-  const balance = `EPF balance is now ${rupees(r.balance)}${through ? `, up to ${monthYear(through)}` : ''}.`;
+  const balance = `EPF balance is now ${formatMoney(r.balance, { decimals: 'auto' })}${through ? `, up to ${formatDate(through, 'month')}` : ''}.`;
   return `${head.charAt(0).toUpperCase()}${head.slice(1)}. ${balance}`;
 };

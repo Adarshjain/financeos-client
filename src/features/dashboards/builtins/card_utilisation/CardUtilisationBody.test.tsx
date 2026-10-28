@@ -55,14 +55,14 @@ describe('CardUtilisationBody', () => {
     renderWithQuery(<CardUtilisationBody {...bodyProps('card_utilisation')} />);
     const rows = await screen.findAllByTestId('utilisation-row');
     expect(rows.map((r) => r.getAttribute('data-account-id'))).toEqual(['c-high', 'c-mid', 'c-low', 'c-nolimit']);
-    expect(within(rows[0]).getByText('80.0%')).toBeInTheDocument();
+    expect(within(rows[0]).getByText('80%')).toBeInTheDocument();
     expect(within(rows[0]).getByText('Over 30%')).toBeInTheDocument();
     expect(within(rows[2]).queryByText('Over 30%')).not.toBeInTheDocument();
-    expect(rows[2]).toHaveTextContent('₹10,000.00 owed of ₹1,00,000.00');
+    expect(rows[2]).toHaveTextContent('₹10,000 owed of ₹1,00,000');
     expect(rows[3]).toHaveTextContent('no limit set');
     expect(within(rows[3]).getByText('—')).toBeInTheDocument();
     expect(screen.getByTestId('utilisation-overall')).toHaveTextContent('All cards');
-    expect(screen.getByTestId('utilisation-overall')).toHaveTextContent('₹1,35,000.00 owed of ₹3,00,000.00');
+    expect(screen.getByTestId('utilisation-overall')).toHaveTextContent('₹1,35,000 owed of ₹3,00,000');
     expect(screen.queryByText('Closed Card')).not.toBeInTheDocument();
   });
 

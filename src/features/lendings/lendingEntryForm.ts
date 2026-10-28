@@ -1,12 +1,12 @@
+import { formatMoney } from '@/lib/format';
 import type { CounterpartyResponse, CounterpartySelection, CreateLendingRequest } from '@/lib/lending.types';
 import { fromEntryType, type LendingEntryType } from '@/lib/lendingEntry';
-import { formatMoney } from '@/lib/utils';
 
 /** "Owes you ₹1,200" / "You owe ₹500" / "Settled" / "No entries yet". */
 export function positionLabel(cp: CounterpartyResponse): string {
   if (cp.entryCount === 0) return 'No entries yet';
-  if (cp.netPosition > 0) return `Owes you ${formatMoney(cp.netPosition)}`;
-  if (cp.netPosition < 0) return `You owe ${formatMoney(-cp.netPosition)}`;
+  if (cp.netPosition > 0) return `Owes you ${formatMoney(cp.netPosition, { decimals: 'auto' })}`;
+  if (cp.netPosition < 0) return `You owe ${formatMoney(-cp.netPosition, { decimals: 'auto' })}`;
   return 'Settled';
 }
 

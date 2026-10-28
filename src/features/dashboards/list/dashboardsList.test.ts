@@ -17,15 +17,15 @@ describe('widgetCount', () => {
 describe('dashboardRow', () => {
   it('reads name, description, widget count, default flag, update day and where a row opens', () => {
     const row = dashboardRow(board({ id: 'abc', description: ' Net worth and spend ', isDefault: true, widgets: [widget('report'), widget('report')] as DashboardResponse['widgets'] }));
-    expect(row).toMatchObject({ id: 'abc', name: 'Money', description: 'Net worth and spend', widgets: 2, widgetsLabel: '2 widgets', isDefault: true, updated: '13 Oct', href: '/dashboards/abc' });
-    expect(row.phoneSub).toBe('Default · 2 widgets · updated 13 Oct');
+    expect(row).toMatchObject({ id: 'abc', name: 'Money', description: 'Net worth and spend', widgets: 2, widgetsLabel: '2 widgets', isDefault: true, updated: '13 Oct 2020', href: '/dashboards/abc' });
+    expect(row.phoneSub).toBe('Default · 2 widgets · updated 13 Oct 2020');
   });
 
   it('has no description when it is blank, is singular for one widget and leaves Default out of the phone line for others', () => {
     const row = dashboardRow(board({ description: '  ', widgets: [widget('builtin')] as DashboardResponse['widgets'] }));
     expect(row.description).toBeNull();
     expect(row.widgetsLabel).toBe('1 widget');
-    expect(row.phoneSub).toBe('1 widget · updated 13 Oct');
+    expect(row.phoneSub).toBe('1 widget · updated 13 Oct 2020');
   });
 
   it('says today for a dashboard updated today', () => {

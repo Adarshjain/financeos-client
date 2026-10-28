@@ -16,11 +16,10 @@ import {
   Skeleton,
   Text,
 } from '@/components/ds';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { getAccountName } from '@/lib/utils';
 
-import { rupees } from '../investmentsFormat';
 import type { DividendPrefill } from './DividendFormDialog';
 import { REASON_LABELS } from './dividendsModel';
 import type { DividendMatchCandidate, DividendMatchItem, MatchTier } from './receiptTypes';
@@ -40,7 +39,7 @@ function isStale(coverageEnd: string | null | undefined, today: string): boolean
 
 function candidateLabel(c: DividendMatchCandidate, account: string): string {
   const t = c.transaction;
-  return `${t.description || t.sourcedDescription || 'Transaction'} · ${account} · ${formatDayMonth(t.date)} · +${rupees(Math.abs(t.amount))}`;
+  return `${t.description || t.sourcedDescription || 'Transaction'} · ${account} · ${formatDate(t.date, 'list')} · +${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}`;
 }
 
 interface ItemProps {
@@ -70,7 +69,7 @@ function MatchItem({ item, accounts, r, busy }: ItemProps) {
             {`${d.symbol || d.instrumentName}${d.brokerName ? ` · ${d.brokerName}` : ''}`}
           </Text>
           <Text variant="label" tone="ink-3" as="span">
-            {`${rupees(expectedNet)} · ${formatDayMonth(d.exDate ?? d.payDate)}`}
+            {`${formatMoney(expectedNet, { decimals: 'auto' })} · ${formatDate(d.exDate ?? d.payDate, 'list')}`}
           </Text>
         </div>
         {options.length === 1 ? (
@@ -96,7 +95,7 @@ function MatchItem({ item, accounts, r, busy }: ItemProps) {
             <label className="flex items-center gap-space-8">
               <Checkbox checked={r.recordTds(item)} disabled={busy} onCheckedChange={(v) => r.setRecordTds(d.id, v === true)} />
               <Text variant="label" tone="ink-2" as="span">
-                {`Record TDS ${rupees(selected.impliedTds)}`}
+                {`Record TDS ${formatMoney(selected.impliedTds, { decimals: 'auto' })}`}
               </Text>
             </label>
           ) : (
@@ -176,7 +175,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
                 </Text>
                 {r.meta && r.meta.unresolvedCount > 0 && isStale(r.meta.coverageEnd, today) ? (
                   <Text variant="label" tone="warning" as="div">
-                    {`Your bank data stops at ${formatDayMonth(r.meta.coverageEnd ?? '')}. Import a newer statement.`}
+                    {`Your bank data stops at ${formatDate(r.meta.coverageEnd ?? '', 'list')}. Import a newer statement.`}
                   </Text>
                 ) : null}
               </div>
@@ -190,7 +189,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
             {r.meta ? (
               <Text variant="caption" tone="ink-3" as="div">
                 {`${r.meta.unresolvedCount} unmatched ${r.meta.unresolvedCount === 1 ? 'dividend' : 'dividends'} · ${r.meta.withCandidates} with candidates${
-                  r.meta.coverageEnd ? ` · Bank data through ${formatDayMonth(r.meta.coverageEnd)}` : ''
+                  r.meta.coverageEnd ? ` · Bank data through ${formatDate(r.meta.coverageEnd, 'list')}` : ''
                 }`}
               </Text>
             ) : null}
@@ -223,11 +222,11 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
                           {t.description || t.sourcedDescription || 'Transaction'}
                         </Text>
                         <Text variant="body-strong" tone="positive" as="span">
-                          {`+${rupees(Math.abs(t.amount))}`}
+                          {`+${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}`}
                         </Text>
                       </div>
                       <Text variant="label" tone="ink-3" as="div">
-                        {`${getAccountName(accounts, t.accountId)} · ${formatDayMonth(t.date)}`}
+                        {`${getAccountName(accounts, t.accountId)} · ${formatDate(t.date, 'list')}`}
                       </Text>
                       <span className="flex flex-wrap gap-space-8">
                         {(holdingHints.length === 0 ? [null] : holdingHints).map((h) => (

@@ -15,12 +15,12 @@ import { appHref } from '@/features/shell/routes';
 import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { type EmergencyFund, useEmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { AccountType } from '@/lib/types';
 
-import { formatRupees } from '../builtin.helpers';
 import { BuiltinError } from '../BuiltinParts';
 import type { BuiltinBodyProps } from '../types';
 import { formatMonthsCovered, monthName, noFigureReason } from './emergencyFund.model';
@@ -103,8 +103,8 @@ export function EmergencyFundBody({ className }: BuiltinBodyProps) {
               {formatMonthsCovered(covered)}
             </Text>
             <Text variant="caption" tone="ink-3" as="p">
-              Usual monthly outflow <strong>{formatRupees(fund.medianOutflow)}</strong>
-              {fund.historyMonths < 6 ? ` · based on ${fund.historyMonths} ${fund.historyMonths === 1 ? 'month' : 'months'}` : ''}
+              Usual monthly outflow <strong>{formatMoney(fund.medianOutflow)}</strong>
+              {fund.historyMonths < 6 ? ` · based on ${formatCount(fund.historyMonths, ['month', 'months'])}` : ''}
             </Text>
           </div>
         ) : (
@@ -121,10 +121,10 @@ export function EmergencyFundBody({ className }: BuiltinBodyProps) {
           <Button
             variant="link"
             onClick={() =>
-              setDrill({ title: `Bank and cash · ${formatRupees(fund.liquidBalance)}`, request: liquidBalanceRequest() })
+              setDrill({ title: `Bank and cash · ${formatMoney(fund.liquidBalance)}`, request: liquidBalanceRequest() })
             }
           >
-            {formatRupees(fund.liquidBalance)}
+            {formatMoney(fund.liquidBalance)}
           </Button>{' '}
           in bank and cash
           {fund.liquidBalance <= 0 && covered == null ? ' — nothing set aside yet' : ''}
@@ -133,7 +133,7 @@ export function EmergencyFundBody({ className }: BuiltinBodyProps) {
           fund={fund}
           onOpen={(month) =>
             setDrill({
-              title: `Outflow · ${monthName(month.month, true)} · ${formatRupees(month.outflow)}`,
+              title: `Outflow · ${monthName(month.month, true)} · ${formatMoney(month.outflow)}`,
               request: monthOutflowRequest(month.month, fund.accounts.map((a) => a.id)),
             })
           }

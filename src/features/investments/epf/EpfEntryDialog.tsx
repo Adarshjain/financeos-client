@@ -17,12 +17,11 @@ import {
   TextField,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatMoney } from '@/lib/format';
 
-import { rupees } from '../investmentsFormat';
 import { EpfCreditSection } from './EpfCreditSection';
 import { EpfEmployerDialog } from './EpfEmployerDialog';
 import {
@@ -150,7 +149,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
     }
   };
 
-  const importedOn = entry?.importedAt ? formatDayMonth(entry.importedAt.slice(0, 10)) : '';
+  const importedOn = entry?.importedAt ? formatDate(entry.importedAt.slice(0, 10), 'list') : '';
   const sharesHelper =
     form.type === 'OPENING_BALANCE'
       ? 'Use the closing balance from your last passbook. Later entries add to it.'
@@ -328,7 +327,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
           }}
           title={`Delete the ${entryTitle(entry)}?`}
           description={`This entry you added goes${
-            entry.type === 'WITHDRAWAL' || entry.type === 'TRANSFER_OUT' ? '' : `, and the balance drops by ${rupees(entry.employeeAmount + entry.employerAmount)}`
+            entry.type === 'WITHDRAWAL' || entry.type === 'TRANSFER_OUT' ? '' : `, and the balance drops by ${formatMoney(entry.employeeAmount + entry.employerAmount, { decimals: 'auto' })}`
           }. Entries from the passbook stay.`}
           confirmLabel="Delete entry"
           confirmLoading={mutations.deleteEntry.isPending}

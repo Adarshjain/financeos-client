@@ -1,10 +1,10 @@
 // Pure helpers for the "View underlying data" dialog: query params, labels,
 // value formatting and the CSV file name.
 
+import { formatMeasure } from '@/features/reports/measureFormat';
 import { formatCell } from '@/features/reports/view/cells';
 import { formatDateRangeForFilename, todayInAppZone } from '@/lib/date-range';
 import type { SortClause, TableColumn, TableRow } from '@/lib/reports.types';
-import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 
 import type { UnderlyingSource } from './underlying.types';
 
@@ -49,7 +49,7 @@ export function partitionByGroup(
 
 type Format = 'currency' | 'number' | 'percent';
 
-/** Narrows a wire format string to the hint formatMeasureValue understands. */
+/** Narrows a wire format string to the hint formatMeasure understands. */
 export function asFormat(format: string | null | undefined): Format | undefined {
   return format === 'currency' || format === 'number' || format === 'percent' ? format : undefined;
 }
@@ -76,7 +76,7 @@ export function formatKpiValue(
   value: number | null | undefined,
   kpi: { measure: string; aggregation: string; format?: string | null },
 ): string {
-  return formatMeasureValue(value, {
+  return formatMeasure(value, {
     field: kpi.measure,
     aggregation: kpi.aggregation,
     format: asFormat(kpi.format),
@@ -85,7 +85,7 @@ export function formatKpiValue(
 
 /** An amount carrying only a format hint (summary lines, not-counted items, breakdown steps). */
 export function formatAmount(value: number | null | undefined, format: string | null | undefined): string {
-  return formatMeasureValue(value, { format: asFormat(format) });
+  return formatMeasure(value, { format: asFormat(format) });
 }
 
 /** Strips characters file systems reject and collapses whitespace. Never adds anything. */

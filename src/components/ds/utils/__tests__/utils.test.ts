@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  formatCount,
-  formatDate,
+  capCount,
   formatMonth,
   monthNames,
   monthNamesShort,
@@ -13,51 +12,28 @@ import {
 } from '../index';
 
 describe('Dinero utils', () => {
-  describe('formatCount', () => {
+  describe('capCount', () => {
     it('formats counts under the max as strings', () => {
-      expect(formatCount(0)).toBe('0');
-      expect(formatCount(5)).toBe('5');
-      expect(formatCount(99)).toBe('99');
+      expect(capCount(0)).toBe('0');
+      expect(capCount(5)).toBe('5');
+      expect(capCount(99)).toBe('99');
     });
 
     it('formats counts above default max (99) with a plus suffix', () => {
-      expect(formatCount(100)).toBe('99+');
-      expect(formatCount(150)).toBe('99+');
+      expect(capCount(100)).toBe('99+');
+      expect(capCount(150)).toBe('99+');
     });
 
     it('respects a custom max threshold', () => {
-      expect(formatCount(10, 9)).toBe('9+');
-      expect(formatCount(5, 10)).toBe('5');
-      expect(formatCount(10, 10)).toBe('10');
-      expect(formatCount(11, 10)).toBe('10+');
+      expect(capCount(10, 9)).toBe('9+');
+      expect(capCount(5, 10)).toBe('5');
+      expect(capCount(10, 10)).toBe('10');
+      expect(capCount(11, 10)).toBe('10+');
     });
 
     it('handles numeric string counts', () => {
-      expect(formatCount('5')).toBe('5');
-      expect(formatCount('120')).toBe('99+');
-    });
-  });
-
-  describe('formatDate', () => {
-    it('formats input style as dd/mm/yyyy', () => {
-      expect(formatDate('2026-10-13', 'input')).toBe('13/10/2026');
-      expect(formatDate('2026-01-05', 'input')).toBe('05/01/2026');
-    });
-
-    it('formats list style as day + short month without leading zero', () => {
-      expect(formatDate('2026-10-13', 'list')).toBe('13 Oct');
-      expect(formatDate('2026-05-04', 'list')).toBe('4 May');
-      expect(formatDate('2026-01-01', 'list')).toBe('1 Jan');
-    });
-
-    it('handles ISO timestamps with time component', () => {
-      expect(formatDate('2026-10-13T14:30:00Z', 'input')).toBe('13/10/2026');
-      expect(formatDate('2026-10-13T14:30:00Z', 'list')).toBe('13 Oct');
-    });
-
-    it('returns empty string for invalid or missing inputs', () => {
-      expect(formatDate('', 'input')).toBe('');
-      expect(formatDate('invalid', 'list')).toBe('');
+      expect(capCount('5')).toBe('5');
+      expect(capCount('120')).toBe('99+');
     });
   });
 

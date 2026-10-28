@@ -119,7 +119,7 @@ describe('ChartBreakdown change', () => {
     const d = compared();
     d.previous!.series[0].data = [500, 150, 100];
     view({ higherIsBetter: false, columns: ['amount', 'change'] }, d);
-    expect(cell('-20%').className).toMatch(/positive/);
+    expect(cell('−20%').className).toMatch(/positive/);
     expect(cell('+33%').className).toMatch(/danger/);
   });
 
@@ -128,7 +128,7 @@ describe('ChartBreakdown change', () => {
     d.previous!.series[0].data = [500, 150, 100];
     view({ higherIsBetter: true, columns: ['amount', 'change'] }, d);
     expect(cell('+33%').className).toMatch(/positive/);
-    expect(cell('-20%').className).toMatch(/danger/);
+    expect(cell('−20%').className).toMatch(/danger/);
   });
 
   it('keeps the change neutral with no preference and when it is zero', () => {

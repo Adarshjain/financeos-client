@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Dialog, DialogBody, DialogContent, Text } from '@/components/ds';
-import { formatDayMonthYear, formatRupees } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto } from '@/lib/loan.types';
 
 export interface LinkedEmiDialogProps {
@@ -27,7 +27,7 @@ export function LinkedEmiDialog({ installment, onUnlink, onClose }: LinkedEmiDia
         <DialogBody>
           {payment ? (
             <Text variant="body" as="p">
-              {`Paid ${formatRupees(payment.amount)} on ${formatDayMonthYear(payment.paymentDate)}`}
+              {`Paid ${formatMoney(payment.amount, { decimals: 'auto' })} on ${formatDate(payment.paymentDate, 'full')}`}
             </Text>
           ) : null}
           <Text variant="caption" tone="ink-3" as="p">

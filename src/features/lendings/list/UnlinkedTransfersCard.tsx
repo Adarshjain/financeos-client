@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Button, Card, ListRow, showToast } from '@/components/ds';
+import { Button, Card, ListRow, showToast, StatusWord } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { useDeleteLending, useRecordSettlement } from '../useRecordSettlement';
@@ -72,7 +72,7 @@ export function UnlinkedTransfersCard({ rows, unrecorded = [] }: { rows: Transfe
             wrap
             trailing={
               isLinked ? (
-                <Badge tone="success">Linked</Badge>
+                <StatusWord tone="success">Linked</StatusWord>
               ) : (
                 <Button
                   variant="secondary"

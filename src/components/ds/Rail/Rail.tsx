@@ -9,7 +9,7 @@ import { cn } from '../cn';
 import { Icon, type IconName } from '../Icon/Icon';
 import { Tooltip } from '../Tooltip/Tooltip';
 import { useControllableState } from '../useControllableState';
-import { formatCount } from '../utils';
+import { capCount } from '../utils';
 
 export interface RailItem {
   id: string;
@@ -133,7 +133,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
               }
               className={collapsed ? 'absolute top-space-2 right-space-2' : 'ml-auto'}
             >
-              {formatCount(item.count)}
+              {capCount(item.count)}
             </Badge>
           ) : null}
         </>

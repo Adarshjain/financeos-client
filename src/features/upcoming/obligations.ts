@@ -1,4 +1,5 @@
 import type { ObligationItemDto } from '@/lib/api/types';
+import { formatDate } from '@/lib/format';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 export type ObligationItem = ObligationItemDto;
@@ -58,7 +59,7 @@ export function bucketObligations(items: ObligationItem[], today: string): Oblig
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, list]) => ({
       key,
-      label: parseCalendarDate(`${key}-01`).toLocaleString('en-IN', { month: 'long', year: 'numeric' }),
+      label: formatDate(`${key}-01`, 'month'),
       items: list,
     }));
   return out;

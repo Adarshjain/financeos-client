@@ -1,4 +1,5 @@
 import type { RewardRuleFormFields } from '@/features/rewards/rules/form/useRewardRuleFormFields';
+import { formatMoney, formatQuantity } from '@/lib/format';
 
 type Fields = Pick<
   RewardRuleFormFields,
@@ -13,7 +14,7 @@ export interface RuleTestReading {
   tone: 'positive' | 'warning';
 }
 
-const rupees = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+const rupees = (n: number) => formatMoney(n, { decimals: 'auto' });
 const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
@@ -30,7 +31,7 @@ export function readRuleTest(preview: { matched: boolean; text: string }, f: Fie
       ? `Tiered rate on ${amount}`
       : f.accrualType === 'PERCENT'
         ? `${f.percentRate}% of ${amount}`
-        : `${points ? `${f.pointsPerSlab} pts` : `₹${f.pointsPerSlab}`} per ₹${f.slabSize} slab on ${amount}`;
+        : `${points ? `${formatQuantity(Number(f.pointsPerSlab), 2)} pts` : formatMoney(Number(f.pointsPerSlab), { decimals: 'auto' })} per ${formatMoney(Number(f.slabSize), { decimals: 'auto' })} slab on ${amount}`;
     return {
       headline: paid.replace(/ cashback$/, '') || null,
       verdict: ['Matches', basis, tier ? 'tier progress assumed ₹0' : null].filter(Boolean).join(' · '),
