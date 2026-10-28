@@ -25,6 +25,16 @@ export type Granularity = 'day' | 'week' | 'month' | 'quarter' | 'year' | 'fy';
 // 1. Datasource catalog — GET /api/v1/report/datasource
 // ---------------------------------------------------------------------------
 
+export type GuardKind = 'no_aggregation' | 'needs' | 'avoid' | 'no_filter';
+
+/** A combination rule the server enforces on a field; the editor mirrors it (see builder/guards.ts). */
+export interface FieldGuard {
+  kind: GuardKind;
+  fields?: string[] | null;
+  aggregations?: Aggregation[] | null;
+  reason: string;
+}
+
 /** A reportable field in the datasource catalog. */
 export interface FieldDefinition {
   name: string;
@@ -33,6 +43,8 @@ export interface FieldDefinition {
   role: FieldRole;
   /** Present for measures only. */
   aggregations?: Aggregation[];
+  /** Combination rules the server enforces for this field. */
+  guards?: FieldGuard[] | null;
   /** Allowed values for STATIC enum fields only. */
   values?: string[];
   /**

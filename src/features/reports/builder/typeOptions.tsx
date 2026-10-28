@@ -17,6 +17,7 @@ import {
 } from './builderReducer';
 import { columnsFor, fieldByName, isDateFieldName } from './catalog';
 import { ConfigSection } from './ConfigSection';
+import type { GuardMeasure } from './guards';
 import { AGGREGATION_LABELS } from './labels';
 import { chartTypeOptions, dimensionOptions, granularityOptions } from './options';
 import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton, RevealPair } from './pickers';
@@ -101,6 +102,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
     (v: MeasureValue) => dispatch({ type: 'CHART_SET', value: { measureField: v.field, measureAggregation: v.aggregation } }),
     [dispatch],
   );
+  const chartMeasures = [{ field: c.measureField, aggregation: c.measureAggregation }];
   const isBreakdown = c.chartType === 'breakdown';
   const isSlices = c.chartType === 'pie' || c.chartType === 'donut';
   const dimensionLabel = isBreakdown ? 'Rows' : isSlices ? 'Slices' : 'Dimension (X-axis)';
@@ -122,6 +124,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
           type="CHART"
           label={dimensionLabel}
           value={{ field: c.dimensionField, granularity: c.dimensionGranularity }}
+          measures={chartMeasures}
           error={issues.dimension}
           onChange={(v) => set({ dimensionField: v.field, dimensionGranularity: v.granularity })}
         />
@@ -133,6 +136,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
             noneLabel="No series"
             placeholder="No series"
             value={{ field: c.seriesField, granularity: c.seriesGranularity }}
+            measures={chartMeasures}
             error={issues.series}
             onChange={(v) => set({ seriesField: v.field, seriesGranularity: v.granularity })}
           />
@@ -146,7 +150,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
               <PickSelect
                 label="Sub-rows"
                 value={c.subDimensionField}
-                options={dimensionOptions(catalog, 'CHART', c.dimensionField ? [c.dimensionField] : [], c.subDimensionField)}
+                options={dimensionOptions(catalog, 'CHART', c.dimensionField ? [c.dimensionField] : [], c.subDimensionField, chartMeasures)}
                 noneLabel="No sub-rows"
                 placeholder="No sub-rows"
                 error={isDateFieldName(catalog, c.subDimensionField) ? undefined : issues.subDimension}
@@ -359,6 +363,7 @@ function AggTableFields({ catalog, state, dispatch, issues }: SectionProps) {
         catalog={catalog}
         drafts={agg.rows}
         exclude={fieldNames(agg.columns)}
+        measures={agg.measures}
         error={issues.rows}
         onChange={(rows) => apply({ rows })}
       />
@@ -368,6 +373,7 @@ function AggTableFields({ catalog, state, dispatch, issues }: SectionProps) {
         catalog={catalog}
         drafts={agg.columns}
         exclude={fieldNames(agg.rows)}
+        measures={agg.measures}
         error={issues.columns}
         onChange={(columns) => apply({ columns })}
       />
@@ -404,6 +410,7 @@ function DimensionList({
   catalog,
   drafts,
   exclude,
+  measures,
   error,
   onChange,
 }: {
@@ -412,6 +419,7 @@ function DimensionList({
   catalog: DatasourceCatalog;
   drafts: DimensionDraft[];
   exclude: string[];
+  measures: GuardMeasure[];
   error?: string;
   onChange: (drafts: DimensionDraft[]) => void;
 }) {
@@ -425,6 +433,7 @@ function DimensionList({
               type="TABLE"
               label={i === 0 ? title : 'Then by'}
               value={d}
+              measures={measures}
               exclude={[...exclude, ...drafts.filter((x) => x.id !== d.id && x.field).map((x) => x.field as string)]}
               error={i === 0 ? error : undefined}
               onChange={(next) => onChange(drafts.map((x) => (x.id === d.id ? { ...next, id: d.id } : x)))}

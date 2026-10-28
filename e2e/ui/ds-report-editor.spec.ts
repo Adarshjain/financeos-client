@@ -305,4 +305,29 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(dialog.getByText(rowOf.get(tapped)!).first()).toBeVisible();
     await expect(dialog.getByText(rowOf.get(other)!)).toHaveCount(0);
   });
+  test('warns about a sum that adds up wrong and keeps it from being created until it is fixed', async ({ page }) => {
+    test.slow();
+    await page.goto('/reports/new');
+    await expect(page.getByLabel('Report name')).toBeVisible({ timeout: 45_000 });
+    await page.getByLabel('Report name').fill('Ds editor net worth guard');
+    await pick(page, 'Datasource', 'Net worth');
+    await page.getByRole('radio', { name: 'KPI' }).click();
+    await pick(page, 'Measure', 'Value');
+
+    // Net worth Value summed over both sides adds assets and liabilities together: a warning, and Create does nothing.
+    const warning = page.getByText("These numbers don't add up");
+    await expect(warning).toBeVisible();
+    await expect(page.getByText('Value adds assets and liabilities together. Split by Side, or filter it to one value.')).toBeVisible();
+    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.waitForTimeout(1_000);
+    await expect(page).toHaveURL(/\/reports\/new/);
+
+    // Net value already nets the sides: the warning goes and the report is created.
+    await pick(page, 'Measure', 'Net value');
+    await expect(warning).toHaveCount(0);
+    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.waitForURL(/\/reports$/, { timeout: 45_000 });
+    // Only the fixed one was written: the blocked Create made nothing.
+    await expect(page.getByRole('table').getByText('Ds editor net worth guard', { exact: true })).toHaveCount(1, { timeout: 45_000 });
+  });
 });

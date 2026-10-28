@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ConfirmDialog, showToast } from '@/components/ds';
+import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
 import { REPORTS_HREF } from '@/features/reports/list/reportsList';
 import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStore';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -13,6 +13,7 @@ import type { ReportCatalog, ReportData, ReportResponse } from '@/lib/reports.ty
 import type { BuilderAction } from './builderReducer';
 import { EditorActions } from './EditorActions';
 import { initialEditorState, makeEditorReducer, snapshot, workingCatalog } from './editorState';
+import { guardProblems } from './guards';
 import { ReportConfigCard } from './ReportConfigCard';
 import { ReportPreviewCard } from './ReportPreviewCard';
 import { buildCreateRequest, buildRunRequest, buildUpdateRequest, validationIssues } from './serialize';
@@ -64,6 +65,12 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     return { request: req, signature: JSON.stringify(req) };
   }, [state, catalog]);
   const issues = React.useMemo(() => validationIssues(state, catalog), [state, catalog]);
+  // Combination problems the server would reject. A warning only: they never gate Preview.
+  const problems = React.useMemo(() => guardProblems(state, catalog), [state, catalog]);
+  // The definition the editor opened with, to tell a rename (allowed on a saved report) from a changed definition.
+  const [openingDefinition] = React.useState(() =>
+    JSON.stringify(buildUpdateRequest(initial, workingCatalog(allDatasources, initial.datasource)).definition),
+  );
 
   const initialShown = React.useMemo(
     () =>
@@ -112,15 +119,22 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     preview.run();
   };
 
-  /** Validates, shows what is missing at its field, and tells whether the draft can be written. */
-  const ready = (): boolean => {
+  /**
+   * Validates, shows what is missing at its field, and tells whether the draft can be written. A draft that breaks a
+   * combination guard cannot be written as a new report, nor saved with a changed definition; a saved one renamed
+   * only still can.
+   */
+  const ready = (createsReport: boolean): boolean => {
     setShowIssues(true);
     setNameTried(true);
-    return state.name.trim() !== '' && issues.length === 0;
+    if (state.name.trim() === '' || issues.length > 0) return false;
+    if (problems.length === 0) return true;
+    const changed = JSON.stringify(buildUpdateRequest(state, catalog).definition) !== openingDefinition;
+    return !createsReport && !changed;
   };
 
   const save = () => {
-    if (!ready()) return;
+    if (!ready(!edit)) return;
     if (edit) {
       const saved = snapshot(state);
       actions.update.mutate(
@@ -151,7 +165,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
   };
 
   const saveAsNew = () => {
-    if (ready()) createCopy('Saved as a new report');
+    if (ready(true)) createCopy('Saved as a new report');
   };
 
   /** Changing the report type starts the preview over: the old result belongs to the old type. */
@@ -174,15 +188,28 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     >
       <div className="flex flex-col pb-space-48">
         <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-x-space-24 gap-y-space-8 desk:gap-space-16">
-          <ReportConfigCard
-            allDatasources={allDatasources}
-            catalog={catalog}
-            dynamicOptions={dynamicOptions}
-            state={state}
-            dispatch={dispatchDraft}
-            issues={showIssues ? firstPerKey(issues) : {}}
-            nameError={nameTried && state.name.trim() === '' ? 'Give the report a name.' : undefined}
-          />
+          <div className="flex flex-col gap-space-8 desk:gap-space-16">
+            {problems.length > 0 ? (
+              <Banner tone="warning" title="These numbers don't add up">
+                <div className="flex flex-col gap-space-4">
+                  {problems.map((message) => (
+                    <Text key={message} variant="body" as="p">
+                      {message}
+                    </Text>
+                  ))}
+                </div>
+              </Banner>
+            ) : null}
+            <ReportConfigCard
+              allDatasources={allDatasources}
+              catalog={catalog}
+              dynamicOptions={dynamicOptions}
+              state={state}
+              dispatch={dispatchDraft}
+              issues={showIssues ? firstPerKey(issues) : {}}
+              nameError={nameTried && state.name.trim() === '' ? 'Give the report a name.' : undefined}
+            />
+          </div>
           <ReportPreviewCard preview={preview} catalog={catalog} missing={missing} onPreview={runPreview} />
         </div>
       </div>

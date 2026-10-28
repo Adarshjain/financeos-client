@@ -6,6 +6,7 @@ import { Button, Icon, Reveal, Select, type SelectOption, Text, TextField } from
 import type { Aggregation, ComparisonDisplay, DatasourceCatalog, DimensionRef, Granularity, ReportType } from '@/lib/reports.types';
 
 import { fieldByName, isDateFieldName } from './catalog';
+import type { GuardMeasure } from './guards';
 import { aggregationOptions, dimensionOptions, granularityOptions, measureOptions, NONE, parseCount } from './options';
 
 /** The grid of a row of two fields, side by side at every width. */
@@ -155,7 +156,7 @@ export function MeasurePicker({
   fieldLabel?: string;
 }) {
   const fields = measureOptions(catalog, type);
-  const aggs = aggregationOptions(catalog, value.field);
+  const aggs = aggregationOptions(catalog, value.field, value.aggregation);
   const onlyField = fields.length === 1 ? fields[0].value : undefined;
   const onlyAggregation = aggs.length === 1 ? (aggs[0].value as Aggregation) : undefined;
 
@@ -205,6 +206,7 @@ export function DimensionPicker({
   noneLabel,
   exclude,
   error,
+  measures,
 }: {
   catalog: DatasourceCatalog;
   type: ReportType;
@@ -215,6 +217,8 @@ export function DimensionPicker({
   noneLabel?: string;
   exclude?: string[];
   error?: string;
+  /** The measures in use: a field their guards forbid splitting by is disabled. */
+  measures?: GuardMeasure[];
 }) {
   const isDate = isDateFieldName(catalog, value.field);
   return (
@@ -224,7 +228,7 @@ export function DimensionPicker({
         <PickSelect
           label={label}
           value={value.field}
-          options={dimensionOptions(catalog, type, exclude, value.field)}
+          options={dimensionOptions(catalog, type, exclude, value.field, measures)}
           placeholder={placeholder}
           noneLabel={noneLabel}
           error={isDate ? undefined : error}
