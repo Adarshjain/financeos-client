@@ -172,8 +172,13 @@ export function EpfPassbookCard({
           <Select
             options={employerOptions}
             value={employerValue}
+            // The year shown stays put: a new employer keeps it rather than jumping to its own newest year.
             onValueChange={(v) =>
-              go({ employer: v as string, fy: null, page: 0 })
+              go({
+                employer: v as string,
+                fy: fyValue === 'all' ? 'all' : Number(fyValue),
+                page: 0,
+              })
             }
             trigger={
               <FilterChip hasDropdown selected className="shrink-0">

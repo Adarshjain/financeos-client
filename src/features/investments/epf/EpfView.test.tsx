@@ -231,7 +231,7 @@ describe('EpfView: the FY and employer choices and the pager', () => {
     expect(screen.queryByRole('button', { name: 'All employers' })).not.toBeInTheDocument();
   });
 
-  it('has an employer select with more than one employer, and a change is one URL change', async () => {
+  it('has an employer select with more than one employer; a change keeps the year shown and starts at page 1', async () => {
     const employers = [employer(), transferred(), settled()];
     renderWithQuery(
       <EpfView
@@ -249,7 +249,28 @@ describe('EpfView: the FY and employer choices and the pager', () => {
     expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
     fireEvent.click(await screen.findByRole('option', { name: 'Contoso Systems' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?employer=e2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2026&employer=e2', { scroll: false });
+  });
+
+  it('a new employer keeps All years', async () => {
+    const employers = [employer(), transferred(), settled()];
+    renderWithQuery(
+      <EpfView
+        {...props(
+          {
+            employerOptions: [{ value: 'all', label: 'All employers' }, ...employers.map((e) => ({ value: e.id, label: e.name }))],
+            employerValue: 'e1',
+            fyValue: 'all',
+          },
+          base,
+          employers,
+          parseEpfUrl({ fy: 'all' }),
+        )}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
+    fireEvent.click(await screen.findByRole('option', { name: 'All employers' }));
+    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=all&employer=all', { scroll: false });
   });
 
   it('pages in the address', () => {
