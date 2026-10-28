@@ -45,6 +45,7 @@ export interface SelectGroup {
 export interface SelectAction {
   label: React.ReactNode;
   onSelect: () => void;
+  disabled?: boolean;
 }
 
 export interface SelectMenuProps {
@@ -67,7 +68,7 @@ export interface SelectMenuProps {
   onClose?: () => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
-  action?: SelectAction;
+  actions?: SelectAction[];
   clearLabel?: React.ReactNode;
   discardLabel?: React.ReactNode;
   doneLabel?: (count: number) => React.ReactNode;
@@ -101,7 +102,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       onClose,
       onCreate,
       createLabel,
-      action,
+      actions,
       clearLabel = 'Clear',
       discardLabel = 'Cancel',
       doneLabel,
@@ -434,15 +435,23 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           </>
         ) : null}
 
-        {action ? (
+        {actions && actions.length > 0 ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            {/* A ghost button, aligned right */}
-            <div className="flex justify-end px-space-10 py-space-8 text-label">
-              <Button type="button" variant="ghost" onClick={action.onSelect}>
-                {action.label}
-              </Button>
-            </div>
+            {actions.map((a, i) => (
+              <button
+                key={i}
+                type="button"
+                disabled={a.disabled}
+                onClick={() => {
+                  onClose?.();
+                  a.onSelect();
+                }}
+                className={cn(getItemRowClass({ disabled: a.disabled }), 'w-full text-left')}
+              >
+                {a.label}
+              </button>
+            ))}
           </>
         ) : null}
 
@@ -487,7 +496,7 @@ SelectMenu.displayName = 'SelectMenu';
 export interface SelectProps
   extends Omit<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    'value' | 'defaultValue' | 'onChange' | 'placeholder' | 'action'
+    'value' | 'defaultValue' | 'onChange' | 'placeholder'
   > {
   id?: string;
   name?: string;
@@ -507,7 +516,7 @@ export interface SelectProps
   onSearchChange?: (query: string) => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
-  action?: SelectAction;
+  actions?: SelectAction[];
   clearLabel?: React.ReactNode;
   /** Multiple only: restores the value the field had when the popover opened, then closes */
   discardLabel?: React.ReactNode;
@@ -554,7 +563,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       onSearchChange,
       onCreate,
       createLabel,
-      action,
+      actions,
       clearLabel,
       discardLabel,
       doneLabel,
@@ -908,7 +917,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             onClose={() => setOpen(false)}
             onCreate={onCreate}
             createLabel={createLabel}
-            action={action}
+            actions={actions}
             clearLabel={clearLabel}
             discardLabel={discardLabel}
             doneLabel={doneLabel}

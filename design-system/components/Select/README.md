@@ -23,8 +23,8 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `searchable`: boolean, embeds search input.
 - `searchPlaceholder`, `searchValue`, `onSearchChange`: search controls.
 - `onCreate`, `createLabel`: create option from search query. The create row shows only when the typed text is not already an option (any case); Enter or a click calls `onCreate` with the trimmed text and clears the search for the next entry. The page adds the new option and selects it (identifiers on Add/Edit account, saved with the form).
-- `action`: `{ label, onSelect }`, pinned action row under options: a `ghost` Button (owner, 2026-10-25; was `link`), natural width, aligned right.
-- Layout: the menu has `space-6` padding inside the popover edge. The option list is the only scroller (it scrolls with the wheel and by touch even inside a modal Dialog); the search row, create row, `action` row and the multi-select Clear and Done row stay pinned. Cancel, Clear (ghost, sm) and Done (primary) keep their natural width; Cancel sits at the left edge, Clear and Done at the right.
+- `actions`: `{ label, onSelect, disabled? }[]`, pinned action rows under options after a divider: one row per action, stacked, full width, left-aligned, drawn like an option row (no check, no icon); choosing one closes the dropdown then calls `onSelect` (owner, 2026-10-28; replaces the single `action` ghost button). Rows are Tab-reachable buttons, not part of the arrow-key option list.
+- Layout: the menu has `space-6` padding inside the popover edge. The option list is the only scroller (it scrolls with the wheel and by touch even inside a modal Dialog); the search row, create row, `actions` rows and the multi-select Clear and Done row stay pinned. Cancel, Clear (ghost, sm) and Done (primary) keep their natural width; Cancel sits at the left edge, Clear and Done at the right.
 - `clearLabel`: custom label for multi-select clear button (default: `'Clear'`).
 - `doneLabel`: `(count: number) => ReactNode`, custom label for multi-select done button (default: `'Done'`).
 - `filter`: `'auto' | 'none' | ((option, query) => boolean)`.
@@ -41,6 +41,6 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Cancel, Clear, Done), FieldFrame.
 
 ## Variants
-- **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with an action row**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
+- **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with action rows**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
 - **Small** (`size="sm"`, inline in a list row).
 - Closed field states: value, placeholder, icon, open, chips, overflow, error, disabled, loading.

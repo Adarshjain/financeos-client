@@ -308,7 +308,7 @@ describe('SelectMenu', () => {
     render(
       <SelectMenu
         options={sampleOptions}
-        action={{ label: '+ Add Bank', onSelect }}
+        actions={[{ label: '+ Add Bank', onSelect }]}
       />,
     );
 
@@ -436,7 +436,7 @@ describe('Select menu layout (UAT)', () => {
       value: `b${i}`,
       label: `Bank ${i}`,
     }));
-    render(<SelectMenu options={many} searchable action={{ label: 'Add bank', onSelect: vi.fn() }} />);
+    render(<SelectMenu options={many} searchable actions={[{ label: 'Add bank', onSelect: vi.fn() }]} />);
     const list = screen.getByRole('listbox');
     expect(list).toHaveClass('overflow-y-auto', 'min-h-0');
     expect(screen.getByRole('searchbox')).toBeInTheDocument();
@@ -454,11 +454,40 @@ describe('Select menu layout (UAT)', () => {
     expect(done.parentElement).toHaveClass('justify-end');
   });
 
-  it('draws the action row at natural width, aligned right', () => {
-    render(<SelectMenu options={sampleOptions} action={{ label: '+ Add bank', onSelect: vi.fn() }} />);
-    const action = screen.getByText('+ Add bank');
-    expect(action).not.toHaveClass('w-full');
-    expect(action.parentElement).toHaveClass('justify-end');
+  it('draws action rows stacked, full width, in order', () => {
+    render(
+      <SelectMenu
+        options={sampleOptions}
+        actions={[
+          { label: 'First action', onSelect: vi.fn() },
+          { label: 'Second action', onSelect: vi.fn() },
+        ]}
+      />,
+    );
+    const first = screen.getByRole('button', { name: 'First action' });
+    const second = screen.getByRole('button', { name: 'Second action' });
+    expect(first).toHaveClass('w-full', 'text-left');
+    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('does not fire a disabled action', () => {
+    const onSelect = vi.fn();
+    render(<SelectMenu options={sampleOptions} actions={[{ label: 'Add widget', onSelect, disabled: true }]} />);
+    const btn = screen.getByRole('button', { name: 'Add widget' });
+    expect(btn).toBeDisabled();
+    fireEvent.click(btn);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('closes the dropdown and calls onSelect when an action is chosen', () => {
+    const onSelect = vi.fn();
+    render(
+      <Select options={sampleOptions} placeholder="Pick" actions={[{ label: 'Edit dashboard', onSelect }]} />,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit dashboard' }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Edit dashboard' })).not.toBeInTheDocument();
   });
 
   it('uses the md trigger height by default and control-sm for size="sm"', () => {

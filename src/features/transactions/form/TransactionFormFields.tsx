@@ -163,7 +163,7 @@ export function TransactionFormFields({
             value={values.accountId || null}
             disabled={isUpdate}
             onValueChange={(v) => onAccountChange(v ?? '')}
-            action={isUpdate ? undefined : { label: 'Add account', onSelect: onAddAccount }}
+            actions={isUpdate ? undefined : [{ label: 'Add account', onSelect: onAddAccount }]}
             error={errors.accountId}
           />
         )}

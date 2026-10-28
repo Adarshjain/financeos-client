@@ -67,14 +67,14 @@ beforeEach(() => {
 });
 
 describe('HomeScreen', () => {
-  it('has no greeting, status line or page title: the switcher and the ⋯ menu are the top bar\'s title', () => {
+  it('has no greeting, status line or page title: the switcher is the top bar\'s title', () => {
     render([home, money]);
     expect(screen.queryByRole('heading', { name: /Good/ })).toBeNull();
     expect(screen.queryByText(/things? needs? you|synced/)).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Home' })).toBeNull();
     const bar = screen.getByRole('banner');
     expect(within(bar).getByTestId('home-switch')).toBeInTheDocument();
-    expect(within(bar).getByRole('button', { name: 'Dashboard actions' })).toBeInTheDocument();
+    expect(within(bar).queryByRole('button', { name: 'Dashboard actions' })).toBeNull();
     // Nothing above the widgets in the body.
     expect(screen.getByRole('main').firstElementChild).toBe(screen.getByTestId('widgets'));
   });
@@ -82,14 +82,14 @@ describe('HomeScreen', () => {
   it('the switcher takes the rest of the top bar: it grows with no fixed width, and so does its wrapper', () => {
     render([home, money]);
     const select = screen.getByTestId('home-switch');
-    // The Select's own wrapper grows and may shrink; the ⋯ button sits after it in a wrapper that grows too.
+    // The Select's own wrapper grows and may shrink; its wrapper grows too.
     const field = select.closest('div.flex-1');
     expect(field).not.toBeNull();
     expect(field?.className).toMatch(/min-w-0/);
     const row = field?.parentElement as HTMLElement;
     expect(row.className).toMatch(/flex-1/);
     expect(row.innerHTML).not.toMatch(/container-xs/);
-    expect(within(row).getByRole('button', { name: 'Dashboard actions' })).toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Dashboard actions' })).toBeNull();
   });
 
   it('shows the default dashboard', () => {
@@ -114,32 +114,35 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/dashboards');
   });
 
-  it('the ⋯ menu of the default dashboard has Add widget, Edit dashboard and New dashboard, with no Set as default', async () => {
+  it('the switcher of the default dashboard has Add widget, Edit dashboard and New dashboard, with no Set as default', async () => {
     render([home]);
-    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
-    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Edit dashboard', 'New dashboard']);
-    await user.click(screen.getByRole('menuitem', { name: 'Edit dashboard' }));
+    await user.click(screen.getByTestId('home-switch'));
+    expect(screen.queryByRole('button', { name: 'Set as default' })).toBeNull();
+    for (const name of ['Add widget', 'Edit dashboard', 'New dashboard', 'View all dashboards']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+    await user.click(screen.getByRole('button', { name: 'Edit dashboard' }));
     expect(router.push).toHaveBeenCalledWith('/dashboards/home?edit=1');
   });
 
-  it('the ⋯ menu of a dashboard that is not the default offers Set as default, which saves it as the default', async () => {
+  it('the switcher of a dashboard that is not the default offers Set as default, which saves it as the default', async () => {
     api.PUT.mockResolvedValue({ data: { ...money, isDefault: true } });
     render([home, money]);
     // The default toggle re-reads the dashboard before it writes.
     api.GET.mockImplementation(async (url: string) => ({ data: url === '/api/v1/dashboards/{id}' ? money : [] }));
     await user.click(screen.getByTestId('home-switch'));
     await user.click(screen.getByRole('option', { name: 'Money overview' }));
-    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
-    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard']);
-    await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
+    await user.click(screen.getByTestId('home-switch'));
+    expect(screen.getByRole('button', { name: 'Set as default' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Set as default' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Set as default'));
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ name: 'Money overview', isDefault: true });
   });
 
   it('New dashboard goes to the create page', async () => {
     render([home]);
-    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'New dashboard' }));
+    await user.click(screen.getByTestId('home-switch'));
+    await user.click(screen.getByRole('button', { name: 'New dashboard' }));
     expect(router.push).toHaveBeenCalledWith('/dashboards/new');
   });
 
@@ -148,8 +151,8 @@ describe('HomeScreen', () => {
       data: { ...home, widgets: body.widgets.map((w, i) => ({ ...widget(w.id), ...w, id: i === 0 ? 'w1' : w.id })) },
     }));
     render([home]);
-    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Add widget' }));
+    await user.click(screen.getByTestId('home-switch'));
+    await user.click(screen.getByRole('button', { name: 'Add widget' }));
     await user.click(within(await screen.findByRole('dialog', { name: 'Add widget' })).getByRole('button', { name: 'Add Net worth' }));
 
     await waitFor(() => expect(api.PUT).toHaveBeenCalledTimes(1));
@@ -167,8 +170,8 @@ describe('HomeScreen', () => {
   it('a failed add says so and keeps what was there', async () => {
     api.PUT.mockRejectedValue(new Error('boom'));
     render([home]);
-    await user.click(screen.getByRole('button', { name: 'Dashboard actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Add widget' }));
+    await user.click(screen.getByTestId('home-switch'));
+    await user.click(screen.getByRole('button', { name: 'Add widget' }));
     await user.click(within(await screen.findByRole('dialog', { name: 'Add widget' })).getByRole('button', { name: 'Add Net worth' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
     expect(screen.getByTestId('widgets')).toHaveTextContent('w1');
