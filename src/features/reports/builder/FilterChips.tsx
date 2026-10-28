@@ -11,6 +11,7 @@ import { ConfigSection } from './ConfigSection';
 import { defaultFilterClause } from './filterClause';
 import { describeFilter } from './filterLabel';
 import { FilterValueEditor } from './FilterValueEditor';
+import { filterBlockedReason } from './guards';
 import { humanizeToken } from './labels';
 import { FieldError, PAIR, PickSelect } from './pickers';
 import { isFilterComplete } from './serialize';
@@ -36,7 +37,10 @@ function FilterForm({
           label="Field"
           value={clause.field}
           searchable
-          options={filterableFields(catalog).map((f) => ({ value: f.name, label: f.label }))}
+          options={filterableFields(catalog).map((f) => {
+            const reason = f.name === clause.field ? undefined : filterBlockedReason(catalog, f.name);
+            return { value: f.name, label: f.label, ...(reason ? { disabled: true, disabledReason: reason } : {}) };
+          })}
           onValueChange={(name) => {
             const next = fieldByName(catalog, name);
             if (next) onChange(defaultFilterClause(catalog, next, operatorsForField(catalog, next)[0] ?? ''));
@@ -74,7 +78,8 @@ interface FilterChipsProps {
 
 /** The first filterable field, with its first operator, as the clause a new filter starts from. */
 function blankClause(catalog: DatasourceCatalog): FilterClause | null {
-  const field = filterableFields(catalog)[0];
+  const fields = filterableFields(catalog);
+  const field = fields.find((f) => !filterBlockedReason(catalog, f.name)) ?? fields[0];
   return field ? defaultFilterClause(catalog, field, operatorsForField(catalog, field)[0] ?? '') : null;
 }
 

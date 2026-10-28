@@ -5719,6 +5719,7 @@ export interface components {
             dynamic: boolean;
             filterable: boolean;
             format: string;
+            guards: components["schemas"]["FieldGuard"][];
             idField: string;
             label: string;
             name: string;
@@ -5730,6 +5731,13 @@ export interface components {
                 [key: string]: string;
             };
             values: string[];
+        };
+        FieldGuard: {
+            aggregations?: ("sum" | "avg" | "count" | "min" | "max")[];
+            fields?: string[];
+            /** @enum {string} */
+            kind: "no_aggregation" | "needs" | "avoid" | "no_filter";
+            reason: string;
         };
         FilterClause: {
             field?: string;
