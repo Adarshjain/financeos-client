@@ -1,5 +1,5 @@
-import { formatAmount, formatDayMonth, formatPct, formatRupees } from '@/features/accounts/list/accountsList';
 import { amountExpressionValue } from '@/lib/amountExpression';
+import { formatCount,formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type {
   RewardCardRecommendation,
   RewardRecommendationRequest,
@@ -87,7 +87,7 @@ export function buildRequest(
 
 /** ₹ with paise only when the amount has them. */
 export function money(value: number): string {
-  return Number.isInteger(value) ? formatRupees(value) : `₹${formatAmount(value, 2)}`;
+  return formatMoney(value, { decimals: 'auto' });
 }
 
 /** "Ranked for ₹4,500 dining today": the spend, its categories and the day. */
@@ -99,7 +99,7 @@ export function resultTitle(
   const names = (input.categoryIds ?? [])
     .map((id) => categories.find((c) => c.id === id)?.name)
     .filter((n): n is string => !!n);
-  const day = !input.date || input.date === today ? 'today' : `on ${formatDayMonth(input.date)}`;
+  const day = !input.date || input.date === today ? 'today' : `on ${formatDate(input.date, 'list')}`;
   return ['Ranked for', money(input.amount), names.join(', ').toLowerCase(), day].filter(Boolean).join(' ');
 }
 
@@ -142,7 +142,7 @@ export function cardRow(card: RewardCardRecommendation): CardRow {
     name: card.accountName,
     best: card.rank === 1,
     earn: money(card.totalValueInr),
-    effective: `${formatPct(card.effectiveRatePct)} effective return`,
+    effective: `${formatPercent(card.effectiveRatePct)} effective return`,
     detail:
       `Guaranteed ${money(card.guaranteedValueInr)}` +
       (card.milestoneValueInr > 0 ? ` + milestone ${money(card.milestoneValueInr)}` : ''),
@@ -200,14 +200,14 @@ export function ruleLineView(line: SimulatedRuleLine, index: number): RuleLineVi
     name: line.ruleName || 'Base rule evaluation',
     stacking: line.stacking ?? null,
     outcome: { label: meta?.label ?? String(line.reason), tone: REASON_TONE[line.reason] ?? 'neutral' },
-    earned: line.earnedUnit === 'POINTS' ? `${formatAmount(line.earned, 0)} pts` : money(line.earned),
+    earned: line.earnedUnit === 'POINTS' ? formatCount(line.earned, 'pts') : money(line.earned),
     earnedValue: line.earnedUnit === 'POINTS' ? `= ${money(line.earnedValueInr)}` : null,
     cap: cap
       ? {
           text:
             `Cap headroom ${money(cap.capRemainingBefore)} of ${money(cap.totalCap)}` +
             (cap.bucketName ? ` (shared: ${cap.bucketName})` : '') +
-            (cap.windowEnd ? ` · window ends ${formatDayMonth(cap.windowEnd)}` : ''),
+            (cap.windowEnd ? ` · window ends ${formatDate(cap.windowEnd, 'list')}` : ''),
           remaining: cap.capRemainingBefore,
           total: cap.totalCap,
         }
@@ -248,7 +248,7 @@ export function breakdown(card: RewardCardRecommendation): Breakdown {
   const summary = [{ label: 'Guaranteed', value: money(card.guaranteedValueInr) }];
   if (card.milestoneValueInr > 0) summary.push({ label: 'Milestone', value: money(card.milestoneValueInr) });
   summary.push({ label: 'Total', value: money(card.totalValueInr) });
-  summary.push({ label: 'Effective return', value: formatPct(card.effectiveRatePct) });
+  summary.push({ label: 'Effective return', value: formatPercent(card.effectiveRatePct) });
   return {
     title: card.accountName,
     summary,

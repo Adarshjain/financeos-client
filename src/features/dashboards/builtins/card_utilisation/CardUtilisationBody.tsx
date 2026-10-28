@@ -12,9 +12,9 @@ import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/Lazy
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatMoney, formatPercent } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { formatUtilisation, UTILISATION_WATCH_PCT, utilisationTone } from '@/lib/utilisation';
-import { formatMoney } from '@/lib/utils';
+import { UTILISATION_WATCH_PCT, utilisationTone } from '@/lib/utilisation';
 
 import { BarRow, type BarRowTone, BuiltinError, BuiltinNote } from '../BuiltinParts';
 import { stringParam } from '../subtitles';
@@ -33,7 +33,7 @@ const TEXT_TONE = { low: 'ink', medium: 'warning', high: 'danger' } as const;
 function Percent({ pct }: { pct: number | null }) {
   return (
     <Text variant="body-strong" tone={pct == null ? 'ink-3' : TEXT_TONE[utilisationTone(pct)]}>
-      {formatUtilisation(pct)}
+      {pct == null || !Number.isFinite(pct) ? '—' : formatPercent(pct)}
     </Text>
   );
 }

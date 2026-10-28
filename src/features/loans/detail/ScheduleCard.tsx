@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterChip, Select, Text } from '@/components/ds';
+import { Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterChip, Select, StatusWord, Text } from '@/components/ds';
 import type { InstallmentDto } from '@/lib/loan.types';
 
 import { fyOptions, fySummaryLine, type ScheduleRow } from './scheduleModel';
@@ -58,7 +58,7 @@ function columnsFor(onMarkPaid: (inst: InstallmentDto) => void) {
       meta: { size: 'md', wrap: true, phone: 'status' },
       cell: ({ row }) => (
         <>
-          <Badge tone={row.original.status.tone}>{row.original.status.label}</Badge>
+          <StatusWord tone={row.original.status.tone}>{row.original.status.label}</StatusWord>
           <OverdueAction row={row.original} onMarkPaid={onMarkPaid} />
         </>
       ),
@@ -108,7 +108,7 @@ export function ScheduleCard({ rows, installments, fy, onFyChange, highlightSeq,
         getRowId={(row) => row.id}
         band={(row) => row.band}
         onRowSelect={onOpenRow}
-        rowState={(row) => ({ tone: row.overdue ? 'warning' : undefined, pressable: !row.settled || Boolean(row.payment) })}
+        rowState={(row) => ({ tone: row.overdue ? 'danger' : undefined, pressable: !row.settled || Boolean(row.payment) })}
         highlightedRowId={highlightSeq == null ? undefined : String(highlightSeq)}
         phoneSub={(row) => <PhoneSub text={row.phoneSub} />}
         empty={<EmptyState compact description="No schedule to show yet." />}

@@ -103,6 +103,7 @@ const REMOVED_API = [
   [/\b(?:onUndo|undoLabel|onRetry|retryLabel|removeLabel|actionRow|onActionClick)\b/, 'one action shape: action={{ label, onSelect }} (audit G6)'],
   [/@deprecated|\b[Ll]egacy (?:alias|year|prop)|for (?:backward )?compatibility/, 'no aliases or compatibility shims: one name per prop (RULES §5c.8); update the callers instead'],
 ];
+const LEGACY_FORMATTERS = /\bimport\b[^;]*\b(?:formatMoney|formatCurrency|formatNumber|formatNullableMoney|formatDate|formatRelativeTime|formatMonthYear)\b[^;]*from ['"]@\/lib\/utils['"]/;
 const STORY_RULES = [
   ['story-callback', /=>\s*\{\s*\}|\balert\(|\bconsole\.(?:log|info|warn)\(/, 'stories log callbacks with fn() from storybook/test (RULES §5a.3)'],
   ['story-import', /from ['"]\.\.?\//, 'stories import from @/components/ds or @/components/organisms (RULES §5a.5)'],
@@ -223,7 +224,7 @@ function dsComponent(file) {
 function check(lines, all = false, classes = true) {
   const errors = [];
   const allowed = [];
-  for (const { file, line, text } of lines) {
+  for (const [idx, { file, line, text }] of lines.entries()) {
     if (!SCAN_EXT.test(file) || SKIP.some((re) => re.test(file))) continue;
     if (!all && !SCOPE.some((p) => file.startsWith(p))) continue;
     for (const r of RULES) {
@@ -268,6 +269,16 @@ function check(lines, all = false, classes = true) {
     }
     if (/^src\/components\/(?:ds|organisms)\//.test(file) && !/\.stories\.tsx$/.test(file) && /['"`]20\d\d-\d\d-\d\d['"`]|\?\?\s*20\d\d\b/.test(text)) {
       errors.push({ file, line, rule: 'removed-api', why: 'a hard-coded date in a component: dates come from props (today from the app, G10)', text: text.trim().slice(0, 160) });
+    }
+    // An import may span lines: the whole statement (from its `import {` line to its `from` line) is tested once.
+    if (/^\s*import\b/.test(text)) {
+      let stmt = text;
+      for (let j = idx + 1; j < lines.length && !/\bfrom\s+['"]/.test(stmt) && lines[j].file === file && lines[j].line === lines[j - 1].line + 1; j++) {
+        stmt += '\n' + lines[j].text;
+      }
+      if (LEGACY_FORMATTERS.test(stmt)) {
+        errors.push({ file, line, rule: 'legacy-format', why: "Legacy formatter from '@/lib/utils' — format through '@/lib/format' (RULES §4.4)", text: text.trim().slice(0, 160) });
+      }
     }
     if (/^src\/components\/ds\//.test(file) && /from ['"]@\/components\/organisms/.test(text)) {
       errors.push({ file, line, rule: 'ds-imports-organism', why: 'Dinero never imports organisms (RULES §5b.1)', text: text.trim().slice(0, 160) });
@@ -370,6 +381,13 @@ function selfTest() {
       fail++;
     }
   }
+  {
+    const ml = ['import {', '  formatMoney,', "} from '@/lib/utils';"].map((text, i) => ({ file: 'src/x.tsx', line: i + 1, text }));
+    if (!check(ml, true, false).errors.some((e) => e.rule === 'legacy-format')) {
+      console.log('MISSED legacy-format: multi-line import');
+      fail++;
+    }
+  }
   for (const text of good) {
     const { errors } = check([{ file: 'src/x.tsx', line: 1, text }], true, false);
     if (errors.length) {
@@ -417,6 +435,10 @@ function selfTest() {
     ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
     ['src/components/ds/Button/Button.tsx', '<button type="button">', 'raw-button', false],
     ['src/components/ds/Card/Card.stories.tsx', '<button>', 'raw-button', false],
+    ['src/features/bills/BillRow.tsx', "import { cn, formatMoney } from '@/lib/utils';", 'legacy-format', true],
+    ['src/features/bills/BillRow.tsx', "import { formatDate } from '@/lib/utils';", 'legacy-format', true],
+    ['src/features/bills/BillRow.tsx', "import { formatMoney } from '@/lib/format';", 'legacy-format', false],
+    ['src/features/bills/BillRow.tsx', "import { cn, toCalendarDate } from '@/lib/utils';", 'legacy-format', false],
   ]) {
     const { errors } = check([{ file, line: 1, text }], true, false);
     if (errors.some((e) => e.rule === rule) !== bad) {

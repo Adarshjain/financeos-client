@@ -10,6 +10,7 @@ import { workingCatalog } from '@/features/reports/builder/editorState';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
 import { ApiError } from '@/lib/api/client';
+import { formatCount } from '@/lib/format';
 import { storeSavedDashboard,useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import type { ReportData, ReportResponse } from '@/lib/reports.types';
@@ -225,7 +226,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   const title = draft.name ?? deleteName ?? 'this report';
   const overline = isDelete ? 'Delete report' : isUpdate ? 'Change to your report' : 'Report draft';
   const caption = isDelete
-    ? dashboardCount ? `It is on ${dashboardCount} ${dashboardCount === 1 ? 'dashboard' : 'dashboards'}. Its widget goes with it.` : null
+    ? dashboardCount ? `It is on ${formatCount(dashboardCount, ['dashboard', 'dashboards'])}. Its widget goes with it.` : null
     : draftCaption(draft);
   const previewBlocks = Boolean(preview.error || preview.loading);
   const reportHref = result?.reportId ? appHref(`/reports/${result.reportId}`) : null;

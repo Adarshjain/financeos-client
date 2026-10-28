@@ -46,7 +46,7 @@ describe('/investments/corporate-actions', () => {
   it('lists the actions with date, instrument, type, ratio and effect', async () => {
     await renderPage();
     expect(server.fetchCorporateActionsPage).toHaveBeenCalledWith({ type: undefined, search: undefined, sort: 'newest', page: 0, size: 25 });
-    for (const text of ['INFY · Infosys', '10 Jun 25', 'Bonus', '1 : 1', /30 → 60/]) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
+    for (const text of ['INFY · Infosys', '10 Jun 2025', 'Bonus', '1 : 1', /30 → 60/]) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Note: record date 11 Jun 25').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ITC').length).toBeGreaterThan(0);
   });

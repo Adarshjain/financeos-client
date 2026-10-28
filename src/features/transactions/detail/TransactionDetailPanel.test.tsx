@@ -4,9 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConcealProvider } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 import { TransactionDetailPanel, type TransactionDetailPanelProps } from './TransactionDetailPanel';
+
+pinClock();
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
@@ -109,7 +112,7 @@ describe('TransactionDetailPanel', () => {
     );
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
     expect(screen.getByText('UPI/DR/427812345678/BIGBASKET BANGALORE')).toBeInTheDocument();
-    expect(screen.getByText('.00').parentElement).toHaveTextContent('₹3,600.00');
+    expect(screen.getByText('₹3,600')).toBeInTheDocument();
     expect(screen.getByText('₹2,95,030 after')).toBeInTheDocument();
     for (const [label, value] of [
       ['Account', 'HDFC Regalia Gold'],
@@ -155,7 +158,7 @@ describe('TransactionDetailPanel', () => {
 
   it('draws a credit as money in', () => {
     renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn({ amount: 18500 })] })} />);
-    expect(screen.getByText('.00').parentElement).toHaveTextContent('+₹18,500.00');
+    expect(screen.getByText('+₹18,500')).toBeInTheDocument();
   });
 
   it('is closed without a transaction', () => {
@@ -220,7 +223,7 @@ describe('TransactionDetailPanel', () => {
       const p = props({ pageTransactions: [withLink()] });
       renderWithQuery(<TransactionDetailPanel {...p} />);
       expect(await screen.findByText('Links')).toBeInTheDocument();
-      expect(screen.getByText('Refund · +₹240.00 · 14 Oct · HDFC Regalia Gold')).toBeInTheDocument();
+      expect(screen.getByText('Refund · +₹240 · 14 Oct · HDFC Regalia Gold')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'BigBasket refund' }));
       expect(p.onOpenTransaction).toHaveBeenCalledWith('t2');
     });
@@ -424,7 +427,7 @@ describe('TransactionDetailPanel', () => {
       renderWithQuery(<TransactionDetailPanel {...p} />);
       fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
       const dialog = await screen.findByRole('dialog', { name: /Delete BigBasket/ });
-      expect(within(dialog).getByText('Delete BigBasket · ₹3,600.00?')).toBeInTheDocument();
+      expect(within(dialog).getByText('Delete BigBasket · ₹3,600?')).toBeInTheDocument();
       expect(within(dialog).getByText(/1 linked record stays \(Lending · Priya Nair\) but loses the link/)).toBeInTheDocument();
       expect(within(dialog).getByText(/not a manually created transaction/)).toBeInTheDocument();
       expect(api.deleteTransaction).not.toHaveBeenCalled();

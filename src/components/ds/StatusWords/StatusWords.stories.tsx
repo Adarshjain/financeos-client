@@ -29,7 +29,7 @@ export const Neutral: StoryObj<typeof StatusWord> = {
   argTypes: {
     tone: {
       control: 'select',
-      options: ['neutral', 'info', 'warning', 'success'],
+      options: ['neutral', 'info', 'warning', 'success', 'danger'],
     },
     icon: { control: 'text' },
     children: { control: 'text' },
@@ -45,7 +45,7 @@ export const Info: StoryObj<typeof StatusWord> = {
   argTypes: {
     tone: {
       control: 'select',
-      options: ['neutral', 'info', 'warning', 'success'],
+      options: ['neutral', 'info', 'warning', 'success', 'danger'],
     },
     icon: { control: 'text' },
     children: { control: 'text' },
@@ -62,7 +62,7 @@ export const Warning: StoryObj<typeof StatusWord> = {
   argTypes: {
     tone: {
       control: 'select',
-      options: ['neutral', 'info', 'warning', 'success'],
+      options: ['neutral', 'info', 'warning', 'success', 'danger'],
     },
     icon: { control: 'text' },
     children: { control: 'text' },
@@ -78,7 +78,7 @@ export const Success: StoryObj<typeof StatusWord> = {
   argTypes: {
     tone: {
       control: 'select',
-      options: ['neutral', 'info', 'warning', 'success'],
+      options: ['neutral', 'info', 'warning', 'success', 'danger'],
     },
     icon: { control: 'text' },
     children: { control: 'text' },
@@ -86,6 +86,22 @@ export const Success: StoryObj<typeof StatusWord> = {
   args: {
     tone: 'success',
     children: 'Verified',
+  },
+};
+
+export const Danger: StoryObj<typeof StatusWord> = {
+  render: (args) => <StatusWord {...args} />,
+  argTypes: {
+    tone: {
+      control: 'select',
+      options: ['neutral', 'info', 'warning', 'success', 'danger'],
+    },
+    icon: { control: 'text' },
+    children: { control: 'text' },
+  },
+  args: {
+    tone: 'danger',
+    children: 'Overdue 8 d',
   },
 };
 

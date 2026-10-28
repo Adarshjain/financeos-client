@@ -41,7 +41,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('1 : 3')).toBeVisible();
         await expect(page.getByText('1 : 1', { exact: true })).toBeVisible();
       } else {
-        await expect(page.getByText(/ex 10 Jun 25 · 1:1 · 30 → 60 shares/)).toBeVisible();
+        await expect(page.getByText(/ex 10 Jun 2025 · 1:1 · 30 → 60 shares/)).toBeVisible();
       }
       await expect(page.getByText('How each type is applied')).toBeVisible();
       await expect(page.getByText('Floored; the fraction is sold as cash-in-lieu')).toBeVisible();
@@ -93,7 +93,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Updated bonus 3:1')).toBeVisible();
       await expect(dialog).toHaveCount(0);
       if (viewport.width > 640) await expect(page.getByText('30 → 120', { exact: false }).first()).toBeVisible();
-      else await expect(page.getByText(/ex 10 Jun 25 · 3:1 · 30 → 120 shares/)).toBeVisible();
+      else await expect(page.getByText(/ex 10 Jun 2025 · 3:1 · 30 → 120 shares/)).toBeVisible();
     });
 
     test('the edit dialog shows a demerger with its child and cost share', async ({ page }) => {

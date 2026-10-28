@@ -9,7 +9,6 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
-  formatDate,
   showToast,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
@@ -17,6 +16,7 @@ import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpr
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateBillDetailsRequest } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate } from '@/lib/format';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
 export interface StatementDetailsDialogProps {

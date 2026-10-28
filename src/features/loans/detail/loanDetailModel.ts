@@ -1,19 +1,10 @@
-import { formatDayMonth, formatPct, formatRupees } from '@/features/accounts/list/accountsList';
-import { daysBetween, monthYearShort, plainAmount } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormat';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { InstallmentDto, LoanEventResponse, LoanResponse } from '@/lib/loan.types';
-
-/** "1 Aug 25": a calendar date with a two-digit year. */
-export function shortDate(iso: string): string {
-  return `${formatDayMonth(iso)} ${iso.slice(2, 4)}`;
-}
-
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
-}
 
 /** Rates read without trailing zeros past the second decimal: 8.25, 9, 8.5. */
 export function ratePct(pct: number): string {
-  return `${Number(pct.toFixed(2))}%`;
+  return formatPercent(pct, { decimals: 2 });
 }
 
 // ---- Header ---------------------------------------------------------------------------------
@@ -48,7 +39,7 @@ export function nextEmi(loan: LoanResponse, schedule: InstallmentDto[], today: s
   if (loan.status !== 'active') return null;
   const inst = firstUnpaid(schedule);
   if (!inst) return null;
-  const amount = formatRupees(inst.emi);
+  const amount = formatMoney(inst.emi);
   const days = daysBetween(inst.dueDate, today);
   if (inst.status === 'overdue') {
     const ago = Math.max(days ?? 1, 1);
@@ -56,7 +47,7 @@ export function nextEmi(loan: LoanResponse, schedule: InstallmentDto[], today: s
       eyebrow: `EMI #${inst.seq} overdue`,
       amount,
       overdue: true,
-      context: `was due ${formatDayMonth(inst.dueDate)} · ${plural(ago, 'day', 'days')} ago`,
+      context: `was due ${formatDate(inst.dueDate, 'list')} · ${formatCount(ago, ['day', 'days'])} ago`,
     };
   }
   const until = Math.max(-(days ?? 0), 0);
@@ -66,8 +57,8 @@ export function nextEmi(loan: LoanResponse, schedule: InstallmentDto[], today: s
     overdue: false,
     context:
       until === 0
-        ? `due today · ${formatDayMonth(inst.dueDate)}`
-        : `due ${formatDayMonth(inst.dueDate)} · in ${plural(until, 'day', 'days')}`,
+        ? `due today · ${formatDate(inst.dueDate, 'list')}`
+        : `due ${formatDate(inst.dueDate, 'list')} · in ${formatCount(until, ['day', 'days'])}`,
   };
 }
 
@@ -86,8 +77,8 @@ export function loanHeader(
   const meta = [
     loan.lender?.trim() || null,
     loan.loanAccountNumber ? `#${loan.loanAccountNumber}` : null,
-    loan.startDate ? `started ${shortDate(loan.startDate)}` : null,
-    loan.projectedEndDate ? `ends ${monthYearShort(loan.projectedEndDate)}` : null,
+    loan.startDate ? `started ${formatDate(loan.startDate, 'list')}` : null,
+    loan.projectedEndDate ? `ends ${formatDate(loan.projectedEndDate, 'month')}` : null,
     paymentAccountName ? `paid from ${paymentAccountName}` : null,
   ].filter((part): part is string => Boolean(part));
   return {
@@ -160,35 +151,35 @@ export function loanTiles(loan: LoanResponse, events: LoanEventResponse[]): Loan
     tiles: [
       {
         label: 'Outstanding',
-        value: formatRupees(loan.outstandingPrincipal),
+        value: formatMoney(loan.outstandingPrincipal),
         context:
           loan.principal > 0
-            ? `of ${formatRupees(loan.principal)} · ${formatPct(repaid)} repaid`
+            ? `of ${formatMoney(loan.principal)} · ${formatPercent(repaid)} repaid`
             : undefined,
       },
       {
         label: 'Current EMI',
-        value: formatRupees(loan.currentEmi),
+        value: formatMoney(loan.currentEmi),
         context: change
-          ? `was ₹${plainAmount(change.was)} before the ${change.cause === 'change' ? 'change' : change.cause}`
+          ? `was ${formatMoney(change.was, { decimals: 'auto' })} before the ${change.cause === 'change' ? 'change' : change.cause}`
           : undefined,
       },
       {
         label: 'Interest paid',
-        value: formatRupees(loan.totalInterestPaid),
+        value: formatMoney(loan.totalInterestPaid),
         context: apr != null ? `effective APR ${ratePct(apr)}` : undefined,
       },
       {
         label: 'Timeline',
         value: `${loan.settledInstallments} / ${loan.totalInstallments}`,
-        context: saved > 0 ? `${plural(saved, 'month', 'months')} saved by prepayment` : undefined,
+        context: saved > 0 ? `${formatCount(saved, ['month', 'months'])} saved by prepayment` : undefined,
       },
     ],
     timeline: {
       pct: repaid,
-      start: loan.startDate ? monthYearShort(loan.startDate) : '',
+      start: loan.startDate ? formatDate(loan.startDate, 'month') : '',
       today: `Today · EMI ${loan.settledInstallments} settled`,
-      end: loan.projectedEndDate ? monthYearShort(loan.projectedEndDate) : '—',
+      end: loan.projectedEndDate ? formatDate(loan.projectedEndDate, 'month') : '—',
     },
   };
 }

@@ -43,8 +43,8 @@ describe('ChatHistoryPane', () => {
     expect(screen.getByText('Recent chats')).toBeInTheDocument();
     expect(screen.getByText('Your last 10 chats are kept. A new chat removes the oldest.')).toBeInTheDocument();
     for (const g of ['Today', 'Yesterday', 'Earlier']) expect(screen.getAllByText(g).length).toBeGreaterThan(0);
-    expect(within(rowOf('Spend in the last 90 days')).getByText(/14:05 · 2 questions/)).toBeInTheDocument();
-    expect(within(rowOf('Net worth breakdown')).getByText(/21:48 · 1 question$/)).toBeInTheDocument();
+    expect(within(rowOf('Spend in the last 90 days')).getByText(/2:05 pm · 2 questions/)).toBeInTheDocument();
+    expect(within(rowOf('Net worth breakdown')).getByText(/9:48 pm · 1 question$/)).toBeInTheDocument();
     expect(within(rowOf('Who still owes me money')).getByText('22 Oct · 2 questions')).toBeInTheDocument();
   });
 

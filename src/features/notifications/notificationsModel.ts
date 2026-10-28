@@ -1,7 +1,7 @@
 import { appHref } from '@/features/shell/routes';
 import type { AppNotification } from '@/lib/api/types';
-import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatTime } from '@/lib/format';
 
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
@@ -81,7 +81,7 @@ export function groupByDay(items: AppNotification[], now: Date = new Date()): No
 
 /** "2:05 pm" (12-hour, IST). */
 export function timeLabel(createdAt: string): string {
-  return clock12(new Date(createdAt));
+  return formatTime(createdAt);
 }
 
 /** Time when it arrived today, else the date ("13 Oct"): the dropdown's subtitle tail. */

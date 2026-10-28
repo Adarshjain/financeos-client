@@ -1,8 +1,8 @@
 import type { SelectOption } from '@/components/ds';
-import { formatAmount } from '@/features/accounts/list/accountsList';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
+import { formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -91,7 +91,7 @@ export function reasonLabel(reason: NonNullable<TransactionsQuery['reason']>): s
 }
 
 function rupees(n: number): string {
-  return `₹${formatAmount(n, Number.isInteger(n) ? 0 : 2)}`;
+  return formatMoney(n, { decimals: 'auto' });
 }
 
 /** "Over ₹500", "Under ₹5,000", "₹500 – ₹5,000". */

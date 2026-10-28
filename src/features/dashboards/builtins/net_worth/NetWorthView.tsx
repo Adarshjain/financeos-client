@@ -7,10 +7,10 @@
 import React from 'react';
 
 import { Button, Text } from '@/components/ds';
-import { formatCompact } from '@/lib/charts/chart-format';
+import { formatMeasure } from '@/features/reports/measureFormat';
 import { formatComparedRange } from '@/lib/date-range';
+import { formatMoney, formatPercent } from '@/lib/format';
 import { isKpiData } from '@/lib/reports.helpers';
-import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
 import { signed } from '@/lib/reports/signed';
 
 import { BuiltinNote } from '../BuiltinParts';
@@ -23,7 +23,7 @@ export function NetWorthView({ data, loading, onKpiValueClick }: TemplateViewPro
   const { data: parts } = useNetWorthParts();
   if (!isKpiData(data)) return <BuiltinNote>This widget can&apos;t show this data.</BuiltinNote>;
   const fmt = (n: number | null) =>
-    formatMeasureValue(n, {
+    formatMeasure(n, {
       field: data.measure,
       aggregation: data.aggregation,
       format: data.format ?? undefined,
@@ -31,7 +31,7 @@ export function NetWorthView({ data, loading, onKpiValueClick }: TemplateViewPro
       wholeRupees: true,
     });
   const c = data.comparison;
-  const percent = c?.changePercent != null ? ` (${signed(`${c.changePercent.toFixed(1)}%`, c.changePercent)})` : '';
+  const percent = c?.changePercent != null ? ` (${formatPercent(c.changePercent, { sign: 'always' })})` : '';
   const figure = fmt(data.value);
   return (
     <div className="flex flex-col gap-space-4" data-testid="net-worth-view" aria-busy={loading || undefined}>
@@ -56,7 +56,7 @@ export function NetWorthView({ data, loading, onKpiValueClick }: TemplateViewPro
         <div className="flex flex-wrap gap-x-space-12 gap-y-space-2" data-testid="net-worth-parts">
           {parts.map((part) => (
             <Text key={part.key} variant="caption" tone="ink-3" as="span">
-              {part.label} <strong>{formatCompact(Math.abs(part.value), true)}</strong>
+              {part.label} <strong>{formatMoney(Math.abs(part.value), { compact: 'k' })}</strong>
             </Text>
           ))}
         </div>

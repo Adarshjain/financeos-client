@@ -4,9 +4,9 @@ import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 
 import { Button, createDataTableColumnHelper, DataTable, Icon, Text } from '@/components/ds';
-import { dayMonth } from '@/features/jobs/format';
 import { formatFromHeader } from '@/features/jobs/gmailSyncModel';
 import { appHref } from '@/features/shell/routes';
+import { formatDate } from '@/lib/format';
 import type { SyncMessageOutcome, SyncSummary } from '@/lib/types';
 
 const ACCOUNTS_HREF = appHref('/accounts');
@@ -76,7 +76,7 @@ const columns = [
     meta: { size: 'sm', phone: 'amount' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
-        {dayMonth(row.original.receivedAt)}
+        {formatDate(row.original.receivedAt, 'list')}
       </Text>
     ),
   }),

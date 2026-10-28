@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { answerText, type AssistantRecord, formatCell, metaLine, stepLabel, stepMeta, tableToTsv } from './answerModel';
+import { answerText, type AssistantRecord, formatAnswerCell, metaLine, stepLabel, stepMeta, tableToTsv } from './answerModel';
 
 const record = (over: Partial<AssistantRecord> = {}): AssistantRecord => ({ kind: 'assistant', id: 'a', status: 'COMPLETE', steps: [], ...over });
 
@@ -17,10 +17,10 @@ describe('tableToTsv', () => {
   });
 });
 
-describe('formatCell', () => {
+describe('formatAnswerCell', () => {
   it('groups numbers the Indian way', () => {
-    expect(formatCell(1234567, 'number')).toBe('12,34,567');
-    expect(formatCell(true)).toBe('true');
+    expect(formatAnswerCell(1234567, 'number')).toBe('12,34,567');
+    expect(formatAnswerCell(true)).toBe('true');
   });
 });
 

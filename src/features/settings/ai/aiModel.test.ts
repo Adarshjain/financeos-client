@@ -17,10 +17,10 @@ const key = (over: Partial<LlmKeyDto>): LlmKeyDto => ({
 
 describe('formatLastUsed', () => {
   const today = '2026-10-20';
-  it('says today, yesterday, N days ago and a date', () => {
+  it('says today, yesterday, else a date', () => {
     expect(formatLastUsed('2026-10-20T08:00:00Z', today)).toBe('today');
     expect(formatLastUsed('2026-10-19T08:00:00Z', today)).toBe('yesterday');
-    expect(formatLastUsed('2026-10-17T08:00:00Z', today)).toBe('3 days ago');
+    expect(formatLastUsed('2026-10-17T08:00:00Z', today)).toBe('17 Oct');
     expect(formatLastUsed('2026-10-13T08:00:00Z', today)).toBe('13 Oct');
   });
   it('is a dash when never used', () => {

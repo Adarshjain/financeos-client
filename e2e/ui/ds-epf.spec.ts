@@ -223,6 +223,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('a file that is not a passbook is refused with the server message', async ({ page }) => {
+      test.slow();
       await page.goto('/investments/import?type=epf');
       await upload(page, ['Just some text', 'Not an EPFO passbook at all'], 'notes.pdf');
       await expect(page.getByRole('button', { name: 'Choose other files' })).toBeVisible({ timeout: 30_000 });

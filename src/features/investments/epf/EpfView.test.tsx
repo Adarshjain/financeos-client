@@ -68,7 +68,7 @@ describe('EpfView: the figures', () => {
       expect(screen.getAllByText(text).length).toBeGreaterThan(0);
     }
     expect(screen.getAllByText('₹8,43,210').length).toBeGreaterThan(0);
-    expect(screen.getByText('Passbook up to Sep 2026')).toBeInTheDocument();
+    expect(screen.getByText('Passbook up to September 2026')).toBeInTheDocument();
     expect(screen.getAllByText('₹78,900').length).toBeGreaterThan(0);
     expect(screen.getByText('You ₹43,200 · employer ₹35,700')).toBeInTheDocument();
     expect(screen.getAllByText('≈ ₹32,880').length).toBeGreaterThan(0);
@@ -79,7 +79,7 @@ describe('EpfView: the figures', () => {
 
   it('shows the phone hero: the balance, then contributed, interest so far and last interest', () => {
     renderWithQuery(<EpfView {...props()} />);
-    expect(screen.getByText('Up to Sep 2026')).toBeInTheDocument();
+    expect(screen.getByText('Up to September 2026')).toBeInTheDocument();
     expect(screen.getByText('You ₹43,200')).toBeInTheDocument();
     expect(screen.getByText('Interest so far')).toBeInTheDocument();
     expect(screen.getByText('Estimate at 8.25%')).toBeInTheDocument();
@@ -190,20 +190,20 @@ describe('EpfView: the passbook', () => {
 
   it('opens an entry when its row is pressed', async () => {
     renderWithQuery(<EpfView {...props()} />);
-    fireEvent.click(screen.getAllByText('Sep 2026')[0]);
-    expect(await screen.findByText('Sep 2026 contribution')).toBeInTheDocument();
+    fireEvent.click(screen.getAllByText('September 2026')[0]);
+    expect(await screen.findByText('September 2026 contribution')).toBeInTheDocument();
     expect(screen.getByText(/From the passbook imported on 16 Oct/)).toBeInTheDocument();
   });
 
   it('follows the fresh row of the open entry, and keeps it when the page no longer lists it', async () => {
     const view = renderWithQuery(<EpfView {...props({}, [manualContribution()])} />);
-    fireEvent.click(screen.getAllByText('Aug 2026')[0]);
-    await screen.findByText('Aug 2026 contribution');
+    fireEvent.click(screen.getAllByText('August 2026')[0]);
+    await screen.findByText('August 2026 contribution');
     expect((screen.getByLabelText(/^Your share/) as HTMLInputElement).value).toBe('7200');
     view.rerender(<EpfView {...props({}, [{ ...manualContribution(), employeeAmount: 7500 }])} />);
     expect((screen.getByLabelText(/^Your share/) as HTMLInputElement).value).toBe('7200');
     view.rerender(<EpfView {...props({}, [])} />);
-    expect(screen.getByText('Aug 2026 contribution')).toBeInTheDocument();
+    expect(screen.getByText('August 2026 contribution')).toBeInTheDocument();
   });
 
   it('shows an empty line when the period has no entries', () => {
@@ -220,7 +220,7 @@ describe('EpfView: the passbook', () => {
 describe('EpfView: the stale banner', () => {
   it('names the months to bring in and links to Upload passbook', () => {
     renderWithQuery(<EpfView {...props({ stale: { through: '2026-07-01', missing: missingMonths('2026-07-01', today) } })} />);
-    expect(screen.getByText('Your passbook is up to Jul 2026. Upload a newer one to bring in Aug and Sep.')).toBeInTheDocument();
+    expect(screen.getByText('Your passbook is up to July 2026. Upload a newer one to bring in Aug and Sep.')).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Upload passbook' })[0]);
     expect(router.push).toHaveBeenCalledWith('/investments/import?type=epf');
   });
@@ -307,12 +307,12 @@ describe('EpfView: the employers card', () => {
   it('lists every employer with its balance and status', () => {
     renderWithQuery(<EpfView {...props({}, base, three)} />);
     expect(screen.getByText('Employers')).toBeInTheDocument();
-    expect(screen.getByText('Member ID …67890 · since Sep 2023')).toBeInTheDocument();
+    expect(screen.getByText('Member ID …67890 · since September 2023')).toBeInTheDocument();
     expect(screen.getByText('Current')).toBeInTheDocument();
     expect(screen.getByText('Transferred')).toBeInTheDocument();
     expect(screen.getByText('Settled')).toBeInTheDocument();
-    expect(screen.getByText('Jun 2018 – Aug 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023')).toBeInTheDocument();
-    expect(screen.getByText('Apr 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018')).toBeInTheDocument();
+    expect(screen.getByText('June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023')).toBeInTheDocument();
+    expect(screen.getByText('April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018')).toBeInTheDocument();
   });
 
   it('Add employer opens the employer form and saves it', async () => {

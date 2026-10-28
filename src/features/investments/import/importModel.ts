@@ -1,12 +1,10 @@
 import type { SelectOption } from '@/components/ds';
-import { formatAmount } from '@/features/accounts/list/accountsList';
 import { type Broker, isAccountClosed } from '@/lib/account.types';
+import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
 
-import { moveTone, quantity, shortDate } from '../investmentsFormat';
+import { moveTone } from '../investmentsFormat';
 import type { ImportAssetScope, ImportMode, RowState } from './types';
-
-const MINUS = '−';
 
 export const IMPORT_STEPS = [
   { id: 'upload', label: 'Upload files' },
@@ -70,20 +68,13 @@ export function reconcileNote(fnoOnly: boolean): { lead: string; body: string } 
 
 /** "₹49,000.00": two decimals, Indian grouping. */
 export function money(value: number | string | null | undefined): string {
-  return `₹${formatAmount(Number(value ?? 0), 2)}`;
-}
-
-/** "+₹18,232.40" / "−₹1,840.00": two decimals with the sign always shown. */
-export function signedMoney(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  if (rounded === 0) return money(0);
-  return `${rounded > 0 ? '+' : MINUS}₹${formatAmount(Math.abs(rounded), 2)}`;
+  return formatMoney(Number(value ?? 0), { decimals: 'exact' });
 }
 
 export function fileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024) return `${formatQuantity(bytes / 1024, 1)} KB`;
+  return `${formatQuantity(bytes / (1024 * 1024), 1)} MB`;
 }
 
 /** A selected file as DropZone lists it. */
@@ -123,7 +114,7 @@ export function executionRow(exec: ReconciledExecution): ExecutionRow {
   return {
     id: String(exec.rowIndex),
     rowIndex: exec.rowIndex,
-    date: shortDate(exec.tradeDate),
+    date: formatDate(exec.tradeDate, 'list'),
     side: exec.type === 'buy' ? 'Buy' : 'Sell',
     settlement: exec.settlementType === 'intraday' ? 'MIS' : 'CNC',
     symbol: exec.symbol,
@@ -157,7 +148,7 @@ export function fnoRow(t: FnoTradePreview, index: number): FnoRow {
   const detail = [
     t.underlyingSymbol && `Underlying: ${t.underlyingSymbol}`,
     t.optionType && `${t.optionType}${t.strikePrice ? ` @ ${t.strikePrice}` : ''}`,
-    t.expiryDate && `Exp: ${shortDate(t.expiryDate)}`,
+    t.expiryDate && `Exp: ${formatDate(t.expiryDate, 'list')}`,
   ]
     .filter(Boolean)
     .join(' | ');
@@ -168,13 +159,13 @@ export function fnoRow(t: FnoTradePreview, index: number): FnoRow {
     kind: t.contractType === 'option' ? 'OPT' : 'FUT',
     duplicate: t.isDuplicate,
     detail,
-    quantity: quantity(t.quantity),
+    quantity: formatQuantity(t.quantity),
     buy: money(t.buyValue),
     sell: money(t.sellValue),
     charges: money(t.totalCharges),
-    pnl: signedMoney(t.realizedPnl),
+    pnl: formatMoney(t.realizedPnl, { decimals: 'exact', sign: 'always' }),
     pnlTone: moveTone(t.realizedPnl),
-    figures: `Qty ${quantity(t.quantity)} · Buy ${money(t.buyValue)} · Sell ${money(t.sellValue)}`,
+    figures: `Qty ${formatQuantity(t.quantity)} · Buy ${money(t.buyValue)} · Sell ${money(t.sellValue)}`,
   };
 }
 
@@ -212,11 +203,11 @@ export function casRow(row: ImportRow): CasRow {
   return {
     id: String(row.rowIndex),
     rowIndex: row.rowIndex,
-    date: p.tradeDate ? shortDate(p.tradeDate) : '',
+    date: p.tradeDate ? formatDate(p.tradeDate, 'list') : '',
     side: p.kind === 'dividend' ? 'Dividend' : p.type === 'sell' ? 'Sell' : 'Buy',
     name: p.parsedName || p.parsedSymbol || p.parsedIsin || 'Unnamed row',
     scrip: p.parsedIsin || p.parsedSymbol || '',
-    unitsNav: units != null && nav != null ? `${quantity(units)} × ${money(nav)}` : '',
+    unitsNav: units != null && nav != null ? `${formatQuantity(units)} × ${money(nav)}` : '',
     amount: amount != null ? money(amount) : '',
     error: p.error || undefined,
     row,

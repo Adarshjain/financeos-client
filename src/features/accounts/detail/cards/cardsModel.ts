@@ -1,20 +1,13 @@
 import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 import {
-  formatDayMonth,
-  formatDayMonthYear,
-  formatPct,
-  formatRupees,
-} from '@/features/accounts/list/accountsList';
-import {
   type Card,
   type Cardholder,
   type CreditCard,
   isCardholderClosed,
 } from '@/lib/account.types';
+import { formatCount, formatDate, formatMoney, formatPercent, initialsOf } from '@/lib/format';
 import { utilisationTone } from '@/lib/utilisation';
 
-import { initialsOf } from '../overview/cardOverviewModel';
-import { plural } from '../overview/dates';
 
 export interface CardStat {
   cardId: string;
@@ -104,12 +97,6 @@ export interface CardsModel {
   sharedLimit: SharedLimitModel | null;
 }
 
-/** "15 Mar 24". */
-export function formatShortDate(iso: string): string {
-  const day = formatDayMonth(iso);
-  return day ? `${day} ${iso.slice(2, 4)}` : '';
-}
-
 export function roleLabel(role: Cardholder['role'], isBank: boolean): string {
   if (role === 'PRIMARY') return 'Primary';
   return isBank ? 'Joint holder' : 'Add-on';
@@ -150,15 +137,15 @@ export function plasticModel(
   const status = plasticStatus(card, all);
   let caption: string;
   if (status === 'Active') {
-    caption = card.issuedOn ? `issued ${formatShortDate(card.issuedOn)}` : '';
+    caption = card.issuedOn ? `issued ${formatDate(card.issuedOn, 'list')}` : '';
   } else {
     const range = [card.issuedOn, card.closedOn]
       .filter((d): d is string => Boolean(d))
-      .map(formatShortDate)
+      .map((d) => formatDate(d, 'list'))
       .join(' → ');
     const count = stats?.cards?.find((s) => s.cardId === card.id)?.transactionCount;
     const parts = [range];
-    if (count != null) parts.push(plural(count, 'transaction', 'transactions'));
+    if (count != null) parts.push(formatCount(count, ['transaction', 'transactions']));
     caption = parts.filter(Boolean).join(' · ');
   }
   return {
@@ -195,14 +182,14 @@ function openCaption(holder: Cardholder, isBank: boolean): string {
   const parts: string[] = [];
   if (holder.role === 'PRIMARY') {
     parts.push('Account holder');
-    if (holder.openedOn) parts.push(`opened ${formatDayMonthYear(holder.openedOn)}`);
+    if (holder.openedOn) parts.push(`opened ${formatDate(holder.openedOn, 'full')}`);
   } else {
     const rel = relationshipLabel(holder);
     if (rel) parts.push(rel);
     else parts.push(roleLabel(holder.role, isBank));
-    if (holder.openedOn) parts.push(`added ${formatDayMonthYear(holder.openedOn)}`);
+    if (holder.openedOn) parts.push(`added ${formatDate(holder.openedOn, 'full')}`);
     if (holder.spendLimit != null && holder.spendLimit > 0) {
-      parts.push(`spend limit ${formatRupees(holder.spendLimit)}`);
+      parts.push(`spend limit ${formatMoney(holder.spendLimit)}`);
     }
   }
   return parts.join(' · ');
@@ -215,15 +202,15 @@ export function holderStats(
 ): StatModel[] {
   if (!stats) return [];
   const out: StatModel[] = [
-    { label: 'Spend · year', value: formatRupees(stats.spendThisYear) },
+    { label: 'Spend · year', value: formatMoney(stats.spendThisYear) },
     { label: isBank ? 'Transactions' : 'Txns', value: String(stats.transactionCount) },
-    { label: 'Last used', value: stats.lastUsedOn ? formatDayMonth(stats.lastUsedOn) : '—' },
+    { label: 'Last used', value: stats.lastUsedOn ? formatDate(stats.lastUsedOn, 'list') : '—' },
   ];
   if (!isBank) {
     const limit = holder.spendLimit;
     if (holder.role === 'ADDON' && limit != null && limit > 0) {
       const pct = (stats.currentCycleSpend / limit) * 100;
-      out.push({ label: 'Limit used', value: formatPct(pct), tone: limitUsedTone(pct) });
+      out.push({ label: 'Limit used', value: formatPercent(pct), tone: limitUsedTone(pct) });
     } else {
       out.push({ label: 'Limit used', value: '—', muted: true });
     }
@@ -236,9 +223,9 @@ function closedCaption(holder: Cardholder, stats: HolderStats | undefined, isBan
   const rel = relationshipLabel(holder);
   if (rel) parts.push(rel.toLowerCase());
   const closedOn = holder.effectiveClosedOn ?? holder.closedOn;
-  if (closedOn) parts.push(`closed ${formatDayMonthYear(closedOn)}`);
+  if (closedOn) parts.push(`closed ${formatDate(closedOn, 'full')}`);
   const count = holder.transactionCount ?? stats?.transactionCount ?? 0;
-  parts.push(`${plural(count, 'transaction', 'transactions')} kept`);
+  parts.push(`${formatCount(count, ['transaction', 'transactions'])} kept`);
   return parts.join(' · ');
 }
 
@@ -248,12 +235,12 @@ export function sharedLimitModel(account: CreditCard): SharedLimitModel {
   if (pool) {
     return {
       thisCard: null,
-      shared: `${pool.name} · ${formatRupees(pool.creditLimit)} · ${plural(pool.memberCount, 'card', 'cards')}`,
+      shared: `${pool.name} · ${formatMoney(pool.creditLimit)} · ${formatCount(pool.memberCount, ['card', 'cards'])}`,
     };
   }
   return {
     thisCard:
-      account.creditLimit != null ? `Own limit · ${formatRupees(account.creditLimit)}` : 'Not set',
+      account.creditLimit != null ? `Own limit · ${formatMoney(account.creditLimit)}` : 'Not set',
     shared: null,
   };
 }

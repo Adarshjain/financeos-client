@@ -1,5 +1,4 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import { plainAmount } from '@/features/loans/loanFormat';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto, InstallmentMatchSuggestion } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -17,7 +16,7 @@ export function differenceWords(paid: number, emi: number): string | null {
   if (!Number.isFinite(paid) || paid <= 0) return null;
   const diff = Math.round((paid - emi) * 100) / 100;
   if (diff === 0) return null;
-  return `₹${plainAmount(Math.abs(diff))} ${diff > 0 ? 'more' : 'less'} than EMI`;
+  return `${formatMoney(Math.abs(diff), { decimals: 'auto' })} ${diff > 0 ? 'more' : 'less'} than EMI`;
 }
 
 /** The bank debit the server found for one installment: the first (closest) candidate. */
@@ -32,7 +31,7 @@ export function foundDebit(
 /** `"SBI Home Loan EMI" · HDFC Bank Savings · 5 Oct · ₹39,052` */
 export function foundDebitLine(tx: Transaction, accountName: string): string {
   const text = tx.description || tx.sourcedDescription || 'Bank debit';
-  return `"${text}" · ${accountName} · ${formatDayMonth(tx.date)} · ₹${plainAmount(Math.abs(tx.amount))}`;
+  return `"${text}" · ${accountName} · ${formatDate(tx.date, 'list')} · ${formatMoney(Math.abs(tx.amount), { decimals: 'auto' })}`;
 }
 
 export interface PayValues {
@@ -65,5 +64,5 @@ export function payProblems(v: PayValues): PayProblem[] {
 
 /** The subtitle under the form title: `₹36,603 due 5 Oct · Home Loan · SBI MaxGain`. */
 export function payDescription(inst: InstallmentDto, loanName: string): string {
-  return `₹${plainAmount(inst.emi)} due ${formatDayMonth(inst.dueDate)} · ${loanName}`;
+  return `${formatMoney(inst.emi, { decimals: 'auto' })} due ${formatDate(inst.dueDate, 'list')} · ${loanName}`;
 }

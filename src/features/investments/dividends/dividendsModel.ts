@@ -1,10 +1,10 @@
-import { formatAmount, formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear as fyStartOf } from '@/features/loans/detail/financialYear';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { DividendFilters, DividendInstrumentTotal, DividendReceiptFilter } from '@/lib/investments.types';
 import type { Dividend, DividendReceiptStatus, DividendReceiptSummary, DividendSuggestion, DividendSummary, DividendType } from '@/lib/types';
 
-import { fyLabel, quantity, rupees, shortDate } from '../investmentsFormat';
+import { fyLabel } from '../investmentsFormat';
 import type { MatchReason, UnrecordedCredit } from './receiptTypes';
 
 // ---- URL state ---------------------------------------------------------------
@@ -240,17 +240,17 @@ export function dividendsFigures(
   return {
     fy: fy === undefined ? null : fyLabel(fy),
     declared: totals
-      ? { value: rupees(totals.gross), context: `${totals.count} ${totals.count === 1 ? 'payout' : 'payouts'}` }
+      ? { value: formatMoney(totals.gross), context: `${totals.count} ${totals.count === 1 ? 'payout' : 'payouts'}` }
       : { value: UNAVAILABLE, context: '' },
     received: receipts
       ? {
-          value: rupees((received?.receivedAmount ?? 0) + (untracked?.receivedAmount ?? 0)),
+          value: formatMoney((received?.receivedAmount ?? 0) + (untracked?.receivedAmount ?? 0)),
           context: matchedLine(received?.count ?? 0, untracked?.count ?? 0),
         }
       : { value: UNAVAILABLE, context: '' },
-    tds: totals ? { value: rupees(totals.tds), context: 'claim in ITR' } : { value: UNAVAILABLE, context: '' },
+    tds: totals ? { value: formatMoney(totals.tds), context: 'claim in ITR' } : { value: UNAVAILABLE, context: '' },
     notReceived: receipts
-      ? { value: rupees(open), context: notReceivedNote(notReceivedCounts(receipts), names), tone: open > 0 ? 'warning' : undefined }
+      ? { value: formatMoney(open), context: notReceivedNote(notReceivedCounts(receipts), names), tone: open > 0 ? 'warning' : undefined }
       : { value: UNAVAILABLE, context: undefined, tone: undefined },
   };
 }
@@ -274,14 +274,10 @@ export function dividendsTiles(f: DividendsFigures): DividendsTile[] {
 
 // ---- The list -------------------------------------------------------------------
 
-/** "110", "1,500", "1,020.50": a table figure, whole when it is whole. */
-export function plainAmount(value: number): string {
-  return formatAmount(value, Number.isInteger(value) ? 0 : 2);
-}
-
 /** "₹11", "₹5.50", "₹7.5025": a per-unit figure with the decimals it needs (at least two when not whole). */
 export function perUnitText(value: number): string {
-  return `₹${value.toLocaleString('en-IN', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 4 })}`;
+  if (Math.round(value * 100) / 100 === value) return formatMoney(value, { decimals: 'auto' });
+  return `₹${formatQuantity(value, 4)}`;
 }
 
 /** The units behind a payout: gross over the per-unit amount; null when either is missing. */
@@ -343,19 +339,19 @@ export function dividendListRow(d: Dividend): DividendListRow {
   const tds = Number(d.tds || 0);
   const perUnit = d.perUnit ? Number(d.perUnit) : null;
   const units = unitsOf(gross, perUnit);
-  const payDay = formatDayMonth(d.payDate);
+  const payDay = formatDate(d.payDate, 'list');
   return {
     id: d.id,
     title: d.symbol || d.instrumentName || 'Instrument',
-    payDate: shortDate(d.payDate),
+    payDate: formatDate(d.payDate, 'list'),
     payDay,
-    perUnit: perUnit ? formatAmount(perUnit, 2) : '—',
-    gross: plainAmount(gross),
-    tds: plainAmount(tds),
-    net: plainAmount(gross - tds),
+    perUnit: perUnit ? formatMoney(perUnit, { decimals: 'exact', symbol: false }) : '—',
+    gross: formatMoney(gross, { decimals: 'auto', symbol: false }),
+    tds: formatMoney(tds, { decimals: 'auto', symbol: false }),
+    net: formatMoney(gross - tds, { decimals: 'auto', symbol: false }),
     receipt: receiptWord(d.receiptStatus),
-    unitsLine: perUnit && units ? `${perUnitText(perUnit)} × ${quantity(units)}` : null,
-    tdsLine: tds > 0 ? `TDS ${rupees(tds)}` : null,
+    unitsLine: perUnit && units ? `${perUnitText(perUnit)} × ${formatQuantity(units)}` : null,
+    tdsLine: tds > 0 ? `TDS ${formatMoney(tds)}` : null,
     account: d.transaction?.accountName ?? null,
     canLink: !d.transaction && (d.receiptStatus === 'awaiting' || d.receiptStatus === 'overdue'),
     noBankNote: d.receiptStatus === 'unverifiable' ? `no statement covers ${payDay}` : null,
@@ -370,15 +366,15 @@ export function listTotals(
   rows: Dividend[],
   totalElements: number,
 ): { net: string; tds: string | null } | null {
-  if (!state.receipt) return totals ? { net: rupees(totals.net), tds: rupees(totals.tds) } : null;
+  if (!state.receipt) return totals ? { net: formatMoney(totals.net), tds: formatMoney(totals.tds) } : null;
   // A receipt filter narrows the list below what the summary covers: one page can be added up, a filtered total comes from the receipt buckets.
   if (totalElements <= rows.length) {
     const net = rows.reduce((s, d) => s + Number(d.amount || 0) - Number(d.tds || 0), 0);
     const tds = rows.reduce((s, d) => s + Number(d.tds || 0), 0);
-    return { net: rupees(net), tds: rupees(tds) };
+    return { net: formatMoney(net), tds: formatMoney(tds) };
   }
   const found = bucket(receipts, state.receipt);
-  return found ? { net: rupees(found.expectedNet), tds: null } : null;
+  return found ? { net: formatMoney(found.expectedNet), tds: null } : null;
 }
 
 /** "Total net ₹3,605 · TDS ₹370". */
@@ -435,7 +431,7 @@ export const REASON_LABELS: Record<MatchReason, string> = {
 /** One bank credit in the banner: its description, amount and day. */
 function creditPhrase(c: UnrecordedCredit): string {
   const t = c.transaction;
-  return `"${t.description || t.sourcedDescription || 'Transaction'}" ${rupees(Math.abs(t.amount))} on ${formatDayMonth(t.date)}`;
+  return `"${t.description || t.sourcedDescription || 'Transaction'}" ${formatMoney(Math.abs(t.amount))} on ${formatDate(t.date, 'list')}`;
 }
 
 /** The banner over the list: how many credits look like dividends and the first two, or null with none. */
@@ -460,7 +456,7 @@ export interface ByInstrumentRow {
 }
 
 export function byInstrumentRow(t: DividendInstrumentTotal): ByInstrumentRow {
-  return { id: t.instrumentId, title: t.symbol || t.instrumentName, net: rupees(t.net) };
+  return { id: t.instrumentId, title: t.symbol || t.instrumentName, net: formatMoney(t.net) };
 }
 
 // ---- Suggestions -----------------------------------------------------------------
@@ -472,13 +468,13 @@ export interface SuggestionRow {
 }
 
 /** "paid 5 Aug · 10 shares · ₹100"; a payout from an earlier year carries the year ("paid 28 Oct 25"). */
-export function suggestionRow(s: DividendSuggestion, thisYear: string): SuggestionRow {
+export function suggestionRow(s: DividendSuggestion): SuggestionRow {
   const units = Number(s.qtyHeld);
-  const date = s.exDate.slice(0, 4) === thisYear ? formatDayMonth(s.exDate) : shortDate(s.exDate);
+  const date = formatDate(s.exDate, 'list');
   return {
     key: `${s.holdingId}-${s.exDate}`,
     title: `${s.symbol} · ${perUnitText(Number(s.perUnit))} / share`,
-    line: `paid ${date} · ${quantity(units)} ${units === 1 ? 'share' : 'shares'} · ${rupees(Number(s.estimatedAmount))}`,
+    line: `paid ${date} · ${formatQuantity(units)} ${units === 1 ? 'share' : 'shares'} · ${formatMoney(Number(s.estimatedAmount))}`,
   };
 }
 

@@ -1,5 +1,4 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import { rupeesExact } from '@/features/lendings/settle';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 
 import { type ObligationItem, obligationTitle, sumAmounts } from './obligations';
 
@@ -77,7 +76,7 @@ export function monthSummary(monthItems: ObligationItem[]): string {
   const withAmount = monthItems.some((i) => i.amount != null);
   const overdue = monthItems.filter((i) => i.status === 'overdue').length;
   return [
-    withAmount ? `${rupeesExact(sumAmounts(monthItems))} due` : null,
+    withAmount ? `${formatMoney(sumAmounts(monthItems), { decimals: 'auto' })} due` : null,
     overdue > 0 ? `${overdue} overdue` : null,
   ]
     .filter(Boolean)
@@ -87,20 +86,18 @@ export function monthSummary(monthItems: ObligationItem[]): string {
 /** "Tue 13 Oct". */
 export function dayTitle(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
-  return `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${formatDayMonth(iso)}`;
+  return `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${formatDate(iso, 'list')}`;
 }
 
 /** "2 items · ₹51,440" (the total only when a row carries an amount). */
 export function daySubtitle(dayItems: ObligationItem[]): string {
-  const total = dayItems.some((i) => i.amount != null) ? rupeesExact(sumAmounts(dayItems)) : null;
-  return [`${dayItems.length} item${dayItems.length === 1 ? '' : 's'}`, total].filter(Boolean).join(' · ');
+  const total = dayItems.some((i) => i.amount != null) ? formatMoney(sumAmounts(dayItems), { decimals: 'auto' }) : null;
+  return [formatCount(dayItems.length, ['item', 'items']), total].filter(Boolean).join(' · ');
 }
 
 /** "₹36.6K", "₹12K", "₹1.05L": the amount of a chip. */
 export function shortAmount(value: number): string {
-  if (value >= 1e5) return `₹${Number((value / 1e5).toFixed(2))}L`;
-  if (value >= 1e3) return `₹${Number((value / 1e3).toFixed(1))}K`;
-  return `₹${Math.round(value)}`;
+  return formatMoney(value, { compact: 'k' });
 }
 
 const CHIP_NAME_MAX = 12;

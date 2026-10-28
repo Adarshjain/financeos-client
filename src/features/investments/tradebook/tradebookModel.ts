@@ -1,13 +1,12 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear } from '@/features/loans/detail/financialYear';
 import { DS_PREFIX } from '@/features/shell/routes';
-import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatDateTime, formatMoney, formatQuantity } from '@/lib/format';
 import type { TradesQuery } from '@/lib/investments.types';
 import type { JobResponse } from '@/lib/jobs.types';
 import type { ImportCommitResult, InvestmentTransactionResponse } from '@/lib/types';
 
-import { fyLabel, plainPrice, plainRupees, quantity, shortDate, unitPrice } from '../investmentsFormat';
+import { fyLabel } from '../investmentsFormat';
 
 /** The Tradebook page's own address (always the Dinero route, whatever the tab links point at). */
 export const TRADEBOOK_HREF = `${DS_PREFIX}/investments/tradebook`;
@@ -124,7 +123,7 @@ export interface TradebookRow {
 
 /** "89.32" or "710": a unit price with no trailing ".00". */
 function looseUnitPrice(price: number): string {
-  return unitPrice(price).replace(/\.00$/, '');
+  return formatMoney(price, { decimals: 'auto' });
 }
 
 export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {
@@ -137,19 +136,19 @@ export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {
   return {
     id: t.id,
     raw: t,
-    date: shortDate(t.tradeDate),
+    date: formatDate(t.tradeDate, 'list'),
     title: t.instrument.symbol || t.instrument.name,
     broker: t.brokerName,
     side,
     settlement,
-    quantity: quantity(qty),
-    pricePlain: plainPrice(price),
-    valuePlain: plainRupees(qty * price),
-    value: `₹${plainRupees(qty * price)}`,
-    chargesPlain: charges > 0 ? plainPrice(charges) : '0',
+    quantity: formatQuantity(qty),
+    pricePlain: formatMoney(price, { decimals: 'exact', symbol: false }),
+    valuePlain: formatMoney(qty * price, { symbol: false }),
+    value: formatMoney(qty * price),
+    chargesPlain: charges > 0 ? formatMoney(charges, { decimals: 'exact', symbol: false }) : '0',
     sub: {
-      date: formatDayMonth(t.tradeDate),
-      position: `${quantity(qty)}${fund ? ' units' : ''} @ ${looseUnitPrice(price)}`,
+      date: formatDate(t.tradeDate, 'list'),
+      position: `${formatQuantity(qty)}${fund ? ' units' : ''} @ ${looseUnitPrice(price)}`,
     },
   };
 }
@@ -162,7 +161,7 @@ export function subLineText(row: TradebookRow): string {
 
 /** "TATAMOTORS · 1 Oct 26 sell": what the delete confirmation names. */
 export function tradeLabel(t: InvestmentTransactionResponse): string {
-  return `${t.instrument.symbol || t.instrument.name} · ${shortDate(t.tradeDate)} ${t.type}`;
+  return `${t.instrument.symbol || t.instrument.name} · ${formatDate(t.tradeDate, 'list')} ${t.type}`;
 }
 
 // ---- Last import / last reconcile line ---------------------------------------------
@@ -173,23 +172,10 @@ export interface TradebookJobLine {
   jobId: string;
 }
 
-/** "13 Oct, 11:02 am" in the app's zone (12-hour). */
-export function jobTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const parts = new Intl.DateTimeFormat('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: 'numeric',
-    month: 'short',
-  }).formatToParts(d);
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${get('day')} ${get('month')}, ${clock12(d)}`;
-}
-
 /** The line for the newest job of a kind; null when none ran. The trade count shows for a finished import. */
 export function jobLine(label: string, job: JobResponse | null, withCount: boolean): TradebookJobLine | null {
   if (!job) return null;
-  const at = jobTime(job.finishedAt ?? job.createdAt);
+  const at = formatDateTime(job.finishedAt ?? job.createdAt);
   const committed = withCount && job.status === 'SUCCEEDED' ? (job.result as ImportCommitResult | null | undefined)?.committed : undefined;
   const text = [`${label} ${at}`.trim(), committed != null ? `${committed} ${committed === 1 ? 'trade' : 'trades'}` : null]
     .filter(Boolean)
@@ -277,13 +263,6 @@ export function tradeTotals(side: TradeSide, qtyText: string, priceTextValue: st
   const value = num(qtyText) * num(priceTextValue);
   const total = chargesTotal(charges);
   return { value, charges: total, total: side === 'buy' ? value + total : Math.max(0, value - total) };
-}
-
-/** "₹30,254" for a whole amount, "₹35,457.90" when it has paise: the form's summary figures. */
-export function exactRupees(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  const hasPaise = Math.round(rounded * 100) % 100 !== 0;
-  return `₹${rounded.toLocaleString('en-IN', { minimumFractionDigits: hasPaise ? 2 : 0, maximumFractionDigits: 2 })}`;
 }
 
 export interface TradeFormInput {

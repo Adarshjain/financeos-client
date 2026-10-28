@@ -8,7 +8,7 @@ A word, a middle dot (`·`) between words, never a pill. Colour is never the onl
 ## Props
 
 ### StatusWord
-- `tone?: 'neutral' | 'info' | 'warning' | 'success'`: semantic colour (default `'neutral'`).
+- `tone?: 'neutral' | 'info' | 'warning' | 'success' | 'danger'`: semantic colour (default `'neutral'`).
 - `icon?: IconName`: optional icon glyph rendered before the text.
 
 ### StatusWords
@@ -17,7 +17,7 @@ A word, a middle dot (`·`) between words, never a pill. Colour is never the onl
 - `separator?: React.ReactNode`: separator element between words (default `' · '`).
 
 ## Variants
-- Tones: `neutral` (grey), `info` (blue), `warning` (amber), `success` (green).
+- Tones: `neutral` (grey), `info` (blue), `warning` (amber), `success` (green), `danger` (red, bold).
 
 ## Built from
 - `Icon`

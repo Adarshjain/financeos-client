@@ -7,7 +7,7 @@ import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
-import { formatCount } from '../utils';
+import { capCount } from '../utils';
 
 export type FilterChipVariant =
   | 'outline'
@@ -107,7 +107,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     const countNode =
       count !== undefined && count !== null ? (
         <Badge variant="solid" shape="rounded" size="sm">
-          {formatCount(count)}
+          {capCount(count)}
         </Badge>
       ) : null;
 

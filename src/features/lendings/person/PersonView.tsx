@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds';
-import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { formatDate } from '@/lib/format';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
@@ -108,7 +108,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
             </div>
             <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <ExpectedReturnCard
-                date={cp.expectedReturnDate ? formatDayMonthYear(cp.expectedReturnDate) : null}
+                date={cp.expectedReturnDate ? formatDate(cp.expectedReturnDate, 'full') : null}
                 canExport={hasEntries}
                 onExport={() => setExporting(true)}
               />

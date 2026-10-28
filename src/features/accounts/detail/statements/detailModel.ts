@@ -1,7 +1,6 @@
-import { plural } from '@/features/accounts/detail/overview/dates';
-import { formatAmount, formatDayMonth, formatDayMonthYear, formatRupees } from '@/features/accounts/list/accountsList';
 import { deletionImpactItems, deletionNote } from '@/features/accounts/statements/deletionImpact';
 import type { CardBillResponse, Schemas } from '@/lib/api/types';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 
 import { signedRupees, statementDate } from './listModel';
 
@@ -18,6 +17,8 @@ export interface LineRowModel {
   date: string;
   description: string;
   amount: string;
+  /** The line's amount as a number, for the Amount figure. */
+  value: number;
   credit: boolean;
   /** "1", "2": the line's position in the statement; "" when the server sent none. */
   index: string;
@@ -84,16 +85,17 @@ const REVIEW: Record<string, { label: string; tone: 'success' | 'warning' | 'inf
 export function buildLineRow(line: StatementDetailData['lines'][number]): LineRowModel {
   const linked = line.origin !== 'created';
   const credit = line.type === 'CREDIT';
-  const day = formatDayMonth(line.date);
+  const day = formatDate(line.date, 'list');
   const review = (line.reviewType && REVIEW[line.reviewType]) || null;
   const chain = line.chainValid == null ? null : line.chainValid ? 'valid' : 'broken';
-  const balanceAfter = line.balanceAfter == null ? '—' : formatRupees(line.balanceAfter);
+  const balanceAfter = line.balanceAfter == null ? '—' : formatMoney(line.balanceAfter, { decimals: 'auto' });
   const how = credit ? 'credit' : linked ? 'linked to transaction' : 'created from this statement';
   return {
     id: line.transactionId,
     date: day,
     description: line.description ?? '',
-    amount: `${credit ? '+' : ''}${formatAmount(line.amount)}`,
+    amount: `${credit ? '+' : ''}${formatMoney(line.amount, { decimals: 'exact', symbol: false })}`,
+    value: line.amount,
     index: line.lineIndex == null ? '' : String(line.lineIndex + 1),
     review,
     balanceAfter,
@@ -110,7 +112,7 @@ export function buildDetails(detail: StatementDetailData, isCard: boolean): Stat
   const out: StatStat[] = [];
   if (isCard && card) {
     out.push(
-      { label: 'Due date', value: card.paymentDueDate ? formatDayMonthYear(card.paymentDueDate) : '—' },
+      { label: 'Due date', value: card.paymentDueDate ? formatDate(card.paymentDueDate, 'full') : '—' },
       { label: 'Credit limit', value: money(card.creditLimit) },
       { label: 'Available credit', value: money(card.availableCreditLimit) },
       { label: 'Finance charges', value: money(card.financeCharges) },
@@ -120,11 +122,11 @@ export function buildDetails(detail: StatementDetailData, isCard: boolean): Stat
       { label: 'Total purchases', value: money(card.totalPurchases) },
       {
         label: 'Reward points balance',
-        value: card.rewardPointsBalance == null ? '—' : card.rewardPointsBalance.toLocaleString('en-IN'),
+        value: card.rewardPointsBalance == null ? '—' : formatCount(card.rewardPointsBalance),
       },
       {
         label: 'Points earned',
-        value: card.rewardPointsEarned == null ? '—' : `+${card.rewardPointsEarned.toLocaleString('en-IN')}`,
+        value: card.rewardPointsEarned == null ? '—' : `+${formatCount(card.rewardPointsEarned)}`,
       }
     );
   }
@@ -132,7 +134,7 @@ export function buildDetails(detail: StatementDetailData, isCard: boolean): Stat
     { label: 'Parse mode', value: detail.parseMode || 'Standard' },
     {
       label: 'Chain validation',
-      value: detail.chainValidationPct == null ? 'N/A' : `${detail.chainValidationPct.toFixed(1)}% valid`,
+      value: detail.chainValidationPct == null ? 'N/A' : `${formatPercent(detail.chainValidationPct)} valid`,
     },
     { label: 'Ingestion source', value: detail.source === 'gmail' ? 'Gmail' : 'File upload' }
   );
@@ -153,17 +155,17 @@ export function buildDetailModel(
   const end = statementDate({ periodEnd: detail.periodEnd, createdAt: detail.createdAt });
   const subtitle: string[] = [];
   if (detail.periodStart && detail.periodEnd) {
-    subtitle.push(`Period ${formatDayMonth(detail.periodStart)} → ${formatDayMonth(detail.periodEnd)}`);
+    subtitle.push(`Period ${formatDate(detail.periodStart, 'list')} → ${formatDate(detail.periodEnd, 'list')}`);
   }
   if (detail.source === 'file_upload' && detail.sourceRef) subtitle.push(detail.sourceRef);
-  subtitle.push(`uploaded ${formatDayMonth(detail.createdAt.slice(0, 10))}`);
+  subtitle.push(`uploaded ${formatDate(detail.createdAt.slice(0, 10), 'list')}`);
 
   const card = detail.cardDetails;
   const stats: StatStat[] = isCard
     ? [
         { label: 'Total due', value: money(card?.totalAmountDue ?? bill?.totalAmountDue) },
         { label: 'Minimum', value: money(card?.minimumAmountDue ?? bill?.minimumAmountDue) },
-        { label: 'Paid so far', value: bill ? formatRupees(bill.paidAmount ?? 0) : '—' },
+        { label: 'Paid so far', value: bill ? formatMoney(bill.paidAmount ?? 0, { decimals: 'auto' }) : '—' },
       ]
     : [
         { label: 'Opening', value: money(detail.openingBalance) },
@@ -175,13 +177,13 @@ export function buildDetailModel(
   const missing = isCard ? (detail.missingDetails ?? []) : [];
   return {
     statementId: detail.id,
-    periodEndLabel: formatDayMonthYear(end),
-    title: `Statement · ${formatDayMonthYear(end)}`,
+    periodEndLabel: formatDate(end, 'full'),
+    title: `Statement · ${formatDate(end, 'full')}`,
     subtitle,
     checksumOk: detail.checksumOk ?? null,
     stats,
     details: buildDetails(detail, isCard),
-    skippedBanner: skipped > 0 ? `${plural(skipped, 'line was', 'lines were')} skipped.` : null,
+    skippedBanner: skipped > 0 ? `${formatCount(skipped, ['line was', 'lines were'])} skipped.` : null,
     lines: detail.lines.map(buildLineRow),
     ledgerLine: ledgerLine(detail.closingBalance, detail.matchesLedger, detail.ledgerBalanceAtClose),
     isCard,

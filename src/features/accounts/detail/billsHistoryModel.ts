@@ -1,6 +1,6 @@
-import { formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import { billStatusLabel } from '@/features/bills/bills.helpers';
 import type { CardBillResponse } from '@/lib/api/types';
+import { formatDate,formatMoney } from '@/lib/format';
 
 export type BillBadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -31,7 +31,7 @@ export function paidTiming(
 }
 
 function due(bill: CardBillResponse): string | null {
-  return bill.paymentDueDate ? `Due ${formatDayMonth(bill.paymentDueDate)}` : null;
+  return bill.paymentDueDate ? `Due ${formatDate(bill.paymentDueDate, 'list')}` : null;
 }
 
 /** One statement row: "{d MMM} statement" with the bill's caption, status badge and amount. */
@@ -39,19 +39,19 @@ export function buildBillRow(entry: BillEntry): BillRowModel {
   const { bill } = entry;
   const row: BillRowModel = {
     key: entry.statementId,
-    title: `${formatDayMonth(entry.periodEnd)} statement`,
+    title: `${formatDate(entry.periodEnd, 'list')} statement`,
     caption: null,
     badge: null,
     amount: null,
     muted: false,
   };
   if (!bill) return row;
-  row.amount = bill.totalAmountDue != null ? formatRupees(bill.totalAmountDue) : null;
+  row.amount = bill.totalAmountDue != null ? formatMoney(bill.totalAmountDue) : null;
   switch (bill.status) {
     case 'PAID': {
       const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);
       row.caption = bill.paidMarkedOn
-        ? `Paid ${formatDayMonth(bill.paidMarkedOn)}${timing ? ` · ${timing}` : ''}`
+        ? `Paid ${formatDate(bill.paidMarkedOn, 'list')}${timing ? ` · ${timing}` : ''}`
         : 'Paid';
       row.badge = { tone: 'success', label: 'Paid' };
       row.muted = true;

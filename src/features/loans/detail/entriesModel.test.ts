@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { deleteEntryCopy, entriesCount, entryRows } from './entriesModel';
 import { chargeFixture, eventFixture } from './loanDetail.fixtures';
+
+pinClock();
 
 describe('entryRows', () => {
   const events = [
@@ -22,25 +26,25 @@ describe('entryRows', () => {
     const rows = entryRows(events, charges);
     expect(rows.find((r) => r.id === 'e2')).toMatchObject({
       title: 'Rate change · 8.25%',
-      subtitle: '1 Aug 26 · reduce EMI',
+      subtitle: '1 Aug · reduce EMI',
       amount: null,
     });
     expect(rows.find((r) => r.id === 'e1')).toMatchObject({
       title: 'Prepayment',
-      subtitle: '1 Jun 26 · reduce tenure',
+      subtitle: '1 Jun · reduce tenure',
       amount: '₹2,00,000',
     });
-    expect(rows.find((r) => r.id === 'e3')).toMatchObject({ title: 'Foreclosure', subtitle: '1 Dec 26', amount: '₹100' });
+    expect(rows.find((r) => r.id === 'e3')).toMatchObject({ title: 'Foreclosure', subtitle: '1 Dec', amount: '₹100' });
   });
 
   it('draws a charge with its note', () => {
     const rows = entryRows(events, charges);
     expect(rows.find((r) => r.id === 'c1')).toMatchObject({
       title: 'Insurance premium',
-      subtitle: '1 Aug 25 · SBI Life RiNn Raksha',
+      subtitle: '1 Aug 2025 · SBI Life RiNn Raksha',
       amount: '₹24,500',
     });
-    expect(rows.find((r) => r.id === 'c2')?.subtitle).toBe('1 Sep 25');
+    expect(rows.find((r) => r.id === 'c2')?.subtitle).toBe('1 Sep 2025');
   });
 
   it('counts the entries in words', () => {
@@ -55,7 +59,7 @@ describe('deleteEntryCopy', () => {
     const [row] = entryRows([eventFixture({ id: 'e1' })], []);
     const copy = deleteEntryCopy(row);
     expect(copy.title).toBe('Delete event');
-    expect(copy.description).toBe('Removes Prepayment, 1 Jun 26 · reduce tenure.');
+    expect(copy.description).toBe('Removes Prepayment, 1 Jun · reduce tenure.');
     expect(copy.impact).toContain('The schedule is calculated again without it.');
     expect(copy.impact.join(' ')).toContain('A linked bank transaction stays');
   });
@@ -64,7 +68,7 @@ describe('deleteEntryCopy', () => {
     const [row] = entryRows([], [chargeFixture()]);
     const copy = deleteEntryCopy(row);
     expect(copy.title).toBe('Delete charge');
-    expect(copy.description).toBe('Removes Insurance premium of ₹24,500, 1 Aug 25 · SBI Life RiNn Raksha.');
+    expect(copy.description).toBe('Removes Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha.');
     expect(copy.impact.join(' ')).toContain('A linked bank transaction stays');
   });
 });

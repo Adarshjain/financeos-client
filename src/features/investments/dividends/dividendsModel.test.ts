@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { awaiting, dividend, instrumentTotal, receipts, suggestion, summary, unrecordedCredit } from './dividends.fixtures';
 import {
   byInstrumentRow,
@@ -18,7 +20,6 @@ import {
   notReceivedNote,
   parseDividendsUrl,
   perUnitText,
-  plainAmount,
   receiptNoteOf,
   receiptVariance,
   receiptWord,
@@ -29,6 +30,8 @@ import {
   unitsOf,
   unrecordedBanner,
 } from './dividendsModel';
+
+pinClock();
 
 const DEFAULTS = parseDividendsUrl({});
 const UUID = '5f0bb705-96f2-4c7e-89d8-88cece3fd79b';
@@ -150,7 +153,7 @@ describe('a row of the list', () => {
     const row = dividendListRow(dividend());
     expect(row).toMatchObject({
       title: 'HDFCBANK',
-      payDate: '11 Jul 26',
+      payDate: '11 Jul',
       payDay: '11 Jul',
       perUnit: '22.00',
       gross: '880',
@@ -188,8 +191,6 @@ describe('a row of the list', () => {
   });
 
   it('formats figures and units', () => {
-    expect(plainAmount(1500)).toBe('1,500');
-    expect(plainAmount(1020.5)).toBe('1,020.50');
     expect(perUnitText(5.5)).toBe('₹5.50');
     expect(perUnitText(11)).toBe('₹11');
     expect(perUnitText(7.5025)).toBe('₹7.5025');
@@ -265,9 +266,9 @@ describe('the cards', () => {
   });
 
   it('words a suggestion, with the year only when it is not this year', () => {
-    expect(suggestionRow(suggestion(), '2026')).toEqual({ key: 'h2-2026-08-05', title: 'TCS · ₹10 / share', line: 'paid 5 Aug · 10 shares · ₹100' });
-    expect(suggestionRow(suggestion({ exDate: '2025-10-28', perUnit: 21, qtyHeld: 60, estimatedAmount: 1260 }), '2026').line).toBe('paid 28 Oct 25 · 60 shares · ₹1,260');
-    expect(suggestionRow(suggestion({ qtyHeld: 1 }), '2026').line).toContain('1 share ·');
+    expect(suggestionRow(suggestion())).toEqual({ key: 'h2-2026-08-05', title: 'TCS · ₹10 / share', line: 'paid 5 Aug · 10 shares · ₹100' });
+    expect(suggestionRow(suggestion({ exDate: '2025-10-28', perUnit: 21, qtyHeld: 60, estimatedAmount: 1260 })).line).toBe('paid 28 Oct 2025 · 60 shares · ₹1,260');
+    expect(suggestionRow(suggestion({ qtyHeld: 1 })).line).toContain('1 share ·');
   });
 
   it('rounds typed numbers to the places asked and drops what is not a number', () => {

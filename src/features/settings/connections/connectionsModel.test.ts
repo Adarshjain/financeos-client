@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { authFailedLine, type GmailConnection, mailboxStatusLine, oauthReturnFrom, senderTitle } from './connectionsModel';
+
+pinClock();
 
 const conn = (over: Partial<GmailConnection> = {}) =>
   ({ id: 'c1', email: 'a@b.test', isPrimary: true, needsReconnect: false, ...over }) as GmailConnection;
@@ -15,8 +19,8 @@ describe('connectionsModel', () => {
 
   it('builds the status line from whatever dates are known', () => {
     expect(mailboxStatusLine(conn({ connectedAt: '2026-06-15T10:00:00Z' }))).toBe('Connected 15 Jun');
-    expect(mailboxStatusLine(conn({ connectedAt: '2026-06-15T10:00:00Z', lastSyncedAt: new Date().toISOString() }))).toMatch(
-      /^Connected 15 Jun · last sync (now|\d+ seconds? ago)$/,
+    expect(mailboxStatusLine(conn({ connectedAt: '2026-06-15T10:00:00Z', lastSyncedAt: '2026-06-16T10:00:00Z' }))).toBe(
+      'Connected 15 Jun · last sync 16 Jun, 3:30 pm',
     );
     expect(mailboxStatusLine(conn())).toBe('');
   });

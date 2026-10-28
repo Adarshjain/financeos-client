@@ -30,7 +30,7 @@ describe('CapHeadroomView', () => {
     renderWithQuery(<CapHeadroomView {...view(caps)} />);
     const [, millennia, atlas] = screen.getAllByTestId('cap-row');
     expect(millennia).toHaveTextContent('Millennia · Cashback · Asha');
-    expect(millennia).toHaveTextContent('₹900.00 of ₹1,000.00 · resets after 31 Oct');
+    expect(millennia).toHaveTextContent('₹900 of ₹1,000 · resets after 31 Oct');
     expect(atlas).toHaveTextContent('Atlas · Travel');
     expect(atlas).not.toHaveTextContent('All cardholders');
     expect(atlas).toHaveTextContent('4,000 pts of 10,000 pts');

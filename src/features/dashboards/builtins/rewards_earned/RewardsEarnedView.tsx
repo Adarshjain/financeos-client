@@ -10,9 +10,9 @@ import React from 'react';
 import { Button, concealMoney, EmptyState, ListRow, Text } from '@/components/ds';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
 import { widgetTitle } from '@/lib/dashboards.helpers';
+import { formatCount, formatMoney } from '@/lib/format';
 import { isPivotTableData } from '@/lib/reports.helpers';
 
-import { formatCount, formatRupees } from '../builtin.helpers';
 import { BuiltinNote, BuiltinPager } from '../BuiltinParts';
 import type { TemplateViewProps } from '../types';
 import { buildRewardsEarned, nativeText, type RewardCardRow, rewardsRequest } from './rewardsEarned.model';
@@ -31,12 +31,12 @@ function CardFigure({ row, onOpen }: { row: RewardCardRow; onOpen: () => void })
   }
   return (
     <Text variant="body-strong">
-      {formatCount(row.points)} pts
+      {formatCount(row.points, 'pts')}
       {row.cash > 0 ? (
         <>
           {' + '}
           <Button variant="link" onClick={onOpen}>
-            {concealMoney(formatRupees(row.cash))}
+            {concealMoney(formatMoney(row.cash))}
           </Button>
         </>
       ) : null}
@@ -64,8 +64,8 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
     <div data-testid="rewards-earned-view" aria-busy={loading || undefined}>
       <div className="flex flex-col gap-space-2 pb-space-8">
         <Text variant="figure" as="div">
-          <Button variant="link" onClick={() => setDrill({ title: `${title} · ${formatRupees(model.totalInr)}`, cardId: null })}>
-            {concealMoney(formatRupees(model.totalInr))}
+          <Button variant="link" onClick={() => setDrill({ title: `${title} · ${formatMoney(model.totalInr)}`, cardId: null })}>
+            {concealMoney(formatMoney(model.totalInr))}
           </Button>
         </Text>
         {model.unvaluedPoints > 0 ? (
@@ -81,7 +81,7 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
           borderTop={false}
           className="border-l-0 px-0"
           title={row.card}
-          trailing={<CardFigure row={row} onOpen={() => setDrill({ title: `${title} · ${row.card} · ${formatRupees(row.cash + row.pointsValue)}`, cardId: row.cardId })} />}
+          trailing={<CardFigure row={row} onOpen={() => setDrill({ title: `${title} · ${row.card} · ${formatMoney(row.cash + row.pointsValue)}`, cardId: row.cardId })} />}
         />
       ))}
       <BuiltinPager page={data.page} unit="card" onPageChange={onPageChange} />

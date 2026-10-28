@@ -1,9 +1,8 @@
 import type { Broker } from '@/lib/account.types';
 import { amountExpressionValue } from '@/lib/amountExpression';
+import { formatMoney } from '@/lib/format';
 import type { CreateFnoTradeRequest, FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
 
-import { plainPrice } from '../investmentsFormat';
-import { trimmedAmount } from './fnoModel';
 
 export interface FnoTradeForm {
   brokerAccountId: string;
@@ -126,8 +125,7 @@ export interface NetModel {
 /** "+₹5,625" / "−₹1,339.50": a signed rupee figure; `exact` keeps two decimals. */
 function signed(value: number, exact = false): string {
   if (Math.round(value * 100) === 0) return '₹0';
-  const body = `₹${exact ? plainPrice(Math.abs(value)) : trimmedAmount(Math.abs(value))}`;
-  return `${value > 0 ? '+' : '\u2212'}${body}`;
+  return formatMoney(value, { sign: 'always', decimals: exact ? 'exact' : 'auto' });
 }
 
 /** Gross, charges and net from the amounts typed so far; null until a buy or sell value is there. */
@@ -139,7 +137,7 @@ export function netModel(form: FnoTradeForm): NetModel | null {
   const gross = sell - buy;
   const net = Math.round((gross - charges) * 100) / 100;
   return {
-    line: `Gross ${signed(gross)} · charges ₹${plainPrice(charges)}`,
+    line: `Gross ${signed(gross)} · charges ${formatMoney(charges, { decimals: 'exact' })}`,
     net: `Net ${signed(net, true)}`,
     tone: net > 0 ? 'positive' : net < 0 ? 'danger' : undefined,
   };

@@ -33,10 +33,16 @@ export function LoanHeader({ header, canPrepay, closed, onPrepay, onEdit, onClos
       <div className="flex flex-col gap-space-8 desk:flex-row desk:items-center desk:gap-space-16">
         {next ? (
           <div className="flex flex-col gap-space-2">
-            <Text variant="overline" tone="ink-3" as="div">
-              {next.eyebrow}
-            </Text>
-            <Text variant="figure" tone={next.overdue ? 'danger' : 'ink'} as="div">
+            {next.overdue ? (
+              <div>
+                <Badge tone="danger">{next.eyebrow}</Badge>
+              </div>
+            ) : (
+              <Text variant="overline" tone="ink-3" as="div">
+                {next.eyebrow}
+              </Text>
+            )}
+            <Text variant="figure" as="div">
               {next.amount}
             </Text>
             <Text variant="label" tone="ink-3" as="div">

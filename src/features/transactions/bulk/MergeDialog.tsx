@@ -2,9 +2,10 @@
 
 import React from 'react';
 
-import { Badge, Banner, Card, Dialog, DialogBody, DialogContent, ListField, Text } from '@/components/ds';
-import { formatAmount, formatDayMonthYear } from '@/features/accounts/list/accountsList';
+import { Badge, Banner, Card, Dialog, DialogBody, DialogContent } from '@/components/ds';
+import { TransactionRow } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { computeDefaultKeepId, mergeChecks, mergeSourceLabel, mergeWarning } from './mergeModel';
@@ -19,7 +20,11 @@ export interface MergeDialogProps {
   onMerged: (deletedId: string) => void;
 }
 
-const money = (t: Transaction) => `${t.amount > 0 ? '+' : ''}₹${formatAmount(Math.abs(t.amount), 2)}`;
+/** The amount as the Transactions list writes it: "+45.00" for a credit, "7,430.00" for a debit. */
+const amountOf = (t: Transaction) => {
+  const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
+  return t.amount > 0 ? `+${amount}` : amount;
+};
 
 /**
  * Merge transactions (boards D/P-transactions-merge): two cards, tap the one to keep. The keeper starts as the
@@ -41,22 +46,35 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
 
   const card = (t: Transaction) => {
     const kept = keepId === t.id;
-    const plastic = t.cardLast4 ? ` ••${t.cardLast4}` : '';
     return (
-      <Card selected={kept} asChild>
-        <button type="button" className="flex min-w-0 flex-col gap-space-4 p-space-12 text-left" onClick={() => setKeepId(t.id)}>
-          <span className="flex items-center justify-between gap-space-8">
-            <Text as="span" variant="body-strong" className="min-w-0 break-words">
-              {t.description || t.sourcedDescription || '—'}
-            </Text>
+      <Card selected={kept}>
+        <div className="flex min-w-0 flex-col gap-space-4 p-space-12 text-left">
+          <span className="flex">
             <Badge tone={kept ? 'success' : 'danger'}>{kept ? 'Keep' : 'Delete · merge in'}</Badge>
           </span>
-          <ListField label="Amount" value={money(t)} />
-          <ListField label="Date" value={formatDayMonthYear(t.date)} />
-          <ListField label="Account" value={`${accountName(t.accountId)}${plastic}`} />
-          <ListField label="Category" value={t.categories?.map((c) => c.name).join(', ') || '—'} />
-          <ListField label="Source" value={mergeSourceLabel(t.source)} />
-        </button>
+          <TransactionRow
+            role="radio"
+            aria-checked={kept}
+            onClick={() => setKeepId(t.id)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              setKeepId(t.id);
+            }}
+            compact
+            borderTop={false}
+            className="bg-transparent px-0 hover:bg-transparent"
+            description={t.description || t.sourcedDescription || '—'}
+            date={formatDate(t.date, 'list')}
+            account={accountName(t.accountId)}
+            plastic={t.cardLast4 ? `••${t.cardLast4}` : undefined}
+            categories={t.categories?.map((c) => c.name) ?? []}
+            unsetCategoryLabel="Uncategorized"
+            provenance={mergeSourceLabel(t.source)}
+            amount={amountOf(t)}
+            isCredit={t.amount > 0}
+          />
+        </div>
       </Card>
     );
   };

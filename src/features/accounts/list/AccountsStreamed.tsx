@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 
-import { Badge, KpiTile, Skeleton, Text } from '@/components/ds';
+import { KpiTile, Skeleton, StatusWord, Text } from '@/components/ds';
 import type { CardBillResponse } from '@/lib/api/types';
 
 import {
@@ -68,7 +68,7 @@ async function NextBill({
   today,
 }: Pick<AccountsListData, 'bills'> & { id: string; today: string }) {
   const badge = nextBillBadge(await billFor(bills, id), today);
-  return badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : null;
+  return badge ? <StatusWord tone={badge.tone}>{badge.label}</StatusWord> : null;
 }
 
 async function Rewards({

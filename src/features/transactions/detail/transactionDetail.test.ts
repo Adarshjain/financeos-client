@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   balanceAfterWords,
@@ -14,6 +15,8 @@ import {
   sourceWords,
   statusItems,
 } from './transactionDetail';
+
+pinClock();
 
 const txn = (over: Partial<Transaction> = {}): Transaction =>
   ({
@@ -88,14 +91,14 @@ describe('field words', () => {
   });
 
   it('puts the minus before the rupee sign on a negative balance', () => {
-    expect(balanceAfterWords(txn({ balance: -208100 }))).toBe('-₹2,08,100 after');
+    expect(balanceAfterWords(txn({ balance: -208100 }))).toBe('−₹2,08,100 after');
   });
 
   it('writes only the reward fields that are set, and nothing when none is', () => {
     expect(rewardsWords(txn())).toBeNull();
     expect(
       rewardsWords(txn({ settlementDate: '2026-10-14', channel: 'UPI', instantDiscount: 120, convenienceFee: 0, isEmi: true })),
-    ).toBe('Settled 14 Oct · UPI · ₹120.00 discount · No fee · EMI');
+    ).toBe('Settled 14 Oct · UPI · ₹120 discount · No fee · EMI');
   });
 });
 
@@ -118,7 +121,7 @@ describe('linkRows', () => {
       kind: 'transaction',
       title: 'BigBasket refund',
       otherId: 't2',
-      subtitle: 'Refund · +₹240.00 · 14 Oct · HDFC Regalia Gold',
+      subtitle: 'Refund · +₹240 · 14 Oct · HDFC Regalia Gold',
     });
   });
 
@@ -142,7 +145,7 @@ describe('linkRows', () => {
       ['/loans/loan1', null],
       ['/investments/epf', 'now'],
     ]);
-    expect(rows[1]).toMatchObject({ subtitle: '₹1,200.00' });
+    expect(rows[1]).toMatchObject({ subtitle: '₹1,200' });
   });
 });
 
@@ -182,6 +185,6 @@ describe('bankBalanceWords', () => {
   });
 
   it('keeps the ledger sign on a card (owed is negative)', () => {
-    expect(bankBalanceWords(txn({ balance: -5000, bankBalance: -4500.25 }))).toBe('Bank says -₹4,500.25 · differs by ₹499.75');
+    expect(bankBalanceWords(txn({ balance: -5000, bankBalance: -4500.25 }))).toBe('Bank says −₹4,500.25 · differs by ₹499.75');
   });
 });

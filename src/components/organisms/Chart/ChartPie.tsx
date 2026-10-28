@@ -10,7 +10,6 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { Text } from '@/components/ds';
 import { cn } from '@/components/ds/cn';
-import { valueFormat } from '@/lib/charts/chart-format';
 import { formatShare, seriesLabel } from '@/lib/charts/chart-series';
 import { useElementSize } from '@/lib/charts/useElementSize';
 
@@ -27,6 +26,7 @@ import {
   CHART_SURFACE_COLOR,
   chartColor,
 } from './chartTokens';
+import { chartValueFormat } from './chartValueFormat';
 
 /** Below this width the legend stacks under the pie instead of beside it. */
 const STACK_BELOW_PX = 360;
@@ -58,7 +58,7 @@ export function ChartPie({
 }) {
   const [frameRef, { width, height }] = useElementSize<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
-  const format = valueFormat(money);
+  const format = chartValueFormat(money);
 
   const first = data.series[0];
   const all = data.categories.map((name, i) => ({

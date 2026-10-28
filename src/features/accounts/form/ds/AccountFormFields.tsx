@@ -4,10 +4,10 @@ import React from 'react';
 
 import { DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
 import { BankLogo, SettingsToggle } from '@/components/organisms';
-import { formatRupees } from '@/features/accounts/list/accountsList';
 import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
+import { formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -124,7 +124,7 @@ export function AccountFormFields({
     { value: LIMIT_POOL_NONE, label: 'None, this card has its own limit' },
     ...pools.map((p) => ({
       value: p.id,
-      label: `${p.name} · ${formatRupees(p.creditLimit)}`,
+      label: `${p.name} · ${formatMoney(p.creditLimit)}`,
       hint: `${p.memberCount} ${p.memberCount === 1 ? 'card' : 'cards'}`,
     })),
     { value: LIMIT_POOL_NEW, label: 'New shared limit…' },

@@ -77,6 +77,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('No rules found')).toBeVisible();
 
       await page.getByRole('button', { name: 'All', exact: true }).click();
+      await expect(page).toHaveURL(/status=all/);
       await page.getByPlaceholder('Search').fill('ola');
       await expect(page).toHaveURL(/q=ola/);
       await expect(page.getByText('Zepto', { exact: true })).toHaveCount(0);
@@ -169,7 +170,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByText('2 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
         await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(1);
         await expect.poll(() => inReview(user.cookie)).toBe(1);
-        await page.getByRole('button', { name: 'Undo' }).click();
+        await page.getByRole('status').filter({ hasText: '2 rules verified' }).getByRole('button', { name: 'Undo' }).click();
         await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(3);
         await expect.poll(() => inReview(user.cookie)).toBe(3);
       }

@@ -219,7 +219,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     expect(screen.getByText('5 Sep statement')).toBeInTheDocument();
     expect(screen.getByText('Paid 18 Sep · on time')).toBeInTheDocument();
     expect(screen.getByText('₹46,800')).toBeInTheDocument();
-    expect(screen.getByText('Anniversary year 15 Mar → 14 Mar')).toBeInTheDocument();
+    expect(screen.getByText('Anniversary year 15 Mar → 14 Mar 2027')).toBeInTheDocument();
     expect(screen.getByText('2,180 pts ≈ ₹1,090')).toBeInTheDocument();
     expect(screen.getByText('Arjun Mehta')).toBeInTheDocument();
     expect(screen.getByText('Primary')).toBeInTheDocument();
@@ -373,12 +373,12 @@ describe('/accounts/[id] bank Overview', () => {
     expect(screen.getByText('interest ₹1,842 last quarter')).toBeInTheDocument();
     expect(screen.getByText('Latest 2 of 96')).toBeInTheDocument();
     expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('12 Oct · bal ₹2,95,030').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹2,95,030').length).toBeGreaterThan(0);
 
-    expect(screen.getByText('Sep 2026')).toBeInTheDocument();
+    expect(screen.getByText('September 2026')).toBeInTheDocument();
     expect(screen.getByText('12 rows · closing ₹1,48,320 · uploaded 13 Oct')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=b1');
-    expect(screen.getByRole('link', { name: /Sep 2026/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /September 2026/ })).toHaveAttribute(
       'href',
       '/accounts/b1/statements?statement=s1',
     );

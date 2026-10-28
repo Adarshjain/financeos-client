@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { Card, Cardholder, CreditCard } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   buildCardsModel,
-  formatShortDate,
   holderMenu,
   type HolderStats,
   limitUsedTone,
@@ -13,6 +13,8 @@ import {
   plasticStatus,
   sharedLimitModel,
 } from './cardsModel';
+
+pinClock();
 
 const TODAY = '2026-10-13';
 
@@ -68,12 +70,6 @@ const stats: HolderStats[] = [
   },
 ];
 
-describe('formatShortDate', () => {
-  it('shows day, month and a two-digit year', () => {
-    expect(formatShortDate('2024-03-15')).toBe('15 Mar 24');
-  });
-});
-
 describe('limitUsedTone', () => {
   it('is plain under 30%, amber from 30%, rose from 70%', () => {
     expect(limitUsedTone(6.6)).toBe('ink');
@@ -91,7 +87,7 @@ describe('plastic status and caption', () => {
     expect(plasticModel(all[0], all, stats[0])).toMatchObject({
       mask: '••7741',
       status: 'Active',
-      caption: 'issued 2 Jun 25',
+      caption: 'issued 2 Jun 2025',
     });
   });
 
@@ -99,7 +95,7 @@ describe('plastic status and caption', () => {
     expect(plasticStatus(all[1], all)).toBe('Replaced');
     expect(plasticModel(all[1], all, stats[0])).toMatchObject({
       status: 'Replaced',
-      caption: '15 Mar 24 → 2 Jun 25 · 41 transactions',
+      caption: '15 Mar 2024 → 2 Jun 2025 · 41 transactions',
     });
   });
 
@@ -107,14 +103,14 @@ describe('plastic status and caption', () => {
     const lone = [card({ id: 'k9', last4: '1111', issuedOn: '2024-01-05', closedOn: '2025-02-01' })];
     expect(plasticModel(lone[0], lone, undefined)).toMatchObject({
       status: 'Closed',
-      caption: '5 Jan 24 → 1 Feb 25',
+      caption: '5 Jan 2024 → 1 Feb 2025',
     });
   });
 
   it('says 1 transaction in the singular', () => {
     const lone = [card({ id: 'k9', last4: '1111', issuedOn: '2024-01-05', closedOn: '2025-02-01' })];
     const s: HolderStats = { ...stats[0], cards: [{ cardId: 'k9', transactionCount: 1 }] };
-    expect(plasticModel(lone[0], lone, s).caption).toBe('5 Jan 24 → 1 Feb 25 · 1 transaction');
+    expect(plasticModel(lone[0], lone, s).caption).toBe('5 Jan 2024 → 1 Feb 2025 · 1 transaction');
   });
 });
 

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { MilestoneStatus, RewardLine, RewardReport, RewardRule } from '@/lib/rewards.types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   buildKpis,
@@ -17,6 +18,8 @@ import {
   windowLabel,
 } from './rewardsModel';
 import { capitalize } from './rewardsPeriod';
+
+pinClock();
 
 // Ranges drop the year of the current one, so the clock is fixed.
 beforeAll(() => {
@@ -77,7 +80,7 @@ describe('buildKpis', () => {
   });
   it('nets discounts against fees and lists both', () => {
     const k = buildKpis({ ...report, summary: { ...report.summary, fees: 590, discounts: 100 } }, window);
-    expect(k[2]).toMatchObject({ value: '-₹490', context: '₹590 fees · ₹100 discounts' });
+    expect(k[2]).toMatchObject({ value: '−₹490', context: '₹590 fees · ₹100 discounts' });
   });
   it('leaves out effective return when the report has none, and shows cashback for cashback cards', () => {
     const k = buildKpis({ ...report, summary: { ...report.summary, points: 0, pointsValueInr: null, cashbackInr: 340, grossValueInr: 340, effectivePct: null } }, window);

@@ -5,12 +5,11 @@
 
 import React from 'react';
 
-import { EmptyState, formatDate, Text } from '@/components/ds';
+import { EmptyState, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import { isRawTableData } from '@/lib/reports.helpers';
-import { formatMoney } from '@/lib/utils';
 
-import { formatCount } from '../builtin.helpers';
 import { BarRow, type BarRowTone, BuiltinNote, BuiltinPager } from '../BuiltinParts';
 import type { TemplateViewProps } from '../types';
 import { type CapItem, capItems, type CapTone } from './capHeadroom.model';
@@ -19,7 +18,7 @@ const BAR: Record<CapTone, BarRowTone> = { neutral: 'brand', near: 'warning', hi
 const TEXT = { neutral: 'ink', near: 'warning', hit: 'danger' } as const;
 
 function inUnit(value: number, unit: string): string {
-  return unit === 'POINTS' ? `${formatCount(value)} pts` : formatMoney(value);
+  return unit === 'POINTS' ? formatCount(value, 'pts') : formatMoney(value);
 }
 
 function caption(it: CapItem): string {

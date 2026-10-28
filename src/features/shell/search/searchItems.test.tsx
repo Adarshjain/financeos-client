@@ -3,9 +3,12 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ConcealProvider } from '@/components/ds';
+import { pinClock } from '@/test/pinClock';
 
 import { EMPTY_SEARCH_RESULT, type GlobalSearchResult } from './searchApi';
 import { buildSearchGroups, type SearchAction, searchHint, type SearchPage } from './searchItems';
+
+pinClock();
 
 const pages: SearchPage[] = [
   { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
@@ -170,7 +173,7 @@ describe('buildSearchGroups', () => {
       render(
         <ConcealProvider concealed={concealed}>
           {items.slice(0, 2).map((i) => (
-            <p key={i.id}>{i.trailing}</p>
+            <div key={i.id}>{i.row?.({ active: false })}</div>
           ))}
         </ConcealProvider>,
       );
@@ -178,8 +181,8 @@ describe('buildSearchGroups', () => {
 
     it('shows a debit as ₹24,990 and a credit as +₹46,800 in the money-in tone', () => {
       amounts(false);
-      expect(screen.getByText('₹24,990')).toHaveClass('text-ink');
-      expect(screen.getByText('+₹46,800')).toHaveClass('text-positive');
+      expect(screen.getByText('24,990.00').closest('[role="cell"]')).toHaveClass('text-ink');
+      expect(screen.getByText('+46,800.00').closest('[role="cell"]')).toHaveClass('text-positive');
     });
 
     it('shows ₹ — in ink for both while amounts are hidden', () => {
@@ -187,7 +190,7 @@ describe('buildSearchGroups', () => {
       const hidden = screen.getAllByText('₹ —');
       expect(hidden).toHaveLength(2);
       hidden.forEach((h) => expect(h).toHaveClass('text-ink'));
-      expect(screen.queryByText('₹24,990')).toBeNull();
+      expect(screen.queryByText('24,990.00')).toBeNull();
     });
   });
 

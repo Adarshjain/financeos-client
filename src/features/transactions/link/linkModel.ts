@@ -1,5 +1,5 @@
-import { plainAmount } from '@/features/loans/loanFormat';
 import type { Schemas } from '@/lib/api/types';
+import { formatMoney } from '@/lib/format';
 import {
   type CreateTransactionLinkRequest,
   type LinkKind,
@@ -203,9 +203,9 @@ export function coverageLine(
     .reduce((sum, t) => sum + t.amount, 0);
   if (refunded <= 0) return null;
   const paid = Math.abs(purchase.amount);
-  const base = `Refunds ₹${plainAmount(refunded)} of ₹${plainAmount(paid)}`;
+  const base = `Refunds ${formatMoney(refunded, { decimals: 'auto' })} of ${formatMoney(paid, { decimals: 'auto' })}`;
   if (Math.round((refunded - paid) * 100) === 0) return `${base} · fully refunded`;
-  if (refunded > paid) return `${base} · ₹${plainAmount(refunded - paid)} more than the purchase`;
+  if (refunded > paid) return `${base} · ${formatMoney(refunded - paid, { decimals: 'auto' })} more than the purchase`;
   return `${base} · partly refunded`;
 }
 
@@ -213,7 +213,7 @@ export function coverageLine(
 export function linkTitle(members: readonly Transaction[]): string {
   if (members.length === 1) {
     const t = members[0];
-    return `Link ${t.description || t.sourcedDescription || 'transaction'} · ₹${plainAmount(Math.abs(t.amount))} to…`;
+    return `Link ${t.description || t.sourcedDescription || 'transaction'} · ${formatMoney(Math.abs(t.amount), { decimals: 'auto' })} to…`;
   }
   return `Link ${members.length} transactions`;
 }

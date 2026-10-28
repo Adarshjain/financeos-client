@@ -307,10 +307,10 @@ describe('/investments/[instrumentId]: Overview', () => {
   it('shows Dividends without a Final or Interim word, and Corporate actions without "Applied"', async () => {
     await renderPage();
     expect(screen.getByText('Dividend ₹22 / share')).toBeInTheDocument();
-    expect(screen.getByText('ex 30 May 25 · paid 18 Jun 25 · TDS ₹132')).toBeInTheDocument();
+    expect(screen.getByText('ex 30 May 2025 · paid 18 Jun 2025 · TDS ₹132')).toBeInTheDocument();
     expect(screen.getByText('+₹1,320')).toBeInTheDocument();
     expect(screen.getByText('Bonus 1:1')).toBeInTheDocument();
-    expect(screen.getByText('ex 10 Jun 25')).toBeInTheDocument();
+    expect(screen.getByText('ex 10 Jun 2025')).toBeInTheDocument();
     expect(screen.queryByText(/Final|Interim|Applied/)).toBeNull();
     expect(screen.getAllByRole('button', { name: 'Record' })).toHaveLength(2);
   });
@@ -437,7 +437,7 @@ describe('/investments/[instrumentId]: Price chart', () => {
     await renderPage();
     expect(screen.getByText('Price · 1 year')).toBeInTheDocument();
     expect(screen.getByText('Daily close')).toBeInTheDocument();
-    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug 26,20 Sep 26,13 Oct 26|1400,1450,1512.7');
+    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug,20 Sep,13 Oct|1400,1450,1512.7');
   });
 
   it('narrows the range from the 1m / 3m / 1y / All control', async () => {
@@ -446,9 +446,9 @@ describe('/investments/[instrumentId]: Price chart', () => {
     fireEvent.click(screen.getByRole('radio', { name: '1m' }));
     expect(screen.getByText('Price · 1 month')).toBeInTheDocument();
     // Counted back from the newest price: 20 Sep and 13 Oct are within a month.
-    expect(screen.getByTestId('chart')).toHaveTextContent('20 Sep 26,13 Oct 26|1450,1512.7');
+    expect(screen.getByTestId('chart')).toHaveTextContent('20 Sep,13 Oct|1450,1512.7');
     fireEvent.click(screen.getByRole('radio', { name: '3m' }));
-    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug 26,20 Sep 26,13 Oct 26|1400,1450,1512.7');
+    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug,20 Sep,13 Oct|1400,1450,1512.7');
     fireEvent.click(screen.getByRole('radio', { name: 'All' }));
     expect(screen.getByText('Price · All time')).toBeInTheDocument();
   });
@@ -456,7 +456,7 @@ describe('/investments/[instrumentId]: Price chart', () => {
   it('draws split-adjusted prices: those before a split divided by its ratio, those on or after unchanged', async () => {
     server.fetchInstrumentCorporateActions.mockResolvedValue([{ id: 'sp', instrumentId: 'i-infy', type: 'split', ratioFrom: 1, ratioTo: 2, exDate: '2026-09-20' }]);
     await renderPage();
-    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug 26,20 Sep 26,13 Oct 26|700,1450,1512.7');
+    expect(screen.getByTestId('chart')).toHaveTextContent('1 Aug,20 Sep,13 Oct|700,1450,1512.7');
   });
 
   it('says there are too few prices to draw', async () => {
@@ -486,7 +486,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     await renderPage();
     expect(screen.queryByRole('dialog', { name: 'Price history' })).toBeNull();
     const dialog = await openHistory();
-    expect(await within(dialog).findByText('13 Oct 26')).toBeInTheDocument();
+    expect(await within(dialog).findByText('13 Oct')).toBeInTheDocument();
     expect(server.fetchPricesPage).toHaveBeenCalledTimes(1);
     expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 10);
     expect(within(dialog).getAllByText('Yahoo').length).toBeGreaterThan(0);
@@ -497,7 +497,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
   it("puts Edit and Delete only on the user's own manual price", async () => {
     await renderPage();
     const dialog = await openHistory();
-    await within(dialog).findByText('13 Oct 26');
+    await within(dialog).findByText('13 Oct');
     expect(within(dialog).getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
     expect(within(dialog).getAllByRole('button', { name: 'Delete' })).toHaveLength(1);
   });
@@ -506,7 +506,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), items: prices.filter((p) => !p.editable) });
     await renderPage();
     const dialog = await openHistory();
-    await within(dialog).findByText('13 Oct 26');
+    await within(dialog).findByText('13 Oct');
     expect(within(dialog).queryByRole('button', { name: 'Edit' })).toBeNull();
     expect(within(dialog).queryByRole('button', { name: 'Delete' })).toBeNull();
   });
@@ -515,10 +515,10 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), totalElements: 40, totalPages: 4 });
     await renderPage();
     const dialog = await openHistory();
-    await within(dialog).findByText('13 Oct 26');
+    await within(dialog).findByText('13 Oct');
     server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), page: 1, totalElements: 40, totalPages: 4, items: [{ id: null, asOf: '2026-09-01', close: 1300, source: 'YAHOO', editable: false }] });
     fireEvent.click(within(dialog).getAllByRole('button', { name: /next/i })[0]);
-    expect(await within(dialog).findByText('1 Sep 26')).toBeInTheDocument();
+    expect(await within(dialog).findByText('1 Sep')).toBeInTheDocument();
     expect(server.fetchPricesPage).toHaveBeenLastCalledWith('i-infy', 1, 10);
   });
 
@@ -528,7 +528,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     const dialog = await openHistory();
     expect(await within(dialog).findByText('The price history could not be loaded.')).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
-    expect(await within(dialog).findByText('13 Oct 26')).toBeInTheDocument();
+    expect(await within(dialog).findByText('13 Oct')).toBeInTheDocument();
   });
 
   it('says so when there are no prices', async () => {
@@ -575,7 +575,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     const history = await openHistory();
     fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete manual price' });
-    expect(within(dialog).getByText('Delete your manual price of ₹1,470.00 on 10 Oct 26?')).toBeInTheDocument();
+    expect(within(dialog).getByText('Delete your manual price of ₹1,470.00 on 10 Oct?')).toBeInTheDocument();
     expect(within(dialog).getByText('Only this price is deleted.')).toBeInTheDocument();
     expect(within(dialog).getByText('Your trades and the other prices stay.')).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();

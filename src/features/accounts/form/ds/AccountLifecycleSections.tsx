@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Button, DateField, Text } from '@/components/ds';
-import { formatDayMonthYear } from '@/features/accounts/list/accountsList';
+import { formatDate } from '@/lib/format';
 
 function Heading({ children, tone = 'ink-3' }: { children: React.ReactNode; tone?: 'ink-3' | 'danger' }) {
   return (
@@ -43,7 +43,7 @@ export function CloseAccountSection({
         <Heading>Close account</Heading>
         <div className="flex items-center justify-between gap-space-12">
           <div className="flex flex-col min-w-0">
-            <Text variant="body-strong">Closed on {formatDayMonthYear(closedOn)}</Text>
+            <Text variant="body-strong">Closed on {formatDate(closedOn, 'full')}</Text>
             <Text variant="caption" tone="ink-3">
               All transactions and statements are kept.
             </Text>

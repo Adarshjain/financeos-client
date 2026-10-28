@@ -18,6 +18,7 @@ import {
   Select,
   Text,
 } from '@/components/ds';
+import { formatDate } from '@/lib/format';
 
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 import {
@@ -26,7 +27,6 @@ import {
   type EpfRow,
   epfUrl,
   type EpfUrlState,
-  monthYear,
 } from './epfModel';
 
 export const EPF_UPLOAD_HREF = `${INVESTMENTS_IMPORT_HREF}?type=${EPF_IMPORT_TYPE}`;
@@ -221,7 +221,7 @@ export function EpfPassbookCard({
               onSelect: () => router.push(EPF_UPLOAD_HREF),
             }}
           >
-            {`Your passbook is up to ${monthYear(stale.through)}. Upload a newer one to bring in ${stale.missing || 'the latest months'}.`}
+            {`Your passbook is up to ${formatDate(stale.through, 'month')}. Upload a newer one to bring in ${stale.missing || 'the latest months'}.`}
           </Banner>
         ) : null}
         <DataTable

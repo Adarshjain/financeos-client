@@ -3,9 +3,8 @@
 import React, { useMemo } from 'react';
 
 import { createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
-import { dayMonth } from '@/features/jobs/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { PriceRefreshItem, PriceRefreshResult as PriceRefreshData } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
 
 import { ResultSection } from './ResultSection';
 
@@ -27,7 +26,7 @@ const columns = [
     meta: { size: 'sm', phone: 'hidden' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
-        {dayMonth(row.original.priceDate)}
+        {formatDate(row.original.priceDate, 'list')}
       </Text>
     ),
   }),
@@ -45,7 +44,7 @@ const columns = [
     id: 'close',
     header: 'Close',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => <Text variant="body" fraction="small">{formatCurrency(row.original.close)}</Text>,
+    cell: ({ row }) => <Text variant="body" fraction="small">{formatMoney(row.original.close, { decimals: 'exact' })}</Text>,
   }),
 ];
 
@@ -53,7 +52,7 @@ const columns = [
 export function PriceRefreshResult({ result }: { result: PriceRefreshData }) {
   const refreshed = result.refreshed ?? 0;
   const skipped = result.skipped ?? 0;
-  const asOf = result.asOf ? dayMonth(String(result.asOf)) : 'today';
+  const asOf = result.asOf ? formatDate(String(result.asOf), 'list') : 'today';
   const failed = useMemo(() => (Array.isArray(result.failed) ? result.failed : []), [result.failed]);
   const updated = useMemo(() => result.refreshedItems ?? [], [result.refreshedItems]);
   const skippedItems = result.skippedItems ?? [];
@@ -86,7 +85,7 @@ export function PriceRefreshResult({ result }: { result: PriceRefreshData }) {
           columns={columns}
           data={updated}
           getRowId={(u) => u.instrumentId}
-          phoneSub={(u) => `${dayMonth(u.priceDate)} · ${u.source}`}
+          phoneSub={(u) => `${formatDate(u.priceDate, 'list')} · ${u.source}`}
           stickyHeader={false}
         />
       </ResultSection>

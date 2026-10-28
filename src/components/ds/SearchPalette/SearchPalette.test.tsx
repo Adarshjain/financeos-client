@@ -209,4 +209,44 @@ describe('SearchPalette', () => {
     expect(row('With icon').querySelector('.w-space-20')).toContainElement(screen.getByTestId('mark'));
     expect(row('Without icon').querySelector('.w-space-20')).toBeNull();
   });
+
+  it('draws a custom row in place of the text, keeping the option role, the active state and the press', () => {
+    const onSelect = vi.fn();
+    const groups: SearchPaletteGroup[] = [
+      {
+        id: 'g',
+        label: 'Transactions',
+        items: [
+          { id: 'a', title: 'ignored', row: ({ active }) => <span>{active ? 'Custom A active' : 'Custom A'}</span>, onSelect },
+          { id: 'b', title: 'Plain', onSelect: vi.fn() },
+        ],
+      },
+    ];
+    render(<SearchPalette defaultOpen groups={groups} />);
+    expect(screen.queryByText('ignored')).toBeNull();
+    expect(row('Custom A active')).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(row('Custom A'));
+    expect(onSelect).toHaveBeenCalled();
+  });
+
+  it('a disabled custom row is aria-disabled, dimmed and never picked', () => {
+    const onSelect = vi.fn();
+    const groups: SearchPaletteGroup[] = [
+      {
+        id: 'g',
+        label: 'Transactions',
+        items: [
+          { id: 'a', title: 'x', disabled: true, row: () => <span>Custom off</span>, onSelect },
+          { id: 'b', title: 'Plain', onSelect: vi.fn() },
+        ],
+      },
+    ];
+    render(<SearchPalette defaultOpen groups={groups} />);
+    const off = row('Custom off');
+    expect(off).toHaveAttribute('aria-disabled', 'true');
+    expect(off).toHaveClass('opacity-50');
+    expect(off).toHaveAttribute('aria-selected', 'false');
+    fireEvent.click(off);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

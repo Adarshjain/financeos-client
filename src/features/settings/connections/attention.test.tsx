@@ -4,9 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { AttentionCard } from './AttentionCard';
+
+pinClock();
 
 const routerRefresh = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', async (importOriginal) => ({
@@ -107,7 +110,7 @@ describe('AttentionCard', () => {
     for (const text of ['Mailbox', 'arjun.mehta@gmail.test', 'From', 'Email date', 'Card', '••9999', 'Account', 'HDFC Regalia', 'First seen', 'Last tried', 'Attempts', 'Error']) {
       expect(d).toHaveTextContent(text);
     }
-    expect(d).toHaveTextContent('10 Oct 2026');
+    expect(d).toHaveTextContent('10 Oct');
     const link = screen.getByRole('link', { name: 'Open in Gmail' });
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('href')).toContain('authuser=arjun.mehta%40gmail.test');

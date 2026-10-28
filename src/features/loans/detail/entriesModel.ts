@@ -1,4 +1,4 @@
-import { formatRupees } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney } from '@/lib/format';
 import type {
   AdjustmentMode,
   LoanChargeResponse,
@@ -7,7 +7,7 @@ import type {
   LoanEventType,
 } from '@/lib/loan.types';
 
-import { ratePct, shortDate } from './loanDetailModel';
+import { ratePct } from './loanDetailModel';
 
 export const EVENT_TYPES: { value: LoanEventType; label: string }[] = [
   { value: 'rate_change', label: 'Rate change' },
@@ -64,8 +64,8 @@ function eventRow(event: LoanEventResponse): EntryRow {
     id: event.id,
     kind: 'event',
     title,
-    subtitle: [shortDate(event.effectiveDate), mode].filter(Boolean).join(' · '),
-    amount: event.amount != null ? formatRupees(event.amount) : null,
+    subtitle: [formatDate(event.effectiveDate, 'list'), mode].filter(Boolean).join(' · '),
+    amount: event.amount != null ? formatMoney(event.amount) : null,
   };
 }
 
@@ -74,8 +74,8 @@ function chargeRow(charge: LoanChargeResponse): EntryRow {
     id: charge.id,
     kind: 'charge',
     title: chargeLabel(charge.chargeType),
-    subtitle: [shortDate(charge.chargeDate), charge.notes?.trim() || null].filter(Boolean).join(' · '),
-    amount: formatRupees(charge.amount),
+    subtitle: [formatDate(charge.chargeDate, 'list'), charge.notes?.trim() || null].filter(Boolean).join(' · '),
+    amount: formatMoney(charge.amount),
   };
 }
 

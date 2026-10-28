@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { LoanMatchSuggestions, LoanResponse, LoansSummaryDetail } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   closedLoansLine,
@@ -16,6 +17,8 @@ import {
   parseLoansUrl,
   singleCandidateBatches,
 } from './loansList';
+
+pinClock();
 
 const TODAY = '2026-10-21';
 
@@ -119,7 +122,7 @@ describe('nextCell and loanRow', () => {
       lender: null,
       emi: '36,603',
       outstanding: '41,92,327',
-      progressText: '13 of 240 · ends Jan 45',
+      progressText: '13 of 240 · ends January 2045',
       next: { kind: 'overdue', label: '#14 overdue' },
       phoneSub: '8.25% · EMI ₹36,603 · 13 of 240 paid',
       closed: false,

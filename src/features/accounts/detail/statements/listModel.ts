@@ -1,7 +1,7 @@
-import { formatDayMonth, formatDayMonthYear, formatRupees } from '@/features/accounts/list/accountsList';
 import { billStatusLabel } from '@/features/bills/bills.helpers';
 import type { CardBillResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate,formatMoney } from '@/lib/format';
 import type { StatementSummary, StatementVerdict } from '@/lib/statement.types';
 
 import type { BillBadgeTone } from '../billsHistoryModel';
@@ -105,9 +105,9 @@ export function sourceLabel(source: string): string {
   return source;
 }
 
-/** "₹44,319", or "-₹1,200" for a negative figure. */
+/** "₹44,319", or "−₹1,200" for a negative figure. */
 export function signedRupees(value: number): string {
-  return value < 0 ? `-${formatRupees(-value)}` : formatRupees(value);
+  return formatMoney(value);
 }
 
 /** The bill's status badge for a statement row; null when the bill says nothing worth a badge. */
@@ -126,7 +126,7 @@ export function billBadge(bill: CardBillResponse | null): { tone: BillBadgeTone;
       const tone = bill.daysUntilDue != null && bill.daysUntilDue <= 3 ? 'warning' : 'neutral';
       return {
         tone,
-        label: bill.paymentDueDate ? `Due ${formatDayMonth(bill.paymentDueDate)}` : billStatusLabel('OPEN'),
+        label: bill.paymentDueDate ? `Due ${formatDate(bill.paymentDueDate, 'list')}` : billStatusLabel('OPEN'),
       };
     }
     default:
@@ -157,20 +157,20 @@ export function buildStatementRow(
   if (!isCard) {
     if (s.closingBalance != null) parts.push(`closing ${signedRupees(s.closingBalance)}`);
   } else if (bill?.status === 'PAID') {
-    if (bill.totalAmountDue != null) parts.push(formatRupees(bill.totalAmountDue));
-    if (bill.paidMarkedOn) parts.push(`paid ${formatDayMonth(bill.paidMarkedOn)}`);
+    if (bill.totalAmountDue != null) parts.push(formatMoney(bill.totalAmountDue));
+    if (bill.paidMarkedOn) parts.push(`paid ${formatDate(bill.paidMarkedOn, 'list')}`);
     if (bill.paidSource === 'MANUAL') {
       parts.push('marked by you');
       undo = true;
     }
   } else {
-    if (s.openingBalance != null) parts.push(`opening ${formatRupees(Math.abs(s.openingBalance))}`);
-    if (bill?.totalAmountDue != null) parts.push(`due ${formatRupees(bill.totalAmountDue)}`);
+    if (s.openingBalance != null) parts.push(`opening ${formatMoney(Math.abs(s.openingBalance))}`);
+    if (bill?.totalAmountDue != null) parts.push(`due ${formatMoney(bill.totalAmountDue)}`);
   }
   const detailsMissing = isCard && Boolean(s.missingDetails?.length);
   return {
     id: s.id,
-    title: formatDayMonthYear(statementDate(s)),
+    title: formatDate(statementDate(s), 'full'),
     caption: parts.join(' · '),
     undo,
     verdict: detailsMissing ? { label: 'Details missing', tone: 'warning' } : verdictWord(s.verdict),

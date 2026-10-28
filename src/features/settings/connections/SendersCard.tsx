@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Button, Card, createDataTableColumnHelper, DataTable, EmptyState, Text } from '@/components/ds';
+import { Button, Card, createDataTableColumnHelper, DataTable, EmptyState, StatusWord, Text } from '@/components/ds';
 import type { GmailSenderResponse } from '@/lib/api/types';
 
 import { senderTitle } from './connectionsModel';
@@ -42,7 +42,7 @@ function makeColumns(onEdit: (sender: GmailSenderResponse) => void) {
       header: 'Status',
       meta: { size: 'sm', phone: 'status' },
       cell: ({ row }) => (
-        <Badge tone={row.original.enabled ? 'success' : 'neutral'}>{row.original.enabled ? 'On' : 'Off'}</Badge>
+        <StatusWord tone={row.original.enabled ? 'success' : 'neutral'}>{row.original.enabled ? 'On' : 'Off'}</StatusWord>
       ),
     }),
     ch.display({

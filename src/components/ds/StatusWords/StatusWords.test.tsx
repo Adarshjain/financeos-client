@@ -19,6 +19,9 @@ describe('StatusWord and StatusWords components', () => {
 
     rerender(<StatusWord tone="success">Verified</StatusWord>);
     expect(screen.getByText('Verified')).toHaveClass('text-positive-strong', 'font-bold');
+
+    rerender(<StatusWord tone="danger">Overdue</StatusWord>);
+    expect(screen.getByText('Overdue')).toHaveClass('text-danger', 'font-bold');
   });
 
   it('renders icon only when passed explicitly', () => {

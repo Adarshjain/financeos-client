@@ -5,6 +5,7 @@ import type { CardBillResponse } from '@/lib/api/types';
 import type { RewardReport } from '@/lib/rewards.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   buildCardholders,
@@ -15,6 +16,8 @@ import {
   meterTone,
 } from './cardOverviewModel';
 import { daysBetween } from './dates';
+
+pinClock();
 
 const TODAY = '2026-10-13';
 
@@ -199,7 +202,7 @@ describe('buildRewards', () => {
 
   it('summarises earnings, rules, caps and the milestone', () => {
     const m = buildRewards(report, window, TODAY);
-    expect(m?.subtitle).toBe('Anniversary year 15 Mar → 14 Mar');
+    expect(m?.subtitle).toBe('Anniversary year 15 Mar → 14 Mar 2027');
     expect(m?.earned).toBe('2,180 pts ≈ ₹1,090');
     expect(m?.rules).toEqual([
       { id: 'r1', label: 'Base rule', value: '2,180 pts' },
@@ -384,8 +387,8 @@ describe('buildRecentTransactions', () => {
       { ...base, id: 't3', date: '2026-10-01', amount: -10, sourcedDescription: 'Raw text' },
       { ...base, id: 't4', date: '2026-10-01', amount: -10 },
     ] as unknown as Transaction[]);
-    expect(rows[0]).toMatchObject({ date: '5 Oct', amount: '+45.00', credit: true, balance: '56,681', category: null });
-    expect(rows[1]).toMatchObject({ amount: '352.00', credit: false, category: 'Transport', balance: null });
+    expect(rows[0]).toMatchObject({ date: '5 Oct', amount: '+45.00', credit: true, balanceLabel: '₹56,681', category: null });
+    expect(rows[1]).toMatchObject({ amount: '352.00', credit: false, category: 'Transport', balanceLabel: null });
     expect(rows[2].description).toBe('Raw text');
     // A zero amount is not money in.
     expect(buildRecentTransactions([{ ...base, id: 't0', date: '2026-10-01', amount: 0 }] as unknown as Transaction[])[0]).toMatchObject({ credit: false, amount: '0.00' });

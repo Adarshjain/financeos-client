@@ -1,6 +1,6 @@
+import { formatDate } from '@/lib/format';
 import type { CorporateAction, PriceHistoryPoint } from '@/lib/types';
 
-import { shortDate } from '../investmentsFormat';
 
 export type ChartRange = '1m' | '3m' | '1y' | 'all';
 
@@ -70,7 +70,7 @@ export function pricesInRange(history: readonly PriceHistoryPoint[], range: Char
 export function priceChartData(points: readonly PriceHistoryPoint[]) {
   return {
     chartType: 'area',
-    categories: points.map((p) => shortDate(p.asOf)),
+    categories: points.map((p) => formatDate(p.asOf, 'list')),
     series: [{ name: 'Price', data: points.map((p) => Number(p.close)) }],
     measure: { field: 'amount', aggregation: 'sum' },
   } as never;

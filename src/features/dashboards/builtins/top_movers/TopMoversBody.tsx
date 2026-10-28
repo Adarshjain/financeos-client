@@ -8,8 +8,9 @@
 import React from 'react';
 
 import { EmptyState, ListRow, SegmentedControl, Skeleton, Text } from '@/components/ds';
-import { moveTone, signedPct, signedRupees, unitPrice } from '@/features/investments/investmentsFormat';
+import { moveTone } from '@/features/investments/investmentsFormat';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
+import { formatMoney, formatPercent } from '@/lib/format';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 
 import { BodyError } from '../investmentsLoansParts';
@@ -46,7 +47,7 @@ export function TopMoversSkeleton() {
 function MoverRow({ mover, showWindow, onOpen }: { mover: Mover; showWindow: boolean; onOpen: (mover: Mover) => void }) {
   const tone = moveTone(mover.changePct) ?? 'ink';
   const dates = showWindow ? moverWindow(mover, dayMonthShort) : null;
-  const detail = [mover.price != null ? unitPrice(mover.price) : null, dates].filter(Boolean).join(' · ');
+  const detail = [mover.price != null ? formatMoney(mover.price, { decimals: 'exact' }) : null, dates].filter(Boolean).join(' · ');
   return (
     <ListRow
       onClick={() => onOpen(mover)}
@@ -54,8 +55,8 @@ function MoverRow({ mover, showWindow, onOpen }: { mover: Mover; showWindow: boo
       subtitle={detail || undefined}
       trailing={
         <div className="text-right">
-          <Text variant="body-strong" tone={tone} as="div">{signedPct(mover.changePct)}</Text>
-          <Text variant="caption" tone={tone} as="div">{signedRupees(mover.change)}</Text>
+          <Text variant="body-strong" tone={tone} as="div">{formatPercent(mover.changePct, { sign: 'always' })}</Text>
+          <Text variant="caption" tone={tone} as="div">{formatMoney(mover.change, { sign: 'always' })}</Text>
         </div>
       }
     />

@@ -4,8 +4,11 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PriceRefreshResult } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import { refreshResultMessage, useRefreshPrices } from './useRefreshPrices';
+
+pinClock();
 
 const api = vi.hoisted(() => ({ POST: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
@@ -47,7 +50,7 @@ describe('refreshResultMessage', () => {
   const base: PriceRefreshResult = { refreshed: 3, skipped: 1, failed: [], asOf: '2026-10-13' };
 
   it('says how many prices were updated and skipped', () => {
-    expect(refreshResultMessage(base)).toEqual({ message: 'Updated 3 prices (as of 13 Oct 26); 1 skipped.', failed: false });
+    expect(refreshResultMessage(base)).toEqual({ message: 'Updated 3 prices (as of 13 Oct); 1 skipped.', failed: false });
     expect(refreshResultMessage({ ...base, refreshed: 1 }).message).toContain('Updated 1 price (');
   });
 
@@ -82,7 +85,7 @@ describe('useRefreshPrices', () => {
       polling.isPolling = false;
       polling.settle!({ status: 'SUCCEEDED', result: { refreshed: 2, skipped: 0, failed: [], asOf: '2026-10-13' } });
     });
-    expect(notify.success).toHaveBeenCalledWith('Updated 2 prices (as of 13 Oct 26); 0 skipped.');
+    expect(notify.success).toHaveBeenCalledWith('Updated 2 prices (as of 13 Oct); 0 skipped.');
     expect(onSettled).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(result.current.busy).toBe(false));
     expect(result.current.jobId).toBe('job-1');

@@ -91,8 +91,8 @@ describe('ReportUnderlyingDialog grouped built-in listing', () => {
     open();
     const groups = await screen.findAllByRole('region');
     expect(groups.map((g) => g.getAttribute('aria-label'))).toEqual(['Asset', 'Liability']);
-    expect(within(groups[0]).getByText('₹1,30,000.00')).toBeInTheDocument();
-    expect(within(groups[1]).getAllByText(/40,000\.00/).length).toBeGreaterThan(1);
+    expect(within(groups[0]).getByText('₹1,30,000')).toBeInTheDocument();
+    expect(within(groups[1]).getAllByText(/40,000/).length).toBeGreaterThan(1);
     expect(within(groups[0]).getByText('HDFC Savings')).toBeInTheDocument();
     expect(within(groups[0]).getByText('Zerodha')).toBeInTheDocument();
     expect(within(groups[1]).getByText('Home loan')).toBeInTheDocument();

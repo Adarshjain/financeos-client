@@ -3,8 +3,11 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 
 import type { JobResponse } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import { JobResultBody } from './JobResultBody';
+
+pinClock();
 
 const body = (type: JobResponse['type'], result: unknown) =>
   render(<JobResultBody job={{ id: 'j', type, status: 'SUCCEEDED', result } as unknown as JobResponse} />);

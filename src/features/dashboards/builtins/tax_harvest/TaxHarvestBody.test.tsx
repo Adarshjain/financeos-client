@@ -24,11 +24,14 @@ vi.mock('@/features/reports/underlying/LazyReportUnderlyingDialogs', () => ({
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { TaxHarvestLot, TaxHarvestResponse } from '@/lib/taxHarvest.types';
+import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { bookedGainsRequest } from '../investmentsLoansData';
 import { lotKeys, TAX_HARVEST_LOTS } from './taxHarvest';
 import { TaxHarvestBody } from './TaxHarvestBody';
+
+pinClock();
 
 const lot = (over: Partial<TaxHarvestLot> = {}): TaxHarvestLot => ({
   holdingId: 'h1',
@@ -167,9 +170,9 @@ describe('TaxHarvestBody', () => {
     expect(dialog).toHaveAttribute('data-title', 'Nifty 50 ETF');
     await userEvent.click(dialog);
     expect(screen.queryByTestId('breakdown')).not.toBeInTheDocument();
-    expect(rows[0]).toHaveTextContent('Long term · Bought 10 Jan 24');
+    expect(rows[0]).toHaveTextContent('Long term · Bought 10 Jan 2024');
     expect(rows[0]).toHaveTextContent('+₹31,200');
-    expect(rows[1]).toHaveTextContent('Short term · Long-term on 2 Aug 27 · 1 day · cost may be higher');
+    expect(rows[1]).toHaveTextContent('Short term · Long-term on 2 Aug 2027 · 1 day · cost may be higher');
     expect(rows[1]).toHaveTextContent('−₹4,000');
   });
 

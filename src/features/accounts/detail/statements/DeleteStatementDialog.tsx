@@ -6,9 +6,9 @@ import React from 'react';
 import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
 import { useDeleteStatement } from '@/features/accounts/statements/useDeleteStatement';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { formatCount } from '@/lib/format';
 
 import { accountHref } from '../accountTabsModel';
-import { plural } from '../overview/dates';
 import { deletionImpact, deletionNote } from './detailModel';
 
 export interface DeleteStatementDialogProps {
@@ -39,7 +39,7 @@ export function DeleteStatementDialog({
     try {
       const result = await remove.mutateAsync();
       showToast(
-        `Statement deleted, ${plural(result.transactionsDeleted, 'transaction', 'transactions')} removed`
+        `Statement deleted, ${formatCount(result.transactionsDeleted, ['transaction', 'transactions'])} removed`
       );
       onOpenChange(false);
       router.push(`${accountHref(accountId)}/statements?fy=${fy}`);

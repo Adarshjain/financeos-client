@@ -64,8 +64,8 @@ describe('buildCreateLendingRequest', () => {
 
 describe('labels', () => {
   it('positionLabel words the balance', () => {
-    expect(positionLabel(rahul)).toBe('Owes you ₹1,200.00');
-    expect(positionLabel({ ...rahul, netPosition: -500 })).toBe('You owe ₹500.00');
+    expect(positionLabel(rahul)).toBe('Owes you ₹1,200');
+    expect(positionLabel({ ...rahul, netPosition: -500 })).toBe('You owe ₹500');
     expect(positionLabel({ ...rahul, netPosition: 0 })).toBe('Settled');
     expect(positionLabel({ ...rahul, entryCount: 0, linkedEntryCount: 0, netPosition: 0 })).toBe('No entries yet');
   });

@@ -1,35 +1,19 @@
 import type { LlmBucketHealthDto, LlmKeyDto, LlmRoutingDto, RoutingOptionDto, Schemas } from '@/lib/api/types';
-import { clock12 } from '@/lib/clock12';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatTime } from '@/lib/format';
 
 import { type ProviderConfig, PROVIDERS } from './providers';
 
 type RoutingEntryDto = Schemas['RoutingEntryDto'];
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-function dayNumber(ymd: string): number {
-  const [y, m, d] = ymd.split('-').map(Number);
-  return Math.round(Date.UTC(y, m - 1, d) / 86_400_000);
-}
-
-/** "today", "yesterday", "3 days ago" (under a week), else "13 Oct"; "—" when never used. */
+/** "today", "yesterday", else "13 Oct"; "—" when never used. */
 export function formatLastUsed(iso: string | null | undefined, today: string = todayInAppZone()): string {
-  if (!iso) return '—';
-  const when = new Date(iso);
-  if (Number.isNaN(when.getTime())) return '—';
-  const day = todayInAppZone(when);
-  const diff = dayNumber(today) - dayNumber(day);
-  if (diff <= 0) return 'today';
-  if (diff === 1) return 'yesterday';
-  if (diff < 7) return `${diff} days ago`;
-  const [, m, d] = day.split('-').map(Number);
-  return `${d} ${MONTHS[m - 1]}`;
+  return formatDate(iso, 'relative', { today, inline: true }) || '—';
 }
 
 /** "3:30 pm" (12h) in the app zone. */
 export function formatCooldownTime(iso: string): string {
-  return clock12(new Date(iso));
+  return formatTime(iso);
 }
 
 export interface KeyRow {

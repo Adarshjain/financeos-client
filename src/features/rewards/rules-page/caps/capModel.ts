@@ -1,3 +1,4 @@
+import { formatMoney, formatQuantity } from '@/lib/format';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
 
 export const CAP_WINDOW_LABELS: Record<CapWindow, string> = {
@@ -24,11 +25,9 @@ export const COUNTER_SCOPE_OPTIONS: { value: CounterScope; label: string }[] = [
   { value: 'PER_CARDHOLDER', label: 'Per cardholder' },
 ];
 
-const grouped = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-
 /** "5,000 pts" or "₹500". */
 export function capAmountText(cap: number, rewardType: RewardType): string {
-  return rewardType === 'POINTS' ? `${grouped(cap)} pts` : `₹${grouped(cap)}`;
+  return rewardType === 'POINTS' ? `${formatQuantity(cap, 2)} pts` : formatMoney(cap, { decimals: 'auto' });
 }
 
 /** Positions (1-based, top of the list first: the highest priority is evaluated first) of the rules that draw from this cap. */

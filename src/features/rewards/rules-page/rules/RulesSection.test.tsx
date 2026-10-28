@@ -561,7 +561,7 @@ describe('rule dialog', () => {
     fireEvent.change(textbox('Rate %'), { target: { value: '2' } });
     fireEvent.click(screen.getByRole('button', { name: 'Test this rule' }));
     expect(within(document.body).getByText('Matches · 2% of ₹1,000')).toBeInTheDocument();
-    expect(within(document.body).getByText('₹20.00')).toBeInTheDocument();
+    expect(within(document.body).getByText('₹20')).toBeInTheDocument();
   });
 });
 
@@ -714,7 +714,7 @@ describe('Test this rule result', () => {
     choose('Rewards paid as', 'Cash ₹');
     fireEvent.change(textbox('Rate %'), { target: { value: '5' } });
     fireEvent.change(textbox('Amount'), { target: { value: '2500' } });
-    expect(screen.getByText('₹125.00')).toBeInTheDocument();
+    expect(screen.getByText('₹125')).toBeInTheDocument();
     expect(screen.getByText('Matches · 5% of ₹2,500')).toBeInTheDocument();
   });
 
@@ -722,7 +722,7 @@ describe('Test this rule result', () => {
     await openTester();
     fireEvent.change(textbox('Min amount'), { target: { value: '5000' } });
     expect(screen.getByText('0 pts')).toBeInTheDocument();
-    expect(screen.getByText('No match · Below minimum amount ₹5000')).toBeInTheDocument();
+    expect(screen.getByText('No match · Below minimum amount ₹5,000')).toBeInTheDocument();
   });
 
   it('keeps the day-of-week caveat only when the rule has days', async () => {

@@ -1,16 +1,9 @@
-import {
-  formatAmount,
-  formatCompactRupees,
-  formatDayMonth,
-  formatDayMonthYear,
-  formatPct,
-  formatRupees,
-} from '@/features/accounts/list/accountsList';
 import { formatDateRangeCompressed } from '@/lib/date-range';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
 import { REASON_META } from '@/lib/rewards.types';
 
-import { daysBetween, plural } from '../overview/dates';
+import { daysBetween } from '../overview/dates';
 import type { RewardsWindow } from '../overview/rewardsWindow';
 import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriod';
 
@@ -20,7 +13,7 @@ export const PAGE_SIZES = [10, 25, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = 10;
 
 function pts(n: number): string {
-  return `${formatAmount(n, 0)} pts`;
+  return formatCount(n, 'pts');
 }
 
 // ---- KPI tiles -------------------------------------------------------------
@@ -49,29 +42,29 @@ export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: 
   // grossValueInr = cashback + cash milestones + points valued at the card's point value.
   const grossValue = unvalued
     ? s.grossValueInr > 0
-      ? `${formatRupees(s.grossValueInr)} + ${pts(totalPts)}`
+      ? `${formatMoney(s.grossValueInr)} + ${pts(totalPts)}`
       : pts(totalPts)
     : totalPts > 0
       ? pts(totalPts)
-      : formatRupees(s.grossValueInr);
+      : formatMoney(s.grossValueInr);
   const grossContext: string[] = [];
   if (totalPts > 0 && s.pointsValueInr != null) {
-    grossContext.push(`≈ ${formatRupees(s.grossValueInr)} at ₹${formatAmount(s.pointsValueInr / totalPts)} / pt`);
+    grossContext.push(`≈ ${formatMoney(s.grossValueInr)} at ${formatMoney(s.pointsValueInr / totalPts, { decimals: 'exact' })} / pt`);
   }
-  if (s.cashbackInr > 0 && (totalPts > 0 || s.milestonesInr > 0)) grossContext.push(`${formatRupees(s.cashbackInr)} cashback`);
-  if (s.milestonesInr > 0) grossContext.push(`${formatRupees(s.milestonesInr)} milestones`);
+  if (s.cashbackInr > 0 && (totalPts > 0 || s.milestonesInr > 0)) grossContext.push(`${formatMoney(s.cashbackInr)} cashback`);
+  if (s.milestonesInr > 0) grossContext.push(`${formatMoney(s.milestonesInr)} milestones`);
 
   // The engine's effective value is gross + discounts - fees.
   const net = s.discounts - s.fees;
   const adjustContext: string[] = [];
-  if (s.fees > 0) adjustContext.push(`${formatRupees(s.fees)} fees`);
-  if (s.discounts > 0) adjustContext.push(`${formatRupees(s.discounts)} discounts`);
+  if (s.fees > 0) adjustContext.push(`${formatMoney(s.fees)} fees`);
+  if (s.discounts > 0) adjustContext.push(`${formatMoney(s.discounts)} discounts`);
 
   const kpis: RewardsKpi[] = [
     {
       key: 'eligible',
       label: 'Eligible spend',
-      value: formatRupees(s.basisSpend),
+      value: formatMoney(s.basisSpend),
       context: `${s.matchedCount} of ${s.transactionCount} transactions earned`,
     },
     {
@@ -84,12 +77,12 @@ export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: 
     {
       key: 'adjustments',
       label: 'Adjustments',
-      value: net === 0 ? formatRupees(0) : `${net > 0 ? '+' : '-'}${formatRupees(Math.abs(net))}`,
+      value: formatMoney(net, { sign: 'always' }),
       context: adjustContext.length > 0 ? adjustContext.join(' · ') : 'no fees netted',
     },
   ];
   if (s.effectivePct != null) {
-    kpis.push({ key: 'effective', label: 'Effective return', value: formatPct(s.effectivePct), context: windowLabel(window, preset) });
+    kpis.push({ key: 'effective', label: 'Effective return', value: formatPercent(s.effectivePct), context: windowLabel(window, preset) });
   }
   return kpis;
 }
@@ -174,6 +167,8 @@ export interface LineRow {
   description: string;
   holder: string | null;
   basis: string;
+  /** The basis with its ₹ (negatives read −₹), for the phone sub-line. */
+  basisLabel: string;
   rule: string;
   earned: string;
   why: { label: string; tone: 'neutral' | 'info' | 'warning' | 'success' };
@@ -205,16 +200,16 @@ const WHY_TONE: Record<RewardLine['reason'], LineRow['why']['tone']> = {
 };
 
 const earnedText = (line: Pick<RewardLine, 'earned' | 'earnedUnit'>) =>
-  line.earnedUnit === 'RUPEES' ? formatRupees(line.earned) : pts(line.earned);
+  line.earnedUnit === 'RUPEES' ? formatMoney(line.earned) : pts(line.earned);
 
 /** The tapped line's computation: dates, amounts, MCC, channel, rule, earned, and the reason in one sentence. */
 export function lineDetail(line: RewardLine): LineDetail {
-  const rows: LineDetail['rows'] = [{ label: 'Transaction date', value: formatDayMonthYear(line.transactionDate) }];
+  const rows: LineDetail['rows'] = [{ label: 'Transaction date', value: formatDate(line.transactionDate, 'full') }];
   if (line.effectiveDate !== line.transactionDate) {
-    rows.push({ label: 'Settled (used for rewards)', value: formatDayMonthYear(line.effectiveDate) });
+    rows.push({ label: 'Settled (used for rewards)', value: formatDate(line.effectiveDate, 'full') });
   }
-  rows.push({ label: 'Amount charged', value: formatRupees(line.amount) });
-  if (line.basis !== line.amount) rows.push({ label: 'Eligible after refunds', value: formatRupees(line.basis) });
+  rows.push({ label: 'Amount charged', value: formatMoney(line.amount) });
+  if (line.basis !== line.amount) rows.push({ label: 'Eligible after refunds', value: formatMoney(line.basis) });
   if (line.mcc) rows.push({ label: 'MCC', value: line.mcc });
   if (line.channel) rows.push({ label: 'Channel', value: line.channel });
   rows.push({ label: 'Rule', value: line.ruleName ?? '—' });
@@ -232,10 +227,11 @@ export function lineDetail(line: RewardLine): LineDetail {
 export function lineRow(line: RewardLine): LineRow {
   return {
     id: `${line.transactionId}:${line.ruleId ?? ''}`,
-    date: formatDayMonth(line.effectiveDate),
+    date: formatDate(line.effectiveDate, 'list'),
     description: line.description ?? line.sourcedDescription ?? 'Transaction',
     holder: line.cardLabel ?? null,
-    basis: formatAmount(line.basis, 0),
+    basis: formatMoney(line.basis, { symbol: false }),
+    basisLabel: formatMoney(line.basis),
     rule: line.ruleName ?? 'No rule',
     earned: earnedText(line),
     why: { label: REASON_META[line.reason].label, tone: WHY_TONE[line.reason] },
@@ -244,7 +240,7 @@ export function lineRow(line: RewardLine): LineRow {
 }
 
 export function linesSubtitle(total: number, window: RewardsWindow, preset?: RangePreset): string {
-  return `${plural(total, 'line', 'lines')} · ${capitalize(periodWords(preset, window))}`;
+  return `${formatCount(total, ['line', 'lines'])} · ${capitalize(periodWords(preset, window))}`;
 }
 
 // ---- Milestones ------------------------------------------------------------
@@ -286,12 +282,12 @@ export function milestonePace(
 export function buildMilestone(m: MilestoneStatus, today: string): MilestoneModel {
   const spend = m.basis === 'SPEND';
   const noun = WINDOW_NOUN[m.windowType];
-  const each = !spend && m.minTxnAmount ? ` of ${formatRupees(m.minTxnAmount)}+ each` : '';
+  const each = !spend && m.minTxnAmount ? ` of ${formatMoney(m.minTxnAmount)}+ each` : '';
   const target = spend
-    ? `Spend ${formatCompactRupees(m.threshold)} in the ${noun}`
-    : `${plural(m.threshold, 'transaction', 'transactions')}${each} in the ${noun}`;
+    ? `Spend ${formatMoney(m.threshold, { compact: true })} in the ${noun}`
+    : `${formatCount(m.threshold, ['transaction', 'transactions'])}${each} in the ${noun}`;
   const payout =
-    m.payoutValue != null ? (m.rewardType === 'POINTS' ? ` → ${formatAmount(m.payoutValue, 0)} bonus pts` : ` → ${formatRupees(m.payoutValue)} bonus`) : '';
+    m.payoutValue != null ? (m.rewardType === 'POINTS' ? ` → ${formatCount(m.payoutValue)} bonus pts` : ` → ${formatMoney(m.payoutValue)} bonus`) : '';
   const pct = m.threshold > 0 ? Math.min(100, Math.round((m.progress / m.threshold) * 100)) : 0;
   const pace = milestonePace(m, today);
 
@@ -303,11 +299,11 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
 
   const caption: string[] = [`${pct}%`];
   if (m.windowType === 'ONE_TIME') caption.push(`One-time ${formatDateRangeCompressed(m.windowStart, m.windowEnd)}`);
-  if (m.achieved && m.payoutDate) caption.push(`credited ${formatDayMonth(m.payoutDate)}`);
+  if (m.achieved && m.payoutDate) caption.push(`credited ${formatDate(m.payoutDate, 'list')}`);
   if (pace && !m.achieved) {
-    caption.push(`${plural(pace.daysLeft, 'day', 'days')} left`);
+    caption.push(`${formatCount(pace.daysLeft, ['day', 'days'])} left`);
     if (spend && pace.daysLeft > 0) {
-      caption.push(`need ${formatRupees(Math.round(pace.needPerDay))} / day`, `pace ${formatRupees(Math.round(pace.pacePerDay))} / day`);
+      caption.push(`need ${formatMoney(Math.round(pace.needPerDay))} / day`, `pace ${formatMoney(Math.round(pace.pacePerDay))} / day`);
     }
   }
 
@@ -317,7 +313,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
     subtitle: `${target}${payout}`,
     status,
     figure: spend
-      ? { done: formatRupees(m.progress), of: `of ${formatRupees(m.threshold)}` }
+      ? { done: formatMoney(m.progress), of: `of ${formatMoney(m.threshold)}` }
       : { done: String(m.progress), of: `of ${m.threshold} transactions` },
     pct,
     caption: caption.join(' · '),
@@ -338,7 +334,7 @@ export function milestonePaid(list: readonly MilestoneStatus[]): string | null {
   const paying = list.filter((m) => m.payoutType === 'CASH_VALUE');
   const inr = paying.filter((m) => m.rewardType !== 'POINTS').reduce((sum, m) => sum + (m.payoutValue ?? 0), 0);
   const points = paying.filter((m) => m.rewardType === 'POINTS').reduce((sum, m) => sum + (m.payoutValue ?? 0), 0);
-  const parts = [inr > 0 ? formatRupees(inr) : null, points > 0 ? pts(points) : null].filter(Boolean);
+  const parts = [inr > 0 ? formatMoney(inr) : null, points > 0 ? pts(points) : null].filter(Boolean);
   return parts.length > 0 ? parts.join(' + ') : null;
 }
 
@@ -357,7 +353,7 @@ export function completedMilestones(milestones: readonly MilestoneStatus[]): Com
       subtitle: [
         m.windowType === 'ONE_TIME' ? 'One-time' : null,
         formatDateRangeCompressed(m.windowStart, m.windowEnd),
-        m.payoutDate ? `credited ${formatDayMonth(m.payoutDate)}` : null,
+        m.payoutDate ? `credited ${formatDate(m.payoutDate, 'list')}` : null,
       ]
         .filter(Boolean)
         .join(' · '),
@@ -366,7 +362,7 @@ export function completedMilestones(milestones: readonly MilestoneStatus[]): Com
           ? 'Tracker'
           : m.rewardType === 'POINTS'
             ? pts(m.payoutValue ?? 0)
-            : formatRupees(m.payoutValue ?? 0),
+            : formatMoney(m.payoutValue ?? 0),
     })),
   };
 }
@@ -404,9 +400,9 @@ function capBars(rule: RewardRuleBreakdown): CapBar[] {
   const cap = rule.capStatus;
   if (!cap || cap.cap <= 0) return [];
   const points = rule.earnedUnit === 'POINTS';
-  const amount = (n: number) => (points ? `${formatAmount(n, 0)}` : formatRupees(n));
-  const capText = points ? `${formatAmount(cap.cap, 0)} pts` : formatRupees(cap.cap);
-  const resets = `resets ${formatDayMonth(cap.windowEnd)}`;
+  const amount = (n: number) => (points ? formatCount(n) : formatMoney(n));
+  const capText = points ? formatCount(cap.cap, 'pts') : formatMoney(cap.cap);
+  const resets = `resets ${formatDate(cap.windowEnd, 'list')}`;
   const pct = (used: number) => Math.min(100, Math.round((used / cap.cap) * 100));
   if (cap.counterScope === 'PER_CARDHOLDER' && (cap.perCard ?? []).length > 0) {
     return (cap.perCard ?? []).map((c) => ({
@@ -450,11 +446,11 @@ export function ruleDescription(rule: RewardRule): string {
   if (rule.tiers?.length) parts.push('tiered');
   else if (rule.accrualType === 'PERCENT' && rule.percentRate != null) parts.push(`${rule.percentRate}%`);
   else if (rule.accrualType === 'SLAB' && rule.pointsPerSlab != null && rule.slabSize != null) {
-    parts.push(`${cash ? formatRupees(rule.pointsPerSlab) : `${rule.pointsPerSlab} pts`} / ${formatRupees(rule.slabSize)}`);
+    parts.push(`${cash ? formatMoney(rule.pointsPerSlab) : formatCount(rule.pointsPerSlab, 'pts')} / ${formatMoney(rule.slabSize)}`);
   }
 
   if (rule.periodCap != null && rule.periodCap > 0) {
-    const cap = cash ? formatRupees(rule.periodCap) : formatAmount(rule.periodCap, 0);
+    const cap = cash ? formatMoney(rule.periodCap) : formatCount(rule.periodCap);
     parts.push(`cap ${cap}${rule.capWindow ? ` / ${CAP_NOUN[rule.capWindow]}` : ''}`);
   }
   if (noCriteria) parts.push('everything else');
@@ -466,7 +462,7 @@ export function ruleLines(rules: readonly RewardRule[] | null, report: RewardRep
   const earnedFor = (id: string) => {
     const b = report.rules.find((r) => r.ruleId === id);
     if (!b) return pts(0);
-    return b.earnedUnit === 'RUPEES' ? formatRupees(b.earned) : pts(b.earned);
+    return b.earnedUnit === 'RUPEES' ? formatMoney(b.earned) : pts(b.earned);
   };
   if (rules && rules.length > 0) {
     return [...rules]
@@ -511,7 +507,7 @@ export function rewardsBanners(report: RewardReport): RewardsBanner[] {
   if (n > 0) {
     banners.push({
       key: 'unattributed',
-      text: `${plural(n, 'transaction', 'transactions')} on this multi-card account ${n === 1 ? 'is' : 'are'} unattributed and could not match card-scoped rules or limits.`,
+      text: `${formatCount(n, ['transaction', 'transactions'])} on this multi-card account ${n === 1 ? 'is' : 'are'} unattributed and could not match card-scoped rules or limits.`,
       action: { label: 'Manage cards' },
     });
   }
@@ -532,8 +528,8 @@ export function cardholderRows(report: RewardReport): CardholderRow[] {
   return cards.map((c) => ({
     id: c.cardId ?? 'unattributed',
     title: c.unattributed ? 'Unattributed' : c.cardLabel,
-    subtitle: `${plural(c.txnCount, 'transaction', 'transactions')} · ${formatRupees(c.basisSpend)} spend`,
-    earned: c.points > 0 ? `${c.cashbackInr > 0 ? `${formatRupees(c.cashbackInr)} + ` : ''}${pts(c.points)}` : formatRupees(c.cashbackInr),
+    subtitle: `${formatCount(c.txnCount, ['transaction', 'transactions'])} · ${formatMoney(c.basisSpend)} spend`,
+    earned: c.points > 0 ? `${c.cashbackInr > 0 ? `${formatMoney(c.cashbackInr)} + ` : ''}${pts(c.points)}` : formatMoney(c.cashbackInr),
   }));
 }
 

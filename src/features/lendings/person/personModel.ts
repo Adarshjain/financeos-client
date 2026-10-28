@@ -1,11 +1,9 @@
-import { formatDayMonth, formatDayMonthYear } from '@/features/accounts/list/accountsList';
-import { daysBetween, plainAmount, plural } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormat';
 import { appHref } from '@/features/shell/routes';
+import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
 import type { CounterpartyResponse, LedgerEntryResponse, LendingDirection } from '@/lib/lending.types';
 import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
 
-import { initialsOf } from '../list/lendingsList';
-import { rupeesExact } from '../settle';
 
 // ---- URL state -------------------------------------------------------------
 
@@ -43,15 +41,14 @@ export function personUrl(id: string, state: PersonUrlState): string {
 // ---- Header ----------------------------------------------------------------
 
 function monthOf(iso: string): string {
-  return formatDayMonth(iso).split(' ')[1] ?? '';
+  return formatDate(iso, 'month');
 }
 
 /** "in 15 days", "today", "3 days overdue". */
 export function inDays(days: number): string {
   if (days === 0) return 'today';
   const n = Math.abs(days);
-  const unit = n === 1 ? 'day' : 'days';
-  return days > 0 ? `in ${n} ${unit}` : `${n} ${unit} overdue`;
+  return days > 0 ? `in ${formatCount(n, ['day', 'days'])}` : `${formatCount(n, ['day', 'days'])} overdue`;
 }
 
 export interface PersonHeaderModel {
@@ -72,18 +69,18 @@ export function personHeader(cp: CounterpartyResponse, firstEntryDate: string | 
   const entries =
     cp.entryCount === 0
       ? 'No entries yet'
-      : `${plural(cp.entryCount, 'entry', 'entries')}${firstEntryDate ? ` since ${monthOf(firstEntryDate)}` : ''}`;
+      : `${formatCount(cp.entryCount, ['entry', 'entries'])}${firstEntryDate ? ` since ${monthOf(firstEntryDate)}` : ''}`;
   let context: string | null = null;
   if (net !== 0 && cp.expectedReturnDate) {
     const days = daysBetween(today, cp.expectedReturnDate);
-    const day = formatDayMonth(cp.expectedReturnDate);
+    const day = formatDate(cp.expectedReturnDate, 'list');
     context = `${net < 0 ? 'due' : 'expected'} ${day}${days === null ? '' : ` · ${inDays(days)}`}`;
   }
   return {
     initials: initialsOf(cp.name),
     meta: [cp.notes?.trim(), entries].filter(Boolean).join(' · '),
     eyebrow: net > 0 ? 'Owes you' : net < 0 ? 'You owe' : 'Settled',
-    amount: rupeesExact(Math.abs(net)),
+    amount: formatMoney(Math.abs(net), { decimals: 'auto' }),
     tone: net > 0 ? 'positive' : 'ink',
     context,
   };
@@ -118,20 +115,19 @@ export function entryWord(direction: LendingDirection, kind: LedgerEntryResponse
 }
 
 function balanceText(value: number): string {
-  if (Math.abs(value) < 0.005) return '0';
-  return value < 0 ? `-${plainAmount(-value)}` : plainAmount(value);
+  return formatMoney(value, { decimals: 'auto', symbol: false });
 }
 
 export function ledgerRow(entry: LedgerEntryResponse): LedgerRow {
   const type = toEntryType(entry.direction, entry.kind);
-  const date = formatDayMonth(entry.entryDate);
+  const date = formatDate(entry.entryDate, 'list');
   const out = entry.direction === 'lent';
   const tx = entry.transaction;
   const sub = [
     date,
-    `${entryWord(entry.direction, entry.kind)} ${rupeesExact(entry.amount)}`,
+    `${entryWord(entry.direction, entry.kind)} ${formatMoney(entry.amount, { decimals: 'auto' })}`,
     tx ? tx.description || tx.accountName || null : null,
-    entry.expectedReturnDate && !isSettlementType(type) ? `expected ${formatDayMonth(entry.expectedReturnDate)}` : null,
+    entry.expectedReturnDate && !isSettlementType(type) ? `expected ${formatDate(entry.expectedReturnDate, 'list')}` : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -142,8 +138,8 @@ export function ledgerRow(entry: LedgerEntryResponse): LedgerRow {
     title: entry.notes?.trim() || ENTRY_TYPE_SHORT[type],
     linked: Boolean(entry.transaction),
     settled: Math.abs(entry.runningBalance) < 0.005,
-    lent: out ? plainAmount(entry.amount) : null,
-    received: out ? null : `+${plainAmount(entry.amount)}`,
+    lent: out ? formatMoney(entry.amount, { decimals: 'auto', symbol: false }) : null,
+    received: out ? null : formatMoney(entry.amount, { decimals: 'auto', symbol: false, sign: 'always' }),
     balance: balanceText(entry.runningBalance),
     sub,
   };
@@ -155,15 +151,15 @@ export const ledgerRows = (entries: readonly LedgerEntryResponse[]): LedgerRow[]
 export function totalsLine(totals: { lent: number; received: number; closing: number }): string {
   return [
     'Opening ₹0',
-    `lent ${rupeesExact(totals.lent)}`,
-    `received ${rupeesExact(totals.received)}`,
-    `closing ${rupeesExact(totals.closing)}`,
+    `lent ${formatMoney(totals.lent, { decimals: 'auto' })}`,
+    `received ${formatMoney(totals.received, { decimals: 'auto' })}`,
+    `closing ${formatMoney(totals.closing, { decimals: 'auto' })}`,
   ].join(' · ');
 }
 
 /** "2 of 3 entries" */
 export function linkedLine(entryCount: number, linkedEntryCount: number): string {
-  return `${linkedEntryCount} of ${plural(entryCount, 'entry', 'entries')}`;
+  return `${linkedEntryCount} of ${formatCount(entryCount, ['entry', 'entries'])}`;
 }
 
 /** "Delete this repayment entry of ₹10,000?" copy for the delete confirm. */
@@ -171,7 +167,7 @@ export function deleteEntryCopy(entry: LedgerEntryResponse): { description: stri
   const type = toEntryType(entry.direction, entry.kind);
   const noun = isSettlementType(type) ? 'repayment' : entry.direction;
   return {
-    description: `Delete this ${noun} entry of ${rupeesExact(entry.amount)}?`,
+    description: `Delete this ${noun} entry of ${formatMoney(entry.amount, { decimals: 'auto' })}?`,
     impact: [
       'The entry leaves the ledger and the balance is worked out again.',
       ...(entry.transaction ? ['The bank transaction stays; only its link to this entry goes.'] : []),
@@ -182,7 +178,7 @@ export function deleteEntryCopy(entry: LedgerEntryResponse): { description: stri
 /** The "Since" row: "May 2026" (month and year of the first entry), or null. */
 export function sinceText(firstEntryDate: string | null): string | null {
   if (!firstEntryDate) return null;
-  return formatDayMonthYear(firstEntryDate).split(' ').slice(1).join(' ');
+  return formatDate(firstEntryDate, 'month');
 }
 
 /** "Delete Rahul Sharma?" copy: what goes (the whole ledger) and what stays. */
@@ -190,7 +186,7 @@ export function deletePersonCopy(cp: CounterpartyResponse): { description: strin
   return {
     description: `Delete ${cp.name}?`,
     impact: [
-      `Their whole ledger goes (${plural(cp.entryCount, 'entry', 'entries')}).`,
+      `Their whole ledger goes (${formatCount(cp.entryCount, ['entry', 'entries'])}).`,
       'Bank transactions stay; only their links to these entries go.',
     ],
   };

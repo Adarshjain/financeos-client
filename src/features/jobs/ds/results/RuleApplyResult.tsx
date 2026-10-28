@@ -4,11 +4,10 @@ import Link from 'next/link';
 import React, { useMemo } from 'react';
 
 import { Button, createDataTableColumnHelper, DataTable, Text, useConcealed } from '@/components/ds';
-import { dayMonth } from '@/features/jobs/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';
 import type { RuleApplyResult as RuleApplyData } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
 
 import { ResultSection } from './ResultSection';
 
@@ -21,7 +20,7 @@ function AmountCell({ type, amount }: { type?: string | null; amount?: string | 
   const credit = type === 'CREDIT';
   return (
     <Text variant="body" tone={credit && !concealed ? 'positive' : 'ink'} fraction="small">
-      {`${credit ? '+' : ''}${formatCurrency(amount)}`}
+      {formatMoney(amount, { decimals: 'exact', sign: credit ? 'always' : 'auto' }) || '—'}
     </Text>
   );
 }
@@ -32,7 +31,7 @@ const columns = [
     meta: { size: 'sm', phone: 'hidden' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
-        {dayMonth(row.original.date)}
+        {formatDate(row.original.date, 'list')}
       </Text>
     ),
   }),
@@ -98,7 +97,7 @@ export function RuleApplyResult({ result }: { result: RuleApplyData }) {
           columns={columns}
           data={transactions}
           getRowId={(t) => t.id}
-          phoneSub={(t) => dayMonth(t.date)}
+          phoneSub={(t) => formatDate(t.date, 'list')}
           stickyHeader={false}
         />
         {more > 0 ? (

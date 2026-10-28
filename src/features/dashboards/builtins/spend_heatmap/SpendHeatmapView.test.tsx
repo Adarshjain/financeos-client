@@ -57,7 +57,7 @@ describe('SpendHeatmapView', () => {
     await userEvent.click(screen.getByTestId('chart'));
     const dialog = screen.getByTestId('underlying');
     expect(JSON.parse(dialog.getAttribute('data-request') as string)).toEqual(daySpendRequest('2026-10-09'));
-    expect(dialog).toHaveAttribute('data-title', 'Spending on 09/10/2026 · ₹1,250.00');
+    expect(dialog).toHaveAttribute('data-title', 'Spending on 09/10/2026 · ₹1,250');
     await userEvent.click(dialog);
     expect(screen.queryByTestId('underlying')).not.toBeInTheDocument();
   });

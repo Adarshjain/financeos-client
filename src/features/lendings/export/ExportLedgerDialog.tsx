@@ -18,9 +18,9 @@ import {
 } from '@/components/ds';
 import { AmountField, SettingsToggle } from '@/components/organisms';
 import { amountExpressionProps } from '@/lib/amountExpression';
+import { formatDate, formatMoney } from '@/lib/format';
 import { ENTRY_TYPE_SHORT, toEntryType } from '@/lib/lendingEntry';
 import { directionLabels, type ExportableEntry, type LendingExportToggles } from '@/lib/lendingExport';
-import { formatDate, formatMoney } from '@/lib/utils';
 
 import { type ExportLedgerState, useExportLedger } from '../useExportLedger';
 
@@ -70,7 +70,7 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
               title={
                 <label htmlFor={id} className="flex flex-wrap gap-x-space-12">
                   <Text variant="body" tone="ink-3" as="span">
-                    {formatDate(entry.entryDate)}
+                    {formatDate(entry.entryDate, 'list')}
                   </Text>
                   <Text variant="body" as="span">
                     {label}
@@ -80,7 +80,7 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
               subtitle={entry.notes || undefined}
               trailing={
                 <Text variant="body-strong" as="span">
-                  {formatMoney(entry.amount)}
+                  {formatMoney(entry.amount, { decimals: 'auto' })}
                 </Text>
               }
             />

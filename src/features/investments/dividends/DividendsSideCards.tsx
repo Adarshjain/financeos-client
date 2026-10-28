@@ -49,12 +49,11 @@ export const suggestionsKey = (brokerAccountId?: string) => ['dividend-suggestio
 /** Takes recorded suggestions out of the open scan, so they leave the card without a new scan. */
 export function dropSuggestions(qc: QueryClient, brokerAccountId: string | undefined, keysToDrop: string[]): void {
   qc.setQueryData<DividendSuggestionsResponse>(suggestionsKey(brokerAccountId), (old) =>
-    old ? { ...old, suggestions: old.suggestions.filter((s) => !keysToDrop.includes(suggestionRow(s, '').key)) } : old,
+    old ? { ...old, suggestions: old.suggestions.filter((s) => !keysToDrop.includes(suggestionRow(s).key)) } : old,
   );
 }
 
 export interface SuggestionsCardProps {
-  thisYear: string;
   /** The page's broker filter, sent to the scan. */
   brokerAccountId?: string;
   /** Opens the record form for one suggestion. */
@@ -66,7 +65,7 @@ export interface SuggestionsCardProps {
  * scans (Yahoo) and the result stays for the visit, and Rescan scans again. A broker change goes back to idle.
  * One Record opens the form, so the pay date can be set.
  */
-export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: SuggestionsCardProps) {
+export function SuggestionsCard({ brokerAccountId, onRecord }: SuggestionsCardProps) {
   const qc = useQueryClient();
   const mutations = useDividendMutations();
   const [recordingAll, setRecordingAll] = React.useState(false);
@@ -95,7 +94,7 @@ export function SuggestionsCard({ thisYear, brokerAccountId, onRecord }: Suggest
   };
 
   const suggestions = scan.data?.suggestions ?? [];
-  const rows = suggestions.map((s) => ({ s, row: suggestionRow(s, thisYear) }));
+  const rows = suggestions.map((s) => ({ s, row: suggestionRow(s) }));
 
   /** Records every suggestion at the amount and date the scan estimated. */
   const recordAll = async () => {

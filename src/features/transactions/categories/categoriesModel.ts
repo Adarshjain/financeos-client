@@ -1,5 +1,5 @@
-import { formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import type { Category } from '@/lib/categories.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';
 
 import type { UncategorizedRow } from './UncategorizedCard';
@@ -63,7 +63,7 @@ export function uncategorizedData(
     rows: page.content.map((t) => ({
       id: t.id,
       description: t.description || t.sourcedDescription || '—',
-      detail: `${formatDayMonth(t.date)} · ${formatRupees(Math.abs(t.amount))}`,
+      detail: `${formatDate(t.date, 'list')} · ${formatMoney(Math.abs(t.amount))}`,
     })),
   };
 }

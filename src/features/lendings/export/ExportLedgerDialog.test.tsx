@@ -80,7 +80,7 @@ describe('layout', () => {
     expect(screen.getAllByText('Lent')).toHaveLength(2);
     expect(screen.getByText('They repaid')).toBeInTheDocument();
     expect(screen.getByText('Dinner')).toBeInTheDocument();
-    expect(screen.getByText('₹5,000.00')).toBeInTheDocument();
+    expect(screen.getByText('₹5,000')).toBeInTheDocument();
   });
 
   it('draws the four include options as switches with the Legacy defaults', () => {

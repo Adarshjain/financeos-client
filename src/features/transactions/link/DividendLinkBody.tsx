@@ -14,10 +14,9 @@ import {
   TextField,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import { plainAmount } from '@/features/loans/loanFormat';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate, formatMoney } from '@/lib/format';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
@@ -96,10 +95,10 @@ function DeclaredDividends({ dividend }: { dividend: UseDividendLinkResult }) {
                 onClick={() => dividend.setSelectedId(d.id)}
                 leading={<Radio checked={checked} tabIndex={-1} aria-hidden="true" />}
                 title={title}
-                subtitle={[d.brokerName, formatDayMonth(d.exDate ?? d.payDate), receipt].filter(Boolean).join(' · ')}
+                subtitle={[d.brokerName, formatDate(d.exDate ?? d.payDate, 'list'), receipt].filter(Boolean).join(' · ')}
                 trailing={
                   <Text variant="body-strong" as="span">
-                    {`₹${plainAmount(expectedNet(d))}`}
+                    {formatMoney(expectedNet(d), { decimals: 'auto' })}
                   </Text>
                 }
               />
@@ -111,11 +110,11 @@ function DeclaredDividends({ dividend }: { dividend: UseDividendLinkResult }) {
         <ListRow
           role="checkbox"
           aria-checked={dividend.recordTds}
-          aria-label={`Record TDS of ₹${plainAmount(dividend.tdsGap)}`}
+          aria-label={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'auto' })}`}
           className="px-0"
           onClick={() => dividend.setRecordTds(!dividend.recordTds)}
           leading={<Checkbox checked={dividend.recordTds} tabIndex={-1} aria-hidden="true" />}
-          title={`Record TDS of ₹${plainAmount(dividend.tdsGap)}`}
+          title={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'auto' })}`}
         />
       ) : null}
     </>

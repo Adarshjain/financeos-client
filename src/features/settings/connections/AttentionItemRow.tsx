@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { Badge, Button, Card, CardRow, ListField, Text } from '@/components/ds';
-import { dayMonth, longDateTime } from '@/features/jobs/format';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItem.helpers';
 
@@ -20,13 +20,13 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
     <Card variant="inset" data-testid="attention-details">
       <ListField label="Mailbox" value={item.connectionEmail} />
       <ListField label="From" value={item.senderAddress || '—'} />
-      <ListField label="Email date" value={longDateTime(item.internalDate)} />
+      <ListField label="Email date" value={formatDateTime(item.internalDate) || '—'} />
       {item.extractedLast4 ? <ListField label="Card" value={`••${item.extractedLast4}`} /> : null}
       {item.accountName ? <ListField label="Account" value={item.accountName} /> : null}
-      <ListField label="First seen" value={longDateTime(item.discoveredAt)} />
-      <ListField label="Last tried" value={longDateTime(item.processedAt)} />
+      <ListField label="First seen" value={formatDateTime(item.discoveredAt) || '—'} />
+      <ListField label="Last tried" value={formatDateTime(item.processedAt) || '—'} />
       {item.attemptCount > 0 ? <ListField label="Attempts" value={item.attemptCount} /> : null}
-      {archived ? <ListField label="Archived" value={longDateTime(item.archivedAt)} /> : null}
+      {archived ? <ListField label="Archived" value={formatDateTime(item.archivedAt) || '—'} /> : null}
       <ListField
         label="Error"
         value={
@@ -65,7 +65,7 @@ export function AttentionItemRow({ item, onRetryItem, onAssign, onArchive, onUna
         <div className="flex flex-wrap items-center gap-x-space-8 gap-y-space-4">
           <Badge tone="warning">{label}</Badge>
           <Text variant="caption" tone="ink-3" className="break-all">
-            {dayMonth(emailDate)}
+            {formatDate(emailDate, 'list')}
             {item.senderAddress ? ` · ${item.senderAddress}` : ''}
           </Text>
         </div>

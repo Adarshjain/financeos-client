@@ -11,6 +11,7 @@ import {
 import { sumBalances } from '@/lib/accountTotals';
 import type { CardBillResponse } from '@/lib/api/types';
 import { sumCreditUsage } from '@/lib/creditLimitPools';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 import { utilisationTone } from '@/lib/utilisation';
 
@@ -26,31 +27,10 @@ export interface BadgeModel {
   label: string;
 }
 
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
 function dateParts(iso: string): { y: string; m: number; d: number } | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!match) return null;
   return { y: match[1], m: Number(match[2]), d: Number(match[3]) };
-}
-
-/** "13 Oct" from a calendar date (YYYY-MM-DD). */
-export function formatDayMonth(iso: string): string {
-  const p = dateParts(iso);
-  return p ? `${p.d} ${MONTHS[p.m - 1]}` : '';
 }
 
 /** "today" or "yesterday" when the calendar date is that day relative to `today` (both YYYY-MM-DD), else null. */
@@ -62,48 +42,6 @@ export function relativeDay(iso: string, today: string): 'today' | 'yesterday' |
   const before = new Date(Date.UTC(Number(t.y), t.m - 1, t.d - 1));
   const yesterday = `${before.getUTCFullYear()}-${String(before.getUTCMonth() + 1).padStart(2, '0')}-${String(before.getUTCDate()).padStart(2, '0')}`;
   return day === yesterday ? 'yesterday' : null;
-}
-
-/** "today", "yesterday", else "13 Oct", from a calendar date (YYYY-MM-DD). */
-export function formatDayMonthRelative(iso: string, today: string): string {
-  return relativeDay(iso, today) ?? formatDayMonth(iso);
-}
-
-/** "13 Oct 2026" from a calendar date (YYYY-MM-DD). */
-export function formatDayMonthYear(iso: string): string {
-  const p = dateParts(iso);
-  return p ? `${p.d} ${MONTHS[p.m - 1]} ${p.y}` : '';
-}
-
-/** Indian grouping with the given decimals, no currency symbol: "2,95,030.50". */
-export function formatAmount(value: number, decimals = 2): string {
-  return (value + 0).toLocaleString('en-IN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
-
-/** "₹8,66,024": whole rupees, Indian grouping. */
-export function formatRupees(value: number): string {
-  return `₹${formatAmount(value, 0)}`;
-}
-
-/** Compact rupees: "₹2.99L", "₹3L", "₹1.2Cr"; under a lakh the full figure. */
-export function formatCompactRupees(value: number): string {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? '-' : '';
-  if (abs >= 1e7) return `${sign}₹${Number((abs / 1e7).toFixed(2))}Cr`;
-  if (abs >= 1e5) return `${sign}₹${Number((abs / 1e5).toFixed(2))}L`;
-  return `${sign}${formatRupees(abs)}`;
-}
-
-/** One decimal, none when it is zero: "0%", "34.3%". */
-export function formatPct(pct: number): string {
-  return `${Number(pct.toFixed(1))}%`;
-}
-
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
 }
 
 function ofType<T extends Account>(
@@ -167,8 +105,8 @@ export function cashKpi(sections: AccountSections): KpiModel {
   const total = sumBalances(sections.banks.open) + sumBalances(wallets);
   return {
     label: 'Cash & wallets',
-    value: formatRupees(total),
-    context: `${plural(sections.banks.open.length, 'bank', 'banks')} · ${plural(wallets.length, 'wallet', 'wallets')}`,
+    value: formatMoney(total),
+    context: `${formatCount(sections.banks.open.length, ['bank', 'banks'])} · ${formatCount(wallets.length, ['wallet', 'wallets'])}`,
   };
 }
 
@@ -176,10 +114,10 @@ export function cardsKpi(sections: AccountSections): KpiModel {
   const usage = sumCreditUsage(sections.cards.open);
   return {
     label: 'Cards · you owe',
-    value: formatRupees(usage.owed),
+    value: formatMoney(usage.owed),
     context:
       usage.limit > 0 && usage.utilizationPct != null
-        ? `${formatPct(usage.utilizationPct)} of ${formatCompactRupees(usage.limit)} limit`
+        ? `${formatPercent(usage.utilizationPct)} of ${formatMoney(usage.limit, { compact: true })} limit`
         : undefined,
   };
 }
@@ -196,11 +134,11 @@ export function investmentsKpi(
     };
   } = {
     label: 'Investments',
-    value: formatRupees(sumBalances(sections.brokers.open)),
+    value: formatMoney(sumBalances(sections.brokers.open)),
   };
   if (dayChangePct != null && Number.isFinite(dayChangePct)) {
     kpi.delta = {
-      value: `${dayChangePct > 0 ? '+' : ''}${dayChangePct.toFixed(2)}%`,
+      value: formatPercent(dayChangePct, { sign: 'always', decimals: 2, fixed: true }),
       period: 'today',
       direction:
         dayChangePct > 0 ? 'good' : dayChangePct < 0 ? 'bad' : 'neutral',
@@ -210,7 +148,7 @@ export function investmentsKpi(
 }
 
 export function netWorthKpi(netWorth: number): KpiModel {
-  return { label: 'Net worth', value: formatRupees(netWorth) };
+  return { label: 'Net worth', value: formatMoney(netWorth) };
 }
 
 /** The one line under a section listing its closed accounts; null when there are none. */
@@ -225,7 +163,7 @@ export function closedLine(
   if (closed.length > 1) return `Closed · ${closed.length}`;
   const [a] = closed;
   const last4 = a.last4 ? ` ••${a.last4}` : '';
-  const when = a.closedOn ? `, closed ${formatDayMonthYear(a.closedOn)}` : '';
+  const when = a.closedOn ? `, closed ${formatDate(a.closedOn, 'full')}` : '';
   return `Closed · 1 · ${a.name}${last4}${when}`;
 }
 
@@ -259,7 +197,7 @@ export interface BankRow {
 /** Badge text for the gap between transactions and statement; null when none. */
 export function gapLabel(gap: number | null | undefined): string | null {
   if (gap == null || !Number.isFinite(gap) || gap === 0) return null;
-  return `Gap ${formatCompactRupees(Math.abs(gap))}`;
+  return `Gap ${formatMoney(Math.abs(gap), { compact: true })}`;
 }
 
 /** The date a balance is current to: the later of the last transaction (ignored when in the future) and the last statement. */
@@ -275,7 +213,7 @@ export function balanceCurrency(
 
 export function bankRow(account: BankAccount, today: string): BankRow {
   const current = balanceCurrency(account.lastTransactionDate, account.lastStatementDate, today);
-  const day = current ? formatDayMonthRelative(current.date, today) : '';
+  const day = current ? formatDate(current.date, 'relative', { today, inline: true }) : '';
   const cap = day.charAt(0).toUpperCase() + day.slice(1);
   const isTx = current?.kind === 'transaction';
   return {
@@ -285,7 +223,7 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     bank: account.bank || null,
     synced: Boolean(account.ingestFromDate),
     gapLabel: gapLabel(account.reconciliationGap),
-    balance: formatAmount(sumBalances([account])),
+    balance: formatMoney(sumBalances([account]), { decimals: 'exact', symbol: false }),
     asOf: current ? (isTx ? cap : `Stmt ${day}`) : null,
     phoneSub: current ? (isTx ? `As of ${day}` : `Statement ${day}`) : null,
     closed: isAccountClosed(account, today),
@@ -315,8 +253,8 @@ export function limitUsed(card: CreditCard): LimitUsed | null {
   const band = utilisationTone(pct);
   return {
     pct,
-    pctLabel: formatPct(pct),
-    limitLabel: formatCompactRupees(limit),
+    pctLabel: formatPercent(pct),
+    limitLabel: formatMoney(limit, { compact: true }),
     tone: band === 'high' ? 'danger' : band === 'medium' ? 'warning' : 'brand',
     textTone:
       band === 'high' ? 'danger' : band === 'medium' ? 'warning' : 'ink',
@@ -326,9 +264,9 @@ export function limitUsed(card: CreditCard): LimitUsed | null {
 /** Rewards cell text: points, else the rupee value, else an em dash. */
 export function rewardsText(total: RewardTotal | undefined): string {
   if (total && total.points > 0)
-    return `${total.points.toLocaleString('en-IN')} pts`;
+    return formatCount(total.points, 'pts');
   if (total && (total.grossValueInr ?? 0) > 0)
-    return `₹${formatAmount(total.grossValueInr as number, 0)}`;
+    return formatMoney(total.grossValueInr as number);
   return '—';
 }
 
@@ -349,13 +287,13 @@ export function nextBillBadge(
       };
     }
     return bill.paymentDueDate
-      ? { tone: 'neutral', label: formatDayMonth(bill.paymentDueDate) }
+      ? { tone: 'neutral', label: formatDate(bill.paymentDueDate, 'list') }
       : null;
   }
   if (state.statementLate)
     return { tone: 'danger', label: 'Statement missing' };
   return bill.nextStatementExpectedOn
-    ? { tone: 'neutral', label: formatDayMonth(bill.nextStatementExpectedOn) }
+    ? { tone: 'neutral', label: formatDate(bill.nextStatementExpectedOn, 'list') }
     : null;
 }
 
@@ -393,14 +331,14 @@ export function cardBaseRow(card: CreditCard, today: string): CardBaseRow {
     last4: card.last4 || null,
     bank: card.bank || null,
     sharedLimit: card.limitPool
-      ? `Shared limit · ${card.limitPool.name} ${formatCompactRupees(card.limitPool.creditLimit)}`
+      ? `Shared limit · ${card.limitPool.name} ${formatMoney(card.limitPool.creditLimit, { compact: true })}`
       : null,
     extraBadges,
     closing:
       isAccountClosing(card, today) && card.closedOn
-        ? `Closing ${formatDayMonth(card.closedOn)}`
+        ? `Closing ${formatDate(card.closedOn, 'list')}`
         : null,
-    outstanding: formatAmount(-(card.balance ?? 0)),
+    outstanding: formatMoney(-(card.balance ?? 0), { decimals: 'exact', symbol: false }),
     limitUsed: limitUsed(card),
     cardholders: card.cardholders?.length ?? 0,
     closed: isAccountClosed(card, today),
@@ -427,7 +365,7 @@ export function cardsSubtitle(open: readonly CreditCard[]): string {
   const limit = sumCreditUsage(open).limit;
   const base = 'Outstanding is what you owe today';
   return limit > 0
-    ? `${base} · ${formatRupees(limit)} limit across ${plural(open.length, 'card', 'cards')}`
+    ? `${base} · ${formatMoney(limit)} limit across ${formatCount(open.length, ['card', 'cards'])}`
     : base;
 }
 
@@ -443,12 +381,12 @@ export interface BrokerRow {
 }
 
 export function brokerRow(broker: Broker, today: string): BrokerRow {
-  const cash = formatRupees(broker.cashBalance ?? 0);
+  const cash = formatMoney(broker.cashBalance ?? 0);
   return {
     id: broker.id,
     name: broker.name,
-    value: formatAmount(sumBalances([broker])),
-    cash: formatAmount(broker.cashBalance ?? 0),
+    value: formatMoney(sumBalances([broker]), { decimals: 'exact', symbol: false }),
+    cash: formatMoney(broker.cashBalance ?? 0, { decimals: 'exact', symbol: false }),
     phoneSub: broker.clientId
       ? `${broker.clientId} · cash ${cash}`
       : `cash ${cash}`,
@@ -471,7 +409,7 @@ export function walletRow(wallet: GenericAccount, today: string): WalletRow {
     name: wallet.name,
     excluded: Boolean(wallet.excludeFromNetAsset),
     liability: wallet.financialPosition === 'liability',
-    balance: formatAmount(sumBalances([wallet])),
+    balance: formatMoney(sumBalances([wallet]), { decimals: 'exact', symbol: false }),
     closed: isAccountClosed(wallet, today),
   };
 }

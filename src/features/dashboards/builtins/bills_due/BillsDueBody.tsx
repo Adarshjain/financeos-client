@@ -8,14 +8,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, StatusWord, Text } from '@/components/ds';
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { type BillCardState, buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
 import { billCardLabel } from '@/features/bills/bills.helpers';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import { useBills } from '@/lib/query/hooks/useBills';
-import { formatMoney } from '@/lib/utils';
 
 import { BuiltinError } from '../BuiltinParts';
 import { stringParam } from '../subtitles';
@@ -43,7 +42,7 @@ function BillRow({ state, highlighted }: { state: BillCardState; highlighted: bo
       data-statement-id={bill.statementId ?? undefined}
       data-account-id={bill.accountId}
       title={billCardLabel(bill)}
-      subtitle={!awaiting && bill.paymentDueDate ? `Due ${formatDayMonth(bill.paymentDueDate)}` : undefined}
+      subtitle={!awaiting && bill.paymentDueDate ? `Due ${formatDate(bill.paymentDueDate, 'list')}` : undefined}
       trailing={
         <div className="flex items-baseline gap-space-6">
             <Text variant="caption" tone="ink-3" as="span" data-testid="bill-status">
@@ -121,7 +120,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
           <div data-testid="bills-nothing-pending">
             <Text variant="caption" as="p" className="px-space-16 py-space-8">
               <Button variant="link" aria-expanded={showSettled} onClick={() => setShowSettled((v) => !v)}>
-                Nothing pending · {n} {n === 1 ? 'card' : 'cards'}
+                Nothing pending · {formatCount(n, ['card', 'cards'])}
               </Button>
             </Text>
             {showSettled

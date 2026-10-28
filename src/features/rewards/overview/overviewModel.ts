@@ -1,6 +1,6 @@
 import { windowLabel } from '@/features/accounts/detail/rewards/rewardsModel';
-import { formatAmount, formatCompactRupees, formatDayMonth, formatRupees } from '@/features/accounts/list/accountsList';
 import { appHref } from '@/features/shell/routes';
+import { formatCount,formatDate, formatMoney } from '@/lib/format';
 
 import { rewardsCardHref } from './rewardsTabs';
 
@@ -86,13 +86,13 @@ export interface RewardsOverviewModel {
 export const earnedPoints = (total: Pick<CardTotal, 'points' | 'milestonePoints'>): number =>
   total.points + (total.milestonePoints ?? 0);
 
-const pts = (n: number) => `${formatAmount(n, 0)} pts`;
+const pts = (n: number) => formatCount(n, 'pts');
 
 /** What is left of the cap nearest to exhaustion: "₹100 left of ₹500 · Dining", "120 pts left of 500 pts · Fuel", "₹0 left · Dining" once used up. */
 export function capLeftText(cap: NearestCap | null | undefined): string {
   if (!cap) return '—';
   const points = cap.unit === 'POINTS';
-  const amount = (n: number) => (points ? pts(n) : formatCompactRupees(n));
+  const amount = (n: number) => (points ? pts(n) : formatMoney(n, { compact: true }));
   const left = Math.max(0, cap.cap - cap.used);
   return left === 0 ? `${amount(0)} left · ${cap.label}` : `${amount(left)} left of ${amount(cap.cap)} · ${cap.label}`;
 }
@@ -105,10 +105,10 @@ export function nextMilestoneText(
   if (next) {
     const left = Math.max(0, next.threshold - next.progress);
     return next.basis === 'SPEND'
-      ? `${formatCompactRupees(left)} to go · ${next.name}`
+      ? `${formatMoney(left, { compact: true })} to go · ${next.name}`
       : `${left} more · ${next.name}`;
   }
-  if (lastMet) return `Met · ${formatDayMonth(lastMet.achievedOn).split(' ')[1] ?? ''}`.trim();
+  if (lastMet) return `Met · ${formatDate(lastMet.achievedOn, 'list').split(' ')[1] ?? ''}`.trim();
   return '—';
 }
 
@@ -126,8 +126,8 @@ export function yearLines(year: string): { main: string; sub: string | null } {
 
 /** "₹1,502", "₹1,502 + 1,040 pts", or "1,040 pts" when there are no rupees at all. */
 export function earnedText(rupees: number, unvaluedPoints: number): string {
-  if (unvaluedPoints <= 0) return formatRupees(rupees);
-  return rupees > 0 ? `${formatRupees(rupees)} + ${pts(unvaluedPoints)}` : pts(unvaluedPoints);
+  if (unvaluedPoints <= 0) return formatMoney(rupees);
+  return rupees > 0 ? `${formatMoney(rupees)} + ${pts(unvaluedPoints)}` : pts(unvaluedPoints);
 }
 
 /**

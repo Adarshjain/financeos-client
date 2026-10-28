@@ -27,8 +27,8 @@ describe('groupConversations', () => {
       today,
     );
     expect(groups.map((g) => g.label)).toEqual(['Today', 'Yesterday', 'Earlier']);
-    expect(groups[0].rows[0]).toMatchObject({ title: 'Chat a', dayPrefix: 'Today ', meta: '14:05 · 2 questions' });
-    expect(groups[1].rows[0]).toMatchObject({ dayPrefix: 'Yesterday ', meta: '21:48 · 1 question' });
+    expect(groups[0].rows[0]).toMatchObject({ title: 'Chat a', dayPrefix: 'Today ', meta: '2:05 pm · 2 questions' });
+    expect(groups[1].rows[0]).toMatchObject({ dayPrefix: 'Yesterday ', meta: '9:48 pm · 1 question' });
     expect(groups[2].rows[0]).toMatchObject({ dayPrefix: '', meta: '22 Oct · 2 questions' });
   });
 
@@ -36,7 +36,7 @@ describe('groupConversations', () => {
     // 19:00 UTC on the 25th is 00:30 IST on the 26th.
     const groups = groupConversations([chat('a', '2026-10-25T19:00:00Z')], today);
     expect(groups.map((g) => g.id)).toEqual(['today']);
-    expect(groups[0].rows[0].meta).toBe('00:30 · 2 questions');
+    expect(groups[0].rows[0].meta).toBe('12:30 am · 2 questions');
   });
 
   it('leaves out empty groups and calls an untitled chat New chat', () => {

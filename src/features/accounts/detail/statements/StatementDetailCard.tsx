@@ -3,22 +3,14 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Button, Card, CardFooter, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, MenuItem, StatusWord, StatusWords, Text, useConcealed } from '@/components/ds';
+import { Banner, Button, Card, CardFooter, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, MenuItem, StatusWord, StatusWords, Text } from '@/components/ds';
+import { Amount } from '@/components/organisms';
 
 import { DeleteStatementDialog } from './DeleteStatementDialog';
 import type { LineRowModel, StatementDetailModel } from './detailModel';
 import { EditDetailsDialog } from './EditDetailsDialog';
 
 const helper = createDataTableColumnHelper<LineRowModel>();
-
-function CreditAmount({ children }: { children: string }) {
-  const concealed = useConcealed();
-  return (
-    <Text tone={concealed ? 'ink' : 'positive'} as="span">
-      <Conceal whole>{children}</Conceal>
-    </Text>
-  );
-}
 
 const allColumns = helper.columns([
   helper.accessor('index', {
@@ -67,12 +59,15 @@ const allColumns = helper.columns([
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) =>
-      row.original.credit ? (
-        <CreditAmount>{row.original.amount}</CreditAmount>
-      ) : (
-        <Conceal whole>{row.original.amount}</Conceal>
-      ),
+    cell: ({ row }) => (
+      <Amount
+        variant="body"
+        value={row.original.value}
+        direction={row.original.credit ? 'credit' : 'debit'}
+        decimals="exact"
+        symbol={false}
+      />
+    ),
   }),
 ]);
 

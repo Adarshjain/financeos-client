@@ -1,6 +1,6 @@
 import type { TransactionLink, TransactionRowData } from '@/components/organisms';
-import { formatAmount, formatDayMonth } from '@/features/accounts/list/accountsList';
 import type { Account } from '@/lib/account.types';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction, TransactionSource } from '@/lib/transaction.types';
 
 /** A transaction as the list draws it: the strings and flags `TransactionRow` and the table columns take. */
@@ -114,14 +114,14 @@ function bankIdOf(accounts: RowContext['accounts'], accountId: string): string |
 export function transactionRow(t: Transaction, ctx: RowContext): TransactionListRow {
   const excluded = Boolean(t.isTransactionExcluded);
   const credit = t.amount > 0;
-  const amount = formatAmount(Math.abs(t.amount), 2);
+  const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
   const categories = excluded ? [] : (t.categories ?? []).map((c) => c.name);
   const source = ctx.showSource ? SOURCE_WORDS[t.source] : undefined;
   const provenance = [excluded ? 'Excluded' : undefined, source].filter(Boolean).join(' · ');
   return {
     id: t.id,
     day: t.date.slice(0, 10),
-    date: formatDayMonth(t.date),
+    date: formatDate(t.date, 'list'),
     weekday: weekdayOf(t.date),
     description: t.description || t.sourcedDescription || '—',
     amount: t.amount,
@@ -130,7 +130,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     account: ctx.accounts ? (ctx.accounts.find((a) => a.id === t.accountId)?.name ?? 'Unknown') : undefined,
     bankId: bankIdOf(ctx.accounts, t.accountId),
     plastic: plasticOf(t),
-    balance: t.balance != null && !excluded ? `${t.balance < 0 ? '-' : ''}₹${formatAmount(Math.abs(t.balance), 0)}` : undefined,
+    balance: t.balance != null && !excluded ? formatMoney(t.balance) : undefined,
     categories,
     category: categories[0],
     reviewStatus: reviewWords(t),

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Button, Card, ListField, ListRow, showToast, Text } from '@/components/ds';
+import { Button, Card, ListField, ListRow, showToast, StatusWord, Text } from '@/components/ds';
 import { watchSession } from '@/lib/authExpiry';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
@@ -97,7 +97,7 @@ export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnli
             wrap
             trailing={
               isLinked ? (
-                <Badge tone="success">Linked</Badge>
+                <StatusWord tone="success">Linked</StatusWord>
               ) : (
                 <Button
                   variant="secondary"

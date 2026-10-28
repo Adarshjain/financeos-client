@@ -2,6 +2,8 @@
 
 import React, { forwardRef, useId, useMemo, useRef, useState } from 'react';
 
+import { formatDate } from '@/lib/format';
+
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -9,7 +11,7 @@ import { MonthCalendar } from '../MonthCalendar/MonthCalendar';
 import { Popover } from '../Popover/Popover';
 import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
-import { formatDate, parseDateInput } from '../utils';
+import { parseDateInput } from '../utils';
 import { formatDateInput, formatRangeInput } from './dateFormat';
 
 export interface DateRangeValue {

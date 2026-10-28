@@ -12,6 +12,7 @@ import {
 } from '@/features/rewards/queries/useRewardRulesQueries';
 import { useEndDateAndClone } from '@/features/rewards/rules/useEndDateAndClone';
 import { ApiError } from '@/lib/api/client';
+import { formatMoney } from '@/lib/format';
 import { RewardRule, RewardType } from '@/lib/rewards.types';
 import { toastError } from '@/lib/toastError';
 
@@ -92,7 +93,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
       { accountId, defaultRewardType, pointValueInr: num },
       {
         onSuccess: (data) => {
-          toast.success(num != null ? `Point value set to ₹${num}/pt` : 'Point value reset to default (₹0.25/pt)');
+          toast.success(num != null ? `Point value set to ${formatMoney(num, { decimals: 'auto' })}/pt` : 'Point value reset to default (₹0.25/pt)');
           setPointValueInr(data.pointValueInr != null ? String(data.pointValueInr) : '');
         },
         onError: (e) => toastError(e, 'Failed to update reward config'),

@@ -11,9 +11,13 @@ import type {
   RoutingOptionDto,
   Schemas,
 } from '@/lib/api/types';
+import { formatDate } from '@/lib/format';
 import { keys as queryKeys } from '@/lib/query/keys';
+import { pinClock } from '@/test/pinClock';
 
 import { AiSettings } from './AiSettings';
+
+pinClock();
 
 const routerRefresh = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', async (importOriginal) => ({
@@ -158,7 +162,7 @@ describe('Your keys', () => {
     setup();
     expect(screen.getAllByText('•••• k3Qa').length).toBeGreaterThan(0);
     expect(screen.getAllByText('today').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('3 days ago').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(formatDate(iso(3), 'relative', { inline: true })).length).toBeGreaterThan(0);
     // A key never used reads as a dash on desktop.
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });

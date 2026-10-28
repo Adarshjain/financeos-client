@@ -3,8 +3,9 @@
 import React from 'react';
 
 import { Button, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { formatCount } from '@/lib/format';
 
-import { formatCell, tableToTsv } from './answerModel';
+import { formatAnswerCell, tableToTsv } from './answerModel';
 import type { ChatTableBlock } from './chat.types';
 import { copyText } from './copyText';
 
@@ -21,7 +22,7 @@ const isNumeric = (c: ChatTableBlock['columns'][number]) => c.align === 'right' 
 export function ChatTableCard({ table }: { table: ChatTableBlock }) {
   const { columns, rows } = table;
   const data = React.useMemo<Row[]>(
-    () => rows.map((r, i) => ({ id: String(i), cells: Object.fromEntries(columns.map((c) => [c.key, formatCell(r[c.key], c.format)])) })),
+    () => rows.map((r, i) => ({ id: String(i), cells: Object.fromEntries(columns.map((c) => [c.key, formatAnswerCell(r[c.key], c.format)])) })),
     [rows, columns],
   );
   const tableColumns = React.useMemo(() => {
@@ -60,7 +61,7 @@ export function ChatTableCard({ table }: { table: ChatTableBlock }) {
   return (
     <Card
       title={table.title}
-      subtitle={`${rows.length} ${rows.length === 1 ? 'row' : 'rows'}`}
+      subtitle={formatCount(rows.length, ['row', 'rows'])}
       action={
         <Text variant="label" as="span">
           <Button variant="link" onClick={copy}>

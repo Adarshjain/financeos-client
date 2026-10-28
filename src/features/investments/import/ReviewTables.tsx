@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Badge, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { formatMoney } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
 
 import { moveTone } from '../investmentsFormat';
@@ -19,7 +20,6 @@ import {
   netRealized,
   setCreateNew,
   setFnoSkip,
-  signedMoney,
   sortCasRows,
   sortExecutions,
 } from './importModel';
@@ -255,7 +255,7 @@ export function FnoTable({ trades, fnoRowStates, setFnoRowStates, locked }: FnoT
         <Text variant="label" tone="ink-3" as="span">
           {'Net realized P&L: '}
           <Text variant="body-strong" tone={moveTone(net)} as="span">
-            {signedMoney(net)}
+            {formatMoney(net, { decimals: 'exact', sign: 'always' })}
           </Text>
         </Text>
       </div>

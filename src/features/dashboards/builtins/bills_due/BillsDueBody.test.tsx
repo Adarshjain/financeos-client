@@ -73,8 +73,8 @@ describe('BillsDueBody', () => {
     render();
     const rows = await screen.findAllByTestId('bill-row');
     expect(rows.map((r) => r.getAttribute('data-phase'))).toEqual(['overdue', 'arrived', 'awaiting']);
-    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('To pay ₹7,000.00');
-    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800.00');
+    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('To pay ₹7,000');
+    expect(screen.getByTestId('bills-widget-totals')).toHaveTextContent('Unbilled ₹1,800');
   });
 
   it('an arrived card: name, due date and amount due only (no countdown, minimum or spent-since line)', async () => {
@@ -85,8 +85,8 @@ describe('BillsDueBody', () => {
     expect(row).toHaveTextContent('Due 12 Oct');
     expect(row).not.toHaveTextContent('Due in 4 days');
     expect(row).not.toHaveTextContent('spent since this statement');
-    expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000.00');
-    expect(row).not.toHaveTextContent('Min ₹200.00');
+    expect(within(row).getByTestId('bill-headline')).toHaveTextContent('₹2,000');
+    expect(row).not.toHaveTextContent('Min ₹200');
   });
 
   it('an overdue card says Overdue in colour beside its amount', async () => {
@@ -115,7 +115,7 @@ describe('BillsDueBody', () => {
     seed([awaiting, late]);
     render();
     const [lateRow, wait] = await screen.findAllByTestId('bill-row');
-    expect(within(wait).getByTestId('bill-headline')).toHaveTextContent('₹1,500.00');
+    expect(within(wait).getByTestId('bill-headline')).toHaveTextContent('₹1,500');
     expect(wait).toHaveTextContent('unbilled');
     expect(wait).not.toHaveTextContent('Statement expected');
     expect(wait).not.toHaveTextContent('Mark paid');

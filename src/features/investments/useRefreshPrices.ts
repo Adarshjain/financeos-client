@@ -6,10 +6,10 @@ import { useState } from 'react';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { api } from '@/lib/api/client';
+import { formatCount, formatDate } from '@/lib/format';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import type { EnqueueResponse, PriceRefreshResult } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
 
 /** How the refresh reports progress: the Legacy button sends it to the old toaster, Dinero to its own. */
 export interface RefreshNotifier {
@@ -28,8 +28,8 @@ export interface UseRefreshPricesOptions {
 /** What the price-refresh job did, as one line. */
 export function refreshResultMessage(result: PriceRefreshResult): { message: string; failed: boolean } {
   const { refreshed, skipped, failed, asOf } = result;
-  const formattedAsOf = asOf ? formatDate(asOf) : 'today';
-  let message = `Updated ${refreshed} price${refreshed === 1 ? '' : 's'} (as of ${formattedAsOf}); ${skipped} skipped.`;
+  const formattedAsOf = asOf ? formatDate(asOf, 'list') : 'today';
+  let message = `Updated ${formatCount(refreshed, ['price', 'prices'])} (as of ${formattedAsOf}); ${skipped} skipped.`;
   if (failed && failed.length > 0) {
     const failDetails = failed.map((f) => `${f.instrumentName || f.instrumentId}: ${f.reason}`).join(', ');
     message += ` Failed: ${failDetails}`;

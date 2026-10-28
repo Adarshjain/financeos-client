@@ -3,10 +3,10 @@
 import React from 'react';
 
 import { Button, createDataTableColumnHelper, DataTable, ProgressBar, type ProgressBarColor, Text } from '@/components/ds';
+import { formatMeasure } from '@/features/reports/measureFormat';
+import { formatCount, formatPercent } from '@/lib/format';
 import { labelChartData, valueLabel } from '@/lib/reports.helpers';
 import type { BreakdownBars, BreakdownColumn, BreakdownSubRow } from '@/lib/reports.types';
-import { formatMeasureValue } from '@/lib/reports/formatMeasureValue';
-import { signed } from '@/lib/reports/signed';
 
 import type { ChartInput } from './Chart';
 
@@ -54,8 +54,8 @@ const DEFAULT_COLUMNS: BreakdownColumn[] = ['amount', 'share', 'change'];
 const ORDER: BreakdownColumn[] = ['amount', 'share', 'count', 'avg', 'change'];
 const HEADERS: Record<BreakdownColumn, string> = { amount: 'Amount', share: 'Share', count: 'Txns', avg: 'Avg', change: 'vs prev' };
 
-const txns = (n: number) => `${n} ${n === 1 ? 'txn' : 'txns'}`;
-const percent = (n: number) => `${Math.round(n)}%`;
+const txns = (n: number) => formatCount(n, ['txn', 'txns']);
+const percent = (n: number) => formatPercent(n, { decimals: 0 });
 const SERIES: ProgressBarColor[] = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
@@ -83,7 +83,7 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
         id: String(index),
         index,
         label: isOther
-          ? `Other · ${data.other?.foldedCount ?? 0} ${data.other?.foldedCount === 1 ? 'category' : 'categories'}`
+          ? `Other · ${formatCount(data.other?.foldedCount ?? 0, ['category', 'categories'])}`
           : category,
         isOther,
         value,
@@ -104,15 +104,15 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
     return ORDER.filter((c) => asked.includes(c) && !(c === 'share' && !total) && !(c === 'change' && !comparing));
   }, [wanted, total, comparing]);
 
-  const fmt = (v: number | null | undefined) => formatMeasureValue(v, { field, aggregation, money, wholeRupees: true });
+  const fmt = (v: number | null | undefined) => formatMeasure(v, { field, aggregation, money, wholeRupees: true });
   // An average is never a count, even for a count measure.
-  const fmtAvg = (v: number | null | undefined) => formatMeasureValue(v, { field, money, wholeRupees: true });
+  const fmtAvg = (v: number | null | undefined) => formatMeasure(v, { field, money, wholeRupees: true });
 
   const changeTone = (change: number | null): 'positive' | 'danger' | 'ink-3' => {
     if (change === null || Math.round(change) === 0 || higherIsBetter === undefined) return 'ink-3';
     return change > 0 === higherIsBetter ? 'positive' : 'danger';
   };
-  const changeText = (change: number | null) => (change === null ? '—' : signed(percent(change), Math.round(change)));
+  const changeText = (change: number | null) => (change === null ? '—' : formatPercent(change, { sign: 'always', decimals: 0 }));
 
   const tableColumns = React.useMemo(
     () => [

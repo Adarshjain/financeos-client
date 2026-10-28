@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import {
   deleteEntryCopy,
   deletePersonCopy,
@@ -16,6 +18,8 @@ import {
   totalsLine,
 } from './personModel';
 import { entriesFixture, entryFixture, personFixture } from './personModel.fixtures';
+
+pinClock();
 
 const TODAY = '2026-10-13';
 
@@ -39,7 +43,7 @@ describe('personHeader', () => {
     const h = personHeader(personFixture(), '2026-08-29', TODAY);
     expect(h).toEqual({
       initials: 'RS',
-      meta: 'College friend · 3 entries since Aug',
+      meta: 'College friend · 3 entries since August 2026',
       eyebrow: 'Owes you',
       amount: '₹15,000',
       tone: 'positive',
@@ -60,7 +64,7 @@ describe('personHeader', () => {
   it('copes with a person without entries or notes', () => {
     const h = personHeader(personFixture({ entryCount: 0, notes: null, netPosition: 0, expectedReturnDate: null }), null, TODAY);
     expect(h.meta).toBe('No entries yet');
-    expect(personHeader(personFixture({ entryCount: 1, notes: ' ' }), '2026-08-29', TODAY).meta).toBe('1 entry since Aug');
+    expect(personHeader(personFixture({ entryCount: 1, notes: ' ' }), '2026-08-29', TODAY).meta).toBe('1 entry since August 2026');
   });
 
   it('counts days in words', () => {
@@ -102,7 +106,7 @@ describe('ledgerRow', () => {
 
   it('shows a negative balance with a minus sign and a repayment you made as "paid"', () => {
     const row = ledgerRow(entryFixture({ direction: 'lent', kind: 'settlement', amount: 500, runningBalance: -500, notes: null }));
-    expect(row).toMatchObject({ balance: '-500', title: 'You repaid', lent: '500' });
+    expect(row).toMatchObject({ balance: '−500', title: 'You repaid', lent: '500' });
     expect(row.sub).toContain('paid ₹500');
   });
 

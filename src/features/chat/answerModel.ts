@@ -1,17 +1,16 @@
+import { formatCount, formatMoney, formatQuantity } from '@/lib/format';
+
 import type { ChatTableBlock } from './chat.types';
 import type { ChatRecord, ChatStep } from './conversation.types';
 
 export type AssistantRecord = Extract<ChatRecord, { kind: 'assistant' }>;
 
-const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-const plain = new Intl.NumberFormat('en-IN');
-
 /** A table cell as the reader sees it. */
-export function formatCell(value: string | number | boolean | null | undefined, format?: 'inr' | 'number' | 'text'): string {
+export function formatAnswerCell(value: string | number | boolean | null | undefined, format?: 'inr' | 'number' | 'text'): string {
   if (value === null || value === undefined) return '—';
   if (typeof value === 'number') {
-    if (format === 'inr') return inr.format(value);
-    if (format === 'number') return plain.format(value);
+    if (format === 'inr') return formatMoney(value);
+    if (format === 'number') return formatQuantity(value, 2);
   }
   return String(value);
 }
@@ -21,7 +20,7 @@ export function tableToTsv(table: ChatTableBlock): string {
   const clean = (v: string) => v.replace(/[\t\r\n]+/g, ' ');
   const lines = [table.columns.map((c) => clean(c.label)).join('\t')];
   for (const row of table.rows) {
-    lines.push(table.columns.map((c) => clean(formatCell(row[c.key], c.format))).join('\t'));
+    lines.push(table.columns.map((c) => clean(formatAnswerCell(row[c.key], c.format))).join('\t'));
   }
   return lines.join('\n');
 }
@@ -34,7 +33,7 @@ export function queryCount(steps: ChatStep[]): number {
 /** "Ran 2 queries · 4.2 s". */
 export function metaLine(record: AssistantRecord): string {
   const n = queryCount(record.steps);
-  const parts = [`Ran ${n} ${n === 1 ? 'query' : 'queries'}`];
+  const parts = [`Ran ${formatCount(n, ['query', 'queries'])}`];
   if (record.durationMs != null) parts.push(`${(record.durationMs / 1000).toFixed(1)} s`);
   return parts.join(' · ');
 }
@@ -46,7 +45,7 @@ export function stepLabel(step: ChatStep): string {
 /** "1,284 rows · 1.6 s". */
 export function stepMeta(step: ChatStep): string | undefined {
   const parts: string[] = [];
-  if (step.rowCount != null) parts.push(`${plain.format(step.rowCount)} ${step.rowCount === 1 ? 'row' : 'rows'}`);
+  if (step.rowCount != null) parts.push(formatCount(step.rowCount, ['row', 'rows']));
   if (step.durationMs != null) parts.push(`${(step.durationMs / 1000).toFixed(1)} s`);
   return parts.length ? parts.join(' · ') : undefined;
 }

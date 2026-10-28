@@ -1,3 +1,4 @@
+import { formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 import { RewardRule } from '@/lib/rewards.types';
 
 export const WINDOW_SHORT: Record<string, string> = {
@@ -15,11 +16,11 @@ export function accrualSummary(rule: RewardRule): string {
       rule.accrualType === 'PERCENT'
         ? '%'
         : points
-        ? ` pts/₹${rule.slabSize}`
-        : ` ₹/₹${rule.slabSize}`;
+        ? ` pts/${formatMoney(rule.slabSize, { decimals: 'auto' })}`
+        : ` ₹/${formatMoney(rule.slabSize, { decimals: 'auto' })}`;
     const schedule = rule.tiers
       .map((t) =>
-        t.upTo != null ? `${t.rate}${unit} to ₹${t.upTo}` : `then ${t.rate}${unit}`
+        t.upTo != null ? `${t.rate}${unit} to ${formatMoney(t.upTo, { decimals: 'auto' })}` : `then ${t.rate}${unit}`
       )
       .join(', ');
     const suffix =
@@ -28,12 +29,12 @@ export function accrualSummary(rule: RewardRule): string {
   }
   if (rule.accrualType === 'PERCENT') {
     return points
-      ? `${rule.percentRate}% in points`
-      : `${rule.percentRate}% cashback`;
+      ? `${formatPercent(rule.percentRate, { decimals: 2 })} in points`
+      : `${formatPercent(rule.percentRate, { decimals: 2 })} cashback`;
   }
   return points
-    ? `${rule.pointsPerSlab} pts / ₹${rule.slabSize}`
-    : `₹${rule.pointsPerSlab} / ₹${rule.slabSize}`;
+    ? `${formatQuantity(rule.pointsPerSlab, 2)} pts / ${formatMoney(rule.slabSize, { decimals: 'auto' })}`
+    : `${formatMoney(rule.pointsPerSlab, { decimals: 'auto' })} / ${formatMoney(rule.slabSize, { decimals: 'auto' })}`;
 }
 
 export function capSummary(rule: RewardRule): string | null {
@@ -43,8 +44,8 @@ export function capSummary(rule: RewardRule): string | null {
   if (rule.periodCap == null) return null;
   const window = WINDOW_SHORT[rule.capWindow ?? 'CALENDAR_MONTH'];
   return rule.rewardType === 'POINTS'
-    ? `cap ${rule.periodCap} pts/${window}`
-    : `cap ₹${rule.periodCap}/${window}`;
+    ? `cap ${formatQuantity(rule.periodCap, 2)} pts/${window}`
+    : `cap ${formatMoney(rule.periodCap, { decimals: 'auto' })}/${window}`;
 }
 
 export function matchSummary(rule: RewardRule): string {
@@ -57,7 +58,7 @@ export function matchSummary(rule: RewardRule): string {
   if (rule.daysOfWeek && rule.daysOfWeek.length)
     parts.push(rule.daysOfWeek.map((d) => d.slice(0, 3).toLowerCase()).join('/'));
   if (rule.minAmount != null || rule.maxAmount != null) {
-    parts.push(`₹${rule.minAmount ?? 0}–${rule.maxAmount ?? '∞'}`);
+    parts.push(`${formatMoney(rule.minAmount ?? 0, { decimals: 'auto' })}–${rule.maxAmount != null ? formatMoney(rule.maxAmount, { decimals: 'auto' }) : '∞'}`);
   }
   if (rule.emiTreatment !== 'INCLUDE')
     parts.push(rule.emiTreatment === 'EXCLUDE_EMI' ? 'no EMI' : 'EMI only');

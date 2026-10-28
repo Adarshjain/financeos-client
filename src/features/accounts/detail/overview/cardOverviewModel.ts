@@ -1,10 +1,3 @@
-import {
-  formatAmount,
-  formatCompactRupees,
-  formatDayMonth,
-  formatPct,
-  formatRupees,
-} from '@/features/accounts/list/accountsList';
 import { deriveBillCardState } from '@/features/bills/billCardState';
 import {
   type Cardholder,
@@ -12,6 +5,7 @@ import {
   isCardholderClosed,
 } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
+import { formatCount, formatDate, formatMoney, formatPercent, initialsOf } from '@/lib/format';
 import type { RewardReport } from '@/lib/rewards.types';
 import type { CardCycleSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
@@ -19,7 +13,7 @@ import { utilisationTone } from '@/lib/utilisation';
 
 import { paidTiming } from '../billsHistoryModel';
 import { currentMilestones } from '../milestones';
-import { daysBetween, plural } from './dates';
+import { daysBetween } from './dates';
 
 export type MeterTone = 'brand' | 'warning' | 'danger';
 export type TextTone = 'ink-3' | 'warning' | 'danger';
@@ -56,15 +50,15 @@ export interface LimitCycleModel {
 
 function dueCaption(bill: CardBillResponse): string {
   const parts: string[] = [];
-  if (bill.paymentDueDate) parts.push(`Due ${formatDayMonth(bill.paymentDueDate)}`);
+  if (bill.paymentDueDate) parts.push(`Due ${formatDate(bill.paymentDueDate, 'list')}`);
   const days = bill.daysUntilDue;
   if (days != null) {
     parts.push(
       days < 0
-        ? `${plural(-days, 'day', 'days')} overdue`
+        ? `${formatCount(-days, ['day', 'days'])} overdue`
         : days === 0
           ? 'today'
-          : `${plural(days, 'day', 'days')} left`
+          : `${formatCount(days, ['day', 'days'])} left`
     );
   }
   return parts.join(' · ');
@@ -89,48 +83,48 @@ export function buildLimitCycle(
         : null;
 
   const subtitleParts: string[] = [];
-  if (summary?.periodEnd) subtitleParts.push(`Statement of ${formatDayMonth(summary.periodEnd)}`);
+  if (summary?.periodEnd) subtitleParts.push(`Statement of ${formatDate(summary.periodEnd, 'list')}`);
   if (bill?.nextStatementExpectedOn) {
-    subtitleParts.push(`next statement ${formatDayMonth(bill.nextStatementExpectedOn)}`);
+    subtitleParts.push(`next statement ${formatDate(bill.nextStatementExpectedOn, 'list')}`);
   }
 
   const state = bill ? deriveBillCardState(bill, today) : null;
   const unbilled = state?.unbilled != null ? Math.max(0, state.unbilled) : 0;
   const lastStatement = summary?.periodEnd ?? bill?.periodEnd ?? null;
 
-  let billValue = formatRupees(0);
+  let billValue = formatMoney(0);
   let billCaption = 'No bill due';
   if (bill && state && state.phase !== 'awaiting') {
-    billValue = state.toPay != null ? formatRupees(state.toPay) : '—';
+    billValue = state.toPay != null ? formatMoney(state.toPay) : '—';
     billCaption = dueCaption(bill) || 'Due date missing';
   } else if (bill?.status === 'PAID' && bill.paidMarkedOn) {
     const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);
-    billCaption = `Paid ${formatDayMonth(bill.paidMarkedOn)}${timing ? ` · ${timing}` : ''}`;
+    billCaption = `Paid ${formatDate(bill.paidMarkedOn, 'list')}${timing ? ` · ${timing}` : ''}`;
   }
 
   return {
     subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : null,
     anchored: Boolean(account.balanceAnchored),
     used: {
-      value: formatRupees(owedAmount),
+      value: formatMoney(owedAmount),
       pct,
       tone: meterTone(pct),
       caption:
         hasLimit && pct != null && free != null
-          ? `${formatPct(pct)} of ${formatCompactRupees(limit)} · ${formatCompactRupees(free)} free`
+          ? `${formatPercent(pct)} of ${formatMoney(limit, { compact: true })} · ${formatMoney(free, { compact: true })} free`
           : null,
     },
     cycle: {
-      value: formatRupees(unbilled),
-      caption: lastStatement ? `Unbilled since ${formatDayMonth(lastStatement)}` : 'Unbilled',
+      value: formatMoney(unbilled),
+      caption: lastStatement ? `Unbilled since ${formatDate(lastStatement, 'list')}` : 'Unbilled',
     },
     bill: { value: billValue, caption: billCaption },
-    ownLimit: pool ? null : account.creditLimit != null ? formatRupees(account.creditLimit) : 'Not set',
+    ownLimit: pool ? null : account.creditLimit != null ? formatMoney(account.creditLimit) : 'Not set',
     pool: pool
       ? {
           label: `Shared limit · ${pool.name}`,
-          value: `${formatRupees(pool.available)} free of ${formatRupees(pool.creditLimit)}`,
-          sub: `across ${plural(pool.memberCount, 'card', 'cards')}`,
+          value: `${formatMoney(pool.available)} free of ${formatMoney(pool.creditLimit)}`,
+          sub: `across ${formatCount(pool.memberCount, ['card', 'cards'])}`,
         }
       : null,
   };
@@ -151,7 +145,7 @@ export interface RewardsModel {
 }
 
 function pts(n: number): string {
-  return `${formatAmount(n, 0)} pts`;
+  return formatCount(n, 'pts');
 }
 
 /** Null when the report has neither rules nor milestones: the Rewards tab carries the empty state. */
@@ -167,27 +161,27 @@ export function buildRewards(
   if (totalPts > 0) {
     earnedParts.push(
       summary.pointsValueInr != null
-        ? `${pts(totalPts)} ≈ ${formatRupees(summary.pointsValueInr)}`
+        ? `${pts(totalPts)} ≈ ${formatMoney(summary.pointsValueInr)}`
         : pts(totalPts)
     );
   }
-  if (summary.cashbackInr > 0) earnedParts.push(`${formatRupees(summary.cashbackInr)} cashback`);
+  if (summary.cashbackInr > 0) earnedParts.push(`${formatMoney(summary.cashbackInr)} cashback`);
 
   return {
     subtitle: window.calendarYear
       ? 'Calendar year'
-      : `Anniversary year ${formatDayMonth(window.from)} → ${formatDayMonth(window.to)}`,
+      : `Anniversary year ${formatDate(window.from, 'list')} → ${formatDate(window.to, 'list')}`,
     earned: earnedParts.length > 0 ? earnedParts.join(' · ') : pts(0),
     rules: report.rules.map((rule) => {
       const rupees = rule.earnedUnit === 'RUPEES';
-      const fmt = (n: number) => (rupees ? formatRupees(n) : pts(n));
+      const fmt = (n: number) => (rupees ? formatMoney(n) : pts(n));
       const cap = rule.capStatus;
       return {
         id: rule.ruleId,
         label: rule.name,
         value:
           cap && cap.cap > 0
-            ? `${rupees ? formatRupees(cap.used ?? 0) : formatAmount(cap.used ?? 0, 0)} of ${rupees ? formatRupees(cap.cap) : pts(cap.cap)} cap`
+            ? `${rupees ? formatMoney(cap.used ?? 0) : formatCount(cap.used ?? 0)} of ${rupees ? formatMoney(cap.cap) : pts(cap.cap)} cap`
             : fmt(rule.earned),
       };
     }),
@@ -198,13 +192,13 @@ export function buildRewards(
         m.payoutValue != null
           ? m.rewardType === 'POINTS'
             ? pts(m.payoutValue)
-            : formatRupees(m.payoutValue)
+            : formatMoney(m.payoutValue)
           : null;
       const daysLeft = daysBetween(today, m.windowEnd);
       const count = spend
-        ? `${formatRupees(m.progress)} of ${formatRupees(m.threshold)}`
+        ? `${formatMoney(m.progress)} of ${formatMoney(m.threshold)}`
         : `${m.progress} of ${m.threshold} txns`;
-      const each = !spend && m.minTxnAmount ? ` (${formatRupees(m.minTxnAmount)}+ each)` : '';
+      const each = !spend && m.minTxnAmount ? ` (${formatMoney(m.minTxnAmount)}+ each)` : '';
       const target = `${count}${each}${payout ? ` → ${payout}` : ''}${m.achieved ? ' · achieved' : ''}`;
       return {
         id: m.milestoneId,
@@ -212,7 +206,7 @@ export function buildRewards(
         pct,
         caption:
           daysLeft != null && daysLeft >= 0
-            ? `${target} · ${plural(daysLeft, 'day', 'days')} left`
+            ? `${target} · ${formatCount(daysLeft, ['day', 'days'])} left`
             : target,
       };
     }),
@@ -243,15 +237,6 @@ export interface CardholdersModel {
   rows: CardholderRowModel[];
 }
 
-export function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-}
-
 export function buildCardholders(
   cardholders: readonly Cardholder[],
   stats: readonly CardholderStats[] | null | undefined,
@@ -267,7 +252,7 @@ export function buildCardholders(
   const byId = new Map((stats ?? []).map((s) => [s.cardholderId, s]));
 
   return {
-    subtitle: `${plural(plastics, 'active plastic', 'active plastics')}`,
+    subtitle: `${formatCount(plastics, ['active plastic', 'active plastics'])}`,
     rows: open.map((c) => {
       const role = c.role === 'PRIMARY' ? 'Primary' : 'Add-on';
       const name = c.personName || role;
@@ -276,15 +261,15 @@ export function buildCardholders(
       const parts: string[] = [];
       if (last4) parts.push(`••${last4}`);
       if (s) {
-        parts.push(`${formatRupees(s.spendThisYear)} this year`);
-        parts.push(plural(s.transactionCount, 'txn', 'txns'));
-        if (s.lastUsedOn) parts.push(`last used ${formatDayMonth(s.lastUsedOn)}`);
+        parts.push(`${formatMoney(s.spendThisYear)} this year`);
+        parts.push(formatCount(s.transactionCount, ['txn', 'txns']));
+        if (s.lastUsedOn) parts.push(`last used ${formatDate(s.lastUsedOn, 'list')}`);
       }
       let limitLine: CardholderRowModel['limitLine'] = null;
       if (c.role === 'ADDON' && c.spendLimit != null && c.spendLimit > 0 && s) {
         const pct = (s.currentCycleSpend / c.spendLimit) * 100;
         limitLine = {
-          text: `${formatPct(pct)} of ${formatRupees(c.spendLimit)} spend limit used`,
+          text: `${formatPercent(pct)} of ${formatMoney(c.spendLimit)} spend limit used`,
           tone: textTone(pct),
         };
       }
@@ -316,15 +301,15 @@ export function buildConnections(input: {
 }): ConnectionsModel {
   const parts: string[] = [];
   if (input.identifierCount != null) {
-    parts.push(plural(input.identifierCount, 'identifier', 'identifiers'));
+    parts.push(formatCount(input.identifierCount, ['identifier', 'identifiers']));
   }
-  if (input.lastMatchDate) parts.push(`last match ${formatDayMonth(input.lastMatchDate)}`);
+  if (input.lastMatchDate) parts.push(`last match ${formatDate(input.lastMatchDate, 'list')}`);
   if (input.unmatchedCount != null && input.unmatchedCount > 0) {
     parts.push(`${input.unmatchedCount} unmatched`);
   }
   return {
     statements: input.lastStatementDate
-      ? `PDF upload · last ${formatDayMonth(input.lastStatementDate)}`
+      ? `PDF upload · last ${formatDate(input.lastStatementDate, 'list')}`
       : 'None yet',
     gmail: !input.ingestFromDate ? 'Off' : parts.length > 0 ? parts.join(' · ') : 'On',
   };
@@ -339,22 +324,23 @@ export interface TransactionRowModel {
   category: string | null;
   amount: string;
   credit: boolean;
-  balance: string | null;
+  /** The balance with its ₹ (negatives read −₹). */
+  balanceLabel: string | null;
 }
 
 /** "+45.00" for a credit, "7,430.00" for a debit; the balance in whole rupees or null. */
 export function buildRecentTransactions(items: readonly Transaction[]): TransactionRowModel[] {
   return items.map((t) => {
     const credit = t.amount > 0;
-    const amount = formatAmount(Math.abs(t.amount), 2);
+    const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
     return {
       id: t.id,
-      date: formatDayMonth(t.date),
+      date: formatDate(t.date, 'list'),
       description: t.description || t.sourcedDescription || '—',
       category: t.categories?.[0]?.name ?? null,
       amount: credit ? `+${amount}` : amount,
       credit,
-      balance: t.balance != null ? formatAmount(t.balance, 0) : null,
+      balanceLabel: t.balance != null ? formatMoney(t.balance) : null,
     };
   });
 }

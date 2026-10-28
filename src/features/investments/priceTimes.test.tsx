@@ -1,35 +1,21 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { pinClock } from '@/test/pinClock';
+
 import { holding, manualPrice } from './holding/holding.fixtures';
 import { holdingFigures, priceRow } from './holding/holdingModel';
 import { header } from './holdings/holdings.fixtures';
 import { heroModel } from './holdings/holdingsModel';
 import { PricesLine } from './holdings/PricesLine';
-import { dayWithTime, istTime, priceTimeLabel } from './investmentsFormat';
+import { priceTimeLabel } from './investmentsFormat';
+
+pinClock();
 
 describe('IST price times', () => {
-  it('12-hour edge cases', () => {
-    expect(istTime('2026-10-13T00:05:00+05:30')).toBe('12:05 am');
-    expect(istTime('2026-10-13T12:00:00+05:30')).toBe('12:00 pm');
-    expect(istTime('2026-10-13T15:30:00+05:30')).toBe('3:30 pm');
-    expect(istTime('2026-10-13T09:05:00+05:30')).toBe('9:05 am');
-    expect(istTime('2026-10-13T23:59:00+05:30')).toBe('11:59 pm');
-    expect(istTime('2026-10-12T18:35:00Z')).toBe('12:05 am');
-  });
-
   it('priceTimeLabel says Live while open and Closed after', () => {
     expect(priceTimeLabel('13 Oct', '2026-10-13T15:30:00+05:30', new Date('2026-10-14T05:00:00Z'))).toBe('Closed · 13 Oct, 3:30 pm');
     expect(priceTimeLabel('13 Oct', '2026-10-13T11:45:00+05:30', new Date('2026-10-13T06:30:00Z'))).toBe('Live · 11:45 am');
-  });
-
-  it('formats an offset timestamp as 12h IST, whatever the offset written', () => {
-    expect(istTime('2026-10-13T15:30:00+05:30')).toBe('3:30 pm');
-    expect(istTime('2026-10-13T10:00:00Z')).toBe('3:30 pm');
-    expect(istTime(null)).toBe('');
-    expect(istTime('nope')).toBe('');
-    expect(dayWithTime('13 Oct', '2026-10-13T09:05:00+05:30')).toBe('13 Oct, 9:05 am');
-    expect(dayWithTime('13 Oct', null)).toBe('13 Oct');
   });
 
   it('adds the time to the hero price date only when the header carries one', () => {
@@ -54,6 +40,6 @@ describe('IST price times', () => {
   it('price history rows carry the time only when present', () => {
     expect(priceRow({ ...manualPrice, priceAt: '2026-10-10T15:29:00+05:30' }).time).toBe('3:29 pm');
     expect(priceRow(manualPrice).time).toBe('');
-    expect(priceRow({ ...manualPrice, priceAt: '2026-10-10T15:29:00+05:30' }).date).toBe('10 Oct 26');
+    expect(priceRow({ ...manualPrice, priceAt: '2026-10-10T15:29:00+05:30' }).date).toBe('10 Oct');
   });
 });

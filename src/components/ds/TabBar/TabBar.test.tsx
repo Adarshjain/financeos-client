@@ -109,7 +109,7 @@ describe('TabBar', () => {
     );
   });
 
-  it('renders 99+ when count exceeds 99 via formatCount', () => {
+  it('renders 99+ when count exceeds 99 via capCount', () => {
     const highCountItems: TabBarItem[] = [
       { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 150, countTone: 'danger' },
     ];

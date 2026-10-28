@@ -117,7 +117,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
       await expect(page.getByText(`Updated ${renamed} for your account`)).toBeVisible();
       await expect(shown(page.getByText(renamed))).toBeVisible();
-      await expect(page.getByText(/Edited for your account/)).toHaveCount(2);
+      await expect(page.getByText(/Edited for your account/).locator('visible=true')).toHaveCount(2);
 
       // Reset it from the row: the confirmation says what goes.
       const row = page.getByRole('button').filter({ hasText: renamed, has: page.getByRole('button', { name: 'Reset to catalog', exact: true }) });

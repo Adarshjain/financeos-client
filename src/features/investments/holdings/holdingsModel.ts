@@ -1,9 +1,9 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
-import { dayWithTime, fyLabel, moveTone, plainPct, plainPrice, plainRupees, plainSignedRupees, priceTimeLabel, quantity, rupees, shortDate, signedPct, signedRupees, unitPrice, unitWord } from '../investmentsFormat';
+import { fyLabel, moveTone, priceTimeLabel, unitWord } from '../investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------
@@ -140,22 +140,24 @@ export function heroModel(header: HoldingsHeader, now: Date = new Date()): Holdi
     header.dayChange == null
       ? null
       : {
-          text: `${signedRupees(header.dayChange)} today${header.dayChangePct == null ? '' : ` · ${signedPct(header.dayChangePct, 2)}`}`,
+          text: `${formatMoney(header.dayChange, { sign: 'always' })} today${header.dayChangePct == null ? '' : ` · ${formatPercent(header.dayChangePct, { sign: 'always', decimals: 2, fixed: true })}`}`,
           tone: moveTone(header.dayChange),
         };
   const sub = [
-    header.unrealisedPct == null ? null : signedPct(header.unrealisedPct),
-    header.xirr == null ? null : `XIRR ${plainPct(header.xirr)}`,
+    header.unrealisedPct == null ? null : formatPercent(header.unrealisedPct, { sign: 'always' }),
+    header.xirr == null ? null : `XIRR ${formatPercent(header.xirr)}`,
   ].filter(Boolean);
   return {
-    value: rupees(header.currentValue),
+    value: formatMoney(header.currentValue),
     day,
-    invested: rupees(header.invested),
-    unrealised: { text: signedRupees(header.unrealised), tone: moveTone(header.unrealised) },
+    invested: formatMoney(header.invested),
+    unrealised: { text: formatMoney(header.unrealised, { sign: 'always' }), tone: moveTone(header.unrealised) },
     unrealisedSub: sub.length > 0 ? sub.join(' · ') : null,
-    priceAsOf: header.priceAsOf ? dayWithTime(formatDayMonth(header.priceAsOf), header.priceAt) : null,
+    priceAsOf: header.priceAsOf
+      ? [formatDate(header.priceAsOf, 'list'), formatTime(header.priceAt)].filter(Boolean).join(', ')
+      : null,
     priceLine: header.priceAsOf
-      ? priceTimeLabel(formatDayMonth(header.priceAsOf), header.priceAt, now) || `Prices as of ${formatDayMonth(header.priceAsOf)}`
+      ? priceTimeLabel(formatDate(header.priceAsOf, 'list'), header.priceAt, now) || `Prices as of ${formatDate(header.priceAsOf, 'list')}`
       : null,
   };
 }
@@ -197,7 +199,7 @@ export function holdingsTiles(
 }
 
 function signedRealised(value: number): string {
-  return value < 0 ? signedRupees(value) : rupees(value);
+  return value < 0 ? formatMoney(value, { sign: 'always' }) : formatMoney(value);
 }
 
 // ---- Rows --------------------------------------------------------------------
@@ -231,12 +233,12 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
   const merged = row.mergedIntoName ? { into: row.mergedIntoName, date: row.mergedIntoDate } : null;
   const title = row.symbol || row.name;
   const priced = row.ltp != null && !row.noPrice;
-  const qty = quantity(row.quantity);
+  const qty = formatQuantity(row.quantity);
   const position = merged
     ? `${qty} ${unitWord(row.assetType, row.quantity)}`
     : row.assetType === 'mutual_fund'
-      ? `${qty} units × ${unitPrice(priced ? row.ltp! : row.avgCost)}`
-      : `${qty} × ${unitPrice(priced ? row.ltp! : row.avgCost)}`;
+      ? `${qty} units × ${formatMoney(priced ? row.ltp! : row.avgCost, { decimals: 'exact' })}`
+      : `${qty} × ${formatMoney(priced ? row.ltp! : row.avgCost, { decimals: 'exact' })}`;
   return {
     id: row.instrumentId,
     href: holdingHref(row.instrumentId),
@@ -247,22 +249,22 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
     noPrice: row.noPrice,
     manualPrice: row.manualPrice,
     quantity: qty,
-    avgCost: merged ? null : plainPrice(row.avgCost),
-    ltp: priced ? plainPrice(row.ltp!) : null,
+    avgCost: merged ? null : formatMoney(row.avgCost, { decimals: 'exact', symbol: false }),
+    ltp: priced ? formatMoney(row.ltp!, { decimals: 'exact', symbol: false }) : null,
     dayPct:
       priced && !row.manualPrice && row.dayChangePct != null
-        ? { text: signedPct(row.dayChangePct), tone: moveTone(row.dayChangePct) }
+        ? { text: formatPercent(row.dayChangePct, { sign: 'always' }), tone: moveTone(row.dayChangePct) }
         : null,
-    invested: merged ? null : plainRupees(row.invested),
-    current: rupees(row.currentValue),
-    currentPlain: plainRupees(row.currentValue),
+    invested: merged ? null : formatMoney(row.invested, { symbol: false }),
+    current: formatMoney(row.currentValue),
+    currentPlain: formatMoney(row.currentValue, { symbol: false }),
     pnl:
       merged || row.noPrice
         ? null
         : {
-            amount: signedRupees(row.unrealised),
-            plain: plainSignedRupees(row.unrealised),
-            pct: row.unrealisedPct == null ? null : signedPct(row.unrealisedPct),
+            amount: formatMoney(row.unrealised, { sign: 'always' }),
+            plain: formatMoney(row.unrealised, { sign: 'always', symbol: false }),
+            pct: row.unrealisedPct == null ? null : formatPercent(row.unrealisedPct, { sign: 'always' }),
             tone: moveTone(row.unrealised),
           },
     position,
@@ -271,7 +273,7 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
 
 /** "Merged into HDFCBANK · 13 Jul 23". */
 export function mergedLine(merged: { into: string; date: string | null }): string {
-  return merged.date ? `Merged into ${merged.into} · ${shortDate(merged.date)}` : `Merged into ${merged.into}`;
+  return merged.date ? `Merged into ${merged.into} · ${formatDate(merged.date, 'list')}` : `Merged into ${merged.into}`;
 }
 
 // ---- Groups ------------------------------------------------------------------
@@ -294,7 +296,7 @@ export function groupBands(groups: readonly HoldingsGroup[]): Map<InstrumentType
       {
         key: g.assetType,
         name: GROUP_NAMES[g.assetType],
-        total: rupees(g.value),
+        total: formatMoney(g.value),
         share: all > 0 ? `${Math.round((g.value / all) * 100)}%` : '0%',
       },
     ]),
@@ -335,20 +337,20 @@ export function taxCardModel(tax: TaxHarvestResponse): TaxCardModel {
   const lossNames = distinct(lots.filter((l) => l.gain < 0).map((l) => l.instrument), 3);
   const rows: TaxCardModel['rows'] = [
     { label: 'Realised gains', value: signedRealisedTotal(realised.ltcg - realised.ltcl + realised.stcg - realised.stcl) },
-    { label: 'LTCG exemption left', value: rupees(realised.exemptionLeft) },
+    { label: 'LTCG exemption left', value: formatMoney(realised.exemptionLeft) },
   ];
   if (summary) {
     rows.push({
       label: 'Harvestable gains',
       sub: gainNames.length > 0 ? gainNames.join(', ') : undefined,
-      value: rupees(summary.harvestableLtcg),
+      value: formatMoney(summary.harvestableLtcg),
     });
     const loss = summary.harvestableLosses.total;
     if (loss > 0) {
       rows.push({
         label: 'Loss to offset',
         sub: lossNames.length > 0 ? lossNames.join(', ') : undefined,
-        value: signedRupees(-loss),
+        value: formatMoney(-loss, { sign: 'always' }),
         tone: 'danger',
       });
     }
@@ -357,7 +359,7 @@ export function taxCardModel(tax: TaxHarvestResponse): TaxCardModel {
 }
 
 function signedRealisedTotal(value: number): string {
-  return value < 0 ? signedRupees(value) : rupees(value);
+  return value < 0 ? formatMoney(value, { sign: 'always' }) : formatMoney(value);
 }
 
 export interface Mover {
@@ -373,5 +375,5 @@ export function topMovers(rows: readonly HoldingRow[]): Mover[] {
     .filter((r) => r.dayChange != null && Math.round(r.dayChange) !== 0 && !r.mergedIntoName)
     .sort((a, b) => Math.abs(b.dayChange!) - Math.abs(a.dayChange!))
     .slice(0, 3)
-    .map((r) => ({ id: r.instrumentId, symbol: r.symbol || r.name, amount: signedRupees(r.dayChange!), tone: moveTone(r.dayChange) }));
+    .map((r) => ({ id: r.instrumentId, symbol: r.symbol || r.name, amount: formatMoney(r.dayChange!, { sign: 'always' }), tone: moveTone(r.dayChange) }));
 }

@@ -4,9 +4,8 @@ import Link from 'next/link';
 import React, { useMemo } from 'react';
 
 import { Badge, Banner, Button, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
-import { dayMonth } from '@/features/jobs/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { DuplicateDetail, FileIngestionResult, FileSummary } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
 
 import { SyncCounters } from '../SyncCounters';
 import { ResultSection } from './ResultSection';
@@ -19,7 +18,7 @@ const dupColumns = [
     meta: { size: 'sm', phone: 'amount' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
-        {dayMonth(row.original.date)}
+        {formatDate(row.original.date, 'list')}
       </Text>
     ),
   }),
@@ -47,7 +46,7 @@ const dupColumns = [
     id: 'amount',
     header: 'Amount',
     meta: { size: 'sm', align: 'end', phone: 'status' },
-    cell: ({ row }) => <Text variant="body" fraction="small">{formatCurrency(row.original.amount)}</Text>,
+    cell: ({ row }) => <Text variant="body" fraction="small">{formatMoney(row.original.amount, { decimals: 'exact' }) || '—'}</Text>,
   }),
 ];
 
@@ -142,7 +141,7 @@ export function IngestionResult({ result }: { result: FileIngestionResult }) {
           columns={dupColumns}
           data={duplicates}
           getRowId={(d) => d.transactionId}
-          phoneSub={(d) => `${dayMonth(d.date)} · ${d.filename}`}
+          phoneSub={(d) => `${formatDate(d.date, 'list')} · ${d.filename}`}
           stickyHeader={false}
         />
         {result.duplicatesTruncated ? (

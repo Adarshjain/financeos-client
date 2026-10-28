@@ -29,7 +29,7 @@ describe('CardUtilisationBody owed amount drill', () => {
     } as never);
     renderWithQuery(<CardUtilisationBody {...bodyProps('card_utilisation')} />);
     const rows = await screen.findAllByTestId('utilisation-row');
-    await userEvent.click(within(rows[1]).getByRole('button', { name: '₹10,000.00' }));
+    await userEvent.click(within(rows[1]).getByRole('button', { name: '₹10,000' }));
     const dialog = screen.getByTestId('breakdown');
     expect(dialog).toHaveAttribute('data-datasource', 'net_worth');
     expect(dialog).toHaveAttribute('data-row-id', 'c-low');

@@ -827,4 +827,43 @@ describe('TransactionRow account logo', () => {
     expect(container.querySelector('.gap-space-4.inline-flex')).toBeNull();
     expect(container.querySelector('.mr-space-4')).toBeNull();
   });
+
+  describe('compact', () => {
+    it('keeps the phone layout: the date joins the context line and the desktop cells are not drawn', () => {
+      const { container } = render(
+        <TransactionRow
+          compact
+          date="12 Oct"
+          description="Swiggy"
+          account="HDFC Regalia"
+          plastic="••7741"
+          categories={['Food']}
+          balance="₹1,000"
+          amount="1,249.00"
+        />,
+      );
+      expect(screen.getAllByText('12 Oct')).toHaveLength(1);
+      expect(screen.getAllByText('HDFC Regalia ••7741')).toHaveLength(1);
+      expect(screen.getAllByText('Food')).toHaveLength(1);
+      expect(container.querySelector('[class*="desk:"]')).toBeNull();
+      expect(container.querySelectorAll('[role="cell"]').length).toBe(2);
+    });
+
+    it('puts the date first on the context line', () => {
+      render(<TransactionRow compact date="12 Oct" description="Swiggy" account="HDFC Regalia" amount="10.00" />);
+      const date = screen.getByText('12 Oct');
+      const account = screen.getByText('HDFC Regalia');
+      expect(date.compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('marks a disabled row aria-disabled', () => {
+      render(<TransactionRow compact disabled description="Swiggy" amount="10.00" />);
+      expect(document.querySelector('[aria-disabled="true"]')).not.toBeNull();
+    });
+
+    it('still colours a credit', () => {
+      render(<TransactionRow compact isCredit description="Salary" amount="+500.00" />);
+      expect(screen.getByText('+500').closest('[role="cell"]')).toHaveClass('text-positive');
+    });
+  });
 });

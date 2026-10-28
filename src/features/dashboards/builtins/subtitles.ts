@@ -2,6 +2,7 @@
 // lookups that need the account list (a picked card's name, an account's type) are done by the callers.
 
 import type { Account } from '@/lib/account.types';
+import { formatCount } from '@/lib/format';
 
 /** A param's value when it is a non-empty string. */
 export function stringParam(params: Record<string, unknown>, key: string): string | null {
@@ -16,12 +17,12 @@ export const ALL_CARDS_SUBTITLE = 'All cards';
 /** Upcoming's "Next 14 days"; null (defer to the server's line) without a numeric `days` param. */
 export function upcomingSubtitle(params: Record<string, unknown>): string | null {
   const days = params.days;
-  return typeof days === 'number' ? `Next ${days} ${days === 1 ? 'day' : 'days'}` : null;
+  return typeof days === 'number' ? `Next ${formatCount(days, ['day', 'days'])}` : null;
 }
 
 /** The spend heatmap's "Last 6 months". */
 export function monthsSubtitle(months: number): string {
-  return `Last ${months} ${months === 1 ? 'month' : 'months'}`;
+  return `Last ${formatCount(months, ['month', 'months'])}`;
 }
 
 /** A card-scoped widget's subtitle: that card's name ("One card" until the list loads or when it is gone). */

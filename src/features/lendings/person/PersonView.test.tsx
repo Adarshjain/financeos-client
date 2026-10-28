@@ -68,11 +68,14 @@ vi.mock('./matchActions', () => ({ loadPersonMatches }));
 const loadPersonLedger = vi.hoisted(() => vi.fn());
 vi.mock('./ledgerActions', () => ({ loadPersonLedger }));
 
+import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { AddLendingProvider } from '../form/AddLendingProvider';
 import { entriesFixture, ledgerFixture, personFixture } from './personModel.fixtures';
 import { PersonView, type PersonViewProps } from './PersonView';
+
+pinClock();
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
@@ -113,7 +116,7 @@ describe('header', () => {
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
     expect(screen.getByText('Owe & lend / Lendings')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
-    expect(screen.getByText('College friend · 4 entries since May')).toBeInTheDocument();
+    expect(screen.getByText('College friend · 4 entries since May 2026')).toBeInTheDocument();
     expect(screen.getByText('Owes you')).toBeInTheDocument();
     expect(screen.getByText('₹15,000')).toBeInTheDocument();
     expect(screen.getByText('expected 28 Oct · in 15 days')).toBeInTheDocument();

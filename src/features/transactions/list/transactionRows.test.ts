@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { pinClock } from '@/test/pinClock';
 
 import { dayHeader, linkWords, monthBand, monthLabel, reviewWords, transactionRow, transactionRows, weekdayOf } from './transactionRows';
+
+pinClock();
 
 const t = (over: Partial<Transaction> = {}): Transaction =>
   ({
@@ -30,7 +33,7 @@ describe('transactionRow', () => {
   });
 
   it('puts the minus before the rupee sign on a negative balance', () => {
-    expect(transactionRow(t({ balance: -210150 }), ctx).balance).toBe('-₹2,10,150');
+    expect(transactionRow(t({ balance: -210150 }), ctx).balance).toBe('−₹2,10,150');
   });
 
   it('falls back to the bank text, then a dash', () => {

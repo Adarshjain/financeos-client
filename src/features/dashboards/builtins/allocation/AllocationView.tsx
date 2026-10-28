@@ -9,9 +9,9 @@ import React from 'react';
 import { EmptyState, Skeleton } from '@/components/ds';
 import { Chart } from '@/components/organisms';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
+import { formatMoney } from '@/lib/format';
 import type { ChartData } from '@/lib/reports.types';
 
-import { formatRupees } from '../builtin.helpers';
 import { positionsValueRequest } from '../investmentsLoansData';
 import type { TemplateViewProps } from '../types';
 import { allocationDonut, sliceFilter, sliceKeyOf } from './allocationData';
@@ -47,7 +47,7 @@ export function AllocationView({ data }: TemplateViewProps) {
       {opened ? (
         <LazyReportUnderlyingDialog
           request={positionsValueRequest([sliceFilter(opened.key)])}
-          title={`${opened.label} holdings · ${formatRupees(opened.value)}`}
+          title={`${opened.label} holdings · ${formatMoney(opened.value)}`}
           onClose={() => setOpened(null)}
         />
       ) : null}

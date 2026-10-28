@@ -160,6 +160,7 @@ for (const viewport of VIEWPORTS) {
       await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Here is the table.', blocks }]);
       await page.goto('/chat');
       await ask(page, 'Show the table');
+      await answer(page, 'Here is the table.');
       await page.getByRole('button', { name: 'Copy table' }).click();
       await expect(page.getByText('Table copied')).toBeVisible();
       const text = await page.evaluate(() => navigator.clipboard.readText());

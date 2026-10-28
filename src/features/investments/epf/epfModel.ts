@@ -1,9 +1,8 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { fyStartYear } from '@/features/loans/detail/financialYear';
 import { DS_PREFIX } from '@/features/shell/routes';
 import type { components } from '@/lib/api/schema';
+import { formatDate, formatMoney, formatPercent } from '@/lib/format';
 
-import { rupees } from '../investmentsFormat';
 
 type Schemas = components['schemas'];
 export type EpfSummary = Schemas['EpfSummaryResponse'];
@@ -80,18 +79,6 @@ export function effectiveFy(state: EpfUrlState, fys: number[]): number | undefin
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** "Sep 2026" from a calendar date; '' when missing. */
-export function monthYear(iso: string | null | undefined): string {
-  if (!iso) return '';
-  const month = Number(iso.slice(5, 7));
-  return month >= 1 && month <= 12 ? `${MONTHS[month - 1]} ${iso.slice(0, 4)}` : '';
-}
-
-/** "15 Oct 2026" */
-export function fullDay(iso: string): string {
-  return `${formatDayMonth(iso)} ${iso.slice(0, 4)}`;
-}
-
 /** "FY 2026-27" from the year it starts in. */
 export function epfFyLabel(start: number): string {
   return `FY ${start}-${String(start + 1).slice(-2)}`;
@@ -165,24 +152,24 @@ export interface EpfFigures {
 export function epfFigures(summary: EpfSummary): EpfFigures {
   const passbookThrough = summary.throughMonth ?? null;
   const { interestEstimate: est, lastInterest: last } = summary;
-  const upTo = passbookThrough ? `Passbook up to ${monthYear(passbookThrough)}` : '';
+  const upTo = passbookThrough ? `Passbook up to ${formatDate(passbookThrough, 'month')}` : '';
   const interest = est
-    ? { value: `≈ ${rupees(est.amount)}`, context: `Estimate at ${rateText(est.rate)} · credited after 31 Mar` }
+    ? { value: `≈ ${formatMoney(est.amount)}`, context: `Estimate at ${rateText(est.rate)} · credited after 31 Mar` }
     : summary.balance <= 0
       ? { value: '₹0', context: 'No balance yet' }
       : { value: '—', context: '' };
   return {
-    balance: { value: rupees(summary.balance), context: upTo, phoneContext: upTo.replace('Passbook up', 'Up') },
+    balance: { value: formatMoney(summary.balance), context: upTo, phoneContext: upTo.replace('Passbook up', 'Up') },
     contributed: {
-      value: rupees(summary.fyEmployee + summary.fyEmployer),
-      context: `You ${rupees(summary.fyEmployee)} · employer ${rupees(summary.fyEmployer)}`,
-      phoneContext: `You ${rupees(summary.fyEmployee)}`,
+      value: formatMoney(summary.fyEmployee + summary.fyEmployer),
+      context: `You ${formatMoney(summary.fyEmployee)} · employer ${formatMoney(summary.fyEmployer)}`,
+      phoneContext: `You ${formatMoney(summary.fyEmployee)}`,
     },
     interest,
     lastInterest: last
       ? {
-          value: rupees(last.amount),
-          context: `${epfFyLabel(last.fy)}${last.rate != null ? ` at ${rateText(last.rate)}` : ''} · ${formatDayMonth(last.creditedOn)}`,
+          value: formatMoney(last.amount),
+          context: `${epfFyLabel(last.fy)}${last.rate != null ? ` at ${rateText(last.rate)}` : ''} · ${formatDate(last.creditedOn, 'list')}`,
           phoneContext: epfFyLabel(last.fy),
         }
       : { value: '—', context: '', phoneContext: '' },
@@ -190,7 +177,7 @@ export function epfFigures(summary: EpfSummary): EpfFigures {
 }
 
 function rateText(rate: number): string {
-  return `${Number(rate.toFixed(2))}%`;
+  return formatPercent(rate, { decimals: 2 });
 }
 
 /** The pension card's lines. */
@@ -200,8 +187,8 @@ export function pensionCard(pension: NonNullable<EpfSummary['pension']>) {
   const part = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
   const service = [years > 0 ? part(years, 'year') : '', months > 0 || years === 0 ? part(months, 'month') : ''].filter(Boolean).join(' ');
   return {
-    value: rupees(pension.estimatedMonthlyPension),
-    note: `Estimated from your service so far. Your employer pays ${rupees(pension.monthlyContribution)} a month into the pension fund; it is not in your EPF balance or your net worth.`,
+    value: formatMoney(pension.estimatedMonthlyPension),
+    note: `Estimated from your service so far. Your employer pays ${formatMoney(pension.monthlyContribution)} a month into the pension fund; it is not in your EPF balance or your net worth.`,
     service: `Service counted: ${service}${pension.eligible ? '' : ' · pension needs 10 years'}`,
   };
 }
@@ -229,7 +216,7 @@ export interface EpfRow {
   amountTone?: 'positive';
 }
 
-const PLUS = (n: number) => `+${rupees(n)}`;
+const PLUS = (n: number) => `+${formatMoney(n)}`;
 
 function sharesOf(e: EpfEntry): number {
   return e.type === 'WITHDRAWAL' && e.withdrawalKind === 'PENSION' ? e.pensionAmount : e.employeeAmount + e.employerAmount;
@@ -238,24 +225,24 @@ function sharesOf(e: EpfEntry): number {
 export function epfRow(e: EpfEntry): EpfRow {
   const source = e.source === 'PASSBOOK' ? 'Passbook' : 'Added by you';
   const dash = '—';
-  const money = (n: number, sign: '+' | '−' | '') => (sign === '' ? rupees(n) : sign === '+' ? PLUS(n) : `−${rupees(n)}`);
+  const money = (n: number, sign: '+' | '−' | '') => (sign === '' ? formatMoney(n) : sign === '+' ? PLUS(n) : `−${formatMoney(n)}`);
   const base = {
     id: e.id,
-    wageMonth: monthYear(e.wageMonth) || dash,
-    balance: rupees(e.runningBalance),
-    amountSub: rupees(e.runningBalance),
+    wageMonth: formatDate(e.wageMonth, 'month') || dash,
+    balance: formatMoney(e.runningBalance),
+    amountSub: formatMoney(e.runningBalance),
     pension: dash,
   };
   switch (e.type) {
     case 'CONTRIBUTION': {
-      const pension = e.pensionAmount > 0 ? rupees(e.pensionAmount) : dash;
+      const pension = e.pensionAmount > 0 ? formatMoney(e.pensionAmount) : dash;
       return {
         ...base,
         title: source,
-        phoneTitle: monthYear(e.wageMonth) || source,
+        phoneTitle: formatDate(e.wageMonth, 'month') || source,
         // The month's split on phone, on one line beside the balance; pension is not in the amount, so it stays on desktop and in the entry.
-        phoneSub: `You ${rupees(e.employeeAmount)} · ${e.employerName} ${rupees(e.employerAmount)}`,
-        split: { you: rupees(e.employeeAmount), employerName: e.employerName, employer: rupees(e.employerAmount) },
+        phoneSub: `You ${formatMoney(e.employeeAmount)} · ${e.employerName} ${formatMoney(e.employerAmount)}`,
+        split: { you: formatMoney(e.employeeAmount), employerName: e.employerName, employer: formatMoney(e.employerAmount) },
         employee: money(e.employeeAmount, '+'),
         employer: money(e.employerAmount, '+'),
         pension,
@@ -285,7 +272,7 @@ export function epfRow(e: EpfEntry): EpfRow {
         phoneSub: source,
         employee: money(e.employeeAmount, ''),
         employer: money(e.employerAmount, ''),
-        amount: rupees(sharesOf(e)),
+        amount: formatMoney(sharesOf(e)),
       };
     case 'TRANSFER_IN':
     case 'TRANSFER_OUT': {
@@ -311,10 +298,10 @@ export function epfRow(e: EpfEntry): EpfRow {
         ...base,
         title,
         phoneTitle: title,
-        phoneSub: pensionKind ? 'Withdrawal' : `Withdrawal · You ${rupees(e.employeeAmount)} · employer ${rupees(e.employerAmount)}`,
+        phoneSub: pensionKind ? 'Withdrawal' : `Withdrawal · You ${formatMoney(e.employeeAmount)} · employer ${formatMoney(e.employerAmount)}`,
         employee: pensionKind ? dash : money(e.employeeAmount, '−'),
         employer: pensionKind ? dash : money(e.employerAmount, '−'),
-        pension: pensionKind ? rupees(e.pensionAmount) : dash,
+        pension: pensionKind ? formatMoney(e.pensionAmount) : dash,
         amount: money(sharesOf(e), '−'),
       };
     }
@@ -344,13 +331,13 @@ export interface EpfEmployerRow {
 }
 
 export function employerRow(e: EpfEmployer): EpfEmployerRow {
-  const range = `${monthYear(e.joinedOn)}${e.leftOn ? ` – ${monthYear(e.leftOn)}` : ''}`.trim();
-  const when = e.statusDate ? fullDay(e.statusDate) : '';
+  const range = `${formatDate(e.joinedOn, 'month')}${e.leftOn ? ` – ${formatDate(e.leftOn, 'month')}` : ''}`.trim();
+  const when = e.statusDate ? formatDate(e.statusDate, 'full') : '';
   let line: string;
   if (e.status === 'CURRENT') {
-    line = [e.memberId ? `Member ID ${memberTail(e.memberId)}` : '', e.joinedOn ? `since ${monthYear(e.joinedOn)}` : ''].filter(Boolean).join(' · ');
+    line = [e.memberId ? `Member ID ${memberTail(e.memberId)}` : '', e.joinedOn ? `since ${formatDate(e.joinedOn, 'month')}` : ''].filter(Boolean).join(' · ');
   } else if (e.status === 'TRANSFERRED') {
-    const amount = e.transferredOutAmount != null ? `${rupees(e.transferredOutAmount)} ` : '';
+    const amount = e.transferredOutAmount != null ? `${formatMoney(e.transferredOutAmount)} ` : '';
     const to = e.transferredToEmployerName ? e.transferredToEmployerName : 'another employer';
     line = [range, `${amount}moved to ${to}${when ? ` on ${when}` : ''}`].filter(Boolean).join(' · ');
   } else if (e.status === 'SETTLED') {
@@ -359,7 +346,7 @@ export function employerRow(e: EpfEmployer): EpfEmployerRow {
   } else {
     line = [range, 'left'].filter(Boolean).join(' · ');
   }
-  return { id: e.id, name: e.name, line, balance: rupees(e.balance), status: STATUS_LABEL[e.status] };
+  return { id: e.id, name: e.name, line, balance: formatMoney(e.balance), status: STATUS_LABEL[e.status] };
 }
 
 /** The passbook card's subtitle: the employer, its member ID and the UAN. */
@@ -476,7 +463,7 @@ export function receivedAmount(form: EpfFormState): number {
 
 export function receivedCaption(form: EpfFormState, employerName: string): string {
   if (form.kind === 'PENSION') return "Pension is not in your EPF balance, so the balance doesn't change.";
-  const received = `Received in bank: ${rupees(receivedAmount(form))}.`;
+  const received = `Received in bank: ${formatMoney(receivedAmount(form))}.`;
   return form.kind === 'FINAL_SETTLEMENT'
     ? `${received} Shares are filled with ${employerName || 'the employer'}'s full balance; adding it marks the employer Settled.`
     : `${received} After you add it, a matching bank credit is suggested.`;
@@ -521,7 +508,7 @@ export function formToRequest(form: EpfFormState): { body: EpfEntryRequest } | {
 export function entryTitle(e: EpfEntry): string {
   switch (e.type) {
     case 'CONTRIBUTION':
-      return `${monthYear(e.wageMonth)} contribution`.trim();
+      return `${formatDate(e.wageMonth, 'month')} contribution`.trim();
     case 'INTEREST':
       return e.interestFy != null ? `Interest · ${epfFyLabel(e.interestFy)}` : 'Interest';
     case 'WITHDRAWAL':
@@ -533,7 +520,7 @@ export function entryTitle(e: EpfEntry): string {
 
 /** "NEFT CR EPFO MUMBAI" row line: "HDFC Bank ••4521 · 24 Feb 2025". */
 export function creditLine(t: EpfLinkedTransaction): string {
-  return [t.accountName, fullDay(t.date)].filter(Boolean).join(' · ');
+  return [t.accountName, formatDate(t.date, 'full')].filter(Boolean).join(' · ');
 }
 
 /** FY choices: the years the server lists, the one in use, and every year. */
@@ -548,9 +535,9 @@ export function wageMonthOptions(today: string, current: string): { value: strin
   const out: { value: string; label: string }[] = [];
   for (let i = -1; i < 360; i += 1) {
     const value = addMonths(start, -i);
-    out.push({ value, label: monthYear(value) });
+    out.push({ value, label: formatDate(value, 'month') });
   }
-  if (current && !out.some((o) => o.value === current)) out.push({ value: current, label: monthYear(current) });
+  if (current && !out.some((o) => o.value === current)) out.push({ value: current, label: formatDate(current, 'month') });
   return out;
 }
 

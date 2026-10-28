@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Account, BankAccount, Broker, CreditCard, GenericAccount } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
 import { AccountType } from '@/lib/types';
+import { pinClock } from '@/test/pinClock';
 
 import {
   bankRow,
@@ -12,7 +13,6 @@ import {
   cardsSubtitle,
   cashKpi,
   closedLine,
-  formatCompactRupees,
   gapLabel,
   groupAccounts,
   investmentsKpi,
@@ -22,6 +22,8 @@ import {
   rewardsText,
   walletRow,
 } from './accountsList';
+
+pinClock();
 
 const TODAY = '2026-10-19';
 
@@ -89,7 +91,7 @@ describe('KPI sums', () => {
 
   it('investments delta is signed with period today, and absent when unknown', () => {
     expect(investmentsKpi(sections, 0.594).delta).toEqual({ value: '+0.59%', period: 'today', direction: 'good' });
-    expect(investmentsKpi(sections, -1.2).delta?.value).toBe('-1.20%');
+    expect(investmentsKpi(sections, -1.2).delta?.value).toBe('−1.20%');
     expect(investmentsKpi(sections, -1.2).delta?.direction).toBe('bad');
     expect(investmentsKpi(sections, null).delta).toBeUndefined();
     expect(investmentsKpi(sections, undefined).delta).toBeUndefined();
@@ -107,16 +109,6 @@ describe('KPI sums', () => {
   it('cards KPI omits the context line when there is no limit', () => {
     const s = groupAccounts([card({ creditLimit: null, effectiveCreditLimit: null, balance: -500 })], TODAY);
     expect(cardsKpi(s).context).toBeUndefined();
-  });
-});
-
-describe('compact rupees', () => {
-  it('formats lakhs, trims zeros, and keeps small figures whole', () => {
-    expect(formatCompactRupees(298962)).toBe('₹2.99L');
-    expect(formatCompactRupees(300000)).toBe('₹3L');
-    expect(formatCompactRupees(408000)).toBe('₹4.08L');
-    expect(formatCompactRupees(95000)).toBe('₹95,000');
-    expect(formatCompactRupees(12000000)).toBe('₹1.2Cr');
   });
 });
 

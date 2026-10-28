@@ -1,5 +1,4 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
-import { plainAmount } from '@/features/loans/loanFormat';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { MatchSuggestionsResponse } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -21,7 +20,7 @@ export function suggestionRows(response: MatchSuggestionsResponse | null): Sugge
         key: `${s.installmentSeq}:${tx.id}`,
         seq: s.installmentSeq,
         tx,
-        text: `#${s.installmentSeq} "${tx.description || 'DEBIT'}" ${formatDayMonth(tx.date)} · ₹${plainAmount(Math.abs(tx.amount))}`,
+        text: `#${s.installmentSeq} "${tx.description || 'DEBIT'}" ${formatDate(tx.date, 'list')} · ${formatMoney(Math.abs(tx.amount), { decimals: 'auto' })}`,
       })),
     );
 }

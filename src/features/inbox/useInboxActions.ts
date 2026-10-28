@@ -8,8 +8,8 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
+import { formatDate } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
-import { formatDate } from '@/lib/utils';
 
 import { summarise } from './inbox.helpers';
 
@@ -29,7 +29,7 @@ export interface InboxNotifier {
 
 export const sonnerInboxNotifier: InboxNotifier = {
   snoozed: (until, undo) =>
-    toast.success(`Snoozed until ${formatDate(until)}`, { action: { label: 'Undo', onClick: undo } }),
+    toast.success(`Snoozed until ${formatDate(until, 'list')}`, { action: { label: 'Undo', onClick: undo } }),
   dismissed: (undo) => toast.success('Dismissed', { action: { label: 'Undo', onClick: undo } }),
   restored: () => toast.success('Restored'),
   snoozeFailed: (e) => toast.error(getErrorMessage(e, 'Could not snooze this item')),

@@ -1,4 +1,4 @@
-import { formatAmount, formatDayMonth } from '@/features/accounts/list/accountsList';
+import { formatDate, formatMoney } from '@/lib/format';
 
 /** What the picker needs of a transaction: both a full `Transaction` and a lending's transaction summary fit. */
 export interface PickerSummaryLike {
@@ -14,8 +14,7 @@ export interface PickerSummaryLike {
 
 /** "₹2,300", "₹2,300.50": whole figures bare, paise only when there are some. */
 function rupeesOf(value: number): string {
-  const abs = Math.abs(value);
-  return `₹${formatAmount(abs, Number.isInteger(abs) ? 0 : 2)}`;
+  return formatMoney(Math.abs(value), { decimals: 'auto' });
 }
 
 /** The amount of a summary, signed (a debit is negative). */
@@ -54,7 +53,7 @@ export function pickerListItem(
   return {
     id: tx.id,
     title: tx.description || tx.sourcedDescription || 'Transaction',
-    subtitle: [formatDayMonth(tx.date), where, note].filter(Boolean).join(' · '),
+    subtitle: [formatDate(tx.date, 'list'), where, note].filter(Boolean).join(' · '),
     amount: rupeesOf(signed),
     isCredit: signed > 0,
   };

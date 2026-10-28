@@ -1,9 +1,8 @@
-import { formatDayMonth } from '@/features/accounts/list/accountsList';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { formatDate, formatMoney } from '@/lib/format';
 import { INSTRUMENT_MAX_PAGE_SIZE, type InstrumentListQuery, instrumentListQuery } from '@/lib/instrumentList';
 import type { Instrument, InstrumentType } from '@/lib/types';
 
-import { plainPrice, unitPrice } from '../investmentsFormat';
 import { describeOverriddenFields, isOverridden } from './instrumentEdit';
 
 // ---- URL state ---------------------------------------------------------------
@@ -152,7 +151,7 @@ function priceLine(source: string | null | undefined, asOf: string | null): stri
 
 export function instrumentListRow(i: Instrument): InstrumentListRow {
   const price = priceNumber(i.lastPrice);
-  const asOf = price != null && i.lastPriceAsOf ? formatDayMonth(i.lastPriceAsOf) || null : null;
+  const asOf = price != null && i.lastPriceAsOf ? formatDate(i.lastPriceAsOf, 'list') || null : null;
   const label = price != null ? priceSourceWord(i.lastPriceSource) : '';
   const identifier = identifierOf(i);
   const overridden = isOverridden(i);
@@ -163,8 +162,8 @@ export function instrumentListRow(i: Instrument): InstrumentListRow {
     typeLabel: typeWord(i.type),
     exchange: i.exchange || null,
     identifier,
-    price: price != null ? plainPrice(price) : null,
-    priceRupees: price != null ? unitPrice(price) : null,
+    price: price != null ? formatMoney(price, { decimals: 'exact', symbol: false }) : null,
+    priceRupees: price != null ? formatMoney(price, { decimals: 'exact' }) : null,
     source: label ? { label, tone: i.lastPriceSource?.toUpperCase() === 'MANUAL' ? 'warning' : 'neutral' } : null,
     asOf,
     notHeld: Boolean(i.notHeld),
