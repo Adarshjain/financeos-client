@@ -18,6 +18,7 @@ import {
   Switch,
   TabBar,
   Text,
+  Tooltip,
 } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
@@ -34,11 +35,22 @@ import {
 } from './navigation';
 import { usePendingPath } from './navigationStore';
 import { useOpenQuickAddDialog } from './quickAdd';
+import { RAIL_COLLAPSED_COOKIE } from './railCollapsedName';
 import { appHref, DS_HOME_HREF } from './routes';
 import { useSearch } from './search/SearchProvider';
 import { useHideOnScroll } from './useHideOnScroll';
 
 const subscribeNever = () => () => undefined;
+
+function saveRailCollapsed(collapsed: boolean): void {
+  try {
+    document.cookie = `${RAIL_COLLAPSED_COOKIE}=${collapsed ? '1' : '0'}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax${
+      window.location.protocol === 'https:' ? '; secure' : ''
+    }`;
+  } catch {
+    // Cookies blocked: the choice still holds until the page reloads.
+  }
+}
 
 type NavCount = { count: number; countTone: 'danger' | 'warning' };
 
@@ -262,8 +274,10 @@ export function ShellTabBar({
 // load). They set prefetch={false} so Dinero pages do not preload Legacy CSS and Inter.
 export function ShellRail({
   user,
+  initialCollapsed = false,
 }: {
   user: ShellUser;
+  initialCollapsed?: boolean;
 }) {
   const pathname = usePathname();
   // A clicked nav item reads as current at once, before the page commits.
@@ -273,9 +287,32 @@ export function ShellRail({
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
   const { open: openSearch } = useSearch();
+  const [collapsed, setCollapsedState] = useState(initialCollapsed);
+  const setCollapsed = (next: boolean) => {
+    setCollapsedState(next);
+    saveRailCollapsed(next);
+  };
+
+  // ⌘B / Ctrl+B toggles the rail, only while it is on screen (desk and up).
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'b') return;
+      if (e.defaultPrevented || e.isComposing) return;
+      if (!window.matchMedia('(min-width: 641px)').matches) return;
+      e.preventDefault();
+      setCollapsedState(!collapsed);
+      saveRailCollapsed(!collapsed);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [collapsed]);
 
   return (
     <Rail
+      collapsible
+      collapsed={collapsed}
+      onCollapsedChange={setCollapsed}
+      toggleShortcut="⌘B"
       data-view-transition="rail"
       groups={shellRailGroups.map((group) => ({
         ...group,
@@ -288,19 +325,33 @@ export function ShellRail({
       }))}
       value={current}
       search={
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          fullWidth
-          icon={<Icon name="search" size="md" />}
-          onClick={openSearch}
-        >
-          <span>Search</span>
-          <span className="ml-auto">
-            <Kbd>⌘K</Kbd>
-          </span>
-        </Button>
+        collapsed ? (
+          <Tooltip content="Search (⌘K)" side="right">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              iconOnly
+              aria-label="Search"
+              icon={<Icon name="search" size="md" />}
+              onClick={openSearch}
+            />
+          </Tooltip>
+        ) : (
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            fullWidth
+            icon={<Icon name="search" size="md" />}
+            onClick={openSearch}
+          >
+            <span>Search</span>
+            <span className="ml-auto">
+              <Kbd>⌘K</Kbd>
+            </span>
+          </Button>
+        )
       }
       brand={
         <Link href={DS_HOME_HREF}>
@@ -308,26 +359,42 @@ export function ShellRail({
         </Link>
       }
       footer={
-        <ListRow
-          asChild
-          leading={
-            <Avatar
-              variant="circle"
-              tone="brand"
-              size="sm"
-              src={user.avatar}
-              initials={initials}
-            >
-              {initials}
-            </Avatar>
-          }
-          title={profileText}
-          subtitle={user.name?.trim() ? user.email : undefined}
-          borderTop={false}
-          className="px-space-8"
-        >
-          <Link href={appHref('/settings')} prefetch={false} />
-        </ListRow>
+        collapsed ? (
+          <Tooltip content={profileText} side="right">
+            <Link href={appHref('/settings')} prefetch={false} aria-label={profileText}>
+              <Avatar
+                variant="circle"
+                tone="brand"
+                size="sm"
+                src={user.avatar}
+                initials={initials}
+              >
+                {initials}
+              </Avatar>
+            </Link>
+          </Tooltip>
+        ) : (
+          <ListRow
+            asChild
+            leading={
+              <Avatar
+                variant="circle"
+                tone="brand"
+                size="sm"
+                src={user.avatar}
+                initials={initials}
+              >
+                {initials}
+              </Avatar>
+            }
+            title={profileText}
+            subtitle={user.name?.trim() ? user.email : undefined}
+            borderTop={false}
+            className="px-space-8"
+          >
+            <Link href={appHref('/settings')} prefetch={false} />
+          </ListRow>
+        )
       }
     />
   );

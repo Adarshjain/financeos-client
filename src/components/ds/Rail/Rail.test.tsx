@@ -123,4 +123,49 @@ describe('Rail component', () => {
     expect(inboxBtn).toHaveAttribute('aria-current', 'page');
     expect(homeBtn).not.toHaveAttribute('aria-current');
   });
+  describe('collapsible', () => {
+    it('renders as today without a toggle when not collapsible', () => {
+      render(<Rail groups={sampleGroups} brand={<span>Brand Logo</span>} collapsed />);
+      expect(screen.queryByRole('button', { name: /sidebar/i })).not.toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByRole('navigation')).toHaveClass('w-container-xs');
+    });
+
+    it('shows the toggle beside the brand, and collapsing hides labels, brand and group labels', () => {
+      const onCollapsedChange = vi.fn();
+      render(
+        <Rail
+          collapsible
+          groups={sampleGroups}
+          brand={<span>Brand Logo</span>}
+          onCollapsedChange={onCollapsedChange}
+        />,
+      );
+      const toggle = screen.getByRole('button', { name: 'Collapse sidebar' });
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByText('Brand Logo')).toBeInTheDocument();
+      fireEvent.click(toggle);
+      expect(onCollapsedChange).toHaveBeenCalledWith(true);
+      const expand = screen.getByRole('button', { name: 'Expand sidebar' });
+      expect(expand).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByText('Brand Logo')).not.toBeInTheDocument();
+      expect(screen.queryByText('Money')).not.toBeInTheDocument();
+      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+      expect(screen.getByRole('navigation')).toHaveClass('w-space-64');
+    });
+
+    it('collapsed items keep an aria-label and a count badge', () => {
+      render(<Rail collapsible defaultCollapsed groups={sampleGroups} value="home" />);
+      const inbox = screen.getByRole('button', { name: 'Inbox' });
+      expect(inbox).toHaveTextContent('9');
+      expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('is controllable through collapsed', () => {
+      const { rerender } = render(<Rail collapsible collapsed={false} groups={sampleGroups} />);
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      rerender(<Rail collapsible collapsed groups={sampleGroups} />);
+      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+    });
+  });
 });

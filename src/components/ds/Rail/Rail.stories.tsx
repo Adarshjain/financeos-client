@@ -186,3 +186,23 @@ export const WithFooter: Story = {
     footer: sampleFooter,
   },
 };
+
+export const Collapsed: Story = {
+  args: {
+    value: 'home',
+    groups: financeOSRailGroups,
+    collapsible: true,
+    defaultCollapsed: true,
+    toggleShortcut: '⌘B',
+    search: (
+      <Button type="button" variant="secondary" size="md" iconOnly aria-label="Search" icon={<Icon name="search" size="md" />} />
+    ),
+    footer: (
+      <a href="#" aria-label="Arjun Mehta">
+        <Avatar variant="circle" tone="brand" size="sm" initials="AM">
+          AM
+        </Avatar>
+      </a>
+    ),
+  },
+};

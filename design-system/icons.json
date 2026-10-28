@@ -35,6 +35,11 @@
   "use": "Search fields and buttons"
  },
  {
+  "name": "sidebar",
+  "phosphor": "sidebar-simple",
+  "use": "Collapse or expand the side navigation"
+ },
+ {
   "name": "add",
   "phosphor": "plus",
   "use": "The + add button"
