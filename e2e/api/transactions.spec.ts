@@ -41,6 +41,7 @@ const TRANSACTION_KEYS = new Set([
   'updatedAt',
   'reviewedAt',
   'balance',
+  'bankBalance',
   'reviewType',
   'reviewReasons',
   'appliedRuleId',
