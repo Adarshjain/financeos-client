@@ -5733,8 +5733,8 @@ export interface components {
             values: string[];
         };
         FieldGuard: {
-            aggregations?: ("sum" | "avg" | "count" | "min" | "max")[];
-            fields?: string[];
+            aggregations: ("sum" | "avg" | "count" | "min" | "max")[];
+            fields: string[];
             /** @enum {string} */
             kind: "no_aggregation" | "needs" | "avoid" | "no_filter";
             reason: string;
