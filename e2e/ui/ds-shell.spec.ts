@@ -241,4 +241,31 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await page.waitForURL('**/transactions');
     expect(new URL(page.url()).pathname).toBe('/transactions');
   });
+  test('desktop 1440px: the rail collapses to icons, keeps the choice on reload, and Ctrl+B expands it', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+
+    const rail = page.getByRole('navigation', { name: 'Primary' });
+    await expect(rail.getByText('Money')).toBeVisible();
+    await rail.getByRole('button', { name: 'Collapse sidebar' }).click();
+
+    // Labels and group labels are gone; the icon links remain and still navigate.
+    await expect(rail.getByRole('button', { name: 'Expand sidebar' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(rail.getByText('Money')).toHaveCount(0);
+    await expect(rail.getByText('Transactions')).toHaveCount(0);
+    await expect(rail.getByRole('button', { name: 'Search' })).toBeVisible();
+
+    // The choice is a cookie the server reads, so a reload paints collapsed.
+    await page.reload();
+    await expect(rail.getByRole('button', { name: 'Expand sidebar' })).toBeVisible();
+    await expect(rail.getByText('Money')).toHaveCount(0);
+
+    await rail.getByRole('link', { name: 'Transactions' }).click();
+    await page.waitForURL('**/transactions');
+    await expect(rail.getByRole('button', { name: 'Expand sidebar' })).toBeVisible();
+
+    await page.keyboard.press('Control+b');
+    await expect(rail.getByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
+    await expect(rail.getByText('Money')).toBeVisible();
+  });
 });
