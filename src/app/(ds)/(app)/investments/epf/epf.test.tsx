@@ -56,22 +56,6 @@ describe('/investments/epf: data', () => {
     expect(server.fetchEpfEntries).toHaveBeenCalledWith({ employerId: 'e2', fy: 2025, page: 1, size: 50 });
   });
 
-  it('asks for the figures for the same employer and year as the passbook', async () => {
-    await renderPage();
-    expect(server.fetchEpfSummary).toHaveBeenCalledWith({ employerId: 'e1', fy: 2026 });
-    server.fetchEpfEmployers.mockResolvedValue([employer(), transferred()]);
-    await renderPage({ fy: 'all', employer: 'all' });
-    expect(server.fetchEpfSummary).toHaveBeenLastCalledWith({ employerId: undefined, fy: undefined });
-  });
-
-  it('names the figures for a past year', async () => {
-    server.fetchEpfSummary.mockResolvedValue(summary({ balanceAsOf: '2026-03-31', periodFy: 2025, interestEstimate: undefined }));
-    await renderPage({ fy: '2025' });
-    expect(screen.getByText('Contributed in FY 2025-26')).toBeInTheDocument();
-    expect(screen.getByText('Interest for FY 2025-26')).toBeInTheDocument();
-    expect(screen.getAllByText('As of 31 Mar 2026').length).toBeGreaterThan(0);
-  });
-
   it('asks for every employer and every year when the address says so', async () => {
     server.fetchEpfEmployers.mockResolvedValue([employer(), transferred()]);
     await renderPage({ fy: 'all', employer: 'all' });

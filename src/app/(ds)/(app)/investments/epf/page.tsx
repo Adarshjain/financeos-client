@@ -8,7 +8,6 @@ import {
   epfFigures,
   epfRow,
   epfUrl,
-  figuresPeriod,
   fyOptions,
   missingMonths,
   parseEpfUrl,
@@ -27,18 +26,14 @@ export default async function DsEpfPage({ searchParams }: { searchParams: Promis
   const state = parseEpfUrl(await searchParams);
   const today = todayInAppZone();
 
-  const employers = await loaded(fetchEpfEmployers());
+  const [summary, employers] = await Promise.all([loaded(fetchEpfSummary()), loaded(fetchEpfEmployers())]);
+  if (!summary.ok) return <LoansLoadError what="EPF" reference={summary.reference} />;
   if (!employers.ok) return <LoansLoadError what="EPF" reference={employers.reference} />;
   const employer = effectiveEmployer(state, employers.data);
 
   const fys = (await orNull(fetchEpfFys(employer?.id))) ?? [];
   const fy = effectiveFy(state, fys);
-  // The figures follow the same employer and year as the passbook.
-  const [summary, list] = await Promise.all([
-    loaded(fetchEpfSummary({ employerId: employer?.id, fy })),
-    loaded(fetchEpfEntries({ employerId: employer?.id, fy, page: state.page, size: state.size })),
-  ]);
-  if (!summary.ok) return <LoansLoadError what="EPF" reference={summary.reference} />;
+  const list = await loaded(fetchEpfEntries({ employerId: employer?.id, fy, page: state.page, size: state.size }));
   if (!list.ok) return <LoansLoadError what="EPF" reference={list.reference} />;
   const page = list.data;
   // A page past the end (a stale address) shows the last page instead of an empty one.
@@ -53,7 +48,7 @@ export default async function DsEpfPage({ searchParams }: { searchParams: Promis
     <EpfView
       state={state}
       summary={summary.data}
-      figures={epfFigures(summary.data, figuresPeriod(fy, today))}
+      figures={epfFigures(summary.data)}
       entries={page.content}
       rows={page.content.map((e) => epfRow(e))}
       totalElements={page.totalElements}
