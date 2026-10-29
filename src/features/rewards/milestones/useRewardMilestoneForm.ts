@@ -152,7 +152,7 @@ export function useRewardMilestoneForm({
       notify.success(isUpdateMode ? 'Milestone updated' : 'Milestone created');
       onSaved();
     };
-    const onError = (e: unknown) => notify.failure(e, 'Failed to save milestone');
+    const onError = (e: unknown) => notify.failure(e, "Couldn't save the milestone. Try again.");
     if (isUpdateMode && milestone) {
       updateMilestoneMutation.mutate({ id: milestone.id, body }, { onSuccess, onError });
     } else {

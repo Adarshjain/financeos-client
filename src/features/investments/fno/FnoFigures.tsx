@@ -76,7 +76,7 @@ export function FnoTiles({ figures, allYears = false }: { figures: FnoFiguresMod
         </>
       ) : (
         [realisedLabel(allYears), 'Win rate', 'Charges'].map((label) => (
-          <KpiTile key={label} label={label} error="Could not load this figure. Refresh the page to try again." />
+          <KpiTile key={label} label={label} error="Couldn't load this figure. Try again." />
         ))
       )}
     </div>

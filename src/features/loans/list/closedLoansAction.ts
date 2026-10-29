@@ -21,7 +21,7 @@ async function allWithStatus(status: 'closed' | 'foreclosed', q: string): Promis
 
 /** Every closed and foreclosed loan matching the search, as rows, for the "Closed · n · Show" line. */
 export const loadClosedLoans = createDomainAction(
-  { fallbackError: 'Failed to load closed loans' },
+  { fallbackError: "Couldn't load closed loans. Try again." },
   async (q: string): Promise<LoanRow[]> => {
     const today = todayInAppZone();
     const [closed, foreclosed] = await Promise.all([allWithStatus('closed', q), allWithStatus('foreclosed', q)]);

@@ -39,7 +39,7 @@ export function useAssignAccount(
     e?.preventDefault();
     if (!item) return;
     if (!effectiveAccountId) {
-      setErrorMessage('Please select an account.');
+      setErrorMessage('Select an account.');
       return;
     }
 
@@ -58,7 +58,7 @@ export function useAssignAccount(
 
       onDone();
     } catch (err) {
-      setErrorMessage(getErrorMessage(err, 'Failed to assign identifier to account'));
+      setErrorMessage(getErrorMessage(err, "Couldn't assign the identifier. Try again."));
     }
   };
 

@@ -93,13 +93,13 @@ describe('/investments/epf: data', () => {
   it('shows a load error with the reference when the list fails', async () => {
     server.fetchEpfEntries.mockRejectedValue(new Error('boom'));
     await renderPage();
-    expect(screen.getByText('Could not load EPF')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load EPF")).toBeInTheDocument();
   });
 
   it('shows a load error when the summary fails', async () => {
     server.fetchEpfSummary.mockRejectedValue(new Error('boom'));
     await renderPage();
-    expect(screen.getByText('Could not load EPF')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load EPF")).toBeInTheDocument();
   });
 
   it('sends a page past the end to the last page', async () => {

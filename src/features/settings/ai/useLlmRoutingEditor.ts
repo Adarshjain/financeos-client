@@ -178,7 +178,7 @@ export function useLlmRoutingEditor() {
       }));
       return true;
     } catch (err) {
-      patchGroup(groupType, { addError: getErrorMessage(err, 'Could not test the model') });
+      patchGroup(groupType, { addError: getErrorMessage(err, "Couldn't test the model. Try again.") });
       return false;
     } finally {
       setPending(null);
@@ -195,7 +195,7 @@ export function useLlmRoutingEditor() {
       applyGroupUpdate(groupType, updated);
       setEditing(groupType, false);
     } catch (err) {
-      setRoutingError(getErrorMessage(err, 'Failed to save routing'));
+      setRoutingError(getErrorMessage(err, "Couldn't save routing. Try again."));
     } finally {
       setPending(null);
     }
@@ -209,7 +209,7 @@ export function useLlmRoutingEditor() {
       applyGroupUpdate(groupType, updated);
       setEditing(groupType, false);
     } catch (err) {
-      setRoutingError(getErrorMessage(err, 'Failed to reset routing'));
+      setRoutingError(getErrorMessage(err, "Couldn't reset routing. Try again."));
     } finally {
       setPending(null);
     }

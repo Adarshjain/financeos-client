@@ -14,7 +14,7 @@ export type Built<T> = { ok: true; body: T } | { ok: false; errors: Record<strin
 
 /** "The issued date cannot be in the future" for a date after today, else null. */
 export function futureDateError(noun: string, value: string, today: string): string | null {
-  return value && value > today ? `The ${noun} date cannot be in the future` : null;
+  return value && value > today ? `Pick the ${noun} date on or before today.` : null;
 }
 
 export function digitsOnly(value: string): string {
@@ -26,7 +26,7 @@ function spendLimitOf(value: string): number | null {
   return amountExpressionValue(value);
 }
 
-const SPEND_LIMIT_ERROR = 'Please enter a valid amount.';
+const SPEND_LIMIT_ERROR = 'Enter the limit as a number, like 50,000.';
 
 /** An error when the spend limit text is filled in but is not a usable amount (e.g. "5+" or "100/0"). */
 function spendLimitError(value: string): string | null {

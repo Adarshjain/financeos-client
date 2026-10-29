@@ -351,14 +351,14 @@ describe('checkDetails', () => {
     expect(
       checkDetails(form({ periodStart: '2026-10-06' }), initial).errors
         .periodStart
-    ).toBe('Period start must be on or before period end');
+    ).toBe('Enter a period start on or before the period end.');
   });
 
   it('rejects a period longer than 400 days', () => {
     expect(
       checkDetails(form({ periodStart: '2025-01-01' }), initial).errors
         .periodStart
-    ).toBe('Statement period cannot be longer than 400 days');
+    ).toBe('Enter a statement period of 400 days or less.');
     expect(
       checkDetails(form({ periodStart: '2025-09-01' }), initial).errors
         .periodStart
@@ -366,7 +366,7 @@ describe('checkDetails', () => {
   });
 
   it('rejects a due date before the period end or more than 60 days after', () => {
-    const msg = 'Due date must be 0 to 60 days after the period end';
+    const msg = 'Enter a due date 0 to 60 days after the period end.';
     expect(
       checkDetails(form({ dueDate: '2026-10-04' }), initial).errors.dueDate
     ).toBe(msg);
@@ -381,7 +381,7 @@ describe('checkDetails', () => {
   it('checks the due window when only the period end moves', () => {
     expect(
       checkDetails(form({ periodEnd: '2026-10-26' }), initial).errors.dueDate
-    ).toBe('Due date must be 0 to 60 days after the period end');
+    ).toBe('Enter a due date 0 to 60 days after the period end.');
   });
 
   it('does not block a due date because an old total and minimum are odd', () => {
@@ -397,24 +397,24 @@ describe('checkDetails', () => {
   it('rejects a minimum above the total', () => {
     expect(
       checkDetails(form({ minimumDue: '50000' }), initial).errors.minimumDue
-    ).toBe('Minimum due cannot exceed total due');
+    ).toBe('Enter a minimum due that is not above the total due.');
     expect(
       checkDetails(form({ totalDue: '1000' }), initial).errors.minimumDue
-    ).toBe('Minimum due cannot exceed total due');
+    ).toBe('Enter a minimum due that is not above the total due.');
   });
 
   it('rejects negative amounts', () => {
     expect(
       checkDetails(form({ totalDue: '-1' }), initial).errors.totalDue
-    ).toBe('Total due cannot be negative');
+    ).toBe('Enter a total due of ₹0 or more.');
     expect(
       checkDetails(form({ minimumDue: '-1' }), initial).errors.minimumDue
-    ).toBe('Minimum due cannot be negative');
+    ).toBe('Enter a minimum due of ₹0 or more.');
   });
 
   it('does not let a set field be cleared, but leaves a missing one empty', () => {
     expect(checkDetails(form({ dueDate: '' }), initial).errors.dueDate).toBe(
-      'Enter the due date'
+      'Enter the due date.'
     );
     const missing = { ...initial, dueDate: null };
     const r = checkDetails(

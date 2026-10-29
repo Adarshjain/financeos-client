@@ -220,7 +220,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText(/Some anniversary-year windows fell back to calendar years/)).toBeVisible({ timeout: 45_000 });
   });
 
-  test('rules: card switch, + opens New rule, create, edit, clone, End & clone, delete with toasts', async ({ page }) => {
+  test('rules: card switch, + opens Add rule, create, edit, clone, End & clone, delete with toasts', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const { account: cardA } = await createRewardCard(api, { name: 'Ds Rules Card A', anniversaryDate: anniversary() });
@@ -243,8 +243,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Ending Rule', { exact: true })).toBeVisible();
 
     // The app bar + opens a new rule.
-    await page.getByRole('button', { name: 'New rule', exact: true }).first().click();
-    const create = page.getByRole('dialog', { name: /New rule/ });
+    await page.getByRole('button', { name: 'Add rule', exact: true }).first().click();
+    const create = page.getByRole('dialog', { name: /Add rule/ });
     await expect(create).toBeVisible();
     await create.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Created Rule');
     await create.getByLabel('Rate %').fill('2');
@@ -269,10 +269,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(toast(page, 'Rule updated')).toBeVisible();
     await expect(edit).toHaveCount(0);
 
-    // Clone from the row menu opens a prefilled New rule; save it under a new name.
+    // Clone from the row menu opens a prefilled Add rule; save it under a new name.
     await page.getByText('Ds Created Rule', { exact: true }).click();
     await page.getByRole('menuitem', { name: 'Clone', exact: true }).click();
-    const clone = page.getByRole('dialog', { name: /New rule/ });
+    const clone = page.getByRole('dialog', { name: /Add rule/ });
     await expect(clone).toBeVisible();
     await expect(clone.getByLabel('Rate %')).toHaveValue('3');
     await clone.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Cloned Rule');
@@ -284,7 +284,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.getByText('Ds Ending Rule', { exact: true }).click();
     await page.getByRole('menuitem', { name: 'End & clone', exact: true }).click();
     await expect(toast(page, /"Ds Ending Rule" ended/)).toBeVisible();
-    const successor = page.getByRole('dialog', { name: /New rule/ });
+    const successor = page.getByRole('dialog', { name: /Add rule/ });
     await expect(successor).toBeVisible();
     await successor.getByRole('button', { name: 'Cancel' }).click();
     await expect(successor).toHaveCount(0);
@@ -370,11 +370,11 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Base Rule', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Cap: create, edit, delete.
-    await page.getByRole('button', { name: 'New cap' }).click();
-    const newCap = page.getByRole('dialog', { name: 'New cap' });
+    await page.getByRole('button', { name: 'Add cap' }).click();
+    const newCap = page.getByRole('dialog', { name: 'Add cap' });
     await newCap.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Dining Pool');
     await newCap.getByRole('textbox', { name: /^Cap \(/ }).fill('1000');
-    await newCap.getByRole('button', { name: 'Save cap' }).click();
+    await newCap.getByRole('button', { name: 'Add cap' }).click();
     await expect(toast(page, 'Cap created')).toBeVisible();
     await expect(page.getByText('Ds Dining Pool', { exact: true })).toBeVisible();
 
@@ -394,12 +394,12 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Dining Pool 2', { exact: true })).toHaveCount(0);
 
     // Milestone: a monthly one is created, edited, deleted.
-    await page.getByRole('button', { name: 'New milestone' }).click();
-    const newMs = page.getByRole('dialog', { name: 'New milestone' });
+    await page.getByRole('button', { name: 'Add milestone' }).click();
+    const newMs = page.getByRole('dialog', { name: 'Add milestone' });
     await newMs.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Quarterly 50k');
     await newMs.getByRole('textbox', { name: /^Threshold/ }).fill('50000');
     await newMs.getByRole('textbox', { name: /^Payout value/ }).fill('2000');
-    await newMs.getByRole('button', { name: 'Save milestone' }).click();
+    await newMs.getByRole('button', { name: 'Add milestone' }).click();
     await expect(toast(page, 'Milestone created')).toBeVisible();
     await expect(page.getByText('Ds Quarterly 50k', { exact: true })).toBeVisible();
 
@@ -412,8 +412,8 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Quarterly 60k', { exact: true })).toBeVisible();
 
     // A one-time welcome offer needs its start and deadline.
-    await page.getByRole('button', { name: 'New milestone' }).click();
-    const offer = page.getByRole('dialog', { name: 'New milestone' });
+    await page.getByRole('button', { name: 'Add milestone' }).click();
+    const offer = page.getByRole('dialog', { name: 'Add milestone' });
     await offer.getByRole('textbox', { name: 'Name', exact: true }).fill('Ds Welcome Offer');
     await offer.getByRole('combobox', { name: 'Window' }).click();
     await page.getByRole('option', { name: 'One-time (welcome offer)' }).click();
@@ -422,7 +422,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await offer.getByLabel('Offer deadline').fill(ddmmyyyy(istToday(60)));
     await offer.getByRole('textbox', { name: /^Threshold/ }).fill('5000');
     await offer.getByRole('textbox', { name: /^Payout value/ }).fill('500');
-    await offer.getByRole('button', { name: 'Save milestone' }).click();
+    await offer.getByRole('button', { name: 'Add milestone' }).click();
     await expect(toast(page, 'Milestone created')).toBeVisible();
     await expect(page.getByText('Ds Welcome Offer', { exact: true })).toBeVisible();
 
@@ -519,7 +519,7 @@ test.describe('/ds Rewards, phone 390px (@ui @mobile)', () => {
 
     await page.getByText('Ds Phone Rule', { exact: true }).click();
     await page.getByRole('menuitem', { name: 'Clone', exact: true }).click();
-    const sheet = page.getByRole('dialog', { name: /New rule/ });
+    const sheet = page.getByRole('dialog', { name: /Add rule/ });
     await expect(sheet).toBeVisible();
     const box = await sheet.boundingBox();
     expect(box).not.toBeNull();

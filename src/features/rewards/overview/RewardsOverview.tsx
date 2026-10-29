@@ -14,7 +14,7 @@ export function RewardsOverview({ data }: { data: RewardsOverviewData }) {
     return (
       <Card>
         <EmptyState
-          title="No credit cards available"
+          title="No credit cards yet"
           description="Rewards earned show once a credit card is added."
         />
       </Card>

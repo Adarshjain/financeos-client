@@ -34,12 +34,12 @@ describe('SendersCard', () => {
     expect(edit).toHaveBeenCalledWith(senders[0]);
   });
 
-  it('shows today\'s empty text with a Configure sender action', () => {
+  it('shows today\'s empty text with an Add your first sender action', () => {
     const add = vi.fn();
     render(<SendersCard senders={[]} onOpenAddSender={add} onOpenEditSender={vi.fn()} />);
-    expect(screen.getByText('No allowed senders configured yet')).toBeInTheDocument();
+    expect(screen.getByText('No allowed senders yet')).toBeInTheDocument();
     expect(screen.getByText('Add banks, credit cards, or service alerts to the allowlist.')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Configure sender' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add your first sender' }));
     expect(add).toHaveBeenCalledTimes(1);
   });
 });
@@ -70,7 +70,7 @@ describe('SenderDialog', () => {
     expect(screen.getByText('Add allowed sender')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete sender' })).toBeNull();
     expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(screen.getByRole('button', { name: 'Save sender' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add sender' }));
     expect(p.onSubmit).toHaveBeenCalled();
   });
 
@@ -92,7 +92,7 @@ describe('SenderDialog', () => {
     const p = dialog(senders[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));
     expect(p.onDelete).not.toHaveBeenCalled();
-    expect(screen.getByText('Are you sure you want to delete this sender from the allowlist?')).toBeInTheDocument();
+    expect(screen.getByText("Mail from this address is no longer read. Transactions already imported stay. This can't be undone.")).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)!);
     await waitFor(() => expect(p.onDelete).toHaveBeenCalledWith('s1'));
     await waitFor(() => expect(p.onOpenChange).toHaveBeenCalledWith(false));
@@ -104,7 +104,7 @@ describe('SenderDialog', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)!);
     await waitFor(() => expect(p.onDelete).toHaveBeenCalledWith('s1'));
     await waitFor(() => expect(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)).toBeEnabled());
-    expect(screen.getByText('Are you sure you want to delete this sender from the allowlist?')).toBeInTheDocument();
+    expect(screen.getByText("Mail from this address is no longer read. Transactions already imported stay. This can't be undone.")).toBeInTheDocument();
     expect(screen.getByText('Edit allowed sender')).toBeInTheDocument();
     expect(p.onOpenChange).not.toHaveBeenCalled();
   });

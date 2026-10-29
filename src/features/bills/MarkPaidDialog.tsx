@@ -75,7 +75,7 @@ export function MarkPaidDialog({
       router.refresh();
       onMarked?.();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not undo the payment mark'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't undo the payment. Try again."), { tone: 'danger' });
     }
   };
 
@@ -95,7 +95,7 @@ export function MarkPaidDialog({
       }
     }
     if (paidOn && paidOn > today) {
-      setDateError('The paid date cannot be in the future');
+      setDateError('Enter a paid date that is not in the future.');
       valid = false;
     } else {
       setDateError(null);
@@ -112,7 +112,7 @@ export function MarkPaidDialog({
       router.refresh();
       onMarked?.();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not mark the bill as paid'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't mark the bill paid. Try again."), { tone: 'danger' });
     }
   };
 

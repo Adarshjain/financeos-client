@@ -71,7 +71,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
       await unsubscribe.mutateAsync(endpoint);
       notify.success('Device removed');
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not remove the device'));
+      notify.error(getErrorMessage(e, "Couldn't remove the device. Try again."));
     }
   };
 
@@ -125,7 +125,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
           )
         }
       />
-      {devices.length === 0 ? <CardEmpty>No device is registered yet.</CardEmpty> : null}
+      {devices.length === 0 ? <CardEmpty>No devices yet</CardEmpty> : null}
       {others.map((device) => (
         <ListRow
           key={device.endpoint}

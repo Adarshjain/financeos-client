@@ -265,7 +265,7 @@ describe('TransactionDetailPanel', () => {
       );
       fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
       await waitFor(() => expect(lending.unlink).toHaveBeenCalledWith('e1'));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Unlinked from ledger entry', expect.anything()));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('Ledger entry unlinked', expect.anything()));
       toastAction().onSelect();
       await waitFor(() => expect(lending.link).toHaveBeenCalledWith({ id: 'e1', transactionId: 't1' }));
     });
@@ -278,7 +278,7 @@ describe('TransactionDetailPanel', () => {
       );
       fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
       await waitFor(() => expect(api.unlinkDividendTransaction).toHaveBeenCalledWith('d1'));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Unlinked from dividend', expect.anything()));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('Dividend unlinked', expect.anything()));
       toastAction().onSelect();
       await waitFor(() => expect(api.linkDividendTransaction).toHaveBeenCalledWith('d1', 't1'));
     });
@@ -291,7 +291,7 @@ describe('TransactionDetailPanel', () => {
       );
       fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
       await waitFor(() => expect(api.unlinkEpfWithdrawalTransaction).toHaveBeenCalledWith('w1'));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Unlinked from the EPF withdrawal', expect.anything()));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('EPF withdrawal unlinked', expect.anything()));
       toastAction().onSelect();
       await waitFor(() => expect(api.linkEpfWithdrawalTransaction).toHaveBeenCalledWith('w1', 't1'));
       await waitFor(() => expect(toast).toHaveBeenCalledWith('Linked to the EPF withdrawal'));
@@ -324,8 +324,8 @@ describe('TransactionDetailPanel', () => {
         />,
       );
       fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to unlink EPF withdrawal', { tone: 'danger' }));
-      expect(toast).not.toHaveBeenCalledWith('Unlinked from the EPF withdrawal', expect.anything());
+      await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't unlink the EPF withdrawal. Try again.", { tone: 'danger' }));
+      expect(toast).not.toHaveBeenCalledWith('EPF withdrawal unlinked', expect.anything());
     });
 
     it('asks before removing a loan settlement, and has no Undo (it deletes the payment)', async () => {
@@ -361,7 +361,7 @@ describe('TransactionDetailPanel', () => {
       view.rerender(<TransactionDetailPanel {...props({ transactionId: null, pageTransactions: [] })} />);
       await new Promise((r) => setTimeout(r, 20));
       expect(api.fetchTransaction).not.toHaveBeenCalled();
-      expect(screen.queryByText('Could not load this transaction.')).toBeNull();
+      expect(screen.queryByText("Couldn't load this transaction.")).toBeNull();
     });
 
     it('after Delete, closes without asking the server for the deleted transaction or its links', async () => {
@@ -381,7 +381,7 @@ describe('TransactionDetailPanel', () => {
       await new Promise((r) => setTimeout(r, 30));
       expect(api.fetchTransaction).not.toHaveBeenCalled();
       expect(api.fetchTransactionLinks).toHaveBeenCalledTimes(1);
-      expect(screen.queryByText('Could not load this transaction.')).toBeNull();
+      expect(screen.queryByText("Couldn't load this transaction.")).toBeNull();
     });
 
     it('shows a transaction fetched without a balance, hiding the "after" line', async () => {

@@ -82,7 +82,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       toast.success('Debit card added');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to add debit card'));
+      setFormError(getErrorMessage(err, "Couldn't add the debit card. Try again."));
     }
   };
 
@@ -110,7 +110,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       toast.success(isBank ? 'Joint holder added' : 'Add-on cardholder created');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, isBank ? 'Failed to add joint holder' : 'Failed to create add-on cardholder'));
+      setFormError(getErrorMessage(err, isBank ? "Couldn't add the joint holder. Try again." : "Couldn't add the add-on cardholder. Try again."));
     }
   };
 
@@ -128,7 +128,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       toast.success('Cardholder updated');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to update cardholder'));
+      setFormError(getErrorMessage(err, "Couldn't update the cardholder. Try again."));
     }
   };
 
@@ -142,7 +142,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       toast.success('Cardholder closed');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to close cardholder'));
+      setFormError(getErrorMessage(err, "Couldn't close the cardholder. Try again."));
     }
   };
 
@@ -151,19 +151,19 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       await reopenCardholderMutation.mutateAsync(ch.id);
       toast.success('Cardholder reopened');
     } catch (err) {
-      toastError(err, 'Failed to reopen cardholder');
+      toastError(err, "Couldn't reopen the cardholder. Try again.");
     }
   };
 
   const handleDeleteCardholder = async (ch: Cardholder) => {
-    if (!confirm(`Are you sure you want to delete cardholder ${ch.personName || ch.role}? This cannot be undone.`)) {
+    if (!confirm(`Delete cardholder ${ch.personName || ch.role}? This can't be undone.`)) {
       return;
     }
     try {
       await deleteCardholderMutation.mutateAsync(ch.id);
       toast.success('Cardholder deleted');
     } catch (err) {
-      toastError(err, 'Failed to delete cardholder');
+      toastError(err, "Couldn't delete the cardholder. Try again.");
     }
   };
 
@@ -178,10 +178,10 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
     const payload: CreateCardRequest = { last4: cardLast4.trim(), issuedOn: issuedOn || undefined };
     try {
       await addCardMutation.mutateAsync({ cardholderId: targetCardholder.id, body: payload });
-      toast.success('New card issued');
+      toast.success('Card issued');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to issue card'));
+      setFormError(getErrorMessage(err, "Couldn't issue the card. Try again."));
     }
   };
 
@@ -196,10 +196,10 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
     const payload: ReplaceCardRequest = { newLast4: replaceNewLast4.trim(), issuedOn: replaceIssuedOn || undefined };
     try {
       await replaceCardMutation.mutateAsync({ cardholderId: targetCardholder.id, cardId: targetCard.id, body: payload });
-      toast.success('Card replaced successfully');
+      toast.success('Card replaced');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to replace card'));
+      setFormError(getErrorMessage(err, "Couldn't replace the card. Try again."));
     }
   };
 
@@ -214,7 +214,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       toast.success('Card plastic closed');
       backToList();
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to close card'));
+      setFormError(getErrorMessage(err, "Couldn't close the card. Try again."));
     }
   };
 
@@ -226,7 +226,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       await deleteCardPlasticMutation.mutateAsync({ cardholderId: ch.id, cardId: card.id });
       toast.success('Card plastic deleted');
     } catch (err) {
-      toastError(err, 'Failed to delete card plastic');
+      toastError(err, "Couldn't delete the card. Try again.");
     }
   };
 
@@ -250,10 +250,10 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
         currentCardId: reattributeSource === 'UNATTRIBUTED' ? null : reattributeSource,
         cardId: targetCardId,
       });
-      toast.success(`Reassigned ${res.updatedCount} transaction(s)`);
+      toast.success(`${res.updatedCount} transaction(s) reassigned`);
       backToList();
     } catch (err) {
-      setReattributeError(getErrorMessage(err, 'Failed to reassign transactions'));
+      setReattributeError(getErrorMessage(err, "Couldn't reassign transactions. Try again."));
     }
   };
 

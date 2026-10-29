@@ -84,7 +84,7 @@ describe('useReportPreview', () => {
     const { result } = renderHook(() => useReportPreview({ request, signature: 'a', valid: true }));
     await act(async () => result.current.run());
     await act(async () => result.current.run());
-    expect(result.current.error).toBe('Failed to run the report. Try again.');
+    expect(result.current.error).toBe("Couldn't run the report. Try again.");
     expect(result.current.shown?.data).toEqual(kpi(1));
   });
 

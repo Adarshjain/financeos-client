@@ -188,7 +188,7 @@ export function jobLine(label: string, job: JobResponse | null, withCount: boole
 export const CHARGE_FIELDS = [
   { key: 'brokerage', label: 'Brokerage' },
   { key: 'stt', label: 'STT' },
-  { key: 'exchangeTxnCharges', label: 'Exchange txn charges' },
+  { key: 'exchangeTxnCharges', label: 'Exchange transaction charges' },
   { key: 'sebiCharges', label: 'SEBI charges' },
   { key: 'stampDuty', label: 'Stamp duty' },
   { key: 'gst', label: 'GST' },
@@ -284,10 +284,10 @@ export interface TradeFormErrors {
 export function validateTrade(input: Pick<TradeFormInput, 'quantity' | 'price' | 'date'>): TradeFormErrors {
   const errors: TradeFormErrors = {};
   const qty = Number(input.quantity.replace(/,/g, ''));
-  if (input.quantity.trim() === '' || !Number.isFinite(qty) || qty <= 0) errors.quantity = 'Quantity must be above zero';
+  if (input.quantity.trim() === '' || !Number.isFinite(qty) || qty <= 0) errors.quantity = 'Enter a quantity above zero.';
   const price = Number(input.price.replace(/,/g, ''));
-  if (input.price.trim() === '' || !Number.isFinite(price) || price < 0) errors.price = 'Enter the price per unit';
-  if (!input.date) errors.date = 'Trade date is required';
+  if (input.price.trim() === '' || !Number.isFinite(price) || price < 0) errors.price = 'Enter the price per unit.';
+  if (!input.date) errors.date = 'Enter the trade date.';
   return errors;
 }
 

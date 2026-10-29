@@ -201,7 +201,7 @@ describe('Notifications tab: this browser and devices', () => {
     );
     expect(toast.success).toHaveBeenCalledWith('Device removed');
     expect(pushMocks.unsubscribeFromPush).not.toHaveBeenCalled();
-    expect(await screen.findByText('No device is registered yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No devices yet')).toBeInTheDocument();
   });
 
   it('shows Send a test only when this browser is registered, and sends it', async () => {
@@ -390,8 +390,8 @@ describe('Notifications tab: muted', () => {
     renderWithQuery(<NotificationsSettings />, { queryClient });
     const muted = await screen.findByText('Per card or loan');
     expect(muted).toBeInTheDocument();
-    expect(await screen.findByText('No open credit cards yet.')).toBeInTheDocument();
-    expect(await screen.findByText('No active loans yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No open credit cards yet')).toBeInTheDocument();
+    expect(await screen.findByText('No active loans yet')).toBeInTheDocument();
     expect(within(document.body).queryByText('Home loan')).toBeNull();
   });
 });
@@ -406,6 +406,6 @@ describe('Notifications tab: loading and failure', () => {
   it('says so when settings could not load', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: undefined } as never);
     renderWithQuery(<NotificationsSettings />);
-    expect(await screen.findByText("Couldn't load notification settings. Refresh to try again.")).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load notification settings. Try again.")).toBeInTheDocument();
   });
 });

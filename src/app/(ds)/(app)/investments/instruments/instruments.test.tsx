@@ -63,11 +63,11 @@ describe('/investments/instruments: data', () => {
     expect(list.fetchInstrumentsPage).toHaveBeenCalledWith({ search: 'tata', type: 'etf', sort: 'name,desc', stale: true, page: 1, size: 25 });
   });
 
-  it('shows a load error with Try again when the list cannot be read', async () => {
+  it('shows a load error with Retry when the list cannot be read', async () => {
     list.fetchInstrumentsPage.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getByText('Could not load instruments')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load instruments")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -118,7 +118,7 @@ describe('/investments/instruments: rows', () => {
   it('explains an empty catalog and opens Add instrument from it', async () => {
     list.fetchInstrumentsPage.mockResolvedValue(instrumentPage([]));
     await renderPage();
-    expect(screen.getByText(/No instruments recorded yet/)).toBeInTheDocument();
+    expect(screen.getByText(/No instruments yet/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Add instrument' }));
     expect(await screen.findByRole('dialog', { name: 'Add instrument' })).toBeInTheDocument();
   });
@@ -126,7 +126,7 @@ describe('/investments/instruments: rows', () => {
   it('says nothing matches a filter, and Clear filters drops it', async () => {
     list.fetchInstrumentsPage.mockResolvedValue(instrumentPage([]));
     await renderPage({ q: 'zzz', type: 'etf', stale: '1' });
-    expect(screen.getByText('No instruments match your search or filter.')).toBeInTheDocument();
+    expect(screen.getByText('No instruments match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenCalledWith('/investments/instruments', { scroll: false });
   });
@@ -217,7 +217,7 @@ describe('/investments/instruments: edit', () => {
     });
     expect(api.PATCH).not.toHaveBeenCalled();
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Updated Infosys for your account', { tone: 'success' });
+    expect(toast).toHaveBeenCalledWith('Infosys updated', { tone: 'success' });
   });
 
   it('refuses a blank name without calling the server', async () => {
@@ -252,7 +252,7 @@ describe('/investments/instruments: edit', () => {
     await renderPage();
     const dialog = await open();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save instrument' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update instrument', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't update instrument. Try again.", { tone: 'danger' }));
   });
 
   it('says when the holdings moved to another instrument', async () => {
@@ -376,7 +376,7 @@ describe('/investments/instruments: add', () => {
       },
     });
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Created instrument Bajaj Housing Finance', { tone: 'success' });
+    expect(toast).toHaveBeenCalledWith('Bajaj Housing Finance added', { tone: 'success' });
   });
 
   it('shows a bad request under the form and keeps the dialog open', async () => {
@@ -406,7 +406,7 @@ describe('/investments/instruments: add', () => {
     fireEvent.click(within(add).getByRole('button', { name: /Parag Parikh Flexi Cap/ }));
     await waitFor(() => expect(api.POST).toHaveBeenCalledWith('/api/v1/instruments/resolve', { body: expect.objectContaining({ name: 'Parag Parikh Flexi Cap', amfiCode: '122639', type: 'mutual_fund' }) }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Added Parag Parikh Flexi Cap', { tone: 'success' });
+    expect(toast).toHaveBeenCalledWith('Parag Parikh Flexi Cap added', { tone: 'success' });
   });
 
   it('says when the catalog has no match and points at the manual form', async () => {

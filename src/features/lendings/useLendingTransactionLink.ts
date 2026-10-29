@@ -29,7 +29,7 @@ export function useLinkLendingTransaction(options?: LinkOptions) {
         .PUT('/api/v1/lendings/{id}/transaction', { params: { path: { id } }, body: { transactionId } })
         .then((r) => r.data!),
     onSuccess: refresh,
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to link transaction')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't link transaction. Try again.")),
   });
 }
 
@@ -39,6 +39,6 @@ export function useUnlinkLendingTransaction(options?: LinkOptions) {
   return useMutation({
     mutationFn: (id: string) => api.DELETE('/api/v1/lendings/{id}/transaction', { params: { path: { id } } }),
     onSuccess: refresh,
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to unlink transaction')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't unlink transaction. Try again.")),
   });
 }

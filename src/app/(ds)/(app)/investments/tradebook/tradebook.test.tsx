@@ -105,7 +105,7 @@ describe('/investments/tradebook: data', () => {
   it('says so when the trades cannot load', async () => {
     tradebook.fetchTradebookPage.mockRejectedValue(new Error('boom'));
     await renderPage();
-    expect(screen.getByText('Could not load trades')).toBeTruthy();
+    expect(screen.getByText("Couldn't load trades")).toBeTruthy();
   });
 
   it('still shows the trades when the jobs or the brokers fail', async () => {
@@ -160,10 +160,10 @@ describe('/investments/tradebook: rows', () => {
   it('says there are no trades yet, or none that match', async () => {
     tradebook.fetchTradebookPage.mockResolvedValue(tradesPage([]));
     const { unmount } = await renderPage();
-    expect(screen.getByText('No trades recorded. Record a trade or import your tradebook.')).toBeTruthy();
+    expect(screen.getByText('No trades yet. Record a trade or import your tradebook.')).toBeTruthy();
     unmount();
     await renderPage({ type: 'buy' });
-    expect(screen.getByText('No trades match.')).toBeTruthy();
+    expect(screen.getByText('No trades match')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenCalledWith('/investments/tradebook');
   });
@@ -308,7 +308,7 @@ describe('/investments/tradebook: edit and delete', () => {
     const dialog = await openEdit();
     fireEvent.change(within(dialog).getByLabelText('Qty'), { target: { value: '' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save trade' }));
-    expect(await within(dialog).findByText('Quantity must be above zero')).toBeTruthy();
+    expect(await within(dialog).findByText('Enter a quantity above zero.')).toBeTruthy();
     expect(api.PUT).not.toHaveBeenCalled();
   });
 
@@ -316,7 +316,7 @@ describe('/investments/tradebook: edit and delete', () => {
     api.PUT.mockRejectedValue(new Error('nope'));
     const dialog = await openEdit();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save trade' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the trade', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't update the trade. Try again.", { tone: 'danger' }));
     expect(screen.getByText('Edit trade')).toBeTruthy();
   });
 

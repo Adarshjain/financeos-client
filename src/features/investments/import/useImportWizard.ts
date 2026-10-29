@@ -27,7 +27,7 @@ import { useImportWizardState } from './useImportWizardState';
 export interface ImportWizardNotify {
   error: (message: string) => void;
   info: (message: string) => void;
-  /** A thrown error; `fallback` names what failed ("Failed to commit import"). */
+  /** A thrown error; `fallback` names what failed ("Couldn't commit import"). */
   caught: (error: unknown, fallback: string) => void;
 }
 
@@ -95,9 +95,9 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
       qc.invalidateQueries({ queryKey: keys.accounts.all }); // broker balances derive from holdings
       onSuccess?.();
     } else if (job.status === 'FAILED') {
-      notify.error(job.errorMessage || 'Commit failed.');
+      notify.error(job.errorMessage || "Couldn't commit the import. Try again.");
     } else if (job.status === 'CANCELLED') {
-      notify.info('Import commit job was cancelled.');
+      notify.info('Import cancelled');
     }
     setActiveJobId(null);
     setIsCommitting(false);
@@ -115,7 +115,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
   const handlePreviewSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!brokerAccountId) {
-      notify.error('Please select a target broker account.');
+      notify.error('Select a target broker account.');
       return;
     }
 
@@ -124,12 +124,12 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
       if (mode === 'reconcile_zerodha' || mode === 'reconcile_groww') {
         const isFnoOnly = mode === 'reconcile_zerodha' && assetScope === 'fno';
         if (!isFnoOnly && tradebookFiles.length === 0) {
-          notify.error('Please upload at least one Tradebook / Order History file.');
+          notify.error('Upload at least one Tradebook / Order History file.');
           setIsPreviewing(false);
           return;
         }
         if (taxpnlFiles.length === 0) {
-          notify.error('Please upload at least one Tax P&L / Capital Gains file.');
+          notify.error('Upload at least one Tax P&L / Capital Gains file.');
           setIsPreviewing(false);
           return;
         }
@@ -152,7 +152,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
       } else {
         // MF CAS
         if (!casFile) {
-          notify.error('Please select a CAS PDF/CSV file.');
+          notify.error('Select a CAS PDF/CSV file.');
           setIsPreviewing(false);
           return;
         }
@@ -168,7 +168,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
         setStep(2);
       }
     } catch (err) {
-      notify.caught(err, 'Failed to preview import');
+      notify.caught(err, "Couldn't preview import");
     } finally {
       setIsPreviewing(false);
     }
@@ -194,7 +194,7 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
         if (data?.jobId) {
           setActiveJobId(data.jobId);
           emitJobStarted(data.jobId);
-          notify.info('Reconciliation commit job started in background.');
+          notify.info('Reconciliation started');
         } else {
           setIsCommitting(false);
         }
@@ -207,13 +207,13 @@ export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImpo
         if (data?.jobId) {
           setActiveJobId(data.jobId);
           emitJobStarted(data.jobId);
-          notify.info('Import commit job started in background.');
+          notify.info('Import started');
         } else {
           setIsCommitting(false);
         }
       }
     } catch (err) {
-      notify.caught(err, 'Failed to commit import');
+      notify.caught(err, "Couldn't commit import");
       setIsCommitting(false);
     }
   };

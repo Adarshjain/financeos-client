@@ -62,10 +62,10 @@ export function useReportEditorActions() {
   const undoDuplicate = useMutation({
     mutationFn: (copyId: string) => api.DELETE('/api/v1/reports/{id}', { params: { path: { id: copyId } } }),
     onSuccess: () => {
-      showToast('Copy removed');
+      showToast('Copy deleted');
       changed();
     },
-    onError: failed("Couldn't remove the copy. Try again."),
+    onError: failed("Couldn't delete the copy. Try again."),
   });
 
   const duplicate = useMutation({

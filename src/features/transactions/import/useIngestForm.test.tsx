@@ -125,7 +125,7 @@ describe('useIngestForm upload feedback', () => {
     expect(result.current.isUploading).toBe(false);
     expect(result.current.files).toHaveLength(2);
     expect(toast.dismiss).toHaveBeenCalledWith('upload-toast');
-    expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to start ingestion job');
+    expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't start the import. Try again.");
   });
 
   it('ignores a second submit while the first upload is in flight', async () => {

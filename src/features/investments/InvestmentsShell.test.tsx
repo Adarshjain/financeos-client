@@ -122,7 +122,7 @@ describe('InvestmentsShell', () => {
 
   it.each([
     ['/investments/tradebook', 'trade', 'Record trade', 'Import tradebook'],
-    ['/investments/fno', 'fno', 'Add F&O trade', 'Import statement'],
+    ['/investments/fno', 'fno', 'Record F&O trade', 'Import statement'],
   ])('makes the + on %s a menu with the add and the import', (path, dialog, addLabel, importLabel) => {
     pathname = path;
     renderShell();

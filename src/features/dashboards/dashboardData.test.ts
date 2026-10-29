@@ -85,7 +85,7 @@ describe('loadDashboardPage', () => {
     expect(queries(state)).not.toContain(JSON.stringify(keys.reports.list()));
   });
 
-  it('the New dashboard page loads no dashboard, only the reports and the catalog', async () => {
+  it('the Add dashboard page loads no dashboard, only the reports and the catalog', async () => {
     const { dashboard: none, state } = await loadDashboardPage();
     expect(none).toBeUndefined();
     expect(dashboardsApi.getById).not.toHaveBeenCalled();

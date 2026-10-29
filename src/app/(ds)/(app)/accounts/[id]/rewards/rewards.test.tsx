@@ -204,7 +204,7 @@ describe('/accounts/[id]/rewards', () => {
     loadData.mockResolvedValue(data({ report: { ...report, rules: [] }, rules: [] }));
     await renderPage();
 
-    expect(screen.queryByText('No reward rules on HDFC Regalia Gold')).toBeNull();
+    expect(screen.queryByText('No reward rules on HDFC Regalia Gold yet')).toBeNull();
     expect(screen.getByText('Annual spend')).toBeDefined();
     expect(screen.queryByText('Rules on this account')).toBeNull();
   });
@@ -228,22 +228,22 @@ describe('/accounts/[id]/rewards', () => {
     loadData.mockResolvedValue(data({ report: { ...report, rules: [], milestones: [] }, rules: [], lines: null }));
     await renderPage();
 
-    expect(screen.getByText('No reward rules on Paytm Wallet')).toBeDefined();
+    expect(screen.getByText('No reward rules on Paytm Wallet yet')).toBeDefined();
     expect(screen.getByText('Rewards earned here show once a rule covers this account.')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Add reward rule' }));
     expect(push).toHaveBeenCalledWith('/rewards/rules?account=w1');
   });
 
-  it('shows an error with Try again when the report failed, and keeps the page when only the lines failed', async () => {
+  it('shows an error with Retry when the report failed, and keeps the page when only the lines failed', async () => {
     loadData.mockResolvedValue(data({ report: null }));
     const { unmount } = await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(refresh).toHaveBeenCalled();
     unmount();
 
     loadData.mockResolvedValue(data({ lines: null }));
     await renderPage();
-    expect(screen.getByText('Could not load earning lines')).toBeDefined();
+    expect(screen.getByText("Couldn't load earning lines")).toBeDefined();
     expect(screen.getByText('Eligible spend')).toBeDefined();
   });
 

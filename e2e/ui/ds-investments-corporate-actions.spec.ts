@@ -57,7 +57,7 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('button', { name: 'Merger', exact: true }).click();
       await page.waitForURL(/type=merger/);
-      await expect(page.getByText('No corporate actions match.')).toBeVisible();
+      await expect(page.getByText('No corporate actions match')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: false }))).toBeVisible();
@@ -90,7 +90,7 @@ for (const viewport of VIEWPORTS) {
 
       await dialog.getByRole('textbox', { name: /^After/ }).fill('4');
       await dialog.getByRole('button', { name: 'Save bonus' }).click();
-      await expect(page.getByText('Updated bonus 3:1')).toBeVisible();
+      await expect(page.getByText('Corporate action updated')).toBeVisible();
       await expect(dialog).toHaveCount(0);
       if (viewport.width > 640) await expect(page.getByText('30 → 120', { exact: false }).first()).toBeVisible();
       else await expect(page.getByText(/ex 10 Jun 2025 · 3:1 · 30 → 120 shares/)).toBeVisible();
@@ -124,7 +124,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('dialog', { name: 'Delete corporate action' }).getByRole('button', { name: 'Delete corporate action' }).click();
       await expect(page.getByText('Corporate action deleted')).toBeVisible();
       await expect(page.getByText(seeded.infy.symbol, { exact: false })).toHaveCount(0);
-      await expect(page.getByText('No corporate actions match.')).toBeVisible();
+      await expect(page.getByText('No corporate actions match')).toBeVisible();
     });
   });
 }

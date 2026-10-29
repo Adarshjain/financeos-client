@@ -68,66 +68,66 @@ export function useCardholderActions(accountId: string, isBank: boolean): Cardho
 
   return {
     addPrimaryCard: (body) =>
-      run(() => m.addPrimaryMutation.mutateAsync(body), 'Debit card added', 'Failed to add debit card'),
+      run(() => m.addPrimaryMutation.mutateAsync(body), 'Debit card added', "Couldn't add the debit card. Try again."),
     addHolder: (body) =>
       run(
         () => m.addAddonMutation.mutateAsync(body),
         isBank ? 'Joint holder added' : 'Add-on cardholder created',
-        isBank ? 'Failed to add joint holder' : 'Failed to create add-on cardholder'
+        isBank ? "Couldn't add the joint holder. Try again." : "Couldn't add the add-on cardholder. Try again."
       ),
     editHolder: (holder, body) =>
       run(
         () => m.updateCardholderMutation.mutateAsync({ cardholderId: holder.id, body }),
         'Cardholder updated',
-        'Failed to update cardholder'
+        "Couldn't update the cardholder. Try again."
       ),
     closeHolder: (holder, body) =>
       run(
         () => m.closeCardholderMutation.mutateAsync({ cardholderId: holder.id, body }),
         'Cardholder closed',
-        'Failed to close cardholder'
+        "Couldn't close the cardholder. Try again."
       ),
     reopenHolder: (holder) =>
       run(
         () => m.reopenCardholderMutation.mutateAsync(holder.id),
         'Cardholder reopened',
-        'Failed to reopen cardholder'
+        "Couldn't reopen the cardholder. Try again."
       ),
     deleteHolder: (holder) =>
       run(
         () => m.deleteCardholderMutation.mutateAsync(holder.id),
         'Cardholder deleted',
-        'Failed to delete cardholder'
+        "Couldn't delete the cardholder. Try again."
       ),
     addCard: (holder, body) =>
       run(
         () => m.addCardMutation.mutateAsync({ cardholderId: holder.id, body }),
-        'New card issued',
-        'Failed to issue card'
+        'Card issued',
+        "Couldn't issue the card. Try again."
       ),
     replaceCard: (holder, card, body) =>
       run(
         () => m.replaceCardMutation.mutateAsync({ cardholderId: holder.id, cardId: card.id, body }),
-        'Card replaced successfully',
-        'Failed to replace card'
+        'Card replaced',
+        "Couldn't replace the card. Try again."
       ),
     closeCard: (holder, card, body) =>
       run(
         () => m.closeCardMutation.mutateAsync({ cardholderId: holder.id, cardId: card.id, body }),
         'Card plastic closed',
-        'Failed to close card'
+        "Couldn't close the card. Try again."
       ),
     deleteCard: (holder, card) =>
       run(
         () => deleteCardMutation.mutateAsync({ cardholderId: holder.id, cardId: card.id }),
         'Card plastic deleted',
-        'Failed to delete card plastic'
+        "Couldn't delete the card. Try again."
       ),
     reassign: (body) =>
       run(
         () => m.reattributeMutation.mutateAsync(body),
-        (res) => `Reassigned ${(res as { updatedCount: number }).updatedCount} transaction(s)`,
-        'Failed to reassign transactions'
+        (res) => `${(res as { updatedCount: number }).updatedCount} transaction(s) reassigned`,
+        "Couldn't reassign transactions. Try again."
       ),
   };
 }

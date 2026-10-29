@@ -295,7 +295,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
               compact
               description={
                 filtered
-                  ? 'No trades match.'
+                  ? 'No trades match'
                   : `No F&O trades${state.fy == null ? '' : ` in ${fnoFyLabel(state.fy)}`}. Log a trade or import a broker Tax P&L statement.`
               }
               action={

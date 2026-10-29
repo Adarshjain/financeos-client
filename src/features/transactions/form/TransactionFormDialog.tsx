@@ -187,21 +187,21 @@ export function TransactionFormDialog({
             });
           });
           shown.settle(true);
-          showToast('Transaction saved!');
+          showToast('Transaction saved');
           router.refresh();
         } catch (e) {
           shown.settle(false);
-          showToast(getErrorMessage(e, 'An unexpected error occurred'), { tone: 'danger' });
+          showToast(getErrorMessage(e, "Couldn't save the transaction. Try again."), { tone: 'danger' });
         }
         return;
       }
       if (transaction) await updateMutation.mutateAsync({ id: transaction.id, body });
       else await createMutation.mutateAsync(body);
-      showToast('Transaction saved!');
+      showToast('Transaction saved');
       onClose();
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'An unexpected error occurred'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't save the transaction. Try again."), { tone: 'danger' });
     }
   };
 
@@ -211,7 +211,7 @@ export function TransactionFormDialog({
         size="md"
         title={isUpdate ? 'Edit transaction' : 'Add transaction'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: isUpdate ? 'Save' : 'Save transaction', type: 'submit', form: FORM_ID, loading: saving }}
+        primary={{ label: isUpdate ? 'Save transaction' : 'Add transaction', type: 'submit', form: FORM_ID, loading: saving }}
       >
         <DialogBody>
           <form

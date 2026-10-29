@@ -87,7 +87,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
   if (isLoading) {
     body = <BillsDueSkeleton />;
   } else if (error) {
-    body = <BuiltinError message={getErrorMessage(error, 'request failed')} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
+    body = <BuiltinError message={getErrorMessage(error, "Couldn't load your bills.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (bills.length === 0) {
     body = accountId ? (
       <EmptyState compact title="No current bill for this card" />

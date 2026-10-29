@@ -181,12 +181,12 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
         storeSavedDashboard(queryClient, saved);
         done = { action: 'saved-home', reportId: report.id, reportName: report.name, widgetId, dashboardId: saved.id ?? home?.id, ...(home ? {} : { createdDashboard: true }) };
       } catch {
-        showToast('Saved the report, but could not add it to Home.', { tone: 'danger' });
+        showToast("Report saved, but couldn't add it to Home.", { tone: 'danger' });
       }
     }
     finish(done);
     setBusyTo(null);
-    showToast(done.action === 'saved-home' ? 'Saved as report and added to Home' : 'Report saved', {
+    showToast(done.action === 'saved-home' ? 'Report saved and added to Home' : 'Report saved', {
       action: { label: 'Undo', onSelect: () => void undo(done, null) },
     });
   };
@@ -279,9 +279,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
           <CardFooter>
             <Text variant="label" tone="ink-3" as="span">
               {result.action === 'saved-home'
-                ? 'Saved as report and added to Home'
+                ? 'Report saved and added to Home'
                 : result.action === 'saved'
-                  ? 'Saved as report'
+                  ? 'Report saved'
                   : result.action === 'updated'
                     ? 'Report updated'
                     : 'Report deleted'}
@@ -334,7 +334,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
             if (!open && busy !== 'delete') setConfirming(false);
           }}
           title={`Delete “${title}”?`}
-          description="The report and its widget on Home go. Your transactions stay."
+          description="The report and its widget on Home go. Your transactions stay. This can't be undone."
           confirmLabel="Delete report"
           confirmLoading={busy === 'delete'}
           onConfirm={() => void remove()}

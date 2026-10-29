@@ -80,7 +80,7 @@ const pickPerson = async (name: RegExp) => {
   await user.click(screen.getByRole('option', { name }));
 };
 const amount = () => screen.getByRole('textbox', { name: /^Amount/ });
-const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save entry' }));
+const save = () => fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -91,14 +91,14 @@ beforeEach(() => {
 describe('AddLendingDialog', () => {
   it('opens with the Legacy fields: person, entry type, amount, date, expected return date, notes', () => {
     render(<AddLendingDialog onClose={onClose} />);
-    expect(screen.getByText('Add ledger entry')).toBeInTheDocument();
+    expect(screen.getByText('Record ledger entry')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Person/ })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Entry type/ })).toHaveTextContent('I lent money');
     expect(amount()).toHaveValue('');
     expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
     expect(screen.getByLabelText(/Expected return date/)).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^Notes/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save entry' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Record entry' })).toBeInTheDocument();
   });
 
   it('asks for a person, then an amount, and does not call the server', async () => {
@@ -136,7 +136,7 @@ describe('AddLendingDialog', () => {
       }),
     );
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Lending recorded successfully');
+    expect(toast).toHaveBeenCalledWith('Lending recorded');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -185,7 +185,7 @@ describe('AddLendingDialog', () => {
     save();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     onErrorOption?.(new Error('Server said no'));
-    expect(toast).toHaveBeenCalledWith('Failed to create lending', { tone: 'danger' });
+    expect(toast).toHaveBeenCalledWith("Couldn't record lending. Try again.", { tone: 'danger' });
     expect(onClose).not.toHaveBeenCalled();
   });
 

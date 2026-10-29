@@ -95,9 +95,9 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
         ) : null}
         {categories === null ? (
           <ErrorState
-            title="Could not load categories"
-            description="The categories request failed. Try again, and quote the reference if it keeps failing."
-            action={{ label: 'Try again', onSelect: () => router.refresh() }}
+            title="Couldn't load categories"
+            description="Retry, and quote the reference if it keeps failing."
+            action={{ label: 'Retry', onSelect: () => router.refresh() }}
             reference={reference}
           />
         ) : (
@@ -107,8 +107,8 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
             />
             {categories.rows.length === 0 ? (
               <EmptyState
-                title="No categories found"
-                description={state.q ? 'Try adjusting your search query.' : 'Get started by creating your first category.'}
+                title={state.q ? 'No categories match' : 'No categories yet'}
+                description={state.q ? 'Try adjusting your search query.' : 'Add your first category to get started.'}
               />
             ) : (
               <Card>
@@ -189,8 +189,8 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
           if (!open && !remove.isPending) close();
         }}
         title={dialog?.kind === 'delete' ? `Delete ${dialog.category.name}?` : 'Delete category?'}
-        description="Transactions in this category will keep their other categories; none are deleted."
-        confirmLabel="Delete"
+        description="Transactions in this category keep their other categories; none are deleted. This can't be undone."
+        confirmLabel="Delete category"
         confirmLoading={remove.isPending}
         onConfirm={() => {
           if (dialog?.kind === 'delete') remove.mutate(dialog.category);

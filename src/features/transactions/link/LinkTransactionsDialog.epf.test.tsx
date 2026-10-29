@@ -92,7 +92,7 @@ describe('LinkTransactionsDialog, EPF withdrawal', () => {
   it('lists the withdrawals with the suggested one chosen, and links it with the TDS gap recorded', async () => {
     open([tx('t1', 101340)]);
     await chooseEpf();
-    expect(screen.getByText('Record an EPF withdrawal')).toBeInTheDocument();
+    expect(screen.getByText('Record an EPF withdrawal.')).toBeInTheDocument();
     await screen.findByText('Final settlement · Globex Retail');
     expect(screen.getByText('12 Sep 2018 · no TDS recorded · suggested')).toBeInTheDocument();
     expect(screen.getByText('₹1,12,600')).toBeInTheDocument();

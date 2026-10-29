@@ -21,7 +21,7 @@ import {
   UNRESOLVED_RECEIPTS,
 } from './dividendLinkHelpers';
 
-const AMOUNT_ERROR = 'Please enter a valid amount.';
+const AMOUNT_ERROR = 'Enter an amount above ₹0.';
 
 export type DividendLinkMode = 'existing' | 'new';
 type DividendType = Schemas['CreateDividendRequest']['type'];
@@ -36,7 +36,7 @@ interface UseDividendLinkProps {
 
 class LinkAfterCreateError extends Error {
   constructor(readonly original: unknown) {
-    super('Dividend recorded, but linking failed');
+    super("Dividend recorded, but couldn't link it. Try again.");
   }
 }
 
@@ -170,10 +170,10 @@ export function useDividendLink({
       if (err instanceof LinkAfterCreateError) {
         // The dividend exists now; keep the dialog open so a retry only re-links.
         invalidateInvestmentQueries(queryClient);
-        toastError(err, 'Dividend recorded, but linking failed');
+        toastError(err, "Dividend recorded, but couldn't link it. Try again.");
         return;
       }
-      toastError(err, 'Failed to link dividend');
+      toastError(err, "Couldn't link the dividend. Try again.");
     },
   });
 
@@ -194,7 +194,7 @@ export function useDividendLink({
 
   const handleSubmit = () => {
     if (mode === 'new' && !holding) {
-      notify.error('Please select a held instrument.');
+      notify.error('Select a held instrument.');
       return;
     }
     if (mode === 'new' && (numAmount === null || numAmount <= 0 || (tds.trim() && numTds === null))) {

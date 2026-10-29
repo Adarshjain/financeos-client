@@ -83,7 +83,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // Preview runs on demand and shows the ranked rows with their share.
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Preview' })).toBeVisible();
-    await expect(page.getByText('Could not run the report')).toHaveCount(0);
+    await expect(page.getByText("Couldn't run the report")).toHaveCount(0);
     await expect(page.getByRole('columnheader', { name: 'Txns' })).toBeVisible({ timeout: 45_000 });
     await expect(page.getByRole('columnheader', { name: 'Share' })).toBeVisible();
     await expect(page.getByText(`Bd Food ${tag}`).first()).toBeVisible();
@@ -92,7 +92,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
 
     // A press on a row expands its sub-rows; the underlying data opens from the link inside.
     await page.getByText(`Bd Food ${tag}`).first().click();
-    await expect(page.getByText(`${accountName} · 2 txns`)).toBeVisible();
+    await expect(page.getByText(`${accountName} · 2 transactions`)).toBeVisible();
     await page.getByRole('button', { name: 'Underlying data' }).last().click();
     const underlying = page.getByRole('dialog', { name: /^Underlying data/ });
     await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
@@ -134,7 +134,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(page.getByLabel('Show top')).toHaveValue('5');
 
     // Create writes the report and takes the visitor back to the list it was opened from, which shows it.
-    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.getByRole('button', { name: 'Add report' }).click();
     await page.waitForURL(/\/reports$/, { timeout: 45_000 });
     await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toBeVisible({ timeout: 45_000 });
 
@@ -157,14 +157,14 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(page.getByRole('combobox', { name: 'Columns', exact: true })).toContainText('Transactions');
     // The saved result is already there, run on the server before the first render.
     await expect(page.getByText('Click Preview to run this report.')).toHaveCount(0);
-    await expect(page.getByText('Could not run the report')).toHaveCount(0);
+    await expect(page.getByText("Couldn't run the report")).toHaveCount(0);
 
     // Change something: the label appears, and leaving asks first.
     await page.getByLabel('Show top').fill('8');
     await expect(page.getByText('Unsaved changes')).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();
     const dialog = page.getByRole('dialog');
-    await expect(dialog.getByText('Leave without saving?')).toBeVisible();
+    await expect(dialog.getByText('Discard changes?')).toBeVisible();
     await dialog.getByRole('button', { name: 'Keep editing' }).click();
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/reports\/[0-9a-f-]{36}$/);
@@ -218,7 +218,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(
       page.getByRole('combobox', { name: 'Datasource' })
     ).toContainText('Dividends');
-    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.getByRole('button', { name: 'Add report' }).click();
     await page.waitForURL(/\/reports$/, { timeout: 45_000 });
   });
 
@@ -318,14 +318,14 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     const warning = page.getByText("These numbers don't add up");
     await expect(warning).toBeVisible();
     await expect(page.getByText('Value adds assets and liabilities together. Split by Side, or filter it to one value.')).toBeVisible();
-    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.getByRole('button', { name: 'Add report' }).click();
     await page.waitForTimeout(1_000);
     await expect(page).toHaveURL(/\/reports\/new/);
 
     // Net value already nets the sides: the warning goes and the report is created.
     await pick(page, 'Measure', 'Net value');
     await expect(warning).toHaveCount(0);
-    await page.getByRole('button', { name: 'Create report' }).click();
+    await page.getByRole('button', { name: 'Add report' }).click();
     await page.waitForURL(/\/reports$/, { timeout: 45_000 });
     // Only the fixed one was written: the blocked Create made nothing.
     await expect(page.getByRole('table').getByText('Ds editor net worth guard', { exact: true })).toHaveCount(1, { timeout: 45_000 });

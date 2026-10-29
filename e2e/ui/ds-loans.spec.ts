@@ -153,15 +153,15 @@ for (const viewport of VIEWPORTS) {
       }
     });
 
-    test('Person: the + opens Add ledger entry with this person already picked', async ({ page }) => {
+    test('Person: the + opens Record ledger entry with this person already picked', async ({ page }) => {
       const { rahul } = await seedLedger();
       await page.goto(personPath(rahul.id));
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
-      const dialog = page.getByRole('dialog', { name: 'Add ledger entry' });
+      const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
       await expect(dialog).toBeVisible();
       await expect(dialog.getByRole('combobox', { name: /^Person/ })).toContainText('Rahul Sharma');
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('700');
-      await dialog.getByRole('button', { name: 'Save entry' }).click();
+      await dialog.getByRole('button', { name: 'Record entry' }).click();
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹25,700 · received ₹10,000 · closing ₹15,700')).toBeVisible();
       expect(new URL(page.url()).pathname).toBe(personPath(rahul.id));
@@ -226,14 +226,14 @@ for (const viewport of VIEWPORTS) {
       const dialog = page.getByRole('dialog', { name: 'Edit ledger entry' });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('26000');
-      await dialog.getByRole('button', { name: 'Save changes' }).click();
+      await dialog.getByRole('button', { name: 'Save entry' }).click();
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹10,000 · closing ₹16,000')).toBeVisible();
 
       await page.getByText('Part repayment').first().click();
       await dialog.getByRole('button', { name: 'Delete entry' }).click();
       const confirm = page.getByRole('dialog', { name: 'Delete entry' });
-      await expect(confirm.getByText(/Delete this lent entry of ₹10,000\?|Delete this borrowed entry of ₹10,000\?|Delete this repayment entry of ₹10,000\?/)).toBeVisible();
+      await expect(confirm.getByText(/This (lent|borrowed|repayment) entry of ₹10,000 goes\./)).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete entry' }).click();
       await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹0 · closing ₹26,000')).toBeVisible();
     });
@@ -245,7 +245,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('menuitem', { name: 'Delete person' }).click();
 
       const confirm = page.getByRole('dialog', { name: 'Delete person' });
-      await expect(confirm.getByText('Delete Rahul Sharma?')).toBeVisible();
+      await expect(confirm.getByText('Rahul Sharma goes.')).toBeVisible();
       await expect(confirm.getByText('Their whole ledger goes (2 entries).')).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete person' }).click();
 
@@ -253,19 +253,19 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
     });
 
-    test('the + opens Add ledger entry; saving a new person adds a row', async ({ page }) => {
+    test('the + opens Record ledger entry; saving a new person adds a row', async ({ page }) => {
       await seedPeople();
       await page.goto('/loans/lendings');
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
 
-      const dialog = page.getByRole('dialog', { name: 'Add ledger entry' });
+      const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
       await expect(dialog).toBeVisible();
       const name = `Kavita Rao ${Date.now()}`;
       await dialog.getByRole('combobox', { name: /^Person/ }).click();
       await page.getByPlaceholder('Type a name').fill(name);
       await page.getByRole('button', { name: `Add "${name}"` }).click();
       await dialog.getByRole('textbox', { name: /^Amount/ }).fill('40000');
-      await dialog.getByRole('button', { name: 'Save entry' }).click();
+      await dialog.getByRole('button', { name: 'Record entry' }).click();
 
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText(name).first()).toBeVisible();
@@ -340,7 +340,7 @@ for (const viewport of VIEWPORTS) {
 
       const dialog = page.getByRole('dialog', { name: 'Add loan' });
       await expect(dialog).toBeVisible();
-      await dialog.getByRole('button', { name: 'Create loan' }).click();
+      await dialog.getByRole('button', { name: 'Add loan' }).click();
       await expect(dialog.getByText('Loan name is required')).toBeVisible();
 
       await dialog.getByRole('textbox', { name: /^Loan name/ }).fill('Scooter Loan UI');
@@ -348,7 +348,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('textbox', { name: /^Principal/ }).fill('90000');
       await dialog.getByRole('textbox', { name: /^Annual rate/ }).fill('11');
       await dialog.getByRole('textbox', { name: /^Tenure/ }).fill('24');
-      await dialog.getByRole('button', { name: 'Create loan' }).click();
+      await dialog.getByRole('button', { name: 'Add loan' }).click();
 
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Scooter Loan UI').first()).toBeVisible();

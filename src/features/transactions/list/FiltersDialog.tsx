@@ -114,7 +114,7 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
       <DialogContent
         size="md"
         title="Filters"
-        description="Every filter combines with the others"
+        description="Every filter combines with the others."
         tertiary={{ label: 'Cancel', onSelect: onClose }}
         secondary={{ label: 'Clear all', onSelect: clearAll }}
         primary={{ label: showLabel, onSelect: () => onApply(draftQuery) }}

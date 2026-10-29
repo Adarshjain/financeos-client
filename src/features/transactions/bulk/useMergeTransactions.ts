@@ -33,6 +33,6 @@ export function useMergeTransactions(onMerged: () => void) {
       router.refresh();
       onMerged();
     },
-    onError: (e) => showToast(getErrorMessage(e, 'Could not merge these transactions'), { tone: 'danger' }),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't merge these transactions. Try again."), { tone: 'danger' }),
   });
 }

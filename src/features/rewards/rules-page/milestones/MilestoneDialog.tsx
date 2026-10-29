@@ -106,12 +106,12 @@ export function MilestoneDialog({
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent
         size="lg"
-        title={milestone ? `Edit milestone · ${milestone.name}` : 'New milestone'}
+        title={milestone ? `Edit milestone · ${milestone.name}` : 'Add milestone'}
         tertiary={
           milestone && onDelete ? { label: 'Delete milestone', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined
         }
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: 'Save milestone', onSelect: f.onSubmit, loading: pending }}
+        primary={{ label: milestone ? 'Save milestone' : 'Add milestone', onSelect: f.onSubmit, loading: pending }}
       >
         <DialogBody>
           <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
@@ -157,7 +157,7 @@ export function MilestoneDialog({
               onValueChange={(v) => f.setBasis(v as MilestoneBasis)}
             />
             <TextField
-              label={`Threshold ${f.basis === 'SPEND' ? '₹' : '(txns)'}`}
+              label={`Threshold ${f.basis === 'SPEND' ? '₹' : '(transactions)'}`}
               inputMode="decimal"
               placeholder={f.basis === 'SPEND' ? 'e.g. 50000' : 'e.g. 4'}
               value={f.threshold}
@@ -165,7 +165,7 @@ export function MilestoneDialog({
             />
             {f.basis === 'TXN_COUNT' ? (
               <TextField
-                label="Min txn amount ₹"
+                label="Minimum transaction amount ₹"
                 optional
                 inputMode="decimal"
                 placeholder="e.g. 1500"

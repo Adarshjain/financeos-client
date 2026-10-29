@@ -234,7 +234,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
         </div>
         <SettingsToggle
           label="Group the rest as Other"
-          description={c.limit === undefined ? 'Set a top number first' : undefined}
+          description={c.limit === undefined ? 'Set a top number first.' : undefined}
           checked={!!c.other && c.limit !== undefined}
           disabled={c.limit === undefined}
           onCheckedChange={(other) => set({ other })}

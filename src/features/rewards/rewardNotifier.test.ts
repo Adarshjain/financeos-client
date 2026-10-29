@@ -21,10 +21,10 @@ describe('dsRewardNotifier', () => {
 
   it('shows a failure with the server’s message, or the fallback, and records it for diagnostics', () => {
     const err = new ApiError(409, { message: 'Cap is full' } as never);
-    dsRewardNotifier.failure(err, 'Failed to save reward rule');
+    dsRewardNotifier.failure(err, "Couldn't save the reward rule. Try again.");
     expect(showToast).toHaveBeenCalledWith('Cap is full', { tone: 'danger' });
     expect(record).toHaveBeenCalledWith(err, { message: 'Cap is full' });
-    dsRewardNotifier.failure(undefined, 'Failed to save reward rule');
-    expect(showToast).toHaveBeenLastCalledWith('Failed to save reward rule', { tone: 'danger' });
+    dsRewardNotifier.failure(undefined, "Couldn't save the reward rule. Try again.");
+    expect(showToast).toHaveBeenLastCalledWith("Couldn't save the reward rule. Try again.", { tone: 'danger' });
   });
 });

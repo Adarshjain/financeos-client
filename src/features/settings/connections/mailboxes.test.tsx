@@ -108,7 +108,7 @@ describe('MailboxesCard', () => {
 
   it('shows the empty state with a first-account action and no Sync now', () => {
     const p = setup([]);
-    expect(screen.getByText('No connected Gmail accounts found.')).toBeInTheDocument();
+    expect(screen.getByText('No Gmail accounts yet')).toBeInTheDocument();
     expect(screen.getByText('Connect a mailbox to import bank alerts and statements automatically.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Sync now' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Connect your first account' }));

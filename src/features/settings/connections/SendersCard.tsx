@@ -85,9 +85,9 @@ export function SendersCard({ senders, onOpenAddSender, onOpenEditSender }: Send
         empty={
           <EmptyState
             size="sm"
-            title="No allowed senders configured yet"
+            title="No allowed senders yet"
             description="Add banks, credit cards, or service alerts to the allowlist."
-            action={{ label: 'Configure sender', onSelect: onOpenAddSender, variant: 'secondary' }}
+            action={{ label: 'Add your first sender', onSelect: onOpenAddSender, variant: 'secondary' }}
           />
         }
       />

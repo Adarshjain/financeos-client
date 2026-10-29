@@ -19,7 +19,7 @@ export function useSaveSettings() {
     try {
       await update.mutateAsync(body);
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not save notification settings'));
+      notify.error(getErrorMessage(e, "Couldn't save notification settings. Try again."));
     }
   };
   return { save, pending: update.isPending };

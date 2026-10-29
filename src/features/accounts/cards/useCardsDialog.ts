@@ -64,7 +64,7 @@ export function useCardsDialog(account: Account) {
     handleOpenChange,
     cardholders: cardholdersQuery.data ?? [],
     isLoading,
-    error: cardholdersQuery.error ? getErrorMessage(cardholdersQuery.error, 'Failed to fetch cardholders') : null,
+    error: cardholdersQuery.error ? getErrorMessage(cardholdersQuery.error, "Couldn't load cardholders. Try again.") : null,
     view: state.view,
     targetCardholder: state.targetCardholder,
     targetCard: state.targetCard,

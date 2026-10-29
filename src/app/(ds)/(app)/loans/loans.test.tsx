@@ -144,7 +144,7 @@ describe('/loans', () => {
   it('says so under each tile label when the summary fails, and still lists the loans', async () => {
     server.fetchLoansSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText('Could not load this figure. Refresh the page to try again.')).toHaveLength(4);
+    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(4);
     expect(screen.getAllByText('Car Loan · HDFC Bank').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Closed ·/)).toBeNull();
   });
@@ -204,7 +204,7 @@ describe('/loans', () => {
   it('says nothing matches when a search finds no loan, and invites one when there are none', async () => {
     server.fetchLoans.mockResolvedValue(pageOf([]));
     await renderPage({ q: 'zzz' });
-    expect(screen.getByText('No loans match.')).toBeInTheDocument();
+    expect(screen.getByText('No loans match')).toBeInTheDocument();
   });
 
   it('invites a first loan when there are none at all', async () => {
@@ -213,11 +213,11 @@ describe('/loans', () => {
     expect(screen.getByText('No loans yet. Add a loan to track its EMIs.')).toBeInTheDocument();
   });
 
-  it('shows an error with Try again when the loans fail to load', async () => {
+  it('shows an error with Retry when the loans fail to load', async () => {
     server.fetchLoans.mockRejectedValue(new Error('boom'));
     await renderPage();
-    expect(screen.getByText('Could not load loans')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load loans")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -278,7 +278,7 @@ describe('/loans', () => {
       batch.mockRejectedValue(new Error('nope'));
       await renderPage();
       fireEvent.click(screen.getByRole('button', { name: 'Link all three' }));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to record batch loan payments', { tone: 'danger' }));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't record batch loan payments. Try again.", { tone: 'danger' }));
       expect(batch).toHaveBeenCalledTimes(1);
       expect(router.refresh).not.toHaveBeenCalled();
     });
@@ -289,7 +289,7 @@ describe('/loans', () => {
       await renderPage();
       fireEvent.click(screen.getByRole('button', { name: 'Link all three' }));
       await waitFor(() => expect(toast).toHaveBeenCalledWith('Marked 1 EMI paid'));
-      expect(toast).toHaveBeenCalledWith('Failed to record batch loan payments', { tone: 'danger' });
+      expect(toast).toHaveBeenCalledWith("Couldn't record batch loan payments. Try again.", { tone: 'danger' });
       expect(router.refresh).toHaveBeenCalled();
     });
   });
@@ -349,10 +349,10 @@ describe('/loans', () => {
     });
 
     it('toasts the failure when the closed loans cannot be loaded', async () => {
-      loadClosedLoans.mockResolvedValue({ success: false, error: { message: 'Failed to load closed loans' } });
+      loadClosedLoans.mockResolvedValue({ success: false, error: { message: "Couldn't load closed loans. Try again." } });
       await renderPage();
       fireEvent.click(screen.getByRole('button', { name: /Show/ }));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to load closed loans', { tone: 'danger' }));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't load closed loans. Try again.", { tone: 'danger' }));
       expect(screen.getByRole('button', { name: /Show/ })).toBeInTheDocument();
     });
   });

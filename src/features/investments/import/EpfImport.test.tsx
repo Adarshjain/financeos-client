@@ -280,7 +280,7 @@ describe('EPF passbook import: refused files', () => {
     open();
     await upload();
     await readPassbook();
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Failed to preview import: Network error', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't preview import: Network error", { tone: 'danger' }));
   });
 });
 
@@ -324,7 +324,7 @@ describe('EPF passbook import: result', () => {
     await upload();
     await readPassbook();
     await user.click(await screen.findByRole('button', { name: 'Import 3 entries' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Failed to commit import: Boom', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't commit import: Boom", { tone: 'danger' }));
     expect(within(document.body).getByRole('button', { name: 'Import 3 entries' })).toBeEnabled();
   });
 });
@@ -439,7 +439,7 @@ describe('EPF passbook import: several passbooks', () => {
     epfCalls.preview.mockRejectedValue(apiError('VALIDATION_ERROR', 'Two passbooks cannot go under one employer.'));
     await user.click(screen.getByRole('combobox', { name: 'Employer' }));
     await user.click(await screen.findByRole('option', { name: 'Northwind Labs' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Failed to preview import: Two passbooks cannot go under one employer.', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't preview import: Two passbooks cannot go under one employer.", { tone: 'danger' }));
     expect(screen.getByRole('combobox', { name: 'Employer' })).toHaveTextContent('New employer: Fabrikam Ltd');
   });
 

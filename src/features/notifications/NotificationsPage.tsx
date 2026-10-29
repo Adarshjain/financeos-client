@@ -98,14 +98,14 @@ export function NotificationsPage() {
         <ErrorState
           title="Couldn't load notifications"
           description="The server did not answer. Nothing was lost."
-          action={{ label: 'Try again', onSelect: () => void refetch() }}
+          action={{ label: 'Retry', onSelect: () => void refetch() }}
         />
       </Card>
     );
   } else if (items.length === 0) {
     body = (
       <Card>
-        <EmptyState title="No notifications" description="Finished imports, syncs and rewards show up here." />
+        <EmptyState title="No notifications yet" description="Finished imports, syncs and rewards show up here." />
       </Card>
     );
   } else {

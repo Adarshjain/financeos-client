@@ -20,6 +20,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -242,12 +243,12 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
         charges: allCharges(charges),
         notes: notes.trim() || undefined,
       });
-      showToast(`Recorded ${side} for ${instrument.symbol || instrument.name}`, { tone: 'success' });
+      showToast('Trade recorded', { tone: 'success' });
       router.refresh();
       onSaved?.();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to record the trade'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't record the trade. Try again."), { tone: 'danger' });
     }
   };
 
@@ -387,7 +388,7 @@ export function EditTradeDialog({ trade, onClose }: EditTradeDialogProps) {
       router.refresh();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to update the trade'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't update the trade. Try again."), { tone: 'danger' });
     }
   };
 
@@ -399,7 +400,7 @@ export function EditTradeDialog({ trade, onClose }: EditTradeDialogProps) {
       onClose();
     } catch (e) {
       setConfirming(false);
-      showToast(getErrorMessage(e, 'Failed to delete the trade'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the trade. Try again."), { tone: 'danger' });
     }
   };
 
@@ -450,7 +451,9 @@ export function EditTradeDialog({ trade, onClose }: EditTradeDialogProps) {
         confirmLabel="Delete trade"
         confirmLoading={deleteTrade.isPending}
         onConfirm={() => void remove()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
     </>
   );
 }

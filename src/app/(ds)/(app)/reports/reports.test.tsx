@@ -56,7 +56,7 @@ describe('/reports', () => {
     loadReportsList.mockResolvedValue({ ok: true, data });
     renderWithQuery(await ReportsPage({ searchParams: Promise.resolve({ type: 'TABLE' }) }));
     expect(screen.queryByText('Spend this month')).toBeNull();
-    expect(screen.getByText('No reports match.')).toBeInTheDocument();
+    expect(screen.getByText('No reports match')).toBeInTheDocument();
   });
 
   it('treats an unknown type as All', async () => {
@@ -65,17 +65,17 @@ describe('/reports', () => {
     expect(screen.getByText('Spend this month')).toBeInTheDocument();
   });
 
-  it('says what failed and offers Try again when the list does not load', async () => {
+  it('says what failed and offers Retry when the list does not load', async () => {
     loadReportsList.mockResolvedValue({ ok: false, reference: 'req-42' });
     renderWithQuery(await ReportsPage({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByText('Could not load reports')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load reports")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
     expect(screen.getByText(/req-42/)).toBeInTheDocument();
   });
 
-  it('wraps the page in the Reports frame with the New report +', () => {
+  it('wraps the page in the Reports frame with the Add report +', () => {
     renderWithQuery(<Layout>body</Layout>);
-    expect(screen.getByRole('link', { name: 'New report' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Add report' })).toBeInTheDocument();
     expect(screen.getByText('body')).toBeInTheDocument();
   });
 

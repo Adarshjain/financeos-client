@@ -60,7 +60,7 @@ export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfi
       {nothingFound(matches) ? (
         <ListField
           label="Suggested"
-          value="No matching bank transactions found for due or overdue installments."
+          value="No matching bank transactions for due or overdue installments."
         />
       ) : null}
     </Card>

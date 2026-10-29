@@ -45,7 +45,7 @@ function NoLiquidAccounts() {
   return (
     <EmptyState
       compact
-      title={allExcluded ? 'Your bank and cash accounts are excluded' : 'No bank or cash accounts'}
+      title={allExcluded ? 'Your bank and cash accounts are excluded' : 'No bank or cash accounts yet'}
       description={
         allExcluded
           ? 'Accounts marked excluded are left out. Include one to see how long your money would last.'
@@ -84,7 +84,7 @@ export function EmergencyFundBody({ className }: BuiltinBodyProps) {
   if (isLoading && !fund) {
     body = <EmergencyFundSkeleton />;
   } else if (error || !fund) {
-    body = <BuiltinError message={getErrorMessage(error, 'Failed to load the emergency fund')} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
+    body = <BuiltinError message={getErrorMessage(error, "Couldn't load the emergency fund.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (fund.accounts.length === 0) {
     body = <NoLiquidAccounts />;
   } else {

@@ -5,10 +5,12 @@ FinanceOS is a personal money app for India, used mostly on phones: accounts, ca
 - **Write from the user's side.** Name things the way people say them: "Mark paid", "Upload statement", "Money due back", not "Settle liability" or "Ingest PDF".
 - **Sentence case everywhere**: titles, buttons, chips, menu items. Uppercase only for `overline` captions.
 - **Second person, no "I".** "You owe ₹12,000", "Rahul owes you". The app never speaks as a person and never apologises.
-- **Numbers are the content.** Use Indian grouping (₹11,98,842; ₹1.55L, ₹4.2Cr in compact places), two decimals in transaction lists, none in totals. Credits carry a + sign. Dates read "13 Oct" in lists, dd/mm/yyyy in inputs.
+- **Numbers are the content.** Use Indian grouping (₹11,98,842; ₹1.55L, ₹4.2Cr in compact places), two decimals in transaction lists, none in totals. Credits carry a + sign, negatives a real minus (−₹500). Dates read "13 Oct" ("13 Oct 2025" outside this year), dd/mm/yyyy in inputs; times are 12-hour IST ("3:30 pm"). Format every value with `@/lib/format`.
 - **Middle dots join facts**: "HDFC Regalia ••7741 · Unreconciled · Gmail". Card numbers show as ••7741.
-- **Buttons are verb + object** and say exactly what happens: "Approve 9", "Save & apply", "Try again". Never "OK", "Submit", "Click here".
+- **Buttons are verb + object** and say exactly what happens: "Approve 9", "Save & apply", "Retry". Never "OK", "Submit", "Click here".
 - **Errors say what failed and how to fix it**: "Enter an amount like 1,249.00", "Token expired (invalid_grant) · reconnect Gmail".
+- **Messages have fixed shapes**: failure "Couldn't save the rule. Try again."; success "Rule saved"; confirm "Delete rule?" ending "This can't be undone."; empty "No rules yet" / "No rules match".
+- **Glossary**: *transaction* (never "txn"); *statement* = a bank or card PDF/period, *bill* = what a card statement asks you to pay; *dismiss* = hide an inbox item, *archive* = keep a connection's item out of the queue; *card* = a credit card unless "debit card" is said; *Add* creates, *Record* logs money that already moved, *Delete* destroys, *Remove* only unlinks.
 - **No emoji, no exclamation marks, no filler summaries** ("10 rules · 142 transactions categorised" lines were removed on purpose; counts live in filter chips).
 
 ## Visual foundations

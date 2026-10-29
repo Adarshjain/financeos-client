@@ -102,7 +102,7 @@ describe('Notifications bell', () => {
     serve(mockApi, feedPage([]), 0);
     renderWithQuery(<Bar />);
     fireEvent.click(bell());
-    expect(await screen.findByText('No notifications yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
   });
 
   it('dropdown error with Try again that reloads', async () => {
@@ -114,7 +114,7 @@ describe('Notifications bell', () => {
     fireEvent.click(bell());
     expect(await screen.findByText("Couldn't load notifications.")).toBeInTheDocument();
     serve(mockApi, feedPage([readRow]), 0);
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Sync done')).toBeInTheDocument();
   });
 

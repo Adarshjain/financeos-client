@@ -26,7 +26,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
     try {
       await mute.mutateAsync({ accountId, muted });
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not update the card'));
+      notify.error(getErrorMessage(e, "Couldn't update the card. Try again."));
     }
   };
 
@@ -34,7 +34,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
     try {
       await muteLoan.mutateAsync({ loanId, muted });
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not update the loan'));
+      notify.error(getErrorMessage(e, "Couldn't update the loan. Try again."));
     }
   };
 
@@ -42,7 +42,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
     <Card title="Muted" subtitle="Per card or loan">
       <CardSection>Cards</CardSection>
       {cards.length === 0 ? (
-        <CardEmpty>No open credit cards yet.</CardEmpty>
+        <CardEmpty>No open credit cards yet</CardEmpty>
       ) : (
         cards.map((card) => (
           <ListRow
@@ -60,7 +60,7 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
       )}
       <CardSection>Loans</CardSection>
       {loans.length === 0 ? (
-        <CardEmpty>No active loans yet.</CardEmpty>
+        <CardEmpty>No active loans yet</CardEmpty>
       ) : (
         loans.map((loan) => (
           <ListRow

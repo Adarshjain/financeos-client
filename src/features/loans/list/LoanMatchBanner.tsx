@@ -33,7 +33,7 @@ export function LoanMatchBanner({ matches }: { matches: LoanMatchSuggestions[] }
         recorded += created;
       }
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to record batch loan payments'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't record batch loan payments. Try again."), { tone: 'danger' });
     } finally {
       busy.current = false;
     }

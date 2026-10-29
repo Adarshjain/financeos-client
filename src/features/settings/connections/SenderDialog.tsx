@@ -69,7 +69,7 @@ export function SenderDialog({
           }
           secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false) }}
           primary={{
-            label: submittingSender ? 'Saving…' : 'Save sender',
+            label: submittingSender ? 'Saving…' : editingSender ? 'Save sender' : 'Add sender',
             type: 'submit',
             form: FORM_ID,
             disabled: submittingSender,
@@ -110,7 +110,7 @@ export function SenderDialog({
           if (!next && !deleting) setConfirmingDelete(false);
         }}
         title="Delete sender?"
-        description="Are you sure you want to delete this sender from the allowlist?"
+        description="Mail from this address is no longer read. Transactions already imported stay. This can't be undone."
         confirmLabel="Delete sender"
         confirmLoading={deleting}
         onConfirm={confirmDelete}

@@ -116,7 +116,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
         ))}
         {groups.length === 0 ? (
           <Text variant="caption" tone="ink-3" as="p" className="p-space-16">
-            No chats yet.
+            No chats yet
           </Text>
         ) : null}
       </Card>
@@ -127,7 +127,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
             size="sm"
             title="Rename chat"
             secondary={{ label: 'Cancel', onSelect: () => setRenaming(null), disabled: pending }}
-            primary={{ label: 'Save', type: 'submit', form: RENAME_FORM_ID, loading: pending, disabled: pending || !valid || trimmed === renaming.title }}
+            primary={{ label: 'Save name', type: 'submit', form: RENAME_FORM_ID, loading: pending, disabled: pending || !valid || trimmed === renaming.title }}
           >
             <DialogBody>
               <form
@@ -151,7 +151,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
             if (!open && !pending) setDeleting(null);
           }}
           title={`Delete “${deleting.title}”?`}
-          description="The chat and its answers go. Reports you saved from it stay."
+          description="The chat and its answers go. Reports you saved from it stay. This can't be undone."
           confirmLabel="Delete chat"
           confirmLoading={pending}
           onConfirm={() => void confirmDelete()}

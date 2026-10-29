@@ -136,12 +136,12 @@ describe('RulesScreen', () => {
     const { unmount } = renderWithQuery(
       <RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 }, state: { ...DEFAULT_RULES_STATE, q: 'zzz' } })} />,
     );
-    expect(screen.getByText('No rules found')).toBeTruthy();
+    expect(screen.getByText('No rules match')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenCalledWith('?', { scroll: false });
     unmount();
     renderWithQuery(<RulesScreen {...props({ rules: null, reference: 'r-1' })} />);
-    expect(screen.getByText('Could not load rules')).toBeTruthy();
+    expect(screen.getByText("Couldn't load rules")).toBeTruthy();
   });
 
   it('Approve verifies that rule', async () => {
@@ -313,16 +313,16 @@ describe('RulesScreen', () => {
   it('the top bar + opens an empty Add rule form that saves with its categories', async () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.click(screen.getAllByRole('button', { name: /Add/ })[0]);
-    expect(await screen.findByText('Add rule')).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Add rule' })).toBeTruthy();
     expect((screen.getByLabelText('Pattern') as HTMLInputElement).value).toBe('');
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
     expect(await screen.findByText('Pick at least one category.')).toBeTruthy();
     expect(http.POST).not.toHaveBeenCalledWith('/api/v1/rules', expect.anything());
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ZOMATO' } });
     fireEvent.click(screen.getByRole('combobox', { name: /Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Food & dining' }));
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/rules', {
         body: { merchantKey: 'ZOMATO', matchType: 'MERCHANT_KEY', displayName: undefined, categoryIds: ['c1'], mcc: undefined },
@@ -390,13 +390,13 @@ describe('RulesScreen', () => {
     await screen.findByText('Edit rule · Dunzo');
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ab' } });
     fireEvent.change(screen.getByLabelText(/MCC code/), { target: { value: '58' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save rule' }));
     expect(await screen.findByText('Pattern must be at least 3 characters.')).toBeTruthy();
     expect(screen.getByText('MCC code must be exactly 4 digits, or left empty.')).toBeTruthy();
     expect(http.PUT).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'DUNZO NOW' } });
     fireEvent.change(screen.getByLabelText(/MCC code/), { target: { value: '5812' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save rule' }));
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/rules/{id}', {
         params: { path: { id: 'r1' } },
@@ -450,9 +450,9 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Find matches' }));
-    expect(await screen.findByText('Could not load matches', {}, { timeout: 5000 })).toBeTruthy();
+    expect(await screen.findByText("Couldn't load matches", {}, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByText('No transactions match this rule.')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText(/Select all 1 match/)).toBeTruthy();
   });
 

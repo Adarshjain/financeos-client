@@ -214,7 +214,7 @@ describe('Your keys', () => {
     setup();
     const items = await openMenuFor('Key options for OpenRouter');
     fireEvent.click(items[0]);
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Verification failed: Key rejected', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't verify the key: Key rejected", { tone: 'danger' }));
   });
 
   it('Test key keeps the row busy until the call returns', async () => {
@@ -236,7 +236,7 @@ describe('Your keys', () => {
     fireEvent.click(items[3]);
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Delete API key?')).toBeInTheDocument();
-    expect(dialog).toHaveTextContent('Are you sure you want to delete Personal (•••• k3Qa)?');
+    expect(dialog).toHaveTextContent("Personal (•••• k3Qa) goes. Your other keys stay. This can't be undone.");
     expect(del).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete key' }));
     await waitFor(() => expect(del).toHaveBeenCalledWith('/api/v1/llm-keys/{id}', { params: { path: { id: 'g1' } } }));
@@ -247,7 +247,7 @@ describe('Your keys', () => {
     const items = await openMenuFor('Key options for OpenRouter');
     fireEvent.click(items[1]);
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('Are you sure you want to delete openrouter key (•••• 9f2c)?');
+    expect(dialog).toHaveTextContent("openrouter key (•••• 9f2c) goes. Your other keys stay. This can't be undone.");
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(del).not.toHaveBeenCalled();
@@ -268,7 +268,7 @@ describe('Add key dialog', () => {
     setup();
     fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0]);
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Add key')).toBeInTheDocument();
+    expect(within(dialog).getAllByText('Add key')).toHaveLength(2);
     expect(dialog).toHaveTextContent('Groq');
     expect(within(dialog).getByRole('link', { name: 'Groq' })).toHaveAttribute('href', 'https://console.groq.com/keys');
   });
@@ -289,11 +289,11 @@ describe('Add key dialog', () => {
     expect(dialog).not.toHaveTextContent('Training & privacy disclosure');
   });
 
-  it('requires a key: Save key is disabled until one is typed', async () => {
+  it('requires a key: Add key is disabled until one is typed', async () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: 'Add key' }));
     const dialog = await screen.findByRole('dialog');
-    const save = within(dialog).getByRole('button', { name: 'Save key' });
+    const save = within(dialog).getByRole('button', { name: 'Add key' });
     expect(save).toBeDisabled();
     fireEvent.change(within(dialog).getByLabelText('API key'), { target: { value: 'AIza-secret' } });
     expect(save).toBeEnabled();
@@ -315,7 +315,7 @@ describe('Add key dialog', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText('API key'), { target: { value: '  AIza-secret ' } });
     fireEvent.change(within(dialog).getByLabelText(/Label/), { target: { value: 'Work' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save key' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add key' }));
     await waitFor(() =>
       expect(post).toHaveBeenCalledWith('/api/v1/llm-keys', { body: { provider: 'gemini', key: 'AIza-secret', label: 'Work' } })
     );
@@ -328,7 +328,7 @@ describe('Add key dialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add key' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText('API key'), { target: { value: 'k' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save key' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add key' }));
     await waitFor(() => expect(post).toHaveBeenCalledWith('/api/v1/llm-keys', { body: { provider: 'gemini', key: 'k', label: undefined } }));
   });
 
@@ -338,7 +338,7 @@ describe('Add key dialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add key' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText('API key'), { target: { value: 'bad' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save key' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add key' }));
     expect(await within(dialog).findByRole('alert')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
@@ -438,7 +438,7 @@ describe('Routing editor dialog', () => {
     setup();
     const dialog = await openChatEditor();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Move down Gemini 3.8 Flash' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save routing' }));
     await waitFor(() => expect(put).toHaveBeenCalled());
     const [url, init] = put.mock.calls[0];
     expect(url).toBe('/api/v1/llm/routing/{group}');
@@ -459,7 +459,7 @@ describe('Routing editor dialog', () => {
     put.mockRejectedValue(new Error('bad order'));
     setup();
     const dialog = await openChatEditor();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save routing' }));
     expect(await within(dialog).findByRole('alert')).toBeInTheDocument();
   });
 

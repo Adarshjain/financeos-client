@@ -135,8 +135,8 @@ export function TransactionPickerField({
 
   const hint = pickerEmptyHint(ruleHint, direction);
   const emptyCopy = hint
-    ? `No matching transactions. ${hint}`
-    : 'No matching transactions';
+    ? `No transactions match. ${hint}`
+    : 'No transactions match';
 
   if (disabled && !value) {
     return (

@@ -26,7 +26,7 @@ export function InboxBillHost({ pending, onClose }: InboxBillHostProps) {
 
   React.useEffect(() => {
     if (pending && error) {
-      showToast(getErrorMessage(error, 'Could not load the bill'), { tone: 'danger' });
+      showToast(getErrorMessage(error, "Couldn't load the bill. Try again."), { tone: 'danger' });
       onClose();
     }
   }, [pending, error, onClose]);

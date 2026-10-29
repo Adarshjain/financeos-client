@@ -89,13 +89,13 @@ describe('TransactionPickerField', () => {
     (api.POST as Mock).mockReturnValue(new Promise(() => undefined));
     renderField();
     expect(screen.getAllByTestId('picker-skeleton').length).toBeGreaterThan(0);
-    expect(screen.queryByText(/No matching transactions/)).toBeNull();
+    expect(screen.queryByText(/No transactions match/)).toBeNull();
   });
 
   it('hides a row another obligation already claims, and says why when nothing is left', async () => {
     respond([txn('t1', { obligationRefs: [{ kind: 'LOAN' }] })]);
     renderField({ excludeAnyObligationRef: true, ruleHint: 'EMI settlements link money-out (debit) transactions' });
-    expect(await screen.findByText('No matching transactions. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
+    expect(await screen.findByText('No transactions match. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
   });
 
   it('notes a row that is already shared with ledger entries', async () => {
@@ -173,21 +173,21 @@ describe('TransactionPickerField', () => {
       value: { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'IMPS from X', signedAmount: -2300 },
       ruleHint: 'EMI settlements link money-out (debit) transactions',
     });
-    expect(await screen.findByText('No matching transactions. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
+    expect(await screen.findByText('No transactions match. EMI settlements link money-out (debit) transactions')).toBeInTheDocument();
   });
 
   it('with a pick in place, shows a loading cue while the search is pending', () => {
     (api.POST as Mock).mockReturnValue(new Promise(() => undefined));
     renderField({ value: { id: 't1', date: '2026-09-13', accountId: 'a1', description: 'IMPS from X', signedAmount: -2300 } });
     expect(screen.getByTestId('picker-pending')).toBeInTheDocument();
-    expect(screen.queryByText(/No matching transactions/)).toBeNull();
+    expect(screen.queryByText(/No transactions match/)).toBeNull();
   });
 
   it('disabled with no pick shows only the label: no search, no empty copy', () => {
     renderField({ disabled: true });
     expect(screen.getByText('Transaction (optional)')).toBeInTheDocument();
     expect(screen.queryByRole('searchbox')).toBeNull();
-    expect(screen.queryByText(/No matching transactions/)).toBeNull();
+    expect(screen.queryByText(/No transactions match/)).toBeNull();
     expect(api.POST).not.toHaveBeenCalled();
   });
 });

@@ -123,7 +123,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
   const openingBalance = parsedOpening === null ? null : opening.theyOwe ? parsedOpening : -parsedOpening;
   // Text that is not a usable amount ("5+", "100/0") is an error, never silently left out of the export.
   const openingError =
-    opening.amount.trim() !== '' && parsedOpening === null ? 'Please enter a valid amount.' : undefined;
+    opening.amount.trim() !== '' && parsedOpening === null ? 'Enter a valid amount.' : undefined;
 
   const setOpeningAmount = useCallback(
     (raw: string) => setOpeningOverride({ amount: sanitizeAmountExpressionInput(raw), theyOwe: opening.theyOwe }),
@@ -170,7 +170,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
       await navigator.clipboard.writeText(text);
       notify('Ledger copied', 'success');
     } catch {
-      notify('Could not copy — select the preview text and copy it manually', 'danger');
+      notify("Couldn't copy the ledger. Select the preview text and copy it manually.", 'danger');
     }
   }, [text, notify, openingError]);
 

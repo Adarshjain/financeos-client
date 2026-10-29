@@ -54,7 +54,7 @@ beforeEach(() => {
 describe('EpfEntryDialog: adding', () => {
   it('opens as a contribution for the current employer, filled from the last contribution', () => {
     renderWithQuery(<EpfEntryDialog employers={employers} latestContribution={latestContribution()} onClose={vi.fn()} />);
-    expect(screen.getByText('Add EPF entry')).toBeInTheDocument();
+    expect(screen.getByText('Record EPF entry')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Contribution');
     expect(screen.getByRole('combobox', { name: /^Employer/ })).toHaveTextContent('Northwind Labs');
     expect(screen.getByRole('combobox', { name: /^Wage month/ })).toHaveTextContent('October 2026');
@@ -77,7 +77,7 @@ describe('EpfEntryDialog: adding', () => {
     const onClose = vi.fn();
     const onChanged = vi.fn();
     renderWithQuery(<EpfEntryDialog employers={employers} latestContribution={latestContribution()} onClose={onClose} onChanged={onChanged} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/epf/entries', {
         body: { type: 'CONTRIBUTION', employerId: 'e1', creditedOn: '2026-11-15', wageMonth: '2026-10-01', employeeAmount: 7200, employerAmount: 5950, pensionAmount: 1250 },
@@ -120,7 +120,7 @@ describe('EpfEntryDialog: adding', () => {
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance');
     fireEvent.change(field('Your share'), { target: { value: '410920' } });
     fireEvent.change(field('Employer share'), { target: { value: '297210' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/epf/entries', {
         body: { type: 'OPENING_BALANCE', employerId: 'e1', creditedOn: '2026-10-27', employeeAmount: 410920, employerAmount: 297210 },
@@ -133,7 +133,7 @@ describe('EpfEntryDialog: adding', () => {
     await choose(/^From employer/, 'Contoso Systems');
     fireEvent.change(field('Your share'), { target: { value: '171300' } });
     fireEvent.change(field('Employer share'), { target: { value: '141100' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/epf/entries', {
         body: { type: 'TRANSFER_IN', employerId: 'e1', creditedOn: '2026-10-27', fromEmployerId: 'e2', employeeAmount: 171300, employerAmount: 141100 },
@@ -143,7 +143,7 @@ describe('EpfEntryDialog: adding', () => {
 
   it('says what is missing and adds nothing', async () => {
     renderWithQuery(<EpfEntryDialog employers={employers} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Enter your share or the employer share.', { tone: 'danger' }));
     expect(http.POST).not.toHaveBeenCalled();
   });
@@ -152,7 +152,7 @@ describe('EpfEntryDialog: adding', () => {
     http.POST.mockRejectedValue(new ApiError(400, { code: 'VALIDATION', message: 'A contribution for Oct 2026 already exists.' }));
     const onClose = vi.fn();
     renderWithQuery(<EpfEntryDialog employers={employers} latestContribution={latestContribution()} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('A contribution for Oct 2026 already exists.', { tone: 'danger' }));
     expect(onClose).not.toHaveBeenCalled();
   });
@@ -195,7 +195,7 @@ describe('EpfEntryDialog: withdrawals', () => {
     fireEvent.change(tdsField(), { target: { value: '2000' } });
     expect(screen.getByText(/Received in bank: ₹38,000/)).toBeInTheDocument();
     fireEvent.change(field('Note'), { target: { value: 'Medical advance' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/epf/entries', {
         body: {
@@ -236,7 +236,7 @@ describe('EpfEntryDialog: withdrawals', () => {
     expect(screen.queryByLabelText(/^Your share/)).toBeNull();
     expect(screen.getByText("Pension is not in your EPF balance, so the balance doesn't change.")).toBeInTheDocument();
     fireEvent.change(field('Amount'), { target: { value: '28400' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/epf/entries', {
         body: { type: 'WITHDRAWAL', withdrawalKind: 'PENSION', employerId: 'e1', creditedOn: '2026-10-27', pensionAmount: 28400 },
@@ -253,7 +253,7 @@ describe('EpfEntryDialog: an entry you added', () => {
     expect(field('Your share')).toHaveValue('7200');
     expect(screen.getByText('Added by you. A passbook that has this month replaces it.')).toBeInTheDocument();
     fireEvent.change(field('Your share'), { target: { value: '7300' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/epf/entries/{id}', {
         params: { path: { id: 'n2' } },
@@ -268,8 +268,8 @@ describe('EpfEntryDialog: an entry you added', () => {
     const onClose = vi.fn();
     renderWithQuery(<EpfEntryDialog entry={manualContribution()} employers={employers} onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Delete entry' }));
-    expect(await screen.findByText('Delete the August 2026 contribution?')).toBeInTheDocument();
-    expect(screen.getByText('This entry you added goes, and the balance drops by ₹13,150. Entries from the passbook stay.')).toBeInTheDocument();
+    expect(await screen.findByText('Delete EPF entry?')).toBeInTheDocument();
+    expect(screen.getByText('This entry you added goes, and the balance drops by ₹13,150. Entries from the passbook stay. This can\'t be undone.')).toBeInTheDocument();
     expect(http.DELETE).not.toHaveBeenCalled();
     const confirm = screen.getAllByRole('button', { name: 'Delete entry' }).at(-1)!;
     fireEvent.click(confirm);
@@ -285,7 +285,7 @@ describe('EpfEntryDialog: an entry you added', () => {
     expect(screen.getByRole('combobox', { name: /^From employer/ })).toHaveTextContent('Contoso Systems');
     expect(screen.getByRole('combobox', { name: /^To employer/ })).toHaveTextContent('Northwind Labs');
     fireEvent.change(field('Your share'), { target: { value: '170000' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(http.PUT).toHaveBeenCalled());
     expect(http.PUT.mock.calls[0][1].body).toMatchObject({ type: 'TRANSFER_OUT', employerId: 'e2', employeeAmount: 170000 });
   });
@@ -298,7 +298,7 @@ describe('EpfEntryDialog: an entry imported from the passbook', () => {
     expect(screen.getByText('From the passbook imported on 16 Oct. Upload a newer passbook to change it.')).toBeInTheDocument();
     for (const name of [/^Type/, /^Employer/, /^Wage month/]) expect(screen.getByRole('combobox', { name })).toBeDisabled();
     for (const name of ['Credited on', 'Your share', 'Employer share', 'Pension']) expect(field(name)).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Delete entry' })).toBeNull();
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' }).at(-1)!);
     expect(onClose).toHaveBeenCalled();
@@ -308,7 +308,7 @@ describe('EpfEntryDialog: an entry imported from the passbook', () => {
     renderWithQuery(<EpfEntryDialog entry={interest()} employers={employers} onClose={vi.fn()} />);
     expect(screen.getByText('Interest · FY 2025-26')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^For year/ })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
   });
 
   const imported = (overrides = {}) => withdrawal({ source: 'PASSBOOK', importedAt: '2026-10-16T10:00:00Z', ...overrides });
@@ -323,7 +323,7 @@ describe('EpfEntryDialog: an entry imported from the passbook', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'TDS was deducted' }));
     fireEvent.change(tdsField(), { target: { value: '2000' } });
     fireEvent.change(field('Note'), { target: { value: 'Home repair' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/epf/entries/{id}', {
         params: { path: { id: 'n7' } },
@@ -427,7 +427,7 @@ describe('EpfEntryDialog: the bank credit of a withdrawal', () => {
     expect(screen.queryByTestId('picker')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Unlink' }));
     await waitFor(() => expect(http.DELETE).toHaveBeenCalledWith('/api/v1/epf/entries/{id}/transaction', { params: { path: { id: 'n7' } } }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Unlinked from the EPF withdrawal', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) })));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Bank credit unlinked', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) })));
     showToast.mock.calls.at(-1)![1].action.onSelect();
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/epf/entries/{id}/transaction', {
@@ -470,7 +470,7 @@ describe('EpfEntryDialog: staying in step with the entry', () => {
     expect(field('Note')).toHaveValue('Edited note');
 
     http.PUT.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(http.PUT).toHaveBeenCalled());
     expect(http.PUT.mock.calls[0][1].body).toMatchObject({ tdsAmount: 2000, note: 'Edited note' });
   });

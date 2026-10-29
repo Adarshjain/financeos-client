@@ -44,7 +44,7 @@ export function LocalFailuresCard({ highlightRef, onSelectRef }: LocalFailuresCa
       }
     >
       {records.length === 0 ? (
-        <CardEmpty>No local failures recorded in this browser session.</CardEmpty>
+        <CardEmpty>No local failures yet</CardEmpty>
       ) : (
         records.map((rec, idx) => {
           const isHighlighted = Boolean(highlightRef) && rec.ref === highlightRef;

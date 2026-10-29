@@ -61,7 +61,7 @@ describe('messages', () => {
 
   it('deletedMessage is singular for one', () => {
     expect(deletedMessage(1)).toBe('Transaction deleted');
-    expect(deletedMessage(3)).toBe('Deleted 3 transactions');
+    expect(deletedMessage(3)).toBe('3 transactions deleted');
   });
 });
 
@@ -70,7 +70,7 @@ describe('deleteCopy', () => {
     const copy = deleteCopy([txn({ description: 'Swiggy', amount: -1249 })]);
     expect(copy.title).toBe('Delete Swiggy · ₹1,249?');
     expect(copy.confirmLabel).toBe('Delete transaction');
-    expect(copy.impact[0]).toContain('deleted for good');
+    expect(copy.impact[0]).toBe('The transaction is deleted.');
   });
 
   it('several: counts them, the records that stay and the imported ones', () => {
@@ -82,7 +82,7 @@ describe('deleteCopy', () => {
     expect(copy.title).toBe('Delete 3 transactions?');
     expect(copy.confirmLabel).toBe('Delete 3 transactions');
     expect(copy.impact).toEqual([
-      '3 transactions are deleted for good. This cannot be undone.',
+      '3 transactions are deleted.',
       '1 linked record stays but loses the link.',
       '2 are not manually created. It is discouraged to delete these.',
     ]);

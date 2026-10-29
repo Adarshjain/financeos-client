@@ -30,7 +30,7 @@ export function EntriesCard({ rows, onAddEvent, onAddCharge, onDelete }: Entries
       }
     >
       {rows.length === 0 ? (
-        <EmptyState compact description="No lifecycle events or charges recorded." />
+        <EmptyState compact description="No events or charges yet" />
       ) : (
         rows.map((row) => (
           <ListRow

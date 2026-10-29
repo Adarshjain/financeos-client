@@ -36,11 +36,11 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
 
   const save = () => {
     if (!name.trim()) {
-      showToast('Cap name is required.', { tone: 'danger' });
+      showToast('Enter a cap name.', { tone: 'danger' });
       return;
     }
     if (!(Number(amount) > 0)) {
-      showToast('Cap must be a positive number.', { tone: 'danger' });
+      showToast('Enter a cap above 0.', { tone: 'danger' });
       return;
     }
     const body = { accountId, name: name.trim(), cap: Number(amount), rewardType, windowType, counterScope };
@@ -49,7 +49,7 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
       refresh();
       onClose();
     };
-    const onError = (e: unknown) => dsRewardNotifier.failure(e, 'Failed to save cap');
+    const onError = (e: unknown) => dsRewardNotifier.failure(e, "Couldn't save the cap. Try again.");
     if (cap) update.mutate({ id: cap.id, body }, { onSuccess, onError });
     else create.mutate(body, { onSuccess, onError });
   };
@@ -58,10 +58,10 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent
         size="md"
-        title={cap ? `Edit cap · ${cap.name}` : 'New cap'}
+        title={cap ? `Edit cap · ${cap.name}` : 'Add cap'}
         tertiary={cap && onDelete ? { label: 'Delete cap', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: 'Save cap', onSelect: save, loading: pending }}
+        primary={{ label: cap ? 'Save cap' : 'Add cap', onSelect: save, loading: pending }}
       >
         <DialogBody>
           <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">

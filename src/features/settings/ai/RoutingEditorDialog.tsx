@@ -35,7 +35,7 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
           description={group.dto.description}
           secondary={{ label: 'Cancel', disabled: group.saving, onSelect: group.onCancel }}
           primary={{
-            label: 'Save',
+            label: 'Save routing',
             loading: group.saving,
             disabled: group.saving || group.testing || group.draft.length === 0,
             onSelect: group.onSave,

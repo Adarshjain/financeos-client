@@ -145,7 +145,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
         await done('Entry added');
       }
     } catch (e) {
-      showToast(getErrorMessage(e, editing ? 'Failed to update the entry' : 'Failed to add the entry'), { tone: 'danger' });
+      showToast(getErrorMessage(e, editing ? "Couldn't update the entry. Try again." : "Couldn't add the entry. Try again."), { tone: 'danger' });
     }
   };
 
@@ -185,14 +185,14 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
   const footerPrimary =
     imported && !importedWithdrawal
       ? undefined
-      : { label: editing ? 'Save' : 'Add entry', type: 'submit' as const, form: FORM_ID, loading: pending };
+      : { label: editing ? 'Save entry' : 'Record entry', type: 'submit' as const, form: FORM_ID, loading: pending };
 
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <DialogContent
           size="sm"
-          title={entry ? entryTitle(entry) : 'Add EPF entry'}
+          title={entry ? entryTitle(entry) : 'Record EPF entry'}
           tertiary={showFooterDelete ? { label: 'Delete entry', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: pending } : undefined}
           secondary={{ label: imported && !importedWithdrawal ? 'Close' : 'Cancel', onSelect: onClose, disabled: pending }}
           primary={footerPrimary}
@@ -325,10 +325,10 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
           onOpenChange={(open) => {
             if (!mutations.deleteEntry.isPending) setConfirmingDelete(open);
           }}
-          title={`Delete the ${entryTitle(entry)}?`}
+          title="Delete EPF entry?"
           description={`This entry you added goes${
             entry.type === 'WITHDRAWAL' || entry.type === 'TRANSFER_OUT' ? '' : `, and the balance drops by ${formatMoney(entry.employeeAmount + entry.employerAmount, { decimals: 'auto' })}`
-          }. Entries from the passbook stay.`}
+          }. Entries from the passbook stay. This can't be undone.`}
           confirmLabel="Delete entry"
           confirmLoading={mutations.deleteEntry.isPending}
           onConfirm={() => {
@@ -338,7 +338,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                 setConfirmingDelete(false);
                 await done('Entry deleted');
               } catch (e) {
-                showToast(getErrorMessage(e, 'Failed to delete the entry'), { tone: 'danger' });
+                showToast(getErrorMessage(e, "Couldn't delete the entry. Try again."), { tone: 'danger' });
               }
             })();
           }}

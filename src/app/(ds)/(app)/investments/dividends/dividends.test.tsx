@@ -159,11 +159,11 @@ describe('/investments/dividends: data', () => {
     await expect(renderPage({ page: '5' })).rejects.toThrow('REDIRECT /investments/dividends?page=2');
   });
 
-  it('says the list failed and offers Try again', async () => {
+  it('says the list failed and offers Retry', async () => {
     server.fetchDividends.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getByText('Could not load dividends')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load dividends")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -268,7 +268,7 @@ describe('/investments/dividends: the list', () => {
   it('says what the empty list means: nothing yet, nothing in the FY, nothing matches', async () => {
     server.fetchDividends.mockResolvedValue(list([]));
     const first = await renderPage({ fy: 'all' });
-    expect(screen.getByText('No dividends recorded yet.')).toBeInTheDocument();
+    expect(screen.getByText('No dividends yet')).toBeInTheDocument();
     first.unmount();
 
     const second = await renderPage();
@@ -278,7 +278,7 @@ describe('/investments/dividends: the list', () => {
     second.unmount();
 
     await renderPage({ receipt: 'overdue' });
-    expect(screen.getByText('No dividends match.')).toBeInTheDocument();
+    expect(screen.getByText('No dividends match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/dividends', { scroll: false });
   });
@@ -372,7 +372,7 @@ describe('/investments/dividends: suggestions', () => {
     expect(screen.getByRole('button', { name: 'Rescan' })).toBeEnabled();
     await act(async () => {});
     expect(actions.scanDividendSuggestions).not.toHaveBeenCalled();
-    expect(screen.queryByText('Nothing new found')).toBeNull();
+    expect(screen.queryByText('No new dividends')).toBeNull();
   });
 
   it('scans once when Rescan is pressed, and lists what was found, with the year on an earlier payout', async () => {
@@ -438,22 +438,22 @@ describe('/investments/dividends: suggestions', () => {
     await waitFor(() => expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(2));
   });
 
-  it('is always shown: it reads "Nothing new found" when the scan finds nothing', async () => {
+  it('is always shown: it reads "No new dividends" when the scan finds nothing', async () => {
     actions.scanDividendSuggestions.mockResolvedValue({ success: true, data: { suggestions: [], scannedSymbols: 1, skippedSymbols: ['XYZ'] } });
     await renderPage();
     await pressRescan();
-    expect(await screen.findByText('Nothing new found')).toBeInTheDocument();
+    expect(await screen.findByText('No new dividends')).toBeInTheDocument();
     expect(screen.getByText('Suggestions')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Rescan' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Record \d/ })).toBeNull();
-    expect(screen.getByText('Checked 1 symbol. Could not check XYZ.')).toBeInTheDocument();
+    expect(screen.getByText("Checked 1 symbol. Couldn't check XYZ.")).toBeInTheDocument();
   });
 
   it('says the scan failed and offers Rescan', async () => {
     actions.scanDividendSuggestions.mockResolvedValue({ success: false, error: { message: 'x' } });
     await renderPage();
     await pressRescan();
-    expect(await screen.findByText('Could not scan for dividends. Try again.')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't scan for dividends. Try again.")).toBeInTheDocument();
   });
 
   it('says why a record failed', async () => {

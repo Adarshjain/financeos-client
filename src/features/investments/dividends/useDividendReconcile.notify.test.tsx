@@ -62,7 +62,7 @@ describe('useDividendReconcile: where results go', () => {
     await act(async () => {
       await view.result.current.confirmAll();
     });
-    expect(notify).toHaveBeenCalledWith('Failed to link dividends', 'danger');
+    expect(notify).toHaveBeenCalledWith("Couldn't link dividends. Try again.", 'danger');
   });
 
   it('keeps using the Legacy toaster without a notifier', async () => {

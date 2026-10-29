@@ -171,7 +171,7 @@ export function DashboardsScreen() {
           <EmptyState
             title="No dashboards yet"
             description="Make one from built-in widgets and your saved reports."
-            action={{ label: 'New dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) }}
+            action={{ label: 'Add dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) }}
             secondaryAction={{ label: 'Restore default Home', onSelect: home.restore }}
           />
         </Card>
@@ -192,7 +192,7 @@ export function DashboardsScreen() {
               empty={
                 <EmptyState
                   compact
-                  description="No dashboards match."
+                  description="No dashboards match"
                   action={{ label: 'Clear search', variant: 'link', onSelect: () => setSearch('') }}
                 />
               }
@@ -209,7 +209,7 @@ export function DashboardsScreen() {
             if (!open && !remove.isPending) setDeleting(null);
           }}
           title={`Delete ${deleting.name}?`}
-          description="This cannot be undone. Its widgets go with it; your saved reports stay."
+          description="Its widgets go with it; your saved reports stay. This can't be undone."
           confirmLabel="Delete dashboard"
           confirmLoading={remove.isPending}
           onConfirm={() => remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}

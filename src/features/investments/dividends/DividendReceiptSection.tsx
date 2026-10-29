@@ -62,7 +62,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
                 type="button"
                 size="sm"
                 disabled={busy}
-                onClick={() => void run(() => mutations.unlink.mutateAsync(dividend.id), 'Unlinked', 'Failed to unlink the bank credit')}
+                onClick={() => void run(() => mutations.unlink.mutateAsync(dividend.id), 'Unlinked', "Couldn't unlink the bank credit. Try again.")}
               >
                 Unlink
               </Button>
@@ -74,7 +74,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
           label="Bank credit"
           value={null}
           onSelect={(t) =>
-            void run(() => mutations.link.mutateAsync({ id: dividend.id, transactionId: t.id }), 'Linked', 'Failed to link the bank credit')
+            void run(() => mutations.link.mutateAsync({ id: dividend.id, transactionId: t.id }), 'Linked', "Couldn't link the bank credit. Try again.")
           }
           onClear={() => undefined}
           type="CREDIT"
@@ -111,7 +111,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
             : undefined
         }
         onValueChange={(v) =>
-          void run(() => mutations.setNote.mutateAsync({ id: dividend.id, note: v as ReceiptNote }), 'Receipt note updated', 'Failed to update the receipt note')
+          void run(() => mutations.setNote.mutateAsync({ id: dividend.id, note: v as ReceiptNote }), 'Receipt note updated', "Couldn't update the receipt note. Try again.")
         }
       />
     </div>

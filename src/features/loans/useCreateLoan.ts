@@ -16,6 +16,6 @@ export function useCreateLoan(options?: { onError?: (e: unknown) => void }) {
   return useMutation({
     mutationFn: (body: CreateLoanRequest) => api.POST('/api/v1/loans', { body }).then((r) => r.data! as LoanResponse),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to create loan')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't create loan. Try again.")),
   });
 }

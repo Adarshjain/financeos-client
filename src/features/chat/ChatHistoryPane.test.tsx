@@ -71,7 +71,7 @@ describe('ChatHistoryPane', () => {
     expect(field).toHaveValue('Net worth breakdown');
     expect(field).toHaveAttribute('maxlength', '120');
     fireEvent.change(field, { target: { value: '  Net worth  ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
     await waitFor(() => expect(onRename).toHaveBeenCalledWith('b', 'Net worth'));
     await waitFor(() => expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull());
   });
@@ -80,7 +80,7 @@ describe('ChatHistoryPane', () => {
     const { onRename } = setup();
     await userEvent.click(within(rowOf('Net worth breakdown')).getByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
-    const save = await screen.findByRole('button', { name: 'Save' });
+    const save = await screen.findByRole('button', { name: 'Save name' });
     expect(save).toBeDisabled();
     fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: '   ' } });
     expect(save).toBeDisabled();
@@ -92,7 +92,7 @@ describe('ChatHistoryPane', () => {
     await userEvent.click(within(rowOf('Net worth breakdown')).getByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     fireEvent.change(await screen.findByRole('textbox', { name: 'Name' }), { target: { value: 'Other' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
     await waitFor(() => expect(onRename).toHaveBeenCalled());
     expect(screen.getByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
@@ -102,7 +102,7 @@ describe('ChatHistoryPane', () => {
     await userEvent.click(within(rowOf('Net worth breakdown')).getByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete chat' }));
     expect(await screen.findByText('Delete “Net worth breakdown”?')).toBeInTheDocument();
-    expect(screen.getByText('The chat and its answers go. Reports you saved from it stay.')).toBeInTheDocument();
+    expect(screen.getByText("The chat and its answers go. Reports you saved from it stay. This can't be undone.")).toBeInTheDocument();
     expect(onDelete).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Delete chat' }));
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('b'));

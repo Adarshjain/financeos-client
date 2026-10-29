@@ -27,7 +27,7 @@ export function PersonExportDialog({ counterpartyId, entryCount, theirName, defa
       if (!live) return;
       if (result.success) setEntries([...result.data].reverse());
       else {
-        showToast(result.error.message || 'Failed to load the ledger', { tone: 'danger' });
+        showToast(result.error.message || "Couldn't load the ledger. Try again.", { tone: 'danger' });
         onClose();
       }
     });

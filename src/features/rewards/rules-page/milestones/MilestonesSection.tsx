@@ -50,7 +50,7 @@ export function MilestonesSection({
         setDeleting(null);
         setOpen(null);
       },
-      onError: (e) => dsRewardNotifier.failure(e, 'Failed to delete milestone'),
+      onError: (e) => dsRewardNotifier.failure(e, "Couldn't delete the milestone. Try again."),
     });
   };
 
@@ -61,7 +61,7 @@ export function MilestonesSection({
       action={
         <Text variant="label" as="div">
           <Button variant="link" size="sm" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
-            New milestone
+            Add milestone
           </Button>
         </Text>
       }
@@ -112,7 +112,7 @@ export function MilestonesSection({
         open={deleting !== null}
         onOpenChange={(o) => (o ? undefined : setDeleting(null))}
         title={`Delete milestone "${deleting?.name ?? ''}"?`}
-        description="The milestone goes. Your transactions and rewards stay."
+        description="The milestone goes. Your transactions and rewards stay. This can't be undone."
         confirmLabel="Delete milestone"
         loading={remove.isPending}
         onConfirm={confirmDelete}

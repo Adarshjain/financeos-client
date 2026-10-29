@@ -52,7 +52,7 @@ export function AppearanceCard() {
         className="px-space-16 border-l-4 border-l-transparent"
         borderTop
         label="Hide amounts"
-        description="Show ₹ — instead of balances and amounts"
+        description="Show ₹ — instead of balances and amounts."
         checked={hidden}
         onCheckedChange={setHidden}
       />

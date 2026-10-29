@@ -38,7 +38,7 @@ export function RuleJobsCard() {
         onOpen={(job) => router.push(openHref(job))}
         empty={
           <Text variant="body" tone="ink-3" as="p" className="p-space-16">
-            No rules applied yet.
+            No rules applied yet
           </Text>
         }
       />

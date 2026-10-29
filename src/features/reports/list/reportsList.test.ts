@@ -162,7 +162,7 @@ describe('filters', () => {
 });
 
 describe('templates', () => {
-  it('sends Use to New report, naming the template', () => {
+  it('sends Use to Add report, naming the template', () => {
     expect(templateHref({ id: 'dividend-income-by-fy', label: 'x' })).toMatch(/\/reports\/new\?template=dividend-income-by-fy$/);
   });
 });

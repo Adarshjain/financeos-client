@@ -167,7 +167,7 @@ export function deleteEntryCopy(entry: LedgerEntryResponse): { description: stri
   const type = toEntryType(entry.direction, entry.kind);
   const noun = isSettlementType(type) ? 'repayment' : entry.direction;
   return {
-    description: `Delete this ${noun} entry of ${formatMoney(entry.amount, { decimals: 'auto' })}?`,
+    description: `This ${noun} entry of ${formatMoney(entry.amount, { decimals: 'auto' })} goes.`,
     impact: [
       'The entry leaves the ledger and the balance is worked out again.',
       ...(entry.transaction ? ['The bank transaction stays; only its link to this entry goes.'] : []),
@@ -184,7 +184,7 @@ export function sinceText(firstEntryDate: string | null): string | null {
 /** "Delete Rahul Sharma?" copy: what goes (the whole ledger) and what stays. */
 export function deletePersonCopy(cp: CounterpartyResponse): { description: string; impact: string[] } {
   return {
-    description: `Delete ${cp.name}?`,
+    description: `${cp.name} goes.`,
     impact: [
       `Their whole ledger goes (${formatCount(cp.entryCount, ['entry', 'entries'])}).`,
       'Bank transactions stay; only their links to these entries go.',

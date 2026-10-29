@@ -107,7 +107,7 @@ describe('Combination guards in a new report', () => {
     setup();
     await pick('Measure', 'Amount');
     await type('Report name', 'Mixed');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     expect(writeCalls()).toHaveLength(0);
     expect(screen.getByText(BANNER)).toBeInTheDocument();
   });

@@ -13,8 +13,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('ReportsShell', () => {
-  it('puts New report on the + and opens the Dinero editor', () => {
+  it('puts Add report on the + and opens the Dinero editor', () => {
     renderWithQuery(<ReportsShell>body</ReportsShell>);
-    expect(screen.getByRole('link', { name: 'New report' })).toHaveAttribute('href', '/reports/new');
+    expect(screen.getByRole('link', { name: 'Add report' })).toHaveAttribute('href', '/reports/new');
   });
 });

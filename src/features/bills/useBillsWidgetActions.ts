@@ -44,7 +44,7 @@ export function useBillsWidgetActions() {
         router.refresh();
         toast.success('Payment mark removed');
       } catch (e) {
-        toast.error(getErrorMessage(e, 'Could not undo the payment mark'));
+        toast.error(getErrorMessage(e, "Couldn't undo the payment. Try again."));
       }
     },
   };
@@ -58,7 +58,7 @@ export function useBillsWidgetActions() {
       router.refresh();
       toast.success(bill.status === 'PAID' ? 'Bill marked as paid' : 'Partial payment recorded');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not mark the bill as paid'));
+      toast.error(getErrorMessage(e, "Couldn't mark the bill paid. Try again."));
     }
   };
 
@@ -71,7 +71,7 @@ export function useBillsWidgetActions() {
       router.refresh();
       toast.success('Statement details saved');
     } catch (e) {
-      toast.error(getErrorMessage(e, 'Could not save the statement details'));
+      toast.error(getErrorMessage(e, "Couldn't save statement details. Try again."));
     }
   };
 

@@ -21,7 +21,7 @@ export function useDuplicateBuiltinReport() {
     onSuccess: ({ report, windowAsOf }) => {
       void queryClient.invalidateQueries({ queryKey: keys.reports.all });
       const note = windowNote(windowAsOf);
-      showToast(`Saved "${report.name}" to your reports.${note ? ` ${note}` : ''}`, {
+      showToast(`Report "${report.name}" saved${note ? `. ${note}` : ''}`, {
         action: { label: 'Open', onSelect: () => router.push(reportHref(report.id)) },
       });
     },

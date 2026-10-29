@@ -57,14 +57,14 @@ export function useCategorySuggestions({
     try {
       const trimmed = categoryName.trim();
       if (!trimmed) {
-        notify.error('Failed to create category: Category name is required');
+        notify.error("Couldn't add the category. Enter a category name.");
         return;
       }
       const newCategory = await createCategoryMutation.mutateAsync(trimmed);
       setLocalCategories((prev) => [...prev, newCategory]);
       setSelectedCategories((prev) => [...prev, newCategory]);
     } catch (err) {
-      toastError(err, 'Failed to create category');
+      toastError(err, "Couldn't add the category. Try again.");
     } finally {
       setCreatingCategory(false);
     }

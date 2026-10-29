@@ -36,7 +36,7 @@ export function AddKeyDialog(p: AddKeyDialogProps) {
         title="Add key"
         secondary={{ label: 'Cancel', disabled: p.submitting, onSelect: () => p.onOpenChange(false) }}
         primary={{
-          label: 'Save key',
+          label: 'Add key',
           type: 'submit',
           form: FORM_ID,
           loading: p.submitting,

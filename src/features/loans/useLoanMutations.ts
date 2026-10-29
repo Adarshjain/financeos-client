@@ -47,13 +47,13 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         })
         .then((r) => r.data!),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to record loan payment'),
+    onError: onErrorToast("Couldn't record loan payment. Try again."),
   });
 
   const addPaymentsBatch = useMutation({
     mutationFn: (body: BatchLoanPaymentRequest) => postLoanPaymentsBatch(loanId, body),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to record batch loan payments'),
+    onError: onErrorToast("Couldn't record batch loan payments. Try again."),
   });
 
   const deletePayment = useMutation({
@@ -62,7 +62,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         params: { path: { id: loanId, paymentId } },
       }),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to delete loan payment'),
+    onError: onErrorToast("Couldn't delete loan payment. Try again."),
   });
 
   const addEvent = useMutation({
@@ -74,7 +74,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         })
         .then((r) => r.data!),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to add loan event'),
+    onError: onErrorToast("Couldn't add loan event. Try again."),
   });
 
   const deleteEvent = useMutation({
@@ -83,7 +83,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         params: { path: { id: loanId, eventId } },
       }),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to delete loan event'),
+    onError: onErrorToast("Couldn't delete loan event. Try again."),
   });
 
   const addCharge = useMutation({
@@ -95,7 +95,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         })
         .then((r) => r.data!),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to add loan charge'),
+    onError: onErrorToast("Couldn't add loan charge. Try again."),
   });
 
   const deleteCharge = useMutation({
@@ -104,7 +104,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         params: { path: { id: loanId, chargeId } },
       }),
     onSuccess: invalidateLoanAndTransactions,
-    onError: onErrorToast('Failed to delete loan charge'),
+    onError: onErrorToast("Couldn't delete loan charge. Try again."),
   });
 
   const closeLoan = useMutation({
@@ -113,7 +113,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         params: { path: { id: loanId } },
       }),
     onSuccess: invalidateLoan,
-    onError: onErrorToast('Failed to close loan'),
+    onError: onErrorToast("Couldn't close loan. Try again."),
   });
 
   const reopenLoan = useMutation({
@@ -122,14 +122,14 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
         params: { path: { id: loanId } },
       }),
     onSuccess: invalidateLoan,
-    onError: onErrorToast('Failed to reopen loan'),
+    onError: onErrorToast("Couldn't reopen loan. Try again."),
   });
 
   const deleteLoan = useMutation({
     mutationFn: () =>
       api.DELETE('/api/v1/loans/{id}', { params: { path: { id: loanId } } }),
     onSuccess: invalidateLoan,
-    onError: onErrorToast('Failed to delete loan'),
+    onError: onErrorToast("Couldn't delete loan. Try again."),
   });
 
   return {

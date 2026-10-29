@@ -6,7 +6,7 @@ import type { LendingTransferSuggestion } from '@/lib/lending.types';
 
 /** The bank transfers the server finds for this person's unlinked entries (the matching tolerance is the server's). */
 export const loadPersonMatches = createDomainAction(
-  { fallbackError: 'Failed to find matching bank transactions' },
+  { fallbackError: "Couldn't find matching bank transactions. Try again." },
   async (counterpartyId: string): Promise<LendingTransferSuggestion[]> => {
     const { data } = await serverApi.GET('/api/v1/counterparties/{id}/match-suggestions', {
       params: { path: { id: counterpartyId } },

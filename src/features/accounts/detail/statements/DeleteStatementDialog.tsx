@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
 import { useDeleteStatement } from '@/features/accounts/statements/useDeleteStatement';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatCount } from '@/lib/format';
 
@@ -46,7 +47,7 @@ export function DeleteStatementDialog({
       router.refresh();
       void refreshAfterDelete();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete statement'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the statement. Try again."), { tone: 'danger' });
     }
   };
 
@@ -56,7 +57,7 @@ export function DeleteStatementDialog({
       onOpenChange={(next) => {
         if (!remove.isPending) onOpenChange(next);
       }}
-      title="Delete statement"
+      title="Delete statement?"
       description={`Removes the ${periodEndLabel} statement and what it added to this account.`}
       impact={preview.data ? deletionImpact(preview.data) : undefined}
       previewLoading={preview.isLoading}
@@ -67,13 +68,14 @@ export function DeleteStatementDialog({
       onConfirm={confirm}
     >
       {preview.error ? (
-        <Banner tone="danger">{getErrorMessage(preview.error, 'Could not check this statement')}</Banner>
+        <Banner tone="danger">{getErrorMessage(preview.error, "Couldn't check this statement. Try again.")}</Banner>
       ) : null}
       {preview.data ? (
         <Text variant="caption" tone="ink-3" as="p">
           {deletionNote(source)}
         </Text>
       ) : null}
+      <IrreversibleNote />
     </ConfirmDialog>
   );
 }

@@ -162,7 +162,7 @@ describe('ChatScreen, history', () => {
     await userEvent.click(screen.getByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     fireEvent.change(await screen.findByRole('textbox', { name: 'Name' }), { target: { value: 'Renamed' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
     await waitFor(() => expect(actions.rename).toHaveBeenCalledWith('c1', 'Renamed'));
     expect(await screen.findByText('Renamed')).toBeInTheDocument();
   });

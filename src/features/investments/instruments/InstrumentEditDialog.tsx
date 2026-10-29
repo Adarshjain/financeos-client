@@ -68,7 +68,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
       if (merged) {
         showToast(`Merged your holding into your existing ${updated.name} holding${mergeNote ? `. ${mergeNote}` : ''}`, { tone: 'success', duration: 8000 });
       } else {
-        showToast(moved ? `Moved your holdings to ${updated.name}` : `Updated ${updated.name} for your account`, { tone: 'success' });
+        showToast(moved ? `Moved your holdings to ${updated.name}` : `${updated.name} updated`, { tone: 'success' });
       }
       if (onSaved) onSaved(result);
       else router.refresh();
@@ -76,7 +76,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
     } catch (e) {
       const inline = instrumentFormErrors(e);
       if (inline) setErrors(inline);
-      else showToast(getErrorMessage(e, 'Failed to update instrument'), { tone: 'danger' });
+      else showToast(getErrorMessage(e, "Couldn't update instrument. Try again."), { tone: 'danger' });
     }
   };
 
@@ -85,7 +85,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
       <DialogContent
         size="sm"
         title="Edit instrument"
-        description="Changes apply to your account only"
+        description="Changes apply to your account only."
         tertiary={isOverridden(instrument) ? { label: 'Reset to catalog', onSelect: onReset, disabled: submitting } : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Save instrument', type: 'submit', form: FORM_ID, loading: submitting }}

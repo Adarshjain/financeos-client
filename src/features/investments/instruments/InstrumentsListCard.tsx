@@ -281,13 +281,13 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
             catalogEmpty ? (
               <EmptyState
                 compact
-                description="No instruments recorded yet. Add stocks, mutual funds and ETFs to track their prices."
+                description="No instruments yet. Add stocks, mutual funds and ETFs to track their prices."
                 action={{ label: 'Add instrument', variant: 'link', onSelect: () => setDialog({ kind: 'add', mode: 'catalog' }) }}
               />
             ) : (
               <EmptyState
                 compact
-                description={state.page > 0 ? 'No more instruments.' : 'No instruments match your search or filter.'}
+                description={state.page > 0 ? 'No more instruments.' : 'No instruments match'}
                 action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', type: '', stale: false, page: 0 }) } : undefined}
               />
             )

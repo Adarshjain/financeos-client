@@ -78,7 +78,7 @@ describe('useLoanMutations', () => {
     await act(async () => {
       await result.current.addEvent.mutateAsync({ eventType: 'prepayment', effectiveDate: '2026-10-05' }).catch(() => undefined);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to add loan event'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't add loan event. Try again."));
   });
 
   it('lets the page replace the error toast and gives it the fallback message', async () => {
@@ -88,7 +88,7 @@ describe('useLoanMutations', () => {
     await act(async () => {
       await result.current.deleteEvent.mutateAsync('e1').catch(() => undefined);
     });
-    await waitFor(() => expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to delete loan event'));
+    await waitFor(() => expect(onError).toHaveBeenCalledWith(expect.any(Error), "Couldn't delete loan event. Try again."));
     expect(toastError).not.toHaveBeenCalled();
   });
 });

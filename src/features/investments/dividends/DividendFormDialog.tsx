@@ -130,12 +130,12 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           await mutations.link.mutateAsync({ id: created.id, transactionId: prefill.linkTransactionId });
           linked = true;
         } catch (e) {
-          showToast(getErrorMessage(e, 'Dividend recorded, but linking the bank credit failed'), { tone: 'danger' });
+          showToast(getErrorMessage(e, "Dividend recorded, but couldn't link the bank credit. Try again."), { tone: 'danger' });
         }
       }
       await done(linked ? 'Dividend recorded and linked' : 'Dividend recorded');
     } catch (e) {
-      showToast(getErrorMessage(e, editing ? 'Failed to update the dividend' : 'Failed to record the dividend'), { tone: 'danger' });
+      showToast(getErrorMessage(e, editing ? "Couldn't update the dividend. Try again." : "Couldn't record the dividend. Try again."), { tone: 'danger' });
     }
   };
 
@@ -243,7 +243,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
             if (!mutations.remove.isPending) setConfirmingDelete(open);
           }}
           title={`Delete ${dividend.symbol || dividend.instrumentName || 'dividend'} · ${formatMoney(Number(dividend.amount || 0) - Number(dividend.tds || 0), { decimals: 'auto' })}?`}
-          description="This payout record goes. A bank credit it was linked to stays in your transactions, unlinked."
+          description="This payout record goes. A bank credit it was linked to stays in your transactions, unlinked. This can't be undone."
           confirmLabel="Delete dividend"
           confirmLoading={mutations.remove.isPending}
           onConfirm={() => {
@@ -253,7 +253,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
                 setConfirmingDelete(false);
                 await done('Dividend deleted');
               } catch (e) {
-                showToast(getErrorMessage(e, 'Failed to delete the dividend'), { tone: 'danger' });
+                showToast(getErrorMessage(e, "Couldn't delete the dividend. Try again."), { tone: 'danger' });
               }
             })();
           }}
@@ -294,7 +294,7 @@ export function DividendAddDialog({ onClose, prefill, onSaved }: DividendAddDial
         <DialogContent
           size="sm"
           title="Record dividend"
-          description="The accounts and holdings could not be loaded. Close this and try again."
+          description="Couldn't load the accounts and holdings. Close this and try again."
           secondary={{ label: 'Close', onSelect: onClose }}
         >
           <DialogBody>{null}</DialogBody>

@@ -74,8 +74,8 @@ describe('/reports/new', () => {
   it('says what failed when the catalog does not load, inside the app bar', async () => {
     loadNewReport.mockResolvedValue({ ok: false, reference: 'req-9' });
     renderWithQuery(await NewReportPage({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByText('Could not load reports')).toBeInTheDocument();
-    expect(screen.getByText('New report')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load reports")).toBeInTheDocument();
+    expect(screen.getByText('Add report')).toBeInTheDocument();
   });
 });
 
@@ -101,6 +101,6 @@ describe('/reports/[id]', () => {
   it('shows the failure with its reference when the page does not load', async () => {
     loadSavedReport.mockResolvedValue({ ok: false, reference: 'req-9' });
     renderWithQuery(await ReportPage({ params: Promise.resolve({ id: 'r1' }) }));
-    expect(screen.getByText('Could not load reports')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load reports")).toBeInTheDocument();
   });
 });

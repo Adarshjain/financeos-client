@@ -95,7 +95,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
             : undefined
         }
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: 'Save', type: 'submit', form: FORM_ID, loading: saving, disabled: saving || creatingCategory }}
+        primary={{ label: rule ? 'Save rule' : 'Add rule', type: 'submit', form: FORM_ID, loading: saving, disabled: saving || creatingCategory }}
       >
         <DialogBody>
           <form

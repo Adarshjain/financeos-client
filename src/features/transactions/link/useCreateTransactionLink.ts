@@ -15,14 +15,14 @@ export function useCreateTransactionLink(onLinked: () => void) {
   return useMutation({
     mutationFn: (body: CreateTransactionLinkRequest) => createTransactionLink(body),
     onSuccess: () => {
-      notify.success('Transactions linked successfully');
+      notify.success('Transactions linked');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       // A TRANSFER/REVERSAL link moves the emergency fund's outflow and the spending calendar.
       void invalidateMoneyQueries(queryClient);
       onLinked();
     },
     onError: (err: unknown) => {
-      toastError(err, 'An unexpected error occurred');
+      toastError(err, "Couldn't link the transactions. Try again.");
     },
   });
 }

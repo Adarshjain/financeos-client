@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { AccountPicker, AmountField } from '@/components/organisms';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import type { Broker } from '@/lib/account.types';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -100,7 +101,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
       router.refresh();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to save the F&O trade'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't save the F&O trade. Try again."), { tone: 'danger' });
     }
   };
 
@@ -108,11 +109,11 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
     if (!trade) return;
     try {
       await remove.mutateAsync(trade.id);
-      showToast(`Deleted the trade for ${trade.tradingSymbol}`);
+      showToast("F&O trade deleted");
       router.refresh();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete the F&O trade'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the F&O trade. Try again."), { tone: 'danger' });
       setConfirming(false);
     }
   };
@@ -122,11 +123,11 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
       <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
         <DialogContent
           size="sm"
-          title={trade ? 'Edit F&O trade' : 'Add F&O trade'}
-          description="Values in ₹"
+          title={trade ? 'Edit F&O trade' : 'Record F&O trade'}
+          description="Values in ₹."
           tertiary={trade ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirming(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-          primary={{ label: 'Save trade', type: 'submit', form: FORM_ID, loading: saving }}
+          primary={{ label: trade ? 'Save trade' : 'Record trade', type: 'submit', form: FORM_ID, loading: saving }}
         >
           <DialogBody>
             <form
@@ -268,13 +269,15 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
           onOpenChange={(open) => {
             if (!open && !remove.isPending) setConfirming(false);
           }}
-          title="Delete F&O trade"
-          description={`Delete the trade for ${trade.tradingSymbol}?`}
+          title="Delete F&O trade?"
+          description={`The trade for ${trade.tradingSymbol} goes.`}
           impact={['Only this trade is deleted.', 'Your other trades stay.']}
           confirmLabel="Delete trade"
           confirmLoading={remove.isPending}
           onConfirm={() => void confirmDelete()}
-        />
+        >
+          <IrreversibleNote />
+        </ConfirmDialog>
       ) : null}
     </>
   );

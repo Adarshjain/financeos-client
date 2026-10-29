@@ -57,14 +57,14 @@ export function RuleMatchesPreview({ matchType, pattern, ruleId }: RuleMatchesPr
     >
       {failed ? (
         <ErrorState
-          title="Could not load matches"
-          description="The matches request failed. Try again."
-          action={{ label: 'Try again', onSelect: refetch }}
+          title="Couldn't load matches"
+          description="The matches didn't load."
+          action={{ label: 'Retry', onSelect: refetch }}
         />
       ) : loading || !matches ? (
         <Skeleton height={48} />
       ) : matches.content.length === 0 ? (
-        <EmptyState compact title="No transactions match this pattern." />
+        <EmptyState compact title="No transactions match this pattern" />
       ) : (
         <>
           {matches.content.map((txn) => (

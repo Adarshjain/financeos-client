@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -120,10 +121,10 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
     try {
       if (action) {
         await updateMutation.mutateAsync({ id: action.id, body: request });
-        showToast(`Updated ${form.type} ${ratioText(form.type, Number(form.ratioFrom), Number(form.ratioTo), true)}`);
+        showToast('Corporate action updated');
       } else {
         await createMutation.mutateAsync(request);
-        showToast(`Recorded ${form.type} ${ratioText(form.type, Number(form.ratioFrom), Number(form.ratioTo), true)} for ${form.instrument.name}`);
+        showToast('Corporate action recorded');
       }
       router.refresh();
       onClose();
@@ -138,7 +139,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
         setFormError(getErrorMessage(e, 'The corporate action was not accepted.'));
         return;
       }
-      showToast(getErrorMessage(e, 'Failed to save the corporate action'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't save the corporate action. Try again."), { tone: 'danger' });
     }
   };
 
@@ -158,7 +159,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
         return;
       }
       setConfirmingDelete(false);
-      showToast(getErrorMessage(e, 'Failed to delete the corporate action'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the corporate action. Try again."), { tone: 'danger' });
     } finally {
       setDeleting(false);
     }
@@ -184,7 +185,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
         <DialogContent
           size="sm"
           title={editing ? 'Edit corporate action' : 'Record corporate action'}
-          description="Quantity and cost update when you save"
+          description="Quantity and cost update when you save."
           tertiary={editing ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
@@ -298,13 +299,15 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           onOpenChange={(open) => {
             if (!open && !deleting) setConfirmingDelete(false);
           }}
-          title="Delete corporate action"
-          description={`Delete the ${action.type} ${ratioText(action.type, action.ratioFrom, action.ratioTo, true)} of ${instrumentLabel({ name: action.instrumentName, symbol: action.instrumentSymbol })}?`}
+          title="Delete corporate action?"
+          description={`The ${action.type} ${ratioText(action.type, action.ratioFrom, action.ratioTo, true)} of ${instrumentLabel({ name: action.instrumentName, symbol: action.instrumentSymbol })} goes.`}
           impact={['Its quantity and cost change are taken back from the holding.', 'Your trades and dividends stay.']}
           confirmLabel="Delete corporate action"
           confirmLoading={deleting}
           onConfirm={() => void remove()}
-        />
+        >
+          <IrreversibleNote />
+        </ConfirmDialog>
       ) : null}
     </>
   );

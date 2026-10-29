@@ -165,16 +165,16 @@ for (const viewport of VIEWPORTS) {
 
       // The main validation error: nothing chosen. It stays on step 1.
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
-      await expect(page.getByText('Please select a target broker account.')).toBeVisible();
+      await expect(page.getByText('Select a target broker account.')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Preview reconciliation' })).toBeVisible();
 
       await pick(page, /Target broker account/, new RegExp(broker.name));
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
-      await expect(page.getByText('Please upload at least one Tradebook / Order History file.')).toBeVisible();
+      await expect(page.getByText('Upload at least one Tradebook / Order History file.')).toBeVisible();
 
       await upload(page, 'tradebook-zone', { name: 'groww-orders.xlsx', mimeType: XLSX, buffer: await genGrowwOrderHistoryXlsx(orders) });
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
-      await expect(page.getByText('Please upload at least one Tax P&L / Capital Gains file.')).toBeVisible();
+      await expect(page.getByText('Upload at least one Tax P&L / Capital Gains file.')).toBeVisible();
 
       await upload(page, 'taxpnl-zone', { name: 'groww-cg.xlsx', mimeType: XLSX, buffer: await genGrowwCapitalGainsXlsx({ shortTerm: [] }) });
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
@@ -238,7 +238,7 @@ for (const viewport of VIEWPORTS) {
 
       // No file yet.
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
-      await expect(page.getByText('Please select a CAS PDF/CSV file.')).toBeVisible();
+      await expect(page.getByText('Select a CAS PDF/CSV file.')).toBeVisible();
 
       await page.getByLabel('CAS PDF password').fill('CAS_PASSWORD_123');
       await upload(page, 'cas-zone', { name: 'cams-cas-statement.pdf', mimeType: 'application/pdf', buffer: await genCasPdf(cas) });

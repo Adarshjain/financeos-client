@@ -27,9 +27,9 @@ export function ConnectionsPage({
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {banner?.kind === 'success' ? (
-        <Banner tone="success" title="Successfully connected" onDismiss={dismiss}>
-          Your Gmail account <strong>{banner.email}</strong> has been successfully linked. We will now process
-          transaction alerts and statements from this account.
+        <Banner tone="success" title="Gmail connected" onDismiss={dismiss}>
+          Your Gmail account <strong>{banner.email}</strong> is connected. Transaction alerts and statements from
+          this account are now processed.
         </Banner>
       ) : null}
       {banner?.kind === 'error' ? (

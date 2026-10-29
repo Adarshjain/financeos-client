@@ -57,7 +57,7 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
         <ErrorState
           title="Couldn't load the inbox"
           description="The server did not answer. Your items are safe."
-          action={{ label: 'Try again', onSelect: () => void refetch() }}
+          action={{ label: 'Retry', onSelect: () => void refetch() }}
         />
       </Card>
     );

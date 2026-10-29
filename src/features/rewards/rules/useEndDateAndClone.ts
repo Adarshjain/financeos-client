@@ -60,7 +60,7 @@ export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notif
           notify.success(`"${rule.name}" ended ${formatDate(today, 'list')} — configure its successor`);
           onEnded(updated);
         },
-        onError: (e) => notify.failure(e, 'Failed to update reward rule'),
+        onError: (e) => notify.failure(e, "Couldn't update the reward rule. Try again."),
       }
     );
   };

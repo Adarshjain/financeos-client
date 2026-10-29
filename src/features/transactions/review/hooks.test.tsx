@@ -137,7 +137,7 @@ describe('useApproveTransactions', () => {
       done = await result.current.approve(txns, ['UNRECONCILED']);
     });
     expect(done).toBe(false);
-    expect(showToast).toHaveBeenCalledWith('Could not approve', { tone: 'danger' });
+    expect(showToast).toHaveBeenCalledWith("Couldn't approve. Try again.", { tone: 'danger' });
     expect(router.refresh).not.toHaveBeenCalled();
   });
 });
@@ -244,6 +244,6 @@ describe('useQuickApprove', () => {
       outcome = await result.current.quickApprove({ id: 'a', reviewReasons: ['UNRECONCILED'] });
     });
     expect(outcome).toBe('failed');
-    expect(showToast).toHaveBeenCalledWith('Could not approve', { tone: 'danger' });
+    expect(showToast).toHaveBeenCalledWith("Couldn't approve. Try again.", { tone: 'danger' });
   });
 });

@@ -213,7 +213,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
       const blob = await fetchUnderlyingCsv(source, { period, sort });
       saveBlob(blob, underlyingCsvFilename(data?.measureLabel ? `Underlying data ${data.measureLabel}` : 'Underlying data', data?.range));
     } catch (e) {
-      setCsvError(getErrorMessage(e, 'Could not download the CSV. Try again.'));
+      setCsvError(getErrorMessage(e, "Couldn't download the CSV. Try again."));
     } finally {
       setDownloading(false);
     }
@@ -303,12 +303,12 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
           ) : null}
 
           {query.isError ? (
-            <Banner tone="danger" title="Could not load the underlying data">
+            <Banner tone="danger" title="Couldn't load the underlying data">
               {getErrorMessage(query.error, 'Try again in a moment.')}
             </Banner>
           ) : null}
           {csvError ? (
-            <Banner tone="danger" title="Could not download the CSV" onDismiss={() => setCsvError(null)}>
+            <Banner tone="danger" title="Couldn't download the CSV" onDismiss={() => setCsvError(null)}>
               {csvError}
             </Banner>
           ) : null}

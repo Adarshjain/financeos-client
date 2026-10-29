@@ -203,9 +203,9 @@ describe('the top bar +', () => {
   it('is registered while a card is shown and opens a new rule', async () => {
     renderSection();
     expect(adder).not.toBeNull();
-    expect(screen.queryByRole('button', { name: 'New rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add rule' })).not.toBeInTheDocument();
     openNew();
-    expect(await screen.findByText('New rule')).toBeInTheDocument();
+    expect(await screen.findByText('Add rule')).toBeInTheDocument();
     expect(textbox('Name')).toHaveValue('');
   });
 
@@ -254,7 +254,7 @@ describe('the row menu', () => {
     renderSection();
     await pressRow('5X on dining');
     await pickMenu('Clone');
-    await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Add rule')).toBeInTheDocument());
     expect(textbox('Name')).toHaveValue('5X on dining');
     expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
   });
@@ -262,7 +262,7 @@ describe('the row menu', () => {
   it('a new rule has neither link', async () => {
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
   });
@@ -278,7 +278,7 @@ describe('the row menu', () => {
       { id: 'r1', body: expect.objectContaining({ name: '5X on dining', activeTo: expect.any(String) }) },
       expect.anything(),
     );
-    await waitFor(() => expect(screen.getByText('New rule')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Add rule')).toBeInTheDocument());
   });
 
   it('Delete confirms with the Legacy words, then removes the rule and says so', async () => {
@@ -394,7 +394,7 @@ describe('test a transaction', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: /^Amount/ }), { target: { value: '0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Run test' }));
     expect(recommend).not.toHaveBeenCalled();
-    expect(screen.getByText('Please enter a valid spend amount greater than ₹0')).toBeInTheDocument();
+    expect(screen.getByText('Enter a spend amount above ₹0.')).toBeInTheDocument();
   });
 });
 
@@ -402,7 +402,7 @@ describe('rule dialog', () => {
   it('words the tester checkbox International, never Intl', async () => {
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     expect(screen.getAllByText('International').length).toBeGreaterThan(0);
     expect(screen.queryByText('Intl')).not.toBeInTheDocument();
   });
@@ -410,7 +410,7 @@ describe('rule dialog', () => {
   it('creates a rule: "any of" holds MCCs, everything else goes in its own field', async () => {
     renderSection();
     openNew();
-    expect(await screen.findByText('New rule')).toBeInTheDocument();
+    expect(await screen.findByText('Add rule')).toBeInTheDocument();
     expect(screen.queryByText(/Changes apply to every transaction/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Leave everything empty/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Per slab' }));
@@ -591,7 +591,7 @@ describe('When cap is hit', () => {
   it('defaults to Stop for a new rule', async () => {
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     fillNewWithOwnCap();
     expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Stop (earn nothing)');
     fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
@@ -602,7 +602,7 @@ describe('When cap is hit', () => {
   it('keeps the user’s choice through Period cap None, own, None, own', async () => {
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     choose('Period cap', 'This rule’s own cap');
     choose('When cap is hit', 'Fall through to next rule');
     choose('Period cap', 'No period cap');
@@ -625,7 +625,7 @@ describe('When cap is hit', () => {
     renderSection();
     await pressRow('5X on dining');
     await pickMenu('Clone');
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     expect(screen.getByRole('combobox', { name: /^When cap is hit/ })).toHaveTextContent('Fall through to next rule');
     fireEvent.click(screen.getByRole('button', { name: 'Save & recompute' }));
     await waitFor(() => expect(create).toHaveBeenCalled());
@@ -638,7 +638,7 @@ describe('Shared bucket', () => {
     caps = [bucket({ rewardType: 'CASH' })];
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     choose('Period cap', 'Shared bucket');
     expect(screen.getByRole('combobox', { name: /^Shared bucket/ })).toBeDisabled();
     expect(screen.getByText('No points bucket yet. Add one in Caps.')).toBeInTheDocument();
@@ -658,7 +658,7 @@ describe('Shared bucket', () => {
     caps = [bucket()];
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     choose('Period cap', 'Shared bucket');
     const select = screen.getByRole('combobox', { name: /^Shared bucket/ });
     expect(select).not.toBeDisabled();
@@ -675,7 +675,7 @@ describe('Test this rule section scroll', () => {
     HTMLElement.prototype.scrollIntoView = scroll;
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     vi.useFakeTimers();
     const toggle = screen.getByRole('button', { name: 'Test this rule' });
     fireEvent.click(toggle);
@@ -699,7 +699,7 @@ describe('Test this rule result', () => {
   const openTester = async () => {
     renderSection();
     openNew();
-    await screen.findByText('New rule');
+    await screen.findByText('Add rule');
     fireEvent.click(screen.getByRole('button', { name: 'Test this rule' }));
   };
 

@@ -46,7 +46,7 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
     }
     setAmountError(null);
     recommend.mutate(built.request, {
-      onError: (e) => showToast(getErrorMessage(e, 'Failed to simulate card rewards'), { tone: 'danger' }),
+      onError: (e) => showToast(getErrorMessage(e, "Couldn't simulate card rewards. Try again."), { tone: 'danger' }),
     });
   };
 

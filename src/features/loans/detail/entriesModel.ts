@@ -94,17 +94,19 @@ export function entriesCount(n: number): string {
 }
 
 /** What the delete confirmation says goes and what stays. */
-export function deleteEntryCopy(row: EntryRow): { title: string; description: string; impact: string[] } {
+export function deleteEntryCopy(row: EntryRow): { title: string; confirmLabel: string; description: string; impact: string[] } {
   if (row.kind === 'event') {
     return {
-      title: 'Delete event',
-      description: `Removes ${row.title}, ${row.subtitle}.`,
+      title: 'Delete event?',
+      confirmLabel: 'Delete event',
+      description: `${row.title}, ${row.subtitle} goes.`,
       impact: ['The schedule is calculated again without it.', 'A linked bank transaction stays; only the link goes.'],
     };
   }
   return {
-    title: 'Delete charge',
-    description: `Removes ${row.title}${row.amount ? ` of ${row.amount}` : ''}, ${row.subtitle}.`,
+    title: 'Delete charge?',
+    confirmLabel: 'Delete charge',
+    description: `${row.title}${row.amount ? ` of ${row.amount}` : ''}, ${row.subtitle} goes.`,
     impact: ['It no longer counts toward the loan\'s costs.', 'A linked bank transaction stays; only the link goes.'],
   };
 }

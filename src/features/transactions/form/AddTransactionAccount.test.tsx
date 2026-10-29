@@ -79,7 +79,7 @@ describe('Add account from Add transaction', () => {
     await user.click(await screen.findByRole('combobox', { name: /^Account/ }));
     await user.click(screen.getByRole('button', { name: 'Add account' }));
     expect(await screen.findByText('Account form')).toBeInTheDocument();
-    expect(screen.getByText('Add transaction')).toBeInTheDocument();
+    expect(screen.getAllByText('Add transaction')).toHaveLength(2);
   });
 
   it('cancel returns to the form with its values intact', async () => {

@@ -75,7 +75,7 @@ describe('describeAttentionItem', () => {
 
   it('any other extraction failure says the AI could not read it', () => {
     const d = describeAttentionItem(item({ error: 'Extraction failed: model returned invalid JSON' }));
-    expect(d.label).toBe('Could not read email');
+    expect(d.label).toBe("Couldn't read email");
   });
 
   it('an unknown error reports the attempt count', () => {

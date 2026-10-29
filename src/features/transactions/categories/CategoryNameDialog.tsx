@@ -23,10 +23,10 @@ export function CategoryNameDialog({ category, saving, onSubmit, onClose }: Cate
     <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
       <DialogContent
         size="sm"
-        title={category ? 'Rename category' : 'New category'}
+        title={category ? 'Rename category' : 'Add category'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{
-          label: category ? 'Save' : 'Create',
+          label: category ? 'Save category' : 'Add category',
           type: 'submit',
           form: FORM_ID,
           loading: saving,

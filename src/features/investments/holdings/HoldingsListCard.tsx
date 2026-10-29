@@ -341,7 +341,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           empty={
             <EmptyState
               compact
-              description={filtered ? 'No holdings match.' : 'No holdings yet. Record a trade or import your tradebook.'}
+              description={filtered ? 'No holdings match' : 'No holdings yet. Record a trade or import your tradebook.'}
               action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => router.push(holdingsUrl({ ...state, q: '', type: '', broker: '', page: 0 })) } : undefined}
             />
           }

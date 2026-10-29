@@ -80,7 +80,7 @@ describe('LoanPayoffBody', () => {
   it('no active loans: an empty state with a way to Loans', async () => {
     respond([]);
     renderWithQuery(<LoanPayoffBody loanId={null} />);
-    expect(await screen.findByText('No active loans')).toBeInTheDocument();
+    expect(await screen.findByText('No active loans yet')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Go to loans' }));
     expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/loans'));
   });

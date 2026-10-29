@@ -30,7 +30,7 @@ describe('/dashboard (Home)', () => {
   it('says Home could not load, with Try again', async () => {
     loadHome.mockResolvedValue({ ok: false });
     renderWithQuery(await DsHomePage());
-    expect(screen.getByText('Could not load dashboards')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load dashboards")).toBeInTheDocument();
   });
 
   it('shows the widgets’ shape while it loads', () => {

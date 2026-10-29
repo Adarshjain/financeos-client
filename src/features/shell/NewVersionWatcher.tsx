@@ -90,7 +90,7 @@ export function NewVersionWatcher({ loadedVersion: renderedVersion }: { loadedVe
             className="pt-safe-top pl-safe-left pr-safe-right"
             action={{ label: 'Refresh', onSelect: () => window.location.reload() }}
             onDismiss={() => setVisible(false)}
-            title="FinanceOS was updated."
+            title="FinanceOS was updated"
           >
             Refresh to use the latest version.
           </Banner>

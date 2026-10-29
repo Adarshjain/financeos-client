@@ -76,7 +76,7 @@ function setup(over: Partial<TransactionFormDialogProps> = {}) {
   return renderWithQuery(<TransactionFormDialog today="2026-10-13" accounts={accountList} onClose={onClose} {...over} />);
 }
 const amount = () => screen.getByLabelText('Amount');
-const save = (name = 'Save transaction') => fireEvent.click(screen.getByRole('button', { name }));
+const save = (name = 'Add transaction') => fireEvent.click(screen.getByRole('button', { name }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -88,7 +88,7 @@ beforeEach(() => {
 describe('Add transaction', () => {
   it('opens as a debit dated today with every field and the Add footer', () => {
     setup();
-    expect(screen.getByText('Add transaction')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Debit' })).toBeChecked();
     expect(amount()).toHaveAttribute('placeholder', '0.00');
     expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
@@ -150,11 +150,11 @@ describe('Add transaction', () => {
   it('shows each error under its field and does not save an empty form', async () => {
     setup();
     save();
-    expect(await screen.findByText('Enter an amount greater than zero')).toBeInTheDocument();
-    expect(screen.getByText('Please select an account')).toBeInTheDocument();
+    expect(await screen.findByText('Enter an amount above ₹0.')).toBeInTheDocument();
+    expect(screen.getByText('Select an account.')).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
     fireEvent.change(amount(), { target: { value: '250' } });
-    expect(screen.queryByText('Enter an amount greater than zero')).toBeNull();
+    expect(screen.queryByText('Enter an amount above ₹0.')).toBeNull();
   });
 
   it('tints the amount green for a credit and leaves it neutral for a debit', async () => {
@@ -230,7 +230,7 @@ describe('Add transaction', () => {
     });
     expect(create.mock.calls[0][0]).not.toHaveProperty('reviewType');
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Transaction saved!');
+    expect(toast).toHaveBeenCalledWith('Transaction saved');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -278,7 +278,7 @@ describe('Add transaction', () => {
     fireEvent.change(amount(), { target: { value: '10' } });
     create.mockRejectedValueOnce(new Error('boom'));
     save();
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('An unexpected error occurred', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't save the transaction. Try again.", { tone: 'danger' }));
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -330,7 +330,7 @@ describe('Edit transaction', () => {
     expect(screen.getByRole('combobox', { name: /^Account/ })).toBeDisabled();
     expect(screen.getByRole('combobox', { name: /^Categories/ })).toHaveTextContent('Groceries');
     expect(screen.getByRole('combobox', { name: /^Review status/ })).toHaveTextContent('Manually reviewed');
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save transaction' })).toBeInTheDocument();
   });
 
   it('opens a transaction with no review type as Manually reviewed', () => {
@@ -346,7 +346,7 @@ describe('Edit transaction', () => {
   it('saves the changes against the transaction, keeping its source', async () => {
     setup({ transaction: stored() });
     fireEvent.change(amount(), { target: { value: '4000' } });
-    save('Save');
+    save('Save transaction');
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
     expect(update.mock.calls[0][0].id).toBe('t1');
     expect(update.mock.calls[0][0].body).toMatchObject({
@@ -375,7 +375,7 @@ describe('Edit transaction', () => {
     await user.click(screen.getByRole('option', { name: 'Needs review' }));
     expect(screen.getByText('Pick at least one reason it needs review')).toBeInTheDocument();
     expect(screen.getByText('Why it needs review')).toBeInTheDocument();
-    save('Save');
+    save('Save transaction');
     expect(update).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('combobox', { name: /^Why it needs review/ }));
@@ -384,7 +384,7 @@ describe('Edit transaction', () => {
     await user.click(screen.getByRole('button', { name: /Done/ }));
     expect(screen.queryByText('Pick at least one reason it needs review')).toBeNull();
 
-    save('Save');
+    save('Save transaction');
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0][0].body).toMatchObject({
       reviewType: 'NEEDS_REVIEW',
@@ -404,7 +404,7 @@ describe('Edit transaction', () => {
     setup({ transaction: stored({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED'] }) });
     await user.click(screen.getByRole('combobox', { name: /^Review status/ }));
     await user.click(screen.getByRole('option', { name: 'Manually reviewed' }));
-    save('Save');
+    save('Save transaction');
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0][0].body.reviewType).toBe('MANUALLY_REVIEWED');
     expect(update.mock.calls[0][0].body).not.toHaveProperty('reviewReasons');
@@ -413,7 +413,7 @@ describe('Edit transaction', () => {
   it('does not force a reason on a Needs review that never had one', async () => {
     setup({ transaction: stored({ reviewType: 'NEEDS_REVIEW', reviewReasons: [] }) });
     expect(screen.queryByText('Pick at least one reason it needs review')).toBeNull();
-    save('Save');
+    save('Save transaction');
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0][0].body).not.toHaveProperty('reviewReasons');
   });
@@ -453,7 +453,7 @@ describe('Amount arithmetic', () => {
     setup({ defaultAccountId: 'b1' });
     fireEvent.change(amount(), { target: { value: '5/0' } });
     save();
-    expect(await screen.findByText('Enter an amount greater than zero')).toBeInTheDocument();
+    expect(await screen.findByText('Enter an amount above ₹0.')).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
   });
 });

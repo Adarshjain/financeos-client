@@ -279,7 +279,7 @@ export function checkDetails(
   (Object.keys(FIELD_NAMES) as DetailsField[]).forEach((f) => {
     if (!changed(f)) return;
     if (form[f] === '') {
-      errors[f] = `Enter the ${FIELD_NAMES[f]}`;
+      errors[f] = `Enter the ${FIELD_NAMES[f]}.`;
       return;
     }
     if (f === 'totalDue' || f === 'minimumDue') {
@@ -288,8 +288,8 @@ export function checkDetails(
       else if (n < 0)
         errors[f] =
           f === 'totalDue'
-            ? 'Total due cannot be negative'
-            : 'Minimum due cannot be negative';
+            ? 'Enter a total due of ₹0 or more.'
+            : 'Enter a minimum due of ₹0 or more.';
       else body[f === 'totalDue' ? 'totalAmountDue' : 'minimumAmountDue'] = n;
     } else {
       body[f === 'dueDate' ? 'paymentDueDate' : f] = form[f];
@@ -305,14 +305,14 @@ export function checkDetails(
       : 'periodStart';
     const days = dayNumber(end) - dayNumber(start);
     if (days < 0)
-      errors[field] ??= 'Period start must be on or before period end';
+      errors[field] ??= 'Enter a period start on or before the period end.';
     else if (days > 400)
-      errors[field] ??= 'Statement period cannot be longer than 400 days';
+      errors[field] ??= 'Enter a statement period of 400 days or less.';
   }
   if ((changed('dueDate') || changed('periodEnd')) && form.dueDate && end) {
     const days = dayNumber(form.dueDate) - dayNumber(end);
     if (days < 0 || days > 60)
-      errors.dueDate ??= 'Due date must be 0 to 60 days after the period end';
+      errors.dueDate ??= 'Enter a due date 0 to 60 days after the period end.';
   }
   if (
     (changed('totalDue') || changed('minimumDue')) &&
@@ -320,7 +320,7 @@ export function checkDetails(
     form.minimumDue !== ''
   ) {
     if (Number(form.minimumDue) > Number(form.totalDue))
-      errors.minimumDue ??= 'Minimum due cannot exceed total due';
+      errors.minimumDue ??= 'Enter a minimum due that is not above the total due.';
   }
 
   if (Object.keys(errors).length === 0 && Object.keys(body).length === 0) {

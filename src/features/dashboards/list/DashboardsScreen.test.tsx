@@ -94,7 +94,7 @@ describe('DashboardsScreen', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
     await user.clear(screen.getByPlaceholderText('Search'));
     await user.type(screen.getByPlaceholderText('Search'), 'zzz');
-    expect(screen.getByText('No dashboards match.')).toBeInTheDocument();
+    expect(screen.getByText('No dashboards match')).toBeInTheDocument();
     // The empty state's own action (the field has its own clear button too).
     await user.click(screen.getAllByRole('button', { name: 'Clear search' }).at(-1)!);
     expect(screen.getByText('Money overview')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('DashboardsScreen', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
     await waitFor(() => expect(api.PUT).toHaveBeenCalled());
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ name: 'Money overview', isDefault: true });
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Set as default'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Default dashboard set'));
   });
 
   it('Delete asks first, in the board words, and Cancel keeps the dashboard', async () => {
@@ -137,7 +137,7 @@ describe('DashboardsScreen', () => {
     await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete Money overview?' });
-    expect(within(dialog).getByText('This cannot be undone. Its widgets go with it; your saved reports stay.')).toBeInTheDocument();
+    expect(within(dialog).getByText("Its widgets go with it; your saved reports stay. This can't be undone.")).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     expect(api.DELETE).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
@@ -193,11 +193,11 @@ describe('DashboardsScreen', () => {
     expect(api.POST).toHaveBeenCalledTimes(2);
   });
 
-  it('with no dashboards: the empty state, with New dashboard and Restore default Home', async () => {
+  it('with no dashboards: the empty state, with Add dashboard and Restore default Home', async () => {
     api.POST.mockResolvedValue({ data: home });
     render([]);
     expect(screen.getByText('No dashboards yet')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'New dashboard' }));
+    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
     expect(router.push).toHaveBeenCalledWith('/dashboards/new');
     await user.click(screen.getByRole('button', { name: 'Restore default Home' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());

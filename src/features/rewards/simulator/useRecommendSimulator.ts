@@ -35,7 +35,7 @@ export function useRecommendSimulator() {
   const handleSimulate = () => {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      toast.error('Please enter a valid spend amount greater than ₹0');
+      toast.error('Enter a spend amount above ₹0.');
       return;
     }
 
@@ -60,7 +60,7 @@ export function useRecommendSimulator() {
           }
         },
         onError: (e) =>
-          toastError(e, 'Failed to simulate card rewards'
+          toastError(e, "Couldn't simulate card rewards. Try again."
           ),
       }
     );

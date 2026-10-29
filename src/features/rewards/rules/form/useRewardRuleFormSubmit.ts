@@ -170,7 +170,7 @@ export function useRewardRuleFormSubmit({
       notify.success(isUpdateMode ? 'Rule updated' : 'Rule created');
       onSaved();
     };
-    const onError = (e: unknown) => notify.failure(e, 'Failed to save reward rule');
+    const onError = (e: unknown) => notify.failure(e, "Couldn't save the reward rule. Try again.");
 
     if (isUpdateMode && rule) {
       updateRuleMutation.mutate({ id: rule.id, body }, { onSuccess, onError });

@@ -249,7 +249,7 @@ describe('useDividendLink new mode', () => {
   it('validates the holding first', async () => {
     const { result } = await setupNew();
     act(() => result.current.handleSubmit());
-    expect(toast.error).toHaveBeenCalledWith('Please select a held instrument.');
+    expect(toast.error).toHaveBeenCalledWith('Select a held instrument.');
     expect(api.POST).not.toHaveBeenCalled();
   });
 
@@ -258,7 +258,7 @@ describe('useDividendLink new mode', () => {
     act(() => result.current.setHolding('b1|i1'));
     act(() => result.current.setAmount('abc'));
     act(() => result.current.handleSubmit());
-    expect(toast.error).toHaveBeenCalledWith('Please enter a valid amount.');
+    expect(toast.error).toHaveBeenCalledWith('Enter an amount above ₹0.');
     act(() => result.current.setAmount('0'));
     act(() => result.current.handleSubmit());
     expect(toast.error).toHaveBeenCalledTimes(2);
@@ -271,14 +271,14 @@ describe('useDividendLink new mode', () => {
     for (const bad of ['100/0', '5+', '100-200']) {
       act(() => result.current.setAmount(bad));
       expect(result.current.canSubmit).toBe(false);
-      expect(result.current.amountError).toBe('Please enter a valid amount.');
+      expect(result.current.amountError).toBe('Enter an amount above ₹0.');
       act(() => result.current.handleSubmit());
     }
     act(() => result.current.setAmount('1000'));
     expect(result.current.amountError).toBeUndefined();
     act(() => result.current.setTds('100/0'));
     expect(result.current.canSubmit).toBe(false);
-    expect(result.current.tdsError).toBe('Please enter a valid amount.');
+    expect(result.current.tdsError).toBe('Enter an amount above ₹0.');
     act(() => result.current.handleSubmit());
     expect(api.POST).not.toHaveBeenCalled();
   });
@@ -360,7 +360,7 @@ describe('useDividendLink new mode', () => {
     act(() => result.current.setHolding('b1|i1'));
     act(() => result.current.handleSubmit());
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
-    expect(toast.error).toHaveBeenCalledWith('Dividend recorded, but linking failed', expect.anything());
+    expect(toast.error).toHaveBeenCalledWith("Dividend recorded, but couldn't link it. Try again.", expect.anything());
     expect(onOpenChange).not.toHaveBeenCalled();
     expect(api.POST).toHaveBeenCalledTimes(1);
 

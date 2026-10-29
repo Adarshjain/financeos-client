@@ -80,7 +80,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       announce();
     } catch (e) {
       // Dismissing the prompt is not an error worth a toast.
-      if (!isCancelled(e)) showToast('Could not turn on app lock', { tone: 'danger' });
+      if (!isCancelled(e)) showToast("Couldn't turn on app lock. Try again.", { tone: 'danger' });
     }
   };
 
@@ -98,7 +98,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       setArmed(false);
       announce();
     } catch (e) {
-      if (!isCancelled(e)) showToast('Could not turn off app lock', { tone: 'danger' });
+      if (!isCancelled(e)) showToast("Couldn't turn off app lock. Try again.", { tone: 'danger' });
     }
   };
 

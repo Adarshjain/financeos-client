@@ -114,20 +114,20 @@ describe('MergeDialog', () => {
 
   it('blocks a merge across accounts', () => {
     setup([alert, { ...statement, accountId: 'a2' }]);
-    expect(screen.getByText('Cross-Account Merge Blocked')).toBeInTheDocument();
+    expect(screen.getByText('Cross-account merge blocked')).toBeInTheDocument();
     expect(screen.getByText(/HDFC Regalia vs SBI Cashback/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Merge and resolve' })).toBeDisabled();
   });
 
   it('warns, without blocking, on opposite directions', () => {
     setup([alert, { ...statement, amount: 1249 }]);
-    expect(screen.getByText('Direction Mismatch')).toBeInTheDocument();
+    expect(screen.getByText('Direction mismatch')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Merge and resolve' })).toBeEnabled();
   });
 
   it('warns on different amounts', () => {
     setup([alert, { ...statement, amount: -1300 }]);
-    expect(screen.getByText('Amount Mismatch')).toBeInTheDocument();
+    expect(screen.getByText('Amount mismatch')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Merge and resolve' })).toBeEnabled();
   });
 

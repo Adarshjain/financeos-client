@@ -290,13 +290,13 @@ describe('/accounts/[id]/statements', () => {
   it('shows an error banner when the statements request failed', async () => {
     loadData.mockResolvedValue({ ...data(), statements: null, view: null });
     await renderPage();
-    expect(screen.getByText('Could not load the statements. Reload the page to try again.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load statements. Try again.")).toBeInTheDocument();
   });
 
   it('shows the empty state with an upload action when there are no statements', async () => {
     loadData.mockResolvedValue({ ...data(), statements: [], view: buildStatementsView([], undefined, undefined, '2026-10-13') });
     await renderPage();
-    expect(screen.getByText('No statement history found')).toBeInTheDocument();
+    expect(screen.getByText('No statements yet')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Upload statement' }));
     expect(push).toHaveBeenCalledWith('/transactions/import?account=c1');
   });
@@ -320,7 +320,7 @@ describe('/accounts/[id]/statements', () => {
   it('says the detail failed to load when only its request failed', async () => {
     loadData.mockResolvedValue({ ...data(), detail: null, detailFailed: true });
     await renderPage();
-    expect(screen.getByText('Failed to load statement details')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load statement details. Try again.")).toBeInTheDocument();
     expect(screen.getByText('Each statement is a bill')).toBeInTheDocument();
   });
 
@@ -374,7 +374,7 @@ describe('/accounts/[id]/statements', () => {
 
     await user.clear(field);
     await user.type(field, '30/10/2026');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
 
     await waitFor(() =>
       expect(api.PATCH).toHaveBeenCalledWith('/api/v1/bills/{statementId}/details', {
@@ -398,7 +398,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByLabelText('Due date')).toHaveValue('');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
     expect(await within(dialog).findByText('Change at least one of the fields')).toBeInTheDocument();
     expect(api.PATCH).not.toHaveBeenCalled();
   });
@@ -420,7 +420,7 @@ describe('/accounts/[id]/statements', () => {
     const min = within(dialog).getByLabelText('Minimum due');
     await user.clear(min);
     await user.type(min, '3000');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
     await waitFor(() =>
       expect(api.PATCH).toHaveBeenCalledWith('/api/v1/bills/{statementId}/details', {
         params: { path: { statementId: 's3' } },
@@ -437,8 +437,8 @@ describe('/accounts/[id]/statements', () => {
     const min = within(dialog).getByLabelText('Minimum due');
     await user.clear(min);
     await user.type(min, '50000');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(await within(dialog).findByText('Minimum due cannot exceed total due')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
+    expect(await within(dialog).findByText('Enter a minimum due that is not above the total due.')).toBeInTheDocument();
     expect(api.PATCH).not.toHaveBeenCalled();
   });
 
@@ -448,8 +448,8 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     await user.clear(within(dialog).getByLabelText('Total due'));
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(await within(dialog).findByText('Enter the total due')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
+    expect(await within(dialog).findByText('Enter the total due.')).toBeInTheDocument();
     expect(api.PATCH).not.toHaveBeenCalled();
   });
 
@@ -485,7 +485,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(screen.getByRole('button', { name: 'More actions' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save details' }));
     expect(await within(dialog).findByText('Change at least one of the fields')).toBeInTheDocument();
     expect(api.PATCH).not.toHaveBeenCalled();
   });

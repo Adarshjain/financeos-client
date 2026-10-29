@@ -71,7 +71,7 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
       <DialogContent
         size="lg"
         title="Add widget"
-        description="Built-ins update themselves; report widgets show a saved report"
+        description="Built-ins update themselves; report widgets show a saved report."
         secondary={{ label: 'Cancel', onSelect: onClose }}
         primary={{ label: 'Add to board', onSelect: add, disabled: !canAdd }}
       >
@@ -99,7 +99,7 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
             ) : builtins.length === 0 ? (
               <EmptyState compact description="No built-in widgets available." />
             ) : shownBuiltins.length === 0 ? (
-              <EmptyState compact description="No widgets match." />
+              <EmptyState compact description="No widgets match" />
             ) : (
               <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8">
                 {shownBuiltins.map((b) => (
@@ -117,7 +117,7 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
           ) : reports.length === 0 ? (
             <EmptyState compact description="No saved reports yet. Make one in Reports." />
           ) : shownReports.length === 0 ? (
-            <EmptyState compact description="No reports match." />
+            <EmptyState compact description="No reports match" />
           ) : (
             <ChoiceCard.Group value={selected} onValueChange={choose} className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8">
               {shownReports.map((r) => (

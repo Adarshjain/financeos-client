@@ -20,14 +20,14 @@ describe('EpfAddDialog', () => {
   it('shows the form filled from the last contribution once the employers arrive', async () => {
     options.load.mockResolvedValue({ success: true, data: { employers: [employer()], latestContribution: latestContribution() } });
     renderWithQuery(<EpfAddDialog onClose={vi.fn()} />);
-    expect(await screen.findByRole('button', { name: 'Add entry' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Record entry' })).toBeInTheDocument();
     expect(screen.getByLabelText(/^Your share/)).toHaveValue('7200');
   });
 
   it('opens on the type it was given', async () => {
     options.load.mockResolvedValue({ success: true, data: { employers: [], latestContribution: null } });
     renderWithQuery(<EpfAddDialog initialType="OPENING_BALANCE" onClose={vi.fn()} />);
-    await screen.findByRole('button', { name: 'Add entry' });
+    await screen.findByRole('button', { name: 'Record entry' });
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance');
   });
 
@@ -35,7 +35,7 @@ describe('EpfAddDialog', () => {
     options.load.mockResolvedValue({ success: false, error: { message: 'no' } });
     const onClose = vi.fn();
     renderWithQuery(<EpfAddDialog onClose={onClose} />);
-    expect(await screen.findByText('The employers could not be loaded. Close this and try again.')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the employers. Close this and try again.")).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' }).at(-1)!);
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });

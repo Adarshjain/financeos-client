@@ -102,7 +102,7 @@ export function InstrumentSelect({
       onValueChange(resolved);
       setQuery('');
     } catch (e) {
-      const message = getErrorMessage(e, 'Failed to add the instrument');
+      const message = getErrorMessage(e, "Couldn't add the instrument. Try again.");
       if (onResolveError) onResolveError(message);
       else showToast(message, { tone: 'danger' });
     }
@@ -130,7 +130,7 @@ export function InstrumentSelect({
       trigger={trigger}
       disabled={disabled}
       actions={onEnterManually ? [{ label: 'Enter it manually', onSelect: onEnterManually }] : undefined}
-      emptyText={() => (searching ? 'Searching…' : typed ? 'No instruments found.' : 'Type at least 2 characters to search.')}
+      emptyText={() => (searching ? 'Searching…' : typed ? 'No instruments match' : 'Type at least 2 characters to search.')}
     />
   );
 }

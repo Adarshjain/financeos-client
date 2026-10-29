@@ -206,7 +206,7 @@ describe('LinkTransactionsDialog, several transactions', () => {
   it('titles the count, gives every row a role and the refund a coverage line', async () => {
     open(rows());
     expect(screen.getByText('Link 3 transactions')).toBeInTheDocument();
-    expect(screen.getByText('Picked from the selection; give each one its role')).toBeInTheDocument();
+    expect(screen.getByText('Picked from the selection; give each one its role.')).toBeInTheDocument();
     await chooseType(/Refund/);
     expect(screen.getByRole('combobox', { name: 'Role of Croma Electronics' })).toHaveTextContent('Purchase');
     expect(screen.getByRole('combobox', { name: 'Role of Croma refund 1' })).toHaveTextContent('Refund');
@@ -257,7 +257,7 @@ describe('LinkTransactionsDialog, records', () => {
   it('records a new lending entry from the transaction, direction following it', async () => {
     open([tx('t1', -15000, { description: 'UPI to Rahul' })]);
     await chooseType(/Lending entry/);
-    expect(screen.getByText('Record it in a lending ledger')).toBeInTheDocument();
+    expect(screen.getByText('Record it in a lending ledger.')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Direction/ })).toHaveTextContent('You lent');
     expect(screen.getByRole('combobox', { name: /^Direction/ })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: /^Amount/ })).toHaveValue('15000');

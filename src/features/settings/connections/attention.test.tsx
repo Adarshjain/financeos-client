@@ -141,7 +141,7 @@ describe('AttentionCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Assign & remember' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Assign & remember' }));
-    expect(await screen.findByText(/boom|Failed to assign identifier to account/)).toBeInTheDocument();
+    expect(await screen.findByText(/boom|Couldn't assign the identifier. Try again./)).toBeInTheDocument();
     expect(screen.getByText('Assign account identifier')).toBeInTheDocument();
   });
 

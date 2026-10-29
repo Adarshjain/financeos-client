@@ -22,7 +22,7 @@ export async function loadBillsHistory(
     params: { query: { accountId, limit } },
   });
   if (error || data == null)
-    throw new Error('Could not load the bills history');
+    throw new Error("Couldn't load bills history. Try again.");
   return data
     .filter((bill) => bill.statementId)
     .map((bill) => ({

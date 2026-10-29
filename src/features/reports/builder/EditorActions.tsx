@@ -60,7 +60,7 @@ export function EditorActions({ dirty, edit, saving, duplicating, onCancel, onSa
       }
       actions={[
         { id: 'cancel', label: 'Cancel', variant: 'link', onSelect: onCancel },
-        { id: 'save', label: edit ? 'Save report' : 'Create report', variant: 'primary', onSelect: onSave, loading: saving },
+        { id: 'save', label: edit ? 'Save report' : 'Add report', variant: 'primary', onSelect: onSave, loading: saving },
       ]}
     />
   );

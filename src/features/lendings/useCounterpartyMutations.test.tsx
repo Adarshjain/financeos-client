@@ -174,7 +174,7 @@ describe('useCounterpartyMutations — error toasts', () => {
     result.current.deleteCp.mutate();
 
     await waitFor(() => expect(result.current.deleteCp.isError).toBe(true));
-    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to delete counterparty');
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), "Couldn't delete counterparty. Try again.");
   });
 
   it('does the same for the link and unlink mutations', async () => {
@@ -188,7 +188,7 @@ describe('useCounterpartyMutations — error toasts', () => {
     result.current.unlinkTransaction.mutate('l1');
 
     await waitFor(() => expect(onError).toHaveBeenCalledTimes(2));
-    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to link transaction');
-    expect(onError).toHaveBeenCalledWith(expect.any(Error), 'Failed to unlink transaction');
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), "Couldn't link transaction. Try again.");
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), "Couldn't unlink transaction. Try again.");
   });
 });

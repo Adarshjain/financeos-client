@@ -35,7 +35,7 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
         size="sm"
         title="Edit person details"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
-        primary={{ label: 'Save changes', type: 'submit', form: FORM_ID, loading: submitting }}
+        primary={{ label: 'Save person', type: 'submit', form: FORM_ID, loading: submitting }}
       >
         <DialogBody>
           <form

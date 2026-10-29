@@ -81,7 +81,7 @@ export function useReportPreview({
         setShown({ data: asReportData(data), request: req, signature: sig, page, size, sort });
       } catch (e) {
         if (id !== latest.current) return;
-        setError(getErrorMessage(e, 'Failed to run the report. Try again.'));
+        setError(getErrorMessage(e, "Couldn't run the report. Try again."));
       } finally {
         if (id === latest.current) setLoading(false);
       }

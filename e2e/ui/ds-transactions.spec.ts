@@ -275,7 +275,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('option', { name: food.name }).click();
         await page.keyboard.press('Escape');
         await expect(dialog).toBeVisible();
-        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Set category', exact: true }).click();
         await expect(dialog).not.toBeVisible();
         await expect(row(page, 'Rent Advance')).toContainText(food.name);
 
@@ -328,14 +328,14 @@ for (const viewport of VIEWPORTS) {
         const dialog = page.getByRole('dialog', { name: 'Add transaction' });
         await expect(dialog).toBeVisible();
 
-        await dialog.getByRole('button', { name: 'Save transaction' }).click();
+        await dialog.getByRole('button', { name: 'Add transaction' }).click();
         await expect(dialog).toBeVisible();
 
         await dialog.getByRole('textbox', { name: 'Amount', exact: true }).fill('777.5');
         await dialog.getByRole('textbox', { name: 'Description' }).fill('Coffee Beans Added');
         await dialog.getByRole('combobox', { name: /^Account/ }).click();
         await page.getByRole('option', { name: /Main Bank/ }).click();
-        await dialog.getByRole('button', { name: 'Save transaction' }).click();
+        await dialog.getByRole('button', { name: 'Add transaction' }).click();
 
         await expect(dialog).not.toBeVisible();
         const added = row(page, 'Coffee Beans Added');
@@ -353,7 +353,7 @@ for (const viewport of VIEWPORTS) {
         await expect(dialog).toBeVisible();
 
         await dialog.getByRole('textbox', { name: 'Amount', exact: true }).fill('4200');
-        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Save transaction', exact: true }).click();
         await expect(dialog).not.toBeVisible();
         await expect(row(page, 'Rent Advance')).toContainText('4,200.00');
         await expect(row(page, 'Rent Advance')).not.toContainText('3,600.00');
@@ -370,10 +370,10 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('option', { name: 'Needs review' }).click();
         await expect(dialog.getByText('Pick at least one reason it needs review')).toBeVisible();
 
-        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Save transaction', exact: true }).click();
         await expect(dialog).toBeVisible();
         await expect(dialog.getByText('Pick at least one reason it needs review')).toBeVisible();
-        await expect(page.getByText('Transaction saved!')).toHaveCount(0);
+        await expect(page.getByText('Transaction saved')).toHaveCount(0);
       });
 
       test('Delete from the panel asks first, then removes the row', async ({ page }) => {
@@ -750,11 +750,11 @@ for (const viewport of VIEWPORTS) {
         // A wallet is the minimal account: a bank also needs a bank picked.
         await accountDialog.getByRole('radio', { name: 'Wallet / cash' }).click();
         await accountDialog.getByRole('textbox', { name: 'Account name' }).fill('Fresh Wallet');
-        await accountDialog.getByRole('button', { name: 'Create account' }).click();
+        await accountDialog.getByRole('button', { name: 'Add account' }).click();
         await expect(accountDialog).not.toBeVisible({ timeout: 30_000 });
 
         await expect(dialog.getByRole('combobox', { name: /^Account/ })).toContainText('Fresh Wallet');
-        await dialog.getByRole('button', { name: 'Save transaction' }).click();
+        await dialog.getByRole('button', { name: 'Add transaction' }).click();
         await expect(dialog).not.toBeVisible();
         await expect(row(page, 'Fresh Account Spend')).toHaveCount(1);
       });

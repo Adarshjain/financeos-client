@@ -52,16 +52,16 @@ describe('useWidgetData', () => {
       await waitFor(() => expect(result.current.error).toBe('Report broke'));
     });
 
-    it('falls back to "Failed to load widget" for a non-ApiError built-in failure', async () => {
+    it('falls back to the "load the widget" copy for a non-ApiError built-in failure', async () => {
       vi.mocked(api.POST).mockRejectedValue(new Error('net'));
       const { result } = run(builtinTemplate());
-      await waitFor(() => expect(result.current.error).toBe('Failed to load widget'));
+      await waitFor(() => expect(result.current.error).toBe("Couldn't load the widget. Try again."));
     });
 
-    it('falls back to "Failed to run report" for a non-ApiError report failure', async () => {
+    it('falls back to the "run the report" copy for a non-ApiError report failure', async () => {
       vi.mocked(api.POST).mockRejectedValue(new Error('net'));
       const { result } = run(reportWidget());
-      await waitFor(() => expect(result.current.error).toBe('Failed to run report'));
+      await waitFor(() => expect(result.current.error).toBe("Couldn't run the report. Try again."));
     });
 
     it('has no error on success', async () => {

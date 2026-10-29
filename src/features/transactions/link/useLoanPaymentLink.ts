@@ -153,7 +153,7 @@ export function useLoanPaymentLink({
       onSuccess?.();
     },
     onError: (err: unknown) => {
-      toastError(err, 'Failed to settle installment');
+      toastError(err, "Couldn't settle the installment. Try again.");
     },
   });
 

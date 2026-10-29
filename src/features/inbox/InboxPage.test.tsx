@@ -109,7 +109,7 @@ describe('InboxPage', () => {
     expect(await screen.findByText("Couldn't load the inbox")).toBeInTheDocument();
     expect(screen.getByText('The server did not answer. Your items are safe.')).toBeInTheDocument();
     vi.mocked(api.GET).mockResolvedValue({ data: inbox([bill]) } as never);
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Amex bill')).toBeInTheDocument();
   });
 

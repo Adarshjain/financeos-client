@@ -111,7 +111,7 @@ export function StatementDetailsDialog({
       showToast('Statement details saved');
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not save the statement details'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't save statement details. Try again."), { tone: 'danger' });
     }
   };
 
@@ -128,7 +128,7 @@ export function StatementDetailsDialog({
           onSelect: () => onOpenChange(false),
           disabled: updateDetails.isPending,
         }}
-        primary={{ label: 'Save', onSelect: submit, loading: updateDetails.isPending }}
+        primary={{ label: 'Save details', onSelect: submit, loading: updateDetails.isPending }}
       >
         <DialogBody>
           {formError ? <Banner tone="danger">{formError}</Banner> : null}

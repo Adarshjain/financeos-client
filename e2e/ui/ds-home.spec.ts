@@ -12,7 +12,7 @@ import { builtinWidget } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
 
 // The dashboard actions at the foot of the Home switcher's dropdown
-const SWITCHER_ACTIONS = /^(Add widget|Set as default|Edit dashboard|New dashboard|View all dashboards)$/;
+const SWITCHER_ACTIONS = /^(Add widget|Set as default|Edit dashboard|Add dashboard|View all dashboards)$/;
 
 const VIEWPORTS = [
   { name: 'desktop 1440px', width: 1440, height: 900 },
@@ -77,7 +77,7 @@ for (const viewport of VIEWPORTS) {
       await expect(rowOf(page, 'Ds home')).toHaveCount(0);
       await expect(rowOf(page, 'Ds money')).toHaveCount(1);
       await page.getByPlaceholder('Search').fill('zzz');
-      await expect(page.getByText('No dashboards match.')).toBeVisible();
+      await expect(page.getByText('No dashboards match')).toBeVisible();
       // The empty state's action (the field has its own clear button too).
       await page.getByText('Clear search', { exact: true }).click();
       await expect(rowOf(page, 'Ds home')).toHaveCount(1);
@@ -120,7 +120,7 @@ for (const viewport of VIEWPORTS) {
 
       await openMenu(page, 'Ds money');
       await page.getByRole('menuitem', { name: 'Set as default' }).click();
-      await expect(page.getByText('Set as default', { exact: true })).toBeVisible();
+      await expect(page.getByText('Default dashboard set', { exact: true })).toBeVisible();
       await expect(defaultMark(page, 'Ds money')).toHaveCount(1);
       await expect(defaultMark(page, 'Ds home')).toHaveCount(0);
 
@@ -141,7 +141,7 @@ for (const viewport of VIEWPORTS) {
       await openMenu(page, 'Ds money');
       await page.getByRole('menuitem', { name: 'Delete dashboard' }).click();
       const dialog = page.getByRole('dialog', { name: 'Delete Ds money?' });
-      await expect(dialog.getByText('This cannot be undone. Its widgets go with it; your saved reports stay.')).toBeVisible();
+      await expect(dialog.getByText("Its widgets go with it; your saved reports stay. This can't be undone.")).toBeVisible();
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
       expect(await dashboardCount()).toBe(2);
@@ -167,11 +167,11 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: 'Restore default Home' })).toHaveCount(0);
     });
 
-    test('list: with no dashboards it says so, offers New dashboard and Restore default Home', async ({ page }) => {
+    test('list: with no dashboards it says so, offers Add dashboard and Restore default Home', async ({ page }) => {
       await page.goto('/dashboards');
       await expect(page.getByText('No dashboards yet')).toBeVisible({ timeout: 45_000 });
       await expect(page.getByRole('button', { name: 'Restore default Home' })).toBeVisible();
-      await page.getByRole('button', { name: 'New dashboard' }).click();
+      await page.getByRole('button', { name: 'Add dashboard' }).click();
       await expect(page).toHaveURL(/\/dashboards\/new/);
     });
 
@@ -217,7 +217,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
       await page.getByTestId('home-switch').click();
-      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Edit dashboard', 'New dashboard', 'View all dashboards']);
+      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Edit dashboard', 'Add dashboard', 'View all dashboards']);
     });
 
     test('Home: Bills due rows show the due date; Nothing pending is a caption-sized link', async ({ page }) => {
@@ -247,9 +247,9 @@ for (const viewport of VIEWPORTS) {
       await page.getByTestId('home-switch').click();
       await page.getByRole('option', { name: 'Ds money' }).click();
       await page.getByTestId('home-switch').click();
-      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Set as default', 'Edit dashboard', 'New dashboard', 'View all dashboards']);
+      await expect(page.getByRole('button', { name: SWITCHER_ACTIONS })).toHaveText(['Add widget', 'Set as default', 'Edit dashboard', 'Add dashboard', 'View all dashboards']);
       await page.getByRole('button', { name: 'Set as default', exact: true }).click();
-      await expect(page.getByText('Set as default', { exact: true })).toBeVisible();
+      await expect(page.getByText('Default dashboard set', { exact: true })).toBeVisible();
       await expect
         .poll(async () => ((await makeApi(currentUser.cookie).GET('/api/v1/dashboards/{id}', { params: { path: { id: money.id } } })).data ?? { isDefault: false }).isDefault)
         .toBe(true);
@@ -294,7 +294,7 @@ for (const viewport of VIEWPORTS) {
       await expect.poll(saved).toBe(1);
     });
 
-    test('Home: switcher Edit dashboard opens that dashboard editing, and New dashboard opens the create page', async ({ page }) => {
+    test('Home: switcher Edit dashboard opens that dashboard editing, and Add dashboard opens the create page', async ({ page }) => {
       const home = await board('Ds home', true);
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
@@ -306,7 +306,7 @@ for (const viewport of VIEWPORTS) {
 
       await page.goto('/dashboard');
       await page.getByTestId('home-switch').click();
-      await page.getByRole('button', { name: 'New dashboard', exact: true }).click();
+      await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
       await expect(page).toHaveURL(/\/dashboards\/new/);
     });
 
@@ -327,7 +327,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: a default dashboard with nothing on it says so and offers Add widget', async ({ page }) => {
       await board('Ds home', true, []);
       await page.goto('/dashboard');
-      await expect(page.getByText('This dashboard has no widgets yet')).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByText('No widgets yet')).toBeVisible({ timeout: 45_000 });
       await page.getByRole('button', { name: 'Add widget' }).click();
       await expect(page.getByRole('dialog', { name: /Add widget/ })).toBeVisible();
     });
@@ -337,7 +337,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/dashboard');
       await expect(page.getByText('No default dashboard')).toBeVisible({ timeout: 45_000 });
       const main = page.getByRole('main');
-      await expect(main.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/dashboards/new');
+      await expect(main.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
       await expect(main.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/dashboards');
       await expect(main.getByRole('link', { name: 'Ask the data' })).toBeVisible();
 

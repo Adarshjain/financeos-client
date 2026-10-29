@@ -30,7 +30,7 @@ export function useCopyRawLog(currentRef: string | undefined, currentType: strin
         notify.success('Raw log entries copied to clipboard');
       }
     } catch {
-      notify.error('Failed to fetch raw log lines');
+      notify.error("Couldn't copy the raw log. Try again.");
     } finally {
       setCopying(false);
     }

@@ -46,7 +46,7 @@ export function formatDeletionSummary(summaryData: DeletionSummaryResponse): str
   if (parts.length === 0) {
     return summaryData.total > 0
       ? `${formatCount(summaryData.total)} total associated records`
-      : 'No financial records found';
+      : 'No financial records yet';
   }
 
   return parts.join(' · ');

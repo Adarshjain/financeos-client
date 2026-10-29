@@ -29,7 +29,7 @@ export function DashboardEditActions({ creating, dirty, saving, onDiscard, onSav
       }
       actions={[
         { id: 'discard', label: creating ? 'Cancel' : 'Discard', variant: 'link', onSelect: onDiscard, disabled: saving },
-        { id: 'save', label: creating ? 'Create' : 'Save', variant: 'primary', onSelect: onSave, loading: saving },
+        { id: 'save', label: creating ? 'Add dashboard' : 'Save dashboard', variant: 'primary', onSelect: onSave, loading: saving },
       ]}
     />
   );

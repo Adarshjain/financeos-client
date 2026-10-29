@@ -10,17 +10,17 @@ import type { JobType } from '@/lib/types';
 export function getJobTypeLabel(type: JobType): string {
   switch (type) {
     case 'STATEMENT_INGEST':
-      return 'Statement Ingestion';
+      return 'Statement ingestion';
     case 'GMAIL_SYNC':
-      return 'Gmail Sync';
+      return 'Gmail sync';
     case 'PRICE_REFRESH':
-      return 'Price Refresh';
+      return 'Price refresh';
     case 'INVESTMENT_IMPORT_COMMIT':
-      return 'Investment Import Commit';
+      return 'Investment import commit';
     case 'BROKER_RECONCILE_COMMIT':
-      return 'Broker Reconcile Commit';
+      return 'Broker reconcile commit';
     case 'RULE_APPLY':
-      return 'Rule Apply';
+      return 'Rule apply';
     default:
       return type;
   }

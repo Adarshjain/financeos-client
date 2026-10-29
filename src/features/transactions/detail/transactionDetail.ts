@@ -181,7 +181,7 @@ export function linkRows(
 
 /** What deleting says goes and what stays; imported transactions get Legacy's warning. */
 export function deleteImpact(t: Transaction): string[] {
-  const impact: string[] = ['The transaction is deleted for good. This cannot be undone.'];
+  const impact: string[] = ['The transaction is deleted.'];
   const records = t.obligationRefs ?? [];
   if (records.length > 0) {
     const n = records.length;

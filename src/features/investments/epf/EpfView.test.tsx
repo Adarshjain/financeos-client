@@ -133,19 +133,19 @@ describe('EpfView: no EPF yet', () => {
     expect(router.push).toHaveBeenCalledWith('/investments/import?type=epf');
   });
 
-  it('Add opening balance opens Add entry on Opening balance', async () => {
+  it('Add opening balance opens Record entry on Opening balance', async () => {
     renderWithQuery(<EpfView {...empty()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add opening balance' }));
-    expect(await screen.findByText('Add EPF entry')).toBeInTheDocument();
+    expect(await screen.findByText('Record EPF entry')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance'));
   });
 
   it('keeps Add entry open on Opening balance when the first employer ends the empty state', async () => {
     const { rerender } = renderWithQuery(<EpfView {...empty()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add opening balance' }));
-    expect(await screen.findByText('Add EPF entry')).toBeInTheDocument();
+    expect(await screen.findByText('Record EPF entry')).toBeInTheDocument();
     rerender(<EpfView {...props()} />);
-    expect(screen.getByText('Add EPF entry')).toBeInTheDocument();
+    expect(screen.getByText('Record EPF entry')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Opening balance');
   });
 });
@@ -331,7 +331,7 @@ describe('EpfView: the employers card', () => {
     expect(await screen.findByText('Edit employer')).toBeInTheDocument();
     expect(screen.getByLabelText(/^Name/)).toHaveValue('Globex Retail');
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Globex Retail Pvt' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save employer' }));
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/epf/employers/{id}', {
         params: { path: { id: 'e3' } },

@@ -205,7 +205,7 @@ describe('DashboardWidgetFrame menus', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: 'Duplicate as my report' }));
     await waitFor(() => expect(showToast).toHaveBeenCalled());
     expect(vi.mocked(api.POST)).toHaveBeenNthCalledWith(1, '/api/v1/dashboards/builtins/{key}/definition', { params: { path: { key: 'upcoming' } }, body: { params: { days: 30 } } });
-    expect(showToast.mock.calls[0][0]).toBe('Saved "Upcoming" to your reports.');
+    expect(showToast.mock.calls[0][0]).toBe('Report "Upcoming" saved');
     showToast.mock.calls[0][1].action.onSelect();
     expect(push).toHaveBeenCalledWith('/reports/rep-9');
   });
@@ -221,11 +221,11 @@ describe('DashboardWidgetFrame menus', () => {
     await open();
     await userEvent.click(screen.getByRole('menuitem', { name: 'Widget settings' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Changes this widget on Money overview only')).toBeInTheDocument();
+    expect(within(dialog).getByText('Changes this widget on Money overview only.')).toBeInTheDocument();
     // The closing menu leaves the page marked pointer-events none for a tick.
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     await user.type(within(dialog).getByPlaceholderText('Upcoming'), 'Next bills');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save widget' }));
     await waitFor(() => expect(onSaveSettings).toHaveBeenCalledWith({ params: { days: 14 }, title: 'Next bills' }));
   });
 });

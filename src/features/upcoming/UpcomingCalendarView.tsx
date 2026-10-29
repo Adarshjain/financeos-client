@@ -95,7 +95,7 @@ export function UpcomingCalendarView() {
   }, [billParam, isFetched, selected]);
 
   const failed = Boolean(error) && !data;
-  const retry = { label: 'Try again', onSelect: () => void refetch() };
+  const retry = { label: 'Retry', onSelect: () => void refetch() };
 
   const rowProps = (item: ObligationItem) => ({
     item,
@@ -119,7 +119,7 @@ export function UpcomingCalendarView() {
       <>
         {error ? (
           <Banner tone="danger" action={retry}>
-            Failed to load upcoming items.
+            Couldn&apos;t load upcoming items.
           </Banner>
         ) : null}
         <Card

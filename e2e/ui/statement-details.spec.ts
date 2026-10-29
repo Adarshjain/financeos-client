@@ -70,7 +70,7 @@ test.describe('Statement details on the card statements page (@ui)', () => {
     await dialog.getByLabel('Total due').fill('1000');
     await dialog.getByLabel('Minimum due').fill('2000');
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog.getByText('Minimum due cannot exceed total due')).toBeVisible();
+    await expect(dialog.getByText('Enter a minimum due that is not above the total due.')).toBeVisible();
 
     // Correct it and give the due date (dd/mm/yyyy).
     await dialog.getByLabel('Minimum due').fill('300');

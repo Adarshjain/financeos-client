@@ -79,7 +79,7 @@ export function EditDetailsDialog({
       showToast('Statement details saved');
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not save the statement details'), {
+      showToast(getErrorMessage(e, "Couldn't save statement details. Try again."), {
         tone: 'danger',
       });
     }
@@ -118,7 +118,7 @@ export function EditDetailsDialog({
           disabled: updateDetails.isPending,
         }}
         primary={{
-          label: 'Save',
+          label: 'Save details',
           onSelect: submit,
           loading: updateDetails.isPending,
         }}

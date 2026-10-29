@@ -8,7 +8,7 @@ import { fetchCorporateActionPreview } from './corporateActionsServerApi';
 
 /** The effect of recording the action, rolled back on the server. */
 export const loadCorporateActionPreview = createDomainAction(
-  { fallbackError: 'Failed to preview the corporate action' },
+  { fallbackError: "Couldn't preview the corporate action. Try again." },
   async (instrumentId: string, body: CreateCorporateActionRequest & { excludeActionId?: string }): Promise<CorporateActionPreview> =>
     fetchCorporateActionPreview(instrumentId, body),
 );

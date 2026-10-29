@@ -64,7 +64,7 @@ export function AddLendingDialog({
   const router = useRouter();
   const today = todayInAppZone();
   const createLending = useCreateLending({
-    onError: (e) => showToast(getErrorMessage(e, 'Failed to create lending'), { tone: 'danger' }),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't record lending. Try again."), { tone: 'danger' }),
   });
 
   const [party, setParty] = React.useState<CounterpartySelection | null>(
@@ -100,7 +100,7 @@ export function AddLendingDialog({
           transactionId: transaction?.id,
         }),
       );
-      showToast('Lending recorded successfully');
+      showToast('Lending recorded');
       onClose();
       router.refresh();
     } catch {
@@ -112,10 +112,10 @@ export function AddLendingDialog({
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent
         size="md"
-        title="Add ledger entry"
+        title="Record ledger entry"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: createLending.isPending }}
         primary={{
-          label: 'Save entry',
+          label: 'Record entry',
           type: 'submit',
           form: FORM_ID,
           loading: createLending.isPending,
@@ -196,7 +196,7 @@ export function AddLendingDialog({
             <TextArea
               label="Notes"
               optional
-              placeholder="e.g. Dinner split, trip cash advance..."
+              placeholder="e.g. Dinner split, trip cash advance…"
               value={notes}
               onValueChange={setNotes}
               minRows={2}

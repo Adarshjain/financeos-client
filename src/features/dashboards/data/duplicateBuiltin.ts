@@ -32,6 +32,6 @@ export async function duplicateBuiltin({ builtinKey, params }: DuplicateBuiltinV
       definition: resolved.definition,
     } as never,
   });
-  if (!report) throw new Error('Failed to create the report.');
+  if (!report) throw new Error("Couldn't create the report. Try again.");
   return { report, windowAsOf: resolved.windowAsOf ?? null };
 }

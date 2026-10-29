@@ -179,7 +179,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
           empty={
             <EmptyState
               compact
-              description={state.q ? 'No loans match.' : 'No loans yet. Add a loan to track its EMIs.'}
+              description={state.q ? 'No loans match' : 'No loans yet. Add a loan to track its EMIs.'}
               action={state.q ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', page: 0 }) } : undefined}
             />
           }

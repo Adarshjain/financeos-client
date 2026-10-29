@@ -79,7 +79,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
         ) : null}
 
         {error ? (
-          <Banner tone="danger" title="Could not run the report">
+          <Banner tone="danger" title="Couldn't run the report">
             {error}
           </Banner>
         ) : null}

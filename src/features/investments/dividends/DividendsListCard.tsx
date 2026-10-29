@@ -180,7 +180,7 @@ export function DividendsListCard({
       if (!result.success) throw new Error(result.error.message);
       downloadCsv(result.data.csv, result.data.filename);
     } catch (e) {
-      showToast(e instanceof Error ? e.message : 'Failed to export the dividends', { tone: 'danger' });
+      showToast(e instanceof Error ? e.message : "Couldn't export the dividends. Try again.", { tone: 'danger' });
     } finally {
       setExporting(false);
     }
@@ -209,7 +209,7 @@ export function DividendsListCard({
   const empty = narrowed ? (
     <EmptyState
       compact
-      description="No dividends match."
+      description="No dividends match"
       action={{
         label: 'Clear filters',
         variant: 'link',
@@ -223,7 +223,7 @@ export function DividendsListCard({
       action={{ label: 'Show all FYs', variant: 'link', onSelect: () => go({ fy: 'all', page: 0 }) }}
     />
   ) : (
-    <EmptyState compact description="No dividends recorded yet." />
+    <EmptyState compact description="No dividends yet" />
   );
 
   return (

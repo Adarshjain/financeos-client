@@ -175,11 +175,11 @@ describe('the trade form figures', () => {
 
   it('refuses no quantity, a negative price and no date', () => {
     expect(validateTrade({ quantity: '', price: '', date: '' })).toEqual({
-      quantity: 'Quantity must be above zero',
-      price: 'Enter the price per unit',
-      date: 'Trade date is required',
+      quantity: 'Enter a quantity above zero.',
+      price: 'Enter the price per unit.',
+      date: 'Enter the trade date.',
     });
-    expect(validateTrade({ quantity: '0', price: '-1', date: '2026-10-13' })).toEqual({ quantity: 'Quantity must be above zero', price: 'Enter the price per unit' });
+    expect(validateTrade({ quantity: '0', price: '-1', date: '2026-10-13' })).toEqual({ quantity: 'Enter a quantity above zero.', price: 'Enter the price per unit.' });
     expect(validateTrade({ quantity: '0.5', price: '0', date: '2026-10-13' })).toEqual({});
   });
 

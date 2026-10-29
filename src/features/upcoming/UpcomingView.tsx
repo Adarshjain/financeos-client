@@ -69,7 +69,7 @@ export function UpcomingView() {
   };
 
   const failed = Boolean(error) && !data;
-  const retry = { label: 'Try again', onSelect: () => void refetch() };
+  const retry = { label: 'Retry', onSelect: () => void refetch() };
 
   let body: React.ReactNode;
   if (isPending && !failed) {
@@ -86,7 +86,7 @@ export function UpcomingView() {
         />
         {error ? (
           <Banner tone="danger" action={retry}>
-            Failed to load upcoming items.
+            Couldn&apos;t load upcoming items.
           </Banner>
         ) : null}
         {failed ? null : items.length === 0 ? (

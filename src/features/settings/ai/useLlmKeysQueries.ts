@@ -49,6 +49,6 @@ export function useLlmKeysQueries() {
     routing: routingQuery.data ?? null,
     health: healthQuery.data ?? [],
     loading,
-    error: firstError ? getErrorMessage(firstError, 'Failed to load configuration') : null,
+    error: firstError ? getErrorMessage(firstError, "Couldn't load the AI settings. Try again.") : null,
   };
 }

@@ -310,7 +310,7 @@ describe('ExportLedgerDialog — Copy and Share', () => {
     fireEvent.click(button('Copy'));
 
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not copy — select the preview text and copy it manually'),
+      expect(toast.error).toHaveBeenCalledWith("Couldn't copy the ledger. Select the preview text and copy it manually."),
     );
     expect(toast.success).not.toHaveBeenCalled();
   });

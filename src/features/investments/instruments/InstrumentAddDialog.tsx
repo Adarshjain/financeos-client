@@ -64,12 +64,12 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
         currency: c.currency,
         existingInstrumentId: c.existingInstrumentId,
       });
-      showToast(`Added ${resolved.name}`, { tone: 'success' });
+      showToast(`${resolved.name} added`, { tone: 'success' });
       onCreated?.(resolved);
       router.refresh();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to add instrument'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't add instrument. Try again."), { tone: 'danger' });
       setResolvingKey(null);
     }
   };
@@ -82,14 +82,14 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
     setErrors({ fields: {}, form: null });
     try {
       const created = await create.mutateAsync(instrumentRequest(values));
-      showToast(`Created instrument ${created.name}`, { tone: 'success' });
+      showToast(`${created.name} added`, { tone: 'success' });
       onCreated?.(created);
       router.refresh();
       onClose();
     } catch (e) {
       const inline = instrumentFormErrors(e);
       if (inline) setErrors(inline);
-      else showToast(getErrorMessage(e, 'Failed to create instrument'), { tone: 'danger' });
+      else showToast(getErrorMessage(e, "Couldn't add instrument. Try again."), { tone: 'danger' });
     }
   };
 

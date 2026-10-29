@@ -51,7 +51,7 @@ export function BreakdownFrameView({ datasource, rowId, onBack, transactionsOpen
       ) : null}
 
       {query.error ? (
-        <Banner tone="danger" title="Could not load the breakdown">
+        <Banner tone="danger" title="Couldn't load the breakdown">
           {getErrorMessage(query.error, 'Try again in a moment.')}
         </Banner>
       ) : !data ? (
@@ -258,13 +258,13 @@ function SectionTable({
               />
             ) : undefined
           }
-          empty={<EmptyState compact description="Nothing here." />}
+          empty={<EmptyState compact description="No rows yet" />}
         />
       ) : (
         <Skeleton height={96} />
       )}
       {pageError ? (
-        <Banner tone="danger" title="Could not load this page">
+        <Banner tone="danger" title="Couldn't load this page">
           {getErrorMessage(pageError, 'Try again in a moment.')}
         </Banner>
       ) : null}

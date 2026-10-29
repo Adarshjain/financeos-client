@@ -6,6 +6,6 @@ import type { MatchSuggestionsResponse } from '@/lib/loan.types';
 
 /** The bank debits the server finds for this loan's due and overdue EMIs (the matching tolerance is the server's). */
 export const loadLoanMatches = createDomainAction(
-  { fallbackError: 'Failed to find matching bank transactions' },
+  { fallbackError: "Couldn't find matching bank transactions. Try again." },
   async (loanId: string): Promise<MatchSuggestionsResponse> => loansApi.getMatchSuggestions(loanId),
 );

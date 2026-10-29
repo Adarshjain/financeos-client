@@ -25,7 +25,7 @@ const holder = (over: Partial<Cardholder> & { id: string }): Cardholder => ({
 
 describe('futureDateError', () => {
   it('flags only dates after today', () => {
-    expect(futureDateError('issued', '2026-10-14', TODAY)).toBe('The issued date cannot be in the future');
+    expect(futureDateError('issued', '2026-10-14', TODAY)).toBe("Pick the issued date on or before today.");
     expect(futureDateError('issued', TODAY, TODAY)).toBeNull();
     expect(futureDateError('issued', '', TODAY)).toBeNull();
   });
@@ -47,7 +47,7 @@ describe('buildAddCard', () => {
   it('refuses a future issue date and builds the body otherwise', () => {
     expect(buildAddCard({ last4: '1234', issuedOn: '2026-12-01' }, TODAY)).toMatchObject({
       ok: false,
-      errors: { issuedOn: 'The issued date cannot be in the future' },
+      errors: { issuedOn: "Pick the issued date on or before today." },
     });
     expect(buildAddCard({ last4: '1234', issuedOn: '2026-10-01' }, TODAY)).toEqual({
       ok: true,
@@ -74,7 +74,7 @@ describe('buildAddHolder', () => {
     for (const bad of ['5+', '100/0', '100-200']) {
       expect(buildAddHolder({ ...base, spendLimit: bad }, TODAY)).toEqual({
         ok: false,
-        errors: { spendLimit: 'Please enter a valid amount.' },
+        errors: { spendLimit: 'Enter the limit as a number, like 50,000.' },
       });
     }
   });
@@ -115,7 +115,7 @@ describe('buildAddHolder', () => {
 
   it('refuses a future opened date', () => {
     expect(buildAddHolder({ ...base, openedOn: '2027-01-01' }, TODAY)).toMatchObject({
-      errors: { openedOn: 'The opened date cannot be in the future' },
+      errors: { openedOn: "Pick the opened date on or before today." },
     });
   });
 });
@@ -137,7 +137,7 @@ describe('buildEditHolder', () => {
     });
     expect(buildEditHolder(holder({ id: 'h2' }), { ...v, spendLimit: '100/0' }, TODAY)).toEqual({
       ok: false,
-      errors: { spendLimit: 'Please enter a valid amount.' },
+      errors: { spendLimit: 'Enter the limit as a number, like 50,000.' },
     });
   });
 
@@ -150,7 +150,7 @@ describe('buildEditHolder', () => {
   it('refuses a future opened date', () => {
     expect(buildEditHolder(holder({ id: 'h2' }), { ...v, openedOn: '2027-01-01' }, TODAY)).toMatchObject({
       ok: false,
-      errors: { openedOn: 'The opened date cannot be in the future' },
+      errors: { openedOn: "Pick the opened date on or before today." },
     });
   });
 });
@@ -161,7 +161,7 @@ describe('buildReplaceCard', () => {
       ok: false,
       errors: {
         newLast4: 'New last 4 digits must be exactly 4 digits.',
-        issuedOn: 'The issued date cannot be in the future',
+        issuedOn: "Pick the issued date on or before today.",
       },
     });
     expect(buildReplaceCard({ newLast4: '8820', issuedOn: TODAY }, TODAY)).toEqual({
@@ -175,7 +175,7 @@ describe('buildClose', () => {
   it('refuses a future date, and leaves an empty date out', () => {
     expect(buildClose('2026-10-20', TODAY)).toMatchObject({
       ok: false,
-      errors: { closedOn: 'The closed date cannot be in the future' },
+      errors: { closedOn: "Pick the closed date on or before today." },
     });
     expect(buildClose('', TODAY)).toEqual({ ok: true, body: { closedOn: undefined } });
     expect(buildClose(TODAY, TODAY)).toEqual({ ok: true, body: { closedOn: TODAY } });

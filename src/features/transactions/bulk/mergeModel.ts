@@ -57,22 +57,22 @@ export function mergeWarning(
   if (checks.differentAccount) {
     return {
       kind: 'blocked',
-      title: 'Cross-Account Merge Blocked',
+      title: 'Cross-account merge blocked',
       text: `These transactions belong to different accounts (${accountNames[0]} vs ${accountNames[1]}). Cross-account merging is not allowed.`,
     };
   }
   if (checks.directionMismatch) {
     return {
       kind: 'direction',
-      title: 'Direction Mismatch',
+      title: 'Direction mismatch',
       text: 'One transaction is a debit and the other a credit. These are usually a payment and its reversal, not duplicates — consider linking them instead of merging.',
     };
   }
   if (checks.amountMismatch) {
     return {
       kind: 'amount',
-      title: 'Amount Mismatch',
-      text: 'Amounts differ between these transactions. Please confirm they represent the same real-world event before merging.',
+      title: 'Amount mismatch',
+      text: 'Amounts differ between these transactions. Confirm they represent the same real-world event before merging.',
     };
   }
   return null;

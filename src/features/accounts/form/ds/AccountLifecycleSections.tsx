@@ -77,7 +77,7 @@ export function DeleteAccountSection({ disabled, onDelete }: { disabled: boolean
       <Heading tone="danger">Delete account</Heading>
       <div className="flex items-center gap-space-12">
         <Text variant="caption" tone="ink-3" as="p" className="flex-1">
-          Permanently removes this account and everything recorded on it.
+          Deletes this account and everything recorded on it. This can&apos;t be undone.
         </Text>
         <Button variant="danger" size="sm" disabled={disabled} onClick={onDelete}>
           Delete account

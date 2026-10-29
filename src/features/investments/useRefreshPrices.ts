@@ -54,9 +54,9 @@ export function useRefreshPrices({ notify, onSettled }: UseRefreshPricesOptions)
       else notify.success(message);
       void invalidateInvestmentQueries(qc);
     } else if (job.status === 'FAILED') {
-      notify.error(job.errorMessage || 'Failed to refresh prices.');
+      notify.error(job.errorMessage || "Couldn't refresh prices. Try again.");
     } else if (job.status === 'CANCELLED') {
-      notify.info('Price refresh job was cancelled.');
+      notify.info('Price refresh cancelled');
     }
     setActiveJobId(null);
     onSettled?.();
@@ -74,10 +74,10 @@ export function useRefreshPrices({ notify, onSettled }: UseRefreshPricesOptions)
         setActiveJobId(data.jobId);
         setStartedJobId(data.jobId);
         emitJobStarted(data.jobId);
-        notify.info('Price refresh started in background.');
+        notify.info('Price refresh started');
       }
     } catch (err) {
-      toastError(err, 'Failed to refresh prices');
+      toastError(err, "Couldn't refresh prices. Try again.");
     }
   };
 

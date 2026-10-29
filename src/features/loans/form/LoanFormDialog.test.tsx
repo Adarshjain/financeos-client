@@ -42,7 +42,7 @@ const onClose = vi.fn();
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 const field = (label: string) => screen.getByRole('textbox', { name: new RegExp(`^${label}`) });
 const fill = (label: string, value: string) => fireEvent.change(field(label), { target: { value } });
-const create = () => fireEvent.click(screen.getByRole('button', { name: 'Create loan' }));
+const create = () => fireEvent.click(screen.getByRole('button', { name: 'Add loan' }));
 
 function fillRequired() {
   fill('Loan name', ' Home Loan HDFC ');
@@ -60,12 +60,12 @@ beforeEach(() => {
 describe('LoanFormDialog', () => {
   it('opens with the Legacy fields and defaults', () => {
     render(<LoanFormDialog onClose={onClose} />);
-    expect(screen.getByText('Add loan')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add loan' })).toBeInTheDocument();
     for (const label of ['Loan name', 'Lender', 'Loan account number', 'Principal', 'Annual rate', 'Tenure', 'EMI amount', 'Notes']) {
       expect(field(label)).toBeInTheDocument();
     }
-    expect(screen.getByRole('combobox', { name: /^Loan type/ })).toHaveTextContent('Home Loan');
-    expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Fixed Rate');
+    expect(screen.getByRole('combobox', { name: /^Loan type/ })).toHaveTextContent('Home loan');
+    expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Fixed rate');
     expect(screen.getByLabelText('Disbursal date')).toHaveValue('13/10/2026');
     expect(screen.getByLabelText('First EMI due')).toHaveValue('13/10/2026');
     expect(field('EMI amount')).toHaveAttribute('placeholder', 'Auto if blank');
@@ -117,7 +117,7 @@ describe('LoanFormDialog', () => {
       }),
     );
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Loan created successfully');
+    expect(toast).toHaveBeenCalledWith('Loan created');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -146,9 +146,9 @@ describe('LoanFormDialog', () => {
   it('sends the picked loan and rate types', async () => {
     render(<LoanFormDialog onClose={onClose} />);
     await user.click(screen.getByRole('combobox', { name: /^Loan type/ }));
-    await user.click(screen.getByRole('option', { name: 'Car Loan' }));
+    await user.click(screen.getByRole('option', { name: 'Car loan' }));
     await user.click(screen.getByRole('combobox', { name: /^Rate type/ }));
-    await user.click(screen.getByRole('option', { name: 'Floating Rate' }));
+    await user.click(screen.getByRole('option', { name: 'Floating rate' }));
     fillRequired();
     create();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
@@ -162,7 +162,7 @@ describe('LoanFormDialog', () => {
     create();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     onErrorOption?.(new Error('boom'));
-    expect(toast).toHaveBeenCalledWith('Failed to create loan', { tone: 'danger' });
+    expect(toast).toHaveBeenCalledWith("Couldn't create loan. Try again.", { tone: 'danger' });
     expect(onClose).not.toHaveBeenCalled();
   });
 

@@ -266,10 +266,10 @@ describe('UpcomingView states', () => {
     const refetch = vi.fn();
     mockQuery({ data: undefined, error: new Error('x'), refetch });
     render(<UpcomingView />);
-    expect(screen.getByText('Failed to load upcoming items.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load upcoming items.")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Card bills' })).toBeInTheDocument();
     expect(screen.queryByText(/Nothing scheduled/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(refetch).toHaveBeenCalled();
   });
 

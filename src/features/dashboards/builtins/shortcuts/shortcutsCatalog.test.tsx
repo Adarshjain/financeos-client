@@ -47,7 +47,7 @@ describe('parseShortcutId', () => {
 
 describe('resolveShortcut', () => {
   it('a page by its path; an unknown page is hidden', () => {
-    expect(resolveShortcut('page:/transactions/review')).toMatchObject({ label: 'Needs Review', href: '/transactions/review', actionId: null });
+    expect(resolveShortcut('page:/transactions/review')).toMatchObject({ label: 'Needs review', href: '/transactions/review', actionId: null });
     expect(resolveShortcut('page:/nowhere')).toBeNull();
   });
 

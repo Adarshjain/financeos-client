@@ -46,7 +46,7 @@ describe('useCreateLending', () => {
     const { result } = setup();
     result.current.mutate(body);
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to create lending');
+    expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't record lending. Try again.");
   });
 
   it('onError replaces the default toast', async () => {

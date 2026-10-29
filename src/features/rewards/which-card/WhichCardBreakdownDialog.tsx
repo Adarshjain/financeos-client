@@ -39,7 +39,7 @@ export function BreakdownContent({ detail }: { detail: Breakdown }) {
             </Text>
             <Card>
               {detail.lines.length === 0 ? (
-                <ListRow title={<Text tone="ink-3">No matching rule lines.</Text>} />
+                <ListRow title={<Text tone="ink-3">No rule lines match</Text>} />
               ) : (
                 detail.lines.map((line) => (
                   <ListRow

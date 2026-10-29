@@ -211,7 +211,7 @@ describe('ChartBreakdown Other row', () => {
     d.breakdown!.rows[2].subRows = [sub('Other thing', 100, 4)];
     view({}, d);
     await user.click(screen.getByText('Other · 3 categories'));
-    expect(screen.queryByText('Other thing · 4 txns')).not.toBeInTheDocument();
+    expect(screen.queryByText('Other thing · 4 transactions')).not.toBeInTheDocument();
   });
 
   it('has no rank column: the label column leads and takes the remaining width', () => {
@@ -227,21 +227,21 @@ describe('ChartBreakdown sub-rows and presses', () => {
   it('expands a row with sub-rows on a press, showing each with its count and value, and opens nothing', async () => {
     const onOpen = vi.fn();
     view({ onOpenRow: onOpen });
-    expect(screen.queryByText('Swiggy · 12 txns')).not.toBeInTheDocument();
+    expect(screen.queryByText('Swiggy · 12 transactions')).not.toBeInTheDocument();
     await user.click(screen.getByText('Food'));
-    expect(screen.getByText('Swiggy · 12 txns')).toBeInTheDocument();
-    expect(screen.getByText('Zomato · 8 txns')).toBeInTheDocument();
+    expect(screen.getByText('Swiggy · 12 transactions')).toBeInTheDocument();
+    expect(screen.getByText('Zomato · 8 transactions')).toBeInTheDocument();
     expect(screen.getByText('₹250')).toBeInTheDocument();
     expect(onOpen).not.toHaveBeenCalled();
     expect(screen.getByText('Tap a row to expand it')).toBeInTheDocument();
   });
 
-  it('says "1 txn" for a single transaction', async () => {
+  it('says "1 transaction" for a single transaction', async () => {
     const d = data();
     d.breakdown!.rows[0].subRows = [sub('Swiggy', 250, 1)];
     view({}, d);
     await user.click(screen.getByText('Food'));
-    expect(screen.getByText('Swiggy · 1 txn')).toBeInTheDocument();
+    expect(screen.getByText('Swiggy · 1 transaction')).toBeInTheDocument();
   });
 
   it('opens underlying data from the link inside the expanded row', async () => {
@@ -256,7 +256,7 @@ describe('ChartBreakdown sub-rows and presses', () => {
     const d = data({ subValueLabels: { Swiggy: 'Swiggy Instamart' } });
     view({}, d);
     await user.click(screen.getByText('Food'));
-    expect(screen.getByText('Swiggy Instamart · 12 txns')).toBeInTheDocument();
+    expect(screen.getByText('Swiggy Instamart · 12 transactions')).toBeInTheDocument();
   });
 
   it('opens underlying data directly on a press when the row has no sub-rows', async () => {
@@ -270,7 +270,7 @@ describe('ChartBreakdown sub-rows and presses', () => {
     const onOpen = vi.fn();
     view({ onOpenRow: onOpen, canOpenRow: (i) => i === 1 });
     await user.click(screen.getByText('Food'));
-    expect(screen.getByText('Swiggy · 12 txns')).toBeInTheDocument();
+    expect(screen.getByText('Swiggy · 12 transactions')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Underlying data' })).not.toBeInTheDocument();
     await user.click(screen.getByText('Shopping'));
     expect(onOpen).toHaveBeenCalledTimes(1);

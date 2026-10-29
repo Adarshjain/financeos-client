@@ -33,9 +33,9 @@ export function PageError({ error, reset, unstable_retry, what = 'this page', sh
   const body = (
     <ErrorState
       illustration={<Illustration variant="error" />}
-      title={`Could not load ${what}`}
-      description="The request failed. Try again, and quote the reference if it keeps failing."
-      action={{ label: 'Try again', onSelect: retry }}
+      title={`Couldn't load ${what}`}
+      description="Quote the reference if it keeps failing."
+      action={{ label: 'Retry', onSelect: retry }}
       reference={error.digest}
     />
   );

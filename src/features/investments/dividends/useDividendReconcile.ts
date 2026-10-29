@@ -130,7 +130,7 @@ export function useDividendReconcile({ brokerAccountId, onLinked, notify }: UseD
     try {
       await confirm([body]);
     } catch (err) {
-      reportFailure(err, 'Failed to link dividend');
+      reportFailure(err, "Couldn't link dividend. Try again.");
     } finally {
       setConfirmingId(null);
     }
@@ -143,7 +143,7 @@ export function useDividendReconcile({ brokerAccountId, onLinked, notify }: UseD
     try {
       await confirm(body);
     } catch (err) {
-      reportFailure(err, 'Failed to link dividends');
+      reportFailure(err, "Couldn't link dividends. Try again.");
     } finally {
       setConfirmingAll(false);
     }

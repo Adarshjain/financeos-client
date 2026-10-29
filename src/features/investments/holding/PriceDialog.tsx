@@ -68,7 +68,7 @@ export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: Pr
         setDateError(e.response.message);
         return;
       }
-      showToast(getErrorMessage(e, 'Failed to update the price'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't update the price. Try again."), { tone: 'danger' });
     }
   };
 
@@ -76,10 +76,10 @@ export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: Pr
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent
         size="sm"
-        title={editing ? 'Edit manual price' : 'Set manual price'}
+        title={editing ? 'Edit manual price' : 'Record price'}
         description={name}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
-        primary={{ label: 'Save price', type: 'submit', form: FORM_ID, loading: submitting }}
+        primary={{ label: editing ? 'Save price' : 'Record price', type: 'submit', form: FORM_ID, loading: submitting }}
       >
         <DialogBody>
           <form

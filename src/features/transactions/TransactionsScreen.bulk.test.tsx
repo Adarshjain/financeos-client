@@ -259,7 +259,7 @@ describe('TransactionsScreen selection and bulk actions', () => {
     expect(posts('/api/v1/transactions/batch-delete')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Delete 2 transactions' }));
     await waitFor(() => expect(posts('/api/v1/transactions/batch-delete')).toEqual([{ body: { transactionIds: ['t1', 't2'] } }]));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Deleted 2 transactions', { tone: 'success' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('2 transactions deleted', { tone: 'success' }));
     await waitFor(() => expect(screen.queryByText(/ selected$/)).toBeNull());
   });
 

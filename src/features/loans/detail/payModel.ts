@@ -7,8 +7,8 @@ export type PayChoice = 'found' | 'none' | 'pick';
 /** What the Mark paid form does with the transaction side of the payment. */
 export const PAY_CHOICE_COPY: Record<PayChoice, { label: string; description: string }> = {
   found: { label: 'Link the bank debit we found', description: '' },
-  none: { label: 'Record payment without a transaction', description: 'Amount and date below' },
-  pick: { label: 'Pick another bank debit', description: 'Search your debits' },
+  none: { label: 'Record payment without a transaction', description: 'Amount and date below.' },
+  pick: { label: 'Pick another bank debit', description: 'Search your debits.' },
 };
 
 /** "₹2,449 more than EMI" or "₹1,000 less than EMI"; null when what was paid is the EMI. */

@@ -164,7 +164,7 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
           empty={
             <EmptyState
               compact
-              description={filtered ? 'No people match.' : 'No lendings yet. Add a lending to start a ledger.'}
+              description={filtered ? 'No people match' : 'No lendings yet. Add a lending to start a ledger.'}
               action={
                 filtered
                   ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', filter: 'all', page: 0 }) }

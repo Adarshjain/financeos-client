@@ -63,7 +63,7 @@ export function LoanPayoffBody({ loanId }: { loanId: string | null }) {
     return (
       <EmptyState
         compact
-        title={loanId ? 'This loan is closed or no longer exists' : 'No active loans'}
+        title={loanId ? 'This loan is closed or no longer exists' : 'No active loans yet'}
         action={{ label: 'Go to loans', variant: 'link', onSelect: () => router.push(appHref('/loans')) }}
       />
     );

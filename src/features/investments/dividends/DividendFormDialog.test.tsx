@@ -116,7 +116,7 @@ describe('DividendAddDialog', () => {
     renderWithQuery(<DividendAddDialog prefill={{ instrumentId: 'i1', amount: 500, linkTransactionId: 'tx1' }} onClose={onClose} />);
     await screen.findByRole('button', { name: 'Record dividend' });
     fireEvent.click(screen.getByRole('button', { name: 'Record dividend' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.stringContaining('linking the bank credit failed'), { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.stringContaining('link the bank credit'), { tone: 'danger' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Dividend recorded'));
     expect(onClose).toHaveBeenCalled();
   });
@@ -124,7 +124,7 @@ describe('DividendAddDialog', () => {
   it('shows an error when the form options cannot be loaded', async () => {
     options.load.mockResolvedValue({ success: false, error: { message: 'down' } });
     renderWithQuery(<DividendAddDialog onClose={vi.fn()} />);
-    expect(await screen.findByText(/could not be loaded/)).toBeInTheDocument();
+    expect(await screen.findByText(/Couldn't load/)).toBeInTheDocument();
   });
 });
 

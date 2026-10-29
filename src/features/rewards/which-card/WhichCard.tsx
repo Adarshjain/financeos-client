@@ -68,7 +68,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
     }
     setAmountError(null);
     recommend.mutate(built.request, {
-      onError: (err) => showToast(getErrorMessage(err, 'Failed to simulate card rewards'), { tone: 'danger' }),
+      onError: (err) => showToast(getErrorMessage(err, "Couldn't simulate card rewards. Try again."), { tone: 'danger' }),
     });
   };
 

@@ -74,6 +74,6 @@ describe('/dashboards/new', () => {
 
   it('shows the editor\'s shape while it loads', () => {
     renderWithQuery(<NewLoading />);
-    expect(screen.getByText('New dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Add dashboard')).toBeInTheDocument();
   });
 });

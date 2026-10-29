@@ -26,7 +26,7 @@ export async function AccountStatements({
   const data = await loadStatementsData(account, params, today);
 
   if (!data.statements || !data.view) {
-    return <Banner tone="danger">Could not load the statements. Reload the page to try again.</Banner>;
+    return <Banner tone="danger">Couldn&apos;t load statements. Try again.</Banner>;
   }
   if (data.statements.length === 0) return <StatementsEmpty accountId={account.id} />;
 
@@ -58,7 +58,7 @@ export async function AccountStatements({
                 model={buildDetailModel(data.detail, data.bills[selected] ?? null, isCard)}
               />
             ) : (
-              <Banner tone="danger">Failed to load statement details</Banner>
+              <Banner tone="danger">Couldn&apos;t load statement details. Try again.</Banner>
             )}
           </div>
         ) : null}

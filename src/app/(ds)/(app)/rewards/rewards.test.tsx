@@ -136,15 +136,15 @@ describe('/rewards', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('says so when there is no card, and offers Try again when the request failed', async () => {
+  it('says so when there is no card, and offers Retry when the request failed', async () => {
     loadOverview.mockResolvedValue({ model: { total: '₹0', cards: [] } });
     const { unmount } = await renderOverview();
-    expect(screen.getByText('No credit cards available')).toBeDefined();
+    expect(screen.getByText('No credit cards yet')).toBeDefined();
     unmount();
 
     loadOverview.mockResolvedValue({ model: null });
     await renderOverview();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(refresh).toHaveBeenCalled();
   });
 });
@@ -383,7 +383,7 @@ describe('/rewards/cards/[accountId]', () => {
   it('keeps the period control when the report failed, so a bad range can be changed', async () => {
     loadData.mockResolvedValue(tabData({ report: null, query: { page: 0, size: 10, period: 'CUSTOM' } }));
     await renderCard();
-    expect(screen.getByText('Could not load rewards')).toBeDefined();
+    expect(screen.getByText("Couldn't load rewards")).toBeDefined();
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'This month' }));
     expect(push).toHaveBeenLastCalledWith('/rewards/cards/c1?period=THIS_MONTH');

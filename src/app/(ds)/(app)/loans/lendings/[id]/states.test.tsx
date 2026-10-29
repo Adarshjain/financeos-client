@@ -23,12 +23,12 @@ describe('person page states', () => {
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
   });
 
-  it('an error says what failed, offers Try again and quotes the reference', () => {
+  it('an error says what failed, offers Retry and quotes the reference', () => {
     const reset = vi.fn();
     render(<DsPersonError error={Object.assign(new Error('x'), { digest: 'ref-9' })} reset={reset} />);
-    expect(screen.getByText('Could not load this person')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load this person")).toBeInTheDocument();
     expect(screen.getByText(/ref-9/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(reset).toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
   });

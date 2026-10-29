@@ -101,17 +101,17 @@ describe('DeleteAccountCard', () => {
 
   const open = async (user = google) => {
     wrap(<DeleteAccountCard user={user} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete my account' }));
-    await screen.findByText('Delete account permanently');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete account' }));
+    await screen.findByText('Delete account?');
   };
-  const submit = () => screen.getByRole('button', { name: /Permanently delete account|Retry deletion/ });
+  const submit = () => screen.getByRole('button', { name: /Delete account|Retry deletion/ });
   const type = (label: string | RegExp, value: string) =>
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
   it('shows the card copy and opens no dialog until asked', () => {
     wrap(<DeleteAccountCard user={google} />);
     expect(screen.getByText(/Removes every account, transaction, statement, rule and connection/)).toBeInTheDocument();
-    expect(screen.queryByText('Delete account permanently')).toBeNull();
+    expect(screen.queryByText('Delete account?')).toBeNull();
     expect(get).not.toHaveBeenCalled();
   });
 
@@ -180,7 +180,7 @@ describe('DeleteAccountCard', () => {
     type(/Type "DELETE"/, 'DELETE');
     fireEvent.click(submit());
     expect(await screen.findByText('Wrong password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Permanently delete account' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Delete account' })).toBeEnabled();
   });
 
   it('cannot be closed while deleting', async () => {
@@ -194,7 +194,7 @@ describe('DeleteAccountCard', () => {
     expect(await screen.findByRole('button', { name: 'Deleting account…' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
-    expect(screen.getByText('Delete account permanently')).toBeInTheDocument();
+    expect(screen.getByText('Delete account?')).toBeInTheDocument();
     finish({ success: false, error: { code: 'X', message: 'later' } });
     expect(await screen.findByText('later')).toBeInTheDocument();
   });
@@ -208,9 +208,9 @@ describe('DeleteAccountCard', () => {
     fireEvent.click(submit());
     await screen.findByText('Wrong password');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByText('Delete account permanently')).toBeNull());
-    fireEvent.click(screen.getByRole('button', { name: 'Delete my account' }));
-    await screen.findByText('Delete account permanently');
+    await waitFor(() => expect(screen.queryByText('Delete account?')).toBeNull());
+    fireEvent.click(screen.getByRole('button', { name: 'Delete account' }));
+    await screen.findByText('Delete account?');
     expect(screen.queryByText('Wrong password')).toBeNull();
     expect(screen.getByLabelText('Current password')).toHaveValue('');
     expect(screen.getByLabelText(/Type "DELETE"/)).toHaveValue('');

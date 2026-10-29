@@ -119,7 +119,7 @@ describe('filters', () => {
 describe('list', () => {
   it('shows the empty text when no job matches', () => {
     render(<ActivityPage {...props} />);
-    expect(screen.getByText('No background jobs found matching the selected filters.')).toBeInTheDocument();
+    expect(screen.getByText('No jobs match')).toBeInTheDocument();
   });
 
   it('offers Clear filters only when a filter is set', () => {

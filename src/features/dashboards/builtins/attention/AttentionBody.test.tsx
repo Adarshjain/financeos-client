@@ -79,7 +79,7 @@ describe('AttentionBody', () => {
     vi.mocked(api.GET).mockResolvedValue({ data: inbox([item({ key: 'i', section: 'info' })]) } as never);
     render();
     expect(await screen.findByText('All clear')).toBeInTheDocument();
-    expect(screen.getByText('Nothing needs you right now')).toBeInTheDocument();
+    expect(screen.getByText('Nothing needs you right now.')).toBeInTheDocument();
   });
 
   it('a failure names it and offers Retry', async () => {

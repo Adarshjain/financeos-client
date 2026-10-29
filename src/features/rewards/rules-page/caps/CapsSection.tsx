@@ -37,7 +37,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
         setDeleting(null);
         setOpen(null);
       },
-      onError: (e) => dsRewardNotifier.failure(e, 'Failed to delete cap'),
+      onError: (e) => dsRewardNotifier.failure(e, "Couldn't delete the cap. Try again."),
     });
   };
 
@@ -48,7 +48,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
       action={
         <Text variant="label" as="div">
           <Button variant="link" size="sm" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
-            New cap
+            Add cap
           </Button>
         </Text>
       }
@@ -97,7 +97,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
         description={
           deleting && usedByRules(deleting)
             ? `${deleting.ruleCount || 'Some'} rule${deleting.ruleCount === 1 ? '' : 's'} still use this cap. Detach them first; the rules stay.`
-            : 'The cap goes. Your rules and rewards stay.'
+            : "The cap goes. Your rules and rewards stay. This can't be undone."
         }
         confirmLabel="Delete cap"
         confirmDisabled={deleting ? usedByRules(deleting) : false}

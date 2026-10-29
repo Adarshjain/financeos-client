@@ -272,7 +272,7 @@ describe('ReportUnderlyingDialog', () => {
   it('shows the error when the rows cannot load', async () => {
     vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
     renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
-    expect(await screen.findByText('Could not load the underlying data')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the underlying data")).toBeInTheDocument();
     expect(within(document.body).getByText('Underlying data')).toBeInTheDocument();
   });
 });

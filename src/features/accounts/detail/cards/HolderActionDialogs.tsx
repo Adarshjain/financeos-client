@@ -54,7 +54,7 @@ export function ReassignDialog({
   return (
     <DialogFrame
       title="Reassign transactions"
-      description={`Move past transactions to ${name}${target ? ` · ••${target.last4}` : ''}`}
+      description={`Move past transactions to ${name}${target ? ` · ••${target.last4}` : ''}.`}
       submitLabel="Reassign"
       onSubmit={handle}
       onClose={onClose}
@@ -104,7 +104,7 @@ export function DeleteHolderDialog({
       open
       onOpenChange={(open) => (open ? undefined : onClose())}
       title={`Delete cardholder ${name}?`}
-      description={`Removes ${name} and every card they hold. No transactions are attached to ${name}. This cannot be undone.`}
+      description={`Removes ${name} and every card they hold. No transactions are attached to ${name}. This can't be undone.`}
       confirmLabel="Delete cardholder"
       onConfirm={() => void submit(onConfirm)}
       onCancel={onClose}
@@ -140,7 +140,7 @@ export function DeleteCardDialog({
       open
       onOpenChange={(open) => (open ? undefined : onClose())}
       title={`Delete card ••${card.last4}?`}
-      description={`Removes this old card from ${name}’s card list. ${stays}`}
+      description={`Removes this old card from ${name}’s card list. ${stays} This can't be undone.`}
       confirmLabel="Delete card"
       onConfirm={() => void submit(onConfirm)}
       onCancel={onClose}

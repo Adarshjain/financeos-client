@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, Conceal, ConfirmDialog, Dialog, DialogBody, DialogContent, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 
@@ -51,13 +52,13 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
     if (!row?.id) return;
     try {
       await deletePrice.mutateAsync(row.id);
-      showToast('Price entry deleted');
+      showToast('Price deleted');
       setDeleting(null);
       router.refresh();
       // The last row of the last page went: show the page before it.
       await load(section && section.rows.length === 1 && page > 0 ? page - 1 : page);
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete the price'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the price. Try again."), { tone: 'danger' });
     }
   };
 
@@ -84,9 +85,9 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
           <DialogBody className="p-0 gap-0 desk:gap-0">
             {section === null && !failed ? <Skeleton height={48} /> : null}
             {section === null && failed ? (
-              <EmptyState compact description="The price history could not be loaded." action={{ label: 'Try again', onSelect: () => void load(0), variant: 'link' }} />
+              <EmptyState compact description="Couldn't load the price history." action={{ label: 'Retry', onSelect: () => void load(0), variant: 'link' }} />
             ) : null}
-            {section && section.rows.length === 0 ? <EmptyState compact description="No prices recorded yet." /> : null}
+            {section && section.rows.length === 0 ? <EmptyState compact description="No prices yet" /> : null}
             {section && section.rows.length > 0 ? pager : null}
             {section?.rows.map((r) => (
               <ListRow
@@ -128,13 +129,15 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
         onOpenChange={(open) => {
           if (!open && !deletePrice.isPending) setDeleting(null);
         }}
-        title="Delete manual price"
-        description={deleting ? `Delete your manual price of ${priceDescription(deleting)}?` : ''}
+        title="Delete manual price?"
+        description={deleting ? `Your manual price of ${priceDescription(deleting)} goes.` : ''}
         impact={['Only this price is deleted.', 'Your trades and the other prices stay.']}
         confirmLabel="Delete price"
         confirmLoading={deletePrice.isPending}
         onConfirm={() => void confirmDelete()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
     </>
   );
 }

@@ -144,18 +144,18 @@ describe('totals, linked count, since', () => {
 describe('confirm copy', () => {
   it('names the entry and what stays', () => {
     const copy = deleteEntryCopy(entriesFixture()[0]);
-    expect(copy.description).toBe('Delete this repayment entry of ₹10,000?');
+    expect(copy.description).toBe('This repayment entry of ₹10,000 goes.');
     expect(copy.impact).toEqual([
       'The entry leaves the ledger and the balance is worked out again.',
       'The bank transaction stays; only its link to this entry goes.',
     ]);
-    expect(deleteEntryCopy(entriesFixture()[1])).toMatchObject({ description: 'Delete this lent entry of ₹25,000?' });
+    expect(deleteEntryCopy(entriesFixture()[1])).toMatchObject({ description: 'This lent entry of ₹25,000 goes.' });
     expect(deleteEntryCopy(entriesFixture()[1]).impact).toHaveLength(1);
   });
 
   it('says the whole ledger goes when a person is deleted', () => {
     const copy = deletePersonCopy(personFixture());
-    expect(copy.description).toBe('Delete Rahul Sharma?');
+    expect(copy.description).toBe('Rahul Sharma goes.');
     expect(copy.impact[0]).toBe('Their whole ledger goes (3 entries).');
     expect(copy.impact[1]).toContain('Bank transactions stay');
   });

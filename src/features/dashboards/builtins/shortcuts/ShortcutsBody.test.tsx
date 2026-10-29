@@ -31,8 +31,8 @@ describe('ShortcutsBody', () => {
     expect(links[0]).toHaveAttribute('href', expect.stringContaining('/upcoming'));
   });
 
-  it('a page built in Dinero opens it; Needs Review opens as the Transactions filter', () => {
-    state.items = [page('page:/upcoming', 'Upcoming', '/upcoming'), page('page:/transactions/review', 'Needs Review', '/transactions/review')];
+  it('a page built in Dinero opens it; Needs review opens as the Transactions filter', () => {
+    state.items = [page('page:/upcoming', 'Upcoming', '/upcoming'), page('page:/transactions/review', 'Needs review', '/transactions/review')];
     render(<ShortcutsBody ids={['x']} />);
     const links = screen.getAllByRole('link');
     expect(links[0]).toHaveAttribute('href', '/upcoming');
@@ -60,7 +60,7 @@ describe('ShortcutsBody', () => {
 
   it('nothing resolves: a hint to pick some in settings', () => {
     render(<ShortcutsBody ids={['page:/gone']} />);
-    expect(screen.getByText('No shortcuts')).toBeInTheDocument();
+    expect(screen.getByText('No shortcuts yet')).toBeInTheDocument();
     expect(screen.getByText("Pick some in this widget's settings.")).toBeInTheDocument();
   });
 });

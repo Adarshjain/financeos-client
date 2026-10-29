@@ -142,7 +142,7 @@ describe('viewing a dashboard', () => {
     expect(screen.getByText('2 widgets')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Set as default' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save dashboard' })).toBeNull();
     // Widget settings save straight away in view mode.
     expect(screen.getAllByTestId('frame')[0]).toHaveAttribute('data-can-save-settings', 'true');
   });
@@ -155,17 +155,17 @@ describe('viewing a dashboard', () => {
 
   it('says so when there is nothing on the dashboard, and Add widget opens the editor and the picker', async () => {
     show(<DashboardScreen dashboard={dashboard({ widgets: [] })} />);
-    expect(screen.getByText('This dashboard has no widgets yet')).toBeInTheDocument();
+    expect(screen.getByText('No widgets yet')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add widget' }));
     expect(await screen.findByRole('dialog', { name: /Add widget/ })).toBeInTheDocument();
     // Behind the dialog the page is already editing.
-    expect(screen.getByRole('button', { name: 'Save', hidden: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save dashboard', hidden: true })).toBeInTheDocument();
   });
 
   it('Set as default makes it the default and confirms; the button then clears it', async () => {
     show(<DashboardScreen dashboard={dashboard()} />);
     await user.click(screen.getByRole('button', { name: 'Set as default' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Set as default'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Default dashboard set'));
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ isDefault: true, name: 'Money overview' });
     expect(await screen.findByRole('button', { name: 'Clear default' })).toBeInTheDocument();
   });
@@ -202,7 +202,7 @@ describe('editing a dashboard', () => {
     expect(screen.getAllByLabelText(/Description/)[0]).toHaveValue('Everything');
     expect(screen.queryByRole('button', { name: 'Add header' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save dashboard' })).toBeInTheDocument();
     expect(screen.getByTestId('grid')).toHaveAttribute('data-editing', 'true');
     expect(screen.getByRole('button', { name: 'Add a widget' })).toBeInTheDocument();
     expect(screen.queryByText('Unsaved changes')).toBeNull();
@@ -211,7 +211,7 @@ describe('editing a dashboard', () => {
   it('opens straight into editing with ?edit=1 (startEditing) and takes the flag off the address', () => {
     window.history.replaceState(null, '', '/dashboards/d1?edit=1');
     show(<DashboardScreen dashboard={dashboard()} startEditing />);
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save dashboard' })).toBeInTheDocument();
     expect(window.location.search).toBe('');
   });
 
@@ -255,7 +255,7 @@ describe('editing a dashboard', () => {
     await user.click(screen.getByRole('button', { name: 'reverse order' }));
     expect(ids()).toEqual(['b', 'a', 'h1']);
     await user.click(screen.getByRole('button', { name: 'widen first' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Dashboard saved'));
     expect(api.PUT.mock.calls[0][0]).toBe('/api/v1/dashboards/{id}');
     const body = putBody();
@@ -271,7 +271,7 @@ describe('editing a dashboard', () => {
   it('refuses to save without a name: says so at the field, toasts, focuses it and writes nothing', async () => {
     await edit();
     await user.clear(screen.getByLabelText('Dashboard name'));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     expect(screen.getByText(NAME_REQUIRED)).toBeInTheDocument();
     expect(toast).toHaveBeenCalledWith("Couldn't save the dashboard. Fix the fields marked in red.", { tone: 'danger' });
     await waitFor(() => expect(screen.getByLabelText('Dashboard name')).toHaveFocus());
@@ -281,7 +281,7 @@ describe('editing a dashboard', () => {
   it('refuses to save a widget that is missing something, marking it and focusing its fix', async () => {
     show(<DashboardScreen dashboard={dashboard({ widgets: [cardWidget()] })} />);
     await user.click(screen.getByRole('button', { name: 'Edit' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     expect(screen.getByText('Pick a card for this widget.')).toBeInTheDocument();
     expect(toast).toHaveBeenCalledWith("Couldn't save the dashboard. Fix the fields marked in red.", { tone: 'danger' });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus());
@@ -302,10 +302,10 @@ describe('editing a dashboard', () => {
     const dialog = await screen.findByRole('dialog', { name: /Widget settings · Spend/ });
     expect(within(dialog).queryByText('Card')).toBeNull();
     await user.type(within(dialog).getByPlaceholderText('Spend'), 'My spend');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save widget' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     await waitFor(() => expect(api.PUT).toHaveBeenCalled());
     const saved = putBody().widgets.find((w: WidgetResponse) => w.id === 'a');
     expect(saved).toMatchObject({ title: 'My spend', reportId: 'r-a' });
@@ -317,7 +317,7 @@ describe('editing a dashboard', () => {
     await edit();
     await user.clear(screen.getByLabelText('Dashboard name'));
     await user.type(screen.getByLabelText('Dashboard name'), 'Renamed');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't save the dashboard. Try again.", { tone: 'danger' }));
     expect(screen.getByLabelText('Dashboard name')).toHaveValue('Renamed');
   });
@@ -338,7 +338,7 @@ describe('editing a dashboard', () => {
   it('an untitled header blocks Save and marks its field', async () => {
     await edit();
     await addHeaderFromTopBar();
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save dashboard' }));
     expect(screen.getByText('Give this header a title.')).toBeInTheDocument();
     expect(api.PUT).not.toHaveBeenCalled();
   });
@@ -348,11 +348,11 @@ describe('a new dashboard', () => {
   it('starts editing an empty draft with Cancel and Create, and Add widget / Add header', () => {
     show(<DashboardScreen />);
     expect(screen.getByLabelText('Dashboard name')).toHaveValue('');
-    expect(screen.getByText('Nothing on this dashboard yet')).toBeInTheDocument();
+    expect(screen.getByText('No widgets yet')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Add widget' }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: 'Add header' }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add dashboard' })).toBeInTheDocument();
   });
 
   it('Cancel with nothing typed goes back to Dashboards', async () => {
@@ -372,7 +372,7 @@ describe('a new dashboard', () => {
 
   it('Create without a name says so and creates nothing', async () => {
     show(<DashboardScreen />);
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
     expect(screen.getByText(NAME_REQUIRED)).toBeInTheDocument();
     expect(api.POST).not.toHaveBeenCalled();
   });
@@ -385,7 +385,7 @@ describe('a new dashboard', () => {
     await user.click(within(dialog).getByRole('radio', { name: /Net worth/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Add to board' }));
     await waitFor(() => expect(ids()).toHaveLength(1));
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Dashboard created'));
     expect(api.POST.mock.calls[0][0]).toBe('/api/v1/dashboards');
     expect(api.POST.mock.calls[0][1].body).toMatchObject({

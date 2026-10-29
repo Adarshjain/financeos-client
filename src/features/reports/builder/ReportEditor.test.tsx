@@ -94,11 +94,10 @@ const toggle = (label: string | RegExp): HTMLElement => {
 
 const body = () => writeCalls()[0][1].body;
 
-describe('New report', () => {
-  it('opens on a blank KPI with no + (New report) action, Cancel back to the list and no unsaved label', async () => {
+describe('Add report', () => {
+  it('opens on a blank KPI with no + (Add report) action, Cancel back to the list and no unsaved label', async () => {
     setup();
-    expect(screen.queryByRole('link', { name: 'New report' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'New report' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Add report' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(router.push).toHaveBeenCalledWith('/reports');
     expect(screen.getByRole('radio', { name: 'KPI' })).toBeChecked();
@@ -156,7 +155,7 @@ describe('KPI options and save', () => {
     await type('Report name', 'Total spend');
     await pick('Measure', 'Spend');
     await pick('Aggregation', 'Sum');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body()).toEqual({
       name: 'Total spend',
@@ -176,7 +175,7 @@ describe('KPI options and save', () => {
     await user.type(screen.getByLabelText(/Description/), 'Everything out');
     await pick('Measure', 'Spend');
     await pick('Aggregation', 'Sum');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().description).toBe('Everything out');
   });
@@ -188,7 +187,7 @@ describe('KPI options and save', () => {
     await pick('Aggregation', 'Count');
     expect(screen.getByRole('combobox', { name: 'Comparison' })).toHaveTextContent('None');
     expect(screen.queryByRole('combobox', { name: 'Change perception' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).toMatchObject({ measure: 'amount', aggregation: 'count', comparison: { enabled: false } });
   });
@@ -200,14 +199,14 @@ describe('KPI options and save', () => {
     await pick('Aggregation', 'Sum');
     await pick('Comparison', 'Previous period value');
     await pick('Change perception', 'Lower is better');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition.comparison).toEqual({ higherIsBetter: false, display: 'previous_value' });
   });
 
   it('shows what is missing at its field after a save is tried, and writes nothing', async () => {
     setup();
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     expect(screen.getByText('Give the report a name.')).toBeInTheDocument();
     expect(screen.getAllByText('Select a measure.').length).toBeGreaterThan(0);
     expect(writeCalls()).toHaveLength(0);
@@ -228,7 +227,7 @@ describe('KPI options and save', () => {
     await type('Report name', 'Spend');
     await pick('Measure', 'Spend');
     await pick('Aggregation', 'Sum');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't save the report. Try again.", { tone: 'danger' }));
     expect(router.replace).not.toHaveBeenCalled();
   });
@@ -259,7 +258,7 @@ describe('Chart options', () => {
     await user.click(toggle(/Group the rest as Other/));
     await pick('Order', 'Value, low to high');
     await pick('Comparison', 'Change vs previous period');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().type).toBe('CHART');
     expect(body().definition).toEqual({
@@ -333,7 +332,7 @@ describe('Chart options', () => {
     await pick('Aggregation', 'Sum');
     await type('Show top', '8');
     await user.click(toggle(/Group the rest as Other/));
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).toMatchObject({
       chartType: 'breakdown',
@@ -367,7 +366,7 @@ describe('Breakdown display options', () => {
     await user.click(await screen.findByRole('option', { name: 'Transactions' }));
     await user.keyboard('{Escape}');
     await pick('Bars', 'Share of total');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).toMatchObject({ columns: ['amount', 'share', 'count'], bars: 'share_of_total' });
   });
@@ -379,7 +378,7 @@ describe('Breakdown display options', () => {
     await pick('Rows', 'Category');
     await pick('Measure', 'Spend');
     await pick('Aggregation', 'Sum');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).not.toHaveProperty('columns');
     expect(body().definition).not.toHaveProperty('bars');
@@ -402,7 +401,7 @@ describe('Table options', () => {
     await user.click(screen.getByRole('button', { name: /Move up.*Amount/ }));
     await user.click(screen.getByRole('button', { name: 'Add sort' }));
     await pick('Direction', 'Descending');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).toEqual({
       mode: 'raw',
@@ -429,7 +428,7 @@ describe('Table options', () => {
     await user.click(await screen.findByRole('option', { name: 'Amount' }));
     await user.click(screen.getAllByRole('combobox', { name: 'Aggregation' })[1]);
     await user.click(await screen.findByRole('option', { name: 'Count' }));
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition).toEqual({
       mode: 'aggregated',
@@ -541,7 +540,7 @@ describe('Filters', () => {
     await pick('Field', 'Date');
     await pick('Operator', 'This month');
     await user.click(screen.getByRole('button', { name: 'Apply filter' }));
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition.filters).toEqual([{ field: 'date', operator: 'this_month' }]);
   });
@@ -586,7 +585,7 @@ describe('Preview', () => {
     expect(await screen.findByTestId('chart')).toHaveAttribute('data-type', 'bar');
     api.POST.mockRejectedValue(new Error('down'));
     await user.click(screen.getByRole('button', { name: 'Preview' }));
-    expect(await screen.findByText('Could not run the report')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't run the report")).toBeInTheDocument();
   });
 
   it('pages and sorts a table on the server, keeping the pager above and below', async () => {
@@ -630,7 +629,7 @@ describe('Template', () => {
     expect(screen.getByRole('radio', { name: 'Chart' })).toBeChecked();
     expect(screen.getByRole('combobox', { name: 'Datasource' })).toHaveTextContent('Dividends');
     expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body()).toMatchObject({
       type: 'CHART',
@@ -732,7 +731,7 @@ describe('A saved report', () => {
     await type('Report name', 'Quiet leave');
     await user.click(screen.getByRole('button', { name: 'Save report' }));
     await waitFor(() => expect(router.back).toHaveBeenCalled());
-    expect(screen.queryByText('Leave without saving?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Discard changes?')).not.toBeInTheDocument();
   });
 
   it('shows the new name in the title after saving', async () => {
@@ -819,18 +818,18 @@ describe('Leaving with unsaved changes', () => {
     await user.type(screen.getByLabelText('Report name'), 'Spend');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Leave without saving?')).toBeInTheDocument();
+    expect(within(dialog).getByText('Discard changes?')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Keep editing' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Report name')).toHaveValue('Spend');
   });
 
-  it('goes where the link led after Leave without saving', async () => {
+  it('goes where the link led after Discard', async () => {
     setup();
     await user.type(screen.getByLabelText('Report name'), 'Spend');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Leave without saving' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Discard' }));
     expect(router.push).toHaveBeenCalledWith('/reports');
   });
 
@@ -877,7 +876,7 @@ describe('Sectioned editor', () => {
     await pick('Measure', 'Spend');
     await pick('Aggregation', 'Sum');
     await pick('Comparison', 'Change vs previous period');
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Add report' }));
     await waitFor(() => expect(writeCalls()).toHaveLength(1));
     expect(body().definition.comparison).toBeUndefined(); // the server's default is on: nothing to send
   });
@@ -914,9 +913,9 @@ describe('Sectioned editor', () => {
     expect(screen.queryByRole('combobox', { name: 'Sort by' })).not.toBeInTheDocument();
   });
 
-  it('labels the primary action Create report on a new report and Save report on a saved one', () => {
+  it('labels the primary action Add report on a new report and Save report on a saved one', () => {
     const { unmount } = setup();
-    expect(screen.getByRole('button', { name: 'Create report' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add report' })).toBeInTheDocument();
     unmount();
     setup({ report: savedChart, initialResult: chartResult });
     expect(screen.getByRole('button', { name: 'Save report' })).toBeInTheDocument();

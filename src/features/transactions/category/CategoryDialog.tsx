@@ -71,20 +71,20 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
             }),
           );
           shown.settle(true);
-          showToast('Transaction saved!');
+          showToast('Transaction saved');
           router.refresh();
         } catch (e) {
           shown.settle(false);
-          showToast(getErrorMessage(e, 'An unexpected error occurred'), { tone: 'danger' });
+          showToast(getErrorMessage(e, "Couldn't save the category. Try again."), { tone: 'danger' });
         }
         return;
       }
       await updateMutation.mutateAsync({ id: transaction.id, body });
-      showToast('Transaction saved!');
+      showToast('Transaction saved');
       onClose();
       router.refresh();
     } catch (e) {
-      setError(getErrorMessage(e, 'An unexpected error occurred'));
+      setError(getErrorMessage(e, "Couldn't save the category. Try again."));
     }
   };
 
@@ -94,7 +94,7 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
         size="md"
         title="Set category"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: 'Save', onSelect: () => void save(), loading: saving }}
+        primary={{ label: 'Set category', onSelect: () => void save(), loading: saving }}
       >
         <DialogBody className="flex flex-col gap-space-8 desk:gap-space-12">
           {error ? <Banner tone="danger">{error}</Banner> : null}

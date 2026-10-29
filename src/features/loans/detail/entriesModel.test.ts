@@ -58,8 +58,8 @@ describe('deleteEntryCopy', () => {
   it('says what an event delete takes and what stays', () => {
     const [row] = entryRows([eventFixture({ id: 'e1' })], []);
     const copy = deleteEntryCopy(row);
-    expect(copy.title).toBe('Delete event');
-    expect(copy.description).toBe('Removes Prepayment, 1 Jun · reduce tenure.');
+    expect(copy.title).toBe('Delete event?');
+    expect(copy.description).toBe('Prepayment, 1 Jun · reduce tenure goes.');
     expect(copy.impact).toContain('The schedule is calculated again without it.');
     expect(copy.impact.join(' ')).toContain('A linked bank transaction stays');
   });
@@ -67,8 +67,8 @@ describe('deleteEntryCopy', () => {
   it('says what a charge delete takes and what stays', () => {
     const [row] = entryRows([], [chargeFixture()]);
     const copy = deleteEntryCopy(row);
-    expect(copy.title).toBe('Delete charge');
-    expect(copy.description).toBe('Removes Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha.');
+    expect(copy.title).toBe('Delete charge?');
+    expect(copy.description).toBe('Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha goes.');
     expect(copy.impact.join(' ')).toContain('A linked bank transaction stays');
   });
 });

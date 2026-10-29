@@ -24,7 +24,7 @@ export async function NetWorthTile({
 }: Pick<AccountsListData, 'netWorth'>) {
   const value = await netWorth;
   if (value === null) {
-    return <KpiTile label="Net worth" error="Could not load net worth" />;
+    return <KpiTile label="Net worth" error="Couldn't load net worth. Try again." />;
   }
   const kpi = netWorthKpi(value);
   return <KpiTile label={kpi.label} value={kpi.value} />;

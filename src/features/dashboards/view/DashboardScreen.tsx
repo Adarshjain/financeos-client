@@ -192,7 +192,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           </div>
           {state.widgets.length === 0 ? (
             <EmptyState
-              title={creating ? 'Nothing on this dashboard yet' : 'This dashboard has no widgets yet'}
+              title="No widgets yet"
               description="Add a widget to start. You can rearrange and resize after."
               action={{ label: 'Add widget', onSelect: () => setPicking(true) }}
               secondaryAction={{ label: 'Add header', onSelect: addHeader }}
@@ -251,7 +251,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           </div>
           {saved.widgets.length === 0 ? (
             <EmptyState
-              title="This dashboard has no widgets yet"
+              title="No widgets yet"
               description="Use Add widget to put built-ins or your saved reports here."
               action={{
                 label: 'Add widget',

@@ -126,7 +126,7 @@ describe('NotificationsPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Clear all' }));
     await waitFor(() => expect(mockApi.POST).toHaveBeenCalledWith('/api/v1/notifications/feed/clear'));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Notifications cleared'));
-    expect(await screen.findByText('No notifications')).toBeInTheDocument();
+    expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
   });
 
   it('Cancel leaves everything in place; a failed Clear all toasts and keeps the dialog', async () => {
@@ -141,7 +141,7 @@ describe('NotificationsPage', () => {
     mockApi.POST.mockRejectedValue(new Error('nope'));
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear all' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't clear notifications.", { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't clear notifications. Try again.", { tone: 'danger' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
@@ -201,7 +201,7 @@ describe('NotificationsPage', () => {
   it('empty state', async () => {
     serve(mockApi, feedPage([]), 0);
     renderWithQuery(<NotificationsPage />);
-    expect(await screen.findByText('No notifications')).toBeInTheDocument();
+    expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
     expect(screen.getByText('Finished imports, syncs and rewards show up here.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear all' })).not.toBeInTheDocument();
   });
@@ -214,7 +214,7 @@ describe('NotificationsPage', () => {
     renderWithQuery(<NotificationsPage />);
     expect(await screen.findByText("Couldn't load notifications")).toBeInTheDocument();
     serve(mockApi, feedPage([today2]), 0);
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Sync done')).toBeInTheDocument();
   });
 

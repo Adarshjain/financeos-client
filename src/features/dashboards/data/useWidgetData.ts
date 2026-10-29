@@ -78,8 +78,8 @@ export function useWidgetData(
     ? query.error instanceof ApiError
       ? query.error.response.message
       : builtin
-        ? 'Failed to load widget'
-        : 'Failed to run report'
+        ? "Couldn't load the widget. Try again."
+        : "Couldn't run the report. Try again."
     : null;
 
   return {

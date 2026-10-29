@@ -32,7 +32,7 @@ describe('RewardsShell +', () => {
         <Tab />
       </RewardsShell>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'New rule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
     expect(add).toHaveBeenCalledTimes(1);
   });
 
@@ -43,7 +43,7 @@ describe('RewardsShell +', () => {
         <Tab />
       </RewardsShell>,
     );
-    expect(screen.queryByRole('button', { name: 'New rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add rule' })).not.toBeInTheDocument();
   });
 
   it('has no + on Earning rules while no card is registered', () => {
@@ -52,6 +52,6 @@ describe('RewardsShell +', () => {
         <Tab enabled={false} />
       </RewardsShell>,
     );
-    expect(screen.queryByRole('button', { name: 'New rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add rule' })).not.toBeInTheDocument();
   });
 });
