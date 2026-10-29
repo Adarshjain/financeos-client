@@ -54,7 +54,6 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
     return (
       <EmptyState
         compact
-        title="No rewards yet this financial year"
         description="Rewards on your cards' spends add up here from April."
       />
     );

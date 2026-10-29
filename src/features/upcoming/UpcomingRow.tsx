@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, DateTile, Icon, ListRow, StatusWord, Text } from '@/components/ds';
+import { Button, DateTile, ListRow, StatusWord, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';
@@ -29,6 +30,7 @@ export function UpcomingRow({
   onSettle,
   onSetDetails,
 }: UpcomingRowProps) {
+  const router = useRouter();
   const date = rowDate(item);
   const amount = rowAmount(item);
   const overdue = item.status === 'overdue';
@@ -61,7 +63,16 @@ export function UpcomingRow({
 
   return (
     <ListRow
-      wrap
+      clickable={Boolean(pageHref)}
+      onClick={
+        pageHref
+          ? (e) => {
+              // Buttons and links on the row do their own thing.
+              if ((e.target as HTMLElement).closest('a,button')) return;
+              router.push(appHref(pageHref));
+            }
+          : undefined
+      }
       highlighted={highlighted}
       data-bill-row={item.type === 'card_bill' ? (item.statementId ?? undefined) : undefined}
       leading={
@@ -118,17 +129,6 @@ export function UpcomingRow({
           {canSettle ? (
             <Button variant="secondary" size="sm" onClick={() => onSettle(item)}>
               Settle
-            </Button>
-          ) : null}
-          {pageHref ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              asChild
-              icon={<Icon name="chevron-right" size="xs" />}
-            >
-              <Link href={appHref(pageHref)} prefetch={false} aria-label="Open" />
             </Button>
           ) : null}
         </>

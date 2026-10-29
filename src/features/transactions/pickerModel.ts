@@ -14,7 +14,7 @@ export interface PickerSummaryLike {
 
 /** "₹2,300", "₹2,300.50": whole figures bare, paise only when there are some. */
 function rupeesOf(value: number): string {
-  return formatMoney(Math.abs(value), { decimals: 'auto' });
+  return formatMoney(Math.abs(value), { decimals: 'exact' });
 }
 
 /** The amount of a summary, signed (a debit is negative). */

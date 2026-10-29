@@ -88,7 +88,7 @@ export function buildLineRow(line: StatementDetailData['lines'][number]): LineRo
   const day = formatDate(line.date, 'list');
   const review = (line.reviewType && REVIEW[line.reviewType]) || null;
   const chain = line.chainValid == null ? null : line.chainValid ? 'valid' : 'broken';
-  const balanceAfter = line.balanceAfter == null ? '—' : formatMoney(line.balanceAfter, { decimals: 'auto' });
+  const balanceAfter = line.balanceAfter == null ? '—' : formatMoney(line.balanceAfter, { decimals: 'exact' });
   const how = credit ? 'credit' : linked ? 'linked to transaction' : 'created from this statement';
   return {
     id: line.transactionId,
@@ -165,7 +165,7 @@ export function buildDetailModel(
     ? [
         { label: 'Total due', value: money(card?.totalAmountDue ?? bill?.totalAmountDue) },
         { label: 'Minimum', value: money(card?.minimumAmountDue ?? bill?.minimumAmountDue) },
-        { label: 'Paid so far', value: bill ? formatMoney(bill.paidAmount ?? 0, { decimals: 'auto' }) : '—' },
+        { label: 'Paid so far', value: bill ? formatMoney(bill.paidAmount ?? 0, { decimals: 'exact' }) : '—' },
       ]
     : [
         { label: 'Opening', value: money(detail.openingBalance) },

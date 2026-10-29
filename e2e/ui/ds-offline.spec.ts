@@ -10,8 +10,8 @@ test.describe('/ds Offline page (@ui)', () => {
     await expect(page).toHaveTitle('Offline · FinanceOS');
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
     await expect(
-      page.getByText("Check your connection.")
+      page.getByText(/Your money is exactly where you left it/)
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
   });
 });

@@ -10,7 +10,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 export function AccountsShell({ children }: { children: React.ReactNode }) {
   const { open } = useAccountDialogs();
   return (
-    <ShellPage crumb={areaCrumb('accounts')} title="Accounts" onAdd={() => open()}>
+    <ShellPage crumb={areaCrumb('accounts')} title="Accounts" onAdd={() => open()} addLabel="Add account">
       {children}
     </ShellPage>
   );

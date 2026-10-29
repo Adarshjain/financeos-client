@@ -10,7 +10,6 @@ import {
   heroModel,
   holdingListRow,
   holdingsQuery,
-  holdingsTiles,
   holdingsUrl,
   mergedLine,
   parseHoldingsUrl,
@@ -25,7 +24,7 @@ pinClock();
 
 describe('Holdings URL state', () => {
   it('reads defaults from an empty query', () => {
-    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', dir: 'asc', page: 0, size: 50 });
+    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', dir: 'asc', page: 0, size: 25 });
   });
 
   it('reads every filter and ignores values it does not know', () => {
@@ -45,14 +44,14 @@ describe('Holdings URL state', () => {
       sort: 'name',
       dir: 'asc',
       page: 0,
-      size: 50,
+      size: 25,
     });
   });
 
   it('keeps defaults out of the address', () => {
     expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments');
-    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 25 })).toBe(
-      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=25',
+    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 50 })).toBe(
+      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=50',
     );
   });
 
@@ -99,12 +98,12 @@ describe('Holdings sort direction', () => {
 
   it('offers six options, each with its direction in words', () => {
     expect(SORT_OPTIONS.map((o) => o.label)).toEqual([
-      'Name: A to Z',
-      'Name: Z to A',
-      '% return: high to low',
-      '% return: low to high',
-      '₹ return: high to low',
-      '₹ return: low to high',
+      'Name A–Z',
+      'Name Z–A',
+      'Best % return',
+      'Worst % return',
+      'Best ₹ return',
+      'Worst ₹ return',
     ]);
   });
 
@@ -176,7 +175,7 @@ describe('holdingListRow', () => {
       holdingRow({ symbol: 'HDFC', name: 'HDFC Ltd', quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13', currentValue: 0 }),
     );
     expect(row.merged).toEqual({ into: 'HDFCBANK', date: '2023-07-13' });
-    expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 2023');
+    expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 23');
     expect(row.position).toBe('0 shares');
     expect(row.avgCost).toBeNull();
     expect(row.invested).toBeNull();
@@ -238,16 +237,6 @@ describe('Tax this FY', () => {
     expect(taxCardModel(noLoss).rows.map((r) => r.label)).toEqual(['Realised gains', 'LTCG exemption left', 'Harvestable gains']);
     const noSummary = { ...tax, summary: undefined } as TaxHarvestResponse;
     expect(taxCardModel(noSummary).rows.map((r) => r.label)).toEqual(['Realised gains', 'LTCG exemption left']);
-  });
-
-  it('writes the four desktop tiles, with Realised null when the tax request failed', () => {
-    const tiles = holdingsTiles(header, 13, tax);
-    expect(tiles.map((t) => t?.label)).toEqual(['Current value', 'Invested', 'Unrealised P&L', 'Realised this FY']);
-    expect(tiles[0]!.context).toBe('+₹3,566 today · +0.56%');
-    expect(tiles[1]!.context).toBe('13 holdings');
-    expect(tiles[2]).toMatchObject({ value: '+₹1,44,909', tone: 'positive', context: '+29.4% · XIRR 24.1%' });
-    expect(tiles[3]).toMatchObject({ value: '−₹11,075', context: 'LTCG ₹2,425 · STCG −₹13,500' });
-    expect(holdingsTiles(header, 1, null)[3]).toBeNull();
   });
 });
 

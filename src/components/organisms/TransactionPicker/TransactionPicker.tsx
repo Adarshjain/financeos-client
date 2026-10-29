@@ -87,7 +87,7 @@ export const TransactionPicker = forwardRef<HTMLDivElement, TransactionPickerPro
       defaultFilter = 'all',
       onFilterChange,
       page = 0,
-      pageSize = 10,
+      pageSize = 5,
       totalElements = 0,
       onPageChange,
       emptyLabel,

@@ -12,8 +12,7 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
-  KpiTile,
+  Hero,
   Pager,
   Select,
   type SelectOption,
@@ -29,6 +28,8 @@ import { downloadCsv } from '@/lib/downloadCsv';
 import type { DividendFilters } from '@/lib/investments.types';
 import { AccountType } from '@/lib/types';
 
+import { FilterRowSkeleton } from '../FilterRowSkeleton';
+import { DividendAddDialog } from './DividendFormDialog';
 import { exportDividendsCsv } from './dividendsActions';
 import {
   type DividendListRow,
@@ -57,13 +58,13 @@ const money = (value: string, tone?: 'ink-3') => (
   </Text>
 );
 
-/** The table's columns; the edit button reports the row it was pressed on. */
-function buildColumns(onEdit: (id: string) => void) {
+/** The table's columns; a row tap opens the edit dialog. */
+function buildColumns() {
   return [
     ch.display({
       id: 'payDate',
       header: 'Pay date',
-      meta: { size: 'sm', phone: 'hidden' },
+      meta: { size: 'date', phone: 'hidden' },
       cell: ({ row }) => (
         <Text variant="body" tone="ink-3">
           {row.original.payDate}
@@ -114,25 +115,6 @@ function buildColumns(onEdit: (id: string) => void) {
         </Text>
       ),
     }),
-    ch.display({
-      id: 'edit',
-      header: '',
-      meta: { size: 'xs', align: 'end', phone: 'hidden' },
-      cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          aria-label={`Edit ${row.original.title} dividend`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(row.original.id);
-          }}
-        >
-          <Icon name="pencil-simple" size="sm" />
-        </Button>
-      ),
-    }),
   ];
 }
 
@@ -172,9 +154,10 @@ export function DividendsListCard({
 }: DividendsListCardProps) {
   const router = useRouter();
   const [exporting, setExporting] = React.useState(false);
+  const [adding, setAdding] = React.useState(false);
   const go = (next: Partial<DividendsUrlState>) => router.push(dividendsUrl({ ...state, ...next }), { scroll: false });
 
-  const columns = React.useMemo(() => buildColumns(onEdit), [onEdit]);
+  const columns = React.useMemo(() => buildColumns(), []);
 
   const exportCsv = async () => {
     setExporting(true);
@@ -209,29 +192,30 @@ export function DividendsListCard({
     />
   );
 
+  const clearAll = () => go({ fy: null, broker: '', type: '', receipt: '', instrument: '', page: 0 });
   const empty = narrowed ? (
     <EmptyState
-      compact
-      description="No dividends match"
-      action={{
-        label: 'Clear filters',
-        variant: 'link',
-        onSelect: () => go({ broker: '', type: '', receipt: '', instrument: '', page: 0 }),
-      }}
+      title="No dividends match"
+      description="Try different filters."
+      action={{ label: 'Clear filters', variant: 'secondary', onSelect: clearAll }}
     />
   ) : state.fy !== 'all' ? (
     <EmptyState
-      compact
-      description={`No dividends in ${fyLabel}.`}
-      action={{ label: 'Show all FYs', variant: 'link', onSelect: () => go({ fy: 'all', page: 0 }) }}
+      title={`No dividends in ${fyLabel}`}
+      description="Try another year."
+      action={{ label: 'Show all FYs', variant: 'secondary', onSelect: () => go({ fy: 'all', page: 0 }) }}
     />
   ) : (
-    <EmptyState compact description="No dividends yet" />
+    <EmptyState
+      title="No dividends yet"
+      description="Record a dividend to see what you have received."
+      action={{ label: 'Record dividend', variant: 'primary', onSelect: () => setAdding(true) }}
+    />
   );
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar>
+      <FilterBar changed={narrowed || state.fy !== null} onReset={clearAll}>
         <Select
           value={fyValue}
           options={fyOptions}
@@ -240,7 +224,7 @@ export function DividendsListCard({
             go({ fy: value === 'all' ? 'all' : Number(value) === currentFy ? null : Number(value), page: 0 });
           }}
           trigger={
-            <FilterChip hasDropdown selected className="shrink-0">
+            <FilterChip hasDropdown changed={state.fy !== null} onReset={() => go({ fy: null, page: 0 })} className="shrink-0">
               {fyLabel}
             </FilterChip>
           }
@@ -253,8 +237,8 @@ export function DividendsListCard({
             value={state.broker}
             onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
             trigger={
-              <FilterChip hasDropdown selected={state.broker !== ''} className="shrink-0">
-                {brokers.find((b) => b.id === state.broker)?.name ?? 'All brokers'}
+              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '', page: 0 })} className="shrink-0">
+                {brokers.find((b) => b.id === state.broker)?.name ?? 'Broker'}
               </FilterChip>
             }
           />
@@ -264,7 +248,7 @@ export function DividendsListCard({
           options={receiptOptions}
           onValueChange={(v) => go({ receipt: v as DividendsUrlState['receipt'], page: 0 })}
           trigger={
-            <FilterChip hasDropdown selected={state.receipt !== ''} className="shrink-0">
+            <FilterChip hasDropdown changed={state.receipt !== ''} onReset={() => go({ receipt: '', page: 0 })} className="shrink-0">
               {state.receipt ? RECEIPT_LABEL[state.receipt] : 'Receipt status'}
             </FilterChip>
           }
@@ -274,14 +258,14 @@ export function DividendsListCard({
           options={typeOptions}
           onValueChange={(v) => go({ type: v as DividendsUrlState['type'], page: 0 })}
           trigger={
-            <FilterChip hasDropdown selected={state.type !== ''} className="shrink-0">
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
               {TYPE_OPTIONS.find((t) => t.value === state.type)?.label ?? 'Type'}
             </FilterChip>
           }
         />
         {instrumentLabel ? (
-          <FilterChip selected removable className="shrink-0" onRemove={() => go({ instrument: '', page: 0 })}>
-            {`Showing ${instrumentLabel}`}
+          <FilterChip changed onReset={() => go({ instrument: '', page: 0 })} className="shrink-0">
+            {instrumentLabel}
           </FilterChip>
         ) : null}
       </FilterBar>
@@ -334,22 +318,19 @@ export function DividendsListCard({
           stickyHeader={false}
         />
       </Card>
+    {adding ? <DividendAddDialog onClose={() => setAdding(false)} /> : null}
     </div>
   );
 }
 
-/** The tiles and the table while the page loads. */
+/** The hero, filter row and table while the page loads. */
 export function DividendsListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-      </div>
+      <Hero.Skeleton label change figures={2} />
+      <FilterRowSkeleton chips={4} />
       <Card>
-        <DataTable columns={buildColumns(() => undefined)} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />
+        <DataTable columns={buildColumns()} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />
       </Card>
     </div>
   );

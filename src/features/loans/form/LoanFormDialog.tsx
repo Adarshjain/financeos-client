@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog, showToast } from '@/components/ds';
+import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -29,6 +30,8 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
   });
   const { data: accounts } = useAccounts();
   const [values, setValues] = React.useState<LoanFormValues>(() => emptyLoanValues(today));
+  const [initial] = React.useState(values);
+  const guard = useDiscardGuard({ dirty: JSON.stringify(values) !== JSON.stringify(initial), busy: createLoan.isPending, onClose, what: 'loan' });
   const [errors, setErrors] = React.useState<LoanFormErrors>({});
 
   const change = (patch: Partial<LoanFormValues>) => {
@@ -61,28 +64,31 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <Dialog.Content
-        size="md"
-        title="Add loan"
-        secondary={{ label: 'Cancel', onSelect: onClose, disabled: createLoan.isPending }}
-        primary={{ label: 'Add loan', type: 'submit', form: FORM_ID, loading: createLoan.isPending }}
-      >
-        <Dialog.Body>
-          <form
-            id={FORM_ID}
-            noValidate
-            autoComplete="off"
-            className="flex flex-col gap-space-8 desk:gap-space-16"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submit();
-            }}
-          >
-            <LoanFormFields values={values} errors={errors} accounts={accounts ?? []} today={today} onChange={change} />
-          </form>
-        </Dialog.Body>
-      </Dialog.Content>
-    </Dialog>
+    <>
+      <Dialog open onOpenChange={(open) => (open ? undefined : guard.requestClose())}>
+        <Dialog.Content
+          size="md"
+          title="Add loan"
+          secondary={{ label: 'Cancel', onSelect: guard.requestClose, disabled: createLoan.isPending }}
+          primary={{ label: 'Add loan', type: 'submit', form: FORM_ID, loading: createLoan.isPending }}
+        >
+          <Dialog.Body>
+            <form
+              id={FORM_ID}
+              noValidate
+              autoComplete="off"
+              className="flex flex-col gap-space-8 desk:gap-space-16"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void submit();
+              }}
+            >
+              <LoanFormFields values={values} errors={errors} accounts={accounts ?? []} today={today} onChange={change} />
+            </form>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog>
+      {guard.node}
+    </>
   );
 }

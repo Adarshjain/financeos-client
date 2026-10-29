@@ -48,7 +48,7 @@ export function formatCompact(value: number, money = false): string {
   const body = new Intl.NumberFormat('en-IN', {
     maximumFractionDigits: digits,
   }).format(scaled);
-  return `${value < 0 ? '-' : ''}${money ? '₹' : ''}${body}${unit}`;
+  return `${value < 0 ? '−' : ''}${money ? '₹' : ''}${body}${unit}`;
 }
 
 /** Shortens a long category label for an axis tick; the tooltip shows it whole. */

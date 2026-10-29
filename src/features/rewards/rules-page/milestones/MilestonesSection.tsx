@@ -113,7 +113,7 @@ export function MilestonesSection({
         onOpenChange={(o) => (o ? undefined : setDeleting(null))}
         title={`Delete milestone "${deleting?.name ?? ''}"?`}
         description="The milestone goes. Your transactions and rewards stay. This can't be undone."
-        confirmLabel="Delete milestone"
+        confirmLabel="Delete"
         loading={remove.isPending}
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}

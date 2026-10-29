@@ -15,7 +15,7 @@ describe('pickerListItem', () => {
       id: 't',
       title: 'IMPS from X',
       subtitle: '13 Sep · HDFC Savings ••1234',
-      amount: '₹2,300',
+      amount: '₹2,300.00',
       isCredit: false,
     });
   });

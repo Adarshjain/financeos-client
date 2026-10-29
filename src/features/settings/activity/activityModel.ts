@@ -4,7 +4,7 @@ import { appHref } from '@/features/shell/routes';
 import type { JobResponse } from '@/lib/types';
 
 export const ACTIVITY_HREF = appHref('/settings/activity');
-export const ACTIVITY_SIZE_OPTIONS = [10, 25, 50, 100];
+export const ACTIVITY_SIZE_OPTIONS = [25, 50, 100];
 
 /** The status filter values the URL and the API use today; '' is every status, 'active' is pending plus running. */
 export const STATUS_OPTIONS = [
@@ -15,15 +15,15 @@ export const STATUS_OPTIONS = [
   { label: 'Cancelled', value: 'CANCELLED' },
 ];
 
-/** "Status: Failed" once a choice is made, "Status: All" before. */
+/** The chip's name ("Status") until a choice is made, then just the value ("Failed"). */
 export function filterChipLabel(
   name: 'Status' | 'Type',
   options: { label: string; value: string }[],
   value: string,
 ): string {
-  if (!value) return `${name}: All`;
+  if (!value) return name;
   const label = options.find((o) => o.value === value)?.label ?? value;
-  return `${name}: ${label}`;
+  return label;
 }
 
 export interface ActivityUrlState {

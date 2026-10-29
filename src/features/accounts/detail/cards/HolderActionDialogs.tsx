@@ -106,7 +106,7 @@ export function DeleteHolderDialog({
       onOpenChange={(open) => (open ? undefined : onClose())}
       title={`Delete cardholder ${name}?`}
       description={`Removes ${name} and every card they hold. No transactions are attached to ${name}. This can't be undone.`}
-      confirmLabel="Delete cardholder"
+      confirmLabel="Delete"
       onConfirm={() => void submit(onConfirm)}
       onCancel={onClose}
       loading={pending}
@@ -142,7 +142,7 @@ export function DeleteCardDialog({
       onOpenChange={(open) => (open ? undefined : onClose())}
       title={`Delete card ••${card.last4}?`}
       description={`Removes this old card from ${name}’s card list. ${stays} This can't be undone.`}
-      confirmLabel="Delete card"
+      confirmLabel="Delete"
       onConfirm={() => void submit(onConfirm)}
       onCancel={onClose}
       loading={pending}

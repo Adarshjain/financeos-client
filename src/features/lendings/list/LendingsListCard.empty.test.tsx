@@ -16,9 +16,11 @@ describe('LendingsListCard empty', () => {
     expect(router.push).toHaveBeenCalledWith('/loans/lendings', { scroll: false });
   });
 
-  it('no lendings at all says so and has no clear action', () => {
+  it('no lendings at all says so, has no clear action and offers Add lending', () => {
     render(<LendingsListCard {...base} state={{ q: '', filter: 'all', page: 0, size: 25 }} />);
-    expect(screen.getByText('No lendings yet. Add a lending to start a ledger.')).toBeInTheDocument();
+    expect(screen.getByText('No lendings yet')).toBeInTheDocument();
+    expect(screen.getByText('Add a lending to start a ledger.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add lending' })).toBeInTheDocument();
   });
 });

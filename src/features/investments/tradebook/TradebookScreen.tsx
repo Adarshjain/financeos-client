@@ -14,12 +14,13 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
   Pager,
   Select,
   Text,
 } from '@/components/ds';
+import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 import { jobHref } from '@/features/investments/holdings/PricesLine';
+import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs';
 import { useSearchText } from '@/features/shell/useSearchText';
 
 import {
@@ -33,6 +34,12 @@ import {
   type TradebookUrlState,
 } from './tradebookModel';
 import { EditTradeDialog } from './TradeDialog';
+
+const TYPE_OPTIONS: { value: TradebookUrlState['type']; label: string }[] = [
+  { value: '', label: 'All types' },
+  { value: 'buy', label: 'Buy' },
+  { value: 'sell', label: 'Sell' },
+];
 
 const ch = createDataTableColumnHelper<TradebookRow>();
 
@@ -55,12 +62,12 @@ function PhoneSub({ row }: { row: TradebookRow }) {
   );
 }
 
-function columnsFor(onEdit: (row: TradebookRow) => void) {
+function columnsFor() {
   return [
     ch.display({
       id: 'date',
       header: 'Date',
-      meta: { size: 'sm', phone: 'hidden' },
+      meta: { size: 'date', phone: 'hidden' },
       cell: ({ row }) => <Text variant="body">{row.original.date}</Text>,
     }),
     ch.display({
@@ -135,25 +142,6 @@ function columnsFor(onEdit: (row: TradebookRow) => void) {
         </Text>
       ),
     }),
-    ch.display({
-      id: 'edit',
-      header: '',
-      meta: { size: 'xs', align: 'end', phone: 'hidden' },
-      cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          aria-label={`Edit ${row.original.title} trade`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(row.original);
-          }}
-        >
-          <Icon name="pencil-simple" size="sm" />
-        </Button>
-      ),
-    }),
   ];
 }
 
@@ -193,8 +181,9 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
   const go = (next: Partial<TradebookUrlState>) => router.push(tradebookUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [editing, setEditing] = React.useState<TradebookRow | null>(null);
-  const columns = React.useMemo(() => columnsFor(setEditing), []);
+  const columns = React.useMemo(() => columnsFor(), []);
 
+  const brokerOptions = [{ value: '', label: 'All brokers' }, ...brokers.map((b) => ({ value: b.id, label: b.name }))];
   const fyChoices = fyOptions(today, state.fy);
   const fyText = fyChoices.find((o) => o.value === (state.fy == null ? '' : String(state.fy)))?.label ?? 'All years';
 
@@ -216,27 +205,39 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <JobsLine lines={jobLines} />
-      <FilterBar search={{ value: text, onValueChange: setText }}>
-        <FilterChip className="shrink-0" selected={state.broker === ''} onClick={() => go({ broker: '', page: 0 })}>
-          All brokers
-        </FilterChip>
-        {brokers.map((b) => (
-          <FilterChip key={b.id} className="shrink-0" selected={state.broker === b.id} onClick={() => go({ broker: b.id, page: 0 })}>
-            {b.name}
-          </FilterChip>
-        ))}
-        <FilterChip className="shrink-0" selected={state.type === 'buy'} onClick={() => go({ type: state.type === 'buy' ? '' : 'buy', page: 0 })}>
-          Buy
-        </FilterChip>
-        <FilterChip className="shrink-0" selected={state.type === 'sell'} onClick={() => go({ type: state.type === 'sell' ? '' : 'sell', page: 0 })}>
-          Sell
-        </FilterChip>
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+        changed={filtered}
+        onReset={() => go({ q: '', broker: '', type: '', fy: currentFy(), page: 0 })}
+      >
+        {brokers.length > 0 ? (
+          <Select
+            value={state.broker}
+            options={brokerOptions}
+            onValueChange={(v) => go({ broker: String(v ?? ''), page: 0 })}
+            trigger={
+              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '', page: 0 })} className="shrink-0">
+                {brokers.find((b) => b.id === state.broker)?.name ?? 'Broker'}
+              </FilterChip>
+            }
+          />
+        ) : null}
+        <Select
+          value={state.type}
+          options={TYPE_OPTIONS}
+          onValueChange={(v) => go({ type: (v ?? '') as TradebookUrlState['type'], page: 0 })}
+          trigger={
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
+              {TYPE_OPTIONS.find((o) => o.value === state.type && o.value !== '')?.label ?? 'Type'}
+            </FilterChip>
+          }
+        />
         <Select
           value={state.fy == null ? '' : String(state.fy)}
           options={fyChoices}
           onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
           trigger={
-            <FilterChip hasDropdown selected={state.fy !== currentFy()} className="shrink-0">
+            <FilterChip hasDropdown changed={state.fy !== currentFy()} onReset={() => go({ fy: currentFy(), page: 0 })} className="shrink-0">
               {fyText}
             </FilterChip>
           }
@@ -251,11 +252,19 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
           phoneSub={(row) => <PhoneSub row={row} />}
           onRowSelect={(row) => setEditing(row)}
           empty={
-            <EmptyState
-              compact
-              description={filtered ? 'No trades match' : 'No trades yet. Record a trade or import your tradebook.'}
-              action={filtered ? { label: 'Clear filters', variant: 'link', href: tradebookUrl({ ...state, q: '', broker: '', type: '', fy: currentFy(), page: 0 }) } : undefined}
-            />
+            filtered ? (
+              <EmptyState
+                title="No trades match"
+                description="Try a different search or filter."
+                action={{ label: 'Clear filters', variant: 'secondary', href: tradebookUrl({ ...state, q: '', broker: '', type: '', fy: currentFy(), page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title="No trades yet"
+                description="Record a trade or import your tradebook."
+                action={{ label: 'Import tradebook', variant: 'primary', href: INVESTMENTS_IMPORT_HREF }}
+              />
+            )
           }
           stickyHeader={false}
         />
@@ -265,11 +274,14 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
   );
 }
 
-/** The table while the page loads. */
+/** The filter row and table while the page loads. */
 export function TradebookSkeleton() {
   return (
-    <Card>
-      <DataTable columns={columnsFor(() => undefined)} data={[]} getRowId={(row) => row.id} loading skeletonRows={10} />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterRowSkeleton chips={3} />
+      <Card>
+        <DataTable columns={columnsFor()} data={[]} getRowId={(row) => row.id} loading skeletonRows={10} />
+      </Card>
+    </div>
   );
 }

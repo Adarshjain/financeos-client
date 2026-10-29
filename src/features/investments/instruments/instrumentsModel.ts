@@ -2,7 +2,7 @@ import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney } from '@/lib/format';
-import { INSTRUMENT_MAX_PAGE_SIZE, type InstrumentListQuery, instrumentListQuery } from '@/lib/instrumentList';
+import { type InstrumentListQuery, instrumentListQuery } from '@/lib/instrumentList';
 import type { Instrument, InstrumentType } from '@/lib/types';
 
 import { describeOverriddenFields, isOverridden } from './instrumentEditModel';
@@ -11,8 +11,8 @@ import { describeOverriddenFields, isOverridden } from './instrumentEditModel';
 
 /** This page's own address (the Dinero page exists, so no Legacy fallback is needed). */
 export const INSTRUMENTS_HREF = `${DS_PREFIX}/investments/instruments`;
-export const INSTRUMENTS_SIZE_OPTIONS = [25, 50, 100, INSTRUMENT_MAX_PAGE_SIZE];
-export const INSTRUMENTS_DEFAULT_SIZE = 50;
+export const INSTRUMENTS_SIZE_OPTIONS = [25, 50, 100];
+export const INSTRUMENTS_DEFAULT_SIZE = 25;
 
 export type InstrumentsSortDir = 'asc' | 'desc';
 

@@ -60,10 +60,10 @@ export function LimitCycleCard({ model }: { model: LimitCycleModel }) {
       subtitle={model.subtitle ?? undefined}
       action={model.anchored ? <Badge tone="success">Anchored to statement</Badge> : undefined}
     >
-      <div className="px-space-16 pt-space-4 pb-space-16 grid grid-cols-2 desk:grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
+      <div className="px-space-16 pt-space-4 pb-space-16 grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
         <Stat
-          label="Used"
-          value={model.used.value}
+          label="Limit used"
+          value={model.used.pct != null ? formatPercent(model.used.pct) : model.used.value}
           meter={
             model.used.pct != null ? (
               <ProgressBar value={Math.min(100, model.used.pct)} tone={model.used.tone} />
@@ -72,7 +72,6 @@ export function LimitCycleCard({ model }: { model: LimitCycleModel }) {
           caption={model.used.caption}
         />
         <Stat label="This cycle" value={model.cycle.value} caption={model.cycle.caption} />
-        <Stat label="Current bill" value={model.bill.value} caption={model.bill.caption} />
       </div>
       {model.ownLimit ? <ListField label="Own limit" value={model.ownLimit} /> : null}
       {model.pool ? (
@@ -98,8 +97,8 @@ export function BillsCard({ accountId, rows }: { accountId: string; rows: BillRo
       title="Bills"
       subtitle="The statement is the bill"
       action={
-        <HeaderLink href={`${accountHref(accountId)}/statements`} chevron>
-          All
+        <HeaderLink href={`${accountHref(accountId)}/statements`}>
+          View all
         </HeaderLink>
       }
     >
@@ -133,7 +132,7 @@ export function RewardsCard({ accountId, model }: { accountId: string; model: Re
       title="Rewards"
       subtitle={model.subtitle}
       action={
-        <HeaderLink href={appHref(`/rewards/rules?account=${accountId}`)} chevron>
+        <HeaderLink href={appHref(`/rewards/rules?account=${accountId}`)}>
           Rules
         </HeaderLink>
       }

@@ -298,7 +298,7 @@ describe('guards', () => {
     const { queryClient } = setup({ mode: 'delete', reportId: 'r1', name: 'Swiggy in October' });
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
     fireEvent.click(screen.getByRole('button', { name: 'Delete report' }));
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete report' })).at(-1)!);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete' })).at(-1)!);
     await screen.findByText(/^Report deleted/);
     expect(spy).toHaveBeenCalledWith({ queryKey: ['dashboards'] });
   });
@@ -390,7 +390,7 @@ describe('delete draft', () => {
     expect(await screen.findByText('Delete “Swiggy in October”?')).toBeInTheDocument();
     expect(screen.getByText("The report and its widget on Home go. Your transactions stay. This can't be undone.")).toBeInTheDocument();
     expect(actions.removeReport).not.toHaveBeenCalled();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete report' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     expect(await screen.findByText(/^Report deleted/)).toBeInTheDocument();
     expect(actions.removeReport).toHaveBeenCalledWith('r1');
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'deleted', reportId: 'r1', reportName: 'Swiggy in October' });
@@ -409,7 +409,7 @@ describe('delete draft', () => {
     actions.removeReport.mockRejectedValue(new ApiError(409, { code: 'CONFLICT', message: 'Report is in use' }));
     setup(del);
     fireEvent.click(screen.getByRole('button', { name: 'Delete report' }));
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete report' })).at(-1)!);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete' })).at(-1)!);
     expect(await screen.findByText('Report is in use')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete report' })).toBeInTheDocument();
   });

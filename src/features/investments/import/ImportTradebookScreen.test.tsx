@@ -200,12 +200,12 @@ describe('ImportTradebookScreen: step 1', () => {
   });
 
   it('keeps step 1 and says why when the server rejects the files', async () => {
-    mutations.previewReconcile.mockRejectedValueOnce(new ApiError(400, { message: 'Tax P&L file is not a Zerodha report for FY 2026-27' } as never));
+    mutations.previewReconcile.mockRejectedValueOnce(new ApiError(400, { message: 'Tax P&L file is not a Zerodha report for FY 26-27' } as never));
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
     await uploadZerodha();
     await preview();
     await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith("Couldn't preview import: Tax P&L file is not a Zerodha report for FY 2026-27", { tone: 'danger' }),
+      expect(showToast).toHaveBeenCalledWith("Couldn't preview import: Tax P&L file is not a Zerodha report for FY 26-27", { tone: 'danger' }),
     );
     expect(screen.getByRole('button', { name: 'Preview reconciliation' })).toBeEnabled();
     expect(screen.getByText('taxpnl_FY26-27.xlsx')).toBeInTheDocument();

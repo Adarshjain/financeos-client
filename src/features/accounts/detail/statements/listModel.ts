@@ -107,7 +107,7 @@ export function sourceLabel(source: string): string {
 
 /** "₹44,319", or "−₹1,200" for a negative figure. */
 export function signedRupees(value: number): string {
-  return formatMoney(value);
+  return formatMoney(value, { decimals: 'exact' });
 }
 
 /** The bill's status badge for a statement row; null when the bill says nothing worth a badge. */
@@ -157,15 +157,15 @@ export function buildStatementRow(
   if (!isCard) {
     if (s.closingBalance != null) parts.push(`closing ${signedRupees(s.closingBalance)}`);
   } else if (bill?.status === 'PAID') {
-    if (bill.totalAmountDue != null) parts.push(formatMoney(bill.totalAmountDue));
+    if (bill.totalAmountDue != null) parts.push(formatMoney(bill.totalAmountDue, { decimals: 'exact' }));
     if (bill.paidMarkedOn) parts.push(`paid ${formatDate(bill.paidMarkedOn, 'list')}`);
     if (bill.paidSource === 'MANUAL') {
       parts.push('marked by you');
       undo = true;
     }
   } else {
-    if (s.openingBalance != null) parts.push(`opening ${formatMoney(Math.abs(s.openingBalance))}`);
-    if (bill?.totalAmountDue != null) parts.push(`due ${formatMoney(bill.totalAmountDue)}`);
+    if (s.openingBalance != null) parts.push(`opening ${formatMoney(Math.abs(s.openingBalance), { decimals: 'exact' })}`);
+    if (bill?.totalAmountDue != null) parts.push(`due ${formatMoney(bill.totalAmountDue, { decimals: 'exact' })}`);
   }
   const detailsMissing = isCard && Boolean(s.missingDetails?.length);
   return {

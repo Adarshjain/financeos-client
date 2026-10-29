@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type ProgressBarTone = 'brand' | 'warning' | 'danger';
+export type ProgressBarTone = 'brand' | 'warning' | 'danger' | 'positive';
 
 export type ProgressBarSeries =
   | 'brand'
@@ -64,7 +64,7 @@ const ProgressBarRoot = forwardRef<HTMLDivElement, ProgressBarProps>(
       const total = segments.reduce((sum, s) => sum + Math.max(s.value, 0), 0);
       return (
         <div ref={ref} className={cn('w-full select-none', className)} {...props}>
-          <div className="flex h-space-8 w-full overflow-hidden rounded-ds-pill bg-line-soft">
+          <div className="flex h-space-8 w-full overflow-hidden rounded-ds-pill bg-line-soft dark:bg-line-strong">
             {total > 0
               ? segments
                   .filter((s) => s.value > 0)
@@ -101,6 +101,7 @@ const ProgressBarRoot = forwardRef<HTMLDivElement, ProgressBarProps>(
           brand: 'bg-brand',
           warning: 'bg-warning',
           danger: 'bg-danger',
+          positive: 'bg-positive',
         }[tone] ?? 'bg-brand');
 
     return (
@@ -112,7 +113,7 @@ const ProgressBarRoot = forwardRef<HTMLDivElement, ProgressBarProps>(
           aria-valuemax={max}
           aria-label={ariaLabel}
           aria-valuetext={typeof label === 'string' ? label : undefined}
-          className="h-space-6 w-full rounded-ds-pill bg-line-soft overflow-hidden"
+          className="h-space-6 w-full rounded-ds-pill bg-line-soft dark:bg-line-strong overflow-hidden"
         >
           <div
             className={cn(

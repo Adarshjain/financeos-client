@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, DropZone, GRID_GAP,Pager, Text } from '@/components/ds';
+import { Button, Card, DropZone, GRID_GAP, PageFooter, Pager, Text } from '@/components/ds';
 import { AccountPicker, JobsHistory } from '@/components/organisms';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
@@ -117,21 +117,17 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
                 queuedFiles={queued}
                 onRemoveFile={(f) => form.removeFile(queued.findIndex((q) => q.id === f.id))}
               />
-              <div className="flex justify-end gap-space-8">
-                {count > 0 ? (
-                  <Button type="button" variant="secondary" onClick={form.clearAllFiles} disabled={locked}>
-                    Clear
-                  </Button>
-                ) : null}
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={locked}
-                  disabled={!form.selectedAccountId || count === 0 || locked}
-                >
-                  {label}
-                </Button>
-              </div>
+              {/* Flush with the card's edges (the card clips its corners), not a band inside its padding. */}
+              <PageFooter
+                className="-mx-space-16 desk:-mx-space-20 -mb-space-16 desk:-mb-space-20"
+                secondary={count > 0 ? { label: 'Clear', onSelect: form.clearAllFiles, disabled: locked } : undefined}
+                primary={{
+                  label,
+                  type: 'submit',
+                  loading: locked,
+                  disabled: !form.selectedAccountId || count === 0 || locked,
+                }}
+              />
             </form>
           </Card>
           <Card

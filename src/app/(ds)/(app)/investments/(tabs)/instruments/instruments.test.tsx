@@ -56,7 +56,7 @@ afterEach(() => {
 describe('/investments/instruments: data', () => {
   it('asks the server for the first page by name', async () => {
     await renderPage();
-    expect(list.fetchInstrumentsPage).toHaveBeenCalledWith({ page: 0, size: 50 });
+    expect(list.fetchInstrumentsPage).toHaveBeenCalledWith({ page: 0, size: 25 });
   });
 
   it('passes search, type, stale, order, page and size from the URL to the server', async () => {
@@ -135,19 +135,19 @@ describe('/investments/instruments: rows', () => {
 });
 
 describe('/investments/instruments: filters go to the URL', () => {
-  it('filters by type from the chips, back to the first page, with no counts on them', async () => {
+  it('filters by type from one dropdown chip, back to the first page, with no counts on the options', async () => {
     list.fetchInstrumentsPage.mockResolvedValue(instrumentPage(sampleInstruments, { totalElements: 120, totalPages: 3 }));
     await renderPage({ page: '3' });
-    expect(screen.getByRole('button', { name: /^Stocks/ })).toHaveTextContent(/^Stocks$/);
-    expect(screen.getByRole('button', { name: /^Funds/ })).toHaveTextContent(/^Funds$/);
-    expect(screen.getByRole('button', { name: /^ETFs/ })).toHaveTextContent(/^ETFs$/);
-    fireEvent.click(screen.getByRole('button', { name: /^Funds/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Type' }));
+    expect(await screen.findByRole('option', { name: 'Stocks' })).toHaveTextContent(/^Stocks$/);
+    expect(screen.getByRole('option', { name: 'ETFs' })).toHaveTextContent(/^ETFs$/);
+    fireEvent.click(screen.getByRole('option', { name: 'Funds' }));
     expect(router.push).toHaveBeenCalledWith('/investments/instruments?type=mutual_fund', { scroll: false });
   });
 
-  it('clears the type with All types, keeping the other filters', async () => {
+  it('clears the type with the x of its chip, keeping the other filters', async () => {
     await renderPage({ type: 'etf', stale: '1' });
-    fireEvent.click(screen.getByRole('button', { name: 'All types' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Reset filter' })[0]);
     expect(router.push).toHaveBeenCalledWith('/investments/instruments?stale=1', { scroll: false });
   });
 
@@ -193,11 +193,11 @@ describe('/investments/instruments: prices line', () => {
 
 describe('/investments/instruments: edit', () => {
   const open = async (name = 'Infosys') => {
-    fireEvent.click(screen.getByRole('button', { name: `Edit ${name}` }));
+    fireEvent.click(screen.getAllByText(name)[0]);
     return screen.findByRole('dialog', { name: 'Edit instrument' });
   };
 
-  it('opens from the pencil with the instrument filled in', async () => {
+  it('opens from the row with the instrument filled in', async () => {
     await renderPage();
     const dialog = await open();
     expect(within(dialog).getByLabelText('Name')).toHaveValue('Infosys');
@@ -280,7 +280,7 @@ describe('/investments/instruments: edit', () => {
     expect(api.POST).not.toHaveBeenCalled();
   });
 
-  it('opens from the row on phone, where there is no pencil', async () => {
+  it('opens from the row', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('Tata Motors')[0]);
     const dialog = await screen.findByRole('dialog', { name: 'Edit instrument' });
@@ -293,7 +293,7 @@ describe('/investments/instruments: asset class and reset', () => {
     api.PUT.mockResolvedValue({ data: instrument() });
     api.PATCH.mockResolvedValue({ data: instrument() });
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Infosys' }));
+    fireEvent.click(screen.getAllByText('Infosys')[0]);
     const dialog = await screen.findByRole('dialog', { name: 'Edit instrument' });
     fireEvent.click(within(dialog).getByRole('combobox', { name: /^Asset class/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Gold' }));
@@ -303,7 +303,7 @@ describe('/investments/instruments: asset class and reset', () => {
 
   it('offers Reset to catalog in the edit dialog for an edited instrument, and confirms first', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Mirae Asset Large Cap · Direct Growth' }));
+    fireEvent.click(screen.getAllByText('Mirae Asset Large Cap · Direct Growth')[0]);
     const edit = await screen.findByRole('dialog', { name: 'Edit instrument' });
     fireEvent.click(within(edit).getByRole('button', { name: 'Reset to catalog' }));
     const confirm = await screen.findByRole('alertdialog', { name: /Reset to catalog/ }).catch(() => screen.findByRole('dialog', { name: /Reset to catalog/ }));

@@ -63,6 +63,12 @@ describe('loadPersonPage', () => {
     expect(ledger).not.toHaveBeenCalled();
   });
 
+  it('is a 404 too when the server rejects the id itself (400)', async () => {
+    get.mockRejectedValue(new ApiError(400, { code: 'BAD', message: 'no', timestamp: 'x' }));
+    await expect(loadPersonPage('nope', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
+    expect(notFound).toHaveBeenCalled();
+  });
+
   it('lets any other failure through to the route error state', async () => {
     get.mockRejectedValue(new ApiError(500, { code: 'X', message: 'boom', timestamp: 'x' }));
     await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow();

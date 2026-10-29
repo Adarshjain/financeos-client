@@ -10,7 +10,7 @@ const meta: Meta<typeof ProgressBar> = {
     docs: {
       description: {
         component:
-          'A 6px track (line-soft) with a rounded fill in brand, warning, or danger.',
+          'A 6px track (line-soft) with a rounded fill in brand, warning, danger, or positive.',
       },
     },
   },
@@ -27,7 +27,7 @@ const meta: Meta<typeof ProgressBar> = {
     max: { control: 'number' },
     tone: {
       control: 'select',
-      options: ['brand', 'warning', 'danger'],
+      options: ['brand', 'warning', 'danger', 'positive'],
     },
     color: {
       control: 'select',
@@ -69,6 +69,14 @@ export const Danger: Story = {
     value: 108,
     tone: 'danger',
     label: '108% · over by ₹12,400',
+  },
+};
+
+export const Positive: Story = {
+  args: {
+    value: 72,
+    tone: 'positive',
+    label: '+₹18,400 · a gain month',
   },
 };
 

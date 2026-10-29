@@ -71,7 +71,6 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
           <ListRow
             key={row.id}
             highlighted={row.selected}
-            chevron
             title={row.title}
             subtitle={
               <>

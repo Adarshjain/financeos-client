@@ -13,6 +13,7 @@ import {
   buildLimitCycle,
   buildRecentTransactions,
   buildRewards,
+  cardHeroFigures,
   meterTone,
 } from './cardOverviewModel';
 import { daysBetween } from './overviewDatesModel';
@@ -80,12 +81,21 @@ describe('buildLimitCycle', () => {
     expect(m.used).toMatchObject({
       value: '₹44,319',
       tone: 'brand',
-      caption: '14.8% of ₹3L · ₹2.56L free',
+      caption: 'of ₹3L limit',
     });
     expect(m.cycle).toEqual({ value: '₹0', caption: 'Unbilled since 5 Oct' });
     expect(m.bill).toEqual({ value: '₹44,319', caption: 'Due 25 Oct · 12 days left' });
     expect(m.ownLimit).toBe('₹3,00,000');
     expect(m.pool).toBeNull();
+  });
+
+  it('gives the page hero its limit left, bill due and due date', () => {
+    const m = buildLimitCycle(card, summary, bill(), TODAY);
+    expect(cardHeroFigures(m)).toEqual([
+      { label: 'Limit left', value: '₹2,55,681', caption: 'of ₹3L' },
+      { label: 'Bill due', value: '₹44,319' },
+      { label: 'Due date', value: '25 Oct', caption: '12 days left' },
+    ]);
   });
 
   it('words an overdue and a due-today bill', () => {
@@ -145,7 +155,7 @@ describe('buildLimitCycle', () => {
       TODAY
     );
     expect(poolOnly.ownLimit).toBeNull();
-    expect(poolOnly.used.caption).toBe('8.9% of ₹5L · ₹3.41L free');
+    expect(poolOnly.used.caption).toBe('of ₹5L limit');
   });
 
   it('says Not set and shows no bar or caption without a limit', () => {
@@ -202,7 +212,7 @@ describe('buildRewards', () => {
 
   it('summarises earnings, rules, caps and the milestone', () => {
     const m = buildRewards(report, window, TODAY);
-    expect(m?.subtitle).toBe('Anniversary year 15 Mar → 14 Mar 2027');
+    expect(m?.subtitle).toBe('Anniversary year 15 Mar → 14 Mar 27');
     expect(m?.earned).toBe('2,180 pts ≈ ₹1,090');
     expect(m?.rules).toEqual([
       { id: 'r1', label: 'Base rule', value: '2,180 pts' },
@@ -387,7 +397,7 @@ describe('buildRecentTransactions', () => {
       { ...base, id: 't3', date: '2026-10-01', amount: -10, sourcedDescription: 'Raw text' },
       { ...base, id: 't4', date: '2026-10-01', amount: -10 },
     ] as unknown as Transaction[]);
-    expect(rows[0]).toMatchObject({ date: '5 Oct', amount: '+45.00', credit: true, balanceLabel: '₹56,681', category: null });
+    expect(rows[0]).toMatchObject({ date: '5 Oct', amount: '+45.00', credit: true, balanceLabel: '₹56,681.00', category: null });
     expect(rows[1]).toMatchObject({ amount: '352.00', credit: false, category: 'Transport', balanceLabel: null });
     expect(rows[2].description).toBe('Raw text');
     // A zero amount is not money in.

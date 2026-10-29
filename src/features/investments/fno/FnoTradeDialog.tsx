@@ -123,7 +123,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
           size="sm"
           title={trade ? 'Edit F&O trade' : 'Record F&O trade'}
           description="Values in ₹."
-          tertiary={trade ? { label: 'Delete trade', tone: 'danger', onSelect: () => setConfirming(true), disabled: saving } : undefined}
+          tertiary={trade ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirming(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: trade ? 'Save trade' : 'Record trade', type: 'submit', form: FORM_ID, loading: saving }}
         >
@@ -270,7 +270,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
           title="Delete F&O trade?"
           description={`The trade for ${trade.tradingSymbol} goes.`}
           impact={['Only this trade is deleted.', 'Your other trades stay.']}
-          confirmLabel="Delete trade"
+          confirmLabel="Delete"
           confirmLoading={remove.isPending}
           onConfirm={() => void confirmDelete()}
         >

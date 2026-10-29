@@ -173,9 +173,9 @@ describe('TaxHarvestBody', () => {
     expect(dialog).toHaveAttribute('data-title', 'Nifty 50 ETF');
     await userEvent.click(dialog);
     expect(screen.queryByTestId('breakdown')).not.toBeInTheDocument();
-    expect(rows[0]).toHaveTextContent('Long term · Bought 10 Jan 2024');
+    expect(rows[0]).toHaveTextContent('Long term · Bought 10 Jan 24');
     expect(rows[0]).toHaveTextContent('+₹31,200');
-    expect(rows[1]).toHaveTextContent('Short term · Long-term on 2 Aug 2027 · 1 day · cost may be higher');
+    expect(rows[1]).toHaveTextContent('Short term · Long-term on 2 Aug 27 · 1 day · cost may be higher');
     expect(rows[1]).toHaveTextContent('−₹4,000');
   });
 

@@ -73,14 +73,12 @@ export function fySummary(schedule: InstallmentDto[], fy: string): FySummary {
   };
 }
 
-/** "FY 26-27 · 12 EMIs · principal ₹95,798 · interest ₹3,43,443" */
+/** "12 EMIs · principal ₹95,798": short enough for one line on a phone (the FY is in the picker, interest on each row). */
 export function fySummaryLine(schedule: InstallmentDto[], fy: string): string {
   const s = fySummary(schedule, fy);
   return [
-    fyLabel(Number(fy)),
     formatCount(s.emis, ['EMI', 'EMIs']),
     `principal ${formatMoney(s.principal)}`,
-    `interest ${formatMoney(s.interest)}`,
   ].join(' · ');
 }
 
@@ -167,16 +165,16 @@ export function buildScheduleRows(
       id: String(inst.seq),
       seq: inst.seq,
       due: formatDate(inst.dueDate, 'list'),
-      opening: formatMoney(inst.openingBalance, { symbol: false }),
-      emi: formatMoney(inst.emi, { symbol: false }),
-      interest: formatMoney(inst.interest, { symbol: false }),
-      principal: formatMoney(inst.principal, { symbol: false }),
-      closing: formatMoney(inst.closingBalance, { symbol: false }),
+      opening: formatMoney(inst.openingBalance, { symbol: false, decimals: 'exact' }),
+      emi: formatMoney(inst.emi, { symbol: false, decimals: 'exact' }),
+      interest: formatMoney(inst.interest, { symbol: false, decimals: 'exact' }),
+      principal: formatMoney(inst.principal, { symbol: false, decimals: 'exact' }),
+      closing: formatMoney(inst.closingBalance, { symbol: false, decimals: 'exact' }),
       status,
       settled: inst.status === 'settled',
       overdue: inst.status === 'overdue',
       payment: inst.payment ?? null,
-      phoneSub: `interest ${formatMoney(inst.interest, { symbol: false })} · principal ${formatMoney(inst.principal, { symbol: false })}`,
+      phoneSub: `interest ${formatMoney(inst.interest, { symbol: false, decimals: 'exact' })} · principal ${formatMoney(inst.principal, { symbol: false, decimals: 'exact' })}`,
       fy: String(fyStartYear(inst.dueDate)),
       band:
         happened.length > 0

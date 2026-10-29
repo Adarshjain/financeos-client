@@ -82,6 +82,28 @@ describe('TransactionRow', () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
   });
+  it('phone: a running balance under the amount wins over the status', () => {
+    const { container } = render(
+      <TransactionRow description="Rent" amount="1,000.00" balance="bal ₹9,000" reviewStatus="Duplicate" />,
+    );
+    const under = container.querySelector('.desk\\:hidden.text-caption:not(.flex)');
+    expect(under).toHaveTextContent('bal ₹9,000');
+  });
+
+  it('phone: when the balance takes the spot under the amount, the status moves to the account line', () => {
+    const { container } = render(
+      <TransactionRow description="Rent" amount="1,000.00" account="HDFC" balance="bal ₹9,000" reviewStatus="Duplicate" />,
+    );
+    const line = container.querySelector('.desk\\:hidden.flex-nowrap');
+    expect(line).toHaveTextContent('HDFC');
+    expect(line).toHaveTextContent('Duplicate');
+  });
+
+  it('phone: without a balance the one status sits under the amount', () => {
+    const { container } = render(<TransactionRow description="Rent" amount="1,000.00" reviewStatus="Duplicate" />);
+    expect(container.querySelector('.desk\\:hidden.text-caption')).toHaveTextContent('Duplicate');
+  });
+
   it('renders description, amount, balance, account, and provenance', () => {
     render(
       <TransactionRow
@@ -215,13 +237,6 @@ describe('TransactionRow', () => {
     expect(grid).toHaveClass('gap-x-0');
     expect(grid).not.toHaveClass('gap-x-space-10');
     expect(eye.parentElement).toHaveClass('pl-space-10');
-  });
-
-  it('adds no extra eye padding when a chevron keeps the grid gap', () => {
-    render(<TransactionRow description="Uber India" amount="640.00" selectable onOpenDetail={vi.fn()} chevron />);
-    const eye = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
-    expect(eye.closest('.grid-cols-fill-auto-auto')).toHaveClass('gap-x-space-10');
-    expect(eye.parentElement).not.toHaveClass('pl-space-10');
   });
 
   it('does not render eye button when outside selection mode even if selectable and onOpenDetail is passed', () => {
@@ -625,19 +640,30 @@ describe('TransactionRow', () => {
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
 
-  it('renders leading element and trailing chevron', () => {
-    const { container } = render(
+  it('phone: the one status sits under the amount, not in the grey line', () => {
+    render(
       <TransactionRow
-        leading={<span data-testid="leading-avatar">HD</span>}
+        compact
         description="Amex bill"
         amount="10,000.00"
-        chevron
+        account="HDFC Regalia"
+        reviewStatus="Unreconciled"
+        provenance="Manual"
+        categories={['Bills']}
       />,
+    );
+    const amountCell = screen.getByText('10,000').closest('[role="cell"]')!;
+    expect(amountCell).toHaveTextContent('Unreconciled');
+    expect(amountCell).not.toHaveTextContent('Manual');
+  });
+
+  it('renders the leading element and no row chevron', () => {
+    const { container } = render(
+      <TransactionRow leading={<span data-testid="leading-avatar">HD</span>} description="Amex bill" amount="10,000.00" />,
     );
 
     expect(screen.getByTestId('leading-avatar')).toBeInTheDocument();
-    const chevronSvg = container.querySelector('svg.w-icon-sm');
-    expect(chevronSvg).toBeInTheDocument();
+    expect(container.querySelector('svg.w-icon-sm')).not.toBeInTheDocument();
   });
 
   it('supports uncontrolled selection via defaultSelected', () => {
@@ -709,7 +735,7 @@ describe('TransactionRow', () => {
 
       const dateMeta = dateCol.meta as DataTableColumnMeta | undefined;
       expect(dateCol.id).toBe('date');
-      expect(dateMeta?.size).toBe('sm');
+      expect(dateMeta?.size).toBe('date');
       expect(dateMeta?.sortable).toBe(true);
 
       const descMeta = descCol.meta as DataTableColumnMeta | undefined;

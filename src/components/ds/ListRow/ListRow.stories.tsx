@@ -114,6 +114,7 @@ export const WithActions: Story = {
   },
 };
 
+/** Phone navigation lists (Settings, More) only; the chevron hides from desktop up. */
 export const WithChevron: Story = {
   args: {
     title: 'Privacy & Security',
@@ -140,7 +141,7 @@ export const Highlighted: Story = {
 export const Disabled: Story = {
   args: {
     title: 'Archived account',
-    subtitle: 'Closed on 31 Mar 2025',
+    subtitle: 'Closed on 31 Mar 25',
     disabled: true,
   },
 };

@@ -1,28 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
 import { Logo } from '@/components/organisms';
 import { useNotificationsAction } from '@/features/notifications/useNotificationMutations';
 
-import { isChatPath } from './navigation';
+import { crumbParentHref, trimCrumb } from './crumbTrail';
 import { hasInAppHistory } from './navigationStore';
-import { appHref } from './routes';
 import { useSearch } from './search/SearchProvider';
-
-/** Top-bar actions every /ds page gets after Search (boards D-accounts, P-accounts), matching the live routes. */
-export const shellTopBarActions: TopBarAction[] = [
-  {
-    id: 'chat',
-    icon: 'chat',
-    label: 'Ask the data',
-    asChild: true,
-    children: <Link href={appHref('/chat')} prefetch={false} />,
-  },
-];
+import { useTabBarHidden } from './tabBarStore';
 
 export interface ShellPageProps {
   title: React.ReactNode;
@@ -34,9 +23,9 @@ export interface ShellPageProps {
   /** The + opens a dropdown of these rows instead of one add. Wins over onAdd and addHref. */
   addMenu?: TopBarMenuItem[];
   addLabel?: string;
-  /** Where the phone back button goes (detail pages). Replaces the leading logo on phone; without it the bar shows the logo. */
+  /** Where the back button goes. Optional: a crumb two or more deep gives it by itself (the parent list); this overrides that. Without either the bar shows the logo. */
   backHref?: string;
-  /** The content starts with a tab strip: no space between the top bar and it. */
+  /** The content starts with a tab strip: no space between the top bar and it, and no back arrow derived from the crumb (tabs are siblings; an explicit backHref still wins). */
   flushTop?: boolean;
   children: React.ReactNode;
 }
@@ -63,29 +52,16 @@ function useBack(backHref?: string) {
   };
 }
 
-/** The current pathname; null outside an app router (tests, Storybook). */
-function useCurrentPath(): string | null {
-  try {
-     
-    return usePathname();
-  } catch {
-    return null;
-  }
-}
-
-/** The top bar of a page without backHref: bell, Search and Ask the data, then the page's own add. */
+/** The top bar of a page without backHref: bell and Search, then the page's own add. */
 function MainTopBar({ addActions, ...barProps }: React.ComponentProps<typeof TopBar> & { addActions: TopBarAction[] }) {
   const notifications = useNotificationsAction();
   const { open: openSearch } = useSearch();
-  // The Ask the data shortcut is left out of the bar on the Ask the data pages themselves.
-  const onChatPage = isChatPath(useCurrentPath());
   return (
     <TopBar
       {...barProps}
       actions={[
         notifications,
         { id: 'search', icon: 'search' as const, label: 'Search', phoneOnly: true, onSelect: openSearch },
-        ...shellTopBarActions.filter((a) => !(onChatPage && a.id === 'chat')),
         ...addActions,
       ]}
     />
@@ -95,17 +71,23 @@ function MainTopBar({ addActions, ...barProps }: React.ComponentProps<typeof Top
 /** One signed-in page: the top bar with this page's title and +, then the content area. */
 export function ShellPage({
   title,
-  crumb,
+  crumb: crumbProp,
   addHref,
   onAdd,
   addMenu,
   addLabel,
-  backHref,
+  backHref: backHrefProp,
   flushTop,
   children,
 }: ShellPageProps) {
+  // The crumb never repeats the title; a page below a list (a crumb two or more deep) gets the back arrow without asking.
+  const crumb = trimCrumb(crumbProp, title);
+  // A page that starts with its area's tab strip (flushTop) is a sibling of the other tabs, not a child: no derived back arrow.
+  const backHref = backHrefProp ?? (flushTop ? undefined : crumbParentHref(crumb));
   const onBack = useBack(backHref);
-  // Detail pages (backHref) keep only back, title and their own add/menu: no bell, Search or Ask the data.
+  // Without the phone tab bar the content needs no room for it: the page's sticky footer takes the bottom edge (a column, so a short page still pushes it down).
+  const tabBarHidden = useTabBarHidden();
+  // Detail pages (backHref) keep only back, title and their own add/menu: no bell or Search.
   const addActions: TopBarAction[] = [
     ...(addMenu
       ? [
@@ -165,7 +147,7 @@ export function ShellPage({
       {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included);
           isolate keeps their z-sticky inside the content, so the bar always draws above them. */}
       <main
-        className={`isolate flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
+        className={`isolate flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 ${tabBarHidden ? 'max-desk:pb-0 max-desk:flex max-desk:flex-col' : 'pb-bottom-clearance'} desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
       >
         {children}
       </main>

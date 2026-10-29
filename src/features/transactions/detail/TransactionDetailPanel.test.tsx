@@ -113,7 +113,7 @@ describe('TransactionDetailPanel', () => {
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
     expect(screen.getByText('UPI/DR/427812345678/BIGBASKET BANGALORE')).toBeInTheDocument();
     expect(screen.getByText('₹3,600')).toBeInTheDocument();
-    expect(screen.getByText('₹2,95,030 after')).toBeInTheDocument();
+    expect(screen.getByText('₹2,95,030.00 after')).toBeInTheDocument();
     for (const [label, value] of [
       ['Account', 'HDFC Regalia Gold'],
       ['Card', 'Meera · ••7742'],
@@ -223,7 +223,7 @@ describe('TransactionDetailPanel', () => {
       const p = props({ pageTransactions: [withLink()] });
       renderWithQuery(<TransactionDetailPanel {...p} />);
       expect(await screen.findByText('Links')).toBeInTheDocument();
-      expect(screen.getByText('Refund · +₹240 · 14 Oct · HDFC Regalia Gold')).toBeInTheDocument();
+      expect(screen.getByText('Refund · +₹240.00 · 14 Oct · HDFC Regalia Gold')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'BigBasket refund' }));
       expect(p.onOpenTransaction).toHaveBeenCalledWith('t2');
     });
@@ -338,7 +338,7 @@ describe('TransactionDetailPanel', () => {
       expect(api.deleteLoanPayment).not.toHaveBeenCalled();
       expect(screen.getByText('Remove this settlement?')).toBeInTheDocument();
       expect(screen.getByText('The installment goes back to unpaid; the transaction stays.')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Remove settlement' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
       await waitFor(() => expect(api.deleteLoanPayment).toHaveBeenCalledWith('loan1', 'pay1'));
       await waitFor(() => expect(toast).toHaveBeenCalledWith('Settlement removed'));
       expect(toast.mock.calls.every((c) => !c[1]?.action)).toBe(true);
@@ -376,7 +376,7 @@ describe('TransactionDetailPanel', () => {
       expect(api.fetchTransactionLinks).toHaveBeenCalledTimes(1);
 
       fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
-      fireEvent.click(await screen.findByRole('button', { name: 'Delete transaction' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
       await waitFor(() => expect(onDeleted).toHaveBeenCalled());
       await new Promise((r) => setTimeout(r, 30));
       expect(api.fetchTransaction).not.toHaveBeenCalled();
@@ -427,12 +427,12 @@ describe('TransactionDetailPanel', () => {
       renderWithQuery(<TransactionDetailPanel {...p} />);
       fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
       const dialog = await screen.findByRole('dialog', { name: /Delete BigBasket/ });
-      expect(within(dialog).getByText('Delete BigBasket · ₹3,600?')).toBeInTheDocument();
+      expect(within(dialog).getByText('Delete BigBasket · ₹3,600.00?')).toBeInTheDocument();
       expect(within(dialog).getByText(/1 linked record stays \(Lending · Priya Nair\) but loses the link/)).toBeInTheDocument();
       expect(within(dialog).getByText(/not a manually created transaction/)).toBeInTheDocument();
       expect(api.deleteTransaction).not.toHaveBeenCalled();
 
-      fireEvent.click(within(dialog).getByRole('button', { name: 'Delete transaction' }));
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
       await waitFor(() => expect(api.deleteTransaction).toHaveBeenCalledWith('t1'));
       await waitFor(() => expect(p.onDeleted).toHaveBeenCalled());
       expect(toast).toHaveBeenCalledWith('Transaction deleted');

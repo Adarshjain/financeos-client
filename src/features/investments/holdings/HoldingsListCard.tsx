@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -13,7 +12,6 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
   Pager,
   Select,
   type SelectOption,
@@ -22,6 +20,7 @@ import {
 import { AccountPicker } from '@/components/organisms';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
+import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
 import { AccountType } from '@/lib/types';
@@ -194,18 +193,6 @@ const columns = [
       );
     },
   }),
-  ch.display({
-    id: 'open',
-    header: '',
-    meta: { size: 'xs', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Button asChild variant="ghost" size="sm" iconOnly aria-label={`Open ${row.original.title}`}>
-        <Link href={row.original.href} prefetch={false}>
-          <Icon name="chevron-right" size="sm" />
-        </Link>
-      </Button>
-    ),
-  }),
 ];
 
 /** The second line of a phone row: "40 × ₹1,742.60 −0.3%", "10 × ₹2,150 · manual price", "Merged into …". */
@@ -281,13 +268,17 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   return (
     <RecordMergerContext.Provider value={recordMerger}>
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar search={{ value: text, onValueChange: setText }}>
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+        changed={filtered}
+        onReset={() => go({ q: '', type: '', broker: '', page: 0 })}
+      >
         <Select
           value={state.type}
           options={TYPE_OPTIONS}
           onValueChange={(v) => go({ type: (v ?? '') as HoldingsUrlState['type'], page: 0 })}
           trigger={
-            <FilterChip hasDropdown selected={state.type !== ''} className="shrink-0">
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
               {typeLabel}
             </FilterChip>
           }
@@ -300,7 +291,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
             value={state.broker}
             onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
             trigger={
-              <FilterChip hasDropdown selected={state.broker !== ''} className="shrink-0">
+              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '', page: 0 })} className="shrink-0">
                 {brokerName ?? 'Broker'}
               </FilterChip>
             }
@@ -339,11 +330,19 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           onRowSelect={(row) => router.push(row.href)}
           rowState={(row) => (byId.get(row.id)?.mergedIntoName ? { muted: true } : undefined)}
           empty={
-            <EmptyState
-              compact
-              description={filtered ? 'No holdings match' : 'No holdings yet. Record a trade or import your tradebook.'}
-              action={filtered ? { label: 'Clear filters', variant: 'link', href: holdingsUrl({ ...state, q: '', type: '', broker: '', page: 0 }) } : undefined}
-            />
+            filtered ? (
+              <EmptyState
+                title="No holdings match"
+                description="Try a different search or filter."
+                action={{ label: 'Clear filters', variant: 'secondary', href: holdingsUrl({ ...state, q: '', type: '', broker: '', page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title="No holdings yet"
+                description="Record a trade or import your tradebook."
+                action={{ label: 'Import tradebook', variant: 'primary', href: INVESTMENTS_IMPORT_HREF }}
+              />
+            )
           }
           stickyHeader={false}
         />

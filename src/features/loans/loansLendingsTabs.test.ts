@@ -11,7 +11,7 @@ describe('loansLendingsTabs', () => {
   });
 
   it('titles the top bar as the boards do', () => {
-    expect(loansLendingsTabs.map((t) => t.title)).toEqual(['Lendings', 'Loans & lendings']);
+    expect(loansLendingsTabs.map((t) => t.title)).toEqual(['Loans & lendings', 'Loans & lendings']);
   });
 
   it('picks the tab from the pathname', () => {

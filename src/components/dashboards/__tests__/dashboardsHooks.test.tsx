@@ -77,13 +77,13 @@ describe('useDuplicateBuiltin', () => {
     expect(router.push).toHaveBeenCalledWith('/legacy/reports/rep-new');
   });
 
-  it('a copy fixed to a reward window says so (dd/mm/yyyy) in the toast', async () => {
+  it('a copy fixed to a reward window says so (dd/mm/yy) in the toast', async () => {
     serve(resolved({ key: 'cap_headroom', label: 'Cap headroom', windowAsOf: '2026-10-01' }), { id: 'r2', name: 'Cap headroom' });
     const { Wrapper } = wrapperFor();
     const { result } = renderHook(() => useDuplicateBuiltin(), { wrapper: Wrapper });
     await act(async () => { await result.current.mutateAsync({ builtinKey: 'cap_headroom', params: {} }); });
     expect(toast.success).toHaveBeenCalledWith('Saved "Cap headroom" to your reports', {
-      description: 'This copy is fixed to the window open on 01/10/2026.',
+      description: 'This copy is fixed to the window open on 01/10/26.',
       action: expect.anything(),
     });
   });

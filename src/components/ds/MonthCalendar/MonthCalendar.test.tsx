@@ -61,11 +61,15 @@ describe('MonthCalendar', () => {
       expect(chips('2026-10-15')[2]).toHaveClass('bg-brand-tint', 'text-brand');
     });
 
-    it('chips are bars below desk: label hidden until desk', () => {
+    it('below desk a day with events shows their count instead of chips; desk shows the chips', () => {
       renderEvents();
       const [sbi] = chips('2026-10-03');
-      expect(sbi).toHaveClass('h-space-6', 'desk:h-auto', 'desk:truncate');
-      expect(sbi.firstElementChild).toHaveClass('hidden', 'desk:inline');
+      expect(sbi).toHaveClass('hidden', 'desk:block', 'desk:truncate');
+      const count = (iso: string) => cell(iso).querySelector<HTMLElement>('[data-event-count]');
+      expect(count('2026-10-03')).toHaveTextContent('1');
+      expect(count('2026-10-15')).toHaveTextContent('4');
+      expect(count('2026-10-15')).toHaveClass('desk:hidden');
+      expect(count('2026-10-14')).toBeNull();
     });
 
     it('shows at most maxEventsPerDay chips, then an overridable "+N more"', () => {

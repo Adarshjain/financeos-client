@@ -8,14 +8,13 @@ import {
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
-  Icon,
   Pager,
   StatusWord,
   Text,
   useConcealed,
 } from '@/components/ds';
 
-import { LEDGER_SIZE_OPTIONS, type LedgerRow } from './personModel';
+import type { LedgerRow } from './personModel';
 
 const ch = createDataTableColumnHelper<LedgerRow>();
 
@@ -27,7 +26,6 @@ function ReceivedCell({ children }: { children: string }) {
     </Text>
   );
 }
-const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
 export interface LedgerCardProps {
   /** The person's first name, for the subtitle and the empty state. */
@@ -46,7 +44,7 @@ export interface LedgerCardProps {
   onExport: () => void;
 }
 
-/** The person's entries newest first, each with the balance after it. Paged by the server, Pager above and below. */
+/** The person's entries newest first, each with the balance after it. Paged by the server. */
 export function LedgerCard({
   firstName,
   rows,
@@ -65,7 +63,7 @@ export function LedgerCard({
       ch.display({
         id: 'date',
         header: 'Date',
-        meta: { size: 'sm', phone: 'hidden' },
+        meta: { size: 'date', phone: 'hidden' },
         cell: ({ row }) => (
           <Text variant="body" tone="ink-3">
             {row.original.date}
@@ -118,27 +116,8 @@ export function LedgerCard({
         meta: { size: 'sm', align: 'end', phone: 'amount' },
         cell: ({ row }) => <Text variant="body-strong" fraction="small">{row.original.balance}</Text>,
       }),
-      ch.display({
-        id: 'edit',
-        header: '',
-        meta: { size: 'xs', align: 'end', phone: 'hidden' },
-        // The row itself opens the entry; the button's own press must not also open it a second time.
-        cell: ({ row }) => (
-          <div onPointerDown={stop} onPointerUp={stop} onClick={stop} onKeyDown={stop}>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              aria-label={`Edit ${row.original.title}`}
-              onClick={() => onOpenEntry(row.original)}
-            >
-              <Icon name="pencil-simple" size="sm" />
-            </Button>
-          </div>
-        ),
-      }),
     ],
-    [onOpenEntry],
+    [],
   );
 
   const pager = (
@@ -148,8 +127,6 @@ export function LedgerCard({
       totalElements={totalElements}
       totalPages={totalPages}
       unit="entries"
-      sizeOptions={LEDGER_SIZE_OPTIONS}
-      sizeLabel={(n) => `${n} / page`}
       onPageChange={onPageChange}
       onSizeChange={onSizeChange}
     />

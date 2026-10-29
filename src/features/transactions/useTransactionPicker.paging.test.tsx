@@ -36,11 +36,11 @@ describe('useTransactionPicker paging', () => {
     const { result } = renderHook(() => useTransactionPicker({ active: true }));
     await waitFor(() => expect(result.current.candidates).toHaveLength(1));
     expect(queries()).toEqual([0]);
-    expect((api.POST as Mock).mock.calls[0]![1].params.query.size).toBe(10);
+    expect((api.POST as Mock).mock.calls[0]![1].params.query.size).toBe(5);
     expect(result.current.page).toBe(0);
     expect(result.current.totalPages).toBe(3);
     expect(result.current.totalElements).toBe(30);
-    expect(result.current.pageSize).toBe(10);
+    expect(result.current.pageSize).toBe(5);
   });
 
   it('goes to another page and shows only that page rows', async () => {

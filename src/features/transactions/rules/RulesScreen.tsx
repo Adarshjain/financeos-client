@@ -7,7 +7,6 @@ import {
   ConfirmDialog,
   EmptyState,
   FilterBar,
-  FilterChip,
   Icon,
   Pager,
   SelectionBar,
@@ -29,6 +28,7 @@ import { RuleJobsCard } from './RuleJobsCard';
 import {
   ANY,
   DEFAULT_RULES_STATE,
+  DEFAULT_STATUS,
   hasRuleFilters,
   MATCH_FILTER_OPTIONS,
   MATCH_TYPE_LABEL,
@@ -69,11 +69,11 @@ type Dialogs =
   | { kind: 'delete'; rule: CategoryRule }
   | null;
 
-const STATUS_CHIPS: { id: RuleStatus; label: string }[] = [
-  { id: 'unverified', label: 'Unverified' },
-  { id: 'verified', label: 'Verified' },
-  { id: 'all', label: 'All' },
-];
+const STATUS_LABEL: Record<RuleStatus, string> = { unverified: 'Unverified', verified: 'Verified', all: 'All' };
+const STATUS_OPTIONS: SelectOption[] = (['unverified', 'verified', 'all'] as const).map((value) => ({
+  value,
+  label: STATUS_LABEL[value],
+}));
 
 /** /transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
 export function RulesScreen({ rules, reference, state, categories, hasRulesElsewhere = false }: RulesScreenProps) {
@@ -123,27 +123,26 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
   const allOnPage = pageSelectable.length > 0 && pageSelectable.every((id) => ids.includes(id));
 
   return (
-    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
+    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })} addLabel="Add rule">
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
-        <FilterBar size="md"
+        <FilterBar
+          size="md"
           search={{ value: text, onValueChange: setText }}
+          changed={state.status !== DEFAULT_STATUS || state.source !== null || state.matchType !== null || state.categoryId !== null}
+          onReset={() => go({ ...DEFAULT_RULES_STATE, q: state.q, size: state.size })}
         >
-          {STATUS_CHIPS.map((chip) => (
-            <FilterChip
-              key={chip.id}
-              size="md"
-              className="shrink-0"
-              selected={state.status === chip.id}
-              onSelectedChange={(on) => {
-                if (on) go({ status: chip.id });
-              }}
-            >
-              {chip.label}
-            </FilterChip>
-          ))}
+          <ChoiceChip
+            label={STATUS_LABEL[state.status]}
+            value={state.status}
+            options={STATUS_OPTIONS}
+            selected={state.status !== DEFAULT_STATUS}
+            onReset={() => go({ status: DEFAULT_STATUS })}
+            onCommit={(v) => go({ status: v as RuleStatus })}
+          />
             <ChoiceChip
-              label={categoryName ? `Category · ${categoryName}` : 'Category'}
+              label={categoryName ?? 'Category'}
+              onReset={() => go({ categoryId: null })}
               value={state.categoryId ?? ANY}
               options={categoryOptions}
               selected={state.categoryId !== null}
@@ -151,14 +150,16 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
               onCommit={(v) => go({ categoryId: v === ANY ? null : v })}
             />
             <ChoiceChip
-              label={state.source ? `Source · ${SOURCE_LABEL[state.source]}` : 'Source'}
+              label={state.source ? SOURCE_LABEL[state.source] : 'Source'}
+              onReset={() => go({ source: null })}
               value={state.source ?? ANY}
               options={SOURCE_OPTIONS}
               selected={state.source !== null}
               onCommit={(v) => go({ source: v === ANY ? null : (v as RuleSource) })}
             />
             <ChoiceChip
-              label={state.matchType ? `Match type · ${MATCH_TYPE_LABEL[state.matchType]}` : 'Match type'}
+              label={state.matchType ? MATCH_TYPE_LABEL[state.matchType] : 'Match type'}
+              onReset={() => go({ matchType: null })}
               value={state.matchType ?? ANY}
               options={MATCH_FILTER_OPTIONS}
               selected={state.matchType !== null}
@@ -173,7 +174,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
             description={
               noMatch
                 ? 'Try adjusting your search or filters.'
-                : 'Transactions you import will generate rules automatically, or add one with the + at the top.'
+                : 'Transactions you import will generate rules automatically, or add one yourself.'
             }
             action={
               hasRuleFilters(state)
@@ -182,7 +183,9 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
                     variant: 'secondary',
                     onSelect: () => go({ ...DEFAULT_RULES_STATE, status: state.status, size: state.size }),
                   }
-                : undefined
+                : noMatch
+                  ? undefined
+                  : { label: 'Add rule', onSelect: () => setDialog({ kind: 'add' }) }
             }
           />
         ) : (
@@ -204,9 +207,9 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
                     categories={rule.categories.map((c) => c.name)}
                     onApprove={() => verify.mutate(rule)}
                     menuItems={[
+                      { label: 'Edit', onSelect: () => setDialog({ kind: 'edit', rule }) },
                       { label: 'Find matches', onSelect: () => setDialog({ kind: 'matches', rule }) },
-                      { label: 'Edit rule', onSelect: () => setDialog({ kind: 'edit', rule }) },
-                      { label: 'Delete rule', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
+                      { label: 'Delete', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
                     ]}
                     selectable={!rule.verified}
                     selected={ids.includes(rule.id)}
@@ -253,7 +256,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
         }}
         title="Delete rule?"
         description="Transactions already categorized by this rule keep their categories. This can't be undone."
-        confirmLabel="Delete rule"
+        confirmLabel="Delete"
         confirmLoading={remove.isPending}
         onConfirm={() => {
           if (dialog?.kind === 'delete') remove.mutate(dialog.rule);

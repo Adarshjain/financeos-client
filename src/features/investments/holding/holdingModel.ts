@@ -29,16 +29,17 @@ export function holdingHeader(holding: HoldingDetail): HoldingHeaderModel {
 
 export interface HoldingHeroModel {
   value: string;
-  /** "+₹48,162 · +113% · today +2.1%". */
+  /** "+₹1,240 today · +2.1%"; null when the price did not move or is a manual one. */
   line: { text: string; tone: 'positive' | 'danger' | undefined } | null;
 }
 
 export function holdingHero(holding: HoldingDetail): HoldingHeroModel {
-  if (holding.noPrice) return { value: formatMoney(holding.currentValue), line: null };
-  const parts = [formatMoney(holding.unrealised, { sign: 'always' })];
-  if (holding.unrealisedPct != null) parts.push(formatPercent(holding.unrealisedPct, { sign: 'always' }));
-  if (holding.dayChangePct != null && !holding.manualPrice) parts.push(`today ${formatPercent(holding.dayChangePct, { sign: 'always' })}`);
-  return { value: formatMoney(holding.currentValue), line: { text: parts.join(' · '), tone: moveTone(holding.unrealised) } };
+  const value = formatMoney(holding.currentValue);
+  if (holding.noPrice || holding.manualPrice || (holding.dayChange == null && holding.dayChangePct == null)) return { value, line: null };
+  const parts: string[] = [];
+  if (holding.dayChange != null) parts.push(`${formatMoney(holding.dayChange, { sign: 'always' })} today`);
+  if (holding.dayChangePct != null) parts.push(holding.dayChange == null ? `today ${formatPercent(holding.dayChangePct, { sign: 'always' })}` : formatPercent(holding.dayChangePct, { sign: 'always' }));
+  return { value, line: { text: parts.join(' · '), tone: moveTone(holding.dayChange ?? holding.dayChangePct) } };
 }
 
 // ---- Figures ---------------------------------------------------------------------
@@ -59,6 +60,9 @@ export function sourceWord(source: string | null | undefined): string {
   if (!source) return '';
   return SOURCE_WORDS[source.toUpperCase()] ?? source;
 }
+
+/** The three figures the hero shows under the value; the other five are the Position card's rows. */
+export const HERO_FIGURE_IDS: readonly string[] = ['invested', 'return', 'xirr'];
 
 /** The eight figures of the holding, in board order. `tradeCount` is the holding's trades in the tradebook. */
 export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number, now: Date = new Date()): HoldingFigure[] {
@@ -88,7 +92,7 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
       id: 'invested',
       label: 'Invested',
       value: formatMoney(holding.invested),
-      context: holding.quantity > 0 ? `${formatQuantity(holding.quantity)} ${unit} at ${formatMoney(holding.avgCost, { decimals: 'auto' })} avg` : undefined,
+      context: holding.quantity > 0 ? `${formatQuantity(holding.quantity)} ${unit} at ${formatMoney(holding.avgCost, { decimals: 'exact' })} avg` : undefined,
     },
     {
       id: 'return',
@@ -164,7 +168,7 @@ export function tradeRow(t: InvestmentTransactionResponse): TradeRow {
     pricePlain: formatMoney(price, { decimals: 'exact', symbol: false }),
     valuePlain: formatMoney(qty * price, { symbol: false }),
     pnl,
-    phoneSub: [date, `${formatQuantity(qty)} @ ${formatMoney(price, { decimals: 'auto' })}`, pnl?.text].filter(Boolean).join(' · '),
+    phoneSub: [date, `${formatQuantity(qty)} @ ${formatMoney(price, { decimals: 'exact' })}`, pnl?.text].filter(Boolean).join(' · '),
   };
 }
 
@@ -184,15 +188,15 @@ export function dividendRow(d: Dividend): DividendRowModel {
   const subtitle = [
     d.exDate ? `ex ${formatDate(d.exDate, 'list')}` : '',
     `paid ${formatDate(d.payDate, 'list')}`,
-    tds != null ? `TDS ${formatMoney(tds)}` : '',
+    tds != null ? `TDS ${formatMoney(tds, { decimals: 'exact' })}` : '',
   ]
     .filter(Boolean)
     .join(' · ');
   return {
     id: d.id,
-    title: perUnit != null ? `${word} ${formatMoney(perUnit, { decimals: 'auto' })} / share` : word,
+    title: perUnit != null ? `${word} ${formatMoney(perUnit, { decimals: 'exact' })} / share` : word,
     subtitle,
-    amount: `+${formatMoney(Number(d.amount))}`,
+    amount: `+${formatMoney(Number(d.amount), { decimals: 'exact' })}`,
   };
 }
 

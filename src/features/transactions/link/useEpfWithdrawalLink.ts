@@ -181,7 +181,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
   const sharesTotal = isPension ? (numPension ?? 0) : (numEmployee ?? 0) + (numEmployer ?? 0);
   const received = sharesTotal - (numTds ?? 0);
   const receivedCaption =
-    mode === 'new' && sharesTotal > 0 && received >= 0 ? `Received in bank: ${formatMoney(received, { decimals: 'auto' })}.` : null;
+    mode === 'new' && sharesTotal > 0 && received >= 0 ? `Received in bank: ${formatMoney(received, { decimals: 'exact' })}.` : null;
   const newValid =
     Boolean(employerId) &&
     Boolean(creditedOn) &&

@@ -55,16 +55,16 @@ export function capCount(n: number | string, max = 99): string {
 }
 
 /**
- * Parses user input in dd/mm/yyyy format into an ISO yyyy-mm-dd string, or null if invalid.
+ * Parses user input in dd/mm/yy (read as 20yy) or dd/mm/yyyy format into an ISO yyyy-mm-dd string, or null if invalid.
  */
 export function parseDateInput(text: string): string | null {
   if (!text) return null;
-  const match = text.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const match = text.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
   if (!match) return null;
   const [, dStr, mStr, yStr] = match;
   const d = parseInt(dStr, 10);
   const m = parseInt(mStr, 10);
-  const y = parseInt(yStr, 10);
+  const y = yStr.length === 2 ? 2000 + parseInt(yStr, 10) : parseInt(yStr, 10);
   if (m < 1 || m > 12) return null;
   if (d < 1 || d > 31) return null;
   const date = new Date(Date.UTC(y, m - 1, d));

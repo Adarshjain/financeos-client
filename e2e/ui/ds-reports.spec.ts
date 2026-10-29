@@ -54,14 +54,13 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     const reportsTab = page.getByRole('tab', { name: /^Reports$/ });
     await expect(reportsTab).toBeVisible();
     await expect(page.getByRole('tab', { name: /^Dashboards$/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'KPI', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Table', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Type', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /Datasource/ })).toHaveCount(0);
 
-    // A type chip is a URL, applied to the loaded list.
-    await page.getByRole('button', { name: 'Table', exact: true }).click();
+    // The Type chip is a dropdown; its choice is a URL, applied to the loaded list.
+    await page.getByRole('button', { name: 'Type', exact: true }).click();
+    await page.getByRole('option', { name: 'Table', exact: true }).click();
     await expect(page).toHaveURL(/\/reports\?type=TABLE/);
-    await expect(page.getByRole('button', { name: 'KPI', exact: true })).toBeVisible();
     await expect(reportsTab).toBeVisible();
     await expect(
       table.getByText('Ds Spend Table', { exact: true })
@@ -69,7 +68,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     await expect(table.getByText('Ds Spend KPI', { exact: true })).toHaveCount(
       0
     );
-    await page.getByRole('button', { name: 'All', exact: true }).click();
+    await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
     await expect(
       table.getByText('Ds Spend KPI', { exact: true })
     ).toBeVisible();

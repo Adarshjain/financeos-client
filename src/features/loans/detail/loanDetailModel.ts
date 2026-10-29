@@ -9,8 +9,6 @@ export function ratePct(pct: number): string {
 
 // ---- Header ---------------------------------------------------------------------------------
 
-export type HeaderTone = 'success' | 'neutral' | 'danger';
-
 export interface NextEmiModel {
   /** "EMI #14 overdue" */
   eyebrow: string;
@@ -22,11 +20,8 @@ export interface NextEmiModel {
 }
 
 export interface LoanHeaderModel {
-  status: { label: string; tone: HeaderTone };
-  /** "Floating 8.25%" */
-  rate: string;
-  /** "State Bank of India · #SBIHL00482913 · started 1 Aug 25 · ends Jan 45 · paid from HDFC Bank Savings" */
-  meta: string;
+  /** "Closed" / "Foreclosed" when the loan is not active, else the lender; null when there is nothing to say. */
+  info: string | null;
   next: NextEmiModel | null;
 }
 
@@ -39,7 +34,7 @@ export function nextEmi(loan: LoanResponse, schedule: InstallmentDto[], today: s
   if (loan.status !== 'active') return null;
   const inst = firstUnpaid(schedule);
   if (!inst) return null;
-  const amount = formatMoney(inst.emi);
+  const amount = formatMoney(inst.emi, { decimals: 'exact' });
   const days = daysBetween(inst.dueDate, today);
   if (inst.status === 'overdue') {
     const ago = Math.max(days ?? 1, 1);
@@ -62,41 +57,13 @@ export function nextEmi(loan: LoanResponse, schedule: InstallmentDto[], today: s
   };
 }
 
-export function loanHeader(
-  loan: LoanResponse,
-  schedule: InstallmentDto[],
-  paymentAccountName: string | null,
-  today: string,
-): LoanHeaderModel {
-  const status: LoanHeaderModel['status'] =
-    loan.status === 'active'
-      ? { label: 'Active', tone: 'success' }
-      : loan.status === 'closed'
-        ? { label: 'Closed', tone: 'neutral' }
-        : { label: 'Foreclosed', tone: 'danger' };
-  const meta = [
-    loan.lender?.trim() || null,
-    loan.loanAccountNumber ? `#${loan.loanAccountNumber}` : null,
-    loan.startDate ? `started ${formatDate(loan.startDate, 'list')}` : null,
-    loan.projectedEndDate ? `ends ${formatDate(loan.projectedEndDate, 'month')}` : null,
-    paymentAccountName ? `paid from ${paymentAccountName}` : null,
-  ].filter((part): part is string => Boolean(part));
-  return {
-    status,
-    rate: `${loan.rateType === 'floating' ? 'Floating' : 'Fixed'} ${ratePct(loan.currentAnnualRatePct)}`,
-    meta: meta.join(' · '),
-    next: nextEmi(loan, schedule, today),
-  };
+export function loanHeader(loan: LoanResponse, schedule: InstallmentDto[], today: string): LoanHeaderModel {
+  const info =
+    loan.status === 'closed' ? 'Closed' : loan.status === 'foreclosed' ? 'Foreclosed' : loan.lender?.trim() || null;
+  return { info, next: nextEmi(loan, schedule, today) };
 }
 
 // ---- Tiles ----------------------------------------------------------------------------------
-
-export interface DetailTile {
-  label: string;
-  value: string;
-  /** Absent when there is nothing to add. */
-  context?: string;
-}
 
 export interface TimelineModel {
   /** Share of the borrowed principal repaid, 0 to 100. */
@@ -106,8 +73,12 @@ export interface TimelineModel {
   end: string;
 }
 
-export interface LoanTilesModel {
-  tiles: DetailTile[];
+export interface LoanHeroModel {
+  /** Outstanding principal, to the paisa. */
+  outstanding: string;
+  /** The EMI to pay next ("EMI #14 overdue · ₹36,603 · was due 5 Oct · 8 days ago"); absent when none is due. */
+  next: { text: string; overdue: boolean } | null;
+  figures: { label: string; value: string; caption?: string }[];
   timeline: TimelineModel;
 }
 
@@ -142,43 +113,33 @@ export function emiChange(loan: LoanResponse, events: LoanEventResponse[]): { wa
   return { was: loan.emiAmount, cause };
 }
 
-export function loanTiles(loan: LoanResponse, events: LoanEventResponse[]): LoanTilesModel {
+export function loanHero(loan: LoanResponse, events: LoanEventResponse[], next: NextEmiModel | null): LoanHeroModel {
   const repaid = repaidPct(loan);
   const change = emiChange(loan, events);
   const saved = monthsSaved(loan);
-  const apr = loan.effectiveAprPct;
+  const left = Math.max(0, loan.totalInstallments - loan.settledInstallments);
   return {
-    tiles: [
+    outstanding: formatMoney(loan.outstandingPrincipal, { decimals: 'exact' }),
+    next: next ? { text: [next.eyebrow, next.amount, next.context].join(' · '), overdue: next.overdue } : null,
+    figures: [
       {
-        label: 'Outstanding',
-        value: formatMoney(loan.outstandingPrincipal),
-        context:
-          loan.principal > 0
-            ? `of ${formatMoney(loan.principal)} · ${formatPercent(repaid)} repaid`
-            : undefined,
-      },
-      {
-        label: 'Current EMI',
-        value: formatMoney(loan.currentEmi),
-        context: change
-          ? `was ${formatMoney(change.was, { decimals: 'auto' })} before the ${change.cause === 'change' ? 'change' : change.cause}`
+        label: 'EMI',
+        value: formatMoney(loan.currentEmi, { decimals: 'exact' }),
+        caption: change
+          ? `was ${formatMoney(change.was, { decimals: 'exact' })} before the ${change.cause === 'change' ? 'change' : change.cause}`
           : undefined,
       },
+      { label: 'Rate', value: `${ratePct(loan.currentAnnualRatePct)} ${loan.rateType}` },
       {
-        label: 'Interest paid',
-        value: formatMoney(loan.totalInterestPaid),
-        context: apr != null ? `effective APR ${ratePct(apr)}` : undefined,
-      },
-      {
-        label: 'Timeline',
-        value: `${loan.settledInstallments} / ${loan.totalInstallments}`,
-        context: saved > 0 ? `${formatCount(saved, ['month', 'months'])} saved by prepayment` : undefined,
+        label: 'Months left',
+        value: String(left),
+        caption: saved > 0 ? `${formatCount(saved, ['month', 'months'])} saved by prepayment` : undefined,
       },
     ],
     timeline: {
       pct: repaid,
       start: loan.startDate ? formatDate(loan.startDate, 'month') : '',
-      today: `Today · EMI ${loan.settledInstallments} settled`,
+      today: `Today · ${formatPercent(repaid)} of ${formatMoney(loan.principal)} repaid`,
       end: loan.projectedEndDate ? formatDate(loan.projectedEndDate, 'month') : '—',
     },
   };

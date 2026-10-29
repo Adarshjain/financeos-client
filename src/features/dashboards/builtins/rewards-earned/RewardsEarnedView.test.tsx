@@ -82,7 +82,7 @@ describe('RewardsEarnedView', () => {
 
   it('empty: no rewards yet this financial year', () => {
     renderWithQuery(<RewardsEarnedView {...view(pivot([]))} />);
-    expect(screen.getByText('No rewards yet this financial year')).toBeInTheDocument();
+    expect(screen.getByText("Rewards on your cards' spends add up here from April.")).toBeInTheDocument();
   });
 
   it('data of another shape is not drawn', () => {

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, EmptyState, FilterChip, ListRow, Menu, Text } from '@/components/ds';
+import { Button, Card, EmptyState, ListRow, Menu, Text } from '@/components/ds';
 import type { LoanEventType } from '@/lib/loan.types';
 
 import { entriesCount,type EntryRow } from './entriesModel';
@@ -21,7 +21,7 @@ export function EntriesCard({ rows, onAddEvent, onAddCharge, onDelete }: Entries
       title="Events & charges"
       subtitle={entriesCount(rows.length)}
       action={
-        <Menu align="end" trigger={<FilterChip hasDropdown>Add</FilterChip>}>
+        <Menu align="end" trigger={<Button variant="link" size="sm">Add</Button>}>
           <Menu.Item onSelect={() => onAddEvent('rate_change')}>Rate change</Menu.Item>
           <Menu.Item onSelect={() => onAddEvent('prepayment')}>Prepayment</Menu.Item>
           <Menu.Item onSelect={() => onAddEvent('foreclosure')}>Foreclosure</Menu.Item>
@@ -43,7 +43,7 @@ export function EntriesCard({ rows, onAddEvent, onAddCharge, onDelete }: Entries
                 {row.amount ?? '—'}
               </Text>
             }
-            actions={[{ id: 'delete', label: row.kind === 'event' ? 'Delete event' : 'Delete charge', tone: 'danger', onSelect: () => onDelete(row) }]}
+            actions={[{ id: 'delete', label: 'Delete', tone: 'danger', onSelect: () => onDelete(row) }]}
           />
         ))
       )}

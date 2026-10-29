@@ -65,7 +65,7 @@ export interface OverviewCard {
   capLeft: string;
   /** "₹1.2L to go · Annual spend", "3 more · Ten swipes", "Met · Oct" or "—". */
   nextMilestone: string;
-  /** "HDFC Bank · ••7741 · Anniversary year 15 Mar – 14 Mar 27": the phone's second line. */
+  /** "••7741 · 15 Mar – 14 Mar 27": the phone's second line. */
   subtitle: string;
   /** Rupees earned this reward year; "₹1,502 + 1,040 pts" while the card's points have no point value. */
   earned: string;
@@ -157,7 +157,7 @@ export function buildOverview(
         year,
         capLeft: capLeftText(total?.nearestCap),
         nextMilestone: nextMilestoneText(total?.nextMilestone, total?.lastMet),
-        subtitle: [identity, year].filter(Boolean).join(' · '),
+        subtitle: [identity, yearLines(year).main].filter(Boolean).join(' · '),
         earned: earnedText(rupees, points),
         needsPointValue: points > 0,
         href: rewardsCardHref(card.id),

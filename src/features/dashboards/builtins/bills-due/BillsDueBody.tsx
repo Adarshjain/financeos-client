@@ -89,11 +89,10 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
     body = <BuiltinError message={getErrorMessage(error, "Couldn't load your bills.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (bills.length === 0) {
     body = accountId ? (
-      <EmptyState compact title="No current bill for this card" />
+      <EmptyState compact description="No current bill for this card" />
     ) : (
       <EmptyState
         compact
-        title="No credit cards yet"
         description="Add a credit card to track its bills here."
         action={{ label: 'Go to accounts', href: appHref('/accounts'), variant: 'link' }}
       />

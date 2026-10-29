@@ -81,7 +81,7 @@ describe('AttentionBody', () => {
   it('info rows stay on the Inbox page: nothing else to do reads "All clear"', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: inbox([item({ key: 'i', section: 'info' })]) } as never);
     render();
-    expect(await screen.findByText('All clear')).toBeInTheDocument();
+    expect(await screen.findByText('Nothing needs you right now.')).toBeInTheDocument();
     expect(screen.getByText('Nothing needs you right now.')).toBeInTheDocument();
   });
 

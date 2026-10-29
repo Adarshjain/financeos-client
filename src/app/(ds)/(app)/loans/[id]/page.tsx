@@ -18,12 +18,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function DsLoanPage({ params, searchParams }: Params & { searchParams: SearchParams }) {
   const { id } = await params;
   const { highlightSeq } = parseLoanUrl(await searchParams);
-  const { detail, schedule, paymentAccountName } = await loadLoanPage(id);
+  const { detail, schedule } = await loadLoanPage(id);
   return (
     <LoanDetailScreen
       detail={detail}
       schedule={schedule}
-      paymentAccountName={paymentAccountName}
       today={todayInAppZone()}
       highlightSeq={highlightSeq}
     />

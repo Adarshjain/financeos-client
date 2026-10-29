@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Card, EmptyState, Text } from '@/components/ds';
+import { Card, EmptyState, Hero } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { RewardsOverviewData } from './overviewData';
@@ -22,17 +22,7 @@ export function RewardsOverview({ data }: { data: RewardsOverviewData }) {
   }
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="flex flex-col gap-space-2">
-        <Text variant="overline" tone="ink-3" as="div">
-          Earned this year
-        </Text>
-        <Text variant="hero-figure" family="display" as="div">
-          {model.total}
-        </Text>
-        <Text variant="label" tone="ink-3" as="div">
-          Each card over its own reward year
-        </Text>
-      </div>
+      <Hero label="Earned this year" value={model.total} change={{ text: 'Each card over its own reward year' }} />
       <RewardsCardList cards={model.cards} />
     </div>
   );

@@ -2,9 +2,10 @@
 
 import React from 'react';
 
-import { Button, FilterBar, FilterChip, Icon, Select } from '@/components/ds';
+import { FilterBar, FilterChip, Select } from '@/components/ds';
 
 import {
+  DEFAULT_OBLIGATION_MONTHS,
   OBLIGATION_KINDS,
   OBLIGATION_MONTH_OPTIONS,
   type ObligationKindFilter,
@@ -16,22 +17,31 @@ export interface UpcomingFiltersProps {
   months: number;
   onKindChange: (kind: ObligationKindFilter) => void;
   onMonthsChange: (months: number) => void;
+  /** Puts the kind and the range back to their defaults together. */
+  onReset: () => void;
 }
 
-/** Kind chips and the range Select in one FilterBar row (it scrolls sideways when it overflows). */
-export function UpcomingFilters({ kind, months, onKindChange, onMonthsChange }: UpcomingFiltersProps) {
+/** Two dropdown chips, kind and range, in one FilterBar row; a chip off its default shows just its value and a ×. */
+export function UpcomingFilters({ kind, months, onKindChange, onMonthsChange, onReset }: UpcomingFiltersProps) {
+  const kindChanged = kind !== 'all';
+  const monthsChanged = months !== DEFAULT_OBLIGATION_MONTHS;
   return (
-    <FilterBar>
-      {OBLIGATION_KINDS.map((k) => (
-        <FilterChip
-          key={k.value}
-          className="shrink-0"
-          selected={kind === k.value}
-          onClick={() => onKindChange(k.value)}
-        >
-          {k.label}
-        </FilterChip>
-      ))}
+    <FilterBar changed={kindChanged || monthsChanged} onReset={onReset}>
+      <Select
+        value={kind}
+        options={OBLIGATION_KINDS}
+        onValueChange={(v) => onKindChange(v as ObligationKindFilter)}
+        trigger={
+          <FilterChip
+            className="shrink-0"
+            hasDropdown
+            changed={kindChanged}
+            onReset={() => onKindChange('all')}
+          >
+            {kindChanged ? (OBLIGATION_KINDS.find((k) => k.value === kind)?.label ?? 'Type') : 'Type'}
+          </FilterChip>
+        }
+      />
       <Select
         value={String(months)}
         options={OBLIGATION_MONTH_OPTIONS.map((m) => ({
@@ -40,10 +50,14 @@ export function UpcomingFilters({ kind, months, onKindChange, onMonthsChange }: 
         }))}
         onValueChange={(v) => onMonthsChange(Number(v))}
         trigger={
-          <Button variant="secondary" size="sm" aria-label="Range" className="shrink-0">
+          <FilterChip
+            className="shrink-0"
+            hasDropdown
+            changed={monthsChanged}
+            onReset={() => onMonthsChange(DEFAULT_OBLIGATION_MONTHS)}
+          >
             {monthsLabel(months)}
-            <Icon name="chevron-down" size="xs" />
-          </Button>
+          </FilterChip>
         }
       />
     </FilterBar>

@@ -56,10 +56,10 @@ describe('statement lines', () => {
     expect(row).toMatchObject({
       index: '1',
       review: { label: 'Needs review', tone: 'warning' },
-      balanceAfter: '₹12,500',
+      balanceAfter: '₹12,500.00',
       chain: 'broken',
     });
-    expect(row.phoneSub).toBe('9 Sep · linked to transaction · balance ₹12,500');
+    expect(row.phoneSub).toBe('9 Sep · linked to transaction · balance ₹12,500.00');
   });
 
   it.each([
@@ -97,14 +97,14 @@ describe('buildDetails', () => {
       },
     });
     expect(buildDetails(d, true)).toEqual([
-      { label: 'Due date', value: '25 Oct 2026' },
-      { label: 'Credit limit', value: '₹3,00,000' },
-      { label: 'Available credit', value: '₹2,55,681' },
-      { label: 'Finance charges', value: '₹0' },
-      { label: 'Fees and charges', value: '₹590' },
-      { label: 'Previous balance', value: '₹46,800' },
-      { label: 'Payments received', value: '₹46,800' },
-      { label: 'Total purchases', value: '₹44,319' },
+      { label: 'Due date', value: '25 Oct 26' },
+      { label: 'Credit limit', value: '₹3,00,000.00' },
+      { label: 'Available credit', value: '₹2,55,681.00' },
+      { label: 'Finance charges', value: '₹0.00' },
+      { label: 'Fees and charges', value: '₹590.00' },
+      { label: 'Previous balance', value: '₹46,800.00' },
+      { label: 'Payments received', value: '₹46,800.00' },
+      { label: 'Total purchases', value: '₹44,319.00' },
       { label: 'Reward points balance', value: '12,480' },
       { label: 'Points earned', value: '+1,560' },
       { label: 'Parse mode', value: 'llm' },
@@ -133,13 +133,13 @@ describe('buildDetails', () => {
 
 describe('ledgerLine', () => {
   it('says it matches, or names the ledger figure when it does not', () => {
-    expect(ledgerLine(44319, true, 44319)).toBe('Closing balance ₹44,319 · matches ledger');
-    expect(ledgerLine(44319, false, 43000)).toBe('Closing balance ₹44,319 · ledger ₹43,000');
+    expect(ledgerLine(44319, true, 44319)).toBe('Closing balance ₹44,319.00 · matches ledger');
+    expect(ledgerLine(44319, false, 43000)).toBe('Closing balance ₹44,319.00 · ledger ₹43,000.00');
   });
 
   it('shows the closing balance alone when the server could not compare', () => {
-    expect(ledgerLine(44319, null, null)).toBe('Closing balance ₹44,319');
-    expect(ledgerLine(44319, false, null)).toBe('Closing balance ₹44,319');
+    expect(ledgerLine(44319, null, null)).toBe('Closing balance ₹44,319.00');
+    expect(ledgerLine(44319, false, null)).toBe('Closing balance ₹44,319.00');
   });
 
   it('has no line without a closing balance', () => {
@@ -184,19 +184,19 @@ describe('buildDetailModel', () => {
 
   it('builds the card detail: title, subtitle, stats from the statement and the bill', () => {
     const m = buildDetailModel(detail(), bill, true);
-    expect(m.title).toBe('Statement · 5 Oct 2026');
+    expect(m.title).toBe('Statement · 5 Oct 26');
     expect(m.subtitle).toEqual([
       'Period 6 Sep → 5 Oct',
       'Regalia-Gold-statement.pdf',
       'uploaded 13 Oct',
     ]);
     expect(m.stats).toEqual([
-      { label: 'Total due', value: '₹44,319' },
-      { label: 'Minimum', value: '₹2,500' },
-      { label: 'Paid so far', value: '₹500' },
+      { label: 'Total due', value: '₹44,319.00' },
+      { label: 'Minimum', value: '₹2,500.00' },
+      { label: 'Paid so far', value: '₹500.00' },
     ]);
     expect(m.dueDate).toBe('2026-10-26');
-    expect(m.ledgerLine).toBe('Closing balance ₹44,319 · matches ledger');
+    expect(m.ledgerLine).toBe('Closing balance ₹44,319.00 · matches ledger');
     expect(m.lines).toHaveLength(2);
   });
 
@@ -242,14 +242,14 @@ describe('buildDetailModel', () => {
 
   it('shows Paid so far as zero when the bill has no paid amount', () => {
     const m = buildDetailModel(detail(), { ...bill, paidAmount: null }, true);
-    expect(m.stats[2]).toEqual({ label: 'Paid so far', value: '₹0' });
+    expect(m.stats[2]).toEqual({ label: 'Paid so far', value: '₹0.00' });
   });
 
   it('builds the bank detail with opening, closing and lines', () => {
     const m = buildDetailModel(detail({ cardDetails: undefined, transactionCount: 14 }), null, false);
     expect(m.stats).toEqual([
-      { label: 'Opening', value: '₹46,800' },
-      { label: 'Closing', value: '₹44,319' },
+      { label: 'Opening', value: '₹46,800.00' },
+      { label: 'Closing', value: '₹44,319.00' },
       { label: 'Lines', value: '14' },
     ]);
     expect(m.isCard).toBe(false);

@@ -61,7 +61,7 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
       <Dialog.Content
         size="md"
         title={cap ? `Edit cap · ${cap.name}` : 'Add cap'}
-        tertiary={cap && onDelete ? { label: 'Delete cap', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined}
+        tertiary={cap && onDelete ? { label: 'Delete', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: cap ? 'Save cap' : 'Add cap', type: 'submit', form: FORM_ID, loading: pending }}
       >

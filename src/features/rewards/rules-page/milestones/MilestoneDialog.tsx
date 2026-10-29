@@ -110,7 +110,7 @@ export function MilestoneDialog({
         size="lg"
         title={milestone ? `Edit milestone · ${milestone.name}` : 'Add milestone'}
         tertiary={
-          milestone && onDelete ? { label: 'Delete milestone', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined
+          milestone && onDelete ? { label: 'Delete', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined
         }
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: milestone ? 'Save milestone' : 'Add milestone', type: 'submit', form: FORM_ID, loading: pending }}

@@ -64,7 +64,7 @@ export function ChatTableCard({ table }: { table: ChatTableBlock }) {
       subtitle={formatCount(rows.length, ['row', 'rows'])}
       action={
         <Text variant="label" as="span">
-          <Button variant="link" onClick={copy}>
+          <Button variant="link" size="sm" onClick={copy}>
             Copy table
           </Button>
         </Text>

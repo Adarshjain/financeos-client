@@ -23,6 +23,16 @@ export function oauthReturnFrom(params: { gmail?: string; email?: string; messag
   return null;
 }
 
+/** Looks like a raw HTTP status: "HTTP 500", "status 502", "status code 404", "404 Not Found". A bare amount like "₹500" is not. */
+const RAW_HTTP = /\bHTTP\b|\bstatus(?: code)?:?\s*[45]\d\d\b|\b[45]\d\d (?:Bad Request|Unauthorized|Forbidden|Not Found|Conflict|Too Many Requests|Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout)\b/i;
+
+/** An error banner reads as one short line: a long or raw HTTP message ("HTTP 500 ...") gives way to the fallback. */
+export function shortError(message: string | null | undefined, fallback: string): string {
+  const text = (message ?? '').trim();
+  if (!text || text.length > 90 || RAW_HTTP.test(text) || text.includes('\n')) return fallback;
+  return text;
+}
+
 export const OAUTH_ERROR_FALLBACK = "Couldn't connect Gmail. Try again.";
 
 /** "Connected 15 Jun · last sync 16 Jun, 3:30 pm"; either half is left out when the date is unknown. */

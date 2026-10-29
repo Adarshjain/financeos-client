@@ -117,8 +117,14 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/unknown')).toBeUndefined();
   });
 
-  it('hides the phone tab bar on the Ask the data pages only', () => {
+  it('hides the phone tab bar on Ask the data (home and a conversation) and on create/edit pages', () => {
     expect(hidesTabBar('/chat')).toBe(true);
+    expect(hidesTabBar('/reports/new')).toBe(true);
+    expect(hidesTabBar('/reports/r-1')).toBe(true);
+    expect(hidesTabBar('/dashboards/new')).toBe(true);
+    expect(hidesTabBar('/dashboards')).toBe(false);
+    expect(hidesTabBar('/dashboards/d-1')).toBe(false);
+    expect(hidesTabBar('/transactions/import')).toBe(false);
     expect(hidesTabBar('/chat/c-1')).toBe(true);
     expect(hidesTabBar('/chatter')).toBe(false);
     expect(hidesTabBar('/reports')).toBe(false);
@@ -127,6 +133,12 @@ describe('shell navigation', () => {
     const { container } = render(<ShellTabBar user={{ email: 'a@example.test' }} />);
     expect(container).toBeEmptyDOMElement();
     expect(screen.queryByRole('tab', { name: /Menu/i })).toBeNull();
+  });
+
+  it('keeps the phone tab bar on the Import tab and a dashboard view', () => {
+    mockPathname = '/transactions/import';
+    render(<ShellTabBar user={{ email: 'a@example.test' }} />);
+    expect(screen.getByRole('tab', { name: /Menu/i })).toBeTruthy();
   });
 
   it('has no Upcoming entry in the rail or the tab bar; Inbox owns /upcoming', () => {

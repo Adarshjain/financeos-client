@@ -24,7 +24,10 @@ const TABS = [
 
 const MENU_TABS = new Set(['/investments/tradebook', '/investments/fno']);
 
-const plus = (page: Page) => page.getByRole('button', { name: 'Add', exact: true }).first();
+/** The top-bar + names its verb and object; on Tradebook and F&O it opens a menu and says "Add trade" / "Add F&O trade". */
+const plus = (page: Page, name: string) => page.getByRole('button', { name, exact: true }).first();
+const plusName = (tab: { path: string; dialog: string }) =>
+  tab.path === '/investments/tradebook' ? 'Add trade' : tab.path === '/investments/fno' ? 'Add F&O trade' : tab.dialog;
 
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Investments top-bar +, ${viewport.name} (@ui)`, () => {
@@ -41,7 +44,7 @@ for (const viewport of VIEWPORTS) {
     for (const tab of TABS) {
       test(`${tab.path}: + opens ${tab.dialog}`, async ({ page }) => {
         await page.goto(tab.path);
-        await plus(page).click();
+        await plus(page, plusName(tab)).click();
         // On Tradebook and F&O the + is a menu: its first row is the add.
         if (MENU_TABS.has(tab.path)) await page.getByRole('menuitem', { name: tab.dialog }).click();
         await expect(page.getByRole('dialog', { name: tab.dialog })).toBeVisible();
@@ -52,7 +55,7 @@ for (const viewport of VIEWPORTS) {
 
     test('records a trade from Holdings + and finds it in the Tradebook', async ({ page }) => {
       await page.goto('/investments');
-      await plus(page).click();
+      await plus(page, 'Record trade').click();
       const dialog = page.getByRole('dialog', { name: 'Record trade' });
       await dialog.getByRole('combobox', { name: /Instrument/ }).click();
       await page.getByPlaceholder('Search by name or symbol').fill(seeded.tcs.symbol);
@@ -70,7 +73,7 @@ for (const viewport of VIEWPORTS) {
 
     test('a holding page records a trade, a dividend and a corporate action for that instrument', async ({ page }) => {
       await page.goto(`/investments/${seeded.infy.id}`);
-      await page.getByRole('button', { name: 'Record trade' }).click();
+      await page.getByRole('button', { name: 'Record trade' }).first().click();
       const trade = page.getByRole('dialog', { name: 'Record trade' });
       await expect(trade.getByRole('combobox', { name: /Instrument/ })).toContainText(seeded.infy.symbol);
       await trade.getByRole('button', { name: 'Cancel' }).click();
@@ -84,15 +87,18 @@ for (const viewport of VIEWPORTS) {
       await expect(action.getByRole('combobox', { name: /Instrument/ })).toContainText(seeded.infy.symbol);
     });
 
-    test('a holding page + opens a menu with every record option, each opening its dialog', async ({ page }) => {
+    test('a holding page header has Record trade and a menu with the other record options, each opening its dialog', async ({ page }) => {
       await page.goto(`/investments/${seeded.infy.id}`);
+      await page.getByRole('button', { name: 'Record trade' }).first().click();
+      await expect(page.getByRole('dialog', { name: 'Record trade' })).toBeVisible();
+      await page.getByRole('button', { name: 'Cancel' }).click();
+      await expect(page.getByRole('dialog')).toHaveCount(0);
       for (const [item, dialog] of [
-        ['Record trade', 'Record trade'],
         ['Record dividend', 'Record dividend'],
         ['Record corporate action', 'Record corporate action'],
         ['Record price', 'Record price'],
       ]) {
-        await plus(page).click();
+        await page.getByRole('button', { name: 'More actions' }).click();
         await page.getByRole('menuitem', { name: item }).click();
         await expect(page.getByRole('dialog', { name: dialog })).toBeVisible();
         await page.getByRole('button', { name: 'Cancel' }).click();

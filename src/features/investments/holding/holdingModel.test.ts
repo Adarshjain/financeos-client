@@ -7,6 +7,7 @@ import { bonus, buy, dividend, estimate, holding, instrument, manualPrice } from
 import {
   corporateActionRow,
   dividendRow,
+  HERO_FIGURE_IDS,
   holdingFigures,
   holdingHeader,
   holdingHero,
@@ -28,13 +29,13 @@ describe('holdingHeader and holdingHero', () => {
     expect(holdingHeader(fund)).toEqual({ title: 'Mirae Asset Large Cap' });
   });
 
-  it('writes the move line with the return, its percent and today', () => {
-    expect(holdingHero(holding)).toEqual({ value: '₹90,762', line: { text: '+₹48,162 · +113.1% · today +2.1%', tone: 'positive' } });
+  it("writes the move line as today's change and its percent", () => {
+    expect(holdingHero(holding)).toEqual({ value: '₹90,762', line: { text: '+₹1,860 today · +2.1%', tone: 'positive' } });
   });
 
-  it('has no move line for a holding without a price, and no "today" for a manual price', () => {
+  it('has no move line for a holding without a price, and no move for a manual price', () => {
     expect(holdingHero({ ...holding, noPrice: true }).line).toBeNull();
-    expect(holdingHero({ ...holding, manualPrice: true }).line!.text).toBe('+₹48,162 · +113.1%');
+    expect(holdingHero({ ...holding, manualPrice: true }).line).toBeNull();
   });
 });
 
@@ -47,8 +48,8 @@ describe('holdingFigures', () => {
     expect(f.quantity.value).toBe('60');
     expect(f.avgCost.value).toBe('₹710.00');
     expect(f.ltp).toMatchObject({ value: '₹1,512.70', context: 'Yahoo · 13 Oct', override: true });
-    expect(f.xirr).toMatchObject({ value: '31.4%', tone: 'positive', context: 'since 11 Mar 2024' });
-    expect(f.invested).toMatchObject({ value: '₹42,600', context: '60 shares at ₹710 avg' });
+    expect(f.xirr).toMatchObject({ value: '31.4%', tone: 'positive', context: 'since 11 Mar 24' });
+    expect(f.invested).toMatchObject({ value: '₹42,600', context: '60 shares at ₹710.00 avg' });
     expect(f.return).toMatchObject({ value: '+₹48,162', tone: 'positive', context: 'unrealised · +113.1%' });
     expect(f.realised).toMatchObject({ value: '₹0', context: 'nothing sold yet' });
     expect(f.charges).toMatchObject({ value: '₹51.20', context: 'across 3 trades' });
@@ -84,25 +85,25 @@ describe('sellLine', () => {
 
 describe('section rows', () => {
   it('writes a buy with its broker and value, and a sell with its realised P&L', () => {
-    expect(tradeRow(buy())).toMatchObject({ side: 'Buy', broker: 'Zerodha', quantity: '20', price: '₹1,420.00', value: '₹28,400', pnl: null, date: '11 Mar 2024' });
+    expect(tradeRow(buy())).toMatchObject({ side: 'Buy', broker: 'Zerodha', quantity: '20', price: '₹1,420.00', value: '₹28,400', pnl: null, date: '11 Mar 24' });
     const sell = tradeRow(buy({ id: 't3', type: 'sell', realisedPnl: 1200 }));
     expect(sell.side).toBe('Sell');
     expect(sell.pnl).toEqual({ text: 'P&L +₹1,200', plain: 'P&L +1,200', tone: 'positive' });
     expect([sell.pricePlain, sell.valuePlain]).toEqual(['1,420.00', '28,400']);
-    expect(sell.phoneSub).toBe('11 Mar 2024 · 20 @ ₹1,420 · P&L +₹1,200');
+    expect(sell.phoneSub).toBe('11 Mar 24 · 20 @ ₹1,420.00 · P&L +₹1,200');
   });
 
   it('writes a dividend per share with its dates and TDS, and no Final or Interim word', () => {
     expect(dividendRow(dividend)).toEqual({
       id: 'd1',
-      title: 'Dividend ₹22 / share',
-      subtitle: 'ex 30 May 2025 · paid 18 Jun 2025 · TDS ₹132',
-      amount: '+₹1,320',
+      title: 'Dividend ₹22.00 / share',
+      subtitle: 'ex 30 May 25 · paid 18 Jun 25 · TDS ₹132.00',
+      amount: '+₹1,320.00',
     });
   });
 
   it('writes a corporate action with its ratio and ex date, and no "Applied" word', () => {
-    expect(corporateActionRow(bonus)).toEqual({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 2025' });
+    expect(corporateActionRow(bonus)).toEqual({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 25' });
   });
 
   it('lets only the signed-in user\'s own manual prices change', () => {
@@ -120,5 +121,13 @@ describe('section rows', () => {
       { label: 'Price source', value: 'Yahoo' },
       { label: 'Overrides', value: 'none' },
     ]);
+  });
+});
+
+describe('hero figures', () => {
+  it('puts Invested, ₹ return and XIRR in the hero; the other five are the Position card rows', () => {
+    const ids = holdingFigures(holding, null, 2).map((f) => f.id);
+    expect(HERO_FIGURE_IDS).toEqual(['invested', 'return', 'xirr']);
+    expect(ids.filter((id) => !HERO_FIGURE_IDS.includes(id))).toEqual(['quantity', 'avgCost', 'ltp', 'realised', 'charges']);
   });
 });

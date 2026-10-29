@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, Icon, ListRow, SectionHeader, Text } from '@/components/ds';
+import { Button, Card, ListRow, SectionHeader, Text } from '@/components/ds';
 import { formatMoney } from '@/lib/format';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
@@ -100,7 +100,6 @@ export function UpcomingList({
                         onClick={() => setShown((prev) => new Set(prev).add(s.key))}
                       >
                         Show
-                        <Icon name="chevron-right" size="xs" />
                       </Button>
                     </Text>
                   }
@@ -109,16 +108,19 @@ export function UpcomingList({
             );
           }
           const total = s.items.some((i) => i.amount != null)
-            ? formatMoney(sumAmounts(s.items), { decimals: 'auto' })
+            ? formatMoney(sumAmounts(s.items))
             : null;
           const keys = upcomingRowKeys(s.items);
           return (
             <React.Fragment key={s.key}>
               <RowTransition key="header">
                 <SectionHeader
+                  as="h2"
                   variant="strong"
                   sticky={false}
+                  borderTop={false}
                   tone={s.danger ? 'danger' : 'neutral'}
+                  meta={`· ${s.items.length}`}
                   action={
                     total ? (
                       <Text variant="label" tone={s.danger ? 'danger' : 'ink'}>
@@ -127,7 +129,7 @@ export function UpcomingList({
                     ) : undefined
                   }
                 >
-                  {`${s.name} · ${s.items.length}`}
+                  {s.name}
                 </SectionHeader>
               </RowTransition>
               {s.items.map((item, idx) => (

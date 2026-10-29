@@ -146,4 +146,25 @@ describe('EmptyState', () => {
     );
     expect(container.firstChild).toHaveClass('custom-empty-class');
   });
+
+  it('page-level shape: heading, one hint, one primary button', () => {
+    render(<EmptyState title="No accounts yet" description="Add an account to start." action={{ label: 'Add account', onSelect: () => {} }} />);
+    expect(screen.getByRole('heading', { name: 'No accounts yet' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Add account' })).toBeInTheDocument();
+  });
+
+  it('no-match shape: heading, one hint, a Clear filters button', () => {
+    const clear = vi.fn();
+    render(<EmptyState title="No matches" description="Try fewer filters." action={{ label: 'Clear filters', variant: 'secondary', onSelect: clear }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it('secondary-card shape: compact is one muted line with no heading or button', () => {
+    render(<EmptyState compact description="Nothing here yet." />);
+    expect(screen.getByText('Nothing here yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
 });

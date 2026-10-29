@@ -4,6 +4,18 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Pager } from './Pager';
 
+describe('Pager hide-when-fits', () => {
+  it('hides when everything fits on the first page', () => {
+    const { container } = render(<Pager page={0} size={50} totalElements={10} onPageChange={() => {}} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('stays visible on page 2+ after the total shrank, so the user can page back', () => {
+    render(<Pager page={2} size={50} totalElements={10} onPageChange={() => {}} />);
+    expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument();
+  });
+});
+
 describe('Pager', () => {
   it('renders range and total count with / by default', () => {
     render(
@@ -54,13 +66,14 @@ describe('Pager', () => {
     expect(screen.queryByText('/ 182')).not.toBeInTheDocument();
   });
 
-  it('handles 0 totalElements', () => {
+  it('handles 0 totalElements when kept with alwaysShow', () => {
     render(
       <Pager
         page={0}
         size={50}
         totalElements={0}
         totalPages={1}
+        alwaysShow
         unit="transactions"
         onPageChange={() => {}}
       />,
@@ -232,13 +245,32 @@ describe('Pager', () => {
     expect(handleSizeChange).toHaveBeenCalledWith(100);
   });
 
-  it('hides arrows and page buttons for single page lists', () => {
+  it('renders nothing when everything fits one page', () => {
+    const { container } = render(
+      <Pager page={0} size={25} totalElements={25} onSizeChange={() => {}} onPageChange={() => {}} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('keeps the size select when one page is not the smallest page size', () => {
+    render(<Pager page={0} size={100} totalElements={40} onSizeChange={() => {}} onPageChange={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Rows per page' })).toHaveTextContent('100 / page');
+    expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
+  });
+
+  it('has no bare page-size box without onSizeChange', () => {
+    render(<Pager page={0} size={25} totalElements={80} onPageChange={() => {}} />);
+    expect(screen.queryByText('25 / page')).not.toBeInTheDocument();
+  });
+
+  it('hides arrows and page buttons for single page lists when kept', () => {
     render(
       <Pager
         page={0}
         size={50}
         totalElements={25}
         totalPages={1}
+        alwaysShow
         unit="needing review"
         onPageChange={() => {}}
       />,

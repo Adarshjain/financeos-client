@@ -20,13 +20,16 @@ import { type LineRow, PAGE_SIZES, rewardsHref, type RewardsQuery, type RuleChip
 
 const ALL_RULES = 'all';
 
+/** The rule, unless the Why column already says the same thing ("No rule"): the reason shows once per row. */
+const ruleOnce = (r: LineRow) => (r.rule === r.why.label ? '' : r.rule);
+
 const ch = createDataTableColumnHelper<LineRow>();
 
 const columns = ch.columns([
   ch.accessor('date', {
     id: 'date',
     header: 'Date',
-    meta: { size: 'sm', phone: 'hidden' },
+    meta: { size: 'date', phone: 'hidden' },
     cell: ({ getValue }) => (
       <Text variant="body" tone="ink-3" as="span">
         {getValue()}
@@ -51,7 +54,7 @@ const columns = ch.columns([
         </Text>
         <div className="max-desk:hidden min-w-0">
           <Text variant="caption" tone="ink-3" truncate>
-            {row.original.rule}
+            {ruleOnce(row.original)}
           </Text>
         </div>
       </div>
@@ -105,7 +108,7 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
           go({ ruleId: next === ALL_RULES ? undefined : next, page: 0 });
         }}
         trigger={
-          <FilterChip hasDropdown selected={Boolean(query.ruleId)}>
+          <FilterChip hasDropdown changed={Boolean(query.ruleId)} onReset={() => go({ ruleId: undefined, page: 0 })}>
             {chosen?.label ?? 'All rules'}
           </FilterChip>
         }
@@ -119,7 +122,7 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
         data={rows}
         getRowId={(r) => r.id}
         onRowSelect={setOpen}
-        phoneSub={(r) => `${r.date} · ${r.basisLabel} · ${r.rule}`}
+        phoneSub={(r) => [r.date, r.basisLabel, ruleOnce(r)].filter(Boolean).join(' · ')}
         empty={<EmptyState compact title="No earning lines match" description="Nothing matches this rule in this period." />}
         pager={
           <Pager

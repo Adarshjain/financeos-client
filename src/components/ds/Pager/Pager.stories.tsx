@@ -70,7 +70,6 @@ export const Desktop: Story = {
     totalElements: 182,
     totalPages: 4,
     unit: 'transactions',
-    sizeLabel: (n) => `${n} / page`,
   },
 };
 
@@ -82,19 +81,19 @@ export const MiddlePage: Story = {
     totalElements: 250,
     totalPages: 10,
     unit: 'statements',
-    sizeLabel: (n) => `${n} / page`,
   },
 };
 
 export const SinglePage: Story = {
   name: 'Single page',
+  parameters: { docs: { description: { story: 'A list that fits one page renders no Pager at all; `alwaysShow` is the opt-out, shown here.' } } },
   args: {
+    alwaysShow: true,
     page: 0,
     size: 50,
     totalElements: 25,
     totalPages: 1,
     unit: 'items',
-    sizeLabel: (n) => `${n} / page`,
   },
 };
 
@@ -106,7 +105,6 @@ export const CustomSummary: Story = {
     totalElements: 182,
     totalPages: 4,
     summary: ({ start, end, total }) => `${start}–${end} of ${total} transactions`,
-    sizeLabel: (n) => `${n} / page`,
   },
 };
 
@@ -129,7 +127,6 @@ export const Interactive: Story = {
     size: 50,
     totalElements: 182,
     unit: 'transactions',
-    sizeLabel: (n) => `${n} / page`,
   },
 };
 
@@ -144,6 +141,5 @@ export const Phone: Story = {
     totalElements: 182,
     totalPages: 4,
     unit: 'transactions',
-    sizeLabel: (n) => `${n} / page`,
   },
 };

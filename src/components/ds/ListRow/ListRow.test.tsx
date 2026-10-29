@@ -103,6 +103,16 @@ describe('ListRow', () => {
     expect(svg).toHaveClass('w-icon-sm', 'h-icon-sm');
   });
 
+  it('shows the chevron only below desktop', () => {
+    const { container } = render(<ListRow title="Navigate" chevron />);
+    expect(container.querySelector('svg')).toHaveClass('desk:hidden');
+  });
+
+  it('has no chevron of its own, even when the row is clickable', () => {
+    const { container } = render(<ListRow title="Open" onClick={() => {}} />);
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
   it('renders asChild using Radix Slot without underline and with inherited text color', () => {
     render(
       <ListRow asChild title="Sign in" subtitle="Account access" chevron>

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner, Dialog, showToast } from '@/components/ds';
+import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -36,6 +37,8 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
   });
   const { data: accounts } = useAccounts();
   const [values, setValues] = React.useState<LoanFormValues>(() => loanValuesFrom(loan, today));
+  const [initial] = React.useState(values);
+  const guard = useDiscardGuard({ dirty: JSON.stringify(values) !== JSON.stringify(initial), busy: updateLoan.isPending, onClose, what: 'loan' });
   const [errors, setErrors] = React.useState<LoanFormErrors>({});
 
   const change = (patch: Partial<LoanFormValues>) => {
@@ -68,36 +71,39 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
   };
 
   return (
-    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <Dialog.Content
-        size="md"
-        title="Edit loan"
-        secondary={{ label: 'Cancel', onSelect: onClose, disabled: updateLoan.isPending }}
-        primary={{ label: 'Save loan', type: 'submit', form: FORM_ID, loading: updateLoan.isPending }}
-      >
-        <Dialog.Body>
-          <form
-            id={FORM_ID}
-            noValidate
-            autoComplete="off"
-            className="flex flex-col gap-space-8 desk:gap-space-16"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submit();
-            }}
-          >
-            {termsLocked ? <Banner tone="warning">{TERMS_LOCKED_NOTE}</Banner> : null}
-            <LoanFormFields
-              values={values}
-              errors={errors}
-              accounts={accounts ?? []}
-              today={today}
-              onChange={change}
-              termsLocked={termsLocked}
-            />
-          </form>
-        </Dialog.Body>
-      </Dialog.Content>
-    </Dialog>
+    <>
+      <Dialog open onOpenChange={(open) => (open ? undefined : guard.requestClose())}>
+        <Dialog.Content
+          size="md"
+          title="Edit loan"
+          secondary={{ label: 'Cancel', onSelect: guard.requestClose, disabled: updateLoan.isPending }}
+          primary={{ label: 'Save loan', type: 'submit', form: FORM_ID, loading: updateLoan.isPending }}
+        >
+          <Dialog.Body>
+            <form
+              id={FORM_ID}
+              noValidate
+              autoComplete="off"
+              className="flex flex-col gap-space-8 desk:gap-space-16"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void submit();
+              }}
+            >
+              {termsLocked ? <Banner tone="warning">{TERMS_LOCKED_NOTE}</Banner> : null}
+              <LoanFormFields
+                values={values}
+                errors={errors}
+                accounts={accounts ?? []}
+                today={today}
+                onChange={change}
+                termsLocked={termsLocked}
+              />
+            </form>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog>
+      {guard.node}
+    </>
   );
 }

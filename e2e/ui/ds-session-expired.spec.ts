@@ -14,11 +14,11 @@ test.describe('/ds session expiry and version (@ui)', () => {
 
   test('an expired session asks for the password over the page; wrong password stays, right one carries on', async ({ page, context }) => {
     await page.goto(`${E2E_CLIENT_URL}/loans`);
-    await expect(page.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add loan', exact: true }).first()).toBeVisible();
 
     // The session ends while the page is open.
     await context.clearCookies();
-    await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+    await page.getByRole('button', { name: 'Add loan', exact: true }).first().click();
 
     const dialog = page.getByRole('dialog', { name: 'Sign in again' });
     await expect(dialog).toBeVisible();

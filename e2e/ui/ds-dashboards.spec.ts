@@ -77,14 +77,16 @@ for (const viewport of VIEWPORTS) {
 
     const widgetCard = (page: Page, id: string) => page.locator(`[data-testid="dashboard-widget"][data-widget-id="${id}"]`);
 
-    test('view: the widgets show in the saved order, with the count and the page actions', async ({ page }) => {
+    test('view: the widgets show in the saved order, with the page actions', async ({ page }) => {
       const { dashboard } = await seedBoard();
       await page.goto(`/dashboards/${dashboard.id}`);
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       expect(await itemIds(page)).toEqual(['wr', 'wb']);
-      await expect(page.getByText('2 widgets', { exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Set as default', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
+      // Set as default lives in the more-actions menu next to Edit.
+      await page.getByRole('button', { name: 'More actions', exact: true }).click();
+      await expect(page.getByRole('menuitem')).toHaveText(['Set as default', 'Delete']);
+      await page.keyboard.press('Escape');
       // Not editing: no bottom bar and no grips.
       await expect(page.getByRole('button', { name: 'Save dashboard', exact: true })).toHaveCount(0);
       await expect(page.locator('[data-widget-grid-grip]')).toHaveCount(0);
@@ -131,9 +133,8 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByLabel('Dashboard name').fill('Ds created board');
 
-      // A built-in from the picker, then a saved report (the top bar's + opens it).
-      await page.getByRole('button', { name: 'Add', exact: true }).click();
-      await page.getByRole('menuitem', { name: 'Add widget' }).click();
+      // A built-in from the picker (the empty state's Add widget), then a saved report (the "Add a widget" row under the grid).
+      await page.getByRole('button', { name: 'Add widget', exact: true }).click();
       let picker = page.getByRole('dialog', { name: /Add widget/ });
       await expect(picker.getByRole('tab', { name: /Built-in/ })).toBeVisible();
       await picker.getByRole('radio', { name: /Net worth/ }).click();
@@ -141,9 +142,8 @@ for (const viewport of VIEWPORTS) {
       await picker.getByRole('button', { name: 'Add to board' }).click();
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1);
 
-      await page.getByRole('button', { name: 'Add', exact: true }).click();
-      await page.getByRole('menuitem', { name: 'Add widget' }).click();
-      picker = page.getByRole('dialog', { name: /Add widget/ });
+      await page.getByRole('button', { name: 'Add a widget', exact: true }).click();
+      picker =  page.getByRole('dialog', { name: /Add widget/ });
       await picker.getByRole('tab', { name: /My reports/ }).click();
       await picker.getByRole('radio', { name: /Ds Dash KPI/ }).click();
       await picker.getByPlaceholder('Ds Dash KPI').fill('My spend');
@@ -158,16 +158,14 @@ for (const viewport of VIEWPORTS) {
       await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       expect((await gridState(page)).map((s) => s.split(':')[1])).toEqual(before.map((s) => s.split(':')[1]));
-      await expect(page.getByText('2 widgets', { exact: true })).toBeVisible();
     });
 
     test('Add header puts a titled section header on top, edited inline, and Save keeps it', async ({ page }) => {
       await page.goto('/dashboards/new');
       await page.getByLabel('Dashboard name').fill('Ds headed board');
-      // The top bar's + opens Add widget and Add header; Add header is the second row.
-      await page.getByRole('button', { name: 'Add', exact: true }).click();
-      await expect(page.getByRole('menuitem')).toHaveText(['Add widget', 'Add header']);
-      await page.getByRole('menuitem', { name: 'Add header' }).click();
+      // A new dashboard has no top-bar +; its empty state offers Add widget and Add header.
+      await expect(page.getByRole('button', { name: 'Add', exact: true })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Add header', exact: true }).click();
       // The new header's title field is right on the header and focused.
       const title = page.getByLabel('Header', { exact: true });
       await expect(title).toBeFocused();
@@ -177,7 +175,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('heading', { name: 'This month' })).toBeVisible({ timeout: 45_000 });
       // A header is full width and not a widget.
       await expect(page.locator('[data-widget-grid-item][data-width="full"]')).toHaveCount(1);
-      await expect(page.getByText('0 widgets', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(0);
       // Plain heading text, not a grey band.
       await expect(page.getByTestId('dashboard-header')).toBeVisible();
     });
@@ -234,11 +232,15 @@ for (const viewport of VIEWPORTS) {
     test('Set as default makes it the default, and the button then clears it', async ({ page }) => {
       const { dashboard } = await seedBoard();
       await page.goto(`/dashboards/${dashboard.id}`);
-      await page.getByRole('button', { name: 'Set as default', exact: true }).click();
+      await page.getByRole('button', { name: 'More actions', exact: true }).click();
+      await page.getByRole('menuitem', { name: 'Set as default', exact: true }).click();
       await expect(page.getByText('Default dashboard set', { exact: true }).first()).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Clear default', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'More actions', exact: true }).click();
+      await expect(page.getByRole('menuitem', { name: 'Clear default', exact: true })).toBeVisible();
+      await page.keyboard.press('Escape');
       await page.reload();
-      await expect(page.getByRole('button', { name: 'Clear default', exact: true })).toBeVisible({ timeout: 45_000 });
+      await page.getByRole('button', { name: 'More actions', exact: true }).click({ timeout: 45_000 });
+      await expect(page.getByRole('menuitem', { name: 'Clear default', exact: true })).toBeVisible();
     });
 
     test('unsaved changes are guarded: Discard asks, Keep editing stays, Discard restores the saved dashboard', async ({ page }) => {
@@ -248,7 +250,11 @@ for (const viewport of VIEWPORTS) {
       await expect(name).toHaveValue('Ds guarded', { timeout: 45_000 });
 
       // Nothing changed: Discard just leaves editing.
-      await page.getByRole('button', { name: 'Discard', exact: true }).click();
+      // (A click before the page hydrates does nothing, so retry until it leaves editing.)
+      await expect(async () => {
+        await page.getByRole('button', { name: 'Discard', exact: true }).click({ timeout: 2_000 });
+        await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible({ timeout: 2_000 });
+      }).toPass({ timeout: 20_000 });
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await page.getByRole('button', { name: 'Edit', exact: true }).click();
 
@@ -308,7 +314,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Save dashboard', exact: true }).click();
       await expect(page.getByText('Dashboard saved')).toBeVisible();
       await page.reload();
-      await expect(page.getByText('1 widget', { exact: true })).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
     });
 
     /** Two categories with one transaction each, and a dashboard of one saved report ("wr") over them. */
@@ -395,9 +401,10 @@ for (const viewport of VIEWPORTS) {
       await expect(bars).toHaveCount(2, { timeout: 45_000 });
       await bars.first().click();
       const dialog = page.getByRole('dialog', { name: `Underlying data · ${name}` });
-      const chip = dialog.getByRole('button', { name: /^Category: / });
+      // A changed chip shows only its value: the tapped bar's category.
+      const chip = dialog.getByRole('button', { name: new RegExp(`^(${categories.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`) }).first();
       await expect(chip).toBeVisible({ timeout: 45_000 });
-      const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).replace(/^Category: /, '').trim();
+      const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).trim();
       expect(categories).toContain(tapped);
       const other = categories.find((c) => c !== tapped)!;
       await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });

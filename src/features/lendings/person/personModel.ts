@@ -1,15 +1,15 @@
-import { daysBetween } from '@/features/loans/loanFormatModel';
+import { daysBetween, type HeroModel } from '@/features/loans/loanFormatModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
-import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { CounterpartyResponse, LedgerEntryResponse, LendingDirection } from '@/lib/lending.types';
 import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
 
 
 // ---- URL state -------------------------------------------------------------
 
-export const LEDGER_SIZE_OPTIONS = [10, 25, 50];
+export const LEDGER_SIZE_OPTIONS = [25, 50, 100];
 
 export interface PersonUrlState {
   page: number;
@@ -41,10 +41,6 @@ export function personUrl(id: string, state: PersonUrlState): string {
 
 // ---- Header ----------------------------------------------------------------
 
-function monthOf(iso: string): string {
-  return formatDate(iso, 'month');
-}
-
 /** "in 15 days", "today", "3 days overdue". */
 export function inDays(days: number): string {
   if (days === 0) return 'today';
@@ -53,24 +49,14 @@ export function inDays(days: number): string {
 }
 
 export interface PersonHeaderModel {
-  initials: string;
-  /** "College friend · 3 entries since Aug" */
-  meta: string;
-  eyebrow: 'Owes you' | 'You owe' | 'Settled';
-  /** "₹15,000" */
-  amount: string;
-  tone: 'positive' | 'ink';
+  /** The person's notes, or null. */
+  info: string | null;
   /** "expected 28 Oct · in 15 days", or null. */
   context: string | null;
 }
 
-/** `firstEntryDate` is the oldest entry's date, null before any entry. */
-export function personHeader(cp: CounterpartyResponse, firstEntryDate: string | null, today: string): PersonHeaderModel {
+export function personHeader(cp: CounterpartyResponse, today: string): PersonHeaderModel {
   const net = cp.netPosition;
-  const entries =
-    cp.entryCount === 0
-      ? 'No entries yet'
-      : `${formatCount(cp.entryCount, ['entry', 'entries'])}${firstEntryDate ? ` since ${monthOf(firstEntryDate)}` : ''}`;
   let context: string | null = null;
   if (net !== 0 && cp.expectedReturnDate) {
     const days = daysBetween(today, cp.expectedReturnDate);
@@ -78,12 +64,19 @@ export function personHeader(cp: CounterpartyResponse, firstEntryDate: string | 
     context = `${net < 0 ? 'due' : 'expected'} ${day}${days === null ? '' : ` · ${inDays(days)}`}`;
   }
   return {
-    initials: initialsOf(cp.name),
-    meta: [cp.notes?.trim(), entries].filter(Boolean).join(' · '),
-    eyebrow: net > 0 ? 'Owes you' : net < 0 ? 'You owe' : 'Settled',
-    amount: formatMoney(Math.abs(net), { decimals: 'auto' }),
-    tone: net > 0 ? 'positive' : 'ink',
+    info: cp.notes?.trim() || null,
     context,
+  };
+}
+
+/** The person's hero: one figure, the net position. Green when they owe you, red when you owe them, Settled at zero. */
+export function personHero(cp: CounterpartyResponse): HeroModel {
+  const net = cp.netPosition;
+  return {
+    label: net > 0 ? 'Owed to you' : net < 0 ? 'You owe' : 'Settled',
+    value: formatMoney(Math.abs(net)),
+    tone: net > 0 ? 'positive' : net < 0 ? 'danger' : undefined,
+    figures: [],
   };
 }
 
@@ -116,7 +109,7 @@ export function entryWord(direction: LendingDirection, kind: LedgerEntryResponse
 }
 
 function balanceText(value: number): string {
-  return formatMoney(value, { decimals: 'auto', symbol: false });
+  return formatMoney(value, { decimals: 'exact', symbol: false });
 }
 
 export function ledgerRow(entry: LedgerEntryResponse): LedgerRow {
@@ -126,7 +119,7 @@ export function ledgerRow(entry: LedgerEntryResponse): LedgerRow {
   const tx = entry.transaction;
   const sub = [
     date,
-    `${entryWord(entry.direction, entry.kind)} ${formatMoney(entry.amount, { decimals: 'auto' })}`,
+    `${entryWord(entry.direction, entry.kind)} ${formatMoney(entry.amount, { decimals: 'exact' })}`,
     tx ? tx.description || tx.accountName || null : null,
     entry.expectedReturnDate && !isSettlementType(type) ? `expected ${formatDate(entry.expectedReturnDate, 'list')}` : null,
   ]
@@ -139,8 +132,8 @@ export function ledgerRow(entry: LedgerEntryResponse): LedgerRow {
     title: entry.notes?.trim() || ENTRY_TYPE_SHORT[type],
     linked: Boolean(entry.transaction),
     settled: Math.abs(entry.runningBalance) < 0.005,
-    lent: out ? formatMoney(entry.amount, { decimals: 'auto', symbol: false }) : null,
-    received: out ? null : formatMoney(entry.amount, { decimals: 'auto', symbol: false, sign: 'always' }),
+    lent: out ? formatMoney(entry.amount, { decimals: 'exact', symbol: false }) : null,
+    received: out ? null : formatMoney(entry.amount, { decimals: 'exact', symbol: false, sign: 'always' }),
     balance: balanceText(entry.runningBalance),
     sub,
   };

@@ -32,7 +32,7 @@ const variantStyles: Record<AvatarVariant, string> = {
 };
 
 const toneStyles: Record<AvatarTone, string> = {
-  neutral: 'bg-canvas text-ink-2',
+  neutral: 'bg-canvas text-ink-2 dark:bg-ink dark:text-on-brand',
   brand: 'bg-brand-tint text-brand-strong',
   inverse: 'bg-brand text-on-brand',
   info: 'bg-info-tint text-info-ink',
@@ -86,6 +86,8 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(
           variantStyles[variant],
           toneStyles[tone],
           sizeStyles[size],
+          // A photo or logo keeps a light tile in dark mode.
+          src && !imageError && 'dark:bg-ink',
           className,
         )}
         {...props}

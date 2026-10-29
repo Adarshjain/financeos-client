@@ -87,7 +87,7 @@ describe('/accounts', () => {
     await renderPage();
 
     expect(screen.queryByText('Old Card')).toBeNull();
-    expect(screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 2025')).toBeDefined();
+    expect(screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 25')).toBeDefined();
     expect(screen.getByRole('button', { name: /Show/ })).toBeDefined();
   });
 
@@ -97,7 +97,7 @@ describe('/accounts', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
 
-    const line = screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 2025');
+    const line = screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 25');
     const closedRow = screen.getAllByText('Old Card')[0];
     const openRow = screen.getAllByText('Axis Magnus')[0];
     expect(line.compareDocumentPosition(closedRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

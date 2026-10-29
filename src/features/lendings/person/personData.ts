@@ -21,7 +21,7 @@ export interface PersonPageData {
 export const loadPerson = cache(async (id: string): Promise<PersonCounterparty> => {
   const cp = await counterpartiesApi.get(id).catch(async (e: unknown) => {
     await signInIfSessionEnded(e);
-    if (e instanceof ApiError && e.status === 404) return null;
+    if (e instanceof ApiError && (e.status === 404 || e.status === 400)) return null;
     throw e;
   });
   if (!cp) notFound();

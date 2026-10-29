@@ -73,7 +73,7 @@ export function LoanPaymentLinkBody({ loanPayment }: { loanPayment: UseLoanPayme
                   subtitle={installmentSubtitle(i, today)}
                   trailing={
                     <Text variant="body-strong" as="span">
-                      {formatMoney(i.emi, { decimals: 'auto' })}
+                      {formatMoney(i.emi, { decimals: 'exact' })}
                     </Text>
                   }
                 />

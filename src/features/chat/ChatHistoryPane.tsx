@@ -155,7 +155,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
           }}
           title={`Delete “${deleting.title}”?`}
           description="The chat and its answers go. Reports you saved from it stay. This can't be undone."
-          confirmLabel="Delete chat"
+          confirmLabel="Delete"
           confirmLoading={pending}
           onConfirm={() => confirmDelete()}
         />

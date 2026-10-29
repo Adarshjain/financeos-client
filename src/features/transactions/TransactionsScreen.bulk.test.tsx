@@ -323,7 +323,7 @@ describe('TransactionsScreen review', () => {
     fireEvent.click(within(row).getByText('swipe-left'));
     expect(screen.getByText(/^Delete BigBasket/)).toBeInTheDocument();
     expect(posts('/api/v1/transactions/batch-delete')).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(posts('/api/v1/transactions/batch-delete')).toEqual([{ body: { transactionIds: ['t1'] } }]));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction deleted', { tone: 'success' }));
   });

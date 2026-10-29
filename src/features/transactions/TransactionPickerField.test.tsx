@@ -115,7 +115,7 @@ describe('TransactionPickerField', () => {
     expect(await screen.findByRole('radio', { name: /Second page/ })).toBeInTheDocument();
     expect(screen.queryByRole('radio', { name: /IMPS from X/ })).toBeNull();
     expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.page).toBe(1);
-    expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.size).toBe(10);
+    expect((api.POST as Mock).mock.calls.at(-1)?.[1].params.query.size).toBe(5);
   });
 
   it('sends the Debit / Credit filter to the server and returns to the first page', async () => {

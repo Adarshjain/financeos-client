@@ -4,6 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { ProgressBar } from './ProgressBar';
 
 describe('ProgressBar component', () => {
+  it('draws a lighter empty track in dark mode', () => {
+    const { container } = render(<ProgressBar value={40} />);
+    expect(container.querySelector('[role="progressbar"]')).toHaveClass('bg-line-soft', 'dark:bg-line-strong');
+  });
+
   it('renders with role="progressbar" and accessibility attributes', () => {
     render(<ProgressBar value={40} max={100} aria-label="Usage" />);
     const bar = screen.getByRole('progressbar', { name: 'Usage' });
@@ -20,7 +25,7 @@ describe('ProgressBar component', () => {
     expect(fill).toHaveStyle({ width: '21%' });
   });
 
-  it('defaults to brand tone and supports warning and danger tones', () => {
+  it('defaults to brand tone and supports warning, danger and positive tones', () => {
     const { container, rerender } = render(<ProgressBar value={62} />);
     expect(container.querySelector('.bg-brand')).toBeInTheDocument();
     expect(container.querySelector('.bg-brand')).toHaveStyle({ width: '62%' });
@@ -30,6 +35,9 @@ describe('ProgressBar component', () => {
 
     rerender(<ProgressBar value={62} tone="danger" />);
     expect(container.querySelector('.bg-danger')).toBeInTheDocument();
+
+    rerender(<ProgressBar value={62} tone="positive" />);
+    expect(container.querySelector('.bg-positive')).toBeInTheDocument();
   });
 
   it('fills with a chart colour instead of the tone, for every chart colour', () => {

@@ -17,7 +17,7 @@ import {
   Text,
 } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
-import { areaCrumb } from '@/features/shell/navigation';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Category } from '@/lib/categories.types';
@@ -69,7 +69,7 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
     ) : null;
 
   return (
-    <ShellPage crumb={areaCrumb('transactions')} title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })}>
+    <ShellPage crumb={subCrumb('transactions')} title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })} addLabel="Add category">
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
         {uncategorized ? (
@@ -90,7 +90,12 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
             {categories.rows.length === 0 ? (
               <EmptyState
                 title={state.q ? 'No categories match' : 'No categories yet'}
-                description={state.q ? 'Try adjusting your search query.' : 'Add your first category to get started.'}
+                description={state.q ? 'Try a different search.' : 'Add your first category to get started.'}
+                action={
+                  state.q
+                    ? { label: 'Clear filters', variant: 'secondary', onSelect: () => router.replace(categoriesUrl({ q: '', page: 0 }), { scroll: false }) }
+                    : { label: 'Add category', onSelect: () => setDialog({ kind: 'create' }) }
+                }
               />
             ) : (
               <Card>
@@ -172,7 +177,7 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
         }}
         title={dialog?.kind === 'delete' ? `Delete ${dialog.category.name}?` : 'Delete category?'}
         description="Transactions in this category keep their other categories; none are deleted. This can't be undone."
-        confirmLabel="Delete category"
+        confirmLabel="Delete"
         confirmLoading={remove.isPending}
         onConfirm={() => {
           if (dialog?.kind === 'delete') remove.mutate(dialog.category);

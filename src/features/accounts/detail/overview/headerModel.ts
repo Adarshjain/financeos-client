@@ -13,12 +13,10 @@ export interface MarkPaidTarget {
 export interface HeaderModel {
   label: string;
   figure: string;
-  /** Neutral badge before the caption ("No bill due"). */
-  badge?: string;
-  /** Caption parts, joined with " · ". */
-  caption: string[];
-  /** "Closed 30 Jun 2026" for a closed account. */
-  closedLabel?: string;
+  /** Danger while the headline is money you owe. */
+  figureTone?: 'danger';
+  /** The one fact beside the actions: "Closed 30 Jun 2026", "Next statement 5 Nov" or "as of 10 Oct". */
+  info?: string;
   markPaid: MarkPaidTarget | null;
 }
 
@@ -29,49 +27,36 @@ function cardHeader(
   bill: CardBillResponse | null | undefined,
   today: string,
   closed: boolean
-): Pick<HeaderModel, 'label' | 'figure' | 'badge' | 'caption' | 'markPaid'> {
+): Pick<HeaderModel, 'label' | 'figure' | 'figureTone' | 'info' | 'markPaid'> {
   const balance = account.balance ?? 0;
   const owed = formatMoney(Math.max(0, -balance));
   const inCredit = balance > 0;
   if (!bill) {
     return {
-      label: inCredit ? 'In credit' : 'You owe',
+      label: inCredit ? 'In credit' : 'Amount you owe',
       figure: inCredit ? formatMoney(balance) : owed,
-      caption: [],
+      figureTone: balance < 0 ? 'danger' : undefined,
       markPaid: null,
     };
   }
   const state = deriveBillCardState(bill, today);
   const unbilled = state.unbilled != null ? Math.max(0, state.unbilled) : null;
+  const info = bill.nextStatementExpectedOn ? `Next statement ${formatDate(bill.nextStatementExpectedOn, 'list')}` : undefined;
 
   if (state.phase === 'awaiting') {
-    const caption: string[] = [];
-    if (bill.nextStatementExpectedOn) {
-      caption.push(`next statement ${formatDate(bill.nextStatementExpectedOn, 'list')}`);
-    }
-    if (bill.status === 'PAID' && bill.totalAmountDue != null) {
-      caption.push(
-        bill.paidMarkedOn
-          ? `last bill ${formatMoney(bill.totalAmountDue)} paid ${formatDate(bill.paidMarkedOn, 'list')}`
-          : `last bill ${formatMoney(bill.totalAmountDue)}`
-      );
-    }
     return {
       label: 'Unbilled so far',
       figure: formatMoney(unbilled ?? 0),
-      badge: 'No bill due',
-      caption,
+      info,
       markPaid: null,
     };
   }
 
-  const caption: string[] = [];
-  if (bill.paymentDueDate) caption.push(`due ${formatDate(bill.paymentDueDate, 'list')}`);
-  if (unbilled != null) caption.push(`unbilled ${formatMoney(unbilled)}`);
   return {
-    label: inCredit ? 'In credit' : 'You owe',
+    label: inCredit ? 'In credit' : 'Amount you owe',
     figure: inCredit ? formatMoney(balance) : owed,
-    caption,
+    figureTone: balance < 0 ? 'danger' : undefined,
+    info,
     markPaid:
       !closed && MARKABLE.has(bill.status) && bill.statementId
         ? { statementId: bill.statementId, remaining: state.toPay }
@@ -88,32 +73,25 @@ export function buildHeaderModel(
   lastEntry?: string | null
 ): HeaderModel {
   const closed = isAccountClosed(account, today);
-  const closedLabel =
-    closed && account.closedOn
-      ? `Closed ${formatDate(account.closedOn, 'full')}`
-      : undefined;
+  const closedInfo = closed && account.closedOn ? `Closed ${formatDate(account.closedOn, 'full')}` : undefined;
 
   if (account.type === AccountType.CREDIT_CARD) {
-    return {
-      ...cardHeader(account, bill, today, closed),
-      closedLabel,
-    };
+    const card = cardHeader(account, bill, today, closed);
+    return { ...card, info: closedInfo ?? card.info };
   }
 
-  const caption: string[] = [];
+  let info: string | undefined;
   if (account.type !== AccountType.GENERIC && account.balanceAnchored && account.anchorDate) {
     // Later transactions are added on top of the statement balance, so the balance is current to the newest one.
     const latest = account.lastTransactionDate;
     const current = latest && latest > account.anchorDate && latest <= today ? latest : null;
-    caption.push(current ? `as of ${formatDate(current, 'relative', { today, inline: true })}` : `as of statement ${formatDate(account.anchorDate, 'relative', { today, inline: true })}`);
+    info = current ? `as of ${formatDate(current, 'relative', { today, inline: true })}` : `as of statement ${formatDate(account.anchorDate, 'relative', { today, inline: true })}`;
   }
   if (account.type === AccountType.BROKER) {
-    if (account.cashBalance !== undefined) caption.push(`cash ${formatMoney(account.cashBalance)}`);
     return {
       label: 'Portfolio value',
       figure: formatMoney(account.balance ?? 0),
-      caption,
-      closedLabel,
+      info: closedInfo ?? info,
       markPaid: null,
     };
   }
@@ -122,18 +100,15 @@ export function buildHeaderModel(
     return {
       label: 'Balance',
       figure: formatMoney(account.balance ?? (Number.isFinite(opening) ? opening : 0)),
-      caption,
-      closedLabel,
+      info: closedInfo ?? info,
       markPaid: null,
     };
   }
-  caption.push('Manual balance');
-  if (lastEntry) caption.push(`last entry ${formatDate(lastEntry, 'list')}`);
+  if (!info && lastEntry) info = `last entry ${formatDate(lastEntry, 'list')}`;
   return {
     label: 'Balance',
     figure: formatMoney(account.balance ?? 0),
-    caption,
-    closedLabel,
+    info: closedInfo ?? info,
     markPaid: null,
   };
 }

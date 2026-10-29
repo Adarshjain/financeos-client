@@ -1,11 +1,11 @@
 'use client';
 
-// The editor's bottom bar (the report editor's pattern): Discard (Cancel on a new dashboard) and Save (Create),
+// The editor's page footer (PageFooter, like the report editor): Discard (Cancel on a new dashboard) and Save (Create),
 // with an "Unsaved changes" note while the draft differs from what is saved.
 
 import React from 'react';
 
-import { SelectionBar, Text } from '@/components/ds';
+import { PageFooter, Text } from '@/components/ds';
 
 export interface DashboardEditActionsProps {
   /** A new dashboard: Cancel and Create instead of Discard and Save. */
@@ -18,19 +18,17 @@ export interface DashboardEditActionsProps {
 
 export function DashboardEditActions({ creating, dirty, saving, onDiscard, onSave }: DashboardEditActionsProps) {
   return (
-    <SelectionBar
-      className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
-      summary={
-        dirty ? (
-          <Text variant="label" tone="warning">
-            Unsaved changes
-          </Text>
-        ) : undefined
-      }
-      actions={[
-        { id: 'discard', label: creating ? 'Cancel' : 'Discard', variant: 'link', onSelect: onDiscard, disabled: saving },
-        { id: 'save', label: creating ? 'Add dashboard' : 'Save dashboard', variant: 'primary', onSelect: onSave, loading: saving },
-      ]}
-    />
+    <PageFooter
+      sticky
+      className="mt-space-16"
+      primary={{ label: creating ? 'Add dashboard' : 'Save dashboard', onSelect: onSave, loading: saving }}
+      secondary={{ label: creating ? 'Cancel' : 'Discard', onSelect: onDiscard, disabled: saving }}
+    >
+      {dirty ? (
+        <Text variant="label" tone="warning" as="p" className="pb-space-8">
+          Unsaved changes
+        </Text>
+      ) : null}
+    </PageFooter>
   );
 }

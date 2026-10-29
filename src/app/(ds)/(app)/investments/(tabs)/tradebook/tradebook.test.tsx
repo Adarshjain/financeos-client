@@ -117,7 +117,7 @@ describe('/investments/tradebook: data', () => {
     await renderPage();
     expect(first('TATAMOTORS')).toBeTruthy();
     expect(screen.queryByText('View job')).toBeNull();
-    expect(screen.getByRole('button', { name: 'All brokers' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Broker' })).toBeNull();
   });
 });
 
@@ -162,7 +162,8 @@ describe('/investments/tradebook: rows', () => {
   it('says there are no trades yet, or none that match', async () => {
     tradebook.fetchTradebookPage.mockResolvedValue(tradesPage([]));
     const { unmount } = await renderPage();
-    expect(screen.getByText('No trades yet. Record a trade or import your tradebook.')).toBeTruthy();
+    expect(screen.getByText('No trades yet')).toBeTruthy();
+    expect(screen.getByText('Record a trade or import your tradebook.')).toBeTruthy();
     unmount();
     await renderPage({ type: 'buy' });
     expect(screen.getByText('No trades match')).toBeTruthy();
@@ -204,21 +205,35 @@ describe('/investments/tradebook: filters', () => {
     expect(router.push).toHaveBeenCalledWith('/investments/tradebook?q=tcs', { scroll: false });
   });
 
-  it('picks a broker, All brokers clears it', async () => {
-    await renderPage({ broker: 'b-groww' });
-    expect(screen.getByRole('button', { name: 'Groww' }).className).toContain('bg-brand-tint');
-    expect(screen.getByRole('button', { name: 'All brokers' }).className).not.toContain('bg-brand-tint');
-    fireEvent.click(screen.getByRole('button', { name: 'Zerodha' }));
+  it('picks a broker from one dropdown chip, and the x of the changed chip clears it', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await user.click(screen.getByRole('button', { name: 'Broker' }));
+    await user.click(await screen.findByRole('option', { name: 'Zerodha' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?broker=b-zerodha', { scroll: false });
-    fireEvent.click(screen.getByRole('button', { name: 'All brokers' }));
+  });
+
+  it('shows a chosen broker as just its name, darker, with a x that resets it', async () => {
+    await renderPage({ broker: 'b-groww' });
+    expect(screen.getByRole('button', { name: 'Groww' }).className).not.toContain('bg-brand-tint');
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
   });
 
-  it('toggles Buy and Sell', async () => {
+  it('picks Buy or Sell from one Type dropdown chip', async () => {
+    const user = userEvent.setup();
     await renderPage({ type: 'buy' });
-    fireEvent.click(screen.getByRole('button', { name: 'Sell' }));
+    await user.click(screen.getByRole('button', { name: 'Buy' }));
+    await user.click(await screen.findByRole('option', { name: 'Sell' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?type=sell', { scroll: false });
-    fireEvent.click(screen.getByRole('button', { name: 'Buy' }));
+  });
+
+  it('resets everything with Reset filters, which shows only while a filter is changed', async () => {
+    const { unmount } = await renderPage();
+    expect(screen.queryByRole('button', { name: 'Reset filters' })).toBeNull();
+    unmount();
+    await renderPage({ type: 'sell', q: 'tata' });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
   });
 
@@ -254,7 +269,7 @@ describe('/investments/tradebook: filters', () => {
 describe('/investments/tradebook: edit and delete', () => {
   async function openEdit() {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit TATAMOTORS trade' }));
+    fireEvent.click(screen.getAllByText('TATAMOTORS')[0]);
     return screen.findByRole('dialog');
   }
 

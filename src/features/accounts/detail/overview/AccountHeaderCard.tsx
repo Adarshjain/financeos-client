@@ -2,65 +2,41 @@
 
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { ActionBar, Button, Hero, type HeroFigure } from '@/components/ds';
 import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 
 import type { HeaderModel } from './headerModel';
 
-/** The block at the top of every account page: the headline figure, and the account's actions. */
+/** The block at the top of every account page: the hero with the headline figure, then the action bar with one fact. */
 export function AccountHeaderCard({
   accountName,
   model,
+  figures,
 }: {
   accountName: string;
   model: HeaderModel;
+  /** Up to three small figures under the headline. */
+  figures?: HeroFigure[];
 }) {
   const [markPaidOpen, setMarkPaidOpen] = React.useState(false);
 
   return (
-    <Card>
-      <div className="p-space-16 flex flex-wrap items-center gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        <div className="min-w-0">
-          <Text variant="label" tone="ink-3" as="div">
-            {model.label}
-          </Text>
-          <Text variant="hero-figure" as="div" className="mt-space-2">
-            {model.figure}
-          </Text>
-          {model.badge || model.caption.length > 0 || model.closedLabel ? (
-            <div className="flex flex-wrap items-center gap-space-6 mt-space-2">
-              {model.badge ? <Badge tone="neutral">{model.badge}</Badge> : null}
-              {model.caption.length > 0 ? (
-                <Text variant="caption" tone="ink-3">
-                  {model.caption.join(' · ')}
-                </Text>
-              ) : null}
-              {model.closedLabel ? <StatusWord tone="neutral">{model.closedLabel}</StatusWord> : null}
-            </div>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-space-8 w-full desk:w-auto">
-          {model.markPaid ? (
-            <Button
-              variant="primary"
-              className="flex-1 desk:flex-none"
-              onClick={() => setMarkPaidOpen(true)}
-            >
-              Mark paid
-            </Button>
-          ) : null}
-          <OpenDialogButton variant="secondary" className="flex-1 desk:flex-none">
-            Edit
-          </OpenDialogButton>
-        </div>
-      </div>
+    <div className="flex flex-col gap-space-12 desk:gap-space-16">
+      <Hero label={model.label} value={model.figure} valueTone={model.figureTone} figures={figures} />
+      <ActionBar
+        info={model.info}
+        actions={
+          <>
+            {model.markPaid ? (
+              <Button variant="primary" onClick={() => setMarkPaidOpen(true)}>
+                Mark paid
+              </Button>
+            ) : null}
+            <OpenDialogButton variant="secondary">Edit</OpenDialogButton>
+          </>
+        }
+      />
       {model.markPaid ? (
         <MarkPaidDialog
           open={markPaidOpen}
@@ -70,6 +46,6 @@ export function AccountHeaderCard({
           remaining={model.markPaid.remaining}
         />
       ) : null}
-    </Card>
+    </div>
   );
 }

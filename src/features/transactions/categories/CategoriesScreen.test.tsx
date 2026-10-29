@@ -83,7 +83,7 @@ describe('CategoriesScreen', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('Delete Dining out?')).toBeTruthy();
     expect(http.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete category' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(http.DELETE).toHaveBeenCalled());
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(toasts.showToast).toHaveBeenCalledWith('Category "Dining out" deleted');

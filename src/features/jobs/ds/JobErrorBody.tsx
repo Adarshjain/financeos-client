@@ -22,7 +22,7 @@ export function JobErrorBody({
     <div className="flex flex-col gap-space-6">
       <Text variant="label" tone="danger" as="div">
         <Button
-          variant="link"
+          variant="link" size="sm"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
           icon={<Icon name={open ? 'chevron-down' : 'chevron-right'} size="xs" />}

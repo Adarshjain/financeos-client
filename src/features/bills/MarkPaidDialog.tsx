@@ -122,7 +122,7 @@ export function MarkPaidDialog({
         size="sm"
         title="Mark bill as paid"
         description={
-          remaining != null ? `${cardName} · ${formatMoney(remaining)} outstanding` : cardName
+          remaining != null ? `${cardName} · ${formatMoney(remaining, { decimals: 'exact' })} outstanding` : cardName
         }
         secondary={{
           label: 'Cancel',

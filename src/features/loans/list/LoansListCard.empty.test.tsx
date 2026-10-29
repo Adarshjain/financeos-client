@@ -17,9 +17,11 @@ describe('LoansListCard empty', () => {
     expect(router.push).toHaveBeenCalledWith('/loans', { scroll: false });
   });
 
-  it('no loans at all says so and has no clear action', () => {
+  it('no loans at all says so, has no clear action and offers Add loan', () => {
     render(<LoansListCard {...base} state={{ q: '', page: 0, size: 25 }} />);
-    expect(screen.getByText('No loans yet. Add a loan to track its EMIs.')).toBeInTheDocument();
+    expect(screen.getByText('No loans yet')).toBeInTheDocument();
+    expect(screen.getByText('Add a loan to track its EMIs.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add loan' })).toBeInTheDocument();
   });
 });

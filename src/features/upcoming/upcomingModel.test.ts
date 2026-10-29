@@ -66,9 +66,9 @@ describe('buildTiles', () => {
     expect(buildTiles(emis, TODAY).map((t) => t.id)).toEqual(['overdue', 'month']);
   });
 
-  it('sums only rows that carry an amount and shows paise when present', () => {
+  it('sums only rows that carry an amount, in whole rupees', () => {
     const tiles = buildTiles([it_({ date: '2026-10-14', amount: 10.5 }), it_({ date: '2026-10-14', amount: null })], TODAY);
-    expect(tiles.find((t) => t.id === 'next7')).toMatchObject({ value: '₹10.50', caption: '2 EMIs' });
+    expect(tiles.find((t) => t.id === 'next7')).toMatchObject({ value: '₹11', caption: '2 EMIs' });
   });
 });
 
@@ -97,9 +97,9 @@ describe('page state', () => {
 
 describe('row model', () => {
   it('amount tones: danger when overdue, "+" green when owed to you, dash when none, plain otherwise', () => {
-    expect(rowAmount(overdueEmi)).toEqual({ text: '₹36,603', tone: 'danger' });
-    expect(rowAmount(rahul)).toEqual({ text: '+₹15,000', tone: 'positive' });
-    expect(rowAmount(priya)).toEqual({ text: '₹12,000', tone: 'ink' });
+    expect(rowAmount(overdueEmi)).toEqual({ text: '₹36,603.00', tone: 'danger' });
+    expect(rowAmount(rahul)).toEqual({ text: '+₹15,000.00', tone: 'positive' });
+    expect(rowAmount(priya)).toEqual({ text: '₹12,000.00', tone: 'ink' });
     expect(rowAmount(overdueStmt)).toEqual({ text: '—', tone: 'none' });
   });
 

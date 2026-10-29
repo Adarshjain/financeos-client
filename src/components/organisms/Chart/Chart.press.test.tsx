@@ -183,10 +183,10 @@ describe('Chart heatmap', () => {
   it('reports a pressed day with a value as an entry', () => {
     const onSelectEntry = vi.fn();
     render(<Chart data={heat} money={false} onSelectEntry={onSelectEntry} />);
-    fireEvent.click(screen.getByRole('button', { name: /06\/01\/2026/ }));
+    fireEvent.click(screen.getByRole('button', { name: /06\/01\/26/ }));
     expect(onSelectEntry).toHaveBeenCalledWith({
       key: '2026-01-06',
-      label: '06/01/2026',
+      label: '06/01/26',
       value: 400,
     });
     // A day with no value is not pressable.

@@ -4,13 +4,11 @@ import { LoadError } from '@/features/shell/LoadError';
 import type { Loaded } from '@/features/shell/loadHelpers';
 import { ListTransition } from '@/lib/viewTransition';
 
+import { HeroBlock } from '../HeroBlock';
 import type { fetchLoanMatches, fetchLoans, fetchLoansSummary } from '../loansServerApi';
-import { TileGrid } from '../TileGrid';
 import { LoanMatchBanner } from './LoanMatchBanner';
 import { LoansListCard } from './LoansListCard';
-import { closedLoansLine, loanRow, type LoansUrlState,loanTiles } from './loansListModel';
-
-const TILE_LABELS = ['Outstanding', 'EMIs per month', 'Overdue', 'Interest this FY'];
+import { closedLoansLine, loanRow, loansHero, type LoansUrlState } from './loansListModel';
 
 export interface LoansScreenProps {
   state: LoansUrlState;
@@ -22,15 +20,11 @@ export interface LoansScreenProps {
   matches: Awaited<ReturnType<typeof fetchLoanMatches>> | null;
 }
 
-/** The Loans tab: the figures, the match banner and the list of active loans. */
+/** The Loans tab: the hero, the match banner and the list of active loans. */
 export function LoansScreen({ state, today, list, summary, matches }: LoansScreenProps) {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <TileGrid
-        tiles={summary ? loanTiles(summary, today) : null}
-        labels={TILE_LABELS}
-        error="Couldn't load this figure. Try again."
-      />
+      <HeroBlock hero={summary ? loansHero(summary, today) : null} error="Couldn't load the figures. Try again." />
       {matches ? <LoanMatchBanner matches={matches} /> : null}
       {list.ok ? (
         <ListTransition>

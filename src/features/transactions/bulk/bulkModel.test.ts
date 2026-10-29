@@ -68,8 +68,8 @@ describe('messages', () => {
 describe('deleteCopy', () => {
   it('one transaction: names it and uses the detail impact', () => {
     const copy = deleteCopy([txn({ description: 'Swiggy', amount: -1249 })]);
-    expect(copy.title).toBe('Delete Swiggy · ₹1,249?');
-    expect(copy.confirmLabel).toBe('Delete transaction');
+    expect(copy.title).toBe('Delete Swiggy · ₹1,249.00?');
+    expect(copy.confirmLabel).toBe('Delete');
     expect(copy.impact[0]).toBe('The transaction is deleted.');
   });
 

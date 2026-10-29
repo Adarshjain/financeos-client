@@ -150,13 +150,13 @@ describe('coverageLine', () => {
   const purchase = tx('p', -24990);
   it('says fully refunded when the refunds add up to the purchase', () => {
     expect(coverageLine('REFUND', [purchase, tx('r1', 20000), tx('r2', 4990)], 'p')).toBe(
-      'Refunds ₹24,990 of ₹24,990 · fully refunded',
+      'Refunds ₹24,990.00 of ₹24,990.00 · fully refunded',
     );
   });
   it('says partly refunded, or by how much it is over', () => {
-    expect(coverageLine('REFUND', [purchase, tx('r', 240)], 'p')).toBe('Refunds ₹240 of ₹24,990 · partly refunded');
+    expect(coverageLine('REFUND', [purchase, tx('r', 240)], 'p')).toBe('Refunds ₹240.00 of ₹24,990.00 · partly refunded');
     expect(coverageLine('REFUND', [purchase, tx('r', 25000)], 'p')).toBe(
-      'Refunds ₹25,000 of ₹24,990 · ₹10 more than the purchase',
+      'Refunds ₹25,000.00 of ₹24,990.00 · ₹10.00 more than the purchase',
     );
   });
   it('is only for a refund with a purchase and refunds', () => {
@@ -168,7 +168,7 @@ describe('coverageLine', () => {
 
 describe('titles and role words', () => {
   it('names one transaction with its amount, and counts several', () => {
-    expect(linkTitle([tx('a', -3600, { description: 'BigBasket' })])).toBe('Link BigBasket · ₹3,600 to…');
+    expect(linkTitle([tx('a', -3600, { description: 'BigBasket' })])).toBe('Link BigBasket · ₹3,600.00 to…');
     expect(linkTitle([tx('a', -1), tx('b', 1), tx('c', 1)])).toBe('Link 3 transactions');
   });
   it('says Purchase and Refund for a refund', () => {

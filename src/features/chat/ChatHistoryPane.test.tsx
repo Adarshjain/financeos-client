@@ -106,7 +106,7 @@ describe('ChatHistoryPane', () => {
     expect(await screen.findByText('Delete “Net worth breakdown”?')).toBeInTheDocument();
     expect(screen.getByText("The chat and its answers go. Reports you saved from it stay. This can't be undone.")).toBeInTheDocument();
     expect(onDelete).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete chat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('b'));
   });
 

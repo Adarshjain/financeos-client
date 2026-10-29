@@ -134,28 +134,22 @@ describe('/loans/lendings', () => {
   });
 
   it('passes the search, chip, page and size from the URL to the server', async () => {
-    await renderPage({ q: 'pri', filter: 'owe', page: '3', size: '10' });
-    expect(server.fetchPeople).toHaveBeenCalledWith({ q: 'pri', direction: 'YOU_OWE', page: 2, size: 10 });
+    await renderPage({ q: 'pri', filter: 'owe', page: '3', size: '50' });
+    expect(server.fetchPeople).toHaveBeenCalledWith({ q: 'pri', direction: 'YOU_OWE', page: 2, size: 50 });
   });
 
-  it('shows the four tiles from the summary', async () => {
+  it('shows the hero from the summary: what is owed net, what you owe and how many are settled', async () => {
     await renderPage();
-    for (const [label, value, context] of [
-      ['Owed to you', '₹19,200', '2 people'],
-      ['You owe', '₹1,12,000', '2 people'],
-      ['Due this month', '₹12,000', 'Priya · 23 Oct'],
-      ['Expected back', '₹15,000', 'Rahul · 28 Oct'],
-    ]) {
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(value).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(context).length).toBeGreaterThan(0);
+    for (const text of ['Owed to you (net)', '−₹92,800', 'You owe', '₹1,12,000', '2 people', 'Settled', '4 people']) {
+      expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
+    expect(server.fetchPeople).toHaveBeenCalledWith({ direction: 'SETTLED', size: 1 });
   });
 
-  it('says so under each tile label when the summary fails, and still lists the people', async () => {
+  it('says so in the hero place when the summary fails, and still lists the people', async () => {
     server.fetchPeopleSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(4);
+    expect(screen.getByText("Couldn't load the figures. Try again.")).toBeInTheDocument();
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
   });
 
@@ -185,7 +179,7 @@ describe('/loans/lendings', () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('Priya Nair')[0]);
     expect(router.push).toHaveBeenCalledWith('/loans/lendings/p2');
-    expect(screen.getByRole('link', { name: 'Open Priya Nair' })).toHaveAttribute('href', '/loans/lendings/p2');
+    expect(screen.queryByRole('link', { name: 'Open Priya Nair' })).toBeNull();
   });
 
   it('shows the Pager above and below with the server totals', async () => {
@@ -202,13 +196,14 @@ describe('/loans/lendings', () => {
     expect(router.push).toHaveBeenCalledWith('/loans/lendings?filter=owed&page=2', { scroll: false });
   });
 
-  it('marks the chip of the current filter and navigates on another chip', async () => {
+  it('shows one Direction dropdown chip: plain on All, the value with a × when changed, and the × resets it', async () => {
+    await renderPage();
+    expect(screen.getByRole('button', { name: 'Direction' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset filter' })).toBeNull();
+    document.body.innerHTML = '';
     await renderPage({ filter: 'owe' });
-    expect(screen.getByRole('button', { name: 'You owe' }).className).toContain('bg-brand-tint');
-    expect(screen.getByRole('button', { name: 'All' }).className).not.toContain('bg-brand-tint');
-    fireEvent.click(screen.getByRole('button', { name: 'Settled' }));
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings?filter=settled', { scroll: false });
-    fireEvent.click(screen.getByRole('button', { name: 'All' }));
+    expect(screen.getByRole('button', { name: 'You owe' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(router.push).toHaveBeenLastCalledWith('/loans/lendings', { scroll: false });
   });
 
@@ -233,7 +228,8 @@ describe('/loans/lendings', () => {
   it('invites a first entry when there are no people at all', async () => {
     server.fetchPeople.mockResolvedValue(pageOf([]));
     await renderPage();
-    expect(screen.getByText('No lendings yet. Add a lending to start a ledger.')).toBeInTheDocument();
+    expect(screen.getByText('No lendings yet')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add lending' })).toBeInTheDocument();
   });
 
   it('shows an error with Retry and the reference when the people fail to load', async () => {
@@ -243,7 +239,7 @@ describe('/loans/lendings', () => {
     expect(screen.getByText(/req-42/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
-    expect(screen.getByText('Owed to you')).toBeInTheDocument();
+    expect(screen.getByText('Owed to you (net)')).toBeInTheDocument();
   });
 
   describe('Unlinked bank transfers', () => {

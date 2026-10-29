@@ -2,10 +2,7 @@
 
 import React from 'react';
 
-import {
-  ConfirmDialog,
-  GRID_GAP,
-} from '@/components/ds';
+import { ActionBar, Button, ConfirmDialog, GRID_GAP, Menu } from '@/components/ds';
 import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
@@ -20,9 +17,8 @@ import { EntriesCard } from './EntriesCard';
 import { deleteEntryCopy, type EntryRow, entryRows } from './entriesModel';
 import { EventFormDialog } from './EventFormDialog';
 import { LinkedEmiDialog } from './LinkedEmiDialog';
-import { linkedLine, loanHeader, loanTiles, termsLocked } from './loanDetailModel';
-import { LoanHeader } from './LoanHeader';
-import { LoanTilesCard } from './LoanTilesCard';
+import { linkedLine, loanHeader, loanHero, termsLocked } from './loanDetailModel';
+import { LoanHero } from './LoanHero';
 import { MarkPaidDialog } from './MarkPaidDialog';
 import { MatchingCard } from './MatchingCard';
 import { foundDebit } from './payModel';
@@ -34,15 +30,14 @@ import { useLoanDetailMutations } from './useLoanDetailMutations';
 export interface LoanDetailScreenProps {
   detail: LoanDetailResponse;
   schedule: InstallmentDto[];
-  paymentAccountName: string | null;
   /** Today's calendar date in the app zone (YYYY-MM-DD). */
   today: string;
   /** `?installment=N` from an EMI push: its financial year opens and its row is highlighted. */
   highlightSeq: number | null;
 }
 
-/** One loan: header, tiles, schedule, events and charges, and matching, with the forms they open. */
-export function LoanDetailScreen({ detail, schedule, paymentAccountName, today, highlightSeq }: LoanDetailScreenProps) {
+/** One loan: header, hero, schedule, events and charges, and matching, with the forms they open. */
+export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: LoanDetailScreenProps) {
   const { loan, events, charges } = detail;
   const actions = useLoanDetailMutations(loan.id);
 
@@ -56,8 +51,8 @@ export function LoanDetailScreen({ detail, schedule, paymentAccountName, today, 
   const [searching, setSearching] = React.useState(false);
   const [deletingEntry, setDeletingEntry] = React.useState<EntryRow | null>(null);
 
-  const header = loanHeader(loan, schedule, paymentAccountName, today);
-  const tiles = loanTiles(loan, events);
+  const header = loanHeader(loan, schedule, today);
+  const hero = loanHero(loan, events, header.next);
   const rows = React.useMemo(() => buildScheduleRows(loan, schedule, events, today), [loan, schedule, events, today]);
   const splits = React.useMemo(() => fySplits(schedule, today), [schedule, today]);
   const fy = fyChoice ?? initialFy(schedule, today, highlightSeq);
@@ -92,20 +87,34 @@ export function LoanDetailScreen({ detail, schedule, paymentAccountName, today, 
           </SharedName>
         }
         backHref={appHref('/loans')}
+        addLabel="Add event"
         onAdd={() => setEventType('rate_change')}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
-          <LoanHeader
-            header={header}
-            canPrepay={!closed}
-            closed={closed}
-            onPrepay={() => setEventType('prepayment')}
-            onEdit={() => setEditing(true)}
-            onClose={() => void actions.closeLoan()}
-            onReopen={() => void actions.reopenLoan()}
-            onDelete={() => setDeleting(true)}
+          <LoanHero model={hero} />
+          <ActionBar
+            info={header.info}
+            actions={
+              closed ? null : (
+                <Button variant="secondary" onClick={() => setEventType('prepayment')}>
+                  Prepay
+                </Button>
+              )
+            }
+            menu={
+              <>
+                <Menu.Item onSelect={() => setEditing(true)}>Edit loan</Menu.Item>
+                {closed ? (
+                  <Menu.Item onSelect={() => void actions.reopenLoan()}>Reopen loan</Menu.Item>
+                ) : (
+                  <Menu.Item onSelect={() => void actions.closeLoan()}>Close loan</Menu.Item>
+                )}
+                <Menu.Item tone="danger" onSelect={() => setDeleting(true)}>
+                  Delete
+                </Menu.Item>
+              </>
+            }
           />
-          <LoanTilesCard model={tiles} />
           <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-9 min-w-0">
               <ScheduleCard
@@ -198,7 +207,7 @@ export function LoanDetailScreen({ detail, schedule, paymentAccountName, today, 
           'Its schedule, payments, events and charges are deleted.',
           'Bank transactions stay; only their links to this loan go.',
         ]}
-        confirmLabel="Delete loan"
+        confirmLabel="Delete"
         confirmLoading={actions.pending.deleteLoan}
         onConfirm={() => void actions.deleteLoan()}
       >

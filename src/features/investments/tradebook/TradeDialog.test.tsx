@@ -110,7 +110,7 @@ describe('Record trade', () => {
     expect(within(dialog).getByText('Zerodha · prices in ₹')).toBeTruthy();
     expect(within(dialog).getByRole('radio', { name: 'Buy' }).getAttribute('aria-checked')).toBe('true');
     expect(within(dialog).getByRole('combobox', { name: /Broker/ }).textContent).toContain('Zerodha · ZQ4471');
-    expect((within(dialog).getByLabelText('Date') as HTMLInputElement).value).toBe('13/10/2026');
+    expect((within(dialog).getByLabelText('Date') as HTMLInputElement).value).toBe('13/10/26');
     expect(within(dialog).getByRole('button', { name: 'Record buy' })).toBeTruthy();
     expect(within(dialog).getByText('Type to search your catalog, AMFI or Yahoo.')).toBeTruthy();
   });

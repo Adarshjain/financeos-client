@@ -46,6 +46,23 @@ export interface LimitCycleModel {
   /** Null for a card on a shared pool: the pool row replaces it. */
   ownLimit: string | null;
   pool: { label: string; value: string; sub: string } | null;
+  /** The three small figures under the page hero. */
+  hero: { limitLeft: string; limitCaption: string | null; billDue: string; dueDate: string; dueCaption: string | null };
+}
+
+/** The card page hero's small figures: limit left, bill due, due date. */
+export function cardHeroFigures(m: LimitCycleModel): { label: string; value: string; caption?: string }[] {
+  return [
+    { label: 'Limit left', value: m.hero.limitLeft, caption: m.hero.limitCaption ?? undefined },
+    { label: 'Bill due', value: m.hero.billDue },
+    { label: 'Due date', value: m.hero.dueDate, caption: m.hero.dueCaption ?? undefined },
+  ];
+}
+
+function dueDaysCaption(bill: CardBillResponse): string | null {
+  const days = bill.daysUntilDue;
+  if (days == null) return null;
+  return days < 0 ? `${formatCount(-days, ['day', 'days'])} overdue` : days === 0 ? 'today' : `${formatCount(days, ['day', 'days'])} left`;
 }
 
 function dueCaption(bill: CardBillResponse): string {
@@ -111,7 +128,7 @@ export function buildLimitCycle(
       tone: meterTone(pct),
       caption:
         hasLimit && pct != null && free != null
-          ? `${formatPercent(pct)} of ${formatMoney(limit, { compact: true })} · ${formatMoney(free, { compact: true })} free`
+          ? `of ${formatMoney(limit, { compact: true })} limit`
           : null,
     },
     cycle: {
@@ -119,6 +136,13 @@ export function buildLimitCycle(
       caption: lastStatement ? `Unbilled since ${formatDate(lastStatement, 'list')}` : 'Unbilled',
     },
     bill: { value: billValue, caption: billCaption },
+    hero: {
+      limitLeft: free != null ? formatMoney(free) : '—',
+      limitCaption: hasLimit ? `of ${formatMoney(limit, { compact: true })}` : null,
+      billDue: billValue,
+      dueDate: bill?.paymentDueDate && state && state.phase !== 'awaiting' ? formatDate(bill.paymentDueDate, 'list') : '—',
+      dueCaption: bill && state && state.phase !== 'awaiting' ? dueDaysCaption(bill) : null,
+    },
     ownLimit: pool ? null : account.creditLimit != null ? formatMoney(account.creditLimit) : 'Not set',
     pool: pool
       ? {
@@ -340,7 +364,7 @@ export function buildRecentTransactions(items: readonly Transaction[]): Transact
       category: t.categories?.[0]?.name ?? null,
       amount: credit ? `+${amount}` : amount,
       credit,
-      balanceLabel: t.balance != null ? formatMoney(t.balance) : null,
+      balanceLabel: t.balance != null ? formatMoney(t.balance, { decimals: 'exact' }) : null,
     };
   });
 }

@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Dialog, Select, TextField } from '@/components/ds';
+import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Category } from '@/lib/categories.types';
 import { formatCount } from '@/lib/format';
 import { useCategories } from '@/lib/query/hooks/useCategories';
@@ -53,6 +54,13 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
       onMccSuggested: noop,
     });
   const saving = create.isPending || update.isPending;
+  const dirty =
+    pattern !== (rule?.merchantKey ?? '') ||
+    matchType !== (rule?.matchType ?? 'MERCHANT_KEY') ||
+    displayName !== (rule?.displayName ?? '') ||
+    mcc !== (rule?.mcc ?? '') ||
+    selectedCategories.map((c) => c.id).join() !== (rule?.categories ?? NO_CATEGORIES).map((c) => c.id).join();
+  const guard = useDiscardGuard({ dirty, onClose });
 
   const submit = () => {
     const found: Problems = {
@@ -86,7 +94,8 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
   };
 
   return (
-    <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
+    <>
+    <Dialog open onOpenChange={(open) => (open || saving ? undefined : guard.requestClose())}>
       <Dialog.Content
         size="lg"
         title={rule ? `Edit rule · ${ruleName(rule)}` : 'Add rule'}
@@ -95,7 +104,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
             ? `Changing the pattern unlinks the ${formatCount(rule.appliedCount, ['transaction', 'transactions'])} it categorized; they keep their category.`
             : undefined
         }
-        secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
+        secondary={{ label: 'Cancel', onSelect: guard.requestClose, disabled: saving }}
         primary={{ label: rule ? 'Save rule' : 'Add rule', type: 'submit', form: FORM_ID, loading: saving, disabled: saving || creatingCategory }}
       >
         <Dialog.Body>
@@ -160,5 +169,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>
+    {guard.node}
+    </>
   );
 }

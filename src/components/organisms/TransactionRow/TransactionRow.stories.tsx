@@ -103,10 +103,6 @@ const meta: Meta<typeof TransactionRow> = {
       control: 'boolean',
       description: 'Shows trailing eye button',
     },
-    chevron: {
-      control: 'boolean',
-      description: 'Shows trailing chevron icon',
-    },
     query: {
       control: 'text',
       description: 'Search text; matches get the marker stroke',
@@ -1149,7 +1145,6 @@ export const WithLeadingAvatar: Story = {
     amount: '48,250.00',
     account: 'HDFC Bank Savings',
     categories: ['Housing'],
-    chevron: true,
     leading: <Avatar variant="square" tone="inverse" initials="HD" size="md" />,
   },
 };

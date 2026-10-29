@@ -369,7 +369,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
           onOpenChange={setShowDelete}
           title={`Delete ${account.name}?`}
           description="Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
-          confirmLabel="Delete account"
+          confirmLabel="Delete"
           confirmLoading={mutations.deleteAccountMutation.isPending}
           onConfirm={deleteAccount}
         >

@@ -8,7 +8,6 @@ import {
   dividendFilters,
   dividendListRow,
   dividendsFigures,
-  dividendsTiles,
   dividendsUrl,
   effectiveFy,
   figureFilters,
@@ -128,7 +127,6 @@ describe('the figures', () => {
   it('shows a dash, not zero, for a figure that could not be read', () => {
     const f = dividendsFigures(2026, null, null, {});
     expect([f.declared.value, f.received.value, f.tds.value, f.notReceived.value]).toEqual(['—', '—', '—', '—']);
-    expect(dividendsTiles(f)[1].tone).toBeUndefined();
     expect(dividendsFigures(2026, totals, null, {}).declared.value).toBe('₹3,975');
   });
 
@@ -140,12 +138,6 @@ describe('the figures', () => {
     const counts = notReceivedCounts(receipts({ buckets: [{ status: 'overdue', count: 4, expectedNet: 10, receivedAmount: 0 }] }));
     expect(notReceivedNote(counts, { overdue: ['ITC', 'INFY', 'TCS'] })).toBe('ITC, INFY +2 overdue');
   });
-
-  it('draws four tiles, the first reading FY only when a FY is shown', () => {
-    const tiles = dividendsTiles(dividendsFigures(2026, totals, receipts(), {}));
-    expect(tiles.map((t) => t.label)).toEqual(['Declared · FY', 'Received', 'TDS', 'Not received']);
-    expect(dividendsTiles(dividendsFigures(undefined, totals, receipts(), {}))[0].label).toBe('Declared');
-  });
 });
 
 describe('a row of the list', () => {
@@ -156,11 +148,11 @@ describe('a row of the list', () => {
       payDate: '11 Jul',
       payDay: '11 Jul',
       perUnit: '22.00',
-      gross: '880',
-      tds: '88',
-      net: '792',
+      gross: '880.00',
+      tds: '88.00',
+      net: '792.00',
       unitsLine: '₹22 × 40',
-      tdsLine: 'TDS ₹88',
+      tdsLine: 'TDS ₹88.00',
       account: 'HDFC Savings',
       canLink: false,
       noBankNote: null,
@@ -170,7 +162,7 @@ describe('a row of the list', () => {
 
   it('offers to link an awaiting payout and has no TDS line without TDS', () => {
     const row = dividendListRow(awaiting());
-    expect(row).toMatchObject({ canLink: true, tdsLine: null, account: null, unitsLine: '₹11 × 10', net: '110' });
+    expect(row).toMatchObject({ canLink: true, tdsLine: null, account: null, unitsLine: '₹11 × 10', net: '110.00' });
     expect(row.receipt).toEqual({ label: 'Awaiting', tone: 'neutral' });
   });
 
@@ -267,7 +259,7 @@ describe('the cards', () => {
 
   it('words a suggestion, with the year only when it is not this year', () => {
     expect(suggestionRow(suggestion())).toEqual({ key: 'h2-2026-08-05', title: 'TCS · ₹10 / share', line: 'paid 5 Aug · 10 shares · ₹100' });
-    expect(suggestionRow(suggestion({ exDate: '2025-10-28', perUnit: 21, qtyHeld: 60, estimatedAmount: 1260 })).line).toBe('paid 28 Oct 2025 · 60 shares · ₹1,260');
+    expect(suggestionRow(suggestion({ exDate: '2025-10-28', perUnit: 21, qtyHeld: 60, estimatedAmount: 1260 })).line).toBe('paid 28 Oct 25 · 60 shares · ₹1,260');
     expect(suggestionRow(suggestion({ qtyHeld: 1 })).line).toContain('1 share ·');
   });
 

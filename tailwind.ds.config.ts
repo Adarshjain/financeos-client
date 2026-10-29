@@ -69,6 +69,7 @@ const config: Config = {
         canvas: 'var(--ds-bg-canvas)',
         surface: 'var(--ds-bg-surface)',
         glass: 'var(--ds-bg-glass)',
+        'glass-medium': 'var(--ds-bg-glass-medium)',
         'glass-strong': 'var(--ds-bg-glass-strong)',
         sunken: 'var(--ds-bg-sunken)',
         subtle: 'var(--ds-bg-subtle)',
@@ -159,8 +160,9 @@ const config: Config = {
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       maxHeight: {
-        // Full dynamic viewport minus the notch / status-bar inset (a phone sheet never reaches under it).
-        'dvh-safe': 'calc(100dvh - env(safe-area-inset-top))',
+        // Full dynamic viewport minus the notch / status-bar inset and a gap (a phone sheet never reaches under
+        // the notch, and a tall one still leaves the backdrop strip above its handle).
+        'dvh-safe': 'calc(100dvh - env(safe-area-inset-top) - var(--ds-space-16))',
       },
       borderRadius: {
         'ds-2xs': 'var(--ds-radius-2xs)',

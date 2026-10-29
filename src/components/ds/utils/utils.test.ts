@@ -45,6 +45,14 @@ describe('Dinero utils', () => {
       expect(parseDateInput('29/02/2024')).toBe('2024-02-29'); // Leap year
     });
 
+    it('reads a two-digit year as 20yy', () => {
+      expect(parseDateInput('13/10/26')).toBe('2026-10-13');
+      expect(parseDateInput('5/1/07')).toBe('2007-01-05');
+      expect(parseDateInput('29/02/24')).toBe('2024-02-29');
+      expect(parseDateInput('29/02/26')).toBeNull();
+      expect(parseDateInput('13/10/202')).toBeNull();
+    });
+
     it('returns null for invalid dates', () => {
       expect(parseDateInput('')).toBeNull();
       expect(parseDateInput('32/01/2026')).toBeNull();

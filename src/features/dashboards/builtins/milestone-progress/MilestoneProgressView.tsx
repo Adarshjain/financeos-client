@@ -22,7 +22,6 @@ export function MilestoneProgressView({ data, loading, onPageChange }: TemplateV
     return (
       <EmptyState
         compact
-        title="No milestones in progress"
         description="Add spend milestones to a card on the Rewards page to track them here."
       />
     );

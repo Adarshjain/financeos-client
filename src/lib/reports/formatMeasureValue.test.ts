@@ -49,7 +49,8 @@ describe('formatMeasureValue: money override and whole rupees', () => {
 
   it('prints whole rupees with Indian grouping and a leading minus', () => {
     expect(formatMeasureValue(1198842.4, { money: true, wholeRupees: true })).toBe('₹11,98,842');
-    expect(formatMeasureValue(-1500, { money: true, wholeRupees: true })).toBe('-₹1,500');
+    expect(formatMeasureValue(-1500, { money: true, wholeRupees: true })).toBe('−₹1,500');
+    expect(formatMeasureValue(-1500.5, { money: true })).toBe('−₹1,500.50');
   });
 
   it('leaves counts and percents alone', () => {

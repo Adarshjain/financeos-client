@@ -81,6 +81,6 @@ describe('/investments/fno: All years', () => {
   it('says there are no trades without naming a year', async () => {
     server.fetchFnoPage.mockResolvedValue(fnoPage([]));
     await renderPage({ fy: 'all' });
-    expect(screen.getByText(/^No F&O trades\. Log a trade/)).toBeInTheDocument();
+    expect(screen.getByText('No F&O trades yet')).toBeInTheDocument();
   });
 });

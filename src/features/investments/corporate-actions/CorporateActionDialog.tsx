@@ -179,7 +179,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           size="sm"
           title={editing ? 'Edit corporate action' : 'Record corporate action'}
           description="Quantity and cost update when you save."
-          tertiary={editing ? { label: 'Delete corporate action', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
+          tertiary={editing ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
         >
@@ -295,7 +295,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           title="Delete corporate action?"
           description={`The ${action.type} ${ratioText(action.type, action.ratioFrom, action.ratioTo, true)} of ${instrumentLabel({ name: action.instrumentName, symbol: action.instrumentSymbol })} goes.`}
           impact={['Its quantity and cost change are taken back from the holding.', 'Your trades and dividends stay.']}
-          confirmLabel="Delete corporate action"
+          confirmLabel="Delete"
           confirmLoading={deleting}
           onConfirm={() => void remove()}
         >

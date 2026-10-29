@@ -65,9 +65,9 @@ export function deleteCopy(
     const [t] = transactions;
     const name = t.description || t.sourcedDescription || '—';
     return {
-      title: `Delete ${name} · ${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}?`,
+      title: `Delete ${name} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}?`,
       impact: deleteImpact(t as Transaction),
-      confirmLabel: 'Delete transaction',
+      confirmLabel: 'Delete',
     };
   }
   const n = transactions.length;

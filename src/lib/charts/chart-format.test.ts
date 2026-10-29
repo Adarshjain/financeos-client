@@ -27,8 +27,8 @@ describe('formatCompact', () => {
 
   it('prefixes ₹ for money and keeps the sign in front', () => {
     expect(formatCompact(150000, true)).toBe('₹1.5L');
-    expect(formatCompact(-150000, true)).toBe('-₹1.5L');
-    expect(formatCompact(-1200)).toBe('-1.2K');
+    expect(formatCompact(-150000, true)).toBe('−₹1.5L');
+    expect(formatCompact(-1200)).toBe('−1.2K');
   });
 
   it('returns an empty label for non-finite input', () => {

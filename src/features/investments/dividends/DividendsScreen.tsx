@@ -13,13 +13,12 @@ import type { Dividend } from '@/lib/types';
 
 import { DividendAddDialog, DividendEditDialog, type DividendPrefill } from './DividendFormDialog';
 import { DividendReconcileDialog } from './DividendReconcileDialog';
-import { DividendsHero, DividendsTiles } from './DividendsFigures';
+import { DividendsHero } from './DividendsFigures';
 import { DividendsListCard } from './DividendsListCard';
 import {
   type ByInstrumentRow,
   type DividendListRow,
   type DividendsFigures as FiguresModel,
-  dividendsTiles,
   dividendsUrl,
   type DividendsUrlState,
   type FyOption,
@@ -49,7 +48,7 @@ export interface DividendsScreenProps {
   today: string;
 }
 
-/** The Dividends tab: figures, the unrecorded-credits banner, the list, the by-instrument and suggestions cards, and the dialogs they open. */
+/** The Dividends tab: hero, the unrecorded-credits banner, the list, the by-instrument and suggestions cards, and the dialogs they open. */
 export function DividendsScreen({
   state,
   figures,
@@ -88,7 +87,6 @@ export function DividendsScreen({
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <DividendsHero figures={figures} />
-      <DividendsTiles tiles={dividendsTiles(figures)} />
       {banner ? (
         <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', onSelect: () => setReconciling(true) }}>
           {banner.detail}

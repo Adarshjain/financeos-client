@@ -73,7 +73,7 @@ export function SignupForm() {
       <Illustration variant="signup" className="w-full h-auto desk:h-full" />
 
       {/* Form column */}
-      <div className="flex-1 flex items-center justify-center p-space-20 desk:p-space-40">
+      <div className="flex-1 flex items-start desk:items-center justify-center px-space-20 pt-space-24 pb-space-20 desk:p-space-40">
         <div className="w-full max-w-sm flex flex-col gap-space-8 desk:gap-space-16">
           {/* 1. Title and 2. Subtitle */}
           <div className="flex flex-col gap-space-4">

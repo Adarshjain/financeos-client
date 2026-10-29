@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Card, Icon, ListRow, SectionHeader, Text, TextField } from '@/components/ds';
+import { Card, Icon, ListRow, SectionHeader, Text, TextField } from '@/components/ds';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstrumentCandidate, InstrumentType } from '@/lib/types';
 
@@ -58,9 +58,9 @@ export function CatalogSearch({ type, autoFocus, placeholder = 'Search by name o
               {c.pricePreview ? (
                 <Text variant="label" tone="ink-3">{`${formatMoney(c.pricePreview.value, { decimals: 'exact' })} · ${formatDate(c.pricePreview.asOf, 'list')}`}</Text>
               ) : null}
-              <Badge variant="outline" size="sm">
+              <Text variant="label" tone="ink-3">
                 {typeWord(c.type)}
-              </Badge>
+              </Text>
             </span>
           )
         }

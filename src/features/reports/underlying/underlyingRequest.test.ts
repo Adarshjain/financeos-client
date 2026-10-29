@@ -330,9 +330,9 @@ describe('resolveChartEntry for a heatmap and for repeated labels', () => {
   const heatDef = chartDef({ dimension: { field: 'date', granularity: 'day' } });
 
   it('finds a heatmap day by its ISO date among "dd Mon yy" categories, without a series', () => {
-    const pick = resolveChartEntry(heat, heatDef, { key: '2026-10-09', label: '09/10/2026', value: 5 });
+    const pick = resolveChartEntry(heat, heatDef, { key: '2026-10-09', label: '09/10/26', value: 5 });
     expect(pick).toEqual({ index: 1 });
-    expect(resolveChartEntry(heat, heatDef, { key: '2026-10-01', label: '01/10/2026', value: 5 })).toBeNull();
+    expect(resolveChartEntry(heat, heatDef, { key: '2026-10-01', label: '01/10/26', value: 5 })).toBeNull();
   });
 
   it('pins only the day\'s date window for a heatmap day, replacing the report\'s date filters', () => {

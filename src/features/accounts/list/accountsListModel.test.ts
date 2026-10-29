@@ -106,6 +106,11 @@ describe('KPI sums', () => {
     expect(cardsKpi(whole).context).toBe('20% of ₹1L limit');
   });
 
+  it('cards KPI is danger only while something is owed', () => {
+    expect(cardsKpi(groupAccounts([card({ balance: -500 })], TODAY)).tone).toBe('danger');
+    expect(cardsKpi(groupAccounts([card({ balance: 0 })], TODAY)).tone).toBeUndefined();
+  });
+
   it('cards KPI omits the context line when there is no limit', () => {
     const s = groupAccounts([card({ creditLimit: null, effectiveCreditLimit: null, balance: -500 })], TODAY);
     expect(cardsKpi(s).context).toBeUndefined();
@@ -319,11 +324,11 @@ describe('card rows', () => {
   });
   it('subtitle includes the full limit and card count, and drops the limit part at zero', () => {
     const open = [card({ id: 'a' }), card({ id: 'b' })];
-    expect(cardsSubtitle(open)).toBe('Outstanding is what you owe today · ₹2,00,000 limit across 2 cards');
+    expect(cardsSubtitle(open)).toBe('Owed today · ₹2,00,000 limit, 2 cards');
     expect(cardsSubtitle([card({ creditLimit: null, effectiveCreditLimit: null })])).toBe(
-      'Outstanding is what you owe today',
+      'Owed today',
     );
-    expect(cardsSubtitle([card()])).toContain('across 1 card');
+    expect(cardsSubtitle([card()])).toContain('limit, 1 card');
   });
 });
 
@@ -345,7 +350,7 @@ describe('closed line', () => {
   });
   it('names the single closed account with its date', () => {
     expect(closedLine([{ name: 'Old HDFC', last4: '1234', closedOn: '2025-03-07' }])).toBe(
-      'Closed · 1 · Old HDFC ••1234, closed 7 Mar 2025',
+      'Closed · 1 · Old HDFC ••1234, closed 7 Mar 25',
     );
   });
   it('gives only the count for several', () => {

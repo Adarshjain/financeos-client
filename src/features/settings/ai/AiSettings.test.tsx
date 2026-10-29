@@ -233,7 +233,7 @@ describe('Your keys', () => {
     expect(within(dialog).getByText('Delete API key?')).toBeInTheDocument();
     expect(dialog).toHaveTextContent("Personal (•••• k3Qa) goes. Your other keys stay. This can't be undone.");
     expect(del).not.toHaveBeenCalled();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete key' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(del).toHaveBeenCalledWith('/api/v1/llm-keys/{id}', { params: { path: { id: 'g1' } } }));
   });
 
@@ -253,7 +253,7 @@ describe('Your keys', () => {
     setup();
     const items = await openMenuFor('Key options for OpenRouter');
     fireEvent.click(items[1]);
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete key' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 });

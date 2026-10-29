@@ -99,7 +99,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('−₹4,571').last()).toBeVisible();
 
       // The top bar + is a menu; its Import statement row goes to the Import tradebook page.
-      await page.getByRole('button', { name: 'Add' }).first().click();
+      await page.getByRole('button', { name: 'Add F&O trade' }).first().click();
       await expect(page.getByRole('menuitem', { name: 'Import statement' })).toHaveAttribute('href', '/investments/import');
     });
 
@@ -139,10 +139,11 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('No trades match')).toBeVisible();
     });
 
-    test('the controls change the URL: contract chip, search, sort, year and clear filters', async ({ page }) => {
+    test('the controls change the URL: contract dropdown, search, sort, year and clear filters', async ({ page }) => {
       await page.goto('/investments/fno');
 
-      await page.getByRole('button', { name: 'PE', exact: true }).click();
+      await page.getByRole('button', { name: 'Contract', exact: true }).click();
+      await page.getByRole('option', { name: 'PE', exact: true }).click();
       await expect(page).toHaveURL(/contract=PE/);
 
       await page.goto('/investments/fno');
@@ -194,7 +195,7 @@ for (const viewport of VIEWPORTS) {
     test('Delete asks first, says what goes and what stays, then removes the trade', async ({ page }) => {
       await page.goto('/investments/fno');
       await shown(page.getByText('BANKNIFTY 56000 PE')).click();
-      await page.getByRole('dialog', { name: 'Edit F&O trade' }).getByRole('button', { name: 'Delete trade', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Edit F&O trade' }).getByRole('button', { name: 'Delete', exact: true }).click();
 
       const confirm = page.getByRole('dialog', { name: 'Delete F&O trade' });
       await expect(confirm.getByText('The trade for BANKNIFTY26OCT56000PE goes.')).toBeVisible();
@@ -206,8 +207,8 @@ for (const viewport of VIEWPORTS) {
       await expect(confirm).toBeHidden();
       await expect(page.getByRole('dialog', { name: 'Edit F&O trade' })).toBeVisible();
 
-      await page.getByRole('dialog', { name: 'Edit F&O trade' }).getByRole('button', { name: 'Delete trade', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Delete F&O trade' }).getByRole('button', { name: 'Delete trade' }).click();
+      await page.getByRole('dialog', { name: 'Edit F&O trade' }).getByRole('button', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Delete F&O trade' }).getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('F&O trade deleted')).toBeVisible();
       await expect(page.getByText('BANKNIFTY 56000 PE')).toHaveCount(0);
       await expect(shown(page.getByText('2 trades', { exact: true }))).toBeVisible();

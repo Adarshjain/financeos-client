@@ -112,3 +112,56 @@ export function queryFromDraft(base: TransactionsQuery, draft: FiltersDraft): Tr
     page: 0,
   };
 }
+
+export type FilterSection = 'date' | 'accountCategory' | 'amount' | 'status';
+
+/** One filter the Filters dialog's draft has moved off its default: its words, its section and the patch that resets it. */
+export interface ChangedFilter {
+  id: string;
+  label: string;
+  section: FilterSection;
+  reset: Partial<FiltersDraft>;
+}
+
+const DEFAULT_DRAFT_PERIOD: Partial<FiltersDraft> = {
+  periodMode: 'preset',
+  preset: 'all_time',
+  date: '',
+  from: '',
+  to: '',
+};
+
+/** The filters of a draft that differ from their defaults, in dialog order (sort is not a filter). */
+export function changedFilters(
+  draft: FiltersDraft,
+  words: {
+    period: string;
+    accounts: string;
+    categories: string;
+    type: string;
+    amount: string;
+    review: string;
+    reason: string;
+    source: string;
+  }
+): ChangedFilter[] {
+  const out: ChangedFilter[] = [];
+  const periodChanged =
+    (draft.periodMode === 'preset' && draft.preset !== 'all_time') ||
+    (draft.periodMode === 'date' && draft.date !== '') ||
+    (draft.periodMode === 'range' && draft.from !== '' && draft.to !== '');
+  if (periodChanged) out.push({ id: 'period', label: words.period, section: 'date', reset: DEFAULT_DRAFT_PERIOD });
+  if (draft.accounts.length > 0) out.push({ id: 'accounts', label: words.accounts, section: 'accountCategory', reset: { accounts: [] } });
+  if (draft.categories.length > 0) out.push({ id: 'categories', label: words.categories, section: 'accountCategory', reset: { categories: [] } });
+  if (draft.type !== 'all') out.push({ id: 'type', label: words.type, section: 'accountCategory', reset: { type: 'all' } });
+  if (amountFromDraft(draft)) {
+    out.push({ id: 'amount', label: words.amount, section: 'amount', reset: { amountOp: 'greater_than', amountFrom: '', amountTo: '' } });
+  }
+  if (draft.review !== ANY) out.push({ id: 'review', label: words.review, section: 'status', reset: { review: ANY } });
+  if (draft.reason !== ANY) out.push({ id: 'reason', label: words.reason, section: 'status', reset: { reason: ANY } });
+  if (draft.source !== ANY) out.push({ id: 'source', label: words.source, section: 'status', reset: { source: ANY } });
+  if (draft.monitoring) out.push({ id: 'monitoring', label: 'Monitoring', section: 'status', reset: { monitoring: false } });
+  if (draft.upToStatement) out.push({ id: 'upToStatement', label: 'Up to statement', section: 'status', reset: { upToStatement: false } });
+  if (draft.excluded) out.push({ id: 'excluded', label: 'Excluded only', section: 'status', reset: { excluded: false } });
+  return out;
+}

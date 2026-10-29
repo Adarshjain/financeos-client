@@ -46,7 +46,7 @@ export const Default: Story = {
 export const WithTopBorder: Story = {
   args: {
     label: 'Date',
-    value: '11 Oct 2026',
+    value: '11 Oct 26',
     borderTop: true,
   },
 };

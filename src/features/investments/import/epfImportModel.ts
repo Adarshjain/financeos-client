@@ -1,6 +1,6 @@
 import { formatFileSize, MAX_REQUEST_BYTES, MAX_REQUEST_MB } from '@/features/transactions/import/fileLimits';
 import type { Schemas } from '@/lib/api/types';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate, formatMoney, fyLabel } from '@/lib/format';
 
 
 export type EpfPreview = Schemas['EpfImportPreviewResponse'];
@@ -41,10 +41,8 @@ export const NEW_EMPLOYER = 'new';
 /** Server error codes the upload step shows as a banner with the server's own message. */
 export const EPF_UPLOAD_ERROR_CODES = ['NOT_A_PASSBOOK', 'PASSWORD_PROTECTED', 'UNREADABLE', 'UAN_MISMATCH', 'VALIDATION_ERROR'];
 
-/** "FY 2025-26" from the year the financial year starts in. */
-export function fullFy(startYear: number): string {
-  return `FY ${startYear}-${String(startYear + 1).slice(-2)}`;
-}
+/** "FY 25-26" from the year the financial year starts in. */
+export const fullFy = fyLabel;
 
 const STATUS_WORDS: Record<EpfPreviewRow['status'], string> = {
   NEW: 'New',

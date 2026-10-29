@@ -164,7 +164,7 @@ function ExistingEntries({
             key={entry.id}
             role="radio"
             aria-checked={entryId === entry.id}
-            aria-label={`${formatDate(entry.entryDate, 'list')} ${formatMoney(entry.amount, { decimals: 'auto' })}`}
+            aria-label={`${formatDate(entry.entryDate, 'list')} ${formatMoney(entry.amount, { decimals: 'exact' })}`}
             className="px-0"
             wrap
             onClick={() => onEntryChange(entry.id)}
@@ -173,7 +173,7 @@ function ExistingEntries({
             subtitle={formatDate(entry.entryDate, 'list')}
             trailing={
               <Text variant="body-strong" as="span">
-                {formatMoney(entry.amount, { decimals: 'auto' })}
+                {formatMoney(entry.amount, { decimals: 'exact' })}
               </Text>
             }
           />

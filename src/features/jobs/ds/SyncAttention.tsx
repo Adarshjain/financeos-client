@@ -15,7 +15,7 @@ const IMPORT_HREF = '/transactions/import';
 function ActionCell({ outcome }: { outcome: SyncMessageOutcome }) {
   const link = (href: string, label: string) => (
     <Text variant="label" as="span">
-      <Button asChild variant="link">
+      <Button asChild variant="link" size="sm">
         <Link href={href}>{label}</Link>
       </Button>
     </Text>

@@ -216,8 +216,8 @@ const tabData = (over: Partial<RewardsTabData> = {}): RewardsTabData => ({
   window: { from: '2026-03-15', to: '2027-03-14', calendarYear: false },
   report,
   rules: [rule, { ...rule, id: 'r2', name: 'Fuel', priority: 2 }],
-  lines: { content: [line], totalElements: 1, totalPages: 1, size: 10, number: 0, first: true, last: true, empty: false },
-  query: { page: 0, size: 10 },
+  lines: { content: [line], totalElements: 1, totalPages: 1, size: 25, number: 0, first: true, last: true, empty: false },
+  query: { page: 0, size: 25 },
   ...over,
 });
 
@@ -247,9 +247,20 @@ describe('/rewards/cards/[accountId]', () => {
     expect(push).toHaveBeenCalledWith('/rewards/cards/c1?rule=r1');
   });
 
-  it('starts the transactions at 10 a page', async () => {
+  it('hides the pager while the lines fit one page', async () => {
     await renderCard();
-    expect(screen.getAllByRole('button', { name: 'Rows per page' })[0].textContent).toContain('10');
+    expect(screen.queryByRole('button', { name: 'Rows per page' })).toBeNull();
+  });
+
+  it('starts the transactions at 25 a page once the lines outgrow one', async () => {
+    loadData.mockResolvedValue(
+      tabData({
+        lines: { content: [line], totalElements: 60, totalPages: 3, size: 25, number: 0, first: true, last: false, empty: false },
+        query: { page: 0, size: 25 },
+      }),
+    );
+    await renderCard();
+    expect(screen.getAllByRole('button', { name: 'Rows per page' })[0].textContent).toContain('25');
   });
 
   it('is not found for a broker or a missing account', async () => {
@@ -260,7 +271,7 @@ describe('/rewards/cards/[accountId]', () => {
   });
 
   it('chooses a period: any preset resets the page, Custom starts from the dates on screen', async () => {
-    loadData.mockResolvedValue(tabData({ query: { page: 2, size: 10, ruleId: 'r1' } }));
+    loadData.mockResolvedValue(tabData({ query: { page: 2, size: 25, ruleId: 'r1' } }));
     await renderCard();
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Last month' }));
@@ -272,7 +283,7 @@ describe('/rewards/cards/[accountId]', () => {
 
   it('puts the Custom range From and To fields in two equal columns', async () => {
     loadData.mockResolvedValue(
-      tabData({ query: { page: 0, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+      tabData({ query: { page: 0, size: 25, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
     );
     await renderCard();
     const grid = screen.getByLabelText('From').closest('.grid');
@@ -312,7 +323,7 @@ describe('/rewards/cards/[accountId]', () => {
 
   it('shows the two date fields for a custom period, and the preset it is on', async () => {
     loadData.mockResolvedValue(
-      tabData({ query: { page: 0, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+      tabData({ query: { page: 0, size: 25, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
     );
     await renderCard();
     expect(screen.getByRole('combobox').textContent).toContain('Custom range');
@@ -323,7 +334,7 @@ describe('/rewards/cards/[accountId]', () => {
 
   it('changes a custom end through its date field, back to the first page', async () => {
     loadData.mockResolvedValue(
-      tabData({ query: { page: 3, size: 10, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
+      tabData({ query: { page: 3, size: 25, period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30' }, window: { from: '2026-05-01', to: '2026-06-30', calendarYear: false } }),
     );
     await renderCard();
     const from = screen.getByLabelText('From');
@@ -380,7 +391,7 @@ describe('/rewards/cards/[accountId]', () => {
   });
 
   it('keeps the period control when the report failed, so a bad range can be changed', async () => {
-    loadData.mockResolvedValue(tabData({ report: null, query: { page: 0, size: 10, period: 'CUSTOM' } }));
+    loadData.mockResolvedValue(tabData({ report: null, query: { page: 0, size: 25, period: 'CUSTOM' } }));
     await renderCard();
     expect(screen.getByText("Couldn't load rewards")).toBeDefined();
     fireEvent.click(screen.getByRole('combobox'));

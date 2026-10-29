@@ -30,7 +30,6 @@ export function SpendHeatmapView({ widget, data, loading }: TemplateViewProps) {
     return (
       <EmptyState
         compact
-        title="No spending in this period"
         description="Debits on your accounts fill in the calendar day by day."
       />
     );

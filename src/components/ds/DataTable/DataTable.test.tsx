@@ -149,6 +149,18 @@ describe('DataTable', () => {
     });
   });
 
+  describe('Date column', () => {
+    it("size 'date' is wider than 'sm' so a two-digit-year date fits", () => {
+      const dateColumns = helper.columns([
+        helper.accessor('date', { id: 'date', header: 'Date', meta: { size: 'date' }, cell: ({ getValue }) => getValue() }),
+      ]);
+      const { container } = render(<DataTable columns={dateColumns} data={testData} getRowId={(r) => r.id} />);
+      expect((container.firstChild as HTMLElement).style.getPropertyValue('--grid-template')).toBe(
+        'calc(var(--ds-space-96) * 1.25)',
+      );
+    });
+  });
+
   describe('Row size', () => {
     const dataRows = () => screen.getAllByRole('row').filter((r) => /Alpha|Beta|Gamma/.test(r.textContent ?? ''));
 
@@ -625,7 +637,7 @@ describe('DataTable', () => {
       expect(leads).toHaveLength(2);
       const desk = leads.find((el) => el.closest('[role="cell"]'));
       const phone = leads.find((el) => !el.closest('[role="cell"]'));
-      expect(desk?.parentElement).toHaveClass('hidden', 'desk:block');
+      expect(desk?.parentElement).toHaveClass('hidden', 'desk:flex');
       expect(phone?.parentElement).toHaveClass('desk:hidden', 'row-span-2');
       const rows = screen.getAllByRole('row');
       expect(rows[1]).toHaveClass('grid-cols-lead-fill-auto');
@@ -756,7 +768,8 @@ describe('DataTable', () => {
       );
 
       const dayHeader = screen.getByText('10 Oct').closest('div');
-      expect(dayHeader).toHaveClass('desk:hidden');
+      expect(dayHeader).toHaveClass('desk:hidden', 'sticky', 'bg-subtle', 'border-t');
+      expect(dayHeader).not.toHaveClass('glass:bg-glass');
     });
   });
 

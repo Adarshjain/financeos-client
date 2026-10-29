@@ -5,6 +5,7 @@ import React from 'react';
 
 import {
   Dialog,
+  FilterChip,
   ListRow,
   Reveal,
   SectionHeader,
@@ -22,18 +23,25 @@ import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
   AMOUNT_OP_OPTIONS,
+  amountLabel,
   categoryOptions,
   FILTER_ACCOUNT_TYPES,
   filterAccounts,
+  periodLabel,
   REASON_OPTIONS,
+  reasonLabel,
   REVIEW_OPTIONS,
+  reviewLabel,
   SORT_ORDER_OPTIONS,
   SOURCE_OPTIONS,
+  sourceLabel,
   TYPE_OPTIONS,
 } from './filterOptionsModel';
 import {
+  changedFilters,
   draftFromQuery,
   type FiltersDraft,
+  type FilterSection,
   queryFromDraft,
 } from './filtersDraftModel';
 import { PeriodEditor } from './PeriodEditor';
@@ -107,26 +115,46 @@ export function FiltersDialog({
   const draftQuery = queryFromDraft(base, draft);
   const count = useMatchingCount(draftQuery);
 
+  const accountList = accounts ?? [];
+  const changed = changedFilters(draft, {
+    period: periodLabel(draftQuery.period),
+    accounts:
+      draft.accounts.length === 1
+        ? (accountList.find((a) => a.id === draft.accounts[0])?.name ?? '1 account')
+        : `${draft.accounts.length} accounts`,
+    categories:
+      draft.categories.length === 1
+        ? draft.categories[0]
+        : `${draft.categories.length} categories`,
+    type: TYPE_OPTIONS.find((o) => o.value === draft.type)?.label ?? '',
+    amount: draftQuery.amount ? amountLabel(draftQuery.amount) : '',
+    review: draftQuery.review ? reviewLabel(draftQuery.review) : '',
+    reason: draftQuery.reason ? reasonLabel(draftQuery.reason) : '',
+    source: draftQuery.source ? sourceLabel(draftQuery.source) : '',
+  });
+  const changedSections = new Set<FilterSection>(changed.map((c) => c.section));
+  const dot = (section: FilterSection, label: string) => (
+    <span className="inline-flex items-center gap-space-8">
+      {label}
+      {changedSections.has(section) ? (
+        <span
+          data-testid={`changed-${section}`}
+          className="h-space-8 w-space-8 rounded-ds-pill bg-brand"
+        />
+      ) : null}
+    </span>
+  );
+
   const clearAll = () => {
-    const cleared = clearedQuery(base);
+    const cleared = { ...clearedQuery(base), q: base.q };
     setBase(cleared);
     setDraft(draftFromQuery(cleared));
   };
 
-  // On a phone the footer's three buttons share one width, so the label drops the noun there.
   const showLabel =
-    count === undefined ? (
-      <span>
-        Show <span className="max-desk:hidden">transactions</span>
-      </span>
-    ) : (
-      <span>
-        Show {count}{' '}
-        <span className="max-desk:hidden">
-          {pluralize(count, 'transaction', 'transactions')}
-        </span>
-      </span>
-    );
+    count === undefined
+      ? 'Show results'
+      : `Show ${count} ${pluralize(count, 'result', 'results')}`;
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
@@ -134,8 +162,7 @@ export function FiltersDialog({
         size="md"
         title="Filters"
         description="Every filter combines with the others."
-        tertiary={{ label: 'Cancel', onSelect: onClose }}
-        secondary={{ label: 'Clear all', onSelect: clearAll }}
+        tertiary={{ label: 'Reset to defaults', onSelect: clearAll }}
         primary={{ label: showLabel, type: 'submit', form: formId }}
       >
         <Dialog.Body className="p-0 gap-0 desk:gap-0">
@@ -147,12 +174,31 @@ export function FiltersDialog({
               onApply(draftQuery);
             }}
           >
-            <SectionHeader borderTop={false}>Date</SectionHeader>
+            {changed.length > 0 ? (
+              <div
+                data-testid="changed-filters"
+                className="flex flex-wrap gap-space-8 px-space-16 desk:px-space-20 py-space-12"
+              >
+                {changed.map((c) => (
+                  <FilterChip
+                    key={c.id}
+                    size="md"
+                    changed
+                    onReset={() => set(c.reset)}
+                  >
+                    {c.label}
+                  </FilterChip>
+                ))}
+              </div>
+            ) : null}
+            <SectionHeader borderTop={changed.length > 0}>
+              {dot('date', 'Date')}
+            </SectionHeader>
             <div className="px-space-16 desk:px-space-20 py-space-12">
               <PeriodEditor draft={draft} today={today} onChange={set} />
             </div>
 
-            <SectionHeader>Account and category</SectionHeader>
+            <SectionHeader>{dot('accountCategory', 'Account and category')}</SectionHeader>
             <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <AccountPicker
@@ -187,7 +233,7 @@ export function FiltersDialog({
               />
             </div>
 
-            <SectionHeader>Amount</SectionHeader>
+            <SectionHeader>{dot('amount', 'Amount')}</SectionHeader>
             <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
               <Select
                 label="Condition"
@@ -237,7 +283,7 @@ export function FiltersDialog({
               </div>
             </div>
 
-            <SectionHeader>Status and source</SectionHeader>
+            <SectionHeader>{dot('status', 'Status and source')}</SectionHeader>
             <div className="flex flex-col gap-space-8 desk:gap-space-12 px-space-16 desk:px-space-20 py-space-12">
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <Select

@@ -25,7 +25,7 @@ describe('EditDetailsDialog', () => {
         open
         onOpenChange={onOpenChange}
         statementId="s1"
-        statementLabel="Statement · 5 Oct 2026"
+        statementLabel="Statement · 5 Oct 26"
         initial={{ periodStart: '2026-09-06', periodEnd: '2026-10-05', dueDate: '2026-10-25', totalDue: 100, minimumDue: 10 }}
       />,
     );

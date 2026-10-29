@@ -22,7 +22,12 @@ export interface PagerProps
   borderPosition?: 'top' | 'bottom' | 'none';
   /** `compact` trims the padding and uses small controls, for tight lists (owner, 2026-10-17). */
   variant?: 'default' | 'compact';
+  /** Keeps the pager when everything fits one page. Default: hidden when the total fits the smallest page size. */
+  alwaysShow?: boolean;
 }
+
+/** The page sizes a list offers; one list everywhere. The first is the default size. */
+export const PAGE_SIZE_OPTIONS: number[] = [25, 50, 100];
 
 /** First, last, current and `neighbours` either side; a gap of exactly one page shows that page, never an ellipsis. */
 function pageSet(currentPage: number, totalPages: number, neighbours: number): number[] {
@@ -61,7 +66,7 @@ function getPageItems(currentPage: number, totalPages: number): PageItem[] {
 /**
  * Pager: pagination for lists that outgrow one page.
  * Sits above and below the list in table cards or card grids.
- * Server-side paging only. Single page shows count and page size only, no arrows.
+ * Server-side paging only. Hides itself when everything fits one page (`alwaysShow` keeps it); otherwise the range, one "25 / page" select and the page buttons.
  * Uses desk: CSS breakpoint classes to switch between compact mobile and desktop layouts.
  */
 export const Pager = forwardRef<HTMLElement, PagerProps>(
@@ -76,9 +81,10 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
       sizeLabel,
       onPageChange,
       onSizeChange,
-      sizeOptions = [25, 50, 100],
+      sizeOptions = PAGE_SIZE_OPTIONS,
       borderPosition = 'top',
       variant = 'compact',
+      alwaysShow = false,
       className,
       ...props
     },
@@ -90,13 +96,16 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
 
     const start = totalElements === 0 ? 0 : page * size + 1;
     const end = Math.min((page + 1) * size, totalElements);
-    const formatSize = sizeLabel ?? ((s: number) => String(s));
+    const formatSize = sizeLabel ?? ((s: number) => `${s} / page`);
 
     const pageItems = getPageItems(page, totalPages);
     const compact = variant === 'compact';
     const control = compact
       ? 'min-w-control-sm h-control-sm'
       : 'min-w-control-md h-control-md';
+
+    // Everything fits one page at every size (and we are on the first page, so a shrunk total can still page back): nothing to page through or resize.
+    if (!alwaysShow && page === 0 && isSinglePage && totalElements <= Math.min(size, ...sizeOptions)) return null;
 
     return (
       <nav
@@ -160,16 +169,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                   </Button>
                 }
               />
-            ) : (
-              <span
-                className={cn(
-                  'inline-flex items-center gap-space-6 px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface',
-                  compact ? 'h-control-sm' : 'h-control-md',
-                )}
-              >
-                {formatSize(size)}
-              </span>
-            )}
+            ) : null}
           </div>
 
           {!isSinglePage && (

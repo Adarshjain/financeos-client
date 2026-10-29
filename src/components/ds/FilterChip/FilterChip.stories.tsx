@@ -116,6 +116,19 @@ export const Removable: Story = {
   },
 };
 
+export const DefaultVsChanged: Story = {
+  name: 'Default vs changed',
+  parameters: { docs: { description: { story: 'A chip on its default is plain (name, or its value when the default is not "All"). A changed chip shows just the value on an ink fill, with a × that resets it.' } } },
+  render: (args) => (
+    <div className="flex flex-wrap items-center gap-space-8">
+      <FilterChip hasDropdown>Type</FilterChip>
+      <FilterChip hasDropdown changed onReset={args.onRemove}>Stocks</FilterChip>
+      <FilterChip hasDropdown size="md" shape="rounded">Account</FilterChip>
+      <FilterChip hasDropdown size="md" shape="rounded" changed onReset={args.onRemove}>HDFC Savings</FilterChip>
+    </div>
+  ),
+};
+
 export const FieldSized: Story = {
   name: 'Field sized',
   args: {

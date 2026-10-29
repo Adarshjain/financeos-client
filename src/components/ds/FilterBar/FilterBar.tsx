@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useState } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { TextField } from '../TextField/TextField';
@@ -20,6 +21,10 @@ export interface FilterBarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   /** Matches the chips' `size`: the search field is as tall as they are. sm is 28px (default), md is 32px. */
   size?: 'sm' | 'md';
+  /** True while any filter differs from its default: shows the "Reset filters" link at the row's end. */
+  changed?: boolean;
+  /** Puts every filter back to its default. */
+  onReset?: () => void;
 }
 
 /**
@@ -27,12 +32,13 @@ export interface FilterBarProps extends React.HTMLAttributes<HTMLDivElement> {
  * One row, search first, then the chips; the row scrolls sideways when they overflow.
  * Phone: the search field rests narrow (space-96) and, while focused or holding text, grows to the
  * viewport inset width (the chips scroll away) and shrinks back when blurred and empty.
+ * "Reset filters" (`changed` + `onReset`) sits at the row end, only while a chip is off its default.
  * Desktop: a fixed container-xs field, the same row as every list page had before.
  * The row carries its own bleed: padding that lets the focus ring show inside the scroll area, cancelled by
  * negative margins (the phone page gutter on phone, space-4 on desktop), so the row sits where it would without it.
  */
 export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
-  ({ search, children, size = 'sm', className, ...props }, ref) => {
+  ({ search, children, size = 'sm', changed = false, onReset, className, ...props }, ref) => {
     const [focused, setFocused] = useState(false);
     const expanded = focused || (search?.value ?? '') !== '';
 
@@ -69,6 +75,11 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
           </div>
         ) : null}
         {children}
+        {changed && onReset ? (
+          <Button variant="link" size="sm" onClick={onReset} className="shrink-0 whitespace-nowrap">
+            Reset filters
+          </Button>
+        ) : null}
       </div>
     );
   },

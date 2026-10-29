@@ -52,7 +52,7 @@ describe('AccountTileBody', () => {
   it('a card shows what it owes as a positive amount, or "In credit"', async () => {
     serve(card({ id: 'a1', name: 'Amex', balance: -33900 }));
     const { unmount } = renderWithQuery(<AccountTileBody {...bodyProps('account_tile', { accountId: 'a1' })} />);
-    expect(await screen.findByTestId('account-tile')).toHaveTextContent('You owe₹33,900');
+    expect(await screen.findByTestId('account-tile')).toHaveTextContent('Amount you owe₹33,900');
     unmount();
     serve(card({ id: 'a1', name: 'Amex', balance: 1200 }));
     renderWithQuery(<AccountTileBody {...bodyProps('account_tile', { accountId: 'a1' })} />);

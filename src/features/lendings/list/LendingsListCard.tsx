@@ -1,23 +1,22 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
   Avatar,
-  Badge,
-  Button,
   Card,
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
   Pager,
+  Select,
+  StatusWord,
   Text,
 } from '@/components/ds';
+import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
@@ -26,7 +25,6 @@ import {
   LENDING_FILTERS,
   type LendingFilter,
   type LendingRow,
-  LENDINGS_SIZE_OPTIONS,
   lendingsUrl,
   type LendingsUrlState,
 } from './lendingsListModel';
@@ -50,7 +48,7 @@ const columns = [
     id: 'direction',
     header: 'Direction',
     meta: { size: 'sm', phone: 'status' },
-    cell: ({ row }) => <Badge tone={row.original.directionTone}>{row.original.directionLabel}</Badge>,
+    cell: ({ row }) => <StatusWord tone={row.original.directionTone}>{row.original.directionLabel}</StatusWord>,
   }),
   ch.display({
     id: 'balance',
@@ -82,18 +80,6 @@ const columns = [
       </Text>
     ),
   }),
-  ch.display({
-    id: 'open',
-    header: '',
-    meta: { size: 'xs', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Button asChild variant="ghost" size="sm" iconOnly aria-label={`Open ${row.original.name}`}>
-        <Link href={row.original.href} prefetch={false}>
-          <Icon name="chevron-right" size="sm" />
-        </Link>
-      </Button>
-    ),
-  }),
 ];
 
 export interface LendingsListCardProps {
@@ -103,9 +89,10 @@ export interface LendingsListCardProps {
   totalPages: number;
 }
 
-/** Search, the direction chips, and the people table with the Pager above and below. All of it is server-side. */
+/** Search, the direction dropdown, and the people table with its Pager. All of it is server-side. */
 export function LendingsListCard({ state, rows, totalElements, totalPages }: LendingsListCardProps) {
   const router = useRouter();
+  const addLending = useAddLending();
   // The newest state asked for, so a change made while an earlier push is still travelling (a chip, then
   // a search typed straight after) builds on it instead of on the URL state the page has not caught up to.
   const latest = React.useRef(state);
@@ -126,8 +113,6 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
       totalElements={totalElements}
       totalPages={totalPages}
       unit="people"
-      sizeOptions={LENDINGS_SIZE_OPTIONS}
-      sizeLabel={(n) => `${n} / page`}
       onPageChange={(page) => go({ page })}
       onSizeChange={(size) => go({ size, page: 0 })}
     />
@@ -137,17 +122,24 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar
         search={{ value: text, onValueChange: setText }}
+        changed={filtered}
+        onReset={() => go({ q: '', filter: 'all', page: 0 })}
       >
-        {LENDING_FILTERS.map((f) => (
-          <FilterChip
-            key={f.value}
-            className="shrink-0"
-            selected={state.filter === f.value}
-            onClick={() => go({ filter: f.value as LendingFilter, page: 0 })}
-          >
-            {f.label}
-          </FilterChip>
-        ))}
+        <Select
+          value={state.filter}
+          options={LENDING_FILTERS}
+          onValueChange={(v) => go({ filter: v as LendingFilter, page: 0 })}
+          trigger={
+            <FilterChip
+              className="shrink-0"
+              hasDropdown
+              changed={state.filter !== 'all'}
+              onReset={() => go({ filter: 'all', page: 0 })}
+            >
+              {state.filter === 'all' ? 'Direction' : (LENDING_FILTERS.find((f) => f.value === state.filter)?.label ?? 'Direction')}
+            </FilterChip>
+          }
+        />
       </FilterBar>
       <Card>
         <DataTable
@@ -162,15 +154,19 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
           phoneSub={(row) => row.phoneSub}
           onRowSelect={(row) => router.push(row.href)}
           empty={
-            <EmptyState
-              compact
-              description={filtered ? 'No people match' : 'No lendings yet. Add a lending to start a ledger.'}
-              action={
-                filtered
-                  ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', filter: 'all', page: 0 }) }
-                  : undefined
-              }
-            />
+            filtered ? (
+              <EmptyState
+                title="No people match"
+                description="Try another name or direction."
+                action={{ label: 'Clear filters', variant: 'secondary', onSelect: () => go({ q: '', filter: 'all', page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title="No lendings yet"
+                description="Add a lending to start a ledger."
+                action={{ label: 'Add lending', variant: 'primary', onSelect: () => addLending.open() }}
+              />
+            )
           }
           stickyHeader={false}
         />

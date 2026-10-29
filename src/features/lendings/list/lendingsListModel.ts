@@ -1,4 +1,4 @@
-import { daysBetween, type TileModel } from '@/features/loans/loanFormatModel';
+import { daysBetween, type HeroModel } from '@/features/loans/loanFormatModel';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
@@ -9,7 +9,6 @@ import type {
   CounterpartyListItem,
   CounterpartyMatchSuggestions,
   CounterpartySummary,
-  CounterpartySummaryBucket,
   UnrecordedTransfer,
 } from '@/lib/lending.types';
 
@@ -31,7 +30,7 @@ const DIRECTION: Record<LendingFilter, CounterpartyDirectionFilter | undefined> 
   settled: 'SETTLED',
 };
 
-export const LENDINGS_SIZE_OPTIONS = [10, 25, 50];
+export const LENDINGS_SIZE_OPTIONS = [25, 50, 100];
 
 export interface LendingsUrlState {
   q: string;
@@ -68,40 +67,31 @@ export function lendingsUrl(state: LendingsUrlState): string {
   return text ? `${LENDINGS_HREF}?${text}` : LENDINGS_HREF;
 }
 
-// ---- Tiles -----------------------------------------------------------------
+// ---- Hero ------------------------------------------------------------------
 
-function bucketContext(bucket: CounterpartySummaryBucket, empty: string): string {
-  if (bucket.count === 0) return empty;
-  if (bucket.nextName && bucket.nextDate) return `${bucket.nextName} · ${formatDate(bucket.nextDate, 'list')}`;
-  return formatCount(bucket.count, ['entry', 'entries']);
-}
-
-/** The four Lendings tiles. A tile with nothing in it reads ₹0 with a plain "Nothing …" line. */
-export function lendingTiles(summary: CounterpartySummary): TileModel[] {
-  return [
-    {
-      label: 'Owed to you',
-      value: formatMoney(summary.owedToYou),
-      context: formatCount(summary.owedToYouCount, ['person', 'people']),
-      tone: summary.owedToYou > 0 ? 'positive' : undefined,
-    },
-    {
-      label: 'You owe',
-      value: formatMoney(summary.youOwe),
-      context: formatCount(summary.youOweCount, ['person', 'people']),
-    },
-    {
-      label: 'Due this month',
-      value: formatMoney(summary.dueThisMonth.amount),
-      context: bucketContext(summary.dueThisMonth, 'Nothing due'),
-    },
-    {
-      label: 'Expected back',
-      value: formatMoney(summary.expectedBack.amount),
-      context: bucketContext(summary.expectedBack, 'Nothing expected'),
-      tone: summary.expectedBack.amount > 0 ? 'positive' : undefined,
-    },
-  ];
+/**
+ * The Lendings hero: what people owe you net of what you owe (green when it is yours, red when it is theirs),
+ * then what you owe and how many people are settled. `settledCount` null = it could not be read.
+ */
+export function lendingsHero(summary: CounterpartySummary, settledCount: number | null): HeroModel {
+  const net = summary.owedToYou - summary.youOwe;
+  return {
+    label: 'Owed to you (net)',
+    value: formatMoney(net),
+    tone: net > 0 ? 'positive' : net < 0 ? 'danger' : undefined,
+    figures: [
+      {
+        label: 'You owe',
+        value: formatMoney(summary.youOwe),
+        tone: summary.youOwe > 0 ? 'danger' : undefined,
+        caption: formatCount(summary.youOweCount, ['person', 'people']),
+      },
+      {
+        label: 'Settled',
+        value: settledCount === null ? '—' : formatCount(settledCount, ['person', 'people']),
+      },
+    ],
+  };
 }
 
 // ---- Rows ------------------------------------------------------------------
@@ -118,10 +108,10 @@ export interface LendingRow {
   avatarTone: AvatarToneName;
   side: PersonSide;
   directionLabel: string;
-  directionTone: 'success' | 'warning' | 'neutral';
+  directionTone: 'success' | 'danger' | 'neutral';
   /** "+15,000" when they owe you, "12,000" when you owe them, "0" when settled. */
   balance: string;
-  balanceTone: 'positive' | 'ink';
+  balanceTone: 'positive' | 'danger' | 'ink';
   /** "28 Oct · in 15 d" or "no date". */
   expected: string;
   hasExpected: boolean;
@@ -146,7 +136,7 @@ export function sideOf(netPosition: number): PersonSide {
 
 const SIDE_BADGE: Record<PersonSide, { label: string; tone: LendingRow['directionTone'] }> = {
   owed: { label: 'Owes you', tone: 'success' },
-  owe: { label: 'You owe', tone: 'warning' },
+  owe: { label: 'You owe', tone: 'danger' },
   settled: { label: 'Settled', tone: 'neutral' },
 };
 
@@ -207,7 +197,7 @@ export function lendingRow(person: CounterpartyListItem, today: string): Lending
     directionLabel: badge.label,
     directionTone: badge.tone,
     balance,
-    balanceTone: side === 'owed' ? 'positive' : 'ink',
+    balanceTone: side === 'owed' ? 'positive' : side === 'owe' ? 'danger' : 'ink',
     expected: expectedText(person.expectedReturnDate, today),
     hasExpected: Boolean(person.expectedReturnDate),
     lastEntry: lastEntryText(person),

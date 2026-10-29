@@ -29,7 +29,7 @@ export const createTransactionColumns = (query?: string) => {
   helper.accessor('date', {
     id: 'date',
     header: 'Date',
-    meta: { size: 'sm', sortable: true },
+    meta: { size: 'date', sortable: true },
     cell: ({ row }) => row.original.date,
   }),
   helper.accessor('description', {

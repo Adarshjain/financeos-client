@@ -83,7 +83,7 @@ describe('a chart entry press', () => {
     const heat = { ...data, chartType: 'heatmap', dimension: 'date', categories: ['08 Oct 26', '09 Oct 26'], series: [{ name: 'Spend', data: [1, 2] }] } as unknown as ChartData;
     const open = vi.fn();
     render(<ReportResult data={heat} definition={{ ...definition, series: undefined, dimension: { field: 'date', granularity: 'day' } }} onOpenChartEntry={open} />);
-    press({ key: '2026-10-09', label: '09/10/2026', value: 2 });
+    press({ key: '2026-10-09', label: '09/10/26', value: 2 });
     expect(open).toHaveBeenCalledWith(1, undefined);
   });
 

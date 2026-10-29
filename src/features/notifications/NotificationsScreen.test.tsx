@@ -54,7 +54,7 @@ describe('NotificationsScreen', () => {
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Today', 'Yesterday', '13 Oct']);
     expect(screen.getByText('Amex PDF')).toBeInTheDocument();
     expect(screen.getByText('2:05 pm')).toBeInTheDocument();
-    expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 0, size: 20 } } });
+    expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 0, size: 25 } } });
   });
 
   it('rows with a destination open it; rows without are not clickable', async () => {
@@ -184,13 +184,21 @@ describe('NotificationsScreen', () => {
     serve(mockApi, feedPage([today2], { totalElements: 45, totalPages: 3 }), 0);
     renderWithQuery(<NotificationsScreen />);
     await screen.findByText('Sync done');
-    expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 1, size: 20 } } });
+    expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 1, size: 25 } } });
     expect(screen.getAllByRole('button', { name: 'Next page' })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Previous page' })[0]);
     expect(push).toHaveBeenCalledWith('/notifications', { scroll: false });
     push.mockClear();
     fireEvent.click((await screen.findAllByRole('button', { name: 'Next page' }))[1]);
     expect(push).toHaveBeenCalledWith('/notifications?page=2', { scroll: false });
+  });
+
+  it('has a back arrow to Inbox under the "Inbox" crumb', async () => {
+    serve(mockApi, feedPage([today2]), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await screen.findByText('Sync done');
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByText('Inbox')).toBeInTheDocument();
   });
 
   it('no pager for a single page', async () => {

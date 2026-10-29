@@ -97,6 +97,8 @@ export function cashWallets(sections: AccountSections): GenericAccount[] {
 export interface KpiModel {
   label: string;
   value: string;
+  /** Danger while the figure is money you owe. */
+  tone?: 'danger';
   context?: string;
 }
 
@@ -115,6 +117,7 @@ export function cardsKpi(sections: AccountSections): KpiModel {
   return {
     label: 'Cards · you owe',
     value: formatMoney(usage.owed),
+    tone: usage.owed > 0 ? 'danger' : undefined,
     context:
       usage.limit > 0 && usage.utilizationPct != null
         ? `${formatPercent(usage.utilizationPct)} of ${formatMoney(usage.limit, { compact: true })} limit`
@@ -363,9 +366,9 @@ export function cardRow(
 
 export function cardsSubtitle(open: readonly CreditCard[]): string {
   const limit = sumCreditUsage(open).limit;
-  const base = 'Outstanding is what you owe today';
+  const base = 'Owed today';
   return limit > 0
-    ? `${base} · ${formatMoney(limit)} limit across ${formatCount(open.length, ['card', 'cards'])}`
+    ? `${base} · ${formatMoney(limit)} limit, ${formatCount(open.length, ['card', 'cards'])}`
     : base;
 }
 

@@ -89,7 +89,7 @@ describe('LoansListCard paging', () => {
   it('a new page size goes back to the first page', async () => {
     render(<LoansListCard {...props({ state: { q: 'sbi', page: 2, size: 25 }, totalElements: 90, totalPages: 4 })} />);
     await user.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
-    await user.click(screen.getByRole('option', { name: '10 / page' }));
-    expect(router.push).toHaveBeenCalledWith('/loans?q=sbi&size=10', { scroll: false });
+    await user.click(screen.getByRole('option', { name: '50 / page' }));
+    expect(router.push).toHaveBeenCalledWith('/loans?q=sbi&size=50', { scroll: false });
   });
 });

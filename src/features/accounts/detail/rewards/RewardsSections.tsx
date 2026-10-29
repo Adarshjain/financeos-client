@@ -95,7 +95,7 @@ export function RulesCard({
       title="Rules on this account"
       subtitle="First match wins"
       action={
-        <HeaderLink href={appHref(`/rewards/rules?account=${accountId}`)} chevron>
+        <HeaderLink href={appHref(`/rewards/rules?account=${accountId}`)}>
           Manage
         </HeaderLink>
       }

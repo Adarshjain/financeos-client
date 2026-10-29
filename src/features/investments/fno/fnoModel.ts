@@ -184,7 +184,7 @@ export interface PnlBarRow {
   tone: Tone;
   /** Bar fill, 0 to 100 of the biggest move. */
   pct: number;
-  barTone: 'brand' | 'danger';
+  barTone: 'positive' | 'danger';
 }
 
 /** The months with a result, in year order, each with a bar sized against the biggest month. */
@@ -197,7 +197,7 @@ export function monthRows(summary: FnoSummary): PnlBarRow[] {
     amount: formatMoney(m.pnl, { sign: 'always' }),
     tone: moveTone(m.pnl),
     pct: biggest > 0 ? Math.max(2, Math.round((Math.abs(m.pnl) / biggest) * 100)) : 0,
-    barTone: m.pnl < 0 ? 'danger' : 'brand',
+    barTone: m.pnl < 0 ? 'danger' : 'positive',
   }));
 }
 

@@ -17,10 +17,11 @@ const VIEWPORTS = [
 const shown = (locator: Locator) => locator.locator('visible=true').first();
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-/** "2026-10-03" as the date field types it ("03/10/2026"), the server message ("3 Oct 2026") and a history row ("3 Oct", plus the year when it is not the current one). */
+/** "2026-10-03" as the date field types it ("03/10/2026") and shows it ("03/10/26"), the server message ("3 Oct 2026") and a history row ("3 Oct", plus the two-digit year when it is not the current one). */
 const asField = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+const asShown = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`;
 const asLong = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
-const asShort = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}${iso.slice(0, 4) === istToday().slice(0, 4) ? '' : ` ${iso.slice(0, 4)}`}`;
+const asShort = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}${iso.slice(0, 4) === istToday().slice(0, 4) ? '' : ` ${iso.slice(2, 4)}`}`;
 
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Investments, ${viewport.name} (@ui)`, () => {
@@ -43,8 +44,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'EPF', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
       await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('href', '/investments/tradebook');
 
-      // The phone hero has no label; the desktop keeps its Current value tile.
-      await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(viewport.name.startsWith('phone') ? 0 : 1);
+      // The hero names its headline figure at both sizes.
+      await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(1);
       await expect(shown(page.getByText('Unrealised P&L', { exact: true }))).toBeVisible();
       await expect(page.getByText(/Prices as of \d+ \w+/)).toBeVisible();
       // Prices are live, so there is no manual Refresh (owner 2026-10-26).
@@ -55,7 +56,7 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText(/manual price/))).toBeVisible();
       await expect(shown(page.getByText(/at cost \(no price\)/))).toBeVisible();
       await expect(shown(page.getByRole('button', { name: 'record a merger' }))).toBeVisible();
-      await expect(shown(page.getByText(new RegExp(`Merged into ${seeded.target.name} · \\d+ Jul 2023`)))).toBeVisible();
+      await expect(shown(page.getByText(new RegExp(`Merged into ${seeded.target.name} · \\d+ Jul 23`)))).toBeVisible();
       await expect(shown(page.getByText('Stocks', { exact: false }))).toBeVisible();
       // One row per stock: INFY is held at two brokers and appears once.
       await expect(page.getByRole('button').filter({ hasText: seeded.infy.symbol })).toHaveCount(1);
@@ -84,14 +85,14 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
 
       // Each sort option carries its direction.
-      await page.getByRole('button', { name: 'Name: A to Z' }).click();
-      await page.getByRole('option', { name: '₹ return: high to low' }).click();
+      await page.getByRole('button', { name: 'Name A–Z' }).click();
+      await page.getByRole('option', { name: 'Best ₹ return' }).click();
       await page.waitForURL(/sort=return_abs/);
-      await expect(page.getByRole('button', { name: '₹ return: high to low' })).toBeVisible();
-      await page.getByRole('button', { name: '₹ return: high to low' }).click();
-      await page.getByRole('option', { name: '₹ return: low to high' }).click();
+      await expect(page.getByRole('button', { name: 'Best ₹ return' })).toBeVisible();
+      await page.getByRole('button', { name: 'Best ₹ return' }).click();
+      await page.getByRole('option', { name: 'Worst ₹ return' }).click();
       await page.waitForURL(/sort=return_abs&dir=asc/);
-      await expect(page.getByRole('button', { name: '₹ return: low to high' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Worst ₹ return' })).toBeVisible();
 
       await page.getByRole('button', { name: 'Broker' }).click();
       await page.getByRole('option', { name: seeded.groww.name }).click();
@@ -114,7 +115,8 @@ for (const viewport of VIEWPORTS) {
       await page.goto(`/investments/${seeded.infy.id}`);
 
       await expect(shown(page.getByText(new RegExp(`${seeded.infy.symbol} · `)))).toBeVisible();
-      await expect(page.getByText('Current value', { exact: true })).toHaveCount(0);
+      // The hero holds Invested, ₹ return and XIRR; the other five are the Position card's rows.
+      await expect(shown(page.getByText('Current value', { exact: true }))).toBeVisible();
       for (const label of ['Quantity', 'Avg cost', 'LTP', 'XIRR', 'Invested', '₹ return', 'Realised P&L', 'Total charges']) {
         await expect(shown(page.getByText(label, { exact: true }))).toBeVisible();
       }
@@ -130,7 +132,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByText('If you sell today')).toBeVisible();
       await expect(page.getByText(/^Sell all \d+$/)).toBeVisible();
-      await expect(page.getByText('Dividend ₹22 / share')).toBeVisible();
+      await expect(page.getByText('Dividend ₹22.00 / share')).toBeVisible();
       await expect(page.getByText(/^Bonus 1:1/)).toBeVisible();
       await expect(page.getByText('Shared catalog entry')).toBeVisible();
       await expect(page.getByText(/Final|Interim|Applied/)).toHaveCount(0);
@@ -179,7 +181,7 @@ for (const viewport of VIEWPORTS) {
       await history.getByRole('button', { name: 'Delete' }).first().click();
       const confirm = page.getByRole('dialog', { name: 'Delete manual price' });
       await expect(confirm.getByText('Only this price is deleted.')).toBeVisible();
-      await confirm.getByRole('button', { name: 'Delete price' }).click();
+      await confirm.getByRole('button', { name: 'Delete' }).click();
       await expect(page.getByText('Price deleted')).toBeVisible();
       await expect(history.getByRole('button', { name: 'Delete' })).toHaveCount(1);
     });
@@ -197,7 +199,7 @@ for (const viewport of VIEWPORTS) {
       await history.getByRole('button', { name: 'Edit' }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Edit manual price' });
       await expect(dialog.getByLabel('As of')).toBeEnabled();
-      await expect(dialog.getByLabel('As of')).toHaveValue(asField(istToday()));
+      await expect(dialog.getByLabel('As of')).toHaveValue(asShown(istToday()));
 
       await dialog.getByLabel('As of').fill(asField(older));
       await dialog.getByRole('button', { name: 'Save price' }).click();
@@ -213,15 +215,16 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(history.getByText(asShort(older), { exact: true }))).toBeVisible();
     });
 
-    test('Holding page: no tabs; old tab addresses show the same page; the + records anything', async ({ page }) => {
+    test('Holding page: no tabs; old tab addresses show the same page; the header records anything', async ({ page }) => {
       await page.goto(`/investments/${seeded.infy.id}?tab=prices`);
       await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
       await expect(page.getByText('Trades', { exact: true })).toBeVisible();
       await expect(page.getByText('By broker')).toBeVisible();
       await expect(page.getByText('Dividends', { exact: true })).toBeVisible();
       await expect(page.getByText('Corporate actions', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
-      for (const name of ['Record trade', 'Record dividend', 'Record corporate action', 'Record price']) {
+      await expect(page.getByRole('button', { name: 'Record trade' }).first()).toBeVisible();
+      await page.getByRole('button', { name: 'More actions', exact: true }).click();
+      for (const name of ['Record dividend', 'Record corporate action', 'Record price']) {
         await expect(page.getByRole('menuitem', { name })).toBeVisible();
       }
     });

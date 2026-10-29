@@ -45,7 +45,7 @@ describe('loadSavedReport', () => {
     expect(reportsApi.getById).toHaveBeenCalledTimes(1);
     expect(reportsApi.getDatasource).toHaveBeenCalledTimes(1);
     expect(reportsApi.runSaved).toHaveBeenCalledTimes(1);
-    expect(reportsApi.runSaved).toHaveBeenCalledWith(key, { page: 0, size: 50 });
+    expect(reportsApi.runSaved).toHaveBeenCalledWith(key, { page: 0, size: 25 });
   });
 
   it('opens the report without a result when only the run fails', async () => {

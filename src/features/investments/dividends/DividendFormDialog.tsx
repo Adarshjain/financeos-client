@@ -146,7 +146,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           size="sm"
           title={editing ? 'Edit dividend' : 'Record dividend'}
           description={title}
-          tertiary={dividend ? { label: 'Delete dividend', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: submitting } : undefined}
+          tertiary={dividend ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: submitting } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
           primary={{ label: editing ? 'Save dividend' : 'Record dividend', type: 'submit', form: FORM_ID, loading: submitting }}
         >
@@ -242,7 +242,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           }}
           title={`Delete ${dividend.symbol || dividend.instrumentName || 'dividend'} · ${formatMoney(Number(dividend.amount || 0) - Number(dividend.tds || 0), { decimals: 'auto' })}?`}
           description="This payout record goes. A bank credit it was linked to stays in your transactions, unlinked. This can't be undone."
-          confirmLabel="Delete dividend"
+          confirmLabel="Delete"
           confirmLoading={mutations.remove.isPending}
           onConfirm={() => {
             void (async () => {

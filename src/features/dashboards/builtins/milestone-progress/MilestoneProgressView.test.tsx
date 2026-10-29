@@ -53,7 +53,7 @@ describe('MilestoneProgressView', () => {
 
   it('empty: no milestones in progress', () => {
     renderWithQuery(<MilestoneProgressView {...view(rawTable(COLS, []))} />);
-    expect(screen.getByText('No milestones in progress')).toBeInTheDocument();
+    expect(screen.getByText('Add spend milestones to a card on the Rewards page to track them here.')).toBeInTheDocument();
   });
 
   it('pages only when the rows span several pages', async () => {

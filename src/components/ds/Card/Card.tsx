@@ -216,6 +216,11 @@ export interface CardProps
   tone?: CardTone;
   /** Marks the card as chosen: a 2px `brand` ring that never changes the card's size. */
   selected?: boolean;
+  /**
+   * The whole card is a press target (`asChild` with a button, `a` or Link child): hover and pressed backgrounds and
+   * a focus ring like other pressables. `selected !== undefined` keeps implying it.
+   */
+  interactive?: boolean;
 }
 
 const toneStyles: Record<CardTone, string> = {
@@ -238,12 +243,14 @@ const CardRoot = forwardRef<HTMLDivElement, CardProps>(
       variant = 'default',
       tone = 'neutral',
       selected,
+      interactive,
       className,
       children,
       ...props
     },
     ref,
   ) => {
+    const pressable = asChild && (interactive || selected !== undefined);
     const hasHeader = Boolean(title || subtitle || action);
     const Comp = asChild ? Slot : 'div';
 
@@ -256,9 +263,8 @@ const CardRoot = forwardRef<HTMLDivElement, CardProps>(
             toneStyles[tone],
             variantStyles[variant],
             selected && 'ring-2 ring-brand',
-            asChild &&
-              selected !== undefined &&
-              'cursor-pointer hover:bg-hover active:bg-pressed',
+            pressable &&
+              'cursor-pointer transition-colors duration-fast hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
             className,
           )}
           {...props}

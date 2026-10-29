@@ -32,19 +32,19 @@ describe('entryRows', () => {
     expect(rows.find((r) => r.id === 'e1')).toMatchObject({
       title: 'Prepayment',
       subtitle: '1 Jun · reduce tenure',
-      amount: '₹2,00,000',
+      amount: '₹2,00,000.00',
     });
-    expect(rows.find((r) => r.id === 'e3')).toMatchObject({ title: 'Foreclosure', subtitle: '1 Dec', amount: '₹100' });
+    expect(rows.find((r) => r.id === 'e3')).toMatchObject({ title: 'Foreclosure', subtitle: '1 Dec', amount: '₹100.00' });
   });
 
   it('draws a charge with its note', () => {
     const rows = entryRows(events, charges);
     expect(rows.find((r) => r.id === 'c1')).toMatchObject({
       title: 'Insurance premium',
-      subtitle: '1 Aug 2025 · SBI Life RiNn Raksha',
-      amount: '₹24,500',
+      subtitle: '1 Aug 25 · SBI Life RiNn Raksha',
+      amount: '₹24,500.00',
     });
-    expect(rows.find((r) => r.id === 'c2')?.subtitle).toBe('1 Sep 2025');
+    expect(rows.find((r) => r.id === 'c2')?.subtitle).toBe('1 Sep 25');
   });
 
   it('counts the entries in words', () => {
@@ -68,7 +68,7 @@ describe('deleteEntryCopy', () => {
     const [row] = entryRows([], [chargeFixture()]);
     const copy = deleteEntryCopy(row);
     expect(copy.title).toBe('Delete charge?');
-    expect(copy.description).toBe('Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha goes.');
+    expect(copy.description).toBe('Insurance premium of ₹24,500.00, 1 Aug 25 · SBI Life RiNn Raksha goes.');
     expect(copy.impact.join(' ')).toContain('A linked bank transaction stays');
   });
 });

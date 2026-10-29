@@ -57,35 +57,41 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('tab', { name: /^Loans/ })).toHaveAttribute('data-state', 'active');
     });
 
-    test('Lendings: tiles show the seeded totals, chips filter on the server and search narrows', async ({ page }) => {
+    test('Lendings: the hero shows the seeded totals, the Direction chip filters on the server and search narrows', async ({ page }) => {
       await seedPeople();
       await page.goto('/loans/lendings');
       await expect(page).toHaveTitle('Lendings · FinanceOS');
 
-      await expect(page.getByText('₹15,000').first()).toBeVisible(); // Owed to you
+      await expect(page.getByText('Owed to you (net)')).toBeVisible();
+      await expect(page.getByText('₹3,000').first()).toBeVisible(); // 15,000 owed to you less 12,000 you owe
       await expect(page.getByText('₹12,000').first()).toBeVisible(); // You owe
       await expect(page.getByText('1 person').first()).toBeVisible();
       for (const name of ['Rahul Sharma', 'Priya Nair', 'Meera Iyer']) {
         await expect(page.getByText(name).first()).toBeVisible();
       }
 
-      await page.getByRole('button', { name: 'Owed to you' }).click();
+      const pickDirection = async (label: string) => {
+        await page.getByRole('button', { name: /^(Direction|Owed to you|You owe|Settled)$/ }).click();
+        await page.getByRole('option', { name: label, exact: true }).click();
+      };
+      await pickDirection('Owed to you');
       await page.waitForURL(/filter=owed/);
       await expect(page.getByText('Rahul Sharma').first()).toBeVisible();
       await expect(page.getByText('Priya Nair')).toHaveCount(0);
       await expect(page.getByText('Meera Iyer')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'You owe' }).click();
+      await pickDirection('You owe');
       await page.waitForURL(/filter=owe/);
       await expect(page.getByText('Priya Nair').first()).toBeVisible();
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Settled' }).click();
+      await pickDirection('Settled');
       await page.waitForURL(/filter=settled/);
       await expect(page.getByText('Meera Iyer').first()).toBeVisible();
       await expect(page.getByText('Priya Nair')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'All', exact: true }).click();
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
+      await page.waitForURL((url) => !url.search.includes('filter='));
       await page.getByPlaceholder('Search').fill('priya');
       await page.waitForURL(/q=priya/);
       await expect(page.getByText('Priya Nair').first()).toBeVisible();
@@ -95,16 +101,9 @@ for (const viewport of VIEWPORTS) {
     test('Lendings: a person row links to the Dinero person page', async ({ page }) => {
       const { rahul } = await seedPeople();
       await page.goto('/loans/lendings');
-      if (viewport.width >= 1024) {
-        await expect(page.getByRole('link', { name: 'Open Rahul Sharma' })).toHaveAttribute(
-          'href',
-          `/loans/lendings/${rahul.id}`,
-        );
-      } else {
-        // On phone the whole row opens the person.
-        await page.getByText('Rahul Sharma').first().click();
-        await page.waitForURL(`**/loans/lendings/${rahul.id}`);
-      }
+      // The whole row opens the person; there is no chevron link.
+      await page.getByText('Rahul Sharma').first().click();
+      await page.waitForURL(`**/loans/lendings/${rahul.id}`);
     });
 
     /** Rahul lent 25,000 and was repaid 10,000: he owes 15,000. */
@@ -121,12 +120,11 @@ for (const viewport of VIEWPORTS) {
     test('Person: opening a person from the list shows the ledger with the running balance, outside the tabs', async ({ page }) => {
       const { rahul } = await seedPeople();
       await page.goto('/loans/lendings');
-      if (viewport.width >= 1024) await page.getByRole('link', { name: 'Open Rahul Sharma' }).click();
-      else await page.getByText('Rahul Sharma').first().click();
+      await page.getByText('Rahul Sharma').first().click();
       await page.waitForURL(`**${personPath(rahul.id)}`);
 
-      await expect(page.getByText('Owes you', { exact: true })).toBeVisible();
-      await expect(page.getByText('₹15,000').first()).toBeVisible();
+      await expect(page.getByText('Owed to you')).toBeVisible();
+      await expect(page.getByText('₹15,000', { exact: true }).first()).toBeVisible();
       await expect(page.getByText('Running balance · positive means Rahul owes you')).toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹15,000 · received ₹0 · closing ₹15,000')).toBeVisible();
       // The Lendings · Loans tabs belong to the two lists, not to a person's page.
@@ -144,7 +142,7 @@ for (const viewport of VIEWPORTS) {
       if (viewport.width >= 1024) {
         await expect(page.getByRole('columnheader', { name: 'Balance' })).toBeVisible();
         const newest = page.getByRole('button').filter({ hasText: 'Part repayment' });
-        await expect(newest).toContainText('+10,000');
+        await expect(newest).toContainText('+10,000.00');
         await expect(newest).toContainText('15,000');
         const oldest = page.getByRole('button').filter({ hasText: 'Laptop advance' });
         await expect(oldest).toContainText('25,000');
@@ -157,7 +155,7 @@ for (const viewport of VIEWPORTS) {
     test('Person: the + opens Record ledger entry with this person already picked', async ({ page }) => {
       const { rahul } = await seedLedger();
       await page.goto(personPath(rahul.id));
-      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Add entry', exact: true }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
       await expect(dialog).toBeVisible();
       await expect(dialog.getByRole('combobox', { name: /^Person/ })).toContainText('Rahul Sharma');
@@ -232,10 +230,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹10,000 · closing ₹16,000')).toBeVisible();
 
       await page.getByText('Part repayment').first().click();
-      await dialog.getByRole('button', { name: 'Delete entry' }).click();
+      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
       const confirm = page.getByRole('dialog', { name: 'Delete entry' });
       await expect(confirm.getByText(/This (lent|borrowed|repayment) entry of ₹10,000 goes\./)).toBeVisible();
-      await confirm.getByRole('button', { name: 'Delete entry' }).click();
+      await confirm.getByRole('button', { name: 'Delete' }).click();
       await expect(page.getByText('Opening ₹0 · lent ₹26,000 · received ₹0 · closing ₹26,000')).toBeVisible();
     });
 
@@ -243,12 +241,12 @@ for (const viewport of VIEWPORTS) {
       const { rahul } = await seedLedger();
       await page.goto(personPath(rahul.id));
       await page.getByRole('button', { name: 'More actions' }).click();
-      await page.getByRole('menuitem', { name: 'Delete person' }).click();
+      await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
       const confirm = page.getByRole('dialog', { name: 'Delete person' });
       await expect(confirm.getByText('Rahul Sharma goes.')).toBeVisible();
       await expect(confirm.getByText('Their whole ledger goes (2 entries).')).toBeVisible();
-      await confirm.getByRole('button', { name: 'Delete person' }).click();
+      await confirm.getByRole('button', { name: 'Delete' }).click();
 
       await page.waitForURL((u) => u.pathname === '/loans/lendings');
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
@@ -257,7 +255,7 @@ for (const viewport of VIEWPORTS) {
     test('the + opens Record ledger entry; saving a new person adds a row', async ({ page }) => {
       await seedPeople();
       await page.goto('/loans/lendings');
-      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Add lending', exact: true }).first().click();
 
       const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
       await expect(dialog).toBeVisible();
@@ -274,7 +272,7 @@ for (const viewport of VIEWPORTS) {
       expect(new URL(page.url()).pathname).toBe('/loans/lendings');
     });
 
-    test('Loans: tiles, search by lender, Closed · n · Show, and row links', async ({ page }) => {
+    test('Loans: hero, search by lender, Closed · n · Show, and row opens the loan', async ({ page }) => {
       const api = makeApi(currentUser.cookie);
       const home = await createLoan(api, { name: 'Home Loan', lender: 'SBI MaxGain', loanType: 'home', principal: 1000000, tenureMonths: 120 });
       await createLoan(api, { name: 'Car Loan', lender: 'HDFC Bank', loanType: 'car', principal: 500000, tenureMonths: 60 });
@@ -282,16 +280,12 @@ for (const viewport of VIEWPORTS) {
       await closeLoan(api, old.id);
 
       await page.goto('/loans');
-      for (const label of ['Outstanding', 'EMIs per month', 'Overdue', 'Interest this FY']) {
+      for (const label of ['Total outstanding', 'EMIs a month', 'Next EMI']) {
         await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
       }
-      await expect(page.getByText('of ₹15L borrowed')).toBeVisible();
       await expect(page.getByText('Home Loan').first()).toBeVisible();
       await expect(page.getByText('Car Loan').first()).toBeVisible();
       await expect(page.getByText('Old Bike Loan')).toHaveCount(0);
-      if (viewport.width >= 1024) {
-        await expect(page.getByRole('link', { name: 'Open Home Loan' })).toHaveAttribute('href', `/loans/${home.id}`);
-      }
 
       await page.getByPlaceholder('Search').fill('SBI');
       await page.waitForURL(/q=SBI/);
@@ -337,7 +331,7 @@ for (const viewport of VIEWPORTS) {
 
     test('the + on Loans opens Add loan; creating one adds a row', async ({ page }) => {
       await page.goto('/loans');
-      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Add loan', exact: true }).first().click();
 
       const dialog = page.getByRole('dialog', { name: 'Add loan' });
       await expect(dialog).toBeVisible();

@@ -107,4 +107,16 @@ describe('FilterBar', () => {
     expect(container.firstElementChild).toHaveClass('px-space-8');
     expect(container.firstElementChild).not.toHaveClass('px-space-16');
   });
+
+  it('shows Reset filters at the row end only while changed', () => {
+    const onReset = vi.fn();
+    const { container, rerender } = render(<FilterBar onReset={onReset}><FilterChip>All</FilterChip></FilterBar>);
+    expect(screen.queryByRole('button', { name: 'Reset filters' })).toBeNull();
+    rerender(<FilterBar changed onReset={onReset}><FilterChip>All</FilterChip></FilterBar>);
+    const reset = screen.getByRole('button', { name: 'Reset filters' });
+    expect(container.firstElementChild?.lastElementChild).toBe(reset);
+    expect(reset).toHaveClass('text-label');
+    fireEvent.click(reset);
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
 });

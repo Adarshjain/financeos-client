@@ -98,7 +98,7 @@ function DeclaredDividends({ dividend }: { dividend: UseDividendLinkResult }) {
                 subtitle={[d.brokerName, formatDate(d.exDate ?? d.payDate, 'list'), receipt].filter(Boolean).join(' · ')}
                 trailing={
                   <Text variant="body-strong" as="span">
-                    {formatMoney(expectedNet(d), { decimals: 'auto' })}
+                    {formatMoney(expectedNet(d), { decimals: 'exact' })}
                   </Text>
                 }
               />
@@ -110,11 +110,11 @@ function DeclaredDividends({ dividend }: { dividend: UseDividendLinkResult }) {
         <ListRow
           role="checkbox"
           aria-checked={dividend.recordTds}
-          aria-label={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'auto' })}`}
+          aria-label={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'exact' })}`}
           className="px-0"
           onClick={() => dividend.setRecordTds(!dividend.recordTds)}
           leading={<Checkbox checked={dividend.recordTds} tabIndex={-1} aria-hidden="true" />}
-          title={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'auto' })}`}
+          title={`Record TDS of ${formatMoney(dividend.tdsGap, { decimals: 'exact' })}`}
         />
       ) : null}
     </>

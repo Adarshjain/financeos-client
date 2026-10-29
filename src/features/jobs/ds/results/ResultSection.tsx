@@ -25,7 +25,7 @@ export function ResultSection({
     <div className="flex flex-col gap-space-6" data-testid="result-section" data-title={title}>
       <Text variant="label" tone={tone} as="div">
         <Button
-          variant="link"
+          variant="link" size="sm"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
           icon={<Icon name={open ? 'chevron-down' : 'chevron-right'} size="xs" />}

@@ -28,12 +28,12 @@ const ctx = { accounts, showSource: false };
 describe('transactionRow', () => {
   it('formats a debit and a credit with Indian grouping', () => {
     const debit = transactionRow(t(), ctx);
-    expect(debit).toMatchObject({ formattedAmount: '3,600.00', isCredit: false, date: '12 Oct', weekday: 'Mon', balance: '₹2,95,030', account: 'HDFC Bank Savings', category: 'Groceries' });
+    expect(debit).toMatchObject({ formattedAmount: '3,600.00', isCredit: false, date: '12 Oct', weekday: 'Mon', balance: '₹2,95,030.00', account: 'HDFC Bank Savings', category: 'Groceries' });
     expect(transactionRow(t({ amount: 215000 }), ctx)).toMatchObject({ formattedAmount: '+2,15,000.00', isCredit: true });
   });
 
   it('puts the minus before the rupee sign on a negative balance', () => {
-    expect(transactionRow(t({ balance: -210150 }), ctx).balance).toBe('−₹2,10,150');
+    expect(transactionRow(t({ balance: -210150 }), ctx).balance).toBe('−₹2,10,150.00');
   });
 
   it('falls back to the bank text, then a dash', () => {

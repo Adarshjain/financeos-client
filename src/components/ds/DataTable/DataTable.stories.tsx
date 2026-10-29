@@ -276,7 +276,7 @@ const statementColumns = stmtHelper.columns([
   stmtHelper.accessor('date', {
     id: 'date',
     header: 'Date',
-    meta: { size: 'sm', sortable: true },
+    meta: { size: 'date', sortable: true },
   }),
   stmtHelper.accessor('description', {
     id: 'description',

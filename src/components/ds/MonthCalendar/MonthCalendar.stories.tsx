@@ -276,3 +276,8 @@ export const PickerYearRange: Story = {
     maxDate: '2026-11-20',
   },
 };
+
+export const UpcomingCalendarPhone: Story = {
+  ...UpcomingCalendar,
+  globals: { viewport: { value: 'phone', isRotated: false } },
+};

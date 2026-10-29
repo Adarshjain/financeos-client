@@ -34,6 +34,14 @@ export const RANGE_PRESET_LABELS: Record<RangePreset, string> = {
   CUSTOM: 'Custom range',
 };
 
+/** The preset's label; a bank's year is the calendar year, a card's the anniversary year. */
+export function presetLabel(preset: RangePreset, calendarYear?: boolean): string {
+  if (!calendarYear) return RANGE_PRESET_LABELS[preset];
+  if (preset === 'THIS_ANNIVERSARY_YEAR') return 'This calendar year';
+  if (preset === 'LAST_ANNIVERSARY_YEAR') return 'Previous calendar year';
+  return RANGE_PRESET_LABELS[preset];
+}
+
 /** The period a card's rewards open on: its current reward year. Not written to the address. */
 export const DEFAULT_PERIOD: RangePreset = 'THIS_ANNIVERSARY_YEAR';
 

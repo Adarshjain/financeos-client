@@ -14,13 +14,14 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  KpiTile,
+  Hero,
   Pager,
   Select,
   Text,
 } from '@/components/ds';
 import { formatDate } from '@/lib/format';
 
+import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 import {
   EPF_IMPORT_TYPE,
@@ -45,7 +46,7 @@ const columns = [
   ch.display({
     id: 'wageMonth',
     header: 'Wage month',
-    meta: { size: 'sm', phone: 'hidden' },
+    meta: { size: 'md', phone: 'hidden' },
     cell: ({ row }) => <Text variant="body">{row.original.wageMonth}</Text>,
   }),
   ch.display({
@@ -168,7 +169,10 @@ export function EpfPassbookCard({
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar>
+      <FilterBar
+        changed={state.fy !== null || state.employer !== ''}
+        onReset={() => go({ fy: null, employer: '', page: 0 })}
+      >
         {employerOptions.length > 0 ? (
           <Select
             options={employerOptions}
@@ -182,7 +186,7 @@ export function EpfPassbookCard({
               })
             }
             trigger={
-              <FilterChip hasDropdown selected className="shrink-0">
+              <FilterChip hasDropdown changed={state.employer !== ''} onReset={() => go({ employer: '', page: 0 })} className="shrink-0">
                 {employerLabel}
               </FilterChip>
             }
@@ -195,7 +199,7 @@ export function EpfPassbookCard({
             go({ fy: v === 'all' ? 'all' : Number(v), page: 0 })
           }
           trigger={
-            <FilterChip hasDropdown selected className="shrink-0">
+            <FilterChip hasDropdown changed={state.fy !== null} onReset={() => go({ fy: null, page: 0 })} className="shrink-0">
               {fyLabel}
             </FilterChip>
           }
@@ -251,7 +255,11 @@ export function EpfPassbookCard({
           }
           onRowSelect={(row) => onOpen(row.id)}
           empty={
-            <EmptyState compact description="No entries in this period." />
+            <EmptyState
+              title="No entries in this period"
+              description="Try another year or employer."
+              action={{ label: 'Clear filters', variant: 'secondary', onSelect: () => go({ fy: null, employer: '', page: 0 }) }}
+            />
           }
           stickyHeader={false}
           size="sm"
@@ -261,26 +269,24 @@ export function EpfPassbookCard({
   );
 }
 
-/** The tiles and the table while the page loads. */
+/** The hero, filter row and table while the page loads. */
 export function EpfPassbookSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
+      <Hero.Skeleton label change figures={2} />
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        <FilterRowSkeleton chips={2} />
+        <Card>
+          <DataTable
+            columns={columns}
+            data={[]}
+            getRowId={(row) => row.id}
+            size="sm"
+            loading
+            skeletonRows={5}
+          />
+        </Card>
       </div>
-      <Card>
-        <DataTable
-          columns={columns}
-          data={[]}
-          getRowId={(row) => row.id}
-          size="sm"
-          loading
-          skeletonRows={5}
-        />
-      </Card>
     </div>
   );
 }

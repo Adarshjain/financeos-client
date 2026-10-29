@@ -14,6 +14,7 @@ import {
   buildLimitCycle,
   buildRecentTransactions,
   buildRewards,
+  cardHeroFigures,
 } from './cardOverviewModel';
 import {
   BillsCard,
@@ -37,6 +38,7 @@ export async function CardOverview({
   const rewards = closed
     ? null
     : buildRewards(data.rewards?.report, data.rewards?.window, today);
+  const limitCycle = buildLimitCycle(account, data.summary, data.bill, today);
   const connections = buildConnections({
     lastStatementDate: account.lastStatementDate,
     ingestFromDate: account.ingestFromDate,
@@ -50,10 +52,11 @@ export async function CardOverview({
       <AccountHeaderCard
         accountName={account.name}
         model={buildHeaderModel(account, data.bill, today)}
+        figures={cardHeroFigures(limitCycle)}
       />
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
-          <LimitCycleCard model={buildLimitCycle(account, data.summary, data.bill, today)} />
+          <LimitCycleCard model={limitCycle} />
           {data.billHistory ? (
             <BillsCard accountId={account.id} rows={buildBillRows(data.billHistory)} />
           ) : null}

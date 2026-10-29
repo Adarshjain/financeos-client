@@ -32,7 +32,7 @@ export function BillsCard({ settings }: { settings: NotificationSettingsResponse
   };
 
   return (
-    <Card title="Bills & EMIs" subtitle="Every change saves immediately">
+    <Card title="Bills & EMIs">
       <ListRow
         title={<Text variant="body">Days before due</Text>}
         trailing={

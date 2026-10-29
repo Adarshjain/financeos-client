@@ -222,6 +222,8 @@ function DataTableInner<Row extends RowData>(
               {showDay && (
                 <SectionHeader
                   variant="strong"
+                  borderTop
+                  glass={false}
                   meta={currentDay.sublabel}
                   className="desk:hidden"
                 >

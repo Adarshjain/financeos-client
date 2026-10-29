@@ -8,7 +8,7 @@ import {
 } from '@/components/ds';
 
 import { AttentionCard } from './AttentionCard';
-import { OAUTH_ERROR_FALLBACK, type OauthReturn } from './connectionsModel';
+import { OAUTH_ERROR_FALLBACK, type OauthReturn, shortError } from './connectionsModel';
 import { MailboxesCard } from './MailboxesCard';
 import { RecentSyncJobsCard } from './RecentSyncJobsCard';
 import { SenderDialog } from './SenderDialog';
@@ -37,12 +37,12 @@ export function ConnectionsScreen({
       ) : null}
       {banner?.kind === 'error' ? (
         <Banner tone="danger" title="Connection error" onDismiss={dismiss}>
-          {banner.message || OAUTH_ERROR_FALLBACK}
+          {shortError(banner.message, OAUTH_ERROR_FALLBACK)}
         </Banner>
       ) : null}
       {g.message ? (
         <Banner tone={g.message.type === 'success' ? 'success' : 'danger'} onDismiss={g.dismissMessage}>
-          {g.message.text}
+          {g.message.type === 'success' ? g.message.text : shortError(g.message.text, 'Something went wrong. Try again.')}
         </Banner>
       ) : null}
 

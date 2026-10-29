@@ -24,11 +24,11 @@ describe('LendingsListCard paging', () => {
       />,
     );
     await user.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
-    await user.click(screen.getByRole('option', { name: '10 / page' }));
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings?q=pri&filter=owe&size=10', { scroll: false });
+    await user.click(screen.getByRole('option', { name: '50 / page' }));
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings?q=pri&filter=owe&size=50', { scroll: false });
   });
 
-  it('a search typed right after a chip keeps the chip that was just chosen', async () => {
+  it('a search typed right after a reset keeps the reset that was just made', async () => {
     render(
       <LendingsListCard
         state={{ q: '', filter: 'settled', page: 0, size: 25 }}
@@ -37,7 +37,7 @@ describe('LendingsListCard paging', () => {
         totalPages={0}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'All' }));
+    await user.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(router.push).toHaveBeenLastCalledWith('/loans/lendings', { scroll: false });
     // The page still carries filter=settled: the push has not landed yet.
     await user.type(screen.getByPlaceholderText('Search'), 'priya');

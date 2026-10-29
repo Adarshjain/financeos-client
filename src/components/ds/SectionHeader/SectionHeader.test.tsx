@@ -31,6 +31,12 @@ describe('SectionHeader', () => {
     expect(container.firstChild).not.toHaveClass('glass:bg-glass');
   });
 
+  it('a sticky header with glass={false} keeps its solid ground', () => {
+    const { container } = render(<SectionHeader variant="strong" glass={false}>Today</SectionHeader>);
+    expect(container.firstChild).toHaveClass('sticky', 'bg-subtle');
+    expect(container.firstChild).not.toHaveClass('glass:bg-glass');
+  });
+
   it('renders strong variant with sticky=false', () => {
     const { container } = render(
       <SectionHeader variant="strong" sticky={false}>

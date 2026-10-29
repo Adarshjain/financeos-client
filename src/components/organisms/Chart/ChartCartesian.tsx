@@ -50,6 +50,8 @@ type ChartRow = Record<string, string | number | null>;
 const ROW_INDEX = '__index';
 
 const NARROW_PX = 400;
+/** Past this many categories the bars stay upright (a long daily series is not a list). */
+const MAX_HORIZONTAL_CATEGORIES = 10;
 const ANIMATION_MS = 450;
 
 export interface ChartCartesianProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -111,44 +113,86 @@ export const ChartCartesian = forwardRef<HTMLDivElement, ChartCartesianProps>(fu
     yDomain !== 'data'
   );
   const tick = { fontSize, fill: CHART_AXIS_COLOR };
+  // A narrow range rounds neighbouring compact ticks to the same text; then every tick shows its full value.
+  const compactTexts = yTicks.map((t) => format.compact(t));
+  const valueTickText = (v: number) =>
+    new Set(compactTexts).size === compactTexts.length ? format.compact(v) : format.full(v);
   // Room per category, in characters; Recharts skips ticks that still collide.
   const labelChars = width
     ? Math.max(
-        6,
+        8,
         Math.min(16, Math.floor(width / categories.length / (fontSize * 0.6)))
       )
     : 12;
   const isBar = chartType !== 'line' && chartType !== 'area';
   const stacked = chartType === 'stackedBar';
+  // A few categories whose names would not fit under their bars lie down: names on the left in full, bars run right.
+  const longestLabel = categories.reduce((n, c) => Math.max(n, String(c).length), 0);
+  const horizontal =
+    isBar &&
+    width > 0 &&
+    categories.length > 1 &&
+    categories.length <= MAX_HORIZONTAL_CATEGORIES &&
+    longestLabel * fontSize * 0.6 > width / categories.length - 8;
+  const nameWidth = Math.min(Math.ceil(longestLabel * fontSize * 0.6) + 4, Math.floor(width * 0.45));
+  const valueTicks = { ticks: yTicks, domain: [yTicks[0], yTicks[yTicks.length - 1]] as [number, number] };
 
   const chrome = [
     <CartesianGrid
       key="grid"
-      vertical={false}
+      vertical={horizontal}
+      horizontal={!horizontal}
       stroke={CHART_GRID_COLOR}
     />,
-    <XAxis
-      key="x"
-      dataKey="category"
-      tick={tick}
-      tickLine={false}
-      axisLine={false}
-      tickMargin={8}
-      minTickGap={narrow ? 8 : 16}
-      interval="preserveStartEnd"
-      tickFormatter={(v: string) => truncateLabel(String(v), labelChars)}
-    />,
-    <YAxis
-      key="y"
-      width="auto"
-      tick={tick}
-      tickLine={false}
-      axisLine={false}
-      tickMargin={4}
-      ticks={yTicks}
-      domain={[yTicks[0], yTicks[yTicks.length - 1]]}
-      tickFormatter={(v: number) => format.compact(v)}
-    />,
+    horizontal ? (
+      <XAxis
+        key="x"
+        type="number"
+        tick={tick}
+        tickLine={false}
+        axisLine={false}
+        tickMargin={8}
+        interval="preserveStartEnd"
+        {...valueTicks}
+        tickFormatter={valueTickText}
+      />
+    ) : (
+      <XAxis
+        key="x"
+        dataKey="category"
+        tick={tick}
+        tickLine={false}
+        axisLine={false}
+        tickMargin={8}
+        minTickGap={narrow ? 8 : 16}
+        interval="preserveStartEnd"
+        tickFormatter={(v: string) => truncateLabel(String(v), labelChars)}
+      />
+    ),
+    horizontal ? (
+      <YAxis
+        key="y"
+        type="category"
+        dataKey="category"
+        width={nameWidth}
+        tick={tick}
+        tickLine={false}
+        axisLine={false}
+        tickMargin={4}
+        interval={0}
+      />
+    ) : (
+      <YAxis
+        key="y"
+        width="auto"
+        tick={tick}
+        tickLine={false}
+        axisLine={false}
+        tickMargin={4}
+        {...valueTicks}
+        tickFormatter={valueTickText}
+      />
+    ),
     <Tooltip
       key="tooltip"
       cursor={
@@ -289,7 +333,7 @@ export const ChartCartesian = forwardRef<HTMLDivElement, ChartCartesianProps>(fu
     // stacked segments are split by a hairline of the surface colour.
     const stackId = stacked ? 'stack' : undefined;
     chart = (
-      <BarChart data={rows} margin={margin} barGap={2} barCategoryGap="24%">
+      <BarChart data={rows} margin={margin} barGap={2} barCategoryGap="24%" layout={horizontal ? 'vertical' : 'horizontal'}>
         {chrome}
         {series.map((s, i) => (
           <Bar
@@ -299,10 +343,10 @@ export const ChartCartesian = forwardRef<HTMLDivElement, ChartCartesianProps>(fu
             stackId={stackId}
             fill={colorOf(s)}
             maxBarSize={narrow ? 20 : 28}
-            radius={!stacked || i === series.length - 1 ? [4, 4, 0, 0] : 0}
+            radius={!stacked || i === series.length - 1 ? (horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]) : 0}
             stroke={stacked ? CHART_SURFACE_COLOR : undefined}
             strokeWidth={stacked ? 1 : 0}
-            animationDuration={ANIMATION_MS}
+            isAnimationActive={false}
             onClick={
               onSelectEntry
                 ? (d) => pressEntry(s, (d as { payload?: ChartRow }).payload)

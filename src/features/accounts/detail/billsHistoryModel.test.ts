@@ -46,7 +46,7 @@ describe('buildBillRow', () => {
       title: '5 Oct statement',
       caption: 'Due 25 Oct',
       badge: { tone: 'neutral', label: '12 d' },
-      amount: '₹44,319',
+      amount: '₹44,319.00',
       muted: false,
     });
   });
@@ -58,7 +58,7 @@ describe('buildBillRow', () => {
     expect(row).toMatchObject({
       caption: 'Paid 10 Oct · on time',
       badge: { tone: 'success', label: 'Paid' },
-      amount: '₹46,800',
+      amount: '₹46,800.00',
       muted: true,
     });
   });

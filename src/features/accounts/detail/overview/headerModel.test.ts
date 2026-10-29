@@ -37,10 +37,9 @@ function bill(over: Partial<CardBillResponse> = {}): CardBillResponse {
 describe('buildHeaderModel for a card', () => {
   it('shows what is owed with the due date and unbilled spend, and allows Mark paid', () => {
     const m = buildHeaderModel(card, bill(), TODAY);
-    expect(m.label).toBe('You owe');
+    expect(m.label).toBe('Amount you owe');
     expect(m.figure).toBe('₹44,319');
-    expect(m.caption).toEqual(['due 25 Oct', 'unbilled ₹0']);
-    expect(m.badge).toBeUndefined();
+    expect(m.info).toBeUndefined();
     expect(m.markPaid).toEqual({ statementId: 's1', remaining: 44319 });
   });
 
@@ -51,11 +50,11 @@ describe('buildHeaderModel for a card', () => {
   it('keeps Mark paid off when the due date is unknown, but still shows the owed figure', () => {
     const m = buildHeaderModel(card, bill({ status: 'DUE_UNKNOWN', paymentDueDate: null }), TODAY);
     expect(m.markPaid).toBeNull();
-    expect(m.label).toBe('You owe');
-    expect(m.caption).toEqual(['unbilled ₹0']);
+    expect(m.label).toBe('Amount you owe');
+    expect(m.info).toBeUndefined();
   });
 
-  it('shows the unbilled spend, a No bill due badge and the last paid bill when nothing is due', () => {
+  it('shows the unbilled spend and the next statement date when nothing is due', () => {
     const m = buildHeaderModel(
       { ...card, balance: -6224 },
       bill({
@@ -69,15 +68,24 @@ describe('buildHeaderModel for a card', () => {
     );
     expect(m.label).toBe('Unbilled so far');
     expect(m.figure).toBe('₹6,224');
-    expect(m.badge).toBe('No bill due');
-    expect(m.caption).toEqual(['next statement 5 Nov', 'last bill ₹46,800 paid 18 Sep']);
+    expect(m.info).toBe('Next statement 5 Nov');
     expect(m.markPaid).toBeNull();
   });
 
-  it('leaves out caption parts it does not know', () => {
+  it('shows the next statement date beside an owed bill when known', () => {
+    expect(buildHeaderModel(card, bill({ nextStatementExpectedOn: '2026-11-05' }), TODAY).info).toBe('Next statement 5 Nov');
+  });
+
+  it('leaves out the info it does not know', () => {
     const m = buildHeaderModel(card, bill({ status: 'AWAITING_STATEMENT', unbilledAmount: 100 }), TODAY);
-    expect(m.caption).toEqual([]);
+    expect(m.info).toBeUndefined();
     expect(m.figure).toBe('₹100');
+  });
+
+  it('tones the owed headline danger, and leaves in-credit and unbilled neutral', () => {
+    expect(buildHeaderModel(card, bill(), TODAY).figureTone).toBe('danger');
+    expect(buildHeaderModel(card, null, TODAY).figureTone).toBe('danger');
+    expect(buildHeaderModel({ ...card, balance: 500 }, bill(), TODAY).figureTone).toBeUndefined();
   });
 
   it('labels a card in credit and floors a missing balance at zero owed', () => {
@@ -90,18 +98,18 @@ describe('buildHeaderModel for a card', () => {
 
   it('falls back to the owed figure with no actions when the bills request failed', () => {
     const m = buildHeaderModel(card, null, TODAY);
-    expect(m).toMatchObject({ label: 'You owe', figure: '₹44,319', caption: [], markPaid: null });
+    expect(m).toMatchObject({ label: 'Amount you owe', figure: '₹44,319', markPaid: null });
   });
 
   it('hides Mark paid and says when it closed', () => {
     const m = buildHeaderModel({ ...card, closedOn: '2026-06-30' }, bill(), TODAY);
     expect(m.markPaid).toBeNull();
-    expect(m.closedLabel).toBe('Closed 30 Jun 2026');
+    expect(m.info).toBe('Closed 30 Jun 26');
   });
 
   it('keeps a closing card open until the date passes', () => {
     const m = buildHeaderModel({ ...card, closedOn: '2026-10-31' }, bill(), TODAY);
-    expect(m.closedLabel).toBeUndefined();
+    expect(m.info).toBeUndefined();
     expect(m.markPaid).not.toBeNull();
   });
 });
@@ -114,30 +122,30 @@ describe('buildHeaderModel for other types', () => {
     expect(m).toMatchObject({
       label: 'Balance',
       figure: '₹1,20,000',
-      caption: ['as of statement 5 Oct'],
+      info: 'as of statement 5 Oct',
       markPaid: null,
     });
   });
 
   it('says the balance is current to the newest later transaction, else to the statement', () => {
     const anchored = { ...bank, balanceAnchored: true, anchorDate: '2026-10-05' };
-    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-10' }, null, TODAY).caption).toEqual(['as of 10 Oct']);
-    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-03' }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
-    expect(buildHeaderModel({ ...anchored, lastTransactionDate: null }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
-    expect(buildHeaderModel({ ...anchored, lastTransactionDate: TODAY }, null, TODAY).caption).toEqual(['as of today']);
-    expect(buildHeaderModel({ ...anchored, anchorDate: TODAY, lastTransactionDate: null }, null, TODAY).caption).toEqual(['as of statement today']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-10' }, null, TODAY).info).toBe('as of 10 Oct');
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-03' }, null, TODAY).info).toBe('as of statement 5 Oct');
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: null }, null, TODAY).info).toBe('as of statement 5 Oct');
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: TODAY }, null, TODAY).info).toBe('as of today');
+    expect(buildHeaderModel({ ...anchored, anchorDate: TODAY, lastTransactionDate: null }, null, TODAY).info).toBe('as of statement today');
     // A transaction dated after today is not in the balance yet.
-    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-20' }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-20' }, null, TODAY).info).toBe('as of statement 5 Oct');
   });
 
-  it('falls back to the opening balance and leaves the caption out when not anchored', () => {
+  it('falls back to the opening balance and leaves the info out when not anchored', () => {
     const m = buildHeaderModel(
       { ...bank, balance: null, openingBalance: '2500' },
       null,
       TODAY
     );
     expect(m.figure).toBe('₹2,500');
-    expect(m.caption).toEqual([]);
+    expect(m.info).toBeUndefined();
   });
 
   it('labels a broker Portfolio value and a wallet Balance', () => {
@@ -151,6 +159,7 @@ describe('buildHeaderModel for other types', () => {
       label: 'Balance',
       figure: '₹200',
     });
+    expect(buildHeaderModel(wallet, null, TODAY, '2026-10-10').info).toBe('last entry 10 Oct');
   });
 });
 

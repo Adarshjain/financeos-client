@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { DateField, SegmentedControl, Select } from '@/components/ds';
+import { DateField, Select } from '@/components/ds';
 
 import { PERIOD_OPTIONS } from './filterOptionsModel';
 import type { FiltersDraft, PeriodMode } from './filtersDraftModel';
@@ -26,13 +26,12 @@ export interface PeriodEditorProps {
   onChange: (patch: Partial<PeriodDraft>) => void;
 }
 
-/** The Preset / Single date / Range control and the field it shows; shared by the Filters dialog and the Period dropdown. */
+/** The Preset / Single date / Range select and the field it shows; shared by the Filters dialog and the Period dropdown. */
 export function PeriodEditor({ draft, today, onChange }: PeriodEditorProps) {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-12">
-      <SegmentedControl
+      <Select
         aria-label="Period type"
-        className="w-fit"
         options={PERIOD_MODES}
         value={draft.periodMode}
         onValueChange={(mode) => onChange({ periodMode: mode as PeriodMode })}

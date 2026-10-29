@@ -99,7 +99,7 @@ describe('DashboardsScreen', () => {
     await user.type(screen.getByPlaceholderText('Search'), 'zzz');
     expect(screen.getByText('No dashboards match')).toBeInTheDocument();
     // The empty state's own action (the field has its own clear button too).
-    await user.click(screen.getAllByRole('button', { name: 'Clear search' }).at(-1)!);
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(screen.getByText('Money overview')).toBeInTheDocument();
   });
 
@@ -153,7 +153,7 @@ describe('DashboardsScreen', () => {
     await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete Money overview?' });
-    await user.click(within(dialog).getByRole('button', { name: 'Delete dashboard' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/dashboards/{id}', { params: { path: { id: 'money' } } }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Dashboard deleted'));
   });
@@ -163,7 +163,7 @@ describe('DashboardsScreen', () => {
     render([home, money]);
     await user.click(menuOf('Money overview'));
     await user.click(screen.getByRole('menuitem', { name: 'Delete dashboard' }));
-    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete dashboard' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });

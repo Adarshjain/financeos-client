@@ -31,7 +31,7 @@ async function renderPage(searchParams: { installment?: string | string[] } = {}
 beforeEach(() => {
   vi.clearAllMocks();
   viewProps = undefined;
-  loadLoanPage.mockResolvedValue({ detail: detailFixture(), schedule: scheduleFixture(), paymentAccountName: 'HDFC Bank Savings' });
+  loadLoanPage.mockResolvedValue({ detail: detailFixture(), schedule: scheduleFixture() });
 });
 
 describe('/loans/[id]', () => {
@@ -40,7 +40,6 @@ describe('/loans/[id]', () => {
     expect(screen.getByText('loan view')).toBeInTheDocument();
     expect(loadLoanPage).toHaveBeenCalledWith('l1');
     expect(viewProps?.today).toBe('2026-10-13');
-    expect(viewProps?.paymentAccountName).toBe('HDFC Bank Savings');
     expect(viewProps?.schedule).toHaveLength(7);
     expect(viewProps?.highlightSeq).toBeNull();
   });

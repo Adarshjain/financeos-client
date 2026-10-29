@@ -16,13 +16,13 @@ describe('/offline page and OfflineContent', () => {
     expect(screen.getByText("You're offline")).toBeDefined();
     expect(
       screen.getByText(
-        "Check your connection.",
+        "Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show.",
       ),
     ).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeDefined();
   });
 
-  it('clicking Retry triggers page reload', () => {
+  it('clicking Try again triggers page reload', () => {
     const reloadMock = vi.fn();
     Object.defineProperty(window, 'location', {
       configurable: true,
@@ -31,7 +31,7 @@ describe('/offline page and OfflineContent', () => {
 
     render(<OfflineContent />);
 
-    const button = screen.getByRole('button', { name: 'Retry' });
+    const button = screen.getByRole('button', { name: 'Try again' });
     fireEvent.click(button);
 
     expect(reloadMock).toHaveBeenCalledTimes(1);

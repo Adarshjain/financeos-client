@@ -68,17 +68,19 @@ for (const viewport of VIEWPORTS) {
     test('opens on Unverified (chips carry no counts); filters live in the address and survive a reload', async ({ page }) => {
       await page.goto('/transactions/rules');
       await expect(page.getByRole('button', { name: 'Unverified', exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'All', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Verified', exact: true })).toHaveCount(0);
       for (const name of ['Third Wave', 'Ola Cabs', 'Zepto']) await expect(page.getByText(name, { exact: true })).toBeVisible();
       await expect(page.getByText(/last used|last active/i)).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Verified', exact: true }).click();
+      await page.getByRole('button', { name: 'Unverified', exact: true }).click();
+      await page.getByRole('option', { name: 'Verified', exact: true }).click();
       await expect(page).toHaveURL(/status=verified/);
       // Rules exist on another tab, so the empty Verified tab is a miss, not a first-use state.
       await expect(page.getByText('No rules match')).toBeVisible();
       await expect(page.getByText('No rules yet')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'All', exact: true }).click();
+      await page.getByRole('button', { name: 'Verified', exact: true }).click();
+      await page.getByRole('option', { name: 'All', exact: true }).click();
       await expect(page).toHaveURL(/status=all/);
       await page.getByPlaceholder('Search').fill('ola');
       await expect(page).toHaveURL(/q=ola/);
@@ -90,7 +92,7 @@ for (const viewport of VIEWPORTS) {
 
     test('+ adds a rule (a category created inline); Edit loads its matches with the account and follows the pattern', async ({ page }) => {
       await page.goto('/transactions/rules');
-      await page.getByRole('button', { name: /^Add$/ }).first().click();
+      await page.getByRole('button', { name: 'Add rule', exact: true }).first().click();
       const add = page.getByRole('dialog', { name: 'Add rule' });
       await expect(add).toBeVisible();
       await add.getByLabel('Pattern').fill('SWIGGY');
@@ -102,7 +104,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Rule created')).toBeVisible();
 
       await menuOf(page, 'Third Wave').click();
-      await page.getByRole('menuitem', { name: 'Edit rule' }).click();
+      await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
       const edit = page.getByRole('dialog', { name: /Edit rule · Third Wave/ });
       await expect(edit.getByText('Matches now · 1')).toBeVisible();
       await expect(edit.getByText(/Rules Account/)).toBeVisible();
@@ -124,9 +126,9 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Rule applied to 1 transaction')).toBeVisible({ timeout: 30_000 });
 
       await menuOf(page, 'Ola Cabs').click();
-      await page.getByRole('menuitem', { name: 'Delete rule' }).click();
+      await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Delete rule?')).toBeVisible();
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete rule' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Rule deleted')).toBeVisible();
       await expect(menuOf(page, 'Ola Cabs')).toHaveCount(0);
     });
@@ -185,8 +187,8 @@ for (const viewport of VIEWPORTS) {
       await page.getByLabel('Select Zepto').click();
       await expect(page.getByText('2 selected')).toBeVisible();
       await menuOf(page, 'Ola Cabs').click();
-      await page.getByRole('menuitem', { name: 'Delete rule' }).click();
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete rule' }).click();
+      await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Rule deleted')).toBeVisible();
       await expect(page.getByText('1 selected')).toBeVisible();
       await page.getByText('1 selected').locator('xpath=ancestor::div[.//button][1]').getByRole('button', { name: /Approve/ }).click();
@@ -204,7 +206,7 @@ for (const viewport of VIEWPORTS) {
         // caret: 'initial' keeps Playwright from rewriting inline styles before React has hydrated (a false hydration warning).
         await page.screenshot({ path: test.info().outputPath(`list-${tag}.png`), caret: 'initial' });
         await menuOf(page, 'Third Wave').click();
-        await page.getByRole('menuitem', { name: 'Edit rule' }).click();
+        await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
         await expect(page.getByText('Matches now · 1')).toBeVisible();
         await page.screenshot({ path: test.info().outputPath(`edit-${tag}.png`) });
         await page.goto('/transactions/rules');

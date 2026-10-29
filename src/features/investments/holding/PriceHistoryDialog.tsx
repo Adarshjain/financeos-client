@@ -132,7 +132,7 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
         title="Delete manual price?"
         description={deleting ? `Your manual price of ${priceDescription(deleting)} goes.` : ''}
         impact={['Only this price is deleted.', 'Your trades and the other prices stay.']}
-        confirmLabel="Delete price"
+        confirmLabel="Delete"
         confirmLoading={deletePrice.isPending}
         onConfirm={() => void confirmDelete()}
       >

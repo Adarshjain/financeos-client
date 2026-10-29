@@ -3,6 +3,7 @@ import React from 'react';
 import {
   Card,
   GRID_GAP,
+  Hero,
   Skeleton,
 } from '@/components/ds';
 
@@ -27,17 +28,15 @@ function SkeletonCard({ rows }: { rows: number }) {
   );
 }
 
-/** The card Overview's shape: header card, two columns of cards, then the table. */
+/** The card Overview's shape: header and hero, two columns of cards, then the table. */
 export function AccountOverviewSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <Card>
-        <div className="p-space-16 flex flex-col gap-space-8">
-          <Skeleton width={80} height={12} />
-          <Skeleton width={160} height={32} />
-          <Skeleton width={220} height={12} />
-        </div>
-      </Card>
+      <div className="flex items-center justify-between gap-space-16">
+        <Skeleton width={200} height={16} />
+        <Skeleton width={72} height={36} />
+      </div>
+      <Hero.Skeleton label figures={3} />
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
           <SkeletonCard rows={3} />
@@ -69,6 +68,9 @@ function SkeletonHolder() {
 export function AccountCardsSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="flex justify-end">
+        <Skeleton width={160} height={32} />
+      </div>
       <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
         <SkeletonHolder />
         <SkeletonHolder />
@@ -96,15 +98,12 @@ function RewardsCard({ rows }: { rows: number }) {
   );
 }
 
-/** The Rewards tab's shape: four tiles, then the earning lines beside the milestone and rules. */
+/** The Rewards tab's shape: the hero, then the earning lines beside the milestone and rules. */
 export function AccountRewardsSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
-        {Array.from({ length: 4 }, (_, i) => (
-          <RewardsCard key={i} rows={1} />
-        ))}
-      </div>
+      <Skeleton width={240} height={40} />
+      <Hero.Skeleton label change figures={3} />
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7">
           <RewardsCard rows={8} />

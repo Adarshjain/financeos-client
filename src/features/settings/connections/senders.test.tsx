@@ -68,7 +68,7 @@ describe('SenderDialog', () => {
   it('adds: titled Add, no Delete, enabled by default, saves', () => {
     const p = dialog(null, { senderAddress: 'a@b.test' });
     expect(screen.getByText('Add allowed sender')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete sender' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Add sender' }));
     expect(p.onSubmit).toHaveBeenCalled();
@@ -85,25 +85,25 @@ describe('SenderDialog', () => {
   it('edits: titled Edit, with Delete as the tertiary action', () => {
     dialog(senders[0]);
     expect(screen.getByText('Edit allowed sender')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete sender' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
   });
 
   it('confirms before deleting, then deletes and closes', async () => {
     const p = dialog(senders[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(p.onDelete).not.toHaveBeenCalled();
     expect(screen.getByText("Mail from this address is no longer read. Transactions already imported stay. This can't be undone.")).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     await waitFor(() => expect(p.onDelete).toHaveBeenCalledWith('s1'));
     await waitFor(() => expect(p.onOpenChange).toHaveBeenCalledWith(false));
   });
 
   it('keeps both dialogs open when the delete fails', async () => {
     const p = dialog(senders[0], { onDelete: vi.fn().mockResolvedValue(false) });
-    fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)!);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     await waitFor(() => expect(p.onDelete).toHaveBeenCalledWith('s1'));
-    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Delete sender' }).at(-1)).toBeEnabled());
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Delete' }).at(-1)).toBeEnabled());
     expect(screen.getByText("Mail from this address is no longer read. Transactions already imported stay. This can't be undone.")).toBeInTheDocument();
     expect(screen.getByText('Edit allowed sender')).toBeInTheDocument();
     expect(p.onOpenChange).not.toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('SenderDialog', () => {
 
   it('keeps the sender when the delete confirm is cancelled', () => {
     const p = dialog(senders[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete sender' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Cancel' }).at(-1)!);
     expect(p.onDelete).not.toHaveBeenCalled();
   });

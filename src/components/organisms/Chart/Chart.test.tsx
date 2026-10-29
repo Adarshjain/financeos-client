@@ -84,6 +84,32 @@ beforeEach(() => {
 });
 
 describe('Chart cartesian', () => {
+  const cats = ['Groceries', 'Entertainment', 'Transport', 'Dining out', 'Utilities'];
+  const catData = {
+    chartType: 'bar' as const,
+    categories: cats,
+    series: [{ name: 'spend', data: [5, 4, 3, 2, 1] }],
+  };
+
+  it('lays bars down (names on the left) when category names would not fit under upright bars', () => {
+    size.width = 320;
+    size.height = 240;
+    render(<Chart data={catData} />);
+    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[0,4,4,0]');
+  });
+
+  it('keeps bars upright when the names fit, and for a long series', () => {
+    size.width = 600;
+    size.height = 240;
+    const { unmount } = render(<Chart data={catData} />);
+    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[4,4,0,0]');
+    unmount();
+    size.width = 320;
+    const many = Array.from({ length: 14 }, (_, i) => `Category ${i}`);
+    render(<Chart data={{ chartType: 'bar', categories: many, series: [{ name: 'spend', data: many.map(() => 1) }] }} />);
+    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[4,4,0,0]');
+  });
+
   it('shows no series legend for a single series', () => {
     render(
       <Chart

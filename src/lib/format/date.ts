@@ -51,10 +51,16 @@ function dayBefore({ y, m, d }: Ymd): Ymd {
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
+const yy = (y: number) => pad(y % 100);
+
+/** "FY 26-27": the label of a financial year, from the year it starts in (2026). */
+export function fyLabel(startYear: number): string {
+  return `FY ${yy(startYear)}-${yy(startYear + 1)}`;
+}
 
 /**
- * One date, six styles: list "13 Oct" (adds the year when it is not the current one), full "13 Oct 2026",
- * input "13/10/2026", month "October 2026", weekday "Tue 13 Oct" (year added when not current), relative "Today" / "Yesterday" else the list form
+ * One date, six styles: list "13 Oct" (adds the two-digit year when it is not the current one: "13 Oct 25"), full "13 Oct 26",
+ * input "13/10/26" (four-digit year outside 2000-2099), month "October 2026", weekday "Tue 13 Oct" (year added when not current), relative "Today" / "Yesterday" else the list form
  * (inline: lower-case, for mid-sentence use). A plain date is used as-is; an instant is read in IST.
  */
 export function formatDate(
@@ -66,12 +72,12 @@ export function formatDate(
   if (!ymd) return '';
   const short = `${ymd.d} ${MONTH_SHORT[ymd.m - 1]}`;
   const today = toYmd(opts.today ?? todayInAppZone()) ?? istParts(new Date()).ymd;
-  const list = () => (ymd.y === today.y ? short : `${short} ${ymd.y}`);
+  const list = () => (ymd.y === today.y ? short : `${short} ${yy(ymd.y)}`);
   switch (style) {
     case 'full':
-      return `${short} ${ymd.y}`;
+      return `${short} ${yy(ymd.y)}`;
     case 'input':
-      return `${pad(ymd.d)}/${pad(ymd.m)}/${ymd.y}`;
+      return `${pad(ymd.d)}/${pad(ymd.m)}/${ymd.y >= 2000 && ymd.y <= 2099 ? yy(ymd.y) : String(ymd.y).padStart(4, '0')}`;
     case 'weekday':
       return `${WEEKDAY_SHORT[new Date(Date.UTC(ymd.y, ymd.m - 1, ymd.d)).getUTCDay()]} ${list()}`;
     case 'month':

@@ -85,15 +85,18 @@ describe('AppearanceCard', () => {
 
   it('links Storybook as a plain page load', () => {
     render(<AppearanceCard />);
-    const links = screen.getAllByRole('link', { name: 'Open' });
-    expect(links.map((l) => l.getAttribute('href'))).toContain('/storybook');
+    const assign = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, 'location', { value: { ...original, assign }, configurable: true });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Open' })[0]);
+    Object.defineProperty(window, 'location', { value: original, configurable: true });
+    expect(assign).toHaveBeenCalledWith('/storybook');
   });
 
   it('has an Open Legacy row that links /legacy/dashboard', () => {
     render(<AppearanceCard />);
     expect(screen.getByRole('link', { name: 'Open Legacy' })).toHaveAttribute('href', '/legacy/dashboard');
-    const hrefs = screen.getAllByRole('link', { name: 'Open' }).map((l) => l.getAttribute('href'));
-    expect(hrefs).toEqual(['/storybook']);
+    expect(screen.queryAllByRole('link', { name: 'Open' })).toHaveLength(0);
   });
 });
 
@@ -105,7 +108,7 @@ describe('DeleteAccountCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete account' }));
     await screen.findByText('Delete account?');
   };
-  const submit = () => screen.getByRole('button', { name: /Delete account|Retry deletion/ });
+  const submit = () => screen.getByRole('button', { name: /^Delete$|Retry deletion/ });
   const type = (label: string | RegExp, value: string) =>
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
@@ -181,7 +184,7 @@ describe('DeleteAccountCard', () => {
     type(/Type "DELETE"/, 'DELETE');
     fireEvent.click(submit());
     expect(await screen.findByText('Wrong password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete account' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeEnabled();
   });
 
   it('cannot be closed while deleting', async () => {

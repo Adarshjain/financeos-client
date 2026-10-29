@@ -43,7 +43,6 @@ function NoLiquidAccounts() {
   return (
     <EmptyState
       compact
-      title={allExcluded ? 'Your bank and cash accounts are excluded' : 'No bank or cash accounts yet'}
       description={
         allExcluded
           ? 'Accounts marked excluded are left out. Include one to see how long your money would last.'

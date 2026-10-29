@@ -15,6 +15,8 @@ import {
   FilterChip,
   Icon,
   Menu,
+  Select,
+  Skeleton,
   Text,
 } from '@/components/ds';
 import { replaceUrl } from '@/lib/urlState';
@@ -23,6 +25,7 @@ import { AddToDashboardDialog } from './AddToDashboardDialog';
 import { ReportsAside } from './ReportsAside';
 import {
   filterRows,
+  NEW_REPORT_HREF,
   parseReportsType,
   type ReportKind,
   type ReportRow,
@@ -204,36 +207,34 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
     if (type) setType(undefined);
   };
 
-  const emptyDescription = rows.length === 0 && !type
-    ? 'No reports yet. Add your first report to start analyzing your transactions.'
-    : 'No reports match';
+  const firstUse = rows.length === 0 && !type;
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs />
 
-      <FilterBar size="md"
+      <FilterBar
+        size="md"
         search={{ value: search, onValueChange: setSearch }}
+        changed={filtered || Boolean(type)}
+        onReset={clearFilters}
       >
-        <FilterChip
-          size="md"
-          className="shrink-0"
-          selected={!type}
-          onSelectedChange={() => setType(undefined)}
-        >
-          All
-        </FilterChip>
-        {TYPE_CHIPS.map((chip) => (
-          <FilterChip
-            key={chip.type}
-            size="md"
-            className="shrink-0"
-            selected={type === chip.type}
-            onSelectedChange={() => setType(chip.type)}
-          >
-            {chip.label}
-          </FilterChip>
-        ))}
+        <Select
+          value={type ?? 'all'}
+          options={[{ value: 'all', label: 'All types' }, ...TYPE_CHIPS.map((chip) => ({ value: chip.type, label: chip.label }))]}
+          onValueChange={(v) => setType(v === 'all' ? undefined : (v as ReportKind))}
+          trigger={
+            <FilterChip
+              size="md"
+              className="shrink-0"
+              hasDropdown
+              changed={Boolean(type)}
+              onReset={() => setType(undefined)}
+            >
+              {TYPE_CHIPS.find((chip) => chip.type === type)?.label ?? 'Type'}
+            </FilterChip>
+          }
+        />
       </FilterBar>
 
       <Card>
@@ -244,15 +245,19 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
           band={(row) => ({ key: row.areaId, label: row.areaLabel })}
           onRowSelect={(row) => router.push(row.href)}
           empty={
-            <EmptyState
-              compact
-              description={emptyDescription}
-              action={
-                filtered || type
-                  ? { label: 'Clear filters', variant: 'link', onSelect: clearFilters }
-                  : undefined
-              }
-            />
+            firstUse ? (
+              <EmptyState
+                title="No reports yet"
+                description="Add your first report to start analyzing your transactions."
+                action={{ label: 'Add report', href: NEW_REPORT_HREF }}
+              />
+            ) : (
+              <EmptyState
+                title="No reports match"
+                description="Try a different search or filter."
+                action={filtered || type ? { label: 'Clear filters', variant: 'secondary', onSelect: clearFilters } : undefined}
+              />
+            )
           }
           stickyHeader={false}
         />
@@ -273,7 +278,7 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
             'Dashboards that use it will show the report as unavailable.',
             'Your transactions and other data stay.',
           ]}
-          confirmLabel="Delete report"
+          confirmLabel="Delete"
           confirmLoading={actions.remove.isPending}
           onConfirm={() => actions.remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}
         />
@@ -298,6 +303,9 @@ export function ReportsListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs />
+      <FilterBar size="md" search={{ value: '', onValueChange: noop }}>
+        <Skeleton height={32} width={72} className="shrink-0" />
+      </FilterBar>
       <Card>
       <DataTable columns={makeColumns({ onEdit: noop, onDuplicate: noop, onAddToDashboard: noop, onDelete: noop, duplicating: false })} data={[]} getRowId={(row) => row.id} loading skeletonRows={6} />
       </Card>

@@ -1,35 +1,26 @@
 import React from 'react';
 
-import {
-  GRID_GAP,
-  KpiTile,
-  Text,
-} from '@/components/ds';
+import { Hero } from '@/components/ds';
 
 import type { UpcomingTile } from './upcomingModel';
 
-/** The totals row: two across on phone, four on desktop. Hidden when no tile has anything in it. */
+/**
+ * The page's Hero: Next 7 days is the headline (₹0 when nothing falls in it), Overdue and Due back to you are the
+ * figures beside it. Hidden when no tile has anything in it.
+ */
 export function UpcomingTotals({ tiles }: { tiles: UpcomingTile[] }) {
   if (tiles.length === 0) return null;
+  const next7 = tiles.find((t) => t.id === 'next7');
+  const figures = tiles
+    .filter((t) => t.id === 'overdue' || t.id === 'dueBack')
+    .map((t) => ({ label: t.label, value: t.value, tone: t.tone === 'ink' ? undefined : t.tone, caption: t.caption }));
   return (
-    <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
-      {tiles.map((t) => (
-        <KpiTile
-          key={t.id}
-          data-testid={`tile-${t.id}`}
-          label={t.label}
-          value={
-            t.tone === 'ink' ? (
-              t.value
-            ) : (
-              <Text variant="figure" tone={t.tone}>
-                {t.value}
-              </Text>
-            )
-          }
-          context={t.caption}
-        />
-      ))}
-    </div>
+    <Hero
+      data-testid="upcoming-hero"
+      label="Next 7 days"
+      value={next7?.value ?? '₹0'}
+      change={next7?.caption ? { text: next7.caption } : undefined}
+      figures={figures}
+    />
   );
 }

@@ -74,5 +74,5 @@ export function formatEarned(line: {
 }): string {
   return line.earnedUnit === 'POINTS'
     ? `${formatQuantity(line.earned, 2)} pts`
-    : formatMoney(line.earned, { decimals: 'auto' });
+    : formatMoney(line.earned, { decimals: 'exact' });
 }

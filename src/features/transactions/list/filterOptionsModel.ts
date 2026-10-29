@@ -2,7 +2,7 @@ import type { SelectOption } from '@/components/ds';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
-import { formatCount, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -17,10 +17,9 @@ import {
   type TypeFilter,
 } from './transactionsUrl';
 
-/** Dates read dd/mm/yyyy in fields and chips. */
+/** Dates read dd/mm/yy in fields and chips. */
 export function dmy(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  return formatDate(iso, 'input') || iso;
 }
 
 export function periodLabel(period: Period): string {
@@ -54,6 +53,13 @@ export const AMOUNT_OP_OPTIONS: (SelectOption & { value: AmountOp })[] = [
 ];
 
 export const ANY = 'any';
+
+/** The on/off filters the row's Status chip holds. */
+export const STATUS_OPTIONS: SelectOption[] = [
+  { value: 'monitoring', label: 'Monitoring' },
+  { value: 'review', label: 'Needs review' },
+  { value: 'statement', label: 'Up to statement' },
+];
 
 export const REVIEW_OPTIONS: SelectOption[] = [
   { value: ANY, label: 'Any' },

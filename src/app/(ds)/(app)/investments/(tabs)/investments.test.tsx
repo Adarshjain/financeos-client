@@ -78,7 +78,7 @@ describe('/investments Holdings: data', () => {
       brokerAccountId: undefined,
       sort: 'name',
       page: 0,
-      size: 50,
+      size: 25,
     });
   });
 
@@ -109,22 +109,22 @@ describe('/investments Holdings: data', () => {
 });
 
 describe('/investments Holdings: figures', () => {
-  it('shows the phone hero and the desktop tiles from the header', async () => {
+  it('shows the hero from the header: value with today, then Invested and Unrealised P&L', async () => {
     await renderPage();
-    expect(screen.getAllByText('₹6,38,208').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('+₹3,566 today · +0.56%').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('₹4,93,299').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('+₹1,44,909').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('+29.4% · XIRR 24.1%').length).toBeGreaterThan(0);
-    for (const label of ['Current value', 'Invested', 'Unrealised P&L', 'Realised this FY']) {
+    expect(screen.getAllByText('₹6,38,208')).toHaveLength(1);
+    expect(screen.getAllByText('+₹3,566 today · +0.56%')).toHaveLength(1);
+    expect(screen.getAllByText('₹4,93,299')).toHaveLength(1);
+    expect(screen.getAllByText('+₹1,44,909')).toHaveLength(1);
+    expect(screen.getAllByText('+29.4% · XIRR 24.1%')).toHaveLength(1);
+    for (const label of ['Current value', 'Invested', 'Unrealised P&L']) {
       expect(screen.getAllByText(label).length, label).toBeGreaterThan(0);
     }
+    expect(screen.queryByText('Realised this FY')).toBeNull();
   });
 
-  it('says so under Realised this FY when the tax request fails, and still lists holdings', async () => {
+  it('drops the Tax card when the tax request fails, and still lists holdings', async () => {
     server.fetchTaxHarvest.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(1);
     expect(screen.queryByText('Tax this FY')).toBeNull();
     expect(screen.getAllByText('HDFCBANK').length).toBeGreaterThan(0);
   });
@@ -177,7 +177,7 @@ describe('/investments Holdings: rows', () => {
 
   it('writes a merged holding with what it merged into and no P&L', async () => {
     await renderPage();
-    expect(screen.getAllByText(/Merged into HDFCBANK · 13 Jul 2023/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Merged into HDFCBANK · 13 Jul 23/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/0 shares/).length).toBeGreaterThan(0);
   });
 
@@ -207,11 +207,11 @@ describe('/investments Holdings: rows', () => {
     expect(screen.getAllByText(/325\.11 units × ₹118\.62/).length).toBeGreaterThan(0);
   });
 
-  it('opens the holding page when the row is pressed, and has a link for it', async () => {
+  it('opens the holding page when the row is pressed, with no chevron link at the row end', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('HDFCBANK')[0]);
     expect(router.push).toHaveBeenCalledWith('/investments/i-hdfcbank');
-    expect(screen.getByRole('link', { name: 'Open HDFCBANK' })).toHaveAttribute('href', '/investments/i-hdfcbank');
+    expect(screen.queryByRole('link', { name: 'Open HDFCBANK' })).toBeNull();
   });
 
   it('says nothing matches when the filters find no holding, and offers to clear them', async () => {
@@ -224,7 +224,9 @@ describe('/investments Holdings: rows', () => {
   it('invites a first trade when there are no holdings at all', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { groups: [] }));
     await renderPage();
-    expect(screen.getByText('No holdings yet. Record a trade or import your tradebook.')).toBeInTheDocument();
+    expect(screen.getByText('No holdings yet')).toBeInTheDocument();
+    expect(screen.getByText('Record a trade or import your tradebook.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Import tradebook' })).toBeInTheDocument();
   });
 
   it('shows an error with Retry when the holdings fail to load', async () => {
@@ -260,6 +262,19 @@ describe('/investments Holdings: filters go to the URL', () => {
     expect(router.push).toHaveBeenCalledWith('/investments?q=gold', { scroll: false });
   });
 
+  it('resets a changed type with the x of its chip, and every filter with Reset filters at the row end', async () => {
+    await renderPage({ type: 'etf', q: 'gold' });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
+    expect(router.push).toHaveBeenLastCalledWith('/investments?q=gold', { scroll: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(router.push).toHaveBeenLastCalledWith('/investments', { scroll: false });
+  });
+
+  it('shows no Reset filters while every filter is on its default', async () => {
+    await renderPage();
+    expect(screen.queryByRole('button', { name: 'Reset filters' })).toBeNull();
+  });
+
   it('searches the server once typing pauses, from the first page', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
     vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -273,24 +288,24 @@ describe('/investments Holdings: filters go to the URL', () => {
     expect(router.push).toHaveBeenCalledWith('/investments?q=infy', { scroll: false });
   });
 
-  it('sorts by return from the sort dropdown, which starts on Name: A to Z', async () => {
+  it('sorts by return from the sort dropdown, which starts on Name A–Z', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Name: A to Z/ }));
-    fireEvent.click(await screen.findByRole('option', { name: '% return: high to low' }));
+    fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Best % return' }));
     expect(router.push).toHaveBeenCalledWith('/investments?sort=return_pct', { scroll: false });
   });
 
   it('lists every sort with its direction and puts sort and dir in the address', async () => {
     const cases: [string, string][] = [
-      ['Name: Z to A', '/investments?dir=desc'],
-      ['% return: low to high', '/investments?sort=return_pct&dir=asc'],
-      ['₹ return: high to low', '/investments?sort=return_abs'],
-      ['₹ return: low to high', '/investments?sort=return_abs&dir=asc'],
+      ['Name Z–A', '/investments?dir=desc'],
+      ['Worst % return', '/investments?sort=return_pct&dir=asc'],
+      ['Best ₹ return', '/investments?sort=return_abs'],
+      ['Worst ₹ return', '/investments?sort=return_abs&dir=asc'],
     ];
     for (const [label, url] of cases) {
       router.push.mockClear();
       const { unmount } = await renderPage();
-      fireEvent.click(screen.getByRole('button', { name: /Name: A to Z/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
       fireEvent.click(await screen.findByRole('option', { name: label }));
       expect(router.push, label).toHaveBeenCalledWith(url, { scroll: false });
       unmount();
@@ -299,7 +314,7 @@ describe('/investments Holdings: filters go to the URL', () => {
 
   it('shows the chosen direction on the sort chip and asks the server for it', async () => {
     await renderPage({ sort: 'return_abs', dir: 'asc' });
-    expect(screen.getByRole('button', { name: '₹ return: low to high' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Worst ₹ return' })).toBeInTheDocument();
     expect(server.fetchHoldings).toHaveBeenCalledWith(expect.objectContaining({ sort: 'return_abs', dir: 'asc' }));
   });
 
@@ -360,12 +375,6 @@ describe('/investments Holdings: whole-portfolio figures', () => {
   it('makes no extra request without a type filter', async () => {
     await renderPage();
     expect(server.fetchHoldings).toHaveBeenCalledTimes(1);
-  });
-
-  it('counts open holdings in the Invested tile, not merged-away rows', async () => {
-    // Five rows come back (one merged away), the groups count 13 open holdings.
-    await renderPage();
-    expect(screen.getByText('13 holdings')).toBeInTheDocument();
   });
 });
 

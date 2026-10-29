@@ -11,7 +11,7 @@ import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 import { MatchRow } from './MatchRow';
 import { useRuleMatches } from './useRuleMatches';
 
-export const PREVIEW_PAGE_SIZE = 10;
+export const PREVIEW_PAGE_SIZE = 5;
 
 export interface RuleMatchesPreviewProps {
   matchType: MatchType;

@@ -13,7 +13,7 @@ export const LENDINGS_HREF = appHref('/loans/lendings');
 export const LOANS_HREF = appHref('/loans');
 
 export const loansLendingsTabs: LoansLendingsTab[] = [
-  { id: 'lendings', label: 'Lendings', title: 'Lendings', href: LENDINGS_HREF },
+  { id: 'lendings', label: 'Lendings', title: 'Loans & lendings', href: LENDINGS_HREF },
   { id: 'loans', label: 'Loans', title: 'Loans & lendings', href: LOANS_HREF },
 ];
 

@@ -66,8 +66,8 @@ describe('DsIndexPage', () => {
     const routes = groups.flatMap((dir) =>
       fs
         .readdirSync(dir, { withFileTypes: true })
-        // `ds` is the index itself.
-        .filter((e) => e.isDirectory() && e.name !== 'ds' && fs.existsSync(path.join(dir, e.name, 'page.tsx')))
+        // `ds` is the index itself; a catch-all (`[...unmatched]`) is the in-shell not-found, not a page.
+        .filter((e) => e.isDirectory() && e.name !== 'ds' && !e.name.startsWith('[') && fs.existsSync(path.join(dir, e.name, 'page.tsx')))
         .map((e) => `/${e.name}`),
     );
     render(<DsIndexPage />);

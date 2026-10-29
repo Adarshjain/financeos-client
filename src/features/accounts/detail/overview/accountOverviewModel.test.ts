@@ -171,18 +171,14 @@ describe('buildLinked', () => {
 describe('wallet and broker headers', () => {
   const wallet: GenericAccount = { id: 'w1', type: AccountType.GENERIC, name: 'Paytm', balance: 2844 };
 
-  it('captions a wallet with its newest entry', () => {
-    expect(buildHeaderModel(wallet, null, '2026-10-13', '2026-10-12').caption).toEqual([
-      'Manual balance',
-      'last entry 12 Oct',
-    ]);
-    expect(buildHeaderModel(wallet, null, '2026-10-13', null).caption).toEqual(['Manual balance']);
+  it('gives a wallet its newest entry as the one fact', () => {
+    expect(buildHeaderModel(wallet, null, '2026-10-13', '2026-10-12').info).toBe('last entry 12 Oct');
+    expect(buildHeaderModel(wallet, null, '2026-10-13', null).info).toBeUndefined();
   });
 
-  it('captions a broker with its cash balance', () => {
+  it('gives a broker no header caption (its cash shows elsewhere)', () => {
     const broker: Broker = { id: 'k1', type: AccountType.BROKER, name: 'Zerodha', balance: 428439, cashBalance: 12500 };
-    expect(buildHeaderModel(broker, null, '2026-10-13').caption).toEqual(['cash ₹12,500']);
-    expect(buildHeaderModel({ ...broker, cashBalance: undefined }, null, '2026-10-13').caption).toEqual([]);
+    expect(buildHeaderModel(broker, null, '2026-10-13').info).toBeUndefined();
   });
 });
 

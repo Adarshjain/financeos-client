@@ -64,8 +64,8 @@ export function AppearanceCard() {
         subtitle="Every Dinero component, live"
         trailing={
           // A static page under public/, not a Next route: a plain anchor makes it a full page load.
-          <Button variant="link" asChild>
-            <a href="/storybook">Open</a>
+          <Button variant="link" size="sm" onClick={() => window.location.assign('/storybook')}>
+            Open
           </Button>
         }
       />

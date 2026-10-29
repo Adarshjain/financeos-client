@@ -58,6 +58,18 @@ const config = [
         rules: { "@typescript-eslint/no-explicit-any": "warn" },
     },
     {
+        // The (ds) catch-all not-found route makes every path a page, so the Next link rule flags every
+        // `<a href>`. Test and story fixtures render plain anchors on purpose, and the global not-found page
+        // has no router context of its own.
+        files: [
+            "src/**/__tests__/**",
+            "src/**/*.test.tsx",
+            "src/**/*.stories.tsx",
+            "src/app/global-not-found.tsx",
+        ],
+        rules: { "@next/next/no-html-link-for-pages": "off" },
+    },
+    {
         // The service worker runs in a worker scope, not the browser globals
         // the rest of the app is linted against.
         files: ["src/app/sw.ts"],

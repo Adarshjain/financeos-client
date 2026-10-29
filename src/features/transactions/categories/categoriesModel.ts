@@ -62,7 +62,7 @@ export function uncategorizedData(
     rows: page.content.map((t) => ({
       id: t.id,
       description: t.description || t.sourcedDescription || '—',
-      detail: `${formatDate(t.date, 'list')} · ${formatMoney(Math.abs(t.amount))}`,
+      detail: `${formatDate(t.date, 'list')} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}`,
     })),
   };
 }

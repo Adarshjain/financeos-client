@@ -44,6 +44,8 @@ function getColumnTrack(meta?: DataTableColumnMeta): string {
       return 'var(--ds-control-md)';
     case 'sm':
       return 'var(--ds-space-96)';
+    case 'date':
+      return 'calc(var(--ds-space-96) * 1.25)';
     case 'md':
       return 'calc(var(--ds-space-96) * 1.5)';
     case 'lg':

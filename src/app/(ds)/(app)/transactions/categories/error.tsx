@@ -1,6 +1,6 @@
 'use client';
 
 import { areaError } from '@/features/shell/areaError';
-import { areaCrumb } from '@/features/shell/navigation';
+import { subCrumb } from '@/features/shell/navigation';
 
-export default areaError({ what: 'categories', crumb: areaCrumb('transactions'), title: 'Categories' });
+export default areaError({ what: 'categories', crumb: subCrumb('transactions'), title: 'Categories' });

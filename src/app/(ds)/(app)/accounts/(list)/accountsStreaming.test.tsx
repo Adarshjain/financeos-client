@@ -80,7 +80,7 @@ describe('/accounts streaming', () => {
     // The pending pieces show no data yet.
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
     expect(screen.getByText('₹5,000')).toBeDefined();
-    expect(screen.queryByText('Net worth')).toBeNull();
+    expect(screen.queryByText('₹11,98,842')).toBeNull();
     expect(screen.queryByText("Couldn't load net worth. Try again.")).toBeNull();
     expect(screen.queryByText('+0.59%')).toBeNull();
     expect(screen.queryByText('1,200 pts')).toBeNull();
@@ -105,7 +105,7 @@ describe('/accounts streaming', () => {
     loadMock.mockReturnValue(toStreams({ ...plain, bills: [bill] }));
     await resolved();
 
-    expect(screen.getAllByText('1 Jan 2999').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('1 Jan 99').length).toBeGreaterThan(0);
     expect(screen.queryByText('Statement missing')).toBeNull();
   });
 

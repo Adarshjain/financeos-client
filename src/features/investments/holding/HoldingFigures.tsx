@@ -2,88 +2,61 @@
 
 import React from 'react';
 
-import { Button, Conceal, KpiTile, Text } from '@/components/ds';
+import { Button, Card, Conceal, Figures, Hero } from '@/components/ds';
 
-import type { HoldingFigure, HoldingHeroModel } from './holdingModel';
-
-/** The context line of a figure; the LTP figure ends with an "override" link. */
-function Context({ figure, onOverride }: { figure: HoldingFigure; onOverride: () => void }) {
-  if (!figure.context && !figure.override) return null;
-  return (
-    <Text variant="label" tone="ink-3" as="div">
-      <Conceal>{figure.context ?? ''}</Conceal>
-      {figure.override ? (
-        <>
-          {figure.context ? ' · ' : ''}
-          <Button variant="link" size="sm" onClick={onOverride}>
-            override
-          </Button>
-        </>
-      ) : null}
-    </Text>
-  );
-}
+import { HERO_FIGURE_IDS, type HoldingFigure, type HoldingHeroModel } from './holdingModel';
 
 export interface HoldingFiguresProps {
   hero: HoldingHeroModel;
   figures: HoldingFigure[];
-  onOverride: () => void;
 }
 
-/**
- * The top of a holding: its particulars, the current value with its move, and eight figures. The phone shows
- * the value as the hero and the figures as pairs; the desktop shows the figures as tiles.
- */
-export function HoldingFigures({ hero, figures, onOverride }: HoldingFiguresProps) {
+/** The top of a holding: the current value with today's move, then Invested, ₹ return and XIRR. Same at both sizes. */
+export function HoldingHero({ hero, figures }: HoldingFiguresProps) {
+  const shown = HERO_FIGURE_IDS.map((id) => figures.find((f) => f.id === id)).filter((f): f is HoldingFigure => Boolean(f));
   return (
-    <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="flex flex-col gap-space-8 desk:gap-space-12 desk:flex-row desk:items-end desk:justify-between">
-        <div className="flex items-end gap-space-16">
-          <div className="flex flex-col gap-space-2">
-            <Text variant="hero-figure" family="display" as="div">
-              {hero.value}
-            </Text>
-            {hero.line ? (
-              <Text variant="label" tone={hero.line.tone} as="div">
-                <Conceal>{hero.line.text}</Conceal>
-              </Text>
-            ) : null}
-          </div>
-        </div>
-      </div>
+    <Hero
+      label="Current value"
+      value={<Conceal>{hero.value}</Conceal>}
+      change={hero.line ? { text: <Conceal>{hero.line.text}</Conceal>, tone: hero.line.tone } : undefined}
+      figures={shown.map((f) => ({
+        label: f.label,
+        value: <Conceal>{f.value}</Conceal>,
+        tone: f.tone,
+        caption: f.context ? <Conceal>{f.context}</Conceal> : undefined,
+      }))}
+    />
+  );
+}
 
-      <div className="desk:hidden grid grid-cols-2 gap-x-space-16 gap-y-space-8">
-        {figures.map((f) => (
-          <div key={f.id} className="min-w-0 flex flex-col gap-space-2">
-            <Text variant="label" tone="ink-3" as="div">
-              {f.label}
-            </Text>
-            <Text variant="figure" tone={f.tone} as="div">
-              <Conceal>{f.value}</Conceal>
-            </Text>
-            <Context figure={f} onOverride={onOverride} />
-          </div>
-        ))}
+/** The other five figures (quantity, average cost, LTP, realised P&L, charges), as figures in a card above the chart. */
+export function PositionCard({ figures, onOverride }: { figures: HoldingFigure[]; onOverride: () => void }) {
+  const rest = figures.filter((f) => !HERO_FIGURE_IDS.includes(f.id));
+  return (
+    <Card title="Position" subtitle="Your holding at a glance">
+      <div className="p-space-16">
+        <Figures
+          figures={rest.map((f) => ({
+            label: f.label,
+            value: <Conceal>{f.value}</Conceal>,
+            tone: f.tone,
+            caption:
+              f.context || f.override ? (
+                <>
+                  <Conceal>{f.context ?? ''}</Conceal>
+                  {f.override ? (
+                    <>
+                      {f.context ? ' · ' : ''}
+                      <Button variant="link" size="sm" onClick={onOverride}>
+                        override
+                      </Button>
+                    </>
+                  ) : null}
+                </>
+              ) : undefined,
+          }))}
+        />
       </div>
-
-      <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        {figures.map((f) => (
-          <KpiTile
-            key={f.id}
-            label={f.label}
-            value={
-              f.tone ? (
-                <Text as="span" variant="figure" tone={f.tone}>
-                  {f.value}
-                </Text>
-              ) : (
-                f.value
-              )
-            }
-            context={<Context figure={f} onOverride={onOverride} />}
-          />
-        ))}
-      </div>
-    </div>
+    </Card>
   );
 }

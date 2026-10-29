@@ -3,6 +3,7 @@ import React from 'react';
 import {
   Card,
   GRID_GAP,
+  Hero,
   Skeleton,
 } from '@/components/ds';
 import { DetailLoadingTitle } from '@/features/shell/DetailLoadingTitle';
@@ -25,19 +26,14 @@ function SkeletonCard({ rows }: { rows: number }) {
   );
 }
 
-/** The loan page's shape: the particulars line, the figures, then the schedule beside two cards. */
+/** The loan page's shape: the particulars line, the hero, then the schedule beside two cards. */
 export function LoanSkeleton() {
   return (
     <ShellPage crumb={subCrumb('loans')} title={<DetailLoadingTitle kind="loan">Loan</DetailLoadingTitle>} backHref={appHref('/loans')}>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton width="60%" height={20} />
-        <Card>
-          <div className="p-space-16 flex flex-col gap-space-8">
-            <Skeleton width={80} height={12} />
-            <Skeleton width={160} height={32} />
-            <Skeleton width="100%" height={8} />
-          </div>
-        </Card>
+        <Hero.Skeleton label change figures={3} />
+        <Skeleton width="100%" height={8} />
         <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-9">
             <SkeletonCard rows={8} />

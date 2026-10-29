@@ -86,19 +86,19 @@ describe('field words', () => {
   });
 
   it('writes the balance without a "bal" prefix', () => {
-    expect(balanceAfterWords(txn({ balance: 295030 }))).toBe('₹2,95,030 after');
+    expect(balanceAfterWords(txn({ balance: 295030 }))).toBe('₹2,95,030.00 after');
     expect(balanceAfterWords(txn({ balance: null }))).toBeNull();
   });
 
   it('puts the minus before the rupee sign on a negative balance', () => {
-    expect(balanceAfterWords(txn({ balance: -208100 }))).toBe('−₹2,08,100 after');
+    expect(balanceAfterWords(txn({ balance: -208100 }))).toBe('−₹2,08,100.00 after');
   });
 
   it('writes only the reward fields that are set, and nothing when none is', () => {
     expect(rewardsWords(txn())).toBeNull();
     expect(
       rewardsWords(txn({ settlementDate: '2026-10-14', channel: 'UPI', instantDiscount: 120, convenienceFee: 0, isEmi: true })),
-    ).toBe('Settled 14 Oct · UPI · ₹120 discount · No fee · EMI');
+    ).toBe('Settled 14 Oct · UPI · ₹120.00 discount · No fee · EMI');
   });
 });
 
@@ -121,7 +121,7 @@ describe('linkRows', () => {
       kind: 'transaction',
       title: 'BigBasket refund',
       otherId: 't2',
-      subtitle: 'Refund · +₹240 · 14 Oct · HDFC Regalia Gold',
+      subtitle: 'Refund · +₹240.00 · 14 Oct · HDFC Regalia Gold',
     });
   });
 
@@ -145,7 +145,7 @@ describe('linkRows', () => {
       ['/loans/loan1', null],
       ['/investments/epf', 'now'],
     ]);
-    expect(rows[1]).toMatchObject({ subtitle: '₹1,200' });
+    expect(rows[1]).toMatchObject({ subtitle: '₹1,200.00' });
   });
 });
 

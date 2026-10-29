@@ -66,8 +66,8 @@ describe('LoanFormDialog', () => {
     }
     expect(screen.getByRole('combobox', { name: /^Loan type/ })).toHaveTextContent('Home loan');
     expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Fixed rate');
-    expect(screen.getByLabelText('Disbursal date')).toHaveValue('13/10/2026');
-    expect(screen.getByLabelText('First EMI due')).toHaveValue('13/10/2026');
+    expect(screen.getByLabelText('Disbursal date')).toHaveValue('13/10/26');
+    expect(screen.getByLabelText('First EMI due')).toHaveValue('13/10/26');
     expect(field('EMI amount')).toHaveAttribute('placeholder', 'Auto if blank');
   });
 
@@ -166,11 +166,26 @@ describe('LoanFormDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('closes on Cancel', () => {
+  it('closes on Cancel at once while nothing was typed', () => {
     render(<LoanFormDialog onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onClose).toHaveBeenCalled();
     expect(mutateAsync).not.toHaveBeenCalled();
+    expect(screen.queryByText('Discard changes?')).toBeNull();
+  });
+
+  it('asks "Discard changes?" on Cancel once something was typed; Keep editing stays, Discard closes', async () => {
+    render(<LoanFormDialog onClose={onClose} />);
+    fill('Loan name', 'Car');
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Discard changes?')).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(field('Loan name')).toHaveValue('Car');
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(await screen.findByRole('button', { name: 'Discard' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

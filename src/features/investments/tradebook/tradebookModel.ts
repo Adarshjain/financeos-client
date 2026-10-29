@@ -115,7 +115,7 @@ export interface TradebookRow {
 
 /** "89.32" or "710": a unit price with no trailing ".00". */
 function looseUnitPrice(price: number): string {
-  return formatMoney(price, { decimals: 'auto' });
+  return formatMoney(price, { decimals: 'exact' });
 }
 
 export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {

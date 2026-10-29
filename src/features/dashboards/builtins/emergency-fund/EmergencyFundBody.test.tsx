@@ -112,7 +112,7 @@ describe('EmergencyFundBody', () => {
   it('no bank or cash account: an empty state that goes to accounts', async () => {
     serve(fund({ accounts: [] }));
     render();
-    expect(await screen.findByText('No bank or cash accounts yet')).toBeInTheDocument();
+    expect(await screen.findByText('Add a bank account or wallet to see how long your money would last.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 
@@ -120,7 +120,7 @@ describe('EmergencyFundBody', () => {
     vi.mocked(api.GET).mockImplementation(((path: string) =>
       Promise.resolve({ data: path.includes('emergency-fund') ? fund({ accounts: [] }) : [account({ id: 'b1', excludeFromNetAsset: true })] })) as never);
     render();
-    expect(await screen.findByText('Your bank and cash accounts are excluded')).toBeInTheDocument();
+    expect(await screen.findByText('Accounts marked excluded are left out. Include one to see how long your money would last.')).toBeInTheDocument();
   });
 
   it('a failure names it and offers Retry', async () => {

@@ -111,8 +111,8 @@ describe('tradebookRow', () => {
       value: '₹35,500',
       chargesPlain: '42.10',
     });
-    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710 · CNC');
-    expect(row.sub).toEqual({ date: '1 Oct', position: '50 @ ₹710' });
+    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710.00 · CNC');
+    expect(row.sub).toEqual({ date: '1 Oct', position: '50 @ ₹710.00' });
   });
 
   it('draws a fund buy in units with no settlement and zero charges', () => {
@@ -122,14 +122,14 @@ describe('tradebookRow', () => {
   });
 
   it('shows a buy with its CNC tag, and never a realised figure whatever the trade earned', () => {
-    expect(subLineText(tradebookRow(stockBuy))).toBe('21 May · 200 @ ₹62 · CNC');
-    expect(subLineText(tradebookRow(trade({ realisedPnl: 2425 })))).toBe('1 Oct · 50 @ ₹710 · CNC');
+    expect(subLineText(tradebookRow(stockBuy))).toBe('21 May · 200 @ ₹62.00 · CNC');
+    expect(subLineText(tradebookRow(trade({ realisedPnl: 2425 })))).toBe('1 Oct · 50 @ ₹710.00 · CNC');
   });
 
   it('reads an intraday trade as MIS', () => {
     const row = tradebookRow(trade({ settlementType: 'intraday' }));
     expect(row.settlement).toBe('MIS');
-    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710 · MIS');
+    expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710.00 · MIS');
   });
 
   it('falls back to the name when there is no symbol, and names a trade for the delete prompt', () => {

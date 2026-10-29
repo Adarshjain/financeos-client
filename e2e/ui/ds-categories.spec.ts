@@ -38,7 +38,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByPlaceholder('Search').fill('');
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
 
-      await page.getByRole('button', { name: /^Add$/ }).first().click();
+      await page.getByRole('button', { name: 'Add category', exact: true }).first().click();
       await page.getByRole('textbox', { name: 'Name' }).fill('Pets');
       await page.getByRole('button', { name: 'Add category' }).click();
       await expect(page.getByText('Category "Pets" created')).toBeVisible();
@@ -68,7 +68,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Delete' }).click();
       }
       await expect(page.getByText('Delete Pet care?')).toBeVisible();
-      await page.getByRole('dialog', { name: 'Delete Pet care?' }).getByRole('button', { name: 'Delete category' }).click();
+      await page.getByRole('dialog', { name: 'Delete Pet care?' }).getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Pet care', { exact: true })).toHaveCount(0);
     });
 
@@ -103,8 +103,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page).toHaveURL(/\/transactions\?uncategorized=1/);
       await expect(page.getByRole('button', { name: 'Uncategorized' })).toBeVisible();
       await expect(page.getByText('Untagged 4').first()).toBeVisible();
-      // The chip's remove button takes the filter off the address.
-      await page.getByRole('button', { name: /Remove/i }).first().click();
+      // The chip's reset x takes the filter off the address.
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
       await expect(page).not.toHaveURL(/uncategorized/);
     });
 
@@ -132,7 +132,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('button', { name: /^Actions for / }).click();
         await page.getByRole('menuitem', { name: 'Delete' }).click();
       }
-      await page.getByRole('dialog', { name: /^Delete / }).getByRole('button', { name: 'Delete category' }).click();
+      await page.getByRole('dialog', { name: /^Delete / }).getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page).toHaveURL(/page=2/);
       await expect(page.getByText('Dining out')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Page 2' }).first()).toBeVisible();

@@ -61,7 +61,7 @@ describe('StatementDetailsDialog', () => {
     renderDialog({ totalDue: 44319, minimumDue: 2216, dueDate: '2026-10-25' });
     expect(screen.getByLabelText('Total due (₹)')).toHaveValue('44319');
     expect(screen.getByLabelText(/Minimum due/)).toHaveValue('2216');
-    expect(screen.getByLabelText('Due date')).toHaveValue('25/10/2026');
+    expect(screen.getByLabelText('Due date')).toHaveValue('25/10/26');
   });
 
   it('saves the filled fields, closes, toasts and refreshes', async () => {

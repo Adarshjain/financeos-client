@@ -229,3 +229,17 @@ export const Concealed: Story = {
     docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };
+
+export const Interactive: Story = {
+  parameters: { docs: { description: { story: 'The whole card is a press target: `asChild` with a button, `a` or Link, plus `interactive`. Hover, pressed and focus ring come with it.' } } },
+  args: {
+    interactive: true,
+    asChild: true,
+    children: (
+      <button type="button" className="flex w-full flex-col items-start gap-space-6 p-space-16">
+        <Text variant="overline" tone="ink-3" as="div">Spending</Text>
+        <Text variant="body" as="div">What did I spend on food last month?</Text>
+      </button>
+    ),
+  },
+};

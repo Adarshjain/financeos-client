@@ -242,7 +242,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   const reportHref = result?.reportId ? appHref(`/reports/${result.reportId}`) : null;
   const openReport = reportHref ? (
     <Text variant="label" as="span">
-      <Button variant="link" asChild>
+      <Button variant="link" size="sm" asChild>
         <Link href={reportHref} prefetch={false}>
           Open report
         </Link>
@@ -299,7 +299,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
             </Text>
             {canUndo ? (
               <Text variant="label" as="span">
-                <Button variant="link" loading={busy === 'undo'} onClick={() => undo(result, previous)}>
+                <Button variant="link" size="sm" loading={busy === 'undo'} onClick={() => undo(result, previous)}>
                   Undo
                 </Button>
               </Text>
@@ -345,7 +345,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
           }}
           title={`Delete “${title}”?`}
           description="The report and its widget on Home go. Your transactions stay. This can't be undone."
-          confirmLabel="Delete report"
+          confirmLabel="Delete"
           confirmLoading={busy === 'delete'}
           onConfirm={() => remove()}
         />

@@ -94,7 +94,7 @@ export function CustomModelFields({ providers, testing, error, onAdd }: CustomMo
       </div>
 
       <div>
-        <Button variant="link" onClick={() => setShowMore((v) => !v)}>
+        <Button variant="link" size="sm" onClick={() => setShowMore((v) => !v)}>
           {showMore ? 'Fewer options' : 'More options'}
         </Button>
       </div>

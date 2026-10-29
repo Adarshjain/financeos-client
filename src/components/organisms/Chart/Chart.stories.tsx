@@ -50,6 +50,25 @@ export const Bar: Story = {
   },
 };
 
+/** Names too long for upright bars on a narrow frame: the bars lie down and every name shows in full. */
+export const BarLongNamesNarrow: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-80">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    data: {
+      chartType: 'bar',
+      categories: ['Groceries', 'Entertainment', 'Transport', 'Dining out', 'Utilities', 'Health'],
+      series: [{ name: 'spend', data: [18450, 12200, 9980, 8340, 6810, 3275] }],
+      measure: spend,
+    },
+  },
+};
+
 export const Line: Story = {
   args: {
     data: {

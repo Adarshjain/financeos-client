@@ -13,8 +13,7 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
-  KpiTile,
+  Hero,
   Pager,
   Select,
   type SelectOption,
@@ -29,7 +28,9 @@ import { downloadCsv } from '@/lib/downloadCsv';
 import type { FnoSummary } from '@/lib/investments.types';
 import { AccountType, type FnoTradeResponse } from '@/lib/types';
 
+import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { exportFnoCsv } from './fnoActions';
+import { FnoAddDialog } from './FnoAddDialog';
 import {
   CONTRACT_CHIPS,
   currentFy,
@@ -147,16 +148,6 @@ const columns = [
       </Text>
     ),
   }),
-  ch.display({
-    id: 'edit',
-    header: '',
-    meta: { size: 'xs', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Button variant="ghost" size="sm" iconOnly aria-label={`Edit ${row.original.contract}`}>
-        <Icon name="pencil-simple" size="sm" />
-      </Button>
-    ),
-  }),
 ];
 
 export interface FnoListCardProps {
@@ -177,6 +168,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [editing, setEditing] = React.useState<FnoTradeResponse | null>(null);
   const [exporting, setExporting] = React.useState(false);
+  const [adding, setAdding] = React.useState(false);
 
   const rows = React.useMemo(() => trades.map(fnoListRow), [trades]);
   const byId = React.useMemo(() => new Map(trades.map((t) => [t.id, t])), [trades]);
@@ -212,20 +204,26 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
   );
 
   const filtered = state.q !== '' || state.contract !== '' || state.broker !== '';
+  const changed = filtered || state.fy !== currentFy();
+  const contractLabel = state.contract ? (CONTRACT_CHIPS.find((o) => o.value === state.contract)?.label ?? 'Contract') : 'Contract';
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar search={{ value: text, onValueChange: setText }}>
-        {CONTRACT_CHIPS.map((chip) => (
-          <FilterChip
-            key={chip.value || 'all'}
-            className="shrink-0"
-            selected={state.contract === chip.value}
-            onClick={() => go({ contract: chip.value, page: 0 })}
-          >
-            {chip.label}
-          </FilterChip>
-        ))}
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+        changed={changed}
+        onReset={() => go({ q: '', contract: '', broker: '', fy: currentFy(), page: 0 })}
+      >
+        <Select
+          value={state.contract}
+          options={CONTRACT_CHIPS}
+          onValueChange={(v) => go({ contract: (v ?? '') as FnoUrlState['contract'], page: 0 })}
+          trigger={
+            <FilterChip hasDropdown changed={state.contract !== ''} onReset={() => go({ contract: '', page: 0 })} className="shrink-0">
+              {contractLabel}
+            </FilterChip>
+          }
+        />
         {brokers.length > 0 ? (
           <AccountPicker
             accounts={brokerAccounts}
@@ -234,7 +232,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
             value={state.broker}
             onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
             trigger={
-              <FilterChip hasDropdown selected={state.broker !== ''} className="shrink-0">
+              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '', page: 0 })} className="shrink-0">
                 {brokerName ?? 'Broker'}
               </FilterChip>
             }
@@ -245,7 +243,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
           options={[FNO_ALL_YEARS, ...fyOptions(state.fy ?? currentFy())]}
           onValueChange={(v) => go({ fy: v === '' ? null : Number(v), page: 0 })}
           trigger={
-            <FilterChip hasDropdown className="shrink-0">
+            <FilterChip hasDropdown changed={state.fy !== currentFy()} onReset={() => go({ fy: currentFy(), page: 0 })} className="shrink-0">
               {fnoFyLabel(state.fy)}
             </FilterChip>
           }
@@ -292,41 +290,35 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
             ) : undefined
           }
           empty={
-            <EmptyState
-              compact
-              description={
-                filtered
-                  ? 'No trades match'
-                  : `No F&O trades${state.fy == null ? '' : ` in ${fnoFyLabel(state.fy)}`}. Log a trade or import a broker Tax P&L statement.`
-              }
-              action={
-                filtered
-                  ? {
-                      label: 'Clear filters',
-                      variant: 'link',
-                      href: fnoUrl({ ...state, q: '', contract: '', broker: '', page: 0 }),
-                    }
-                  : undefined
-              }
-            />
+            filtered ? (
+              <EmptyState
+                title="No trades match"
+                description="Try a different search or filter."
+                action={{ label: 'Clear filters', variant: 'secondary', href: fnoUrl({ ...state, q: '', contract: '', broker: '', page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title={state.fy == null ? 'No F&O trades yet' : `No F&O trades in ${fnoFyLabel(state.fy)}`}
+                description="Log a trade or import a broker Tax P&L statement."
+                action={{ label: 'Record F&O trade', variant: 'primary', onSelect: () => setAdding(true) }}
+              />
+            )
           }
           stickyHeader={false}
         />
       </Card>
+      {adding ? <FnoAddDialog onClose={() => setAdding(false)} /> : null}
       {editing ? <FnoTradeDialog trade={editing} brokers={brokers} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }
 
-/** The tiles and the list while the page loads. */
+/** The hero, filter row and list while the page loads. */
 export function FnoListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="max-desk:hidden grid grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-      </div>
+      <Hero.Skeleton label change figures={2} />
+      <FilterRowSkeleton chips={3} />
       <Card>
         <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
       </Card>

@@ -191,7 +191,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
         <Dialog.Content
           size="sm"
           title={entry ? entryTitle(entry) : 'Record EPF entry'}
-          tertiary={showFooterDelete ? { label: 'Delete entry', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: pending } : undefined}
+          tertiary={showFooterDelete ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: pending } : undefined}
           secondary={{ label: imported && !importedWithdrawal ? 'Close' : 'Cancel', onSelect: onClose, disabled: pending }}
           primary={footerPrimary}
         >
@@ -327,7 +327,7 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
           description={`This entry you added goes${
             entry.type === 'WITHDRAWAL' || entry.type === 'TRANSFER_OUT' ? '' : `, and the balance drops by ${formatMoney(entry.employeeAmount + entry.employerAmount, { decimals: 'auto' })}`
           }. Entries from the passbook stay. This can't be undone.`}
-          confirmLabel="Delete entry"
+          confirmLabel="Delete"
           confirmLoading={mutations.deleteEntry.isPending}
           onConfirm={() => {
             void (async () => {

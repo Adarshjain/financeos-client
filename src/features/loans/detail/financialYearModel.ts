@@ -12,6 +12,4 @@ export function fyGroupKey(iso: string): string {
 }
 
 /** "FY 26-27": the Dinero label of a financial year, from the year it starts in. */
-export function fyLabel(startYear: number): string {
-  return `FY ${String(startYear).slice(-2)}-${String(startYear + 1).slice(-2)}`;
-}
+export { fyLabel } from '@/lib/format';
