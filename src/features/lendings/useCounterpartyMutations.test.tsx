@@ -3,20 +3,35 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('./actions', () => ({
+  createLendingEntry: vi.fn(),
+  updateLendingEntry: vi.fn(),
+  deleteLendingEntry: vi.fn(),
+  linkLendingEntryTransaction: vi.fn(),
+  unlinkLendingEntryTransaction: vi.fn(),
+  updateCounterparty: vi.fn(),
+  deleteCounterparty: vi.fn(),
+}));
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { CreateLendingRequest, UpdateLendingRequest } from '@/lib/types';
 
+import {
+  createLendingEntry,
+  deleteCounterparty,
+  deleteLendingEntry,
+  linkLendingEntryTransaction,
+  unlinkLendingEntryTransaction,
+  updateCounterparty,
+  updateLendingEntry,
+} from './actions';
 import { useCounterpartyMutations } from './useCounterpartyMutations';
+
+const ok = (data: unknown = undefined) => ({ success: true, data }) as never;
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -35,7 +50,7 @@ describe('useCounterpartyMutations', () => {
   });
 
   it('linkTransaction PUTs {transactionId} and invalidates lendings + transactions', async () => {
-    vi.mocked(api.PUT).mockResolvedValue({ data: { id: 'l1' } } as never);
+    vi.mocked(linkLendingEntryTransaction).mockResolvedValue(ok({ id: 'l1' }));
     const { Wrapper, invalidateSpy } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
 
@@ -43,16 +58,13 @@ describe('useCounterpartyMutations', () => {
 
     await waitFor(() => expect(result.current.linkTransaction.isSuccess).toBe(true));
 
-    expect(api.PUT).toHaveBeenCalledWith('/api/v1/lendings/{id}/transaction', {
-      params: { path: { id: 'l1' } },
-      body: { transactionId: 't1' },
-    });
+    expect(linkLendingEntryTransaction).toHaveBeenCalledWith('l1', 't1');
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
-  it('unlinkTransaction DELETEs the link and invalidates lendings + transactions', async () => {
-    vi.mocked(api.DELETE).mockResolvedValue({ data: null } as never);
+  it('unlinkTransaction removes the link and invalidates lendings + transactions', async () => {
+    vi.mocked(unlinkLendingEntryTransaction).mockResolvedValue(ok());
     const { Wrapper, invalidateSpy } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
 
@@ -60,15 +72,13 @@ describe('useCounterpartyMutations', () => {
 
     await waitFor(() => expect(result.current.unlinkTransaction.isSuccess).toBe(true));
 
-    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/lendings/{id}/transaction', {
-      params: { path: { id: 'l1' } },
-    });
+    expect(unlinkLendingEntryTransaction).toHaveBeenCalledWith('l1');
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('createLending still invalidates lendings + transactions', async () => {
-    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l2' } } as never);
+    vi.mocked(createLendingEntry).mockResolvedValue(ok({ id: 'l2' }));
     const { Wrapper, invalidateSpy } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
 
@@ -82,13 +92,13 @@ describe('useCounterpartyMutations', () => {
 
     await waitFor(() => expect(result.current.createLending.isSuccess).toBe(true));
 
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', { body });
+    expect(createLendingEntry).toHaveBeenCalledWith(body);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('deleteLending still invalidates lendings + transactions', async () => {
-    vi.mocked(api.DELETE).mockResolvedValue({ data: null } as never);
+    vi.mocked(deleteLendingEntry).mockResolvedValue(ok());
     const { Wrapper, invalidateSpy } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
 
@@ -96,15 +106,13 @@ describe('useCounterpartyMutations', () => {
 
     await waitFor(() => expect(result.current.deleteLending.isSuccess).toBe(true));
 
-    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/lendings/{id}', {
-      params: { path: { id: 'l3' } },
-    });
+    expect(deleteLendingEntry).toHaveBeenCalledWith('l3');
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('updateLending invalidates lendings', async () => {
-    vi.mocked(api.PUT).mockResolvedValue({ data: { id: 'l4' } } as never);
+    vi.mocked(updateLendingEntry).mockResolvedValue(ok({ id: 'l4' }));
     const { Wrapper, invalidateSpy } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
 
@@ -113,10 +121,7 @@ describe('useCounterpartyMutations', () => {
 
     await waitFor(() => expect(result.current.updateLending.isSuccess).toBe(true));
 
-    expect(api.PUT).toHaveBeenCalledWith('/api/v1/lendings/{id}', {
-      params: { path: { id: 'l4' } },
-      body,
-    });
+    expect(updateLendingEntry).toHaveBeenCalledWith('l4', body);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
   });
 });
@@ -126,23 +131,22 @@ describe('useCounterpartyMutations', () => {
 // keys.lendings.all prefix — every ledger mutation must invalidate it too.
 describe('useCounterpartyMutations — ledger totals (loans summary) invalidation', () => {
   type Mutations = ReturnType<typeof useCounterpartyMutations>;
-  const resolvePut = () => vi.mocked(api.PUT).mockResolvedValue({ data: { id: 'x' } } as never);
-  const resolvePost = () => vi.mocked(api.POST).mockResolvedValue({ data: { id: 'x' } } as never);
-  const resolveDelete = () => vi.mocked(api.DELETE).mockResolvedValue({ data: null } as never);
+  const resolve = (action: (...args: never[]) => unknown) => () =>
+    vi.mocked(action as never as (...args: never[]) => Promise<never>).mockResolvedValue(ok({ id: 'x' }));
 
   const cases: Array<{ name: keyof Mutations; arrange: () => void; fire: (m: Mutations) => void }> = [
-    { name: 'updateCp', arrange: resolvePut, fire: (m) => m.updateCp.mutate({ name: 'Rahul' }) },
-    { name: 'deleteCp', arrange: resolveDelete, fire: (m) => m.deleteCp.mutate() },
+    { name: 'updateCp', arrange: resolve(updateCounterparty), fire: (m) => m.updateCp.mutate({ name: 'Rahul' }) },
+    { name: 'deleteCp', arrange: resolve(deleteCounterparty), fire: (m) => m.deleteCp.mutate() },
     {
       name: 'createLending',
-      arrange: resolvePost,
+      arrange: resolve(createLendingEntry),
       fire: (m) =>
         m.createLending.mutate({ counterpartyId: 'cp1', direction: 'lent', amount: 500, entryDate: '2026-01-01' }),
     },
-    { name: 'updateLending', arrange: resolvePut, fire: (m) => m.updateLending.mutate({ id: 'l1', body: { amount: 600 } }) },
-    { name: 'deleteLending', arrange: resolveDelete, fire: (m) => m.deleteLending.mutate('l1') },
-    { name: 'linkTransaction', arrange: resolvePut, fire: (m) => m.linkTransaction.mutate({ id: 'l1', transactionId: 't1' }) },
-    { name: 'unlinkTransaction', arrange: resolveDelete, fire: (m) => m.unlinkTransaction.mutate('l1') },
+    { name: 'updateLending', arrange: resolve(updateLendingEntry), fire: (m) => m.updateLending.mutate({ id: 'l1', body: { amount: 600 } }) },
+    { name: 'deleteLending', arrange: resolve(deleteLendingEntry), fire: (m) => m.deleteLending.mutate('l1') },
+    { name: 'linkTransaction', arrange: resolve(linkLendingEntryTransaction), fire: (m) => m.linkTransaction.mutate({ id: 'l1', transactionId: 't1' }) },
+    { name: 'unlinkTransaction', arrange: resolve(unlinkLendingEntryTransaction), fire: (m) => m.unlinkTransaction.mutate('l1') },
   ];
 
   beforeEach(() => {
@@ -166,7 +170,7 @@ describe('useCounterpartyMutations — error toasts', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('hands a failure and its fallback sentence to the caller instead of the Legacy toast', async () => {
-    vi.mocked(api.DELETE).mockRejectedValue(new Error('boom'));
+    vi.mocked(deleteCounterparty).mockRejectedValue(new Error('boom'));
     const onError = vi.fn();
     const { Wrapper } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1', { onError }), { wrapper: Wrapper });
@@ -178,8 +182,8 @@ describe('useCounterpartyMutations — error toasts', () => {
   });
 
   it('does the same for the link and unlink mutations', async () => {
-    vi.mocked(api.PUT).mockRejectedValue(new Error('no'));
-    vi.mocked(api.DELETE).mockRejectedValue(new Error('no'));
+    vi.mocked(linkLendingEntryTransaction).mockRejectedValue(new Error('no'));
+    vi.mocked(unlinkLendingEntryTransaction).mockRejectedValue(new Error('no'));
     const onError = vi.fn();
     const { Wrapper } = createWrapper();
     const { result } = renderHook(() => useCounterpartyMutations('cp1', { onError }), { wrapper: Wrapper });

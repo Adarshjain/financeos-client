@@ -6,6 +6,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
   KpiUnderlyingDialog: (p: { source: unknown; title: string; kpi?: unknown }) => (
     <div data-testid="kpi-dialog" data-title={p.title} data-kpi={String(p.kpi !== undefined)} data-source={JSON.stringify(p.source)} />

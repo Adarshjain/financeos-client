@@ -2,6 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 
+// Multipart PDF uploads stay on the browser client: server actions cap bodies at 1 MB and would double the transfer.
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 

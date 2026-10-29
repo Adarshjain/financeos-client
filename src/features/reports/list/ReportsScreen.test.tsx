@@ -10,8 +10,11 @@ import { ASK_HREF, reportRows } from './reportsList';
 import { ReportsScreen, type ReportsScreenProps } from './ReportsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const search = vi.hoisted(() => ({ params: new URLSearchParams() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => search.params }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: (e: unknown) => { throw e; }, useRouter: () => router, useSearchParams: () => search.params }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -19,18 +22,16 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   showToast: (...args: unknown[]) => toast(...args),
 }));
 
-const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), DELETE: vi.fn() }));
+const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 
 const dashboards = vi.hoisted(() => ({
   list: [] as unknown[],
   failed: false,
   refetch: vi.fn(),
-  putWidgets: vi.fn(),
 }));
 vi.mock('@/lib/query/hooks/useDashboards', () => ({
   useDashboards: () => ({ data: dashboards.list, isLoading: false, isError: dashboards.failed, refetch: dashboards.refetch }),
-  putWidgets: dashboards.putWidgets,
   storeSavedDashboard: vi.fn(),
 }));
 
@@ -290,7 +291,7 @@ describe('row menu', () => {
       // The list is stale: the fresh dashboard has a widget the list does not know.
       const fresh = { ...money, widgets: [{ id: 'w-new-elsewhere', layout: { x: 0, y: 0, w: 50, h: 24 } }] };
       api.GET.mockResolvedValue({ data: fresh });
-      dashboards.putWidgets.mockImplementation(async (_d, widgets: unknown[]) => ({ ...money, widgets }));
+      api.PUT.mockImplementation(async (_path: string, { body }: { body: { widgets: unknown[] } }) => ({ data: { ...money, widgets: body.widgets } }));
       renderWithQuery(<ReportsScreen {...props({ rows: onHome })} />);
       const dialog = await openDialog();
       const add = within(dialog).getByRole('button', { name: 'Add to dashboard' });
@@ -299,10 +300,11 @@ describe('row menu', () => {
       await user.click(await screen.findByText('Money overview', { selector: '[role="option"] *, [role="option"]' }));
       await user.click(add);
 
-      await waitFor(() => expect(dashboards.putWidgets).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(api.PUT).toHaveBeenCalledTimes(1));
       expect(api.GET).toHaveBeenCalledWith('/api/v1/dashboards/{id}', { params: { path: { id: 'd2' } } });
-      const [from, widgets] = dashboards.putWidgets.mock.calls[0] as [unknown, { id: string; reportId?: string }[]];
-      expect(from).toBe(fresh);
+      const first = api.PUT.mock.calls[0] as [string, { params: { path: { id: string } }; body: { widgets: { id: string; reportId?: string }[] } }];
+      expect(first[1].params.path.id).toBe('d2');
+      const widgets = first[1].body.widgets;
       expect(widgets.map((w) => w.id)).toContain('w-new-elsewhere');
       expect(widgets.find((w) => w.reportId === 'r2')).toBeDefined();
       const options = toast.mock.calls.find((c) => c[0] === 'Added to Money overview')![1] as { action: { label: string; onSelect: () => void } };
@@ -312,8 +314,8 @@ describe('row menu', () => {
       const added = widgets.find((w) => w.reportId === 'r2')!;
       api.GET.mockResolvedValue({ data: { ...money, widgets } });
       options.action.onSelect();
-      await waitFor(() => expect(dashboards.putWidgets).toHaveBeenCalledTimes(2));
-      const [, after] = dashboards.putWidgets.mock.calls[1] as [unknown, { id: string }[]];
+      await waitFor(() => expect(api.PUT).toHaveBeenCalledTimes(2));
+      const after = (api.PUT.mock.calls[1] as [string, { body: { widgets: { id: string }[] } }])[1].body.widgets;
       expect(after.map((w) => w.id)).toEqual(['w-new-elsewhere']);
       expect(after.find((w) => w.id === added.id)).toBeUndefined();
     });

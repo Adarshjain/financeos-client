@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { unwrapAction } from '@/lib/actionResult';
 import { amountExpressionValue } from '@/lib/amountExpression';
-import { api } from '@/lib/api/client';
 import type {
   CounterpartySelection,
   CreateLendingRequest,
@@ -24,6 +24,8 @@ import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+
+import { attachLendingTransaction, createLending, loadPersonLendings } from './linkActions';
 
 interface UseRecordLendingProps {
   /** Undefined whenever the LENDING link kind isn't the active/enabled one. */
@@ -136,12 +138,7 @@ export function useRecordLending({
 
   const existingEntriesQuery = useQuery({
     queryKey: keys.lendings.list({ counterpartyId: existingCounterpartyId, page: 0, size: 50 }),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/lendings', {
-        params: { query: { counterpartyId: existingCounterpartyId, page: 0, size: 50 } },
-      });
-      return (data?.content ?? []) as LendingResponse[];
-    },
+    queryFn: () => unwrapAction(loadPersonLendings(existingCounterpartyId)),
     enabled: open && Boolean(existingCounterpartyId),
   });
 
@@ -161,8 +158,7 @@ export function useRecordLending({
   };
 
   const createMutation = useMutation({
-    mutationFn: (body: CreateLendingRequest) =>
-      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
+    mutationFn: (body: CreateLendingRequest) => unwrapAction(createLending(body)),
     onSuccess: () => {
       notify.success('Lending recorded');
       finishAndClose();
@@ -173,11 +169,7 @@ export function useRecordLending({
   });
 
   const attachMutation = useMutation({
-    mutationFn: (lendingId: string) =>
-      api.PUT('/api/v1/lendings/{id}/transaction', {
-        params: { path: { id: lendingId } },
-        body: { transactionId: transaction!.id },
-      }),
+    mutationFn: (lendingId: string) => unwrapAction(attachLendingTransaction(lendingId, transaction!.id)),
     onMutate: (lendingId: string) => setAttachingId(lendingId),
     onSuccess: () => {
       notify.success('Transaction attached');

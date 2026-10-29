@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -11,6 +11,7 @@ import type {
   UpdateLendingRequest,
 } from '@/lib/types';
 
+import { deleteCounterparty, deleteLendingEntry, updateCounterparty, updateLendingEntry } from './actions';
 import { useCreateLending } from './useCreateLending';
 import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingTransactionLink';
 
@@ -32,22 +33,13 @@ export function useCounterpartyMutations(counterpartyId: string, options?: Count
   };
 
   const updateCp = useMutation({
-    mutationFn: (body: UpdateCounterpartyRequest) =>
-      api
-        .PUT('/api/v1/counterparties/{id}', {
-          params: { path: { id: counterpartyId } },
-          body,
-        })
-        .then((r) => r.data!),
+    mutationFn: (body: UpdateCounterpartyRequest) => unwrapAction(updateCounterparty(counterpartyId, body)),
     onSuccess: invalidateLendings,
     onError: onErrorToast("Couldn't update counterparty. Try again."),
   });
 
   const deleteCp = useMutation({
-    mutationFn: () =>
-      api.DELETE('/api/v1/counterparties/{id}', {
-        params: { path: { id: counterpartyId } },
-      }),
+    mutationFn: () => unwrapAction(deleteCounterparty(counterpartyId)),
     onSuccess: invalidateLendings,
     onError: onErrorToast("Couldn't delete counterparty. Try again."),
   });
@@ -57,17 +49,13 @@ export function useCounterpartyMutations(counterpartyId: string, options?: Count
   );
 
   const updateLending = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateLendingRequest }) =>
-      api
-        .PUT('/api/v1/lendings/{id}', { params: { path: { id } }, body })
-        .then((r) => r.data!),
+    mutationFn: ({ id, body }: { id: string; body: UpdateLendingRequest }) => unwrapAction(updateLendingEntry(id, body)),
     onSuccess: invalidateLendings,
     onError: onErrorToast("Couldn't update lending. Try again."),
   });
 
   const deleteLending = useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/lendings/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteLendingEntry(id)),
     onSuccess: invalidateLendingsAndTransactions,
     onError: onErrorToast("Couldn't delete lending. Try again."),
   });

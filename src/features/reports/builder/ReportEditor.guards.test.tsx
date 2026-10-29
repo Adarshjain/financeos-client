@@ -11,6 +11,9 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { catalogFixture, savedChart } from './editor.fixtures';
 import { ReportEditor, type ReportEditorProps } from './ReportEditor';
 
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), back: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/reports/new', useSearchParams: () => new URLSearchParams() }));
 

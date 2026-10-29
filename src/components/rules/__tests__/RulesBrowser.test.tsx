@@ -9,6 +9,7 @@ import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn(), back: vi.fn(), forward: vi.fn() }),
   usePathname: () => '/rules',
   useSearchParams: () => new URLSearchParams(),
@@ -22,6 +23,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 // Toasts render via a `<Toaster />` mounted only in the root layout, which
 // this component-level render doesn't include — assert on the mock calls

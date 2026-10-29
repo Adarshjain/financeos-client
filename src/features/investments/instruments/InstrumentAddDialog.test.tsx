@@ -6,7 +6,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { InstrumentAddDialog } from './InstrumentAddDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/investments/instruments', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router, usePathname: () => '/investments/instruments', useSearchParams: () => new URLSearchParams() }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -21,7 +21,7 @@ vi.mock('./useCatalogSearch', () => ({
 }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 const onClose = vi.fn();
 const onCreated = vi.fn();

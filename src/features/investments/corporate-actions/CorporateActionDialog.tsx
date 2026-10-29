@@ -19,13 +19,13 @@ import {
 import { AmountField } from '@/components/organisms';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { amountExpressionProps } from '@/lib/amountExpression';
-import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CorporateActionItem, CorporateActionKind, CorporateActionPreview } from '@/lib/investments.types';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
+import { isBadRequest } from '../badRequest';
 import { InstrumentSelect } from '../InstrumentSelect';
 import {
   type CorporateActionForm,
@@ -76,9 +76,9 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
   const resolving = resolvingMain || resolvingTarget;
   const [formError, setFormError] = React.useState<string | undefined>();
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
   const { createMutation, updateMutation, deleteMutation } = useCorporateActionMutations(form.instrument?.id);
   const saving = createMutation.isPending || updateMutation.isPending;
+  const deleting = deleteMutation.isPending;
 
   const change = (patch: Partial<CorporateActionForm>, clear?: keyof FormErrors) => {
     setForm((f) => ({ ...f, ...patch }));
@@ -133,7 +133,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
         onClose();
         return;
       }
-      if (e instanceof ApiError && e.status === 400) {
+      if (isBadRequest(e)) {
         setFormError(getErrorMessage(e, 'The corporate action was not accepted.'));
         return;
       }
@@ -143,7 +143,6 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
 
   const remove = async () => {
     if (!action) return;
-    setDeleting(true);
     try {
       await deleteMutation.mutateAsync(action.id);
       showToast('Corporate action deleted');
@@ -158,8 +157,6 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
       }
       setConfirmingDelete(false);
       showToast(getErrorMessage(e, "Couldn't delete the corporate action. Try again."), { tone: 'danger' });
-    } finally {
-      setDeleting(false);
     }
   };
 

@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import * as actions from '@/features/rewards/actions';
 import type { RewardCapBucket } from '@/lib/rewards.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -12,10 +12,15 @@ import {
   useUpdateRewardCapBucket,
 } from '../useRewardCapBucketsQueries';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/features/rewards/actions', () => ({
+  loadRewardCapBuckets: vi.fn(),
+  createRewardCapBucket: vi.fn(),
+  updateRewardCapBucket: vi.fn(),
+  deleteRewardCapBucket: vi.fn(),
+}));
+
+const mocked = vi.mocked(actions);
+const ok = (data: unknown) => ({ success: true, data }) as never;
 
 const bucket: RewardCapBucket = {
   id: 'bucket-1',
@@ -60,33 +65,27 @@ describe('useRewardCapBucketsQueries', () => {
   });
 
   it('fetches buckets scoped to the account and refetches after a mutation invalidates', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [bucket] });
-    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { ...bucket, id: 'bucket-2', name: 'New Bucket' } });
+    mocked.loadRewardCapBuckets.mockResolvedValue(ok([bucket]));
+    mocked.createRewardCapBucket.mockResolvedValue(ok({ ...bucket, id: 'bucket-2', name: 'New Bucket' }));
 
     renderWithQuery(<Harness accountId="acc-1" />);
 
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
-    expect(api.GET).toHaveBeenCalledWith(
-      '/api/v1/reward-cap-buckets',
-      expect.objectContaining({ params: { query: { accountId: 'acc-1' } } })
-    );
+    expect(mocked.loadRewardCapBuckets).toHaveBeenCalledWith('acc-1');
 
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [bucket, { ...bucket, id: 'bucket-2' }] });
+    mocked.loadRewardCapBuckets.mockResolvedValue(ok([bucket, { ...bucket, id: 'bucket-2' }]));
     fireEvent.click(screen.getByText('create'));
 
     await waitFor(() => {
-      expect(api.POST).toHaveBeenCalledWith(
-        '/api/v1/reward-cap-buckets',
-        expect.objectContaining({ body: expect.objectContaining({ name: 'New Bucket', cap: 1000 }) })
-      );
+      expect(mocked.createRewardCapBucket).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Bucket', cap: 1000 }));
     });
     // The mutation's onSuccess invalidates keys.rewards.all, which refetches the list query.
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('2'));
   });
 
   it('sends an update to the correct bucket id', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [bucket] });
-    (api.PUT as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { ...bucket, name: 'Renamed', cap: 750 } });
+    mocked.loadRewardCapBuckets.mockResolvedValue(ok([bucket]));
+    mocked.updateRewardCapBucket.mockResolvedValue(ok({ ...bucket, name: 'Renamed', cap: 750 }));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
@@ -94,19 +93,16 @@ describe('useRewardCapBucketsQueries', () => {
     fireEvent.click(screen.getByText('update'));
 
     await waitFor(() => {
-      expect(api.PUT).toHaveBeenCalledWith(
-        '/api/v1/reward-cap-buckets/{id}',
-        expect.objectContaining({
-          params: { path: { id: 'bucket-1' } },
-          body: expect.objectContaining({ name: 'Renamed', cap: 750 }),
-        })
+      expect(mocked.updateRewardCapBucket).toHaveBeenCalledWith(
+        'bucket-1',
+        expect.objectContaining({ name: 'Renamed', cap: 750 })
       );
     });
   });
 
   it('deletes a bucket by id', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [bucket] });
-    (api.DELETE as ReturnType<typeof vi.fn>).mockResolvedValue({ data: undefined });
+    mocked.loadRewardCapBuckets.mockResolvedValue(ok([bucket]));
+    mocked.deleteRewardCapBucket.mockResolvedValue(ok(undefined));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
@@ -114,15 +110,12 @@ describe('useRewardCapBucketsQueries', () => {
     fireEvent.click(screen.getByText('delete'));
 
     await waitFor(() => {
-      expect(api.DELETE).toHaveBeenCalledWith(
-        '/api/v1/reward-cap-buckets/{id}',
-        expect.objectContaining({ params: { path: { id: 'bucket-1' } } })
-      );
+      expect(mocked.deleteRewardCapBucket).toHaveBeenCalledWith('bucket-1');
     });
   });
 
   it('does not fetch when accountId is empty', () => {
     renderWithQuery(<Harness accountId="" />);
-    expect(api.GET).not.toHaveBeenCalled();
+    expect(mocked.loadRewardCapBuckets).not.toHaveBeenCalled();
   });
 });

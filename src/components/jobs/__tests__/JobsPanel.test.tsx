@@ -12,6 +12,7 @@ import { JobsPanel } from '../JobsPanel';
 import { JobStatusPill } from '../JobStatusPill';
 
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => ({
     refresh: vi.fn(),
     push: vi.fn(),
@@ -33,6 +34,7 @@ vi.mock('@/lib/api/client', () => ({
     }
   },
 }));
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 describe('Shared Job Components', () => {
   it('renders JobStatusPill correctly for different statuses', () => {

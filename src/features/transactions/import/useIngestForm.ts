@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
+// Stays on the browser client: a multipart upload (server actions cap bodies at 1 MB and would double the transfer).
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 import { notify } from '@/lib/notify';

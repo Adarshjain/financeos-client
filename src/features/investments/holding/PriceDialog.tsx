@@ -5,8 +5,8 @@ import React from 'react';
 
 import { DateField, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
+import { ActionError } from '@/lib/actionResult';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
-import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { usePriceMutations } from '../usePriceMutations';
@@ -64,7 +64,8 @@ export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: Pr
       onSaved?.();
       onClose();
     } catch (e) {
-      if (e instanceof ApiError && e.status === 409 && e.response.code === 'DUPLICATE') {
+      // The server answers 409 with code DUPLICATE when the date already has a price of the user's.
+      if (e instanceof ActionError && e.response.code === 'DUPLICATE') {
         setDateError(e.response.message);
         return;
       }

@@ -9,7 +9,7 @@ import { CorporateActionDialog } from './CorporateActionDialog';
 import { demerger, previewDemerger, split } from './corporateActions.fixtures';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),
@@ -23,10 +23,10 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 
 const preview = vi.hoisted(() => vi.fn());
-vi.mock('./corporateActionsActions', () => ({ loadCorporateActionPreview: preview }));
+vi.mock('./corporateActionsActions', async (orig) => ({ ...(await orig<typeof import('./corporateActionsActions')>()), loadCorporateActionPreview: preview }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 const catalog = vi.hoisted(() => ({ results: [] as unknown[], resolve: vi.fn() }));
 vi.mock('../instruments/useCatalogSearch', () => ({

@@ -2,8 +2,9 @@
 // the server's field limits, the asset-class options, the "Edited for your
 // account" wording and how a 400 is split into inline field / form errors.
 
-import { ApiError } from '@/lib/api/client';
 import type { AssetClass, Instrument } from '@/lib/types';
+
+import { isBadRequest } from '../badRequest';
 
 /** The server's @Size limits on InstrumentRequest (the form stops typing past them). */
 export const INSTRUMENT_FIELD_LIMITS = {
@@ -70,8 +71,10 @@ export interface InstrumentFormErrors {
  * is not a 400 (the caller toasts those).
  */
 export function instrumentFormErrors(err: unknown): InstrumentFormErrors | null {
-  if (!(err instanceof ApiError) || err.status !== 400) return null;
-  const details = err.response?.details ?? null;
+  if (!isBadRequest(err)) return null;
+  // An ApiError (browser client, Legacy) or an ActionError (server action): both carry the server's ErrorResponse.
+  const failure = err as Error & { response?: { details?: Record<string, string> | null; message?: string } };
+  const details = failure.response?.details ?? null;
   const fields: InstrumentFormErrors['fields'] = {};
   let unmatched: string | null = null;
   if (details) {
@@ -84,7 +87,7 @@ export function instrumentFormErrors(err: unknown): InstrumentFormErrors | null 
     }
   }
   const hasFields = Object.keys(fields).length > 0;
-  const form = hasFields ? unmatched : (unmatched ?? err.response?.message ?? err.message ?? null);
+  const form = hasFields ? unmatched : (unmatched ?? failure.response?.message ?? failure.message ?? null);
   return { fields, form };
 }
 

@@ -2,8 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
+import { loadBalanceSeries } from '@/lib/query/actions/accounts';
 import { keys } from '@/lib/query/keys';
 
 /** One day's end-of-day balance (same sign convention as the account's `balance`). */
@@ -17,12 +18,7 @@ export type BalancePoint = components['schemas']['BalancePointResponse'];
 export function useBalanceSeries(accountId: string, days = 30, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<BalancePoint[]>({
     queryKey: keys.accounts.balanceSeries(accountId, days),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/accounts/{id}/balance-series', {
-        params: { path: { id: accountId }, query: { days } },
-      });
-      return data ?? [];
-    },
+    queryFn: () => unwrapAction(loadBalanceSeries(accountId, days)),
     enabled: enabled && Boolean(accountId),
   });
 }

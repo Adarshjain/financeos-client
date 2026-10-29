@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -9,12 +9,13 @@ import { ErrorState } from '@/components/organisms';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { activityUrl } from '@/features/settings/activity/activityModel';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import type { ApplyRuleResult, CategoryRule } from '@/lib/rules.types';
 
 import { MatchRow } from './MatchRow';
+import { applyRule } from './ruleActions';
 import { RULE_JOB_TYPE, ruleMatchSentence } from './rulesModel';
 import { useRuleMatches } from './useRuleMatches';
 
@@ -40,12 +41,22 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
   const [picked, setPicked] = React.useState<string[]>([]);
   const [all, setAll] = React.useState(false);
   const [jobId, setJobId] = React.useState<string | null>(null);
-  const [starting, setStarting] = React.useState(false);
+
+  const applyMutation = useMutation({
+    mutationFn: (body: { all: true } | { transactionIds: string[] }) => unwrapAction(applyRule(rule.id, body)),
+    onSuccess: (data) => {
+      if (data?.jobId) {
+        setJobId(data.jobId);
+        emitJobStarted(data.jobId);
+      }
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't apply the rule. Try again."), { tone: 'danger' }),
+  });
 
   const rows = matches?.content ?? [];
   const total = matches?.totalElements ?? 0;
   const count = all ? total : picked.length;
-  const applying = starting || jobId !== null;
+  const applying = applyMutation.isPending || jobId !== null;
 
   useJobStatusPolling<ApplyRuleResult>(jobId, (job) => {
     setJobId(null);
@@ -78,23 +89,9 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
     setPicked((prev) => (on ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
   };
 
-  const apply = async () => {
+  const apply = () => {
     if (count === 0) return;
-    setStarting(true);
-    try {
-      const { data } = await api.POST('/api/v1/rules/{id}/apply', {
-        params: { path: { id: rule.id } },
-        body: all ? { all: true } : { transactionIds: picked },
-      });
-      if (data?.jobId) {
-        setJobId(data.jobId);
-        emitJobStarted(data.jobId);
-      }
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't apply the rule. Try again."), { tone: 'danger' });
-    } finally {
-      setStarting(false);
-    }
+    applyMutation.mutate(all ? { all: true } : { transactionIds: picked });
   };
 
   return (
@@ -106,7 +103,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: applying }}
         primary={{
           label: count > 0 ? `Apply rule (${count})` : 'Apply rule',
-          onSelect: () => void apply(),
+          onSelect: apply,
           loading: applying,
           disabled: count === 0 || applying,
         }}

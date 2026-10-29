@@ -1046,7 +1046,7 @@ export interface FileIngestionResult {
 // API Result type for server actions
 export type ApiResult<T> =
   | { success: true; data: T }
-  | { success: false; error: ErrorResponse };
+  | { success: false; error: ErrorResponse; /** The HTTP status the backend answered with, when it answered. */ status?: number };
 
 export type {
   AccountIdentifierKind,

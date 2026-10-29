@@ -7,10 +7,11 @@
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { showToast } from '@/components/ds';
-import { api } from '@/lib/api/client';
+import { deleteDashboard, saveDashboard, saveDashboardWidgets, setDashboardDefault } from '@/features/dashboards/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
-import { putWidgets, setDefaultDashboard, storeSavedDashboard, useRestoreHomeDashboard } from '@/lib/query/hooks/useDashboards';
+import { storeSavedDashboard, useRestoreHomeDashboard } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 
 import type { saveBody } from '../editor/editorState';
@@ -31,12 +32,7 @@ export const SAVE_FAILED = "Couldn't save the dashboard. Fix the fields marked i
 export function useSaveDashboard() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, body }: { id?: string; body: SaveBody }): Promise<DashboardResponse> => {
-      const res = id
-        ? await api.PUT('/api/v1/dashboards/{id}', { params: { path: { id } }, body })
-        : await api.POST('/api/v1/dashboards', { body });
-      return res.data as DashboardResponse;
-    },
+    mutationFn: ({ id, body }: { id?: string; body: SaveBody }): Promise<DashboardResponse> => unwrapAction(saveDashboard(id, body)),
     onSuccess: (saved, { id }) => {
       if (id) storeSavedDashboard(queryClient, saved);
       invalidateDashboardLists(queryClient, saved.id);
@@ -55,7 +51,7 @@ export function useSaveWidgetSettings(dashboard: DashboardResponse | undefined, 
       const widgets: WidgetResponse[] = dashboard.widgets.map((w) =>
         w.id === widgetId ? { ...w, ...(change.params ? { params: change.params } : {}), title: change.title } : w,
       );
-      return putWidgets(dashboard, widgets);
+      return unwrapAction(saveDashboardWidgets(dashboard, widgets));
     },
     onSuccess: (saved) => {
       storeSavedDashboard(queryClient, saved);
@@ -70,10 +66,10 @@ export function useSaveWidgetSettings(dashboard: DashboardResponse | undefined, 
 export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: setDefaultDashboard,
-    onSuccess: (res, vars) => {
-      invalidateDashboardLists(queryClient, (res.data as DashboardResponse | undefined)?.id ?? vars.id);
-      if (res.data) onSaved(res.data as DashboardResponse);
+    mutationFn: (vars: { id: string; makeDefault: boolean; updatedAt: string }) => unwrapAction(setDashboardDefault(vars)),
+    onSuccess: (saved, vars) => {
+      invalidateDashboardLists(queryClient, saved?.id ?? vars.id);
+      if (saved) onSaved(saved);
       showToast(vars.makeDefault ? 'Default dashboard set' : 'Default cleared');
     },
     onError: (e) =>
@@ -85,7 +81,7 @@ export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
 export function useDeleteDashboard() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteDashboard(id)),
     onSuccess: (_res, id) => {
       invalidateDashboardLists(queryClient, id);
       showToast('Dashboard deleted');
@@ -122,7 +118,7 @@ export function useAddWidgetNow() {
     mutationFn: ({ dashboardId, widgetIds }: { dashboardId: string; widgetIds: string[] }) => {
       const latest = readLatestDashboard(queryClient, dashboardId);
       if (!latest) throw new Error('Dashboard not found');
-      return putWidgets(latest, latest.widgets.filter((w) => !widgetIds.includes(w.id)));
+      return unwrapAction(saveDashboardWidgets(latest, latest.widgets.filter((w) => !widgetIds.includes(w.id))));
     },
     onSuccess: (saved) => storeSavedDashboard(queryClient, saved),
     onError: (e) => showToast(getErrorMessage(e, "Couldn't remove the widget. Try again."), { tone: 'danger' }),
@@ -131,7 +127,7 @@ export function useAddWidgetNow() {
     mutationFn: async ({ dashboard, widget }: { dashboard: DashboardResponse; widget: WidgetResponse }) => {
       // The latest saved dashboard, not the snapshot the click saw (a quick second add or a settings save may have landed since).
       const latest = readLatestDashboard(queryClient, dashboard.id) ?? dashboard;
-      const saved = await putWidgets(latest, [...latest.widgets, widget]);
+      const saved = await unwrapAction(saveDashboardWidgets(latest, [...latest.widgets, widget]));
       return { saved, before: latest.widgets.map((w) => w.id) };
     },
     onSuccess: ({ saved, before: beforeIds }) => {

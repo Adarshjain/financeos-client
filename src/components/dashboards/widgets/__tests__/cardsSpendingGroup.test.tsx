@@ -7,6 +7,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/components/dashboards/widgets/card_utilisation/CardUtilisationWidget', () => ({
   CardUtilisationWidget: ({ accountId, className }: { accountId?: string | null; className?: string }) => (
     <div data-testid="card-util" data-account={accountId ?? 'none'} className={className} />

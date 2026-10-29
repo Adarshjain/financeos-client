@@ -3,10 +3,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { CreateDividendRequest, UpdateDividendRequest } from '@/lib/api/types';
-import type { Dividend } from '@/lib/types';
 
+import { createDividend, deleteDividend, updateDividend } from './dividendsActions';
 import { useDividendReceiptMutations } from './useDividendReceiptMutations';
 
 /**
@@ -23,19 +23,15 @@ export function useDividendMutations() {
     await receipt.refresh();
     router.refresh();
   };
-  const path = (id: string) => ({ params: { path: { id } } });
 
   const create = useMutation({
-    mutationFn: async (body: CreateDividendRequest) => (await api.POST('/api/v1/investments/dividends', { body })).data as Dividend,
+    mutationFn: (body: CreateDividendRequest) => unwrapAction(createDividend(body)),
   });
   const update = useMutation({
-    mutationFn: async (vars: { id: string; body: UpdateDividendRequest }) =>
-      (await api.PUT('/api/v1/investments/dividends/{id}', { ...path(vars.id), body: vars.body })).data as Dividend,
+    mutationFn: (vars: { id: string; body: UpdateDividendRequest }) => unwrapAction(updateDividend(vars.id, vars.body)),
   });
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      await api.DELETE('/api/v1/investments/dividends/{id}', path(id));
-    },
+    mutationFn: (id: string) => unwrapAction(deleteDividend(id)),
   });
   return {
     create,

@@ -2,6 +2,9 @@ import { screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 const dialog = vi.hoisted(() => vi.fn());

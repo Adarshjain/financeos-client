@@ -1,17 +1,16 @@
 'use client';
 
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useRef } from 'react';
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 
 import { summarise } from './inbox.helpers';
+import { dismissEpfSuggestion, dismissInboxItem, linkEpfSuggestion, snoozeInboxItem, undoInboxState } from './inboxActions';
 
 /** How snooze, dismiss and undo tell the user what happened. The default is today's Legacy toasts. */
 export interface InboxNotifier {
@@ -69,28 +68,21 @@ function restore(qc: QueryClient, snapshot: Snapshot | undefined) {
 /*
  * Snooze, dismiss and undo on an inbox row. Snooze and dismiss remove the row optimistically and
  * offer "Undo" in the toast, which clears the row's state on the server. Keys contain ':';
- * openapi-fetch percent-encodes path params itself, so the raw key is passed (encoding here too
- * would double-encode it).
+ * the actions pass the raw key because openapi-fetch percent-encodes path params itself.
  */
 export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   const qc = useQueryClient();
-  const router = useRouter();
-  // One router refresh after the last overlapping action settles, and only if one of them succeeded:
-  // an earlier refresh could resurrect a row another in-flight action has optimistically hidden.
-  const refreshDue = useRef(false);
-  const settle = (_data: unknown, error: unknown) => {
-    if (!error) refreshDue.current = true;
-    if (qc.isMutating({ mutationKey: INBOX_ACTION_KEY }) <= 1 && refreshDue.current) {
-      refreshDue.current = false;
-      router.refresh();
-    }
+  // The list and the badge counts are query-backed (server-prefetched into the same keys), so a refetch is the refresh.
+  // Only after the last overlapping action settles (the settling one still counts as mutating): an earlier refetch
+  // could land while another action is in flight and bring back the row it has optimistically hidden.
+  const settle = () => {
+    if (qc.isMutating({ mutationKey: INBOX_ACTION_KEY }) > 1) return undefined;
     return qc.invalidateQueries({ queryKey: keys.inbox.all });
   };
 
   const undo = useMutation({
     mutationKey: INBOX_ACTION_KEY,
-    mutationFn: (key: string) =>
-      api.DELETE('/api/v1/inbox/{key}/state', { params: { path: { key } } }).then(() => undefined),
+    mutationFn: (key: string) => unwrapAction(undoInboxState(key)),
     onSuccess: () => notifier.restored(),
     onError: (e) => notifier.undoFailed(e),
     onSettled: settle,
@@ -100,10 +92,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
 
   const snooze = useMutation({
     mutationKey: INBOX_ACTION_KEY,
-    mutationFn: ({ key, until }: { key: string; until: string }) =>
-      api
-        .POST('/api/v1/inbox/{key}/snooze', { params: { path: { key } }, body: { until } })
-        .then(() => undefined),
+    mutationFn: ({ key, until }: { key: string; until: string }) => unwrapAction(snoozeInboxItem(key, until)),
     onMutate: ({ key }) => hideRow(qc, key),
     onSuccess: (_data, { key, until }) => notifier.snoozed(until, undoFor(key)),
     onError: (e, _vars, snapshot) => {
@@ -115,8 +104,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
 
   const dismiss = useMutation({
     mutationKey: INBOX_ACTION_KEY,
-    mutationFn: (key: string) =>
-      api.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key } } }).then(() => undefined),
+    mutationFn: (key: string) => unwrapAction(dismissInboxItem(key)),
     onMutate: (key) => hideRow(qc, key),
     onSuccess: (_data, key) => notifier.dismissed(undoFor(key)),
     onError: (e, _key, snapshot) => {
@@ -131,11 +119,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
     mutationFn: async (item: InboxItemResponse) => {
       const { epfEntryId, transactionId } = item.refs;
       if (!epfEntryId || !transactionId) throw new Error('This suggestion has no withdrawal or credit');
-      const res = await api.PUT('/api/v1/epf/entries/{id}/transaction', {
-        params: { path: { id: epfEntryId } },
-        body: { transactionId, recordTds: false },
-      });
-      if (res.error) throw res.error;
+      await unwrapAction(linkEpfSuggestion(epfEntryId, transactionId));
     },
     onMutate: (item) => hideRow(qc, item.key),
     onSuccess: () => {
@@ -153,17 +137,8 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
   // "Not this one": the server stops suggesting this credit, then the row is dismissed like any other.
   const epfDismiss = useMutation({
     mutationKey: INBOX_ACTION_KEY,
-    mutationFn: async (item: InboxItemResponse) => {
-      const { epfEntryId, transactionId } = item.refs;
-      if (epfEntryId && transactionId) {
-        const res = await api.POST('/api/v1/epf/entries/{id}/suggestion/dismiss', {
-          params: { path: { id: epfEntryId } },
-          body: { transactionId },
-        });
-        if (res.error) throw res.error;
-      }
-      await api.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key: item.key } } });
-    },
+    mutationFn: (item: InboxItemResponse) =>
+      unwrapAction(dismissEpfSuggestion(item.key, item.refs.epfEntryId, item.refs.transactionId)),
     onMutate: (item) => hideRow(qc, item.key),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.epf.all });

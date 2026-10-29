@@ -4,11 +4,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { Account } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
-import { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
+
+import { loadAccountStatements, loadCardCycleSummary, loadStatementDetail } from '../actions';
 
 export function useStatementsDialog(account: Account) {
   const qc = useQueryClient();
@@ -19,34 +20,19 @@ export function useStatementsDialog(account: Account) {
 
   const statementsQuery = useQuery({
     queryKey: keys.statements.byAccount(account.id),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/accounts/{accountId}/statements', {
-        params: { path: { accountId: account.id } },
-      });
-      return (data ?? []) as StatementSummary[];
-    },
+    queryFn: () => unwrapAction(loadAccountStatements(account.id)),
     enabled: open,
   });
 
   const cardSummaryQuery = useQuery({
     queryKey: keys.accounts.cycleSummary(account.id),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/accounts/{id}/card-summary', {
-        params: { path: { id: account.id } },
-      });
-      return (data ?? null) as CardCycleSummary | null;
-    },
+    queryFn: () => unwrapAction(loadCardCycleSummary(account.id)),
     enabled: open && isCard,
   });
 
   const detailQuery = useQuery({
     queryKey: keys.statements.detail(selectedStatementId ?? ''),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/statements/{statementId}', {
-        params: { path: { statementId: selectedStatementId as string } },
-      });
-      return data as StatementDetail;
-    },
+    queryFn: () => unwrapAction(loadStatementDetail(selectedStatementId as string)),
     enabled: Boolean(selectedStatementId),
   });
 

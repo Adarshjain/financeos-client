@@ -1,4 +1,4 @@
-import { ApiError } from '@/lib/api/client';
+import { isNotFound } from '../badRequest';
 
 /** Shown when an edit or delete answers 404: the action was already deleted, or isn't the caller's. */
 export const CORPORATE_ACTION_GONE_MESSAGE =
@@ -9,5 +9,5 @@ export const CORPORATE_ACTION_GONE_MESSAGE =
  * that belongs to someone else answers 404. Callers then refresh their list instead of failing hard.
  */
 export function isCorporateActionGone(err: unknown): boolean {
-  return err instanceof ApiError && err.status === 404;
+  return isNotFound(err);
 }

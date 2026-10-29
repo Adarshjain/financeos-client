@@ -3,13 +3,13 @@ import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { createTestQueryClient } from '@/test/renderWithQuery';
 
 import { emitJobStarted } from '../jobsBus';
 import { useJobsListPolling } from '../useJobsListPolling';
 
-vi.mock('@/lib/api/client', () => ({ api: { GET: vi.fn() } }));
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn() } }));
 
 const runningJob = { id: 'job-1', type: 'STATEMENT_INGEST', status: 'RUNNING', createdAt: '2026-10-04T10:00:00Z' };
 

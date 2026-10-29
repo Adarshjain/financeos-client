@@ -1,66 +1,57 @@
-import { api } from '@/lib/api/client';
-import type { Schemas } from '@/lib/api/types';
+import { unwrapAction } from '@/lib/actionResult';
 import type {
   CreateTransactionLinkRequest,
   Transaction,
   TransactionLinkResponse,
 } from '@/lib/transaction.types';
 
-/** GET /transactions/{id}: one transaction, for the detail of a transaction that is not on the open page. */
-export async function fetchTransaction(id: string): Promise<Transaction> {
-  const { data } = await api.GET('/api/v1/transactions/{id}', { params: { path: { id } } });
-  return data as unknown as Transaction;
-}
+import {
+  addTransactionLink,
+  attachDividendTransaction,
+  attachEpfWithdrawalTransaction,
+  detachDividendTransaction,
+  detachEpfWithdrawalTransaction,
+  loadTransaction,
+  loadTransactionLinks,
+  removeLoanPayment,
+  removeTransaction,
+  removeTransactionLink,
+} from './detailActions';
 
-/** DELETE /transactions/{id}. */
-export function deleteTransaction(id: string) {
-  return api.DELETE('/api/v1/transactions/{id}', { params: { path: { id } } });
-}
+/*
+ * The transaction detail's reads and writes, as plain promise functions over the server actions: a failure
+ * throws an ActionError carrying the server's message. Callers (also Legacy's) keep these names and signatures.
+ */
 
-/** GET /transaction-links?transactionId=: every link this transaction is in. */
-export async function fetchTransactionLinks(transactionId: string): Promise<TransactionLinkResponse[]> {
-  const { data } = await api.GET('/api/v1/transaction-links', { params: { query: { transactionId } } });
-  return (data ?? []) as TransactionLinkResponse[];
-}
+/** One transaction, for the detail of a transaction that is not on the open page. */
+export const fetchTransaction = (id: string): Promise<Transaction> => unwrapAction(loadTransaction(id));
 
-/** POST /transaction-links. */
-export async function createTransactionLink(body: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> {
-  const { data } = await api.POST('/api/v1/transaction-links', { body: body as Schemas['CreateTransactionLinkRequest'] });
-  return data as unknown as TransactionLinkResponse;
-}
+export const deleteTransaction = (id: string): Promise<void> => unwrapAction(removeTransaction(id));
 
-/** DELETE /transaction-links/{id}. */
-export function deleteTransactionLink(linkId: string) {
-  return api.DELETE('/api/v1/transaction-links/{id}', { params: { path: { id: linkId } } });
-}
+/** Every link this transaction is in. */
+export const fetchTransactionLinks = (transactionId: string): Promise<TransactionLinkResponse[]> =>
+  unwrapAction(loadTransactionLinks(transactionId));
 
-/** DELETE /loans/{id}/payments/{paymentId}: removes the settlement, so the installment is unpaid again. */
-export function deleteLoanPayment(loanId: string, paymentId: string) {
-  return api.DELETE('/api/v1/loans/{id}/payments/{paymentId}', { params: { path: { id: loanId, paymentId } } });
-}
+export const createTransactionLink = (body: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> =>
+  unwrapAction(addTransactionLink(body));
 
-/** DELETE /investments/dividends/{id}/transaction: detaches the credit from the dividend (idempotent). */
-export function unlinkDividendTransaction(dividendId: string) {
-  return api.DELETE('/api/v1/investments/dividends/{id}/transaction', { params: { path: { id: dividendId } } });
-}
+export const deleteTransactionLink = (linkId: string): Promise<void> => unwrapAction(removeTransactionLink(linkId));
 
-/** PUT /investments/dividends/{id}/transaction: attaches a credit to the dividend. */
-export function linkDividendTransaction(dividendId: string, transactionId: string, updateTds = false) {
-  return api.PUT('/api/v1/investments/dividends/{id}/transaction', {
-    params: { path: { id: dividendId } },
-    body: { transactionId, updateTds },
-  });
-}
+/** Removes the settlement, so the installment is unpaid again. */
+export const deleteLoanPayment = (loanId: string, paymentId: string): Promise<void> =>
+  unwrapAction(removeLoanPayment(loanId, paymentId));
 
-/** DELETE /epf/entries/{id}/transaction: detaches the credit from the EPF withdrawal. */
-export function unlinkEpfWithdrawalTransaction(entryId: string) {
-  return api.DELETE('/api/v1/epf/entries/{id}/transaction', { params: { path: { id: entryId } } });
-}
+/** Detaches the credit from the dividend (idempotent). */
+export const unlinkDividendTransaction = (dividendId: string): Promise<void> => unwrapAction(detachDividendTransaction(dividendId));
 
-/** PUT /epf/entries/{id}/transaction: attaches a credit to the EPF withdrawal (TDS is not recorded again). */
-export function linkEpfWithdrawalTransaction(entryId: string, transactionId: string) {
-  return api.PUT('/api/v1/epf/entries/{id}/transaction', {
-    params: { path: { id: entryId } },
-    body: { transactionId, recordTds: false },
-  });
-}
+/** Attaches a credit to the dividend. */
+export const linkDividendTransaction = (dividendId: string, transactionId: string, updateTds = false): Promise<void> =>
+  unwrapAction(attachDividendTransaction(dividendId, transactionId, updateTds));
+
+/** Detaches the credit from the EPF withdrawal. */
+export const unlinkEpfWithdrawalTransaction = (entryId: string): Promise<void> =>
+  unwrapAction(detachEpfWithdrawalTransaction(entryId));
+
+/** Attaches a credit to the EPF withdrawal (TDS is not recorded again). */
+export const linkEpfWithdrawalTransaction = (entryId: string, transactionId: string): Promise<void> =>
+  unwrapAction(attachEpfWithdrawalTransaction(entryId, transactionId));

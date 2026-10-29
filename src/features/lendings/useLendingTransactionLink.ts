@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
+
+import { linkLendingEntryTransaction, unlinkLendingEntryTransaction } from './actions';
 
 interface LinkOptions {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
@@ -25,9 +27,7 @@ export function useLinkLendingTransaction(options?: LinkOptions) {
   const refresh = useRefreshLendingsAndTransactions();
   return useMutation({
     mutationFn: ({ id, transactionId }: { id: string; transactionId: string }) =>
-      api
-        .PUT('/api/v1/lendings/{id}/transaction', { params: { path: { id } }, body: { transactionId } })
-        .then((r) => r.data!),
+      unwrapAction(linkLendingEntryTransaction(id, transactionId)),
     onSuccess: refresh,
     onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't link transaction. Try again.")),
   });
@@ -37,7 +37,7 @@ export function useLinkLendingTransaction(options?: LinkOptions) {
 export function useUnlinkLendingTransaction(options?: LinkOptions) {
   const refresh = useRefreshLendingsAndTransactions();
   return useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/lendings/{id}/transaction', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(unlinkLendingEntryTransaction(id)),
     onSuccess: refresh,
     onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't unlink transaction. Try again.")),
   });

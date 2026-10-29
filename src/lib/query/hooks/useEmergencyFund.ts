@@ -2,8 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
+import { loadEmergencyFund } from '@/lib/query/actions/insights';
 import { keys } from '@/lib/query/keys';
 
 /** One of the last six full months: `month` is YYYY-MM; `beforeHistory` months (before the first liquid-account transaction) are left out of the median. */
@@ -20,9 +21,6 @@ export type EmergencyFund = components['schemas']['EmergencyFundResponse'];
 export function useEmergencyFund() {
   return useQuery<EmergencyFund>({
     queryKey: keys.insights.emergencyFund(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/insights/emergency-fund');
-      return data as EmergencyFund;
-    },
+    queryFn: () => unwrapAction(loadEmergencyFund()),
   });
 }

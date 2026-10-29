@@ -2,8 +2,10 @@
 
 import { useMutation } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { RewardRecommendationRequest } from '@/lib/rewards.types';
+
+import { recommendRewardCards } from '../actions';
 
 /**
  * The card-picker simulation is read-only server-side (it computes and returns
@@ -13,7 +15,6 @@ import type { RewardRecommendationRequest } from '@/lib/rewards.types';
  */
 export function useRecommendCards() {
   return useMutation({
-    mutationFn: (body: RewardRecommendationRequest) =>
-      api.POST('/api/v1/reward-recommendations', { body }).then((r) => r.data!),
+    mutationFn: (body: RewardRecommendationRequest) => unwrapAction(recommendRewardCards(body)),
   });
 }

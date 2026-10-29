@@ -2,12 +2,20 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { Account, AccountRequest, CloseAccountRequest } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
-import { Schemas } from '@/lib/api/types';
+import { AccountRequest, CloseAccountRequest } from '@/lib/account.types';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
-import { GmailCleanupPreview, GmailCleanupResult } from '@/lib/types';
+
+import {
+  closeAccount,
+  createAccountWithIdentifiers,
+  deleteAccount,
+  executeGmailCleanup,
+  previewGmailCleanup,
+  reopenAccount,
+  updateAccount,
+} from '../actions';
 
 /**
  * Every account-lifecycle mutation the account form (and its danger-zone /
@@ -24,64 +32,41 @@ export function useAccountFormMutations() {
   };
 
   const createAccountMutation = useMutation({
-    // Creates the account, then saves any identifier aliases collected in the
-    // create form (the account id doesn't exist until now). Alias failures do
-    // not roll the account back — they're returned so the form can tell the
-    // user which values to re-add from the edit form.
-    mutationFn: async ({ body, identifiers = [] }: { body: AccountRequest; identifiers?: string[] }) => {
-      const account = await api
-        .POST('/api/v1/accounts', { body: body as Schemas['BankAccountRequest'] })
-        .then((r) => r.data as Account);
-      const failedIdentifiers: string[] = [];
-      for (const value of identifiers) {
-        try {
-          await api.POST('/api/v1/accounts/{id}/identifiers', { params: { path: { id: account.id } }, body: { value } });
-        } catch {
-          failedIdentifiers.push(value);
-        }
-      }
-      return { account, failedIdentifiers };
-    },
+    // Creates the account, then saves any identifier aliases collected in the create form (alias failures
+    // come back as `failedIdentifiers`; see `createAccountWithIdentifiers`).
+    mutationFn: ({ body, identifiers = [] }: { body: AccountRequest; identifiers?: string[] }) =>
+      unwrapAction(createAccountWithIdentifiers(body, identifiers)),
     onSuccess: invalidateAccounts,
   });
 
   const updateAccountMutation = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: AccountRequest }) =>
-      api
-        .PUT('/api/v1/accounts/{id}', { params: { path: { id } }, body: body as Schemas['BankAccountRequest'] })
-        .then((r) => r.data as Account),
+    mutationFn: ({ id, body }: { id: string; body: AccountRequest }) => unwrapAction(updateAccount(id, body)),
     onSuccess: invalidateAccounts,
   });
 
   const closeAccountMutation = useMutation({
-    mutationFn: ({ id, body }: { id: string; body?: CloseAccountRequest }) =>
-      api.POST('/api/v1/accounts/{id}/close', { params: { path: { id } }, body }).then((r) => r.data as Account),
+    mutationFn: ({ id, body }: { id: string; body?: CloseAccountRequest }) => unwrapAction(closeAccount(id, body)),
     onSuccess: invalidateAccountsAndTransactions,
   });
 
   const reopenAccountMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.POST('/api/v1/accounts/{id}/reopen', { params: { path: { id } } }).then((r) => r.data as Account),
+    mutationFn: (id: string) => unwrapAction(reopenAccount(id)),
     onSuccess: invalidateAccountsAndTransactions,
   });
 
   const deleteAccountMutation = useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/accounts/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteAccount(id)),
     onSuccess: invalidateAccounts,
   });
 
   const previewGmailCleanupMutation = useMutation({
     mutationFn: ({ accountId, before }: { accountId: string; before: string }) =>
-      api
-        .GET('/api/v1/accounts/{id}/gmail-cleanup-preview', { params: { path: { id: accountId }, query: { before } } })
-        .then((r) => r.data as GmailCleanupPreview),
+      unwrapAction(previewGmailCleanup(accountId, before)),
   });
 
   const executeGmailCleanupMutation = useMutation({
     mutationFn: ({ accountId, before }: { accountId: string; before: string }) =>
-      api
-        .POST('/api/v1/accounts/{id}/gmail-cleanup', { params: { path: { id: accountId }, query: { before } } })
-        .then((r) => r.data as GmailCleanupResult),
+      unwrapAction(executeGmailCleanup(accountId, before)),
     onSuccess: invalidateAccountsAndTransactions,
   });
 

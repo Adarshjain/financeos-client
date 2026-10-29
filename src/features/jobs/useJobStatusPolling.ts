@@ -3,7 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
-import { api, ApiError } from '@/lib/api/client';
+import { loadJob } from '@/features/jobs/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobStatus } from '@/lib/types';
 
@@ -34,9 +35,7 @@ export function useJobStatusPolling<T = unknown>(
   const query = useQuery({
     queryKey: keys.jobs.byId(jobId ?? ''),
     queryFn: async () => {
-      const { data } = await api.GET('/api/v1/jobs/{id}', {
-        params: { path: { id: jobId as string } },
-      });
+      const data = await unwrapAction(loadJob(jobId as string));
       // The generated JobResponse's `result` is `unknown`; narrowing it to
       // this hook's caller-supplied `T` can't be done structurally.
       return data as JobResponse<T>;
@@ -56,7 +55,7 @@ export function useJobStatusPolling<T = unknown>(
   }, [jobId, job]);
 
   const isPolling = Boolean(jobId) && !(job && TERMINAL.has(job.status));
-  const error = query.error instanceof ApiError ? query.error.response.message : query.error instanceof Error ? query.error.message : null;
+  const error = query.error instanceof Error ? query.error.message : null;
 
   return { job, isPolling, error };
 }

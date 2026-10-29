@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
+
+import { deleteLendingEntry, recordCounterpartySettlement } from './actions';
 
 interface Options {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
@@ -26,12 +28,7 @@ export function useRecordSettlement(options?: Options) {
   const refresh = useRefresh();
   return useMutation({
     mutationFn: ({ counterpartyId, transactionId }: { counterpartyId: string; transactionId: string }) =>
-      api
-        .POST('/api/v1/counterparties/{id}/settlements', {
-          params: { path: { id: counterpartyId } },
-          body: { transactionId },
-        })
-        .then((r) => r.data!),
+      unwrapAction(recordCounterpartySettlement(counterpartyId, transactionId)),
     onSuccess: refresh,
     onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't record settlement. Try again.")),
   });
@@ -41,7 +38,7 @@ export function useRecordSettlement(options?: Options) {
 export function useDeleteLending(options?: Options) {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/lendings/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteLendingEntry(id)),
     onSuccess: refresh,
     onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't delete lending. Try again.")),
   });

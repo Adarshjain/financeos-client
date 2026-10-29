@@ -3,6 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn() } };
@@ -12,7 +15,7 @@ vi.mock('@/lib/toastError', () => ({ toastError: vi.fn() }));
 
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { createTestQueryClient } from '@/test/renderWithQuery';
@@ -71,12 +74,12 @@ describe('useDuplicateReport', () => {
 
   it('surfaces a create error without invalidating', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: src } as never);
-    vi.mocked(api.POST).mockResolvedValue({ error: { message: 'bad' } } as never);
+    vi.mocked(api.POST).mockRejectedValue(new ApiError(400, { code: 'X', message: 'bad' }));
     const { result, spy } = setup();
     await act(async () => {
       await result.current.mutateAsync('r1').catch(() => {});
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith({ message: 'bad' }, 'Failed to duplicate report'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.objectContaining({ message: 'bad' }), 'Failed to duplicate report'));
     expect(spy).not.toHaveBeenCalled();
   });
 });

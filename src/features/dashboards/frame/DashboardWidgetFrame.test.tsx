@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => ({ push, refresh: vi.fn() }),
   usePathname: () => '/dashboards/d1',
   useSearchParams: () => new URLSearchParams(),
@@ -13,6 +14,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 const showToast = vi.hoisted(() => vi.fn());
 vi.mock('@/components/ds/Toast/Toast', async () => ({ ...(await vi.importActual<object>('@/components/ds/Toast/Toast')), showToast }));
 

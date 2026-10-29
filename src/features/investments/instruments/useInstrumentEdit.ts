@@ -2,9 +2,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import type { AssetClass, CreateInstrumentRequest, Instrument } from '@/lib/types';
+
+import { resetInstrumentOverrides, updateInstrument } from './instrumentActions';
 
 export interface UpdateInstrumentVars {
   body: CreateInstrumentRequest;
@@ -34,24 +36,8 @@ export interface UpdateInstrumentResult {
 export function useUpdateInstrument(instrumentId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ body, assetClass }: UpdateInstrumentVars): Promise<UpdateInstrumentResult> => {
-      const put = await api.PUT('/api/v1/instruments/{id}', {
-        params: { path: { id: instrumentId } },
-        body,
-      });
-      let saved = put.data! as Instrument;
-      // Only the PUT answer carries the merge outcome; a follow-up PATCH answer does not.
-      const merged = Boolean(saved.mergedHoldings);
-      const mergeNote = saved.mergeNote ?? null;
-      if (assetClass !== undefined) {
-        const patch = await api.PATCH('/api/v1/instruments/{id}', {
-          params: { path: { id: saved.id } },
-          body: { assetClass },
-        });
-        saved = patch.data! as Instrument;
-      }
-      return { instrument: saved, moved: saved.id !== instrumentId, merged, mergeNote };
-    },
+    mutationFn: ({ body, assetClass }: UpdateInstrumentVars): Promise<UpdateInstrumentResult> =>
+      unwrapAction(updateInstrument(instrumentId, body, assetClass)),
     onSettled: () => invalidateInvestmentQueries(qc),
   });
 }
@@ -60,8 +46,7 @@ export function useUpdateInstrument(instrumentId: string) {
 export function useResetInstrumentOverrides() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) =>
-      (await api.DELETE('/api/v1/instruments/{id}/overrides', { params: { path: { id } } })).data! as Instrument,
+    mutationFn: (id: string): Promise<Instrument> => unwrapAction(resetInstrumentOverrides(id)),
     onSettled: () => invalidateInvestmentQueries(qc),
   });
 }

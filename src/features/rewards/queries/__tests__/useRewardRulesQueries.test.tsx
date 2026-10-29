@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import * as actions from '@/features/rewards/actions';
 import type { RewardRule } from '@/lib/rewards.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -13,10 +13,16 @@ import {
   useUpdateRewardRule,
 } from '../useRewardRulesQueries';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/features/rewards/actions', () => ({
+  loadRewardRules: vi.fn(),
+  createRewardRule: vi.fn(),
+  updateRewardRule: vi.fn(),
+  deleteRewardRule: vi.fn(),
+  reorderRewardRules: vi.fn(),
+}));
+
+const mocked = vi.mocked(actions);
+const ok = (data: unknown) => ({ success: true, data }) as never;
 
 const rule: RewardRule = {
   id: 'rule-1',
@@ -69,39 +75,33 @@ describe('useRewardRulesQueries', () => {
   });
 
   it('fetches rules scoped to the account', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
+    mocked.loadRewardRules.mockResolvedValue(ok([rule]));
 
     renderWithQuery(<Harness accountId="acc-1" />);
 
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
-    expect(api.GET).toHaveBeenCalledWith(
-      '/api/v1/reward-rules',
-      expect.objectContaining({ params: { query: { accountId: 'acc-1' } } })
-    );
+    expect(mocked.loadRewardRules).toHaveBeenCalledWith('acc-1');
   });
 
   it('creates a rule and refetches the list on success', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: [] });
-    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { ...rule, id: 'rule-new' } });
+    mocked.loadRewardRules.mockResolvedValueOnce(ok([]));
+    mocked.createRewardRule.mockResolvedValue(ok({ ...rule, id: 'rule-new' }));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('0'));
 
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
+    mocked.loadRewardRules.mockResolvedValue(ok([rule]));
     fireEvent.click(screen.getByText('create'));
 
     await waitFor(() => {
-      expect(api.POST).toHaveBeenCalledWith(
-        '/api/v1/reward-rules',
-        expect.objectContaining({ body: expect.objectContaining({ name: 'New rule' }) })
-      );
+      expect(mocked.createRewardRule).toHaveBeenCalledWith(expect.objectContaining({ name: 'New rule' }));
     });
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
   });
 
-  it('updates a rule by id, allowing an explicit null-clearing field through the request-body mapping', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
-    (api.PUT as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { ...rule, activeTo: '2026-06-01' } });
+  it('updates a rule by id', async () => {
+    mocked.loadRewardRules.mockResolvedValue(ok([rule]));
+    mocked.updateRewardRule.mockResolvedValue(ok({ ...rule, activeTo: '2026-06-01' }));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
@@ -109,19 +109,13 @@ describe('useRewardRulesQueries', () => {
     fireEvent.click(screen.getByText('update'));
 
     await waitFor(() => {
-      expect(api.PUT).toHaveBeenCalledWith(
-        '/api/v1/reward-rules/{id}',
-        expect.objectContaining({
-          params: { path: { id: 'rule-1' } },
-          body: expect.objectContaining({ activeTo: '2026-06-01' }),
-        })
-      );
+      expect(mocked.updateRewardRule).toHaveBeenCalledWith('rule-1', expect.objectContaining({ activeTo: '2026-06-01' }));
     });
   });
 
   it('deletes a rule by id', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
-    (api.DELETE as ReturnType<typeof vi.fn>).mockResolvedValue({ data: undefined });
+    mocked.loadRewardRules.mockResolvedValue(ok([rule]));
+    mocked.deleteRewardRule.mockResolvedValue(ok(undefined));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
@@ -129,16 +123,13 @@ describe('useRewardRulesQueries', () => {
     fireEvent.click(screen.getByText('delete'));
 
     await waitFor(() => {
-      expect(api.DELETE).toHaveBeenCalledWith(
-        '/api/v1/reward-rules/{id}',
-        expect.objectContaining({ params: { path: { id: 'rule-1' } } })
-      );
+      expect(mocked.deleteRewardRule).toHaveBeenCalledWith('rule-1');
     });
   });
 
-  it('reorders rules via the dedicated reorder endpoint', async () => {
-    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
-    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [rule] });
+  it('reorders rules through the reorder action', async () => {
+    mocked.loadRewardRules.mockResolvedValue(ok([rule]));
+    mocked.reorderRewardRules.mockResolvedValue(ok([rule]));
 
     renderWithQuery(<Harness accountId="acc-1" />);
     await waitFor(() => expect(screen.getByTestId('count')).toHaveTextContent('1'));
@@ -146,10 +137,7 @@ describe('useRewardRulesQueries', () => {
     fireEvent.click(screen.getByText('reorder'));
 
     await waitFor(() => {
-      expect(api.POST).toHaveBeenCalledWith(
-        '/api/v1/reward-rules/reorder',
-        expect.objectContaining({ body: { accountId: 'acc-1', orderedIds: ['rule-2', 'rule-1'] } })
-      );
+      expect(mocked.reorderRewardRules).toHaveBeenCalledWith({ accountId: 'acc-1', orderedIds: ['rule-2', 'rule-1'] });
     });
   });
 });

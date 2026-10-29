@@ -3,15 +3,12 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { type EpfWithdrawalOption, useEpfWithdrawalLink } from './useEpfWithdrawalLink';

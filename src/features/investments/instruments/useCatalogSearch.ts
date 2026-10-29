@@ -2,16 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
-import type {
-  Instrument,
-  InstrumentCandidate,
-  InstrumentType,
-  ResolveInstrumentRequest,
-} from '@/lib/types';
+import type { InstrumentType, ResolveInstrumentRequest } from '@/lib/types';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
+
+import { resolveInstrument, searchCatalog } from './instrumentActions';
 
 /** Shared debounced AMFI/Yahoo catalog search, used by InstrumentSearchField and InstrumentTypeahead. */
 export function useCatalogSearch(rawQuery: string, type?: InstrumentType) {
@@ -21,12 +18,7 @@ export function useCatalogSearch(rawQuery: string, type?: InstrumentType) {
 
   const { data, isFetching } = useQuery({
     queryKey: keys.investments.catalogSearch(debouncedQuery, type),
-    queryFn: async () =>
-      (
-        await api.GET('/api/v1/instruments/catalog-search', {
-          params: { query: { q: debouncedQuery, type } },
-        })
-      ).data! as InstrumentCandidate[],
+    queryFn: () => unwrapAction(searchCatalog(debouncedQuery, type)),
     enabled,
   });
 
@@ -41,10 +33,7 @@ export function useCatalogSearch(rawQuery: string, type?: InstrumentType) {
 export function useResolveInstrumentMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (req: ResolveInstrumentRequest) =>
-      api
-        .POST('/api/v1/instruments/resolve', { body: req })
-        .then((r) => r.data! as Instrument),
+    mutationFn: (req: ResolveInstrumentRequest) => unwrapAction(resolveInstrument(req)),
     onSuccess: () => {
       invalidateInvestmentQueries(qc);
     },

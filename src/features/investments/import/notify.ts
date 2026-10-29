@@ -1,12 +1,13 @@
 'use client';
 
 import { showToast } from '@/components/ds';
-import { ApiError } from '@/lib/api/client';
+import { ActionError } from '@/lib/actionResult';
 
 import type { ImportWizardNotify } from './useImportWizard';
 
 function detailOf(error: unknown): string {
-  if (error instanceof ApiError) return error.response.message || error.message || '';
+  // An unexpected failure on the server comes back as the action's own fallback text, which the toast already says.
+  if (error instanceof ActionError && error.code === 'UNKNOWN_ERROR') return '';
   return error instanceof Error ? error.message : '';
 }
 

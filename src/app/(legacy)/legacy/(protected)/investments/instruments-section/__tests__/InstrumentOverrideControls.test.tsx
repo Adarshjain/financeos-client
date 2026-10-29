@@ -8,6 +8,8 @@ vi.mock('@/lib/api/client', async () => {
     api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() },
   };
 });
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 
 import { toast } from 'sonner';

@@ -7,6 +7,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 vi.mock('sonner', () => ({
   toast: {
@@ -121,11 +122,7 @@ describe('TimelineList', () => {
   });
 
   it('shows error toast when Copy raw request fails', async () => {
-    vi.mocked(api.GET).mockResolvedValue({
-      data: undefined,
-      error: new Error('Network error'),
-      response: new Response(),
-    } as never);
+    vi.mocked(api.GET).mockRejectedValue(new Error('Network error'));
 
     render(<TimelineList timeline={mockTimeline} currentRef="E2EERR01" />);
 

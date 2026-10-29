@@ -30,6 +30,7 @@ describe('apiResult and error helpers (CD-14)', () => {
         timestamp: '2026-07-25T00:00:00Z',
         requestId: null,
       },
+      status: 404,
     });
   });
 

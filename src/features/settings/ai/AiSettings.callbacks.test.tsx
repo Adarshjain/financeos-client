@@ -14,10 +14,8 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }));
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(async () => ({ data: [] })), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(async () => ({ data: [] })), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 
 const seen: Array<{ onAdd: unknown; onTest: unknown; onMove: unknown; onDelete: unknown }> = [];
 vi.mock('./YourKeysCard', () => ({

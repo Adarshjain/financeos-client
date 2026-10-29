@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
-import { ApiError } from '@/lib/api/client';
 import { toastError } from '@/lib/toastError';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { toCalendarDate } from '@/lib/utils';

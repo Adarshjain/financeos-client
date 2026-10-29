@@ -3,12 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+// The hooks read through server actions, which call the server API client.
+vi.mock('@/lib/api/server', () => ({
+  serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() },
+}));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import type { InboxResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 

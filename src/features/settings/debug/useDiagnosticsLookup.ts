@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { lookupDiagnostics } from '@/features/settings/debug/diagnosticsActions';
+import { unwrapAction } from '@/lib/actionResult';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 import { isValidRef } from '@/lib/diagnostics/ref';
 import { keys } from '@/lib/query/keys';
@@ -14,20 +15,7 @@ export function useDiagnosticsLookup(
 
   return useQuery<DiagnosticsLookupResponse>({
     queryKey: keys.diagnostics.lookup(ref, type),
-    queryFn: async () => {
-      const { data, error } = await api.GET('/api/v1/diagnostics/lookup', {
-        params: {
-          query: {
-            ref,
-            type: type || 'auto',
-          },
-        },
-      });
-      if (error) {
-        throw error;
-      }
-      return data as DiagnosticsLookupResponse;
-    },
+    queryFn: () => unwrapAction(lookupDiagnostics(ref, type)),
     enabled,
     retry: 0,
     staleTime: 60_000,

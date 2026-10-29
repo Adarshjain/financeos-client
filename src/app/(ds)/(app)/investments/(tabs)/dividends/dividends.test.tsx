@@ -13,7 +13,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   redirect,
   useRouter: () => router,
   usePathname: () => '/investments/dividends',
@@ -50,7 +50,7 @@ const actions = vi.hoisted(() => ({
   exportDividendsCsv: vi.fn(),
   loadDividendFormOptions: vi.fn(),
 }));
-vi.mock('@/features/investments/dividends/dividendsActions', () => actions);
+vi.mock('@/features/investments/dividends/dividendsActions', async (orig) => ({ ...(await orig<typeof import('@/features/investments/dividends/dividendsActions')>()), ...actions }));
 
 const download = vi.hoisted(() => ({ downloadCsv: vi.fn() }));
 vi.mock('@/lib/downloadCsv', () => download);
@@ -87,6 +87,8 @@ vi.mock('@/lib/api/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api/client')>()),
   api: http,
 }));
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div data-testid="picker" /> }));
 
 const list = (content = [dividend(), awaiting()], extra: Record<string, unknown> = {}) => ({

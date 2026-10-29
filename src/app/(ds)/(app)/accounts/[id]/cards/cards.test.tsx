@@ -17,6 +17,7 @@ const refresh = vi.fn();
 const replace = vi.fn();
 let search = '';
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   notFound: () => notFound(),
   usePathname: () => '/accounts/c1/cards',
   useRouter: () => ({ push: vi.fn(), refresh, replace }),
@@ -63,6 +64,7 @@ vi.mock('@/lib/api/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api/client')>()),
   api: { DELETE: (...args: unknown[]) => apiDelete(...args), GET: vi.fn() },
 }));
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),

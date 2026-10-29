@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { Schemas } from '@/lib/api/types';
 import { FilterClause } from '@/lib/reports.types';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/useDebouncedValue';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
+
+import { searchPickerTransactions } from './actions';
 
 /** Search-result shape: the full generated response, so `obligationRefs` and
  *  `links` (needed for client-side filtering) are available — the hand-rolled
@@ -121,10 +123,7 @@ export function useTransactionPicker({
           });
         }
 
-        const { data } = await api.POST('/api/v1/transactions/search', {
-          body: { filters, search: query.trim() || null },
-          params: { query: { page: pageNo, size: PAGE_SIZE } },
-        });
+        const data = await unwrapAction(searchPickerTransactions(filters, query.trim() || null, pageNo, PAGE_SIZE));
         if (requestId !== requestIdRef.current || key !== currentKeyRef.current) return;
         const content = data?.content ?? [];
         setResults(content);

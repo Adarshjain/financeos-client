@@ -3,10 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 vi.mock('sonner', async (orig) => ({ ...(await orig<typeof import('sonner')>()), toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),
@@ -64,7 +61,7 @@ vi.mock('../TransactionPickerField', () => ({
   },
 }));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

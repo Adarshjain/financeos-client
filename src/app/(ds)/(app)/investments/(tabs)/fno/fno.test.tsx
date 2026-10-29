@@ -15,7 +15,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   redirect,
   useRouter: () => router,
   usePathname: () => '/investments/fno',
@@ -39,12 +39,14 @@ const shared = vi.hoisted(() => ({ fetchBrokers: vi.fn() }));
 vi.mock('@/features/investments/investmentsServerApi', () => shared);
 
 const exportAction = vi.hoisted(() => vi.fn());
-vi.mock('@/features/investments/fno/fnoActions', () => ({ exportFnoCsv: exportAction }));
+vi.mock('@/features/investments/fno/fnoActions', async (orig) => ({ ...(await orig<typeof import('@/features/investments/fno/fnoActions')>()), exportFnoCsv: exportAction }));
 const download = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/downloadCsv', () => ({ downloadCsv: download }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn(), GET: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 async function renderPage(params: Record<string, string> = {}) {
   const ui = await DsFnoPage({ searchParams: Promise.resolve(params) });

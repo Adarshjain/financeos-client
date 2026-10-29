@@ -2,9 +2,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
-import type { CorporateAction, CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
+import { unwrapAction } from '@/lib/actionResult';
+import type { CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+
+import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActionsActions';
 
 /** Create, update and delete of one instrument's corporate actions; each refreshes every investment query on success. */
 export function useCorporateActionMutations(instrumentId: string | undefined) {
@@ -12,30 +14,16 @@ export function useCorporateActionMutations(instrumentId: string | undefined) {
   const onSuccess = () => invalidateInvestmentQueries(qc);
 
   const createMutation = useMutation({
-    mutationFn: (body: CreateCorporateActionRequest) =>
-      api
-        .POST('/api/v1/instruments/{instrumentId}/corporate-actions', {
-          params: { path: { instrumentId: instrumentId as string } },
-          body,
-        })
-        .then((r) => r.data! as CorporateAction),
+    mutationFn: (body: CreateCorporateActionRequest) => unwrapAction(createCorporateAction(instrumentId as string, body)),
     onSuccess,
   });
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; body: UpdateCorporateActionRequest }) =>
-      api
-        .PUT('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
-          params: { path: { instrumentId: instrumentId as string, id: vars.id } },
-          body: vars.body,
-        })
-        .then((r) => r.data! as CorporateAction),
+      unwrapAction(updateCorporateAction(instrumentId as string, vars.id, vars.body)),
     onSuccess,
   });
   const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
-        params: { path: { instrumentId: instrumentId as string, id } },
-      }),
+    mutationFn: (id: string) => unwrapAction(deleteCorporateAction(instrumentId as string, id)),
     onSuccess,
   });
 

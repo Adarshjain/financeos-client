@@ -2,9 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { AccountIdentifierResponse, CreateAccountIdentifierRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+
+import { addAccountIdentifier, loadAccountIdentifiers, removeAccountIdentifier } from '../actions';
 
 export function useAccountIdentifiers(accountId?: string) {
   const qc = useQueryClient();
@@ -14,10 +16,7 @@ export function useAccountIdentifiers(accountId?: string) {
     queryKey,
     queryFn: async () => {
       if (!accountId) return [];
-      const { data } = await api.GET('/api/v1/accounts/{id}/identifiers', {
-        params: { path: { id: accountId } },
-      });
-      return data ?? [];
+      return unwrapAction(loadAccountIdentifiers(accountId));
     },
     enabled: Boolean(accountId),
   });
@@ -25,11 +24,7 @@ export function useAccountIdentifiers(accountId?: string) {
   const createMutation = useMutation({
     mutationFn: async (body: CreateAccountIdentifierRequest) => {
       if (!accountId) throw new Error('Account ID is required');
-      const { data } = await api.POST('/api/v1/accounts/{id}/identifiers', {
-        params: { path: { id: accountId } },
-        body,
-      });
-      return data;
+      return unwrapAction(addAccountIdentifier(accountId, body));
     },
     onSuccess: () => {
       if (accountId) {
@@ -41,9 +36,7 @@ export function useAccountIdentifiers(accountId?: string) {
   const deleteMutation = useMutation({
     mutationFn: async (identifierId: string) => {
       if (!accountId) throw new Error('Account ID is required');
-      await api.DELETE('/api/v1/accounts/{id}/identifiers/{identifierId}', {
-        params: { path: { id: accountId, identifierId } },
-      });
+      await unwrapAction(removeAccountIdentifier(accountId, identifierId));
     },
     onSuccess: () => {
       if (accountId) {

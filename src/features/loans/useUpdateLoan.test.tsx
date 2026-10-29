@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { keys } from '@/lib/query/keys';
 
-const api = vi.hoisted(() => ({ PUT: vi.fn() }));
-vi.mock('@/lib/api/client', () => ({ api }));
+const actions = vi.hoisted(() => ({ updateLoan: vi.fn() }));
+vi.mock('./actions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 
@@ -22,23 +22,23 @@ function setup(options?: Parameters<typeof useUpdateLoan>[0]) {
 }
 
 beforeEach(() => {
-  api.PUT.mockReset();
+  actions.updateLoan.mockReset();
   toastError.mockReset();
 });
 
 describe('useUpdateLoan', () => {
   it('puts the loan and refreshes every loan query', async () => {
-    api.PUT.mockResolvedValue({ data: { id: 'l1' } });
+    actions.updateLoan.mockResolvedValue({ success: true, data: { id: 'l1' } });
     const { result, invalidate } = setup();
     await act(async () => {
       await result.current.mutateAsync({ id: 'l1', body: { name: 'x' } });
     });
-    expect(api.PUT).toHaveBeenCalledWith('/api/v1/loans/{id}', { params: { path: { id: 'l1' } }, body: { name: 'x' } });
+    expect(actions.updateLoan).toHaveBeenCalledWith('l1', { name: 'x' });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.loans.all });
   });
 
   it('uses the Legacy error toast by default, and lets the caller replace it', async () => {
-    api.PUT.mockRejectedValue(new Error('nope'));
+    actions.updateLoan.mockRejectedValue(new Error('nope'));
     const first = setup();
     await act(async () => {
       await first.result.current.mutateAsync({ id: 'l1', body: {} }).catch(() => undefined);

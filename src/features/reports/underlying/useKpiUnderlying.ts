@@ -1,13 +1,16 @@
 'use client';
 
 // Data access for the "View underlying data" dialog: the KPI's rows for one
-// period (one page, server-sorted) and the CSV of all of them. Every call goes
-// through the browser `api` client; the three source kinds map onto the
-// saved / ad-hoc / built-in endpoints.
+// period (one page, server-sorted) and the CSV of all of them. The page goes
+// through a server action; the CSV is a binary download, so it stays on the
+// browser `api` client. The three source kinds map onto the saved / ad-hoc /
+// built-in endpoints.
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { loadUnderlying } from '@/features/reports/actions';
+import { unwrapAction } from '@/lib/actionResult';
+import { api } from '@/lib/api/client'; // binary CSV download: a server action would double the transfer
 import { keys } from '@/lib/query/keys';
 import type { SortClause } from '@/lib/reports.types';
 
@@ -21,30 +24,8 @@ export interface UnderlyingQuery {
   sort: SortClause | null;
 }
 
-async function fetchUnderlying(source: UnderlyingSource, q: UnderlyingQuery): Promise<KpiUnderlyingResponse> {
-  const query = { period: q.period, page: q.page, size: q.size, sort: sortParam(q.sort) };
-  switch (source.kind) {
-    case 'saved': {
-      const { data } = await api.POST('/api/v1/reports/{id}/underlying', {
-        params: { path: { id: source.reportId }, query },
-      });
-      return data!;
-    }
-    case 'adhoc': {
-      const { data } = await api.POST('/api/v1/reports/underlying', {
-        params: { query },
-        body: { ...source.request, definition: { ...source.request.definition } },
-      });
-      return data!;
-    }
-    case 'builtin': {
-      const { data } = await api.POST('/api/v1/dashboards/builtins/{key}/underlying', {
-        params: { path: { key: source.key }, query },
-        body: { params: source.params },
-      });
-      return data!;
-    }
-  }
+function fetchUnderlying(source: UnderlyingSource, q: UnderlyingQuery): Promise<KpiUnderlyingResponse> {
+  return unwrapAction(loadUnderlying(source, { period: q.period, page: q.page, size: q.size, sort: sortParam(q.sort) }));
 }
 
 /**

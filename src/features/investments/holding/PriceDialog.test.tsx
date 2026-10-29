@@ -9,7 +9,7 @@ import { priceRow } from './holdingModel';
 import { PriceDialog } from './PriceDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
@@ -18,7 +18,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn(), GET: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 const onClose = vi.fn();
 const row = priceRow(manualPrice);

@@ -12,10 +12,11 @@ import type {
   CreateCardRequest,
   ReplaceCardRequest,
 } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
+import { deleteCardPlastic } from '../../actions';
 import type { EditHolderBody } from './cardsForms';
 
 /** Resolves to null on success, or the message to show when the request failed. */
@@ -46,9 +47,7 @@ export function useCardholderActions(accountId: string, isBank: boolean): Cardho
   // The live hook's "delete plastic" closes the card; the server now has a real DELETE.
   const deleteCardMutation = useMutation({
     mutationFn: ({ cardholderId, cardId }: { cardholderId: string; cardId: string }) =>
-      api.DELETE('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}', {
-        params: { path: { accountId, cardholderId, cardId } },
-      }),
+      unwrapAction(deleteCardPlastic(accountId, cardholderId, cardId)),
   });
 
   const run = async (

@@ -5,9 +5,10 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
+import { loadBreakdownSection, loadRowBreakdown } from '@/features/reports/actions';
 import { UNDERLYING_PAGE_SIZE } from '@/features/reports/underlying/underlying.helpers';
 import type { RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';
 import type { SortClause } from '@/lib/reports.types';
@@ -17,12 +18,7 @@ export function useRowBreakdown(datasource: string, rowId: string) {
   const size = UNDERLYING_PAGE_SIZE;
   return useQuery({
     queryKey: keys.reports.breakdown(datasource, rowId, { size }),
-    queryFn: async (): Promise<RowBreakdownResponse> => {
-      const { data } = await api.GET('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown', {
-        params: { path: { name: datasource, rowId }, query: { size } },
-      });
-      return data!;
-    },
+    queryFn: (): Promise<RowBreakdownResponse> => unwrapAction(loadRowBreakdown(datasource, rowId, size)),
   });
 }
 
@@ -42,18 +38,7 @@ export function useBreakdownSection(
   const sortParam = sort ? `${sort.key},${sort.direction}` : undefined;
   return useQuery({
     queryKey: keys.reports.breakdown(datasource, rowId, { section, page, size, sort: sortParam ?? null }),
-    queryFn: async () => {
-      const { data } = await api.GET(
-        '/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}',
-        {
-          params: {
-            path: { name: datasource, rowId, section },
-            query: { page, size, ...(sortParam && { sort: sortParam }) },
-          },
-        },
-      );
-      return asReportData(data);
-    },
+    queryFn: async () => asReportData(await unwrapAction(loadBreakdownSection(datasource, rowId, section, page, size, sortParam))),
     enabled: page > 0 || sort != null,
     placeholderData: keepPreviousData,
   });

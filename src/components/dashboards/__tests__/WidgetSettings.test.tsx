@@ -9,6 +9,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/components/bills/BillsDueWidget', () => ({
   BillsDueWidget: ({ accountId }: { accountId?: string | null }) => (
     <div data-testid="bills-widget" data-account={accountId ?? 'none'} />
@@ -16,7 +17,7 @@ vi.mock('@/components/bills/BillsDueWidget', () => ({
 }));
 vi.mock('@/components/inbox/InboxWidget', () => ({ InboxWidget: () => <div data-testid="inbox-widget" /> }));
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, unstable_rethrow: () => undefined, usePathname: () => '/', useSearchParams: () => new URLSearchParams() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
@@ -32,7 +33,7 @@ vi.mock('react-resizable/css/styles.css', () => ({}));
 import { DashboardHome } from '@/components/dashboards/DashboardHome';
 import { DashboardWidgetView } from '@/components/dashboards/DashboardWidgetView';
 import { useDashboardEditor } from '@/components/dashboards/editor/useDashboardEditor';
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import type { BuiltinWidgetResponse, DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { useSaveWidgetParams } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
@@ -321,7 +322,7 @@ describe('saving from the dashboards', () => {
 
   it('editor: a failed save rejects and leaves the widgets as they were', async () => {
     const before = dashboard([upcoming(14)]);
-    vi.mocked(api.PUT).mockRejectedValue(new Error('nope'));
+    vi.mocked(api.PUT).mockRejectedValue(new ApiError(400, { code: 'VALIDATION_ERROR', message: 'nope' }));
     const qc = createTestQueryClient();
     const wrapper = wrapperFor(qc);
     const { result } = renderHook(() => useDashboardEditor({ mode: 'edit', dashboard: before }), { wrapper });

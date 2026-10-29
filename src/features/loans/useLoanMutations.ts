@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatch';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {
@@ -12,6 +12,18 @@ import type {
   CreateLoanEventRequest,
   CreateLoanPaymentRequest,
 } from '@/lib/types';
+
+import {
+  addLoanCharge,
+  addLoanEvent,
+  addLoanPayment,
+  closeLoan as closeLoanAction,
+  deleteLoan as deleteLoanAction,
+  deleteLoanCharge,
+  deleteLoanEvent,
+  deleteLoanPayment,
+  reopenLoan as reopenLoanAction,
+} from './actions';
 
 export interface LoanMutationOptions {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
@@ -39,13 +51,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
   };
 
   const addPayment = useMutation({
-    mutationFn: (body: CreateLoanPaymentRequest) =>
-      api
-        .POST('/api/v1/loans/{id}/payments', {
-          params: { path: { id: loanId } },
-          body,
-        })
-        .then((r) => r.data!),
+    mutationFn: (body: CreateLoanPaymentRequest) => unwrapAction(addLoanPayment(loanId, body)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't record loan payment. Try again."),
   });
@@ -57,77 +63,49 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
   });
 
   const deletePayment = useMutation({
-    mutationFn: (paymentId: string) =>
-      api.DELETE('/api/v1/loans/{id}/payments/{paymentId}', {
-        params: { path: { id: loanId, paymentId } },
-      }),
+    mutationFn: (paymentId: string) => unwrapAction(deleteLoanPayment(loanId, paymentId)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't delete loan payment. Try again."),
   });
 
   const addEvent = useMutation({
-    mutationFn: (body: CreateLoanEventRequest) =>
-      api
-        .POST('/api/v1/loans/{id}/events', {
-          params: { path: { id: loanId } },
-          body,
-        })
-        .then((r) => r.data!),
+    mutationFn: (body: CreateLoanEventRequest) => unwrapAction(addLoanEvent(loanId, body)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't add loan event. Try again."),
   });
 
   const deleteEvent = useMutation({
-    mutationFn: (eventId: string) =>
-      api.DELETE('/api/v1/loans/{id}/events/{eventId}', {
-        params: { path: { id: loanId, eventId } },
-      }),
+    mutationFn: (eventId: string) => unwrapAction(deleteLoanEvent(loanId, eventId)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't delete loan event. Try again."),
   });
 
   const addCharge = useMutation({
-    mutationFn: (body: CreateLoanChargeRequest) =>
-      api
-        .POST('/api/v1/loans/{id}/charges', {
-          params: { path: { id: loanId } },
-          body,
-        })
-        .then((r) => r.data!),
+    mutationFn: (body: CreateLoanChargeRequest) => unwrapAction(addLoanCharge(loanId, body)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't add loan charge. Try again."),
   });
 
   const deleteCharge = useMutation({
-    mutationFn: (chargeId: string) =>
-      api.DELETE('/api/v1/loans/{id}/charges/{chargeId}', {
-        params: { path: { id: loanId, chargeId } },
-      }),
+    mutationFn: (chargeId: string) => unwrapAction(deleteLoanCharge(loanId, chargeId)),
     onSuccess: invalidateLoanAndTransactions,
     onError: onErrorToast("Couldn't delete loan charge. Try again."),
   });
 
   const closeLoan = useMutation({
-    mutationFn: () =>
-      api.POST('/api/v1/loans/{id}/close', {
-        params: { path: { id: loanId } },
-      }),
+    mutationFn: () => unwrapAction(closeLoanAction(loanId)),
     onSuccess: invalidateLoan,
     onError: onErrorToast("Couldn't close loan. Try again."),
   });
 
   const reopenLoan = useMutation({
-    mutationFn: () =>
-      api.POST('/api/v1/loans/{id}/reopen', {
-        params: { path: { id: loanId } },
-      }),
+    mutationFn: () => unwrapAction(reopenLoanAction(loanId)),
     onSuccess: invalidateLoan,
     onError: onErrorToast("Couldn't reopen loan. Try again."),
   });
 
   const deleteLoan = useMutation({
-    mutationFn: () =>
-      api.DELETE('/api/v1/loans/{id}', { params: { path: { id: loanId } } }),
+    mutationFn: () => unwrapAction(deleteLoanAction(loanId)),
     onSuccess: invalidateLoan,
     onError: onErrorToast("Couldn't delete loan. Try again."),
   });

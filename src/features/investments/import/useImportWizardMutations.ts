@@ -64,6 +64,8 @@ export function useImportWizardMutations() {
         .then((r) => r.data! as ReconcilePreview),
   });
 
+  // All four calls stay on the browser client: the previews upload files and the commits send every parsed row,
+  // both past a server action's 1 MB body cap.
   // Both commit endpoints' generated request schemas mark fields required (e.g.
   // CommitRowDto/CommitExecutionDto.newInstrument, ParsedRowData.*) that are actually
   // optional/absent in practice — see "Spec follow-ups" in the migration report.

@@ -13,7 +13,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   redirect,
   useRouter: () => router,
   usePathname: () => '/investments/instruments',
@@ -31,6 +31,8 @@ vi.mock('@/features/investments/instruments/instrumentsServerApi', () => list);
 
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 async function renderPage(params: Record<string, string> = {}) {
   const ui = await DsInstrumentsPage({ searchParams: Promise.resolve(params) });

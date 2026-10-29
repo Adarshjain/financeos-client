@@ -50,7 +50,8 @@ vi.mock('@/features/accounts/detail/overview/accountOverviewData', () => ({
   loadBrokerOverviewData: () => loadBroker(),
 }));
 
-vi.mock('@/lib/api/client', () => ({
+vi.mock('@/lib/api/client', async () => ({
+  ...(await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client')),
   api: {
     GET: vi.fn().mockResolvedValue({ data: { statements: 3, cards: 2, transactions: 142 } }),
   },

@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } }));
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined }));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 
 import { duplicateBuiltin, windowNote } from './duplicateBuiltin';
 
@@ -26,12 +28,12 @@ describe('duplicateBuiltin', () => {
     expect((await duplicateBuiltin({ builtinKey: 'cap_headroom', params: {} })).windowAsOf).toBe('2026-10-01');
   });
 
-  it('throws when the server gives no definition, or no report', async () => {
+  it('throws the copy failure when the server gives no definition, or no report', async () => {
     serve(undefined);
-    await expect(duplicateBuiltin({ builtinKey: 'attention', params: {} })).rejects.toThrow('cannot be copied');
+    await expect(duplicateBuiltin({ builtinKey: 'attention', params: {} })).rejects.toThrow("Couldn't copy the widget as a report. Try again.");
     expect(api.POST).toHaveBeenCalledTimes(1);
     serve(resolved(), null);
-    await expect(duplicateBuiltin({ builtinKey: 'upcoming', params: {} })).rejects.toThrow("Couldn't create the report. Try again.");
+    await expect(duplicateBuiltin({ builtinKey: 'upcoming', params: {} })).rejects.toThrow("Couldn't copy the widget as a report. Try again.");
   });
 
   it('writes the window note in dd/mm/yyyy, and none without a window', () => {

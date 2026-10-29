@@ -4,8 +4,10 @@
 // caps) is resolved against the window open today: the copy is fixed to it, and the confirmation says so.
 
 import { formatDmy } from '@/features/accounts/form/ds/accountFormModel';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { WidgetParams } from '@/lib/dashboards.types';
+
+import { duplicateBuiltinReport } from '../actions';
 
 export interface DuplicateBuiltinVars {
   builtinKey: string;
@@ -18,20 +20,6 @@ export function windowNote(windowAsOf: string | null | undefined): string | null
 }
 
 /** Resolves the template with the widget's params and saves it as a new report. Throws when either step yields nothing. */
-export async function duplicateBuiltin({ builtinKey, params }: DuplicateBuiltinVars) {
-  const { data: resolved } = await api.POST('/api/v1/dashboards/builtins/{key}/definition', {
-    params: { path: { key: builtinKey } },
-    body: { params },
-  });
-  if (!resolved) throw new Error('This widget cannot be copied as a report.');
-  const { data: report } = await api.POST('/api/v1/reports', {
-    body: {
-      name: resolved.label,
-      type: resolved.type,
-      datasource: resolved.datasource,
-      definition: resolved.definition,
-    } as never,
-  });
-  if (!report) throw new Error("Couldn't create the report. Try again.");
-  return { report, windowAsOf: resolved.windowAsOf ?? null };
+export function duplicateBuiltin({ builtinKey, params }: DuplicateBuiltinVars) {
+  return unwrapAction(duplicateBuiltinReport(builtinKey, params));
 }

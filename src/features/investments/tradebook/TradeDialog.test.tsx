@@ -7,7 +7,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { RecordTradeDialog } from './TradeDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/investments', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router, usePathname: () => '/investments', useSearchParams: () => new URLSearchParams() }));
 
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),
@@ -68,7 +68,7 @@ vi.mock('../instruments/InstrumentAddDialog', () => ({
 }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn(), GET: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 const infy = { id: 'i-infy', type: 'stock', name: 'Infosys', symbol: 'INFY', currency: 'INR' };
 const zerodha = { id: 'b-z', type: 'broker', name: 'Zerodha', provider: 'Zerodha', clientId: 'ZQ4471' };

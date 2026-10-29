@@ -6,15 +6,17 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   usePathname: () => '/debug',
   useSearchParams: () => new URLSearchParams(),
 }));
 
 import { DebugPage } from '@/app/(legacy)/legacy/(protected)/debug/DebugPage';
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 describe('DebugPage', () => {
@@ -86,11 +88,9 @@ describe('DebugPage', () => {
   });
 
   it('renders error callout when diagnostics lookup fails with 503 or error', async () => {
-    vi.mocked(api.GET).mockResolvedValue({
-      data: undefined,
-      error: new Error('Loki credentials lack read scope. Please configure LOKI_QUERY_TOKEN.'),
-      response: new Response(),
-    } as never);
+    vi.mocked(api.GET).mockRejectedValue(
+      new ApiError(503, { code: 'SERVICE_UNAVAILABLE', message: 'Loki credentials lack read scope. Please configure LOKI_QUERY_TOKEN.' }),
+    );
 
     renderWithQuery(<DebugPage admin={true} initialRef="E2EERR01" />);
 

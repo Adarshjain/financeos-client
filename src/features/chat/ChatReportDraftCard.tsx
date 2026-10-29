@@ -9,7 +9,7 @@ import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
 import { workingCatalog } from '@/features/reports/builder/editorState';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
-import { ApiError } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/client'; // Exception: draftActions.ts writes through the browser client (see its note), so a gone report arrives as an ApiError.
 import { formatCount } from '@/lib/format';
 import { storeSavedDashboard,useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';

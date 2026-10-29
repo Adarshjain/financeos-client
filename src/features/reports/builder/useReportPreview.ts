@@ -2,8 +2,9 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+import { runAdHocReport } from '@/features/reports/actions';
 import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/format';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData } from '@/lib/reports.helpers';
 import type { ReportData, RunReportRequest, SortClause } from '@/lib/reports.types';
@@ -71,12 +72,9 @@ export function useReportPreview({
       setLoading(true);
       setError(null);
       try {
-        const { data } = await api.POST('/api/v1/reports/data', {
-          params: {
-            query: isTable ? { page, size, ...(sort ? { sort: `${sort.key},${sort.direction}` } : {}) } : {},
-          },
-          body: { ...req, definition: { ...req.definition } },
-        });
+        const data = await unwrapAction(
+          runAdHocReport(req, isTable ? { page, size, ...(sort ? { sort: `${sort.key},${sort.direction}` } : {}) } : {}),
+        );
         if (id !== latest.current) return;
         setShown({ data: asReportData(data), request: req, signature: sig, page, size, sort });
       } catch (e) {

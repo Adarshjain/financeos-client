@@ -2,16 +2,17 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
-import type { CreateFnoTradeRequest, FnoTradeResponse } from '@/lib/types';
+import type { CreateFnoTradeRequest } from '@/lib/types';
+
+import { createFnoTrade, deleteFnoTrade, updateFnoTrade } from './fnoActions';
 
 /** Records an F&O trade (POST /investments/fno) and refreshes every investment query. */
 export function useCreateFnoTrade() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateFnoTradeRequest) =>
-      api.POST('/api/v1/investments/fno', { body }).then((r) => r.data! as FnoTradeResponse),
+    mutationFn: (body: CreateFnoTradeRequest) => unwrapAction(createFnoTrade(body)),
     onSuccess: () => invalidateInvestmentQueries(qc),
   });
 }
@@ -20,10 +21,7 @@ export function useCreateFnoTrade() {
 export function useUpdateFnoTrade(id: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateFnoTradeRequest) =>
-      api
-        .PUT('/api/v1/investments/fno/{id}', { params: { path: { id: id ?? '' } }, body })
-        .then((r) => r.data! as FnoTradeResponse),
+    mutationFn: (body: CreateFnoTradeRequest) => unwrapAction(updateFnoTrade(id ?? '', body)),
     onSuccess: () => invalidateInvestmentQueries(qc),
   });
 }
@@ -32,7 +30,7 @@ export function useUpdateFnoTrade(id: string | undefined) {
 export function useDeleteFnoTrade() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteFnoTrade(id)),
     onSuccess: () => invalidateInvestmentQueries(qc),
   });
 }

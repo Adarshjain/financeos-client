@@ -2,8 +2,9 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
+import { loadJobs } from '@/features/jobs/actions';
 import { buildJobsQueryParams } from '@/features/jobs/jobUtils';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse } from '@/lib/types';
 
@@ -25,9 +26,7 @@ export function useJobsHistory(filters: JobsHistoryFilters) {
   const query = useQuery({
     queryKey: keys.jobs.list(queryParams),
     queryFn: async () => {
-      const { data } = await api.GET('/api/v1/jobs', {
-        params: { query: { ...queryParams, sort: ['createdAt,desc'] } },
-      });
+      const data = await unwrapAction(loadJobs({ ...queryParams, sort: ['createdAt,desc'] }));
       return data ?? { content: [], totalPages: 0, totalElements: 0 };
     },
     placeholderData: keepPreviousData,

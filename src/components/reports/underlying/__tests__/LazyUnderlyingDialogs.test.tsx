@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Each dialog module records when it is evaluated (= its code was loaded).
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const loads = vi.hoisted(() => ({ kpi: 0, row: 0, txn: 0 }));
 
 vi.mock('../KpiUnderlyingDialog', () => {

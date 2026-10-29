@@ -2,6 +2,9 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
@@ -9,6 +12,7 @@ vi.mock('@/lib/api/client', async () => {
 const push = vi.hoisted(() => vi.fn());
 const search = vi.hoisted(() => ({ value: '' }));
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: (e: unknown) => { throw e; },
   useRouter: () => ({ push, refresh: vi.fn() }),
   useSearchParams: () => new URLSearchParams(search.value),
 }));

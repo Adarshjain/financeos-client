@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
+import { loadReportsList } from '@/lib/query/actions/reports';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
@@ -13,10 +14,7 @@ import type { ReportSummaryResponse } from '@/lib/reports.types';
 export function useReportsList({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<ReportSummaryResponse[]>({
     queryKey: keys.reports.list(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/reports');
-      return (data ?? []) as ReportSummaryResponse[];
-    },
+    queryFn: () => unwrapAction(loadReportsList()),
     enabled,
   });
 }

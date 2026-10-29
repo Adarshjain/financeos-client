@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { unwrapAction } from '@/lib/actionResult';
 import { amountExpressionValue } from '@/lib/amountExpression';
-import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { formatMoney } from '@/lib/format';
 import { notify } from '@/lib/notify';
@@ -12,6 +12,8 @@ import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+
+import { createEpfWithdrawal, linkEpfWithdrawal, loadEpfEmployers, loadEpfWithdrawals } from './linkActions';
 
 const AMOUNT_ERROR = 'Enter an amount above ₹0.';
 
@@ -120,15 +122,12 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
 
   const withdrawalsQuery = useQuery({
     queryKey: epfWithdrawalsKey(transactionId ?? ''),
-    queryFn: async () => {
-      const res = await api.GET('/api/v1/epf/withdrawals', { params: { query: { forTransactionId: transactionId! } } });
-      return (res.data ?? []) as EpfWithdrawalOption[];
-    },
+    queryFn: () => unwrapAction(loadEpfWithdrawals(transactionId!)),
     enabled: open && Boolean(transactionId),
   });
   const employersQuery = useQuery({
     queryKey: keys.epf.employers(),
-    queryFn: async () => (await api.GET('/api/v1/epf/employers')).data ?? [],
+    queryFn: () => unwrapAction(loadEpfEmployers()),
     enabled: open && mode === 'new',
   });
 
@@ -196,38 +195,26 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (mode === 'existing') {
-        return api
-          .PUT('/api/v1/epf/entries/{id}/transaction', {
-            params: { path: { id: selectedId } },
-            body: { transactionId: transactionId!, recordTds },
-          })
-          .then((r) => r.data);
+        return unwrapAction(linkEpfWithdrawal(selectedId, transactionId!, recordTds));
       }
       if (!createdIdRef.current) {
-        const created = await api
-          .POST('/api/v1/epf/entries', {
-            body: {
-              type: 'WITHDRAWAL',
-              withdrawalKind: kind,
-              employerId,
-              creditedOn,
-              employeeAmount: isPension ? 0 : (numEmployee ?? 0),
-              employerAmount: isPension ? 0 : (numEmployer ?? 0),
-              pensionAmount: isPension ? (numPension ?? 0) : 0,
-              tdsAmount: numTds,
-              note: note.trim() || undefined,
-            },
-          })
-          .then((r) => r.data!);
+        const created = await unwrapAction(
+          createEpfWithdrawal({
+            type: 'WITHDRAWAL',
+            withdrawalKind: kind,
+            employerId,
+            creditedOn,
+            employeeAmount: isPension ? 0 : (numEmployee ?? 0),
+            employerAmount: isPension ? 0 : (numEmployer ?? 0),
+            pensionAmount: isPension ? (numPension ?? 0) : 0,
+            tdsAmount: numTds,
+            note: note.trim() || undefined,
+          }),
+        );
         createdIdRef.current = created.id;
       }
       try {
-        return await api
-          .PUT('/api/v1/epf/entries/{id}/transaction', {
-            params: { path: { id: createdIdRef.current } },
-            body: { transactionId: transactionId!, recordTds: false },
-          })
-          .then((r) => r.data);
+        return await unwrapAction(linkEpfWithdrawal(createdIdRef.current, transactionId!, false));
       } catch (err) {
         throw new LinkAfterCreateError(err);
       }

@@ -6,6 +6,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   RowBreakdownDialog: (p: { datasource: string; rowId: string; title: string }) => (
     <div data-testid="breakdown-dialog" data-datasource={p.datasource} data-row={p.rowId} data-title={p.title} />

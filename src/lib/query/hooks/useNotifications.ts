@@ -4,8 +4,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { NotificationFeedPage, NotificationFeedSummary } from '@/lib/api/types';
+import {
+  clearAllNotifications,
+  clearNotification,
+  loadNotificationFeed,
+  loadNotificationSummary,
+  markNotificationsRead,
+  restoreNotification,
+} from '@/lib/query/actions/notifications';
 import { keys } from '@/lib/query/keys';
 
 /** One page of the notification feed, newest first (page is 0-based). Refetches on window focus. */
@@ -13,8 +21,7 @@ export function useNotificationFeed(page: number, size: number) {
   return useQuery({
     queryKey: keys.notifications.feed(page, size),
     queryFn: async (): Promise<NotificationFeedPage> => {
-      const { data } = await api.GET('/api/v1/notifications/feed', { params: { query: { page, size } } });
-      return data as NotificationFeedPage;
+      return unwrapAction(loadNotificationFeed(page, size));
     },
   });
 }
@@ -24,8 +31,7 @@ export function useNotificationSummary() {
   return useQuery({
     queryKey: keys.notifications.summary(),
     queryFn: async (): Promise<NotificationFeedSummary> => {
-      const { data } = await api.GET('/api/v1/notifications/feed/summary');
-      return data as NotificationFeedSummary;
+      return unwrapAction(loadNotificationSummary());
     },
     refetchInterval: 60_000,
     staleTime: 30_000,
@@ -53,31 +59,25 @@ export function useNotificationMutations() {
 
   const markRead = useMutation({
     mutationKey: NOTIFICATION_WRITE_KEY,
-    mutationFn: (before?: string) =>
-      api.POST('/api/v1/notifications/feed/read', { body: { before } }).then(() => undefined),
+    mutationFn: (before?: string) => unwrapAction(markNotificationsRead(before)),
     onSettled: settle,
   });
 
   const clear = useMutation({
     mutationKey: NOTIFICATION_WRITE_KEY,
-    mutationFn: (id: string) =>
-      api.POST('/api/v1/notifications/feed/{id}/clear', { params: { path: { id } } }).then(() => undefined),
+    mutationFn: (id: string) => unwrapAction(clearNotification(id)),
     onSettled: settle,
   });
 
   const restore = useMutation({
     mutationKey: NOTIFICATION_WRITE_KEY,
-    mutationFn: (id: string) =>
-      api.POST('/api/v1/notifications/feed/{id}/restore', { params: { path: { id } } }).then(() => undefined),
+    mutationFn: (id: string) => unwrapAction(restoreNotification(id)),
     onSettled: settle,
   });
 
   const clearAll = useMutation({
     mutationKey: NOTIFICATION_WRITE_KEY,
-    mutationFn: async () => {
-      const { data } = await api.POST('/api/v1/notifications/feed/clear');
-      return (data as { cleared: number } | undefined)?.cleared ?? 0;
-    },
+    mutationFn: () => unwrapAction(clearAllNotifications()),
     onSettled: settle,
   });
 

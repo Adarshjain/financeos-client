@@ -4,7 +4,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { runAdHocReport } from '@/features/reports/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import { asReportData, isChartData } from '@/lib/reports.helpers';
 
@@ -15,11 +16,7 @@ export function useNetWorthParts() {
   return useQuery({
     queryKey: [...keys.reports.all, 'adhoc', request] as const,
     queryFn: async () => {
-      const { data } = await api.POST('/api/v1/reports/data', {
-        params: { query: {} },
-        body: { ...request, definition: { ...request.definition } },
-      });
-      const report = asReportData(data);
+      const report = asReportData(await unwrapAction(runAdHocReport(request, {})));
       return isChartData(report) ? netWorthParts(report) : null;
     },
   });

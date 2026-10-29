@@ -2,11 +2,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
-import type { Dividend } from '@/lib/types';
 
+import { linkDividendCredit, setDividendReceiptNote, unlinkDividendCredit } from './dividendsActions';
 import type { ReceiptNote } from './dividendsModel';
 
 /**
@@ -16,34 +16,20 @@ import type { ReceiptNote } from './dividendsModel';
  */
 export function useDividendReceiptMutations() {
   const qc = useQueryClient();
-  const path = (id: string) => ({ params: { path: { id } } });
 
   const refresh = async () => {
     await Promise.all([invalidateInvestmentQueries(qc), qc.invalidateQueries({ queryKey: keys.transactions.all })]);
   };
 
   const link = useMutation({
-    mutationFn: async (vars: { id: string; transactionId: string; updateTds?: boolean }) =>
-      (
-        await api.PUT('/api/v1/investments/dividends/{id}/transaction', {
-          ...path(vars.id),
-          body: { transactionId: vars.transactionId, updateTds: vars.updateTds ?? false },
-        })
-      ).data as Dividend,
+    mutationFn: (vars: { id: string; transactionId: string; updateTds?: boolean }) =>
+      unwrapAction(linkDividendCredit(vars.id, vars.transactionId, vars.updateTds ?? false)),
   });
   const unlink = useMutation({
-    mutationFn: async (id: string) => {
-      await api.DELETE('/api/v1/investments/dividends/{id}/transaction', path(id));
-    },
+    mutationFn: (id: string) => unwrapAction(unlinkDividendCredit(id)),
   });
   const setNote = useMutation({
-    mutationFn: async (vars: { id: string; note: ReceiptNote }) =>
-      (
-        await api.PUT('/api/v1/investments/dividends/{id}/receipt-status', {
-          ...path(vars.id),
-          body: { status: vars.note === 'derived' ? null : vars.note },
-        })
-      ).data as Dividend,
+    mutationFn: (vars: { id: string; note: ReceiptNote }) => unwrapAction(setDividendReceiptNote(vars.id, vars.note)),
   });
 
   return {

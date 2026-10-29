@@ -2,8 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+
+import { deleteInstrumentPrice, setInstrumentPrice, updateInstrumentPrice } from './priceActions';
 
 /**
  * The three ways a user changes one instrument's prices: set a manual price for a date, change the amount of
@@ -15,22 +17,19 @@ export function usePriceMutations(instrumentId: string) {
 
   const setPrice = useMutation({
     mutationFn: (body: { price: number; asOf?: string }) =>
-      api.POST('/api/v1/instruments/{id}/price', { params: { path: { id: instrumentId } }, body }),
+      unwrapAction(setInstrumentPrice(instrumentId, body)),
     onSuccess,
   });
 
   const updatePrice = useMutation({
     mutationFn: (vars: { priceId: string; price: number; asOf?: string }) =>
-      api.PUT('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
-        params: { path: { instrumentId, priceId: vars.priceId } },
-        body: vars.asOf ? { price: vars.price, asOf: vars.asOf } : { price: vars.price },
-      }),
+      unwrapAction(updateInstrumentPrice(instrumentId, vars.priceId, vars.price, vars.asOf)),
     onSuccess,
   });
 
   const deletePrice = useMutation({
     mutationFn: (priceId: string) =>
-      api.DELETE('/api/v1/instruments/{instrumentId}/prices/{priceId}', { params: { path: { instrumentId, priceId } } }),
+      unwrapAction(deleteInstrumentPrice(instrumentId, priceId)),
     onSuccess,
   });
 

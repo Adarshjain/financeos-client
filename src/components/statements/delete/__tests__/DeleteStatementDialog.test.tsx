@@ -6,12 +6,13 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/lib/toastError', () => ({ toastError: vi.fn() }));
 
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -123,14 +124,15 @@ describe('DeleteStatementDialog', () => {
 
   it('stays open and reports the error when the delete fails', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: preview() } as never);
-    const failure = new Error('boom');
-    vi.mocked(api.DELETE).mockRejectedValue(failure);
+    vi.mocked(api.DELETE).mockRejectedValue(new ApiError(500, { code: 'INTERNAL_ERROR', message: 'boom' }));
     const { onOpenChange, onDeleted } = renderDialog();
     await screen.findByText('5 transactions');
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete statement' }));
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(failure, 'Failed to delete statement'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith(expect.objectContaining({ status: 500, message: 'boom' }), 'Failed to delete statement'),
+    );
     expect(onDeleted).not.toHaveBeenCalled();
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });

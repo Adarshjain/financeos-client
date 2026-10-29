@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { ActionError } from '@/lib/actionResult';
 import { ApiError } from '@/lib/api/client';
 import type { Instrument } from '@/lib/types';
 
@@ -80,6 +81,14 @@ describe('assetClassSelection', () => {
 
   it('falls back to Auto when overridden but the class is missing', () => {
     expect(assetClassSelection({ ...base, assetClass: null, overriddenFields: ['assetClass'] })).toBe(AUTO_ASSET_CLASS);
+  });
+});
+
+describe('instrumentFormErrors from a failed server action', () => {
+  it('splits a VALIDATION_ERROR into field errors and keeps other codes null', () => {
+    const failed = new ActionError({ code: 'VALIDATION_ERROR', message: 'Validation failed', details: { name: 'Too long', other: 'Odd' } });
+    expect(instrumentFormErrors(failed)).toEqual({ fields: { name: 'Too long' }, form: 'Odd' });
+    expect(instrumentFormErrors(new ActionError({ code: 'INTERNAL', message: 'down' }))).toBeNull();
   });
 });
 

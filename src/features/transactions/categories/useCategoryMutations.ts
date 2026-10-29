@@ -4,9 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
+
+import { createCategory, deleteCategory, renameCategory } from './categoryActions';
 
 /** Create, rename and delete a category. The list is server-rendered, so each success refreshes the page. */
 export function useCategoryMutations(handlers: { onCreated?: () => void; onRenamed?: () => void; onDeleted?: () => void } = {}) {
@@ -19,7 +21,7 @@ export function useCategoryMutations(handlers: { onCreated?: () => void; onRenam
   const failed = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
 
   const create = useMutation({
-    mutationFn: (name: string) => api.POST('/api/v1/categories', { body: { name } }).then((r) => r.data!),
+    mutationFn: (name: string) => unwrapAction(createCategory(name)),
     onSuccess: (category) => {
       showToast(`Category "${category.name}" created`);
       handlers.onCreated?.();
@@ -29,8 +31,7 @@ export function useCategoryMutations(handlers: { onCreated?: () => void; onRenam
   });
 
   const rename = useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) =>
-      api.PUT('/api/v1/categories/{id}', { params: { path: { id } }, body: { name } }).then((r) => r.data!),
+    mutationFn: ({ id, name }: { id: string; name: string }) => unwrapAction(renameCategory(id, name)),
     onSuccess: (category) => {
       showToast(`Category renamed to "${category.name}"`);
       handlers.onRenamed?.();
@@ -40,8 +41,7 @@ export function useCategoryMutations(handlers: { onCreated?: () => void; onRenam
   });
 
   const remove = useMutation({
-    mutationFn: (category: { id: string; name: string }) =>
-      api.DELETE('/api/v1/categories/{id}', { params: { path: { id: category.id } } }),
+    mutationFn: (category: { id: string; name: string }) => unwrapAction(deleteCategory(category.id)),
     onSuccess: (_data, category) => {
       showToast(`Category "${category.name}" deleted`);
       handlers.onDeleted?.();
