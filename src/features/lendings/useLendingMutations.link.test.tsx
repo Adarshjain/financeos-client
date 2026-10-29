@@ -10,7 +10,7 @@ vi.mock('./lendingActions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 
-import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingTransactionLink';
+import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingMutations';
 
 function setup<T>(hook: () => T) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });

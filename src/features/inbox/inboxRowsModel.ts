@@ -1,7 +1,7 @@
 import { appHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
-import { toPendingBillAction } from './inboxBillAction';
+import { toPendingBillAction } from './inboxBillActions';
 import {
   actionHref,
   type BillActionType,

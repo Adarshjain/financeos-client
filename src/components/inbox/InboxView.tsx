@@ -7,7 +7,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
+import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillActions';
 import { headerCounts, INBOX_SECTIONS } from '@/features/inbox/inboxModel';
 import { useInboxDeepLink } from '@/features/inbox/useInboxDeepLink';
 import { useInboxMutations } from '@/features/inbox/useInboxMutations';

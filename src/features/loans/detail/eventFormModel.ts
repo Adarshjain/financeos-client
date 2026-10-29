@@ -1,6 +1,6 @@
 import type { AdjustmentMode, LoanChargeType, LoanEventType } from '@/lib/loan.types';
 
-import { isCashEvent } from './loanRequests';
+import { isCashEvent } from './loanRequestsModel';
 
 export interface EventFormValues {
   eventType: LoanEventType;

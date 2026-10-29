@@ -9,8 +9,8 @@ import {
   type LoanFormValues,
   loanProblems,
 } from '@/features/loans/loanFormModel';
-import { useCreateLoan } from '@/features/loans/useCreateLoan';
-import { useUpdateLoan } from '@/features/loans/useUpdateLoan';
+import { useCreateLoan } from '@/features/loans/useLoanMutations';
+import { useUpdateLoan } from '@/features/loans/useLoanMutations';
 import type { LoanResponse, LoanType, RateType } from '@/lib/types';
 
 interface UseLoanFormProps {

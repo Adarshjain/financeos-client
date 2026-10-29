@@ -22,8 +22,8 @@ import { type EmergencyFund, useEmergencyFund } from '@/lib/query/hooks/useEmerg
 import type { RunReportRequest } from '@/lib/reports.types';
 import { AccountType } from '@/lib/types';
 
-import { liquidBalanceRequest, monthOutflowRequest } from './emergencyFund.requests';
 import { formatMonthsCovered, monthName, noFigureReason } from './emergencyFundModel';
+import { liquidBalanceRequest, monthOutflowRequest } from './emergencyFundRequestsModel';
 import { EmergencyFundSkeleton } from './EmergencyFundSkeleton';
 
 const BAND_TONE = { low: 'danger', medium: 'warning', high: 'positive' } as const;

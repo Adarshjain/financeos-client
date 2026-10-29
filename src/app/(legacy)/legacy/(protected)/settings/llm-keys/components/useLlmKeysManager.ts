@@ -3,7 +3,7 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
-import { type ProviderConfig, showTrainingWarning as shouldWarnAboutTraining } from '@/features/settings/ai/providers';
+import { type ProviderConfig, showTrainingWarning as shouldWarnAboutTraining } from '@/features/settings/ai/providersModel';
 import { useLlmKeyMutations } from '@/features/settings/ai/useLlmKeyMutations';
 import { useLlmKeysQueries } from '@/features/settings/ai/useLlmKeysQueries';
 import { useLlmRoutingEditor } from '@/features/settings/ai/useLlmRoutingEditor';

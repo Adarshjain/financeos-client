@@ -37,7 +37,7 @@ vi.mock('./detail/transactionDetailApi', () => ({
   unlinkDividendTransaction: vi.fn(),
   linkDividendTransaction: vi.fn(),
 }));
-vi.mock('@/features/lendings/useLendingTransactionLink', () => ({
+vi.mock('@/features/lendings/useLendingMutations', () => ({
   useLinkLendingTransaction: () => ({ mutateAsync: vi.fn() }),
   useUnlinkLendingTransaction: () => ({ mutateAsync: vi.fn() }),
 }));

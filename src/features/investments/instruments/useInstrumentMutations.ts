@@ -6,7 +6,16 @@ import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import type { AssetClass, CreateInstrumentRequest, Instrument } from '@/lib/types';
 
-import { resetInstrumentOverrides, updateInstrument } from './instrumentActions';
+import { createInstrument, resetInstrumentOverrides, updateInstrument } from './instrumentActions';
+
+/** Creates an instrument by hand (POST /instruments) and refreshes every investments query. */
+export function useCreateInstrument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateInstrumentRequest) => unwrapAction(createInstrument(body)),
+    onSuccess: () => invalidateInvestmentQueries(qc),
+  });
+}
 
 export interface UpdateInstrumentVars {
   body: CreateInstrumentRequest;

@@ -17,7 +17,7 @@ import { LendingBalancesBody, LendingBalancesSkeleton } from './lending-balances
 import { LoanNameSubtitle, LoanPayoffBody, LoanPayoffSkeleton } from './loan-payoff/LoanPayoffBody';
 import { PortfolioSnapshotBody, PortfolioSnapshotSkeleton } from './portfolio-snapshot/PortfolioSnapshotBody';
 import { ShortcutsBody, ShortcutsSkeleton } from './shortcuts/ShortcutsBody';
-import { shortcutIds } from './shortcuts/shortcutsParams';
+import { shortcutIds } from './shortcuts/shortcutsParamsModel';
 import { TaxHarvestBody, TaxHarvestSkeleton } from './tax-harvest/TaxHarvestBody';
 import { TopMoversBody, TopMoversSkeleton } from './top-movers/TopMoversBody';
 import { moversCount } from './top-movers/topMoversModel';

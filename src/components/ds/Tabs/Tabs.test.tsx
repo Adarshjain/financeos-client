@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
+import { Tabs } from './Tabs';
 
 
 function mockLayout(positions: Record<string, [number, number]>) {
@@ -147,12 +147,12 @@ describe('Tabs', () => {
   it('renders TabsContent matching the active tab', () => {
     render(
       <Tabs defaultValue="tab1">
-        <TabsList>
-          <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-          <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-        </TabsList>
-        <TabsContent value="tab1">Content 1</TabsContent>
-        <TabsContent value="tab2">Content 2</TabsContent>
+        <Tabs.List>
+          <Tabs.Trigger value="tab1">Tab 1</Tabs.Trigger>
+          <Tabs.Trigger value="tab2">Tab 2</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="tab1">Content 1</Tabs.Content>
+        <Tabs.Content value="tab2">Content 2</Tabs.Content>
       </Tabs>,
     );
     expect(screen.getByText('Content 1')).toBeInTheDocument();
@@ -306,11 +306,11 @@ describe('Tabs', () => {
     it('accepts a link child on TabsTrigger directly', () => {
       render(
         <Tabs value="statements">
-          <TabsList>
-            <TabsTrigger value="statements" count={3} asChild>
+          <Tabs.List>
+            <Tabs.Trigger value="statements" count={3} asChild>
               <Link href="/s">Statements</Link>
-            </TabsTrigger>
-          </TabsList>
+            </Tabs.Trigger>
+          </Tabs.List>
         </Tabs>,
       );
       const tab = screen.getByRole('tab', { name: /Statements\s*·\s*3/ });

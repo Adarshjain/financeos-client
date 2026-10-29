@@ -12,8 +12,7 @@ import type {
 } from '@/lib/types';
 
 import { deleteCounterparty, deleteLendingEntry, updateCounterparty, updateLendingEntry } from './lendingActions';
-import { useCreateLending } from './useCreateLending';
-import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingTransactionLink';
+import { useCreateLending, useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingMutations';
 
 export interface CounterpartyMutationOptions {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */

@@ -14,7 +14,7 @@ import { buildHeatmap, type HeatCell, heatmapMonths,type HeatWeek } from '@/comp
 import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import { isoToDisplay } from '@/components/ui/date-input';
 import { EmptyState } from '@/components/ui/empty-state';
-import { daySpendRequest } from '@/features/dashboards/builtins/spend-heatmap/heatmap.requests';
+import { daySpendRequest } from '@/features/dashboards/builtins/spend-heatmap/heatmapRequestsModel';
 import { useElementSize } from '@/lib/charts/useElementSize';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import { todayInAppZone } from '@/lib/date-range';

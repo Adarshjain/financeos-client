@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChatTrace, Message } from '@/features/chat/chat.types';
 import { notifyChatComplete } from '@/features/chat/chatNotifications';
 import { createSseParser } from '@/features/chat/sseParser';
-import { buildTranscript } from '@/features/chat/transcript';
+import { buildTranscript } from '@/features/chat/transcriptModel';
 import { ensureNotificationPermission } from '@/lib/browserNotifications';
 
 export function useChatStream() {

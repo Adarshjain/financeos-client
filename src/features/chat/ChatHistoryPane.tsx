@@ -14,7 +14,7 @@ import {
   TextField,
 } from '@/components/ds';
 
-import { groupConversations, type HistoryRow,MAX_CHATS } from './chatHistory';
+import { groupConversations, type HistoryRow,MAX_CHATS } from './chatHistoryModel';
 import type { ConversationSummary } from './conversation.types';
 
 export const RENAME_FORM_ID = 'chat-rename-form';

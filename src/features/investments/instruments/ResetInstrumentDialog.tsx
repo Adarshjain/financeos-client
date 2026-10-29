@@ -8,7 +8,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument } from '@/lib/types';
 
 import { describeOverriddenFields } from './instrumentEditModel';
-import { useResetInstrumentOverrides } from './useInstrumentEdit';
+import { useResetInstrumentOverrides } from './useInstrumentMutations';
 
 export interface ResetInstrumentDialogProps {
   instrument: Instrument;

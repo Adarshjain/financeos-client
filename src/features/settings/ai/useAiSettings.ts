@@ -7,7 +7,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LlmKeyDto } from '@/lib/api/types';
 
 import { type KeyRow } from './aiModel';
-import { PROVIDERS, showTrainingWarning } from './providers';
+import { PROVIDERS, showTrainingWarning } from './providersModel';
 import { useLlmKeyMutations } from './useLlmKeyMutations';
 import { useLlmKeysQueries } from './useLlmKeysQueries';
 import { useLlmRoutingEditor } from './useLlmRoutingEditor';

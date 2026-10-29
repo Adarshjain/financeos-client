@@ -6,7 +6,7 @@ import type { RewardReport } from '@/lib/rewards.types';
 import type { CardCycleSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { loadBillsHistory } from '../billsHistory';
+import { loadBillsHistory } from '../billsHistoryData';
 import { type BillEntry } from '../billsHistoryModel';
 import type { CardholderStats } from './cardOverviewModel';
 import { type RewardsWindow, rewardsWindowFor } from './rewardsWindowModel';

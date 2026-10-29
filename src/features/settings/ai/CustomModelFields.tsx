@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { Button, Select, Text, TextField } from '@/components/ds';
 
-import type { ProviderOption } from './providers';
+import type { ProviderOption } from './providersModel';
 import type { CustomModelInput } from './useLlmRoutingEditor';
 
 interface CustomModelFieldsProps {

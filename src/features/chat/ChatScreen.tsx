@@ -12,7 +12,7 @@ import { timeInAppZone } from '@/lib/date-range';
 import { replaceUrl } from '@/lib/urlState';
 
 import { ChatAnswer } from './ChatAnswer';
-import { UNTITLED_CHAT, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistory';
+import { UNTITLED_CHAT, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistoryModel';
 import { ChatHistoryPane } from './ChatHistoryPane';
 import type { Conversation, ConversationSummary } from './conversation.types';
 import { deleteConversation, renameConversation } from './conversationActions';

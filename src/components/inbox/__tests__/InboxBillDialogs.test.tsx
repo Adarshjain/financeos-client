@@ -38,7 +38,7 @@ vi.mock('@/components/bills/BillDetailsDialog', () => ({
     ) : null,
 }));
 
-import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
+import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillActions';
 import { api } from '@/lib/api/client';
 import type { CardBillResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';

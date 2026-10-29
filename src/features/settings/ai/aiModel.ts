@@ -2,7 +2,7 @@ import type { LlmBucketHealthDto, LlmKeyDto, LlmRoutingDto, RoutingOptionDto, Sc
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate, formatTime } from '@/lib/format';
 
-import { type ProviderConfig, PROVIDERS } from './providers';
+import { type ProviderConfig, PROVIDERS } from './providersModel';
 
 type RoutingEntryDto = Schemas['RoutingEntryDto'];
 

@@ -12,7 +12,7 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
 
 const mutateAsync = vi.fn();
 let onErrorOption: ((e: unknown) => void) | undefined;
-vi.mock('./useCreateLending', () => ({
+vi.mock('./useLendingMutations', () => ({
   useCreateLending: (opts?: { onError?: (e: unknown) => void }) => {
     onErrorOption = opts?.onError;
     return { mutateAsync, isPending: false };

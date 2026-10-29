@@ -23,7 +23,7 @@ export interface TabsProps
   items?: TabItem[];
 }
 
-export const Tabs = forwardRef<
+const TabsRoot = forwardRef<
   React.ElementRef<typeof TabsPrimitive.Root>,
   TabsProps
 >(
@@ -90,7 +90,7 @@ export const Tabs = forwardRef<
   },
 );
 
-Tabs.displayName = 'Tabs';
+TabsRoot.displayName = 'Tabs';
 
 /** True once TabsList's measured indicator has taken over from the per-tab active underline. */
 const IndicatorContext = createContext(false);
@@ -98,7 +98,7 @@ const IndicatorContext = createContext(false);
 const ACTIVE_TAB = '[role="tab"][data-state="active"]';
 
 /** Underline slides between tabs (dur-base, none under reduced motion). First paint keeps each tab's own underline; the indicator replaces it once measured. */
-export const TabsList = forwardRef<
+const TabsList = forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, children, ...props }, ref) => {
@@ -142,7 +142,7 @@ export interface TabsTriggerProps
 }
 
 /** With `asChild`, `children` is one link element whose own children are the label. */
-export const TabsTrigger = forwardRef<
+const TabsTrigger = forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
 >(({ className, children, count, disabled, asChild, onClick, ...props }, ref) => {
@@ -189,7 +189,7 @@ export const TabsTrigger = forwardRef<
 
 TabsTrigger.displayName = 'TabsTrigger';
 
-export const TabsContent = forwardRef<
+const TabsContent = forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
@@ -201,3 +201,9 @@ export const TabsContent = forwardRef<
 ));
 
 TabsContent.displayName = 'TabsContent';
+
+export const Tabs = Object.assign(TabsRoot, {
+  List: TabsList,
+  Trigger: TabsTrigger,
+  Content: TabsContent,
+});

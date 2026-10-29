@@ -17,7 +17,7 @@ vi.mock('@/components/bills/BillDetailsDialog', () => ({
     p.open ? <div data-testid="details" data-statement={p.bill?.statementId} /> : null,
 }));
 
-import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
+import type { PendingBillAction } from '@/features/inbox/inboxBillActions';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

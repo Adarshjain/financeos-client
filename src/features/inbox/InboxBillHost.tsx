@@ -9,7 +9,7 @@ import { StatementDetailsDialog } from '@/features/bills/StatementDetailsDialog'
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useBill } from '@/lib/query/hooks/useBills';
 
-import type { PendingBillAction } from './inboxBillAction';
+import type { PendingBillAction } from './inboxBillActions';
 
 interface InboxBillHostProps {
   pending: PendingBillAction | null;

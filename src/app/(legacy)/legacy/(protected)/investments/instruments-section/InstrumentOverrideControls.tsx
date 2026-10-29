@@ -7,7 +7,7 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { describeOverriddenFields, isOverridden } from '@/features/investments/instruments/instrumentEditModel';
-import { useResetInstrumentOverrides } from '@/features/investments/instruments/useInstrumentEdit';
+import { useResetInstrumentOverrides } from '@/features/investments/instruments/useInstrumentMutations';
 import type { Instrument } from '@/lib/types';
 
 /** "Edited for your account" when the signed-in user has their own edits on the instrument. */

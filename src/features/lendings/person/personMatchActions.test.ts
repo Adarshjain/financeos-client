@@ -4,7 +4,7 @@ const get = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: get } }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-import { loadPersonMatches } from './matchActions';
+import { loadPersonMatches } from './personMatchActions';
 
 beforeEach(() => vi.clearAllMocks());
 

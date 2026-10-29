@@ -12,7 +12,7 @@ import { INSTRUMENT_FIELD_LIMITS as LIMITS, type InstrumentFormErrors,instrument
 import { defaultYahooSymbol, emptyInstrumentForm, type InstrumentFormValues, instrumentRequest } from './instrumentFormModel';
 import { TYPE_OPTIONS } from './instrumentsModel';
 import { useResolveInstrumentMutation } from './useCatalogSearch';
-import { useCreateInstrument } from './useCreateInstrument';
+import { useCreateInstrument } from './useInstrumentMutations';
 
 const FORM_ID = 'instrument-add-form';
 

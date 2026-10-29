@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { ProviderConfig } from '@/features/settings/ai/providers';
+import type { ProviderConfig } from '@/features/settings/ai/providersModel';
 
 interface AddKeyDialogProps {
   open: boolean;

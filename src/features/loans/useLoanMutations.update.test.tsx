@@ -10,7 +10,7 @@ vi.mock('./loanActions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 
-import { useUpdateLoan } from './useUpdateLoan';
+import { useUpdateLoan } from './useLoanMutations';
 
 function setup(options?: Parameters<typeof useUpdateLoan>[0]) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });

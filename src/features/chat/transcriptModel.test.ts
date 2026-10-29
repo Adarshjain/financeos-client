@@ -4,7 +4,7 @@ import {
   buildTranscript,
   CLARIFY_PREFIX,
   TranscriptSource,
-} from './transcript';
+} from './transcriptModel';
 
 describe('buildTranscript', () => {
   it('passes user and answered-assistant messages through unchanged', () => {

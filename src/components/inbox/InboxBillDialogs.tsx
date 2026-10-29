@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { BillDetailsDialog } from '@/components/bills/BillDetailsDialog';
 import { MarkPaidDialog } from '@/components/bills/MarkPaidDialog';
-import type { PendingBillAction } from '@/features/inbox/inboxBillAction';
+import type { PendingBillAction } from '@/features/inbox/inboxBillActions';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
 import { useBill, useBillMutations } from '@/lib/query/hooks/useBills';

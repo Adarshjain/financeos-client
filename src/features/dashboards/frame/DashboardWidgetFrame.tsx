@@ -20,9 +20,9 @@ import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 
 import { builtinPieces } from '../builtins/registry';
+import { useDuplicateBuiltinReport } from '../data/useDashboardMutations';
 import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
-import { useDuplicateBuiltinReport } from './useDuplicateBuiltinReport';
 import { useReportWidget } from './useReportWidget';
 import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrameModel';
 import { WidgetHeaderActions } from './WidgetHeaderActions';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildChargeRequest, buildEventRequest, buildPaymentRequest, isCashEvent, prefillAmount, prefillDate } from './loanRequests';
+import { buildChargeRequest, buildEventRequest, buildPaymentRequest, isCashEvent, prefillAmount, prefillDate } from './loanRequestsModel';
 
 describe('prefill from a picked transaction', () => {
   it('fills what is empty and keeps what was typed', () => {

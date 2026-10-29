@@ -1,4 +1,4 @@
-import { deleteImpact } from '@/features/transactions/detail/transactionDetail';
+import { deleteImpact } from '@/features/transactions/detail/transactionDetailModel';
 import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
 import { formatMoney, pluralize } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';

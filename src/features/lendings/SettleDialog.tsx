@@ -31,7 +31,7 @@ import {
   type SettleSegment,
   settleSegmentOptions,
 } from './settleModel';
-import { useCreateLending } from './useCreateLending';
+import { useCreateLending } from './useLendingMutations';
 
 const FORM_ID = 'settle-form';
 

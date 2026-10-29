@@ -7,7 +7,7 @@ import {
   buildChargeRequest,
   buildEventRequest,
   buildPaymentRequest,
-} from '@/features/loans/detail/loanRequests';
+} from '@/features/loans/detail/loanRequestsModel';
 import { useLoanMutations } from '@/features/loans/useLoanMutations';
 import {
   AdjustmentMode,

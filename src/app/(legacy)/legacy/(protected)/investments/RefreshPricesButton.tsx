@@ -4,7 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { useRefreshPrices } from '@/features/investments/useRefreshPrices';
+import { useRefreshPrices } from '@/features/investments/usePriceMutations';
 
 const notify = {
   info: (message: string) => toast.info(message),

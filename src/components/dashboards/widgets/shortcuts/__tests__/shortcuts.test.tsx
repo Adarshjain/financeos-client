@@ -15,7 +15,7 @@ vi.mock('@/components/shortcuts/actions', async () => {
 });
 
 import { DEFAULT_SHORTCUTS } from '@/components/shortcuts/catalog';
-import { DEFAULT_MAX_SHORTCUTS, itemsSpec, moveId, removeId, shortcutIds, toggleId } from '@/features/dashboards/builtins/shortcuts/shortcutsParams';
+import { DEFAULT_MAX_SHORTCUTS, itemsSpec, moveId, removeId, shortcutIds, toggleId } from '@/features/dashboards/builtins/shortcuts/shortcutsParamsModel';
 import { api } from '@/lib/api/client';
 import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

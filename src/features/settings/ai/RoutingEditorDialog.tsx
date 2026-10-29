@@ -6,8 +6,8 @@ import { Banner, Button, Dialog, Icon, ReorderList, Text } from '@/components/ds
 import type { RoutingOptionDto } from '@/lib/api/types';
 
 import { CustomModelFields } from './CustomModelFields';
-import { type ProviderOption } from './providers';
-import type { RoutingGroupEditor } from './routingGroups';
+import { type ProviderOption } from './providersModel';
+import type { RoutingGroupEditor } from './routingGroupsModel';
 import { draftEntryKey, isCustomEntry } from './useLlmRoutingEditor';
 
 interface RoutingEditorDialogProps {

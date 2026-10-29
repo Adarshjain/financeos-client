@@ -12,7 +12,7 @@ import type { Transaction } from '@/lib/transaction.types';
 
 import { deleteCopy } from './bulkModel';
 import { MergeDialog } from './MergeDialog';
-import { useDeleteTransactions } from './useDeleteTransactions';
+import { useDeleteTransactions } from './useBulkMutations';
 
 export interface BulkTransactionMutationsOptions {
   accounts: Account[] | null;

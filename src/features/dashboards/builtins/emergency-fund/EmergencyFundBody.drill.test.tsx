@@ -31,8 +31,8 @@ import { api } from '@/lib/api/client';
 import type { EmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { monthOutflowRequest } from './emergencyFund.requests';
 import { EmergencyFundBody } from './EmergencyFundBody';
+import { monthOutflowRequest } from './emergencyFundRequestsModel';
 
 const fund = {
   liquidBalance: 315000,

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { showToast } from '@/components/ds';
-import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '@/features/lendings/useLendingTransactionLink';
+import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '@/features/lendings/useLendingMutations';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateInvestmentQueries, invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';

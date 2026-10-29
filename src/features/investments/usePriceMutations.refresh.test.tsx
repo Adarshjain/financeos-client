@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PriceRefreshResult } from '@/lib/types';
 import { pinClock } from '@/test/pinClock';
 
-import { refreshResultMessage, useRefreshPrices } from './useRefreshPrices';
+import { refreshResultMessage, useRefreshPrices } from './usePriceMutations';
 
 pinClock();
 

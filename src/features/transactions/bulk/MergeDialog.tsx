@@ -9,7 +9,7 @@ import { formatDate, formatMoney } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { computeDefaultKeepId, mergeChecks, mergeSourceLabel, mergeWarning } from './mergeModel';
-import { useMergeTransactions } from './useMergeTransactions';
+import { useMergeTransactions } from './useBulkMutations';
 
 export interface MergeDialogProps {
   /** The two selected transactions. */

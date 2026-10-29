@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { prefillAmount, prefillDate } from '@/features/loans/detail/loanRequests';
+import { prefillAmount, prefillDate } from '@/features/loans/detail/loanRequestsModel';
 import { Transaction } from '@/lib/transaction.types';
 import { LoanEventType } from '@/lib/types';
 

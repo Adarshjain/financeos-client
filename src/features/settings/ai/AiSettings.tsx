@@ -12,10 +12,10 @@ import { AddKeyDialog } from './AddKeyDialog';
 import { buildHealthRows, type KeyRow } from './aiModel';
 import { DeleteKeyDialog } from './DeleteKeyDialog';
 import { HealthCard } from './HealthCard';
-import { buildProviderOptions } from './providers';
+import { buildProviderOptions } from './providersModel';
 import { RoutingCard } from './RoutingCard';
 import { RoutingEditorDialog } from './RoutingEditorDialog';
-import type { RoutingGroupEditor } from './routingGroups';
+import type { RoutingGroupEditor } from './routingGroupsModel';
 import { useAiSettings } from './useAiSettings';
 import { YourKeysCard } from './YourKeysCard';
 
