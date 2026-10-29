@@ -114,15 +114,15 @@ describe('VUD grouped rows (desktop)', () => {
     expect(screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'))).toEqual(['Asset', 'Liability']);
     const asset = region('Asset');
     expect(within(asset).getByRole('heading', { level: 3 })).toHaveTextContent('Asset');
-    expect(within(asset).getByText('₹16,000.00')).toBeInTheDocument();
+    expect(within(asset).getByText('₹16,000')).toBeInTheDocument();
     expect(within(asset).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
     expect(bodyRows(asset).map(cellText)).toEqual([
-      ['Savings Bank account', '₹10,000.00'],
-      ['Broker Broker', '₹6,000.00'],
+      ['Savings Bank account', '₹10,000'],
+      ['Broker Broker', '₹6,000'],
     ]);
     const liability = region('Liability');
-    expect(within(liability).getByRole('heading', { level: 3 }).nextElementSibling).toHaveTextContent('₹500.00');
-    expect(bodyRows(liability).map(cellText)).toEqual([['Card Credit card', '₹500.00']]);
+    expect(within(liability).getByRole('heading', { level: 3 }).nextElementSibling).toHaveTextContent('₹500');
+    expect(bodyRows(liability).map(cellText)).toEqual([['Card Credit card', '₹500']]);
     expect(screen.queryByRole('columnheader', { name: 'Side' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Kind' })).not.toBeInTheDocument();
   });
@@ -144,7 +144,7 @@ describe('VUD grouped rows (desktop)', () => {
     );
     expect(within(region('Asset')).getByRole('columnheader', { name: 'Value' })).toHaveAttribute('aria-sort', 'ascending');
     expect(within(region('Liability')).getByRole('columnheader', { name: 'Value' })).toHaveAttribute('aria-sort', 'ascending');
-    expect(within(region('Asset')).getByText('₹16,000.00')).toBeInTheDocument();
+    expect(within(region('Asset')).getByText('₹16,000')).toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Side' })).not.toBeInTheDocument();
   });
 
@@ -165,7 +165,7 @@ describe('VUD grouped rows (desktop)', () => {
     render();
     await screen.findByText('Savings');
     expect(within(region('Asset')).getByRole('heading', { level: 3 })).toHaveTextContent('Asset');
-    expect(screen.queryByText('₹16,000.00')).not.toBeInTheDocument();
+    expect(screen.queryByText('₹16,000')).not.toBeInTheDocument();
     expect(bodyRows(region('Asset'))).toHaveLength(2);
   });
 });
@@ -185,13 +185,13 @@ describe('VUD rupee figures', () => {
   it('heads the dialog with the KPI value in rupees', async () => {
     respond = () => Promise.resolve({ data: response({ measure: 'amount', value: -123456.5, groupField: null }) });
     render(spendKpi);
-    expect(screen.getByText('-₹1,23,456.50')).toBeInTheDocument();
+    expect(screen.getByText('−₹1,23,456.50')).toBeInTheDocument();
     await screen.findByText('Savings');
   });
 
   it('heads a headless dialog with the response value in rupees', async () => {
     render(undefined);
-    expect(await screen.findByText('₹15,500.00')).toBeInTheDocument();
+    expect(await screen.findByText('₹15,500')).toBeInTheDocument();
   });
 
   it('labels the previous tab with the previous value in rupees', async () => {
@@ -206,7 +206,7 @@ describe('VUD rupee figures', () => {
         sentiment: 'neutral',
       },
     });
-    expect(screen.getByRole('tab', { name: /Previous · .* · ₹800\.00$/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Previous · .* · ₹800$/ })).toBeInTheDocument();
     await screen.findByText('Savings');
   });
 
@@ -225,9 +225,9 @@ describe('VUD on a phone', () => {
     render();
     const asset = await screen.findByRole('region', { name: 'Asset' });
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
-    expect(within(asset).getByText('₹16,000.00')).toBeInTheDocument();
+    expect(within(asset).getByText('₹16,000')).toBeInTheDocument();
     const savings = within(asset).getByRole('button', { name: /Savings/ });
-    expect(within(savings).getByText('₹10,000.00')).toHaveClass('font-semibold');
+    expect(within(savings).getByText('₹10,000')).toHaveClass('font-semibold');
     expect(within(savings).getByText('Bank account')).toHaveClass('text-slate-500');
     expect(within(savings).queryByText(/·/)).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Liability' })).getByText('Card')).toBeInTheDocument();

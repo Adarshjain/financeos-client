@@ -28,7 +28,7 @@ export function PriceChartCard({ history, splits = [], onOpenHistory }: { histor
     >
       <div className="px-space-16 pb-space-16">
         {history === null ? (
-          <EmptyState compact description="The price chart could not be loaded." />
+          <EmptyState compact description="Couldn't load the price chart." />
         ) : points.length < 2 ? (
           <EmptyState compact description="Not enough prices to draw a chart yet." />
         ) : (

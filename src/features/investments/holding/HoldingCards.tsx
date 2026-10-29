@@ -127,7 +127,7 @@ export function TradesCard({ instrumentId, initial, subtitle, onRecord }: Trades
         getRowId={(row) => row.id}
         phoneSub={(row) => <Text variant="label" tone="ink-3" truncate><Conceal>{row.phoneSub}</Conceal></Text>}
         pager={<SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />}
-        empty={<EmptyState compact description="No trades recorded for this holding." />}
+        empty={<EmptyState compact description="No trades yet" />}
         stickyHeader={false}
       />
     </Card>
@@ -187,7 +187,7 @@ export function SellTodayCard({ estimate, assetType }: { estimate: SellEstimate;
             placeholder="Quantity"
             value={text}
             onValueChange={(v) => setText(sanitizeQuantityInput(v, assetType))}
-            helper={typed && !typed.ok ? `Up to ${formatQuantity(estimate.quantity)} ${unit}` : undefined}
+            helper={typed && !typed.ok ? `Up to ${formatQuantity(estimate.quantity)} ${unit}.` : undefined}
           />
           {typedEstimate ? (
             <Text variant="caption" tone="ink-3">
@@ -216,7 +216,7 @@ export function DividendsCard({
   return (
     <Card title="Dividends" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
       {section.rows.length > 0 ? pager : null}
-      {section.rows.length === 0 ? <EmptyState compact description="No dividends recorded for this holding." /> : null}
+      {section.rows.length === 0 ? <EmptyState compact description="No dividends yet" /> : null}
       {section.rows.map((r) => (
         <ListRow
           key={r.id}
@@ -245,7 +245,7 @@ export function CorporateActionsCard({
   return (
     <Card title="Corporate actions" subtitle="Recorded for this holding" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
       {section.rows.length > 0 ? pager : null}
-      {section.rows.length === 0 ? <EmptyState compact description="No corporate actions recorded for this holding." /> : null}
+      {section.rows.length === 0 ? <EmptyState compact description="No corporate actions yet" /> : null}
       {section.rows.map((r) => (
         <ListRow key={r.id} title={r.title} subtitle={r.subtitle} wrap />
       ))}

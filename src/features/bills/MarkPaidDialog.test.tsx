@@ -100,7 +100,7 @@ describe('MarkPaidDialog', () => {
     renderDialog();
     fireEvent.change(screen.getByLabelText('Paid on'), { target: { value: '14/10/2026' } });
     submit();
-    expect(screen.getByText('The paid date cannot be in the future')).toBeInTheDocument();
+    expect(screen.getByText('Enter a paid date that is not in the future.')).toBeInTheDocument();
     expect(markPaid).not.toHaveBeenCalled();
   });
 
@@ -122,7 +122,7 @@ describe('MarkPaidDialog', () => {
     submit();
 
     await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith('Could not mark the bill as paid', { tone: 'danger' }),
+      expect(showToast).toHaveBeenCalledWith("Couldn't mark the bill paid. Try again.", { tone: 'danger' }),
     );
     expect(onOpenChange).not.toHaveBeenCalled();
   });

@@ -19,8 +19,8 @@ import { useTransferLink } from './useTransferLink';
 export function UnlinkedTransfersCard({ rows, unrecorded = [] }: { rows: TransferRow[]; unrecorded?: UnrecordedRow[] }) {
   const router = useRouter();
   const onError = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
-  const record = useRecordSettlement({ onError: onError('Failed to record settlement') });
-  const deleteEntry = useDeleteLending({ onError: onError('Failed to undo settlement') });
+  const record = useRecordSettlement({ onError: onError("Couldn't record settlement. Try again.") });
+  const deleteEntry = useDeleteLending({ onError: onError("Couldn't undo settlement. Try again.") });
   const [recordingKey, setRecordingKey] = React.useState<string | null>(null);
   const [recorded, setRecorded] = React.useState<ReadonlySet<string>>(new Set());
   const markRecorded = (key: string, on: boolean) =>

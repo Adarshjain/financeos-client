@@ -28,7 +28,7 @@ export function ResetInstrumentDialog({ instrument, onClose }: ResetInstrumentDi
       router.refresh();
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to reset the instrument'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't reset the instrument. Try again."), { tone: 'danger' });
     }
   };
 

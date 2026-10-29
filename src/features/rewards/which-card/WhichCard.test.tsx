@@ -64,7 +64,7 @@ describe('WhichCard', () => {
     renderPage();
     fireEvent.change(screen.getByLabelText(/Amount/), { target: { value: '' } });
     rank();
-    expect(screen.getByText('Please enter a valid spend amount greater than ₹0')).toBeInTheDocument();
+    expect(screen.getByText('Enter a spend amount above ₹0.')).toBeInTheDocument();
     expect(POST).not.toHaveBeenCalled();
   });
 
@@ -150,6 +150,6 @@ describe('WhichCard', () => {
     POST.mockRejectedValue(new Error('boom'));
     renderPage();
     rank();
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Failed to simulate card rewards', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't simulate card rewards. Try again.", { tone: 'danger' }));
   });
 });

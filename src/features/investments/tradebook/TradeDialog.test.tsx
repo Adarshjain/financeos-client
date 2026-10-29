@@ -154,7 +154,7 @@ describe('Record trade', () => {
     await screen.findByRole('dialog');
     expect(screen.queryByLabelText('Brokerage')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Itemise charges · brokerage, STT, exchange, GST, stamp duty' }));
-    for (const label of ['Brokerage', 'STT', 'Exchange txn charges', 'SEBI charges', 'Stamp duty', 'GST', 'DP charges', 'Other']) {
+    for (const label of ['Brokerage', 'STT', 'Exchange transaction charges', 'SEBI charges', 'Stamp duty', 'GST', 'DP charges', 'Other']) {
       expect(screen.getByLabelText(label)).toBeTruthy();
     }
     expect(screen.queryByRole('button', { name: /Itemise charges/ })).toBeNull();
@@ -170,8 +170,8 @@ describe('Record trade', () => {
     open();
     fireEvent.click(await screen.findByRole('button', { name: 'Record buy' }));
     expect(await screen.findByText('Choose an instrument')).toBeTruthy();
-    expect(screen.getByText('Quantity must be above zero')).toBeTruthy();
-    expect(screen.getByText('Enter the price per unit')).toBeTruthy();
+    expect(screen.getByText('Enter a quantity above zero.')).toBeTruthy();
+    expect(screen.getByText('Enter the price per unit.')).toBeTruthy();
     expect(api.POST).not.toHaveBeenCalled();
   });
 
@@ -200,7 +200,7 @@ describe('Record trade', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(router.refresh).toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith('Recorded buy for INFY', { tone: 'success' });
+    expect(toast).toHaveBeenCalledWith('Trade recorded', { tone: 'success' });
   });
 
   it('records a sell on the chosen broker', async () => {
@@ -223,7 +223,7 @@ describe('Record trade', () => {
     fireEvent.change(screen.getByLabelText('Qty'), { target: { value: '1' } });
     fireEvent.change(screen.getByLabelText('Price'), { target: { value: '10' } });
     fireEvent.click(screen.getByRole('button', { name: 'Record buy' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to record the trade', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't record the trade. Try again.", { tone: 'danger' }));
     expect(onClose).not.toHaveBeenCalled();
     expect((screen.getByLabelText('Qty') as HTMLInputElement).value).toBe('1');
   });
@@ -320,7 +320,7 @@ describe('the instrument field', () => {
     open();
     await user.click(await screen.findByRole('combobox', { name: /Instrument/ }));
     await user.type(await screen.findByPlaceholderText('Search by name or symbol'), 'zzzz');
-    expect(await screen.findByText('No instruments found.')).toBeTruthy();
+    expect(await screen.findByText('No instruments match')).toBeTruthy();
   });
 
   it('offers "Enter it manually", which opens the manual add form and selects what it creates', async () => {
@@ -338,7 +338,7 @@ describe('the instrument field', () => {
     catalog.resolve.mockRejectedValue(new Error('bad'));
     open();
     await pickInstrument();
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to add the instrument', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't add the instrument. Try again.", { tone: 'danger' }));
     expect(screen.getByRole('combobox', { name: /Instrument/ }).textContent).not.toContain('INFY');
   });
 });

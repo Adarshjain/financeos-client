@@ -19,17 +19,17 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 
 describe('route error and not-found pages', () => {
   it.each([
-    ['generic', DsAppError, 'Could not load this page'],
-    ['transactions', TransactionsError, 'Could not load transactions'],
-    ['account', AccountError, 'Could not load this account'],
-    ['loan', LoanError, 'Could not load this loan'],
-    ['person', PersonError, 'Could not load this person'],
-  ])('%s error says what failed and Try again resets', (_n, Page, title) => {
+    ['generic', DsAppError, "Couldn't load this page"],
+    ['transactions', TransactionsError, "Couldn't load transactions"],
+    ['account', AccountError, "Couldn't load this account"],
+    ['loan', LoanError, "Couldn't load this loan"],
+    ['person', PersonError, "Couldn't load this person"],
+  ])('%s error says what failed and Retry resets', (_n, Page, title) => {
     const reset = vi.fn();
     render(<Page error={new Error('raw secret')} reset={reset} />);
     expect(screen.getByText(title)).toBeInTheDocument();
     expect(screen.queryByText(/raw secret/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(reset).toHaveBeenCalledTimes(1);
   });
 

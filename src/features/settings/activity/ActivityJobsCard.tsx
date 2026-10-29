@@ -53,7 +53,7 @@ export function ActivityJobsCard({
         empty={
           <EmptyState
             compact
-            title="No background jobs found matching the selected filters."
+            title="No jobs match"
             action={
               statusFilter || typeFilter
                 ? {

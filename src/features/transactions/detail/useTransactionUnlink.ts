@@ -32,8 +32,8 @@ export function useTransactionUnlink(transactionId: string) {
   const [busyKey, setBusyKey] = React.useState<string | null>(null);
 
   const fail = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
-  const linkLending = useLinkLendingTransaction({ onError: fail('Failed to link transaction') });
-  const unlinkLending = useUnlinkLendingTransaction({ onError: fail('Failed to unlink transaction') });
+  const linkLending = useLinkLendingTransaction({ onError: fail("Couldn't link the transaction. Try again.") });
+  const unlinkLending = useUnlinkLendingTransaction({ onError: fail("Couldn't unlink the transaction. Try again.") });
 
   const refresh = async () => {
     await Promise.all([
@@ -77,10 +77,10 @@ export function useTransactionUnlink(transactionId: string) {
         note: link.note,
         members: link.members.map((m) => ({ transactionId: m.transactionId, isAnchor: m.isAnchor })),
       });
-    const ok = await run(link.id, () => deleteTransactionLink(link.id), 'Failed to unlink transaction');
+    const ok = await run(link.id, () => deleteTransactionLink(link.id), "Couldn't unlink the transaction. Try again.");
     if (ok) {
       showToast('Link removed', {
-        action: { label: 'Undo', onSelect: undoWith(link.id, restore, 'Link restored', 'Failed to restore the link') },
+        action: { label: 'Undo', onSelect: undoWith(link.id, restore, 'Link restored', "Couldn't restore the link. Try again.") },
       });
     }
   };
@@ -90,7 +90,7 @@ export function useTransactionUnlink(transactionId: string) {
     if (ref.kind === 'LENDING') {
       const ok = await run(key, () => unlinkLending.mutateAsync(ref.id));
       if (ok) {
-        showToast('Unlinked from ledger entry', {
+        showToast('Ledger entry unlinked', {
           action: {
             label: 'Undo',
             onSelect: undoWith(
@@ -102,26 +102,26 @@ export function useTransactionUnlink(transactionId: string) {
         });
       }
     } else if (ref.kind === 'DIVIDEND') {
-      const ok = await run(key, () => unlinkDividendTransaction(ref.id), 'Failed to unlink dividend');
+      const ok = await run(key, () => unlinkDividendTransaction(ref.id), "Couldn't unlink the dividend. Try again.");
       if (ok) {
         invalidateInvestmentQueries(queryClient);
-        showToast('Unlinked from dividend', {
+        showToast('Dividend unlinked', {
           action: {
             label: 'Undo',
             onSelect: undoWith(
               key,
               () => linkDividendTransaction(ref.id, transactionId),
               'Linked to dividend',
-              'Failed to restore the link',
+              "Couldn't restore the link. Try again.",
             ),
           },
         });
       }
     } else if (ref.kind === 'EPF_WITHDRAWAL') {
-      const ok = await run(key, () => unlinkEpfWithdrawalTransaction(ref.id), 'Failed to unlink EPF withdrawal');
+      const ok = await run(key, () => unlinkEpfWithdrawalTransaction(ref.id), "Couldn't unlink the EPF withdrawal. Try again.");
       if (ok) {
         refreshEpf();
-        showToast('Unlinked from the EPF withdrawal', {
+        showToast('EPF withdrawal unlinked', {
           action: {
             label: 'Undo',
             onSelect: undoWith(
@@ -131,7 +131,7 @@ export function useTransactionUnlink(transactionId: string) {
                 refreshEpf();
               },
               'Linked to the EPF withdrawal',
-              'Failed to restore the link',
+              "Couldn't restore the link. Try again.",
             ),
           },
         });
@@ -149,7 +149,7 @@ export function useTransactionUnlink(transactionId: string) {
         await deleteLoanPayment(loanId, ref.id);
         await queryClient.invalidateQueries({ queryKey: keys.loans.all });
       },
-      'Failed to remove settlement',
+      "Couldn't remove the settlement. Try again.",
     );
     if (ok) showToast('Settlement removed');
     return ok;

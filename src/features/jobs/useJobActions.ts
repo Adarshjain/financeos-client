@@ -22,7 +22,7 @@ export function useJobActions({ onRetried }: { onRetried?: (job: { id: string })
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
       router.refresh();
     },
-    onError: (err) => toastError(err, 'Failed to cancel job'),
+    onError: (err) => toastError(err, "Couldn't cancel the job. Try again."),
   });
 
   const retryMutation = useMutation({
@@ -35,7 +35,7 @@ export function useJobActions({ onRetried }: { onRetried?: (job: { id: string })
       if (onRetried) onRetried(retried);
       else router.refresh();
     },
-    onError: (err) => toastError(err, 'Failed to retry job'),
+    onError: (err) => toastError(err, "Couldn't retry the job. Try again."),
   });
 
   return {

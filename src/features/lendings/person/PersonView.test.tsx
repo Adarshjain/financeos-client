@@ -152,7 +152,7 @@ describe('header', () => {
     expect(screen.getByText('settle Rahul Sharma borrowed 400')).toBeInTheDocument();
   });
 
-  it('the top bar + opens Add ledger entry with this person already picked', () => {
+  it('the top bar + opens Record ledger entry with this person already picked', () => {
     renderView();
     fireEvent.click(topBarAdd());
     expect(screen.getByText('add entry for Rahul Sharma')).toBeInTheDocument();
@@ -297,9 +297,9 @@ describe('edit person', () => {
     expect(name).toHaveValue('Rahul Sharma');
     fireEvent.change(name, { target: { value: ' Rahul S ' } });
     fireEvent.change(screen.getByLabelText(/Notes/), { target: { value: '' } });
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save person' }));
     await waitFor(() => expect(m.updateCp.mutateAsync).toHaveBeenCalledWith({ name: 'Rahul S', notes: undefined }));
-    expect(toast).toHaveBeenCalledWith('Person details updated');
+    expect(toast).toHaveBeenCalledWith('Person updated');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -307,7 +307,7 @@ describe('edit person', () => {
     renderView();
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     fireEvent.change(await screen.findByLabelText('Name'), { target: { value: ' ' } });
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save person' }));
     expect(await screen.findByText('Name is required')).toBeInTheDocument();
     expect(m.updateCp.mutateAsync).not.toHaveBeenCalled();
   });
@@ -318,7 +318,7 @@ describe('delete person', () => {
     renderView();
     await openMenu();
     await user.click(await screen.findByRole('menuitem', { name: 'Delete person' }));
-    expect(await screen.findByText('Delete Rahul Sharma?')).toBeInTheDocument();
+    expect(await screen.findByText('Rahul Sharma goes.')).toBeInTheDocument();
     expect(screen.getByText('Their whole ledger goes (4 entries).')).toBeInTheDocument();
     expect(m.deleteCp.mutateAsync).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Delete person' }));
@@ -344,7 +344,7 @@ describe('entries', () => {
     expect(await screen.findByText('Edit ledger entry')).toBeInTheDocument();
     expect(screen.getByLabelText('Amount')).toHaveValue('25000');
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '26000' } });
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.updateLending.mutateAsync).toHaveBeenCalledTimes(1));
     expect(m.updateLending.mutateAsync).toHaveBeenCalledWith({
       id: 'e2',
@@ -366,13 +366,13 @@ describe('entries', () => {
     renderView();
     await user.click(row('Laptop advance'));
     await user.click(await screen.findByRole('button', { name: 'Pick tx9' }));
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.linkTransaction.mutateAsync).toHaveBeenCalledWith({ id: 'e2', transactionId: 'tx9' }));
     await waitFor(() => expect(screen.queryByText('Edit ledger entry')).toBeNull());
 
     await user.click(row('Part repayment'));
     await user.click(await screen.findByRole('button', { name: 'Remove tx' }));
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.unlinkTransaction.mutateAsync).toHaveBeenCalledWith('e3'));
   });
 
@@ -380,7 +380,7 @@ describe('entries', () => {
     renderView();
     await user.click(row('Part repayment'));
     await user.click(await screen.findByRole('button', { name: 'Remove tx' }));
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.updateLending.mutateAsync).toHaveBeenCalled());
     expect(m.unlinkTransaction.mutateAsync).toHaveBeenCalledWith('e3');
     expect(m.unlinkTransaction.mutateAsync.mock.invocationCallOrder[0]).toBeLessThan(
@@ -393,7 +393,7 @@ describe('entries', () => {
     renderView();
     await user.click(row('Part repayment'));
     await user.click(await screen.findByRole('button', { name: 'Pick tx9' }));
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.linkTransaction.mutateAsync).toHaveBeenCalledWith({ id: 'e3', transactionId: 'tx9' }));
     const order = [m.unlinkTransaction, m.updateLending, m.linkTransaction].map((x) => x.mutateAsync.mock.invocationCallOrder[0]);
     expect(order).toEqual([...order].sort((a, b) => a - b));
@@ -403,7 +403,7 @@ describe('entries', () => {
     renderView();
     await user.click(row('Laptop advance'));
     await user.click(await screen.findByRole('button', { name: 'Delete entry' }));
-    expect(await screen.findByText('Delete this lent entry of ₹25,000?')).toBeInTheDocument();
+    expect(await screen.findByText('This lent entry of ₹25,000 goes.')).toBeInTheDocument();
     expect(m.deleteLending.mutateAsync).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Delete entry' }));
     await waitFor(() => expect(m.deleteLending.mutateAsync).toHaveBeenCalledWith('e2'));
@@ -415,7 +415,7 @@ describe('entries', () => {
     m.updateLending.mutateAsync.mockRejectedValue(new Error('boom'));
     renderView();
     await user.click(row('Laptop advance'));
-    await user.click(await screen.findByRole('button', { name: 'Save changes' }));
+    await user.click(await screen.findByRole('button', { name: 'Save entry' }));
     await waitFor(() => expect(m.updateLending.mutateAsync).toHaveBeenCalled());
     expect(screen.getByText('Edit ledger entry')).toBeInTheDocument();
     expect(toast).not.toHaveBeenCalledWith('Entry updated');

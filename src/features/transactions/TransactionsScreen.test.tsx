@@ -129,7 +129,7 @@ describe('TransactionsScreen', () => {
   it('opens Add transaction from the app bar +, on the one account the list is filtered to', () => {
     setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'] } });
     fireEvent.click(screen.getByRole('button', { name: /^Add$/ }));
-    expect(screen.getByText('Add transaction')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Bank Savings');
   });
 
@@ -187,7 +187,7 @@ describe('TransactionsScreen', () => {
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
       await waitFor(() => expect(window.location.search).toBe(''));
-      expect(screen.queryByText('Could not load this transaction.')).toBeNull();
+      expect(screen.queryByText("Couldn't load this transaction.")).toBeNull();
       expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
     });
 
@@ -204,7 +204,7 @@ describe('TransactionsScreen', () => {
       window.history.replaceState(null, '', `/transactions?txn=${ID}`);
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
-      expect(await screen.findByText('Could not load this transaction.')).toBeInTheDocument();
+      expect(await screen.findByText("Couldn't load this transaction.")).toBeInTheDocument();
       expect(window.location.search).toBe(`?txn=${ID}`);
     });
 

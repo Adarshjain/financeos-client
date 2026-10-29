@@ -42,7 +42,7 @@ function ExistingWithdrawals({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
         <Skeleton width="60%" height={14} />
       ) : epf.optionsError ? (
         <Text variant="body" tone="danger" as="p">
-          Could not load the withdrawals. Try again.
+          Couldn&apos;t load the withdrawals. Try again.
         </Text>
       ) : epf.options.length === 0 ? (
         <Text variant="body" tone="ink-3" as="p">

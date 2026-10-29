@@ -173,14 +173,14 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
         </FilterBar>
         {rules === null ? (
           <ErrorState
-            title="Could not load rules"
-            description="The rules request failed. Try again, and quote the reference if it keeps failing."
-            action={{ label: 'Try again', onSelect: () => router.refresh() }}
+            title="Couldn't load rules"
+            description="Retry, and quote the reference if it keeps failing."
+            action={{ label: 'Retry', onSelect: () => router.refresh() }}
             reference={reference}
           />
         ) : rules.rows.length === 0 ? (
           <EmptyState
-            title="No rules found"
+            title={hasRuleFilters(state) ? 'No rules match' : 'No rules yet'}
             description={
               hasRuleFilters(state)
                 ? 'Try adjusting your search or filters.'
@@ -263,7 +263,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
           if (!open && !remove.isPending) setDialog(null);
         }}
         title="Delete rule?"
-        description="Transactions already categorized by this rule keep their categories."
+        description="Transactions already categorized by this rule keep their categories. This can't be undone."
         confirmLabel="Delete rule"
         confirmLoading={remove.isPending}
         onConfirm={() => {

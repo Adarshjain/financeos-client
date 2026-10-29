@@ -119,7 +119,7 @@ export function SuggestionsCard({ brokerAccountId, onRecord }: SuggestionsCardPr
       dropSuggestions(qc, brokerAccountId, rows.map((r) => r.row.key));
       await mutations.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to record the dividends'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't record the dividends. Try again."), { tone: 'danger' });
     } finally {
       setRecordingAll(false);
     }
@@ -151,9 +151,9 @@ export function SuggestionsCard({ brokerAccountId, onRecord }: SuggestionsCardPr
           <Skeleton height={14} width="40%" />
         </div>
       ) : scan.isError ? (
-        <EmptyState compact description="Could not scan for dividends. Try again." action={{ label: 'Rescan', variant: 'link', onSelect: rescan }} />
+        <EmptyState compact description="Couldn't scan for dividends. Try again." action={{ label: 'Rescan', variant: 'link', onSelect: rescan }} />
       ) : rows.length === 0 ? (
-        <EmptyState compact description="Nothing new found" />
+        <EmptyState compact description="No new dividends" />
       ) : (
         rows.map(({ s, row }) => (
           <ListRow
@@ -170,7 +170,7 @@ export function SuggestionsCard({ brokerAccountId, onRecord }: SuggestionsCardPr
       )}
       {scan.data ? (
         <Text variant="caption" tone="ink-3" as="div" className="px-space-16 py-space-8">
-          {`Checked ${checked} ${checked === 1 ? 'symbol' : 'symbols'}${skipped.length > 0 ? `. Could not check ${skipped.join(', ')}` : ''}.`}
+          {`Checked ${checked} ${checked === 1 ? 'symbol' : 'symbols'}${skipped.length > 0 ? `. Couldn't check ${skipped.join(', ')}` : ''}.`}
         </Text>
       ) : null}
     </Card>

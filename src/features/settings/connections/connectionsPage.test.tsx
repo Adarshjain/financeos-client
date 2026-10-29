@@ -77,7 +77,7 @@ describe('ConnectionsPage banners', () => {
   it('shows the success banner from the OAuth return, then clears the params', () => {
     search = 'gmail=success&email=a%40b.test&focus=attention';
     renderWithQuery(<ConnectionsPage oauth={{ kind: 'success', email: 'a@b.test' }} />);
-    expect(screen.getByText('Successfully connected')).toBeInTheDocument();
+    expect(screen.getByText('Gmail connected')).toBeInTheDocument();
     expect(screen.getByText('a@b.test')).toBeInTheDocument();
     expect(replace).toHaveBeenCalledWith('/settings/connections?focus=attention');
   });
@@ -88,7 +88,7 @@ describe('ConnectionsPage banners', () => {
     expect(screen.getByText('Google did not grant access')).toBeInTheDocument();
     unmount();
     renderWithQuery(<ConnectionsPage oauth={{ kind: 'error' }} />);
-    expect(screen.getByText('An unexpected error occurred during Google authorization.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't connect Gmail. Try again.")).toBeInTheDocument();
   });
 
   it('dismisses the OAuth banner', () => {
@@ -139,7 +139,7 @@ describe('RecentSyncJobsCard', () => {
     unmount();
     jobsState = { jobs: [], loading: false };
     renderWithQuery(<RecentSyncJobsCard />);
-    expect(screen.getByText('No recent sync jobs yet.')).toBeInTheDocument();
+    expect(screen.getByText('No recent sync jobs yet')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/settings/activity?type=GMAIL_SYNC');
   });
 

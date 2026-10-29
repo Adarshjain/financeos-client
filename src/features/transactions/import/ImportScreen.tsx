@@ -154,7 +154,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
               onOpen={(job) => router.push(importJobHref(job.id))}
               empty={
                 <Text variant="body" tone="ink-3" as="p" className="p-space-16">
-                  No statement imports yet.
+                  No statement imports yet
                 </Text>
               }
             />

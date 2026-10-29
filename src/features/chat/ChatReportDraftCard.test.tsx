@@ -153,11 +153,11 @@ describe('create draft', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    expect(await screen.findByText(/^Saved as report and added to Home/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Report saved and added to Home/)).toBeInTheDocument();
     expect(actions.createHomeWithReport).toHaveBeenCalledWith(expect.objectContaining({ id: 'r1' }));
     expect(actions.addReportWidget).not.toHaveBeenCalled();
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'saved-home', reportId: 'r1', reportName: 'Monthly spend by category', widgetId: 'w9', dashboardId: 'h1', createdDashboard: true });
-    expect(toast).toHaveBeenCalledWith('Saved as report and added to Home', expect.anything());
+    expect(toast).toHaveBeenCalledWith('Report saved and added to Home', expect.anything());
   });
 
   it('keeps Add to Home off until the dashboards list has loaded, so no second Home is made', async () => {
@@ -173,7 +173,7 @@ describe('create draft', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    await screen.findByText(/^Saved as report and added to Home/);
+    await screen.findByText(/^Report saved and added to Home/);
     undoToast().onSelect();
     expect(await screen.findByRole('button', { name: 'Add to Home' })).toBeInTheDocument();
     expect(actions.removeDashboard).toHaveBeenCalledWith('h1');
@@ -187,11 +187,11 @@ describe('create draft', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('Save as report saves, shows Saved as report with Open report, keeps the outcome and toasts with Undo', async () => {
+  it('Save as report saves, shows Report saved with Open report, keeps the outcome and toasts with Undo', async () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
-    expect(await screen.findByText(/^Saved as report/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Report saved/)).toBeInTheDocument();
     expect(actions.saveDraftAsReport).toHaveBeenCalledWith(create);
     expect(actions.addReportWidget).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/reports/r1');
@@ -204,7 +204,7 @@ describe('create draft', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
-    await screen.findByText(/^Saved as report/);
+    await screen.findByText(/^Report saved/);
     undoToast().onSelect();
     expect(await screen.findByRole('button', { name: 'Save as report' })).toBeInTheDocument();
     expect(actions.removeReport).toHaveBeenCalledWith('r1');
@@ -215,18 +215,18 @@ describe('create draft', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    expect(await screen.findByText(/^Saved as report and added to Home/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Report saved and added to Home/)).toBeInTheDocument();
     expect(actions.addReportWidget).toHaveBeenCalledWith('d1', expect.objectContaining({ id: 'r1' }));
     expect(actions.createHomeWithReport).not.toHaveBeenCalled();
     expect(remember).toHaveBeenCalledWith('c1', 'm1', { action: 'saved-home', reportId: 'r1', reportName: 'Monthly spend by category', widgetId: 'w1', dashboardId: 'd1' });
-    expect(toast).toHaveBeenCalledWith('Saved as report and added to Home', expect.anything());
+    expect(toast).toHaveBeenCalledWith('Report saved and added to Home', expect.anything());
   });
 
   it('the card Undo after Add to Home removes the widget, then the report', async () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    await screen.findByText(/^Saved as report and added to Home/);
+    await screen.findByText(/^Report saved and added to Home/);
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(await screen.findByRole('button', { name: 'Add to Home' })).toBeInTheDocument();
     expect(actions.removeWidgetFrom).toHaveBeenCalledWith('d1', 'w1');
@@ -239,8 +239,8 @@ describe('create draft', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    expect(await screen.findByText(/^Saved as report/)).toBeInTheDocument();
-    expect(toast).toHaveBeenCalledWith('Saved the report, but could not add it to Home.', { tone: 'danger' });
+    expect(await screen.findByText(/^Report saved/)).toBeInTheDocument();
+    expect(toast).toHaveBeenCalledWith("Report saved, but couldn't add it to Home.", { tone: 'danger' });
     expect(remember).toHaveBeenCalledWith('c1', 'm1', expect.objectContaining({ action: 'saved' }));
   });
 
@@ -262,7 +262,7 @@ describe('guards', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
-    await screen.findByText(/^Saved as report/);
+    await screen.findByText(/^Report saved/);
     undoToast().onSelect();
     undoToast().onSelect();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
@@ -277,7 +277,7 @@ describe('guards', () => {
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
-    await screen.findByText(/^Saved as report/);
+    await screen.findByText(/^Report saved/);
     undoToast().onSelect();
     expect(await screen.findByRole('button', { name: 'Save as report' })).toBeInTheDocument();
     expect(remember).toHaveBeenLastCalledWith('c1', 'm1', { action: 'undone' });
@@ -291,7 +291,7 @@ describe('guards', () => {
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith("Couldn't save this in the chat. After a reload the draft may show its actions again.", { tone: 'danger' }),
     );
-    expect(screen.getByText(/^Saved as report/)).toBeInTheDocument();
+    expect(screen.getByText(/^Report saved/)).toBeInTheDocument();
   });
 
   it('refetches the dashboards after a delete and after undoing a save', async () => {
@@ -308,7 +308,7 @@ describe('guards', () => {
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Home' }));
-    await screen.findByText(/^Saved as report and added to Home/);
+    await screen.findByText(/^Report saved and added to Home/);
     spy.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await screen.findByRole('button', { name: 'Add to Home' });
@@ -319,7 +319,7 @@ describe('guards', () => {
 describe('a stored outcome', () => {
   it('shows the saved state when the conversation is reopened, and Undo still works from the stored ids', async () => {
     setup(create, { draftResult: { action: 'saved-home', reportId: 'r1', widgetId: 'w1', dashboardId: 'd1' } });
-    expect(screen.getByText(/^Saved as report and added to Home/)).toBeInTheDocument();
+    expect(screen.getByText(/^Report saved and added to Home/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open report' })).toHaveAttribute('href', '/reports/r1');
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(actions.removeWidgetFrom).toHaveBeenCalledWith('d1', 'w1'));
@@ -388,7 +388,7 @@ describe('delete draft', () => {
     setup(del);
     fireEvent.click(screen.getByRole('button', { name: 'Delete report' }));
     expect(await screen.findByText('Delete “Swiggy in October”?')).toBeInTheDocument();
-    expect(screen.getByText('The report and its widget on Home go. Your transactions stay.')).toBeInTheDocument();
+    expect(screen.getByText("The report and its widget on Home go. Your transactions stay. This can't be undone.")).toBeInTheDocument();
     expect(actions.removeReport).not.toHaveBeenCalled();
     fireEvent.click(screen.getAllByRole('button', { name: 'Delete report' }).at(-1)!);
     expect(await screen.findByText(/^Report deleted/)).toBeInTheDocument();

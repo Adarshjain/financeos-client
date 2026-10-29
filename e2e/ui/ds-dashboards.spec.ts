@@ -86,7 +86,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: 'Set as default', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
       // Not editing: no bottom bar and no grips.
-      await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Save dashboard', exact: true })).toHaveCount(0);
       await expect(page.locator('[data-widget-grid-grip]')).toHaveCount(0);
     });
 
@@ -105,7 +105,7 @@ for (const viewport of VIEWPORTS) {
       await expect.poll(() => itemIds(page)).toEqual(['wb', 'wr']);
       await expect(page.getByText('Unsaved changes')).toBeVisible();
 
-      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await page.getByRole('button', { name: 'Save dashboard', exact: true }).click();
       await expect(page.getByText('Dashboard saved')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
       expect(await itemIds(page)).toEqual(['wb', 'wr']);
@@ -120,10 +120,10 @@ for (const viewport of VIEWPORTS) {
       await seedKpiReport();
       await page.goto('/dashboards/new');
       await expect(page.getByLabel('Dashboard name')).toBeVisible({ timeout: 45_000 });
-      await expect(page.getByText('Nothing on this dashboard yet')).toBeVisible();
+      await expect(page.getByText('No widgets yet')).toBeVisible();
 
       // No name: the field says so, a toast says why, nothing is created.
-      await page.getByRole('button', { name: 'Create', exact: true }).click();
+      await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
       await expect(page.getByText('Name the dashboard.')).toBeVisible();
       await expect(page.getByText("Couldn't save the dashboard. Fix the fields marked in red.")).toBeVisible();
       await expect(page.getByLabel('Dashboard name')).toBeFocused();
@@ -153,7 +153,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Unsaved changes')).toBeVisible();
 
       const before = await gridState(page);
-      await page.getByRole('button', { name: 'Create', exact: true }).click();
+      await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
       await expect(page.getByText('Dashboard created')).toBeVisible();
       await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
@@ -172,7 +172,7 @@ for (const viewport of VIEWPORTS) {
       const title = page.getByLabel('Header', { exact: true });
       await expect(title).toBeFocused();
       await title.fill('This month');
-      await page.getByRole('button', { name: 'Create', exact: true }).click();
+      await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
       await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
       await expect(page.getByRole('heading', { name: 'This month' })).toBeVisible({ timeout: 45_000 });
       // A header is full width and not a widget.
@@ -215,7 +215,7 @@ for (const viewport of VIEWPORTS) {
       // Net worth's underlying data is its value tap only (owner 2026-10-26).
       await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toHaveCount(0);
       await page.getByRole('menuitem', { name: 'Duplicate as my report' }).click();
-      await expect(page.getByText(/Saved "Net worth" to your reports/)).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByText(/Report "Net worth" saved/)).toBeVisible({ timeout: 30_000 });
 
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
       await page.getByRole('menuitem', { name: 'Edit report' }).click();
@@ -235,7 +235,7 @@ for (const viewport of VIEWPORTS) {
       const { dashboard } = await seedBoard();
       await page.goto(`/dashboards/${dashboard.id}`);
       await page.getByRole('button', { name: 'Set as default', exact: true }).click();
-      await expect(page.getByText('Set as default', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('Default dashboard set', { exact: true }).first()).toBeVisible();
       await expect(page.getByRole('button', { name: 'Clear default', exact: true })).toBeVisible();
       await page.reload();
       await expect(page.getByRole('button', { name: 'Clear default', exact: true })).toBeVisible({ timeout: 45_000 });
@@ -304,7 +304,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: /Remove widget/ }).first().click();
       await expect(page.locator('[data-widget-grid-item]')).toHaveCount(1);
       await page.getByLabel('Dashboard name').fill('Ds trimmed down');
-      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await page.getByRole('button', { name: 'Save dashboard', exact: true }).click();
       await expect(page.getByText('Dashboard saved')).toBeVisible();
       await page.reload();
       await expect(page.getByText('1 widget', { exact: true })).toBeVisible({ timeout: 45_000 });
@@ -474,7 +474,7 @@ for (const viewport of VIEWPORTS) {
         // Drag the corner until the widget is a quarter of the grid wide.
         await drag(page, at, { x: at.x + (gridBox.width * 0.25 - itemBox.width), y: at.y });
         await expect(item).toHaveAttribute('data-width', 'quarter');
-        await page.getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByRole('button', { name: 'Save dashboard', exact: true }).click();
         await expect(page.getByText('Dashboard saved')).toBeVisible();
         await page.reload();
         await expect(page.locator('[data-widget-grid-item="wr"]')).toHaveAttribute('data-width', 'quarter', { timeout: 45_000 });

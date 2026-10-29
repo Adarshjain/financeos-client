@@ -13,7 +13,7 @@ export interface EpfFormOptions {
 
 /** The employers and the newest contribution the add form starts from. */
 export const loadEpfFormOptions = createDomainAction(
-  { fallbackError: 'Failed to load the employers' },
+  { fallbackError: "Couldn't load the employers. Try again." },
   async (): Promise<EpfFormOptions> => {
     const [employers, summary] = await Promise.all([epfApi.employers(), epfApi.summary()]);
     return { employers, latestContribution: summary.latestContribution ?? null };

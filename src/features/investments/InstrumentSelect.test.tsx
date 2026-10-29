@@ -85,7 +85,7 @@ describe('InstrumentSelect', () => {
     const { unmount } = renderWithQuery(<Harness />);
     await search();
     await user.click(await screen.findByRole('option', { name: /^INFY · Infosys/ }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to add the instrument', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't add the instrument. Try again.", { tone: 'danger' }));
     unmount();
 
     const onResolveError = vi.fn();
@@ -93,7 +93,7 @@ describe('InstrumentSelect', () => {
     renderWithQuery(<Harness onResolveError={onResolveError} />);
     await search();
     await user.click(await screen.findByRole('option', { name: /^INFY · Infosys/ }));
-    await waitFor(() => expect(onResolveError).toHaveBeenCalledWith('Failed to add the instrument'));
+    await waitFor(() => expect(onResolveError).toHaveBeenCalledWith("Couldn't add the instrument. Try again."));
     expect(toast).not.toHaveBeenCalled();
   });
 
@@ -110,18 +110,18 @@ describe('InstrumentSelect', () => {
     expect(onEnterManually).toHaveBeenCalled();
   });
 
-  it('says Searching, not "No instruments found", while the search waits for typing to pause', async () => {
+  it('says Searching, not "No instruments match", while the search waits for typing to pause', async () => {
     catalog.settling = true;
     renderWithQuery(<Harness />);
     await search();
     expect(await screen.findByText('Searching…')).toBeTruthy();
-    expect(screen.queryByText('No instruments found.')).toBeNull();
+    expect(screen.queryByText('No instruments match')).toBeNull();
   });
 
-  it('says No instruments found once the search has answered with nothing', async () => {
+  it('says No instruments match once the search has answered with nothing', async () => {
     catalog.results = [];
     renderWithQuery(<Harness />);
     await search();
-    expect(await screen.findByText('No instruments found.')).toBeTruthy();
+    expect(await screen.findByText('No instruments match')).toBeTruthy();
   });
 });

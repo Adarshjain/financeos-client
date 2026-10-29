@@ -325,13 +325,13 @@ describe('events and charges', () => {
     renderView();
     await user.click(screen.getAllByRole('button', { name: 'More options' })[1]);
     await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
-    expect(await screen.findByText('Removes Prepayment, 1 Jun · reduce tenure.')).toBeInTheDocument();
+    expect(await screen.findByText('Prepayment, 1 Jun · reduce tenure goes.')).toBeInTheDocument();
     expect(screen.getByText('A linked bank transaction stays; only the link goes.')).toBeInTheDocument();
     expect(m.deleteEvent.mutateAsync).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(m.deleteEvent.mutateAsync).not.toHaveBeenCalled();
-    expect(screen.queryByText('Removes Prepayment, 1 Jun · reduce tenure.')).toBeNull();
+    expect(screen.queryByText('Prepayment, 1 Jun · reduce tenure goes.')).toBeNull();
   });
 
   it('deletes the event once confirmed', async () => {
@@ -340,7 +340,7 @@ describe('events and charges', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
     await user.click(await screen.findByRole('button', { name: 'Delete event' }));
     await waitFor(() => expect(m.deleteEvent.mutateAsync).toHaveBeenCalledWith('e1'));
-    await waitFor(() => expect(screen.queryByText(/^Removes Prepayment/)).toBeNull());
+    await waitFor(() => expect(screen.queryByText(/^Prepayment, 1 Jun/)).toBeNull());
   });
 
   it('keeps the confirmation open when the server refuses the delete', async () => {
@@ -350,14 +350,14 @@ describe('events and charges', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
     await user.click(await screen.findByRole('button', { name: 'Delete event' }));
     await waitFor(() => expect(m.deleteEvent.mutateAsync).toHaveBeenCalled());
-    expect(screen.getByText(/^Removes Prepayment/)).toBeInTheDocument();
+    expect(screen.getByText(/^Prepayment, 1 Jun/)).toBeInTheDocument();
   });
 
   it('asks before deleting a charge and deletes it once confirmed', async () => {
     renderView({ detail: detailFixture({ charges: [chargeFixture()] }) });
     await user.click(screen.getAllByRole('button', { name: 'More options' }).at(-1)!);
     await user.click(await screen.findByRole('menuitem', { name: 'Delete charge' }));
-    expect(await screen.findByText('Removes Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha.')).toBeInTheDocument();
+    expect(await screen.findByText('Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha goes.')).toBeInTheDocument();
     expect(m.deleteCharge.mutateAsync).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Delete charge' }));
     await waitFor(() => expect(m.deleteCharge.mutateAsync).toHaveBeenCalledWith('c1'));
@@ -414,8 +414,8 @@ describe('matching', () => {
   it('says so when no debit matches', async () => {
     renderView();
     await user.click(screen.getByRole('button', { name: 'Find matches' }));
-    expect(await screen.findByText('No matching bank transactions found for due or overdue installments.')).toBeInTheDocument();
-    expect(toast).toHaveBeenCalledWith('No matching bank transactions found (±7 days)');
+    expect(await screen.findByText('No matching bank transactions for due or overdue installments.')).toBeInTheDocument();
+    expect(toast).toHaveBeenCalledWith('No matching bank transactions (±7 days)');
   });
 });
 
@@ -468,7 +468,7 @@ describe('Prepay, the top bar + and the menu', () => {
     renderView();
     await openMenu('More actions');
     await user.click(await screen.findByRole('menuitem', { name: 'Delete loan' }));
-    expect(await screen.findByText('Delete "Home Loan · SBI MaxGain" and all associated schedule data?')).toBeInTheDocument();
+    expect(await screen.findByText('"Home Loan · SBI MaxGain" and its schedule data go.')).toBeInTheDocument();
     expect(screen.getByText('Its schedule, payments, events and charges are deleted.')).toBeInTheDocument();
     expect(screen.getByText('Bank transactions stay; only their links to this loan go.')).toBeInTheDocument();
     expect(m.deleteLoan.mutateAsync).not.toHaveBeenCalled();

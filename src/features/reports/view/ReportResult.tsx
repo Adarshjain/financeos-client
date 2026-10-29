@@ -219,7 +219,7 @@ function RawTableResult({ data, catalog, busy, sort, onSortChange, onPageChange,
       busy={busy}
       pager={pager}
       phoneSub={phoneSub}
-      empty={<EmptyState compact description="No rows match." />}
+      empty={<EmptyState compact description="No rows match" />}
       stickyHeader={false}
     />
   );
@@ -299,7 +299,7 @@ function PivotTableResult({ data, catalog, busy, sort, onSortChange, onPageChang
       rowState={canOpenTableRow ? (row) => ({ pressable: canOpenTableRow(row.__row) }) : undefined}
       busy={busy}
       pager={pager}
-      empty={<EmptyState compact description="No rows match." />}
+      empty={<EmptyState compact description="No rows match" />}
       stickyHeader={false}
     />
   );

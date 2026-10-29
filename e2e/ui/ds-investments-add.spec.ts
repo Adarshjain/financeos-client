@@ -17,7 +17,7 @@ const TABS = [
   { path: '/investments', dialog: 'Record trade' },
   { path: '/investments/tradebook', dialog: 'Record trade' },
   { path: '/investments/dividends', dialog: 'Record dividend' },
-  { path: '/investments/fno', dialog: 'Add F&O trade' },
+  { path: '/investments/fno', dialog: 'Record F&O trade' },
   { path: '/investments/corporate-actions', dialog: 'Record corporate action' },
   { path: '/investments/instruments', dialog: 'Add instrument' },
 ];
@@ -90,7 +90,7 @@ for (const viewport of VIEWPORTS) {
         ['Record trade', 'Record trade'],
         ['Record dividend', 'Record dividend'],
         ['Record corporate action', 'Record corporate action'],
-        ['Record price', 'Set manual price'],
+        ['Record price', 'Record price'],
       ]) {
         await plus(page).click();
         await page.getByRole('menuitem', { name: item }).click();

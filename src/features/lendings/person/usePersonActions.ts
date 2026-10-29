@@ -29,7 +29,7 @@ export function usePersonActions(counterpartyId: string) {
   const updatePerson = async (name: string, notes: string): Promise<boolean> => {
     try {
       await m.updateCp.mutateAsync({ name: name.trim(), notes: notes.trim() || undefined });
-      showToast('Person details updated');
+      showToast('Person updated');
       router.refresh();
       return true;
     } catch {

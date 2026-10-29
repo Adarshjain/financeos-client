@@ -44,9 +44,9 @@ export function useIngestForm({
       // Imported transactions move balances, the emergency fund and dashboard widgets too.
       void invalidateMoneyQueries(qc);
     } else if (job.status === 'FAILED') {
-      notify.error(job.errorMessage || 'Ingestion failed.');
+      notify.error(job.errorMessage || "Couldn't process the import. Try again.");
     } else {
-      notify.info('Ingestion cancelled.');
+      notify.info('Import cancelled');
     }
     // The toast points at the jobs panel, so refresh it now rather than on its next poll tick.
     qc.invalidateQueries({ queryKey: keys.jobs.all });
@@ -152,11 +152,11 @@ export function useIngestForm({
     if (e) e.preventDefault();
     if (isUploading) return;
     if (!selectedAccountId) {
-      notify.error('Please select an account first.');
+      notify.error('Select an account first.');
       return;
     }
     if (files.length === 0) {
-      notify.error('Please select at least one file to upload.');
+      notify.error('Select at least one file to upload.');
       return;
     }
 
@@ -191,7 +191,7 @@ export function useIngestForm({
       }
     } catch (err: unknown) {
       notify.dismiss(toastId);
-      toastError(err, 'Failed to start ingestion job');
+      toastError(err, "Couldn't start the import. Try again.");
     }
   };
 

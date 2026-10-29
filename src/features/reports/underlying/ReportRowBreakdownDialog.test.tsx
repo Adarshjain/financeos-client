@@ -101,7 +101,7 @@ describe('ReportRowBreakdownDialog', () => {
   it('shows the error when the request fails', async () => {
     vi.mocked(api.GET).mockRejectedValue(new Error('boom') as never);
     render();
-    expect(await screen.findByText('Could not load the breakdown')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the breakdown")).toBeInTheDocument();
   });
 
   it('explains an item the total leaves out', async () => {

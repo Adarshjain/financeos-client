@@ -40,14 +40,14 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
           Couldn&apos;t load notifications.
         </Text>
         <Button variant="link" size="sm" onClick={() => void refetch()}>
-          Try again
+          Retry
         </Button>
       </div>
     );
   } else if (items.length === 0) {
     body = (
       <Text as="p" variant="body" tone="ink-3" className="px-space-12 py-space-8">
-        No notifications yet.
+        No notifications yet
       </Text>
     );
   } else {

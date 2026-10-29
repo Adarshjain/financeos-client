@@ -54,7 +54,7 @@ const DEFAULT_COLUMNS: BreakdownColumn[] = ['amount', 'share', 'change'];
 const ORDER: BreakdownColumn[] = ['amount', 'share', 'count', 'avg', 'change'];
 const HEADERS: Record<BreakdownColumn, string> = { amount: 'Amount', share: 'Share', count: 'Txns', avg: 'Avg', change: 'vs prev' };
 
-const txns = (n: number) => formatCount(n, ['txn', 'txns']);
+const txns = (n: number) => formatCount(n, ['transaction', 'transactions']);
 const percent = (n: number) => formatPercent(n, { decimals: 0 });
 const SERIES: ProgressBarColor[] = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
 const clamp = (n: number) => Math.min(100, Math.max(0, n));

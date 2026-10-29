@@ -72,7 +72,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Asset type' }).click();
       await page.getByRole('option', { name: 'Mutual funds' }).click();
       await page.waitForURL(/type=mutual_fund/);
-      await expect(page.getByText('No holdings match.')).toBeVisible();
+      await expect(page.getByText('No holdings match')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
@@ -151,11 +151,11 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Sell 20: Gain ₹1,854 · long term · tax ≈ ₹0 · ₹1,23,146 exemption left')).toBeVisible();
 
       await box.fill('61');
-      await expect(page.getByText(/^Up to \d+ shares$/)).toBeVisible();
+      await expect(page.getByText(/^Up to \d+ shares\.$/)).toBeVisible();
       await expect(page.getByText(/^Sell \d+:/)).toHaveCount(0);
 
       await box.fill('0');
-      await expect(page.getByText(/^Up to \d+ shares$/)).toBeVisible();
+      await expect(page.getByText(/^Up to \d+ shares\.$/)).toBeVisible();
     });
 
     test('Holding page: only manual prices can be edited, and a delete asks first', async ({ page }) => {
@@ -179,7 +179,7 @@ for (const viewport of VIEWPORTS) {
       const confirm = page.getByRole('dialog', { name: 'Delete manual price' });
       await expect(confirm.getByText('Only this price is deleted.')).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete price' }).click();
-      await expect(page.getByText('Price entry deleted')).toBeVisible();
+      await expect(page.getByText('Price deleted')).toBeVisible();
       await expect(history.getByRole('button', { name: 'Delete' })).toHaveCount(1);
     });
 

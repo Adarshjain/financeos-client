@@ -73,7 +73,7 @@ describe('InboxBillHost', () => {
     expect(screen.getByLabelText(/Minimum due/)).toHaveValue('1700');
     expect(screen.getByLabelText('Due date')).toHaveValue('15/10/2026');
     fireEvent.change(screen.getByLabelText('Total due (₹)'), { target: { value: '34000' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
     await waitFor(() =>
       expect(api.PATCH).toHaveBeenCalledWith('/api/v1/bills/{statementId}/details', {
         params: { path: { statementId: 's1' } },

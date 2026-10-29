@@ -66,7 +66,7 @@ export function SettleDialog({
 }: SettleDialogProps) {
   const first = firstNameOf(name);
   const createLending = useCreateLending({
-    onError: (e) => showToast(getErrorMessage(e, 'Failed to create lending'), { tone: 'danger' }),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't record lending. Try again."), { tone: 'danger' }),
   });
   const amountRef = React.useRef<HTMLInputElement>(null);
   const [segment, setSegment] = React.useState<SettleSegment>('settle');
@@ -124,7 +124,7 @@ export function SettleDialog({
         transactionId: transaction?.id,
         notes: note.trim() || undefined,
       });
-      showToast('Entry added');
+      showToast('Entry recorded');
       onRecorded?.();
       onOpenChange(false);
     } catch {
@@ -144,7 +144,7 @@ export function SettleDialog({
           disabled: createLending.isPending,
         }}
         primary={{
-          label: segment === 'settle' ? 'Record settlement' : 'Add entry',
+          label: segment === 'settle' ? 'Record settlement' : 'Record entry',
           onSelect: submit,
           loading: createLending.isPending,
         }}

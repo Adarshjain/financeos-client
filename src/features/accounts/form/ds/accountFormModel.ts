@@ -375,6 +375,6 @@ export function diffIdentifiers(
 
 export function identifiersFailedMessage(failed: readonly string[], created: boolean): string {
   return created
-    ? `Account created, but these identifiers could not be added: ${failed.join(', ')}. Add them again from Edit account.`
-    : `Saved, but these identifiers could not be updated: ${failed.join(', ')}.`;
+    ? `Account created, but these identifiers couldn't be added: ${failed.join(', ')}. Add them again from Edit account.`
+    : `Saved, but these identifiers couldn't be updated: ${failed.join(', ')}.`;
 }

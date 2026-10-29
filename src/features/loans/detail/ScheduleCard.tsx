@@ -111,7 +111,7 @@ export function ScheduleCard({ rows, installments, fy, onFyChange, highlightSeq,
         rowState={(row) => ({ tone: row.overdue ? 'danger' : undefined, pressable: !row.settled || Boolean(row.payment) })}
         highlightedRowId={highlightSeq == null ? undefined : String(highlightSeq)}
         phoneSub={(row) => <PhoneSub text={row.phoneSub} />}
-        empty={<EmptyState compact description="No schedule to show yet." />}
+        empty={<EmptyState compact description="No schedule yet" />}
         stickyHeader={false}
       />
     </Card>

@@ -67,7 +67,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
                       await mutations.refresh();
                       onChanged?.();
                     } catch (e) {
-                      showToast(getErrorMessage(e, 'Failed to undo'), { tone: 'danger' });
+                      showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' });
                     }
                   })();
                 },
@@ -83,7 +83,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
   };
 
   const link = (transactionId: string, withTds: boolean) =>
-    run(() => mutations.link.mutateAsync({ id: entry.id, transactionId, recordTds: withTds }), 'Linked', 'Failed to link the bank credit');
+    run(() => mutations.link.mutateAsync({ id: entry.id, transactionId, recordTds: withTds }), 'Linked', "Couldn't link the bank credit. Try again.");
 
   const pick = (credit: Transaction) => {
     const gap = Math.round((expectedNet(entry) - Math.abs(credit.amount)) * 100) / 100;
@@ -151,8 +151,8 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
                 onClick={() =>
                   void run(
                     () => mutations.unlink.mutateAsync(entry.id),
-                    'Unlinked from the EPF withdrawal',
-                    'Failed to unlink the bank credit',
+                    'Bank credit unlinked',
+                    "Couldn't unlink the bank credit. Try again.",
                     () => mutations.link.mutateAsync({ id: entry.id, transactionId: linked.id, recordTds: false }),
                   )
                 }
@@ -187,7 +187,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
                     void run(
                       () => mutations.dismiss.mutateAsync({ id: entry.id, transactionId: suggestion.id }),
                       'Suggestion dismissed',
-                      'Failed to dismiss the suggestion',
+                      "Couldn't dismiss the suggestion. Try again.",
                     )
                   }
                 >

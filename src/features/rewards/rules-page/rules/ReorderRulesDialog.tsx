@@ -35,7 +35,7 @@ export function ReorderRulesDialog({ accountId, rules, onClose }: ReorderRulesDi
           refresh();
           onClose();
         },
-        onError: (e) => dsRewardNotifier.failure(e, 'Failed to reorder reward rules'),
+        onError: (e) => dsRewardNotifier.failure(e, "Couldn't reorder reward rules. Try again."),
       },
     );
   };

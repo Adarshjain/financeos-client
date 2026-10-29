@@ -104,7 +104,7 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByPlaceholder('Search').fill('zzznothing');
       await page.waitForURL(/q=zzznothing/);
-      await expect(page.getByText('No trades match.')).toBeVisible();
+      await expect(page.getByText('No trades match')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expectPager(page, '1–2', 2);
@@ -133,7 +133,7 @@ for (const viewport of VIEWPORTS) {
       // Nothing is sent for a quantity of zero.
       await dialog.getByLabel('Qty').fill('0');
       await dialog.getByRole('button', { name: 'Save trade' }).click();
-      await expect(dialog.getByText('Quantity must be above zero')).toBeVisible();
+      await expect(dialog.getByText('Enter a quantity above zero.')).toBeVisible();
 
       await dialog.getByLabel('Qty').fill('100');
       await dialog.getByLabel('Brokerage').fill('20');
@@ -162,7 +162,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
       await page.getByRole('dialog').last().getByRole('button', { name: 'Delete trade' }).click();
       await expect(page.getByText('Trade deleted')).toBeVisible();
-      await expect(page.getByText('No trades match.')).toBeVisible();
+      await expect(page.getByText('No trades match')).toBeVisible();
     });
 
     test('the settlement of a sell can be changed', async ({ page }) => {

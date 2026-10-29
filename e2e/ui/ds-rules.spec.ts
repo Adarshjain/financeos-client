@@ -74,7 +74,7 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('button', { name: 'Verified', exact: true }).click();
       await expect(page).toHaveURL(/status=verified/);
-      await expect(page.getByText('No rules found')).toBeVisible();
+      await expect(page.getByText('No rules yet')).toBeVisible();
 
       await page.getByRole('button', { name: 'All', exact: true }).click();
       await expect(page).toHaveURL(/status=all/);
@@ -96,7 +96,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByPlaceholder(/Search/).last().fill('Eating out');
       await page.getByRole('button', { name: 'Eating out', exact: true }).click();
       await page.getByRole('button', { name: 'Done' }).click();
-      await add.getByRole('button', { name: 'Save' }).click();
+      await add.getByRole('button', { name: 'Add rule' }).click();
       await expect(page.getByText('Rule created')).toBeVisible();
 
       await menuOf(page, 'Third Wave').click();
@@ -106,7 +106,7 @@ for (const viewport of VIEWPORTS) {
       await expect(edit.getByText(/Rules Account/)).toBeVisible();
       await edit.getByLabel('Pattern').fill("OLA CABS RIDE");
       await expect(edit.getByText("OLA CABS RIDE", { exact: true })).toBeVisible();
-      await edit.getByRole('button', { name: 'Save' }).click();
+      await edit.getByRole('button', { name: 'Save rule' }).click();
       await expect(page.getByText('Rule updated')).toBeVisible();
     });
 

@@ -260,7 +260,7 @@ export function AccountFormFields({
         <Section title="Limit">
           <Select
             label="Shared limit"
-            helper="Some banks give several cards one limit · pick an existing one or create a new one"
+            helper="Some banks give several cards one limit · pick an existing one or create a new one."
             options={poolOptions}
             value={values.limitPoolChoice}
             onValueChange={(v) => onLimitPoolChoice(v as string)}
@@ -343,7 +343,7 @@ export function AccountFormFields({
         ) : null}
         <SettingsToggle
           label="Exclude from net worth"
-          description="Leave this account out of totals"
+          description="Leave this account out of totals."
           checked={values.excludeFromNetAsset}
           onCheckedChange={(checked) => onChange({ excludeFromNetAsset: checked })}
         />

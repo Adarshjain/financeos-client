@@ -49,7 +49,7 @@ export function useAiSettings() {
       });
       setAddOpen(false);
     } catch (err) {
-      setAddError(getErrorMessage(err, 'Failed to add API key'));
+      setAddError(getErrorMessage(err, "Couldn't add the API key. Try again."));
     }
   };
 
@@ -62,7 +62,7 @@ export function useAiSettings() {
     } catch (err) {
       // Close the dialog so the error banner is not left behind the overlay.
       setKeyToDelete(null);
-      setActionError(getErrorMessage(err, 'Failed to delete API key'));
+      setActionError(getErrorMessage(err, "Couldn't delete the API key. Try again."));
     }
   };
 
@@ -74,7 +74,7 @@ export function useAiSettings() {
     try {
       await updatePositionMutation.mutateAsync({ id: row.key.id, position });
     } catch (err) {
-      setActionError(getErrorMessage(err, 'Failed to reorder key'));
+      setActionError(getErrorMessage(err, "Couldn't reorder the keys. Try again."));
     }
   };
 
@@ -83,9 +83,9 @@ export function useAiSettings() {
     try {
       const result = await testMutation.mutateAsync({ id: key.id });
       if (result.ok) showToast('Verified', { tone: 'success' });
-      else showToast(result.error ? `Verification failed: ${result.error}` : 'Verification failed', { tone: 'danger' });
+      else showToast(result.error ? `Couldn't verify the key: ${result.error}` : "Couldn't verify the key. Try again.", { tone: 'danger' });
     } catch (err) {
-      showToast(`Verification failed: ${getErrorMessage(err, 'Test failed')}`, { tone: 'danger' });
+      showToast(getErrorMessage(err, "Couldn't verify the key. Try again."), { tone: 'danger' });
     } finally {
       setTestingKeyId(null);
     }

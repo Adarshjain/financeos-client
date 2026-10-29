@@ -104,12 +104,12 @@ beforeEach(() => {
 describe('Add account', () => {
   it('shows only the type picker until a type is picked, with the create button disabled', () => {
     renderDialog({ initialType: null });
-    expect(screen.getByText('Add account')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add account' })).toBeInTheDocument();
     expect(screen.queryByText("Pick a type · only that type's fields appear")).toBeNull();
     expect(screen.getAllByRole('radio')).toHaveLength(4);
     expect(screen.getAllByRole('radio').every((r) => r.getAttribute('aria-checked') !== 'true')).toBe(true);
     expect(screen.queryByText('Basics')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Create account' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add account' })).toBeDisabled();
   });
 
   it('opens with the type from the link preselected and its fields shown', () => {
@@ -139,7 +139,7 @@ describe('Add account', () => {
   it('shows validation errors on the fields and does not call the server', async () => {
     renderDialog({ initialType: AccountType.CREDIT_CARD });
     await user.type(field('Last 4 digits'), '77');
-    submit('Create account');
+    submit('Add account');
     expect(await screen.findByText('Enter the last 4 digits of the card.')).toBeInTheDocument();
     expect(screen.getByText('Name is required')).toBeInTheDocument();
     expect(screen.getByText('Enter the card anniversary.')).toBeInTheDocument();
@@ -164,7 +164,7 @@ describe('Add account', () => {
     await user.type(screen.getByPlaceholderText('Search…'), 'XX7741');
     await user.keyboard('{Enter}');
     await user.keyboard('{Escape}');
-    submit('Create account');
+    submit('Add account');
 
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled(), { timeout: 4000 });
     const arg = mutations.createAccountMutation.mutateAsync.mock.calls[0][0];
@@ -180,7 +180,7 @@ describe('Add account', () => {
     });
     expect(arg.identifiers).toEqual(['XX7741']);
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/accounts/new1'));
-    expect(toast).toHaveBeenCalledWith('Account created successfully!');
+    expect(toast).toHaveBeenCalledWith('Account created');
   });
 
   it('with onCreated, closes and hands over the new account without opening its page', async () => {
@@ -190,7 +190,7 @@ describe('Add account', () => {
     const onClose = vi.fn();
     renderDialog({ initialType: AccountType.GENERIC, onCreated, onClose });
     fill('Account name', 'Cash wallet');
-    submit('Create account');
+    submit('Add account');
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(created));
     expect(onClose).toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
@@ -203,10 +203,10 @@ describe('Add account', () => {
     });
     renderDialog({ initialType: AccountType.GENERIC });
     fill('Account name', 'Paytm');
-    submit('Create account');
+    submit('Add account');
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith(
-        'Account created, but these identifiers could not be added: XX7741, CRN88213. Add them again from Edit account.',
+        "Account created, but these identifiers couldn't be added: XX7741, CRN88213. Add them again from Edit account.",
         { tone: 'danger' }
       )
     );
@@ -219,7 +219,7 @@ describe('Add account', () => {
     });
     renderDialog({ initialType: AccountType.GENERIC });
     fill('Account name', 'Paytm Wallet');
-    submit('Create account');
+    submit('Add account');
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].body).toEqual({
       name: 'Paytm Wallet',
@@ -281,7 +281,7 @@ describe('Add account', () => {
     renderDialog({ initialType: AccountType.CREDIT_CARD });
     await user.click(screen.getByRole('combobox', { name: /Shared limit/ }));
     await user.click(screen.getByRole('option', { name: 'New shared limit…' }));
-    submit('Create account');
+    submit('Add account');
     expect(await screen.findByText('Enter an amount above ₹0')).toBeInTheDocument();
     expect(screen.getAllByText('Name is required').length).toBeGreaterThan(0);
   });
@@ -290,8 +290,8 @@ describe('Add account', () => {
     mutations.createAccountMutation.mutateAsync.mockRejectedValue(new Error('x'));
     renderDialog({ initialType: AccountType.GENERIC });
     fill('Account name', 'Paytm');
-    submit('Create account');
-    expect(await screen.findByText('Failed to create account')).toBeInTheDocument();
+    submit('Add account');
+    expect(await screen.findByText("Couldn't add the account. Try again.")).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });
 
@@ -317,7 +317,7 @@ describe('Add account type switch', () => {
     fill('Account name', 'Zerodha');
     await user.click(screen.getByRole('combobox', { name: /Provider/ }));
     await user.click(screen.getByRole('option', { name: 'Zerodha' }));
-    submit('Create account');
+    submit('Add account');
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].identifiers).toEqual([]);
   }, 20000);
@@ -343,7 +343,7 @@ describe('Bank field', () => {
   it('is required on Add', async () => {
     renderDialog({ initialType: AccountType.BANK_ACCOUNT });
     fill('Account name', 'HDFC Savings');
-    submit('Create account');
+    submit('Add account');
     expect(await screen.findByText('Select a bank.')).toBeInTheDocument();
     expect(mutations.createAccountMutation.mutateAsync).not.toHaveBeenCalled();
   });
@@ -353,13 +353,13 @@ describe('Bank field', () => {
     expect(bankBox()).toHaveTextContent('HDFC Bank');
     unmount();
     renderDialog({ account: { ...card, bank: null } });
-    submit('Save changes');
+    submit('Save account');
     expect(await screen.findByText('Select a bank.')).toBeInTheDocument();
     expect(mutations.updateAccountMutation.mutateAsync).not.toHaveBeenCalled();
     await user.click(bankBox());
     await user.click(screen.getByRole('option', { name: /Axis Bank/ }));
     mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
-    submit('Save changes');
+    submit('Save account');
     await waitFor(() => expect(mutations.updateAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.updateAccountMutation.mutateAsync.mock.calls[0][0].body).toMatchObject({ bank: 'axis' });
   });
@@ -387,7 +387,7 @@ describe('Edit account', () => {
     const name = field('Account name');
     await user.clear(name);
     await user.type(name, 'HDFC Regalia Gold');
-    submit('Save changes');
+    submit('Save account');
     await waitFor(() => expect(mutations.updateAccountMutation.mutateAsync).toHaveBeenCalled());
     const arg = mutations.updateAccountMutation.mutateAsync.mock.calls[0][0];
     expect(arg.id).toBe('c1');
@@ -399,7 +399,7 @@ describe('Edit account', () => {
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(router.refresh).toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith('Account updated successfully!');
+    expect(toast).toHaveBeenCalledWith('Account updated');
     expect(mutations.previewGmailCleanupMutation.mutateAsync).not.toHaveBeenCalled();
   });
 
@@ -415,7 +415,7 @@ describe('Edit account', () => {
     await user.type(screen.getByPlaceholderText('Search…'), 'CRN1');
     await user.keyboard('{Enter}');
     await user.keyboard('{Escape}');
-    submit('Save changes');
+    submit('Save account');
     await waitFor(() => expect(idApi.createIdentifier).toHaveBeenCalledWith({ value: 'CRN1' }));
     expect(idApi.deleteIdentifier).toHaveBeenCalledWith('i1');
   });
@@ -428,7 +428,7 @@ describe('Edit account', () => {
     const date = screen.getByDisplayValue('01/04/2026');
     await user.clear(date);
     await user.type(date, '01082026');
-    submit('Save changes');
+    submit('Save account');
 
     expect(await screen.findByText('Delete earlier Gmail transactions?')).toBeInTheDocument();
     expect(screen.getByText('You moved "Import emails from" to 01/08/2026.')).toBeInTheDocument();
@@ -444,7 +444,7 @@ describe('Edit account', () => {
       accountId: 'c1',
       before: '2026-08-01',
     });
-    expect(toast).toHaveBeenCalledWith('Account updated and transactions cleaned up successfully!');
+    expect(toast).toHaveBeenCalledWith('Account updated and transactions cleaned up');
   });
 
   it('saves straight away when moving the date later removes nothing', async () => {
@@ -454,7 +454,7 @@ describe('Edit account', () => {
     const date = screen.getByDisplayValue('01/04/2026');
     await user.clear(date);
     await user.type(date, '01082026');
-    submit('Save changes');
+    submit('Save account');
     await waitFor(() => expect(mutations.updateAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.executeGmailCleanupMutation.mutateAsync).not.toHaveBeenCalled();
   });
@@ -470,7 +470,7 @@ describe('Edit account', () => {
         body: { closedOn: '2026-10-31' },
       })
     );
-    expect(toast).toHaveBeenCalledWith('Account closed successfully');
+    expect(toast).toHaveBeenCalledWith('Account closed');
     expect(onClose).toHaveBeenCalled();
     expect(router.refresh).toHaveBeenCalled();
   });
@@ -494,7 +494,7 @@ describe('Edit account', () => {
     expect(screen.queryByRole('button', { name: 'Close account' })).toBeNull();
     submit('Reopen account');
     await waitFor(() => expect(mutations.reopenAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
-    expect(toast).toHaveBeenCalledWith('Account reopened successfully');
+    expect(toast).toHaveBeenCalledWith('Account reopened');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -506,7 +506,7 @@ describe('Edit account', () => {
     expect(await screen.findByText('Delete HDFC Regalia?')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'This permanently removes the account with all its transactions, statements, cards, reward rules and Gmail history. It cannot be undone.'
+        "Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
       )
     ).toBeInTheDocument();
     expect(screen.getByText('Not using this account any more?')).toBeInTheDocument();
@@ -515,7 +515,7 @@ describe('Edit account', () => {
     const confirm = screen.getAllByRole('button', { name: 'Delete account' }).at(-1)!;
     fireEvent.click(confirm);
     await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
-    expect(toast).toHaveBeenCalledWith('Account deleted!');
+    expect(toast).toHaveBeenCalledWith('Account deleted');
     expect(router.push).toHaveBeenCalledWith('/accounts');
   });
 
@@ -549,7 +549,7 @@ describe('AccountFormDialog amount arithmetic', () => {
     fill('Credit limit', '200000+100000');
     fireEvent.blur(field('Credit limit'));
     expect(field('Credit limit')).toHaveValue('300000');
-    submit('Create account');
+    submit('Add account');
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled(), { timeout: 4000 });
     expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].body).toMatchObject({ creditLimit: 300000 });
   }, 20000);

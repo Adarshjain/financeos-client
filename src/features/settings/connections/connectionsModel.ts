@@ -23,7 +23,7 @@ export function oauthReturnFrom(params: { gmail?: string; email?: string; messag
   return null;
 }
 
-export const OAUTH_ERROR_FALLBACK = 'An unexpected error occurred during Google authorization.';
+export const OAUTH_ERROR_FALLBACK = "Couldn't connect Gmail. Try again.";
 
 /** "Connected 15 Jun · last sync 16 Jun, 3:30 pm"; either half is left out when the date is unknown. */
 export function mailboxStatusLine(conn: GmailConnection): string {

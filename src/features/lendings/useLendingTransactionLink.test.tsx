@@ -45,7 +45,7 @@ describe('useLinkLendingTransaction', () => {
     await act(async () => {
       await first.result.current.mutateAsync({ id: 'l1', transactionId: 't1' }).catch(() => undefined);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to link transaction'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't link transaction. Try again."));
 
     const onError = vi.fn();
     const second = setup(() => useLinkLendingTransaction({ onError }));
@@ -73,6 +73,6 @@ describe('useUnlinkLendingTransaction', () => {
     await act(async () => {
       await result.current.mutateAsync('l1').catch(() => undefined);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to unlink transaction'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't unlink transaction. Try again."));
   });
 });

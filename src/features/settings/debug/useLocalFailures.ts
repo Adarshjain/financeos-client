@@ -31,7 +31,7 @@ export function useLocalFailures() {
   const copyRef = (rec: DiagnosticRecord): boolean => {
     if (!navigator?.clipboard) return false;
     navigator.clipboard.writeText(rec.ref);
-    notify.success(`Copied ref ${rec.ref}`);
+    notify.success(`Reference ${rec.ref} copied`);
     return true;
   };
 

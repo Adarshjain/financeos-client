@@ -37,9 +37,8 @@ export function AddToDashboardDialog({ report, adding, onAdd, onClose }: AddToDa
         <DialogBody>
           {dashboards.isError ? (
             <ErrorState
-              title="Could not load dashboards"
-              description="The dashboards request failed. Try again."
-              action={{ label: 'Try again', onSelect: () => void dashboards.refetch() }}
+              title="Couldn't load dashboards"
+              action={{ label: 'Retry', onSelect: () => void dashboards.refetch() }}
             />
           ) : (
             <Select

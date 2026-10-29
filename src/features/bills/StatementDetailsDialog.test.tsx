@@ -38,7 +38,7 @@ function renderDialog(over: Partial<React.ComponentProps<typeof StatementDetails
   return onOpenChange;
 }
 
-const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
 
 describe('StatementDetailsDialog', () => {
   beforeEach(() => {

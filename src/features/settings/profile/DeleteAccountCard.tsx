@@ -21,7 +21,7 @@ import { useDeleteAccountFlow } from './useDeleteAccountFlow';
 import { formatDeletionSummary } from './useDeletionSummary';
 
 const WHAT_GOES = [
-  'All accounts, transactions, investments, categories, and rules will be permanently erased.',
+  'All accounts, transactions, investments, categories, and rules will be erased.',
   'Google OAuth permissions and Gmail connections will be revoked.',
   'Stored LLM API keys and task configurations will be destroyed.',
   'Point-in-time encrypted database backups will age out on standard retention.',
@@ -41,13 +41,13 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
           <div className="min-w-0">
             <CardTitle>Delete account</CardTitle>
             <CardSubtitle truncate={false}>
-              Removes every account, transaction, statement, rule and connection. Cannot be undone.
+              Removes every account, transaction, statement, rule and connection. This can&apos;t be undone.
             </CardSubtitle>
           </div>
         </CardHeader>
         <div className="px-space-16 pb-space-16">
           <Button variant="danger" onClick={f.handleOpen}>
-            Delete my account
+            Delete account
           </Button>
         </div>
       </Card>
@@ -56,11 +56,11 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
         <DialogContent
           size="md"
           dismissible={!f.isDeleting}
-          title="Delete account permanently"
-          description="This hard deletion is immediate, permanent, and cannot be undone."
+          title="Delete account?"
+          description="Everything below is erased and you are signed out everywhere. This can't be undone."
           secondary={{ label: 'Cancel', disabled: f.isDeleting, onSelect: f.close }}
           primary={{
-            label: f.isDeleting ? 'Deleting account…' : f.isBusy ? 'Retry deletion' : 'Permanently delete account',
+            label: f.isDeleting ? 'Deleting account…' : f.isBusy ? 'Retry deletion' : 'Delete account',
             destructive: true,
             type: 'submit',
             form: FORM_ID,

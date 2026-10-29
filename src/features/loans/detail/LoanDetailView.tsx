@@ -4,6 +4,7 @@ import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds';
 import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { InstallmentDto, LoanDetailResponse, LoanEventType } from '@/lib/loan.types';
@@ -187,8 +188,8 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
         onOpenChange={(open) => {
           if (!actions.pending.deleteLoan) setDeleting(open);
         }}
-        title="Delete loan"
-        description={`Delete "${loan.name}" and all associated schedule data?`}
+        title="Delete loan?"
+        description={`"${loan.name}" and its schedule data go.`}
         impact={[
           'Its schedule, payments, events and charges are deleted.',
           'Bank transactions stay; only their links to this loan go.',
@@ -196,7 +197,9 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
         confirmLabel="Delete loan"
         confirmLoading={actions.pending.deleteLoan}
         onConfirm={() => void actions.deleteLoan()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
 
       {deletingEntry ? (
         <ConfirmDialog
@@ -205,7 +208,6 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
             if (!open) setDeletingEntry(null);
           }}
           {...deleteEntryCopy(deletingEntry)}
-          confirmLabel={deleteEntryCopy(deletingEntry).title}
           confirmLoading={actions.pending.deleteEvent || actions.pending.deleteCharge}
           onConfirm={() => {
             const row = deletingEntry;
@@ -213,7 +215,9 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
               if (ok) setDeletingEntry(null);
             });
           }}
-        />
+        >
+          <IrreversibleNote />
+        </ConfirmDialog>
       ) : null}
     </>
   );

@@ -84,7 +84,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await page.goto('/investments/epf');
       await page.getByRole('button', { name: 'Add opening balance' }).click();
-      const dialog = page.getByRole('dialog', { name: 'Add EPF entry' });
+      const dialog = page.getByRole('dialog', { name: 'Record EPF entry' });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('combobox', { name: /Employer/ }).click();
       await page.getByRole('button', { name: 'Add employer' }).last().click();
@@ -97,7 +97,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByRole('combobox', { name: 'Type' })).toContainText('Opening balance');
       await dialog.getByRole('textbox', { name: 'Your share' }).fill('300000');
       await dialog.getByRole('textbox', { name: 'Employer share' }).fill('200000');
-      await dialog.getByRole('button', { name: 'Add entry' }).click();
+      await dialog.getByRole('button', { name: 'Record entry' }).click();
       await expect(shown(page.getByText('₹5,00,000'))).toBeVisible();
     });
 
@@ -106,13 +106,13 @@ for (const viewport of VIEWPORTS) {
       await createEpfEmployer(api, { name: 'Hand Added Labs' });
       await page.goto('/investments/epf');
       await plus(page).click();
-      const dialog = page.getByRole('dialog', { name: 'Add EPF entry' });
+      const dialog = page.getByRole('dialog', { name: 'Record EPF entry' });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('combobox', { name: 'Type' }).click();
       await page.getByRole('option', { name: 'Opening balance' }).click();
       await dialog.getByRole('textbox', { name: 'Your share' }).fill('300000');
       await dialog.getByRole('textbox', { name: 'Employer share' }).fill('200000');
-      await dialog.getByRole('button', { name: 'Add entry' }).click();
+      await dialog.getByRole('button', { name: 'Record entry' }).click();
       await expect(dialog).toHaveCount(0);
       await expect(toast(page, 'Entry added')).toBeVisible();
 
@@ -124,12 +124,12 @@ for (const viewport of VIEWPORTS) {
 
       // A contribution through the top bar's +.
       await plus(page).click();
-      const add = page.getByRole('dialog', { name: 'Add EPF entry' });
+      const add = page.getByRole('dialog', { name: 'Record EPF entry' });
       await expect(add).toBeVisible();
       await add.getByRole('textbox', { name: 'Your share' }).fill('7200');
       await add.getByRole('textbox', { name: 'Employer share' }).fill('5950');
       await add.getByRole('textbox', { name: /Pension/ }).fill('1250');
-      await add.getByRole('button', { name: 'Add entry' }).click();
+      await add.getByRole('button', { name: 'Record entry' }).click();
       await expect(add).toHaveCount(0);
       await expect(shown(page.getByText('₹5,13,150'))).toBeVisible();
       await expect(contribution(page, 'Added by you')).toBeVisible();
@@ -147,7 +147,7 @@ for (const viewport of VIEWPORTS) {
       const entry = page.getByRole('dialog').first();
       await expect(entry.getByText('Added by you. A passbook that has this month replaces it.')).toBeVisible();
       await entry.getByRole('button', { name: 'Delete entry' }).click();
-      const confirm = page.getByRole('dialog', { name: /^Delete the/ });
+      const confirm = page.getByRole('dialog', { name: 'Delete EPF entry?' });
       await expect(confirm).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete entry' }).click();
       await expect(toast(page, 'Entry deleted')).toBeVisible();
@@ -293,7 +293,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText('Upload a newer passbook to change it.')).toBeVisible();
       await expect(dialog.getByRole('textbox', { name: 'Your share' })).toBeDisabled();
       await expect(dialog.getByRole('button', { name: 'Delete entry' })).toHaveCount(0);
-      await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0);
+      await expect(dialog.getByRole('button', { name: 'Save entry' })).toHaveCount(0);
       await dialog.getByRole('button', { name: 'Close' }).filter({ hasText: 'Close' }).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
 
@@ -306,7 +306,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByRole('checkbox', { name: 'TDS was deducted' })).toBeEnabled();
       await dialog.getByRole('checkbox', { name: 'TDS was deducted' }).click();
       await dialog.getByRole('textbox', { name: 'TDS' }).fill('1800');
-      await dialog.getByRole('button', { name: 'Save' }).click();
+      await dialog.getByRole('button', { name: 'Save entry' }).click();
       await expect(toast(page, 'Entry updated')).toBeVisible();
     });
 
@@ -403,9 +403,9 @@ for (const viewport of VIEWPORTS) {
       const after = page.getByRole('dialog', { name: 'NEFT EPFO RECORDME' });
       await expect(after.getByText('EPF withdrawal')).toBeVisible({ timeout: 30_000 });
       await after.getByRole('button', { name: 'Unlink' }).click();
-      await expect(toast(page, 'Unlinked from the EPF withdrawal')).toBeVisible();
+      await expect(toast(page, 'EPF withdrawal unlinked')).toBeVisible();
       await expect(after.getByText('EPF withdrawal')).toHaveCount(0);
-      await toast(page, 'Unlinked from the EPF withdrawal').getByRole('button', { name: 'Undo' }).click();
+      await toast(page, 'EPF withdrawal unlinked').getByRole('button', { name: 'Undo' }).click();
       await expect(toast(page, 'Linked to the EPF withdrawal')).toBeVisible();
       await expect(after.getByText('EPF withdrawal')).toBeVisible();
     });

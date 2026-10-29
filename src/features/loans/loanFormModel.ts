@@ -1,19 +1,19 @@
 import type { CreateLoanRequest, LoanResponse, LoanType, RateType, UpdateLoanRequest } from '@/lib/loan.types';
 
 export const LOAN_TYPES: { value: LoanType; label: string }[] = [
-  { value: 'home', label: 'Home Loan' },
-  { value: 'car', label: 'Car Loan' },
-  { value: 'personal', label: 'Personal Loan' },
-  { value: 'education', label: 'Education Loan' },
-  { value: 'gold', label: 'Gold Loan' },
-  { value: 'two_wheeler', label: 'Two Wheeler Loan' },
-  { value: 'consumer_durable', label: 'Consumer Durable Loan' },
-  { value: 'other', label: 'Other Loan' },
+  { value: 'home', label: 'Home loan' },
+  { value: 'car', label: 'Car loan' },
+  { value: 'personal', label: 'Personal loan' },
+  { value: 'education', label: 'Education loan' },
+  { value: 'gold', label: 'Gold loan' },
+  { value: 'two_wheeler', label: 'Two-wheeler loan' },
+  { value: 'consumer_durable', label: 'Consumer durable loan' },
+  { value: 'other', label: 'Other loan' },
 ];
 
 export const RATE_TYPES: { value: RateType; label: string }[] = [
-  { value: 'fixed', label: 'Fixed Rate' },
-  { value: 'floating', label: 'Floating Rate' },
+  { value: 'fixed', label: 'Fixed rate' },
+  { value: 'floating', label: 'Floating rate' },
 ];
 
 /** The "None" choice of the payment account dropdown; it saves as no account. */

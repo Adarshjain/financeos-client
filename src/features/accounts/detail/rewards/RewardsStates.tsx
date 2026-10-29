@@ -12,7 +12,7 @@ export function RewardsEmpty({ accountId, accountName }: { accountId: string; ac
   return (
     <Card>
       <EmptyState
-        title={`No reward rules on ${accountName}`}
+        title={`No reward rules on ${accountName} yet`}
         description="Rewards earned here show once a rule covers this account."
         action={{ label: 'Add reward rule', onSelect: () => router.push(appHref(`/rewards/rules?account=${accountId}`)) }}
       />
@@ -24,9 +24,9 @@ export function RewardsLoadError({ what }: { what: string }) {
   const router = useRouter();
   return (
     <ErrorState
-      title={`Could not load ${what}`}
-      description="The rewards request failed. Try again."
-      action={{ label: 'Try again', onSelect: () => router.refresh() }}
+      title={`Couldn't load ${what}`}
+      description="Try again."
+      action={{ label: 'Retry', onSelect: () => router.refresh() }}
     />
   );
 }

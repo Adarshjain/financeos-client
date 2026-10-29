@@ -139,7 +139,7 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
         {connections.length === 0 ? (
           <EmptyState
             size="sm"
-            title="No connected Gmail accounts found."
+            title="No Gmail accounts yet"
             description="Connect a mailbox to import bank alerts and statements automatically."
             action={{ label: 'Connect your first account', onSelect: onConnect, variant: 'primary' }}
           />

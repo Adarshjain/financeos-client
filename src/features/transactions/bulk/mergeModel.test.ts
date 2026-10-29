@@ -45,7 +45,7 @@ describe('mergeChecks and mergeWarning', () => {
   it('warns on opposite directions, then on different amounts', () => {
     expect(mergeWarning(mergeChecks(txn({}), txn({ id: 'b', amount: 1249 })), names)?.kind).toBe('direction');
     const amount = mergeWarning(mergeChecks(txn({}), txn({ id: 'b', amount: -1250 })), names);
-    expect(amount).toMatchObject({ kind: 'amount', title: 'Amount Mismatch' });
+    expect(amount).toMatchObject({ kind: 'amount', title: 'Amount mismatch' });
   });
 });
 

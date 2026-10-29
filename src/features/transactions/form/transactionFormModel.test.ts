@@ -68,16 +68,16 @@ describe('formProblems', () => {
   it('asks for an amount above zero, a date and an account', () => {
     const errors = formProblems(filled({ amount: '0', date: '', accountId: '' }), ctx);
     expect(errors).toEqual({
-      amount: 'Enter an amount greater than zero',
-      date: 'Pick a date',
-      accountId: 'Please select an account',
+      amount: 'Enter an amount above ₹0.',
+      date: 'Pick a date.',
+      accountId: 'Select an account.',
     });
     expect(formProblems(filled({ amount: '' }), ctx).amount).toBeDefined();
   });
 
   it('says to add an account when there is none to pick', () => {
     expect(formProblems(filled({ accountId: '' }), { ...ctx, selectableAccounts: [] }).accountId).toBe(
-      'Add an account to save this transaction',
+      'Add an account to save this transaction.',
     );
   });
 

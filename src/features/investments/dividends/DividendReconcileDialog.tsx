@@ -160,7 +160,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
             </SectionHeader>
             {r.isError && !r.loading ? (
               <Text variant="body" tone="danger" as="div">
-                Could not load matches. Try again.
+                Couldn&apos;t load matches. Try again.
               </Text>
             ) : r.loading && !r.fetched ? (
               <Skeleton height={64} />
@@ -206,7 +206,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
             </SectionHeader>
             {unrecorded.isError && !unrecorded.loading ? (
               <Text variant="body" tone="danger" as="div">
-                Could not load credits. Try again.
+                Couldn&apos;t load credits. Try again.
               </Text>
             ) : !unrecorded.fetched ? (
               <Skeleton height={48} />

@@ -120,7 +120,7 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
         getRowId={(r) => r.id}
         onRowSelect={setOpen}
         phoneSub={(r) => `${r.date} · ${r.basisLabel} · ${r.rule}`}
-        empty={<EmptyState compact title="No earning lines" description="Nothing matches this rule in this period." />}
+        empty={<EmptyState compact title="No earning lines match" description="Nothing matches this rule in this period." />}
         pager={
           <Pager
             page={query.page}

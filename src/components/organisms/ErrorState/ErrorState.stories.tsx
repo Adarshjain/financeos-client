@@ -40,9 +40,9 @@ const meta: Meta<StoryArgs> = {
     onCopyReference: { control: false },
   },
   args: {
-    title: 'Could not load transactions',
+    title: "Couldn't load transactions",
     description: 'The server answered with an error. Your data is safe; try again in a moment.',
-    actionLabel: 'Try again',
+    actionLabel: 'Retry',
     reference: 'f80e0834',
     size: 'md',
     onAction: fn(),

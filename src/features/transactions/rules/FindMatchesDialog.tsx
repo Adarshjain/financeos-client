@@ -64,7 +64,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
     } else if (job.status === 'FAILED') {
       showToast(job.errorMessage || "Couldn't apply the rule. Try again.", { tone: 'danger' });
     } else if (job.status === 'CANCELLED') {
-      showToast('The apply job was cancelled.');
+      showToast('Rule apply cancelled');
     }
   });
 
@@ -102,7 +102,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
       <DialogContent
         size="lg"
         title={`Matching transactions · ${rule.displayName || rule.merchantKey}`}
-        description={`${ruleMatchSentence(rule)} · manually reviewed transactions are left out`}
+        description={`${ruleMatchSentence(rule)} · manually reviewed transactions are left out.`}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: applying }}
         primary={{
           label: count > 0 ? `Apply rule (${count})` : 'Apply rule',
@@ -114,14 +114,14 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
         <DialogBody className="flex flex-col gap-space-8 desk:gap-space-8">
           {failed ? (
             <ErrorState
-              title="Could not load matches"
-              description="The matches request failed. Try again."
-              action={{ label: 'Try again', onSelect: refetch }}
+              title="Couldn't load matches"
+              description="The matches didn't load."
+              action={{ label: 'Retry', onSelect: refetch }}
             />
           ) : loading ? (
             <Skeleton height={48} />
           ) : total === 0 ? (
-            <EmptyState compact title="No transactions match this rule." />
+            <EmptyState compact title="No transactions match this rule" />
           ) : (
             <>
               <ListRow

@@ -39,7 +39,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
       showToast('Payment mark removed');
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not undo the payment mark'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't undo the payment. Try again."), { tone: 'danger' });
     }
   };
 

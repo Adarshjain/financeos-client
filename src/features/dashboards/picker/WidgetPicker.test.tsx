@@ -158,7 +158,7 @@ describe('WidgetPicker', () => {
     expect(within(dialog).queryByRole('radio', { name: /Top movers/ })).toBeNull();
     await user.clear(within(dialog).getByPlaceholderText('Search widgets'));
     await user.type(within(dialog).getByPlaceholderText('Search widgets'), 'zzz');
-    expect(within(dialog).getByText('No widgets match.')).toBeInTheDocument();
+    expect(within(dialog).getByText('No widgets match')).toBeInTheDocument();
   });
 
   it('My reports: selecting a report and adding it, with a title override', async () => {

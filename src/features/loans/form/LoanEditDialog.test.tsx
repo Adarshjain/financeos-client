@@ -36,7 +36,7 @@ vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: ac
 
 const onClose = vi.fn();
 const field = (label: string) => screen.getByRole('textbox', { name: new RegExp(`^${label}`) });
-const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save loan' }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -52,7 +52,7 @@ describe('LoanEditDialog', () => {
     expect(field('Principal')).toHaveValue('4500000');
     expect(field('Tenure')).toHaveValue('240');
     expect(screen.getByLabelText('Disbursal date')).toHaveValue('01/08/2025');
-    expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Floating Rate');
+    expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Floating rate');
     expect(screen.getByRole('combobox', { name: /^Payment bank account/ })).toHaveTextContent('HDFC Savings');
   });
 
@@ -85,7 +85,7 @@ describe('LoanEditDialog', () => {
         body: expect.objectContaining({ name: 'Home Loan SBI', lender: 'State Bank of India', principal: 4500000, tenureMonths: 240 }),
       }),
     );
-    expect(toast).toHaveBeenCalledWith('Loan updated successfully');
+    expect(toast).toHaveBeenCalledWith('Loan updated');
     expect(onClose).toHaveBeenCalled();
     expect(router.refresh).toHaveBeenCalled();
   });
@@ -136,6 +136,6 @@ describe('LoanEditDialog', () => {
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     expect(onClose).not.toHaveBeenCalled();
     onErrorOption?.(new Error('boom'));
-    expect(toast).toHaveBeenCalledWith('Failed to update loan', { tone: 'danger' });
+    expect(toast).toHaveBeenCalledWith("Couldn't update loan. Try again.", { tone: 'danger' });
   });
 });

@@ -108,7 +108,7 @@ describe('TransactionsView', () => {
   it('the Period chip opens a dropdown on the page; Apply writes the picked period', async () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: 'Period' }));
-    expect(screen.queryByText('Every filter combines with the others')).not.toBeInTheDocument();
+    expect(screen.queryByText('Every filter combines with the others.')).not.toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: 'Apply' }));
     expect(lastUrl()).toBe('/transactions');
   });
@@ -219,7 +219,7 @@ describe('TransactionsView', () => {
   it('opens the Filters dialog from + More and shows the live count; Show writes the address', async () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
-    expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
+    expect(screen.getByText('Every filter combines with the others.')).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
     const show = await screen.findByRole('button', { name: 'Show 7 transactions' });
     expect(show).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('TransactionsView', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByText('Every filter combines with the others')).not.toBeInTheDocument();
+    expect(screen.queryByText('Every filter combines with the others.')).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     expect(screen.getByLabelText('Excluded transactions only')).not.toBeChecked();
@@ -255,7 +255,7 @@ describe('TransactionsView', () => {
     const chip = screen.getByRole('button', { name: /All filters/ });
     expect(chip).toHaveTextContent('2');
     fireEvent.click(chip);
-    expect(screen.getByText('Every filter combines with the others')).toBeInTheDocument();
+    expect(screen.getByText('Every filter combines with the others.')).toBeInTheDocument();
   });
 
   it('Clear all in the dialog drops every filter to all time', async () => {
@@ -347,8 +347,8 @@ describe('TransactionsView', () => {
 
   it('shows an inline load error with Try again', () => {
     setup({ list: { ok: false, reference: 'req-9' } });
-    expect(screen.getByText('Could not load transactions')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load transactions")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 });

@@ -11,7 +11,7 @@ export function StatementsEmpty({ accountId }: { accountId: string }) {
   return (
     <Card>
       <EmptyState
-        title="No statement history found"
+        title="No statements yet"
         description="Statements accumulate automatically when ingested via file upload or Gmail automatic sync. Upload your statements in settings or verify your sync rules."
         action={{
           label: 'Upload statement',

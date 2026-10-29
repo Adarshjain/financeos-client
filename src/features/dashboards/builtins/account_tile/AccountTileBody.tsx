@@ -59,7 +59,7 @@ export function AccountTileBody({ params, className }: BuiltinBodyProps) {
       !account && (!error || (error instanceof ApiError && error.status === 404)) ? (
         <BuiltinNote>This account no longer exists.</BuiltinNote>
       ) : (
-        <BuiltinError message={getErrorMessage(error, 'Failed to load the account')} action={{ label: 'Retry', onSelect: () => void refetch() }} />
+        <BuiltinError message={getErrorMessage(error, "Couldn't load the account.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />
       );
   } else {
     const { label, figure } = buildHeaderModel(account, null, todayInAppZone());

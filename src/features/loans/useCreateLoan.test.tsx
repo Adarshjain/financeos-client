@@ -45,7 +45,7 @@ describe('useCreateLoan', () => {
     await act(async () => {
       await result.current.mutateAsync({} as never).catch(() => undefined);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to create loan'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't create loan. Try again."));
   });
 
   it('lets the caller replace the error toast', async () => {

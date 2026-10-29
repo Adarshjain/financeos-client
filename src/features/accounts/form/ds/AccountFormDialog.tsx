@@ -193,7 +193,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
             return;
           }
         } catch (e) {
-          showToast(getErrorMessage(e, 'Failed to preview Gmail cleanup'), { tone: 'danger' });
+          showToast(getErrorMessage(e, "Couldn't preview the Gmail cleanup. Try again."), { tone: 'danger' });
           return;
         }
       }
@@ -202,13 +202,13 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     try {
       if (account) {
         await mutations.updateAccountMutation.mutateAsync({ id: account.id, body: request });
-        await finishUpdate('Account updated successfully!');
+        await finishUpdate('Account updated');
       } else {
         const { account: created, failedIdentifiers } = await mutations.createAccountMutation.mutateAsync({
           body: request,
           identifiers,
         });
-        showToast('Account created successfully!');
+        showToast('Account created');
         if (failedIdentifiers.length > 0) {
           showToast(identifiersFailedMessage(failedIdentifiers, true), { tone: 'danger' });
         }
@@ -220,7 +220,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
         }
       }
     } catch (e) {
-      setFailure(getErrorMessage(e, isEdit ? 'Failed to update account' : 'Failed to create account'));
+      setFailure(getErrorMessage(e, isEdit ? "Couldn't update the account. Try again." : "Couldn't add the account. Try again."));
     }
   };
 
@@ -229,16 +229,16 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     try {
       await mutations.executeGmailCleanupMutation.mutateAsync({ accountId: account.id, before: cleanup.before });
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to execute Gmail cleanup'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't run the Gmail cleanup. Try again."), { tone: 'danger' });
       return;
     }
     try {
       await mutations.updateAccountMutation.mutateAsync({ id: account.id, body: cleanup.request });
       setCleanup(null);
-      await finishUpdate('Account updated and transactions cleaned up successfully!');
+      await finishUpdate('Account updated and transactions cleaned up');
     } catch (e) {
       setCleanup(null);
-      setFailure(getErrorMessage(e, 'Failed to update account'));
+      setFailure(getErrorMessage(e, "Couldn't update the account. Try again."));
     }
   };
 
@@ -252,12 +252,12 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
       if (closed.warnings && closed.warnings.length > 0) {
         showToast(closed.warnings.join('; '), { tone: 'warning' });
       } else {
-        showToast('Account closed successfully');
+        showToast('Account closed');
       }
       onClose();
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to close account'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't close the account. Try again."), { tone: 'danger' });
     }
   };
 
@@ -265,11 +265,11 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     if (!account) return;
     try {
       await mutations.reopenAccountMutation.mutateAsync(account.id);
-      showToast('Account reopened successfully');
+      showToast('Account reopened');
       onClose();
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to reopen account'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't reopen the account. Try again."), { tone: 'danger' });
     }
   };
 
@@ -277,12 +277,12 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     if (!account) return;
     try {
       await mutations.deleteAccountMutation.mutateAsync(account.id);
-      showToast('Account deleted!');
+      showToast('Account deleted');
       setShowDelete(false);
       router.push(ACCOUNTS_HREF);
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete account'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the account. Try again."), { tone: 'danger' });
     }
   };
 
@@ -297,7 +297,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
           description={account ? `${account.name} · ${accountTypeLabel(account.type)}` : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: busy }}
           primary={{
-            label: isEdit ? 'Save changes' : 'Create account',
+            label: isEdit ? 'Save account' : 'Add account',
             type: 'submit',
             form: FORM_ID,
             loading: saving,
@@ -370,7 +370,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
           open={showDelete}
           onOpenChange={setShowDelete}
           title={`Delete ${account.name}?`}
-          description="This permanently removes the account with all its transactions, statements, cards, reward rules and Gmail history. It cannot be undone."
+          description="Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
           confirmLabel="Delete account"
           confirmLoading={mutations.deleteAccountMutation.isPending}
           onConfirm={deleteAccount}

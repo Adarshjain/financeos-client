@@ -84,7 +84,7 @@ describe('CorporateActionDialog: recording', () => {
       params: { path: { instrumentId: 'i-itc' } },
       body: expect.objectContaining({ type: 'split', ratioFrom: 1, ratioTo: 2, exDate: '2026-10-13' }),
     });
-    expect(toast).toHaveBeenCalledWith('Recorded split 1:2 for ITC');
+    expect(toast).toHaveBeenCalledWith('Corporate action recorded');
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -150,7 +150,7 @@ describe('CorporateActionDialog: a bonus toast', () => {
     renderWithQuery(<CorporateActionDialog instrument={itc} type="bonus" onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Record bonus' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(toast).toHaveBeenCalledWith('Recorded bonus 1:1 for ITC');
+    expect(toast).toHaveBeenCalledWith('Corporate action recorded');
   });
 });
 
@@ -272,7 +272,7 @@ describe('CorporateActionDialog: editing and deleting', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByRole('dialog');
     fireEvent.click(within(confirm).getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Delete corporate action' })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Delete corporate action?' })).toBeNull());
     expect(api.DELETE).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
   });

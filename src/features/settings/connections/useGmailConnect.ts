@@ -65,15 +65,15 @@ export function useGmailConnect() {
 
   const { isPolling } = useJobStatusPolling<SyncSummary>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
-      notify.success('Sync completed!');
+      notify.success('Gmail sync completed');
       // The job is what actually creates/reconciles transactions.
       qc.invalidateQueries({ queryKey: keys.transactions.all });
     } else if (job.status === 'FAILED') {
-      setMessage({ type: 'error', text: job.errorMessage || 'Sync failed.' });
-      notify.error('Sync failed.');
+      setMessage({ type: 'error', text: job.errorMessage || "Couldn't sync Gmail. Try again." });
+      notify.error("Couldn't sync Gmail. Try again.");
     } else if (job.status === 'CANCELLED') {
       setMessage({ type: 'error', text: 'Sync job was cancelled.' });
-      notify.info('Sync cancelled.');
+      notify.info('Sync cancelled');
     }
     // "Recent sync jobs" only live-polls while its own list shows an active job, so a refetch that
     // raced the enqueue can leave it empty; refresh it whenever the job settles.
@@ -100,7 +100,7 @@ export function useGmailConnect() {
         window.location.href = data.authorizationUrl;
       }
     } catch (err) {
-      setMessage({ type: 'error', text: getErrorMessage(err, 'Failed to start Gmail OAuth') });
+      setMessage({ type: 'error', text: getErrorMessage(err, "Couldn't connect Gmail. Try again.") });
     }
   };
 
@@ -110,7 +110,7 @@ export function useGmailConnect() {
       notify.success('Gmail account disconnected');
       return true;
     } catch (err) {
-      toastError(err, 'Failed to disconnect Gmail connection');
+      toastError(err, "Couldn't disconnect Gmail. Try again.");
       return false;
     }
   };
@@ -122,23 +122,23 @@ export function useGmailConnect() {
       if (data?.jobId) {
         setActiveJobId(data.jobId);
         emitJobStarted(data.jobId);
-        notify.info('Gmail sync started in background.');
+        notify.info('Gmail sync started');
       }
     } catch (err) {
-      setMessage({ type: 'error', text: getErrorMessage(err, 'Failed to sync Gmail') });
+      setMessage({ type: 'error', text: getErrorMessage(err, "Couldn't sync Gmail. Try again.") });
     }
   };
 
   const handleRetryAttentionItem = async (ledgerId: string) => {
     try {
       const data = await retryAttentionMutation.mutateAsync(ledgerId);
-      notify.success('Item queued for retry!');
+      notify.success('Item queued for retry');
       if (data?.jobId) {
         setActiveJobId(data.jobId);
         emitJobStarted(data.jobId);
       }
     } catch (err) {
-      toastError(err, 'Failed to retry Gmail attention item');
+      toastError(err, "Couldn't retry the item. Try again.");
     }
   };
 
@@ -147,16 +147,16 @@ export function useGmailConnect() {
       await archiveAttentionMutation.mutateAsync(ledgerId);
       notify.success('Item archived');
     } catch (err) {
-      toastError(err, 'Failed to archive Gmail attention item');
+      toastError(err, "Couldn't archive the item. Try again.");
     }
   };
 
   const handleUnarchiveAttentionItem = async (ledgerId: string) => {
     try {
       await unarchiveAttentionMutation.mutateAsync(ledgerId);
-      notify.success('Item moved back to Needs Attention');
+      notify.success('Item moved back to Needs attention');
     } catch (err) {
-      toastError(err, 'Failed to unarchive Gmail attention item');
+      toastError(err, "Couldn't unarchive the item. Try again.");
     }
   };
 
@@ -195,7 +195,7 @@ export function useGmailConnect() {
       }
       setIsSenderDialogOpen(false);
     } catch (err) {
-      toastError(err, editingSender ? 'Failed to update Gmail sender' : 'Failed to create Gmail sender');
+      toastError(err, editingSender ? "Couldn't update the sender. Try again." : "Couldn't add the sender. Try again.");
     }
   };
 
@@ -205,7 +205,7 @@ export function useGmailConnect() {
       notify.success('Sender deleted');
       return true;
     } catch (err) {
-      toastError(err, 'Failed to delete Gmail sender');
+      toastError(err, "Couldn't delete the sender. Try again.");
       return false;
     }
   };

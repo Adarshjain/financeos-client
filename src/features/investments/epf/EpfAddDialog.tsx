@@ -33,8 +33,8 @@ export function EpfAddDialog({ onClose, initialType }: EpfAddDialogProps) {
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <DialogContent
           size="sm"
-          title="Add EPF entry"
-          description={query.isError ? 'The employers could not be loaded. Close this and try again.' : undefined}
+          title="Record EPF entry"
+          description={query.isError ? "Couldn't load the employers. Close this and try again." : undefined}
           secondary={{ label: query.isError ? 'Close' : 'Cancel', onSelect: onClose }}
         >
           <DialogBody>

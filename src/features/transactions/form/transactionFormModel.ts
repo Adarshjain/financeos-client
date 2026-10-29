@@ -138,11 +138,11 @@ export interface ProblemContext {
 export function formProblems(values: TransactionFormValues, ctx: ProblemContext): FormErrors {
   const errors: FormErrors = {};
   const amount = Number(values.amount);
-  if (!values.amount.trim() || !Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter an amount greater than zero';
-  if (!values.date) errors.date = 'Pick a date';
+  if (!values.amount.trim() || !Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter an amount above ₹0.';
+  if (!values.date) errors.date = 'Pick a date.';
   if (!values.accountId) {
     errors.accountId =
-      ctx.selectableAccounts.length === 0 ? 'Add an account to save this transaction' : 'Please select an account';
+      ctx.selectableAccounts.length === 0 ? 'Add an account to save this transaction.' : 'Select an account.';
   }
   if (!isValidMcc(values.mcc.trim())) errors.mcc = 'MCC code must be exactly 4 digits (or left empty).';
   const discount = parseNonNegativeAmount(values.instantDiscount, 'Instant discount');

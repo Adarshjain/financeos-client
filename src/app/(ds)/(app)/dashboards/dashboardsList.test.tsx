@@ -29,17 +29,17 @@ describe('/dashboards', () => {
     expect(screen.getByTestId('screen')).toBeInTheDocument();
   });
 
-  it('says the list could not load, with Try again and the reference', async () => {
+  it('says the list could not load, with Retry and the reference', async () => {
     loadDashboardsList.mockResolvedValue({ ok: false, reference: 'ref-9' });
     renderWithQuery(await DsDashboardsPage());
-    expect(screen.getByText('Could not load dashboards')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load dashboards")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
     expect(screen.getByText(/ref-9/)).toBeInTheDocument();
   });
 
-  it('the + in the top bar is New dashboard', () => {
+  it('the + in the top bar is Add dashboard', () => {
     renderWithQuery(<DsDashboardsLayout>body</DsDashboardsLayout>);
-    expect(screen.getByRole('link', { name: 'New dashboard' })).toHaveAttribute('href', '/dashboards/new');
+    expect(screen.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
     expect(screen.getByText('body')).toBeInTheDocument();
   });
 

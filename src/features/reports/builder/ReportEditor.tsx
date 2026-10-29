@@ -165,7 +165,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
   };
 
   const saveAsNew = () => {
-    if (ready(true)) createCopy('Saved as a new report');
+    if (ready(true)) createCopy('New report saved');
   };
 
   /** Changing the report type starts the preview over: the old result belongs to the old type. */
@@ -177,7 +177,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
     }
   };
 
-  const title = edit ? savedName : 'New report';
+  const title = edit ? savedName : 'Add report';
   const missing = showIssues ? issues.map((i) => i.message) : [];
 
   return (
@@ -233,10 +233,10 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
             if (!open) guard.cancelLeave();
           }}
           tone="default"
-          title="Leave without saving?"
+          title="Discard changes?"
           description="This report has changes that are not saved."
           impact={['Your changes to this report are lost.', 'The saved version stays as it is.']}
-          confirmLabel="Leave without saving"
+          confirmLabel="Discard"
           cancelLabel="Keep editing"
           onConfirm={guard.confirmLeave}
         />
@@ -248,8 +248,8 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
           onOpenChange={(open) => {
             if (!open && !actions.remove.isPending) setDeleting(false);
           }}
-          title="Delete report"
-          description={`Delete ${savedName}?`}
+          title="Delete report?"
+          description={`${savedName} will be deleted. This can't be undone.`}
           impact={[
             'The report and its settings go.',
             'Dashboards that use it will show the report as unavailable.',

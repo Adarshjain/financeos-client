@@ -26,7 +26,7 @@ import {
 import { loadLoanMatches } from './matchActions';
 import { nothingFound } from './matchModel';
 
-const NO_MATCHES = 'No matching bank transactions found (±7 days)';
+const NO_MATCHES = 'No matching bank transactions (±7 days)';
 
 /**
  * Everything the loan page does to the loan: each action runs the mutation, says what happened in a Toast
@@ -141,7 +141,7 @@ export function useLoanActions(loanId: string) {
     if (items.length === 0) return;
     try {
       const result = await mutations.addPaymentsBatch.mutateAsync({ items } satisfies BatchLoanPaymentRequest);
-      showToast(`Batch confirmed ${result.created} payments`);
+      showToast(`${result.created === 1 ? "1 payment" : `${result.created} payments`} recorded`);
       refreshPayments();
       await fetchMatches();
     } catch {

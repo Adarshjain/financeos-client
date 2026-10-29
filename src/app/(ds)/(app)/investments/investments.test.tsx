@@ -124,7 +124,7 @@ describe('/investments Holdings: figures', () => {
   it('says so under Realised this FY when the tax request fails, and still lists holdings', async () => {
     server.fetchTaxHarvest.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText('Could not load this figure. Refresh the page to try again.')).toHaveLength(1);
+    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(1);
     expect(screen.queryByText('Tax this FY')).toBeNull();
     expect(screen.getAllByText('HDFCBANK').length).toBeGreaterThan(0);
   });
@@ -217,7 +217,7 @@ describe('/investments Holdings: rows', () => {
   it('says nothing matches when the filters find no holding, and offers to clear them', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { groups: [] }));
     await renderPage({ q: 'zzz' });
-    expect(screen.getByText('No holdings match.')).toBeInTheDocument();
+    expect(screen.getByText('No holdings match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenCalledWith('/investments');
   });
@@ -228,11 +228,11 @@ describe('/investments Holdings: rows', () => {
     expect(screen.getByText('No holdings yet. Record a trade or import your tradebook.')).toBeInTheDocument();
   });
 
-  it('shows an error with Try again when the holdings fail to load', async () => {
+  it('shows an error with Retry when the holdings fail to load', async () => {
     server.fetchHoldings.mockRejectedValue(new Error('boom'));
     await renderPage();
-    expect(screen.getByText('Could not load holdings')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load holdings")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 });

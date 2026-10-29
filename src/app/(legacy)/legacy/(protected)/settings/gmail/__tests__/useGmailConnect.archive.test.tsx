@@ -70,7 +70,7 @@ describe('useGmailConnect archive handlers', () => {
     archiveMutateAsync.mockRejectedValue(err);
     const { result } = renderHook(() => useGmailConnect(), { wrapper });
     await act(() => result.current.handleArchiveAttentionItem('ledger-1'));
-    expect(toastError).toHaveBeenCalledWith(err, 'Failed to archive Gmail attention item');
+    expect(toastError).toHaveBeenCalledWith(err, "Couldn't archive the item. Try again.");
     expect(toast.success).not.toHaveBeenCalled();
   });
 
@@ -79,7 +79,7 @@ describe('useGmailConnect archive handlers', () => {
     const { result } = renderHook(() => useGmailConnect(), { wrapper });
     await act(() => result.current.handleUnarchiveAttentionItem('ledger-1'));
     expect(unarchiveMutateAsync).toHaveBeenCalledWith('ledger-1');
-    expect(toast.success).toHaveBeenCalledWith('Item moved back to Needs Attention');
+    expect(toast.success).toHaveBeenCalledWith('Item moved back to Needs attention');
   });
 
   it('surfaces an unarchive failure', async () => {
@@ -87,7 +87,7 @@ describe('useGmailConnect archive handlers', () => {
     unarchiveMutateAsync.mockRejectedValue(err);
     const { result } = renderHook(() => useGmailConnect(), { wrapper });
     await act(() => result.current.handleUnarchiveAttentionItem('ledger-1'));
-    expect(toastError).toHaveBeenCalledWith(err, 'Failed to unarchive Gmail attention item');
+    expect(toastError).toHaveBeenCalledWith(err, "Couldn't unarchive the item. Try again.");
   });
 });
 

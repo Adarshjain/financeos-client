@@ -11,7 +11,7 @@ export default async function DsNewReportPage({ searchParams }: { searchParams: 
   const { template } = await searchParams;
   const result = await loadNewReport();
   if (!result.ok) return (
-      <ShellPage crumb="Insights / Reports" title="New report" backHref={REPORTS_HREF}>
+      <ShellPage crumb="Insights / Reports" title="Add report" backHref={REPORTS_HREF}>
         <ReportsLoadError reference={result.reference} />
       </ShellPage>
     );

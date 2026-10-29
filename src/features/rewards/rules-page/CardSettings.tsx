@@ -104,7 +104,7 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
   const save = () => {
     const num = value.trim() ? parseFloat(value) : null;
     if (num != null && (Number.isNaN(num) || num <= 0)) {
-      showToast('Point value must be greater than ₹0', { tone: 'danger' });
+      showToast('Enter a point value above ₹0.', { tone: 'danger' });
       return;
     }
     const typeChanged = type !== rewardType;
@@ -127,7 +127,7 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
           refresh();
           onClose();
         },
-        onError: (e) => dsRewardNotifier.failure(e, 'Failed to update reward config'),
+        onError: (e) => dsRewardNotifier.failure(e, "Couldn't update reward settings. Try again."),
       },
     );
   };

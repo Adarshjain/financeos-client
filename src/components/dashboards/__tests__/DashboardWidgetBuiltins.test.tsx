@@ -87,7 +87,7 @@ describe('DashboardWidgetView built-ins', () => {
     unmount();
     vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
     renderWithQuery(<DashboardWidgetView widget={template()} />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load widget');
+    expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't load the widget. Try again.");
   });
 
   it('bills_due renders its component with the accountId param and never fetches', async () => {

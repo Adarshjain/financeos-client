@@ -136,13 +136,13 @@ describe('ImportTradebookScreen: step 1', () => {
   it('asks for a target account, then a tradebook, then a tax P&L, and stays on step 1', async () => {
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
     await preview();
-    expect(showToast).toHaveBeenLastCalledWith('Please select a target broker account.', { tone: 'danger' });
+    expect(showToast).toHaveBeenLastCalledWith('Select a target broker account.', { tone: 'danger' });
     await chooseAccount();
     await preview();
-    expect(showToast).toHaveBeenLastCalledWith('Please upload at least one Tradebook / Order History file.', { tone: 'danger' });
+    expect(showToast).toHaveBeenLastCalledWith('Upload at least one Tradebook / Order History file.', { tone: 'danger' });
     await user.upload(fileInput('tradebook-zone'), tradebookFile);
     await preview();
-    expect(showToast).toHaveBeenLastCalledWith('Please upload at least one Tax P&L / Capital Gains file.', { tone: 'danger' });
+    expect(showToast).toHaveBeenLastCalledWith('Upload at least one Tax P&L / Capital Gains file.', { tone: 'danger' });
     expect(mutations.previewReconcile).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Preview reconciliation' })).toBeInTheDocument();
   });
@@ -193,7 +193,7 @@ describe('ImportTradebookScreen: step 1', () => {
     expect(screen.queryByRole('combobox', { name: /Asset scope/ })).not.toBeInTheDocument();
     await chooseAccount();
     await preview();
-    expect(showToast).toHaveBeenLastCalledWith('Please select a CAS PDF/CSV file.', { tone: 'danger' });
+    expect(showToast).toHaveBeenLastCalledWith('Select a CAS PDF/CSV file.', { tone: 'danger' });
     await user.type(screen.getByLabelText('CAS PDF password'), 'ABCDE1234F');
     await user.upload(fileInput('cas-zone'), casFile);
     await preview();
@@ -206,7 +206,7 @@ describe('ImportTradebookScreen: step 1', () => {
     await uploadZerodha();
     await preview();
     await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith('Failed to preview import: Tax P&L file is not a Zerodha report for FY 2026-27', { tone: 'danger' }),
+      expect(showToast).toHaveBeenCalledWith("Couldn't preview import: Tax P&L file is not a Zerodha report for FY 2026-27", { tone: 'danger' }),
     );
     expect(screen.getByRole('button', { name: 'Preview reconciliation' })).toBeEnabled();
     expect(screen.getByText('taxpnl_FY26-27.xlsx')).toBeInTheDocument();
@@ -329,7 +329,7 @@ describe('ImportTradebookScreen: import job and result', () => {
     expect(req.executions.map((e: { rowIndex: number; skip: boolean }) => [e.rowIndex, e.skip])).toEqual([[1, false], [2, true], [3, true], [4, true]]);
     expect(req.fnoTrades.map((t: { skip: boolean }) => t.skip)).toEqual([false, true]);
     expect(started).toHaveBeenCalledWith('job-1');
-    expect(showToast).toHaveBeenCalledWith('Reconciliation commit job started in background.');
+    expect(showToast).toHaveBeenCalledWith('Reconciliation started');
     expect(screen.getByRole('button', { name: 'Importing reconciled executions…' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled();
   });
@@ -379,7 +379,7 @@ describe('ImportTradebookScreen: import job and result', () => {
   it('says so when the job is cancelled', async () => {
     await toImport();
     act(() => polling.settle?.(job({ status: 'CANCELLED' })));
-    expect(showToast).toHaveBeenLastCalledWith('Import commit job was cancelled.');
+    expect(showToast).toHaveBeenLastCalledWith('Import cancelled');
     expect(screen.getByRole('button', { name: 'Import trades (2)' })).toBeEnabled();
   });
 
@@ -391,7 +391,7 @@ describe('ImportTradebookScreen: import job and result', () => {
     await screen.findByText('Stocks & delivery executions');
     await user.click(screen.getByRole('button', { name: 'Skip unmapped rows' }));
     await user.click(screen.getByRole('button', { name: 'Import trades (2)' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Failed to commit import: Network down', { tone: 'danger' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't commit import: Network down", { tone: 'danger' }));
     expect(screen.getByRole('button', { name: 'Import trades (2)' })).toBeEnabled();
   });
 });
@@ -466,7 +466,7 @@ describe('ImportTradebookScreen: statement (CAS) review', () => {
       [3, true, 'f1'],
       [4, true, 'f1'],
     ]);
-    expect(showToast).toHaveBeenCalledWith('Import commit job started in background.');
+    expect(showToast).toHaveBeenCalledWith('Import started');
   });
 
   it('Skip unmapped rows excludes the unmatched fund', async () => {

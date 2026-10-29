@@ -112,7 +112,7 @@ export function LendingLinkBody({ lending, mode, onModeChange, entryId, onEntryC
           <TextArea
             label="Note"
             optional
-            placeholder="e.g. Dinner split, trip cash advance..."
+            placeholder="e.g. Dinner split, trip cash advance…"
             value={lending.notes}
             onValueChange={lending.setNotes}
             minRows={2}

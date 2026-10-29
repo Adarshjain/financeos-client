@@ -70,7 +70,7 @@ export function describeAttentionItem(item: AttentionItem): AttentionDescription
   }
   if (EXTRACTION.test(error)) {
     return {
-      label: 'Could not read email',
+      label: "Couldn't read email",
       summary: 'The AI could not extract a transaction from this email.',
       hint: 'Retry later, or archive it if it is not a transaction.',
     };

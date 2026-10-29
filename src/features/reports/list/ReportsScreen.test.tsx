@@ -192,7 +192,7 @@ describe('type chips', () => {
 
   it('says nothing matches, and Clear filters goes back to All, when a type has no reports', async () => {
     renderWithQuery(<ReportsScreen {...props({ type: 'TABLE', rows: [] })} />);
-    expect(screen.getByText('No reports match.')).toBeInTheDocument();
+    expect(screen.getByText('No reports match')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(screen.getByRole('button', { name: 'All' }).className).toContain('bg-brand-tint');
     expect(router.push).not.toHaveBeenCalled();
@@ -212,7 +212,7 @@ describe('search', () => {
   it('Clear filters empties the search', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await user.type(screen.getByPlaceholderText('Search'), 'zzz');
-    expect(screen.getByText('No reports match.')).toBeInTheDocument();
+    expect(screen.getByText('No reports match')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(within(screen.getByRole('table')).getByText('Net worth over time')).toBeInTheDocument();
   });
@@ -329,14 +329,14 @@ describe('row menu', () => {
       expect(moneyOption).not.toHaveAttribute('aria-disabled', 'true');
     });
 
-    it('says the dashboards did not load, with Try again, instead of an empty Select', async () => {
+    it('says the dashboards did not load, with Retry, instead of an empty Select', async () => {
       dashboards.failed = true;
       renderWithQuery(<ReportsScreen {...props({ rows: onHome })} />);
       const dialog = await openDialog();
-      expect(within(dialog).getByText('Could not load dashboards')).toBeInTheDocument();
+      expect(within(dialog).getByText("Couldn't load dashboards")).toBeInTheDocument();
       expect(within(dialog).queryByRole('combobox')).toBeNull();
       expect(within(dialog).getByRole('button', { name: 'Add to dashboard' })).toBeDisabled();
-      await user.click(within(dialog).getByRole('button', { name: 'Try again' }));
+      await user.click(within(dialog).getByRole('button', { name: 'Retry' }));
       expect(dashboards.refetch).toHaveBeenCalled();
     });
   });

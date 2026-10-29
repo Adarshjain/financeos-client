@@ -38,7 +38,7 @@ export function RecentSyncJobsCard() {
       {loading ? (
         <CardEmpty>Loading jobs…</CardEmpty>
       ) : jobs.length === 0 ? (
-        <CardEmpty>No recent sync jobs yet.</CardEmpty>
+        <CardEmpty>No recent sync jobs yet</CardEmpty>
       ) : (
         <div className="flex flex-col gap-space-8 px-space-16 pb-space-16">
           {jobs.map((job) => {

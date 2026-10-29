@@ -156,13 +156,13 @@ describe('DebugView lookup', () => {
 
     vi.mocked(api.GET).mockResolvedValueOnce({ data: undefined, error: new Error('x'), response: new Response() } as never);
     fireEvent.click(screen.getByRole('button', { name: 'Copy raw' }));
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to fetch raw log lines'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy the raw log. Try again."));
   });
 
   it('shows the error message when the look-up fails', async () => {
     mockLookup(undefined, new Error('Loki credentials lack read scope.'));
     renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
-    expect(await screen.findByText('Look-up failed')).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't look up that reference")).toBeInTheDocument();
     expect(screen.getByText(/Loki credentials lack read scope/)).toBeInTheDocument();
   });
 
@@ -204,7 +204,7 @@ describe('DebugView lookup', () => {
 describe('LocalFailuresCard', () => {
   it('shows today\'s empty text and no actions when empty', () => {
     render(<LocalFailuresCard />);
-    expect(screen.getByText('No local failures recorded in this browser session.')).toBeInTheDocument();
+    expect(screen.getByText('No local failures yet')).toBeInTheDocument();
     expect(screen.getByText('Recent failures on this device · 0')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Copy all' })).not.toBeInTheDocument();
   });
@@ -230,7 +230,7 @@ describe('LocalFailuresCard', () => {
     render(<LocalFailuresCard onSelectRef={onSelectRef} />);
     fireEvent.click(screen.getByText('VAL12345'));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('VAL12345');
-    expect(toast.success).toHaveBeenCalledWith('Copied ref VAL12345');
+    expect(toast.success).toHaveBeenCalledWith('Reference VAL12345 copied');
     expect(onSelectRef).toHaveBeenCalledWith('VAL12345');
   });
 
@@ -278,7 +278,7 @@ describe('LocalFailuresCard', () => {
     render(<LocalFailuresCard />);
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(errorLog.getSnapshot().length).toBe(0);
-    expect(screen.getByText('No local failures recorded in this browser session.')).toBeInTheDocument();
+    expect(screen.getByText('No local failures yet')).toBeInTheDocument();
     expect(toast.info).toHaveBeenCalledWith('Local error history cleared');
   });
 });

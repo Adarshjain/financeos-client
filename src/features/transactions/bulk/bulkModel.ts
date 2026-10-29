@@ -48,7 +48,7 @@ export function mergedMessage(remainingReasonLabels: string[]): string {
 }
 
 export function deletedMessage(count: number): string {
-  return count === 1 ? 'Transaction deleted' : `Deleted ${count} transactions`;
+  return count === 1 ? 'Transaction deleted' : `${count} transactions deleted`;
 }
 
 export interface DeleteCopy {
@@ -71,7 +71,7 @@ export function deleteCopy(
     };
   }
   const n = transactions.length;
-  const impact = [`${n} transactions are deleted for good. This cannot be undone.`];
+  const impact = [`${n} transactions are deleted.`];
   const records = transactions.reduce((sum, t) => sum + (t.obligationRefs?.length ?? 0), 0);
   if (records > 0) {
     impact.push(

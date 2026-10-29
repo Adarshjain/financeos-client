@@ -75,7 +75,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
               params: { path: { id } },
               body: { transactionIds: [], restore: restore.slice(from, from + RESTORE_CHUNK) },
             });
-            if (error || !data) throw error ?? new Error('Could not undo');
+            if (error || !data) throw error ?? new Error("Couldn't undo");
           }
         }),
       );

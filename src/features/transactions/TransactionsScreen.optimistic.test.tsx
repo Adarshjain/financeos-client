@@ -319,7 +319,7 @@ describe('TransactionsScreen instant category and edit', () => {
     fireEvent.click(screen.getAllByText('Set category')[0]);
     fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set category' })).toBeNull());
     expect(screen.queryAllByText('Set category')).toHaveLength(0);
     await act(async () => d.reject(new Error('boom')));
@@ -333,8 +333,8 @@ describe('TransactionsScreen instant category and edit', () => {
     fireEvent.click(screen.getAllByText('Set category')[0]);
     fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved!'));
+    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved'));
     expect(screen.queryAllByText('Set category')).toHaveLength(0);
     expect(router.refresh).toHaveBeenCalled();
   });
@@ -346,7 +346,7 @@ describe('TransactionsScreen instant category and edit', () => {
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
     fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
     fireEvent.change(await screen.findByRole('textbox', { name: /^Description/ }), { target: { value: 'Chai point' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save transaction' }));
     await waitFor(() => expect(present('Chai point')).toBe(true));
     expect(screen.queryByText('Edit transaction')).toBeNull();
     expect(showToast).not.toHaveBeenCalled();
@@ -362,8 +362,8 @@ describe('TransactionsScreen instant category and edit', () => {
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
     fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
     fireEvent.change(await screen.findByRole('textbox', { name: /^Description/ }), { target: { value: 'Chai point' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved!'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save transaction' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved'));
     expect(present('Chai point')).toBe(true);
     expect(router.refresh).toHaveBeenCalled();
   });
@@ -425,7 +425,7 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
     fireEvent.click(screen.getAllByText('Set category')[0]);
     fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
   };
 
   it('writes to one row go out one at a time, in order, and the category save carries the approve that went before it', async () => {

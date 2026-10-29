@@ -13,7 +13,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
 
-const AMOUNT_ERROR = 'Please enter a valid amount.';
+const AMOUNT_ERROR = 'Enter an amount above ₹0.';
 
 export type EpfLinkMode = 'existing' | 'new';
 export type EpfWithdrawalKind = NonNullable<Schemas['EpfEntryRequest']['withdrawalKind']>;
@@ -72,7 +72,7 @@ interface Props {
 
 class LinkAfterCreateError extends Error {
   constructor(readonly original: unknown) {
-    super('Withdrawal recorded, but linking failed');
+    super("Withdrawal recorded, but couldn't link it. Try again.");
   }
 }
 
@@ -245,10 +245,10 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
       if (err instanceof LinkAfterCreateError) {
         // The withdrawal exists now; keep the dialog open so a retry only re-links.
         queryClient.invalidateQueries({ queryKey: ['epf'] });
-        toastError(err.original, 'EPF withdrawal recorded, but linking failed');
+        toastError(err.original, "EPF withdrawal recorded, but couldn't link it. Try again.");
         return;
       }
-      toastError(err, 'Failed to link EPF withdrawal');
+      toastError(err, "Couldn't link the EPF withdrawal. Try again.");
     },
   });
 

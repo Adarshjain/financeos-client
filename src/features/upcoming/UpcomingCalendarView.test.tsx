@@ -231,8 +231,8 @@ describe('loading and errors', () => {
     const refetch = vi.fn();
     mockQuery({ data: undefined, error: new Error('x'), refetch });
     render(<UpcomingCalendarView />);
-    expect(screen.getByText('Failed to load upcoming items.')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText("Couldn't load upcoming items.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(refetch).toHaveBeenCalled();
     expect(screen.queryByText('Nothing due on this day.')).toBeNull();
   });

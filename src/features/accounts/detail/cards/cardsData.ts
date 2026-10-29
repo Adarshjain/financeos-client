@@ -15,7 +15,7 @@ async function loadStats(accountId: string): Promise<HolderStats[]> {
   const { data, error } = await serverApi.GET('/api/v1/accounts/{accountId}/cardholders/stats', {
     params: { path: { accountId } },
   });
-  if (error) throw new Error('Could not load cardholder stats');
+  if (error) throw new Error("Couldn't load cardholder stats. Try again.");
   return (data as HolderStats[] | undefined) ?? [];
 }
 

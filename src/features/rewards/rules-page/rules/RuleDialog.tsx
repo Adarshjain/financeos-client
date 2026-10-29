@@ -185,7 +185,7 @@ export function RuleDialog({
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <DialogContent
         size="lg"
-        title={rule ? 'Edit rule' : 'New rule'}
+        title={rule ? 'Edit rule' : 'Add rule'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: f.isSubmitting }}
         primary={{ label: 'Save & recompute', onSelect: f.onSubmit, loading: f.isSubmitting }}
       >

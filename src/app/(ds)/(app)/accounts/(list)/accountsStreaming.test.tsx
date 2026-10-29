@@ -80,7 +80,7 @@ describe('/accounts streaming', () => {
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
     expect(screen.getByText('₹5,000')).toBeDefined();
     expect(screen.queryByText('Net worth')).toBeNull();
-    expect(screen.queryByText('Could not load net worth')).toBeNull();
+    expect(screen.queryByText("Couldn't load net worth. Try again.")).toBeNull();
     expect(screen.queryByText('+0.59%')).toBeNull();
     expect(screen.queryByText('1,200 pts')).toBeNull();
   });
@@ -127,7 +127,7 @@ describe('/accounts streaming', () => {
     loadMock.mockReturnValue(toStreams({ ...plain, netWorth: null, dayChangePct: null }));
     await resolved();
 
-    expect(screen.getByText('Could not load net worth')).toBeDefined();
+    expect(screen.getByText("Couldn't load net worth. Try again.")).toBeDefined();
     expect(screen.queryByText('+0.59%')).toBeNull();
     expect(screen.getByText('Bank accounts')).toBeDefined();
     expect(screen.getAllByText('1,200 pts').length).toBeGreaterThan(0);

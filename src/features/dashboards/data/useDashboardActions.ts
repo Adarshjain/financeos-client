@@ -74,10 +74,10 @@ export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
     onSuccess: (res, vars) => {
       invalidateDashboardLists(queryClient, (res.data as DashboardResponse | undefined)?.id ?? vars.id);
       if (res.data) onSaved(res.data as DashboardResponse);
-      showToast(vars.makeDefault ? 'Set as default' : 'Default cleared');
+      showToast(vars.makeDefault ? 'Default dashboard set' : 'Default cleared');
     },
     onError: (e) =>
-      showToast(e instanceof Error ? e.message : 'Could not change the default dashboard. Try again.', { tone: 'danger' }),
+      showToast(e instanceof Error ? e.message : "Couldn't change the default dashboard. Try again.", { tone: 'danger' }),
   });
 }
 

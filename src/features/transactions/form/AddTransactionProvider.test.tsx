@@ -55,13 +55,13 @@ describe('AddTransactionProvider', () => {
     );
     expect(screen.queryByText('Add transaction')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('open add'));
-    expect(screen.getAllByText('Add transaction')).toHaveLength(1);
+    expect(screen.getAllByText('Add transaction')).toHaveLength(2);
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Savings');
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '50' } });
-    await userEvent.setup({ pointerEventsCheck: 0 }).click(screen.getByRole('button', { name: 'Save transaction' }));
+    await userEvent.setup({ pointerEventsCheck: 0 }).click(screen.getByRole('button', { name: 'Add transaction' }));
     await waitFor(() => expect(create).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByText('Add transaction')).not.toBeInTheDocument());
-    expect(showToast).toHaveBeenCalledWith('Transaction saved!');
+    expect(showToast).toHaveBeenCalledWith('Transaction saved');
     expect(router.refresh).toHaveBeenCalled();
   });
 });

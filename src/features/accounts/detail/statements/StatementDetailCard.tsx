@@ -163,7 +163,7 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
         getRowId={(line) => line.id}
         sortMode="client"
         phoneSub={(line) => line.phoneSub}
-        empty={<EmptyState compact title="No transaction rows linked to this statement." />}
+        empty={<EmptyState compact title="No transactions linked yet" />}
       />
       {model.ledgerLine ? (
         <CardFooter>

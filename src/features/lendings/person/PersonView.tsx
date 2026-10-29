@@ -5,6 +5,7 @@ import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatDate } from '@/lib/format';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
@@ -181,7 +182,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
           onOpenChange={(open) => {
             if (!open && !actions.pending.deleteEntry) setDeletingEntry(null);
           }}
-          title="Delete entry"
+          title="Delete entry?"
           {...deleteEntryCopy(deletingEntry)}
           confirmLabel="Delete entry"
           confirmLoading={actions.pending.deleteEntry}
@@ -191,7 +192,9 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
               if (ok) setDeletingEntry(null);
             });
           }}
-        />
+        >
+          <IrreversibleNote />
+        </ConfirmDialog>
       ) : null}
 
       <ConfirmDialog
@@ -199,12 +202,14 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
         onOpenChange={(open) => {
           if (!actions.pending.deletePerson) setDeletingPerson(open);
         }}
-        title="Delete person"
+        title="Delete person?"
         {...deletePersonCopy(cp)}
         confirmLabel="Delete person"
         confirmLoading={actions.pending.deletePerson}
         onConfirm={() => void actions.deletePerson()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
     </>
   );
 }

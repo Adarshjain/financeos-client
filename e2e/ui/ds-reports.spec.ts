@@ -47,7 +47,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     ).toBeVisible();
     await expect(table.getByText('Spending', { exact: true })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Reports' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'New report' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Add report' })).toBeVisible();
 
     // The tabs and the type chips carry no counts.
     const reportsTab = page.getByRole('tab', { name: /^Reports$/ });

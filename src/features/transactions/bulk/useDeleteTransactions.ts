@@ -60,7 +60,7 @@ export function useDeleteTransactions() {
       return true;
     } catch (e) {
       shown?.settle(false);
-      showToast(getErrorMessage(e, 'Could not delete'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the transactions. Try again."), { tone: 'danger' });
       return false;
     }
   };

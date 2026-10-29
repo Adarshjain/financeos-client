@@ -63,7 +63,7 @@ describe('UpcomingView', () => {
 
   it('empty: says there are no rows', () => {
     renderWithQuery(<UpcomingView {...view(rawTable(COLUMNS, []))} />);
-    expect(screen.getByText('No rows for this configuration.')).toBeInTheDocument();
+    expect(screen.getByText('No rows match')).toBeInTheDocument();
   });
 
   it('pages only when the rows span several pages', async () => {

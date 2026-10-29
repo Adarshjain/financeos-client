@@ -115,7 +115,7 @@ for (const viewport of VIEWPORTS) {
       const renamed = `${seeded.held.name} Renamed`;
       await dialog.getByLabel('Name', { exact: true }).fill(renamed);
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
-      await expect(page.getByText(`Updated ${renamed} for your account`)).toBeVisible();
+      await expect(page.getByText(`${renamed} updated`)).toBeVisible();
       await expect(shown(page.getByText(renamed))).toBeVisible();
       await expect(page.getByText(/Edited for your account/).locator('visible=true')).toHaveCount(2);
 
@@ -136,7 +136,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('combobox', { name: /^Asset class/ }).click();
       await page.getByRole('option', { name: 'Gold' }).click();
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
-      await expect(page.getByText(`Updated ${seeded.edited.name} for your account`)).toBeVisible();
+      await expect(page.getByText(`${seeded.edited.name} updated`)).toBeVisible();
 
       await page.reload();
       const again = await openEdit(page, seeded.edited.name);
@@ -173,7 +173,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByLabel('Symbol', { exact: true }).fill(`${seeded.tag}A`);
       await expect(dialog.getByLabel('Yahoo symbol')).toHaveValue(`${seeded.tag}A.NS`);
       await dialog.getByRole('button', { name: 'Add instrument' }).click();
-      await expect(page.getByText(`Created instrument ${name}`)).toBeVisible();
+      await expect(page.getByText(`${name} added`)).toBeVisible();
       await expect(shown(page.getByText(name))).toBeVisible();
     });
 

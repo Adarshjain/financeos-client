@@ -130,7 +130,7 @@ describe('DividendReconcileDialog: receipt matching', () => {
   it('says the search failed', () => {
     setReconcile({ isError: true, items: [], meta: null });
     open();
-    expect(screen.getByText('Could not load matches. Try again.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load matches. Try again.")).toBeInTheDocument();
   });
 
   it('reports results through the Dinero toaster', () => {
@@ -178,7 +178,7 @@ describe('DividendReconcileDialog: unrecorded credits', () => {
   it('says the credits could not be loaded', () => {
     setReconcile({ items: [], meta: null });
     open({ unrecorded: unrecorded({ isError: true }) });
-    expect(screen.getByText('Could not load credits. Try again.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load credits. Try again.")).toBeInTheDocument();
   });
 
   it('closes', () => {

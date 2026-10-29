@@ -43,7 +43,7 @@ describe('useUpdateLoan', () => {
     await act(async () => {
       await first.result.current.mutateAsync({ id: 'l1', body: {} }).catch(() => undefined);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), 'Failed to update loan'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith(expect.any(Error), "Couldn't update loan. Try again."));
 
     toastError.mockReset();
     const onError = vi.fn();

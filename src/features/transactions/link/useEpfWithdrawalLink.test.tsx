@@ -294,7 +294,7 @@ describe('useEpfWithdrawalLink new mode', () => {
     act(() => result.current.setEmployerId('emp1'));
     expect(result.current.canSubmit).toBe(true);
     act(() => result.current.setEmployee('abc'));
-    expect(result.current.employeeError).toBe('Please enter a valid amount.');
+    expect(result.current.employeeError).toBe('Enter an amount above ₹0.');
     expect(result.current.canSubmit).toBe(false);
     act(() => {
       result.current.setEmployee('0');

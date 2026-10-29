@@ -26,7 +26,7 @@ export function dueTile(row: TableRow): { day: number; monthLabel: string } | nu
 export function UpcomingView({ data, loading, onPageChange }: TemplateViewProps) {
   if (!isRawTableData(data)) return <BuiltinNote>This widget can&apos;t show this data.</BuiltinNote>;
   if (data.rows.length === 0) {
-    return <EmptyState compact title="No rows for this configuration." />;
+    return <EmptyState compact title="No rows match" />;
   }
   const amountColumn = data.columns.find((c) => c.key === 'amount');
   const kindColumn = data.columns.find((c) => c.key === 'kind');

@@ -35,7 +35,7 @@ export function ShortcutsBody({ ids }: { ids: readonly string[] }) {
 
   if (items.length === 0 && pending) return <ShortcutsSkeleton />;
   if (items.length === 0) {
-    return <EmptyState compact title="No shortcuts" description="Pick some in this widget's settings." />;
+    return <EmptyState compact title="No shortcuts yet" description="Pick some in this widget's settings." />;
   }
   return (
     <div className={GRID} data-testid="shortcuts-widget">

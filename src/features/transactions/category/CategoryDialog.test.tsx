@@ -73,7 +73,7 @@ describe('CategoryDialog', () => {
     setup();
     fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Transport/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
     const expected = buildRequest(valuesFromTransaction(stored), {
       isUpdate: true,
@@ -96,7 +96,7 @@ describe('CategoryDialog', () => {
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(router.refresh).toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith('Transaction saved!');
+    expect(toast).toHaveBeenCalledWith('Transaction saved');
   });
 
   it('closes on Cancel without a request', () => {
@@ -109,8 +109,8 @@ describe('CategoryDialog', () => {
   it('keeps the dialog open and shows the error when saving fails', async () => {
     update.mockRejectedValue(new Error('Boom'));
     setup();
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(await screen.findByText('An unexpected error occurred')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
+    expect(await screen.findByText("Couldn't save the category. Try again.")).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
   });

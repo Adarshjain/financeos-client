@@ -47,7 +47,7 @@ export function TaxHarvestBody() {
 
   if (isLoading) return <TaxHarvestSkeleton />;
   if (error) return <BodyError what="your capital gains" error={error} retry={() => void refetch()} />;
-  if (!data) return <EmptyState compact title="Nothing to show yet" />;
+  if (!data) return <EmptyState compact title="No tax data yet" />;
 
   const lots = data.openLots.items;
   const keys = lotKeys(lots);

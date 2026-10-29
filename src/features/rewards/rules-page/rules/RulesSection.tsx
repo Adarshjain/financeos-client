@@ -173,7 +173,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         .join(' · '),
       earns: accrualSummary(rule),
       applies: appliesTo(rule),
-      cap: [capWords(rule), rule.perTxnCap != null ? `max ${rule.perTxnCap} / txn` : null].filter(Boolean).join(' · ') || '—',
+      cap: [capWords(rule), rule.perTxnCap != null ? `max ${rule.perTxnCap} / transaction` : null].filter(Boolean).join(' · ') || '—',
       year,
       phoneSub: ruleSubtitle(rule),
     };
@@ -189,7 +189,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         setDeleting(null);
         setOpen(null);
       },
-      onError: (e) => dsRewardNotifier.failure(e, 'Failed to delete reward rule'),
+      onError: (e) => dsRewardNotifier.failure(e, "Couldn't delete the reward rule. Try again."),
     });
   };
 
@@ -272,7 +272,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         open={deleting !== null}
         onOpenChange={(o) => (o ? undefined : setDeleting(null))}
         title={`Delete rule "${deleting?.name ?? ''}"?`}
-        description="Historical reports will no longer see it. Your transactions stay."
+        description="Historical reports will no longer see it. Your transactions stay. This can't be undone."
         confirmLabel="Delete rule"
         loading={remove.isPending}
         onConfirm={confirmDelete}

@@ -64,7 +64,7 @@ export function NotificationsSettings() {
 
   if (settingsQuery.isLoading && !settings) return <NotificationsSkeleton />;
   if (!settings) {
-    return <Banner tone="danger">Couldn&apos;t load notification settings. Refresh to try again.</Banner>;
+    return <Banner tone="danger">Couldn&apos;t load notification settings. Try again.</Banner>;
   }
   return <Loaded settings={settings} cards={cards} loans={loansQuery.data ?? []} />;
 }

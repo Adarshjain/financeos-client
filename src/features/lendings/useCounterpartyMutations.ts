@@ -40,7 +40,7 @@ export function useCounterpartyMutations(counterpartyId: string, options?: Count
         })
         .then((r) => r.data!),
     onSuccess: invalidateLendings,
-    onError: onErrorToast('Failed to update counterparty'),
+    onError: onErrorToast("Couldn't update counterparty. Try again."),
   });
 
   const deleteCp = useMutation({
@@ -49,11 +49,11 @@ export function useCounterpartyMutations(counterpartyId: string, options?: Count
         params: { path: { id: counterpartyId } },
       }),
     onSuccess: invalidateLendings,
-    onError: onErrorToast('Failed to delete counterparty'),
+    onError: onErrorToast("Couldn't delete counterparty. Try again."),
   });
 
   const createLending = useCreateLending(
-    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to create lending') } : undefined,
+    options?.onError ? { onError: (e) => options.onError!(e, "Couldn't record lending. Try again.") } : undefined,
   );
 
   const updateLending = useMutation({
@@ -62,22 +62,22 @@ export function useCounterpartyMutations(counterpartyId: string, options?: Count
         .PUT('/api/v1/lendings/{id}', { params: { path: { id } }, body })
         .then((r) => r.data!),
     onSuccess: invalidateLendings,
-    onError: onErrorToast('Failed to update lending'),
+    onError: onErrorToast("Couldn't update lending. Try again."),
   });
 
   const deleteLending = useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/lendings/{id}', { params: { path: { id } } }),
     onSuccess: invalidateLendingsAndTransactions,
-    onError: onErrorToast('Failed to delete lending'),
+    onError: onErrorToast("Couldn't delete lending. Try again."),
   });
 
   const linkTransaction = useLinkLendingTransaction(
-    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to link transaction') } : undefined,
+    options?.onError ? { onError: (e) => options.onError!(e, "Couldn't link transaction. Try again.") } : undefined,
   );
 
   const unlinkTransaction = useUnlinkLendingTransaction(
-    options?.onError ? { onError: (e) => options.onError!(e, 'Failed to unlink transaction') } : undefined,
+    options?.onError ? { onError: (e) => options.onError!(e, "Couldn't unlink transaction. Try again.") } : undefined,
   );
 
   return {

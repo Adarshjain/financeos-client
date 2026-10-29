@@ -26,9 +26,9 @@ export function AttentionBody({ className }: BuiltinBodyProps) {
   if (isLoading) {
     body = <AttentionSkeleton />;
   } else if (error) {
-    body = <BuiltinError message={getErrorMessage(error, 'request failed')} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
+    body = <BuiltinError message={getErrorMessage(error, "Couldn't load your inbox.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (rows.length === 0) {
-    body = <EmptyState compact title="All clear" description="Nothing needs you right now" />;
+    body = <EmptyState compact title="All clear" description="Nothing needs you right now." />;
   } else {
     body = (
       <>

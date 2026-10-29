@@ -133,7 +133,7 @@ describe('TimelineList', () => {
     fireEvent.click(copyRawBtn);
 
     await vi.waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to fetch raw log lines');
+      expect(toast.error).toHaveBeenCalledWith("Couldn't copy the raw log. Try again.");
     });
   });
 });

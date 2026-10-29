@@ -69,9 +69,9 @@ export function CardsTab({
   if (!cardholders || !model) {
     return (
       <ErrorState
-        title="Could not load cardholders"
-        description="The cardholders request failed. Try again, and quote the reference if it keeps failing."
-        action={{ label: 'Try again', onSelect: () => router.refresh() }}
+        title="Couldn't load cardholders"
+        description="Try again. If it keeps failing, quote the reference."
+        action={{ label: 'Retry', onSelect: () => router.refresh() }}
       />
     );
   }
@@ -129,7 +129,7 @@ export function CardsTab({
             }}
           />
         ) : (
-          <EmptyState title="No cardholders found for this account." />
+          <EmptyState title="No cardholders yet" />
         )
       ) : null}
 

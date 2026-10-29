@@ -77,7 +77,7 @@ describe('LocalErrorsSection', () => {
     fireEvent.click(row);
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('VAL12345');
-    expect(toast.success).toHaveBeenCalledWith('Copied ref VAL12345');
+    expect(toast.success).toHaveBeenCalledWith('Reference VAL12345 copied');
     expect(onSelectRef).toHaveBeenCalledWith('VAL12345');
   });
 

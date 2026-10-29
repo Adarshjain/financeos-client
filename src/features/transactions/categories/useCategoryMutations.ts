@@ -25,7 +25,7 @@ export function useCategoryMutations(handlers: { onCreated?: () => void; onRenam
       handlers.onCreated?.();
       done();
     },
-    onError: failed("Couldn't create the category. Try again."),
+    onError: failed("Couldn't add the category. Try again."),
   });
 
   const rename = useMutation({

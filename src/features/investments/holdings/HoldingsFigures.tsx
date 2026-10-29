@@ -66,7 +66,7 @@ export function HoldingsTiles({ tiles, failedLabels }: { tiles: (HoldingsTile | 
             context={tile.context}
           />
         ) : (
-          <KpiTile key={failedLabels[i]} label={failedLabels[i]} error="Could not load this figure. Refresh the page to try again." />
+          <KpiTile key={failedLabels[i]} label={failedLabels[i]} error="Couldn't load this figure. Try again." />
         ),
       )}
     </div>

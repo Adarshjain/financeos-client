@@ -120,7 +120,7 @@ function ChatSession({
   const rename = async (id: string, next: string) => {
     const result = await renameConversation(id, next);
     if (!result.success) {
-      showToast(result.error.message || 'Could not rename the chat', { tone: 'danger' });
+      showToast(result.error.message || "Couldn't rename the chat. Try again.", { tone: 'danger' });
       return false;
     }
     setList((prev) => withTitle(prev, id, result.data.title ?? next));
@@ -130,7 +130,7 @@ function ChatSession({
   const remove = async (id: string) => {
     const result = await deleteConversation(id);
     if (!result.success) {
-      showToast(result.error.message || 'Could not delete the chat', { tone: 'danger' });
+      showToast(result.error.message || "Couldn't delete the chat. Try again.", { tone: 'danger' });
       return false;
     }
     setList((prev) => withoutChat(prev, id));

@@ -14,7 +14,7 @@ export function BodyError({ what, error, retry }: { what: string; error: unknown
     <ErrorState
       size="sm"
       title={`Couldn't load ${what}`}
-      description={getErrorMessage(error, 'request failed')}
+      description={getErrorMessage(error, "Couldn't load this widget.")}
       action={{ label: 'Retry', onSelect: retry }}
     />
   );

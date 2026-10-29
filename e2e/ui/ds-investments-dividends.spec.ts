@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Type' }).click();
       await page.getByRole('option', { name: 'Interest' }).click();
       await page.waitForURL(/type=interest/);
-      await expect(page.getByText('No dividends match.')).toBeVisible();
+      await expect(page.getByText('No dividends match')).toBeVisible();
       await page.getByRole('button', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => !url.search.includes('type'));
       await expect(rowOf(page, seeded.received.symbol)).toBeVisible();
@@ -255,7 +255,7 @@ for (const viewport of VIEWPORTS) {
       await expect(card.getByText(/^Checked \d+ symbols?/)).toBeVisible({ timeout: 30_000 });
       await card.getByRole('button', { name: 'Rescan' }).click();
       await expect(card.getByText(/^Checked \d+ symbols?/)).toBeVisible({ timeout: 30_000 });
-      const nothing = card.getByText('Nothing new found');
+      const nothing = card.getByText('No new dividends');
       const record = card.getByRole('button', { name: 'Record', exact: true }).first();
       await expect(nothing.or(record)).toBeVisible();
       // A found payout opens the record form prefilled (its pay date can be set), it does not save at once.

@@ -45,8 +45,8 @@ export function DebugView({ initialRef = '', initialType = 'auto', admin }: Debu
       ) : null}
 
       {admin && isError ? (
-        <Banner tone="danger" title="Look-up failed">
-          {error instanceof Error ? error.message : 'Failed to retrieve diagnostic data.'}
+        <Banner tone="danger" title="Couldn't look up that reference">
+          {error instanceof Error ? error.message : "Couldn't load diagnostic data. Try again."}
         </Banner>
       ) : null}
 

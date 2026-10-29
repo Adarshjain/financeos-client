@@ -40,7 +40,7 @@ function InvestmentsFrame({ children }: { children: React.ReactNode }) {
         ]
       : tab === 'fno'
         ? [
-            { id: 'add', label: 'Add F&O trade', onSelect: () => setAdding(true) },
+            { id: 'add', label: 'Record F&O trade', onSelect: () => setAdding(true) },
             { id: 'import', label: 'Import statement', asChild: true, children: <Link href={INVESTMENTS_IMPORT_HREF} /> },
           ]
         : undefined;

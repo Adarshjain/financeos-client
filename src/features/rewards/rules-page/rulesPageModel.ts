@@ -115,7 +115,7 @@ export function capWords(rule: RewardRule): string | null {
 /** The phone row's second line: earns · applies to · cap. Stacking, dates and earnings are on the row already. */
 export function ruleSubtitle(rule: RewardRule): string {
   const parts = [accrualSummary(rule), appliesTo(rule), capWords(rule)];
-  if (rule.perTxnCap != null) parts.push(`max ${rule.perTxnCap} / txn`);
+  if (rule.perTxnCap != null) parts.push(`max ${rule.perTxnCap} / transaction`);
   return parts.filter(Boolean).join(' · ');
 }
 

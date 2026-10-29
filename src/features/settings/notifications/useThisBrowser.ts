@@ -71,7 +71,7 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
       setEndpoint(payload.endpoint);
       notify.success('Notifications enabled on this device');
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not enable notifications'));
+      notify.error(getErrorMessage(e, "Couldn't enable notifications. Try again."));
     } finally {
       setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
@@ -88,7 +88,7 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
       setEndpoint(null);
       notify.success('Notifications disabled on this device');
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not disable notifications'));
+      notify.error(getErrorMessage(e, "Couldn't disable notifications. Try again."));
     } finally {
       setEnv((e) => e && { ...e, permission: notificationPermission() });
       setWorking(false);
@@ -100,7 +100,7 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
       const result = await sendTest.mutateAsync();
       notify.success(result.sent > 0 ? `Test sent to ${result.sent} device${result.sent === 1 ? '' : 's'}` : 'No device accepted the test');
     } catch (e) {
-      notify.error(getErrorMessage(e, 'Could not send a test'));
+      notify.error(getErrorMessage(e, "Couldn't send a test. Try again."));
     }
   };
 

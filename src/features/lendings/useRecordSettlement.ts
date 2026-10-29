@@ -33,7 +33,7 @@ export function useRecordSettlement(options?: Options) {
         })
         .then((r) => r.data!),
     onSuccess: refresh,
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to record settlement')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't record settlement. Try again.")),
   });
 }
 
@@ -43,6 +43,6 @@ export function useDeleteLending(options?: Options) {
   return useMutation({
     mutationFn: (id: string) => api.DELETE('/api/v1/lendings/{id}', { params: { path: { id } } }),
     onSuccess: refresh,
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to delete lending')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't delete lending. Try again.")),
   });
 }

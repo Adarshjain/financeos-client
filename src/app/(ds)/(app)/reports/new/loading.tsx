@@ -4,5 +4,5 @@ import { ReportEditorSkeleton } from '@/features/reports/builder/ReportEditorSke
 
 /** Shown while the New report page loads. */
 export default function DsNewReportLoading() {
-  return <ReportEditorSkeleton title="New report" />;
+  return <ReportEditorSkeleton title="Add report" />;
 }

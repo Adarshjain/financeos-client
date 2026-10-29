@@ -76,7 +76,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
             type === 'POINTS' ? 'Card now defaults to reward points' : 'Card now defaults to cash'
           ),
         onError: (e) => {
-          toastError(e, 'Failed to update reward config');
+          toastError(e, "Couldn't update reward settings. Try again.");
           setDefaultRewardType(previous);
         },
       }
@@ -96,7 +96,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
           toast.success(num != null ? `Point value set to ${formatMoney(num, { decimals: 'auto' })}/pt` : 'Point value reset to default (₹0.25/pt)');
           setPointValueInr(data.pointValueInr != null ? String(data.pointValueInr) : '');
         },
-        onError: (e) => toastError(e, 'Failed to update reward config'),
+        onError: (e) => toastError(e, "Couldn't update reward settings. Try again."),
       }
     );
   };
@@ -108,7 +108,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
     [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
     reorderRules.mutate(
       { accountId, orderedIds: reordered.map((r) => r.id) },
-      { onError: (e) => toastError(e, 'Failed to reorder reward rules') }
+      { onError: (e) => toastError(e, "Couldn't reorder reward rules. Try again.") }
     );
   };
 
@@ -116,7 +116,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
     if (!window.confirm(`Delete rule "${rule.name}"? Historical reports will no longer see it.`)) return;
     deleteRule.mutate(rule.id, {
       onSuccess: () => toast.success('Rule deleted'),
-      onError: (e) => toastError(e, 'Failed to delete reward rule'),
+      onError: (e) => toastError(e, "Couldn't delete the reward rule. Try again."),
     });
   };
 

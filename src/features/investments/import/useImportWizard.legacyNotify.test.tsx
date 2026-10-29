@@ -18,7 +18,7 @@ describe('useImportWizard (Legacy dialog)', () => {
       wrapper: ({ children }) => <QueryClientProvider client={createTestQueryClient()}>{children}</QueryClientProvider>,
     });
     await act(async () => result.current.handlePreviewSubmit({ preventDefault: vi.fn() } as never));
-    expect(sonner.error).toHaveBeenCalledWith('Please select a target broker account.');
+    expect(sonner.error).toHaveBeenCalledWith('Select a target broker account.');
     expect(result.current.step).toBe(1);
   });
 });

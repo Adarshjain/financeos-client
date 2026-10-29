@@ -153,7 +153,7 @@ describe('/loans/lendings', () => {
   it('says so under each tile label when the summary fails, and still lists the people', async () => {
     server.fetchPeopleSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText('Could not load this figure. Refresh the page to try again.')).toHaveLength(4);
+    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(4);
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
   });
 
@@ -225,7 +225,7 @@ describe('/loans/lendings', () => {
   it('says nothing matches when a search or chip finds no one, and invites an entry when there is no one at all', async () => {
     server.fetchPeople.mockResolvedValue(pageOf([]));
     await renderPage({ q: 'zzz' });
-    expect(screen.getByText('No people match.')).toBeInTheDocument();
+    expect(screen.getByText('No people match')).toBeInTheDocument();
   });
 
   it('invites a first entry when there are no people at all', async () => {
@@ -234,12 +234,12 @@ describe('/loans/lendings', () => {
     expect(screen.getByText('No lendings yet. Add a lending to start a ledger.')).toBeInTheDocument();
   });
 
-  it('shows an error with Try again and the reference when the people fail to load', async () => {
+  it('shows an error with Retry and the reference when the people fail to load', async () => {
     server.fetchPeople.mockRejectedValue(new ApiError(500, { code: 'X', message: 'boom', timestamp: '' }, { requestId: 'req-42' }));
     await renderPage();
-    expect(screen.getByText('Could not load people')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load people")).toBeInTheDocument();
     expect(screen.getByText(/req-42/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(router.refresh).toHaveBeenCalled();
     expect(screen.getByText('Owed to you')).toBeInTheDocument();
   });
@@ -324,7 +324,7 @@ describe('/loans/lendings', () => {
       api.PUT.mockRejectedValue(new Error('nope'));
       await renderPage();
       fireEvent.click(screen.getByRole('button', { name: 'Link' }));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to link transaction', { tone: 'danger' }));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't link transaction. Try again.", { tone: 'danger' }));
       expect(router.refresh).not.toHaveBeenCalled();
       expect(screen.getByRole('button', { name: 'Link' })).toBeEnabled();
     });

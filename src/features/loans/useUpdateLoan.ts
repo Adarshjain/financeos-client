@@ -17,6 +17,6 @@ export function useUpdateLoan(options?: { onError?: (e: unknown) => void }) {
     mutationFn: ({ id, body }: { id: string; body: UpdateLoanRequest }) =>
       api.PUT('/api/v1/loans/{id}', { params: { path: { id } }, body }).then((r) => r.data! as LoanResponse),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to update loan')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't update loan. Try again.")),
   });
 }

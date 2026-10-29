@@ -240,7 +240,7 @@ for (const viewport of VIEWPORTS) {
         await page.locator('aside').getByRole('button', { name: 'More options', exact: true }).click();
         await page.getByRole('menuitem', { name: 'Rename' }).click();
         await page.getByRole('textbox', { name: 'Name' }).fill('Renamed chat');
-        await page.getByRole('button', { name: 'Save' }).click();
+        await page.getByRole('button', { name: 'Save name' }).click();
         await expect(page.locator('aside').getByText('Renamed chat')).toBeVisible();
 
         await page.locator('aside').getByRole('button', { name: 'More options', exact: true }).click();
@@ -273,8 +273,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Report draft', { exact: true })).toBeVisible();
       await expect(page.getByText('Draft spend KPI', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Save as report' }).click();
-      await expect(page.getByText('Report saved')).toBeVisible();
-      await expect(page.getByText(/^Saved as report/)).toBeVisible();
+      await expect(page.getByText('Report saved').first()).toBeVisible();
+      await expect(page.getByText(/^Report saved/).first()).toBeVisible();
       await page.getByRole('link', { name: 'Open report' }).click();
       await expect(page).toHaveURL(/\/reports\/[0-9a-f-]{36}/);
     });
@@ -283,7 +283,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await askForDraft(page, { mode: 'create', name: 'Draft undo KPI' });
       await page.getByRole('button', { name: 'Save as report' }).click();
-      await expect(page.getByText('Report saved')).toBeVisible();
+      await expect(page.getByText('Report saved').first()).toBeVisible();
       await page.getByRole('button', { name: 'Undo' }).first().click();
       await expect(page.getByRole('button', { name: 'Save as report' })).toBeVisible();
       await page.goto('/reports');
@@ -294,9 +294,9 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       await askForDraft(page, { mode: 'create', name: 'Draft reload KPI' });
       await page.getByRole('button', { name: 'Save as report' }).click();
-      await expect(page.getByText(/^Saved as report/)).toBeVisible();
+      await expect(page.getByText(/^Report saved/).first()).toBeVisible();
       await page.reload();
-      await expect(page.getByText(/^Saved as report/)).toBeVisible();
+      await expect(page.getByText(/^Report saved/).first()).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save as report' })).toHaveCount(0);
     });
 
@@ -311,7 +311,7 @@ for (const viewport of VIEWPORTS) {
 
         await askForDraft(page, { mode: 'create', name: 'Draft home KPI' });
         await page.getByRole('button', { name: 'Add to Home' }).click();
-        await expect(page.getByText('Saved as report and added to Home').first()).toBeVisible();
+        await expect(page.getByText('Report saved and added to Home').first()).toBeVisible();
 
         const url = page.url();
         await page.goto('/dashboard');
@@ -337,7 +337,7 @@ for (const viewport of VIEWPORTS) {
 
         await askForDraft(page, { mode: 'create', name: 'Draft first KPI' });
         await page.getByRole('button', { name: 'Add to Home' }).click();
-        await expect(page.getByText('Saved as report and added to Home').first()).toBeVisible();
+        await expect(page.getByText('Report saved and added to Home').first()).toBeVisible();
 
         await page.goto('/dashboard');
         const widgets = page.getByTestId('dashboard-widget');

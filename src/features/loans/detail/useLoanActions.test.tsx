@@ -100,8 +100,8 @@ describe('mark paid', () => {
 
   it('shows the server message as a danger toast when a mutation fails', () => {
     setup();
-    onErrorOption?.(new Error('x'), 'Failed to record loan payment');
-    expect(toast).toHaveBeenCalledWith('Failed to record loan payment', { tone: 'danger' });
+    onErrorOption?.(new Error('x'), "Couldn't record loan payment. Try again.");
+    expect(toast).toHaveBeenCalledWith("Couldn't record loan payment. Try again.", { tone: 'danger' });
   });
 });
 
@@ -152,7 +152,7 @@ describe('matching', () => {
     loadLoanMatches.mockResolvedValue({ success: true, data: matches([]) });
     const actions = setup();
     await act(async () => actions.current.findMatches());
-    expect(toast).toHaveBeenCalledWith('No matching bank transactions found (±7 days)');
+    expect(toast).toHaveBeenCalledWith('No matching bank transactions (±7 days)');
   });
 
   it('reports a failed search', async () => {
@@ -186,7 +186,7 @@ describe('matching', () => {
     expect(m.addPaymentsBatch.mutateAsync).toHaveBeenCalledWith({
       items: [{ installmentSeq: 14, paymentDate: '2026-10-05', amount: 39052, transactionId: 't1' }],
     });
-    expect(toast).toHaveBeenCalledWith('Batch confirmed 1 payments');
+    expect(toast).toHaveBeenCalledWith('1 payment recorded');
   });
 
   it('confirm all does nothing before the debits were searched for', async () => {

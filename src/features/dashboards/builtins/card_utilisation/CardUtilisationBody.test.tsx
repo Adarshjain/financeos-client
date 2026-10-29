@@ -82,7 +82,7 @@ describe('CardUtilisationBody', () => {
   it('no open cards: an empty state that goes to accounts', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: [account({})] } as never);
     renderWithQuery(<CardUtilisationBody {...bodyProps('card_utilisation')} />);
-    expect(await screen.findByText('No open credit cards')).toBeInTheDocument();
+    expect(await screen.findByText('No open credit cards yet')).toBeInTheDocument();
     await userEvent.setup({ advanceTimers: vi.advanceTimersByTime }).click(screen.getByRole('button', { name: 'Go to accounts' }));
     expect(push).toHaveBeenCalledWith(expect.stringMatching(/\/accounts$/));
   });

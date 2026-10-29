@@ -46,7 +46,7 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
       onSaved?.(saved);
       onClose();
     } catch (e) {
-      showToast(getErrorMessage(e, editing ? 'Failed to update the employer' : 'Failed to add the employer'), { tone: 'danger' });
+      showToast(getErrorMessage(e, editing ? "Couldn't update the employer. Try again." : "Couldn't add the employer. Try again."), { tone: 'danger' });
     }
   };
 
@@ -56,7 +56,7 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
         size="sm"
         title={editing ? 'Edit employer' : 'Add employer'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: editing ? 'Save' : 'Add employer', type: 'submit', form: FORM_ID, loading: pending }}
+        primary={{ label: editing ? 'Save employer' : 'Add employer', type: 'submit', form: FORM_ID, loading: pending }}
       >
         <DialogBody>
           <form

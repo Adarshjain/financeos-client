@@ -24,7 +24,7 @@ export function EpfEmployersCard({ rows, onAdd, onEdit }: EpfEmployersCardProps)
         </Text>
       }
     >
-      {rows.length === 0 ? <EmptyState compact description="No employers yet." /> : null}
+      {rows.length === 0 ? <EmptyState compact description="No employers yet" /> : null}
       {rows.map((row) => (
         <ListRow
           key={row.id}

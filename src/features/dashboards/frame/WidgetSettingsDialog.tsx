@@ -61,9 +61,9 @@ export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClo
       <DialogContent
         size="sm"
         title={`Widget settings · ${name}`}
-        description={dashboardName ? `Changes this widget on ${dashboardName} only` : undefined}
+        description={dashboardName ? `Changes this widget on ${dashboardName} only.` : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: 'Save', onSelect: () => void save(), disabled: !form.valid || saving, loading: saving }}
+        primary={{ label: 'Save widget', onSelect: () => void save(), disabled: !form.valid || saving, loading: saving }}
       >
         <DialogBody>
           <ParamFields form={form} />

@@ -69,12 +69,12 @@ describe('CapsSection', () => {
   it('creates a cap with every field', async () => {
     caps = [];
     render(<CapsSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New cap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add cap' }));
     fireEvent.change(screen.getByRole('textbox', { name: /^Name/ }), { target: { value: 'ACE combined' } });
     fireEvent.change(screen.getByRole('textbox', { name: /^Cap/ }), { target: { value: '500' } });
     fireEvent.click(screen.getByRole('combobox', { name: /^Counter scope/ }));
     fireEvent.click(screen.getByRole('option', { name: 'Per cardholder' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save cap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add cap' }));
     await waitFor(() =>
       expect(create).toHaveBeenCalledWith(
         {
@@ -94,12 +94,12 @@ describe('CapsSection', () => {
   it('refuses a missing name and a non-positive cap', () => {
     caps = [];
     render(<CapsSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New cap' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save cap' }));
-    expect(toast).toHaveBeenCalledWith('Cap name is required.', { tone: 'danger' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add cap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add cap' }));
+    expect(toast).toHaveBeenCalledWith('Enter a cap name.', { tone: 'danger' });
     fireEvent.change(screen.getByRole('textbox', { name: /^Name/ }), { target: { value: 'X' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save cap' }));
-    expect(toast).toHaveBeenCalledWith('Cap must be a positive number.', { tone: 'danger' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add cap' }));
+    expect(toast).toHaveBeenCalledWith('Enter a cap above 0.', { tone: 'danger' });
     expect(create).not.toHaveBeenCalled();
   });
 

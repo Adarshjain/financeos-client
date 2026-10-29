@@ -253,7 +253,7 @@ export function TradebookView({ state, rows, totalElements, totalPages, brokers,
           empty={
             <EmptyState
               compact
-              description={filtered ? 'No trades match.' : 'No trades recorded. Record a trade or import your tradebook.'}
+              description={filtered ? 'No trades match' : 'No trades yet. Record a trade or import your tradebook.'}
               action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => router.push(tradebookUrl({ ...state, q: '', broker: '', type: '', fy: currentFy(), page: 0 })) } : undefined}
             />
           }

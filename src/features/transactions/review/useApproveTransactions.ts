@@ -59,7 +59,7 @@ export function useApproveTransactions() {
       return true;
     } catch (e) {
       shown?.settle(false);
-      showToast(getErrorMessage(e, 'Could not approve'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't approve. Try again."), { tone: 'danger' });
       return false;
     }
   };

@@ -61,7 +61,7 @@ export function useEpfImport(notify: ImportWizardNotify) {
   /** Reads the passbooks; `override` is the employer picked for one section in the review step, absent on the first read. */
   const runPreview = async (override?: { key: string; value: string }) => {
     if (files.length === 0) {
-      notify.error('Please select your EPFO passbook PDFs.');
+      notify.error('Select your EPFO passbook PDFs.');
       return;
     }
     setIsPreviewing(true);
@@ -94,7 +94,7 @@ export function useEpfImport(notify: ImportWizardNotify) {
         setUploadError(err.response.message);
         setStep(1);
       } else {
-        notify.caught(err, 'Failed to preview import');
+        notify.caught(err, "Couldn't preview import");
       }
     } finally {
       setIsPreviewing(false);
@@ -117,7 +117,7 @@ export function useEpfImport(notify: ImportWizardNotify) {
       invalidateInvestmentQueries(qc);
       void qc.invalidateQueries({ queryKey: ['epf'] });
     } catch (err) {
-      notify.caught(err, 'Failed to commit import');
+      notify.caught(err, "Couldn't commit import");
     } finally {
       setIsCommitting(false);
     }

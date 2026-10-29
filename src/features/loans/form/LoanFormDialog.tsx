@@ -25,7 +25,7 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const today = todayInAppZone();
   const createLoan = useCreateLoan({
-    onError: (e) => showToast(getErrorMessage(e, 'Failed to create loan'), { tone: 'danger' }),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't create loan. Try again."), { tone: 'danger' }),
   });
   const { data: accounts } = useAccounts();
   const [values, setValues] = React.useState<LoanFormValues>(() => emptyLoanValues(today));
@@ -52,7 +52,7 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
     if (problems.length > 0) return;
     try {
       await createLoan.mutateAsync(buildCreateLoanRequest(resolved));
-      showToast('Loan created successfully');
+      showToast('Loan created');
       onClose();
       router.refresh();
     } catch {
@@ -66,7 +66,7 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
         size="md"
         title="Add loan"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: createLoan.isPending }}
-        primary={{ label: 'Create loan', type: 'submit', form: FORM_ID, loading: createLoan.isPending }}
+        primary={{ label: 'Add loan', type: 'submit', form: FORM_ID, loading: createLoan.isPending }}
       >
         <DialogBody>
           <form

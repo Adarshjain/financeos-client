@@ -32,7 +32,7 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
   const router = useRouter();
   const today = todayInAppZone();
   const updateLoan = useUpdateLoan({
-    onError: (e) => showToast(getErrorMessage(e, 'Failed to update loan'), { tone: 'danger' }),
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't update loan. Try again."), { tone: 'danger' }),
   });
   const { data: accounts } = useAccounts();
   const [values, setValues] = React.useState<LoanFormValues>(() => loanValuesFrom(loan, today));
@@ -59,7 +59,7 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
     if (problems.length > 0) return;
     try {
       await updateLoan.mutateAsync({ id: loan.id, body: buildUpdateLoanRequest(resolved, !!loan.paymentAccountId) });
-      showToast('Loan updated successfully');
+      showToast('Loan updated');
       onClose();
       router.refresh();
     } catch {
@@ -73,7 +73,7 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
         size="md"
         title="Edit loan"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: updateLoan.isPending }}
-        primary={{ label: 'Save changes', type: 'submit', form: FORM_ID, loading: updateLoan.isPending }}
+        primary={{ label: 'Save loan', type: 'submit', form: FORM_ID, loading: updateLoan.isPending }}
       >
         <DialogBody>
           <form

@@ -25,7 +25,7 @@ export function DeleteKeyDialog({ keyToDelete, deleting, onCancel, onConfirm }: 
       >
         <DialogBody>
           <Text variant="body" tone="ink-2" as="p">
-            Are you sure you want to delete {keyToDelete?.label || `${keyToDelete?.provider} key`} (•••• {keyToDelete?.keyLast4})?
+            {keyToDelete?.label || `${keyToDelete?.provider} key`} (•••• {keyToDelete?.keyLast4}) goes. Your other keys stay. This can&apos;t be undone.
           </Text>
         </DialogBody>
       </DialogContent>

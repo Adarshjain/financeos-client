@@ -73,7 +73,7 @@ const choose = (label: string, option: string) => {
   fireEvent.click(screen.getByRole('combobox', { name: new RegExp(`^${label}`) }));
   fireEvent.click(screen.getByRole('option', { name: option }));
 };
-const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save milestone' }));
+const save = () => fireEvent.click(screen.getByRole('button', { name: /^(Save|Add) milestone$/ }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -113,7 +113,7 @@ describe('MilestonesSection', () => {
   it('creates a milestone, preselecting the card’s reward type', () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New milestone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
     expect(screen.getByRole('combobox', { name: /^Paid as/ })).toHaveTextContent('Reward points');
     fireEvent.change(textbox('Name'), { target: { value: 'Spend 4L' } });
     fireEvent.change(textbox('Threshold'), { target: { value: '400000' } });
@@ -144,7 +144,7 @@ describe('MilestonesSection', () => {
   it('validates as Legacy does', () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New milestone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
     save();
     expect(toast).toHaveBeenLastCalledWith('Milestone name is required.', { tone: 'danger' });
     fireEvent.change(textbox('Name'), { target: { value: 'X' } });
@@ -163,7 +163,7 @@ describe('MilestonesSection', () => {
   it('asks for start and deadline on a one-time offer, and fills 90 days when a card is picked', () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New milestone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
     choose('Window', 'One-time (welcome offer)');
     expect(screen.getByLabelText('Offer start')).toBeInTheDocument();
     expect(screen.getByLabelText('Offer deadline')).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('MilestonesSection', () => {
   it('hides the amount, paid-as and timing for a tracker-only milestone', () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New milestone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
     expect(screen.getByRole('combobox', { name: /^Credited/ })).toBeInTheDocument();
     choose('Payout', 'Tracker only (e.g. fee waiver)');
     expect(screen.queryByRole('combobox', { name: /^Paid as/ })).not.toBeInTheDocument();
@@ -203,10 +203,10 @@ describe('MilestonesSection', () => {
   it('shows the minimum amount only when counting transactions', () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'New milestone' }));
-    expect(screen.queryByRole('textbox', { name: /^Min txn amount/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    expect(screen.queryByRole('textbox', { name: /^Minimum transaction amount/ })).not.toBeInTheDocument();
     choose('Counts', 'Transaction count');
-    fireEvent.change(textbox('Min txn amount'), { target: { value: '1500' } });
+    fireEvent.change(textbox('Minimum transaction amount'), { target: { value: '1500' } });
     fireEvent.change(textbox('Name'), { target: { value: 'Four swipes' } });
     fireEvent.change(textbox('Threshold'), { target: { value: '4' } });
     fireEvent.change(textbox('Payout value'), { target: { value: '1000' } });

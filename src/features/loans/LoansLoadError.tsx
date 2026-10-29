@@ -5,14 +5,14 @@ import React from 'react';
 
 import { ErrorState } from '@/components/organisms';
 
-/** A list that failed to load: say what failed, offer Try again, quote the reference. */
+/** A list that failed to load: say what failed, offer Retry, quote the reference. */
 export function LoansLoadError({ what, reference }: { what: string; reference?: string }) {
   const router = useRouter();
   return (
     <ErrorState
-      title={`Could not load ${what}`}
-      description={`The ${what} request failed. Try again, and quote the reference if it keeps failing.`}
-      action={{ label: 'Try again', onSelect: () => router.refresh() }}
+      title={`Couldn't load ${what}`}
+      description="If it keeps failing, quote the reference."
+      action={{ label: 'Retry', onSelect: () => router.refresh() }}
       reference={reference}
     />
   );

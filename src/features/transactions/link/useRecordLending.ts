@@ -168,7 +168,7 @@ export function useRecordLending({
       finishAndClose();
     },
     onError: (err: unknown) => {
-      toastError(err, 'Failed to record lending');
+      toastError(err, "Couldn't record the lending. Try again.");
     },
   });
 
@@ -180,11 +180,11 @@ export function useRecordLending({
       }),
     onMutate: (lendingId: string) => setAttachingId(lendingId),
     onSuccess: () => {
-      notify.success('Attached to ledger entry');
+      notify.success('Transaction attached');
       finishAndClose();
     },
     onError: (err: unknown) => {
-      toastError(err, 'Failed to attach transaction');
+      toastError(err, "Couldn't attach the transaction. Try again.");
     },
     onSettled: () => setAttachingId(null),
   });

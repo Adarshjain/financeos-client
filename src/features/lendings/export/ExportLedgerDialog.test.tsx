@@ -167,7 +167,7 @@ describe('opening balance expressions', () => {
     renderDialog();
     fireEvent.change(screen.getByLabelText('Opening balance'), { target: { value: '1000+200' } });
     expect(preview()).toContain('Opening balance: Rahul owes Adarsh ₹1,200.00');
-    expect(screen.queryByText('Please enter a valid amount.')).toBeNull();
+    expect(screen.queryByText('Enter a valid amount.')).toBeNull();
   });
 
   it('shows an error and blocks Copy and Share for an invalid expression instead of dropping the line', async () => {
@@ -175,12 +175,12 @@ describe('opening balance expressions', () => {
     renderDialog();
     for (const bad of ['5+', '100/0', '100-200']) {
       fireEvent.change(screen.getByLabelText('Opening balance'), { target: { value: bad } });
-      expect(screen.getByText('Please enter a valid amount.')).toBeInTheDocument();
+      expect(screen.getByText('Enter a valid amount.')).toBeInTheDocument();
       expect(button('Share')).toBeDisabled();
       expect(button('Copy')).toBeDisabled();
     }
     fireEvent.change(screen.getByLabelText('Opening balance'), { target: { value: '300' } });
-    expect(screen.queryByText('Please enter a valid amount.')).toBeNull();
+    expect(screen.queryByText('Enter a valid amount.')).toBeNull();
     expect(button('Share')).not.toBeDisabled();
   });
 });
@@ -260,7 +260,7 @@ describe('Copy and Share', () => {
     renderDialog();
     fireEvent.click(button('Copy'));
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith('Could not copy — select the preview text and copy it manually', { tone: 'danger' }),
+      expect(toast).toHaveBeenCalledWith("Couldn't copy the ledger. Select the preview text and copy it manually.", { tone: 'danger' }),
     );
   });
 

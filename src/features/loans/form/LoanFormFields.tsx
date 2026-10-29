@@ -49,7 +49,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
             <Pair>
               <TextField
                 label="Loan name"
-                placeholder="e.g. Home Loan HDFC"
+                placeholder="e.g. Home loan HDFC"
                 value={values.name}
                 onValueChange={(name) => change({ name })}
                 error={errors.name}
@@ -157,7 +157,7 @@ export function LoanFormFields({ values, errors, accounts, today, onChange, term
             <TextArea
               label="Notes"
               optional
-              placeholder="Optional notes or details..."
+              placeholder="Optional notes or details…"
               value={values.notes}
               onValueChange={(notes) => change({ notes })}
               minRows={2}

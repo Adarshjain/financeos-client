@@ -70,7 +70,7 @@ describe('useRefreshPrices', () => {
     });
     expect(api.POST).toHaveBeenCalledWith('/api/v1/investments/prices/refresh', { params: { query: {} } });
     expect(bus.emitJobStarted).toHaveBeenCalledWith('job-1');
-    expect(notify.info).toHaveBeenCalledWith('Price refresh started in background.');
+    expect(notify.info).toHaveBeenCalledWith('Price refresh started');
     expect(result.current.jobId).toBe('job-1');
     expect(polling.active).toBe('job-1');
     expect(result.current.busy).toBe(true);
@@ -114,7 +114,7 @@ describe('useRefreshPrices', () => {
     await act(async () => {
       polling.settle!({ status: 'CANCELLED' });
     });
-    expect(notify.info).toHaveBeenCalledWith('Price refresh job was cancelled.');
+    expect(notify.info).toHaveBeenCalledWith('Price refresh cancelled');
     expect(onSettled).toHaveBeenCalledTimes(2);
   });
 

@@ -31,7 +31,7 @@ describe('duplicateBuiltin', () => {
     await expect(duplicateBuiltin({ builtinKey: 'attention', params: {} })).rejects.toThrow('cannot be copied');
     expect(api.POST).toHaveBeenCalledTimes(1);
     serve(resolved(), null);
-    await expect(duplicateBuiltin({ builtinKey: 'upcoming', params: {} })).rejects.toThrow('Failed to create the report.');
+    await expect(duplicateBuiltin({ builtinKey: 'upcoming', params: {} })).rejects.toThrow("Couldn't create the report. Try again.");
   });
 
   it('writes the window note in dd/mm/yyyy, and none without a window', () => {

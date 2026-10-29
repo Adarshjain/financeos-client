@@ -51,7 +51,7 @@ export function HomeScreen() {
               Restore default Home
             </Button>
             <Button asChild variant="secondary">
-              <Link href={NEW_DASHBOARD_HREF}>Create dashboard</Link>
+              <Link href={NEW_DASHBOARD_HREF}>Add dashboard</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href={DASHBOARDS_HREF}>View dashboards</Link>
@@ -86,7 +86,7 @@ export function HomeScreen() {
             ? []
             : [{ label: 'Set as default', onSelect: () => toggleDefault.mutate({ id: active.id, makeDefault: true, updatedAt: active.updatedAt }) }]),
           { label: 'Edit dashboard', onSelect: () => router.push(editDashboardHref(active.id)) },
-          { label: 'New dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) },
+          { label: 'Add dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) },
           { label: 'View all dashboards', onSelect: () => router.push(DASHBOARDS_HREF) },
         ]}
       />
@@ -97,7 +97,7 @@ export function HomeScreen() {
     <ShellPage title={switcher}>
       {active.widgets.length === 0 ? (
         <EmptyState
-          title="This dashboard has no widgets yet"
+          title="No widgets yet"
           description="Use Add widget to put built-ins or your saved reports here."
           action={{ label: 'Add widget', onSelect: () => !add.isPending && setPicking(true) }}
         />

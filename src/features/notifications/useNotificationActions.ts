@@ -55,7 +55,7 @@ export function useNotificationActions() {
       showToast('Notifications cleared');
       return true;
     } catch {
-      showToast("Couldn't clear notifications.", { tone: 'danger' });
+      showToast("Couldn't clear notifications. Try again.", { tone: 'danger' });
       return false;
     }
   };

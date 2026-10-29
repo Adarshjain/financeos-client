@@ -28,7 +28,7 @@ export function RewardsShell({ children }: { children: React.ReactNode }) {
       title="Rewards"
       flushTop
       onAdd={tab === 'rules' ? (adder ?? undefined) : undefined}
-      addLabel="New rule"
+      addLabel="Add rule"
     >
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={items} value={tab} />

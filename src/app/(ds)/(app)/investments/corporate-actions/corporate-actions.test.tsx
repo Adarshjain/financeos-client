@@ -86,14 +86,14 @@ describe('/investments/corporate-actions', () => {
   it('says nothing is recorded yet', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([]));
     await renderPage();
-    expect(screen.getByText(/No corporate actions recorded yet/)).toBeInTheDocument();
+    expect(screen.getByText(/No corporate actions yet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
   });
 
   it('offers to clear the filters when none match', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([]));
     await renderPage({ type: 'merger', q: 'zzz' });
-    expect(screen.getByText('No corporate actions match.')).toBeInTheDocument();
+    expect(screen.getByText('No corporate actions match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions');
   });
@@ -102,7 +102,7 @@ describe('/investments/corporate-actions', () => {
     server.fetchCorporateActionsPage.mockRejectedValue(new ApiError(500, { code: 'INTERNAL', message: 'boom' }));
     await renderPage();
     expect(screen.queryByText('How each type is applied')).toBeNull();
-    expect(screen.getByText('Could not load corporate actions')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load corporate actions")).toBeInTheDocument();
   });
 
   it('opens a saved action in the edit dialog from its pencil and from its row', async () => {

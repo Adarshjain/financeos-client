@@ -220,9 +220,9 @@ export function linkTitle(members: readonly Transaction[]): string {
 
 /** The line under the title: what the chosen kind does. */
 export function linkDescription(kind: LinkKind, multi: boolean): string {
-  if (kind === 'LENDING') return 'Record it in a lending ledger';
-  if (kind === 'LOAN_PAYMENT') return 'Settle a loan installment';
-  if (kind === 'DIVIDEND') return 'Record a dividend';
-  if (kind === 'EPF_WITHDRAWAL') return 'Record an EPF withdrawal';
-  return multi ? 'Picked from the selection; give each one its role' : 'One place for everything that explains this transaction';
+  if (kind === 'LENDING') return 'Record it in a lending ledger.';
+  if (kind === 'LOAN_PAYMENT') return 'Settle a loan installment.';
+  if (kind === 'DIVIDEND') return 'Record a dividend.';
+  if (kind === 'EPF_WITHDRAWAL') return 'Record an EPF withdrawal.';
+  return multi ? 'Picked from the selection; give each one its role.' : 'One place for everything that explains this transaction.';
 }

@@ -205,8 +205,8 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
   };
 
   const emptyDescription = rows.length === 0 && !type
-    ? 'No reports yet. Create your first report to start analyzing your transactions.'
-    : 'No reports match.';
+    ? 'No reports yet. Add your first report to start analyzing your transactions.'
+    : 'No reports match';
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
@@ -266,8 +266,8 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
           onOpenChange={(open) => {
             if (!open && !actions.remove.isPending) setDeleting(null);
           }}
-          title="Delete report"
-          description={`Delete ${deleting.name}?`}
+          title="Delete report?"
+          description={`${deleting.name} will be deleted. This can't be undone.`}
           impact={[
             'The report and its settings go.',
             'Dashboards that use it will show the report as unavailable.',

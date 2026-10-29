@@ -229,14 +229,14 @@ export function TransactionFormFields({
       <div className="flex flex-col">
         <SettingsToggle
           label="Exclude transaction"
-          description="Left out of totals and reports"
+          description="Left out of totals and reports."
           checked={values.excluded}
           onCheckedChange={(excluded) => onChange({ excluded })}
         />
         <SettingsToggle
           borderTop
           label="Monitor transaction"
-          description="Shows as Watching until you clear it"
+          description="Shows as Watching until you clear it."
           checked={values.monitored}
           onCheckedChange={(monitored) => onChange({ monitored })}
         />
@@ -301,14 +301,14 @@ export function TransactionFormFields({
       <div className="flex flex-col">
         <SettingsToggle
           label="EMI transaction"
-          description="Converted to instalments by the bank"
+          description="Converted to instalments by the bank."
           checked={values.emi}
           onCheckedChange={(emi) => onChange({ emi })}
         />
         <SettingsToggle
           borderTop
           label="International transaction"
-          description="Forex markup applies"
+          description="Forex markup applies."
           checked={values.international}
           onCheckedChange={(international) => onChange({ international })}
         />

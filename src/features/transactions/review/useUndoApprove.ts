@@ -29,13 +29,13 @@ export function useUndoApprove() {
           rules: verifiedRules.map((r) => ({ ruleId: r.ruleId, restore: r.clearedTransactions })),
         },
       });
-      if (error || !data) throw error ?? new Error('Could not undo');
+      if (error || !data) throw error ?? new Error("Couldn't undo. Try again.");
       qc.invalidateQueries({ queryKey: keys.rules.all });
       qc.invalidateQueries({ queryKey: keys.transactions.all });
       qc.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Could not undo'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' });
     }
   };
 }

@@ -52,11 +52,11 @@ describe('CategoriesScreen', () => {
 
   it('shows the app wording when empty and when the load failed', () => {
     const { unmount } = renderWithQuery(<CategoriesScreen categories={pageOf([])} state={state} />);
-    expect(screen.getByText('No categories found')).toBeTruthy();
-    expect(screen.getByText('Get started by creating your first category.')).toBeTruthy();
+    expect(screen.getByText('No categories yet')).toBeTruthy();
+    expect(screen.getByText('Add your first category to get started.')).toBeTruthy();
     unmount();
     renderWithQuery(<CategoriesScreen categories={null} reference="r1" state={state} />);
-    expect(screen.getByText('Could not load categories')).toBeTruthy();
+    expect(screen.getByText("Couldn't load categories")).toBeTruthy();
   });
 
   it('desktop: the menu renames and a server error is a toast', async () => {
@@ -67,7 +67,7 @@ describe('CategoriesScreen', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     const input = await screen.findByLabelText('Name');
     fireEvent.change(input, { target: { value: 'Food & dining' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save category' }));
     await waitFor(() =>
       expect(toasts.showToast).toHaveBeenCalledWith('A category with this name already exists.', { tone: 'danger' }),
     );
@@ -82,7 +82,7 @@ describe('CategoriesScreen', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('Delete Dining out?')).toBeTruthy();
     expect(http.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete category' }));
     await waitFor(() => expect(http.DELETE).toHaveBeenCalled());
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(toasts.showToast).toHaveBeenCalledWith('Category "Dining out" deleted');
@@ -119,7 +119,7 @@ describe('CategoriesScreen', () => {
     renderWithQuery(<CategoriesScreen categories={pageOf(categories)} state={state} />);
     fireEvent.click(screen.getAllByRole('button', { name: /Add/ })[0]);
     fireEvent.change(await screen.findByLabelText('Name'), { target: { value: ' Pets ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add category' }));
     await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/categories', { body: { name: 'Pets' } }));
     await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Category "Pets" created'));
   });

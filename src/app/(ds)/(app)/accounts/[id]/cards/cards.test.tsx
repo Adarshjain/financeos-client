@@ -233,15 +233,15 @@ describe('/accounts/[id]/cards', () => {
 
       loadCards.mockResolvedValue(data({ cardholders: null }));
       await renderPage();
-      expect(screen.getByText('Could not load cardholders')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      expect(screen.getByText("Couldn't load cardholders")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
       expect(refresh).toHaveBeenCalled();
     });
 
     it('shows the empty state without cardholders', async () => {
       loadCards.mockResolvedValue(data({ cardholders: [] }));
       await renderPage();
-      expect(screen.getByText('No cardholders found for this account.')).toBeInTheDocument();
+      expect(screen.getByText('No cardholders yet')).toBeInTheDocument();
     });
 
     it('raises not-found for an account type that has no Cards tab, and for a missing account', async () => {
@@ -303,7 +303,7 @@ describe('/accounts/[id]/cards', () => {
       fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Meera M' } });
       fireEvent.change(screen.getByLabelText(/Spend limit/), { target: { value: '90000' } });
       fireEvent.change(screen.getByLabelText('Opened on'), { target: { value: '02/06/2024' } });
-      press('Save');
+      press('Save cardholder');
 
       await waitFor(() =>
         expect(mutate.updateCardholderMutation).toHaveBeenCalledWith({
@@ -325,7 +325,7 @@ describe('/accounts/[id]/cards', () => {
       await renderPage();
       pickMenu(0, 'Edit details');
       expect(screen.getByRole('combobox', { name: 'Relationship' })).toBeDisabled();
-      press('Save');
+      press('Save cardholder');
       await waitFor(() =>
         expect(mutate.updateCardholderMutation).toHaveBeenCalledWith({
           cardholderId: 'h1',
@@ -355,7 +355,7 @@ describe('/accounts/[id]/cards', () => {
           body: { newLast4: '8820', issuedOn: '2026-10-13' },
         })
       );
-      expect(showToast).toHaveBeenCalledWith('Card replaced successfully');
+      expect(showToast).toHaveBeenCalledWith('Card replaced');
     });
 
     it('refuses an issue date in the future as it is typed', async () => {
@@ -363,7 +363,7 @@ describe('/accounts/[id]/cards', () => {
       fireEvent.click(screen.getAllByRole('button', { name: 'Replace' })[0]);
       fireEvent.change(screen.getByLabelText('New last 4 digits'), { target: { value: '8820' } });
       fireEvent.change(screen.getByLabelText('Issued on'), { target: { value: '14/10/2026' } });
-      expect(screen.getByText('The issued date cannot be in the future')).toBeInTheDocument();
+      expect(screen.getByText('Pick the issued date on or before today.')).toBeInTheDocument();
       press('Replace card');
       expect(mutate.replaceCardMutation).not.toHaveBeenCalled();
     });
@@ -411,7 +411,7 @@ describe('/accounts/[id]/cards', () => {
       await renderPage();
       press('Close cardholder');
       fireEvent.change(screen.getByLabelText('Closed on'), { target: { value: '20/10/2026' } });
-      expect(screen.getByText('The closed date cannot be in the future')).toBeInTheDocument();
+      expect(screen.getByText('Pick the closed date on or before today.')).toBeInTheDocument();
       fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close cardholder' }));
       expect(mutate.closeCardholderMutation).not.toHaveBeenCalled();
     });
@@ -432,13 +432,13 @@ describe('/accounts/[id]/cards', () => {
           body: { last4: '1234', issuedOn: '2026-10-13' },
         })
       );
-      expect(showToast).toHaveBeenCalledWith('New card issued');
+      expect(showToast).toHaveBeenCalledWith('Card issued');
     });
 
     it('reassigns transactions to the holder card, with a plain Reassign button', async () => {
       await renderPage();
       pickMenu(1, 'Reassign transactions');
-      expect(screen.getByText('Move past transactions to Meera Mehta · ••7742')).toBeInTheDocument();
+      expect(screen.getByText('Move past transactions to Meera Mehta · ••7742.')).toBeInTheDocument();
       expect(screen.queryByText(/not attributed to a plastic/i)).toBeNull();
       fireEvent.change(screen.getByLabelText(/From date/), { target: { value: '01/06/2026' } });
       press('Reassign');
@@ -452,7 +452,7 @@ describe('/accounts/[id]/cards', () => {
           cardId: 'k2',
         })
       );
-      expect(showToast).toHaveBeenCalledWith('Reassigned 7 transaction(s)');
+      expect(showToast).toHaveBeenCalledWith('7 transaction(s) reassigned');
     });
 
     it('refuses to reassign to a holder with no card', async () => {
@@ -483,7 +483,7 @@ describe('/accounts/[id]/cards', () => {
       expect(screen.getByText('Delete card ••2210?')).toBeInTheDocument();
       expect(
         screen.getByText(
-          'Removes this old card from Arjun Mehta’s card list. Its 41 transactions stay with Arjun Mehta.'
+          'Removes this old card from Arjun Mehta’s card list. Its 41 transactions stay with Arjun Mehta. This can\'t be undone.'
         )
       ).toBeInTheDocument();
       expect(apiDelete).not.toHaveBeenCalled();
@@ -513,7 +513,7 @@ describe('/accounts/[id]/cards', () => {
       await renderPage();
       press('Reopen');
       await waitFor(() =>
-        expect(showToast).toHaveBeenCalledWith('Failed to reopen cardholder', { tone: 'danger' })
+        expect(showToast).toHaveBeenCalledWith("Couldn't reopen the cardholder. Try again.", { tone: 'danger' })
       );
     });
 
@@ -521,8 +521,8 @@ describe('/accounts/[id]/cards', () => {
       mutate.updateCardholderMutation.mockRejectedValue(new Error('boom'));
       await renderPage();
       pickMenu(1, 'Edit details');
-      press('Save');
-      expect(await screen.findByText('Failed to update cardholder')).toBeInTheDocument();
+      press('Save cardholder');
+      expect(await screen.findByText("Couldn't update the cardholder. Try again.")).toBeInTheDocument();
       expect(screen.getByText('Edit cardholder')).toBeInTheDocument();
       expect(refresh).not.toHaveBeenCalled();
     });

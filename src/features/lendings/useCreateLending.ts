@@ -22,6 +22,6 @@ export function useCreateLending(options?: { onError?: (e: unknown) => void }) {
       invalidateLendingQueries(qc);
       qc.invalidateQueries({ queryKey: keys.transactions.all });
     },
-    onError: options?.onError ?? ((e: unknown) => toastError(e, 'Failed to create lending')),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't record lending. Try again.")),
   });
 }

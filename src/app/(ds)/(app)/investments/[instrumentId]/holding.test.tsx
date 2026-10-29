@@ -151,7 +151,7 @@ describe('/investments/[instrumentId]: data', () => {
     await renderPage();
     expect(screen.getAllByText('₹90,762').length).toBeGreaterThan(0);
     expect(screen.queryByText('If you sell today')).toBeNull();
-    expect(screen.getByText('No dividends recorded for this holding.')).toBeInTheDocument();
+    expect(screen.getByText('No dividends yet')).toBeInTheDocument();
   });
 });
 
@@ -270,11 +270,11 @@ describe('/investments/[instrumentId]: Overview', () => {
       expect(screen.queryByText(/^Up to 60 shares/)).toBeNull();
       for (const bad of ['0', '61']) {
         type(bad);
-        expect(screen.getByText('Up to 60 shares')).toBeInTheDocument();
+        expect(screen.getByText('Up to 60 shares.')).toBeInTheDocument();
         expect(screen.queryByText(/^Sell \d+:/)).toBeNull();
       }
       type('');
-      expect(screen.queryByText('Up to 60 shares')).toBeNull();
+      expect(screen.queryByText('Up to 60 shares.')).toBeNull();
     });
 
     it('keeps only digits for a stock: letters, signs, commas and a decimal point are dropped', async () => {
@@ -376,7 +376,7 @@ describe('/investments/[instrumentId]: record and edit dialogs', () => {
   it('opens the manual price dialog, dated today, from the + menu', async () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record price' }));
-    const dialog = await screen.findByRole('dialog', { name: /Set manual price/ });
+    const dialog = await screen.findByRole('dialog', { name: /Record price/ });
     expect(within(dialog).getByDisplayValue('13/10/2026')).toBeInTheDocument();
   });
 
@@ -469,7 +469,7 @@ describe('/investments/[instrumentId]: Price chart', () => {
   it('says the chart could not load, and still offers the Price history button, when the history cannot be read', async () => {
     server.fetchPriceHistory.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getByText('The price chart could not be loaded.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't load the price chart.")).toBeInTheDocument();
     expect(screen.queryByTestId('chart')).toBeNull();
     expect(screen.getByRole('button', { name: 'Price history' })).toBeInTheDocument();
   });
@@ -522,12 +522,12 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     expect(server.fetchPricesPage).toHaveBeenLastCalledWith('i-infy', 1, 10);
   });
 
-  it('says so and offers Try again when the first page cannot be read', async () => {
-    actions.loadPricesPage.mockResolvedValueOnce({ success: false, error: { message: 'Failed to load the price history' } });
+  it('says so and offers Retry when the first page cannot be read', async () => {
+    actions.loadPricesPage.mockResolvedValueOnce({ success: false, error: { message: "Couldn't load the price history. Try again." } });
     await renderPage();
     const dialog = await openHistory();
-    expect(await within(dialog).findByText('The price history could not be loaded.')).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
+    expect(await within(dialog).findByText("Couldn't load the price history.")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Retry' }));
     expect(await within(dialog).findByText('13 Oct')).toBeInTheDocument();
   });
 
@@ -535,7 +535,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), items: [], totalElements: 0, totalPages: 0 });
     await renderPage();
     const dialog = await openHistory();
-    expect(await within(dialog).findByText('No prices recorded yet.')).toBeInTheDocument();
+    expect(await within(dialog).findByText('No prices yet')).toBeInTheDocument();
   });
 
   it('edits the amount of a manual price: the date is shown, can change, and is sent only when changed', async () => {
@@ -574,8 +574,8 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     await renderPage();
     const history = await openHistory();
     fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Delete manual price' });
-    expect(within(dialog).getByText('Delete your manual price of ₹1,470.00 on 10 Oct?')).toBeInTheDocument();
+    const dialog = await screen.findByRole('dialog', { name: 'Delete manual price?' });
+    expect(within(dialog).getByText('Your manual price of ₹1,470.00 on 10 Oct goes.')).toBeInTheDocument();
     expect(within(dialog).getByText('Only this price is deleted.')).toBeInTheDocument();
     expect(within(dialog).getByText('Your trades and the other prices stay.')).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
@@ -584,7 +584,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     expect(api.DELETE).toHaveBeenCalledWith('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
       params: { path: { instrumentId: 'i-infy', priceId: 'p3' } },
     });
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Price entry deleted'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Price deleted'));
     expect(router.refresh).toHaveBeenCalled();
   });
 
@@ -593,9 +593,9 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     await renderPage();
     const history = await openHistory();
     fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Delete manual price' });
+    const dialog = await screen.findByRole('dialog', { name: 'Delete manual price?' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete price' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to delete the price', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't delete the price. Try again.", { tone: 'danger' }));
     expect(router.refresh).not.toHaveBeenCalled();
   });
 
@@ -607,7 +607,7 @@ describe('/investments/[instrumentId]: Price history dialog', () => {
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1480' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the price', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't update the price. Try again.", { tone: 'danger' }));
     expect(screen.getByRole('dialog', { name: /Edit manual price/ })).toBeInTheDocument();
     expect(router.refresh).not.toHaveBeenCalled();
   });
@@ -617,11 +617,11 @@ describe('/investments/[instrumentId]: manual price from the LTP override', () =
   it('sets a manual price from the LTP "override" link, dated today', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'override' })[0]);
-    const dialog = await screen.findByRole('dialog', { name: /Set manual price/ });
+    const dialog = await screen.findByRole('dialog', { name: /Record price/ });
     const date = within(dialog).getByDisplayValue('13/10/2026');
     expect(date).not.toBeDisabled();
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1600' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Record price' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
     expect(api.POST).toHaveBeenCalledWith('/api/v1/instruments/{id}/price', {
       params: { path: { id: 'i-infy' } },
@@ -634,11 +634,11 @@ describe('/investments/[instrumentId]: manual price from the LTP override', () =
     api.POST.mockRejectedValue(new Error('refused'));
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'override' })[0]);
-    const dialog = await screen.findByRole('dialog', { name: /Set manual price/ });
+    const dialog = await screen.findByRole('dialog', { name: /Record price/ });
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1600' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save price' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to update the price', { tone: 'danger' }));
-    expect(screen.getByRole('dialog', { name: /Set manual price/ })).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Record price' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't update the price. Try again.", { tone: 'danger' }));
+    expect(screen.getByRole('dialog', { name: /Record price/ })).toBeInTheDocument();
     expect(router.refresh).not.toHaveBeenCalled();
   });
 });
@@ -709,10 +709,10 @@ describe('/investments/[instrumentId]: each list pages on its own', () => {
   it('shows a toast and keeps the rows when a page cannot be read', async () => {
     server.fetchInstrumentDividends.mockResolvedValue({ ...rawDividends(), totalElements: 25, totalPages: 3 });
     await renderPage();
-    actions.loadDividendsPage.mockResolvedValue({ success: false, error: { message: 'Failed to load the dividends' } });
+    actions.loadDividendsPage.mockResolvedValue({ success: false, error: { message: "Couldn't load the dividends. Try again." } });
     const next = screen.getAllByRole('button', { name: /next/i });
     fireEvent.click(next[next.length - 1]);
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Failed to load the dividends', { tone: 'danger' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't load the dividends. Try again.", { tone: 'danger' }));
     expect(screen.getByText('Dividend ₹22 / share')).toBeInTheDocument();
   });
 

@@ -22,6 +22,7 @@ import {
   Text,
 } from '@/components/ds';
 import { Amount } from '@/components/organisms';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -111,7 +112,7 @@ export function TransactionDetailPanel({
           <DialogBody>
             {failed ? (
               <Banner tone="danger" action={{ label: 'Retry', onSelect: retry }}>
-                Could not load this transaction.
+                Couldn&apos;t load this transaction.
               </Banner>
             ) : loading ? (
               <div className="flex flex-col gap-space-8 desk:gap-space-12">
@@ -183,7 +184,7 @@ function DetailContent({
       void invalidateMoneyQueries(queryClient);
       router.refresh();
     } catch (e) {
-      showToast(getErrorMessage(e, 'Failed to delete transaction'), { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't delete the transaction. Try again."), { tone: 'danger' });
     } finally {
       setDeletePending(false);
     }
@@ -301,7 +302,7 @@ function DetailContent({
               {linksFailed ? (
                 <div className="px-space-16 py-space-10">
                   <Banner tone="danger" action={{ label: 'Retry', onSelect: () => void refetchLinks() }}>
-                    Could not load the links.
+                    Couldn&apos;t load the links.
                   </Banner>
                 </div>
               ) : null}
@@ -321,7 +322,9 @@ function DetailContent({
         confirmLabel="Delete transaction"
         confirmLoading={deletePending}
         onConfirm={() => void confirmDelete()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={removing !== null}

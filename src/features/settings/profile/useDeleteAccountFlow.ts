@@ -54,7 +54,7 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
         // Match on the code, not the message: the message is human copy that will be
         // reworded, and matching it by substring silently stops working when it is.
         setIsBusy(res.error.code === 'ACCOUNT_DELETE_BUSY');
-        setError(res.error.message || 'Failed to delete account');
+        setError(res.error.message || "Couldn't delete the account. Try again.");
       }
       // If success, Next.js action redirects to /login?deleted=1
     } catch (e: unknown) {
@@ -64,7 +64,7 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
         throw e;
       }
       setIsDeleting(false);
-      setError(e instanceof Error ? e.message : 'An unexpected error occurred');
+      setError(e instanceof Error ? e.message : "Couldn't delete the account. Try again.");
     }
   };
 

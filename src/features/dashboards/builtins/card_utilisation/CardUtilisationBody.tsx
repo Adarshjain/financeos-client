@@ -67,14 +67,14 @@ export function CardUtilisationBody({ params, className }: BuiltinBodyProps) {
   if (isLoading && !accounts) {
     body = <CardUtilisationSkeleton />;
   } else if (error) {
-    body = <BuiltinError message={getErrorMessage(error, 'Failed to load cards')} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
+    body = <BuiltinError message={getErrorMessage(error, "Couldn't load cards.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (model.rows.length === 0) {
     body = accountId ? (
       <BuiltinNote>This card is closed or no longer exists.</BuiltinNote>
     ) : (
       <EmptyState
         compact
-        title="No open credit cards"
+        title="No open credit cards yet"
         description="Add a credit card to see how much of its limit you're using."
         action={{ label: 'Go to accounts', onSelect: () => router.push(appHref('/accounts')), variant: 'link' }}
       />

@@ -120,7 +120,7 @@ describe('/accounts', () => {
     loadMock.mockReturnValue(data({ netWorth: null, dayChangePct: null }));
     await renderPage();
 
-    expect(screen.getByText('Could not load net worth')).toBeDefined();
+    expect(screen.getByText("Couldn't load net worth. Try again.")).toBeDefined();
     expect(screen.getByText('Bank accounts')).toBeDefined();
     expect(screen.queryByText('+0.59%')).toBeNull();
   });
@@ -129,8 +129,8 @@ describe('/accounts', () => {
     loadMock.mockReturnValue(data({ accounts: null, errorReference: 'req-123' }));
     await renderPage();
 
-    expect(screen.getByText('Could not load accounts')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeDefined();
+    expect(screen.getByText("Couldn't load accounts")).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Copy reference req-123' })).toBeDefined();
     expect(screen.queryByText('Bank accounts')).toBeNull();
     expect(screen.queryByText('Cash & wallets')).toBeNull();

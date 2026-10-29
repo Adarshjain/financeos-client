@@ -11,9 +11,9 @@ export function AccountsLoadError({ reference }: { reference?: string }) {
   const router = useRouter();
   return (
     <ErrorState
-      title="Could not load accounts"
-      description="The accounts request failed. Try again, and quote the reference if it keeps failing."
-      action={{ label: 'Try again', onSelect: () => router.refresh() }}
+      title="Couldn't load accounts"
+      description="Try again. If it keeps failing, quote the reference."
+      action={{ label: 'Retry', onSelect: () => router.refresh() }}
       reference={reference}
     />
   );

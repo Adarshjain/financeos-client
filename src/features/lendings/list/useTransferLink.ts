@@ -15,8 +15,8 @@ import type { TransferRow } from './lendingsList';
  */
 export function useTransferLink(rows: TransferRow[], onChanged?: () => void) {
   const onError = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
-  const link = useLinkLendingTransaction({ onError: onError('Failed to link transaction') });
-  const unlink = useUnlinkLendingTransaction({ onError: onError('Failed to unlink transaction') });
+  const link = useLinkLendingTransaction({ onError: onError("Couldn't link transaction. Try again.") });
+  const unlink = useUnlinkLendingTransaction({ onError: onError("Couldn't unlink transaction. Try again.") });
   const [linkingKey, setLinkingKey] = React.useState<string | null>(null);
   const [linked, setLinked] = React.useState<ReadonlySet<string>>(new Set());
   const mark = (key: string, on: boolean) =>

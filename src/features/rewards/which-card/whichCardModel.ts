@@ -15,7 +15,7 @@ import type { WhichCardOption } from './whichCardData';
 /** The "any" choice of the single selects: the request leaves that field out. */
 export const ANY = 'ANY';
 
-export const AMOUNT_ERROR = 'Please enter a valid spend amount greater than ₹0';
+export const AMOUNT_ERROR = 'Enter a spend amount above ₹0.';
 
 export const CHANNEL_OPTIONS: { value: string; label: string }[] = [
   { value: ANY, label: 'Any / All' },

@@ -32,12 +32,12 @@ export const sonnerInboxNotifier: InboxNotifier = {
     toast.success(`Snoozed until ${formatDate(until, 'list')}`, { action: { label: 'Undo', onClick: undo } }),
   dismissed: (undo) => toast.success('Dismissed', { action: { label: 'Undo', onClick: undo } }),
   restored: () => toast.success('Restored'),
-  snoozeFailed: (e) => toast.error(getErrorMessage(e, 'Could not snooze this item')),
-  dismissFailed: (e) => toast.error(getErrorMessage(e, 'Could not dismiss this item')),
-  undoFailed: (e) => toast.error(getErrorMessage(e, 'Could not undo')),
+  snoozeFailed: (e) => toast.error(getErrorMessage(e, "Couldn't snooze this item. Try again.")),
+  dismissFailed: (e) => toast.error(getErrorMessage(e, "Couldn't dismiss this item. Try again.")),
+  undoFailed: (e) => toast.error(getErrorMessage(e, "Couldn't undo. Try again.")),
   epfLinked: () => toast.success('Linked to the EPF withdrawal'),
   epfDismissed: () => toast.success('Dismissed'),
-  epfFailed: (e) => toast.error(getErrorMessage(e, 'Could not update this suggestion')),
+  epfFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this suggestion. Try again.")),
 };
 
 const INBOX_ACTION_KEY = ['inbox', 'action'] as const;

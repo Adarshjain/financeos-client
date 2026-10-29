@@ -118,7 +118,7 @@ describe('rule row words', () => {
     expect(ruleSubtitle(rule({ periodCap: 5000, capWindow: 'CALENDAR_MONTH', activeFrom: '2026-01-01' }))).toBe(
       '20 pts / ₹150 · 3 MCCs · capped 5,000 / month',
     );
-    expect(ruleSubtitle(rule({ stacking: 'ADDITIVE', perTxnCap: 100 }))).toBe('20 pts / ₹150 · 3 MCCs · max 100 / txn');
+    expect(ruleSubtitle(rule({ stacking: 'ADDITIVE', perTxnCap: 100 }))).toBe('20 pts / ₹150 · 3 MCCs · max 100 / transaction');
   });
 
   it('marks an ended rule: the end day itself is outside it', () => {

@@ -172,7 +172,7 @@ export function EditHolderDialog({
     <DialogFrame
       title="Edit cardholder"
       description={`${holder.personName || roleLabel(holder.role, isBank)} · ${roleLabel(holder.role, isBank).toLowerCase()} on ${accountName}`}
-      submitLabel="Save"
+      submitLabel="Save cardholder"
       onSubmit={handle}
       onClose={onClose}
       pending={pending}

@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds';
+import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -92,10 +93,12 @@ export function useTransactionActions({ accounts, onDone }: TransactionActionsOp
         }}
         title={copy?.title ?? ''}
         impact={copy?.impact}
-        confirmLabel={copy?.confirmLabel ?? 'Delete'}
+        confirmLabel={copy?.confirmLabel ?? 'Delete transaction'}
         confirmLoading={del.isPending}
         onConfirm={() => void confirmDelete()}
-      />
+      >
+        <IrreversibleNote />
+      </ConfirmDialog>
       <ReviewSummaryDialog
         summary={del.summary}
         onClose={del.closeSummary}

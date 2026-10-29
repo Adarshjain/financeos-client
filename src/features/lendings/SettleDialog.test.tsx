@@ -115,7 +115,7 @@ describe('SettleDialog', () => {
         notes: 'Settled via UPI',
       }),
     );
-    expect(showToast).toHaveBeenCalledWith('Entry added');
+    expect(showToast).toHaveBeenCalledWith('Entry recorded');
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -129,11 +129,11 @@ describe('SettleDialog', () => {
     );
   });
 
-  it('the "more" segment records a new principal entry and the button says Add entry', async () => {
+  it('the "more" segment records a new principal entry and the button says Record entry', async () => {
     renderDialog('lent');
     fireEvent.click(screen.getByRole('radio', { name: 'Lent more' }));
     expect(screen.queryByRole('button', { name: 'Record settlement' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ direction: 'lent', kind: 'principal' })),
     );
@@ -142,7 +142,7 @@ describe('SettleDialog', () => {
   it('the "more" segment when you owe them is a borrowed principal', async () => {
     renderDialog('borrowed');
     fireEvent.click(screen.getByRole('radio', { name: 'Borrowed more' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ direction: 'borrowed', kind: 'principal' })),
     );
@@ -198,14 +198,14 @@ describe('SettleDialog', () => {
     expect(screen.queryByText(/more than/)).toBeNull();
   });
 
-  it('a failed save keeps the sheet open and its error toast reads "Failed to create lending"', async () => {
+  it(`a failed save keeps the sheet open and its error toast reads "Couldn't record lending. Try again."`, async () => {
     mutateAsync.mockRejectedValue(new Error('boom'));
     const onOpenChange = renderDialog();
     record();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     expect(onOpenChange).not.toHaveBeenCalled();
     onErrorOption!(undefined);
-    expect(showToast).toHaveBeenCalledWith('Failed to create lending', { tone: 'danger' });
+    expect(showToast).toHaveBeenCalledWith("Couldn't record lending. Try again.", { tone: 'danger' });
   });
 
   it('Cancel closes without saving', () => {

@@ -307,7 +307,7 @@ export function BankSection(props: SectionProps<BankRow>) {
         onRowSelect={(row) => router.push(rowHref(row))}
         leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={(row) => row.phoneSub}
-        empty={<EmptyState compact description="No bank accounts added." />}
+        empty={<EmptyState compact description="No bank accounts yet" />}
       />
       <ClosedFooter
         line={props.closedLine}
@@ -477,7 +477,7 @@ export function CardsSection(
         onRowSelect={(row) => router.push(rowHref(row))}
         leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={cardPhoneSub}
-        empty={<EmptyState compact description="No credit cards added." />}
+        empty={<EmptyState compact description="No credit cards yet" />}
       />
       <ClosedFooter
         line={props.closedLine}
@@ -537,7 +537,7 @@ export function BrokersSection(props: SectionProps<BrokerRow>) {
         rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={(row) => row.phoneSub}
-        empty={<EmptyState compact description="No broker accounts added." />}
+        empty={<EmptyState compact description="No broker accounts yet" />}
       />
       <ClosedFooter
         line={props.closedLine}
@@ -600,7 +600,7 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
-        empty={<EmptyState compact description="No other accounts added." />}
+        empty={<EmptyState compact description="No other accounts yet" />}
       />
       <ClosedFooter
         line={props.closedLine}

@@ -114,11 +114,11 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/dashboards');
   });
 
-  it('the switcher of the default dashboard has Add widget, Edit dashboard and New dashboard, with no Set as default', async () => {
+  it('the switcher of the default dashboard has Add widget, Edit dashboard and Add dashboard, with no Set as default', async () => {
     render([home]);
     await user.click(screen.getByTestId('home-switch'));
     expect(screen.queryByRole('button', { name: 'Set as default' })).toBeNull();
-    for (const name of ['Add widget', 'Edit dashboard', 'New dashboard', 'View all dashboards']) {
+    for (const name of ['Add widget', 'Edit dashboard', 'Add dashboard', 'View all dashboards']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
     await user.click(screen.getByRole('button', { name: 'Edit dashboard' }));
@@ -135,14 +135,14 @@ describe('HomeScreen', () => {
     await user.click(screen.getByTestId('home-switch'));
     expect(screen.getByRole('button', { name: 'Set as default' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Set as default' }));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Set as default'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('Default dashboard set'));
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ name: 'Money overview', isDefault: true });
   });
 
-  it('New dashboard goes to the create page', async () => {
+  it('Add dashboard goes to the create page', async () => {
     render([home]);
     await user.click(screen.getByTestId('home-switch'));
-    await user.click(screen.getByRole('button', { name: 'New dashboard' }));
+    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
     expect(router.push).toHaveBeenCalledWith('/dashboards/new');
   });
 
@@ -179,18 +179,18 @@ describe('HomeScreen', () => {
 
   it('a dashboard with no widgets says so and offers Add widget', async () => {
     render([{ ...home, widgets: [] }]);
-    expect(screen.getByText('This dashboard has no widgets yet')).toBeInTheDocument();
+    expect(screen.getByText('No widgets yet')).toBeInTheDocument();
     expect(screen.queryByTestId('widgets')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Add widget' }));
     expect(await screen.findByRole('dialog', { name: 'Add widget' })).toBeInTheDocument();
   });
 
   describe('with no default dashboard', () => {
-    it('offers Restore default Home, Create dashboard, View dashboards and Ask the data', () => {
+    it('offers Restore default Home, Add dashboard, View dashboards and Ask the data', () => {
       render([{ ...money }]);
       expect(screen.getByText('No default dashboard')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Restore default Home' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Create dashboard' })).toHaveAttribute('href', '/dashboards/new');
+      expect(screen.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
       expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/dashboards');
       expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
     });

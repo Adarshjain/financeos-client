@@ -183,7 +183,7 @@ describe('Card settings', () => {
     fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[0]);
     fireEvent.change(screen.getByRole('textbox', { name: /^Point value/ }), { target: { value: '0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
-    expect(toast).toHaveBeenCalledWith('Point value must be greater than ₹0', { tone: 'danger' });
+    expect(toast).toHaveBeenCalledWith('Enter a point value above ₹0.', { tone: 'danger' });
     expect(updateConfig).not.toHaveBeenCalled();
   });
 
