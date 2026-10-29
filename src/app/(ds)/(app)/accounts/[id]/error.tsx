@@ -1,17 +1,6 @@
 'use client';
 
-import React from 'react';
+import { areaError } from '@/features/shell/areaError';
 
-import { PageError } from '@/features/shell/PageError';
-
-export default function DsAccountError({
-  error,
-  reset,
-  unstable_retry,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-  unstable_retry?: () => void;
-}) {
-  return <PageError error={error} reset={reset} unstable_retry={unstable_retry} what="this account" />;
-}
+/** The account layout already mounts the app bar and tabs, so this renders inside them. */
+export default areaError({ what: 'this account', framed: true });

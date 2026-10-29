@@ -1,5 +1,7 @@
 import type { SelectOption } from '@/components/ds';
+import { clampPage, DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import type { CategoryRule, MatchType, RuleMatchTransaction } from '@/lib/rules.types';
 
 // The Rules tab keeps everything in the address: a link opens it filtered, refresh and Back keep it,
@@ -7,7 +9,6 @@ import type { CategoryRule, MatchType, RuleMatchTransaction } from '@/lib/rules.
 
 export const RULES_HREF = appHref('/rules');
 export const RULES_SIZE_OPTIONS = [25, 50, 100];
-export const RULES_DEFAULT_SIZE = 25;
 /** The jobs the rules page lists (applying a rule to its matches). */
 export const RULE_JOB_TYPE = 'RULE_APPLY';
 export const RULE_JOBS_SIZE = 5;
@@ -38,30 +39,25 @@ export const DEFAULT_RULES_STATE: RulesUrlState = {
   matchType: null,
   categoryId: null,
   page: 0,
-  size: RULES_DEFAULT_SIZE,
+  size: DEFAULT_PAGE_SIZE,
 };
 
-type Raw = Record<string, string | string[] | undefined>;
-
-const first = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? '').trim();
+const trimmed = (v: string | string[] | undefined) => (first(v) ?? '').trim();
 
 export const MATCH_TYPES: MatchType[] = ['MERCHANT_KEY', 'CONTAINS', 'STARTS_WITH', 'EXACT', 'REGEX'];
 
 /** The state an address stands for; anything missing or invalid falls back to its default. */
-export function parseRulesUrl(params: Raw): RulesUrlState {
-  const page = Math.floor(Number(first(params.page)));
-  const size = Number(first(params.size));
-  const status = first(params.status);
-  const source = first(params.source);
-  const matchType = first(params.match) as MatchType;
+export function parseRulesUrl(params: SearchParamsRecord): RulesUrlState {
+  const status = trimmed(params.status);
+  const source = trimmed(params.source);
+  const matchType = trimmed(params.match) as MatchType;
   return {
-    q: first(params.q),
+    q: trimmed(params.q),
     status: status === 'verified' || status === 'all' ? status : DEFAULT_STATUS,
     source: source === 'LLM' || source === 'USER' ? source : null,
     matchType: MATCH_TYPES.includes(matchType) ? matchType : null,
-    categoryId: first(params.category) || null,
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: RULES_SIZE_OPTIONS.includes(size) ? size : RULES_DEFAULT_SIZE,
+    categoryId: trimmed(params.category) || null,
+    ...parsePage(params, { sizes: RULES_SIZE_OPTIONS }),
   };
 }
 
@@ -73,15 +69,15 @@ export function rulesUrl(state: RulesUrlState): string {
   if (state.source) out.set('source', state.source);
   if (state.matchType) out.set('match', state.matchType);
   if (state.categoryId) out.set('category', state.categoryId);
-  if (state.page > 0) out.set('page', String(state.page));
-  if (state.size !== RULES_DEFAULT_SIZE) out.set('size', String(state.size));
+  setPageParam(out, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) out.set('size', String(state.size));
   const text = out.toString();
   return text ? `?${text}` : '?';
 }
 
 /** Everything that decides which rules are listed, without the page: a change here drops the ticked rules. */
 export function rulesFilterKey(state: RulesUrlState): string {
-  return rulesUrl({ ...state, page: 0, size: RULES_DEFAULT_SIZE });
+  return rulesUrl({ ...state, page: 0, size: DEFAULT_PAGE_SIZE });
 }
 
 /** The `verified` filter the server takes for a status; undefined for All. */
@@ -103,7 +99,7 @@ export function rulesRequest(state: RulesUrlState, status: RuleStatus = state.st
 /** Where to go instead when the page asked for is past the last one; null when it is fine. */
 export function clampedRulesUrl(state: RulesUrlState, page: { content: unknown[]; totalPages: number }): string | null {
   if (page.content.length > 0 || page.totalPages === 0 || state.page < page.totalPages) return null;
-  return rulesUrl({ ...state, page: page.totalPages - 1 });
+  return rulesUrl({ ...state, page: clampPage(state.page, page.totalPages) });
 }
 
 /** True when a filter or search narrows the list (the status alone does not). */

@@ -299,7 +299,7 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Pager Txn')).toHaveCount(25);
 
         await page.getByRole('button', { name: 'Page 2' }).first().click();
-        await page.waitForURL(/[?&]page=1/);
+        await page.waitForURL(/[?&]page=2/);
         await expect(row(page, 'Pager Txn')).toHaveCount(2);
         await expect(page.getByRole('button', { name: 'Page 2' }).first()).toHaveAttribute('aria-current', 'page');
       });
@@ -786,6 +786,7 @@ test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
     expect(await flagged()).toHaveLength(2);
 
     await page.goto('/transactions');
+    await expect(page).toHaveTitle('Transactions · FinanceOS');
     await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     await expect(needsReviewChip(page)).toBeVisible();
 

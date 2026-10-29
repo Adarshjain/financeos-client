@@ -45,7 +45,7 @@ describe('Accounts → card → Rewards period', () => {
   });
 
   it('has the period select, and a change goes to the account’s own tab', async () => {
-    render(await DsAccountRewardsPage({ params: Promise.resolve({ id: 'c1' }) }));
+    render(await DsAccountRewardsPage({ params: Promise.resolve({ id: 'c1' }), searchParams: Promise.resolve({}) }));
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'This FY' }));
     expect(push).toHaveBeenCalledWith('/accounts/c1/rewards?period=THIS_FY');

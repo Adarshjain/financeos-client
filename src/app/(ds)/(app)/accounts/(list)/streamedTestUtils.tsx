@@ -37,6 +37,14 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   );
 }
 
+/** The tree a page's one screen component draws, so `resolveDeep` can reach the async pieces inside it (it never calls a component itself). */
+export function openScreen(ui: unknown): unknown {
+  if (React.isValidElement(ui) && typeof ui.type === 'function' && ui.type.constructor.name !== 'AsyncFunction') {
+    return (ui.type as (props: unknown) => unknown)(ui.props);
+  }
+  return ui;
+}
+
 /**
  * Resolves every async Server Component in a tree, including those inside props such as the
  * rows handed to a table, so jsdom can render the result with Testing Library.

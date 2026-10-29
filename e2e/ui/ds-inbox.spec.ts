@@ -43,6 +43,7 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     const loan = await seedDueSoonLoan(api, 'Ds Inbox Loan');
     const emiKey = `emi:${loan.id}:1`;
     await page.goto('/inbox');
+    await expect(page).toHaveTitle('Inbox · FinanceOS');
     await expect(row(page, emiKey)).toBeVisible({ timeout: 45_000 });
 
     await row(page, emiKey).click({ button: 'right' });

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import React from 'react';
 
 import { loaded, orNull } from '@/features/shell/loadHelpers';
+import type { SearchParams } from '@/features/shell/searchParams';
 import {
   CATEGORIES_PAGE_SIZE,
   clampedCategoriesUrl,
@@ -17,6 +18,8 @@ const UNCATEGORIZED_QUERY = { ...DEFAULT_QUERY, uncategorized: true, size: 3 };
 /** Review shows all of them in the list, at its own page size. */
 const REVIEW_HREF = transactionsUrl({ ...DEFAULT_QUERY, uncategorized: true });
 
+export const metadata = { title: 'Categories' };
+
 /**
  * /transactions/categories: one page of categories by name, filtered by the search in the address, and
  * the Uncategorized card (how many transactions have no category, and the latest three), fetched together.
@@ -24,7 +27,7 @@ const REVIEW_HREF = transactionsUrl({ ...DEFAULT_QUERY, uncategorized: true });
 export default async function DsCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
   const state = parseCategoriesUrl(await searchParams);
   const [result, untagged] = await Promise.all([

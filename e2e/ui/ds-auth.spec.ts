@@ -14,6 +14,7 @@ test.describe('/ds Auth UI (@ui)', () => {
   test('signup flow: fill form, submit -> dashboard; wrong invite shows error', async ({ page }) => {
     // 1. Wrong invite shows user-readable error message
     await page.goto(`${E2E_CLIENT_URL}/signup`);
+    await expect(page).toHaveTitle('Create account · FinanceOS');
     await page.getByLabel('Email').fill(nextEmail('bad-invite'));
     await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
     await page.getByLabel('Invite code', { exact: true }).fill('wrong-code-xyz');

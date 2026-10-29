@@ -159,11 +159,11 @@ describe('DebugView lookup', () => {
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy the raw log. Try again."));
   });
 
-  it('shows the error message when the look-up fails', async () => {
+  it('says so, with Retry, when the look-up fails', async () => {
     mockLookup(undefined, new Error('Loki credentials lack read scope.'));
     renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
-    expect(await screen.findByText("Couldn't look up that reference")).toBeInTheDocument();
-    expect(screen.getByText(/Loki credentials lack read scope/)).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load that reference")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
   it('shows the not-found root cause for an unknown reference without a request card', async () => {

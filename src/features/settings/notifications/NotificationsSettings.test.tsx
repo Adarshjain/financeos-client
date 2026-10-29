@@ -406,6 +406,7 @@ describe('Notifications tab: loading and failure', () => {
   it('says so when settings could not load', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: undefined } as never);
     renderWithQuery(<NotificationsSettings />);
-    expect(await screen.findByText("Couldn't load notification settings. Try again.")).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load notification settings")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 });

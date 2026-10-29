@@ -1,5 +1,6 @@
 import { dehydrate, type DehydratedState } from '@tanstack/react-query';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 
 import { guardSession, orNull, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { ApiError } from '@/lib/api/client';
@@ -21,7 +22,7 @@ export interface DashboardPageData {
  * here: each widget loads when it comes into view. A dashboard that does not exist is a 404; the report list and
  * the catalog only degrade (the browser loads them).
  */
-export async function loadDashboardPage(id?: string): Promise<DashboardPageData> {
+export const loadDashboardPage = cache(async (id?: string): Promise<DashboardPageData> => {
   const queryClient = getQueryClient();
   const [dashboard, reports] = await Promise.all([
     id
@@ -38,4 +39,4 @@ export async function loadDashboardPage(id?: string): Promise<DashboardPageData>
   await signInIfPrefetchFailed(queryClient, keys.dashboards.builtins());
   if (reports) queryClient.setQueryData(keys.reports.list(), reports);
   return { dashboard, state: dehydrate(queryClient) };
-}
+});

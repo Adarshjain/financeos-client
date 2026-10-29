@@ -11,6 +11,7 @@ import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';
 import { isActiveJob, JOB_STATUS_BADGE } from '@/features/jobs/jobModel';
 import { startedLabel, tookLabel } from '@/features/jobs/jobsModel';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
+import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { FileSummary, JobResponse } from '@/lib/types';
@@ -52,7 +53,7 @@ export function ImportJobView({ jobId }: { jobId: string }) {
   const { job, error } = useJobStatusPolling(jobId);
 
   return (
-    <ShellPage crumb="Money / Import" title="Import result" backHref={IMPORT_HREF}>
+    <ShellPage crumb={subCrumb('transactions', 'Import')} title="Import result" backHref={IMPORT_HREF}>
       {job ? <Body job={job} /> : <Text variant="body" tone="ink-3" as="p">{error ?? 'Loading import…'}</Text>}
     </ShellPage>
   );

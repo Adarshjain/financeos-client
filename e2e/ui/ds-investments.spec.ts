@@ -36,6 +36,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Holdings: the seven tabs, the figures and every row state', async ({ page }) => {
       await page.goto('/investments');
+      await expect(page).toHaveTitle('Investments · FinanceOS');
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
       // The tab order, and no counts on any tab.

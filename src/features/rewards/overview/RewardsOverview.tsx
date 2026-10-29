@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Card, EmptyState, Text } from '@/components/ds';
-import { RewardsLoadError } from '@/features/accounts/detail/rewards/RewardsStates';
+import { LoadError } from '@/features/shell/LoadError';
 
 import type { RewardsOverviewData } from './overviewData';
 import { RewardsCardList } from './RewardsCardList';
@@ -9,7 +9,7 @@ import { RewardsCardList } from './RewardsCardList';
 /** The Rewards overview: every card's earnings added up, then one row per card. */
 export function RewardsOverview({ data }: { data: RewardsOverviewData }) {
   const { model } = data;
-  if (!model) return <RewardsLoadError what="rewards" />;
+  if (!model) return <LoadError what="rewards" />;
   if (model.cards.length === 0) {
     return (
       <Card>

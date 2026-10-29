@@ -2,25 +2,25 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
-import { monthsToCover, parseCalendarMonth } from '@/features/upcoming/calendarModel';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { UpcomingCalendarView } from '@/features/upcoming/UpcomingCalendarView';
+import { parseUpcomingCalendarUrl } from '@/features/upcoming/upcomingUrl';
 import { obligationsApi } from '@/lib/apiClient';
 import { todayInAppZone } from '@/lib/date-range';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 
 export const metadata = {
-  title: 'Upcoming calendar | FinanceOS',
+  title: 'Upcoming',
   description: 'Card bills, EMIs, lending returns and expected statements by day.',
 };
 
 export default async function DsUpcomingCalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: SearchParams;
 }) {
-  const today = todayInAppZone();
-  const months = monthsToCover(today, parseCalendarMonth((await searchParams).month, today));
+  const { months } = parseUpcomingCalendarUrl(await searchParams, todayInAppZone());
   const qc = getQueryClient();
   await qc.prefetchQuery({
     queryKey: keys.obligations.upcoming({ months }),

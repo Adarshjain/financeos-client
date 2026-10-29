@@ -29,7 +29,7 @@ describe('Holdings URL state', () => {
   });
 
   it('reads every filter and ignores values it does not know', () => {
-    expect(parseHoldingsUrl({ q: ' tcs ', type: 'etf', broker: 'b1', sort: 'return_abs', page: '2', size: '25' })).toEqual({
+    expect(parseHoldingsUrl({ q: ' tcs ', type: 'etf', broker: 'b1', sort: 'return_abs', page: '3', size: '25' })).toEqual({
       q: 'tcs',
       type: 'etf',
       broker: 'b1',
@@ -52,7 +52,7 @@ describe('Holdings URL state', () => {
   it('keeps defaults out of the address', () => {
     expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments');
     expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 25 })).toBe(
-      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=1&size=25',
+      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=25',
     );
   });
 

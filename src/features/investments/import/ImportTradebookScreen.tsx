@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card, SelectionBar, Stepper } from '@/components/ds';
+import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Broker } from '@/lib/account.types';
@@ -63,8 +64,8 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
   const several = epf.files.length > 1;
   const router = useRouter();
   return (
-    <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16 pb-space-48">
+    <ShellPage crumb={subCrumb('investments')} title="Import tradebook" backHref={TRADEBOOK_HREF}>
+      <div className="mx-auto flex max-w-container-md flex-col gap-space-8 desk:gap-space-16 pb-space-48">
         <Card title="Investment bulk import">
           <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
             <Stepper steps={IMPORT_STEPS} current={step - 1} />
@@ -124,8 +125,8 @@ function TradebookScreen({ brokers, wizard, onModeChange }: { brokers: Broker[];
   const router = useRouter();
 
   return (
-    <ShellPage crumb="Grow / Investments" title="Import tradebook" backHref={TRADEBOOK_HREF}>
-      <div className="mx-auto flex max-w-container-xl flex-col gap-space-8 desk:gap-space-16 pb-space-48">
+    <ShellPage crumb={subCrumb('investments')} title="Import tradebook" backHref={TRADEBOOK_HREF}>
+      <div className="mx-auto flex max-w-container-md flex-col gap-space-8 desk:gap-space-16 pb-space-48">
         <Card title="Investment bulk import">
           <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
             <Stepper steps={IMPORT_STEPS} current={step - 1} />

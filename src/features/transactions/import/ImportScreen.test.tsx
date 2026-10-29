@@ -132,7 +132,7 @@ describe('ImportScreen', () => {
     render(<ImportScreen initialAccounts={accounts} initialAccountId="a1" since="2026-09-22T18:30:00.000Z" page={1} />);
     expect(screen.getAllByRole('button', { name: 'Page 3' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 3' })[0]);
-    expect(push).toHaveBeenCalledWith('/transactions/import?account=a1&page=2', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/transactions/import?account=a1&page=3', { scroll: false });
   });
 
   it('draws no pager for a single page', () => {

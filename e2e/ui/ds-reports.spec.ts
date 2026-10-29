@@ -38,6 +38,7 @@ test.describe('/ds Reports list, desktop 1440px (@ui)', () => {
     });
 
     await page.goto('/reports');
+    await expect(page).toHaveTitle('Reports · FinanceOS');
     const table = page.getByRole('table');
     await expect(table.getByText('Ds Spend KPI', { exact: true })).toBeVisible({
       timeout: 45_000,

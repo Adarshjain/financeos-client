@@ -53,6 +53,6 @@ describe('/locked page', () => {
 
   it('goes to sign-in when the session is gone', async () => {
     status.mockRejectedValue(new (ApiError as unknown as new (status: number) => Error)(401));
-    await expect(DsLockedPage({})).rejects.toThrow('REDIRECT:/login');
+    await expect(DsLockedPage({ searchParams: Promise.resolve({}) })).rejects.toThrow('REDIRECT:/login');
   });
 });

@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import type { ReviewReason, ReviewType, TransactionSource } from '@/lib/transaction.types';
 
@@ -7,7 +8,6 @@ import type { ReviewReason, ReviewType, TransactionSource } from '@/lib/transact
 export const TRANSACTIONS_HREF = appHref('/transactions');
 
 export const TRANSACTIONS_SIZE_OPTIONS = [25, 50, 100];
-export const TRANSACTIONS_DEFAULT_SIZE = 25;
 
 // ---- Period ----------------------------------------------------------------
 
@@ -124,7 +124,7 @@ export const DEFAULT_QUERY: TransactionsQuery = {
   txn: null,
   sort: 'newest',
   page: 0,
-  size: TRANSACTIONS_DEFAULT_SIZE,
+  size: DEFAULT_PAGE_SIZE,
 };
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -184,8 +184,6 @@ export function parseTxn(value: string | null | undefined): string | null {
 
 /** The query a set of URL params stands for; anything missing or invalid falls back to its default. */
 export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery {
-  const page = Math.floor(Number(one(params.page)));
-  const size = Number(one(params.size));
   const type = one(params.type);
   const source = one(params.source) as TransactionSource;
   const sort = SORTS.find((s) => s.id === one(params.sort));
@@ -207,8 +205,7 @@ export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery
     source: SOURCES.includes(source) ? source : null,
     txn: parseTxn(one(params.txn)),
     sort: sort?.id ?? 'newest',
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: TRANSACTIONS_SIZE_OPTIONS.includes(size) ? size : TRANSACTIONS_DEFAULT_SIZE,
+    ...parsePage(params, { sizes: TRANSACTIONS_SIZE_OPTIONS }),
   };
 }
 
@@ -247,8 +244,8 @@ export function transactionsSearch(query: TransactionsQuery): string {
   if (query.excluded) out.set('excluded', '1');
   if (query.source) out.set('source', query.source);
   if (query.sort !== 'newest') out.set('sort', query.sort);
-  if (query.page > 0) out.set('page', String(query.page));
-  if (query.size !== TRANSACTIONS_DEFAULT_SIZE) out.set('size', String(query.size));
+  setPageParam(out, query.page);
+  if (query.size !== DEFAULT_PAGE_SIZE) out.set('size', String(query.size));
   return out.toString();
 }
 

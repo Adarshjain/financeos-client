@@ -17,6 +17,8 @@ import {
   Text,
 } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
+import { areaCrumb } from '@/features/shell/navigation';
+import { pageHref } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useUrlState } from '@/features/upcoming/useUrlState';
@@ -24,7 +26,7 @@ import type { AppNotification } from '@/lib/api/types';
 import { useNotificationFeed, useNotificationMutations } from '@/lib/query/hooks/useNotifications';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
-import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, parsePage, timeLabel } from './notificationsModel';
+import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, pageFromSearch, timeLabel } from './notificationsModel';
 import { NotificationsSkeleton } from './NotificationsSkeleton';
 import { useNotificationActions } from './useNotificationActions';
 
@@ -32,7 +34,7 @@ import { useNotificationActions } from './useNotificationActions';
 export function NotificationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [page, setPage] = useUrlState(searchParams.toString(), parsePage);
+  const [page, setPage] = useUrlState(searchParams.toString(), pageFromSearch);
   const { data, isLoading, isFetching, error, refetch } = useNotificationFeed(page, NOTIFICATIONS_PAGE_SIZE);
   const { markRead } = useNotificationMutations();
   const { clearOne, clearEverything, clearing, clearingAll } = useNotificationActions();
@@ -64,7 +66,7 @@ export function NotificationsPage() {
   const goToPage = React.useCallback(
     (p: number, replace = false) => {
       setPage(p);
-      const url = appHref(p > 0 ? `/notifications?page=${p}` : '/notifications');
+      const url = appHref(pageHref('/notifications', {}, p));
       if (replace) router.replace(url, { scroll: false });
       else router.push(url, { scroll: false });
     },
@@ -148,7 +150,7 @@ export function NotificationsPage() {
   }
 
   return (
-    <ShellPage title="Notifications">
+    <ShellPage crumb={areaCrumb('notifications')} title="Notifications">
       {body}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent

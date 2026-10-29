@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
+import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 import { RewardsAddProvider } from './RewardsAdd';
@@ -24,7 +25,7 @@ export function RewardsShell({ children }: { children: React.ReactNode }) {
   }));
   return (
     <ShellPage
-      crumb="Grow"
+      crumb={areaCrumb('rewards')}
       title="Rewards"
       flushTop
       onAdd={tab === 'rules' ? (adder ?? undefined) : undefined}

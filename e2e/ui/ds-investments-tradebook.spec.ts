@@ -69,11 +69,11 @@ for (const viewport of VIEWPORTS) {
     test('pages through the server, and an address past the end shows the last page', async ({ page }) => {
       await page.goto('/investments/tradebook?fy=all');
       await page.getByRole('button', { name: 'Page 2' }).first().click();
-      await page.waitForURL(/page=1/);
+      await page.waitForURL(/page=2/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
 
       await page.goto('/investments/tradebook?fy=all&page=9');
-      await page.waitForURL(/page=1/);
+      await page.waitForURL(/page=2/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
     });
 

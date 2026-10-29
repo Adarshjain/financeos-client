@@ -149,6 +149,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 3. **Layout classes are allowed, styling is not.** Pages may place components with `flex`, `grid`, `gap-*`, `p-*`, `m-*`, width/height, `min-h-*`, `max-w-*`, position and responsive `desk:` variants of those, using spacing and size tokens. `check-ui` fails on visual classes in pages.
 4. **Missing component? Stop and flag it.** If a page needs something Dinero doesn't have, add an Open question naming the gap and leave that part out. Never hand-make it. The owner decides.
 5. **Layout follows the board exactly**: the same elements, in the same order, at the same positions, on phone and desktop. Copy follows the board too unless the owner has accepted different words.
+6. **Where ShellPage is mounted.** A list or tab area mounts ShellPage once, in the area layout (through the feature's Shell). A detail page mounts it in its own screen. `page.tsx` never mounts it. An area's `error.tsx` and `not-found.tsx` come from `areaError` / `areaNotFound` (`framed` when the layout already mounts the bar), and every crumb comes from the one map in `features/shell/navigation.ts`.
 
 ## 5a. Storybook
 

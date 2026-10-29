@@ -59,13 +59,13 @@ const summary: LoansSummaryDetail = {
 describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
     expect(parseLoansUrl({})).toEqual({ q: '', page: 0, size: 25 });
-    expect(parseLoansUrl({ q: ' sbi ', page: '3', size: '10' })).toEqual({ q: 'sbi', page: 3, size: 10 });
+    expect(parseLoansUrl({ q: ' sbi ', page: '4', size: '10' })).toEqual({ q: 'sbi', page: 3, size: 10 });
     expect(parseLoansUrl({ page: 'x', size: '99' })).toEqual({ q: '', page: 0, size: 25 });
   });
 
   it('builds the tab URL with only non-default parts', () => {
     expect(loansUrl({ q: '', page: 0, size: 25 })).toBe('/loans');
-    expect(loansUrl({ q: 'sbi', page: 2, size: 50 })).toBe('/loans?q=sbi&page=2&size=50');
+    expect(loansUrl({ q: 'sbi', page: 2, size: 50 })).toBe('/loans?q=sbi&page=3&size=50');
   });
 });
 

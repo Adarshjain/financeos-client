@@ -58,6 +58,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await spend(api, high.id, { amount: 4000, date: spendDay('11') });
 
     await page.goto('/rewards');
+    await expect(page).toHaveTitle('Rewards · FinanceOS');
     await expect(page.getByText('Earned this year')).toBeVisible({ timeout: 45_000 });
     // 2% of 1,500 + 5% of 4,000.
     await expect(page.getByText(/₹230/).first()).toBeVisible();

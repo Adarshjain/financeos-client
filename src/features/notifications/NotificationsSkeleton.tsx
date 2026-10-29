@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Card, Skeleton } from '@/components/ds';
+import { areaCrumb } from '@/features/shell/navigation';
+import { ShellPage } from '@/features/shell/ShellPage';
 
 /** A day header, then rows of two text lines and a time, while the feed loads. */
 export function NotificationsSkeleton() {
@@ -19,5 +21,14 @@ export function NotificationsSkeleton() {
         </div>
       ))}
     </Card>
+  );
+}
+
+/** The Notifications page while the first page of the feed loads: the app bar and the skeleton. */
+export function NotificationsPageSkeleton() {
+  return (
+    <ShellPage crumb={areaCrumb('notifications')} title="Notifications">
+      <NotificationsSkeleton />
+    </ShellPage>
   );
 }

@@ -10,6 +10,7 @@ import { InstrumentEditDialog } from '@/features/investments/instruments/Instrum
 import { ResetInstrumentDialog } from '@/features/investments/instruments/ResetInstrumentDialog';
 import { holdingHref, HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import { RecordTradeDialog } from '@/features/investments/tradebook/TradeDialog';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatMoney, formatQuantity } from '@/lib/format';
 
@@ -75,7 +76,7 @@ export function HoldingView({ data, today, now }: HoldingViewProps) {
 
   return (
     <>
-      <ShellPage crumb="Grow / Investments" title={header.title} backHref={HOLDINGS_HREF} addMenu={addMenu}>
+      <ShellPage crumb={subCrumb('investments')} title={header.title} backHref={HOLDINGS_HREF} addMenu={addMenu}>
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <HoldingFigures
             hero={holdingHero(holding)}

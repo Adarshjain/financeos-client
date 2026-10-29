@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
 import { REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { subCrumb } from '@/features/shell/navigation';
 import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStore';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
@@ -182,7 +183,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
 
   return (
     <ShellPage
-      crumb="Insights / Reports"
+      crumb={subCrumb('reports')}
       title={title}
       backHref={REPORTS_HREF}
     >

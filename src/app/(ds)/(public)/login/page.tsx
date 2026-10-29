@@ -1,24 +1,19 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import React, { Suspense } from 'react';
 
-import { appHref, isSafeLocalPath } from '@/features/shell/routes';
+import { parseLoginUrl } from '@/features/auth/loginUrl';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { getOptionalSession } from '@/lib/auth';
 
 import { LoginForm } from './LoginForm';
 
-export default async function DsLoginPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ from?: string; deleted?: string }>;
-}) {
-  const params = searchParams ? await searchParams : undefined;
+export const metadata: Metadata = { title: 'Sign in' };
+
+export default async function DsLoginPage({ searchParams }: { searchParams: SearchParams }) {
+  const { destination } = parseLoginUrl(await searchParams);
   const session = await getOptionalSession();
-  if (session) {
-    const from = params?.from;
-    const dest =
-      from && isSafeLocalPath(from) ? from : '/dashboard';
-    redirect(appHref(dest));
-  }
+  if (session) redirect(destination);
 
   return (
     <Suspense>

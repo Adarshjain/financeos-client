@@ -205,7 +205,7 @@ describe('list', () => {
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" page={1} />);
     expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
       'href',
-      '/settings/activity?status=SUCCEEDED&page=1&job=abc',
+      '/settings/activity?status=SUCCEEDED&page=2&job=abc',
     );
   });
 
@@ -242,7 +242,7 @@ describe('pager', () => {
   it('paging keeps the filters and the open job', () => {
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" jobId="abc" />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
-    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=1&job=abc', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=2&job=abc', { scroll: false });
   });
 });
 
@@ -292,7 +292,7 @@ describe('job result card', () => {
     jobs = [job({ id: 'abc' })];
     render(<ActivityPage {...props} statusFilter="SUCCEEDED" page={1} jobId="abc" />);
     fireEvent.click(within(screen.getByTestId('job-result-card')).getByRole('button', { name: 'Close' }));
-    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=1', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/settings/activity?status=SUCCEEDED&page=2', { scroll: false });
   });
 
   it('a running job has Cancel and its progress', () => {

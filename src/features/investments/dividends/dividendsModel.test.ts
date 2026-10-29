@@ -42,9 +42,9 @@ describe('the address', () => {
   });
 
   it('reads and writes every filter, keeping defaults out of the address', () => {
-    const state = parseDividendsUrl({ fy: '2025', broker: 'b1', type: 'interest', receipt: 'overdue', instrumentId: UUID, page: '2', size: '50', ip: '1' });
+    const state = parseDividendsUrl({ fy: '2025', broker: 'b1', type: 'interest', receipt: 'overdue', instrumentId: UUID, page: '3', size: '50', ip: '2' });
     expect(state).toEqual({ fy: 2025, broker: 'b1', type: 'interest', receipt: 'overdue', instrument: UUID, page: 2, size: 50, ipage: 1 });
-    expect(dividendsUrl(state)).toBe(`/investments/dividends?fy=2025&broker=b1&type=interest&receipt=overdue&instrumentId=${UUID}&page=2&size=50&ip=1`);
+    expect(dividendsUrl(state)).toBe(`/investments/dividends?fy=2025&broker=b1&type=interest&receipt=overdue&instrumentId=${UUID}&page=3&size=50&ip=2`);
     expect(dividendsUrl(DEFAULTS)).toBe('/investments/dividends');
   });
 

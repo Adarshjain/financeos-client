@@ -9,7 +9,7 @@ import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './at
 
 interface AttentionItemRowProps {
   item: AttentionItem;
-  onRetryItem: (ledgerId: string) => void;
+  retryItem: (ledgerId: string) => void;
   onAssign: (item: AttentionItem) => void;
   onArchive: (ledgerId: string) => void;
   onUnarchive: (ledgerId: string) => void;
@@ -50,7 +50,7 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
 }
 
 /** One Gmail item that could not become a transaction: what happened, the next step, details and actions. */
-export function AttentionItemRow({ item, onRetryItem, onAssign, onArchive, onUnarchive }: AttentionItemRowProps) {
+export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarchive }: AttentionItemRowProps) {
   const [showDetails, setShowDetails] = useState(false);
   const { label, summary, hint } = describeAttentionItem(item);
   const archived = Boolean(item.archivedAt);
@@ -100,7 +100,7 @@ export function AttentionItemRow({ item, onRetryItem, onAssign, onArchive, onUna
                 Assign
               </Button>
             ) : null}
-            <Button variant="secondary" size="sm" onClick={() => onRetryItem(item.id)}>
+            <Button variant="secondary" size="sm" onClick={() => retryItem(item.id)}>
               Retry
             </Button>
             <Button variant="secondary" size="sm" onClick={() => onArchive(item.id)}>

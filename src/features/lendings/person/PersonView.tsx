@@ -6,6 +6,7 @@ import React from 'react';
 import { ConfirmDialog } from '@/components/ds';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatDate } from '@/lib/format';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
@@ -70,7 +71,7 @@ export function PersonView({ cp, ledger, state, today, myName, openExport }: Per
   return (
     <>
       <ShellPage
-        crumb="Owe & lend / Lendings"
+        crumb={subCrumb('lendings')}
         title={
           // The lendings row's name grows into this title.
           <SharedName name={transitionName.person(cp.id)}>

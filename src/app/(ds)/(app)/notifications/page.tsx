@@ -1,20 +1,22 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
-import { NOTIFICATIONS_PAGE_SIZE, parsePage } from '@/features/notifications/notificationsModel';
+import { NOTIFICATIONS_PAGE_SIZE } from '@/features/notifications/notificationsModel';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
+import { parsePage } from '@/features/shell/pagination';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { notificationFeedApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
+
+export const metadata = { title: 'Notifications' };
 
 export default async function DsNotificationsPage({
   searchParams,
 }: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const raw = params?.page;
-  const page = parsePage(`page=${(Array.isArray(raw) ? raw[0] : raw) ?? ''}`);
+  const { page } = parsePage(await searchParams);
 
   // A failed prefetch is not fatal: the page loads (and reports errors) on the client.
   const queryClient = getQueryClient();

@@ -38,9 +38,9 @@ describe('rules address', () => {
   });
 
   it('reads and writes every filter, leaving defaults out', () => {
-    const state = parseRulesUrl({ q: ' swig ', status: 'all', source: 'USER', match: 'REGEX', category: 'c1', page: '2', size: '50' });
+    const state = parseRulesUrl({ q: ' swig ', status: 'all', source: 'USER', match: 'REGEX', category: 'c1', page: '3', size: '50' });
     expect(state).toEqual({ q: 'swig', status: 'all', source: 'USER', matchType: 'REGEX', categoryId: 'c1', page: 2, size: 50 });
-    expect(rulesUrl(state)).toBe('?q=swig&status=all&source=USER&match=REGEX&category=c1&page=2&size=50');
+    expect(rulesUrl(state)).toBe('?q=swig&status=all&source=USER&match=REGEX&category=c1&page=3&size=50');
     expect(parseRulesUrl(Object.fromEntries(new URLSearchParams(rulesUrl(state).slice(1))))).toEqual(state);
   });
 
@@ -69,7 +69,7 @@ describe('rules address', () => {
 
   it('moves a page past the last one back to the last', () => {
     const state = { ...DEFAULT_RULES_STATE, page: 4 };
-    expect(clampedRulesUrl(state, { content: [], totalPages: 2 })).toBe('?page=1');
+    expect(clampedRulesUrl(state, { content: [], totalPages: 2 })).toBe('?page=2');
     expect(clampedRulesUrl(state, { content: [1], totalPages: 5 })).toBeNull();
     expect(clampedRulesUrl(state, { content: [], totalPages: 0 })).toBeNull();
   });

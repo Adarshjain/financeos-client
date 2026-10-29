@@ -1,4 +1,6 @@
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type {
   CorporateActionItem,
@@ -17,7 +19,6 @@ import { ratioText } from './corporateActionRatio';
 export const CORPORATE_ACTIONS_HREF = `${DS_PREFIX}${INVESTMENTS_PATH}/corporate-actions`;
 
 export const CORPORATE_ACTIONS_SIZE_OPTIONS = [25, 50, 100];
-export const CORPORATE_ACTIONS_DEFAULT_SIZE = 25;
 
 export interface CorporateActionsUrlState {
   q: string;
@@ -31,21 +32,12 @@ export interface CorporateActionsUrlState {
 export const KINDS: CorporateActionKind[] = ['split', 'bonus', 'demerger', 'merger'];
 const SORTS: CorporateActionSort[] = ['newest', 'oldest', 'name'];
 
-export function parseCorporateActionsUrl(params: {
-  q?: string;
-  type?: string;
-  sort?: string;
-  page?: string;
-  size?: string;
-}): CorporateActionsUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
+export function parseCorporateActionsUrl(params: SearchParamsRecord): CorporateActionsUrlState {
   return {
-    q: (params.q ?? '').trim(),
-    type: KINDS.includes(params.type as CorporateActionKind) ? (params.type as CorporateActionKind) : '',
-    sort: SORTS.includes(params.sort as CorporateActionSort) ? (params.sort as CorporateActionSort) : 'newest',
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: CORPORATE_ACTIONS_SIZE_OPTIONS.includes(size) ? size : CORPORATE_ACTIONS_DEFAULT_SIZE,
+    q: (first(params.q) ?? '').trim(),
+    type: KINDS.includes(first(params.type) as CorporateActionKind) ? (first(params.type) as CorporateActionKind) : '',
+    sort: SORTS.includes(first(params.sort) as CorporateActionSort) ? (first(params.sort) as CorporateActionSort) : 'newest',
+    ...parsePage(params, { size: DEFAULT_PAGE_SIZE, sizes: CORPORATE_ACTIONS_SIZE_OPTIONS }),
   };
 }
 
@@ -55,8 +47,8 @@ export function corporateActionsUrl(state: CorporateActionsUrlState): string {
   if (state.q) query.set('q', state.q);
   if (state.type) query.set('type', state.type);
   if (state.sort !== 'newest') query.set('sort', state.sort);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== CORPORATE_ACTIONS_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${CORPORATE_ACTIONS_HREF}?${text}` : CORPORATE_ACTIONS_HREF;
 }

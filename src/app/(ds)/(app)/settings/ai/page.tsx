@@ -6,6 +6,8 @@ import { llmKeysApi, llmRoutingApi } from '@/lib/apiClient';
 import { requireAuth } from '@/lib/auth';
 import { getQueryClient, keys } from '@/lib/query';
 
+export const metadata = { title: 'AI' };
+
 export default async function DsSettingsAiPage() {
   await requireAuth();
 

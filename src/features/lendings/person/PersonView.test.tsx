@@ -178,7 +178,7 @@ describe('ledger', () => {
     renderView({ ledger: { ...ledgerFixture(all, 3), entries: { ...ledgerFixture(all, 3).entries, totalElements: 60 } } });
     expect(screen.getAllByRole('button', { name: /next/i })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p1?page=1', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p1?page=2', { scroll: false });
   });
 
   it('says so when the person has no entries', () => {

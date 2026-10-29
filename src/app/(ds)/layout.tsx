@@ -44,6 +44,8 @@ const SPLASH: Array<[number, number, number]> = [
 
 export const metadata: Metadata = {
   ...rootMetadata,
+  // Every page names itself ("Accounts"); the tab reads "Accounts · FinanceOS". A page that sets none shows the default.
+  title: { default: String(rootMetadata.title), template: '%s · FinanceOS' },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

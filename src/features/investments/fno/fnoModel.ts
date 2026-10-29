@@ -1,5 +1,7 @@
 import { fyStartYear } from '@/features/loans/detail/financialYear';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate, formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 import type { FnoPageQuery, FnoSort, FnoSummary } from '@/lib/investments.types';
@@ -17,7 +19,6 @@ export const IMPORT_STATEMENT_HREF = INVESTMENTS_IMPORT_HREF;
 // ---- URL state ---------------------------------------------------------------
 
 export const FNO_SIZE_OPTIONS = [25, 50, 100];
-export const FNO_DEFAULT_SIZE = 25;
 
 /** The contract filter: every contract, futures, all options, calls or puts (the server's `optionType`). */
 export type FnoContract = '' | 'FUT' | 'OPT' | 'CE' | 'PE';
@@ -43,26 +44,15 @@ export function currentFy(): number {
   return fyStartYear(todayInAppZone());
 }
 
-export function parseFnoUrl(params: {
-  q?: string;
-  contract?: string;
-  broker?: string;
-  fy?: string;
-  sort?: string;
-  page?: string;
-  size?: string;
-}): FnoUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
-  const fy = Math.floor(Number(params.fy));
+export function parseFnoUrl(params: SearchParamsRecord): FnoUrlState {
+  const fy = Math.floor(Number(first(params.fy)));
   return {
-    q: (params.q ?? '').trim(),
-    contract: CONTRACTS.includes(params.contract as FnoContract) ? (params.contract as FnoContract) : '',
-    broker: (params.broker ?? '').trim(),
-    fy: params.fy === 'all' ? null : Number.isFinite(fy) && fy >= 1900 && fy <= 2200 ? fy : currentFy(),
-    sort: SORTS.includes(params.sort as FnoSort) ? (params.sort as FnoSort) : 'newest',
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: FNO_SIZE_OPTIONS.includes(size) ? size : FNO_DEFAULT_SIZE,
+    q: (first(params.q) ?? '').trim(),
+    contract: CONTRACTS.includes(first(params.contract) as FnoContract) ? (first(params.contract) as FnoContract) : '',
+    broker: (first(params.broker) ?? '').trim(),
+    fy: first(params.fy) === 'all' ? null : Number.isFinite(fy) && fy >= 1900 && fy <= 2200 ? fy : currentFy(),
+    sort: SORTS.includes(first(params.sort) as FnoSort) ? (first(params.sort) as FnoSort) : 'newest',
+    ...parsePage(params, { size: DEFAULT_PAGE_SIZE, sizes: FNO_SIZE_OPTIONS }),
   };
 }
 
@@ -75,8 +65,8 @@ export function fnoUrl(state: FnoUrlState): string {
   if (state.fy == null) query.set('fy', 'all');
   else if (state.fy !== currentFy()) query.set('fy', String(state.fy));
   if (state.sort !== 'newest') query.set('sort', state.sort);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== FNO_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${FNO_HREF}?${text}` : FNO_HREF;
 }

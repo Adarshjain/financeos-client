@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 
 import { loaded, signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { ApiError, chatApi } from '@/lib/apiClient';
@@ -12,7 +13,7 @@ export async function loadChatList(): Promise<ConversationSummary[]> {
 }
 
 /** One stored conversation; a missing (or another user's) conversation is a 404 page. */
-export async function loadConversation(id: string): Promise<Conversation> {
+export const loadConversation = cache(async (id: string): Promise<Conversation> => {
   try {
     return await chatApi.getConversation(id);
   } catch (error) {
@@ -20,4 +21,4 @@ export async function loadConversation(id: string): Promise<Conversation> {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
-}
+});

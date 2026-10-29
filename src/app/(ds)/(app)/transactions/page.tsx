@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { loaded, orNull } from '@/features/shell/loadHelpers';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { transactionRows } from '@/features/transactions/list/transactionRows';
 import {
   fetchAccounts,
@@ -8,16 +9,18 @@ import {
   fetchNeedsReviewCount,
   fetchTransactionsPage,
 } from '@/features/transactions/list/transactionsServerApi';
-import { parseTransactionsUrl, type RawSearchParams } from '@/features/transactions/list/transactionsUrl';
+import { parseTransactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import type { TransactionsListResult } from '@/features/transactions/list/TransactionsView';
 import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
 import { todayInAppZone } from '@/lib/date-range';
+
+export const metadata = { title: 'Transactions' };
 
 /**
  * /transactions: the list, filtered and sorted by the address. The server reads the address once and
  * fetches the page, the accounts and categories the chips need, and the needs-review count together.
  */
-export default async function DsTransactionsPage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
+export default async function DsTransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const query = parseTransactionsUrl(await searchParams);
   const [page, accounts, categories, needsReviewCount] = await Promise.all([
     loaded(fetchTransactionsPage(query)),

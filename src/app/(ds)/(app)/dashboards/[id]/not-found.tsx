@@ -1,16 +1,12 @@
-import React from 'react';
+'use client';
 
-import { DASHBOARDS_CRUMB, DASHBOARDS_HREF } from '@/features/dashboards/routes';
-import { PageNotFound } from '@/features/shell/PageNotFound';
+import { areaNotFound } from '@/features/shell/areaNotFound';
+import { crumbMap, subCrumb } from '@/features/shell/navigation';
 
-export default function DsDashboardNotFound() {
-  return (
-    <PageNotFound
-      what="Dashboard"
-      description="It may have been deleted."
-      backPath="/dashboards"
-      backLabel="Go to Dashboards"
-      shell={{ crumb: DASHBOARDS_CRUMB, title: 'Dashboard', backHref: DASHBOARDS_HREF }}
-    />
-  );
-}
+export default areaNotFound({
+  what: 'Dashboard',
+  crumb: subCrumb('dashboards'),
+  title: 'Dashboard',
+  backHref: crumbMap.dashboards.href,
+  backLabel: 'Back to dashboards',
+});

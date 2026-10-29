@@ -6,7 +6,7 @@ import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
 import DsAccountsPage from './page';
-import { type PlainListData, resolveDeep, toStreams } from './streamedTestUtils';
+import { openScreen, type PlainListData, resolveDeep, toStreams } from './streamedTestUtils';
 
 const push = vi.fn();
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -56,7 +56,7 @@ function data(over: Partial<PlainListData> = {}): PlainListData {
 
 async function renderPage() {
   const ui = await DsAccountsPage();
-  return render((await resolveDeep(ui)) as React.ReactElement);
+  return render((await resolveDeep(openScreen(ui))) as React.ReactElement);
 }
 
 describe('/accounts', () => {

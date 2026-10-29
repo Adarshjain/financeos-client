@@ -1,6 +1,6 @@
 import type { IconName } from '@/components/ds/Icon/Icon';
 
-import { normalisePathname } from './routes';
+import { appHref, normalisePathname } from './routes';
 
 export interface ShellNavItem {
   id: string;
@@ -181,3 +181,57 @@ export function isChatPath(pathname: string | null | undefined): boolean {
 
 /** Routes with no phone tab bar: the Ask the data pages dock their own composer at the bottom. */
 export const hidesTabBar = isChatPath;
+
+export type CrumbArea =
+  | 'home'
+  | 'notifications'
+  | 'accounts'
+  | 'transactions'
+  | 'lendings'
+  | 'loans'
+  | 'investments'
+  | 'rewards'
+  | 'dashboards'
+  | 'reports'
+  | 'chat'
+  | 'settings';
+
+export interface CrumbEntry {
+  /** The rail group above the area: the crumb of the area's own pages. */
+  group: string;
+  /** The area's name: the crumb of pages beneath it (a detail page, a sub-page). */
+  label: string;
+  /** The area's own page: where a back button or a not-found page leads. */
+  href: string;
+}
+
+/**
+ * The one crumb map: every area, the rail group it sits in, and its own page. Every ShellPage crumb comes from
+ * `areaCrumb` or `subCrumb`, never from a literal. Home sits under Insights (it is the default dashboard) and
+ * Notifications under Inbox.
+ */
+export const crumbMap: Record<CrumbArea, CrumbEntry> = {
+  home: { group: 'Insights', label: 'Home', href: appHref('/dashboard') },
+  notifications: { group: 'Inbox', label: 'Notifications', href: appHref('/notifications') },
+  accounts: { group: 'Money', label: 'Accounts', href: appHref('/accounts') },
+  transactions: { group: 'Money', label: 'Transactions', href: appHref('/transactions') },
+  lendings: { group: 'Owe & lend', label: 'Lendings', href: appHref('/loans/lendings') },
+  loans: { group: 'Owe & lend', label: 'Loans', href: appHref('/loans') },
+  investments: { group: 'Grow', label: 'Investments', href: appHref('/investments') },
+  rewards: { group: 'Grow', label: 'Rewards', href: appHref('/rewards') },
+  dashboards: { group: 'Insights', label: 'Dashboards', href: appHref('/dashboards') },
+  reports: { group: 'Insights', label: 'Reports', href: appHref('/reports') },
+  chat: { group: 'Insights', label: 'Ask the data', href: appHref('/chat') },
+  settings: { group: 'Settings', label: 'Settings', href: appHref('/settings') },
+};
+
+/** The crumb of an area's own pages (its list, tabs, a single-page area): "Money". */
+export function areaCrumb(area: CrumbArea): string {
+  return crumbMap[area].group;
+}
+
+/** The crumb of a page beneath an area: "Money / Accounts", or deeper with `rest` ("Money / Transactions / Import"). */
+export function subCrumb(area: CrumbArea, ...rest: string[]): string {
+  const { group, label } = crumbMap[area];
+  return [group, label, ...rest].join(' / ');
+}

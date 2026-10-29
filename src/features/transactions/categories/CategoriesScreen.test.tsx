@@ -130,7 +130,7 @@ describe('CategoriesScreen', () => {
     );
     expect(screen.getAllByText(/45/)).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: "Page 2" })[0]);
-    expect(router.push).toHaveBeenCalledWith('?q=din&page=1', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('?q=din&page=2', { scroll: false });
   });
 
   it('shows the Uncategorized card only when given its data', () => {

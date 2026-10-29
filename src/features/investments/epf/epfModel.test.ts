@@ -32,14 +32,14 @@ const today = '2026-10-27';
 
 describe('url state', () => {
   it('reads the FY, employer, page and size, and ignores nonsense', () => {
-    expect(parseEpfUrl({ fy: '2025', employer: 'e2', page: '2', size: '50' })).toEqual({ fy: 2025, employer: 'e2', page: 2, size: 50 });
+    expect(parseEpfUrl({ fy: '2025', employer: 'e2', page: '3', size: '50' })).toEqual({ fy: 2025, employer: 'e2', page: 2, size: 50 });
     expect(parseEpfUrl({ fy: 'all' }).fy).toBe('all');
     expect(parseEpfUrl({ fy: 'x', page: '-3', size: '7' })).toEqual({ fy: null, employer: '', page: 0, size: 25 });
   });
 
   it('keeps the defaults out of the address', () => {
     expect(epfUrl(parseEpfUrl({}))).toBe('/investments/epf');
-    expect(epfUrl({ fy: 2025, employer: 'all', page: 1, size: 50 })).toBe('/investments/epf?fy=2025&employer=all&page=1&size=50');
+    expect(epfUrl({ fy: 2025, employer: 'all', page: 1, size: 50 })).toBe('/investments/epf?fy=2025&employer=all&page=2&size=50');
   });
 
   it('picks the employer: the one chosen, the only one, the current one, or all', () => {

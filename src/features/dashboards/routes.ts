@@ -3,9 +3,6 @@ import { appHref } from '@/features/shell/routes';
 /** The Dashboards list. */
 export const DASHBOARDS_HREF = appHref('/dashboards');
 
-/** The crumb every dashboard page shows. */
-export const DASHBOARDS_CRUMB = 'Insights / Dashboards';
-
 export const dashboardHref = (id: string): string => appHref(`/dashboards/${id}`);
 
 export const NEW_DASHBOARD_HREF = appHref('/dashboards/new');

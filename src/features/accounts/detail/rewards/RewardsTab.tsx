@@ -2,6 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Button, KpiTile } from '@/components/ds';
+import { LoadError } from '@/features/shell/LoadError';
 import { appHref } from '@/features/shell/routes';
 
 import { accountHref } from '../accountTabsModel';
@@ -24,7 +25,7 @@ import {
 import { capitalize, periodWords } from './rewardsPeriod';
 import { RewardsPeriodControl } from './RewardsPeriodControl';
 import { CardholdersCard, MilestonesCard, RulesCard } from './RewardsSections';
-import { RewardsEmpty, RewardsLoadError } from './RewardsStates';
+import { RewardsEmpty } from './RewardsStates';
 
 /**
  * The Rewards tab (boards D-account-rewards, D-account-rewards-empty): period, banners, KPI tiles, earning lines,
@@ -48,7 +49,7 @@ export function RewardsTab({
     return (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <RewardsPeriodControl basePath={basePath} query={query} window={window} today={today} />
-        <RewardsLoadError what="rewards" />
+        <LoadError what="rewards" />
       </div>
     );
   }
@@ -101,7 +102,7 @@ export function RewardsTab({
               query={query}
             />
           ) : (
-            <RewardsLoadError what="earning lines" />
+            <LoadError what="earning lines" />
           )}
         </div>
         <div className="desk:col-span-5 min-w-0 flex flex-col gap-space-8 desk:gap-space-16">

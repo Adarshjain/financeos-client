@@ -5,6 +5,7 @@ import React from 'react';
 import { ConfirmDialog } from '@/components/ds';
 import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
+import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { InstallmentDto, LoanDetailResponse, LoanEventType } from '@/lib/loan.types';
@@ -80,7 +81,7 @@ export function LoanDetailView({ detail, schedule, paymentAccountName, today, hi
   return (
     <>
       <ShellPage
-        crumb="Owe & lend / Loans"
+        crumb={subCrumb('loans')}
         title={
           // The loans row's name grows into this title.
           <SharedName name={transitionName.loan(loan.id)}>

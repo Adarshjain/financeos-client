@@ -1,6 +1,8 @@
 import { daysBetween, type TileModel } from '@/features/loans/loanFormat';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
 import type {
   CounterpartyDirectionFilter,
@@ -30,7 +32,6 @@ const DIRECTION: Record<LendingFilter, CounterpartyDirectionFilter | undefined> 
 };
 
 export const LENDINGS_SIZE_OPTIONS = [10, 25, 50];
-export const LENDINGS_DEFAULT_SIZE = 25;
 
 export interface LendingsUrlState {
   q: string;
@@ -48,14 +49,11 @@ export function parseFilter(raw: string | undefined): LendingFilter {
   return LENDING_FILTERS.some((f) => f.value === raw) ? (raw as LendingFilter) : 'all';
 }
 
-export function parseLendingsUrl(params: { q?: string; filter?: string; page?: string; size?: string }): LendingsUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
+export function parseLendingsUrl(params: SearchParamsRecord): LendingsUrlState {
   return {
-    q: (params.q ?? '').trim(),
-    filter: parseFilter(params.filter),
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: LENDINGS_SIZE_OPTIONS.includes(size) ? size : LENDINGS_DEFAULT_SIZE,
+    q: (first(params.q) ?? '').trim(),
+    filter: parseFilter(first(params.filter)),
+    ...parsePage(params, { sizes: LENDINGS_SIZE_OPTIONS }),
   };
 }
 
@@ -64,8 +62,8 @@ export function lendingsUrl(state: LendingsUrlState): string {
   const query = new URLSearchParams();
   if (state.q) query.set('q', state.q);
   if (state.filter !== 'all') query.set('filter', state.filter);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== LENDINGS_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${LENDINGS_HREF}?${text}` : LENDINGS_HREF;
 }

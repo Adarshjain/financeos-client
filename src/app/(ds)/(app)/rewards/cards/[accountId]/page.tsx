@@ -1,30 +1,24 @@
-import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 import { loadAccount } from '@/features/accounts/detail/accountData';
+import { requireAccount } from '@/features/accounts/detail/accountRoute';
 import { accountTabsFor } from '@/features/accounts/detail/accountTabsModel';
-import { AccountTitle } from '@/features/accounts/detail/AccountTitle';
-import { loadRewardsTabData, type RewardsSearchParams } from '@/features/accounts/detail/rewards/rewardsData';
-import { RewardsTab } from '@/features/accounts/detail/rewards/RewardsTab';
-import { REWARDS_HREF, rewardsCardHref } from '@/features/rewards/overview/rewardsTabs';
-import { ShellPage } from '@/features/shell/ShellPage';
+import { loadRewardsTabData } from '@/features/accounts/detail/rewards/rewardsData';
+import { RewardsCardScreen } from '@/features/rewards/overview/RewardsCardScreen';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
 
+type Params = { params: Promise<{ accountId: string }> };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const account = await loadAccount((await params).accountId);
+  return { title: account?.name ?? 'Rewards' };
+}
+
 /** A card's rewards: the same page body as Accounts → card → Rewards, under the Rewards top bar. */
-export default async function DsRewardsCardPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ accountId: string }>;
-  searchParams?: Promise<RewardsSearchParams>;
-}) {
-  const { accountId } = await params;
-  const account = await loadAccount(accountId);
-  if (!account || !accountTabsFor(account.type).some((t) => t.id === 'rewards')) notFound();
+export default async function DsRewardsCardPage({ params, searchParams }: Params & { searchParams: SearchParams }) {
+  const account = await requireAccount((await params).accountId, (a) => accountTabsFor(a.type).some((t) => t.id === 'rewards'));
   const today = todayInAppZone();
-  const data = await loadRewardsTabData(account, today, searchParams ? await searchParams : undefined);
-  return (
-    <ShellPage crumb="Grow / Rewards" title={<AccountTitle account={account} />} backHref={REWARDS_HREF}>
-      <RewardsTab account={account} today={today} data={data} basePath={rewardsCardHref(account.id)} />
-    </ShellPage>
-  );
+  const data = await loadRewardsTabData(account, today, await searchParams);
+  return <RewardsCardScreen account={account} today={today} data={data} />;
 }

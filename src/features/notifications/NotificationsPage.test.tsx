@@ -154,7 +154,7 @@ describe('NotificationsPage', () => {
   });
 
   it('clearing the last row of a later page steps back once the server agrees', async () => {
-    search = 'page=1';
+    search = 'page=2';
     serve(mockApi, feedPage([today2], { totalElements: 21, totalPages: 2 }), 0);
     renderWithQuery(<NotificationsPage />);
     await screen.findByText('Sync done');
@@ -164,7 +164,7 @@ describe('NotificationsPage', () => {
   });
 
   it('a failed clear of the last row of a later page stays on that page', async () => {
-    search = 'page=1';
+    search = 'page=2';
     serve(mockApi, feedPage([today2], { totalElements: 21, totalPages: 2 }), 0);
     renderWithQuery(<NotificationsPage />);
     await screen.findByText('Sync done');
@@ -178,7 +178,7 @@ describe('NotificationsPage', () => {
   });
 
   it('pager above and below when there are several pages; the page goes in the URL and 0 is omitted', async () => {
-    search = 'page=1';
+    search = 'page=2';
     serve(mockApi, feedPage([today2], { totalElements: 45, totalPages: 3 }), 0);
     renderWithQuery(<NotificationsPage />);
     await screen.findByText('Sync done');
@@ -188,7 +188,7 @@ describe('NotificationsPage', () => {
     expect(push).toHaveBeenCalledWith('/notifications', { scroll: false });
     push.mockClear();
     fireEvent.click((await screen.findAllByRole('button', { name: 'Next page' }))[1]);
-    expect(push).toHaveBeenCalledWith('/notifications?page=1', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/notifications?page=2', { scroll: false });
   });
 
   it('no pager for a single page', async () => {

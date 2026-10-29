@@ -33,7 +33,7 @@ describe('tradebook URL state', () => {
   });
 
   it('reads every filter and ignores junk', () => {
-    expect(parseTradebookUrl({ q: ' tcs ', broker: 'b1', type: 'sell', fy: '2026', page: '2', size: '50' })).toEqual({
+    expect(parseTradebookUrl({ q: ' tcs ', broker: 'b1', type: 'sell', fy: '2026', page: '3', size: '50' })).toEqual({
       q: 'tcs',
       broker: 'b1',
       type: 'sell',
@@ -52,13 +52,13 @@ describe('tradebook URL state', () => {
 
   it('keeps defaults out of the URL and round-trips the rest', () => {
     expect(tradebookUrl(parseTradebookUrl({}))).toBe('/investments/tradebook');
-    const state = parseTradebookUrl({ q: 'tcs', broker: 'b1', type: 'buy', fy: '2025', page: '1', size: '100' });
-    expect(tradebookUrl(state)).toBe('/investments/tradebook?q=tcs&broker=b1&type=buy&fy=2025&page=1&size=100');
+    const state = parseTradebookUrl({ q: 'tcs', broker: 'b1', type: 'buy', fy: '2025', page: '2', size: '100' });
+    expect(tradebookUrl(state)).toBe('/investments/tradebook?q=tcs&broker=b1&type=buy&fy=2025&page=2&size=100');
     expect(parseTradebookUrl(Object.fromEntries(new URL(tradebookUrl(state), 'http://x').searchParams))).toEqual(state);
   });
 
   it('asks the server for the newest trades first with every filter', () => {
-    expect(tradebookQuery(parseTradebookUrl({ q: 'tcs', broker: 'b1', type: 'sell', fy: '2026', page: '1' }))).toEqual({
+    expect(tradebookQuery(parseTradebookUrl({ q: 'tcs', broker: 'b1', type: 'sell', fy: '2026', page: '2' }))).toEqual({
       search: 'tcs',
       brokerAccountId: 'b1',
       type: 'sell',
@@ -73,7 +73,7 @@ describe('tradebook URL state', () => {
 
   it('knows when a filter is on', () => {
     expect(isTradebookFiltered(parseTradebookUrl({}))).toBe(false);
-    expect(isTradebookFiltered(parseTradebookUrl({ page: '3', size: '50' }))).toBe(false);
+    expect(isTradebookFiltered(parseTradebookUrl({ page: '4', size: '50' }))).toBe(false);
     for (const p of [{ q: 'a' }, { broker: 'b' }, { type: 'buy' }, { fy: '2025' }, { fy: 'all' }]) expect(isTradebookFiltered(parseTradebookUrl(p))).toBe(true);
   });
 });

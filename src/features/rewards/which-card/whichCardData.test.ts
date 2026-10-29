@@ -33,17 +33,20 @@ describe('loadWhichCardData', () => {
     ]);
     categories.mockResolvedValue([{ id: 'c2', name: 'Fuel' }, { id: 'c1', name: 'Dining' }]);
     expect(await loadWhichCardData()).toEqual({
-      cards: [{ id: 'a', name: 'HDFC' }],
-      categories: [{ id: 'c1', name: 'Dining' }, { id: 'c2', name: 'Fuel' }],
+      ok: true,
+      data: {
+        cards: [{ id: 'a', name: 'HDFC' }],
+        categories: [{ id: 'c1', name: 'Dining' }, { id: 'c2', name: 'Fuel' }],
+      },
     });
   });
 
-  it('is null when either request fails', async () => {
+  it('is not ok when either request fails', async () => {
     accounts.mockRejectedValue(new Error('boom'));
     categories.mockResolvedValue([]);
-    expect(await loadWhichCardData()).toBeNull();
+    expect(await loadWhichCardData()).toMatchObject({ ok: false });
     accounts.mockResolvedValue([]);
     categories.mockRejectedValue(new Error('boom'));
-    expect(await loadWhichCardData()).toBeNull();
+    expect(await loadWhichCardData()).toMatchObject({ ok: false });
   });
 });

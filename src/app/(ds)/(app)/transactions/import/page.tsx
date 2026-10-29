@@ -4,6 +4,8 @@ import React from 'react';
 
 import { buildJobsQueryParams } from '@/features/jobs/jobUtils';
 import { guardSession } from '@/features/shell/loadHelpers';
+import { clampPage } from '@/features/shell/pagination';
+import { first, type SearchParams } from '@/features/shell/searchParams';
 import { IMPORT_JOB_TYPE, importUrl, parseImportPage, RECENT_IMPORTS_SIZE, recentImportsSince } from '@/features/transactions/import/importModel';
 import { ImportScreen } from '@/features/transactions/import/ImportScreen';
 import { accountsApi, jobsApi } from '@/lib/apiClient';
@@ -11,17 +13,19 @@ import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
 import { getQueryClient, keys } from '@/lib/query';
 
+export const metadata = { title: 'Import' };
+
 /** /transactions/import: the accounts and the latest imports are fetched here, so the first paint needs no request. */
 export default async function DsImportPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
   await requireAuth();
-  const requested = (await searchParams).account;
-  const initialAccountId = Array.isArray(requested) ? requested[0] : requested;
+  const params = await searchParams;
+  const initialAccountId = first(params.account);
   const since = recentImportsSince(todayInAppZone());
-  const page = parseImportPage((await searchParams).page);
+  const page = parseImportPage(params);
   const query = (p: number) => buildJobsQueryParams({ page: p, size: RECENT_IMPORTS_SIZE, statusFilter: '', typeFilter: IMPORT_JOB_TYPE, since });
   const recent = query(page);
   const newest = query(0);
@@ -32,7 +36,7 @@ export default async function DsImportPage({
   // A page past the last one (jobs aged out of the 30 days): go to the last page instead.
   const totalPages = jobs.totalPages ?? 0;
   if (page > 0 && jobs.content?.length === 0 && totalPages > 0 && page >= totalPages) {
-    redirect(importUrl({ page: totalPages - 1, account: initialAccountId }));
+    redirect(importUrl({ page: clampPage(page, totalPages), account: initialAccountId }));
   }
 
   const queryClient = getQueryClient();

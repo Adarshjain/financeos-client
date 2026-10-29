@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Banner, Card, Skeleton } from '@/components/ds';
+import { Card, Skeleton } from '@/components/ds';
+import { LoadError } from '@/features/shell/LoadError';
 
 import { LocalFailuresCard } from './LocalFailuresCard';
 import { LookupCard } from './LookupCard';
@@ -21,7 +22,7 @@ interface DebugViewProps {
 /** The Debug tab: the admin lookup, its results, and this device's recent failures. */
 export function DebugView({ initialRef = '', initialType = 'auto', admin }: DebugViewProps) {
   const { currentRef, currentType, search, select } = useDebugRef(initialRef, initialType, admin);
-  const { data, isLoading, isError, error } = useDiagnosticsLookup(currentRef, currentType, admin);
+  const { data, isLoading, isError, refetch } = useDiagnosticsLookup(currentRef, currentType, admin);
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
@@ -45,9 +46,7 @@ export function DebugView({ initialRef = '', initialType = 'auto', admin }: Debu
       ) : null}
 
       {admin && isError ? (
-        <Banner tone="danger" title="Couldn't look up that reference">
-          {error instanceof Error ? error.message : "Couldn't load diagnostic data. Try again."}
-        </Banner>
+        <LoadError what="that reference" retry={() => void refetch()} />
       ) : null}
 
       {admin && data && !isLoading ? (
