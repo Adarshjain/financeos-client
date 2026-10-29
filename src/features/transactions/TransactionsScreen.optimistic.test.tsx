@@ -314,7 +314,7 @@ describe('TransactionsScreen instant category and edit', () => {
     setup();
     expect(present('Groceries')).toBe(true);
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
+    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set category' })).toBeNull());
@@ -328,7 +328,7 @@ describe('TransactionsScreen instant category and edit', () => {
     update.mockResolvedValue({});
     setup();
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
+    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved'));
@@ -423,7 +423,7 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
   ];
   const pickGroceries = async () => {
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(screen.getByRole('combobox', { name: /^Categories/ }));
+    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
     fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
   };

@@ -12,6 +12,7 @@ export function useReportCatalog(enabled = true) {
     queryKey: keys.reports.catalog(),
     queryFn: () => unwrapAction(loadReportCatalog()),
     staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
     enabled,
   });
 }

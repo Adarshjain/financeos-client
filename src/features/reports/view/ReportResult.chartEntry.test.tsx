@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -40,9 +40,10 @@ const press = (entry: { key: string; label: string; seriesKey?: string; value: n
 beforeEach(() => chart.mockClear());
 
 describe('a chart entry press', () => {
-  it('reports the category index and the series name', () => {
+  it('reports the category index and the series name', async () => {
     const open = vi.fn();
     render(<ReportResult data={data} definition={definition} onOpenChartEntry={open} />);
+    await waitFor(() => expect(chart).toHaveBeenCalled());
     press({ key: 'Rent', label: 'Rent', seriesKey: 'CREDIT', value: 4 });
     expect(open).toHaveBeenCalledWith(1, 'CREDIT');
   });

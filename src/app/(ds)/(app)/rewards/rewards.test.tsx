@@ -307,7 +307,7 @@ describe('/rewards/cards/[accountId]', () => {
   it('opens a rule of this account in the rule dialog in place (Edit, no Delete or Clone), and closes it', async () => {
     await renderCard();
     fireEvent.click(screen.getByRole('button', { name: /^5X/ }));
-    const dialog = screen.getByRole('dialog', { name: 'Edit rule' });
+    const dialog = await screen.findByRole('dialog', { name: 'Edit rule' });
     expect(within(dialog).getByText('Editing 5X')).toBeDefined();
     expect(push).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));

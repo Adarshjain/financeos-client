@@ -15,11 +15,11 @@ vi.mock('./AddLendingDialog', () => ({
 
 function Opener() {
   const { open } = useAddLending();
-  return <button onClick={open}>open lending</button>;
+  return <button onClick={() => void open()}>open lending</button>;
 }
 
 describe('AddLendingProvider', () => {
-  it('opens the dialog from state wherever the page asks, and closes it again', () => {
+  it('opens the dialog from state wherever the page asks, and closes it again', async () => {
     render(
       <AddLendingProvider>
         <Opener />
@@ -27,7 +27,7 @@ describe('AddLendingProvider', () => {
     );
     expect(screen.queryByText('lending dialog')).toBeNull();
     fireEvent.click(screen.getByText('open lending'));
-    expect(screen.getByText('lending dialog')).toBeInTheDocument();
+    expect(await screen.findByText('lending dialog')).toBeInTheDocument();
     fireEvent.click(screen.getByText('close lending'));
     expect(screen.queryByText('lending dialog')).toBeNull();
   });

@@ -21,6 +21,7 @@ import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { accrualSummary } from '@/features/rewards/rules/manager/managerModel';
 import { useEndDateAndClone } from '@/features/rewards/rules/useEndDateAndClone';
 import { formatDateRange } from '@/lib/date-range';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { RewardRule } from '@/lib/rewards.types';
@@ -28,9 +29,10 @@ import { AccountType } from '@/lib/types';
 
 import { appliesTo, capWords, isEnded, ruleSubtitle, type RulesUsage } from '../rulesPageModel';
 import { useRefreshUsage } from '../rulesRefresh';
-import { ReorderRulesDialog } from './ReorderRulesDialog';
-import { RuleDialog } from './RuleDialog';
-import { TestTransactionDialog } from './TestTransactionDialog';
+
+const loadRuleDialog = () => import('./RuleDialog').then((m) => m.RuleDialog);
+const loadReorderDialog = () => import('./ReorderRulesDialog').then((m) => m.ReorderRulesDialog);
+const loadTestDialog = () => import('./TestTransactionDialog').then((m) => m.TestTransactionDialog);
 
 type Open = { mode: 'new' } | { mode: 'edit'; rule: RewardRule } | { mode: 'clone'; rule: RewardRule } | null;
 
@@ -142,16 +144,21 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   const remove = useDeleteRewardRule();
   const refresh = useRefreshUsage();
   const [open, setOpen] = React.useState<Open>(null);
+  // The rule editor, Reorder and Test transaction are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
+  const { Component: ReorderRulesDialog, run: runReorder } = useLazyDialog(loadReorderDialog);
+  const { Component: TestTransactionDialog, run: runTest } = useLazyDialog(loadTestDialog);
+  const openRule = (next: NonNullable<Open>) => void runRule(() => setOpen(next));
   const [reordering, setReordering] = React.useState(false);
   const [testing, setTesting] = React.useState(false);
   const [deleting, setDeleting] = React.useState<RewardRule | null>(null);
   const [menu, setMenu] = React.useState<{ rule: RewardRule; point: { x: number; y: number } } | null>(null);
   const endAndClone = useEndDateAndClone((updated) => {
     refresh();
-    setOpen({ mode: 'clone', rule: updated });
+    openRule({ mode: 'clone', rule: updated });
   }, dsRewardNotifier);
   // The top bar's + opens a new rule while this card is shown.
-  useRewardsAdd(() => setOpen({ mode: 'new' }), Boolean(accountId));
+  useRewardsAdd(() => openRule({ mode: 'new' }), Boolean(accountId));
 
   const isBank = account?.type === AccountType.BANK_ACCOUNT;
   const cardholders = account && 'cardholders' in account ? (account.cardholders ?? []) : [];
@@ -200,12 +207,12 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       action={
         <div className="flex items-center gap-space-12">
           <Text variant="label" as="div">
-            <Button variant="link" size="sm" disabled={!accountId} onClick={() => setTesting(true)}>
+            <Button variant="link" size="sm" disabled={!accountId} onClick={() => void runTest(() => setTesting(true))}>
               Test
             </Button>
           </Text>
           <Text variant="label" as="div">
-            <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => setReordering(true)}>
+            <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => void runReorder(() => setReordering(true))}>
               Reorder
             </Button>
           </Text>
@@ -216,7 +223,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         columns={columns}
         data={rows}
         getRowId={(r) => r.id}
-        onRowSelect={(r, point) => (point ? setMenu({ rule: r.rule, point }) : setOpen({ mode: 'edit', rule: r.rule }))}
+        onRowSelect={(r, point) => (point ? setMenu({ rule: r.rule, point }) : openRule({ mode: 'edit', rule: r.rule }))}
         phoneSub={(r) => r.phoneSub}
         rowState={(r) => (r.ended ? { muted: true } : undefined)}
         empty={
@@ -228,7 +235,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         }
       />
 
-      {open ? (
+      {open && RuleDialog ? (
         <RuleDialog
           key={open.mode === 'new' ? 'new' : `${open.mode}:${open.rule.id}`}
           accountId={accountId}
@@ -252,8 +259,8 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         items={
           menu
             ? [
-                { id: 'edit', label: 'Edit', onSelect: () => setOpen({ mode: 'edit', rule: menu.rule }) },
-                { id: 'clone', label: 'Clone', onSelect: () => setOpen({ mode: 'clone', rule: menu.rule }) },
+                { id: 'edit', label: 'Edit', onSelect: () => openRule({ mode: 'edit', rule: menu.rule }) },
+                { id: 'clone', label: 'Clone', onSelect: () => openRule({ mode: 'clone', rule: menu.rule }) },
                 ...(isEnded(menu.rule, today)
                   ? []
                   : [{ id: 'end-clone', label: 'End & clone', onSelect: () => endAndClone(menu.rule) }]),
@@ -263,8 +270,8 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         }
       />
 
-      {reordering ? <ReorderRulesDialog accountId={accountId} rules={rules} onClose={() => setReordering(false)} /> : null}
-      {testing ? (
+      {reordering && ReorderRulesDialog ? <ReorderRulesDialog accountId={accountId} rules={rules} onClose={() => setReordering(false)} /> : null}
+      {testing && TestTransactionDialog ? (
         <TestTransactionDialog accountId={accountId} categories={categories} today={today} onClose={() => setTesting(false)} />
       ) : null}
 

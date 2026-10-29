@@ -86,7 +86,7 @@ describe('/reports/[id]', () => {
     expect(loadSavedReport).toHaveBeenCalledTimes(1);
     expect(loadSavedReport).toHaveBeenCalledWith('r1');
     expect(screen.getByLabelText('Report name')).toHaveValue('Spend by category');
-    expect(screen.getByTestId('chart')).toBeInTheDocument();
+    expect(await screen.findByTestId('chart')).toBeInTheDocument();
     expect(api.POST).not.toHaveBeenCalled();
     expect(api.GET).not.toHaveBeenCalledWith('/api/v1/reports/{id}', expect.anything());
   });

@@ -7,7 +7,6 @@
 import React from 'react';
 
 import { Button, Text } from '@/components/ds';
-import { Chart } from '@/components/organisms';
 import { buildHeaderModel } from '@/features/accounts/detail/overview/headerModel';
 import { BuiltinError, BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import { stringParam } from '@/features/dashboards/builtins/subtitlesModel';
@@ -16,6 +15,7 @@ import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/Lazy
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
 import { useBalanceSeries } from '@/lib/query/hooks/useBalanceSeries';
 import { AccountType } from '@/lib/types';

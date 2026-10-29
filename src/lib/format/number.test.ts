@@ -97,3 +97,11 @@ describe('formatCompact', () => {
     expect(formatCompact(Infinity)).toBe('');
   });
 });
+
+describe('formatQuantity formatter cache', () => {
+  it('keeps each max-decimals setting independent across calls', () => {
+    expect(formatQuantity(1.23456, 2)).toBe('1.23');
+    expect(formatQuantity(1.23456, 4)).toBe('1.2346');
+    expect(formatQuantity(1.23456, 2)).toBe('1.23');
+  });
+});

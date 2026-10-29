@@ -15,7 +15,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationFeed: () => ({ data: undefined, isLoading: false, error: null, refetch: vi.fn() }),
   useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
 }));
-vi.mock('@/components/organisms', async (orig) => ({ ...(await orig<typeof import('@/components/organisms')>()), Chart: () => <div>chart</div> }));
+vi.mock('@/components/organisms/Chart/Chart', () => ({ Chart: () => <div>chart</div> }));
 
 const actions = vi.hoisted(() => ({ rename: vi.fn(), remove: vi.fn() }));
 vi.mock('./conversationActions', () => ({ renameConversation: actions.rename, deleteConversation: actions.remove }));

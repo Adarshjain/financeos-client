@@ -2,7 +2,6 @@ export * from './AccountPicker/AccountPicker';
 export * from './Amount/Amount';
 export * from './AmountField/AmountField';
 export * from './BankLogo/BankLogo';
-export * from './Chart/Chart';
 export * from './ErrorState/ErrorState';
 export * from './Illustration/Illustration';
 export * from './JobsHistory/JobsHistory';

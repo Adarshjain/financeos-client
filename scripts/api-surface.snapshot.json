@@ -32,6 +32,7 @@
     "reportsApi",
     "rewardsApi",
     "rulesApi",
+    "shellApi",
     "statementsApi",
     "transactionLinksApi",
     "transactionsApi"
@@ -332,6 +333,7 @@
       "batchDelete",
       "batchReview",
       "bulkReattributeCard",
+      "count",
       "create",
       "delete",
       "merge",
@@ -371,6 +373,9 @@
     "inboxApi": [
       "list",
       "summary"
+    ],
+    "shellApi": [
+      "counts"
     ],
     "notificationFeedApi": [
       "feed",

@@ -55,6 +55,11 @@ export const keys = {
     summary: () => [...keys.inbox.all, 'summary'] as const,
   },
 
+  /** GET /shell/counts: the one poll that seeds the inbox, notifications and needs-review count keys. */
+  shell: {
+    counts: () => ['shell', 'counts'] as const,
+  },
+
   notifications: {
     all: ['notifications'] as const,
     feed: (page: number, size: number) => [...keys.notifications.all, 'feed', page, size] as const,

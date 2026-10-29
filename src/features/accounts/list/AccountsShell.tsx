@@ -8,9 +8,9 @@ import { ShellPage } from '@/features/shell/ShellPage';
 
 /** The Accounts list page shell: the app bar + opens Add account in place (inside AccountDialogs). */
 export function AccountsShell({ children }: { children: React.ReactNode }) {
-  const { open } = useAccountDialogs();
+  const { open, loading } = useAccountDialogs();
   return (
-    <ShellPage crumb={areaCrumb('accounts')} title="Accounts" onAdd={() => open()} addLabel="Add account">
+    <ShellPage crumb={areaCrumb('accounts')} title="Accounts" onAdd={() => open()} addLoading={loading} addLabel="Add account">
       {children}
     </ShellPage>
   );

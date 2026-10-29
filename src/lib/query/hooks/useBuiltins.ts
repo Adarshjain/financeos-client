@@ -25,6 +25,7 @@ export function useBuiltins(enabled = true) {
     queryKey: keys.dashboards.builtins(),
     queryFn: fetchBuiltins,
     staleTime: BUILTINS_STALE_TIME,
+    refetchOnWindowFocus: false,
     enabled,
   });
 }

@@ -23,14 +23,30 @@ import { fetchEpfEmployers, fetchEpfEntries, fetchEpfFys, fetchEpfSummary } from
 export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfScreenProps>> {
   const today = todayInAppZone();
 
+  // The employer is known up front only for 'all'; the FY only when the address names it. What is known starts with
+  // the summary and the employers (a failure there is still reported first, below, as before).
+  const early = <T,>(request: Promise<T>): Promise<T> => {
+    request.catch(() => undefined);
+    return request;
+  };
+  const fyKnown = state.fy !== null;
+  const entriesFor = (employerId: string | undefined, fy: number | undefined) =>
+    loaded(fetchEpfEntries({ employerId, fy, page: state.page, size: state.size }));
+  const employerKnown = state.employer === 'all';
+  const earlyFys = employerKnown ? early(orNull(fetchEpfFys(undefined))) : null;
+  const earlyEntries = employerKnown && fyKnown ? early(entriesFor(undefined, effectiveFy(state, []))) : null;
+
   const [summary, employers] = await Promise.all([loaded(fetchEpfSummary()), loaded(fetchEpfEmployers())]);
   if (!summary.ok) return summary;
   if (!employers.ok) return employers;
   const employer = effectiveEmployer(state, employers.data);
 
-  const fys = (await orNull(fetchEpfFys(employer?.id))) ?? [];
+  // Past the employers: the FY list and, when the address names the FY, the entries need nothing from each other.
+  const fysRequest = earlyFys ?? early(orNull(fetchEpfFys(employer?.id)));
+  const entriesRequest = earlyEntries ?? (fyKnown ? early(entriesFor(employer?.id, effectiveFy(state, []))) : null);
+  const fys = (await fysRequest) ?? [];
   const fy = effectiveFy(state, fys);
-  const list = await loaded(fetchEpfEntries({ employerId: employer?.id, fy, page: state.page, size: state.size }));
+  const list = await (entriesRequest ?? entriesFor(employer?.id, fy));
   if (!list.ok) return list;
   const page = list.data;
   // A page past the end (a stale address) shows the last page instead of an empty one.

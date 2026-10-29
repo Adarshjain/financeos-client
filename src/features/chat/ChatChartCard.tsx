@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Card } from '@/components/ds';
-import { Chart } from '@/components/organisms';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 
 import type { ChatChartBlock } from './chat.types';
 

@@ -18,7 +18,7 @@ vi.mock('@/features/reports/underlying/ReportUnderlyingDialog', () => ({
     </div>
   ),
 }));
-vi.mock('@/components/organisms', () => ({
+vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: ({ data }: { data: { categories: string[]; series: { data: (number | null)[] }[] } }) => (
     <div data-testid="chart" data-categories={data.categories.join(',')} data-values={JSON.stringify(data.series[0].data)} />
   ),

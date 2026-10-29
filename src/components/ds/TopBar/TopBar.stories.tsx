@@ -98,6 +98,7 @@ export const WithNotifications: Story = {
         dot: true,
         popover: {
           onOpenChange: fn(),
+          onWarm: fn(),
           content: (
             <div className="w-72">
               <ListRow title="HDFC Regalia bill due" subtitle="₹12,450 due in 3 days" />
@@ -111,6 +112,14 @@ export const WithNotifications: Story = {
         },
       },
     ],
+  },
+};
+
+export const LoadingAction: Story = {
+  args: {
+    crumb: 'Money',
+    title: 'Transactions',
+    actions: [{ id: 'add', icon: 'add', label: 'Add', variant: 'primary', showLabel: true, labelIconSize: 'xs', loading: true, onSelect: fn() }],
   },
 };
 

@@ -7,10 +7,11 @@ import { Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Filt
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
-import { LoanFormDialog } from '../form/LoanFormDialog';
+import { loadLoanFormDialog } from '../lazyDialogs';
 import { loadClosedLoans } from './closedLoanActions';
 import {
   type LoanRow,
@@ -96,6 +97,7 @@ export interface LoansListCardProps {
 export function LoansListCard({ state, rows, totalElements, totalPages, closedLine }: LoansListCardProps) {
   const router = useRouter();
   const [adding, setAdding] = React.useState(false);
+  const { Component: LoanFormDialog, run: runLoan } = useLazyDialog(loadLoanFormDialog);
   const go = (next: Partial<LoansUrlState>) => router.push(loansUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   // The closed rows belong to the search and the server data they were loaded for: a new search or a
@@ -175,7 +177,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
               <EmptyState
                 title="No loans yet"
                 description="Add a loan to track its EMIs."
-                action={{ label: 'Add loan', variant: 'primary', onSelect: () => setAdding(true) }}
+                action={{ label: 'Add loan', variant: 'primary', onSelect: () => void runLoan(() => setAdding(true)) }}
               />
             )
           }
@@ -183,7 +185,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
         />
         <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} />
       </Card>
-      {adding ? <LoanFormDialog onClose={() => setAdding(false)} /> : null}
+      {adding && LoanFormDialog ? <LoanFormDialog onClose={() => setAdding(false)} /> : null}
     </div>
   );
 }

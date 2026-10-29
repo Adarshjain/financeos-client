@@ -3,9 +3,10 @@
 import React from 'react';
 
 import { Button, Card, Dialog, Select, showToast, Text, TextField } from '@/components/ds';
-import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
+import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { formatDate, formatMoney } from '@/lib/format';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { accountAnniversaryDate, type RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -38,6 +39,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
   const account = useAccounts().data?.find((a) => a.id === accountId);
   const [editing, setEditing] = React.useState(false);
   const [editingCard, setEditingCard] = React.useState(false);
+  const accountForm = useLazyDialog(loadAccountForm);
   const anniversary = accountAnniversaryDate(account);
   const cash = (config?.defaultRewardType ?? 'CASH') === 'CASH';
 
@@ -68,7 +70,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
           <Text variant="body-strong">{anniversary ? formatDate(anniversary, 'full') : 'Not set'}</Text>
           {account ? (
             <Text variant="label" as="div">
-              <Button variant="link" size="sm" onClick={() => setEditingCard(true)}>
+              <Button variant="link" size="sm" loading={accountForm.loading} onPointerDown={accountForm.preload} onClick={() => void accountForm.run(() => setEditingCard(true))}>
                 Edit
               </Button>
             </Text>
@@ -84,7 +86,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
           onClose={() => setEditing(false)}
         />
       ) : null}
-      {editingCard && account ? <AccountFormDialog account={account} onClose={() => setEditingCard(false)} /> : null}
+      {editingCard && account && accountForm.Component ? <accountForm.Component account={account} onClose={() => setEditingCard(false)} /> : null}
     </Card>
   );
 }

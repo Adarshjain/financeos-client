@@ -5,7 +5,7 @@ import { rewardsApi } from '@/lib/apiClient';
 import { accountAnniversaryDate, type PagedRewardLines, type RewardReport, type RewardRule } from '@/lib/rewards.types';
 
 import { clampedPage, parseRewardsQuery, type RewardsQuery } from './rewardsModel';
-import { resolvePeriod } from './rewardsPeriodModel';
+import { DEFAULT_PERIOD, resolvePeriod } from './rewardsPeriodModel';
 
 export interface RewardsTabData {
   window: RewardsWindow;
@@ -38,15 +38,36 @@ export async function loadRewardsTabData(
 ): Promise<RewardsTabData> {
   const accountId = account.id;
   const rulesPending = Promise.allSettled([rewardsApi.listRules(accountId)]);
-  const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
-  const mine = totals?.find((t) => t.accountId === accountId);
   const anniversary = accountAnniversaryDate(account);
-  const reportYear: RewardsWindow = mine
-    ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
-    : rewardsWindowFor(anniversary, today);
   // The period is read from the address before the first fetch, so a chosen period never loads twice.
-  const window = resolvePeriod(parseRewardsQuery(params, []), reportYear, today, anniversary);
-  const reportPending = Promise.allSettled([rewardsApi.getReport(accountId, window.from, window.to)]);
+  const asked = parseRewardsQuery(params, []);
+  // Most periods are dates computed from today (or both ends of a custom range). The default period is the card's
+  // current reward year: a report asked for without dates answers with it (and says which), so that one call is both.
+  // Only the previous reward year and an open custom range still need the all-cards totals to find the year.
+  const independent = asked.period != null && asked.period !== 'LAST_ANNIVERSARY_YEAR' && (asked.period !== 'CUSTOM' || (asked.from != null && asked.to != null));
+  const isDefault = !independent && (asked.period ?? DEFAULT_PERIOD) === 'THIS_ANNIVERSARY_YEAR';
+  let reportYear: RewardsWindow;
+  let defaultReport: Promise<PromiseSettledResult<RewardReport>[]> | null = null;
+  if (independent) {
+    reportYear = rewardsWindowFor(anniversary, today);
+  } else if (isDefault) {
+    const first = await Promise.allSettled([rewardsApi.getReport(accountId)]);
+    const report = ok(first[0]);
+    if (report?.windowFrom && report.windowTo) {
+      reportYear = { from: report.windowFrom, to: report.windowTo, calendarYear: report.calendarYearFallback ?? false };
+      defaultReport = Promise.resolve(first);
+    } else {
+      reportYear = rewardsWindowFor(anniversary, today);
+    }
+  } else {
+    const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
+    const mine = totals?.find((t) => t.accountId === accountId);
+    reportYear = mine
+      ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
+      : rewardsWindowFor(anniversary, today);
+  }
+  const window = resolvePeriod(asked, reportYear, today, anniversary);
+  const reportPending = defaultReport ?? Promise.allSettled([rewardsApi.getReport(accountId, window.from, window.to)]);
   const rules = ok((await rulesPending)[0]);
   let query = parseRewardsQuery(params, (rules ?? []).map((r) => r.id));
   const fetchLines = (page: number) =>

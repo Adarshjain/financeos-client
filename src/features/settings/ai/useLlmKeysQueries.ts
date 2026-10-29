@@ -22,6 +22,8 @@ export function useLlmKeysQueries() {
   const catalogQuery = useQuery({
     queryKey: keys.settings.llmCatalog(),
     queryFn: () => unwrapAction(loadLlmCatalog()),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const routingOptionsQuery = useQuery({

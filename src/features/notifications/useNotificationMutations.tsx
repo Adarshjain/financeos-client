@@ -77,14 +77,22 @@ const NONE: ReadonlySet<string> = new Set();
  * it keeps the rows that were unread highlighted, then marks everything shown as read.
  */
 export function useNotificationsAction(): TopBarAction {
-  const { data: summary } = useNotificationSummary();
-  const feed = useNotificationFeed(0, DROPDOWN_SIZE);
+  const { data: summary } = useNotificationSummary({ shell: true });
+  // The feed is fetched once the dropdown opens (or the bell is hovered/focused), not on every page.
+  const [open, setOpen] = React.useState(false);
+  const feed = useNotificationFeed(0, DROPDOWN_SIZE, open);
   const { markRead } = useFeedMutations();
   const [highlighted, setHighlighted] = React.useState<ReadonlySet<string>>(NONE);
   const unread = summary?.unread ?? 0;
 
-  const onOpenChange = async (open: boolean) => {
-    if (!open) return;
+  // refetch() works while the query is disabled; skip it when a fresh copy is cached or one is already on its way.
+  const warm = () => {
+    if ((!feed.data || feed.isStale) && !feed.isFetching) void feed.refetch({ cancelRefetch: false });
+  };
+
+  const onOpenChange = async (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) return;
     const unreadIds = (rows: { id: string; read: boolean }[]) => new Set(rows.filter((n) => !n.read).map((n) => n.id));
     // Highlight from the cache at once, then look again for new arrivals before deciding what was unread.
     setHighlighted(unreadIds(feed.data?.content ?? []));
@@ -98,6 +106,6 @@ export function useNotificationsAction(): TopBarAction {
     icon: 'notifications',
     label: 'Notifications',
     dot: unread > 0,
-    popover: { content: <NotificationsDropdown highlightedIds={highlighted} />, onOpenChange },
+    popover: { content: <NotificationsDropdown highlightedIds={highlighted} />, onOpenChange, onWarm: warm },
   };
 }

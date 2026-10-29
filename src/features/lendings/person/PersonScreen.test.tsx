@@ -139,24 +139,24 @@ describe('header', () => {
     expect(screen.queryByRole('button', { name: 'Settle up' })).toBeNull();
   });
 
-  it('Settle up opens the sheet for this person with the direction and balance', () => {
+  it('Settle up opens the sheet for this person with the direction and balance', async () => {
     renderView();
     fireEvent.click(screen.getByRole('button', { name: 'Settle up' }));
-    expect(screen.getByText('settle Rahul Sharma lent 15000')).toBeInTheDocument();
+    expect(await screen.findByText('settle Rahul Sharma lent 15000')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'recorded' }));
     expect(router.refresh).toHaveBeenCalled();
   });
 
-  it('opens the sheet from the owing side when you owe them', () => {
+  it('opens the sheet from the owing side when you owe them', async () => {
     renderView({ cp: personFixture({ netPosition: -400 }) });
     fireEvent.click(screen.getByRole('button', { name: 'Settle up' }));
-    expect(screen.getByText('settle Rahul Sharma borrowed 400')).toBeInTheDocument();
+    expect(await screen.findByText('settle Rahul Sharma borrowed 400')).toBeInTheDocument();
   });
 
-  it('the top bar + opens Record ledger entry with this person already picked', () => {
+  it('the top bar + opens Record ledger entry with this person already picked', async () => {
     renderView();
     fireEvent.click(topBarAdd());
-    expect(screen.getByText('add entry for Rahul Sharma')).toBeInTheDocument();
+    expect(await screen.findByText('add entry for Rahul Sharma')).toBeInTheDocument();
   });
 });
 

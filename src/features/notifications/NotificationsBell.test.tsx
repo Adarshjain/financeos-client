@@ -99,6 +99,19 @@ describe('Notifications bell', () => {
     await waitFor(() => expect(screen.queryByText('Import failed')).not.toBeInTheDocument());
   });
 
+  it('does not fetch the feed until the bell is warmed or opened', async () => {
+    serve(mockApi, feedPage([readRow]), 0);
+    renderWithQuery(<Bar />);
+    await waitFor(() => expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed/summary'));
+    await new Promise((r) => setTimeout(r, 20));
+    const feedCalls = () => mockApi.GET.mock.calls.filter(([path]) => String(path).endsWith('/notifications/feed')).length;
+    expect(feedCalls()).toBe(0);
+    fireEvent.pointerEnter(bell());
+    await waitFor(() => expect(feedCalls()).toBe(1));
+    fireEvent.click(bell());
+    expect(await screen.findByText('Sync done')).toBeInTheDocument();
+  });
+
   it('dropdown empty state', async () => {
     serve(mockApi, feedPage([]), 0);
     renderWithQuery(<Bar />);

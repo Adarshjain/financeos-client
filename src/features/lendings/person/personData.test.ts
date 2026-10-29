@@ -60,7 +60,23 @@ describe('loadPersonPage', () => {
     get.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'no', timestamp: 'x' }));
     await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
     expect(notFound).toHaveBeenCalled();
-    expect(ledger).not.toHaveBeenCalled();
+  });
+
+  it('starts the person and the ledger together, before either resolves', async () => {
+    let releaseGet!: (v: unknown) => void;
+    get.mockReturnValue(new Promise((r) => (releaseGet = r)));
+    const pending = loadPersonPage('p1', { page: 0, size: 3 });
+    await Promise.resolve();
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(ledger).toHaveBeenCalledTimes(1);
+    releaseGet(personFixture({ entryCount: 4 }));
+    await expect(pending).resolves.toMatchObject({ state: { page: 0, size: 3 } });
+  });
+
+  it('keeps the 404 of the person when the ledger fails too', async () => {
+    get.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'no', timestamp: 'x' }));
+    ledger.mockRejectedValue(new ApiError(500, { code: 'X', message: 'boom', timestamp: 'x' }));
+    await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
   });
 
   it('is a 404 too when the server rejects the id itself (400)', async () => {

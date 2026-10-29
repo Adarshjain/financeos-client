@@ -1,6 +1,9 @@
 import { formatMoney } from '@/lib/format';
 import { isMoneyField } from '@/lib/reports.helpers';
 
+const COUNT_FORMAT = new Intl.NumberFormat('en-IN');
+const DECIMALS_FORMAT = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+
 /**
  * Renders a measure value consistently across the KPI, raw-table and pivot
  * views: counts as plain integers, money as currency, everything else to two
@@ -19,12 +22,11 @@ export function formatMeasureValue(
   },
 ): string {
   if (value === null || value === undefined) return '—';
-  const decimals = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
-  if (options.aggregation === 'count') return new Intl.NumberFormat('en-IN').format(value);
+  if (options.aggregation === 'count') return COUNT_FORMAT.format(value);
   const money = options.money ?? (options.format ? options.format === 'currency' : !!options.field && isMoneyField(options.field));
   if (money) {
     return formatMoney(value, { decimals: options.wholeRupees ? 'whole' : 'exact' });
   }
-  if (options.format === 'percent') return decimals.format(value) + '%';
-  return decimals.format(value);
+  if (options.format === 'percent') return DECIMALS_FORMAT.format(value) + '%';
+  return DECIMALS_FORMAT.format(value);
 }

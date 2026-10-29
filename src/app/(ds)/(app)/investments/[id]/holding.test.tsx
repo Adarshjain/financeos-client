@@ -127,6 +127,7 @@ describe('/investments/[id]: data', () => {
     expect(server.fetchInstrumentDividends).toHaveBeenCalledWith('i-infy', 0, 10);
     expect(server.fetchInstrumentCorporateActions).toHaveBeenCalledTimes(1);
     expect(server.fetchPriceHistory).toHaveBeenCalledTimes(1);
+    expect(server.fetchPriceHistory).toHaveBeenCalledWith(expect.any(String), 200);
     expect(server.fetchPricesPage).not.toHaveBeenCalled();
     // No second read when the cards mount.
     expect(actions.loadTradesPage).not.toHaveBeenCalled();
@@ -354,6 +355,7 @@ describe('/investments/[id]: record and edit dialogs', () => {
   it('opens Record trade for the instrument from the Trades card, with no broker while two hold it', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'Record trade' })[1]);
+    await screen.findByTestId('trade-dialog');
     expect(props('trade-dialog')).toEqual({ initialInstrument: instrument });
   });
 
@@ -382,12 +384,14 @@ describe('/investments/[id]: record and edit dialogs', () => {
   it('opens Record dividend from the header menu', async () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record dividend' }));
+    await screen.findByTestId('dividend-dialog');
     expect((props('dividend-dialog').prefill as { instrumentId: string }).instrumentId).toBe('i-infy');
   });
 
   it('opens Record corporate action from the header menu', async () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record corporate action' }));
+    await screen.findByTestId('action-dialog');
     expect(props('action-dialog')).toEqual({ instrument });
   });
 
@@ -420,6 +424,7 @@ describe('/investments/[id]: record and edit dialogs', () => {
   it('opens the instrument edit dialog from the header menu', async () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Edit instrument' }));
+    await screen.findByTestId('edit-dialog');
     expect((props('edit-dialog').instrument as { id: string }).id).toBe(data.instrument?.id);
   });
 });

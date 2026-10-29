@@ -5,7 +5,6 @@ import React from 'react';
 
 import { ActionBar, Button, ConfirmDialog, GRID_GAP, Menu } from '@/components/ds';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
-import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { firstNameOf } from '@/features/lendings/settleModel';
 import { HeroBlock } from '@/features/loans/HeroBlock';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
@@ -13,11 +12,11 @@ import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatDate } from '@/lib/format';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
-import { EditEntryDialog } from './EditEntryDialog';
 import { EditPersonDialog } from './EditPersonDialog';
 import { LedgerCard } from './LedgerCard';
 import { ExpectedReturnCard, PersonDetailsCard } from './PersonCards';
@@ -50,6 +49,9 @@ export interface PersonScreenProps {
   openExport: boolean;
 }
 
+const loadSettleDialog = () => import('@/features/lendings/SettleDialog').then((m) => m.SettleDialog);
+const loadEditEntryDialog = () => import('./EditEntryDialog').then((m) => m.EditEntryDialog);
+
 /** One person: who owes whom, the ledger, expected return, matching and details, with the forms they open. */
 export function PersonScreen({ cp, ledger, state, today, myName, openExport }: PersonScreenProps) {
   const router = useRouter();
@@ -57,6 +59,9 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
   const actions = usePersonMutations(cp.id);
 
   const [settling, setSettling] = React.useState(false);
+  // Settle and Edit entry are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: SettleDialog, run: runSettle, loading: settleLoading } = useLazyDialog(loadSettleDialog);
+  const { Component: EditEntryDialog, run: runEditEntry } = useLazyDialog(loadEditEntryDialog);
   const [editingPerson, setEditingPerson] = React.useState(false);
   const [editingEntry, setEditingEntry] = React.useState<LedgerEntryResponse | null>(null);
   const [deletingEntry, setDeletingEntry] = React.useState<LedgerEntryResponse | null>(null);
@@ -82,7 +87,8 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
         }
         backHref={LENDINGS_HREF}
         addLabel="Add entry"
-        onAdd={() => addLending.openFor(cp)}
+        onAdd={() => void addLending.openFor(cp)}
+        addLoading={addLending.loading}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <HeroBlock hero={hero} error="" />
@@ -90,7 +96,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
             info={header.info}
             actions={
               cp.netPosition !== 0 ? (
-                <Button variant="secondary" onClick={() => setSettling(true)}>
+                <Button variant="secondary" loading={settleLoading} onClick={() => void runSettle(() => setSettling(true))}>
                   Settle up
                 </Button>
               ) : null
@@ -119,7 +125,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
                 totalPages={ledger.entries.totalPages}
                 onPageChange={(page) => go({ page })}
                 onSizeChange={(size) => go({ size, page: 0 })}
-                onOpenEntry={(row) => setEditingEntry(row.entry)}
+                onOpenEntry={(row) => void runEditEntry(() => setEditingEntry(row.entry))}
                 onExport={() => setExporting(true)}
               />
             </div>
@@ -143,7 +149,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
         </div>
       </ShellPage>
 
-      {settling ? (
+      {settling && SettleDialog ? (
         <SettleDialog
           open
           onOpenChange={(open) => {
@@ -166,7 +172,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
         />
       ) : null}
 
-      {editingEntry ? (
+      {editingEntry && EditEntryDialog ? (
         <EditEntryDialog
           key={editingEntry.id}
           entry={editingEntry}

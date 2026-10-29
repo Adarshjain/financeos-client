@@ -11,6 +11,9 @@ import type { CorporateActionRowModel, DividendRowModel, HoldingSection, TradeRo
 import { corporateActionsPage, dividendsSection, tradesSection } from './holdingSectionsModel';
 import { type PriceSplit, splitsOf } from './priceChartModel';
 
+/** Most price points the chart asks for; the server thins longer histories, keeping first and last. */
+const CHART_POINTS = 200;
+
 export interface HoldingPageData {
   holding: HoldingDetail;
   instrument: Instrument | null;
@@ -43,7 +46,7 @@ export const loadHoldingPage = cache(async (instrumentId: string): Promise<Holdi
     orNull(tradesSection(instrumentId, 0)),
     orNull(dividendsSection(instrumentId, 0)),
     orNull(fetchInstrumentCorporateActions(instrumentId)),
-    orNull(fetchPriceHistory(instrumentId)),
+    orNull(fetchPriceHistory(instrumentId, CHART_POINTS)),
   ]);
   if (!holding) notFound();
   return { holding, instrument, estimate, trades, dividends, corporateActions: actions && corporateActionsPage(actions, 0), splits: actions ? splitsOf(actions) : [], history };

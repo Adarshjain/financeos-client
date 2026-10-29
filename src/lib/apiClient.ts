@@ -27,6 +27,7 @@ import type {
   NotificationFeedSummary,
   NotificationSettingsResponse,
   Schemas,
+  ShellCounts,
 } from '@/lib/api/types';
 import type { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
@@ -957,8 +958,10 @@ export const instrumentsApi = {
     return data! as Instrument;
   },
   setPrice: async (id: string, body: SetPriceRequest): Promise<void> => investmentsApi.setInstrumentPrice(id, body),
-  getPriceHistory: async (id: string): Promise<PriceHistoryPoint[]> => {
-    const { data } = await serverApi.GET('/api/v1/instruments/{id}/prices', { params: { path: { id } } });
+  getPriceHistory: async (id: string, maxPoints?: number): Promise<PriceHistoryPoint[]> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/{id}/prices', {
+      params: { path: { id }, query: maxPoints ? { maxPoints } : {} },
+    });
     return (data as PriceHistoryPoint[]) || [];
   },
   pricesPage: async (instrumentId: string, params?: { page?: number; size?: number }): Promise<PricePage> =>
@@ -1354,7 +1357,8 @@ export const rewardsApi = {
   deleteMilestone: async (milestoneId: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/reward-milestones/{id}', { params: { path: { id: milestoneId } } });
   },
-  getReport: async (accountId: string, from = '', to = ''): Promise<RewardReport> => {
+  /** With `from`/`to` omitted the server reports the card's current reward year and says which in `windowFrom`/`windowTo`. */
+  getReport: async (accountId: string, from?: string, to?: string): Promise<RewardReport> => {
     const { data } = await serverApi.GET('/api/v1/rewards/report', { params: { query: { accountId, from, to } } });
     return data! as RewardReport;
   },
@@ -1472,6 +1476,11 @@ export const transactionsApi = {
       params: { query: queryParams },
     });
     return data! as PagedTransaction;
+  },
+  /** How many transactions match a search body (the same body as `search`), without fetching any rows. */
+  count: async (request: TransactionSearchRequest): Promise<number> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/count', { body: request as Schemas['TransactionSearchRequest'] });
+    return data!.count;
   },
   create: async (body: TransactionRequest): Promise<Transaction> => {
     const { data } = await serverApi.POST('/api/v1/transactions', { body: body as Schemas['CreateTransactionRequest'] });
@@ -1631,6 +1640,14 @@ export const inboxApi = {
   summary: async (): Promise<InboxSummaryResponse> => {
     const { data } = await serverApi.GET('/api/v1/inbox/summary');
     return data! as InboxSummaryResponse;
+  },
+};
+
+/** The shell's badge counts in one call; a part is null when it failed server-side. 423 when the app is locked. */
+export const shellApi = {
+  counts: async (): Promise<ShellCounts> => {
+    const { data } = await serverApi.GET('/api/v1/shell/counts');
+    return data! as ShellCounts;
   },
 };
 

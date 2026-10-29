@@ -312,7 +312,7 @@ describe('/accounts/[id]/cards', () => {
     it('edits a cardholder with the opened date, and toasts and refreshes', async () => {
       await renderPage();
       pickMenu(1, 'Edit details');
-      expect(screen.getByText('Edit cardholder')).toBeInTheDocument();
+      expect(await screen.findByText('Edit cardholder')).toBeInTheDocument();
       expect(screen.getByText('Meera Mehta · add-on on HDFC Regalia')).toBeInTheDocument();
       expect(screen.getByLabelText('Opened on')).toHaveValue('01/06/24');
 
@@ -340,7 +340,7 @@ describe('/accounts/[id]/cards', () => {
     it('fixes the primary relationship in the edit dialog', async () => {
       await renderPage();
       pickMenu(0, 'Edit details');
-      expect(screen.getByRole('combobox', { name: 'Relationship' })).toBeDisabled();
+      expect(await screen.findByRole('combobox', { name: 'Relationship' })).toBeDisabled();
       press('Save cardholder');
       await waitFor(() =>
         expect(mutate.updateCardholderMutation).toHaveBeenCalledWith({
@@ -353,7 +353,7 @@ describe('/accounts/[id]/cards', () => {
     it('replaces a card, validating the new last 4 digits first', async () => {
       await renderPage();
       fireEvent.click(screen.getAllByRole('button', { name: 'Replace' })[0]);
-      expect(screen.getByText('Replace card ••7741')).toBeInTheDocument();
+      expect(await screen.findByText('Replace card ••7741')).toBeInTheDocument();
       expect(
         screen.getByText(/The new card takes over from today\. Reward rules, caps and transaction history stay with/)
       ).toBeInTheDocument();
@@ -377,7 +377,7 @@ describe('/accounts/[id]/cards', () => {
     it('refuses an issue date in the future as it is typed', async () => {
       await renderPage();
       fireEvent.click(screen.getAllByRole('button', { name: 'Replace' })[0]);
-      fireEvent.change(screen.getByLabelText('New last 4 digits'), { target: { value: '8820' } });
+      fireEvent.change(await screen.findByLabelText('New last 4 digits'), { target: { value: '8820' } });
       fireEvent.change(screen.getByLabelText('Issued on'), { target: { value: '14/10/2026' } });
       expect(screen.getByText('Pick the issued date on or before today.')).toBeInTheDocument();
       press('Replace card');
@@ -387,7 +387,7 @@ describe('/accounts/[id]/cards', () => {
     it('closes a card with the closed date', async () => {
       await renderPage();
       fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[1]);
-      expect(screen.getByText('Close card ••7742')).toBeInTheDocument();
+      expect(await screen.findByText('Close card ••7742')).toBeInTheDocument();
       expect(
         screen.getByText('Closes this card number. Meera Mehta stays open and keeps their history.')
       ).toBeInTheDocument();
@@ -405,7 +405,7 @@ describe('/accounts/[id]/cards', () => {
     it('closes a cardholder from the footer button', async () => {
       await renderPage();
       press('Close cardholder');
-      expect(screen.getByText('Meera Mehta · add-on')).toBeInTheDocument();
+      expect(await screen.findByText('Meera Mehta · add-on')).toBeInTheDocument();
       expect(
         screen.getByText(
           'Closes Meera Mehta and every card they hold. Past transactions, caps and milestones stay.'
@@ -426,7 +426,7 @@ describe('/accounts/[id]/cards', () => {
     it('does not close with a date in the future', async () => {
       await renderPage();
       press('Close cardholder');
-      fireEvent.change(screen.getByLabelText('Closed on'), { target: { value: '20/10/2026' } });
+      fireEvent.change(await screen.findByLabelText('Closed on'), { target: { value: '20/10/2026' } });
       expect(screen.getByText('Pick the closed date on or before today.')).toBeInTheDocument();
       fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close cardholder' }));
       expect(mutate.closeCardholderMutation).not.toHaveBeenCalled();
@@ -436,7 +436,7 @@ describe('/accounts/[id]/cards', () => {
       loadCards.mockResolvedValue(data({ cardholders: [arjun, { ...meera, cards: [] }] }));
       await renderPage();
       pickMenu(1, 'Add a card');
-      expect(screen.getByText('Meera Mehta · HDFC Regalia')).toBeInTheDocument();
+      expect(await screen.findByText('Meera Mehta · HDFC Regalia')).toBeInTheDocument();
 
       press('Add card');
       expect(screen.getByText('Last 4 digits must be exactly 4 digits.')).toBeInTheDocument();
@@ -454,7 +454,7 @@ describe('/accounts/[id]/cards', () => {
     it('reassigns transactions to the holder card, with a plain Reassign button', async () => {
       await renderPage();
       pickMenu(1, 'Reassign transactions');
-      expect(screen.getByText('Move past transactions to Meera Mehta · ••7742.')).toBeInTheDocument();
+      expect(await screen.findByText('Move past transactions to Meera Mehta · ••7742.')).toBeInTheDocument();
       expect(screen.queryByText(/not attributed to a plastic/i)).toBeNull();
       fireEvent.change(screen.getByLabelText(/From date/), { target: { value: '01/06/2026' } });
       press('Reassign');
@@ -477,7 +477,7 @@ describe('/accounts/[id]/cards', () => {
       pickMenu(1, 'Reassign transactions');
       press('Reassign');
       expect(
-        screen.getByText('Target cardholder has no valid card to reassign transactions to.')
+        await screen.findByText('Target cardholder has no valid card to reassign transactions to.')
       ).toBeInTheDocument();
       expect(mutate.reattributeMutation).not.toHaveBeenCalled();
     });
@@ -486,7 +486,7 @@ describe('/accounts/[id]/cards', () => {
       loadCards.mockResolvedValue(data({ cardholders: [arjun, { ...meera, transactionCount: 0 }] }));
       await renderPage();
       pickMenu(1, 'Delete cardholder');
-      expect(screen.getByText('Delete cardholder Meera Mehta?')).toBeInTheDocument();
+      expect(await screen.findByText('Delete cardholder Meera Mehta?')).toBeInTheDocument();
       expect(mutate.deleteCardholderMutation).not.toHaveBeenCalled();
       fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }));
       await waitFor(() => expect(mutate.deleteCardholderMutation).toHaveBeenCalledWith('h2'));
@@ -496,7 +496,7 @@ describe('/accounts/[id]/cards', () => {
     it('deletes an old card through the DELETE endpoint after confirming', async () => {
       await renderPage();
       fireEvent.click(screen.getByRole('button', { name: 'Delete card ••2210' }));
-      expect(screen.getByText('Delete card ••2210?')).toBeInTheDocument();
+      expect(await screen.findByText('Delete card ••2210?')).toBeInTheDocument();
       expect(
         screen.getByText(
           'Removes this old card from Arjun Mehta’s card list. Its 41 transactions stay with Arjun Mehta. This can\'t be undone.'

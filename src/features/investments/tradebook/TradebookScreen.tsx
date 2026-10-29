@@ -21,7 +21,9 @@ import {
 import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 import { jobHref } from '@/features/investments/holdings/PricesLine';
 import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs';
+import { loadEditTradeDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import {
   currentFy,
@@ -33,7 +35,6 @@ import {
   tradebookUrl,
   type TradebookUrlState,
 } from './tradebookModel';
-import { EditTradeDialog } from './TradeDialog';
 
 const TYPE_OPTIONS: { value: TradebookUrlState['type']; label: string }[] = [
   { value: '', label: 'All types' },
@@ -181,6 +182,7 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
   const go = (next: Partial<TradebookUrlState>) => router.push(tradebookUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [editing, setEditing] = React.useState<TradebookRow | null>(null);
+  const { Component: EditTradeDialog, run: runEdit } = useLazyDialog(loadEditTradeDialog);
   const columns = React.useMemo(() => columnsFor(), []);
 
   const brokerOptions = [{ value: '', label: 'All brokers' }, ...brokers.map((b) => ({ value: b.id, label: b.name }))];
@@ -250,7 +252,7 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
           getRowId={(row) => row.id}
           pager={pager}
           phoneSub={(row) => <PhoneSub row={row} />}
-          onRowSelect={(row) => setEditing(row)}
+          onRowSelect={(row) => void runEdit(() => setEditing(row))}
           empty={
             filtered ? (
               <EmptyState
@@ -269,7 +271,7 @@ export function TradebookScreen({ state, rows, totalElements, totalPages, broker
           stickyHeader={false}
         />
       </Card>
-      {editing ? <EditTradeDialog key={editing.id} trade={editing.raw} onClose={() => setEditing(null)} /> : null}
+      {editing && EditTradeDialog ? <EditTradeDialog key={editing.id} trade={editing.raw} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }

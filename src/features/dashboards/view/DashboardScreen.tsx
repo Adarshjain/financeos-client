@@ -16,17 +16,17 @@ import { SAVE_FAILED, useDeleteDashboard, useSaveDashboard, useSaveWidgetSetting
 import { textWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIssues } from '@/features/dashboards/editor/editorStateModel';
 import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
+import { loadWidgetPicker, loadWidgetSettings } from '@/features/dashboards/lazyDialogs';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { BuiltinWidgetResponse, DashboardResponse } from '@/lib/dashboards.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { replaceUrl } from '@/lib/urlState';
 
-import { WidgetSettingsDialog } from '../frame/WidgetSettingsDialog';
-import { WidgetPicker } from '../picker/WidgetPicker';
 import { dashboardHref, DASHBOARDS_HREF } from '../routes';
 import { DashboardEditActions } from './DashboardEditActions';
 import { DashboardEditGrid } from './DashboardEditGrid';
@@ -60,6 +60,9 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const [focusTick, setFocusTick] = React.useState(0);
   const [headerTick, setHeaderTick] = React.useState(0);
   const [picking, setPicking] = React.useState(false);
+  const { Component: WidgetPicker, run: runPicker } = useLazyDialog(loadWidgetPicker);
+  const { Component: WidgetSettingsDialog, run: runSettings } = useLazyDialog(loadWidgetSettings);
+  const openPicker = () => void runPicker(() => setPicking(true));
   const [settingsFor, setSettingsFor] = React.useState<string | null>(null);
   const [discarding, setDiscarding] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -170,7 +173,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
       addMenu={
         editing && !creating
           ? [
-              { id: 'add-widget', label: 'Add widget', onSelect: () => setPicking(true) },
+              { id: 'add-widget', label: 'Add widget', onSelect: () => openPicker() },
               { id: 'add-header', label: 'Add header', onSelect: addHeader },
             ]
           : undefined
@@ -197,7 +200,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
             <EmptyState
               title="No widgets yet"
               description="Add a widget to start. You can rearrange and resize after."
-              action={{ label: 'Add widget', onSelect: () => setPicking(true) }}
+              action={{ label: 'Add widget', onSelect: () => openPicker() }}
               secondaryAction={{ label: 'Add header', onSelect: addHeader }}
             />
           ) : (
@@ -211,12 +214,12 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
                 issues={issues}
                 onLayoutChange={(layout) => dispatch({ type: 'LAYOUT', layout })}
                 onRemove={(id) => dispatch({ type: 'REMOVE', id })}
-                onOpenSettings={setSettingsFor}
+                onOpenSettings={(id) => void runSettings(() => setSettingsFor(id))}
                 onUpdateHeader={(id, change) => dispatch({ type: 'UPDATE_HEADER', id, change })}
                 footer={
                   <div className="flex justify-center py-space-12">
                     <Text variant="label" as="span">
-                      <Button variant="link" size="sm" onClick={() => setPicking(true)}>
+                      <Button variant="link" size="sm" onClick={() => openPicker()}>
                         Add a widget
                       </Button>
                     </Text>
@@ -257,7 +260,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
                 label: 'Add widget',
                 onSelect: () => {
                   startEdit();
-                  setPicking(true);
+                  openPicker();
                 },
               }}
             />
@@ -271,7 +274,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
         <DashboardEditActions creating={creating} dirty={dirty} saving={saveMutation.isPending} onDiscard={discard} onSave={save} />
       ) : null}
 
-      {picking ? (
+      {picking && WidgetPicker ? (
         <WidgetPicker
           reports={reports}
           onAddBuiltin={(def, params, title) => dispatch({ type: 'ADD_BUILTIN', def, params, title })}
@@ -280,7 +283,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
         />
       ) : null}
 
-      {settingsWidget ? (
+      {settingsWidget && WidgetSettingsDialog ? (
         <WidgetSettingsDialog
           widget={settingsWidget}
           def={settingsDef}

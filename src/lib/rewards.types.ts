@@ -385,6 +385,11 @@ export interface RewardReport {
   anniversaryFallback: boolean;
   byCard?: CardBreakdown[];
   perCardAttributionIncomplete?: number;
+  /** The window the server used; with no dates asked for it is the card's current reward year (`defaultedWindow`). */
+  windowFrom?: string | null;
+  windowTo?: string | null;
+  defaultedWindow?: boolean;
+  calendarYearFallback?: boolean;
 }
 
 export interface RewardLine {

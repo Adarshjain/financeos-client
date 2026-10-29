@@ -4,13 +4,15 @@ import React from 'react';
 
 import { Card, ListRow, ProgressBar, SectionHeader, StatusWord, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { RewardRule } from '@/lib/rewards.types';
 
 import { HeaderLink } from '../overview/HeaderLink';
 import type { CardholderRow, CompletedMilestones, MilestoneModel, RuleExtras, RuleLine } from './rewardsModel';
-import { RuleEditor } from './RuleEditor';
 
 /** The milestones still to reach, one block each, then the finished ones under a "Completed" section, in one "Milestones" card. */
+const loadRuleEditor = () => import('./RuleEditor').then((m) => m.RuleEditor);
+
 export function MilestonesCard({
   items,
   completed,
@@ -90,6 +92,8 @@ export function RulesCard({
 }) {
   // The rule dialog opens from state, not the address.
   const [editing, setEditing] = React.useState<RewardRule | null>(null);
+  // The rule editor is not in the page: it loads when a rule is opened (see useLazyDialog).
+  const { Component: RuleEditor, run: runEditor } = useLazyDialog(loadRuleEditor);
   return (
     <Card
       title="Rules on this account"
@@ -110,7 +114,7 @@ export function RulesCard({
             subtitle={rule.description || undefined}
             trailing={<Text variant="body-strong">{rule.earned}</Text>}
             clickable={Boolean(full)}
-            onClick={full ? () => setEditing(full) : undefined}
+            onClick={full ? () => void runEditor(() => setEditing(full)) : undefined}
           >
             {bars.length > 0 || note ? (
               <div className="flex flex-col gap-space-6 mt-space-6">
@@ -127,7 +131,7 @@ export function RulesCard({
           </ListRow>
         );
       })}
-      {editing && all ? (
+      {editing && all && RuleEditor ? (
         <RuleEditor accountId={accountId} rule={editing} rules={all} onClose={() => setEditing(null)} />
       ) : null}
     </Card>

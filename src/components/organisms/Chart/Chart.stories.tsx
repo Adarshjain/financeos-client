@@ -3,7 +3,7 @@ import React from 'react';
 import { fn } from 'storybook/test';
 
 import { Card } from '@/components/ds';
-import { Chart } from '@/components/organisms';
+import { Chart } from '@/components/organisms/Chart/Chart';
 
 const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
 const spend = { field: 'amount', aggregation: 'sum' } as never;

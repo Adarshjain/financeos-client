@@ -12,15 +12,18 @@ import {
 } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Card, Cardholder } from '@/lib/account.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { replaceUrl } from '@/lib/urlState';
 
-import { AddCardDialog, CloseDialog, ReplaceCardDialog } from './CardFormDialogs';
 import { type CardsModel, type HolderMenuId, holderName, type HolderStats } from './cardsModel';
-import { DeleteCardDialog, DeleteHolderDialog, ReassignDialog } from './HolderActionDialogs';
 import { ClosedHolders, HolderCard } from './HolderCard';
-import { AddHolderDialog, EditHolderDialog } from './HolderFormDialogs';
 import { SharedLimitCard } from './SharedLimitCard';
 import { useCardholderMutations } from './useCardholderMutations';
+
+const loadCardDialogs = async () => {
+  const [forms, actions, holders] = await Promise.all([import('./CardFormDialogs'), import('./HolderActionDialogs'), import('./HolderFormDialogs')]);
+  return { ...forms, ...actions, ...holders };
+};
 
 type DialogState =
   | { kind: 'addHolder' }
@@ -56,7 +59,13 @@ export function CardsTab({
   model,
 }: CardsTabProps) {
   const actions = useCardholderMutations(accountId, isBank);
-  const [dialog, setDialog] = React.useState<DialogState | null>(null);
+  const [dialog, setDialogState] = React.useState<DialogState | null>(null);
+  // The cardholder and card forms are not in the page: their code loads when one is opened (see useLazyDialog).
+  const { Component: dialogs, run: runDialog } = useLazyDialog(loadCardDialogs);
+  const setDialog = React.useCallback(
+    (next: DialogState | null) => (next === null ? setDialogState(null) : void runDialog(() => setDialogState(next))),
+    [runDialog],
+  );
 
   // The overview's Cardholders "Add" links here with ?add=cardholder: open once on load, then clear it
   // from the URL with replaceState (no server request), so a reload does not reopen the dialog.
@@ -68,7 +77,7 @@ export function CardsTab({
     query.delete('add');
     const rest = query.toString();
     replaceUrl(rest ? `${pathname}?${rest}` : pathname);
-  }, []);
+  }, [setDialog]);
 
   const closeDialog = () => setDialog(null);
 
@@ -160,8 +169,10 @@ export function CardsTab({
         onReopen={(holderId) => onMenu(holderId, 'reopen')}
       />
 
+      {dialogs ? (
+        <>
       {dialog?.kind === 'addHolder' ? (
-        <AddHolderDialog
+        <dialogs.AddHolderDialog
           isBank={isBank}
           accountName={accountName}
           today={today}
@@ -170,7 +181,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'addPrimaryCard' ? (
-        <AddCardDialog
+        <dialogs.AddCardDialog
           title="Add your debit card"
           description={accountName}
           submitLabel="Add debit card"
@@ -181,7 +192,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'edit' && holder ? (
-        <EditHolderDialog
+        <dialogs.EditHolderDialog
           holder={holder}
           isBank={isBank}
           accountName={accountName}
@@ -191,7 +202,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'addCard' && holder ? (
-        <AddCardDialog
+        <dialogs.AddCardDialog
           title="Add a card"
           description={`${name} · ${accountName}`}
           submitLabel="Add card"
@@ -201,7 +212,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'replace' && holder && card ? (
-        <ReplaceCardDialog
+        <dialogs.ReplaceCardDialog
           card={card}
           holderName={name}
           today={today}
@@ -210,7 +221,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'closeCard' && holder && card ? (
-        <CloseDialog
+        <dialogs.CloseDialog
           title={`Close card ••${card.last4}`}
           description={name}
           message={`Closes this card number. ${name} stays open and keeps their history.`}
@@ -221,7 +232,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'closeHolder' && holder ? (
-        <CloseDialog
+        <dialogs.CloseDialog
           title="Close cardholder"
           description={`${name} · ${isBank ? 'joint holder' : 'add-on'}`}
           message={`Closes ${name} and every card they hold. Past transactions, caps and milestones stay.`}
@@ -232,7 +243,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'reassign' && holder ? (
-        <ReassignDialog
+        <dialogs.ReassignDialog
           accountId={accountId}
           holder={holder}
           targetCard={(holder.cards ?? []).find((c) => !c.closedOn)}
@@ -244,7 +255,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'deleteHolder' && holder ? (
-        <DeleteHolderDialog
+        <dialogs.DeleteHolderDialog
           holder={holder}
           isBank={isBank}
           onConfirm={() => actions.deleteHolder(holder)}
@@ -252,7 +263,7 @@ export function CardsTab({
         />
       ) : null}
       {dialog?.kind === 'deleteCard' && holder && card ? (
-        <DeleteCardDialog
+        <dialogs.DeleteCardDialog
           card={card}
           holderName={name}
           transactionCount={
@@ -261,6 +272,8 @@ export function CardsTab({
           onConfirm={() => actions.deleteCard(holder, card)}
           onClose={closeDialog}
         />
+      ) : null}
+        </>
       ) : null}
     </div>
   );

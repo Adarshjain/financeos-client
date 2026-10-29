@@ -4,14 +4,18 @@ import { type QueryClient, useQuery } from '@tanstack/react-query';
 
 import { loadNeedsReviewCount } from '@/features/transactions/list/transactionsActions';
 import { watchSession } from '@/lib/authExpiry';
+import { useShellCounts } from '@/lib/query/hooks/useShellCounts';
 import { keys } from '@/lib/query/keys';
 
 /**
  * How many transactions need review, through a server action: the Transactions badge on the rail and tab
  * bar. The list page already reads this number for its "Needs review" chip and seeds the same key, so it
- * does not ask twice.
+ * does not ask twice. `shell` is for the shell's badges: they own the one combined poll (`useShellCounts`) that
+ * loads and refreshes this entry, so this hook neither polls nor fetches until that has answered (it then fetches
+ * only if the shell call left this entry empty).
  */
-export function useNeedsReviewCount() {
+export function useNeedsReviewCount({ shell = false }: { shell?: boolean } = {}) {
+  const shellCounts = useShellCounts({ enabled: shell, poll: shell });
   return useQuery({
     queryKey: keys.transactions.needsReviewCount(),
     queryFn: async () => {
@@ -19,7 +23,8 @@ export function useNeedsReviewCount() {
       if (!result.success) throw new Error(result.error.message);
       return result.data;
     },
-    refetchInterval: 60_000,
+    enabled: !shell || shellCounts.status !== 'pending',
+    refetchInterval: shell ? false : 60_000,
     staleTime: 30_000,
   });
 }

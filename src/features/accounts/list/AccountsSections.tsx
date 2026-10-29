@@ -16,9 +16,9 @@ import {
   Text,
 } from '@/components/ds';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
-import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
-import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
+import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { appHref } from '@/features/shell/routes';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -168,10 +168,10 @@ function AddLink({
   addType: string;
   children: React.ReactNode;
 }) {
-  const { open } = useAccountDialogs();
+  const { open, preload, loading } = useAccountDialogs();
   return (
     <Text variant="label" as="span">
-      <Button variant="link" size="sm" onClick={() => open(addType)}>
+      <Button variant="link" size="sm" loading={loading} onPointerDown={preload} onClick={() => open(addType)}>
         <Icon name="add" size="xs" />
         {children}
       </Button>
@@ -265,7 +265,8 @@ export function BankSection(props: SectionProps<BankRow>) {
   const router = useRouter();
   const closed = useClosedToggle();
   const [editing, setEditing] = useState<BankRow | null>(null);
-  const columns = useMemo(() => makeBankColumns(setEditing), []);
+  const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
+  const columns = useMemo(() => makeBankColumns((row) => void run(() => setEditing(row))), [run]);
   return (
     <Card
       title="Bank accounts"
@@ -292,7 +293,7 @@ export function BankSection(props: SectionProps<BankRow>) {
         showing={closed.showing}
         onToggle={closed.toggle}
       />
-      {editing ? (
+      {editing && AccountFormDialog ? (
         <AccountFormDialog
           account={editing.account}
           onClose={() => setEditing(null)}

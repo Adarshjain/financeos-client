@@ -110,11 +110,11 @@ describe('InvestmentsShell', () => {
     ['/investments/dividends', 'dividend', 'Record dividend'],
     ['/investments/corporate-actions', 'action', 'Record corporate action'],
     ['/investments/instruments', 'instrument', 'Add instrument'],
-  ])('opens the dialog of %s with the top bar + (labelled verb and object)', (path, dialog, label) => {
+  ])('opens the dialog of %s with the top bar + (labelled verb and object)', async (path, dialog, label) => {
     pathname = path;
     renderShell();
     fireEvent.click(screen.getAllByRole('button', { name: label })[0]);
-    expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
+    expect(await screen.findByTestId(`dialog-${dialog}`)).toBeInTheDocument();
     expect(screen.getAllByTestId(/^dialog-/)).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
     expect(screen.queryByTestId(/^dialog-/)).toBeNull();
@@ -123,14 +123,14 @@ describe('InvestmentsShell', () => {
   it.each([
     ['/investments/tradebook', 'trade', 'Add trade', 'Record trade', 'Import tradebook'],
     ['/investments/fno', 'fno', 'Add F&O trade', 'Record F&O trade', 'Import statement'],
-  ])('makes the + on %s a menu with the add and the import', (path, dialog, buttonLabel, addLabel, importLabel) => {
+  ])('makes the + on %s a menu with the add and the import', async (path, dialog, buttonLabel, addLabel, importLabel) => {
     pathname = path;
     renderShell();
     fireEvent.pointerDown(screen.getAllByRole('button', { name: buttonLabel })[0], { button: 0 });
     expect(screen.queryByTestId(/^dialog-/)).toBeNull();
     expect(screen.getByRole('menuitem', { name: importLabel })).toHaveAttribute('href', '/investments/import');
     fireEvent.click(screen.getByRole('menuitem', { name: addLabel }));
-    expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
+    expect(await screen.findByTestId(`dialog-${dialog}`)).toBeInTheDocument();
   });
 
   it('keeps the + a plain button on Holdings, Dividends, Corporate actions and Instruments', () => {

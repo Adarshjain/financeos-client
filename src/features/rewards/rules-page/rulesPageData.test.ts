@@ -121,6 +121,23 @@ describe('loadRulesPageData', () => {
   });
 });
 
+describe('loadRulesPageData parallelism', () => {
+  it('starts the usage report off the totals while the prefetches are still loading', async () => {
+    let releaseRules!: (v: unknown[]) => void;
+    api.rules.mockReturnValue(new Promise((r) => (releaseRules = r)));
+    GET.mockResolvedValue({ data: [{ accountId: 'a', from: '2026-03-15', to: '2027-03-14' }] });
+    const pending = loadRulesPageData('a', '2026-10-24');
+    await vi.waitFor(() => expect(api.report).toHaveBeenCalledWith('a', '2026-03-15', '2027-03-14'));
+    releaseRules([]);
+    expect((await pending)?.accountId).toBe('a');
+  });
+
+  it('still hides the usage strip when the report fails', async () => {
+    api.report.mockRejectedValue(new Error('down'));
+    expect(await loadRulesPageData('a', '2026-10-24')).toMatchObject({ accountId: 'a', usage: null });
+  });
+});
+
 describe('parseRulesUrl', () => {
   it('reads the card from ?account=, the first of a repeated key', () => {
     expect(parseRulesUrl({ account: 'b' })).toEqual({ account: 'b' });

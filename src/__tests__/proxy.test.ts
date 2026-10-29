@@ -1,7 +1,11 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
 
-import { proxy } from '@/proxy';
+import { config, proxy } from '@/proxy';
+
+function matchesProxy(pathname: string) {
+  return new RegExp(`^${config.matcher[0]}$`).test(pathname);
+}
 
 function requestWithoutSession(pathname: string) {
   return new NextRequest(new URL(pathname, 'https://financeos.local'));
@@ -120,4 +124,18 @@ describe('proxy', () => {
       expect(proxy(request).headers.get('location')).toBeNull();
     });
   });
+
+  it.each(['/sw.js', '/serwist/sw.js', '/icons/icon-192.png', '/brand/google-g.svg', '/banks/sprite.png', '/images/logo.png', '/splash/splash-750x1334.png', '/handbook', '/handbook/index.html', '/manifest.webmanifest', '/robots.txt', '/api/v1/auth/me', '/_next/static/chunks/a.js'])(
+    'does not run the proxy for the static path %s',
+    (pathname) => {
+      expect(matchesProxy(pathname)).toBe(false);
+    }
+  );
+
+  it.each(['/', '/login', '/accounts', '/accounts/abc-123', '/offline', '/legacy/dashboard', '/ds', '/auth/google/callback'])(
+    'still runs the proxy for the page route %s',
+    (pathname) => {
+      expect(matchesProxy(pathname)).toBe(true);
+    }
+  );
 });

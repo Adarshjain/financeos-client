@@ -18,12 +18,11 @@ import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Category } from '@/lib/categories.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { CategoryRule } from '@/lib/rules.types';
 
 import { ChoiceChip } from '../list/FilterChips';
 import { TransactionsTabs } from '../TransactionsTabs';
-import { FindMatchesDialog } from './FindMatchesDialog';
-import { RuleDialog } from './RuleDialog';
 import { RuleJobsCard } from './RuleJobsCard';
 import {
   ANY,
@@ -62,6 +61,10 @@ export interface RulesScreenProps {
   categories: Category[] | null;
 }
 
+// The rule editor and Find matches are not in the page: each loads when pressed (see useLazyDialog).
+const loadRuleDialog = () => import('./RuleDialog').then((m) => m.RuleDialog);
+const loadFindMatchesDialog = () => import('./FindMatchesDialog').then((m) => m.FindMatchesDialog);
+
 type Dialogs =
   | { kind: 'add' }
   | { kind: 'edit'; rule: CategoryRule }
@@ -79,6 +82,14 @@ const STATUS_OPTIONS: SelectOption[] = (['unverified', 'verified', 'all'] as con
 export function RulesScreen({ rules, reference, state, categories, hasRulesElsewhere = false }: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
+  const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
+  const { Component: FindMatchesDialog, run: runMatches } = useLazyDialog(loadFindMatchesDialog);
+  // The rule editor and Find matches load when pressed; Delete is a small confirm and opens at once.
+  const openDialog = (next: NonNullable<Dialogs>) => {
+    if (next.kind === 'add' || next.kind === 'edit') void runRule(() => setDialog(next));
+    else if (next.kind === 'matches') void runMatches(() => setDialog(next));
+    else setDialog(next);
+  };
   const [picked, setPicked] = React.useState<{ key: string; ids: string[] }>({ key: '', ids: [] });
   const filterKey = rulesFilterKey(state);
   // The ticked rules survive paging; another status, filter or search starts from none.
@@ -123,7 +134,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
   const allOnPage = pageSelectable.length > 0 && pageSelectable.every((id) => ids.includes(id));
 
   return (
-    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })} addLabel="Add rule">
+    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => openDialog({ kind: 'add' })} addLabel="Add rule">
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
         <FilterBar
@@ -185,7 +196,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
                   }
                 : noMatch
                   ? undefined
-                  : { label: 'Add rule', onSelect: () => setDialog({ kind: 'add' }) }
+                  : { label: 'Add rule', onSelect: () => openDialog({ kind: 'add' }) }
             }
           />
         ) : (
@@ -207,15 +218,15 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
                     categories={rule.categories.map((c) => c.name)}
                     onApprove={() => verify.mutate(rule)}
                     menuItems={[
-                      { label: 'Edit', onSelect: () => setDialog({ kind: 'edit', rule }) },
-                      { label: 'Find matches', onSelect: () => setDialog({ kind: 'matches', rule }) },
+                      { label: 'Edit', onSelect: () => openDialog({ kind: 'edit', rule }) },
+                      { label: 'Find matches', onSelect: () => openDialog({ kind: 'matches', rule }) },
                       { label: 'Delete', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
                     ]}
                     selectable={!rule.verified}
                     selected={ids.includes(rule.id)}
                     onSelectedChange={(on) => setIds(on ? [...ids, rule.id] : ids.filter((id) => id !== rule.id))}
                     selectionMode={ids.length > 0}
-                    onOpenDetail={() => setDialog({ kind: 'edit', rule })}
+                    onOpenDetail={() => openDialog({ kind: 'edit', rule })}
                   />
                 );
               })}
@@ -246,9 +257,9 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
         ]}
       />
 
-      {dialog?.kind === 'add' ? <RuleDialog categories={categories} onClose={() => setDialog(null)} /> : null}
-      {dialog?.kind === 'edit' ? <RuleDialog key={dialog.rule.id} rule={dialog.rule} categories={categories} onClose={() => setDialog(null)} /> : null}
-      {dialog?.kind === 'matches' ? <FindMatchesDialog key={dialog.rule.id} rule={dialog.rule} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'add' && RuleDialog ? <RuleDialog categories={categories} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'edit' && RuleDialog ? <RuleDialog key={dialog.rule.id} rule={dialog.rule} categories={categories} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'matches' && FindMatchesDialog ? <FindMatchesDialog key={dialog.rule.id} rule={dialog.rule} onClose={() => setDialog(null)} /> : null}
       <ConfirmDialog
         open={dialog?.kind === 'delete'}
         onOpenChange={(open) => {
