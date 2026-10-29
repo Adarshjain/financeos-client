@@ -114,4 +114,11 @@ describe('CategoryDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
   });
+
+  it('submitting the form (Enter) saves through the update', async () => {
+    setup();
+    const form = screen.getByRole('dialog', { name: 'Set category' }).querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+    await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+  });
 });

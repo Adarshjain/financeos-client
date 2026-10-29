@@ -144,6 +144,23 @@ describe('RulesScreen', () => {
     expect(screen.getByText("Couldn't load rules")).toBeTruthy();
   });
 
+  it('an empty status tab says nothing matches when other tabs hold rules, with no Clear filters', () => {
+    renderWithQuery(
+      <RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 }, state: { ...DEFAULT_RULES_STATE, status: 'verified' }, hasRulesElsewhere: true })} />,
+    );
+    expect(screen.getByText('No rules match')).toBeTruthy();
+    expect(screen.queryByText('No rules yet')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+  });
+
+  it('an empty list for a user with no rules at all says No rules yet with the import hint', () => {
+    renderWithQuery(
+      <RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 }, state: { ...DEFAULT_RULES_STATE, status: 'verified' } })} />,
+    );
+    expect(screen.getByText('No rules yet')).toBeTruthy();
+    expect(screen.getByText(/Transactions you import will generate rules/)).toBeTruthy();
+  });
+
   it('Approve verifies that rule', async () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Approve' }));

@@ -4,7 +4,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import {
+  Banner,
+  GRID_GAP,
+} from '@/components/ds';
 import type { DividendFilters } from '@/lib/investments.types';
 import type { Dividend } from '@/lib/types';
 
@@ -105,7 +108,7 @@ export function DividendsScreen({
         exportFilters={exportFilters}
         onEdit={(id) => setOpened(dividends.find((d) => d.id === id) ?? null)}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
         <ByInstrumentCard
           {...byInstrument}
           onPageChange={(ipage) => router.push(dividendsUrl({ ...state, ipage }), { scroll: false })}

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { GRID_GAP } from '@/components/ds';
 import { AppLockCard } from '@/features/app-lock/AppLockCard';
 import type { AppLockStatus } from '@/lib/api/types';
 import type { UserResponse } from '@/lib/types';
@@ -11,7 +12,7 @@ import { ProfileCard } from './ProfileCard';
 /** Profile & appearance: the profile, appearance and app lock cards beside the delete-account card. */
 export function ProfileScreen({ user, appLock }: { user: UserResponse; appLock: AppLockStatus }) {
   return (
-    <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
       <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
         <ProfileCard user={user} />
         <AppearanceCard />

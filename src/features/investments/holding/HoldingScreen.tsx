@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import type { TopBarMenuItem } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import { DividendAddDialog } from '@/features/investments/dividends/DividendFormDialog';
 import { InstrumentEditDialog } from '@/features/investments/instruments/InstrumentEditDialog';
@@ -83,7 +84,7 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
             figures={holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date())}
             onOverride={() => setOverriding(true)}
           />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+          <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-8 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <PriceChartCard history={history} splits={splits} onOpenHistory={() => setDialog('price-history')} />
               <TradesCard instrumentId={id} initial={trades ?? EMPTY_SECTION} subtitle={tradesSubtitle} onRecord={() => setDialog('trade')} />

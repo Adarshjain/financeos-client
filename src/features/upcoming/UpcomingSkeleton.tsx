@@ -1,12 +1,18 @@
 import React from 'react';
 
-import { Card, KpiTile, ListRow, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  KpiTile,
+  ListRow,
+  Skeleton,
+} from '@/components/ds';
 
 /** Totals and rows keep their places while the list loads. */
 export function UpcomingSkeleton() {
   return (
     <>
-      <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
         <KpiTile loading />
         <KpiTile loading />
         <KpiTile loading />

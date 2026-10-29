@@ -14,6 +14,8 @@ import type { BuiltinWidgetResponse, WidgetParams, WidgetResponse } from '@/lib/
 import { ParamFields } from '../params/ParamFields';
 import { useBuiltinParamsForm } from '../params/useBuiltinParamsForm';
 
+const FORM_ID = 'widget-settings-form';
+
 /** Stands in for the params form of a widget that has none. */
 const NO_PARAMS: BuiltinWidgetResponse = { key: '', label: '', description: '', category: '', kind: 'template', minW: 0, params: [] };
 
@@ -63,11 +65,20 @@ export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClo
         title={`Widget settings · ${name}`}
         description={dashboardName ? `Changes this widget on ${dashboardName} only.` : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: 'Save widget', onSelect: () => void save(), disabled: !form.valid || saving, loading: saving }}
+        primary={{ label: 'Save widget', type: 'submit', form: FORM_ID, disabled: !form.valid || saving, loading: saving }}
       >
         <Dialog.Body>
-          <ParamFields form={form} />
-          <TextField label="Title" optional placeholder={name} value={title} onValueChange={setTitle} />
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (form.valid) void save();
+            }}
+          >
+            <ParamFields form={form} />
+            <TextField label="Title" optional placeholder={name} value={title} onValueChange={setTitle} />
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

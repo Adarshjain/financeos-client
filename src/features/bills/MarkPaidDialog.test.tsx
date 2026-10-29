@@ -169,4 +169,14 @@ describe('MarkPaidDialog amount arithmetic', () => {
     submit();
     await waitFor(() => expect(onMarked).toHaveBeenCalledTimes(1));
   });
+
+  it('submitting the form from a field (Enter) marks the bill paid', async () => {
+    markPaid.mockClear();
+    renderDialog();
+    fireEvent.click(screen.getByRole('radio', { name: 'Part payment' }));
+    const input = screen.getByLabelText('Amount paid');
+    fireEvent.change(input, { target: { value: '100' } });
+    fireEvent.submit(input.closest('form') as HTMLFormElement);
+    await waitFor(() => expect(markPaid).toHaveBeenCalledTimes(1));
+  });
 });

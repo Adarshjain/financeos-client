@@ -3,6 +3,7 @@
 import React, { forwardRef, useEffect, useState } from 'react';
 
 import { Badge } from '../Badge/Badge';
+import { ActionButton } from '../Button/ActionButton';
 import { Button, type ButtonVariant } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -14,6 +15,8 @@ export interface SelectionBarAction {
   label: string;
   icon?: React.ReactNode;
   onSelect?: () => void;
+  /** Renders the action as a link (the app's link through LinkProvider) with the same look; `onSelect` still runs on click. */
+  href?: string;
   hint?: string;
   count?: number | string;
   tone?: 'default' | 'danger';
@@ -219,28 +222,28 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
               const isDanger = act.tone === 'danger';
               if (act.variant) {
                 return (
-                  <Button
+                  <ActionButton
                     key={act.id ?? idx}
-                    type="button"
                     size="md"
                     variant={act.variant}
                     disabled={act.disabled}
                     loading={act.loading}
-                    onClick={act.onSelect}
+                    href={act.href}
+                    onSelect={act.onSelect}
                     icon={act.icon}
                     className="min-w-0 shrink"
                   >
                     {act.label}
-                  </Button>
+                  </ActionButton>
                 );
               }
               return (
-                <Button
+                <ActionButton
                   key={act.id ?? idx}
-                  type="button"
                   variant={isDanger ? 'danger' : 'secondary'}
                   disabled={act.disabled}
-                  onClick={act.onSelect}
+                  href={act.href}
+                  onSelect={act.onSelect}
                   aria-label={
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
@@ -276,7 +279,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                       {act.hint}
                     </span>
                   ) : null}
-                </Button>
+                </ActionButton>
               );
             })}
           </div>

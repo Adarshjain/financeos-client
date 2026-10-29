@@ -164,7 +164,7 @@ export function TransactionsList({
                 selected={rowProps.selected}
                 onSelectedChange={rowProps.onSelectedChange}
                 selectionMode={rowProps.selectionMode}
-                onDetail={onOpenDetail ? rowProps.onSelect : undefined}
+                onOpenDetail={onOpenDetail ? rowProps.onSelect : undefined}
                 query={query.q || undefined}
               />
             );

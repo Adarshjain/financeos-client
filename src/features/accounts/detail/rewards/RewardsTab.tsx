@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, KpiTile } from '@/components/ds';
+import {
+  Button,
+  GRID_GAP,
+  KpiTile,
+} from '@/components/ds';
 import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
 import { LoadError } from '@/features/shell/LoadError';
 import { appHref } from '@/features/shell/routes';
@@ -69,7 +73,7 @@ export function RewardsTab({
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <RewardsPeriodControl basePath={basePath} query={query} window={window} today={today} />
       <RewardsBanners accountId={account.id} banners={rewardsBanners(report)} />
-      <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
         {kpis.map((k) => (
           <KpiTile
             key={k.key}
@@ -90,7 +94,7 @@ export function RewardsTab({
           />
         ))}
       </div>
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 min-w-0">
           {lines ? (
             <EarningLines

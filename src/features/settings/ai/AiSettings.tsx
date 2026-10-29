@@ -2,7 +2,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { Banner } from '@/components/ds';
+import {
+  Banner,
+  GRID_GAP,
+} from '@/components/ds';
 import type { LlmKeyDto } from '@/lib/api/types';
 
 import { AddKeyDialog } from './AddKeyDialog';
@@ -80,7 +83,7 @@ export function AiSettings() {
   return (
     <>
       {topError ? <Banner tone="danger" className="mb-space-8 desk:mb-space-16">{topError}</Banner> : null}
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7">
           <YourKeysCard
             keys={s.keysList}

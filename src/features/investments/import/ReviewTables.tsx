@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Badge, Card, createDataTableColumnHelper, DataTable, SectionHeader, Text } from '@/components/ds';
 import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { formatMoney } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
@@ -130,9 +130,7 @@ export function ExecutionsTable({ executions, rowStates, setRowStates, locked }:
 
   return (
     <div className="flex flex-col gap-space-8">
-      <Text variant="overline" tone="ink-3" as="h3">
-        Stocks & delivery executions
-      </Text>
+      <SectionHeader as="h3">Stocks & delivery executions</SectionHeader>
       <Card>
         <DataTable
           columns={columns}
@@ -245,20 +243,22 @@ export function FnoTable({ trades, fnoRowStates, setFnoRowStates, locked }: FnoT
 
   return (
     <div className="flex flex-col gap-space-8">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-space-12">
-        <Text variant="overline" tone="ink-3" as="h3">
-          F&O closed trades{' '}
+      <SectionHeader
+        as="h3"
+        meta={
           <Text variant="label" tone="ink-3" as="span">
-            {`${trades.length} contract${trades.length > 1 ? 's' : ''}`}
+            {'Net realized P&L: '}
+            <Text variant="body-strong" tone={moveTone(net)} as="span">
+              {formatMoney(net, { decimals: 'exact', sign: 'always' })}
+            </Text>
           </Text>
-        </Text>
+        }
+      >
+        F&O closed trades{' '}
         <Text variant="label" tone="ink-3" as="span">
-          {'Net realized P&L: '}
-          <Text variant="body-strong" tone={moveTone(net)} as="span">
-            {formatMoney(net, { decimals: 'exact', sign: 'always' })}
-          </Text>
+          {`${trades.length} contract${trades.length > 1 ? 's' : ''}`}
         </Text>
-      </div>
+      </SectionHeader>
       <Card>
         <DataTable
           columns={columns}
@@ -385,9 +385,7 @@ export function CasTable({ rows: importRows, rowStates, setRowStates, locked }: 
 
   return (
     <div className="flex flex-col gap-space-8">
-      <Text variant="overline" tone="ink-3" as="h3">
-        Statement transactions
-      </Text>
+      <SectionHeader as="h3">Statement transactions</SectionHeader>
       <Card>
         <DataTable
           columns={columns}

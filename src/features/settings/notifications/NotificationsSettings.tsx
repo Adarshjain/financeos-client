@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
+import { GRID_GAP } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Account } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';
@@ -28,7 +29,7 @@ function Loaded({ settings, cards, loans }: { settings: NotificationSettingsResp
   const browser = useThisBrowser(settings);
   const [statements, ...rest] = KIND_GROUPS;
   return (
-    <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
       <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
         <PushCard settings={settings} browser={browser} />
         <BillsCard settings={settings} />

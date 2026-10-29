@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ExportableEntry } from '@/lib/lendingExport';
@@ -277,5 +277,17 @@ describe('closing', () => {
     const { onClose } = renderDialog();
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('form submit', () => {
+  it('submitting the form copies once, and does nothing when no entry is selected', async () => {
+    renderDialog({ entries: [] });
+    fireEvent.submit(screen.getByTestId('ledger-export-preview').closest('form')!);
+    expect(writeText).not.toHaveBeenCalled();
+    cleanup();
+    renderDialog();
+    fireEvent.submit(screen.getByTestId('ledger-export-preview').closest('form')!);
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
   });
 });

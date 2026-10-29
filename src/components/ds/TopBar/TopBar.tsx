@@ -2,6 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
+import { ActionButton } from '../Button/ActionButton';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon, type IconSize } from '../Icon/Icon';
@@ -25,6 +26,8 @@ export interface TopBarAction {
   icon: IconName;
   label: string;
   onSelect?: () => void;
+  /** A plain action with an `href` renders a link (the app's link through LinkProvider) with the same look; `onSelect` still runs on click. Not for menu, popover or asChild actions. */
+  href?: string;
   variant?: 'default' | 'primary';
   shortcut?: string;
   showLabel?: boolean;
@@ -294,19 +297,19 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               }
 
               return (
-                <Button
+                <ActionButton
                   key={action.id}
-                  type="button"
                   variant={btnVariant}
                   size="md"
                   iconOnly={!hasLabel}
                   aria-label={action.label}
-                  onClick={action.onSelect}
+                  href={action.href}
+                  onSelect={action.onSelect}
                   dot={action.dot}
                   className={buttonClasses}
                 >
                   {content}
-                </Button>
+                </ActionButton>
               );
             })}
           </div>

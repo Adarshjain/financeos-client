@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -193,5 +193,17 @@ describe('WidgetPicker', () => {
     open();
     await screen.findByRole('dialog');
     await waitFor(() => expect(api.GET).toHaveBeenCalledWith('/api/v1/dashboards/builtins'));
+  });
+});
+
+describe('WidgetPicker form submit', () => {
+  it('Enter in the title field adds the selected widget once, and nothing is added while none is chosen', async () => {
+    const props = open();
+    const dialog = await screen.findByRole('dialog', { name: /Add widget/ });
+    fireEvent.submit(dialog.querySelector('form')!);
+    expect(props.onAddBuiltin).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('radio', { name: /Net worth/ }));
+    fireEvent.submit(dialog.querySelector('form')!);
+    expect(props.onAddBuiltin).toHaveBeenCalledTimes(1);
   });
 });

@@ -42,8 +42,6 @@ src/features/dashboards/builtins/spend-heatmap/
 src/features/dashboards/builtins/account-tile/
 src/features/dashboards/builtins/emergency-fund/
 src/features/dashboards/builtins/testFixtures.tsx
-src/features/dashboards/builtins/__tests__/group.cardsSpending.test.tsx
-src/features/dashboards/builtins/__tests__/subtitles.test.ts
 src/features/dashboards/builtins/registry.ts
 src/features/dashboards/builtins/shortcuts/
 src/features/dashboards/builtins/group.investmentsLoans.tsx

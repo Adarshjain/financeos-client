@@ -28,6 +28,8 @@ import {
   payProblems,
 } from './payModel';
 
+const FORM_ID = 'loan-mark-paid-form';
+
 export interface MarkPaidValues {
   amount: string;
   paymentDate: string;
@@ -128,79 +130,88 @@ export function MarkPaidDialog({
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{
           label: choice === 'none' ? 'Mark paid' : 'Mark paid & link',
-          onSelect: () => void submit(),
+          type: 'submit', form: FORM_ID,
           loading: submitting,
         }}
       >
         <Dialog.Body>
-          <div role="radiogroup" aria-label="How the EMI was paid" className="flex flex-col">
-            {options.map((o) => (
-              <ListRow
-                key={o.value}
-                role="radio"
-                aria-checked={choice === o.value}
-                aria-label={o.label}
-                data-choice={o.value}
-                className="px-0"
-                wrap
-                onClick={() => choose(o.value)}
-                leading={<Radio checked={choice === o.value} tabIndex={-1} aria-hidden="true" />}
-                title={o.label}
-                subtitle={o.description || undefined}
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!submitting) void submit();
+            }}
+          >
+            <div role="radiogroup" aria-label="How the EMI was paid" className="flex flex-col">
+              {options.map((o) => (
+                <ListRow
+                  key={o.value}
+                  role="radio"
+                  aria-checked={choice === o.value}
+                  aria-label={o.label}
+                  data-choice={o.value}
+                  className="px-0"
+                  wrap
+                  onClick={() => choose(o.value)}
+                  leading={<Radio checked={choice === o.value} tabIndex={-1} aria-hidden="true" />}
+                  title={o.label}
+                  subtitle={o.description || undefined}
+                />
+              ))}
+            </div>
+            {searching && !found ? (
+              <Text variant="caption" tone="ink-3" as="p">
+                Looking for the bank debit…
+              </Text>
+            ) : null}
+            {choice === 'pick' ? (
+              <TransactionPickerField
+                label="Bank debit"
+                value={picked}
+                onSelect={(tx) => {
+                  setPicked(tx);
+                  setAmount(amountText(tx));
+                  setDate(tx.date);
+                  setErrors({});
+                }}
+                onClear={() => setPicked(null)}
+                type="DEBIT"
+                excludeAnyObligationRef
+                suggestAmount={installment.emi}
+                suggestDate={installment.dueDate}
+                ruleHint={PAYMENT_TRANSACTION_HINT}
+                error={errors.transaction}
               />
-            ))}
-          </div>
-          {searching && !found ? (
-            <Text variant="caption" tone="ink-3" as="p">
-              Looking for the bank debit…
-            </Text>
-          ) : null}
-          {choice === 'pick' ? (
-            <TransactionPickerField
-              label="Bank debit"
-              value={picked}
-              onSelect={(tx) => {
-                setPicked(tx);
-                setAmount(amountText(tx));
-                setDate(tx.date);
-                setErrors({});
-              }}
-              onClear={() => setPicked(null)}
-              type="DEBIT"
-              excludeAnyObligationRef
-              suggestAmount={installment.emi}
-              suggestDate={installment.dueDate}
-              ruleHint={PAYMENT_TRANSACTION_HINT}
-              error={errors.transaction}
-            />
-          ) : null}
-          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-            <TextField
-              label="Amount paid"
-              prefix="₹"
-              inputMode="decimal"
-              value={amount}
-              onValueChange={(v) => {
-                chose.current = true;
-                setAmount(sanitizeAmountExpressionInput(v));
-                setErrors((e) => ({ ...e, amount: undefined }));
-              }}
-              onBlur={() => setAmount(resolveAmountExpression(amount))}
-              helper={difference ?? undefined}
-              error={errors.amount}
-            />
-            <DateField
-              label="Paid on"
-              today={today}
-              value={date}
-              onValueChange={(v) => {
-                chose.current = true;
-                setDate(typeof v === 'string' ? v : '');
-                setErrors((e) => ({ ...e, date: undefined }));
-              }}
-              error={errors.date}
-            />
-          </div>
+            ) : null}
+            <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
+              <TextField
+                label="Amount paid"
+                prefix="₹"
+                inputMode="decimal"
+                value={amount}
+                onValueChange={(v) => {
+                  chose.current = true;
+                  setAmount(sanitizeAmountExpressionInput(v));
+                  setErrors((e) => ({ ...e, amount: undefined }));
+                }}
+                onBlur={() => setAmount(resolveAmountExpression(amount))}
+                helper={difference ?? undefined}
+                error={errors.amount}
+              />
+              <DateField
+                label="Paid on"
+                today={today}
+                value={date}
+                onValueChange={(v) => {
+                  chose.current = true;
+                  setDate(typeof v === 'string' ? v : '');
+                  setErrors((e) => ({ ...e, date: undefined }));
+                }}
+                error={errors.date}
+              />
+            </div>
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

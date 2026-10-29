@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  Skeleton,
+} from '@/components/ds';
 import { REPORTS_HREF } from '@/features/reports/list/reportsListModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -11,7 +15,7 @@ export function ReportEditorSkeleton({ title }: { title: string }) {
     <ShellPage crumb={subCrumb('reports')} title={title} backHref={REPORTS_HREF}>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton height={44} width="60%" />
-        <div className="grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] items-start ${GRID_GAP}`}>
           <Card>
             <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton height={12} width="30%" />

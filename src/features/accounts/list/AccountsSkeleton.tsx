@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { KpiTile } from '@/components/ds';
+import {
+  GRID_GAP,
+  KpiTile,
+} from '@/components/ds';
 
 import { AccountsTablesSkeleton } from './AccountsSections';
 
@@ -8,7 +11,7 @@ import { AccountsTablesSkeleton } from './AccountsSections';
 export function AccountsSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
         <KpiTile loading />
         <KpiTile loading />
         <KpiTile loading />

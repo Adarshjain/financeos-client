@@ -74,7 +74,9 @@ for (const viewport of VIEWPORTS) {
 
       await page.getByRole('button', { name: 'Verified', exact: true }).click();
       await expect(page).toHaveURL(/status=verified/);
-      await expect(page.getByText('No rules yet')).toBeVisible();
+      // Rules exist on another tab, so the empty Verified tab is a miss, not a first-use state.
+      await expect(page.getByText('No rules match')).toBeVisible();
+      await expect(page.getByText('No rules yet')).toHaveCount(0);
 
       await page.getByRole('button', { name: 'All', exact: true }).click();
       await expect(page).toHaveURL(/status=all/);

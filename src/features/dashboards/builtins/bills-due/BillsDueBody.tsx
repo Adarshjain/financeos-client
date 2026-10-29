@@ -104,11 +104,11 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
       <div ref={listRef}>
         <Text variant="caption" tone="ink-3" as="p" className="px-space-16 pb-space-8" data-testid="bills-widget-totals">
           To pay{' '}
-          <Text as="span" variant="label" tone="ink" fraction="small" className="font-bold">
+          <Text as="span" variant="label" tone="ink" fraction="small">
             {formatMoney(model.toPayTotal)}
           </Text>{' '}
           · Unbilled{' '}
-          <Text as="span" variant="label" tone="ink" fraction="small" className="font-bold">
+          <Text as="span" variant="label" tone="ink" fraction="small">
             {formatMoney(model.unbilledTotal)}
           </Text>
         </Text>

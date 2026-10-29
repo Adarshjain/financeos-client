@@ -237,4 +237,10 @@ describe('MarkPaidDialog', () => {
     expect(amount()).toHaveValue('30000');
     expectChosen('Record payment without a transaction');
   });
+
+  it('submitting the form from a field (Enter) records the payment', async () => {
+    const { onSubmit } = renderDialog();
+    fireEvent.submit(amount().closest('form') as HTMLFormElement);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+  });
 });

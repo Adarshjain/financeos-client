@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import {
+  Banner,
+  GRID_GAP,
+} from '@/components/ds';
 
 import { AttentionCard } from './AttentionCard';
 import { OAUTH_ERROR_FALLBACK, type OauthReturn } from './connectionsModel';
@@ -43,7 +46,7 @@ export function ConnectionsScreen({
         </Banner>
       ) : null}
 
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
           <MailboxesCard
             connections={g.connections}

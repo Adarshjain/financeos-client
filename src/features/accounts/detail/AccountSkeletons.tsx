@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  Skeleton,
+} from '@/components/ds';
 
 function SkeletonRows({ count }: { count: number }) {
   return (
@@ -34,7 +38,7 @@ export function AccountOverviewSkeleton() {
           <Skeleton width={220} height={12} />
         </div>
       </Card>
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
           <SkeletonCard rows={3} />
           <SkeletonCard rows={3} />
@@ -65,7 +69,7 @@ function SkeletonHolder() {
 export function AccountCardsSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
         <SkeletonHolder />
         <SkeletonHolder />
       </div>
@@ -96,12 +100,12 @@ function RewardsCard({ rows }: { rows: number }) {
 export function AccountRewardsSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
         {Array.from({ length: 4 }, (_, i) => (
           <RewardsCard key={i} rows={1} />
         ))}
       </div>
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7">
           <RewardsCard rows={8} />
         </div>
@@ -117,7 +121,7 @@ export function AccountRewardsSkeleton() {
 /** The Statements tab's shape: the list on the left, the selected statement on the right. */
 export function AccountStatementsSkeleton() {
   return (
-    <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
       <div className="desk:col-span-5">
         <SkeletonCard rows={3} />
       </div>

@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  Skeleton,
+} from '@/components/ds';
 import { HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -33,7 +37,7 @@ export function HoldingSkeleton() {
             <Skeleton width={160} height={32} />
           </div>
         </Card>
-        <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-8 flex flex-col gap-space-8 desk:gap-space-16">
             <SkeletonCard rows={4} />
             <SkeletonCard rows={3} />

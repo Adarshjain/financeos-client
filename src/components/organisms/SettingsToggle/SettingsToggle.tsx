@@ -14,6 +14,8 @@ export interface SettingsToggleProps
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   borderTop?: boolean;
+  /** Drops the row's side gutter (default); pass false inside a container that does not pad its rows */
+  flush?: boolean;
 }
 
 export const SettingsToggle = forwardRef<HTMLDivElement, SettingsToggleProps>(
@@ -27,6 +29,7 @@ export const SettingsToggle = forwardRef<HTMLDivElement, SettingsToggleProps>(
       onCheckedChange,
       disabled = false,
       borderTop = false,
+      flush = true,
       className,
       id: explicitId,
       ...props
@@ -60,7 +63,8 @@ export const SettingsToggle = forwardRef<HTMLDivElement, SettingsToggleProps>(
         borderTop={borderTop}
         wrap
         disabled={disabled}
-        className={cn('px-0 border-l-0', className)}
+        flush={flush}
+        className={className}
         {...props}
       >
         {error ? (

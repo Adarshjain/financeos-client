@@ -139,7 +139,7 @@ const meta: Meta<typeof TransactionRow> = {
     },
   },
   args: {
-    onDetail: fn(),
+    onOpenDetail: fn(),
     onSetCategory: fn(),
     onCategoryClick: fn(),
     onMoreCategoriesClick: fn(),
@@ -837,7 +837,7 @@ export const TransactionsList: StoryObj = {
                   selected={rowProps.selected}
                   onSelectedChange={rowProps.onSelectedChange}
                   selectionMode={rowProps.selectionMode}
-                  onDetail={rowProps.onSelect}
+                  onOpenDetail={rowProps.onSelect}
                 />
               );
             }}
@@ -1307,7 +1307,7 @@ export const InDataTable: StoryObj = {
             selected={rowProps.selected}
             onSelectedChange={rowProps.onSelectedChange}
             selectionMode={rowProps.selectionMode}
-            onDetail={rowProps.onSelect}
+            onOpenDetail={rowProps.onSelect}
           />
         )}
       />
@@ -1367,7 +1367,7 @@ export const InDataTableSwipe: StoryObj = {
             selected={rowProps.selected}
             onSelectedChange={rowProps.onSelectedChange}
             selectionMode={rowProps.selectionMode}
-            onDetail={rowProps.onSelect}
+            onOpenDetail={rowProps.onSelect}
           />
         )}
       />

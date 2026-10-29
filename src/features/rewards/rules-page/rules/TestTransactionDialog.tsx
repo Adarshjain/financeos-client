@@ -17,6 +17,8 @@ import {
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
+const FORM_ID = 'test-transaction-form';
+
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);
 
 export interface TestTransactionDialogProps {
@@ -57,83 +59,92 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
         title="Test a transaction"
         description="See which rule wins on this card, and what it earns with your real cap usage."
         secondary={{ label: 'Close', onSelect: onClose }}
-        primary={{ label: 'Run test', onSelect: run, loading: recommend.isPending }}
+        primary={{ label: 'Run test', type: 'submit', form: FORM_ID, loading: recommend.isPending }}
       >
         <Dialog.Body>
-          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
-            <AmountField
-              label="Amount"
-              prefix="₹"
-              size="lg"
-              inputMode="decimal"
-              value={form.amount}
-              {...amountExpressionProps(form.amount, (amount) => patch({ amount }), () => setAmountError(null))}
-              error={amountError ?? undefined}
-            />
-            <Select
-              label="What"
-              searchable
-              options={[{ value: ANY, label: 'Any category' }, ...categories.map((c) => ({ value: c.id, label: c.name }))]}
-              value={form.categoryId}
-              onValueChange={(v) => patch({ categoryId: asList(v)[0] ?? ANY })}
-            />
-            <Select
-              label="How"
-              options={CHANNEL_OPTIONS}
-              value={form.channel}
-              onValueChange={(v) => patch({ channel: asList(v)[0] ?? ANY })}
-            />
-            <DateField
-              label="When"
-              today={today}
-              value={form.date}
-              onValueChange={(v) => patch({ date: typeof v === 'string' ? v : '' })}
-            />
-          </div>
-          <div>
-            <Button type="button" variant="link" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
-              More options
-            </Button>
-          </div>
-          <Reveal open={moreOpen}>
-            <div className="flex flex-col gap-space-8 desk:gap-space-12">
-              <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
-                <TextField
-                  label="Merchant"
-                  optional
-                  placeholder="e.g. Swiggy, Amazon…"
-                  value={form.merchantText}
-                  onValueChange={(merchantText) => patch({ merchantText })}
-                />
-                <TextField
-                  label="MCC"
-                  optional
-                  placeholder="e.g. 5411, 5812…"
-                  value={form.mcc}
-                  onValueChange={(mcc) => patch({ mcc })}
-                />
-              </div>
-              <div className="flex flex-wrap gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-                <label className="flex items-center gap-space-8">
-                  <Checkbox checked={form.isEmi} onCheckedChange={(c) => patch({ isEmi: c === true })} />
-                  <Text variant="body">EMI transaction</Text>
-                </label>
-                <label className="flex items-center gap-space-8">
-                  <Checkbox checked={form.isIntl} onCheckedChange={(c) => patch({ isIntl: c === true })} />
-                  <Text variant="body">International</Text>
-                </label>
-              </div>
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!recommend.isPending) void run();
+            }}
+          >
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
+              <AmountField
+                label="Amount"
+                prefix="₹"
+                size="lg"
+                inputMode="decimal"
+                value={form.amount}
+                {...amountExpressionProps(form.amount, (amount) => patch({ amount }), () => setAmountError(null))}
+                error={amountError ?? undefined}
+              />
+              <Select
+                label="What"
+                searchable
+                options={[{ value: ANY, label: 'Any category' }, ...categories.map((c) => ({ value: c.id, label: c.name }))]}
+                value={form.categoryId}
+                onValueChange={(v) => patch({ categoryId: asList(v)[0] ?? ANY })}
+              />
+              <Select
+                label="How"
+                options={CHANNEL_OPTIONS}
+                value={form.channel}
+                onValueChange={(v) => patch({ channel: asList(v)[0] ?? ANY })}
+              />
+              <DateField
+                label="When"
+                today={today}
+                value={form.date}
+                onValueChange={(v) => patch({ date: typeof v === 'string' ? v : '' })}
+              />
             </div>
-          </Reveal>
-          {recommend.data ? (
-            card ? (
-              <BreakdownContent detail={breakdown(card)} />
-            ) : (
-              <Text variant="body" tone="ink-3" as="p">
-                This card has no result for that purchase.
-              </Text>
-            )
-          ) : null}
+            <div>
+              <Button type="button" variant="link" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
+                More options
+              </Button>
+            </div>
+            <Reveal open={moreOpen}>
+              <div className="flex flex-col gap-space-8 desk:gap-space-12">
+                <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
+                  <TextField
+                    label="Merchant"
+                    optional
+                    placeholder="e.g. Swiggy, Amazon…"
+                    value={form.merchantText}
+                    onValueChange={(merchantText) => patch({ merchantText })}
+                  />
+                  <TextField
+                    label="MCC"
+                    optional
+                    placeholder="e.g. 5411, 5812…"
+                    value={form.mcc}
+                    onValueChange={(mcc) => patch({ mcc })}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
+                  <label className="flex items-center gap-space-8">
+                    <Checkbox checked={form.isEmi} onCheckedChange={(c) => patch({ isEmi: c === true })} />
+                    <Text variant="body">EMI transaction</Text>
+                  </label>
+                  <label className="flex items-center gap-space-8">
+                    <Checkbox checked={form.isIntl} onCheckedChange={(c) => patch({ isIntl: c === true })} />
+                    <Text variant="body">International</Text>
+                  </label>
+                </div>
+              </div>
+            </Reveal>
+            {recommend.data ? (
+              card ? (
+                <BreakdownContent detail={breakdown(card)} />
+              ) : (
+                <Text variant="body" tone="ink-3" as="p">
+                  This card has no result for that purchase.
+                </Text>
+              )
+            ) : null}
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

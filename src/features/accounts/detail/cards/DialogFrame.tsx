@@ -41,6 +41,7 @@ export function DialogFrame({
   error: string | null;
   children: React.ReactNode;
 }) {
+  const formId = React.useId();
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <Dialog.Content
@@ -48,11 +49,25 @@ export function DialogFrame({
         title={title}
         description={description}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: submitLabel, onSelect: onSubmit, loading: pending }}
+        primary={{
+          label: submitLabel,
+          type: 'submit',
+          form: formId,
+          loading: pending,
+        }}
       >
         <Dialog.Body>
-          {error ? <Banner tone="danger">{error}</Banner> : null}
-          {children}
+          <form
+            id={formId}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!pending) onSubmit();
+            }}
+          >
+            {error ? <Banner tone="danger">{error}</Banner> : null}
+            {children}
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

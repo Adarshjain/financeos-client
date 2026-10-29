@@ -17,6 +17,7 @@ import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions'
 
 const NO_CATEGORIES: never[] = [];
 const noop = () => undefined;
+const FORM_ID = 'category-form';
 
 export interface CategoryDialogProps {
   /** The transaction to set categories on, in full. */
@@ -94,9 +95,17 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
         size="md"
         title="Set category"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
-        primary={{ label: 'Set category', onSelect: () => void save(), loading: saving }}
+        primary={{ label: 'Set category', type: 'submit', form: FORM_ID, loading: saving }}
       >
-        <Dialog.Body className="flex flex-col gap-space-8 desk:gap-space-12">
+        <Dialog.Body>
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!saving) void save();
+            }}
+          >
           {error ? <Banner tone="danger">{error}</Banner> : null}
           <CategoriesField
             categories={localCategories}
@@ -107,7 +116,8 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
             }
             onCreate={(name) => void createCategory(name)}
           />
-       </Dialog.Body>
+          </form>
+        </Dialog.Body>
       </Dialog.Content>
     </Dialog>
   );

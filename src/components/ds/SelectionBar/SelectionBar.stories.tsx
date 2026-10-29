@@ -176,6 +176,19 @@ export const PageActions: Story = {
   },
 };
 
+export const PageActionsWithLink: Story = {
+  name: 'Page actions with a link',
+  args: {
+    count: undefined,
+    onClear: undefined,
+    summary: pageNote,
+    actions: [
+      { label: 'Back to reports', variant: 'link', href: '/reports', onSelect: fn() },
+      { label: 'Save report', variant: 'primary', onSelect: fn() },
+    ],
+  },
+};
+
 export const PageActionsLoading: Story = {
   name: 'Page actions loading',
   args: {

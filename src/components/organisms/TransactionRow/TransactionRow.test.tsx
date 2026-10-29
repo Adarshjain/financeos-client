@@ -182,7 +182,7 @@ describe('TransactionRow', () => {
         amount="640.00"
         selected
         selectionMode
-        onDetail={handleView}
+        onOpenDetail={handleView}
       />,
     );
 
@@ -195,7 +195,7 @@ describe('TransactionRow', () => {
   });
 
   it('keeps the eye mounted but hidden outside selection mode, and reveals it in selection mode', () => {
-    const props = { description: 'Uber India', amount: '640.00', selectable: true, onDetail: vi.fn() };
+    const props = { description: 'Uber India', amount: '640.00', selectable: true, onOpenDetail: vi.fn() };
     const { rerender } = render(<TransactionRow {...props} />);
     expect(screen.queryByRole('button', { name: /view transaction details/i })).toBeNull();
     const hidden = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
@@ -207,7 +207,7 @@ describe('TransactionRow', () => {
   });
 
   it('keeps the eye spacing inside the Reveal, not in the grid gap, so a closed eye leaves no space', () => {
-    const props = { description: 'Uber India', amount: '640.00', selectable: true, onDetail: vi.fn() };
+    const props = { description: 'Uber India', amount: '640.00', selectable: true, onOpenDetail: vi.fn() };
     render(<TransactionRow {...props} />);
     const eye = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
     const grid = eye.closest('.grid-cols-fill-auto-auto') as HTMLElement;
@@ -218,13 +218,13 @@ describe('TransactionRow', () => {
   });
 
   it('adds no extra eye padding when a chevron keeps the grid gap', () => {
-    render(<TransactionRow description="Uber India" amount="640.00" selectable onDetail={vi.fn()} chevron />);
+    render(<TransactionRow description="Uber India" amount="640.00" selectable onOpenDetail={vi.fn()} chevron />);
     const eye = screen.getByRole('button', { name: /view transaction details/i, hidden: true });
     expect(eye.closest('.grid-cols-fill-auto-auto')).toHaveClass('gap-x-space-10');
     expect(eye.parentElement).not.toHaveClass('pl-space-10');
   });
 
-  it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
+  it('does not render eye button when outside selection mode even if selectable and onOpenDetail is passed', () => {
     const handleView = vi.fn();
     render(
       <TransactionRow
@@ -233,7 +233,7 @@ describe('TransactionRow', () => {
         selectable
         selected={false}
         selectionMode={false}
-        onDetail={handleView}
+        onOpenDetail={handleView}
       />,
     );
     expect(
@@ -283,7 +283,7 @@ describe('TransactionRow', () => {
   });
 
   it('muted dims the row but keeps it pressable and selectable', () => {
-    const onDetail = vi.fn();
+    const onOpenDetail = vi.fn();
     const onSelectedChange = vi.fn();
     const { container } = render(
       <TransactionRow
@@ -291,14 +291,14 @@ describe('TransactionRow', () => {
         amount="100.00"
         muted
         selectable
-        onDetail={onDetail}
+        onOpenDetail={onOpenDetail}
         onSelectedChange={onSelectedChange}
       />,
     );
     expect(container.firstChild).toHaveClass('opacity-60');
     expect(container.firstChild).not.toHaveClass('pointer-events-none');
     fireEvent.click(screen.getByText('Excluded tx'));
-    expect(onDetail).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('checkbox'));
     expect(onSelectedChange).toHaveBeenCalledWith(true);
   });
@@ -351,7 +351,7 @@ describe('TransactionRow', () => {
     expect(monStripe).toHaveClass('w-space-4');
   });
 
-  it('calls onDetail on row tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
+  it('calls onOpenDetail on row tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
     const handleSelectedChange = vi.fn();
     const handleDetail = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -362,7 +362,7 @@ describe('TransactionRow', () => {
         selectable
         selected={false}
         selectionMode={false}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -381,7 +381,7 @@ describe('TransactionRow', () => {
         selectable
         selected={false}
         selectionMode={true}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />
     );
@@ -416,7 +416,7 @@ describe('TransactionRow', () => {
         amount="500.00"
         selectable
         selected={false}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -443,7 +443,7 @@ describe('TransactionRow', () => {
         amount="500.00"
         selectable
         selected={false}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -533,7 +533,7 @@ describe('TransactionRow', () => {
     expect(handleSelectedChange).not.toHaveBeenCalled();
   });
 
-  it('a tap on a selectable row outside selection mode calls onDetail and does not select', async () => {
+  it('a tap on a selectable row outside selection mode calls onOpenDetail and does not select', async () => {
     const handleDetail = vi.fn();
     const handleSelectedChange = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -543,7 +543,7 @@ describe('TransactionRow', () => {
         amount="500.00"
         selectable
         selected={false}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -569,7 +569,7 @@ describe('TransactionRow', () => {
         selected={false}
         categories={['Dining']}
         onCategoryClick={handleCategoryClick}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -591,7 +591,7 @@ describe('TransactionRow', () => {
         amount="500.00"
         selected
         selectionMode
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );

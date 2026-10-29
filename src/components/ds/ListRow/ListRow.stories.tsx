@@ -40,6 +40,7 @@ const meta = {
     borderTop: { control: 'boolean' },
     clickable: { control: 'boolean' },
     wrap: { control: 'boolean' },
+    flush: { control: 'boolean' },
     asChild: { control: 'boolean' },
     leading: { control: false },
     trailing: { control: false },
@@ -54,6 +55,7 @@ const meta = {
     borderTop: true,
     clickable: false,
     wrap: false,
+    flush: false,
     asChild: false,
   },
 } satisfies Meta<typeof ListRow>;
@@ -149,6 +151,14 @@ export const Wrap: Story = {
     subtitle: 'IST · statement digests and mailbox alerts go out as soon as they happen',
     wrap: true,
     trailing: <Text variant="body-strong">09:00</Text>,
+  },
+};
+
+export const Flush: Story = {
+  args: {
+    title: 'Hide amounts',
+    subtitle: 'Show ₹ — instead of balances and amounts.',
+    flush: true,
   },
 };
 

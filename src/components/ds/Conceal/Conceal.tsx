@@ -87,7 +87,7 @@ export const Conceal = React.forwardRef<HTMLSpanElement, ConcealProps>(function 
     else content = concealText(String(source), whole, placeholder);
   }
   // Plain text with no wrapper, so layout never changes; a ref or native props ask for the element.
-  if (ref === null && Object.keys(props).length === 0) return <>{content}</>;
+  if (ref === null && Object.values(props).every((v) => v === undefined)) return <>{content}</>;
   return (
     <span ref={ref} {...props}>
       {content}

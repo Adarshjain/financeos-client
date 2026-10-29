@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { GRID_GAP } from '@/components/ds';
 import { fyLabel } from '@/features/investments/investmentsFormatModel';
 
 import { FnoHero, FnoTiles, MonthCard, UnderlyingCard } from './FnoFigures';
@@ -22,7 +23,7 @@ export function FnoScreen({ figures, months, underlyings, ...list }: FnoScreenPr
       <FnoTiles figures={figures} allYears={allYears} />
       <FnoListCard {...list} />
       {months.length > 0 || underlyings.length > 0 ? (
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
           {months.length > 0 ? <MonthCard rows={months} fy={fyLabel(list.state.fy!)} /> : null}
           {underlyings.length > 0 ? <UnderlyingCard rows={underlyings} /> : null}
         </div>

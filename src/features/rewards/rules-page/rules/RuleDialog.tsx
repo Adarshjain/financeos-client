@@ -46,6 +46,8 @@ import { cardholderLabel } from '../milestones/milestoneModel';
 import { useRefreshUsage } from '../rulesRefresh';
 import { RuleTester } from './RuleTester';
 
+const FORM_ID = 'reward-rule-form';
+
 export interface RuleDialogProps {
   accountId: string;
   /** The rule being edited. */
@@ -185,347 +187,356 @@ export function RuleDialog({
         size="lg"
         title={rule ? 'Edit rule' : 'Add rule'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: f.isSubmitting }}
-        primary={{ label: 'Save & recompute', onSelect: f.onSubmit, loading: f.isSubmitting }}
+        primary={{ label: 'Save & recompute', type: 'submit', form: FORM_ID, loading: f.isSubmitting }}
       >
         <Dialog.Body>
-          <Dialog.Section title="Basics">
-            <div className={PAIR}>
-              <TextField label="Name" placeholder="e.g. 5% online" value={f.name} onValueChange={f.setName} />
-              <Select
-                label="Stacking"
-                options={STACKING_OPTIONS}
-                value={f.stacking}
-                onValueChange={(v) => f.setStacking(first(v) as RuleStacking)}
-              />
-            </div>
-            {cardholders.length > 0 ? (
-              <div className={ROW}>
-                <Select
-                  label="Card scope"
-                  options={[
-                    { value: ALL, label: 'All cardholders (account-level)' },
-                    ...cardholders.map((c) => ({ value: c.id, label: cardholderLabel(c, isBank) })),
-                  ]}
-                  value={f.cardId ?? ALL}
-                  onValueChange={(v) => f.setCardId(first(v) === ALL ? null : first(v))}
-                />
-                <Select
-                  label="Counter scope"
-                  options={COUNTER_OPTIONS}
-                  value={f.counterScope}
-                  onValueChange={(v) => f.setCounterScope(first(v) as CounterScope)}
-                />
-              </div>
-            ) : null}
-            <div className={ROW}>
-              <DateField
-                label="Active from"
-                optional
-                placeholder="Always"
-                today={today}
-                value={iso(f.activeFrom)}
-                onValueChange={pickDate(f.setActiveFrom)}
-              />
-              <DateField
-                label="Active until"
-                optional
-                placeholder="Open-ended"
-                today={today}
-                value={iso(f.activeTo)}
-                onValueChange={pickDate(f.setActiveTo)}
-              />
-            </div>
-          </Dialog.Section>
-
-          <Dialog.Section title="Match">
-            <Select
-              label="Categories"
-              multiple
-              searchable
-              placeholder="Any"
-              options={categoryOptions}
-              value={f.selectedCategories.map((c) => c.id)}
-              onValueChange={(v) =>
-                f.setSelectedCategories(asList(v).flatMap((id) => categories.find((c) => c.id === id) ?? []))
-              }
-            />
-            <TextField
-              label="MCC codes"
-              placeholder="Comma-separated, e.g. 5812, 5814"
-              value={f.mccText}
-              onValueChange={f.setMccText}
-            />
-            <div className={MATCH_ROW}>
-              <Select
-                label="Match type"
-                options={MATCH_OPTIONS}
-                value={f.merchantMatch}
-                onValueChange={(v) => f.setMerchantMatch((first(v) || NONE) as RewardMerchantMatch | 'NONE')}
-              />
-              <TextField
-                label="Merchant pattern"
-                optional
-                placeholder="e.g. swiggy"
-                value={f.merchantPattern}
-                onValueChange={f.setMerchantPattern}
-              />
-            </div>
-            <div className={ROW}>
-              <Select
-                label="Channels"
-                multiple
-                placeholder="Any"
-                options={CHANNEL_OPTIONS}
-                value={f.channels}
-                onValueChange={(v) => f.setChannels(asList(v) as TransactionChannel[])}
-              />
-              <Select
-                label="Days of week"
-                multiple
-                placeholder="Any"
-                options={DAY_OPTIONS}
-                value={f.daysOfWeek}
-                onValueChange={(v) => f.setDaysOfWeek(asList(v) as DayOfWeek[])}
-              />
-            </div>
-            <div className={ROW}>
-              <TextField
-                label="Min amount"
-                optional
-                inputMode="decimal"
-                placeholder="₹"
-                value={f.minAmount}
-                onValueChange={(v) => f.setMinAmount(sanitizeDecimalInput(v))}
-              />
-              <TextField
-                label="Max amount"
-                optional
-                inputMode="decimal"
-                placeholder="₹"
-                value={f.maxAmount}
-                onValueChange={(v) => f.setMaxAmount(sanitizeDecimalInput(v))}
-              />
-            </div>
-            <div className={ROW}>
-              <Select
-                label="EMI spends"
-                options={EMI_OPTIONS}
-                value={f.emiTreatment}
-                onValueChange={(v) => f.setEmiTreatment(first(v) as EmiTreatment)}
-              />
-              <Select
-                label="International"
-                options={INTL_OPTIONS}
-                value={f.intlTreatment}
-                onValueChange={(v) => f.setIntlTreatment(first(v) as IntlTreatment)}
-              />
-            </div>
-            <Select
-              label="Convenience fee"
-              options={FEE_OPTIONS}
-              value={f.feeTreatment}
-              onValueChange={(v) => f.setFeeTreatment(first(v) as FeeTreatment)}
-            />
-          </Dialog.Section>
-
-          <Dialog.Section title="Earn">
-            <Select
-              label="Rewards paid as"
-              options={REWARD_TYPE_OPTIONS}
-              value={f.rewardType}
-              onValueChange={(v) => f.setRewardType(first(v) as RewardType)}
-              helper={`Card default: ${defaultRewardType === 'POINTS' ? 'reward points' : 'cash'}`}
-            />
-            <SegmentedControl
-              size="lg"
-              options={ACCRUAL_OPTIONS}
-              value={f.accrualType}
-              onValueChange={(v) => f.setAccrualType(v as AccrualType)}
-              aria-label="How it accrues"
-            />
-            <div className={PAIR}>
-              {f.accrualType === 'PERCENT' ? (
-                <>
-                  {f.isTiered ? null : (
-                    <TextField
-                      label="Rate %"
-                      inputMode="decimal"
-                      placeholder="e.g. 5"
-                      value={f.percentRate}
-                      onValueChange={(v) => f.setPercentRate(sanitizeDecimalInput(v))}
-                    />
-                  )}
-                  <Select
-                    label="Rounding"
-                    options={ROUNDING_OPTIONS(points)}
-                    value={f.rounding}
-                    onValueChange={(v) => f.setRounding(first(v) as CashbackRounding)}
-                  />
-                </>
-              ) : (
-                <>
-                  <TextField
-                    label="Slab size ₹"
-                    inputMode="decimal"
-                    placeholder="e.g. 150"
-                    value={f.slabSize}
-                    onValueChange={(v) => f.setSlabSize(sanitizeDecimalInput(v))}
-                  />
-                  {f.isTiered ? null : (
-                    <TextField
-                      label={points ? 'Points per slab' : '₹ per slab'}
-                      inputMode="decimal"
-                      placeholder="e.g. 5"
-                      value={f.pointsPerSlab}
-                      onValueChange={(v) => f.setPointsPerSlab(sanitizeDecimalInput(v))}
-                    />
-                  )}
-                  <Select
-                    label={points ? 'Point precision' : 'Value precision'}
-                    options={PRECISION_OPTIONS(points)}
-                    value={f.pointPrecision}
-                    onValueChange={(v) => f.setPointPrecision(first(v))}
-                  />
-                </>
-              )}
-            </div>
-            <label className="flex items-center gap-space-8">
-              <Checkbox checked={f.isTiered} onCheckedChange={(c) => f.setIsTiered(c === true)} />
-              <Text variant="body">Tiered rate</Text>
-            </label>
-            {f.isTiered ? (
-              <div className="flex flex-col gap-space-8 desk:gap-space-12">
-                <Select
-                  label="Spend window"
-                  options={CAP_WINDOW_OPTIONS}
-                  value={f.tierWindow}
-                  onValueChange={(v) => f.setTierWindow(first(v) as CapWindow)}
-                />
-                {f.tierRows.map((tier, index) => {
-                  const last = index === f.tierRows.length - 1;
-                  return (
-                    <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-                      {last ? (
-                        <Text variant="body-strong" tone="ink-3" as="div">
-                          {index === 0 ? 'First' : 'Above'} · everything beyond
-                        </Text>
-                      ) : (
-                        <TextField
-                          label={index === 0 ? 'First, up to ₹' : 'Then, up to ₹'}
-                          inputMode="decimal"
-                          placeholder="up to ₹"
-                          value={tier.upTo}
-                          onValueChange={(v) => setTier(index, { upTo: sanitizeDecimalInput(v) })}
-                        />
-                      )}
-                      <TextField
-                        label={f.accrualType === 'PERCENT' ? 'Rate %' : points ? 'Points per slab' : '₹ per slab'}
-                        inputMode="decimal"
-                        value={tier.rate}
-                        onValueChange={(v) => setTier(index, { rate: sanitizeDecimalInput(v) })}
-                      />
-                      {!last && f.tierRows.length > 2 ? (
-                        <Button
-                          type="button"
-                          variant="link"
-                          onClick={() => f.setTierRows((rows) => rows.filter((_, i) => i !== index))}
-                        >
-                          Remove tier
-                        </Button>
-                      ) : null}
-                    </div>
-                  );
-                })}
-                <div>
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={() =>
-                      f.setTierRows((rows) => [...rows.slice(0, -1), { upTo: '', rate: '' }, rows[rows.length - 1]])
-                    }
-                  >
-                    Add tier
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-          </Dialog.Section>
-
-          <Dialog.Section title="Limits">
-            <TextField
-              label={`Per-transaction cap ${unit}`}
-              optional
-              inputMode="decimal"
-              placeholder="No cap"
-              value={f.perTxnCap}
-              onValueChange={(v) => f.setPerTxnCap(sanitizeDecimalInput(v))}
-            />
-            <Select
-              label="Period cap"
-              options={[
-                { value: 'NONE', label: 'No period cap' },
-                { value: 'OWN', label: 'This rule’s own cap' },
-                { value: 'BUCKET', label: `Shared bucket${capBuckets.length === 0 ? ' (none yet)' : ''}`, disabled: capBuckets.length === 0 },
-              ]}
-              value={f.capMode}
-              onValueChange={(v) => f.setCapMode(first(v) as 'NONE' | 'OWN' | 'BUCKET')}
-            />
-            {f.capMode === 'OWN' ? (
-              <div className={ROW}>
-                <TextField
-                  label={`Cap ${unit}`}
-                  inputMode="decimal"
-                  placeholder="e.g. 500"
-                  value={f.periodCap}
-                  onValueChange={(v) => f.setPeriodCap(sanitizeDecimalInput(v))}
-                />
-                <Select
-                  label="Cap window"
-                  options={CAP_WINDOW_OPTIONS}
-                  value={f.capWindow}
-                  onValueChange={(v) => f.setCapWindow(first(v) as CapWindow)}
-                />
-              </div>
-            ) : null}
-            {f.capMode === 'BUCKET' ? (
-              <Select
-                label="Shared bucket"
-                placeholder="Pick a bucket"
-                disabled={noBucketOfType}
-                options={bucketOptions}
-                value={f.capBucketId}
-                onValueChange={(v) => f.setCapBucketId(first(v))}
-                helper={noBucketOfType ? `No ${points ? 'points' : 'cash'} bucket yet. Add one in Caps.` : undefined}
-              />
-            ) : null}
-            {f.capMode !== 'NONE' ? (
-              <Select
-                label="When cap is hit"
-                options={CAP_EXHAUSTED_OPTIONS}
-                value={f.onCapExhausted}
-                onValueChange={(v) => f.setOnCapExhausted(first(v) as CapExhaustedBehavior)}
-              />
-            ) : null}
-          </Dialog.Section>
-
-          <Dialog.Section
-            ref={testRef}
-            title="Test this rule"
-            collapsible
-            defaultOpen={false}
-            onOpenChange={(open) => {
-              // Let the section finish unfolding, then bring it into the body's scroll view.
-              window.clearTimeout(scrollTimer.current);
-              if (open) {
-                scrollTimer.current = window.setTimeout(
-                  () => testRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }),
-                  220,
-                );
-              }
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!f.isSubmitting) void f.onSubmit();
             }}
           >
-            <RuleTester f={f} categories={categories} />
-          </Dialog.Section>
+            <Dialog.Section title="Basics">
+              <div className={PAIR}>
+                <TextField label="Name" placeholder="e.g. 5% online" value={f.name} onValueChange={f.setName} />
+                <Select
+                  label="Stacking"
+                  options={STACKING_OPTIONS}
+                  value={f.stacking}
+                  onValueChange={(v) => f.setStacking(first(v) as RuleStacking)}
+                />
+              </div>
+              {cardholders.length > 0 ? (
+                <div className={ROW}>
+                  <Select
+                    label="Card scope"
+                    options={[
+                      { value: ALL, label: 'All cardholders (account-level)' },
+                      ...cardholders.map((c) => ({ value: c.id, label: cardholderLabel(c, isBank) })),
+                    ]}
+                    value={f.cardId ?? ALL}
+                    onValueChange={(v) => f.setCardId(first(v) === ALL ? null : first(v))}
+                  />
+                  <Select
+                    label="Counter scope"
+                    options={COUNTER_OPTIONS}
+                    value={f.counterScope}
+                    onValueChange={(v) => f.setCounterScope(first(v) as CounterScope)}
+                  />
+                </div>
+              ) : null}
+              <div className={ROW}>
+                <DateField
+                  label="Active from"
+                  optional
+                  placeholder="Always"
+                  today={today}
+                  value={iso(f.activeFrom)}
+                  onValueChange={pickDate(f.setActiveFrom)}
+                />
+                <DateField
+                  label="Active until"
+                  optional
+                  placeholder="Open-ended"
+                  today={today}
+                  value={iso(f.activeTo)}
+                  onValueChange={pickDate(f.setActiveTo)}
+                />
+              </div>
+            </Dialog.Section>
+
+            <Dialog.Section title="Match">
+              <Select
+                label="Categories"
+                multiple
+                searchable
+                placeholder="Any"
+                options={categoryOptions}
+                value={f.selectedCategories.map((c) => c.id)}
+                onValueChange={(v) =>
+                  f.setSelectedCategories(asList(v).flatMap((id) => categories.find((c) => c.id === id) ?? []))
+                }
+              />
+              <TextField
+                label="MCC codes"
+                placeholder="Comma-separated, e.g. 5812, 5814"
+                value={f.mccText}
+                onValueChange={f.setMccText}
+              />
+              <div className={MATCH_ROW}>
+                <Select
+                  label="Match type"
+                  options={MATCH_OPTIONS}
+                  value={f.merchantMatch}
+                  onValueChange={(v) => f.setMerchantMatch((first(v) || NONE) as RewardMerchantMatch | 'NONE')}
+                />
+                <TextField
+                  label="Merchant pattern"
+                  optional
+                  placeholder="e.g. swiggy"
+                  value={f.merchantPattern}
+                  onValueChange={f.setMerchantPattern}
+                />
+              </div>
+              <div className={ROW}>
+                <Select
+                  label="Channels"
+                  multiple
+                  placeholder="Any"
+                  options={CHANNEL_OPTIONS}
+                  value={f.channels}
+                  onValueChange={(v) => f.setChannels(asList(v) as TransactionChannel[])}
+                />
+                <Select
+                  label="Days of week"
+                  multiple
+                  placeholder="Any"
+                  options={DAY_OPTIONS}
+                  value={f.daysOfWeek}
+                  onValueChange={(v) => f.setDaysOfWeek(asList(v) as DayOfWeek[])}
+                />
+              </div>
+              <div className={ROW}>
+                <TextField
+                  label="Min amount"
+                  optional
+                  inputMode="decimal"
+                  placeholder="₹"
+                  value={f.minAmount}
+                  onValueChange={(v) => f.setMinAmount(sanitizeDecimalInput(v))}
+                />
+                <TextField
+                  label="Max amount"
+                  optional
+                  inputMode="decimal"
+                  placeholder="₹"
+                  value={f.maxAmount}
+                  onValueChange={(v) => f.setMaxAmount(sanitizeDecimalInput(v))}
+                />
+              </div>
+              <div className={ROW}>
+                <Select
+                  label="EMI spends"
+                  options={EMI_OPTIONS}
+                  value={f.emiTreatment}
+                  onValueChange={(v) => f.setEmiTreatment(first(v) as EmiTreatment)}
+                />
+                <Select
+                  label="International"
+                  options={INTL_OPTIONS}
+                  value={f.intlTreatment}
+                  onValueChange={(v) => f.setIntlTreatment(first(v) as IntlTreatment)}
+                />
+              </div>
+              <Select
+                label="Convenience fee"
+                options={FEE_OPTIONS}
+                value={f.feeTreatment}
+                onValueChange={(v) => f.setFeeTreatment(first(v) as FeeTreatment)}
+              />
+            </Dialog.Section>
+
+            <Dialog.Section title="Earn">
+              <Select
+                label="Rewards paid as"
+                options={REWARD_TYPE_OPTIONS}
+                value={f.rewardType}
+                onValueChange={(v) => f.setRewardType(first(v) as RewardType)}
+                helper={`Card default: ${defaultRewardType === 'POINTS' ? 'reward points' : 'cash'}`}
+              />
+              <SegmentedControl
+                size="lg"
+                options={ACCRUAL_OPTIONS}
+                value={f.accrualType}
+                onValueChange={(v) => f.setAccrualType(v as AccrualType)}
+                aria-label="How it accrues"
+              />
+              <div className={PAIR}>
+                {f.accrualType === 'PERCENT' ? (
+                  <>
+                    {f.isTiered ? null : (
+                      <TextField
+                        label="Rate %"
+                        inputMode="decimal"
+                        placeholder="e.g. 5"
+                        value={f.percentRate}
+                        onValueChange={(v) => f.setPercentRate(sanitizeDecimalInput(v))}
+                      />
+                    )}
+                    <Select
+                      label="Rounding"
+                      options={ROUNDING_OPTIONS(points)}
+                      value={f.rounding}
+                      onValueChange={(v) => f.setRounding(first(v) as CashbackRounding)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <TextField
+                      label="Slab size ₹"
+                      inputMode="decimal"
+                      placeholder="e.g. 150"
+                      value={f.slabSize}
+                      onValueChange={(v) => f.setSlabSize(sanitizeDecimalInput(v))}
+                    />
+                    {f.isTiered ? null : (
+                      <TextField
+                        label={points ? 'Points per slab' : '₹ per slab'}
+                        inputMode="decimal"
+                        placeholder="e.g. 5"
+                        value={f.pointsPerSlab}
+                        onValueChange={(v) => f.setPointsPerSlab(sanitizeDecimalInput(v))}
+                      />
+                    )}
+                    <Select
+                      label={points ? 'Point precision' : 'Value precision'}
+                      options={PRECISION_OPTIONS(points)}
+                      value={f.pointPrecision}
+                      onValueChange={(v) => f.setPointPrecision(first(v))}
+                    />
+                  </>
+                )}
+              </div>
+              <label className="flex items-center gap-space-8">
+                <Checkbox checked={f.isTiered} onCheckedChange={(c) => f.setIsTiered(c === true)} />
+                <Text variant="body">Tiered rate</Text>
+              </label>
+              {f.isTiered ? (
+                <div className="flex flex-col gap-space-8 desk:gap-space-12">
+                  <Select
+                    label="Spend window"
+                    options={CAP_WINDOW_OPTIONS}
+                    value={f.tierWindow}
+                    onValueChange={(v) => f.setTierWindow(first(v) as CapWindow)}
+                  />
+                  {f.tierRows.map((tier, index) => {
+                    const last = index === f.tierRows.length - 1;
+                    return (
+                      <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
+                        {last ? (
+                          <Text variant="body-strong" tone="ink-3" as="div">
+                            {index === 0 ? 'First' : 'Above'} · everything beyond
+                          </Text>
+                        ) : (
+                          <TextField
+                            label={index === 0 ? 'First, up to ₹' : 'Then, up to ₹'}
+                            inputMode="decimal"
+                            placeholder="up to ₹"
+                            value={tier.upTo}
+                            onValueChange={(v) => setTier(index, { upTo: sanitizeDecimalInput(v) })}
+                          />
+                        )}
+                        <TextField
+                          label={f.accrualType === 'PERCENT' ? 'Rate %' : points ? 'Points per slab' : '₹ per slab'}
+                          inputMode="decimal"
+                          value={tier.rate}
+                          onValueChange={(v) => setTier(index, { rate: sanitizeDecimalInput(v) })}
+                        />
+                        {!last && f.tierRows.length > 2 ? (
+                          <Button
+                            type="button"
+                            variant="link"
+                            onClick={() => f.setTierRows((rows) => rows.filter((_, i) => i !== index))}
+                          >
+                            Remove tier
+                          </Button>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                  <div>
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() =>
+                        f.setTierRows((rows) => [...rows.slice(0, -1), { upTo: '', rate: '' }, rows[rows.length - 1]])
+                      }
+                    >
+                      Add tier
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </Dialog.Section>
+
+            <Dialog.Section title="Limits">
+              <TextField
+                label={`Per-transaction cap ${unit}`}
+                optional
+                inputMode="decimal"
+                placeholder="No cap"
+                value={f.perTxnCap}
+                onValueChange={(v) => f.setPerTxnCap(sanitizeDecimalInput(v))}
+              />
+              <Select
+                label="Period cap"
+                options={[
+                  { value: 'NONE', label: 'No period cap' },
+                  { value: 'OWN', label: 'This rule’s own cap' },
+                  { value: 'BUCKET', label: `Shared bucket${capBuckets.length === 0 ? ' (none yet)' : ''}`, disabled: capBuckets.length === 0 },
+                ]}
+                value={f.capMode}
+                onValueChange={(v) => f.setCapMode(first(v) as 'NONE' | 'OWN' | 'BUCKET')}
+              />
+              {f.capMode === 'OWN' ? (
+                <div className={ROW}>
+                  <TextField
+                    label={`Cap ${unit}`}
+                    inputMode="decimal"
+                    placeholder="e.g. 500"
+                    value={f.periodCap}
+                    onValueChange={(v) => f.setPeriodCap(sanitizeDecimalInput(v))}
+                  />
+                  <Select
+                    label="Cap window"
+                    options={CAP_WINDOW_OPTIONS}
+                    value={f.capWindow}
+                    onValueChange={(v) => f.setCapWindow(first(v) as CapWindow)}
+                  />
+                </div>
+              ) : null}
+              {f.capMode === 'BUCKET' ? (
+                <Select
+                  label="Shared bucket"
+                  placeholder="Pick a bucket"
+                  disabled={noBucketOfType}
+                  options={bucketOptions}
+                  value={f.capBucketId}
+                  onValueChange={(v) => f.setCapBucketId(first(v))}
+                  helper={noBucketOfType ? `No ${points ? 'points' : 'cash'} bucket yet. Add one in Caps.` : undefined}
+                />
+              ) : null}
+              {f.capMode !== 'NONE' ? (
+                <Select
+                  label="When cap is hit"
+                  options={CAP_EXHAUSTED_OPTIONS}
+                  value={f.onCapExhausted}
+                  onValueChange={(v) => f.setOnCapExhausted(first(v) as CapExhaustedBehavior)}
+                />
+              ) : null}
+            </Dialog.Section>
+
+            <Dialog.Section
+              ref={testRef}
+              title="Test this rule"
+              collapsible
+              defaultOpen={false}
+              onOpenChange={(open) => {
+                // Let the section finish unfolding, then bring it into the body's scroll view.
+                window.clearTimeout(scrollTimer.current);
+                if (open) {
+                  scrollTimer.current = window.setTimeout(
+                    () => testRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }),
+                    220,
+                  );
+                }
+              }}
+            >
+              <RuleTester f={f} categories={categories} />
+            </Dialog.Section>
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

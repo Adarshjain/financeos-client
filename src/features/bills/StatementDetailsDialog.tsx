@@ -17,6 +17,8 @@ import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
+const FORM_ID = 'statement-details-form';
+
 export interface StatementDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -126,31 +128,40 @@ export function StatementDetailsDialog({
           onSelect: () => onOpenChange(false),
           disabled: updateDetails.isPending,
         }}
-        primary={{ label: 'Save details', onSelect: submit, loading: updateDetails.isPending }}
+        primary={{ label: 'Save details', type: 'submit', form: FORM_ID, loading: updateDetails.isPending }}
       >
         <Dialog.Body>
-          {formError ? <Banner tone="danger">{formError}</Banner> : null}
-          <AmountField
-            label="Total due (₹)"
-            inputMode="decimal"
-            value={totalText}
-            {...amountExpressionProps(totalText, setTotal)}
-            error={totalError ?? undefined}
-          />
-          <AmountField
-            label="Minimum due"
-            optional
-            inputMode="decimal"
-            value={minimumText}
-            {...amountExpressionProps(minimumText, setMinimum)}
-            error={minimumError ?? undefined}
-          />
-          <DateField
-            label="Due date"
-            today={today}
-            value={due}
-            onValueChange={(v) => setDue(typeof v === 'string' ? v : '')}
-          />
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!updateDetails.isPending) void submit();
+            }}
+          >
+            {formError ? <Banner tone="danger">{formError}</Banner> : null}
+            <AmountField
+              label="Total due (₹)"
+              inputMode="decimal"
+              value={totalText}
+              {...amountExpressionProps(totalText, setTotal)}
+              error={totalError ?? undefined}
+            />
+            <AmountField
+              label="Minimum due"
+              optional
+              inputMode="decimal"
+              value={minimumText}
+              {...amountExpressionProps(minimumText, setMinimum)}
+              error={minimumError ?? undefined}
+            />
+            <DateField
+              label="Due date"
+              today={today}
+              value={due}
+              onValueChange={(v) => setDue(typeof v === 'string' ? v : '')}
+            />
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

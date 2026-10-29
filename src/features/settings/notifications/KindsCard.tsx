@@ -32,8 +32,7 @@ export function KindSwitches({ settings, kinds }: { settings: NotificationSettin
     <>
       {kinds.map((kind) => (
         <SettingsToggle
-          // ListRow keeps a 4px left rail; match it so switches line up with the other rows.
-          className="px-space-16 border-l-4 border-l-transparent"
+          flush={false}
           key={kind.key}
           label={kind.label}
           description={kind.description}

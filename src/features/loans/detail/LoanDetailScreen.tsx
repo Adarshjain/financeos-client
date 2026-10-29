@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { ConfirmDialog } from '@/components/ds';
+import {
+  ConfirmDialog,
+  GRID_GAP,
+} from '@/components/ds';
 import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
@@ -103,7 +106,7 @@ export function LoanDetailScreen({ detail, schedule, paymentAccountName, today, 
             onDelete={() => setDeleting(true)}
           />
           <LoanTilesCard model={tiles} />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+          <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-9 min-w-0">
               <ScheduleCard
                 rows={rows}

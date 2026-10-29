@@ -93,14 +93,14 @@ describe('RuleCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders eye icon and triggers onDetail in selection mode', () => {
+  it('renders eye icon and triggers onOpenDetail in selection mode', () => {
     const handleView = vi.fn();
     render(
       <RuleCard
         name="Lenskart"
         matchType="Contains"
         selectionMode={true}
-        onDetail={handleView}
+        onOpenDetail={handleView}
       />,
     );
 
@@ -119,7 +119,7 @@ describe('RuleCard', () => {
         name="Lenskart"
         matchType="Contains"
         selectionMode
-        onDetail={vi.fn()}
+        onOpenDetail={vi.fn()}
         onApprove={vi.fn()}
         menuItems={[{ label: 'Edit rule' }]}
       />,
@@ -129,7 +129,7 @@ describe('RuleCard', () => {
     expect(screen.getByRole('button', { name: 'Approve' }).parentElement).toHaveClass('max-desk:hidden');
   });
 
-  it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
+  it('does not render eye button when outside selection mode even if selectable and onOpenDetail is passed', () => {
     const handleView = vi.fn();
     render(
       <RuleCard
@@ -137,7 +137,7 @@ describe('RuleCard', () => {
         matchType="Contains"
         selectable
         selectionMode={false}
-        onDetail={handleView}
+        onOpenDetail={handleView}
       />,
     );
     expect(
@@ -188,7 +188,7 @@ describe('RuleCard', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onDetail on card tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
+  it('calls onOpenDetail on card tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
     const handleSelectedChange = vi.fn();
     const handleDetail = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -199,7 +199,7 @@ describe('RuleCard', () => {
         selectable
         selected={false}
         selectionMode={false}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -218,7 +218,7 @@ describe('RuleCard', () => {
         selectable
         selected={false}
         selectionMode={true}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />
     );
@@ -327,7 +327,7 @@ describe('RuleCard', () => {
         selectable
         selected={false}
         onApprove={handleApprove}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -352,7 +352,7 @@ describe('RuleCard', () => {
         selectable
         selected={false}
         menuItems={[{ label: 'Edit rule', onSelect: handleSelectMenuItem }]}
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
@@ -373,7 +373,7 @@ describe('RuleCard', () => {
         matchType="Contains"
         selected
         selectionMode
-        onDetail={handleDetail}
+        onOpenDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );

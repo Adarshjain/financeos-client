@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  Skeleton,
+} from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 
 import { LocalFailuresCard } from './LocalFailuresCard';
@@ -50,7 +54,7 @@ export function DebugScreen({ initialRef = '', initialType = 'auto', admin }: De
       ) : null}
 
       {admin && data && !isLoading ? (
-        <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16">
             {data.request ? (
               <RequestCard

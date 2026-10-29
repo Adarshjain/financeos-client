@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { GRID_GAP } from '@/components/ds';
 import { LivePriceRefresh } from '@/features/investments/LivePriceRefresh';
 
 import { AllocationCard, HoldingsHero, HoldingsTiles, TaxCard, TopMoversCard } from './HoldingsFigures';
@@ -27,7 +28,7 @@ export function HoldingsScreen({ hero, tiles, allocation, tax, movers, ...list }
       <PricesLine asOf={hero.priceAsOf} label={hero.priceLine} />
       <HoldingsTiles tiles={tiles} failedLabels={TILE_LABELS} />
       <HoldingsListCard {...list} />
-      <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>
         {allocation.length > 0 ? <AllocationCard segments={allocation} /> : null}
         {tax ? (
           <div className="desk:order-3">
