@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { Button, Card, CardEmpty, ListRow, Text } from '@/components/ds';
+import { Button, Card, ListRow, Text } from '@/components/ds';
 
 import { failureLine } from './debugModel';
 import { useLocalFailures } from './useLocalFailures';
@@ -44,7 +44,7 @@ export function LocalFailuresCard({ highlightRef, onSelectRef }: LocalFailuresCa
       }
     >
       {records.length === 0 ? (
-        <CardEmpty>No local failures yet</CardEmpty>
+        <Card.Empty>No local failures yet</Card.Empty>
       ) : (
         records.map((rec, idx) => {
           const isHighlighted = Boolean(highlightRef) && rec.ref === highlightRef;

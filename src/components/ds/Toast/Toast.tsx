@@ -17,7 +17,7 @@ export interface ToastProps
   /** Toast message */
   message?: React.ReactNode;
   /** Single action button on the right: action={{ label, onSelect }}, or { label, href } for a link */
-  action?: { label: React.ReactNode } & ActionTarget;
+  action?: { label: string } & ActionTarget;
 }
 
 export const Toast = forwardRef<HTMLDivElement, ToastProps>(
@@ -108,7 +108,7 @@ export function Toaster({
 export interface ShowToastOptions {
   id?: string;
   tone?: BannerTone;
-  action?: { label: React.ReactNode } & ActionTarget;
+  action?: { label: string } & ActionTarget;
   duration?: number;
   onDismiss?: () => void;
 }

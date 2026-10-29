@@ -11,7 +11,7 @@ export type NotifyOptions = ExternalToast;
 
 function toDinero(message: Message, tone: Tone, options?: NotifyOptions, forever?: boolean) {
   const action = options?.action;
-  const hasAction = action && typeof action === 'object' && 'label' in action && 'onClick' in action;
+  const hasAction = action && typeof action === 'object' && 'label' in action && typeof action.label === 'string' && 'onClick' in action;
   const text = typeof message === 'function' ? '' : message;
   return showToast(
     options?.description && typeof text === 'string' && typeof options.description === 'string'
@@ -23,7 +23,7 @@ function toDinero(message: Message, tone: Tone, options?: NotifyOptions, forever
       duration: forever ? Infinity : options?.duration,
       action: hasAction
         ? {
-            label: action.label,
+            label: String(action.label),
             onSelect: () =>
               action.onClick({ preventDefault() {} } as unknown as React.MouseEvent<HTMLButtonElement>),
           }

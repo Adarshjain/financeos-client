@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
-import { EmptyState, type EmptyStateProps } from '@/components/ds';
+import { type ActionTarget, EmptyState, type EmptyStateProps } from '@/components/ds';
 import { copyText } from '@/lib/copyText';
 
 export interface ErrorStateProps
@@ -12,11 +12,11 @@ export interface ErrorStateProps
   /** One sentence on what to do. */
   description?: React.ReactNode;
   /** Retries the failed request: action={{ label: 'Try again', onSelect }}. Without it there is no retry button. */
-  action?: { label: React.ReactNode; onSelect: () => void };
+  action?: { label: string } & ActionTarget;
   /** The error reference to quote (from the error log). Without it there is no copy button. */
   reference?: string;
   /** Label of the copy button. Default: Copy reference <reference>. */
-  copyLabel?: (reference: string) => React.ReactNode;
+  copyLabel?: (reference: string) => string;
   /** Called after the reference was put on the clipboard, e.g. to show a toast. */
   onCopyReference?: (reference: string) => void;
 }

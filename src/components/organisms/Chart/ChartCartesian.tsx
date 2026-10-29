@@ -4,7 +4,7 @@
 // Dinero tokens: series in chart-1…chart-5 (the rest fold into chart-rest),
 // recessive axes, a hairline horizontal grid and compact ₹1.2L ticks.
 
-import { useId } from 'react';
+import { forwardRef, useId } from 'react';
 import {
   Area,
   AreaChart,
@@ -43,6 +43,7 @@ import {
   chartColor,
 } from './chartTokens';
 import { chartValueFormat } from './chartValueFormat';
+import { useMergedRef } from './mergeRefs';
 
 type ChartRow = Record<string, string | number | null>;
 /** The row's category index: category labels can repeat, so a press reads the index, not the label. */
@@ -51,24 +52,32 @@ const ROW_INDEX = '__index';
 const NARROW_PX = 400;
 const ANIMATION_MS = 450;
 
-export function ChartCartesian({
-  data,
-  fill,
-  money,
-  yDomain,
-  onSelectEntry,
-  canSelectEntry,
-}: {
+export interface ChartCartesianProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   yDomain?: 'zero' | 'data';
   onSelectEntry?: (entry: ChartEntry) => void;
   canSelectEntry?: (entry: ChartEntry) => boolean;
-}) {
+}
+
+export const ChartCartesian = forwardRef<HTMLDivElement, ChartCartesianProps>(function ChartCartesian(
+  {
+  data,
+  fill,
+  money,
+  yDomain,
+  onSelectEntry,
+  canSelectEntry,
+  className,
+  ...props
+},
+  ref,
+) {
   const { chartType, categories } = data;
   const gradientId = useId().replace(/:/g, '');
-  const [frameRef, { width }] = useElementSize<HTMLDivElement>();
+  const [sizeRef, { width }] = useElementSize<HTMLDivElement>();
+  const frameRef = useMergedRef(sizeRef, ref);
   const narrow = width > 0 && width < NARROW_PX;
   const format = chartValueFormat(money);
 
@@ -322,8 +331,10 @@ export function ChartCartesian({
       ref={frameRef}
       className={cn(
         'flex w-full min-w-0 flex-col gap-space-8',
-        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide'
+        fill ? 'h-full min-h-0' : 'aspect-video desk:aspect-wide',
+        className
       )}
+      {...props}
     >
       {series.length > 1 && (
         <ChartLegend
@@ -346,4 +357,4 @@ export function ChartCartesian({
       </div>
     </div>
   );
-}
+});

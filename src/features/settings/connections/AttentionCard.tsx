@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Button, Card, CardEmpty, Pager, Text } from '@/components/ds';
+import { Button, Card, Pager, Text } from '@/components/ds';
 import type { Schemas } from '@/lib/api/types';
 
 import { AssignDialog } from './AssignDialog';
@@ -111,7 +111,7 @@ export function AttentionCard({
         }
       >
         {data.content.length === 0 ? (
-          <CardEmpty>Nothing needs attention right now.</CardEmpty>
+          <Card.Empty>Nothing needs attention right now.</Card.Empty>
         ) : (
           <>
             <ListPager data={data} page={page} onPageChange={go} position="top" />

@@ -8,8 +8,6 @@ import {
   ConfirmDialog,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   ListRow,
   Select,
   showToast,
@@ -190,14 +188,14 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={entry ? entryTitle(entry) : 'Record EPF entry'}
           tertiary={showFooterDelete ? { label: 'Delete entry', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: pending } : undefined}
           secondary={{ label: imported && !importedWithdrawal ? 'Close' : 'Cancel', onSelect: onClose, disabled: pending }}
           primary={footerPrimary}
         >
-          <DialogBody>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-16">
               {imported ? (
                 <Banner tone="info">
@@ -315,8 +313,8 @@ export function EpfEntryDialog({ entry = null, employers, latestContribution = n
                 <EpfCreditSection key={`${entry.id}-${entry.transaction?.id ?? ''}-${entry.suggestion?.id ?? ''}`} entry={entry} mutations={mutations} onChanged={onChanged} />
               ) : null}
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
 
       {entry ? (

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Banner, Button, Card, CardHeader, CardSubtitle, CardTitle, Icon, ListRow, Text } from '@/components/ds';
+import { Badge, Banner, Button, Card, Icon, ListRow, Text } from '@/components/ds';
 
 import { routingParts } from './aiModel';
 import type { RoutingGroupEditor } from './routingGroups';
@@ -40,12 +40,12 @@ interface RoutingCardProps {
 export function RoutingCard({ groups, error }: RoutingCardProps) {
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <div className="min-w-0">
-          <CardTitle>Routing</CardTitle>
-          <CardSubtitle truncate={false}>Tried in order. Options without a key are skipped automatically.</CardSubtitle>
+          <Card.Title>Routing</Card.Title>
+          <Card.Subtitle truncate={false}>Tried in order. Options without a key are skipped automatically.</Card.Subtitle>
         </div>
-      </CardHeader>
+      </Card.Header>
       {error ? (
         <div className="px-space-16 pb-space-10">
           <Banner tone="danger">{error}</Banner>

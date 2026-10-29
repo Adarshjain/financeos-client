@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Conceal, ConfirmDialog, Dialog, DialogBody, DialogContent, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
+import { Button, Conceal, ConfirmDialog, Dialog, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
@@ -76,13 +76,13 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="md"
           title="Price history"
           description={`${name} · newest first · only your manual prices can change`}
           secondary={{ label: 'Close', onSelect: onClose }}
         >
-          <DialogBody className="p-0 gap-0 desk:gap-0">
+          <Dialog.Body className="p-0 gap-0 desk:gap-0">
             {section === null && !failed ? <Skeleton height={48} /> : null}
             {section === null && failed ? (
               <EmptyState compact description="Couldn't load the price history." action={{ label: 'Retry', onSelect: () => void load(0), variant: 'link' }} />
@@ -112,8 +112,8 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
               />
             ))}
             {section && section.rows.length > 0 ? pager : null}
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
       {editing ? (
         <PriceDialog

@@ -9,7 +9,6 @@ import {
   DataTable,
   Icon,
   Menu,
-  MenuItem,
   StatusWord,
   Text,
 } from '@/components/ds';
@@ -100,20 +99,20 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
                 </Button>
               }
             >
-              <MenuItem onSelect={() => onTest(key)}>Test key</MenuItem>
+              <Menu.Item onSelect={() => onTest(key)}>Test key</Menu.Item>
               {count > 1 ? (
                 <>
-                  <MenuItem disabled={index === 0} onSelect={() => onMove(row.original, -1)}>
+                  <Menu.Item disabled={index === 0} onSelect={() => onMove(row.original, -1)}>
                     Move up
-                  </MenuItem>
-                  <MenuItem disabled={index === count - 1} onSelect={() => onMove(row.original, 1)}>
+                  </Menu.Item>
+                  <Menu.Item disabled={index === count - 1} onSelect={() => onMove(row.original, 1)}>
                     Move down
-                  </MenuItem>
+                  </Menu.Item>
                 </>
               ) : null}
-              <MenuItem destructive onSelect={() => onDelete(key)}>
+              <Menu.Item tone="danger" onSelect={() => onDelete(key)}>
                 Delete key
-              </MenuItem>
+              </Menu.Item>
             </Menu>
           );
         },

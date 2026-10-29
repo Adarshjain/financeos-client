@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Button, Icon, Menu, MenuItem, MenuSeparator, SelectionBar, type SelectionBarAction, Text } from '@/components/ds';
+import { Button, Icon, Menu, SelectionBar, type SelectionBarAction, Text } from '@/components/ds';
 
 const sampleActions: SelectionBarAction[] = [
   {
@@ -155,10 +155,10 @@ const pageNote = (
         </Button>
       }
     >
-      <MenuItem>Duplicate report</MenuItem>
-      <MenuItem>Add to dashboard</MenuItem>
-      <MenuSeparator />
-      <MenuItem destructive>Delete report</MenuItem>
+      <Menu.Item>Duplicate report</Menu.Item>
+      <Menu.Item>Add to dashboard</Menu.Item>
+      <Menu.Separator />
+      <Menu.Item tone="danger">Delete report</Menu.Item>
     </Menu>
   </>
 );

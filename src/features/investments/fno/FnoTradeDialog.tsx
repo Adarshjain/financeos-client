@@ -8,8 +8,6 @@ import {
   ConfirmDialog,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   SegmentedControl,
   Select,
   showToast,
@@ -121,7 +119,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
   return (
     <>
       <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={trade ? 'Edit F&O trade' : 'Record F&O trade'}
           description="Values in ₹."
@@ -129,7 +127,7 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: trade ? 'Save trade' : 'Record trade', type: 'submit', form: FORM_ID, loading: saving }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <form
               id={FORM_ID}
               noValidate
@@ -260,8 +258,8 @@ export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps)
                 </Card>
               ) : null}
             </form>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
       {trade ? (
         <ConfirmDialog

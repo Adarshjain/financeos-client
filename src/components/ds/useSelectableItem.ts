@@ -27,7 +27,7 @@ export interface UseSelectableItemOptions {
   selected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
   selectionMode?: boolean;
-  onPress?: (point: PressPoint) => void;
+  onOpenDetail?: (point: PressPoint) => void;
   disabled?: boolean;
   longPressThreshold?: number;
 }
@@ -39,7 +39,7 @@ export function useSelectableItem({
   selected = false,
   onSelectedChange,
   selectionMode = false,
-  onPress,
+  onOpenDetail,
   disabled = false,
   longPressThreshold = 500,
 }: UseSelectableItemOptions) {
@@ -85,10 +85,10 @@ export function useSelectableItem({
       // click React Aria synthesizes itself (no ctrlKey), so the key is read from the pointerdown.
       if (ctrlDown.current && !isPhoneLayout()) return;
       if (isPhoneLayout() && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
-      else if (onPress) {
+      else if (onOpenDetail) {
         const rect = (e.target as HTMLElement).getBoundingClientRect();
         const fromPointer = e.pointerType !== 'keyboard' && e.pointerType !== 'virtual';
-        onPress(
+        onOpenDetail(
           fromPointer && lastPointer.current
             ? lastPointer.current
             : { x: rect.left, y: fromPointer ? rect.top : rect.bottom },

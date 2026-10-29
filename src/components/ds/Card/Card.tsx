@@ -20,7 +20,7 @@ export interface CardHeaderProps
   action?: React.ReactNode;
 }
 
-export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ title, subtitle, action, className, children, ...props }, ref) => {
     const inset = useContext(CardVariantContext) === 'inset';
     return (
@@ -61,7 +61,7 @@ export interface CardTitleProps
   truncate?: boolean;
 }
 
-export const CardTitle = forwardRef<HTMLElement, CardTitleProps>(
+const CardTitle = forwardRef<HTMLElement, CardTitleProps>(
   ({ as = 'div', truncate = true, className, children, ...props }, ref) => {
     return (
       <Text
@@ -89,7 +89,7 @@ export interface CardSubtitleProps
   truncate?: boolean;
 }
 
-export const CardSubtitle = forwardRef<HTMLElement, CardSubtitleProps>(
+const CardSubtitle = forwardRef<HTMLElement, CardSubtitleProps>(
   ({ as = 'div', truncate = true, className, children, ...props }, ref) => {
     return (
       <Text
@@ -114,7 +114,7 @@ CardSubtitle.displayName = 'CardSubtitle';
 
 export interface CardRowProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const CardRow = forwardRef<HTMLDivElement, CardRowProps>(
+const CardRow = forwardRef<HTMLDivElement, CardRowProps>(
   ({ className, children, ...props }, ref) => {
     const inset = useContext(CardVariantContext) === 'inset';
     return (
@@ -142,7 +142,7 @@ export interface CardSectionProps
   label?: React.ReactNode;
 }
 
-export const CardSection = forwardRef<HTMLDivElement, CardSectionProps>(
+const CardSection = forwardRef<HTMLDivElement, CardSectionProps>(
   ({ className, children, label, ...props }, ref) => {
     return (
       <SectionHeader
@@ -161,7 +161,7 @@ CardSection.displayName = 'CardSection';
 
 export interface CardEmptyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const CardEmpty = forwardRef<HTMLDivElement, CardEmptyProps>(
+const CardEmpty = forwardRef<HTMLDivElement, CardEmptyProps>(
   ({ className, children, ...props }, ref) => {
     const inset = useContext(CardVariantContext) === 'inset';
     return (
@@ -184,7 +184,7 @@ CardEmpty.displayName = 'CardEmpty';
 
 export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, children, ...props }, ref) => {
     const inset = useContext(CardVariantContext) === 'inset';
     return (
@@ -228,7 +228,7 @@ const variantStyles: Record<CardVariant, string> = {
   inset: 'rounded-ds-md',
 };
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(
+const CardRoot = forwardRef<HTMLDivElement, CardProps>(
   (
     {
       title,
@@ -279,4 +279,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   },
 );
 
-Card.displayName = 'Card';
+CardRoot.displayName = 'Card';
+
+export const Card = Object.assign(CardRoot, {
+  Header: CardHeader,
+  Title: CardTitle,
+  Subtitle: CardSubtitle,
+  Row: CardRow,
+  Section: CardSection,
+  Empty: CardEmpty,
+  Footer: CardFooter,
+});

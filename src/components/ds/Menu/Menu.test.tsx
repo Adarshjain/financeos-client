@@ -4,9 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   Menu,
-  MenuGroup,
-  MenuItem,
-  MenuSeparator,
 } from './Menu';
 
 describe('Menu', () => {
@@ -16,8 +13,8 @@ describe('Menu', () => {
       <Menu
         trigger={<button type="button">Open menu</button>}
       >
-        <MenuItem onSelect={handleSelect}>Edit rule</MenuItem>
-        <MenuItem>Find matches</MenuItem>
+        <Menu.Item onSelect={handleSelect}>Edit rule</Menu.Item>
+        <Menu.Item>Find matches</Menu.Item>
       </Menu>,
     );
 
@@ -40,9 +37,9 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem disabled onSelect={handleSelect} hint="has transactions">
+        <Menu.Item disabled onSelect={handleSelect} hint="has transactions">
           Delete cardholder
-        </MenuItem>
+        </Menu.Item>
       </Menu>,
     );
 
@@ -61,7 +58,7 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem destructive>Delete rule</MenuItem>
+        <Menu.Item tone="danger">Delete rule</Menu.Item>
       </Menu>,
     );
 
@@ -75,9 +72,9 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem active hint="Default">
+        <Menu.Item active hint="Default">
           Home
-        </MenuItem>
+        </Menu.Item>
       </Menu>,
     );
 
@@ -92,7 +89,7 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem action>View all dashboards</MenuItem>
+        <Menu.Item action>View all dashboards</Menu.Item>
       </Menu>,
     );
 
@@ -106,24 +103,24 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem>One</MenuItem>
-        <MenuSeparator />
-        <MenuItem>Two</MenuItem>
+        <Menu.Item>One</Menu.Item>
+        <Menu.Separator />
+        <Menu.Item>Two</Menu.Item>
       </Menu>,
     );
 
     expect(screen.getByRole('separator')).toBeInTheDocument();
   });
 
-  it('renders MenuGroup with uppercase label', () => {
+  it('renders Menu.Group with uppercase label', () => {
     render(
       <Menu
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuGroup label="This widget">
-          <MenuItem>Widget settings</MenuItem>
-        </MenuGroup>
+        <Menu.Group label="This widget">
+          <Menu.Item>Widget settings</Menu.Item>
+        </Menu.Group>
       </Menu>,
     );
 
@@ -163,7 +160,7 @@ describe('Menu', () => {
         defaultOpen
         trigger={<button type="button">Trigger</button>}
       >
-        <MenuItem>Item</MenuItem>
+        <Menu.Item>Item</Menu.Item>
       </Menu>,
     );
 
@@ -176,13 +173,13 @@ describe('Menu', () => {
     const handleSelect = vi.fn();
     render(
       <Menu trigger={<button type="button">Phone Menu</button>}>
-        <MenuItem onSelect={handleSelect}>Item 1</MenuItem>
-        <MenuItem>Item 2</MenuItem>
-        <MenuItem>Item 3</MenuItem>
-        <MenuItem>Item 4</MenuItem>
-        <MenuItem>Item 5</MenuItem>
-        <MenuItem>Item 6</MenuItem>
-        <MenuItem>Item 7</MenuItem>
+        <Menu.Item onSelect={handleSelect}>Item 1</Menu.Item>
+        <Menu.Item>Item 2</Menu.Item>
+        <Menu.Item>Item 3</Menu.Item>
+        <Menu.Item>Item 4</Menu.Item>
+        <Menu.Item>Item 5</Menu.Item>
+        <Menu.Item>Item 6</Menu.Item>
+        <Menu.Item>Item 7</Menu.Item>
       </Menu>,
     );
 
@@ -208,7 +205,7 @@ describe('Menu', () => {
         trigger={<button type="button">Trigger</button>}
         contentProps={{ 'data-testid': 'custom-menu-content' } as Record<string, unknown>}
       >
-        <MenuItem>Item</MenuItem>
+        <Menu.Item>Item</Menu.Item>
       </Menu>,
     );
 
@@ -216,13 +213,13 @@ describe('Menu', () => {
   });
 });
 
-describe('MenuItem asChild', () => {
+describe('Menu.Item asChild', () => {
   it('makes the child itself the menu row (a link keeps its href)', () => {
     render(
       <Menu defaultOpen trigger={<button type="button">Open menu</button>}>
-        <MenuItem asChild>
+        <Menu.Item asChild>
           <a href="/somewhere">Go there</a>
-        </MenuItem>
+        </Menu.Item>
       </Menu>,
     );
     const row = screen.getByRole('menuitem', { name: 'Go there' });

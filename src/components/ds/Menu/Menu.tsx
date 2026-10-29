@@ -8,7 +8,7 @@ import { cn } from '../cn';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 import { useControllableState } from '../useControllableState';
 
-export const MenuRoot = DropdownMenuPrimitive.Root;
+const MenuRoot = DropdownMenuPrimitive.Root;
 /**
  * Radix opens a dropdown on pointerdown, which fires the moment a finger lands, so a swipe that
  * starts on the trigger opens the menu instead of scrolling. For touch/pen the pointerdown is
@@ -16,7 +16,7 @@ export const MenuRoot = DropdownMenuPrimitive.Root;
  * released without scrolling. The click re-enters Radix's own mouse pointerdown path, so open
  * state stays owned by the root (controlled or not). Mouse and keyboard are unchanged.
  */
-export const MenuTrigger = forwardRef<
+const MenuTrigger = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>
 >(({ onPointerDown, onPointerCancel, onClick, disabled, ...props }, ref) => {
@@ -67,18 +67,18 @@ export const MenuTrigger = forwardRef<
   );
 });
 MenuTrigger.displayName = 'MenuTrigger';
-export const MenuPortal = DropdownMenuPrimitive.Portal;
-export const MenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
-export const MenuSub = DropdownMenuPrimitive.Sub;
-export const MenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
-export const MenuSubContent = DropdownMenuPrimitive.SubContent;
+const MenuPortal = DropdownMenuPrimitive.Portal;
+const MenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+const MenuSub = DropdownMenuPrimitive.Sub;
+const MenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
+const MenuSubContent = DropdownMenuPrimitive.SubContent;
 
 export interface MenuContentProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> {
   sideOffset?: number;
 }
 
-export const MenuContent = forwardRef<
+const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   MenuContentProps
 >(({ className, sideOffset = 4, children, onCloseAutoFocus, ...props }, ref) => {
@@ -112,11 +112,10 @@ export interface MenuItemProps
     ItemRowStyleOptions {
   icon?: React.ReactNode;
   hint?: React.ReactNode;
-  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onSelect?: (e: Event) => void;
 }
 
-export const MenuItem = forwardRef<
+const MenuItem = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
   MenuItemProps
 >(
@@ -125,13 +124,12 @@ export const MenuItem = forwardRef<
       children,
       icon,
       hint,
-      destructive = false,
+      tone = 'neutral',
       active = false,
       action = false,
       disabled = false,
       asChild = false,
       className,
-      onClick,
       onSelect,
       ...props
     },
@@ -139,7 +137,7 @@ export const MenuItem = forwardRef<
   ) => {
     const rowClass = getItemRowClass({
       active,
-      destructive,
+      tone,
       action,
       disabled,
       className,
@@ -169,7 +167,6 @@ export const MenuItem = forwardRef<
         ref={ref}
         disabled={disabled}
         className={rowClass}
-        onClick={onClick}
         onSelect={onSelect}
         asChild={asChild}
         {...props}
@@ -187,7 +184,7 @@ export interface MenuSeparatorProps
     typeof DropdownMenuPrimitive.Separator
   > {}
 
-export const MenuSeparator = forwardRef<
+const MenuSeparator = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   MenuSeparatorProps
 >(({ className, ...props }, ref) => {
@@ -207,7 +204,7 @@ export interface MenuGroupProps
   label?: React.ReactNode;
 }
 
-export const MenuGroup = forwardRef<
+const MenuGroup = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Group>,
   MenuGroupProps
 >(({ label, className, children, ...props }, ref) => {
@@ -232,7 +229,7 @@ MenuGroup.displayName = 'MenuGroup';
 export interface MenuLabelProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> {}
 
-export const MenuLabel = forwardRef<
+const MenuLabel = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
   MenuLabelProps
 >(({ className, ...props }, ref) => (
@@ -258,20 +255,7 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   contentProps?: Omit<MenuContentProps, 'align' | 'side' | 'sideOffset' | 'className'>;
 }
 
-export const Menu: React.FC<MenuProps> & {
-  Root: typeof DropdownMenuPrimitive.Root;
-  Trigger: typeof MenuTrigger;
-  Content: typeof MenuContent;
-  Item: typeof MenuItem;
-  Separator: typeof MenuSeparator;
-  Group: typeof MenuGroup;
-  Label: typeof MenuLabel;
-  Portal: typeof DropdownMenuPrimitive.Portal;
-  RadioGroup: typeof DropdownMenuPrimitive.RadioGroup;
-  Sub: typeof DropdownMenuPrimitive.Sub;
-  SubTrigger: typeof DropdownMenuPrimitive.SubTrigger;
-  SubContent: typeof DropdownMenuPrimitive.SubContent;
-} = ({
+const MenuImpl: React.FC<MenuProps> = ({
   trigger,
   children,
   align = 'start',
@@ -314,16 +298,19 @@ export const Menu: React.FC<MenuProps> & {
   );
 };
 
-Menu.displayName = 'Menu';
-Menu.Root = DropdownMenuPrimitive.Root;
-Menu.Trigger = MenuTrigger;
-Menu.Content = MenuContent;
-Menu.Item = MenuItem;
-Menu.Separator = MenuSeparator;
-Menu.Group = MenuGroup;
-Menu.Label = MenuLabel;
-Menu.Portal = DropdownMenuPrimitive.Portal;
-Menu.RadioGroup = DropdownMenuPrimitive.RadioGroup;
-Menu.Sub = DropdownMenuPrimitive.Sub;
-Menu.SubTrigger = DropdownMenuPrimitive.SubTrigger;
-Menu.SubContent = DropdownMenuPrimitive.SubContent;
+MenuImpl.displayName = 'Menu';
+
+export const Menu = Object.assign(MenuImpl, {
+  Root: MenuRoot,
+  Trigger: MenuTrigger,
+  Content: MenuContent,
+  Item: MenuItem,
+  Separator: MenuSeparator,
+  Group: MenuGroup,
+  Label: MenuLabel,
+  Portal: MenuPortal,
+  RadioGroup: MenuRadioGroup,
+  Sub: MenuSub,
+  SubTrigger: MenuSubTrigger,
+  SubContent: MenuSubContent,
+});

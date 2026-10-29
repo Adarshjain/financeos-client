@@ -3,8 +3,9 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
+import { cn } from '../cn';
 import { isPhoneLayout } from '../phoneLayout';
-import { Menu, MenuItem } from './Menu';
+import { Menu } from './Menu';
 
 export interface ContextMenuItem {
   id: string;
@@ -14,7 +15,7 @@ export interface ContextMenuItem {
   disabled?: boolean;
 }
 
-export interface ContextMenuProps {
+export interface ContextMenuProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /** The actions, in order. With none, the browser's own menu stays. */
   items: ContextMenuItem[];
   /** The row the right-click opens the menu from. Leave it out when the page drives the menu with open and point. */
@@ -35,13 +36,19 @@ export interface ContextMenuProps {
  *
  * Built from: Menu (Radix DropdownMenu) anchored to a zero-size point at the pointer.
  */
-export function ContextMenu({
-  items,
-  children,
-  open: controlledOpen,
-  point: controlledPoint,
-  onOpenChange,
-}: ContextMenuProps) {
+export const ContextMenu = React.forwardRef<HTMLDivElement, ContextMenuProps>(function ContextMenu(
+  {
+    items,
+    children,
+    open: controlledOpen,
+    point: controlledPoint,
+    onOpenChange,
+    className,
+    onContextMenu,
+    ...props
+  },
+  ref,
+) {
   const [ownPoint, setOwnPoint] = React.useState<{ x: number; y: number } | null>(null);
   const isControlled = controlledOpen !== undefined;
   const rawPoint = isControlled ? (controlledOpen ? (controlledPoint ?? null) : null) : ownPoint;
@@ -52,6 +59,7 @@ export function ContextMenu({
   };
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    onContextMenu?.(e);
     if (items.length === 0 || isPhoneLayout()) return;
     // The open menu is portaled, but React still bubbles its events to this wrapper: leave it be.
     if ((e.target as HTMLElement).closest('[role="menu"]')) return;
@@ -68,7 +76,7 @@ export function ContextMenu({
   };
 
   return (
-    <div className="contents" onContextMenu={handleContextMenu}>
+    <div ref={ref} className={cn('contents', className)} {...props} onContextMenu={handleContextMenu}>
       {children}
       {point
         ? createPortal(
@@ -89,14 +97,14 @@ export function ContextMenu({
               }
             >
               {items.map((item) => (
-                <MenuItem
+                <Menu.Item
                   key={item.id}
-                  destructive={item.tone === 'danger'}
+                  tone={item.tone === 'danger' ? 'danger' : 'neutral'}
                   disabled={item.disabled}
                   onSelect={() => item.onSelect()}
                 >
                   {item.label}
-                </MenuItem>
+                </Menu.Item>
               ))}
             </Menu>,
             document.body,
@@ -104,4 +112,6 @@ export function ContextMenu({
         : null}
     </div>
   );
-}
+});
+
+ContextMenu.displayName = 'ContextMenu';

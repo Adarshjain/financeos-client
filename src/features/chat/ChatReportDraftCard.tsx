@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import React from 'react';
 
-import { Banner, Button, Card, CardFooter, CardHeader, CardRow, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
+import { Banner, Button, Card, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
 import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
 import { workingCatalog } from '@/features/reports/builder/editorState';
 import { ReportResult } from '@/features/reports/view/ReportResult';
@@ -245,7 +245,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   return (
     <>
       <Card>
-        <CardHeader>
+        <Card.Header>
           <div className="flex min-w-0 flex-col gap-space-2">
             <Text variant="overline" tone="ink-3" as="p">
               {overline}
@@ -259,25 +259,25 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
               </Text>
             ) : null}
           </div>
-        </CardHeader>
+        </Card.Header>
 
         {!isDelete ? (
-          <CardRow className="block">
+          <Card.Row className="block">
             {/* Wait for the catalog (or its failure) too, rather than flash raw field names. */}
             {preview.loading || (preview.data && catalog.isPending) ? <Skeleton height={160} /> : null}
             {preview.error ? <Banner tone="danger" action={{ label: 'Retry', onSelect: () => setPreviewTry((n) => n + 1) }}>{preview.error}</Banner> : null}
             {preview.data && !catalog.isPending ? <ReportResult data={preview.data} catalog={datasourceCatalog} /> : null}
-          </CardRow>
+          </Card.Row>
         ) : null}
 
         {error ? (
-          <CardRow className="block">
+          <Card.Row className="block">
             <Banner tone="danger">{error}</Banner>
-          </CardRow>
+          </Card.Row>
         ) : null}
 
         {result ? (
-          <CardFooter>
+          <Card.Footer>
             <Text variant="label" tone="ink-3" as="span">
               {result.action === 'saved-home'
                 ? 'Report saved and added to Home'
@@ -295,9 +295,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
                 </Button>
               </Text>
             ) : null}
-          </CardFooter>
+          </Card.Footer>
         ) : (
-          <CardFooter className="justify-end">
+          <Card.Footer className="justify-end">
             {isUpdate ? (
               <Text variant="label" tone="ink-3" as="span" className="mr-auto">
                 {`Updates “${title}”`}
@@ -324,7 +324,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
                 Delete report
               </Button>
             ) : null}
-          </CardFooter>
+          </Card.Footer>
         )}
       </Card>
 

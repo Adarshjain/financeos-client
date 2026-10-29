@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, TextField } from '@/components/ds';
+import { Dialog, TextField } from '@/components/ds';
 
 const FORM_ID = 'category-name-form';
 
@@ -21,7 +21,7 @@ export function CategoryNameDialog({ category, saving, onSubmit, onClose }: Cate
   const unchanged = category !== undefined && trimmed === category.name;
   return (
     <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={category ? 'Rename category' : 'Add category'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
@@ -33,7 +33,7 @@ export function CategoryNameDialog({ category, saving, onSubmit, onClose }: Cate
           disabled: saving || !trimmed || unchanged,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             onSubmit={(e) => {
@@ -51,8 +51,8 @@ export function CategoryNameDialog({ category, saving, onSubmit, onClose }: Cate
               autoFocus
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

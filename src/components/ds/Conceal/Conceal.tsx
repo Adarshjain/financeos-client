@@ -60,7 +60,7 @@ export function concealText(text: string, whole = false, placeholder = CONCEAL_P
   return text.replace(MONEY, placeholder);
 }
 
-export interface ConcealProps {
+export interface ConcealProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> {
   /** What to show while amounts are shown. A string is also what gets masked while hidden. */
   children?: React.ReactNode;
   /** Text to mask while hidden, when `children` is not a plain string (e.g. split into a fraction). */
@@ -75,12 +75,24 @@ export interface ConcealProps {
  * Conceal shows its children, or "₹ —" in place of each amount while amounts are hidden.
  * Without `whole`, only ₹ amounts inside the text are replaced; other words stay.
  */
-export function Conceal({ children, value, whole = false, placeholder = CONCEAL_PLACEHOLDER }: ConcealProps) {
+export const Conceal = React.forwardRef<HTMLSpanElement, ConcealProps>(function Conceal(
+  { children, value, whole = false, placeholder = CONCEAL_PLACEHOLDER, ...props },
+  ref,
+) {
   const concealed = useConcealed();
-  if (!concealed) return <>{children}</>;
   const source = value ?? (typeof children === 'string' || typeof children === 'number' ? children : undefined);
-  if (source === undefined) return whole ? <>{placeholder}</> : <>{children}</>;
-  return <>{concealText(String(source), whole, placeholder)}</>;
-}
+  let content: React.ReactNode = children;
+  if (concealed) {
+    if (source === undefined) content = whole ? placeholder : children;
+    else content = concealText(String(source), whole, placeholder);
+  }
+  // Plain text with no wrapper, so layout never changes; a ref or native props ask for the element.
+  if (ref === null && Object.keys(props).length === 0) return <>{content}</>;
+  return (
+    <span ref={ref} {...props}>
+      {content}
+    </span>
+  );
+});
 
 Conceal.displayName = 'Conceal';

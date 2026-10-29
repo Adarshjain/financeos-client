@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Select, TextField } from '@/components/ds';
+import { Dialog, Select, TextField } from '@/components/ds';
 import type { Category } from '@/lib/categories.types';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
@@ -86,7 +86,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
 
   return (
     <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="lg"
         title={rule ? `Edit rule · ${ruleName(rule)}` : 'Add rule'}
         description={
@@ -97,7 +97,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: rule ? 'Save rule' : 'Add rule', type: 'submit', form: FORM_ID, loading: saving, disabled: saving || creatingCategory }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             className="flex flex-col gap-space-8 desk:gap-space-12"
@@ -156,8 +156,8 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
             />
             <RuleMatchesPreview matchType={matchType} pattern={pattern} ruleId={rule?.id} />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

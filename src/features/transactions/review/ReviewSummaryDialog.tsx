@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Dialog, DialogBody, DialogContent, ListRow, SectionHeader, Text } from '@/components/ds';
+import { Card, Dialog, ListRow, SectionHeader, Text } from '@/components/ds';
 
 import type { ReviewSummary } from './useApproveTransactions';
 
@@ -24,13 +24,13 @@ export function ReviewSummaryDialog({
 }: ReviewSummaryDialogProps) {
   return (
     <Dialog open={summary !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={title}
         description="The batch finished with these results."
         primary={{ label: 'Close', onSelect: onClose }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {summary ? (
             <div className="flex flex-col gap-space-8 desk:gap-space-16">
               <Card>
@@ -66,8 +66,8 @@ export function ReviewSummaryDialog({
               ) : null}
             </div>
           ) : null}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

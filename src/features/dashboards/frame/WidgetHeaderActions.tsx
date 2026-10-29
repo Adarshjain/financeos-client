@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import { Button, Icon, Menu, MenuItem } from '@/components/ds';
+import { Button, Icon, Menu } from '@/components/ds';
 
 import type { WidgetMenuItemId } from './widgetFrame.model';
 
@@ -49,11 +49,11 @@ export function WidgetHeaderActions({ items, duplicating, onSelect }: WidgetHead
           }
         >
           {items.map((item) => (
-            <MenuItem key={item} disabled={item === 'duplicate' && duplicating} onSelect={() => {
+            <Menu.Item key={item} disabled={item === 'duplicate' && duplicating} onSelect={() => {
                 chosen.current = item;
               }}>
               {LABELS[item]}
-            </MenuItem>
+            </Menu.Item>
           ))}
         </Menu>
       ) : null}

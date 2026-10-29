@@ -29,7 +29,7 @@ export interface BannerProps
   /** Optional bold lead-in title */
   title?: React.ReactNode;
   /** Optional single action on the right: action={{ label, onSelect }}, or { label, href } for a link */
-  action?: { label: React.ReactNode } & ActionTarget;
+  action?: { label: string } & ActionTarget;
   /** Optional dismiss callback */
   onDismiss?: () => void;
 }

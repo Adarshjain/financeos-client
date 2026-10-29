@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, Dialog, DialogBody, DialogContent, Select, showToast, Text, TextField } from '@/components/ds';
+import { Button, Card, Dialog, Select, showToast, Text, TextField } from '@/components/ds';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -134,14 +134,14 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Card settings"
         description="Apply to every rule on this card."
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: update.isPending }}
         primary={{ label: 'Save settings', onSelect: save, loading: update.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Select
             label="Rewards paid as"
             options={REWARD_TYPE_OPTIONS}
@@ -158,8 +158,8 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
               onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
             />
           )}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

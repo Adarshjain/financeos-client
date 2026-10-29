@@ -6,8 +6,6 @@ import {
   Badge,
   Button,
   Card,
-  CardEmpty,
-  CardRow,
   Checkbox,
   DateField,
   ListRow,
@@ -83,7 +81,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
       </Text>
 
       <Card>
-        <CardRow>
+        <Card.Row>
           <form id={FORM_ID} onSubmit={submit} className="flex w-full flex-col gap-space-8 desk:gap-space-12">
             <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-4">
               <AmountField
@@ -170,7 +168,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
               </div>
             </Reveal>
           </form>
-        </CardRow>
+        </Card.Row>
       </Card>
 
       <Card
@@ -185,11 +183,11 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
         }
       >
         {rows.length === 0 ? (
-          <CardEmpty>
+          <Card.Empty>
             {result
               ? 'No credit cards to rank.'
               : 'Enter the spend details above and select Rank cards to simulate rewards across your cards.'}
-          </CardEmpty>
+          </Card.Empty>
         ) : (
           rows.map((row) => (
             <ListRow

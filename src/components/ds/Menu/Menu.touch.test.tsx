@@ -2,12 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Menu, MenuItem } from './Menu';
+import { Menu } from './Menu';
 
 function setup(props: Partial<React.ComponentProps<typeof Menu>> = {}) {
   render(
     <Menu trigger={<button type="button">Open menu</button>} {...props}>
-      <MenuItem>Edit rule</MenuItem>
+      <Menu.Item>Edit rule</Menu.Item>
     </Menu>,
   );
   return screen.getByRole('button', { name: 'Open menu' });
@@ -80,7 +80,7 @@ describe('Menu touch trigger', () => {
   it('stays closed for a disabled trigger on touch tap', () => {
     render(
       <Menu trigger={<button type="button" disabled>Open menu</button>}>
-        <MenuItem>Edit rule</MenuItem>
+        <Menu.Item>Edit rule</Menu.Item>
       </Menu>,
     );
     const t = screen.getByRole('button', { name: 'Open menu' });

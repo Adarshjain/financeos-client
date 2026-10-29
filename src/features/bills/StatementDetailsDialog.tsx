@@ -7,8 +7,6 @@ import {
   Banner,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   showToast,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
@@ -119,7 +117,7 @@ export function StatementDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Set statement details"
         description={dated ? `${cardLabel} · statement of ${dated}` : cardLabel}
@@ -130,7 +128,7 @@ export function StatementDetailsDialog({
         }}
         primary={{ label: 'Save details', onSelect: submit, loading: updateDetails.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {formError ? <Banner tone="danger">{formError}</Banner> : null}
           <AmountField
             label="Total due (₹)"
@@ -153,8 +151,8 @@ export function StatementDetailsDialog({
             value={due}
             onValueChange={(v) => setDue(typeof v === 'string' ? v : '')}
           />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

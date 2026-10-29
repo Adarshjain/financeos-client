@@ -102,7 +102,7 @@ export const WithMenu: Story = {
       { label: 'Widget settings', onSelect: fn() },
       { label: 'Duplicate as my report', onSelect: fn() },
       { label: 'View full page', onSelect: fn() },
-      { label: 'Remove widget', onSelect: fn(), destructive: true },
+      { label: 'Remove widget', onSelect: fn(), tone: 'danger' },
     ],
     children: (
       <Text variant="figure">

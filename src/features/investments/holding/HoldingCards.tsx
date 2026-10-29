@@ -3,8 +3,8 @@
 import React from 'react';
 
 import {
+  ActionButton,
   Badge,
-  Button,
   Card,
   Conceal,
   createDataTableColumnHelper,
@@ -30,16 +30,6 @@ import {
 } from './holdingModel';
 import { checkQuantity, quantityStep, sanitizeQuantityInput, sellFigures, taxFreeQuantity } from './sellMath';
 import { useSectionPage } from './useSectionPage';
-
-function LinkAction({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <Text variant="label" as="div">
-      <Button variant="link" size="sm" onClick={onClick}>
-        {children}
-      </Button>
-    </Text>
-  );
-}
 
 function SectionPager({ position, onPageChange }: { position: PagePosition; onPageChange: (page: number) => void }) {
   return (
@@ -120,7 +110,7 @@ export interface TradesCardProps {
 export function TradesCard({ instrumentId, initial, subtitle, onRecord }: TradesCardProps) {
   const { section, goTo } = useSectionPage(initial, (page) => loadTradesPage(instrumentId, page));
   return (
-    <Card title="Trades" subtitle={subtitle} action={<LinkAction onClick={onRecord}>Record trade</LinkAction>}>
+    <Card title="Trades" subtitle={subtitle} action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onRecord}>Record trade</ActionButton></Text>}>
       <DataTable
         columns={tradeColumns}
         data={section.rows}
@@ -214,7 +204,7 @@ export function DividendsCard({
   const { section, goTo } = useSectionPage(initial, (page) => loadDividendsPage(instrumentId, page));
   const pager = <SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />;
   return (
-    <Card title="Dividends" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
+    <Card title="Dividends" action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onRecord}>Record</ActionButton></Text>}>
       {section.rows.length > 0 ? pager : null}
       {section.rows.length === 0 ? <EmptyState compact description="No dividends yet" /> : null}
       {section.rows.map((r) => (
@@ -243,7 +233,7 @@ export function CorporateActionsCard({
   const { section, goTo } = useSectionPage(initial, (page) => loadCorporateActionsPage(instrumentId, page));
   const pager = <SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />;
   return (
-    <Card title="Corporate actions" subtitle="Recorded for this holding" action={<LinkAction onClick={onRecord}>Record</LinkAction>}>
+    <Card title="Corporate actions" subtitle="Recorded for this holding" action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onRecord}>Record</ActionButton></Text>}>
       {section.rows.length > 0 ? pager : null}
       {section.rows.length === 0 ? <EmptyState compact description="No corporate actions yet" /> : null}
       {section.rows.map((r) => (
@@ -258,7 +248,7 @@ export function CorporateActionsCard({
 
 export function InstrumentCard({ rows, onEdit }: { rows: InstrumentRow[]; onEdit: () => void }) {
   return (
-    <Card title="Instrument" subtitle="Shared catalog entry" action={<LinkAction onClick={onEdit}>Edit</LinkAction>}>
+    <Card title="Instrument" subtitle="Shared catalog entry" action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onEdit}>Edit</ActionButton></Text>}>
       {rows.map((r) => (
         <ListRow key={r.label} title={r.label} trailing={<Text variant="body">{r.value}</Text>} />
       ))}

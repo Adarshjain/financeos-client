@@ -5,8 +5,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   ListRow,
   Radio,
   Text,
@@ -123,7 +121,7 @@ export function MarkPaidDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={`Mark EMI #${installment.seq} paid`}
         description={payDescription(installment, loanName)}
@@ -134,7 +132,7 @@ export function MarkPaidDialog({
           loading: submitting,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div role="radiogroup" aria-label="How the EMI was paid" className="flex flex-col">
             {options.map((o) => (
               <ListRow
@@ -203,8 +201,8 @@ export function MarkPaidDialog({
               error={errors.date}
             />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

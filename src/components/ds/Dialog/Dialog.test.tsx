@@ -7,10 +7,7 @@ import {
   ConfirmDialog,
   ConfirmDialogShell,
   Dialog,
-  DialogBody,
-  DialogContent,
   DialogShell,
-  DialogTrigger,
 } from './Dialog';
 
 describe('DialogShell', () => {
@@ -20,7 +17,7 @@ describe('DialogShell', () => {
         title="Approve 9 transactions"
         description="Clears the reasons you tick."
       >
-        <DialogBody>Modal body content</DialogBody>
+        <Dialog.Body>Modal body content</Dialog.Body>
       </DialogShell>,
     );
     expect(screen.getByText('Approve 9 transactions')).toBeInTheDocument();
@@ -66,11 +63,11 @@ describe('DialogShell', () => {
     expect(canvasContainer.firstChild).not.toHaveClass('bg-surface');
   });
 
-  it('triggers onClose when close button is clicked', () => {
+  it('triggers onDismiss when close button is clicked', () => {
     const handleClose = vi.fn();
     render(
-      <DialogShell title="Closable" onClose={handleClose}>
-        <DialogBody>Body</DialogBody>
+      <DialogShell title="Closable" onDismiss={handleClose}>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const closeBtn = screen.getByRole('button', { name: 'Close' });
@@ -78,11 +75,11 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers onClose when swiping down past threshold', () => {
+  it('triggers onDismiss when swiping down past threshold', () => {
     const handleClose = vi.fn();
     render(
-      <DialogShell title="Swipe Test" onClose={handleClose}>
-        <DialogBody>Body</DialogBody>
+      <DialogShell title="Swipe Test" onDismiss={handleClose}>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
@@ -94,11 +91,11 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('does not trigger onClose when swiping down below threshold', () => {
+  it('does not trigger onDismiss when swiping down below threshold', () => {
     const handleClose = vi.fn();
     render(
-      <DialogShell title="Swipe Short Test" onClose={handleClose}>
-        <DialogBody>Body</DialogBody>
+      <DialogShell title="Swipe Short Test" onDismiss={handleClose}>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
@@ -118,7 +115,7 @@ describe('DialogShell', () => {
         secondary={{ label: 'Cancel' }}
         primary={{ label: 'Approve 9' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const grid = container.querySelector('.grid.grid-flow-col')!;
@@ -137,7 +134,7 @@ describe('DialogShell', () => {
         secondary={{ label: 'Cancel' }}
         primary={{ label: 'Download CSV', icon: 'download' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const buttons = Array.from(container.querySelectorAll('.grid.grid-flow-col button'));
@@ -156,7 +153,7 @@ describe('DialogShell', () => {
         secondary={{ label: 'Secondary' }}
         primary={{ label: 'Primary' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     expect(screen.getByRole('button', { name: 'Primary' })).toHaveClass('bg-brand');
@@ -169,23 +166,23 @@ describe('DialogShell', () => {
     rerender(
       <DialogShell
         title="Variants test"
-        primary={{ label: 'Delete', destructive: true }}
+        primary={{ label: 'Delete', tone: 'danger' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-danger');
   });
 
-  it('draws secondary and tertiary with tone danger as ghost in the danger colour; primary stays as is', () => {
+  it('draws secondary and tertiary with tone danger as ghost in the danger colour; a plain primary stays brand', () => {
     render(
       <DialogShell
         title="Tone test"
         tertiary={{ label: 'Delete entry', tone: 'danger' }}
         secondary={{ label: 'Remove', tone: 'danger' }}
-        primary={{ label: 'Save', tone: 'danger' }}
+        primary={{ label: 'Save' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     expect(screen.getByRole('button', { name: 'Delete entry' })).toHaveClass('bg-transparent', 'text-danger', 'h-control-md');
@@ -205,7 +202,7 @@ describe('DialogShell', () => {
         secondary={{ label: 'Cancel', onSelect: onSecondary }}
         primary={{ label: 'Save', onSelect: onPrimary }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
 
@@ -230,7 +227,7 @@ describe('DialogShell', () => {
           title="Submit test"
           primary={{ label: 'Submit form', type: 'submit', form: 'edit-form' }}
         >
-          <DialogBody>Body</DialogBody>
+          <Dialog.Body>Body</Dialog.Body>
         </DialogShell>
       </div>,
     );
@@ -248,7 +245,7 @@ describe('DialogShell', () => {
         primary={{ label: 'Saving', loading: true, disabled: true }}
         secondary={{ label: 'Cancel', disabled: true }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const primaryBtn = screen.getByRole('button', { name: 'Saving' });
@@ -265,7 +262,7 @@ describe('DialogShell', () => {
         secondary={{ label: 'Cancel' }}
         primary={{ label: 'Confirm' }}
       >
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     const grid = container.querySelector('.grid.grid-flow-col')!;
@@ -275,7 +272,7 @@ describe('DialogShell', () => {
   it('hides drag handle when dismissible={false}', () => {
     const { container } = render(
       <DialogShell title="Non dismissible" dismissible={false}>
-        <DialogBody>Body</DialogBody>
+        <Dialog.Body>Body</Dialog.Body>
       </DialogShell>,
     );
     expect(container.querySelector('.bg-line-heavy')).toBeNull();
@@ -405,12 +402,12 @@ describe('Dialog (Radix overlay)', () => {
   it('opens and displays content on trigger click', () => {
     render(
       <Dialog>
-        <DialogTrigger asChild>
+        <Dialog.Trigger asChild>
           <Button>Open Modal</Button>
-        </DialogTrigger>
-        <DialogContent title="Interactive Dialog">
-          <DialogBody>Dialog is open</DialogBody>
-        </DialogContent>
+        </Dialog.Trigger>
+        <Dialog.Content title="Interactive Dialog">
+          <Dialog.Body>Dialog is open</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
 
@@ -424,12 +421,12 @@ describe('Dialog (Radix overlay)', () => {
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
   });
 
-  it('sets DialogContent background to bg-canvas when background="canvas"', () => {
+  it('sets Dialog.Content background to bg-canvas when background="canvas"', () => {
     render(
       <Dialog open>
-        <DialogContent background="canvas" title="Canvas Dialog">
-          <DialogBody>Canvas body</DialogBody>
-        </DialogContent>
+        <Dialog.Content background="canvas" title="Canvas Dialog">
+          <Dialog.Body>Canvas body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
 
@@ -442,9 +439,9 @@ describe('Dialog (Radix overlay)', () => {
   it('does not render padded header wrapper when only srTitle is passed without visible header', () => {
     const { container } = render(
       <Dialog open>
-        <DialogContent srTitle="Screen reader title" showClose={false}>
-          <DialogBody>No header body</DialogBody>
-        </DialogContent>
+        <Dialog.Content srTitle="Screen reader title" showClose={false}>
+          <Dialog.Body>No header body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
 
@@ -455,9 +452,9 @@ describe('Dialog (Radix overlay)', () => {
   it('renders portalled panel with font-text class', () => {
     render(
       <Dialog open>
-        <DialogContent title="Font test">
-          <DialogBody>Font body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Font test">
+          <Dialog.Body>Font body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
 
@@ -470,14 +467,14 @@ describe('Dialog (Radix overlay)', () => {
     expect(container.firstChild).toHaveClass('font-text');
   });
 
-  it('close button triggers Radix close path and calls onClose', () => {
+  it('close button triggers Radix close path and calls onDismiss', () => {
     const handleClose = vi.fn();
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
-        <DialogContent title="Close Test" onClose={handleClose}>
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Close Test" onDismiss={handleClose}>
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const closeButtons = screen.getAllByRole('button', { name: 'Close' });
@@ -492,22 +489,22 @@ describe('Dialog (Radix overlay)', () => {
   it('renders dialog drag area with touch-none for swipe handling', () => {
     render(
       <Dialog open>
-        <DialogContent title="Drag Test">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Drag Test">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
     expect(dragArea).toHaveClass('touch-none');
   });
 
-  it('swipe-down past threshold closes DialogContent and calls onOpenChange(false) without onClose', () => {
+  it('swipe-down past threshold closes Dialog.Content and calls onOpenChange(false) without onDismiss', () => {
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
-        <DialogContent title="Swipe Close Test">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Swipe Close Test">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
@@ -519,14 +516,14 @@ describe('Dialog (Radix overlay)', () => {
     expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('swipe-down past threshold closes DialogContent and calls both onClose and onOpenChange(false)', () => {
+  it('swipe-down past threshold closes Dialog.Content and calls both onDismiss and onOpenChange(false)', () => {
     const handleClose = vi.fn();
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
-        <DialogContent title="Swipe Close With Handler" onClose={handleClose}>
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Swipe Close With Handler" onDismiss={handleClose}>
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
@@ -539,13 +536,13 @@ describe('Dialog (Radix overlay)', () => {
     expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('pointercancel mid-drag does not close DialogContent and resets transform', () => {
+  it('pointercancel mid-drag does not close Dialog.Content and resets transform', () => {
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
-        <DialogContent title="Cancel Drag Test">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Cancel Drag Test">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
@@ -570,9 +567,9 @@ describe('Dialog close button (UAT)', () => {
     HTMLElement.prototype.setPointerCapture = capture;
     render(
       <Dialog open>
-        <DialogContent title="Close press">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Close press">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const x = screen
@@ -590,9 +587,9 @@ describe('Dialog close button (UAT)', () => {
     const onOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={onOpenChange}>
-        <DialogContent title="Controlled">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Controlled">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const x = screen
@@ -607,9 +604,9 @@ describe('Dialog close button (UAT)', () => {
   it('clicking × closes an uncontrolled dialog', () => {
     render(
       <Dialog defaultOpen>
-        <DialogContent title="Uncontrolled">
-          <DialogBody>Body text</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Uncontrolled">
+          <Dialog.Body>Body text</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const x = screen
@@ -643,9 +640,9 @@ describe('Dialog side panel (non-modal on desktop)', () => {
       <div>
         <button type="button">Row behind</button>
         <Dialog open variant={variant} onOpenChange={onOpenChange}>
-          <DialogContent title="Detail">
-            <DialogBody>Body</DialogBody>
-          </DialogContent>
+          <Dialog.Content title="Detail">
+            <Dialog.Body>Body</Dialog.Body>
+          </Dialog.Content>
         </Dialog>
       </div>,
     );
@@ -701,9 +698,9 @@ describe('side-panel placement', () => {
   const place = (className?: string, size?: 'sm' | 'md') => {
     render(
       <Dialog open variant="side-panel">
-        <DialogContent title="Detail" className={className} size={size}>
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Detail" className={className} size={size}>
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     return screen.getByRole('dialog');
@@ -728,14 +725,14 @@ describe('nested dialogs', () => {
   it('gives every dialog its own backdrop on the same layer as its panel, in portal order', () => {
     render(
       <Dialog open variant="side-panel">
-        <DialogContent title="Detail">
-          <DialogBody>Lower body</DialogBody>
+        <Dialog.Content title="Detail">
+          <Dialog.Body>Lower body</Dialog.Body>
           <Dialog open>
-            <DialogContent title="Confirm delete">
-              <DialogBody>Upper body</DialogBody>
-            </DialogContent>
+            <Dialog.Content title="Confirm delete">
+              <Dialog.Body>Upper body</Dialog.Body>
+            </Dialog.Content>
           </Dialog>
-        </DialogContent>
+        </Dialog.Content>
       </Dialog>,
     );
     const lowerBackdrop = screen.getByTestId('dialog-backdrop');
@@ -755,9 +752,9 @@ describe('nested dialogs', () => {
   it('a single dialog keeps its backdrop below its own panel', () => {
     render(
       <Dialog open>
-        <DialogContent title="Only">
-          <DialogBody>Body</DialogBody>
-        </DialogContent>
+        <Dialog.Content title="Only">
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const overlay = document.body.querySelector('.bg-backdrop') as HTMLElement;
@@ -770,9 +767,9 @@ describe('Dialog size full', () => {
   it('fills the viewport with no radius, sheet handle or breakpoint-only close', () => {
     render(
       <Dialog defaultOpen>
-        <DialogContent size="full" title="Card utilisation" onClose={vi.fn()}>
-          <DialogBody>Widget body</DialogBody>
-        </DialogContent>
+        <Dialog.Content size="full" title="Card utilisation" onDismiss={vi.fn()}>
+          <Dialog.Body>Widget body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const panel = screen.getByText('Widget body').closest('div.pointer-events-auto');
@@ -788,9 +785,9 @@ describe('Dialog size full', () => {
     const onOpenChange = vi.fn();
     render(
       <Dialog defaultOpen onOpenChange={onOpenChange}>
-        <DialogContent size="full" title="Card utilisation">
-          <DialogBody>Widget body</DialogBody>
-        </DialogContent>
+        <Dialog.Content size="full" title="Card utilisation">
+          <Dialog.Body>Widget body</Dialog.Body>
+        </Dialog.Content>
       </Dialog>,
     );
     const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => !b.classList.contains('sr-only'))!;

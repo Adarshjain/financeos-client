@@ -5,8 +5,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   Select,
   TextArea,
 } from '@/components/ds';
@@ -63,13 +61,13 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Add charge"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Add charge', type: 'submit', form: FORM_ID, loading: submitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -127,8 +125,8 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
               ruleHint={CHARGE_TRANSACTION_HINT}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

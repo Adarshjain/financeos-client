@@ -7,8 +7,6 @@ import {
   Card,
   Checkbox,
   Dialog,
-  DialogBody,
-  DialogContent,
   EmptyState,
   SectionHeader,
   Select,
@@ -132,13 +130,13 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Reconcile"
         description="Match bank credits to your dividends and record the ones that are missing."
         secondary={{ label: 'Close', onSelect: onClose }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <SectionHeader
               variant="band"
@@ -253,8 +251,8 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
               </div>
             )}
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

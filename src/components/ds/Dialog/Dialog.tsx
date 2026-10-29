@@ -50,7 +50,7 @@ DialogHandle.displayName = 'DialogHandle';
 
 export interface DialogBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
+const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ children, className, ...props }, ref) => {
     return (
       <div
@@ -84,7 +84,7 @@ export interface DialogSectionProps
  * Dialog.Section: a section band that spans the dialog edge to edge (it cancels DialogBody's side
  * padding), with its content below at the body's own padding, so band and body text line up.
  */
-export const DialogSection = forwardRef<HTMLDivElement, DialogSectionProps>(
+const DialogSection = forwardRef<HTMLDivElement, DialogSectionProps>(
   (
     {
       title,
@@ -161,7 +161,7 @@ export interface DialogBleedProps extends React.HTMLAttributes<HTMLDivElement> {
  * Dialog.Bleed: wraps content that runs edge to edge inside DialogBody (a band and its table). It
  * cancels the body's side padding, the same amount as Dialog.Section; the content keeps its own inner padding.
  */
-export const DialogBleed = forwardRef<HTMLDivElement, DialogBleedProps>(
+const DialogBleed = forwardRef<HTMLDivElement, DialogBleedProps>(
   ({ className, children, ...props }, ref) => (
     <div ref={ref} className={cn('-mx-space-16 desk:-mx-space-20 flex flex-col', className)} {...props}>
       {children}
@@ -182,13 +182,11 @@ export interface DialogAction {
   loading?: boolean;
   /** Icon registry name drawn before the label (xs, beside button text). */
   icon?: IconName;
-  /** `danger` draws a secondary or tertiary action as a danger link. Primary uses `destructive`. */
+  /** `danger` draws a secondary or tertiary action as a danger link, and a primary action as the danger-filled confirm. */
   tone?: 'danger';
 }
 
-export interface DialogPrimaryAction extends DialogAction {
-  destructive?: boolean;
-}
+export type DialogPrimaryAction = DialogAction;
 
 export interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Primary / confirming action (rendered last, far right on desktop) */
@@ -199,7 +197,7 @@ export interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> 
   tertiary?: DialogAction;
 }
 
-export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
+const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
   ({ children, className, primary, secondary, tertiary, ...props }, ref) => {
     const hasActions = Boolean(primary || secondary || tertiary);
 
@@ -252,7 +250,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
             {primary && (
               <ActionButton
                 key="primary"
-                variant={primary.destructive ? 'danger-filled' : 'primary'}
+                variant={primary.tone === 'danger' ? 'danger-filled' : 'primary'}
                 size="md"
                 type={primary.type ?? 'button'}
                 form={primary.form}
@@ -281,7 +279,7 @@ export interface DialogPanelProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   background?: DialogBackground;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  onClose?: () => void;
+  onDismiss?: () => void;
   showClose?: boolean;
   srTitle?: string;
   primary?: DialogPrimaryAction;
@@ -302,7 +300,7 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
       background = 'surface',
       title,
       description,
-      onClose,
+      onDismiss,
       showClose = true,
       srTitle,
       primary,
@@ -394,11 +392,11 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
                   )
                 )}
               </div>
-              {showClose && onClose && (
+              {showClose && onDismiss && (
                 <button
                   type="button"
                   aria-label="Close"
-                  onClick={onClose}
+                  onClick={onDismiss}
                   className={cn(
                     isFull ? 'inline-flex' : 'hidden desk:inline-flex',
                     'text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring',
@@ -436,7 +434,7 @@ export interface DialogShellProps extends Omit<
   background?: DialogBackground;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  onClose?: () => void;
+  onDismiss?: () => void;
   showClose?: boolean;
   srTitle?: string;
   primary?: DialogPrimaryAction;
@@ -450,20 +448,20 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
     {
       style,
       className,
-      onClose,
+      onDismiss,
       dismissible = true,
       ...props
     },
     ref
   ) => {
     const { dragOffset, isDragging, dragProps } = useSheetDrag({
-      onClose,
+      onDismiss,
     });
 
     return (
       <DialogPanel
         ref={ref}
-        onClose={onClose}
+        onDismiss={onDismiss}
         dismissible={dismissible}
         dragProps={dragProps}
         style={{
@@ -497,7 +495,7 @@ export interface DialogProps
   variant?: DialogVariant;
 }
 
-export const Dialog = ({
+const DialogRoot = ({
   variant = 'modal',
   open,
   defaultOpen,
@@ -523,11 +521,9 @@ export const Dialog = ({
     </DialogVariantContext.Provider>
   );
 };
-Dialog.Section = DialogSection;
-Dialog.Bleed = DialogBleed;
-export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogClose = DialogPrimitive.Close;
-export const DialogPortal = DialogPrimitive.Portal;
+const DialogTrigger = DialogPrimitive.Trigger;
+const DialogClose = DialogPrimitive.Close;
+const DialogPortal = DialogPrimitive.Portal;
 
 export interface DialogContentProps extends Omit<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
@@ -539,14 +535,14 @@ export interface DialogContentProps extends Omit<
   description?: React.ReactNode;
   showClose?: boolean;
   srTitle?: string;
-  onClose?: () => void;
+  onDismiss?: () => void;
   primary?: DialogPrimaryAction;
   secondary?: DialogAction;
   tertiary?: DialogAction;
   dismissible?: boolean;
 }
 
-export const DialogContent = forwardRef<
+const DialogContent = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(
@@ -561,7 +557,7 @@ export const DialogContent = forwardRef<
       description,
       showClose = true,
       srTitle,
-      onClose,
+      onDismiss,
       primary,
       secondary,
       tertiary,
@@ -579,11 +575,11 @@ export const DialogContent = forwardRef<
 
     const handleClose = () => {
       closeRef.current?.click();
-      onClose?.();
+      onDismiss?.();
     };
 
     const { dragOffset, isDragging, dragProps, reset: resetDrag } = useSheetDrag({
-      onClose: handleClose,
+      onDismiss: handleClose,
     });
 
     // The panel unmounts when the close animation ends: clear any drag offset then.
@@ -698,7 +694,7 @@ export const DialogContent = forwardRef<
               description={description}
               showClose={showClose}
               srTitle={srTitle}
-              onClose={handleClose}
+              onDismiss={handleClose}
               primary={primary}
               secondary={secondary}
               tertiary={tertiary}
@@ -719,6 +715,17 @@ export const DialogContent = forwardRef<
 DialogContent.displayName = 'DialogContent';
 
 /* ConfirmDialog preset */
+
+export const Dialog = Object.assign(DialogRoot, {
+  Body: DialogBody,
+  Footer: DialogFooter,
+  Content: DialogContent,
+  Trigger: DialogTrigger,
+  Close: DialogClose,
+  Portal: DialogPortal,
+  Section: DialogSection,
+  Bleed: DialogBleed,
+});
 
 export type ConfirmDialogTone = 'danger' | 'default';
 
@@ -746,7 +753,7 @@ export interface ConfirmDialogShellProps extends Omit<
   size?: DialogSize;
   background?: DialogBackground;
   showClose?: boolean;
-  onClose?: () => void;
+  onDismiss?: () => void;
 }
 
 export const ConfirmDialogShell = forwardRef<
@@ -775,7 +782,7 @@ export const ConfirmDialogShell = forwardRef<
       size = 'sm',
       background = 'surface',
       showClose = true,
-      onClose,
+      onDismiss,
       children,
       className,
       ...props
@@ -800,7 +807,7 @@ export const ConfirmDialogShell = forwardRef<
         title={title}
         description={description}
         showClose={showClose}
-        onClose={onCancel || onClose}
+        onDismiss={onCancel || onDismiss}
         tertiary={
           alternativeLabel
             ? {
@@ -812,13 +819,13 @@ export const ConfirmDialogShell = forwardRef<
         }
         secondary={{
           label: cancelLabel,
-          onSelect: onCancel || onClose,
+          onSelect: onCancel || onDismiss,
           disabled: isBusy,
         }}
         primary={{
           label: confirmLabel,
           onSelect: handleConfirm,
-          destructive: tone === 'danger',
+          tone: tone === 'danger' ? 'danger' : undefined,
           loading: isBusy,
           disabled: isConfirmDisabled,
         }}
@@ -930,7 +937,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(
           title={title}
           description={description}
           showClose={showClose}
-          onClose={handleCancel}
+          onDismiss={handleCancel}
           className={className}
           tertiary={
             alternativeLabel
@@ -949,7 +956,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(
           primary={{
             label: confirmLabel,
             onSelect: handleConfirm,
-            destructive: tone === 'danger',
+            tone: tone === 'danger' ? 'danger' : undefined,
             loading: isBusy,
             disabled: isConfirmDisabled,
           }}

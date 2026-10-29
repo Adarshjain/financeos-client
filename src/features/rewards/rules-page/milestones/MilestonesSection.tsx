@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, CardEmpty, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
+import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
@@ -67,9 +67,9 @@ export function MilestonesSection({
       }
     >
       {milestones.length === 0 ? (
-        <CardEmpty>
+        <Card.Empty>
           No milestones yet. Use them for spend targets, transaction-count bonuses or annual-fee-waiver trackers.
-        </CardEmpty>
+        </Card.Empty>
       ) : (
         milestones.map((m) => (
           <ListRow

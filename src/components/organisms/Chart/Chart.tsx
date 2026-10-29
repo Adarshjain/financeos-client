@@ -1,5 +1,7 @@
 'use client';
 
+import React, { forwardRef } from 'react';
+
 import { isMoneyField, labelChartData } from '@/lib/reports.helpers';
 import type { BreakdownBars, BreakdownColumn, ChartData } from '@/lib/reports.types';
 
@@ -29,7 +31,7 @@ export interface ChartEntry {
   index?: number;
 }
 
-export interface ChartProps {
+export interface ChartProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /** What to draw; `chartType` picks line, bar, stackedBar, area, pie or donut. */
   data: ChartInput;
   /** Fill the parent's height (a fixed-height card) instead of the default 16:9 frame (21:9 from `desk`). */
@@ -62,7 +64,8 @@ export interface ChartProps {
  * A report chart over Recharts, drawn in Dinero tokens: series in chart-1…chart-5 (the rest fold into
  * "Other" in chart-rest), a legend, a hover card and a hidden data table as the text equivalent.
  */
-export function Chart({
+export const Chart = forwardRef<HTMLDivElement, ChartProps>(function Chart(
+  {
   data: raw,
   fill,
   yDomain,
@@ -76,10 +79,15 @@ export function Chart({
   onSelectEntry,
   canSelectEntry,
   months,
-}: ChartProps) {
+  ...props
+},
+  ref,
+) {
   if (raw.chartType === 'breakdown') {
     return (
       <ChartBreakdown
+        ref={ref}
+        {...props}
         data={raw}
         money={moneyProp}
         columns={columns}
@@ -95,7 +103,7 @@ export function Chart({
   const data = labelChartData(raw);
   const { chartType, categories, series } = data;
 
-  if (categories.length === 0 || series.length === 0) return <ChartEmpty />;
+  if (categories.length === 0 || series.length === 0) return <ChartEmpty ref={ref as React.Ref<HTMLElement>} {...props} />;
 
   const money =
     moneyProp ??
@@ -104,11 +112,13 @@ export function Chart({
       isMoneyField(data.measure.field));
 
   if (chartType === 'sparkline') {
-    return <ChartSparkline data={data} />;
+    return <ChartSparkline ref={ref} {...props} data={data} />;
   }
   if (chartType === 'heatmap') {
     return (
       <ChartHeatmap
+        ref={ref}
+        {...props}
         data={data}
         money={money}
         months={months}
@@ -120,6 +130,8 @@ export function Chart({
   if (chartType === 'pie' || chartType === 'donut') {
     return (
       <ChartPie
+        ref={ref}
+        {...props}
         data={data}
         fill={fill}
         money={money}
@@ -131,6 +143,8 @@ export function Chart({
   }
   return (
     <ChartCartesian
+      ref={ref}
+      {...props}
       data={data}
       fill={fill}
       money={money}
@@ -139,4 +153,4 @@ export function Chart({
       canSelectEntry={canSelectEntry}
     />
   );
-}
+});

@@ -7,7 +7,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 
-import { ChoiceCard, Dialog, DialogBody, DialogContent, EmptyState, Icon, Skeleton, Tabs, TextField } from '@/components/ds';
+import { ChoiceCard, Dialog, EmptyState, Icon, Skeleton, Tabs, TextField } from '@/components/ds';
 import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { keys } from '@/lib/query/keys';
@@ -68,14 +68,14 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
+      <Dialog.Content
         size="lg"
         title="Add widget"
         description="Built-ins update themselves; report widgets show a saved report."
         secondary={{ label: 'Cancel', onSelect: onClose }}
         primary={{ label: 'Add to board', onSelect: add, disabled: !canAdd }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Tabs
             value={tab}
             onValueChange={changeTab}
@@ -127,8 +127,8 @@ export function WidgetPicker({ reports, onAddBuiltin, onAddReport, onClose }: Wi
           )}
           {def ? <ParamFields form={form} /> : null}
           {def || report ? <TextField label="Title override" optional placeholder={label} value={title} onValueChange={setTitle} /> : null}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

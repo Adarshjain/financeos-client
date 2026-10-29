@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { Dialog, showToast } from '@/components/ds';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -62,13 +62,13 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Add loan"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: createLoan.isPending }}
         primary={{ label: 'Add loan', type: 'submit', form: FORM_ID, loading: createLoan.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -81,8 +81,8 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
           >
             <LoanFormFields values={values} errors={errors} accounts={accounts ?? []} today={today} onChange={change} />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
-import { Dialog, DialogBody, DialogContent, DialogFooter } from '../Dialog/Dialog';
+import { Dialog } from '../Dialog/Dialog';
 import { Highlight } from '../Highlight/Highlight';
 import { Icon } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
@@ -146,7 +146,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
+        <Dialog.Content
           ref={ref}
           size="md"
           srTitle={srTitle}
@@ -170,7 +170,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
               />
             </div>
 
-            <DialogBody className="gap-0 desk:gap-0 p-space-6">
+            <Dialog.Body className="gap-0 desk:gap-0 p-space-6">
               {hint && (
                 <Text as="p" variant="caption" tone="ink-3" className="px-space-16 py-space-8">
                   {hint}
@@ -238,9 +238,9 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                   ))
                 )}
               </div>
-            </DialogBody>
+            </Dialog.Body>
 
-            <DialogFooter className="hidden desk:block">
+            <Dialog.Footer className="hidden desk:block">
               <div className="flex items-center gap-space-16 text-caption text-ink-3">
                 <span className="flex items-center gap-space-6">
                   <Kbd>
@@ -254,9 +254,9 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                   {openLabel}
                 </span>
               </div>
-            </DialogFooter>
+            </Dialog.Footer>
           </div>
-        </DialogContent>
+        </Dialog.Content>
       </Dialog>
     );
   },

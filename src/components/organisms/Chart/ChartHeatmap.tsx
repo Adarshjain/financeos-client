@@ -7,7 +7,7 @@
 // fit are shown, never a sideways scroll. Today is outlined; days after today
 // are blank. With `onSelectEntry` a day with a value is pressable.
 
-import { useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 
 import { Text } from '@/components/ds';
 import { cn } from '@/components/ds/cn';
@@ -25,6 +25,7 @@ import {
   HEATMAP_DEFAULT_MONTHS,
   type HeatWeek,
 } from './heatmap.model';
+import { useMergedRef } from './mergeRefs';
 
 /** Intensity of level 0…4: chart-1 at four opacity steps; level 0 is the neutral `line` fill, solid. */
 const LEVEL_OPACITY = [1, 0.25, 0.5, 0.75, 1];
@@ -85,12 +86,12 @@ function HeatCellView({
   cell,
   size,
   text,
-  onPress,
+  onSelect,
 }: {
   cell: HeatCell | null;
   size: number;
   text: string;
-  onPress?: () => void;
+  onSelect?: () => void;
 }) {
   const box = { width: size, height: size };
   if (!cell) return <span style={box} aria-hidden />;
@@ -124,7 +125,7 @@ function HeatCellView({
     'data-date': cell.date,
     'data-level': cell.level,
   };
-  if (!onPress) {
+  if (!onSelect) {
     return (
       <span {...common} role="img" className="block">
         {mark}
@@ -136,28 +137,36 @@ function HeatCellView({
       type="button"
       {...common}
       className={cn('block rounded-ds-sm', CELL_PRESS)}
-      onClick={onPress}
+      onClick={onSelect}
     >
       {mark}
     </button>
   );
 }
 
-export function ChartHeatmap({
-  data,
-  money,
-  months = HEATMAP_DEFAULT_MONTHS,
-  onSelectEntry,
-  canSelectEntry,
-}: {
+export interface ChartHeatmapProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   data: ChartInput;
   money: boolean;
   /** How many months the calendar covers (default 6). */
   months?: number;
   onSelectEntry?: (entry: ChartEntry) => void;
   canSelectEntry?: (entry: ChartEntry) => boolean;
-}) {
-  const [frameRef, { width }] = useElementSize<HTMLDivElement>();
+}
+
+export const ChartHeatmap = forwardRef<HTMLDivElement, ChartHeatmapProps>(function ChartHeatmap(
+  {
+  data,
+  money,
+  months = HEATMAP_DEFAULT_MONTHS,
+  onSelectEntry,
+  canSelectEntry,
+  className,
+  ...props
+},
+  ref,
+) {
+  const [sizeRef, { width }] = useElementSize<HTMLDivElement>();
+  const frameRef = useMergedRef(sizeRef, ref);
   const format = chartValueFormat(money);
   const today = todayInAppZone();
   const model = useMemo(
@@ -171,7 +180,7 @@ export function ChartHeatmap({
   const labels = monthLabels(weeks);
 
   return (
-    <div ref={frameRef} className="flex w-full min-w-0 flex-col gap-space-8">
+    <div ref={frameRef} className={cn('flex w-full min-w-0 flex-col gap-space-8', className)} {...props}>
       <div
         className={cn(
           'flex gap-space-2',
@@ -226,7 +235,7 @@ export function ChartHeatmap({
                   cell={day}
                   size={cell}
                   text={text}
-                  onPress={
+                  onSelect={
                     onSelectEntry && entry && (canSelectEntry?.(entry) ?? true)
                       ? () => onSelectEntry(entry)
                       : undefined
@@ -261,4 +270,4 @@ export function ChartHeatmap({
       </div>
     </div>
   );
-}
+});

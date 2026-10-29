@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { Banner, Dialog, showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { Transaction } from '@/lib/transaction.types';
@@ -90,13 +90,13 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Set category"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: 'Set category', onSelect: () => void save(), loading: saving }}
       >
-        <DialogBody className="flex flex-col gap-space-8 desk:gap-space-12">
+        <Dialog.Body className="flex flex-col gap-space-8 desk:gap-space-12">
           {error ? <Banner tone="danger">{error}</Banner> : null}
           <CategoriesField
             categories={localCategories}
@@ -107,8 +107,8 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
             }
             onCreate={(name) => void createCategory(name)}
           />
-       </DialogBody>
-      </DialogContent>
+       </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

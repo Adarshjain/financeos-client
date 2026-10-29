@@ -7,8 +7,6 @@ import {
   Checkbox,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   SegmentedControl,
   Select,
   Text,
@@ -183,13 +181,13 @@ export function RuleDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="lg"
         title={rule ? 'Edit rule' : 'Add rule'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: f.isSubmitting }}
         primary={{ label: 'Save & recompute', onSelect: f.onSubmit, loading: f.isSubmitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Dialog.Section title="Basics">
             <div className={PAIR}>
               <TextField label="Name" placeholder="e.g. 5% online" value={f.name} onValueChange={f.setName} />
@@ -528,8 +526,8 @@ export function RuleDialog({
           >
             <RuleTester f={f} categories={categories} />
           </Dialog.Section>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

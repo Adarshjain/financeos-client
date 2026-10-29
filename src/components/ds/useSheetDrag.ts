@@ -3,7 +3,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 
 export interface UseSheetDragOptions {
-  onClose?: () => void;
+  onDismiss?: () => void;
   threshold?: number;
   velocityThreshold?: number;
 }
@@ -14,7 +14,7 @@ export interface UseSheetDragOptions {
  * and springs back if released before threshold.
  */
 export function useSheetDrag({
-  onClose,
+  onDismiss,
   threshold = 80,
   velocityThreshold = 0.5,
 }: UseSheetDragOptions = {}) {
@@ -68,11 +68,11 @@ export function useSheetDrag({
 
     if (isPastDistance || isFastFlick) {
       // Keep the offset: the closing animation slides on from where the finger let go.
-      onClose?.();
+      onDismiss?.();
       return;
     }
     setDragOffset(0);
-  }, [onClose, threshold, velocityThreshold]);
+  }, [onDismiss, threshold, velocityThreshold]);
 
   const handlePointerCancel = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!draggingRef.current) return;

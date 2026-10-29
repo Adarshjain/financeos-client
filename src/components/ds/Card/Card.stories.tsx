@@ -6,9 +6,6 @@ import { fn } from 'storybook/test';
 import {
   Button,
   Card,
-  CardEmpty,
-  CardRow,
-  CardSection,
   ConcealProvider,
   FilterChip,
   Icon,
@@ -80,14 +77,14 @@ export const WithRows: Story = {
     title: 'Next 14 days',
     children: (
       <>
-        <CardRow>
+        <Card.Row>
           <Text truncate className="flex-1">Amex Platinum bill</Text>
           <Text variant="body-strong">₹33,900</Text>
-        </CardRow>
-        <CardRow>
+        </Card.Row>
+        <Card.Row>
           <Text truncate className="flex-1">Priya Nair · you owe</Text>
           <Text variant="body-strong">₹12,000</Text>
-        </CardRow>
+        </Card.Row>
       </>
     ),
   },
@@ -109,10 +106,10 @@ export const WithAPager: StoryObj<{
     const [{ page = 0 }, updateArgs] = useArgs<{ page?: number }>();
     return (
       <Card title={args.title} subtitle={args.subtitle}>
-        <CardRow>
+        <Card.Row>
           <Text truncate className="flex-1">IKEA India</Text>
           <Text variant="body-strong">196 pts</Text>
-        </CardRow>
+        </Card.Row>
         <Pager
           page={page}
           size={25}
@@ -133,14 +130,14 @@ export const WithSectionBands: Story = {
   args: {
     children: (
       <>
-        <CardSection>Act now · 2</CardSection>
-        <CardRow>
+        <Card.Section>Act now · 2</Card.Section>
+        <Card.Row>
           <Text truncate className="flex-1">SBI statement missing</Text>
-        </CardRow>
-        <CardSection>Updates · 4</CardSection>
-        <CardRow>
+        </Card.Row>
+        <Card.Section>Updates · 4</Card.Section>
+        <Card.Row>
           <Text truncate className="flex-1">Prices refreshed</Text>
-        </CardRow>
+        </Card.Row>
       </>
     ),
   },
@@ -150,7 +147,7 @@ export const Empty: Story = {
   name: 'Empty',
   args: {
     title: 'Untagged · 0',
-    children: <CardEmpty>Every transaction has a category.</CardEmpty>,
+    children: <Card.Empty>Every transaction has a category.</Card.Empty>,
   },
 };
 
@@ -175,14 +172,14 @@ export const Inset: Story = {
           </div>
           <div className="px-space-10 pb-space-10">
             <Card variant="inset">
-              <CardRow>
+              <Card.Row>
                 <Text variant="label" className="flex-1">Skipped · not a transaction</Text>
                 <Text variant="label" tone="ink-3">7 emails</Text>
-              </CardRow>
-              <CardRow>
+              </Card.Row>
+              <Card.Row>
                 <Text variant="label" className="flex-1">HDFC Bank alerts</Text>
                 <Text variant="label" tone="ink-3">3 emails</Text>
-              </CardRow>
+              </Card.Row>
             </Card>
           </div>
         </Card>

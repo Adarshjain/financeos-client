@@ -6,12 +6,7 @@ import {
   Banner,
   Button,
   Card,
-  CardHeader,
-  CardSubtitle,
-  CardTitle,
   Dialog,
-  DialogBody,
-  DialogContent,
   Text,
   TextField,
 } from '@/components/ds';
@@ -37,14 +32,14 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
   return (
     <>
       <Card tone="danger">
-        <CardHeader>
+        <Card.Header>
           <div className="min-w-0">
-            <CardTitle>Delete account</CardTitle>
-            <CardSubtitle truncate={false}>
+            <Card.Title>Delete account</Card.Title>
+            <Card.Subtitle truncate={false}>
               Removes every account, transaction, statement, rule and connection. This can&apos;t be undone.
-            </CardSubtitle>
+            </Card.Subtitle>
           </div>
-        </CardHeader>
+        </Card.Header>
         <div className="px-space-16 pb-space-16">
           <Button variant="danger" onClick={f.handleOpen}>
             Delete account
@@ -53,7 +48,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
       </Card>
 
       <Dialog open={f.open} onOpenChange={f.handleOpenChange}>
-        <DialogContent
+        <Dialog.Content
           size="md"
           dismissible={!f.isDeleting}
           title="Delete account?"
@@ -61,13 +56,13 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
           secondary={{ label: 'Cancel', disabled: f.isDeleting, onSelect: f.close }}
           primary={{
             label: f.isDeleting ? 'Deleting account…' : f.isBusy ? 'Retry deletion' : 'Delete account',
-            destructive: true,
+            tone: 'danger',
             type: 'submit',
             form: FORM_ID,
             disabled: !f.canSubmit,
           }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-16">
               {f.loadingSummary ? (
                 <Banner tone="neutral">Calculating data to be deleted…</Banner>
@@ -131,8 +126,8 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
                 />
               </form>
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     </>
   );

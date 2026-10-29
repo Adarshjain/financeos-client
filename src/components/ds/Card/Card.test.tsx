@@ -4,13 +4,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   Card,
-  CardEmpty,
-  CardFooter,
-  CardHeader,
-  CardRow,
-  CardSection,
-  CardSubtitle,
-  CardTitle,
 } from './Card';
 
 describe('Card', () => {
@@ -30,27 +23,27 @@ describe('Card', () => {
   it('renders compound header structure', () => {
     render(
       <Card>
-        <CardHeader>
+        <Card.Header>
           <div>
-            <CardTitle>Statements</CardTitle>
-            <CardSubtitle>Each statement is a bill</CardSubtitle>
+            <Card.Title>Statements</Card.Title>
+            <Card.Subtitle>Each statement is a bill</Card.Subtitle>
           </div>
-        </CardHeader>
+        </Card.Header>
       </Card>,
     );
     expect(screen.getByText('Statements')).toBeInTheDocument();
     expect(screen.getByText('Each statement is a bill')).toBeInTheDocument();
   });
 
-  it('CardTitle and CardSubtitle support as and truncate props', () => {
+  it('Card.Title and Card.Subtitle support as and truncate props', () => {
     render(
       <Card>
-        <CardHeader>
+        <Card.Header>
           <div>
-            <CardTitle as="h2" truncate={false}>Needs you</CardTitle>
-            <CardSubtitle as="span" truncate={false}>Action required</CardSubtitle>
+            <Card.Title as="h2" truncate={false}>Needs you</Card.Title>
+            <Card.Subtitle as="span" truncate={false}>Action required</Card.Subtitle>
           </div>
-        </CardHeader>
+        </Card.Header>
       </Card>,
     );
     const heading = screen.getByRole('heading', { level: 2 });
@@ -64,14 +57,14 @@ describe('Card', () => {
   it('renders rows with children', () => {
     render(
       <Card title="Upcoming">
-        <CardRow>
+        <Card.Row>
           <span>Amex bill</span>
           <span>₹33,900</span>
-        </CardRow>
-        <CardRow>
+        </Card.Row>
+        <Card.Row>
           <span>Rent</span>
           <span>₹25,000</span>
-        </CardRow>
+        </Card.Row>
       </Card>,
     );
     expect(screen.getByText('Amex bill')).toBeInTheDocument();
@@ -81,8 +74,8 @@ describe('Card', () => {
   it('renders section bands inside card', () => {
     render(
       <Card>
-        <CardSection>Act now · 2</CardSection>
-        <CardRow>Item 1</CardRow>
+        <Card.Section>Act now · 2</Card.Section>
+        <Card.Row>Item 1</Card.Row>
       </Card>,
     );
     expect(screen.getByText('Act now · 2')).toBeInTheDocument();
@@ -92,7 +85,7 @@ describe('Card', () => {
   it('renders empty state without extra top border divider', () => {
     const { container } = render(
       <Card title="Untagged · 0">
-        <CardEmpty>Every transaction has a category.</CardEmpty>
+        <Card.Empty>Every transaction has a category.</Card.Empty>
       </Card>,
     );
     const emptyEl = screen.getByText('Every transaction has a category.');
@@ -103,9 +96,9 @@ describe('Card', () => {
   it('renders footer with px-space-16 padding', () => {
     const { container } = render(
       <Card title="List">
-        <CardFooter>
+        <Card.Footer>
           <span>Pagination info</span>
-        </CardFooter>
+        </Card.Footer>
       </Card>,
     );
     expect(screen.getByText('Pagination info')).toBeInTheDocument();
@@ -150,7 +143,7 @@ describe('Card inset variant', () => {
   it('tightens header and row padding inside an inset', () => {
     render(
       <Card variant="inset" title="Job" data-testid="c">
-        <CardRow>Row</CardRow>
+        <Card.Row>Row</Card.Row>
       </Card>,
     );
     expect(screen.getByText('Job').closest('div.flex')).toHaveClass('px-space-10');
@@ -158,7 +151,7 @@ describe('Card inset variant', () => {
   });
 
   it('keeps normal padding for a default card', () => {
-    render(<Card><CardRow>Row</CardRow></Card>);
+    render(<Card><Card.Row>Row</Card.Row></Card>);
     expect(screen.getByText('Row')).toHaveClass('px-space-16');
   });
 
@@ -166,7 +159,7 @@ describe('Card inset variant', () => {
     render(
       <Card variant="inset" data-testid="outer">
         <Card variant="inset" data-testid="inner">
-          <CardRow>Deep</CardRow>
+          <Card.Row>Deep</Card.Row>
         </Card>
       </Card>,
     );
@@ -199,7 +192,7 @@ describe('Card inset variant', () => {
     it('danger works with the inset variant and leaves rows unchanged', () => {
       render(
         <Card tone="danger" variant="inset" data-testid="c">
-          <CardRow>Row</CardRow>
+          <Card.Row>Row</Card.Row>
         </Card>,
       );
       expect(screen.getByTestId('c')).toHaveClass('border-danger-border', 'rounded-ds-md');

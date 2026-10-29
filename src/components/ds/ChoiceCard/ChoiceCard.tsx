@@ -25,7 +25,7 @@ export interface ChoiceCardGroupProps
  * ChoiceCard.Group: owns the chosen value. Arrow keys move the choice between enabled cards
  * (roving tab stop, like a radio group); `className` places the cards (the page sets the grid).
  */
-export const ChoiceCardGroup = forwardRef<HTMLDivElement, ChoiceCardGroupProps>(
+const ChoiceCardGroup = forwardRef<HTMLDivElement, ChoiceCardGroupProps>(
   ({ value, defaultValue, onValueChange, className, children, onKeyDown, ...props }, ref) => {
     const [current, setCurrent] = useControllableState<string | undefined>({
       value,

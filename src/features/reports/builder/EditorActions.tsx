@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Icon, Menu, MenuItem, SelectionBar, Text } from '@/components/ds';
+import { Button, Icon, Menu, SelectionBar, Text } from '@/components/ds';
 
 export interface EditorActionsProps {
   /** The draft differs from what is saved: shows the "Unsaved changes" note. */
@@ -39,15 +39,15 @@ export function EditorActions({ dirty, edit, saving, duplicating, onCancel, onSa
                   </Button>
                 }
               >
-                <MenuItem disabled={saving} onSelect={onSaveAsNew}>
+                <Menu.Item disabled={saving} onSelect={onSaveAsNew}>
                   Save as new
-                </MenuItem>
-                <MenuItem disabled={duplicating} onSelect={onDuplicate}>
+                </Menu.Item>
+                <Menu.Item disabled={duplicating} onSelect={onDuplicate}>
                   Duplicate
-                </MenuItem>
-                <MenuItem destructive onSelect={onDelete}>
+                </Menu.Item>
+                <Menu.Item tone="danger" onSelect={onDelete}>
                   Delete
-                </MenuItem>
+                </Menu.Item>
               </Menu>
             ) : null}
             {dirty ? (

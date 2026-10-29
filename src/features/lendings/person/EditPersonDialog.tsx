@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, TextArea, TextField } from '@/components/ds';
+import { Dialog, TextArea, TextField } from '@/components/ds';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 
 const FORM_ID = 'edit-person-form';
@@ -31,13 +31,13 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Edit person details"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Save person', type: 'submit', form: FORM_ID, loading: submitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -59,8 +59,8 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
             />
             <TextArea label="Notes" optional value={notes} onValueChange={setNotes} minRows={2} />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

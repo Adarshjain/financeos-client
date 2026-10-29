@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Checkbox, Dialog, DialogBody, DialogContent, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
+import { Checkbox, Dialog, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
@@ -96,7 +96,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
 
   return (
     <Dialog open onOpenChange={(open) => (open || applying ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="lg"
         title={`Matching transactions · ${rule.displayName || rule.merchantKey}`}
         description={`${ruleMatchSentence(rule)} · manually reviewed transactions are left out.`}
@@ -108,7 +108,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
           disabled: count === 0 || applying,
         }}
       >
-        <DialogBody className="flex flex-col gap-space-8 desk:gap-space-8">
+        <Dialog.Body className="flex flex-col gap-space-8 desk:gap-space-8">
           {failed ? (
             <ErrorState
               title="Couldn't load matches"
@@ -159,8 +159,8 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
               </Text>
             </>
           )}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

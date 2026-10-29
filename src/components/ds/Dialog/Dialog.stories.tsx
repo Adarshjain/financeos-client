@@ -9,18 +9,15 @@ import {
   ConcealProvider,
   ConfirmDialog,
   Dialog,
-  DialogBody,
-  DialogContent,
-  DialogTrigger,
   Divider,
   Switch,
   Text,
   TextField,
 } from '@/components/ds';
 
-const meta: Meta<typeof DialogContent> = {
+const meta: Meta<typeof Dialog.Content> = {
   title: 'DS/Overlays/Dialog',
-  component: DialogContent,
+  component: Dialog.Content,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -62,25 +59,25 @@ const meta: Meta<typeof DialogContent> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof DialogContent>;
+type Story = StoryObj<typeof Dialog.Content>;
 
 export const Default: Story = {
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogTrigger asChild>
+      <Dialog.Trigger asChild>
         <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogContent
+      </Dialog.Trigger>
+      <Dialog.Content
         {...args}
         primary={{ label: 'Confirm', onSelect: fn() }}
         secondary={{ label: 'Cancel', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Text>
             Modal body content rendered within standard layout.
           </Text>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -93,16 +90,16 @@ export const SmallWithTertiary: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogTrigger asChild>
+      <Dialog.Trigger asChild>
         <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogContent
+      </Dialog.Trigger>
+      <Dialog.Content
         {...args}
         tertiary={{ label: 'Delete', tone: 'danger', onSelect: fn() }}
         secondary={{ label: 'Cancel', onSelect: fn() }}
         primary={{ label: 'Save', onSelect: fn() }}
       >
-        <DialogBody className="space-y-space-8">
+        <Dialog.Body className="space-y-space-8">
           <div className="flex items-center justify-between py-space-6">
             <Text variant="body-strong">Option 1</Text>
             <Checkbox defaultChecked />
@@ -112,8 +109,8 @@ export const SmallWithTertiary: Story = {
             <Text variant="body-strong">Option 2</Text>
             <Checkbox />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -122,15 +119,15 @@ export const ActionWithIcon: Story = {
   args: { size: 'sm', title: 'Export report' },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogContent
+      <Dialog.Content
         {...args}
         secondary={{ label: 'Cancel', onSelect: fn() }}
         primary={{ label: 'Download CSV', icon: 'download', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Text variant="body">Spend by category, April to September 2026, 248 rows.</Text>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -143,15 +140,15 @@ export const LargeForm: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogTrigger asChild>
+      <Dialog.Trigger asChild>
         <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogContent
+      </Dialog.Trigger>
+      <Dialog.Content
         {...args}
         secondary={{ label: 'Cancel', onSelect: fn() }}
         primary={{ label: 'Save preferences', onSelect: fn() }}
       >
-        <DialogBody className="space-y-space-16">
+        <Dialog.Body className="space-y-space-16">
           <TextField label="Display name" defaultValue="Alex Morgan" />
           <TextField label="Email address" defaultValue="alex@example.com" />
           <Divider />
@@ -159,8 +156,8 @@ export const LargeForm: Story = {
             <Text variant="body-strong">Email notifications</Text>
             <Switch defaultChecked />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -180,20 +177,20 @@ export const SidePanel: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen variant="side-panel">
-      <DialogTrigger asChild>
+      <Dialog.Trigger asChild>
         <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogContent
+      </Dialog.Trigger>
+      <Dialog.Content
         {...args}
         secondary={{ label: 'Close', onSelect: fn() }}
         primary={{ label: 'Update', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Text>
             Side panel drawer content slides in from the right edge.
           </Text>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -206,21 +203,21 @@ export const CanvasBackground: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogTrigger asChild>
+      <Dialog.Trigger asChild>
         <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogContent
+      </Dialog.Trigger>
+      <Dialog.Content
         {...args}
         primary={{ label: 'Done', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Card>
             <div className="p-space-16">
               <Text variant="body-strong">Card Item</Text>
             </div>
           </Card>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -229,20 +226,20 @@ export const WithSections: Story = {
   args: { size: 'md', title: 'Edit rule' },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogContent
+      <Dialog.Content
         {...args}
         primary={{ label: 'Save rule', onSelect: fn() }}
         secondary={{ label: 'Cancel', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Dialog.Section title="Conditions">
             <TextField label="Description contains" defaultValue="Swiggy" />
           </Dialog.Section>
           <Dialog.Section title="Then">
             <TextField label="Set category" defaultValue="Food & dining" />
           </Dialog.Section>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -251,20 +248,20 @@ export const CollapsibleSections: Story = {
   args: { size: 'md', title: 'Edit rule' },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogContent
+      <Dialog.Content
         {...args}
         primary={{ label: 'Save rule', onSelect: fn() }}
         secondary={{ label: 'Cancel', onSelect: fn() }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <Dialog.Section title="Conditions" collapsible onOpenChange={fn()}>
             <TextField label="Description contains" defaultValue="Swiggy" />
           </Dialog.Section>
           <Dialog.Section title="Advanced" collapsible defaultOpen={false} onOpenChange={fn()}>
             <TextField label="Amount at least" defaultValue="₹500" />
           </Dialog.Section>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };
@@ -340,11 +337,11 @@ export const Full: Story = {
   args: { size: 'full', title: 'Card utilisation', description: 'All cards, last 6 months.' },
   render: (args) => (
     <Dialog defaultOpen>
-      <DialogContent {...args} secondary={{ label: 'Close', onSelect: fn() }}>
-        <DialogBody>
+      <Dialog.Content {...args} secondary={{ label: 'Close', onSelect: fn() }}>
+        <Dialog.Body>
           <Text variant="body">HDFC Regalia ₹1,24,500 of ₹4,00,000 used. ICICI Amazon Pay ₹18,200 of ₹2,00,000 used.</Text>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   ),
 };

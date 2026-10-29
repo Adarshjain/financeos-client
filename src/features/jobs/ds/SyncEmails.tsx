@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-import { Button, Card, CardRow, Icon, Text, useConcealed } from '@/components/ds';
+import { Button, Card, Icon, Text, useConcealed } from '@/components/ds';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabels';
 import { appHref } from '@/features/shell/routes';
 import { formatDate, formatMoney, formatTime } from '@/lib/format';
@@ -87,7 +87,7 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
   const concealed = useConcealed();
   const more = message.createdCount - message.transactions.length;
   return (
-    <CardRow className="flex-col items-stretch" data-testid="sync-message">
+    <Card.Row className="flex-col items-stretch" data-testid="sync-message">
       <div className="flex items-start justify-between gap-space-8">
         <div className="min-w-0">
           <Text variant="body-strong" as="p" truncate>
@@ -153,7 +153,7 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
       ) : null}
 
       <MessageAction message={message} />
-    </CardRow>
+    </Card.Row>
   );
 }
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import React, { useActionState, useEffect, useState } from 'react';
 
 import { login, logoutToDinero } from '@/actions/auth';
-import { Banner, Dialog, DialogBody, DialogContent, TextField } from '@/components/ds';
+import { Banner, Dialog, TextField } from '@/components/ds';
 import { AUTH_EXPIRED_EVENT, claimAuthExpired } from '@/lib/authExpiry';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
@@ -53,7 +53,7 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
 
   return (
     <Dialog open={open} onOpenChange={() => undefined}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Sign in again"
         description="Your session ended. Sign in to carry on where you were."
@@ -69,7 +69,7 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
         }}
         primary={{ label: 'Sign in', type: 'submit', form: FORM_ID, loading: isPending, disabled: busy }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form id={FORM_ID} noValidate action={formAction} className="flex flex-col gap-space-8 desk:gap-space-12">
             {error && <Banner tone="danger">{error}</Banner>}
             <TextField
@@ -94,8 +94,8 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
               disabled={busy}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

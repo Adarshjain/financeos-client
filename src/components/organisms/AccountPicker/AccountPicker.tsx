@@ -89,3 +89,5 @@ export const AccountPicker = React.forwardRef<HTMLButtonElement, AccountPickerPr
     />
   );
 });
+
+AccountPicker.displayName = 'AccountPicker';

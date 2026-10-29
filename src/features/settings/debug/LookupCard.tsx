@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Button, Card, CardEmpty, SegmentedControl, Text, TextField } from '@/components/ds';
+import { Button, Card, SegmentedControl, Text, TextField } from '@/components/ds';
 
 import { asRefType, REF_TYPE_OPTIONS, type RefType } from './debugModel';
 
@@ -22,7 +22,7 @@ export function LookupCard({ admin, initialRef, initialType, isLoading, onSearch
   if (!admin) {
     return (
       <Card>
-        <CardEmpty>Look-ups are for admins. Send the reference to the developer.</CardEmpty>
+        <Card.Empty>Look-ups are for admins. Send the reference to the developer.</Card.Empty>
       </Card>
     );
   }

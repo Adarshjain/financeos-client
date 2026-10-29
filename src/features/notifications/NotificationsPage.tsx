@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   Dialog,
-  DialogContent,
   Divider,
   EmptyState,
   Icon,
@@ -153,14 +152,14 @@ export function NotificationsPage() {
     <ShellPage crumb={areaCrumb('notifications')} title="Notifications">
       {body}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title="Clear all notifications?"
           description={`This removes ${totalElements === 1 ? '1 notification' : `all ${totalElements} notifications`}. New ones still show up here.`}
           secondary={{ label: 'Cancel', onSelect: () => setConfirmOpen(false) }}
           primary={{
             label: 'Clear all',
-            destructive: true,
+            tone: 'danger',
             disabled: clearingAll,
             onSelect: () => {
               void clearEverything().then((ok) => {

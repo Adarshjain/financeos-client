@@ -44,7 +44,7 @@ export interface SelectGroup {
 }
 
 export type SelectAction = {
-  label: React.ReactNode;
+  label: string;
   disabled?: boolean;
 } & ActionTarget;
 
@@ -65,7 +65,7 @@ export interface SelectMenuProps {
   onDone?: () => void;
   /** Multiple only: when given, a Cancel action sits first, before Clear and Done */
   onDiscard?: () => void;
-  onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
   actions?: SelectAction[];
@@ -99,7 +99,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       onClear,
       onDone,
       onDiscard,
-      onClose,
+      onOpenChange,
       onCreate,
       createLabel,
       actions,
@@ -276,7 +276,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        onClose?.();
+        onOpenChange?.(false);
       }
     };
 
@@ -446,7 +446,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
                   disabled={a.disabled}
                   href={a.href}
                   onSelect={() => {
-                    onClose?.();
+                    onOpenChange?.(false);
                     a.onSelect?.();
                   }}
                 >
@@ -916,7 +916,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             onClear={handleClear}
             onDone={handleDone}
             onDiscard={multiple ? handleDiscard : undefined}
-            onClose={() => setOpen(false)}
+            onOpenChange={setOpen}
             onCreate={onCreate}
             createLabel={createLabel}
             actions={actions}

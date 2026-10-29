@@ -13,9 +13,9 @@ The one floating surface every dropdown uses: Select's list, Menu, DateField's c
 ## Props
 - `<Popover>` (shorthand):
   - `trigger?: React.ReactNode`: trigger element wrapped in `Popover.Trigger asChild`.
-  - `children?: React.ReactNode`: content rendered inside `PopoverContent` (or composite elements when no `trigger` is supplied).
-  - `contentClassName?: string`: custom className applied to `PopoverContent`.
-  - `contentProps?: Omit<PopoverContentProps, 'align' | 'side' | 'sideOffset' | 'className'>`: additional Radix Content props forwarded to `PopoverContent`.
+  - `children?: React.ReactNode`: content rendered inside `Popover.Content` (or composite elements when no `trigger` is supplied).
+  - `contentClassName?: string`: custom className applied to `Popover.Content`.
+  - `contentProps?: Omit<PopoverContentProps, 'align' | 'side' | 'sideOffset' | 'className'>`: additional Radix Content props forwarded to `Popover.Content`.
   - `align?: 'start' | 'center' | 'end'`: alignment relative to trigger (`default: 'start'`).
   - `side?: 'top' | 'bottom' | 'left' | 'right'`: preferred side (`default: 'bottom'`).
   - `sideOffset?: number`: distance from trigger in pixels (`default: 4`).

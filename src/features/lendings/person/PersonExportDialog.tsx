@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, showToast, Skeleton } from '@/components/ds';
+import { Dialog, showToast, Skeleton } from '@/components/ds';
 import { watchSession } from '@/lib/authExpiry';
 import type { LedgerEntryResponse } from '@/lib/lending.types';
 
@@ -42,15 +42,15 @@ export function PersonExportDialog({ counterpartyId, entryCount, theirName, defa
   }
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent size="md" title="Export ledger" description="Loading the entries…">
-        <DialogBody>
+      <Dialog.Content size="md" title="Export ledger" description="Loading the entries…">
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-12" data-testid="export-loading">
             <Skeleton className="h-space-24 w-full" />
             <Skeleton className="h-space-24 w-full" />
             <Skeleton className="h-space-24 w-full" />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

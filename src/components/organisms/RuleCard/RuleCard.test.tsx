@@ -61,7 +61,7 @@ describe('RuleCard', () => {
       <RuleCard
         name="Dunzo"
         matchType="Contains"
-        status="unverified"
+        tone="warning"
         source="LLM-generated"
         onApprove={handleApprove}
       />,
@@ -79,7 +79,7 @@ describe('RuleCard', () => {
       <RuleCard
         name="Swiggy"
         matchType="Starts with"
-        status="verified"
+        tone="success"
         source="Created by you"
         mcc="MCC 5812"
       />,

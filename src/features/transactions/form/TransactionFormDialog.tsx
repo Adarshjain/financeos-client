@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { Dialog, showToast } from '@/components/ds';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
@@ -207,13 +207,13 @@ export function TransactionFormDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title={isUpdate ? 'Edit transaction' : 'Add transaction'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: isUpdate ? 'Save transaction' : 'Add transaction', type: 'submit', form: FORM_ID, loading: saving }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -248,8 +248,8 @@ export function TransactionFormDialog({
               onAddAccount={addAccount}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -19,11 +19,11 @@ export interface EmptyStateProps
   description?: React.ReactNode;
   /** Single action: action={{ label, onSelect, variant? }}, or { label, href, variant? } for a link */
   action?: {
-    label: React.ReactNode;
+    label: string;
     variant?: 'primary' | 'secondary' | 'link';
   } & ActionTarget;
   /** Second action, after the first: secondaryAction={{ label, onSelect }} or { label, href }. Always `secondary` (`link` when compact). */
-  secondaryAction?: { label: React.ReactNode } & ActionTarget;
+  secondaryAction?: { label: string } & ActionTarget;
   /** Compact single-line style for small panels or widget rows */
   compact?: boolean;
 }

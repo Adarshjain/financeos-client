@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Select } from '@/components/ds';
+import { Dialog, Select } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 
@@ -22,7 +22,7 @@ export function AddToDashboardDialog({ report, adding, onAdd, onClose }: AddToDa
   const already = new Set(report.dashboards.map((d) => d.id));
   return (
     <Dialog open onOpenChange={(open) => (open || adding ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Add to dashboard"
         description={`${report.name} becomes a widget at the bottom of the dashboard.`}
@@ -34,7 +34,7 @@ export function AddToDashboardDialog({ report, adding, onAdd, onClose }: AddToDa
           onSelect: () => onAdd(chosen),
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {dashboards.isError ? (
             <ErrorState
               title="Couldn't load dashboards"
@@ -55,8 +55,8 @@ export function AddToDashboardDialog({ report, adding, onAdd, onClose }: AddToDa
               onValueChange={(v) => setChosen(v as string)}
             />
           )}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

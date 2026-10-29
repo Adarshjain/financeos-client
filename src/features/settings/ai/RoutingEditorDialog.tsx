@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Button, Dialog, DialogBody, DialogContent, Icon, ReorderList, Text } from '@/components/ds';
+import { Banner, Button, Dialog, Icon, ReorderList, Text } from '@/components/ds';
 import type { RoutingOptionDto } from '@/lib/api/types';
 
 import { CustomModelFields } from './CustomModelFields';
@@ -28,7 +28,7 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
   return (
     <Dialog open={group !== null} onOpenChange={(open) => !open && group && !group.saving && group.onCancel()}>
       {group ? (
-        <DialogContent
+        <Dialog.Content
           size="lg"
           dismissible={!group.saving}
           title={group.dto.displayName}
@@ -41,7 +41,7 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
             onSelect: group.onSave,
           }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-12">
               {error ? <Banner tone="danger">{error}</Banner> : null}
               <ReorderList
@@ -88,8 +88,8 @@ export function RoutingEditorDialog({ group, routingOptions, providers, error }:
               />
               <CustomModelFields providers={providers} testing={group.testing} error={group.addError} onAdd={group.onAdd} />
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       ) : null}
     </Dialog>
   );

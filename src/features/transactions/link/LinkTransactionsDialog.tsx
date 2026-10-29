@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Select, type SelectGroup, showToast } from '@/components/ds';
+import { Dialog, Select, type SelectGroup, showToast } from '@/components/ds';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { isRecordKind, type LinkKind, type Transaction } from '@/lib/transaction.types';
 
@@ -115,7 +115,7 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
     );
   };
 
-  let primary: React.ComponentProps<typeof DialogContent>['primary'];
+  let primary: React.ComponentProps<typeof Dialog.Content>['primary'];
   let busy = createLink.isPending;
   if (kind === 'LENDING') {
     busy = lending.submitting || lending.attachingId !== null;
@@ -163,14 +163,14 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title={linkTitle(transactions)}
         description={linkDescription(kind, multi)}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: busy }}
         primary={primary}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <Select label="Type" groups={groups} value={kind} onValueChange={(v) => setKind(v as LinkKind)} />
             {kind === 'LENDING' ? (
@@ -191,8 +191,8 @@ export function LinkTransactionsDialog({ transactions, onClose, onLinked }: Link
               <TransactionsLinkBody type={kind} state={state} accounts={accounts} multi={multi} />
             )}
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -6,8 +6,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   showToast,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
@@ -108,7 +106,7 @@ export function EditDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Edit details"
         description={statementLabel}
@@ -123,14 +121,14 @@ export function EditDetailsDialog({
           loading: updateDetails.isPending,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {date('periodStart', 'Period start')}
           {date('periodEnd', 'Period end')}
           {date('dueDate', 'Due date', errors.form)}
           {amount('totalDue', 'Total due')}
           {amount('minimumDue', 'Minimum due')}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

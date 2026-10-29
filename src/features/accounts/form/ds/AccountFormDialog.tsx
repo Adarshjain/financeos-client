@@ -7,8 +7,6 @@ import {
   Banner,
   ConfirmDialog,
   Dialog,
-  DialogBody,
-  DialogContent,
   SegmentedControl,
   type SelectOption,
   showToast,
@@ -291,7 +289,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="md"
           title={isEdit ? 'Edit account' : 'Add account'}
           description={account ? `${account.name} · ${accountTypeLabel(account.type)}` : undefined}
@@ -304,7 +302,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
             disabled: !type || busy,
           }}
         >
-          <DialogBody>
+          <Dialog.Body>
             {failure ? <Banner tone="danger">{failure}</Banner> : null}
             <form
               id={FORM_ID}
@@ -361,8 +359,8 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 <DeleteAccountSection disabled={busy} onDelete={() => setShowDelete(true)} />
               </>
             ) : null}
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
 
       {account ? (

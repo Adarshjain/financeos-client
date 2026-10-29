@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Checkbox,DateField, Dialog, DialogBody, DialogContent, Reveal, Select, showToast, Text, TextField } from '@/components/ds';
+import { Button, Checkbox, DateField, Dialog, Reveal, Select, showToast, Text, TextField } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
 import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
 import { BreakdownContent } from '@/features/rewards/which-card/WhichCardBreakdownDialog';
@@ -52,14 +52,14 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Test a transaction"
         description="See which rule wins on this card, and what it earns with your real cap usage."
         secondary={{ label: 'Close', onSelect: onClose }}
         primary={{ label: 'Run test', onSelect: run, loading: recommend.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <AmountField
               label="Amount"
@@ -134,8 +134,8 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
               </Text>
             )
           ) : null}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

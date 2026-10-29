@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Card, CardEmpty, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
+import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { RewardCapBucket } from '@/lib/rewards.types';
 
@@ -54,9 +54,9 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
       }
     >
       {caps.length === 0 ? (
-        <CardEmpty>
+        <Card.Empty>
           No shared caps. Use one when several rules must share a single ceiling, then pick it in each rule’s limits.
-        </CardEmpty>
+        </Card.Empty>
       ) : (
         caps.map((cap) => (
           <ListRow

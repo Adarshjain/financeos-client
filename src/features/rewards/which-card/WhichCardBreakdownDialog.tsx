@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, Dialog, DialogBody, DialogContent, ListRow, ProgressBar, StatusWords, Text } from '@/components/ds';
+import { Card, Dialog, ListRow, ProgressBar, StatusWords, Text } from '@/components/ds';
 
 import type { Breakdown } from './whichCardModel';
 
@@ -10,11 +10,11 @@ import type { Breakdown } from './whichCardModel';
 export function WhichCardBreakdownDialog({ detail, onClose }: { detail: Breakdown; onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent size="md" title={detail.title} primary={{ label: 'Close', onSelect: onClose }}>
-        <DialogBody>
+      <Dialog.Content size="md" title={detail.title} primary={{ label: 'Close', onSelect: onClose }}>
+        <Dialog.Body>
           <BreakdownContent detail={detail} />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Button, Card, CardEmpty, formatMonth, Icon, MonthCalendar, Skeleton } from '@/components/ds';
+import { Banner, Button, Card, formatMonth, Icon, MonthCalendar, Skeleton } from '@/components/ds';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
@@ -168,7 +168,7 @@ export function UpcomingCalendarView() {
         {failed ? null : (
           <Card title={dayTitle(selected)} subtitle={dayItems.length > 0 ? daySubtitle(dayItems) : undefined}>
             {dayItems.length === 0 ? (
-              <CardEmpty>Nothing due on this day.</CardEmpty>
+              <Card.Empty>Nothing due on this day.</Card.Empty>
             ) : (
               dayItems.map((item, idx) => <UpcomingRow key={rowKey(item, idx)} {...rowProps(item)} />)
             )}

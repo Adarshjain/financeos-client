@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { Button, createDataTableColumnHelper, DataTable, ProgressBar, type ProgressBarColor, Text } from '@/components/ds';
 import { formatMeasure } from '@/features/reports/measureFormat';
@@ -11,7 +11,7 @@ import type { BreakdownBars, BreakdownColumn, BreakdownSubRow } from '@/lib/repo
 import type { ChartInput } from './Chart';
 
 
-export interface ChartBreakdownProps {
+export interface ChartBreakdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   data: ChartInput;
   /** Whether the measure is money; omitted, its name decides. */
   money?: boolean;
@@ -59,7 +59,10 @@ const percent = (n: number) => formatPercent(n, { decimals: 0 });
 const SERIES: ProgressBarColor[] = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
-export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBetter, rowsLabel, onOpenRow, canOpenRow }: ChartBreakdownProps) {
+export const ChartBreakdown = forwardRef<HTMLDivElement, ChartBreakdownProps>(function ChartBreakdown(
+  { data, money, columns: wanted, bars, higherIsBetter, rowsLabel, onOpenRow, canOpenRow, ...props },
+  ref,
+) {
   const labelled = labelChartData(data);
   const field = data.measure?.field;
   const aggregation = data.measure?.aggregation;
@@ -180,6 +183,8 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
 
   return (
     <DataTable
+      ref={ref}
+      {...props}
       columns={tableColumns}
       data={rows}
       getRowId={(row) => row.id}
@@ -229,4 +234,4 @@ export function ChartBreakdown({ data, money, columns: wanted, bars, higherIsBet
       stickyHeader={false}
     />
   );
-}
+});

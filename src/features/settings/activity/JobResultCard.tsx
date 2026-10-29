@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { Button, Card, CardEmpty, Text } from '@/components/ds';
+import { Button, Card, Text } from '@/components/ds';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';
@@ -44,7 +44,7 @@ export function JobResultCard({
   if (!job) {
     return (
       <Card ref={ref} title="Job result" action={close} data-testid="job-result-card">
-        <CardEmpty>{error ?? 'Loading job…'}</CardEmpty>
+        <Card.Empty>{error ?? 'Loading job…'}</Card.Empty>
       </Card>
     );
   }
