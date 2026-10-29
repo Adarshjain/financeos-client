@@ -1,5 +1,5 @@
 import { ratioText } from '@/features/investments/corporate-actions/corporateActionRatioModel';
-import { moveTone, priceTimeLabel, unitWord } from '@/features/investments/investmentsFormatModel';
+import { moveTone, priceTimeLabel } from '@/features/investments/investmentsFormatModel';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
@@ -64,9 +64,8 @@ export function sourceWord(source: string | null | undefined): string {
 /** The three figures the hero shows under the value; the other five are the Position card's rows. */
 export const HERO_FIGURE_IDS: readonly string[] = ['invested', 'return', 'xirr'];
 
-/** The eight figures of the holding, in board order. `tradeCount` is the holding's trades in the tradebook. */
-export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, tradeCount: number, now: Date = new Date()): HoldingFigure[] {
-  const unit = unitWord(holding.assetType, holding.quantity);
+/** The eight figures of the holding, in board order. */
+export function holdingFigures(holding: HoldingDetail, instrument: Instrument | null, now: Date = new Date()): HoldingFigure[] {
   const source = holding.manualPrice ? 'manual price' : sourceWord(instrument?.lastPriceSource);
   const day = holding.priceAsOf ? formatDate(holding.priceAsOf, 'list') : '';
   const timed = holding.manualPrice || !day ? '' : priceTimeLabel(day, holding.priceAt, now);
@@ -92,27 +91,24 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
       id: 'invested',
       label: 'Invested',
       value: formatMoney(holding.invested),
-      context: holding.quantity > 0 ? `${formatQuantity(holding.quantity)} ${unit} at ${formatMoney(holding.avgCost, { decimals: 'exact' })} avg` : undefined,
     },
     {
       id: 'return',
       label: '₹ return',
       value: holding.noPrice ? '—' : formatMoney(holding.unrealised, { sign: 'always' }),
       tone: holding.noPrice ? undefined : moveTone(holding.unrealised),
-      context: holding.noPrice ? 'no price' : `unrealised${holding.unrealisedPct == null ? '' : ` · ${formatPercent(holding.unrealisedPct, { sign: 'always' })}`}`,
+      context: holding.noPrice ? 'no price' : holding.unrealisedPct == null ? undefined : formatPercent(holding.unrealisedPct, { sign: 'always' }),
     },
     {
       id: 'realised',
       label: 'Realised P&L',
       value: formatMoney(holding.realisedPnl, { sign: 'always' }),
       tone: moveTone(holding.realisedPnl),
-      context: Math.round(holding.realisedPnl) === 0 ? 'nothing sold yet' : 'booked on sells',
     },
     {
       id: 'charges',
       label: 'Total charges',
       value: formatMoney(holding.totalCharges, { decimals: 'exact' }),
-      context: tradeCount > 0 ? `across ${tradeCount} ${tradeCount === 1 ? 'trade' : 'trades'}` : undefined,
     },
   ];
 }

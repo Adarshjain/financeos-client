@@ -30,6 +30,6 @@ describe('PageNotFound', () => {
 
   it('keeps the app bar when given a shell', () => {
     render(<PageNotFound shell={{ title: 'Not found' }} />);
-    expect(screen.getByRole('link', { name: 'Ask the data' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
   });
 });

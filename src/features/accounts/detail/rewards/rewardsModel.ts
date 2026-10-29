@@ -37,7 +37,7 @@ export function windowLabel(window: RewardsWindow, preset?: RangePreset): string
 }
 
 /** The four tiles; a tile the report has no figure for (effective return) is left out. */
-export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: RangePreset): RewardsKpi[] {
+export function buildKpis(report: RewardReport): RewardsKpi[] {
   const s = report.summary;
   const totalPts = s.points + s.milestonesPts;
   const unvalued = totalPts > 0 && s.pointsValueInr == null;
@@ -82,11 +82,11 @@ export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: 
       label: 'Adjustments',
       value: formatMoney(net, { sign: 'always' }),
       tone: net < 0 ? 'danger' : undefined,
-      context: adjustContext.length > 0 ? adjustContext.join(' · ') : 'no fees netted',
+      context: adjustContext.length > 0 ? adjustContext.join(' · ') : undefined,
     },
   ];
   if (s.effectivePct != null) {
-    kpis.push({ key: 'effective', label: 'Effective return', value: formatPercent(s.effectivePct), context: windowLabel(window, preset) });
+    kpis.push({ key: 'effective', label: 'Effective return', value: formatPercent(s.effectivePct) });
   }
   return kpis;
 }

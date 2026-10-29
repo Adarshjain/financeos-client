@@ -123,7 +123,7 @@ describe('/investments/corporate-actions', () => {
     fireEvent.click(screen.getAllByText('ITC')[0]);
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Edit corporate action')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Delete corporate action' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });

@@ -22,7 +22,7 @@ export function RewardsOverview({ data }: { data: RewardsOverviewData }) {
   }
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <Hero label="Earned this year" value={model.total} change={{ text: 'Each card over its own reward year' }} />
+      <Hero label="Earned this year" value={model.total} />
       <RewardsCardList cards={model.cards} />
     </div>
   );

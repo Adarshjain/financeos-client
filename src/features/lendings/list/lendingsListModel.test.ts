@@ -86,7 +86,7 @@ describe('lendingsHero', () => {
       value: '−₹92,800',
       tone: 'danger',
       figures: [
-        { label: 'You owe', value: '₹1,12,000', tone: 'danger', caption: '2 people' },
+        { label: 'You owe', value: '₹1,12,000', tone: 'danger' },
         { label: 'Settled', value: '3 people' },
       ],
     });

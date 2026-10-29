@@ -129,7 +129,7 @@ describe('/loans', () => {
 
   it('shows the hero from the summary: total outstanding, what is overdue, EMIs a month and the next EMI', async () => {
     await renderPage();
-    for (const text of ['Total outstanding', '₹50,50,000', '₹63,954 overdue · 3 EMIs', 'EMIs a month', '3 loans', 'Next EMI', '5 Nov']) {
+    for (const text of ['Total outstanding', '₹50,50,000', '₹63,954 overdue · 3 EMIs', 'EMIs a month', 'Next EMI', '5 Nov']) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
     expect(screen.getAllByText('₹63,954').length).toBeGreaterThan(0);

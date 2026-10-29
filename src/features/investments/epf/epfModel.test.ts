@@ -93,9 +93,9 @@ describe('figures', () => {
     expect(f.lastInterest).toMatchObject({ value: '₹56,180', context: 'FY 25-26 at 8.25% · 18 Aug', phoneContext: 'FY 25-26' });
   });
 
-  it('shows ₹0 and "No balance yet" with no balance, and dashes with nothing credited', () => {
+  it('shows ₹0 with no balance and no caption, and dashes with nothing credited', () => {
     const none = epfFigures(summary({ balance: 0, interestEstimate: undefined, lastInterest: undefined, throughMonth: null }));
-    expect(none.interest).toEqual({ value: '₹0', context: 'No balance yet' });
+    expect(none.interest).toEqual({ value: '₹0', context: '' });
     expect(none.lastInterest.value).toBe('—');
     expect(none.balance.context).toBe('');
     expect(epfFigures(summary({ interestEstimate: undefined })).interest.value).toBe('—');

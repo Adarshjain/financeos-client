@@ -66,7 +66,7 @@ export function loansHero(summary: LoansSummaryDetail, today: string): HeroModel
         ? { text: `${formatMoney(summary.overdueAmount)} overdue · ${formatCount(summary.overdueCount, ['EMI', 'EMIs'])}`, tone: 'danger' }
         : undefined,
     figures: [
-      { label: 'EMIs a month', value: formatMoney(summary.monthlyEmiTotal), caption: formatCount(summary.activeLoanCount, ['loan', 'loans']) },
+      { label: 'EMIs a month', value: formatMoney(summary.monthlyEmiTotal) },
       { label: 'Next EMI', value: next ? formatDate(next, 'list') : '—' },
     ],
   };

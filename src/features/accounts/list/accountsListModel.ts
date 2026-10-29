@@ -108,7 +108,6 @@ export function cashKpi(sections: AccountSections): KpiModel {
   return {
     label: 'Cash & wallets',
     value: formatMoney(total),
-    context: `${formatCount(sections.banks.open.length, ['bank', 'banks'])} · ${formatCount(wallets.length, ['wallet', 'wallets'])}`,
   };
 }
 

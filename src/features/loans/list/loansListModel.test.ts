@@ -77,7 +77,7 @@ describe('loansHero', () => {
       value: '₹50,50,000',
       change: { text: '₹63,954 overdue · 3 EMIs', tone: 'danger' },
       figures: [
-        { label: 'EMIs a month', value: '₹63,954', caption: '3 loans' },
+        { label: 'EMIs a month', value: '₹63,954' },
         { label: 'Next EMI', value: '5 Nov' },
       ],
     });
@@ -90,7 +90,7 @@ describe('loansHero', () => {
   it('copes with no loans', () => {
     const none = loansHero({ ...summary, activeLoanCount: 0, emiDueDays: [], monthlyEmiTotal: 0 }, TODAY);
     expect(none.figures).toEqual([
-      { label: 'EMIs a month', value: '₹0', caption: '0 loans' },
+      { label: 'EMIs a month', value: '₹0' },
       { label: 'Next EMI', value: '—' },
     ]);
   });

@@ -40,19 +40,22 @@ describe('holdingHeader and holdingHero', () => {
 });
 
 describe('holdingFigures', () => {
-  const figures = (h: HoldingDetail = holding, trades = 3) => Object.fromEntries(holdingFigures(h, instrument, trades).map((f) => [f.id, f]));
+  const figures = (h: HoldingDetail = holding) => Object.fromEntries(holdingFigures(h, instrument).map((f) => [f.id, f]));
 
-  it('writes the eight figures with their context lines', () => {
+  it('writes the eight figures with only the context lines that add a fact', () => {
     const f = figures();
     expect(Object.keys(f)).toEqual(['quantity', 'avgCost', 'ltp', 'xirr', 'invested', 'return', 'realised', 'charges']);
     expect(f.quantity.value).toBe('60');
     expect(f.avgCost.value).toBe('₹710.00');
     expect(f.ltp).toMatchObject({ value: '₹1,512.70', context: 'Yahoo · 13 Oct', override: true });
     expect(f.xirr).toMatchObject({ value: '31.4%', tone: 'positive', context: 'since 11 Mar 24' });
-    expect(f.invested).toMatchObject({ value: '₹42,600', context: '60 shares at ₹710.00 avg' });
-    expect(f.return).toMatchObject({ value: '+₹48,162', tone: 'positive', context: 'unrealised · +113.1%' });
-    expect(f.realised).toMatchObject({ value: '₹0', context: 'nothing sold yet' });
-    expect(f.charges).toMatchObject({ value: '₹51.20', context: 'across 3 trades' });
+    expect(f.invested).toMatchObject({ value: '₹42,600' });
+    expect(f.invested.context).toBeUndefined();
+    expect(f.return).toMatchObject({ value: '+₹48,162', tone: 'positive', context: '+113.1%' });
+    expect(f.realised).toMatchObject({ value: '₹0' });
+    expect(f.realised.context).toBeUndefined();
+    expect(f.charges).toMatchObject({ value: '₹51.20' });
+    expect(f.charges.context).toBeUndefined();
   });
 
   it('says "manual price" for the LTP of a holding priced by hand, and dashes a missing price and XIRR', () => {
@@ -64,7 +67,7 @@ describe('holdingFigures', () => {
   });
 
   it('shows a booked loss in red', () => {
-    expect(figures({ ...holding, realisedPnl: -1200 }).realised).toMatchObject({ value: '−₹1,200', tone: 'danger', context: 'booked on sells' });
+    expect(figures({ ...holding, realisedPnl: -1200 }).realised).toMatchObject({ value: '−₹1,200', tone: 'danger' });
   });
 });
 
@@ -126,7 +129,7 @@ describe('section rows', () => {
 
 describe('hero figures', () => {
   it('puts Invested, ₹ return and XIRR in the hero; the other five are the Position card rows', () => {
-    const ids = holdingFigures(holding, null, 2).map((f) => f.id);
+    const ids = holdingFigures(holding, null).map((f) => f.id);
     expect(HERO_FIGURE_IDS).toEqual(['invested', 'return', 'xirr']);
     expect(ids.filter((id) => !HERO_FIGURE_IDS.includes(id))).toEqual(['quantity', 'avgCost', 'ltp', 'realised', 'charges']);
   });

@@ -11,7 +11,7 @@ import {
 export function UpcomingSkeleton() {
   return (
     <>
-      <Hero.Skeleton label change figures={2} />
+      <Hero.Skeleton label figures={2} />
       <UpcomingRowsSkeleton />
     </>
   );

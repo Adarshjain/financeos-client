@@ -80,7 +80,6 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('Realised · FY', { exact: true }))).toBeVisible();
       // 5,528.60 − 4,571.20 + 10,837.40 = 11,794.80
       await expect(shown(page.getByText('+₹11,795', { exact: true }))).toBeVisible();
-      await expect(shown(page.getByText('3 trades', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('66.7%', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('2 of 3', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('₹580', { exact: true }))).toBeVisible();
@@ -211,7 +210,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('dialog', { name: 'Delete F&O trade' }).getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('F&O trade deleted')).toBeVisible();
       await expect(page.getByText('BANKNIFTY 56000 PE')).toHaveCount(0);
-      await expect(shown(page.getByText('2 trades', { exact: true }))).toBeVisible();
+      await expect(shown(page.getByText('Realised · FY', { exact: true }))).toBeVisible();
     });
 
     test('All years lists trades from every year, with no month cards and no export', async ({ page }) => {
@@ -246,7 +245,6 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: /All years/ })).toBeVisible();
       await expect(shown(page.getByText('FINNIFTY 7000 CE'))).toBeVisible();
       await expect(shown(page.getByText('NIFTY 25200 CE'))).toBeVisible();
-      await expect(shown(page.getByText('4 trades', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('Realised · all years', { exact: true }))).toBeVisible();
       await expect(page.getByText('P&L by month')).toHaveCount(0);
       await expect(page.getByText('By underlying')).toBeVisible();

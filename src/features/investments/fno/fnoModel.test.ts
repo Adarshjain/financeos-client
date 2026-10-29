@@ -77,20 +77,16 @@ describe('F&O figures', () => {
   it('reads realised P&L, win rate and charges from the summary', () => {
     expect(figuresModel(summary)).toEqual({
       realised: { text: '+₹10,456', tone: 'positive' },
-      realisedSub: '4 trades',
       winRate: '50%',
       winSub: '2 of 4',
       charges: '₹669',
-      chargesSub: '4 trades',
     });
   });
 
-  it('shows a loss in the danger tone and a single trade in the singular', () => {
+  it('shows a loss in the danger tone and a single trade in its win count', () => {
     const model = figuresModel({ ...summary, realisedPnl: -300, tradeCount: 1, winRate: 0, winCount: 0, totalCharges: 40 });
     expect(model.realised).toEqual({ text: '−₹300', tone: 'danger' });
-    expect(model.realisedSub).toBe('1 trade');
     expect(model.winSub).toBe('0 of 1');
-    expect(model.chargesSub).toBe('1 trade');
   });
 
   it('says the realised line under the list', () => {

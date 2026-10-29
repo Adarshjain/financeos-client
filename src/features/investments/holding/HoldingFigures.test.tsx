@@ -6,7 +6,7 @@ import { PositionCard } from './HoldingFigures';
 import { holdingFigures } from './holdingModel';
 
 describe('PositionCard', () => {
-  const figures = holdingFigures(holding, instrument as never, 3);
+  const figures = holdingFigures(holding, instrument as never);
 
   it('shows only the figures the hero does not, as figures', () => {
     render(<PositionCard figures={figures} onOverride={vi.fn()} />);

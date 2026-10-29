@@ -77,9 +77,9 @@ export function UpcomingRow({
       data-bill-row={item.type === 'card_bill' ? (item.statementId ?? undefined) : undefined}
       leading={
         date ? (
-          <DateTile day={date.day} monthLabel={date.monthLabel} />
+          <DateTile className="w-8" day={date.day} monthLabel={date.monthLabel} />
         ) : (
-          <Text tone="ink-4" align="center" className="w-10 shrink-0">
+          <Text tone="ink-4" align="center" className="w-8 shrink-0">
             —
           </Text>
         )

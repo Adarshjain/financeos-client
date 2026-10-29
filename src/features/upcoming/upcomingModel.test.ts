@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { ObligationItem } from './obligationsModel';
 import {
   buildTiles,
-  countsByType,
   foldedMonthLine,
   parseKind,
   parseMonths,
@@ -40,13 +39,15 @@ const nextMonth = it_({ date: '2026-11-05', amount: 500 });
 const ALL = [overdueEmi, overdueStmt, bill, rahul, priya, nextMonth];
 
 describe('buildTiles', () => {
-  it('all four tiles with their figures and captions, in order', () => {
+  it('all four tiles with their figures, in order, and a caption only on Due back', () => {
     const tiles = buildTiles(ALL, TODAY);
     expect(tiles.map((t) => t.id)).toEqual(['overdue', 'next7', 'month', 'dueBack']);
-    expect(tiles[0]).toMatchObject({ value: '₹36,603', tone: 'danger', caption: '1 EMI · 1 statement' });
-    expect(tiles[1]).toMatchObject({ value: '₹33,900', caption: '1 card bill' });
+    expect(tiles[0]).toMatchObject({ value: '₹36,603', tone: 'danger' });
+    expect(tiles[0].caption).toBeUndefined();
+    expect(tiles[1]).toMatchObject({ value: '₹33,900' });
+    expect(tiles[1].caption).toBeUndefined();
     // this month: bill + rahul + priya (overdue and next month excluded)
-    expect(tiles[2]).toMatchObject({ value: '₹60,900', caption: '3 items' });
+    expect(tiles[2]).toMatchObject({ value: '₹60,900' });
     expect(tiles[3]).toMatchObject({ value: '+₹15,000', tone: 'positive', caption: 'Rahul · 28 Oct' });
   });
 
@@ -68,15 +69,10 @@ describe('buildTiles', () => {
 
   it('sums only rows that carry an amount, in whole rupees', () => {
     const tiles = buildTiles([it_({ date: '2026-10-14', amount: 10.5 }), it_({ date: '2026-10-14', amount: null })], TODAY);
-    expect(tiles.find((t) => t.id === 'next7')).toMatchObject({ value: '₹11', caption: '2 EMIs' });
+    expect(tiles.find((t) => t.id === 'next7')).toMatchObject({ value: '₹11' });
   });
 });
 
-describe('countsByType', () => {
-  it('pluralises per type and skips absent ones', () => {
-    expect(countsByType([overdueEmi, overdueEmi, overdueEmi, overdueStmt])).toBe('3 EMIs · 1 statement');
-  });
-});
 
 describe('page state', () => {
   it('parses kind and months, falling back to the defaults', () => {

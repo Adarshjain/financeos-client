@@ -90,7 +90,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
             info={header.info}
             actions={
               cp.netPosition !== 0 ? (
-                <Button variant="ghost" onClick={() => setSettling(true)}>
+                <Button variant="secondary" onClick={() => setSettling(true)}>
                   Settle up
                 </Button>
               ) : null

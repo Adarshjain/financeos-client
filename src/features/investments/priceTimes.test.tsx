@@ -32,7 +32,7 @@ describe('IST price times', () => {
   });
 
   it('puts the time on the LTP line only when the price has one', () => {
-    const ltp = (priceAt: string | null) => holdingFigures({ ...holding, priceAt }, null, 0).find((f) => f.id === 'ltp')!.context;
+    const ltp = (priceAt: string | null) => holdingFigures({ ...holding, priceAt }, null).find((f) => f.id === 'ltp')!.context;
     expect(ltp('2026-10-13T15:30:00+05:30')).toBe('Closed · 13 Oct, 3:30 pm');
     expect(ltp(null)).toBe('13 Oct');
   });

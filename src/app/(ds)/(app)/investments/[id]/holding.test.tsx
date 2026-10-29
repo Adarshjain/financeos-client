@@ -183,13 +183,12 @@ describe('/investments/[id]: Overview', () => {
     expect(screen.getByText('Position')).toBeInTheDocument();
     expect(screen.getAllByText('₹1,512.70').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('₹51.20')).toHaveLength(1);
-    expect(screen.getAllByText('across 2 trades')).toHaveLength(1);
+    expect(screen.queryByText('across 2 trades')).toBeNull();
   });
 
-  it('puts the identity and the actions in the header: initials and facts at the left, Record trade and the menu at the right', async () => {
+  it('puts the identity and the actions in the header: the one fact at the left, Record trade and the menu at the right', async () => {
     await renderPage();
-    expect(screen.getByText('IN')).toBeInTheDocument();
-    expect(screen.getByText(/^Stock · NSE · 2 brokers$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Stock · NSE$/)).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Record trade' })[0]).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'More actions' })).toBeInTheDocument();
   });
@@ -508,7 +507,7 @@ describe('/investments/[id]: Price history dialog', () => {
     const dialog = await openHistory();
     expect(await within(dialog).findByText('13 Oct')).toBeInTheDocument();
     expect(server.fetchPricesPage).toHaveBeenCalledTimes(1);
-    expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 10);
+    expect(server.fetchPricesPage).toHaveBeenCalledWith('i-infy', 0, 5);
     expect(within(dialog).getAllByText('Yahoo').length).toBeGreaterThan(0);
     expect(within(dialog).getByText('manual price')).toBeInTheDocument();
     expect(within(dialog).getByText('₹1,470.00')).toBeInTheDocument();
@@ -539,7 +538,7 @@ describe('/investments/[id]: Price history dialog', () => {
     server.fetchPricesPage.mockResolvedValue({ ...rawPricePage(), page: 1, totalElements: 40, totalPages: 4, items: [{ id: null, asOf: '2026-09-01', close: 1300, source: 'YAHOO', editable: false }] });
     fireEvent.click(within(dialog).getAllByRole('button', { name: /next/i })[0]);
     expect(await within(dialog).findByText('1 Sep')).toBeInTheDocument();
-    expect(server.fetchPricesPage).toHaveBeenLastCalledWith('i-infy', 1, 10);
+    expect(server.fetchPricesPage).toHaveBeenLastCalledWith('i-infy', 1, 5);
   });
 
   it('says so and offers Retry when the first page cannot be read', async () => {
@@ -599,7 +598,7 @@ describe('/investments/[id]: Price history dialog', () => {
     expect(within(dialog).getByText('Only this price is deleted.')).toBeInTheDocument();
     expect(within(dialog).getByText('Your trades and the other prices stay.')).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete price' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalled());
     expect(api.DELETE).toHaveBeenCalledWith('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
       params: { path: { instrumentId: 'i-infy', priceId: 'p3' } },
@@ -614,7 +613,7 @@ describe('/investments/[id]: Price history dialog', () => {
     const history = await openHistory();
     fireEvent.click(await within(history).findByRole('button', { name: 'Delete' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete manual price?' });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete price' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't delete the price. Try again.", { tone: 'danger' }));
     expect(router.refresh).not.toHaveBeenCalled();
   });

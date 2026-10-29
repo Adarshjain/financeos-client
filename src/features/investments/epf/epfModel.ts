@@ -148,7 +148,7 @@ export function epfFigures(summary: EpfSummary): EpfFigures {
   const interest = est
     ? { value: `≈ ${formatMoney(est.amount)}`, context: `Estimate at ${rateText(est.rate)} · credited after 31 Mar` }
     : summary.balance <= 0
-      ? { value: '₹0', context: 'No balance yet' }
+      ? { value: '₹0', context: '' }
       : { value: '—', context: '' };
   return {
     balance: { value: formatMoney(summary.balance), context: upTo, phoneContext: upTo.replace('Passbook up', 'Up') },

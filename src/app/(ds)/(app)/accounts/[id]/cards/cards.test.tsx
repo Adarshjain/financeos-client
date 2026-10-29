@@ -488,7 +488,7 @@ describe('/accounts/[id]/cards', () => {
       pickMenu(1, 'Delete cardholder');
       expect(screen.getByText('Delete cardholder Meera Mehta?')).toBeInTheDocument();
       expect(mutate.deleteCardholderMutation).not.toHaveBeenCalled();
-      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete cardholder' }));
+      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }));
       await waitFor(() => expect(mutate.deleteCardholderMutation).toHaveBeenCalledWith('h2'));
       expect(showToast).toHaveBeenCalledWith('Cardholder deleted');
     });
@@ -503,7 +503,7 @@ describe('/accounts/[id]/cards', () => {
         )
       ).toBeInTheDocument();
       expect(apiDelete).not.toHaveBeenCalled();
-      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete card' }));
+      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }));
       await waitFor(() =>
         expect(apiDelete).toHaveBeenCalledWith(
           '/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}',

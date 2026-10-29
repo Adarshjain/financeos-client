@@ -259,7 +259,7 @@ describe('VUD on a phone', () => {
     // Neither the side (the section) nor the kind (beside the name) is on offer.
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Default order', 'Name', 'Value']);
     fireEvent.click(screen.getByRole('option', { name: 'Value' }));
-    await waitFor(() => expect(underlyingCalls().at(-1)).toEqual({ period: 'current', page: 0, size: 25, sort: 'value,asc' }));
+    await waitFor(() => expect(underlyingCalls().at(-1)).toEqual({ period: 'current', page: 0, size: 5, sort: 'value,asc' }));
     // Sorted: the sides keep their own card lists.
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sort ascending' })).toBeInTheDocument());
     expect(screen.getByRole('region', { name: 'Asset' })).toBeInTheDocument();

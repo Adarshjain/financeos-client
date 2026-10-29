@@ -33,9 +33,10 @@ export function HoldingHero({ hero, figures }: HoldingFiguresProps) {
 export function PositionCard({ figures, onOverride }: { figures: HoldingFigure[]; onOverride: () => void }) {
   const rest = figures.filter((f) => !HERO_FIGURE_IDS.includes(f.id));
   return (
-    <Card title="Position" subtitle="Your holding at a glance">
-      <div className="p-space-16">
+    <Card title="Position">
+      <div className="px-space-16 pb-space-16">
         <Figures
+          size="sm"
           figures={rest.map((f) => ({
             label: f.label,
             value: <Conceal>{f.value}</Conceal>,

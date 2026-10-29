@@ -327,7 +327,7 @@ export function DividendsListCard({
 export function DividendsListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <Hero.Skeleton label change figures={2} />
+      <Hero.Skeleton label figures={2} />
       <FilterRowSkeleton chips={4} />
       <Card>
         <DataTable columns={buildColumns()} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />

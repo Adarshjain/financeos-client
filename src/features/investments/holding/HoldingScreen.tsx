@@ -69,7 +69,7 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
 
   const id = holding.instrumentId;
   const ref = { id, name: holding.name, symbol: holding.symbol };
-  const figures = holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date());
+  const figures = holdingFigures(holding, instrument, now ? new Date(now) : new Date());
   const facts = [
     ASSET_WORDS[holding.assetType] ?? 'Holding',
     instrument?.exchange,
@@ -85,7 +85,7 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
           <ActionBar
             info={facts}
             actions={
-              <Button variant="primary" onClick={() => setDialog('trade')}>
+              <Button variant="secondary" onClick={() => setDialog('trade')}>
                 Record trade
               </Button>
             }

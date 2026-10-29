@@ -31,10 +31,11 @@ describe('SelectionBar', () => {
     expect(screen.getAllByRole('button', { name: 'Clear selection' })).toHaveLength(1);
   });
 
-  it('is frosted glass: solid surface fallback plus glass: blur classes', () => {
+  it('is fully solid: plain surface, no glass background or blur', () => {
     const { container } = render(<SelectionBar count={1} actions={defaultActions} onClear={() => {}} />);
     const panel = container.querySelector('[data-selection-bar] > div');
-    expect(panel).toHaveClass('bg-surface', 'glass:bg-glass-medium', 'glass:backdrop-blur-glass', 'glass:backdrop-saturate-glass');
+    expect(panel).toHaveClass('bg-surface');
+    expect(panel?.className).not.toMatch(/glass/);
   });
 
   it('triggers action onSelect callback', () => {

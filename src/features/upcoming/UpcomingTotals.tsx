@@ -19,7 +19,6 @@ export function UpcomingTotals({ tiles }: { tiles: UpcomingTile[] }) {
       data-testid="upcoming-hero"
       label="Next 7 days"
       value={next7?.value ?? '₹0'}
-      change={next7?.caption ? { text: next7.caption } : undefined}
       figures={figures}
     />
   );

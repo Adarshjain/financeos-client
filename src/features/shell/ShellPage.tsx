@@ -11,7 +11,6 @@ import { useNotificationsAction } from '@/features/notifications/useNotification
 import { crumbParentHref, trimCrumb } from './crumbTrail';
 import { hasInAppHistory } from './navigationStore';
 import { useSearch } from './search/SearchProvider';
-import { useTabBarHidden } from './tabBarStore';
 
 export interface ShellPageProps {
   title: React.ReactNode;
@@ -85,8 +84,6 @@ export function ShellPage({
   // A page that starts with its area's tab strip (flushTop) is a sibling of the other tabs, not a child: no derived back arrow.
   const backHref = backHrefProp ?? (flushTop ? undefined : crumbParentHref(crumb));
   const onBack = useBack(backHref);
-  // Without the phone tab bar the content needs no room for it: the page's sticky footer takes the bottom edge (a column, so a short page still pushes it down).
-  const tabBarHidden = useTabBarHidden();
   // Detail pages (backHref) keep only back, title and their own add/menu: no bell or Search.
   const addActions: TopBarAction[] = [
     ...(addMenu
@@ -147,7 +144,7 @@ export function ShellPage({
       {/* Sticky headers inside the content stop under the sticky top bar (its height, notch included);
           isolate keeps their z-sticky inside the content, so the bar always draws above them. */}
       <main
-        className={`isolate flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 ${tabBarHidden ? 'max-desk:pb-0 max-desk:flex max-desk:flex-col' : 'pb-bottom-clearance'} desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
+        className={`isolate flex-1 [--ds-sticky-top:theme(spacing.safe-56)] p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24${flushTop ? ' pt-0 desk:pt-0' : ''}`}
       >
         {children}
       </main>

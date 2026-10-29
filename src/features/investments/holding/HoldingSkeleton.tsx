@@ -44,7 +44,7 @@ export function HoldingSkeleton() {
             <Skeleton width="40%" height={16} />
           </div>
           <div className="px-space-16 pb-space-16">
-            <Figures.Skeleton count={5} />
+            <Figures.Skeleton count={5} size="sm" />
           </div>
         </Card>
         <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>

@@ -117,11 +117,11 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/unknown')).toBeUndefined();
   });
 
-  it('hides the phone tab bar on Ask the data (home and a conversation) and on create/edit pages', () => {
+  it('hides the phone tab bar on the Ask the data pages only', () => {
     expect(hidesTabBar('/chat')).toBe(true);
-    expect(hidesTabBar('/reports/new')).toBe(true);
-    expect(hidesTabBar('/reports/r-1')).toBe(true);
-    expect(hidesTabBar('/dashboards/new')).toBe(true);
+    expect(hidesTabBar('/reports/new')).toBe(false);
+    expect(hidesTabBar('/reports/r-1')).toBe(false);
+    expect(hidesTabBar('/dashboards/new')).toBe(false);
     expect(hidesTabBar('/dashboards')).toBe(false);
     expect(hidesTabBar('/dashboards/d-1')).toBe(false);
     expect(hidesTabBar('/transactions/import')).toBe(false);
