@@ -59,7 +59,7 @@ export function ActivityJobsCard({
                 ? {
                     label: 'Clear filters',
                     variant: 'link',
-                    onSelect: () => router.push(activityUrl({ statusFilter: '', typeFilter: '', size }), { scroll: false }),
+                    href: activityUrl({ statusFilter: '', typeFilter: '', size }),
                   }
                 : undefined
             }

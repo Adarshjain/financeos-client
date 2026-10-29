@@ -52,7 +52,7 @@ export const unverifyRule = createDomainAction(
       params: { path: { id } },
       body: { transactionIds: [], restore },
     });
-    if (!data) throw new Error("Couldn't undo");
+    if (!data) throw new Error("Couldn't undo the rule verification. Try again.");
   },
 );
 

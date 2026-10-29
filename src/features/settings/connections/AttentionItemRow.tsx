@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Badge, Button, Card, ListField, Text } from '@/components/ds';
+import { Button, Card, ListField, StatusWord, Text } from '@/components/ds';
 import { formatDate, formatDateTime } from '@/lib/format';
 
 import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
@@ -63,7 +63,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
     >
       <div className="flex flex-col gap-space-4 min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-space-8 gap-y-space-4">
-          <Badge tone="warning">{label}</Badge>
+          <StatusWord tone="warning">{label}</StatusWord>
           <Text variant="caption" tone="ink-3" className="break-all">
             {formatDate(emailDate, 'list')}
             {item.senderAddress ? ` · ${item.senderAddress}` : ''}

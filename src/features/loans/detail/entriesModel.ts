@@ -1,4 +1,4 @@
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type {
   AdjustmentMode,
   LoanChargeResponse,
@@ -90,7 +90,7 @@ export function entryRows(events: LoanEventResponse[], charges: LoanChargeRespon
 /** "4 entries", "1 entry", "No entries yet". */
 export function entriesCount(n: number): string {
   if (n === 0) return 'No entries yet';
-  return `${n} ${n === 1 ? 'entry' : 'entries'}`;
+  return formatCount(n, ['entry', 'entries']);
 }
 
 /** What the delete confirmation says goes and what stays. */

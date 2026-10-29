@@ -151,7 +151,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments/tradebook?type=sell');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.stock.symbol })));
       await expect(dialog.getByRole('radio', { name: 'Sell' })).toBeChecked();
-      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+      await dialog.getByRole('button', { name: 'Delete trade', exact: true }).click();
 
       const confirm = page.getByRole('dialog').last();
       await expect(confirm.getByText(`Delete ${seeded.stock.symbol} · 1 Oct sell?`)).toBeVisible();
@@ -159,7 +159,7 @@ for (const viewport of VIEWPORTS) {
       await confirm.getByRole('button', { name: 'Cancel' }).click();
       await expect(page.getByText('Edit trade')).toBeVisible();
 
-      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+      await dialog.getByRole('button', { name: 'Delete trade', exact: true }).click();
       await page.getByRole('dialog').last().getByRole('button', { name: 'Delete trade' }).click();
       await expect(page.getByText('Trade deleted')).toBeVisible();
       await expect(page.getByText('No trades match')).toBeVisible();

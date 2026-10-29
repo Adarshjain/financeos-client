@@ -109,7 +109,7 @@ describe('useIngestForm upload feedback', () => {
     expect(result.current.isUploading).toBe(true);
     expect(emitJobStarted).toHaveBeenCalledWith('job-1');
     expect(result.current.files).toHaveLength(0);
-    expect(toast.info).toHaveBeenCalledWith('Upload complete — processing in the background.', {
+    expect(toast.info).toHaveBeenCalledWith('Upload complete — processing in the background', {
       id: 'upload-toast',
     });
   });

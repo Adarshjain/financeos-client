@@ -195,12 +195,12 @@ describe('Your keys', () => {
     });
   });
 
-  it('Test key toasts Verified on success', async () => {
+  it('Test key toasts Key verified on success', async () => {
     post.mockResolvedValue({ data: { ok: true } });
     setup();
     const items = await openMenuFor('Key options for Gemini · #1 Personal');
     fireEvent.click(items[0]);
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Verified', { tone: 'success' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Key verified', { tone: 'success' }));
     expect(post).toHaveBeenCalledWith('/api/v1/llm-keys/{id}/test', { params: { path: { id: 'g1' } }, body: { model: undefined } });
   });
 

@@ -140,12 +140,12 @@ for (const viewport of VIEWPORTS) {
 
       // Delete: Cancel keeps it, the confirmation removes it.
       await openEdit(page, seeded.awaiting.symbol, phone);
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete dividend', exact: true }).click();
       await expect(page.getByText(/^Delete .* · ₹150\?$/)).toBeVisible();
       await page.getByRole('button', { name: 'Cancel' }).last().click();
       expect((await listDividends(api)).some((d) => d.id === seeded.awaiting.dividendId)).toBe(true);
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
-      await page.getByRole('button', { name: 'Delete dividend' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete dividend', exact: true }).click();
+      await page.getByRole('dialog').last().getByRole('button', { name: 'Delete dividend' }).click();
       await expectToast(page, 'Dividend deleted');
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(rowsOf(page, seeded.awaiting.symbol)).toHaveCount(0);

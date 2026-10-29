@@ -100,7 +100,7 @@ describe('NotificationsScreen', () => {
     expect(action.label).toBe('Undo');
     await act(async () => action.onSelect());
     expect(mockApi.POST).toHaveBeenCalledWith('/api/v1/notifications/feed/{id}/restore', { params: { path: { id: 'b' } } });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Restored'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Notification restored'));
   });
 
   it('a failed clear puts the row back with the copy', async () => {

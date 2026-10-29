@@ -51,7 +51,7 @@ export const updateTransaction = createDomainAction(
 
 /** Category and MCC suggestions for a description. */
 export const categorizeDescription = createDomainAction(
-  { fallbackError: "Couldn't suggest categories." },
+  { fallbackError: "Couldn't suggest categories. Try again." },
   async (description: string): Promise<CategorizeResponse | null> => {
     const { data } = await serverApi.POST('/api/v1/categorize', { body: { description } });
     return (data ?? null) as CategorizeResponse | null;

@@ -1,5 +1,5 @@
 import { daysBetween } from '@/features/loans/loanFormatModel';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto, LoanEventResponse, LoanResponse } from '@/lib/loan.types';
 
 import { fyLabel, fyStartYear } from './financialYearModel';
@@ -78,7 +78,7 @@ export function fySummaryLine(schedule: InstallmentDto[], fy: string): string {
   const s = fySummary(schedule, fy);
   return [
     fyLabel(Number(fy)),
-    `${s.emis} ${s.emis === 1 ? 'EMI' : 'EMIs'}`,
+    formatCount(s.emis, ['EMI', 'EMIs']),
     `principal ${formatMoney(s.principal)}`,
     `interest ${formatMoney(s.interest)}`,
   ].join(' · ');

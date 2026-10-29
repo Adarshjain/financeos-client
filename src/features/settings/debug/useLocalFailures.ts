@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
+import { copyText } from '@/lib/copyText';
 import { useDiagnostics } from '@/lib/diagnostics/DiagnosticsProvider';
 import { type DiagnosticRecord, errorLog } from '@/lib/diagnostics/errorLog';
 import { notify } from '@/lib/notify';
@@ -30,17 +31,15 @@ export function useLocalFailures() {
   /** Copies the reference; true when the clipboard was available. */
   const copyRef = (rec: DiagnosticRecord): boolean => {
     if (!navigator?.clipboard) return false;
-    navigator.clipboard.writeText(rec.ref);
+    void copyText(rec.ref);
     notify.success(`Reference ${rec.ref} copied`);
     return true;
   };
 
   const copyAll = () => {
-    const text = reportText();
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(text);
-      notify.success('Diagnostics report copied to clipboard');
-    }
+    if (!navigator?.clipboard) return;
+    void copyText(reportText());
+    notify.success('Diagnostics report copied to clipboard');
   };
 
   const share = async () => {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { createLlmKey, deleteLlmKey, testLlmKey, updateLlmKeyPosition } from '@/features/settings/ai/llmActions';
 import { unwrapAction } from '@/lib/actionResult';
@@ -16,9 +15,7 @@ import { keys } from '@/lib/query/keys';
  */
 export function useLlmKeyMutations() {
   const qc = useQueryClient();
-  const router = useRouter();
   const invalidateAll = () => {
-    router.refresh();
     return qc.invalidateQueries({ queryKey: keys.settings.all });
   };
 
@@ -37,7 +34,6 @@ export function useLlmKeyMutations() {
   const updatePositionMutation = useMutation({
     mutationFn: ({ id, position }: { id: string; position: number }) => unwrapAction(updateLlmKeyPosition(id, position)),
     onSuccess: (updatedProviderKeys) => {
-      router.refresh();
       qc.setQueryData(keys.settings.llmKeys(), (current: LlmKeyDto[] | undefined) => {
         if (!current) return updatedProviderKeys;
         const updatedIds = new Set(updatedProviderKeys.map((k) => k.id));

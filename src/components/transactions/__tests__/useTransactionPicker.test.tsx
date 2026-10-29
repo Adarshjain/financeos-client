@@ -117,8 +117,7 @@ describe('useTransactionPicker debounce', () => {
   it('sends exactly one request per settled query despite rapid typing', async () => {
     const { result } = renderHook(() => useTransactionPicker({ direction: 'lent', active: true }));
 
-    // Mount schedules a debounce for the initial empty search; typing cancels
-    // it and reschedules on every keystroke.
+    // The empty search on open goes out at once; typing is debounced.
     act(() => result.current.setSearch('r'));
     await act(async () => vi.advanceTimersByTimeAsync(100));
     act(() => result.current.setSearch('ra'));
@@ -128,8 +127,9 @@ describe('useTransactionPicker debounce', () => {
     // Only the final keystroke's timer should ever fire.
     await act(async () => vi.advanceTimersByTimeAsync(300));
 
-    expect(api.POST).toHaveBeenCalledTimes(1);
-    expect((api.POST as Mock).mock.calls[0][1].body.search).toBe('rah');
+    const calls = (api.POST as Mock).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[1][1].body.search).toBe('rah');
   });
 
   it('ignores a stale response that resolves after a newer request has already settled', async () => {

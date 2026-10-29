@@ -1,6 +1,6 @@
 export type MoneyOptions = {
-  /** 'whole' rounds to the rupee (default); 'auto' shows paise only when non-zero; 'exact' always 2 decimals. */
-  decimals?: 'whole' | 'auto' | 'exact';
+  /** 'whole' rounds to the rupee (default); 'auto' shows paise only when non-zero; 'exact' always 2 decimals; 'unit' is a per-unit price, 2 to 4 decimals with zeros past 2 trimmed. */
+  decimals?: 'whole' | 'auto' | 'exact' | 'unit';
   /** 'auto' signs negatives only (default); 'always' also signs positives; 'none' drops the sign. */
   sign?: 'auto' | 'always' | 'none';
   /** Lakh/crore short form; 'k' also shortens thousands (chart axes). */
@@ -16,6 +16,7 @@ const nf = (fd: number, maxFd = fd) =>
 const NF0 = nf(0);
 const NF2 = nf(2);
 const NF_TRIM2 = nf(0, 2);
+const NF_UNIT = nf(2, 4);
 
 function round(v: number, fd: number): number {
   const p = 10 ** fd;
@@ -60,8 +61,13 @@ export function formatMoney(value: number | string | null | undefined, opts: Mon
   let body: string | null = compact ? compactBody(abs, compact === 'k') : null;
   let zero = false;
   if (body === null) {
-    zero = round(abs, fd) === 0;
-    body = (fd === 2 ? NF2 : NF0).format(abs);
+    if (decimals === 'unit') {
+      zero = round(abs, 4) === 0;
+      body = NF_UNIT.format(abs);
+    } else {
+      zero = round(abs, fd) === 0;
+      body = (fd === 2 ? NF2 : NF0).format(abs);
+    }
   }
   const negative = num < 0 && !zero;
   const prefix = sign === 'none' ? '' : negative ? MINUS : sign === 'always' && !zero ? '+' : '';

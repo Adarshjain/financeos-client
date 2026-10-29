@@ -23,7 +23,7 @@ function setup() {
   return renderHook(() => useLlmKeyMutations(), { wrapper });
 }
 
-describe('useLlmKeyMutations router refresh', () => {
+describe('useLlmKeyMutations router (the keys are a query, so nothing refreshes it)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.POST).mockResolvedValue({ data: {} } as never);
@@ -31,14 +31,14 @@ describe('useLlmKeyMutations router refresh', () => {
     vi.mocked(api.PATCH).mockResolvedValue({ data: [] } as never);
   });
 
-  it('refreshes once per create, delete and reorder', async () => {
+  it('does not refresh the router for create, delete and reorder', async () => {
     const { result } = setup();
     await act(() => result.current.createMutation.mutateAsync({} as never));
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerRefresh).not.toHaveBeenCalled();
     await act(() => result.current.deleteMutation.mutateAsync('k1'));
-    expect(routerRefresh).toHaveBeenCalledTimes(2);
+    expect(routerRefresh).not.toHaveBeenCalled();
     await act(() => result.current.updatePositionMutation.mutateAsync({ id: 'k1', position: 0 }));
-    expect(routerRefresh).toHaveBeenCalledTimes(3);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('does not refresh for a key test', async () => {

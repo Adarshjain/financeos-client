@@ -1,4 +1,4 @@
-import { formatMoney, formatQuantity } from '@/lib/format';
+import { formatCount, formatMoney, formatQuantity, pluralize } from '@/lib/format';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
 
 export const CAP_WINDOW_LABELS: Record<CapWindow, string> = {
@@ -43,9 +43,9 @@ export function capSubtitle(bucket: RewardCapBucket, rules: RewardRule[]): strin
   if (bucket.counterScope === 'PER_CARDHOLDER') parts.push('per cardholder');
   const positions = rulePositionsUsing(bucket.id, rules);
   if (positions.length > 0) {
-    parts.push(`used by rule${positions.length === 1 ? '' : 's'} ${positions.join(', ')}`);
+    parts.push(`used by ${pluralize(positions.length, 'rule', 'rules')} ${positions.join(', ')}`);
   } else if (bucket.ruleCount > 0) {
-    parts.push(`${bucket.ruleCount} rule${bucket.ruleCount === 1 ? '' : 's'}`);
+    parts.push(formatCount(bucket.ruleCount, ['rule', 'rules']));
   } else {
     parts.push('not used by any rule');
   }

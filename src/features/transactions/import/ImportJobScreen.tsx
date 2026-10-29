@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Banner, Button, Card, KpiTile, ListField, Text } from '@/components/ds';
+import { Badge, Banner, Button, Card, GRID_GAP,KpiTile, ListField, Text } from '@/components/ds';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';
@@ -14,6 +14,7 @@ import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { formatCount, pluralize } from '@/lib/format';
 import type { FileSummary, JobResponse } from '@/lib/types';
 
 import { IMPORT_HREF, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
@@ -102,7 +103,7 @@ function Body({ job }: { job: JobResponse }) {
       ) : null}
       {totals ? (
         <>
-          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:grid-cols-4 desk:gap-space-16">
+          <div className={`grid grid-cols-2 ${GRID_GAP} desk:grid-cols-4`}>
             <KpiTile label="Files" value={totals.files} />
             <KpiTile label="Lines read" value={totals.lines} />
             <KpiTile label="Created" value={totals.created} />
@@ -115,10 +116,10 @@ function Body({ job }: { job: JobResponse }) {
           {totals.duplicates > 0 ? (
             <Banner
               tone="warning"
-              title={`${totals.duplicates} ${totals.duplicates === 1 ? 'duplicate' : 'duplicates'} found.`}
+              title={`${formatCount(totals.duplicates, ['duplicate', 'duplicates'])} found.`}
             >
-              {totals.duplicates === 1 ? 'It was' : 'They were'} kept and marked &quot;Duplicate&quot; so you can merge
-              or dismiss {totals.duplicates === 1 ? 'it' : 'them'} from{' '}
+              {pluralize(totals.duplicates, 'It was', 'They were')} kept and marked &quot;Duplicate&quot; so you can merge
+              or dismiss {pluralize(totals.duplicates, 'it', 'them')} from{' '}
               <Button asChild variant="link">
                 <Link href={appHref('/transactions')}>Transactions</Link>
               </Button>

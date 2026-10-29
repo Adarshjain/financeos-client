@@ -25,7 +25,7 @@ export function BillsCard({ settings }: { settings: NotificationSettingsResponse
     const changed = choices.find((o) => next.includes(o) !== offsets.includes(o));
     const result = changed === undefined ? offsets : toggleOffset(offsets, changed);
     if (result.length === 0) {
-      notify.error('Keep at least one reminder');
+      notify.error('Keep at least one reminder.');
       return;
     }
     void save({ reminderOffsets: result });

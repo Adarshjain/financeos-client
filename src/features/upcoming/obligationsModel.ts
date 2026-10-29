@@ -1,5 +1,5 @@
 import type { ObligationItemDto } from '@/lib/api/types';
-import { formatDate } from '@/lib/format';
+import { formatCount, formatDate } from '@/lib/format';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 export type ObligationItem = ObligationItemDto;
@@ -104,7 +104,7 @@ export function obligationHref(item: ObligationItem): string | null {
 
 export function daysText(days: number): string {
   if (days === 0) return 'today';
-  if (days > 0) return `in ${days} day${days === 1 ? '' : 's'}`;
+  if (days > 0) return `in ${formatCount(days, ['day', 'days'])}`;
   const n = Math.abs(days);
   return `${n} day${n === 1 ? '' : 's'} overdue`;
 }

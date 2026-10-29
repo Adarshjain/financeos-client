@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Card, ListRow, ProgressBar, SectionHeader, Text } from '@/components/ds';
+import { Card, ListRow, ProgressBar, SectionHeader, StatusWord, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 import type { RewardRule } from '@/lib/rewards.types';
 
@@ -25,7 +25,7 @@ export function MilestonesCard({
           key={key}
           title={model.title}
           subtitle={model.subtitle}
-          trailing={model.status ? <Badge tone={model.status.tone}>{model.status.label}</Badge> : undefined}
+          trailing={model.status ? <StatusWord tone={model.status.tone}>{model.status.label}</StatusWord> : undefined}
         >
           <div className="flex flex-col gap-space-6 mt-space-6">
             <div className="flex items-baseline justify-between gap-space-12">

@@ -2,8 +2,7 @@
 
 import { forwardRef, type ReactNode } from 'react';
 
-import { Card, Text } from '@/components/ds';
-import { cn } from '@/components/ds/cn';
+import { Card, cn, Text } from '@/components/ds';
 import type { ChartData } from '@/lib/reports.types';
 
 /** Colour key for a series: a short stroke for lines, a small square otherwise. Drawn as SVG so any CSS colour works. */

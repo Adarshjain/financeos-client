@@ -1,7 +1,7 @@
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
-import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
+import { formatDate, formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 import type {
   CorporateActionItem,
   CorporateActionKind,
@@ -119,7 +119,7 @@ function detailLine(a: CorporateActionItem): string {
   const parts: string[] = [];
   const target = a.targetInstrumentName ? instrumentTitle(a.targetInstrumentSymbol, a.targetInstrumentName) : '';
   if (a.type === 'demerger') {
-    parts.push(`Child ${target || 'instrument'}${a.costAllocationPct != null ? ` · ${a.costAllocationPct}% cost` : ''}`);
+    parts.push(`Child ${target || 'instrument'}${a.costAllocationPct != null ? ` · ${formatPercent(a.costAllocationPct, { decimals: 2 })} cost` : ''}`);
   } else if (a.type === 'merger') {
     parts.push(`Merged into ${target || 'acquirer'}`);
   }

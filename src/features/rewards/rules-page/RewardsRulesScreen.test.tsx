@@ -125,7 +125,7 @@ describe('Card settings', () => {
     render(<RewardsRulesScreen accountId="a1" usage={usage} today="2026-10-24" />);
     const settings = card();
     expect(within(settings).getByText('Points')).toBeInTheDocument();
-    expect(within(settings).getByText('₹0.5/pt')).toBeInTheDocument();
+    expect(within(settings).getByText('₹0.50/pt')).toBeInTheDocument();
     expect(within(settings).getByText('15 Mar 2024')).toBeInTheDocument();
     expect(within(settings).queryByText('Fees in basis')).not.toBeInTheDocument();
     expect(within(settings).queryByText('Per-cardholder caps')).not.toBeInTheDocument();

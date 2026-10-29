@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
-import { Badge, Banner, Button, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Banner, Button, createDataTableColumnHelper, DataTable, StatusWord, Text } from '@/components/ds';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { DuplicateDetail, FileIngestionResult, FileSummary } from '@/lib/types';
 
@@ -83,7 +83,7 @@ const fileColumns = [
     id: 'status',
     header: 'Status',
     meta: { size: 'sm', phone: 'status' },
-    cell: ({ row }) => <Badge tone={STATUS_TONE[row.original.status] ?? 'danger'}>{row.original.status}</Badge>,
+    cell: ({ row }) => <StatusWord tone={STATUS_TONE[row.original.status] ?? 'danger'}>{row.original.status}</StatusWord>,
   }),
   fileCh.display({
     id: 'created',

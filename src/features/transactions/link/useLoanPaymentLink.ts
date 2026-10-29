@@ -152,7 +152,7 @@ export function useLoanPaymentLink({
 
   const handleSubmit = () => {
     if (!canSubmit) {
-      notify.error('Select a loan and installment, and check the amount');
+      notify.error('Pick a loan and installment, and check the amount.');
       return;
     }
     submitMutation.mutate();

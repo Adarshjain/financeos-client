@@ -141,7 +141,7 @@ describe('Add account', () => {
     await user.type(field('Last 4 digits'), '77');
     submit('Add account');
     expect(await screen.findByText('Enter the last 4 digits of the card.')).toBeInTheDocument();
-    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    expect(screen.getByText('Enter a name.')).toBeInTheDocument();
     expect(screen.getByText('Enter the card anniversary.')).toBeInTheDocument();
     expect(screen.getByText('Enter a credit limit.')).toBeInTheDocument();
     expect(mutations.createAccountMutation.mutateAsync).not.toHaveBeenCalled();
@@ -283,7 +283,7 @@ describe('Add account', () => {
     await user.click(screen.getByRole('option', { name: 'New shared limit…' }));
     submit('Add account');
     expect(await screen.findByText('Enter an amount above ₹0')).toBeInTheDocument();
-    expect(screen.getAllByText('Name is required').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Enter a name.').length).toBeGreaterThan(0);
   });
 
   it('shows a failed request in a banner and keeps the dialog open', async () => {

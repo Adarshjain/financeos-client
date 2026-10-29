@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, DropZone, Pager, Text } from '@/components/ds';
+import { Button, Card, DropZone, GRID_GAP,Pager, Text } from '@/components/ds';
 import { AccountPicker, JobsHistory } from '@/components/organisms';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
@@ -13,6 +13,7 @@ import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Account } from '@/lib/account.types';
+import { formatCount } from '@/lib/format';
 import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
@@ -76,7 +77,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
       ? 'Uploading files…'
       : 'Processing statements…'
     : count > 0
-      ? `Upload & process ${count} ${count === 1 ? 'file' : 'files'}`
+      ? `Upload & process ${formatCount(count, ['file', 'files'])}`
       : 'Upload & process';
 
   return (
@@ -89,7 +90,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
     >
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
-        <div className="grid grid-cols-1 items-start gap-x-space-12 gap-y-space-8 desk:grid-cols-12 desk:gap-space-16">
+        <div className={`grid grid-cols-1 items-start ${GRID_GAP} desk:grid-cols-12`}>
           <Card className="desk:col-span-7">
             <form
               onSubmit={form.handleSubmit}

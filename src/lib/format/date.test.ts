@@ -42,6 +42,16 @@ describe('formatDate', () => {
     expect(formatDate(new Date('2026-10-12T20:00:00Z'), 'full')).toBe('13 Oct 2026');
   });
 
+  describe('weekday', () => {
+    it('adds the weekday, and the year when not current', () => {
+      expect(formatDate('2026-10-14', 'weekday', T)).toBe('Wed 14 Oct');
+      expect(formatDate('2027-01-03', 'weekday', T)).toBe('Sun 3 Jan 2027');
+    });
+    it('reads an instant in IST', () => {
+      expect(formatDate('2026-10-13T20:00:00Z', 'weekday', T)).toBe('Wed 14 Oct');
+    });
+  });
+
   describe('relative', () => {
     it('says Today and Yesterday', () => {
       expect(formatDate('2026-10-13', 'relative', T)).toBe('Today');

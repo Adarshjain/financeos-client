@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { cancelJob, retryJob } from '@/features/jobs/jobActions';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
@@ -13,14 +12,12 @@ import { toastError } from '@/lib/toastError';
 /** Cancel and retry for one job row, with today's toasts and list refresh. */
 export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string }) => void } = {}) {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => unwrapAction(cancelJob(id)),
     onSuccess: () => {
       notify.info('Cancellation requested');
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
-      router.refresh();
     },
     onError: (err) => toastError(err, "Couldn't cancel the job. Try again."),
   });
@@ -31,8 +28,7 @@ export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string 
       notify.success('Job retried');
       emitJobStarted(retried.id);
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
-      if (onRetried) onRetried(retried);
-      else router.refresh();
+      onRetried?.(retried);
     },
     onError: (err) => toastError(err, "Couldn't retry the job. Try again."),
   });

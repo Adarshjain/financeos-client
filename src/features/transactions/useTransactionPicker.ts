@@ -5,7 +5,7 @@ import * as React from 'react';
 import { unwrapAction } from '@/lib/actionResult';
 import type { Schemas } from '@/lib/api/types';
 import { FilterClause } from '@/lib/reports.types';
-import { SEARCH_DEBOUNCE_MS } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 import { searchPickerTransactions } from './transactionActions';
@@ -70,8 +70,8 @@ export function useTransactionPicker({
   // The request (search and page) whose answer is in `results`: until it arrives the list is not final.
   const [settled, setSettled] = React.useState('');
   const requestIdRef = React.useRef(0);
-  // The search text of the last request sent: only a changed text waits for a typing pause.
-  const sentSearchRef = React.useRef<string | null>(null);
+  // Typed text waits for a pause before it goes out.
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   // The request (search, filter and page) the picker wants right now; an answer for any other is dropped.
   const currentKeyRef = React.useRef('');
 
@@ -143,23 +143,15 @@ export function useTransactionPicker({
   );
 
   React.useEffect(() => {
-    if (!active) return;
-    // A changed search text waits for a pause; a page or filter change goes straight out.
-    const timer = setTimeout(
-      () => {
-        sentSearchRef.current = search;
-        fetchResults(search, page, `${searchKey}|${page}`);
-      },
-      search !== sentSearchRef.current ? SEARCH_DEBOUNCE_MS : 0
-    );
-    return () => clearTimeout(timer);
-  }, [active, search, page, searchKey, fetchResults]);
+    // Typed text waits for a pause; a page or filter change goes straight out.
+    if (!active || debouncedSearch !== search) return;
+    fetchResults(search, page, `${searchKey}|${page}`);
+  }, [active, search, debouncedSearch, page, searchKey, fetchResults]);
 
   React.useEffect(() => {
     if (!active) {
       setSearch('');
       setTypeFilter('all');
-      sentSearchRef.current = null;
     }
   }, [active]);
 

@@ -72,7 +72,7 @@ export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
       showToast(vars.makeDefault ? 'Default dashboard set' : 'Default cleared');
     },
     onError: (e) =>
-      showToast(e instanceof Error ? e.message : "Couldn't change the default dashboard. Try again.", { tone: 'danger' }),
+      showToast(getErrorMessage(e, "Couldn't change the default dashboard. Try again."), { tone: 'danger' }),
   });
 }
 

@@ -14,6 +14,7 @@ import {
   FilterBar,
   FilterChip,
   Icon,
+  KpiTile,
   Pager,
   Select,
   type SelectOption,
@@ -317,11 +318,18 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
   );
 }
 
-/** The list while the page loads. */
+/** The tiles and the list while the page loads. */
 export function FnoListSkeleton() {
   return (
-    <Card>
-      <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="max-desk:hidden grid grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
+        <KpiTile loading />
+        <KpiTile loading />
+        <KpiTile loading />
+      </div>
+      <Card>
+        <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
+      </Card>
+    </div>
   );
 }

@@ -19,9 +19,9 @@ import { api } from '@/lib/api/client';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { ReportUnderlyingDialog, shortDate } from './ReportUnderlyingDialog';
+import { ReportUnderlyingDialog } from './ReportUnderlyingDialog';
 import type { KpiUnderlyingResponse } from './underlying.types';
-import { saveBlob } from './underlyingModel';
+import { cellText, saveBlob } from './underlyingModel';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
@@ -82,10 +82,13 @@ beforeEach(() => {
   }) as never);
 });
 
-describe('shortDate', () => {
-  it('reads a calendar date as day and month', () => {
-    expect(shortDate('2026-10-05')).toBe('5 Oct');
-    expect(shortDate('n/a')).toBe('n/a');
+describe('cellText dates', () => {
+  const dateColumn = { key: 'date', label: 'Date', type: 'date' };
+  it('reads a calendar date as day and month, with the year when not current', () => {
+    const year = new Date().getFullYear();
+    expect(cellText(`${year}-10-05`, dateColumn)).toBe('5 Oct');
+    expect(cellText(`${year - 1}-10-05`, dateColumn)).toBe(`5 Oct ${year - 1}`);
+    expect(cellText('n/a', dateColumn)).toBe('n/a');
   });
 });
 

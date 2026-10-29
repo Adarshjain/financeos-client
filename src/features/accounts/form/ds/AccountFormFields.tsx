@@ -7,7 +7,7 @@ import { BankLogo, SettingsToggle } from '@/components/organisms';
 import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
-import { formatMoney } from '@/lib/format';
+import { formatCount, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -125,7 +125,7 @@ export function AccountFormFields({
     ...pools.map((p) => ({
       value: p.id,
       label: `${p.name} · ${formatMoney(p.creditLimit)}`,
-      hint: `${p.memberCount} ${p.memberCount === 1 ? 'card' : 'cards'}`,
+      hint: formatCount(p.memberCount, ['card', 'cards']),
     })),
     { value: LIMIT_POOL_NEW, label: 'New shared limit…' },
   ];

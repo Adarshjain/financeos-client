@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, KpiTile } from '@/components/ds';
+import { Banner, GRID_GAP,KpiTile } from '@/components/ds';
 
 import { skipRows, unmappedMessage } from './importModel';
 import { CasTable, ExecutionsTable, FnoTable } from './ReviewTables';
@@ -13,7 +13,7 @@ type Wizard = ReturnType<typeof useImportWizard>;
 
 function Tiles({ tiles }: { tiles: [string, React.ReactNode][] }) {
   return (
-    <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:grid-cols-4 desk:gap-space-16">
+    <div className={`grid grid-cols-2 ${GRID_GAP} desk:grid-cols-4`}>
       {tiles.map(([label, value]) => (
         <KpiTile key={label} label={label} value={value} />
       ))}

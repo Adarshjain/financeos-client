@@ -6,6 +6,7 @@ import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } fr
 import { useDeleteRewardCapBucket, useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBucketsQueries';
 import { useRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { formatCount } from '@/lib/format';
 import type { RewardCapBucket } from '@/lib/rewards.types';
 
 import type { CapUsage } from '../rulesPageModel';
@@ -96,7 +97,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
         title={`Delete cap "${deleting?.name ?? ''}"?`}
         description={
           deleting && usedByRules(deleting)
-            ? `${deleting.ruleCount || 'Some'} rule${deleting.ruleCount === 1 ? '' : 's'} still use this cap. Detach them first; the rules stay.`
+            ? `${deleting.ruleCount ? formatCount(deleting.ruleCount, ['rule', 'rules']) : 'Some rules'} still use this cap. Detach them first; the rules stay.`
             : "The cap goes. Your rules and rewards stay. This can't be undone."
         }
         confirmLabel="Delete cap"

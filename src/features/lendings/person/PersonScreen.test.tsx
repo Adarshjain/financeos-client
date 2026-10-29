@@ -308,7 +308,7 @@ describe('edit person', () => {
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     fireEvent.change(await screen.findByLabelText('Name'), { target: { value: ' ' } });
     await user.click(screen.getByRole('button', { name: 'Save person' }));
-    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+    expect(await screen.findByText('Enter a name.')).toBeInTheDocument();
     expect(m.updateCp.mutateAsync).not.toHaveBeenCalled();
   });
 });

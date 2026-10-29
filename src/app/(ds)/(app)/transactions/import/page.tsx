@@ -5,8 +5,8 @@ import React from 'react';
 import { buildJobsQueryParams } from '@/features/jobs/jobsFilterModel';
 import { guardSession } from '@/features/shell/loadHelpers';
 import { clampPage } from '@/features/shell/pagination';
-import { first, type SearchParams } from '@/features/shell/searchParams';
-import { IMPORT_JOB_TYPE, importUrl, parseImportPage, RECENT_IMPORTS_SIZE, recentImportsSince } from '@/features/transactions/import/importModel';
+import type { SearchParams } from '@/features/shell/searchParams';
+import { IMPORT_JOB_TYPE, importUrl, parseImportAccount, parseImportPage, RECENT_IMPORTS_SIZE, recentImportsSince } from '@/features/transactions/import/importModel';
 import { ImportScreen } from '@/features/transactions/import/ImportScreen';
 import { accountsApi, jobsApi } from '@/lib/apiClient';
 import { requireAuth } from '@/lib/auth';
@@ -23,7 +23,7 @@ export default async function DsImportPage({
 }) {
   await requireAuth();
   const params = await searchParams;
-  const initialAccountId = first(params.account);
+  const initialAccountId = parseImportAccount(params);
   const since = recentImportsSince(todayInAppZone());
   const page = parseImportPage(params);
   const query = (p: number) => buildJobsQueryParams({ page: p, size: RECENT_IMPORTS_SIZE, statusFilter: '', typeFilter: IMPORT_JOB_TYPE, since });

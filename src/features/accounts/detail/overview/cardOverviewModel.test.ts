@@ -250,7 +250,7 @@ describe('buildRewards', () => {
     [
       'a transaction count',
       { basis: 'TXN_COUNT', threshold: 50, progress: 10, minTxnAmount: 500, payoutValue: null },
-      '10 of 50 txns (₹500+ each) · 152 days left',
+      '10 of 50 transactions (₹500+ each) · 152 days left',
     ],
     ['an achieved one', { achieved: true, payoutValue: null }, '₹83,764 of ₹4,00,000 · achieved · 152 days left'],
   ] as const)('captions %s', (_name, over, caption) => {
@@ -294,13 +294,13 @@ describe('buildCardholders', () => {
       name: 'Arjun Mehta',
       initials: 'AM',
       role: 'Primary',
-      caption: '••7741 · ₹34,448 this year · 19 txns · last used 12 Oct',
+      caption: '••7741 · ₹34,448 this year · 19 transactions · last used 12 Oct',
       limitLine: null,
     });
     expect(m.rows[1]).toMatchObject({
       name: 'Meera Mehta',
       role: 'Add-on',
-      caption: '••7742 · ₹4,952 this year · 4 txns · last used 29 Sep',
+      caption: '••7742 · ₹4,952 this year · 4 transactions · last used 29 Sep',
       limitLine: { text: '6.6% of ₹75,000 spend limit used', tone: 'ink-3' },
     });
   });

@@ -1,9 +1,11 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
+import { formatCount } from '@/lib/format';
 import { notify } from '@/lib/notify';
 
 import {
@@ -32,7 +34,6 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
   const [env, setEnv] = React.useState<BrowserEnv | null>(null);
   const [endpoint, setEndpoint] = React.useState<string | null>(null);
   const [checking, setChecking] = React.useState(true);
-  const [working, setWorking] = React.useState(false);
   const { subscribe, unsubscribe, sendTest } = useNotificationSettingsMutations();
   const { data: keyInfo } = usePushPublicKey(env?.supported ?? false);
 
@@ -63,42 +64,45 @@ export function useThisBrowser(settings: NotificationSettingsResponse) {
   const devices = settings.devices ?? [];
   const registered = endpoint != null && devices.some((d) => d.endpoint === endpoint);
 
-  const enable = async () => {
-    setWorking(true);
-    try {
+  const refreshPermission = () => setEnv((e) => e && { ...e, permission: notificationPermission() });
+
+  const enableMutation = useMutation({
+    mutationFn: async () => {
       const payload = await subscribeToPush(keyInfo?.publicKey ?? '');
       await subscribe.mutateAsync(payload);
+      return payload;
+    },
+    onSuccess: (payload) => {
       setEndpoint(payload.endpoint);
       notify.success('Notifications enabled on this device');
-    } catch (e) {
-      notify.error(getErrorMessage(e, "Couldn't enable notifications. Try again."));
-    } finally {
-      setEnv((e) => e && { ...e, permission: notificationPermission() });
-      setWorking(false);
-    }
-  };
+    },
+    onError: (e) => notify.error(getErrorMessage(e, "Couldn't enable notifications. Try again.")),
+    onSettled: refreshPermission,
+  });
 
-  const disable = async () => {
-    setWorking(true);
-    try {
+  const disableMutation = useMutation({
+    mutationFn: async () => {
       const removed = await unsubscribeFromPush();
       if (removed ?? endpoint) {
         await unsubscribe.mutateAsync((removed ?? endpoint) as string);
       }
+    },
+    onSuccess: () => {
       setEndpoint(null);
       notify.success('Notifications disabled on this device');
-    } catch (e) {
-      notify.error(getErrorMessage(e, "Couldn't disable notifications. Try again."));
-    } finally {
-      setEnv((e) => e && { ...e, permission: notificationPermission() });
-      setWorking(false);
-    }
-  };
+    },
+    onError: (e) => notify.error(getErrorMessage(e, "Couldn't disable notifications. Try again.")),
+    onSettled: refreshPermission,
+  });
+
+  const working = enableMutation.isPending || disableMutation.isPending;
+  const enable = () => enableMutation.mutate();
+  const disable = () => disableMutation.mutate();
 
   const test = async () => {
     try {
       const result = await sendTest.mutateAsync();
-      notify.success(result.sent > 0 ? `Test sent to ${result.sent} device${result.sent === 1 ? '' : 's'}` : 'No device accepted the test');
+      notify.success(result.sent > 0 ? `Test sent to ${formatCount(result.sent, ['device', 'devices'])}` : 'No device accepted the test');
     } catch (e) {
       notify.error(getErrorMessage(e, "Couldn't send a test. Try again."));
     }

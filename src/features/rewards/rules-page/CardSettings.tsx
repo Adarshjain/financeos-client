@@ -60,7 +60,7 @@ export function CardSettings({ accountId }: { accountId: string }) {
         {cash ? null : (
           <Fact label="Point value">
             <Text variant="body-strong">
-              {config?.pointValueInr != null ? `₹${config.pointValueInr}/pt` : 'Default (₹0.25/pt)'}
+              {config?.pointValueInr != null ? `${formatMoney(config.pointValueInr, { decimals: 'unit' })}/pt` : 'Default (₹0.25/pt)'}
             </Text>
           </Fact>
         )}

@@ -468,8 +468,7 @@ describe('/accounts/[id]/statements', () => {
     await renderPage();
     expect(screen.getByText('Details missing')).toBeInTheDocument();
     expect(screen.getByText(/Missing from this statement: due date, total due\./)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Re-upload to retry' }));
-    expect(push).toHaveBeenCalledWith('/transactions/import?account=c1');
+    expect(screen.getByRole('link', { name: 'Re-upload to retry' })).toHaveAttribute('href', '/transactions/import?account=c1');
     await user.click(screen.getByRole('button', { name: 'Fill in' }));
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });

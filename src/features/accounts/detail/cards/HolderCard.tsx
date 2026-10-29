@@ -42,7 +42,7 @@ export function HolderMenu({
       {items.map((item) => (
         <React.Fragment key={item.id}>
           {item.separatorBefore ? <Menu.Separator /> : null}
-          <Menu.Item tone={item.destructive ? 'danger' : 'neutral'} onSelect={() => onSelect(item.id)}>
+          <Menu.Item tone={item.tone ?? 'neutral'} onSelect={() => onSelect(item.id)}>
             {item.label}
           </Menu.Item>
         </React.Fragment>

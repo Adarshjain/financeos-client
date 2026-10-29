@@ -11,7 +11,7 @@ export interface ErrorStateProps
   title: React.ReactNode;
   /** One sentence on what to do. */
   description?: React.ReactNode;
-  /** Retries the failed request: action={{ label: 'Try again', onSelect }}. Without it there is no retry button. */
+  /** Retries the failed request: action={{ label: 'Retry', onSelect }}. Without it there is no retry button. */
   action?: { label: string } & ActionTarget;
   /** The error reference to quote (from the error log). Without it there is no copy button. */
   reference?: string;
@@ -22,7 +22,7 @@ export interface ErrorStateProps
 }
 
 /**
- * ErrorState: a request failed. Says what failed, keeps the page, and offers Try again and
+ * ErrorState: a request failed. Says what failed, keeps the page, and offers Retry and
  * Copy reference <id> (board `D-states`, "Error · the request failed"). Built from EmptyState.
  */
 export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(

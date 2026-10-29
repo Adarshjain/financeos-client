@@ -262,7 +262,7 @@ export function dividendsTiles(f: DividendsFigures): DividendsTile[] {
 /** "₹11", "₹5.50", "₹7.5025": a per-unit figure with the decimals it needs (at least two when not whole). */
 export function perUnitText(value: number): string {
   if (Math.round(value * 100) / 100 === value) return formatMoney(value, { decimals: 'auto' });
-  return `₹${formatQuantity(value, 4)}`;
+  return formatMoney(value, { decimals: 'unit' });
 }
 
 /** The units behind a payout: gross over the per-unit amount; null when either is missing. */
@@ -465,7 +465,7 @@ export function suggestionRow(s: DividendSuggestion): SuggestionRow {
 
 /** The note a recorded suggestion carries. */
 export function suggestionNote(s: DividendSuggestion): string {
-  return `Auto-detected dividend (${s.qtyHeld} units @ ₹${s.perUnit})`;
+  return `Auto-detected dividend (${s.qtyHeld} units @ ${formatMoney(Number(s.perUnit), { decimals: 'unit' })})`;
 }
 
 // ---- Money fields -----------------------------------------------------------------

@@ -58,7 +58,7 @@ describe('DividendAddDialog', () => {
     renderWithQuery(<DividendAddDialog onClose={vi.fn()} />);
     expect(await screen.findByRole('button', { name: 'Record dividend' })).toBeInTheDocument();
     expect(field('Pay date')).toHaveValue('13/10/2026');
-    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete dividend' })).toBeNull();
   });
 
   it('says what is missing and records nothing', async () => {
@@ -134,7 +134,7 @@ describe('DividendEditDialog', () => {
     expect(field('Amount')).toHaveValue('880');
     expect(field('TDS')).toHaveValue('88');
     expect(field('Ex-date')).toHaveValue('10/07/2026');
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete dividend' })).toBeInTheDocument();
   });
 
   it('saves the changes to the one dividend', async () => {
@@ -154,7 +154,7 @@ describe('DividendEditDialog', () => {
 
   it('asks before deleting, and keeps the dividend on Cancel', async () => {
     renderWithQuery(<DividendEditDialog dividend={dividend()} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete dividend' }));
     expect(await screen.findByText('Delete HDFCBANK · ₹792?')).toBeInTheDocument();
     expect(screen.getByText(/stays in your transactions, unlinked/)).toBeInTheDocument();
     expect(http.DELETE).not.toHaveBeenCalled();
@@ -166,7 +166,7 @@ describe('DividendEditDialog', () => {
   it('deletes after the confirmation, then refreshes and closes', async () => {
     const onClose = vi.fn();
     renderWithQuery(<DividendEditDialog dividend={dividend()} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete dividend' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete dividend' }));
     await waitFor(() => expect(http.DELETE).toHaveBeenCalledWith('/api/v1/investments/dividends/{id}', { params: { path: { id: 'd1' } } }));
     expect(showToast).toHaveBeenCalledWith('Dividend deleted');

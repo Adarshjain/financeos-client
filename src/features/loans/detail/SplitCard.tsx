@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Card, ProgressBar, Text } from '@/components/ds';
+import { formatCount } from '@/lib/format';
 
 import type { FySplit } from './scheduleModel';
 
@@ -18,7 +19,7 @@ export function SplitCard({ splits }: { splits: FySplit[] }) {
               <Text variant="body-strong" as="span">
                 {s.label}
               </Text>
-              <Text tone="ink-3" as="span">{`${s.emiTotal} · ${s.emis} ${s.emis === 1 ? 'EMI' : 'EMIs'}`}</Text>
+              <Text tone="ink-3" as="span">{`${s.emiTotal} · ${formatCount(s.emis, ['EMI', 'EMIs'])}`}</Text>
             </div>
             <ProgressBar
               segments={[

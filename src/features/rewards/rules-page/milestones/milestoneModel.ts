@@ -53,7 +53,7 @@ export function milestoneSummary(m: RewardMilestone): string {
   const target =
     m.basis === 'SPEND'
       ? `${rupees(m.threshold)} spend`
-      : `${formatCount(m.threshold, 'txns')}${m.minTxnAmount ? ` of ${rupees(m.minTxnAmount)}+` : ''}`;
+      : `${formatCount(m.threshold, ['transaction', 'transactions'])}${m.minTxnAmount ? ` of ${rupees(m.minTxnAmount)}+` : ''}`;
   const value = m.payoutValue ?? 0;
   const payout =
     m.payoutType === 'CASH_VALUE'

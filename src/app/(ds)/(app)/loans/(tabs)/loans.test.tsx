@@ -344,7 +344,7 @@ describe('/loans', () => {
       loadClosedLoans.mockResolvedValue({ success: true, data: [] });
       await renderPage({ q: 'zzz' });
       fireEvent.click(screen.getByRole('button', { name: /Show/ }));
-      await waitFor(() => expect(toast).toHaveBeenCalledWith('No closed loans match.'));
+      await waitFor(() => expect(toast).toHaveBeenCalledWith('No closed loans match'));
       expect(screen.getByRole('button', { name: /Show/ })).toBeInTheDocument();
     });
 

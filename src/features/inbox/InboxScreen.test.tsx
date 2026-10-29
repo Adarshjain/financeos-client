@@ -104,7 +104,6 @@ describe('InboxScreen', () => {
     vi.mocked(api.GET).mockRejectedValueOnce(new Error('boom'));
     renderWithQuery(<InboxScreen />);
     expect(await screen.findByText("Couldn't load the inbox")).toBeInTheDocument();
-    expect(screen.getByText('The server did not answer. Your items are safe.')).toBeInTheDocument();
     vi.mocked(api.GET).mockResolvedValue({ data: inbox([bill]) } as never);
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Amex bill')).toBeInTheDocument();
@@ -199,12 +198,12 @@ describe('InboxScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss Prices refreshed' }));
     await waitFor(() => expect(screen.queryByText('Prices refreshed')).not.toBeInTheDocument());
     expect(api.POST).toHaveBeenCalledWith('/api/v1/inbox/{key}/dismiss', { params: { path: { key: 'job:2' } } });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Dismissed', expect.anything()));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Item dismissed', expect.anything()));
     const { action: undo } = showToast.mock.calls[0][1];
     expect(undo.label).toBe('Undo');
     await act(async () => undo.onSelect());
     expect(api.DELETE).toHaveBeenCalledWith('/api/v1/inbox/{key}/state', { params: { path: { key: 'job:2' } } });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Restored'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Item restored'));
   });
 
   it('snooze preset hides the row, toasts the date with Undo', async () => {

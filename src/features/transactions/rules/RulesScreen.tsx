@@ -13,7 +13,8 @@ import {
   SelectionBar,
   type SelectOption,
 } from '@/components/ds';
-import { ErrorState, RuleCard } from '@/components/organisms';
+import { RuleCard } from '@/components/organisms';
+import { LoadError } from '@/features/shell/LoadError';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
@@ -165,12 +166,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
             />
         </FilterBar>
         {rules === null ? (
-          <ErrorState
-            title="Couldn't load rules"
-            description="Retry, and quote the reference if it keeps failing."
-            action={{ label: 'Retry', onSelect: () => router.refresh() }}
-            reference={reference}
-          />
+          <LoadError what="rules" reference={reference} />
         ) : rules.rows.length === 0 ? (
           <EmptyState
             title={noMatch ? 'No rules match' : 'No rules yet'}

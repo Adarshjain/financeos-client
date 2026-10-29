@@ -342,7 +342,7 @@ for (const viewport of VIEWPORTS) {
       const dialog = page.getByRole('dialog', { name: 'Add loan' });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('button', { name: 'Add loan' }).click();
-      await expect(dialog.getByText('Loan name is required')).toBeVisible();
+      await expect(dialog.getByText('Enter a loan name.')).toBeVisible();
 
       await dialog.getByRole('textbox', { name: /^Loan name/ }).fill('Scooter Loan UI');
       await dialog.getByRole('textbox', { name: /^Lender/ }).fill('Bajaj Finserv');

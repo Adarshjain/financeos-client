@@ -6,7 +6,7 @@ import { DialogFrame } from './DialogFrame';
 function renderFrame(pending: boolean) {
   const onSubmit = vi.fn();
   render(
-    <DialogFrame title="Add holder" submitLabel="Save" onSubmit={onSubmit} onClose={vi.fn()} pending={pending} error={null}>
+    <DialogFrame title="Add holder" submitLabel="Save" onSubmit={onSubmit} onClose={vi.fn()} loading={pending} error={null}>
       <input aria-label="Name" />
     </DialogFrame>,
   );

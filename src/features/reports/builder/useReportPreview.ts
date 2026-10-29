@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { runAdHocReport } from '@/features/reports/reportActions';
-import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
+import { REPORT_ROWS_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData } from '@/lib/reports.helpers';
@@ -56,7 +56,7 @@ export function useReportPreview({
   initial?: Pick<Shown, 'data' | 'request' | 'signature'> | null;
 }): PreviewState {
   const [shown, setShown] = useState<Shown | null>(
-    initial ? { ...initial, page: 0, size: DEFAULT_PAGE_SIZE, sort: null } : null,
+    initial ? { ...initial, page: 0, size: REPORT_ROWS_PAGE_SIZE, sort: null } : null,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export function useReportPreview({
 
   // Preview runs the draft (from page 0 once it changed). Paging and sorting belong to the result on screen, so
   // they re-run ITS definition, stale or not: the draft is only run by Preview.
-  const size = shown?.size ?? DEFAULT_PAGE_SIZE;
+  const size = shown?.size ?? REPORT_ROWS_PAGE_SIZE;
   const again = (page: number, nextSize: number, sort: SortClause | null) => {
     if (shown) void fire(shown.request, shown.signature, page, nextSize, sort);
   };

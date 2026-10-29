@@ -1,7 +1,9 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { renderWithQuery as render } from '@/test/renderWithQuery';
 
 import type { ChatRecord, Conversation, ConversationSummary } from './conversation.types';
 

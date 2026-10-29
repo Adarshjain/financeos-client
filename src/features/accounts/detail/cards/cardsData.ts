@@ -1,14 +1,17 @@
-import type { Cardholder } from '@/lib/account.types';
+import type { Account, Cardholder } from '@/lib/account.types';
 import { serverApi } from '@/lib/api/server';
 import { cardholdersApi } from '@/lib/apiClient';
+import { AccountType } from '@/lib/types';
 
-import type { HolderStats } from './cardsModel';
+import { buildCardsModel, type CardsModel, type HolderStats } from './cardsModel';
 
 export interface CardsData {
   /** Null when the cardholders request failed: the tab shows an error instead of the cards. */
   cardholders: Cardholder[] | null;
   /** Null when the stats request failed: the cards show without their figures. */
   stats: HolderStats[] | null;
+  /** Null when the cardholders request failed. */
+  model: CardsModel | null;
 }
 
 async function loadStats(accountId: string): Promise<HolderStats[]> {
@@ -21,11 +24,22 @@ async function loadStats(accountId: string): Promise<HolderStats[]> {
 
 const ok = <T,>(r: PromiseSettledResult<T>): T | null => (r.status === 'fulfilled' ? r.value : null);
 
-/** The cardholders and their stats, fetched in parallel; each degrades on its own. */
-export async function loadCardsData(accountId: string): Promise<CardsData> {
-  const [cardholders, stats] = await Promise.allSettled([
-    cardholdersApi.list(accountId),
-    loadStats(accountId),
+/** The cardholders and their stats, fetched in parallel (each degrades on its own), and the model the tab renders. */
+export async function loadCardsData(account: Account, today: string): Promise<CardsData> {
+  const [cardholdersResult, statsResult] = await Promise.allSettled([
+    cardholdersApi.list(account.id),
+    loadStats(account.id),
   ]);
-  return { cardholders: ok(cardholders), stats: ok(stats) };
+  const cardholders = ok(cardholdersResult);
+  const stats = ok(statsResult);
+  const model = cardholders
+    ? buildCardsModel({
+        cardholders,
+        stats,
+        isBank: account.type === AccountType.BANK_ACCOUNT,
+        creditCard: account.type === AccountType.CREDIT_CARD ? account : null,
+        today,
+      })
+    : null;
+  return { cardholders, stats, model };
 }

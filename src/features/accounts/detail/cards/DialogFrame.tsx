@@ -28,7 +28,7 @@ export function DialogFrame({
   submitLabel,
   onSubmit,
   onClose,
-  pending,
+  loading,
   error,
   children,
 }: {
@@ -37,7 +37,7 @@ export function DialogFrame({
   submitLabel: React.ReactNode;
   onSubmit: () => void;
   onClose: () => void;
-  pending: boolean;
+  loading: boolean;
   error: string | null;
   children: React.ReactNode;
 }) {
@@ -48,12 +48,12 @@ export function DialogFrame({
         size="sm"
         title={title}
         description={description}
-        secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
+        secondary={{ label: 'Cancel', onSelect: onClose, disabled: loading }}
         primary={{
           label: submitLabel,
           type: 'submit',
           form: formId,
-          loading: pending,
+          loading,
         }}
       >
         <Dialog.Body>
@@ -62,7 +62,7 @@ export function DialogFrame({
             className="flex flex-col gap-space-8 desk:gap-space-12"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!pending) onSubmit();
+              if (!loading) onSubmit();
             }}
           >
             {error ? <Banner tone="danger">{error}</Banner> : null}

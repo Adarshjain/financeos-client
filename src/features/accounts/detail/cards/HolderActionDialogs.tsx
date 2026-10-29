@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Banner, ConfirmDialog, DateField, Select } from '@/components/ds';
 import type { Card, Cardholder } from '@/lib/account.types';
+import { pluralize } from '@/lib/format';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
 import { buildReassign, reassignSources, UNATTRIBUTED } from './cardsFormsModel';
@@ -58,7 +59,7 @@ export function ReassignDialog({
       submitLabel="Reassign"
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error ?? formError}
     >
       <Select
@@ -134,7 +135,7 @@ export function DeleteCardDialog({
   const stays =
     transactionCount == null
       ? `Its transactions stay with ${name}.`
-      : `Its ${transactionCount} ${transactionCount === 1 ? 'transaction stays' : 'transactions stay'} with ${name}.`;
+      : `Its ${transactionCount} ${pluralize(transactionCount, 'transaction stays', 'transactions stay')} with ${name}.`;
   return (
     <ConfirmDialog
       open

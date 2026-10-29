@@ -16,6 +16,7 @@ import { AccountPicker } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import type { Category } from '@/lib/categories.types';
+import { pluralize } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
@@ -122,7 +123,7 @@ export function FiltersDialog({
       <span>
         Show {count}{' '}
         <span className="max-desk:hidden">
-          {count === 1 ? 'transaction' : 'transactions'}
+          {pluralize(count, 'transaction', 'transactions')}
         </span>
       </span>
     );

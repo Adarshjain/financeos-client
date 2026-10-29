@@ -1,5 +1,5 @@
 import type { Broker } from '@/lib/account.types';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { StatementSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -78,7 +78,7 @@ export function buildLatestStatement(
 ): StatementRowModel | null {
   const latest = [...statements].sort((a, b) => b.periodEnd.localeCompare(a.periodEnd))[0];
   if (!latest) return null;
-  const parts = [`${latest.transactionCount} ${latest.transactionCount === 1 ? 'row' : 'rows'}`];
+  const parts = [formatCount(latest.transactionCount, ['row', 'rows'])];
   if (latest.closingBalance != null) parts.push(`closing ${formatMoney(latest.closingBalance, { decimals: 'auto' })}`);
   const uploaded = formatDate(latest.createdAt.slice(0, 10), 'list');
   if (uploaded) parts.push(`uploaded ${uploaded}`);

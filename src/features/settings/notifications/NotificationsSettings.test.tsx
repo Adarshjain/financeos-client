@@ -247,7 +247,7 @@ describe('Notifications tab: bills and EMIs', () => {
     render(settings({ reminderOffsets: [0] }));
     fireEvent.click(await screen.findByRole('button', { name: 'Days before due' }));
     fireEvent.click(await screen.findByRole('option', { name: /On the day/ }));
-    expect(toast.error).toHaveBeenCalledWith('Keep at least one reminder');
+    expect(toast.error).toHaveBeenCalledWith('Keep at least one reminder.');
     expect(api.PUT).not.toHaveBeenCalled();
   });
 

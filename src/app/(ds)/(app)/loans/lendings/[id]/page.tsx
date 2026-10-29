@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import React from 'react';
 
 import { loadPerson, loadPersonPage } from '@/features/lendings/person/personData';
-import { parsePersonUrl } from '@/features/lendings/person/personModel';
+import { parseOpenExport, parsePersonUrl } from '@/features/lendings/person/personModel';
 import { PersonScreen } from '@/features/lendings/person/PersonScreen';
-import { first, type SearchParams } from '@/features/shell/searchParams';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
 
@@ -32,7 +32,7 @@ export default async function DsPersonPage({ params, searchParams }: Params & { 
       state={state}
       today={todayInAppZone()}
       myName={user.displayName ?? null}
-      openExport={first(query.export) === '1'}
+      openExport={parseOpenExport(query)}
     />
   );
 }

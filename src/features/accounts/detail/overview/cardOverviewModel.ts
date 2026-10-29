@@ -197,7 +197,7 @@ export function buildRewards(
       const daysLeft = daysBetween(today, m.windowEnd);
       const count = spend
         ? `${formatMoney(m.progress)} of ${formatMoney(m.threshold)}`
-        : `${m.progress} of ${m.threshold} txns`;
+        : `${m.progress} of ${formatCount(m.threshold, ['transaction', 'transactions'])}`;
       const each = !spend && m.minTxnAmount ? ` (${formatMoney(m.minTxnAmount)}+ each)` : '';
       const target = `${count}${each}${payout ? ` → ${payout}` : ''}${m.achieved ? ' · achieved' : ''}`;
       return {
@@ -262,7 +262,7 @@ export function buildCardholders(
       if (last4) parts.push(`••${last4}`);
       if (s) {
         parts.push(`${formatMoney(s.spendThisYear)} this year`);
-        parts.push(formatCount(s.transactionCount, ['txn', 'txns']));
+        parts.push(formatCount(s.transactionCount, ['transaction', 'transactions']));
         if (s.lastUsedOn) parts.push(`last used ${formatDate(s.lastUsedOn, 'list')}`);
       }
       let limitLine: CardholderRowModel['limitLine'] = null;

@@ -2,7 +2,7 @@ import type { SelectOption } from '@/components/ds';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
-import { formatMoney } from '@/lib/format';
+import { formatCount, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -124,9 +124,9 @@ export function activeFilterWords(query: TransactionsQuery): string {
   const words: string[] = [];
   if (!(query.period.kind === 'preset' && query.period.id === 'all_time')) words.push(periodLabel(query.period));
   if (query.q) words.push(`“${query.q}”`);
-  if (query.accounts.length > 0) words.push(query.accounts.length === 1 ? '1 account' : `${query.accounts.length} accounts`);
+  if (query.accounts.length > 0) words.push(formatCount(query.accounts.length, ['account', 'accounts']));
   if (query.categories.length > 0) {
-    words.push(query.categories.length === 1 ? '1 category' : `${query.categories.length} categories`);
+    words.push(formatCount(query.categories.length, ['category', 'categories']));
   }
   if (query.uncategorized) words.push('uncategorized');
   if (query.type !== 'all') words.push(query.type === 'debit' ? 'expense' : 'income');

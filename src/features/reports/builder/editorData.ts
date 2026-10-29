@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
-import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
+import { REPORT_ROWS_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
 import { type Loaded, loaded, signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { ApiError } from '@/lib/api/client';
 import { reportsApi } from '@/lib/apiClient';
@@ -36,7 +36,7 @@ export const loadSavedReport = cache(async (id: string): Promise<Loaded<SavedRep
       throw e;
     }),
     loaded(reportsApi.getDatasource()),
-    reportsApi.runSaved(id, { page: 0, size: DEFAULT_PAGE_SIZE }).then(
+    reportsApi.runSaved(id, { page: 0, size: REPORT_ROWS_PAGE_SIZE }).then(
       (data): ReportData | null => data,
       async (e: unknown) => {
         await signInIfSessionEnded(e);

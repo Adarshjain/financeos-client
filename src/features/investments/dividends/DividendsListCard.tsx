@@ -13,6 +13,7 @@ import {
   FilterBar,
   FilterChip,
   Icon,
+  KpiTile,
   Pager,
   Select,
   type SelectOption,
@@ -337,11 +338,19 @@ export function DividendsListCard({
   );
 }
 
-/** The table while the page loads. */
+/** The tiles and the table while the page loads. */
 export function DividendsListSkeleton() {
   return (
-    <Card>
-      <DataTable columns={buildColumns(() => undefined)} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
+        <KpiTile loading />
+        <KpiTile loading />
+        <KpiTile loading />
+        <KpiTile loading />
+      </div>
+      <Card>
+        <DataTable columns={buildColumns(() => undefined)} data={[]} getRowId={(row) => row.id} loading skeletonRows={5} />
+      </Card>
+    </div>
   );
 }

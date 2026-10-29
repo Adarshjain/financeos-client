@@ -323,7 +323,7 @@ describe('/investments/tradebook: edit and delete', () => {
 
   it('asks before deleting and says what stays', async () => {
     const dialog = await openEdit();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete trade' }));
     expect(await screen.findByText('Delete TATAMOTORS · 1 Oct sell?')).toBeTruthy();
     expect(screen.getByText(/Other trades, prices and dividends of this instrument stay/)).toBeTruthy();
     expect(api.DELETE).not.toHaveBeenCalled();
@@ -331,7 +331,7 @@ describe('/investments/tradebook: edit and delete', () => {
 
   it('deletes after the confirmation, refreshes and closes', async () => {
     const dialog = await openEdit();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete trade' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete trade' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/investments/transactions/{id}', { params: { path: { id: 't-1' } } }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
@@ -341,7 +341,7 @@ describe('/investments/tradebook: edit and delete', () => {
 
   it('cancelling the confirmation keeps the trade', async () => {
     const dialog = await openEdit();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete trade' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(api.DELETE).not.toHaveBeenCalled();
   });

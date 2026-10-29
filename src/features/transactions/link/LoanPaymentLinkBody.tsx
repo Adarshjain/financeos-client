@@ -8,7 +8,7 @@ import { differenceWords } from '@/features/loans/detail/payModel';
 import { daysBetween } from '@/features/loans/loanFormatModel';
 import { amountExpressionProps, amountExpressionValue } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto } from '@/lib/loan.types';
 
 import type { UseLoanPaymentLinkResult } from './useLoanPaymentLink';
@@ -18,7 +18,7 @@ export function installmentSubtitle(i: InstallmentDto, today: string): string {
   const due = `due ${formatDate(i.dueDate, 'list')}`;
   if (i.status !== 'overdue') return due;
   const late = daysBetween(i.dueDate, today);
-  return late && late > 0 ? `${due} · ${late} day${late === 1 ? '' : 's'} overdue` : due;
+  return late && late > 0 ? `${due} · ${formatCount(late, ['day', 'days'])} overdue` : due;
 }
 
 /** Loan payment: pick the loan and one of its unpaid installments, and say what was paid and when. */

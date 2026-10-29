@@ -1,6 +1,6 @@
 import { deleteImpact } from '@/features/transactions/detail/transactionDetail';
 import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
-import { formatMoney } from '@/lib/format';
+import { formatMoney, pluralize } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 type Reviewable = Pick<Transaction, 'reviewType' | 'reviewReasons'>;
@@ -75,12 +75,12 @@ export function deleteCopy(
   const records = transactions.reduce((sum, t) => sum + (t.obligationRefs?.length ?? 0), 0);
   if (records > 0) {
     impact.push(
-      `${records} linked ${records === 1 ? 'record stays' : 'records stay'} but ${records === 1 ? 'loses' : 'lose'} the link.`,
+      `${records} linked ${pluralize(records, 'record stays', 'records stay')} but ${pluralize(records, 'loses', 'lose')} the link.`,
     );
   }
   const imported = transactions.filter((t) => t.source !== 'manual').length;
   if (imported > 0) {
-    impact.push(`${imported} ${imported === 1 ? 'is' : 'are'} not manually created. It is discouraged to delete these.`);
+    impact.push(`${imported} ${pluralize(imported, 'is', 'are')} not manually created. It is discouraged to delete these.`);
   }
   return { title: `Delete ${n} transactions?`, impact, confirmLabel: `Delete ${n} transactions` };
 }

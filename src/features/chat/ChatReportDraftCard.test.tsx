@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import type { ChatReportDraft } from './chat.types';
@@ -245,7 +246,7 @@ describe('create draft', () => {
   });
 
   it('shows what failed in a banner and keeps the actions', async () => {
-    actions.saveDraftAsReport.mockRejectedValue(new Error('A report with this name exists'));
+    actions.saveDraftAsReport.mockRejectedValue(new ApiError(409, { code: 'CONFLICT', message: 'A report with this name exists' }));
     setup();
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
@@ -272,7 +273,6 @@ describe('guards', () => {
   });
 
   it('treats a report that is already gone as undone', async () => {
-    const { ApiError } = await import('@/lib/api/client');
     actions.removeReport.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'gone' }));
     setup();
     await screen.findByText('preview result');
@@ -364,7 +364,7 @@ describe('update draft', () => {
   });
 
   it('shows what failed and keeps the button', async () => {
-    actions.applyDraftUpdate.mockRejectedValue(new Error('Report not found'));
+    actions.applyDraftUpdate.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'Report not found' }));
     setup(update);
     await screen.findByText('preview result');
     fireEvent.click(screen.getByRole('button', { name: 'Update report' }));
@@ -406,7 +406,7 @@ describe('delete draft', () => {
   });
 
   it('shows what failed in the card and keeps the button', async () => {
-    actions.removeReport.mockRejectedValue(new Error('Report is in use'));
+    actions.removeReport.mockRejectedValue(new ApiError(409, { code: 'CONFLICT', message: 'Report is in use' }));
     setup(del);
     fireEvent.click(screen.getByRole('button', { name: 'Delete report' }));
     fireEvent.click((await screen.findAllByRole('button', { name: 'Delete report' })).at(-1)!);

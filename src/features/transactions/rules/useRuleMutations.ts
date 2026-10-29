@@ -7,6 +7,7 @@ import { showToast } from '@/components/ds';
 import { ActionError, unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Schemas } from '@/lib/api/types';
+import { formatCount } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import type { CategoryRule } from '@/lib/rules.types';
 
@@ -95,7 +96,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
   const verify = useMutation({
     mutationFn: (rule: CategoryRule) => unwrapAction(verifyRule(rule.id)),
     onSuccess: (data, rule) => {
-      showToast('Rule verified. Matching transactions are cleared from review.', {
+      showToast('Rule verified. Matching transactions are cleared from review', {
         action: { label: 'Undo', onSelect: () => unverifyMany.mutate([{ id: rule.id, restore: data?.clearedTransactions ?? [] }]) },
       });
       handlers.onVerified?.([rule.id]);
@@ -110,7 +111,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
       // Only rules that were unverified have an entry; the rest were already verified and stay so.
       const undo = (verifiedRules ?? []).map((v) => ({ id: v.ruleId, restore: v.clearedTransactions }));
       showToast(
-        `${verifiedCount} ${verifiedCount === 1 ? 'rule' : 'rules'} verified. Matching transactions are cleared from review.`,
+        `${formatCount(verifiedCount, ['rule', 'rules'])} verified. Matching transactions are cleared from review.`,
         { action: { label: 'Undo', onSelect: () => unverifyMany.mutate(undo) } },
       );
       handlers.onVerified?.(ruleIds);

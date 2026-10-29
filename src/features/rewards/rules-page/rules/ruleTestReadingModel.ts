@@ -1,5 +1,5 @@
 import type { RewardRuleFormFields } from '@/features/rewards/rules/form/useRewardRuleFormFields';
-import { formatMoney, formatQuantity } from '@/lib/format';
+import { formatMoney, formatPercent, formatQuantity } from '@/lib/format';
 
 type Fields = Pick<
   RewardRuleFormFields,
@@ -30,7 +30,7 @@ export function readRuleTest(preview: { matched: boolean; text: string }, f: Fie
     const basis = f.isTiered
       ? `Tiered rate on ${amount}`
       : f.accrualType === 'PERCENT'
-        ? `${f.percentRate}% of ${amount}`
+        ? `${formatPercent(Number(f.percentRate), { decimals: 2 })} of ${amount}`
         : `${points ? `${formatQuantity(Number(f.pointsPerSlab), 2)} pts` : formatMoney(Number(f.pointsPerSlab), { decimals: 'auto' })} per ${formatMoney(Number(f.slabSize), { decimals: 'auto' })} slab on ${amount}`;
     return {
       headline: paid.replace(/ cashback$/, '') || null,

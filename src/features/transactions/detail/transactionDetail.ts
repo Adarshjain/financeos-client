@@ -1,6 +1,6 @@
 import type { StatusWordItem } from '@/components/ds';
 import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate, formatMoney, pluralize } from '@/lib/format';
 import { obligationRefHref } from '@/lib/obligationRefHref';
 import { getDerivedRoleLabel } from '@/lib/transaction.helpers';
 import type {
@@ -186,7 +186,7 @@ export function deleteImpact(t: Transaction): string[] {
   if (records.length > 0) {
     const n = records.length;
     impact.push(
-      `${n} linked ${n === 1 ? 'record stays' : 'records stay'} (${records.map((r) => r.label).join(', ')}) but ${n === 1 ? 'loses' : 'lose'} the link.`,
+      `${n} linked ${pluralize(n, 'record stays', 'records stay')} (${records.map((r) => r.label).join(', ')}) but ${pluralize(n, 'loses', 'lose')} the link.`,
     );
   }
   if (t.source !== 'manual') {

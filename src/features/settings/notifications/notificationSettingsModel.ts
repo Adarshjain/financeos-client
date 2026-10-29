@@ -1,5 +1,5 @@
 import type { NotificationSettingsResponse } from '@/lib/api/types';
-import { formatDate } from '@/lib/format';
+import { formatDate, pluralize } from '@/lib/format';
 
 import { describeDevice } from './push';
 
@@ -129,7 +129,7 @@ export function offsetLabel(offset: number): string {
 export function offsetsSummary(offsets: number[]): string {
   const days = [...new Set(offsets)].filter((o) => o > 0).sort((a, b) => b - a);
   const parts: string[] = [];
-  if (days.length > 0) parts.push(`${days.join(', ')} ${days.length === 1 && days[0] === 1 ? 'day' : 'days'}`);
+  if (days.length > 0) parts.push(`${days.join(', ')} ${pluralize(days.length === 1 ? days[0] : 2, 'day', 'days')}`);
   if (offsets.includes(0)) parts.push(parts.length > 0 ? 'on the day' : 'On the day');
   return parts.join(' · ');
 }

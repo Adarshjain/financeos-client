@@ -129,8 +129,7 @@ describe('ImportTradebookScreen: step 1', () => {
     expect(screen.getByText('2. Zerodha Tradebook')).toBeInTheDocument();
     expect(screen.getByText('3. Holdings snapshot anchor (optional)')).toBeInTheDocument();
     expect(screen.getByText('Authoritative intraday & clean FIFO:')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(mockRouter.push).toHaveBeenCalledWith('/investments/tradebook');
+    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute('href', '/investments/tradebook');
   });
 
   it('asks for a target account, then a tradebook, then a tax P&L, and stays on step 1', async () => {
@@ -356,8 +355,7 @@ describe('ImportTradebookScreen: import job and result', () => {
     expect(screen.getByText('#31 trade date is before the account was opened')).toBeInTheDocument();
     expect(screen.getByText('Skipped executions (1)')).toBeInTheDocument();
     expect(screen.getByText('#9 RELIANCE — already imported (same exchange reference)')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Done & view portfolio' }));
-    expect(mockRouter.push).toHaveBeenCalledWith('/investments');
+    expect(screen.getByRole('link', { name: 'Done & view portfolio' })).toHaveAttribute('href', '/investments');
   });
 
   it('shows no lists when nothing failed or was skipped', async () => {
@@ -384,7 +382,7 @@ describe('ImportTradebookScreen: import job and result', () => {
   });
 
   it('says what failed when the commit request is rejected', async () => {
-    mutations.commitReconcile.mockRejectedValueOnce(new Error('Network down'));
+    mutations.commitReconcile.mockRejectedValueOnce(new ApiError(502, { code: 'BAD_GATEWAY', message: 'Network down' }));
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
     await uploadZerodha();
     await preview();

@@ -23,7 +23,7 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
 
   const submit = async () => {
     if (!name.trim()) {
-      setError('Name is required');
+      setError('Enter a name.');
       return;
     }
     if (await onSubmit(name, notes)) onClose();

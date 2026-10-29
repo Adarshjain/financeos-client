@@ -187,7 +187,7 @@ export function useRecordLending({
 
   const handleSubmitNew = () => {
     if (!canSubmitNew || !transaction || !party) {
-      notify.error('Fill in the required fields');
+      notify.error('Fill in the required fields.');
       return;
     }
     const body: CreateLendingRequest = {

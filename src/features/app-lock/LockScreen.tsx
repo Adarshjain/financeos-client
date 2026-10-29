@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { logoutToDinero } from '@/actions/auth';
@@ -16,25 +17,23 @@ const CANT_UNLOCK = "Can't unlock? Sign out, sign in with your password, then tu
 /** Back in the app after this long away: prompt again on its own. */
 const REPROMPT_AFTER_MS = 2000;
 
+const UNLOCK_KEY = ['app-lock', 'unlock'];
+
 /**
  * The lock screen: the passkey prompt opens on its own when the screen shows and when the app comes back to the
  * front; Unlock opens it again (Safari needs a tap, so there the automatic try fails quietly). A good answer
  * returns to `from`.
  */
 export function LockScreen({ from }: { from: string }) {
-  const [busy, setBusy] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
-  const busyRef = useRef(false);
 
   const toSignIn = () => window.location.replace(appHref('/login'));
 
   /** `auto`: opened without a tap; a dismissed or refused prompt then leaves the screen as it was. */
-  const unlock = async (auto = false) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setError(null);
-    try {
+  const unlockMutation = useMutation({
+    mutationKey: UNLOCK_KEY,
+    mutationFn: async (auto: boolean) => {
       const options = await startUnlock();
       if (!options.success) {
         if (options.error.code === 'UNAUTHORIZED') return toSignIn();
@@ -62,19 +61,25 @@ export function LockScreen({ from }: { from: string }) {
       // A wrong answer comes back as APP_LOCK_UNLOCK_FAILED (data); only the last allowed try ends the session.
       if (verified.error.code === 'UNAUTHORIZED') return toSignIn();
       setError(TRY_AGAIN);
-    } catch {
-      setError(TRY_AGAIN);
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
+    },
+    onError: () => setError(TRY_AGAIN),
+  });
+  const busy = unlockMutation.isPending;
+
+  const unlock = (auto = false) => {
+    // The cache answers at once, before a render could show the pending state: two triggers in a row open one prompt.
+    if (queryClient.isMutating({ mutationKey: UNLOCK_KEY }) > 0) return;
+    setError(null);
+    unlockMutation.mutate(auto);
   };
 
   const unlockRef = useRef(unlock);
-  unlockRef.current = unlock;
+  useEffect(() => {
+    unlockRef.current = unlock;
+  });
 
   useEffect(() => {
-    void unlockRef.current(true);
+    unlockRef.current(true);
     let hiddenAt: number | null = null;
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') {
@@ -82,7 +87,7 @@ export function LockScreen({ from }: { from: string }) {
         return;
       }
       // The OS prompt itself can hide the page for a moment; only a real trip away prompts again.
-      if (hiddenAt !== null && Date.now() - hiddenAt >= REPROMPT_AFTER_MS) void unlockRef.current(true);
+      if (hiddenAt !== null && Date.now() - hiddenAt >= REPROMPT_AFTER_MS) unlockRef.current(true);
       hiddenAt = null;
     };
     document.addEventListener('visibilitychange', onVisibility);
@@ -109,7 +114,7 @@ export function LockScreen({ from }: { from: string }) {
             </div>
           </Banner>
         )}
-        <Button variant="primary" size="xl" fullWidth loading={busy} loadingLabel="Checking…" onClick={() => void unlock()}>
+        <Button variant="primary" size="xl" fullWidth loading={busy} loadingLabel="Checking…" onClick={() => unlock()}>
           Unlock
         </Button>
         <Button variant="link" onClick={() => void logoutToDinero()}>

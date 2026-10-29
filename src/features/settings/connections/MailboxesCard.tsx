@@ -30,13 +30,13 @@ interface MailboxesCardProps {
 function MailboxRow({
   conn,
   showPrimary,
-  busy,
+  loading,
   onReconnect,
   onDisconnect,
 }: {
   conn: GmailConnection;
   showPrimary: boolean;
-  busy: boolean;
+  loading: boolean;
   onReconnect: () => void;
   onDisconnect: () => void;
 }) {
@@ -72,7 +72,7 @@ function MailboxRow({
           <StatusWord tone="success">Healthy</StatusWord>
         )}
         {conn.needsReconnect ? (
-          <Button variant="secondary" size="sm" disabled={busy} onClick={onReconnect}>
+          <Button variant="secondary" size="sm" disabled={loading} onClick={onReconnect}>
             Reconnect
           </Button>
         ) : null}
@@ -146,7 +146,7 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
                 key={conn.id}
                 conn={conn}
                 showPrimary={connections.length > 1}
-                busy={loading !== null}
+                loading={loading !== null}
                 onReconnect={onConnect}
                 onDisconnect={() => setDisconnecting(conn)}
               />

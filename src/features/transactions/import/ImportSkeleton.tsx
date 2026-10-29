@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card, GRID_GAP,Skeleton } from '@/components/ds';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
@@ -12,7 +12,7 @@ export function ImportSkeleton() {
     <ShellPage crumb={subCrumb('transactions', 'Import')} title="Import" flushTop>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
-        <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:grid-cols-12 desk:gap-space-16">
+        <div className={`grid grid-cols-1 ${GRID_GAP} desk:grid-cols-12`}>
           <Card className="desk:col-span-7">
             <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">
               <Skeleton height={36} />

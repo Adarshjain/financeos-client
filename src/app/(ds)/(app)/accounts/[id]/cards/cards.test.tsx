@@ -4,6 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CardsData } from '@/features/accounts/detail/cards/cardsData';
+import { buildCardsModel } from '@/features/accounts/detail/cards/cardsModel';
 import type { Account, Cardholder, CreditCard } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
@@ -29,9 +30,22 @@ vi.mock('@/features/accounts/detail/accountData', () => ({
   loadAccount: (id: string) => loadAccount(id),
 }));
 
-const loadCards = vi.fn<() => Promise<CardsData>>();
+const loadCards = vi.fn<() => Promise<Omit<CardsData, 'model'>>>();
 vi.mock('@/features/accounts/detail/cards/cardsData', () => ({
-  loadCardsData: () => loadCards(),
+  // The real loader builds the model from what the API gave; the test supplies that data.
+  loadCardsData: async (account: Account, today: string) => {
+    const raw = await loadCards();
+    const model = raw.cardholders
+      ? buildCardsModel({
+          cardholders: raw.cardholders,
+          stats: raw.stats,
+          isBank: account.type === AccountType.BANK_ACCOUNT,
+          creditCard: account.type === AccountType.CREDIT_CARD ? account : null,
+          today,
+        })
+      : null;
+    return { ...raw, model };
+  },
 }));
 
 const showToast = vi.fn();
@@ -125,7 +139,7 @@ const rohan: Cardholder = {
   cards: [],
 };
 
-const data = (over: Partial<CardsData> = {}): CardsData => ({
+const data = (over: Partial<Omit<CardsData, 'model'>> = {}): Omit<CardsData, 'model'> => ({
   cardholders: [arjun, meera, rohan],
   stats: [
     {

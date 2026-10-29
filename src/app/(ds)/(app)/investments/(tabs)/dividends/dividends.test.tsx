@@ -399,7 +399,7 @@ describe('/investments/dividends: suggestions', () => {
     expect(await screen.findByLabelText(/^Pay date/)).toHaveValue('05/08/2026');
     expect(screen.getByLabelText(/^Amount/)).toHaveValue('100');
     expect(screen.getByLabelText(/^Per unit/)).toHaveValue('10');
-    expect(screen.getByLabelText(/^Notes/)).toHaveValue('Auto-detected dividend (10 units @ ₹10)');
+    expect(screen.getByLabelText(/^Notes/)).toHaveValue('Auto-detected dividend (10 units @ ₹10.00)');
   });
 
   it('scans once with the broker filter, and no change made on the page scans again', async () => {

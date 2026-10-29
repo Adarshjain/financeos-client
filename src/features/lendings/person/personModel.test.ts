@@ -10,6 +10,7 @@ import {
   ledgerRow,
   ledgerRows,
   linkedLine,
+  parseOpenExport,
   parsePersonUrl,
   personHeader,
   personHref,
@@ -29,6 +30,13 @@ describe('URL state', () => {
     expect(parsePersonUrl({ page: '3', size: '50' })).toEqual({ page: 2, size: 50 });
     expect(parsePersonUrl({ page: '-1', size: '7' })).toEqual({ page: 0, size: 25 });
     expect(parsePersonUrl({ page: 'x' })).toEqual({ page: 0, size: 25 });
+  });
+
+  it('opens Export ledger only for ?export=1', () => {
+    expect(parseOpenExport({ export: '1' })).toBe(true);
+    expect(parseOpenExport({ export: ['1', '0'] })).toBe(true);
+    expect(parseOpenExport({ export: '0' })).toBe(false);
+    expect(parseOpenExport({})).toBe(false);
   });
 
   it('builds the person URL on the Dinero page with defaults left out', () => {

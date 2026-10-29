@@ -227,7 +227,7 @@ describe('/investments/instruments: edit', () => {
     const dialog = await open();
     fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: '  ' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save instrument' }));
-    expect(await within(dialog).findByText('Name is required')).toBeInTheDocument();
+    expect(await within(dialog).findByText('Enter a name.')).toBeInTheDocument();
     expect(api.PUT).not.toHaveBeenCalled();
   });
 
@@ -353,7 +353,7 @@ describe('/investments/instruments: add', () => {
     await renderPage();
     const dialog = await openManual();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add instrument' }));
-    expect(await within(dialog).findByText('Name is required')).toBeInTheDocument();
+    expect(await within(dialog).findByText('Enter a name.')).toBeInTheDocument();
     expect(api.POST).not.toHaveBeenCalled();
   });
 

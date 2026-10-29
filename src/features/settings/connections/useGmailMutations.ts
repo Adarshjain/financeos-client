@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import {
   archiveGmailAttention,
@@ -22,17 +21,13 @@ import { keys } from '@/lib/query/keys';
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
 export function useGmailMutations() {
   const qc = useQueryClient();
-  const router = useRouter();
   const invalidateConnections = () => {
-    router.refresh();
     return qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
   };
   const invalidateSenders = () => {
-    router.refresh();
     return qc.invalidateQueries({ queryKey: keys.settings.gmailSenders() });
   };
   const invalidateAttention = () => {
-    router.refresh();
     return qc.invalidateQueries({ queryKey: keys.settings.gmailAttentionAll() });
   };
 

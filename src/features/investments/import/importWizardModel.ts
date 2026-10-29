@@ -24,7 +24,7 @@ export function buildInitialReconcileRowStates(
       createNew: false,
       newInstrument: {
         type: 'stock',
-        name: exec.symbol || 'New Instrument',
+        name: exec.symbol || 'New instrument',
         symbol: exec.symbol || '',
         exchange: exec.exchange || 'NSE',
         isin: exec.isin || undefined,
@@ -59,7 +59,7 @@ export function buildInitialCasRowStates(
         name:
           row.parsedRow.parsedName ||
           row.parsedRow.parsedSymbol ||
-          'New Mutual Fund',
+          'New mutual fund',
         symbol: row.parsedRow.parsedSymbol || '',
         exchange: 'MUTUAL_FUND',
         isin: row.parsedRow.parsedIsin || undefined,

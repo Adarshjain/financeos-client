@@ -1,6 +1,6 @@
 import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
-import type { SearchParamsRecord } from '@/features/shell/searchParams';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import type { FileIngestionResult, JobResponse } from '@/lib/types';
 
 export const IMPORT_HREF = appHref('/transactions/import');
@@ -12,6 +12,11 @@ export const IMPORT_ACTIVITY_HREF = appHref(`/settings/activity?type=${IMPORT_JO
 /** `?page=` on the Import tab: the 0-based page of Recent imports (the address counts from 1); anything unusable is the first page. */
 export function parseImportPage(params: SearchParamsRecord): number {
   return parsePage(params).page;
+}
+
+/** `?account=`: the account the Import form starts on (a link from a statement). */
+export function parseImportAccount(params: SearchParamsRecord): string | undefined {
+  return first(params.account);
 }
 
 /** The Import tab at a page of Recent imports, keeping the chosen account. */

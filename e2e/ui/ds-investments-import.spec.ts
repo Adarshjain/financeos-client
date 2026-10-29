@@ -138,7 +138,7 @@ for (const viewport of VIEWPORTS) {
       // Result.
       await expect(page.getByText('Broker import reconciliation complete')).toBeVisible({ timeout: 30000 });
       await expect(page.getByText('Committed', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Done & view portfolio' }).click();
+      await page.getByRole('link', { name: 'Done & view portfolio' }).click();
       await expect(page).toHaveURL(/\/investments$/);
       await expect(shown(page.getByText(new RegExp(`${knownName}|${symKnown}`)))).toBeVisible({ timeout: 15000 });
 
@@ -187,7 +187,7 @@ for (const viewport of VIEWPORTS) {
       await importButton.click();
 
       await expect(page.getByText('Broker import reconciliation complete')).toBeVisible({ timeout: 30000 });
-      await expect(page.getByRole('button', { name: 'Done & view portfolio' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Done & view portfolio' })).toBeVisible();
     });
 
     test('F&O only: the tax P&L alone, then the F&O trades are imported', async ({ page }) => {
@@ -253,7 +253,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByText('Broker import reconciliation complete')).toBeVisible({ timeout: 30000 });
       await expect(page.getByText('Committed', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Done & view portfolio' }).click();
+      await page.getByRole('link', { name: 'Done & view portfolio' }).click();
       await expect(shown(page.getByText(/E2E Bluechip/))).toBeVisible({ timeout: 15000 });
     });
   });

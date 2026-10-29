@@ -1,4 +1,4 @@
-import { formatMoney } from '@/lib/format';
+import { formatCount, formatMoney } from '@/lib/format';
 import type { CounterpartyResponse, CounterpartySelection, CreateLendingRequest } from '@/lib/lending.types';
 import { fromEntryType, type LendingEntryType } from '@/lib/lendingEntry';
 
@@ -12,7 +12,7 @@ export function positionLabel(cp: CounterpartyResponse): string {
 
 /** "1 entry", "3 entries". */
 export function entriesLabel(count: number): string {
-  return `${count} ${count === 1 ? 'entry' : 'entries'}`;
+  return formatCount(count, ['entry', 'entries']);
 }
 
 /** What stops an entry from being saved, as the sentence the form shows; null when it can be saved. */
