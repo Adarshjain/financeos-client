@@ -13,6 +13,7 @@ import {
   parseOpenExport,
   parsePersonUrl,
   personHeader,
+  personHero,
   personHref,
   personUrl,
   sinceText,
@@ -28,7 +29,7 @@ describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
     expect(parsePersonUrl({})).toEqual({ page: 0, size: 25 });
     expect(parsePersonUrl({ page: '3', size: '50' })).toEqual({ page: 2, size: 50 });
-    expect(parsePersonUrl({ page: '-1', size: '7' })).toEqual({ page: 0, size: 25 });
+    expect(parsePersonUrl({ page: '-1', size: '10' })).toEqual({ page: 0, size: 25 });
     expect(parsePersonUrl({ page: 'x' })).toEqual({ page: 0, size: 25 });
   });
 
@@ -42,43 +43,55 @@ describe('URL state', () => {
   it('builds the person URL on the Dinero page with defaults left out', () => {
     expect(personHref('p1')).toBe('/loans/lendings/p1');
     expect(personUrl('p1', { page: 0, size: 25 })).toBe('/loans/lendings/p1');
-    expect(personUrl('p1', { page: 2, size: 10 })).toBe('/loans/lendings/p1?page=3&size=10');
+    expect(personUrl('p1', { page: 2, size: 50 })).toBe('/loans/lendings/p1?page=3&size=50');
   });
 });
 
 describe('personHeader', () => {
-  it('says who owes you, the whole-rupee balance and when it is expected', () => {
-    const h = personHeader(personFixture(), '2026-08-29', TODAY);
+  it('shows the notes and when the money is expected', () => {
+    const h = personHeader(personFixture(), TODAY);
     expect(h).toEqual({
-      initials: 'RS',
-      meta: 'College friend · 3 entries since August 2026',
-      eyebrow: 'Owes you',
-      amount: '₹15,000',
-      tone: 'positive',
+      info: 'College friend',
       context: 'expected 28 Oct · in 15 days',
     });
   });
 
-  it('reads You owe, with "due", when you owe them', () => {
-    const h = personHeader(personFixture({ netPosition: -2500, expectedReturnDate: '2026-10-12' }), '2026-08-29', TODAY);
-    expect(h).toMatchObject({ eyebrow: 'You owe', amount: '₹2,500', tone: 'ink', context: 'due 12 Oct · 1 day overdue' });
+  it('says "due", not "expected", when you owe them', () => {
+    const h = personHeader(personFixture({ netPosition: -2500, expectedReturnDate: '2026-10-12' }), TODAY);
+    expect(h.context).toBe('due 12 Oct · 1 day overdue');
   });
 
-  it('reads Settled with no expected line once the balance is zero', () => {
-    const h = personHeader(personFixture({ netPosition: 0 }), '2026-08-29', TODAY);
-    expect(h).toMatchObject({ eyebrow: 'Settled', amount: '₹0', context: null });
+  it('has no expected line once the balance is zero', () => {
+    const h = personHeader(personFixture({ netPosition: 0 }), TODAY);
+    expect(h.context).toBeNull();
   });
 
   it('copes with a person without entries or notes', () => {
-    const h = personHeader(personFixture({ entryCount: 0, notes: null, netPosition: 0, expectedReturnDate: null }), null, TODAY);
-    expect(h.meta).toBe('No entries yet');
-    expect(personHeader(personFixture({ entryCount: 1, notes: ' ' }), '2026-08-29', TODAY).meta).toBe('1 entry since August 2026');
+    const h = personHeader(personFixture({ entryCount: 0, notes: null, netPosition: 0, expectedReturnDate: null }), TODAY);
+    expect(h.info).toBeNull();
+    expect(personHeader(personFixture({ entryCount: 1, notes: ' ' }), TODAY).info).toBeNull();
   });
 
   it('counts days in words', () => {
     expect(inDays(0)).toBe('today');
     expect(inDays(1)).toBe('in 1 day');
     expect(inDays(-3)).toBe('3 days overdue');
+  });
+});
+
+describe('personHero', () => {
+  const hero = (over = {}) => personHero(personFixture(over));
+
+  it('shows only the net position: "Owed to you" in green when they owe you', () => {
+    expect(hero()).toEqual({ label: 'Owed to you', value: '₹15,000', tone: 'positive', figures: [] });
+  });
+
+  it('shows "You owe" in red, as a positive figure, when the balance is yours to pay', () => {
+    expect(hero({ netPosition: -2500 })).toEqual({ label: 'You owe', value: '₹2,500', tone: 'danger', figures: [] });
+  });
+
+  it('reads Settled with zero, plain, when even', () => {
+    expect(hero({ netPosition: 0 })).toEqual({ label: 'Settled', value: '₹0', tone: undefined, figures: [] });
   });
 });
 
@@ -93,29 +106,29 @@ describe('ledgerRow', () => {
       linked: true,
       settled: false,
       lent: null,
-      received: '+10,000',
-      balance: '15,000',
-      sub: '10 Oct · received ₹10,000 · UPI from Rahul Sharma',
+      received: '+10,000.00',
+      balance: '15,000.00',
+      sub: '10 Oct · received ₹10,000.00 · UPI from Rahul Sharma',
     });
   });
 
   it('puts principal in Lent and adds the expected return to the phone line', () => {
     expect(rows[1]).toMatchObject({
       linked: false,
-      lent: '25,000',
+      lent: '25,000.00',
       received: null,
-      sub: '29 Aug · lent ₹25,000 · expected 28 Oct',
+      sub: '29 Aug · lent ₹25,000.00 · expected 28 Oct',
     });
   });
 
   it('flags the entry that brought the balance to zero, and falls back to the type without a note', () => {
-    expect(rows[2]).toMatchObject({ settled: true, balance: '0', title: 'They repaid', sub: '9 May · received ₹1,800' });
+    expect(rows[2]).toMatchObject({ settled: true, balance: '0.00', title: 'They repaid', sub: '9 May · received ₹1,800.00' });
   });
 
   it('shows a negative balance with a minus sign and a repayment you made as "paid"', () => {
     const row = ledgerRow(entryFixture({ direction: 'lent', kind: 'settlement', amount: 500, runningBalance: -500, notes: null }));
-    expect(row).toMatchObject({ balance: '−500', title: 'You repaid', lent: '500' });
-    expect(row.sub).toContain('paid ₹500');
+    expect(row).toMatchObject({ balance: '−500.00', title: 'You repaid', lent: '500.00' });
+    expect(row.sub).toContain('paid ₹500.00');
   });
 
   it('words principal as lent / borrowed and repayments as received / paid', () => {

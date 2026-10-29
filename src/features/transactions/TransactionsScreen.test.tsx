@@ -128,7 +128,7 @@ describe('TransactionsScreen', () => {
 
   it('opens Add transaction from the app bar +, on the one account the list is filtered to', () => {
     setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'] } });
-    fireEvent.click(screen.getByRole('button', { name: /^Add$/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add transaction' }));
     expect(screen.getByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Bank Savings');
   });

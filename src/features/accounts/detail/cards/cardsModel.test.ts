@@ -87,7 +87,7 @@ describe('plastic status and caption', () => {
     expect(plasticModel(all[0], all, stats[0])).toMatchObject({
       mask: '••7741',
       status: 'Active',
-      caption: 'issued 2 Jun 2025',
+      caption: 'issued 2 Jun 25',
     });
   });
 
@@ -95,7 +95,7 @@ describe('plastic status and caption', () => {
     expect(plasticStatus(all[1], all)).toBe('Replaced');
     expect(plasticModel(all[1], all, stats[0])).toMatchObject({
       status: 'Replaced',
-      caption: '15 Mar 2024 → 2 Jun 2025 · 41 transactions',
+      caption: '15 Mar 24 → 2 Jun 25 · 41 transactions',
     });
   });
 
@@ -103,14 +103,14 @@ describe('plastic status and caption', () => {
     const lone = [card({ id: 'k9', last4: '1111', issuedOn: '2024-01-05', closedOn: '2025-02-01' })];
     expect(plasticModel(lone[0], lone, undefined)).toMatchObject({
       status: 'Closed',
-      caption: '5 Jan 2024 → 1 Feb 2025',
+      caption: '5 Jan 24 → 1 Feb 25',
     });
   });
 
   it('says 1 transaction in the singular', () => {
     const lone = [card({ id: 'k9', last4: '1111', issuedOn: '2024-01-05', closedOn: '2025-02-01' })];
     const s: HolderStats = { ...stats[0], cards: [{ cardId: 'k9', transactionCount: 1 }] };
-    expect(plasticModel(lone[0], lone, s).caption).toBe('5 Jan 2024 → 1 Feb 2025 · 1 transaction');
+    expect(plasticModel(lone[0], lone, s).caption).toBe('5 Jan 24 → 1 Feb 25 · 1 transaction');
   });
 });
 
@@ -193,13 +193,13 @@ describe('buildCardsModel', () => {
     expect(p).toMatchObject({
       roleLabel: 'Primary',
       initials: 'AM',
-      caption: 'Account holder · opened 15 Mar 2024',
+      caption: 'Account holder · opened 15 Mar 24',
       plasticsLabel: 'Plastics',
       closeFooter: false,
     });
     expect(a).toMatchObject({
       roleLabel: 'Add-on',
-      caption: 'Spouse · added 1 Jun 2024 · spend limit ₹75,000',
+      caption: 'Spouse · added 1 Jun 24 · spend limit ₹75,000',
       closeFooter: true,
     });
   });
@@ -244,7 +244,7 @@ describe('buildCardsModel', () => {
     expect(build().closed[0]).toMatchObject({
       name: 'Rohan Mehta',
       initials: 'RM',
-      caption: 'Add-on · sibling · closed 30 Jun 2026 · 12 transactions kept',
+      caption: 'Add-on · sibling · closed 30 Jun 26 · 12 transactions kept',
     });
   });
 

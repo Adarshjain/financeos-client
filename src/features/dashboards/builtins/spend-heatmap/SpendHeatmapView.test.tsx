@@ -10,7 +10,7 @@ vi.mock('@/components/organisms', () => ({
       data-type={p.data.chartType}
       data-months={p.months}
       data-categories={p.data.categories.join(',')}
-      onClick={() => p.onSelectEntry?.({ key: '2026-10-09', label: '09/10/2026', value: 1250 })}
+      onClick={() => p.onSelectEntry?.({ key: '2026-10-09', label: '09/10/26', value: 1250 })}
     />
   ),
 }));
@@ -57,14 +57,14 @@ describe('SpendHeatmapView', () => {
     await userEvent.click(screen.getByTestId('chart'));
     const dialog = screen.getByTestId('underlying');
     expect(JSON.parse(dialog.getAttribute('data-request') as string)).toEqual(daySpendRequest('2026-10-09'));
-    expect(dialog).toHaveAttribute('data-title', 'Spending on 09/10/2026 · ₹1,250');
+    expect(dialog).toHaveAttribute('data-title', 'Spending on 09/10/26 · ₹1,250');
     await userEvent.click(dialog);
     expect(screen.queryByTestId('underlying')).not.toBeInTheDocument();
   });
 
   it('no spending in the period: an empty state, no chart', () => {
     renderWithQuery(<SpendHeatmapView {...view(chart(['2026-10-09'], [0]))} />);
-    expect(screen.getByText('No spending in this period')).toBeInTheDocument();
+    expect(screen.getByText('Debits on your accounts fill in the calendar day by day.')).toBeInTheDocument();
     expect(screen.queryByTestId('chart')).not.toBeInTheDocument();
   });
 

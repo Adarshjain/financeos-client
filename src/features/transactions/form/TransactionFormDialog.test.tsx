@@ -88,7 +88,7 @@ describe('Add transaction', () => {
     expect(screen.getByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Debit' })).toBeChecked();
     expect(amount()).toHaveAttribute('placeholder', '0.00');
-    expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
+    expect(screen.getByLabelText('Date')).toHaveValue('13/10/26');
     expect(screen.getByText('Rules and the categoriser suggest a category as you type')).toBeInTheDocument();
     for (const label of ['Account', 'Description', 'Categories', 'MCC code', 'Settlement date', 'Channel', 'Instant discount', 'Convenience fee']) {
       expect(screen.getByText(label)).toBeInTheDocument();
@@ -320,7 +320,7 @@ describe('Edit transaction', () => {
     expect(screen.getByText('Edit transaction')).toBeInTheDocument();
     expect(amount()).toHaveValue('3600.00');
     expect(screen.getByRole('radio', { name: 'Debit' })).toBeChecked();
-    expect(screen.getByLabelText('Date')).toHaveValue('12/10/2026');
+    expect(screen.getByLabelText('Date')).toHaveValue('12/10/26');
     expect(screen.getByRole('textbox', { name: /^Description/ })).toHaveValue('BigBasket');
     expect(screen.getByText('UPI/DR/4278/BIGBASKET')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^MCC code/ })).toHaveValue('5411');

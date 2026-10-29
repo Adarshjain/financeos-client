@@ -44,7 +44,7 @@ export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankL
       data-sprite-cell={bank.spriteIndex}
       data-sprite-size={SPRITE_CELL}
       className={cn(
-        'inline-block shrink-0 overflow-hidden rounded-ds-sm bg-no-repeat',
+        'inline-block shrink-0 overflow-hidden rounded-ds-sm bg-no-repeat dark:bg-ink',
         size === 'sm' ? 'h-icon-sm w-icon-sm' : 'h-space-24 w-space-24',
       )}
       style={{

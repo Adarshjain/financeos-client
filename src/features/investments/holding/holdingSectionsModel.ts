@@ -53,8 +53,11 @@ export function corporateActionsPage(all: CorporateAction[], page: number): Hold
   };
 }
 
+/** The Price history dialog pages 5 at a time, like every list inside a dialog. */
+const PRICE_HISTORY_PAGE_SIZE = 5;
+
 export async function pricesSection(instrumentId: string, page: number): Promise<HoldingSection<PriceRowModel>> {
-  const result = await fetchPricesPage(instrumentId, page, SECTION_PAGE_SIZE);
+  const result = await fetchPricesPage(instrumentId, page, PRICE_HISTORY_PAGE_SIZE);
   return {
     rows: result.items.map(priceRow),
     position: { page: result.page, size: result.size, totalElements: result.totalElements, totalPages: result.totalPages },

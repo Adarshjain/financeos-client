@@ -194,19 +194,19 @@ describe('/accounts/[id]/cards', () => {
 
       expect(screen.getByText('Arjun Mehta')).toBeInTheDocument();
       expect(screen.getByText('Primary')).toBeInTheDocument();
-      expect(screen.getByText('Account holder · opened 15 Mar 2024')).toBeInTheDocument();
+      expect(screen.getByText('Account holder · opened 15 Mar 24')).toBeInTheDocument();
       expect(screen.getByText('₹34,448')).toBeInTheDocument();
       expect(screen.getByText('12 Oct')).toBeInTheDocument();
       expect(screen.getByText('Add-on')).toBeInTheDocument();
       expect(
-        screen.getByText('Spouse · added 1 Jun 2024 · spend limit ₹75,000')
+        screen.getByText('Spouse · added 1 Jun 24 · spend limit ₹75,000')
       ).toBeInTheDocument();
       expect(screen.getByText('6.6%')).toBeInTheDocument();
       expect(screen.getAllByText('Plastics')).toHaveLength(2);
       expect(screen.getByText('••7741')).toBeInTheDocument();
-      expect(screen.getByText('issued 2 Jun 2025')).toBeInTheDocument();
+      expect(screen.getByText('issued 2 Jun 25')).toBeInTheDocument();
       expect(screen.getByText('Replaced')).toBeInTheDocument();
-      expect(screen.getByText('15 Mar 2024 → 2 Jun 2025 · 41 transactions')).toBeInTheDocument();
+      expect(screen.getByText('15 Mar 24 → 2 Jun 25 · 41 transactions')).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: 'Replace' })).toHaveLength(2);
       expect(screen.getByRole('button', { name: 'Delete card ••2210' })).toBeInTheDocument();
 
@@ -227,7 +227,7 @@ describe('/accounts/[id]/cards', () => {
       expect(screen.getByText('Rohan Mehta')).toBeInTheDocument();
       expect(screen.getByText('Closed')).toBeInTheDocument();
       expect(
-        screen.getByText('Add-on · sibling · closed 30 Jun 2026 · 12 transactions kept')
+        screen.getByText('Add-on · sibling · closed 30 Jun 26 · 12 transactions kept')
       ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Reopen' })).toBeInTheDocument();
     });
@@ -314,7 +314,7 @@ describe('/accounts/[id]/cards', () => {
       pickMenu(1, 'Edit details');
       expect(screen.getByText('Edit cardholder')).toBeInTheDocument();
       expect(screen.getByText('Meera Mehta · add-on on HDFC Regalia')).toBeInTheDocument();
-      expect(screen.getByLabelText('Opened on')).toHaveValue('01/06/2024');
+      expect(screen.getByLabelText('Opened on')).toHaveValue('01/06/24');
 
       fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Meera M' } });
       fireEvent.change(screen.getByLabelText(/Spend limit/), { target: { value: '90000' } });

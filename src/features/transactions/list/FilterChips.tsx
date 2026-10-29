@@ -29,6 +29,7 @@ import {
   reviewLabel,
   SORT_OPTIONS,
   sourceLabel,
+  STATUS_OPTIONS,
   TYPE_OPTIONS,
 } from './filterOptionsModel';
 import {
@@ -38,6 +39,7 @@ import {
 } from './filtersDraftModel';
 import { type PeriodDraft, PeriodEditor } from './PeriodEditor';
 import {
+  clearedQuery,
   isAllTime,
   REASON_PARAMS,
   type SortId,
@@ -61,9 +63,14 @@ function MultiChip({
   searchPlaceholder,
   disabled,
   className,
+  changedLabel,
+  onReset,
   onCommit,
 }: {
   label: string;
+  /** What the chip says once something is picked ("Groceries", "3 categories"). */
+  changedLabel?: string;
+  onReset?: () => void;
   value: string[];
   options?: SelectOption[];
   groups?: SelectGroup[];
@@ -72,7 +79,8 @@ function MultiChip({
     accounts: readonly Account[];
     types: readonly AccountType[];
   };
-  searchPlaceholder: string;
+  /** Gives the dropdown a search field; short lists leave it out. */
+  searchPlaceholder?: string;
   disabled?: boolean;
   className?: string;
   onCommit: (value: string[]) => void;
@@ -91,10 +99,10 @@ function MultiChip({
       className="shrink-0"
       hasDropdown
       disabled={disabled}
-      selected={value.length > 0}
-      count={value.length > 0 ? value.length : undefined}
+      changed={value.length > 0}
+      onReset={onReset}
     >
-      {label}
+      {value.length > 0 ? (changedLabel ?? label) : label}
     </FilterChip>
   );
   const shared = {
@@ -118,7 +126,13 @@ function MultiChip({
     );
   }
   return (
-    <Select multiple searchable {...shared} options={options} groups={groups} />
+    <Select
+      multiple
+      searchable={searchPlaceholder !== undefined}
+      {...shared}
+      options={options}
+      groups={groups}
+    />
   );
 }
 
@@ -130,6 +144,7 @@ export function ChoiceChip({
   selected,
   className,
   searchPlaceholder,
+  onReset,
   onCommit,
 }: {
   label: React.ReactNode;
@@ -139,6 +154,8 @@ export function ChoiceChip({
   className?: string;
   /** Gives the dropdown a search field with this placeholder. */
   searchPlaceholder?: string;
+  /** The × of a changed chip: back to its default. */
+  onReset?: () => void;
   onCommit: (value: string) => void;
 }) {
   return (
@@ -154,7 +171,8 @@ export function ChoiceChip({
           size="md"
           className="shrink-0"
           hasDropdown
-          selected={selected}
+          changed={selected}
+          onReset={onReset}
         >
           {label}
         </FilterChip>
@@ -192,12 +210,9 @@ function PeriodChip({
           size="md"
           className="shrink-0"
           hasDropdown
-          selected={!allTime}
-          removable={!allTime}
-          onRemove={
-            allTime
-              ? undefined
-              : () => onChange({ period: { kind: 'preset', id: 'all_time' } })
+          changed={!allTime}
+          onReset={() =>
+            onChange({ period: { kind: 'preset', id: 'all_time' } })
           }
         >
           {allTime ? 'Period' : periodLabel(query.period)}
@@ -242,7 +257,7 @@ export interface FilterChipsProps {
 const DESK_ONLY = 'max-desk:hidden';
 
 /**
- * The row under the tabs: the search, then period, the dropdown filters, the toggles, "+ More" and the sort.
+ * The row under the tabs: the search, then period, the dropdown filters, the Status chip, "+ More" and the sort. Amount and Reason show as chips only once set ("+ More" opens them), so the row fits with "Reset filters".
  * On phone only Period, Account and "All filters" show; "All filters" carries the number of active filters.
  */
 export function FilterChips({
@@ -266,22 +281,49 @@ export function FilterChips({
   const sortLabel =
     SORT_OPTIONS.find((o) => o.value === query.sort)?.label ?? '';
 
+  const statusValue = [
+    ...(query.monitoring ? ['monitoring'] : []),
+    ...(query.review === 'NEEDS_REVIEW' ? ['review'] : []),
+    ...(query.upToStatement ? ['statement'] : []),
+  ];
+  const statusLabel =
+    statusValue.length === 1
+      ? (STATUS_OPTIONS.find((o) => o.value === statusValue[0])?.label ??
+        'Status')
+      : `${statusValue.length} selected`;
   const activeCount = activeFilterCount(query);
+  const accountList = accounts ?? [];
+  const accountsLabel =
+    query.accounts.length === 1
+      ? (accountList.find((a) => a.id === query.accounts[0])?.name ??
+        '1 account')
+      : `${query.accounts.length} accounts`;
+  const categoriesLabel =
+    query.categories.length === 1
+      ? query.categories[0]
+      : `${query.categories.length} categories`;
+  const resetAll = () =>
+    onChange({ ...clearedQuery(query), q: query.q, page: 0 });
 
   return (
-    <FilterBar size="md"
+    <FilterBar
+      size="md"
       search={search}
+      changed={activeCount > 0}
+      onReset={resetAll}
     >
       <PeriodChip query={query} today={today} onChange={onChange} />
       <MultiChip
         label="Account"
+        changedLabel={accountsLabel}
         value={query.accounts}
         accountPicker={{
-          accounts: filterAccounts(query.accounts, accounts ?? []),
+          accounts: filterAccounts(query.accounts, accountList),
           types: FILTER_ACCOUNT_TYPES,
         }}
         searchPlaceholder="Search accounts"
         disabled={accounts === null}
+        onReset={() => onChange({ accounts: [] })}
         onCommit={(accountIds) => onChange({ accounts: accountIds })}
       />
       <FilterChip
@@ -295,11 +337,13 @@ export function FilterChips({
       </FilterChip>
       <MultiChip
         label="Category"
+        changedLabel={categoriesLabel}
         value={query.categories}
         options={categoryOptions(categories ?? [])}
         searchPlaceholder="Search categories"
         className={DESK_ONLY}
         disabled={categories === null}
+        onReset={() => onChange({ categories: [] })}
         onCommit={(names) =>
           onChange({
             categories: names,
@@ -311,102 +355,91 @@ export function FilterChips({
         <FilterChip
           size="md"
           className="shrink-0"
-          selected
-          removable
-          onRemove={() => onChange({ uncategorized: false })}
+          changed
+          onReset={() => onChange({ uncategorized: false })}
           onClick={onOpenFilters}
         >
           Uncategorized
         </FilterChip>
       ) : null}
       <ChoiceChip
-        label={query.type === 'all' ? 'Type' : `Type · ${typeLabel}`}
+        label={query.type === 'all' ? 'Type' : typeLabel}
         value={query.type}
         options={TYPE_OPTIONS}
         selected={query.type !== 'all'}
         className={DESK_ONLY}
+        onReset={() => onChange({ type: 'all' })}
         onCommit={(type) => onChange({ type: type as TypeFilter })}
       />
-      <FilterChip
-        size="md"
-        className={`shrink-0 ${DESK_ONLY}`}
-        selected={query.amount !== null}
-        removable={query.amount !== null}
-        onRemove={
-          query.amount === null ? undefined : () => onChange({ amount: null })
-        }
-        onClick={onOpenFilters}
-      >
-        {query.amount ? amountLabel(query.amount) : 'Amount'}
-      </FilterChip>
-      <FilterChip
-        size="md"
-        className={`shrink-0 ${DESK_ONLY}`}
-        selected={query.monitoring}
-        onSelectedChange={(on) => onChange({ monitoring: on })}
-      >
-        Monitoring
-      </FilterChip>
-      <FilterChip
-        size="md"
-        className={`shrink-0 ${DESK_ONLY}`}
-        tone="warning"
-        selected={query.review === 'NEEDS_REVIEW'}
-        onSelectedChange={(on) =>
-          onChange({ review: on ? 'NEEDS_REVIEW' : null })
-        }
-      >
-        Needs review
-      </FilterChip>
-      <ChoiceChip
-        label={query.reason ? `Reason · ${reasonText}` : 'Reason'}
-        value={reasonParam}
-        options={REASON_OPTIONS}
-        selected={query.reason !== null}
+      {query.amount !== null ? (
+        <FilterChip
+          size="md"
+          className={`shrink-0 ${DESK_ONLY}`}
+          changed
+          onReset={() => onChange({ amount: null })}
+          onClick={onOpenFilters}
+        >
+          {query.amount ? amountLabel(query.amount) : 'Amount'}
+        </FilterChip>
+      ) : null}
+      {query.reason !== null ? (
+        <ChoiceChip
+          label={query.reason ? reasonText : 'Reason'}
+          value={reasonParam}
+          options={REASON_OPTIONS}
+          selected={query.reason !== null}
+          className={DESK_ONLY}
+          onReset={() => onChange({ reason: null })}
+          onCommit={(param) =>
+            onChange({ reason: param === ANY ? null : REASON_PARAMS[param] })
+          }
+        />
+      ) : null}
+      <MultiChip
+        label="Status"
+        changedLabel={statusLabel}
+        value={statusValue}
+        options={STATUS_OPTIONS}
         className={DESK_ONLY}
-        onCommit={(param) =>
-          onChange({ reason: param === ANY ? null : REASON_PARAMS[param] })
+        onReset={() =>
+          onChange({ monitoring: false, review: null, upToStatement: false })
+        }
+        onCommit={(picked) =>
+          onChange({
+            monitoring: picked.includes('monitoring'),
+            review: picked.includes('review') ? 'NEEDS_REVIEW' : null,
+            upToStatement: picked.includes('statement'),
+          })
         }
       />
-      <FilterChip
-        size="md"
-        className={`shrink-0 ${DESK_ONLY}`}
-        selected={query.upToStatement}
-        onSelectedChange={(on) => onChange({ upToStatement: on })}
-      >
-        Up to statement
-      </FilterChip>
       {query.review && query.review !== 'NEEDS_REVIEW' ? (
         <FilterChip
           size="md"
           className={`shrink-0 ${DESK_ONLY}`}
-          selected
-          removable
-          onRemove={() => onChange({ review: null })}
+          changed
+          onReset={() => onChange({ review: null })}
           onClick={onOpenFilters}
         >
-          {`Review · ${reviewLabel(query.review)}`}
+          {reviewLabel(query.review)}
         </FilterChip>
       ) : null}
       {query.source ? (
         <FilterChip
           size="md"
           className={`shrink-0 ${DESK_ONLY}`}
-          selected
-          removable
-          onRemove={() => onChange({ source: null })}
+          changed
+          onReset={() => onChange({ source: null })}
           onClick={onOpenFilters}
         >
-          {`Source · ${sourceLabel(query.source)}`}
+          {sourceLabel(query.source)}
         </FilterChip>
       ) : null}
       {query.excluded ? (
         <FilterChip
           size="md"
           className={`shrink-0 ${DESK_ONLY}`}
-          selected
-          removable
-          onRemove={() => onChange({ excluded: false })}
+          changed
+          onReset={() => onChange({ excluded: false })}
           onClick={onOpenFilters}
         >
           Excluded only
@@ -425,7 +458,7 @@ export function FilterChips({
         value={query.sort}
         options={SORT_OPTIONS}
         selected={false}
-        className={DESK_ONLY}
+        className={`${DESK_ONLY} ml-auto`}
         onCommit={(sort) => onChange({ sort: sort as SortId })}
       />
     </FilterBar>

@@ -64,11 +64,11 @@ describe('period in the address', () => {
   });
   it('writes the period, the custom dates and a reset page', () => {
     const base = '/rewards/cards/c1';
-    expect(rewardsHref(base, { period: 'LAST_MONTH', page: 0, size: 10 })).toBe(`${base}?period=LAST_MONTH`);
-    expect(rewardsHref(base, { period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30', page: 2, size: 10 })).toBe(
+    expect(rewardsHref(base, { period: 'LAST_MONTH', page: 0, size: 25 })).toBe(`${base}?period=LAST_MONTH`);
+    expect(rewardsHref(base, { period: 'CUSTOM', from: '2026-05-01', to: '2026-06-30', page: 2, size: 25 })).toBe(
       `${base}?period=CUSTOM&from=2026-05-01&to=2026-06-30&page=3`,
     );
-    expect(rewardsHref(base, { period: 'THIS_ANNIVERSARY_YEAR', page: 0, size: 10 })).toBe(base);
+    expect(rewardsHref(base, { period: 'THIS_ANNIVERSARY_YEAR', page: 0, size: 25 })).toBe(base);
   });
   it('words the period in the tile and the lines subtitle', () => {
     expect(windowLabel(window)).toBe('Anniversary year 15 Mar 26 – 14 Mar 27');
@@ -113,10 +113,10 @@ describe('lineDetail', () => {
     expect(d.title).toBe('Uber');
     expect(d.source).toBe('UBER INDIA 4455');
     expect(d.rows).toEqual([
-      { label: 'Transaction date', value: '2 Oct 2026' },
-      { label: 'Settled (used for rewards)', value: '3 Oct 2026' },
-      { label: 'Amount charged', value: '₹400' },
-      { label: 'Eligible after refunds', value: '₹352' },
+      { label: 'Transaction date', value: '2 Oct 26' },
+      { label: 'Settled (used for rewards)', value: '3 Oct 26' },
+      { label: 'Amount charged', value: '₹400.00' },
+      { label: 'Eligible after refunds', value: '₹352.00' },
       { label: 'MCC', value: '4121' },
       { label: 'Channel', value: 'ONLINE' },
       { label: 'Rule', value: 'Base' },
@@ -254,5 +254,15 @@ describe('banners and cardholders', () => {
       { id: 'a', title: 'Arjun', subtitle: '19 transactions · ₹100 spend', earned: '888 pts' },
       { id: 'unattributed', title: 'Unattributed', subtitle: '1 transaction · ₹50 spend', earned: '₹12' },
     ]);
+  });
+});
+
+describe('presetLabel', () => {
+  it('reads "calendar year" for a bank and "anniversary year" for a card', async () => {
+    const { presetLabel } = await import('./rewardsPeriodModel');
+    expect(presetLabel('THIS_ANNIVERSARY_YEAR', true)).toBe('This calendar year');
+    expect(presetLabel('LAST_ANNIVERSARY_YEAR', true)).toBe('Previous calendar year');
+    expect(presetLabel('THIS_ANNIVERSARY_YEAR', false)).toBe('This anniversary year');
+    expect(presetLabel('LAST_MONTH', true)).toBe('Last month');
   });
 });

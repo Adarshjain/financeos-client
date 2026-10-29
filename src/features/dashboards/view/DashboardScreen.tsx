@@ -11,17 +11,16 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, ConfirmDialog, EmptyState, showToast, Text, TextField } from '@/components/ds';
-import { SAVE_FAILED, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
+import { ActionBar, Button, ConfirmDialog, EmptyState, Menu, showToast, Text, TextField } from '@/components/ds';
+import { SAVE_FAILED, useDeleteDashboard, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { textWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIssues } from '@/features/dashboards/editor/editorStateModel';
 import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { useHideTabBar } from '@/features/shell/tabBarStore';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
-import { isTextWidget } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, DashboardResponse } from '@/lib/dashboards.types';
-import { formatCount } from '@/lib/format';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
@@ -64,6 +63,10 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const [picking, setPicking] = React.useState(false);
   const [settingsFor, setSettingsFor] = React.useState<string | null>(null);
   const [discarding, setDiscarding] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const remove = useDeleteDashboard();
+  // True from a successful delete until the page navigates away: the confirm stays disabled so it cannot delete twice.
+  const [deleted, setDeleted] = React.useState(false);
   const body = React.useRef<HTMLDivElement>(null);
 
   const catalog = useBuiltins().data ?? NO_BUILTINS;
@@ -73,6 +76,8 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const toggleDefault = useToggleDefault(setSaved);
 
   const dirty = editorSignature(state) !== baseline;
+  // Editing ends in a sticky Cancel/Save footer on the bottom edge: no phone tab bar under it.
+  useHideTabBar(editing);
   const guard = useLeaveGuard(editing && dirty);
 
   // The list's Edit link opens editing with ?edit=1: take the flag off the address so a reload after saving shows the dashboard.
@@ -161,13 +166,12 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const settingsDef = settingsWidget ? catalog.find((d) => d.key === widgetBuiltinKey(settingsWidget)) : undefined;
 
   const shownName = saved?.name ?? 'New dashboard';
-  const count = (saved?.widgets ?? []).filter((w) => !isTextWidget(w)).length;
 
   return (
     <ShellPage crumb={subCrumb('dashboards')} title={shownName}
       backHref={DASHBOARDS_HREF}
       addMenu={
-        editing
+        editing && !creating
           ? [
               { id: 'add-widget', label: 'Add widget', onSelect: () => setPicking(true) },
               { id: 'add-header', label: 'Add header', onSelect: addHeader },
@@ -215,7 +219,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
                 footer={
                   <div className="flex justify-center py-space-12">
                     <Text variant="label" as="span">
-                      <Button variant="link" onClick={() => setPicking(true)}>
+                      <Button variant="link" size="sm" onClick={() => setPicking(true)}>
                         Add a widget
                       </Button>
                     </Text>
@@ -227,30 +231,27 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
         </div>
       ) : saved ? (
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
-          <div className="flex flex-wrap items-center justify-between gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-            <div className="flex flex-col gap-space-2">
-              {saved.description ? (
-                <Text variant="body" tone="ink-3" as="p">
-                  {saved.description}
-                </Text>
-              ) : null}
-              <Text variant="caption" tone="ink-3" as="p">
-                {formatCount(count, ['widget', 'widgets'])}
-              </Text>
-            </div>
-            <div className="flex items-center gap-space-8">
-              <Button
-                variant="secondary"
-                loading={toggleDefault.isPending}
-                onClick={() => toggleDefault.mutate({ id: saved.id, makeDefault: !saved.isDefault, updatedAt: saved.updatedAt })}
-              >
-                {saved.isDefault ? 'Clear default' : 'Set as default'}
-              </Button>
+          <ActionBar
+            info={saved.description || undefined}
+            actions={
               <Button variant="primary" onClick={startEdit}>
                 Edit
               </Button>
-            </div>
-          </div>
+            }
+            menu={
+              <>
+                <Menu.Item
+                  disabled={toggleDefault.isPending}
+                  onSelect={() => toggleDefault.mutate({ id: saved.id, makeDefault: !saved.isDefault, updatedAt: saved.updatedAt })}
+                >
+                  {saved.isDefault ? 'Clear default' : 'Set as default'}
+                </Menu.Item>
+                <Menu.Item tone="danger" onSelect={() => setDeleteOpen(true)}>
+                  Delete
+                </Menu.Item>
+              </>
+            }
+          />
           {saved.widgets.length === 0 ? (
             <EmptyState
               title="No widgets yet"
@@ -289,6 +290,27 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           dashboardName={state.name.trim() || undefined}
           onSave={(change) => dispatch({ type: 'SETTINGS', id: settingsWidget.id, ...change })}
           onClose={() => setSettingsFor(null)}
+        />
+      ) : null}
+
+      {deleteOpen && saved ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !remove.isPending && !deleted) setDeleteOpen(false);
+          }}
+          title={`Delete ${saved.name}?`}
+          description="Its widgets go with it; your saved reports stay. This can't be undone."
+          confirmLabel="Delete"
+          confirmLoading={remove.isPending || deleted}
+          onConfirm={() =>
+            remove.mutate(saved.id, {
+              onSuccess: () => {
+                setDeleted(true);
+                router.replace(DASHBOARDS_HREF);
+              },
+            })
+          }
         />
       ) : null}
 

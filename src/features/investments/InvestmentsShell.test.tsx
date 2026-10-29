@@ -92,11 +92,11 @@ describe('InvestmentsShell', () => {
     }
   });
 
-  it('has the title Investments with its crumb and an Add button', () => {
+  it('has the title Investments with its crumb and its add button', () => {
     renderShell();
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Grow').length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('button', { name: 'Add' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Record trade' }).length).toBeGreaterThan(0);
   });
 
   it('opens no dialog until + is pressed', () => {
@@ -105,15 +105,15 @@ describe('InvestmentsShell', () => {
   });
 
   it.each([
-    ['/investments', 'trade'],
-    ['/investments/epf', 'epf'],
-    ['/investments/dividends', 'dividend'],
-    ['/investments/corporate-actions', 'action'],
-    ['/investments/instruments', 'instrument'],
-  ])('opens the dialog of %s with the top bar +', (path, dialog) => {
+    ['/investments', 'trade', 'Record trade'],
+    ['/investments/epf', 'epf', 'Record EPF entry'],
+    ['/investments/dividends', 'dividend', 'Record dividend'],
+    ['/investments/corporate-actions', 'action', 'Record corporate action'],
+    ['/investments/instruments', 'instrument', 'Add instrument'],
+  ])('opens the dialog of %s with the top bar + (labelled verb and object)', (path, dialog, label) => {
     pathname = path;
     renderShell();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: label })[0]);
     expect(screen.getByTestId(`dialog-${dialog}`)).toBeInTheDocument();
     expect(screen.getAllByTestId(/^dialog-/)).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
@@ -121,12 +121,12 @@ describe('InvestmentsShell', () => {
   });
 
   it.each([
-    ['/investments/tradebook', 'trade', 'Record trade', 'Import tradebook'],
-    ['/investments/fno', 'fno', 'Record F&O trade', 'Import statement'],
-  ])('makes the + on %s a menu with the add and the import', (path, dialog, addLabel, importLabel) => {
+    ['/investments/tradebook', 'trade', 'Add trade', 'Record trade', 'Import tradebook'],
+    ['/investments/fno', 'fno', 'Add F&O trade', 'Record F&O trade', 'Import statement'],
+  ])('makes the + on %s a menu with the add and the import', (path, dialog, buttonLabel, addLabel, importLabel) => {
     pathname = path;
     renderShell();
-    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: buttonLabel })[0], { button: 0 });
     expect(screen.queryByTestId(/^dialog-/)).toBeNull();
     expect(screen.getByRole('menuitem', { name: importLabel })).toHaveAttribute('href', '/investments/import');
     fireEvent.click(screen.getByRole('menuitem', { name: addLabel }));
@@ -134,10 +134,15 @@ describe('InvestmentsShell', () => {
   });
 
   it('keeps the + a plain button on Holdings, Dividends, Corporate actions and Instruments', () => {
-    for (const path of ['/investments', '/investments/dividends', '/investments/corporate-actions', '/investments/instruments']) {
+    for (const [path, label] of [
+      ['/investments', 'Record trade'],
+      ['/investments/dividends', 'Record dividend'],
+      ['/investments/corporate-actions', 'Record corporate action'],
+      ['/investments/instruments', 'Add instrument'],
+    ]) {
       pathname = path;
       const { unmount } = renderShell();
-      fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Add' })[0], { button: 0 });
+      fireEvent.pointerDown(screen.getAllByRole('button', { name: label })[0], { button: 0 });
       expect(screen.queryByRole('menu'), path).toBeNull();
       unmount();
     }

@@ -26,10 +26,9 @@ const rowOf = (page: Page, symbol: string) => page.getByRole('button').filter({ 
 /** Every visible list row of a payout (none once a filter leaves it out). */
 const rowsOf = (page: Page, symbol: string) => page.getByRole('button').filter({ hasText: symbol }).filter({ visible: true });
 
-/** Opens a payout's edit dialog the way each layout does: the pencil on desktop, a tap on the row on phone. */
-async function openEdit(page: Page, symbol: string, phone: boolean) {
-  if (phone) await rowOf(page, symbol).click();
-  else await page.getByRole('button', { name: `Edit ${symbol} dividend`, exact: true }).click();
+/** Opens a payout's edit dialog: a tap on its row, on both layouts (the row has no pencil). */
+async function openEdit(page: Page, symbol: string, _phone: boolean) {
+  await rowOf(page, symbol).click();
   await expect(page.getByRole('dialog').getByText('Edit dividend')).toBeVisible();
 }
 
@@ -97,7 +96,7 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL((url) => !url.search.includes('type'));
       await expect(rowOf(page, seeded.received.symbol)).toBeVisible();
 
-      await page.getByRole('button', { name: 'All brokers' }).click();
+      await page.getByRole('button', { name: 'Broker', exact: true }).click();
       await page.getByRole('option', { name: seeded.broker.name }).click();
       await page.waitForURL(/broker=/);
       await expect(rowOf(page, seeded.received.symbol)).toBeVisible();
@@ -112,10 +111,10 @@ for (const viewport of VIEWPORTS) {
 
     test('the instrument link from a holding narrows the list, and its chip clears it', async ({ page }) => {
       await page.goto(`${PAGE}?instrumentId=${seeded.overdue.id}`);
-      await expect(page.getByText(`Showing ${seeded.overdue.symbol}`)).toBeVisible();
+      await expect(page.getByRole('button', { name: seeded.overdue.symbol, exact: true }).first()).toBeVisible();
       await expect(rowOf(page, seeded.overdue.symbol)).toBeVisible();
       await expect(rowsOf(page, seeded.received.symbol)).toHaveCount(0);
-      await page.getByRole('button', { name: /remove/i }).click();
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
       await page.waitForURL((url) => !url.search.includes('instrumentId'));
       await expect(rowOf(page, seeded.received.symbol)).toBeVisible();
     });
@@ -140,12 +139,12 @@ for (const viewport of VIEWPORTS) {
 
       // Delete: Cancel keeps it, the confirmation removes it.
       await openEdit(page, seeded.awaiting.symbol, phone);
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete dividend', exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText(/^Delete .* · ₹150\?$/)).toBeVisible();
       await page.getByRole('button', { name: 'Cancel' }).last().click();
       expect((await listDividends(api)).some((d) => d.id === seeded.awaiting.dividendId)).toBe(true);
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete dividend', exact: true }).click();
-      await page.getByRole('dialog').last().getByRole('button', { name: 'Delete dividend' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog').last().getByRole('button', { name: 'Delete', exact: true }).click();
       await expectToast(page, 'Dividend deleted');
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(rowsOf(page, seeded.awaiting.symbol)).toHaveCount(0);

@@ -109,6 +109,15 @@ export const Link: Story = {
   ),
 };
 
+export const LinkSizes: Story = {
+  render: () => (
+    <div className="flex items-baseline gap-space-16">
+      <Button variant="link" size="sm">Small link</Button>
+      <Button variant="link" size="md">Body link</Button>
+    </div>
+  ),
+};
+
 export const DangerGhost: Story = {
   args: { variant: 'danger-ghost', children: 'Delete' },
 };

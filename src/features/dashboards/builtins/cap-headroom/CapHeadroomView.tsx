@@ -32,7 +32,6 @@ export function CapHeadroomView({ data, loading, onPageChange }: TemplateViewPro
     return (
       <EmptyState
         compact
-        title="No reward caps this cycle"
         description="Caps on your cards' reward rules show up here as you spend."
       />
     );

@@ -138,12 +138,12 @@ beforeEach(() => {
 });
 
 describe('viewing a dashboard', () => {
-  it('shows the widgets in order and width, the count without headers, and Set as default and Edit', () => {
+  it('shows the widgets in order and width, and Edit with the ⋮ menu', () => {
     show(<DashboardScreen dashboard={dashboard()} />);
     expect(ids()).toEqual(['h1', 'a', 'b']);
     expect(widths()).toEqual(['full', 'half', 'half']);
-    expect(screen.getByText('2 widgets')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Set as default' })).toBeInTheDocument();
+    expect(screen.queryByText('2 widgets')).toBeNull();
+    expect(screen.getByRole('button', { name: 'More actions' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save dashboard' })).toBeNull();
     // Widget settings save straight away in view mode.
@@ -165,20 +165,47 @@ describe('viewing a dashboard', () => {
     expect(screen.getByRole('button', { name: 'Save dashboard', hidden: true })).toBeInTheDocument();
   });
 
-  it('Set as default makes it the default and confirms; the button then clears it', async () => {
+  it('Set as default makes it the default and confirms; the menu then clears it', async () => {
     show(<DashboardScreen dashboard={dashboard()} />);
-    await user.click(screen.getByRole('button', { name: 'Set as default' }));
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Default dashboard set'));
     expect(api.PUT.mock.calls[0][1].body).toMatchObject({ isDefault: true, name: 'Money overview' });
-    expect(await screen.findByRole('button', { name: 'Clear default' })).toBeInTheDocument();
+    expect(screen.queryByText('Default')).toBeNull();
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Clear default' })).toBeInTheDocument();
   });
 
   it('refuses to set the default when the dashboard changed meanwhile', async () => {
     api.GET.mockImplementation(async (path: string) => (path === '/api/v1/dashboards/{id}' ? { data: dashboard({ updatedAt: '2026-10-24T00:00:00Z' }) } : { data: [] }));
     show(<DashboardScreen dashboard={dashboard()} />);
-    await user.click(screen.getByRole('button', { name: 'Set as default' }));
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Set as default' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.stringMatching(/changed since the page was loaded/), { tone: 'danger' }));
     expect(api.PUT).not.toHaveBeenCalled();
+  });
+
+  it('the ⋮ menu ends with a red Delete that asks first', async () => {
+    show(<DashboardScreen dashboard={dashboard()} />);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(items).toEqual(['Set as default', 'Delete']);
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    expect(await screen.findByText('Delete Money overview?')).toBeInTheDocument();
+  });
+
+  it('a confirmed Delete drops the dashboard query instead of refetching it, leaves, and stays disabled', async () => {
+    api.DELETE.mockResolvedValue({ data: undefined });
+    const { queryClient } = show(<DashboardScreen dashboard={dashboard()} />);
+    queryClient.setQueryData(keys.dashboards.byId('d1'), dashboard());
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/dashboards'));
+    expect(queryClient.getQueryData(keys.dashboards.byId('d1'))).toBeUndefined();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(api.DELETE).toHaveBeenCalledTimes(1);
   });
 
   it('the top bar has no + while viewing', () => {
@@ -399,18 +426,23 @@ describe('a new dashboard', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/dashboards/new-id'));
   });
 
-  it('the top bar + opens a menu with Add widget and Add header; Add widget opens the picker', async () => {
+  it('has no + in the top bar (the footer is the action); the empty state adds a widget or a header', async () => {
     show(<DashboardScreen />);
-    await user.click(screen.getByRole('button', { name: /^Add$/ }));
-    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Add widget', 'Add header']);
-    await user.click(screen.getByRole('menuitem', { name: 'Add widget' }));
+    expect(screen.queryByRole('button', { name: /^Add$/ })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Add widget' }));
     expect(await screen.findByRole('dialog', { name: /Add widget/ })).toBeInTheDocument();
   });
 
-  it('the top bar + Add header adds an untitled header', async () => {
+  it('Add header in the empty state adds an untitled header', async () => {
     show(<DashboardScreen />);
-    await addHeaderFromTopBar();
+    await user.click(screen.getByRole('button', { name: 'Add header' }));
     expect(screen.getAllByLabelText('Header')).toHaveLength(1);
+  });
+
+  it('ends with Cancel and Add dashboard in the page footer', () => {
+    show(<DashboardScreen />);
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add dashboard' })).toBeInTheDocument();
   });
 
   it('the Discard confirmation is not red: it confirms with the default tone', async () => {

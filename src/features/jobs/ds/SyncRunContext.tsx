@@ -43,7 +43,7 @@ export function SyncRunContext({ result }: { result: SyncSummary }) {
       <div className="flex flex-col gap-space-4">
         <Text variant="caption" tone="ink-2" as="div">
           <Button
-            variant="link"
+            variant="link" size="sm"
             disabled={senders.length === 0}
             aria-expanded={sendersOpen}
             onClick={() => setSendersOpen((v) => !v)}

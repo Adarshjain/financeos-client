@@ -41,13 +41,16 @@ export function ActivityFilters({
   }));
 
   return (
-    <FilterBar>
+    <FilterBar
+      changed={statusFilter !== '' || typeFilter !== ''}
+      onReset={() => go({ newStatus: '', newType: '' })}
+    >
         <Select
           value={toValue(statusFilter)}
           options={statusOptions}
           onValueChange={(v) => go({ newStatus: fromValue(v as string) })}
           trigger={
-            <FilterChip className="shrink-0" hasDropdown selected={statusFilter !== ''}>
+            <FilterChip className="shrink-0" hasDropdown changed={statusFilter !== ''} onReset={() => go({ newStatus: '' })}>
               {filterChipLabel('Status', STATUS_OPTIONS, statusFilter)}
             </FilterChip>
           }
@@ -57,7 +60,7 @@ export function ActivityFilters({
           options={typeOptions}
           onValueChange={(v) => go({ newType: fromValue(v as string) })}
           trigger={
-            <FilterChip className="shrink-0" hasDropdown selected={typeFilter !== ''}>
+            <FilterChip className="shrink-0" hasDropdown changed={typeFilter !== ''} onReset={() => go({ newType: '' })}>
               {filterChipLabel('Type', TYPE_OPTIONS, typeFilter)}
             </FilterChip>
           }

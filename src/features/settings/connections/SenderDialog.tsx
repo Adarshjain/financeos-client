@@ -64,7 +64,7 @@ export function SenderDialog({
           title={editingSender ? 'Edit allowed sender' : 'Add allowed sender'}
           tertiary={
             editingSender
-              ? { label: 'Delete sender', tone: 'danger', disabled: submittingSender, onSelect: () => setConfirmingDelete(true) }
+              ? { label: 'Delete', tone: 'danger', disabled: submittingSender, onSelect: () => setConfirmingDelete(true) }
               : undefined
           }
           secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false) }}
@@ -111,7 +111,7 @@ export function SenderDialog({
         }}
         title="Delete sender?"
         description="Mail from this address is no longer read. Transactions already imported stay. This can't be undone."
-        confirmLabel="Delete sender"
+        confirmLabel="Delete"
         confirmLoading={deleting}
         onConfirm={confirmDelete}
       />

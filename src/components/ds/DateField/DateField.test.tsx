@@ -11,8 +11,100 @@ describe('formatDateInput helper', () => {
     expect(formatDateInput('13102026')).toBe('13/10/2026');
   });
 
-  it('converts ISO yyyy-mm-dd to dd/mm/yyyy', () => {
-    expect(formatDateInput('2026-10-13')).toBe('13/10/2026');
+  it('converts ISO yyyy-mm-dd to dd/mm/yy', () => {
+    expect(formatDateInput('2026-10-13')).toBe('13/10/26');
+  });
+});
+
+describe('two-digit years', () => {
+  it('formatDateInput masks six digits as dd/mm/yy', () => {
+    expect(formatDateInput('131026')).toBe('13/10/26');
+  });
+
+  it('typing dd/mm/yy emits the 20yy ISO date', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Date');
+    expect(input).toHaveAttribute('placeholder', 'dd/mm/yy');
+    fireEvent.change(input, { target: { value: '13/10/26' } });
+    expect(handleChange).toHaveBeenCalledWith('2026-10-13');
+  });
+
+  it('range typing takes two-digit years ended by a dash', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" range label="Period" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Period');
+    fireEvent.change(input, { target: { value: '01/10/26 – ' } });
+    expect(input).toHaveValue('01/10/26 – ');
+    fireEvent.change(input, { target: { value: '01/10/26 – 15/10/26' } });
+    expect(input).toHaveValue('01/10/26 – 15/10/26');
+    expect(handleChange).toHaveBeenCalledWith({ start: '2026-10-01', end: '2026-10-15' });
+  });
+});
+
+describe('DateField typed ranges', () => {
+  const setup = () => {
+    const onValueChange = vi.fn();
+    render(<DateField today="2026-10-13" range label="Period" onValueChange={onValueChange} />);
+    return { onValueChange, input: screen.getByLabelText('Period') };
+  };
+
+  it('digits only: six start digits, then " – " is inserted', () => {
+    const { input, onValueChange } = setup();
+    fireEvent.change(input, { target: { value: '131026151026' } });
+    expect(input).toHaveValue('13/10/26 – 15/10/26');
+    expect(onValueChange).toHaveBeenLastCalledWith({ start: '2026-10-13', end: '2026-10-15' });
+  });
+
+  it('a typed or pasted four-digit year with separators still works', () => {
+    const { input, onValueChange } = setup();
+    fireEvent.change(input, { target: { value: '13/10/2026 – 15/10/2026' } });
+    expect(input).toHaveValue('13/10/2026 – 15/10/2026');
+    expect(onValueChange).toHaveBeenLastCalledWith({ start: '2026-10-13', end: '2026-10-15' });
+  });
+
+  it('a four-digit start pasted without a dash keeps its eight digits', () => {
+    const { input } = setup();
+    fireEvent.change(input, { target: { value: '13/10/2026' } });
+    expect(input).toHaveValue('13/10/2026 – ');
+  });
+
+  it('never emits an end before the start (transient while typing a four-digit end year)', () => {
+    const { input, onValueChange } = setup();
+    fireEvent.change(input, { target: { value: '13/10/26 – 15/10/20' } });
+    expect(onValueChange).not.toHaveBeenCalled();
+    fireEvent.change(input, { target: { value: '13/10/26 – 15/10/2026' } });
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+    expect(onValueChange).toHaveBeenCalledWith({ start: '2026-10-13', end: '2026-10-15' });
+  });
+
+  it('single fields accept dd/mm/yy and dd/mm/yyyy', () => {
+    const onValueChange = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" onValueChange={onValueChange} />);
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '131026' } });
+    expect(onValueChange).toHaveBeenLastCalledWith('2026-10-13');
+    fireEvent.change(input, { target: { value: '13102027' } });
+    expect(input).toHaveValue('13/10/2027');
+    expect(onValueChange).toHaveBeenLastCalledWith('2027-10-13');
+  });
+});
+
+describe('DateField years outside 2000-2099', () => {
+  it('shows a four-digit year and round-trips a typed 1995 date', () => {
+    const onValueChange = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" defaultValue="1995-05-13" onValueChange={onValueChange} />);
+    const input = screen.getByLabelText('Date');
+    expect(input).toHaveValue('13/05/1995');
+    fireEvent.change(input, { target: { value: '14/05/1995' } });
+    expect(onValueChange).toHaveBeenLastCalledWith('1995-05-14');
+  });
+
+  it('opens the calendar on the value month, not a re-parsed 20yy', () => {
+    render(<DateField today="2026-10-13" label="Date" defaultValue="1995-05-13" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
+    expect(screen.getByRole('button', { name: 'Choose month' })).toHaveTextContent('May');
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('1995');
   });
 });
 
@@ -22,14 +114,14 @@ describe('DateField component', () => {
   it('renders single date field with formatted initial value', () => {
     render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" />);
     const input = screen.getByLabelText('Due date');
-    expect(input).toHaveValue('25/10/2026');
+    expect(input).toHaveValue('25/10/26');
   });
 
   it('auto-formats input as user types digits in uncontrolled mode with onValueChange emitting ISO', () => {
     const handleChange = vi.fn();
     render(<DateField today={TODAY} label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
     const input = screen.getByLabelText('Date');
-    expect(input).toHaveValue('01/01/2026');
+    expect(input).toHaveValue('01/01/26');
 
     // Partial input does not fire onValueChange
     fireEvent.change(input, { target: { value: '01' } });
@@ -47,13 +139,13 @@ describe('DateField component', () => {
       <DateField today={TODAY} label="Due date" value="2026-10-10" onValueChange={handleValueChange} />,
     );
     const input = screen.getByLabelText('Due date');
-    expect(input).toHaveValue('10/10/2026');
+    expect(input).toHaveValue('10/10/26');
 
     fireEvent.change(input, { target: { value: '15102026' } });
     expect(handleValueChange).toHaveBeenCalledWith('2026-10-15');
 
     rerender(<DateField today={TODAY} label="Due date" value="2026-10-15" onValueChange={handleValueChange} />);
-    expect(input).toHaveValue('15/10/2026');
+    expect(input).toHaveValue('15/10/26');
   });
 
   it('reports the empty value when the text is deleted (uncontrolled)', () => {
@@ -143,14 +235,15 @@ describe('DateField component', () => {
     );
 
     const input = screen.getByLabelText('Period');
-    expect(input).toHaveValue('01/10/2026 – 15/10/2026');
+    expect(input).toHaveValue('01/10/26 – 15/10/26');
 
     // Type new start and end digits
-    fireEvent.change(input, { target: { value: '05102026' } });
-    expect(input).toHaveValue('05/10/2026 – ');
+    fireEvent.change(input, { target: { value: '051026' } });
+    expect(input).toHaveValue('05/10/26 – ');
 
-    fireEvent.change(input, { target: { value: '0510202620102026' } });
-    expect(input).toHaveValue('05/10/2026 – 20/10/2026');
+    fireEvent.change(input, { target: { value: '05102620' } });
+    fireEvent.change(input, { target: { value: '051026201026' } });
+    expect(input).toHaveValue('05/10/26 – 20/10/26');
     expect(handleValueChange).toHaveBeenCalledWith({
       start: '2026-10-05',
       end: '2026-10-20',
@@ -192,7 +285,7 @@ describe('DateField component', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
 
     expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-05', end: '2026-10-20' });
-    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – 20/10/2026');
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/26 – 20/10/26');
   });
 
   it('starts a new range on the first tap when a start date is already set', () => {
@@ -211,7 +304,7 @@ describe('DateField component', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
 
     expect(handleValueChange).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – ');
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/26 – ');
   });
 
   it('opens calendar and allows selecting date in single mode emitting ISO', () => {

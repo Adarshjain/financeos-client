@@ -78,7 +78,6 @@ function renderView(props: Partial<LoanDetailScreenProps> = {}) {
     <LoanDetailScreen
       detail={detailFixture()}
       schedule={scheduleFixture()}
-      paymentAccountName="HDFC Bank Savings"
       today={TODAY}
       highlightSeq={null}
       {...props}
@@ -91,7 +90,7 @@ const debit = (id = 't1') =>
 
 /** The Add dropdown of the Events & charges card (the top bar + is the other Add). */
 const cardAdd = () => screen.getAllByRole('button', { name: 'Add' }).find((b) => b.getAttribute('aria-haspopup') === 'menu')!;
-const topBarAdd = () => screen.getAllByRole('button', { name: 'Add' }).find((b) => b.getAttribute('aria-haspopup') == null)!;
+const topBarAdd = () => screen.getAllByRole('button', { name: 'Add event' }).find((b) => b.getAttribute('aria-haspopup') == null)!;
 /** The pressable schedule row whose Due cell reads `due`. */
 const rowOf = (due: string) => screen.getAllByRole('button').find((b) => b.getAttribute('role') === 'button' && within(b).queryByText(due))!;
 const openMenu = async (name: string) => user.click(screen.getAllByRole('button', { name })[0]);
@@ -107,34 +106,28 @@ beforeEach(() => {
 });
 
 describe('header', () => {
-  it('shows the status and rate words and the loan particulars on the top bar page', () => {
+  it('shows the lender in the action bar under the hero', () => {
     renderView();
     expect(screen.getAllByText('Home Loan · SBI MaxGain').length).toBeGreaterThan(0);
-    expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('Floating 8.25%')).toBeInTheDocument();
-    expect(
-      screen.getByText('State Bank of India · #SBIHL00482913 · started 1 Aug 2025 · ends January 2045 · paid from HDFC Bank Savings'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('State Bank of India')).toBeInTheDocument();
+    expect(screen.queryByText('Active')).toBeNull();
   });
 
-  it('puts the overdue EMI on the right', () => {
+  it('puts the overdue EMI on the hero change line', () => {
     renderView({ today: '2026-10-13' });
-    expect(screen.getByText('EMI #14 overdue')).toBeInTheDocument();
-    expect(screen.getByText('was due 5 Oct · 8 days ago')).toBeInTheDocument();
-    expect(screen.getAllByText('₹36,603').length).toBeGreaterThan(0);
+    expect(screen.getByText('EMI #14 overdue · ₹36,603.00 · was due 5 Oct · 8 days ago')).toBeInTheDocument();
   });
 
-  it('shows the four figures, the timeline and the words under them', () => {
+  it('shows the hero: outstanding to the paisa, EMI, rate, months left, the bar and the words under them', () => {
     renderView();
-    for (const label of ['Outstanding', 'Current EMI', 'Interest paid', 'Timeline']) expect(screen.getByText(label)).toBeInTheDocument();
-    expect(screen.getByText('₹41,92,327')).toBeInTheDocument();
-    expect(screen.getByText('of ₹45,00,000 · 6.8% repaid')).toBeInTheDocument();
-    expect(screen.getByText('was ₹39,052 before the rate cut')).toBeInTheDocument();
-    expect(screen.getByText('effective APR 8.72%')).toBeInTheDocument();
-    expect(screen.getByText('13 / 233')).toBeInTheDocument();
+    for (const label of ['Outstanding', 'EMI', 'Rate', 'Months left']) expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    expect(screen.getByText('₹41,92,327.00')).toBeInTheDocument();
+    expect(screen.getByText('was ₹39,052.00 before the rate cut')).toBeInTheDocument();
+    expect(screen.getByText('8.25% floating')).toBeInTheDocument();
+    expect(screen.getByText('220')).toBeInTheDocument();
     expect(screen.getByText('7 months saved by prepayment')).toBeInTheDocument();
     expect(screen.getByText('August 2025')).toBeInTheDocument();
-    expect(screen.getByText('Today · EMI 13 settled')).toBeInTheDocument();
+    expect(screen.getByText('Today · 6.8% of ₹45,00,000 repaid')).toBeInTheDocument();
     expect(screen.getByText('January 2045')).toBeInTheDocument();
   });
 
@@ -169,10 +162,10 @@ describe('schedule', () => {
   it('opens on the current financial year with its summary line', () => {
     renderView();
     expect(screen.getByText('Schedule')).toBeInTheDocument();
-    expect(screen.getByText('FY 26-27 · 6 EMIs · principal ₹46,368 · interest ₹1,73,250')).toBeInTheDocument();
+    expect(screen.getByText('6 EMIs · principal ₹46,368')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
     for (const header of ['#', 'Due', 'Opening', 'EMI', 'Interest', 'Principal', 'Closing', 'Status']) {
-      expect(screen.getByText(header)).toBeInTheDocument();
+      expect(screen.getAllByText(header).length).toBeGreaterThan(0);
     }
   });
 
@@ -188,14 +181,14 @@ describe('schedule', () => {
     renderView();
     await user.click(screen.getByRole('button', { name: 'FY 26-27' }));
     await user.click(await screen.findByRole('option', { name: 'FY 27-28' }));
-    expect(screen.getByText('FY 27-28 · 1 EMI · principal ₹7,728 · interest ₹28,875')).toBeInTheDocument();
+    expect(screen.getByText('1 EMI · principal ₹7,728')).toBeInTheDocument();
     expect(screen.queryByText('Overdue 8 d')).toBeNull();
   });
 
   it('opens on the year of ?installment=N', () => {
     renderView({ highlightSeq: 17 });
     expect(screen.getByRole('button', { name: 'FY 27-28' })).toBeInTheDocument();
-    expect(screen.getByText('FY 27-28 · 1 EMI · principal ₹7,728 · interest ₹28,875')).toBeInTheDocument();
+    expect(screen.getByText('1 EMI · principal ₹7,728')).toBeInTheDocument();
   });
 
   it('puts prepayments and rate changes in the table at their dates', () => {
@@ -221,7 +214,7 @@ describe('schedule', () => {
     await user.click(rowOf('5 Sep'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('EMI #13')).toBeInTheDocument();
-    expect(within(dialog).getByText('Paid ₹36,603 on 5 Sep 2026')).toBeInTheDocument();
+    expect(within(dialog).getByText('Paid ₹36,603 on 5 Sep 26')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Unlink' }));
     await waitFor(() => expect(m.deletePayment.mutateAsync).toHaveBeenCalledWith('p13'));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('Payment unlinked', expect.objectContaining({ action: expect.anything() })));
@@ -295,9 +288,9 @@ describe('events and charges', () => {
     expect(screen.getByText('Rate change · 8.25%')).toBeInTheDocument();
     expect(screen.getByText('1 Aug · reduce EMI')).toBeInTheDocument();
     expect(screen.getByText('Prepayment')).toBeInTheDocument();
-    expect(screen.getByText('₹2,00,000')).toBeInTheDocument();
+    expect(screen.getByText('₹2,00,000.00')).toBeInTheDocument();
     expect(screen.getByText('Insurance premium')).toBeInTheDocument();
-    expect(screen.getByText('1 Aug 2025 · SBI Life RiNn Raksha')).toBeInTheDocument();
+    expect(screen.getByText('1 Aug 25 · SBI Life RiNn Raksha')).toBeInTheDocument();
     expect(screen.getByText('Processing fee')).toBeInTheDocument();
   });
 
@@ -327,7 +320,7 @@ describe('events and charges', () => {
   it('asks before deleting an event, and deletes nothing until confirmed', async () => {
     renderView();
     await user.click(screen.getAllByRole('button', { name: 'More options' })[1]);
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('Prepayment, 1 Jun · reduce tenure goes.')).toBeInTheDocument();
     expect(screen.getByText('A linked bank transaction stays; only the link goes.')).toBeInTheDocument();
     expect(m.deleteEvent.mutateAsync).not.toHaveBeenCalled();
@@ -340,8 +333,8 @@ describe('events and charges', () => {
   it('deletes the event once confirmed', async () => {
     renderView();
     await user.click(screen.getAllByRole('button', { name: 'More options' })[1]);
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
-    await user.click(await screen.findByRole('button', { name: 'Delete event' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteEvent.mutateAsync).toHaveBeenCalledWith('e1'));
     await waitFor(() => expect(screen.queryByText(/^Prepayment, 1 Jun/)).toBeNull());
   });
@@ -350,8 +343,8 @@ describe('events and charges', () => {
     m.deleteEvent.mutateAsync.mockRejectedValue(new Error('Cannot delete event: settled payment exists'));
     renderView();
     await user.click(screen.getAllByRole('button', { name: 'More options' })[1]);
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete event' }));
-    await user.click(await screen.findByRole('button', { name: 'Delete event' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteEvent.mutateAsync).toHaveBeenCalled());
     expect(screen.getByText(/^Prepayment, 1 Jun/)).toBeInTheDocument();
   });
@@ -359,10 +352,10 @@ describe('events and charges', () => {
   it('asks before deleting a charge and deletes it once confirmed', async () => {
     renderView({ detail: detailFixture({ charges: [chargeFixture()] }) });
     await user.click(screen.getAllByRole('button', { name: 'More options' }).at(-1)!);
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete charge' }));
-    expect(await screen.findByText('Insurance premium of ₹24,500, 1 Aug 2025 · SBI Life RiNn Raksha goes.')).toBeInTheDocument();
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    expect(await screen.findByText('Insurance premium of ₹24,500.00, 1 Aug 25 · SBI Life RiNn Raksha goes.')).toBeInTheDocument();
     expect(m.deleteCharge.mutateAsync).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Delete charge' }));
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteCharge.mutateAsync).toHaveBeenCalledWith('c1'));
   });
 
@@ -470,7 +463,7 @@ describe('Prepay, the top bar + and the menu', () => {
   it('Delete asks first, saying what goes and what stays', async () => {
     renderView();
     await openMenu('More actions');
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete loan' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('"Home Loan · SBI MaxGain" and its schedule data go.')).toBeInTheDocument();
     expect(screen.getByText('Its schedule, payments, events and charges are deleted.')).toBeInTheDocument();
     expect(screen.getByText('Bank transactions stay; only their links to this loan go.')).toBeInTheDocument();
@@ -483,8 +476,8 @@ describe('Prepay, the top bar + and the menu', () => {
   it('Delete goes back to the loans once confirmed', async () => {
     renderView();
     await openMenu('More actions');
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete loan' }));
-    await user.click(await screen.findByRole('button', { name: 'Delete loan' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteLoan.mutateAsync).toHaveBeenCalled());
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/loans'));
   });

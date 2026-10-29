@@ -3,13 +3,11 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  ConfirmDialog,
-  GRID_GAP,
-} from '@/components/ds';
+import { ActionBar, Button, ConfirmDialog, GRID_GAP, Menu } from '@/components/ds';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { firstNameOf } from '@/features/lendings/settleModel';
+import { HeroBlock } from '@/features/loans/HeroBlock';
 import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
@@ -24,7 +22,6 @@ import { EditPersonDialog } from './EditPersonDialog';
 import { LedgerCard } from './LedgerCard';
 import { ExpectedReturnCard, PersonDetailsCard } from './PersonCards';
 import { PersonExportDialog } from './PersonExportDialog';
-import { PersonHeader } from './PersonHeader';
 import { PersonMatchingCard } from './PersonMatchingCard';
 import {
   deleteEntryCopy,
@@ -32,6 +29,7 @@ import {
   ledgerRows,
   linkedLine,
   personHeader,
+  personHero,
   personUrl,
   type PersonUrlState,
   sinceText,
@@ -65,7 +63,8 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
   const [deletingPerson, setDeletingPerson] = React.useState(false);
   const [exporting, setExporting] = React.useState(openExport);
 
-  const header = personHeader(cp, cp.firstEntryDate ?? null, today);
+  const header = personHeader(cp, today);
+  const hero = personHero(cp);
   const rows = React.useMemo(() => ledgerRows(ledger.entries.content), [ledger]);
   const hasEntries = cp.entryCount > 0;
   const go = (next: Partial<PersonUrlState>) =>
@@ -82,18 +81,31 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
           </SharedName>
         }
         backHref={LENDINGS_HREF}
+        addLabel="Add entry"
         onAdd={() => addLending.openFor(cp)}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
-          <PersonHeader
-            name={cp.name}
-            header={header}
-            canSettle={cp.netPosition !== 0}
-            canExport={hasEntries}
-            onSettle={() => setSettling(true)}
-            onEdit={() => setEditingPerson(true)}
-            onExport={() => setExporting(true)}
-            onDelete={() => setDeletingPerson(true)}
+          <HeroBlock hero={hero} error="" />
+          <ActionBar
+            info={header.info}
+            actions={
+              cp.netPosition !== 0 ? (
+                <Button variant="ghost" onClick={() => setSettling(true)}>
+                  Settle up
+                </Button>
+              ) : null
+            }
+            menu={
+              <>
+                <Menu.Item onSelect={() => setEditingPerson(true)}>Edit person</Menu.Item>
+                <Menu.Item disabled={!hasEntries} onSelect={() => setExporting(true)}>
+                  Export ledger
+                </Menu.Item>
+                <Menu.Item tone="danger" onSelect={() => setDeletingPerson(true)}>
+                  Delete
+                </Menu.Item>
+              </>
+            }
           />
           <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-7 min-w-0">
@@ -188,7 +200,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
           }}
           title="Delete entry?"
           {...deleteEntryCopy(deletingEntry)}
-          confirmLabel="Delete entry"
+          confirmLabel="Delete"
           confirmLoading={actions.pending.deleteEntry}
           onConfirm={() => {
             const id = deletingEntry.id;
@@ -208,7 +220,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
         }}
         title="Delete person?"
         {...deletePersonCopy(cp)}
-        confirmLabel="Delete person"
+        confirmLabel="Delete"
         confirmLoading={actions.pending.deletePerson}
         onConfirm={() => void actions.deletePerson()}
       >

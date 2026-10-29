@@ -55,7 +55,7 @@ describe('MailboxesCard', () => {
     const p = setup([healthy, stale]);
     expect(screen.getByTestId('needs-reconnect-c2')).toHaveTextContent('Needs reconnect');
     expect(
-      screen.getByText('Google stopped accepting this mailbox on 13 Oct 2026. Imports are paused until you reconnect.'),
+      screen.getByText('Google stopped accepting this mailbox on 13 Oct 26. Imports are paused until you reconnect.'),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect' }));
     expect(p.onConnect).toHaveBeenCalledTimes(1);

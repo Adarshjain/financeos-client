@@ -60,7 +60,7 @@ describe('ShortcutsBody', () => {
 
   it('nothing resolves: a hint to pick some in settings', () => {
     render(<ShortcutsBody ids={['page:/gone']} />);
-    expect(screen.getByText('No shortcuts yet')).toBeInTheDocument();
+    expect(screen.getByText("Pick some in this widget's settings.")).toBeInTheDocument();
     expect(screen.getByText("Pick some in this widget's settings.")).toBeInTheDocument();
   });
 });

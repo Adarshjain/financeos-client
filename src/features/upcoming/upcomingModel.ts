@@ -76,7 +76,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'overdue',
       label: 'Overdue',
-      value: formatMoney(sumAmounts(w.overdue), { decimals: 'auto' }),
+      value: formatMoney(sumAmounts(w.overdue)),
       tone: 'danger',
       caption: countsByType(w.overdue),
     });
@@ -85,7 +85,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'next7',
       label: 'Next 7 days',
-      value: formatMoney(sumAmounts(w.next7), { decimals: 'auto' }),
+      value: formatMoney(sumAmounts(w.next7)),
       tone: 'ink',
       caption: countsByType(w.next7),
     });
@@ -94,7 +94,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'month',
       label: 'This month',
-      value: formatMoney(sumAmounts(w.thisMonth), { decimals: 'auto' }),
+      value: formatMoney(sumAmounts(w.thisMonth)),
       tone: 'ink',
       caption: `${w.thisMonth.length} item${w.thisMonth.length === 1 ? '' : 's'}`,
     });
@@ -115,7 +115,7 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
     tiles.push({
       id: 'dueBack',
       label: 'Due back to you',
-      value: `+${formatMoney(sumAmounts(dueBack), { decimals: 'auto' })}`,
+      value: `+${formatMoney(sumAmounts(dueBack))}`,
       tone: 'positive',
       caption,
     });
@@ -133,11 +133,11 @@ export interface RowAmount {
 /** The amount cell of a row: danger when overdue, "+" in green when money comes to you, "—" when none. */
 export function rowAmount(item: ObligationItem): RowAmount {
   if (item.amount == null) return { text: '—', tone: 'none' };
-  if (item.status === 'overdue') return { text: formatMoney(item.amount, { decimals: 'auto' }), tone: 'danger' };
+  if (item.status === 'overdue') return { text: formatMoney(item.amount, { decimals: 'exact' }), tone: 'danger' };
   if (item.type === 'lending_due' && item.direction === 'lent') {
-    return { text: `+${formatMoney(item.amount, { decimals: 'auto' })}`, tone: 'positive' };
+    return { text: `+${formatMoney(item.amount, { decimals: 'exact' })}`, tone: 'positive' };
   }
-  return { text: formatMoney(item.amount, { decimals: 'auto' }), tone: 'ink' };
+  return { text: formatMoney(item.amount, { decimals: 'exact' }), tone: 'ink' };
 }
 
 /** "SBI Cashback ••3356" style context: when it falls due, then the account. */
@@ -163,6 +163,6 @@ export function rowDate(item: ObligationItem): { day: number; monthLabel: string
 
 /** "December · 3 · ₹63,954" (the total only when a row carries an amount). */
 export function foldedMonthLine(label: string, items: ObligationItem[]): string {
-  const total = items.some((i) => i.amount != null) ? formatMoney(sumAmounts(items), { decimals: 'auto' }) : null;
+  const total = items.some((i) => i.amount != null) ? formatMoney(sumAmounts(items)) : null;
   return [label.split(' ')[0], String(items.length), total].filter(Boolean).join(' · ');
 }

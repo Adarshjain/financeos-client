@@ -130,7 +130,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     account: ctx.accounts ? (ctx.accounts.find((a) => a.id === t.accountId)?.name ?? 'Unknown') : undefined,
     bankId: bankIdOf(ctx.accounts, t.accountId),
     plastic: plasticOf(t),
-    balance: t.balance != null && !excluded ? formatMoney(t.balance) : undefined,
+    balance: t.balance != null && !excluded ? formatMoney(t.balance, { decimals: 'exact' }) : undefined,
     categories,
     category: categories[0],
     reviewStatus: reviewWords(t),

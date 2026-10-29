@@ -21,7 +21,7 @@ export function DeleteKeyDialog({ keyToDelete, deleting, onCancel, onConfirm }: 
         dismissible={!deleting}
         title="Delete API key?"
         secondary={{ label: 'Cancel', disabled: deleting, onSelect: onCancel }}
-        primary={{ label: 'Delete key', tone: 'danger', loading: deleting, disabled: deleting, onSelect: onConfirm }}
+        primary={{ label: 'Delete', tone: 'danger', loading: deleting, disabled: deleting, onSelect: onConfirm }}
       >
         <Dialog.Body>
           <Text variant="body" tone="ink-2" as="p">

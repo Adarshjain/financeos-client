@@ -10,8 +10,8 @@ import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type
 
 export type { RewardsWindow };
 
-export const PAGE_SIZES = [10, 25, 50, 100] as const;
-export const REWARDS_TXN_PAGE_SIZE = 10;
+export const PAGE_SIZES = [25, 50, 100] as const;
+export const REWARDS_TXN_PAGE_SIZE = 25;
 
 function pts(n: number): string {
   return formatCount(n, 'pts');
@@ -24,6 +24,8 @@ export interface RewardsKpi {
   label: string;
   value: string;
   context?: string;
+  /** Danger while the figure is a net cost. */
+  tone?: 'danger';
   /** Points are earned but the card has no point value, so they stay points beside the rupees. */
   needsPointValue?: boolean;
 }
@@ -79,6 +81,7 @@ export function buildKpis(report: RewardReport, window: RewardsWindow, preset?: 
       key: 'adjustments',
       label: 'Adjustments',
       value: formatMoney(net, { sign: 'always' }),
+      tone: net < 0 ? 'danger' : undefined,
       context: adjustContext.length > 0 ? adjustContext.join(' · ') : 'no fees netted',
     },
   ];
@@ -198,7 +201,7 @@ const WHY_TONE: Record<RewardLine['reason'], LineRow['why']['tone']> = {
 };
 
 const earnedText = (line: Pick<RewardLine, 'earned' | 'earnedUnit'>) =>
-  line.earnedUnit === 'RUPEES' ? formatMoney(line.earned) : pts(line.earned);
+  line.earnedUnit === 'RUPEES' ? formatMoney(line.earned, { decimals: 'exact' }) : pts(line.earned);
 
 /** The tapped line's computation: dates, amounts, MCC, channel, rule, earned, and the reason in one sentence. */
 export function lineDetail(line: RewardLine): LineDetail {
@@ -206,8 +209,8 @@ export function lineDetail(line: RewardLine): LineDetail {
   if (line.effectiveDate !== line.transactionDate) {
     rows.push({ label: 'Settled (used for rewards)', value: formatDate(line.effectiveDate, 'full') });
   }
-  rows.push({ label: 'Amount charged', value: formatMoney(line.amount) });
-  if (line.basis !== line.amount) rows.push({ label: 'Eligible after refunds', value: formatMoney(line.basis) });
+  rows.push({ label: 'Amount charged', value: formatMoney(line.amount, { decimals: 'exact' }) });
+  if (line.basis !== line.amount) rows.push({ label: 'Eligible after refunds', value: formatMoney(line.basis, { decimals: 'exact' }) });
   if (line.mcc) rows.push({ label: 'MCC', value: line.mcc });
   if (line.channel) rows.push({ label: 'Channel', value: line.channel });
   rows.push({ label: 'Rule', value: line.ruleName ?? '—' });
@@ -228,8 +231,8 @@ export function lineRow(line: RewardLine): LineRow {
     date: formatDate(line.effectiveDate, 'list'),
     description: line.description ?? line.sourcedDescription ?? 'Transaction',
     holder: line.cardLabel ?? null,
-    basis: formatMoney(line.basis, { symbol: false }),
-    basisLabel: formatMoney(line.basis),
+    basis: formatMoney(line.basis, { decimals: 'exact', symbol: false }),
+    basisLabel: formatMoney(line.basis, { decimals: 'exact' }),
     rule: line.ruleName ?? 'No rule',
     earned: earnedText(line),
     why: { label: REASON_META[line.reason].label, tone: WHY_TONE[line.reason] },

@@ -7,9 +7,10 @@ import type { LendingsScreenProps } from './LendingsScreen';
 
 /** What the Lendings tab shows for the address's search, filter and page. */
 export async function loadLendingsScreen(state: LendingsUrlState): Promise<LendingsScreenProps> {
-  const [list, summary, matches, unrecorded] = await Promise.all([
+  const [list, summary, settled, matches, unrecorded] = await Promise.all([
     loaded(fetchPeople({ q: state.q, direction: directionFor(state.filter), page: state.page, size: state.size })),
     orNull(fetchPeopleSummary()),
+    orNull(fetchPeople({ direction: 'SETTLED', size: 1 })),
     orNull(fetchPeopleMatches()),
     orNull(fetchUnrecordedTransfers()),
   ]);
@@ -22,6 +23,7 @@ export async function loadLendingsScreen(state: LendingsUrlState): Promise<Lendi
     today: todayInAppZone(),
     list,
     summary,
+    settledCount: settled ? settled.totalElements : null,
     transfers: matches ? transferRows(matches, accountNames) : [],
     unrecordedTransfers: unrecorded ? unrecordedRows(unrecorded, accountNames) : [],
   };

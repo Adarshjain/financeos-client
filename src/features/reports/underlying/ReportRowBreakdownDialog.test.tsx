@@ -85,7 +85,7 @@ describe('ReportRowBreakdownDialog', () => {
     render();
     expect(screen.getByText('Net worth')).toBeInTheDocument();
     expect(await screen.findByText('Zerodha')).toBeInTheDocument();
-    expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, { params: { path: { name: 'net_worth', rowId: 'b1' }, query: { size: 25 } } });
+    expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, { params: { path: { name: 'net_worth', rowId: 'b1' }, query: { size: 5 } } });
     expect(screen.getByText('Broker')).toBeInTheDocument();
     expect(screen.getAllByText(/50,000/).length).toBeGreaterThan(0);
     expect(screen.getByTestId('breakdown-steps').querySelectorAll('[data-op]')).toHaveLength(3);
@@ -117,7 +117,7 @@ describe('ReportRowBreakdownDialog', () => {
     render();
     await user.click(await screen.findByText('INFY holding'));
     expect(await screen.findByText('Infosys')).toBeInTheDocument();
-    expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, { params: { path: { name: 'positions', rowId: 'h1' }, query: { size: 25 } } });
+    expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, { params: { path: { name: 'positions', rowId: 'h1' }, query: { size: 5 } } });
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByText('Zerodha')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();

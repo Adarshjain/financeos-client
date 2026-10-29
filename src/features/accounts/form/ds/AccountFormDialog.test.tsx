@@ -373,8 +373,8 @@ describe('Edit account', () => {
     expect(screen.queryByRole('radiogroup')).toBeNull();
     expect(screen.getByDisplayValue('HDFC Regalia')).toBeInTheDocument();
     expect(screen.getByDisplayValue('7741')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('15/03/2024')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('01/04/2026')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('15/03/24')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('01/04/26')).toBeInTheDocument();
     expect(screen.getByDisplayValue('HDFC cards')).toBeInTheDocument();
     expect(screen.getByText('Leave the date empty to pause Gmail import for this card.')).toBeInTheDocument();
     expect(screen.getByText('Close account', { selector: 'h3' })).toBeInTheDocument();
@@ -425,13 +425,13 @@ describe('Edit account', () => {
     mutations.executeGmailCleanupMutation.mutateAsync.mockResolvedValue({});
     mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
     renderDialog({ account: card });
-    const date = screen.getByDisplayValue('01/04/2026');
+    const date = screen.getByDisplayValue('01/04/26');
     await user.clear(date);
     await user.type(date, '01082026');
     submit('Save account');
 
     expect(await screen.findByText('Delete earlier Gmail transactions?')).toBeInTheDocument();
-    expect(screen.getByText('You moved "Import emails from" to 01/08/2026.')).toBeInTheDocument();
+    expect(screen.getByText('You moved "Import emails from" to 01/08/26.')).toBeInTheDocument();
     expect(mutations.previewGmailCleanupMutation.mutateAsync).toHaveBeenCalledWith({
       accountId: 'c1',
       before: '2026-08-01',
@@ -451,7 +451,7 @@ describe('Edit account', () => {
     mutations.previewGmailCleanupMutation.mutateAsync.mockResolvedValue({ count: 0 });
     mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
     renderDialog({ account: card });
-    const date = screen.getByDisplayValue('01/04/2026');
+    const date = screen.getByDisplayValue('01/04/26');
     await user.clear(date);
     await user.type(date, '01082026');
     submit('Save account');
@@ -489,7 +489,7 @@ describe('Edit account', () => {
     const closed: Account = { ...card, closedOn: '2026-06-30' };
     mutations.reopenAccountMutation.mutateAsync.mockResolvedValue(card);
     renderDialog({ account: closed });
-    expect(screen.getByText('Closed on 30 Jun 2026')).toBeInTheDocument();
+    expect(screen.getByText('Closed on 30 Jun 26')).toBeInTheDocument();
     expect(screen.getByText('All transactions and statements are kept.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Close account' })).toBeNull();
     submit('Reopen account');
@@ -512,7 +512,7 @@ describe('Edit account', () => {
     expect(screen.getByText('Not using this account any more?')).toBeInTheDocument();
     expect(mutations.deleteAccountMutation.mutateAsync).not.toHaveBeenCalled();
 
-    const confirm = screen.getAllByRole('button', { name: 'Delete account' }).at(-1)!;
+    const confirm = screen.getAllByRole('button', { name: 'Delete' }).at(-1)!;
     fireEvent.click(confirm);
     await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
     expect(toast).toHaveBeenCalledWith('Account deleted');

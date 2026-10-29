@@ -92,7 +92,7 @@ describe('buildUsage', () => {
 
   it('gives a milestone its percent and days left, or "achieved"', () => {
     expect(usage.milestones.m1.label).toBe('21% · 141 d left');
-    expect(usage.milestones.m1.range).toBe('15 Mar → 14 Mar 2027');
+    expect(usage.milestones.m1.range).toBe('15 Mar → 14 Mar 27');
     expect(usage.milestones.m2.label).toBe('100% · achieved');
   });
 });

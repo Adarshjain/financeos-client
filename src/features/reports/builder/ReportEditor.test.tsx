@@ -61,7 +61,7 @@ const tableResult: TableData = {
     { key: 'amount', label: 'Amount', type: 'number', format: 'currency' },
   ],
   rows: [{ id: 't1', description: 'Swiggy', amount: 420 }],
-  page: { number: 0, size: 50, totalElements: 120, totalPages: 3 },
+  page: { number: 0, size: 25, totalElements: 120, totalPages: 3 },
 };
 
 beforeEach(() => {
@@ -507,15 +507,15 @@ describe('Filters', () => {
     expect(screen.getByRole('button', { name: 'Date · last 90 days' })).toBeInTheDocument();
   });
 
-  it('takes a date range in dd/mm/yyyy', async () => {
+  it('takes a date range in dd/mm/yy', async () => {
     setup();
     await user.click(screen.getByRole('button', { name: 'Add filter' }));
     await pick('Field', 'Date');
     await pick('Operator', 'Between');
     const range = screen.getByLabelText('Between');
-    await user.type(range, '01012026');
-    await user.type(range, '31032026');
-    expect(range).toHaveValue('01/01/2026 – 31/03/2026');
+    await user.type(range, '010126');
+    await user.type(range, '310326');
+    expect(range).toHaveValue('01/01/26 – 31/03/26');
     await user.click(screen.getByRole('button', { name: 'Apply filter' }));
     expect(screen.getByRole('button', { name: 'Date · between 2026-01-01 – 2026-03-31' })).toBeInTheDocument();
   });
@@ -601,16 +601,16 @@ describe('Preview', () => {
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: 'Preview' }));
     await waitFor(() => expect(screen.getAllByText('Swiggy').length).toBeGreaterThan(0));
-    expect(runCalls()[0][1].params.query).toEqual({ page: 0, size: 50 });
+    expect(runCalls()[0][1].params.query).toEqual({ page: 0, size: 25 });
     expect(screen.getAllByRole('navigation', { name: 'Pagination' })).toHaveLength(2);
 
     await user.click(within(screen.getAllByRole('navigation', { name: 'Pagination' })[0]).getByRole('button', { name: /next/i }));
     await waitFor(() => expect(runCalls()).toHaveLength(2));
-    expect(runCalls()[1][1].params.query).toEqual({ page: 1, size: 50 });
+    expect(runCalls()[1][1].params.query).toEqual({ page: 1, size: 25 });
 
     await user.click(within(screen.getByRole('columnheader', { name: /Amount/ })).getByRole('button'));
     await waitFor(() => expect(runCalls()).toHaveLength(3));
-    expect(runCalls()[2][1].params.query).toEqual({ page: 0, size: 50, sort: 'amount,asc' });
+    expect(runCalls()[2][1].params.query).toEqual({ page: 0, size: 25, sort: 'amount,asc' });
   });
 
   it('marks a result stale when the draft changes, and refreshes on request', async () => {
@@ -791,7 +791,7 @@ describe('A saved report', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(/Dashboards that use it will show the report as unavailable/)).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
-    await user.click(within(dialog).getByRole('button', { name: 'Delete report' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/reports/{id}', { params: { path: { id: 'r1' } } }));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
     // Refresh comes after the navigation, so the list it opens is fresh and the deleted page is never re-rendered.

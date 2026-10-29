@@ -1,5 +1,5 @@
+import { formatMoney } from '@/lib/format';
 import { isMoneyField } from '@/lib/reports.helpers';
-import { formatMoney } from '@/lib/utils';
 
 /**
  * Renders a measure value consistently across the KPI, raw-table and pivot
@@ -23,9 +23,7 @@ export function formatMeasureValue(
   if (options.aggregation === 'count') return new Intl.NumberFormat('en-IN').format(value);
   const money = options.money ?? (options.format ? options.format === 'currency' : !!options.field && isMoneyField(options.field));
   if (money) {
-    if (!options.wholeRupees) return formatMoney(value);
-    const rounded = Math.round(value);
-    return `${rounded < 0 ? '-' : ''}₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.abs(rounded))}`;
+    return formatMoney(value, { decimals: options.wholeRupees ? 'whole' : 'exact' });
   }
   if (options.format === 'percent') return decimals.format(value) + '%';
   return decimals.format(value);

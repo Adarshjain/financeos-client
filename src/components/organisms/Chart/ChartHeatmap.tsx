@@ -12,6 +12,7 @@ import { forwardRef, useMemo } from 'react';
 import { cn, Text } from '@/components/ds';
 import { useElementSize } from '@/lib/charts/useElementSize';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate } from '@/lib/format';
 import type { ChartData } from '@/lib/reports.types';
 
 import type { ChartEntry, ChartInput } from './Chart';
@@ -73,10 +74,7 @@ export function monthLabels(weeks: HeatWeek[]): (string | null)[] {
   });
 }
 
-/** YYYY-MM-DD as dd/mm/yyyy. */
-function displayDate(iso: string): string {
-  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
-}
+
 
 const CELL_PRESS =
   'cursor-pointer hover:opacity-80 active:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring';
@@ -222,11 +220,11 @@ export const ChartHeatmap = forwardRef<HTMLDivElement, ChartHeatmapProps>(functi
             </Text>
             {week.days.map((day, i) => {
               const text = day
-                ? `${displayDate(day.date)}: ${day.amount > 0 ? format.full(day.amount) : 'no value'}`
+                ? `${formatDate(day.date, 'input')}: ${day.amount > 0 ? format.full(day.amount) : 'no value'}`
                 : '';
               const entry: ChartEntry | null =
                 day && day.amount > 0
-                  ? { key: day.date, label: displayDate(day.date), value: day.amount }
+                  ? { key: day.date, label: formatDate(day.date, 'input'), value: day.amount }
                   : null;
               return (
                 <HeatCellView

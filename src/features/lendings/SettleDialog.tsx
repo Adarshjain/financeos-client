@@ -6,7 +6,7 @@ import {
   DateField,
   Dialog,
   FilterChip,
-  SegmentedControl,
+  Select,
   showToast,
   Text,
   TextField,
@@ -158,9 +158,8 @@ export function SettleDialog({
               if (!createLending.isPending) void submit();
             }}
           >
-            <SegmentedControl
-              fullWidth
-              aria-label="Entry type"
+            <Select
+              label="Entry type"
               options={settleSegmentOptions(direction)}
               value={segment}
               onValueChange={(v) => {

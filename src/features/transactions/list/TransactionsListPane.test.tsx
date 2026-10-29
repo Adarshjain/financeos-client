@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SEARCH_DEBOUNCE_MS } from '@/features/shell/useSearchText';
@@ -78,30 +78,44 @@ describe('TransactionsListPane', () => {
     expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
     expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
     expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
-    expect(screen.getByText('Needs review')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Status' })).toBeInTheDocument();
     expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Set category').length).toBeGreaterThan(0);
   });
 
-  it('writes a toggle chip to the address, back on page one', () => {
+  const optionOf = (name: string) =>
+    screen.getByText(name, { selector: '[role="option"] *, [role="option"]' });
+
+  it('writes the Status picks to the address once, back on page one', () => {
     setup({ query: { ...DEFAULT_QUERY, page: 2 } });
-    fireEvent.click(screen.getByRole('button', { name: 'Monitoring' }));
-    expect(lastUrl()).toBe('/transactions?monitoring=1');
-    fireEvent.click(screen.getByRole('button', { name: 'Up to statement' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Status' }));
+    fireEvent.click(optionOf('Monitoring'));
+    expect(router.push).not.toHaveBeenCalled();
+    fireEvent.click(optionOf('Up to statement'));
+    fireEvent.click(optionOf('Needs review'));
+    fireEvent.click(screen.getByRole('button', { name: /Done/ }));
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(lastUrl()).toContain('monitoring=1');
     expect(lastUrl()).toContain('statement=1');
-    fireEvent.click(screen.getByRole('button', { name: 'Needs review' }));
     expect(lastUrl()).toContain('review=needs_review');
+    expect(lastUrl()).not.toContain('page=');
   });
 
-  it('turns a switched-on toggle off', () => {
+  it('shows the one picked status by name and resets all of them with the x', () => {
     setup({ query: { ...DEFAULT_QUERY, review: 'NEEDS_REVIEW' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Needs review' }));
+    expect(screen.getByRole('button', { name: 'Needs review' })).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Reset filter' }).at(-1)!);
     expect(lastUrl()).toBe('/transactions');
+  });
+
+  it('says "2 selected" when two statuses are on', () => {
+    setup({ query: { ...DEFAULT_QUERY, monitoring: true, upToStatement: true } });
+    expect(screen.getByRole('button', { name: '2 selected' })).toBeInTheDocument();
   });
 
   it('removing the period chip means all time, which leaves the address bare', () => {
     setup({ query: { ...DEFAULT_QUERY, period: LAST_14_DAYS } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove filter' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Reset filter' })[0]);
     expect(lastUrl()).toBe('/transactions');
   });
 
@@ -221,20 +235,17 @@ describe('TransactionsListPane', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     expect(screen.getByText('Every filter combines with the others.')).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
-    const show = await screen.findByRole('button', { name: 'Show 7 transactions' });
-    expect(show).toBeInTheDocument();
-    // On a phone only the noun is hidden (CSS), so the label reads "Show 7".
-    expect(show.querySelector('.max-desk\\:hidden')?.textContent).toBe('transactions');
+    expect(await screen.findByRole('button', { name: 'Show 7 results' })).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
     expect(lastUrl()).toBe('/transactions?excluded=1');
   });
 
-  it('Cancel drops the draft and closes the dialog without touching the address', async () => {
+  it('closing drops the draft and closes the dialog without touching the address', async () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Filters' })).getAllByRole('button', { name: 'Close' })[0]);
     expect(screen.queryByText('Every filter combines with the others.')).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
@@ -258,22 +269,39 @@ describe('TransactionsListPane', () => {
     expect(screen.getByText('Every filter combines with the others.')).toBeInTheDocument();
   });
 
-  it('Clear all in the dialog drops every filter to all time', async () => {
+  it('Reset to defaults in the dialog drops every filter to all time', async () => {
     setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'], monitoring: true } });
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }));
     fireEvent.click(await screen.findByRole('button', { name: /Show/ }));
     expect(lastUrl()).toBe('/transactions');
   });
 
   it('shows active dialog-only filters as removable chips', () => {
     setup({ query: { ...DEFAULT_QUERY, source: 'manual', excluded: true } });
-    expect(screen.getByText('Source · Manual')).toBeInTheDocument();
+    expect(screen.getByText('Manual')).toBeInTheDocument();
     expect(screen.getByText('Excluded only')).toBeInTheDocument();
     // The × is the sibling of the chip's main button.
     fireEvent.click(screen.getByText('Excluded only').closest('button')!.nextElementSibling!);
     expect(lastUrl()).toContain('source=manual');
     expect(lastUrl()).not.toContain('excluded');
+  });
+
+  it('a changed dropdown chip shows only its value, and its × puts it back to the default', () => {
+    setup({ query: { ...DEFAULT_QUERY, type: 'debit' } });
+    expect(screen.getByRole('button', { name: 'Expense' })).toBeInTheDocument();
+    expect(screen.queryByText(/Type/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
+    expect(lastUrl()).toBe('/transactions');
+  });
+
+  it('shows Reset filters only while something changed, and it clears every filter but the search', () => {
+    const { unmount } = setup();
+    expect(screen.queryByRole('button', { name: 'Reset filters' })).toBeNull();
+    unmount();
+    setup({ query: { ...DEFAULT_QUERY, q: 'swig', type: 'debit', monitoring: true } });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(lastUrl()).toBe('/transactions?q=swig');
   });
 
   it('seeds the nav badge with the count it already has', () => {
@@ -327,15 +355,15 @@ describe('TransactionsListPane', () => {
   it('shows No transactions match with the active filters and clears them', () => {
     setup({ query: { ...DEFAULT_QUERY, period: LAST_14_DAYS, source: 'manual' }, list: { ok: true, rows: [], totalElements: 0, totalPages: 0 } });
     expect(screen.getByText('No transactions match')).toBeInTheDocument();
-    expect(screen.getByText('Last 14 days · manual')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear all filters' }));
+    expect(screen.getByText('Try a different search or fewer filters.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(lastUrl()).toBe('/transactions');
   });
 
-  it('shows No transactions yet with Add account and Import when nothing is filtered', () => {
+  it('shows No transactions yet with Import when nothing is filtered', () => {
     setup({ query: { ...DEFAULT_QUERY, period: ALL_TIME }, list: { ok: true, rows: [], totalElements: 0, totalPages: 0 } });
     expect(screen.getByText('No transactions yet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add account' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add account' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     expect(lastUrl()).toBe('/transactions/import');
   });

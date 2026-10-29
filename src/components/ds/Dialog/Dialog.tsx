@@ -14,6 +14,10 @@ import { useControllableState } from '../useControllableState';
 import { useSheetDrag } from '../useSheetDrag';
 
 /** `full` fills the whole viewport (100dvw x 100dvh), on phone too: no sheet, no handle. */
+/**
+ * `md` for forms (default), `sm` for a single field, `lg` only for two columns. Section labels inside a dialog are
+ * always `Dialog.Section` (the band style). On phone a sheet never reaches the top: it keeps a gap above its handle.
+ */
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type DialogVariant = 'modal' | 'side-panel';
 export type DialogBackground = 'surface' | 'canvas';

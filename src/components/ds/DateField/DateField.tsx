@@ -48,7 +48,7 @@ export interface DateFieldProps
   defaultValue?: DateFieldValue;
   onValueChange?: (val: DateFieldValue) => void;
 
-  /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
+  /** Range mode: one combined field "dd/mm/yy – dd/mm/yy" */
   range?: boolean;
 
   /** Min/Max selectable dates (ISO yyyy-mm-dd) */
@@ -100,8 +100,8 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       placeholder !== undefined
         ? placeholder
         : range
-          ? 'dd/mm/yyyy – dd/mm/yyyy'
-          : 'dd/mm/yyyy';
+          ? 'dd/mm/yy – dd/mm/yy'
+          : 'dd/mm/yy';
 
     // Single mode: internal text for typed input
     const initialSingleText = (() => {
@@ -111,6 +111,11 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     })();
 
     const [singleText, setSingleText] = useState(initialSingleText);
+    const [singleIso, setSingleIso] = useState<string>(() => {
+      if (typeof controlledValue === 'string') return controlledValue;
+      if (typeof defaultValue === 'string') return defaultValue;
+      return '';
+    });
 
     // Range mode state
     const initialStartIso = (() => {
@@ -147,6 +152,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       setPrevControlledValue(controlledValue);
       if (!range && typeof controlledValue === 'string') {
         setSingleText(formatDateInput(controlledValue));
+        setSingleIso(controlledValue);
       } else if (range && typeof controlledValue === 'object' && controlledValue !== null) {
         const s = controlledValue.start ?? '';
         const e = controlledValue.end ?? '';
@@ -162,10 +168,10 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     // Calendar view state (visible month ISO yyyy-mm-01)
     const initialMonthIso = useMemo(() => {
-      const candidate = startIso || (singleText ? parseDateInput(singleText) : null);
+      const candidate = startIso || singleIso;
       if (candidate) return `${candidate.slice(0, 7)}-01`;
       return `${today.slice(0, 7)}-01`;
-    }, [startIso, singleText, today]);
+    }, [startIso, singleIso, today]);
 
     const [viewMonthIso, setViewMonthIso] = useState<string>(initialMonthIso);
 
@@ -176,10 +182,12 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       const formatted = formatDateInput(e.target.value);
       setSingleText(formatted);
       if (!formatted) {
+        setSingleIso('');
         onValueChange?.('');
         return;
       }
       const iso = parseDateInput(formatted);
+      setSingleIso(iso ?? '');
       if (iso) {
         onValueChange?.(iso);
       }
@@ -208,10 +216,12 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
       const sIso = parseDateInput(formatted.startDate);
       const eIso = parseDateInput(formatted.endDate);
+      // An end before the start is a transient (typing a four-digit end year): neither kept nor emitted.
+      const endOk = !!eIso && (!sIso || eIso >= sIso);
       if (sIso) setStartIso(sIso);
-      if (eIso) setEndIso(eIso);
+      if (eIso && endOk) setEndIso(eIso);
 
-      if (sIso && eIso) {
+      if (sIso && eIso && endOk) {
         onValueChange?.({ start: sIso, end: eIso });
       }
     };
@@ -219,6 +229,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const handleSelectDateFromCalendar = (isoDate: string) => {
       if (!range) {
         setSingleText(formatDate(isoDate, 'input'));
+        setSingleIso(isoDate);
         onValueChange?.(isoDate);
         setOpen(false);
       } else {
@@ -260,6 +271,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const handleToday = () => {
       if (!range) {
         setSingleText(formatDate(today, 'input'));
+        setSingleIso(today);
         onValueChange?.(today);
         setOpen(false);
       } else {
@@ -275,6 +287,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const handleClear = () => {
       if (!range) {
         setSingleText('');
+        setSingleIso('');
         onValueChange?.('');
         setOpen(false);
       } else {
@@ -366,7 +379,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         mode="picker"
         month={viewMonthIso}
         onMonthChange={setViewMonthIso}
-        value={isSingleString ? controlledValue : parseDateInput(singleText) ?? undefined}
+        value={isSingleString ? controlledValue : singleIso || undefined}
         minDate={minDate}
         maxDate={maxDate}
         today={today}

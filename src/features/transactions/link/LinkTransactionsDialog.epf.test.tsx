@@ -91,13 +91,13 @@ describe('LinkTransactionsDialog, EPF withdrawal', () => {
     await chooseEpf();
     expect(screen.getByText('Record an EPF withdrawal.')).toBeInTheDocument();
     await screen.findByText('Final settlement · Globex Retail');
-    expect(screen.getByText('12 Sep 2018 · no TDS recorded · suggested')).toBeInTheDocument();
-    expect(screen.getByText('₹1,12,600')).toBeInTheDocument();
-    expect(screen.getByText('12 Sep 2018 · Form 10C')).toBeInTheDocument();
+    expect(screen.getByText('12 Sep 18 · no TDS recorded · suggested')).toBeInTheDocument();
+    expect(screen.getByText('₹1,12,600.00')).toBeInTheDocument();
+    expect(screen.getByText('12 Sep 18 · Form 10C')).toBeInTheDocument();
     await waitFor(() => expect(withdrawalRadios()[0]).toBeChecked());
     expect(withdrawalRadios()[1]).not.toBeChecked();
     expect(screen.getByRole('checkbox')).toBeChecked();
-    expect(screen.getByText('Record TDS of ₹11,260')).toBeInTheDocument();
+    expect(screen.getByText('Record TDS of ₹11,260.00')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Link' }));
     await waitFor(() => expect(onLinked).toHaveBeenCalled());
     expect(api.PUT).toHaveBeenCalledWith('/api/v1/epf/entries/{id}/transaction', {
@@ -133,10 +133,10 @@ describe('LinkTransactionsDialog, EPF withdrawal', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /^Your share/ }), { target: { value: '25000' } });
     fireEvent.change(screen.getByRole('textbox', { name: /^Employer share/ }), { target: { value: '15000' } });
     expect(screen.queryByRole('textbox', { name: /^TDS/ })).toBeNull();
-    expect(screen.getByText('Received in bank: ₹40,000.')).toBeInTheDocument();
+    expect(screen.getByText('Received in bank: ₹40,000.00.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.change(screen.getByRole('textbox', { name: /^TDS/ }), { target: { value: '1000' } });
-    expect(screen.getByText('Received in bank: ₹39,000.')).toBeInTheDocument();
+    expect(screen.getByText('Received in bank: ₹39,000.00.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Record and link' }));
     await waitFor(() => expect(onLinked).toHaveBeenCalled());
     expect((api.POST as Mock).mock.calls[0][0]).toBe('/api/v1/epf/entries');

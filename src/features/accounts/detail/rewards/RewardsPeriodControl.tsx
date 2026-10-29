@@ -6,16 +6,14 @@ import React from 'react';
 import { DateField, Select } from '@/components/ds';
 
 import { rewardsHref, type RewardsQuery } from './rewardsModel';
-import { DEFAULT_PERIOD, RANGE_PRESET_LABELS, RANGE_PRESETS, type RangePreset } from './rewardsPeriodModel';
-
-const OPTIONS = RANGE_PRESETS.map((p) => ({ value: p, label: RANGE_PRESET_LABELS[p] }));
+import { DEFAULT_PERIOD, presetLabel, RANGE_PRESETS, type RangePreset } from './rewardsPeriodModel';
 
 export interface RewardsPeriodControlProps {
   /** The page's own URL, without params. */
   basePath: string;
   query: RewardsQuery;
   /** The dates the page is showing. */
-  window: { from: string; to: string };
+  window: { from: string; to: string; calendarYear?: boolean };
   today: string;
 }
 
@@ -23,6 +21,7 @@ export interface RewardsPeriodControlProps {
 export function RewardsPeriodControl({ basePath, query, window, today }: RewardsPeriodControlProps) {
   const router = useRouter();
   const preset = query.period ?? DEFAULT_PERIOD;
+  const options = RANGE_PRESETS.map((p) => ({ value: p, label: presetLabel(p, window.calendarYear) }));
   const go = (next: Partial<RewardsQuery>) => router.push(rewardsHref(basePath, { ...query, ...next, page: 0 }));
 
   const choose = (value: string | string[]) => {
@@ -35,7 +34,7 @@ export function RewardsPeriodControl({ basePath, query, window, today }: Rewards
 
   return (
     <div className="flex flex-col desk:flex-row desk:items-end gap-space-8 desk:gap-space-12">
-      <Select label="Period" options={OPTIONS} value={preset} onValueChange={choose} />
+      <Select label="Period" options={options} value={preset} onValueChange={choose} />
       {preset === 'CUSTOM' ? (
         // Two equal columns on phone; on desktop the fields join the row of the select.
         <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:contents">

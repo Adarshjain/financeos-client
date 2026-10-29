@@ -6,7 +6,6 @@ import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
 import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
-import { activeFilterWords } from './filterOptionsModel';
 import { dayHeader, monthBand, type TransactionListRow } from './transactionRowsModel';
 import { clearedQuery, isUnfiltered, type SortId, SORTS, TRANSACTIONS_SIZE_OPTIONS, type TransactionsQuery } from './transactionsUrl';
 
@@ -103,15 +102,22 @@ export function TransactionsList({
     query.page === 0 && (noAccounts || isUnfiltered(query)) ? (
       <EmptyState
         title="No transactions yet"
-        description="Transactions belong to an account. Add your first one, then import a statement or add a transaction."
-        action={{ label: 'Add account', onSelect: onAddAccount }}
-        secondaryAction={{ label: 'Import', onSelect: onImport }}
+        description={
+          noAccounts
+            ? 'Transactions belong to an account. Add your first one to get started.'
+            : 'Import a statement, or add a transaction yourself.'
+        }
+        action={
+          noAccounts
+            ? { label: 'Add account', onSelect: onAddAccount }
+            : { label: 'Import', onSelect: onImport }
+        }
       />
     ) : (
       <EmptyState
         title="No transactions match"
-        description={activeFilterWords(query)}
-        action={{ label: 'Clear all filters', variant: 'secondary', onSelect: () => onChange(clearedQuery(query)) }}
+        description="Try a different search or fewer filters."
+        action={{ label: 'Clear filters', variant: 'secondary', onSelect: () => onChange(clearedQuery(query)) }}
       />
     );
 

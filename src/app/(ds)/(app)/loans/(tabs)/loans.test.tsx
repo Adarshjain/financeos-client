@@ -123,28 +123,22 @@ describe('/loans', () => {
   });
 
   it('passes the search, page and size from the URL to the server', async () => {
-    await renderPage({ q: 'sbi', page: '2', size: '10' });
-    expect(server.fetchLoans).toHaveBeenCalledWith({ status: 'active', q: 'sbi', page: 1, size: 10 });
+    await renderPage({ q: 'sbi', page: '2', size: '50' });
+    expect(server.fetchLoans).toHaveBeenCalledWith({ status: 'active', q: 'sbi', page: 1, size: 50 });
   });
 
-  it('shows the four tiles from the summary', async () => {
+  it('shows the hero from the summary: total outstanding, what is overdue, EMIs a month and the next EMI', async () => {
     await renderPage();
-    for (const [label, value, context] of [
-      ['Outstanding', '₹50.5L', 'of ₹55.5L borrowed'],
-      ['EMIs per month', '₹63,954', '3 loans · 5th, 7th, 10th'],
-      ['Overdue', '₹63,954', '3 EMIs unpaid'],
-      ['Interest this FY', '₹3,88,210', 'Apr – Oct 2026'],
-    ]) {
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(value).length).toBeGreaterThan(0);
-      expect(screen.getByText(context)).toBeInTheDocument();
+    for (const text of ['Total outstanding', '₹50,50,000', '₹63,954 overdue · 3 EMIs', 'EMIs a month', '3 loans', 'Next EMI', '5 Nov']) {
+      expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
+    expect(screen.getAllByText('₹63,954').length).toBeGreaterThan(0);
   });
 
-  it('says so under each tile label when the summary fails, and still lists the loans', async () => {
+  it('says so in the hero place when the summary fails, and still lists the loans', async () => {
     server.fetchLoansSummary.mockRejectedValue(new Error('down'));
     await renderPage();
-    expect(screen.getAllByText("Couldn't load this figure. Try again.")).toHaveLength(4);
+    expect(screen.getByText("Couldn't load the figures. Try again.")).toBeInTheDocument();
     expect(screen.getAllByText('Car Loan · HDFC Bank').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Closed ·/)).toBeNull();
   });
@@ -178,7 +172,7 @@ describe('/loans', () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('Car Loan · HDFC Bank')[0]);
     expect(router.push).toHaveBeenCalledWith('/loans/l2');
-    expect(screen.getByRole('link', { name: 'Open Car Loan · HDFC Bank' })).toHaveAttribute('href', '/loans/l2');
+    expect(screen.queryByRole('link', { name: 'Open Car Loan · HDFC Bank' })).toBeNull();
   });
 
   it('shows the Pager above and below with the server totals, and pages through the URL', async () => {
@@ -210,7 +204,8 @@ describe('/loans', () => {
   it('invites a first loan when there are none at all', async () => {
     server.fetchLoans.mockResolvedValue(pageOf([]));
     await renderPage();
-    expect(screen.getByText('No loans yet. Add a loan to track its EMIs.')).toBeInTheDocument();
+    expect(screen.getByText('No loans yet')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add loan' })).toBeInTheDocument();
   });
 
   it('shows an error with Retry when the loans fail to load', async () => {

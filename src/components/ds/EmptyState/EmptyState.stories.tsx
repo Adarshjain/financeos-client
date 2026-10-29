@@ -92,3 +92,44 @@ export const Concealed: Story = {
     docs: { description: { story: 'While amounts are hidden (ConcealProvider), every ₹ amount reads "₹ —".' } },
   },
 };
+
+export const PageLevel: Story = {
+  ...Playground,
+  name: 'Page level (first use)',
+  args: {
+    ...Playground.args,
+    title: 'No accounts yet',
+    description: 'Add an account to start tracking.',
+    actionLabel: 'Add account',
+    actionVariant: 'primary',
+    secondaryActionLabel: '',
+  },
+  parameters: {
+    docs: { description: { story: 'A screen\'s main list with nothing yet: heading, one hint line, one primary button.' } },
+  },
+};
+
+export const NoMatch: Story = {
+  ...Playground,
+  name: 'No match',
+  args: {
+    ...Playground.args,
+    title: 'No transactions match',
+    description: 'Try fewer or different filters.',
+    actionLabel: 'Clear filters',
+    actionVariant: 'secondary',
+    secondaryActionLabel: '',
+  },
+  parameters: {
+    docs: { description: { story: 'Filters match nothing: heading, one hint line, a "Clear filters" button; no pager around it.' } },
+  },
+};
+
+export const SecondaryCard: Story = {
+  ...Playground,
+  name: 'Inside a secondary card',
+  args: { ...Playground.args, compact: true, title: '', description: 'Nothing here yet.', actionLabel: '', secondaryActionLabel: '' },
+  parameters: {
+    docs: { description: { story: 'Secondary cards show one muted line (compact), no heading or button.' } },
+  },
+};

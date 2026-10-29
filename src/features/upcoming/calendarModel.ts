@@ -76,7 +76,7 @@ export function monthSummary(monthItems: ObligationItem[]): string {
   const withAmount = monthItems.some((i) => i.amount != null);
   const overdue = monthItems.filter((i) => i.status === 'overdue').length;
   return [
-    withAmount ? `${formatMoney(sumAmounts(monthItems), { decimals: 'auto' })} due` : null,
+    withAmount ? `${formatMoney(sumAmounts(monthItems))} due` : null,
     overdue > 0 ? `${overdue} overdue` : null,
   ]
     .filter(Boolean)
@@ -91,7 +91,7 @@ export function dayTitle(iso: string): string {
 
 /** "2 items · ₹51,440" (the total only when a row carries an amount). */
 export function daySubtitle(dayItems: ObligationItem[]): string {
-  const total = dayItems.some((i) => i.amount != null) ? formatMoney(sumAmounts(dayItems), { decimals: 'auto' }) : null;
+  const total = dayItems.some((i) => i.amount != null) ? formatMoney(sumAmounts(dayItems)) : null;
   return [formatCount(dayItems.length, ['item', 'items']), total].filter(Boolean).join(' · ');
 }
 

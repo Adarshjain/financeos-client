@@ -80,7 +80,8 @@ describe('buildKpis', () => {
   });
   it('nets discounts against fees and lists both', () => {
     const k = buildKpis({ ...report, summary: { ...report.summary, fees: 590, discounts: 100 } }, window);
-    expect(k[2]).toMatchObject({ value: '−₹490', context: '₹590 fees · ₹100 discounts' });
+    expect(k[2]).toMatchObject({ value: '−₹490', context: '₹590 fees · ₹100 discounts', tone: 'danger' });
+    expect(buildKpis(report, window)[2].tone).toBeUndefined();
   });
   it('leaves out effective return when the report has none, and shows cashback for cashback cards', () => {
     const k = buildKpis({ ...report, summary: { ...report.summary, points: 0, pointsValueInr: null, cashbackInr: 340, grossValueInr: 340, effectivePct: null } }, window);
@@ -134,12 +135,12 @@ describe('parseRewardsQuery / rewardsHref', () => {
     expect(parseRewardsQuery({ rule: 'r2', page: '3', size: '50' }, ['r1', 'r2'])).toEqual({ ruleId: 'r2', page: 2, size: 50 });
   });
   it('ignores unknown rules and invalid page or size', () => {
-    expect(parseRewardsQuery({ rule: 'nope', page: '0', size: '7' }, ['r1'])).toEqual({ ruleId: undefined, page: 0, size: 10 });
-    expect(parseRewardsQuery(undefined, [])).toEqual({ ruleId: undefined, page: 0, size: 10 });
+    expect(parseRewardsQuery({ rule: 'nope', page: '0', size: '7' }, ['r1'])).toEqual({ ruleId: undefined, page: 0, size: 25 });
+    expect(parseRewardsQuery(undefined, [])).toEqual({ ruleId: undefined, page: 0, size: 25 });
   });
   it('writes only non-default params', () => {
     const base = '/accounts/c1/rewards';
-    expect(rewardsHref(base, { page: 0, size: 10 })).toBe(base);
+    expect(rewardsHref(base, { page: 0, size: 25 })).toBe(base);
     expect(rewardsHref(base, { ruleId: 'r1', page: 1, size: 50 })).toBe(`${base}?rule=r1&page=2&size=50`);
   });
 });
@@ -160,11 +161,11 @@ describe('lineRow', () => {
     cardLabel: 'Meera',
   };
   it('formats a line', () => {
-    expect(lineRow(line)).toMatchObject({ date: '3 Oct', description: 'Uber', holder: 'Meera', basis: '352', rule: 'Base', earned: '8 pts', why: { label: 'Earned', tone: 'success' } });
+    expect(lineRow(line)).toMatchObject({ date: '3 Oct', description: 'Uber', holder: 'Meera', basis: '352.00', rule: 'Base', earned: '8 pts', why: { label: 'Earned', tone: 'success' } });
   });
   it('shows rupees for cashback and a plain word for a missing rule', () => {
     const r = lineRow({ ...line, earnedUnit: 'RUPEES', earned: 12, ruleName: null, reason: 'NO_RULE', cardLabel: null });
-    expect(r).toMatchObject({ earned: '₹12', rule: 'No rule', holder: null, why: { label: 'No rule', tone: 'neutral' } });
+    expect(r).toMatchObject({ earned: '₹12.00', rule: 'No rule', holder: null, why: { label: 'No rule', tone: 'neutral' } });
   });
   it('pluralises the subtitle', () => {
     expect(linesSubtitle(30, window)).toBe('30 lines · This anniversary year');

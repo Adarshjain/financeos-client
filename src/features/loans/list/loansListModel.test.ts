@@ -8,10 +8,11 @@ import {
   closedLoansLine,
   joinDates,
   loanRow,
+  loansHero,
   loansUrl,
-  loanTiles,
   matchBanner,
   nextCell,
+  nextEmiDate,
   numberWord,
   paidToast,
   parseLoansUrl,
@@ -59,8 +60,8 @@ const summary: LoansSummaryDetail = {
 describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
     expect(parseLoansUrl({})).toEqual({ q: '', page: 0, size: 25 });
-    expect(parseLoansUrl({ q: ' sbi ', page: '4', size: '10' })).toEqual({ q: 'sbi', page: 3, size: 10 });
-    expect(parseLoansUrl({ page: 'x', size: '99' })).toEqual({ q: '', page: 0, size: 25 });
+    expect(parseLoansUrl({ q: ' sbi ', page: '4', size: '100' })).toEqual({ q: 'sbi', page: 3, size: 100 });
+    expect(parseLoansUrl({ page: 'x', size: '10' })).toEqual({ q: '', page: 0, size: 25 });
   });
 
   it('builds the tab URL with only non-default parts', () => {
@@ -69,31 +70,39 @@ describe('URL state', () => {
   });
 });
 
-describe('loanTiles', () => {
-  it('derives the four tiles', () => {
-    expect(loanTiles(summary, TODAY)).toEqual([
-      { label: 'Outstanding', value: '₹50.5L', context: 'of ₹55.5L borrowed' },
-      { label: 'EMIs per month', value: '₹63,954', context: '3 loans · 5th, 7th, 10th' },
-      { label: 'Overdue', value: '₹63,954', context: '3 EMIs unpaid', tone: 'danger' },
-      { label: 'Interest this FY', value: '₹3,88,210', context: 'Apr – Oct 2026' },
+describe('loansHero', () => {
+  it('puts total outstanding in the hero with the overdue amount as its change line', () => {
+    expect(loansHero(summary, TODAY)).toEqual({
+      label: 'Total outstanding',
+      value: '₹50,50,000',
+      change: { text: '₹63,954 overdue · 3 EMIs', tone: 'danger' },
+      figures: [
+        { label: 'EMIs a month', value: '₹63,954', caption: '3 loans' },
+        { label: 'Next EMI', value: '5 Nov' },
+      ],
+    });
+  });
+
+  it('has no change line when nothing is overdue', () => {
+    expect(loansHero({ ...summary, overdueAmount: 0, overdueCount: 0 }, TODAY).change).toBeUndefined();
+  });
+
+  it('copes with no loans', () => {
+    const none = loansHero({ ...summary, activeLoanCount: 0, emiDueDays: [], monthlyEmiTotal: 0 }, TODAY);
+    expect(none.figures).toEqual([
+      { label: 'EMIs a month', value: '₹0', caption: '0 loans' },
+      { label: 'Next EMI', value: '—' },
     ]);
   });
+});
 
-  it('reads zero wording when nothing is overdue', () => {
-    const tiles = loanTiles({ ...summary, overdueAmount: 0, overdueCount: 0 }, TODAY);
-    expect(tiles[2]).toEqual({ label: 'Overdue', value: '₹0', context: 'Nothing overdue', tone: undefined });
-  });
-
-  it('singularises and copes with no loans', () => {
-    expect(loanTiles({ ...summary, overdueCount: 1 }, TODAY)[2].context).toBe('1 EMI unpaid');
-    const none = loanTiles({ ...summary, activeLoanCount: 0, emiDueDays: [], monthlyEmiTotal: 0 }, TODAY);
-    expect(none[1]).toMatchObject({ value: '₹0', context: '0 loans' });
-    expect(loanTiles({ ...summary, activeLoanCount: 1, emiDueDays: [22] }, TODAY)[1].context).toBe('1 loan · 22nd');
-  });
-
-  it('shows amounts under a lakh in full', () => {
-    const tiles = loanTiles({ ...summary, totalOutstanding: 85000, borrowedPrincipal: 99000 }, TODAY);
-    expect(tiles[0]).toMatchObject({ value: '₹85,000', context: 'of ₹99,000 borrowed' });
+describe('nextEmiDate', () => {
+  it('is the first EMI day from today on, else the first one of next month', () => {
+    expect(nextEmiDate([10, 5, 7], '2026-10-06')).toBe('2026-10-07');
+    expect(nextEmiDate([10, 5, 7], '2026-10-21')).toBe('2026-11-05');
+    expect(nextEmiDate([5], '2026-12-21')).toBe('2027-01-05');
+    expect(nextEmiDate([31], '2026-11-02')).toBe('2026-11-30');
+    expect(nextEmiDate([], '2026-10-21')).toBeNull();
   });
 });
 

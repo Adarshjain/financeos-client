@@ -100,7 +100,7 @@ export function CapsSection({ accountId, usage }: { accountId: string; usage?: R
             ? `${deleting.ruleCount ? formatCount(deleting.ruleCount, ['rule', 'rules']) : 'Some rules'} still use this cap. Detach them first; the rules stay.`
             : "The cap goes. Your rules and rewards stay. This can't be undone."
         }
-        confirmLabel="Delete cap"
+        confirmLabel="Delete"
         confirmDisabled={deleting ? usedByRules(deleting) : false}
         loading={remove.isPending}
         onConfirm={confirmDelete}

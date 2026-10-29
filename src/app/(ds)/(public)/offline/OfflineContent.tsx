@@ -11,9 +11,9 @@ export function OfflineContent() {
       <EmptyState
         illustration={<Illustration variant="offline" />}
         title="You're offline"
-        description="Check your connection."
+        description="Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show."
         action={{
-          label: 'Retry',
+          label: 'Try again',
           onSelect: () => window.location.reload(),
         }}
       />

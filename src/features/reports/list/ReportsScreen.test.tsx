@@ -84,11 +84,12 @@ describe('ReportsScreen list', () => {
     expect(within(table).getByText('Home')).toBeInTheDocument();
   });
 
-  it('has the type chips and no Datasource filter', () => {
+  it('has one Type dropdown chip and no Datasource filter', async () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     expect(screen.queryByRole('button', { name: /Datasource/ })).toBeNull();
-    for (const label of ['All', 'KPI', 'Chart', 'Breakdown', 'Table']) {
-      expect(screen.getByRole('button', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Type' }));
+    for (const label of ['All types', 'KPI', 'Chart', 'Breakdown', 'Table']) {
+      expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
     }
   });
 
@@ -110,10 +111,11 @@ const tableR = report({ id: 'r6', name: 'Recent transactions', type: 'TABLE' });
 const mixed = rowsFor([spend, worth, kpi2, rewards, breakdown, tableR]);
 
 describe('chip labels', () => {
-  it('shows each type chip (Breakdown apart from Chart) with no count', () => {
+  it('offers each type (Breakdown apart from Chart) with no count', async () => {
     renderWithQuery(<ReportsScreen {...props({ rows: mixed })} />);
-    for (const name of ['All', 'KPI', 'Chart', 'Breakdown', 'Table']) {
-      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Type' }));
+    for (const name of ['KPI', 'Chart', 'Breakdown', 'Table']) {
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
     }
   });
 
@@ -147,7 +149,7 @@ describe('toolbar', () => {
   it('has search and the type chips in one row, and Ask the data only in the Ask instead card', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     const search = screen.getByPlaceholderText('Search');
-    expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'All' }).closest('div[class*="overflow-x-auto"]'));
+    expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'Type' }).closest('div[class*="overflow-x-auto"]'));
     const asks = screen.getAllByRole('link', { name: 'Ask the data' });
     expect(asks).toHaveLength(1);
     expect(asks[0]).toHaveAttribute('href', ASK_HREF);
@@ -160,15 +162,16 @@ describe('toolbar', () => {
 });
 
 describe('type chips', () => {
-  it('a chip filters in place and sets its ?type= URL without a server round trip; All clears it', async () => {
+  it('the Type chip filters in place and sets its ?type= URL without a server round trip; its × clears it', async () => {
     const replace = vi.spyOn(window.history, 'replaceState');
     renderWithQuery(<ReportsScreen {...props({ type: 'KPI' })} />);
-    await user.click(screen.getByRole('button', { name: /^Chart/ }));
+    await user.click(screen.getByRole('button', { name: /^KPI/ }));
+    await user.click(screen.getByRole('option', { name: 'Chart' }));
     expect(replace).toHaveBeenLastCalledWith(null, '', '/reports?type=CHART');
     const table = screen.getByRole('table');
     expect(within(table).getByText('Rewards earned by card')).toBeInTheDocument();
     expect(within(table).queryByText('Net worth over time')).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'All' }));
+    await user.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(replace).toHaveBeenLastCalledWith(null, '', '/reports');
     expect(within(screen.getByRole('table')).getByText('Net worth over time')).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
@@ -178,24 +181,24 @@ describe('type chips', () => {
 
   it('follows the URL when it changes after load (back/forward)', () => {
     const { rerender } = renderWithQuery(<ReportsScreen {...props()} />);
-    expect(screen.getByRole('button', { name: 'All' }).className).toContain('bg-brand-tint');
+    expect(screen.getByRole('button', { name: 'Type' })).toBeInTheDocument();
     search.params = new URLSearchParams('type=TABLE');
     rerender(<ReportsScreen {...props()} />);
-    expect(screen.getByRole('button', { name: /^Table/ }).className).toContain('bg-brand-tint');
+    expect(screen.getByRole('button', { name: 'Reset filter' })).toBeInTheDocument();
     search.params = new URLSearchParams();
   });
 
-  it('marks the chip of the URL type as selected', () => {
+  it('shows the chip of the URL type as changed, with its value only', () => {
     renderWithQuery(<ReportsScreen {...props({ type: 'TABLE' })} />);
-    expect(screen.getByRole('button', { name: /^Table/ }).className).toContain('bg-brand-tint');
-    expect(screen.getByRole('button', { name: 'All' }).className).not.toContain('bg-brand-tint');
+    expect(screen.getByRole('button', { name: 'Reset filter' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Type' })).toBeNull();
   });
 
   it('says nothing matches, and Clear filters goes back to All, when a type has no reports', async () => {
     renderWithQuery(<ReportsScreen {...props({ type: 'TABLE', rows: [] })} />);
     expect(screen.getByText('No reports match')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(screen.getByRole('button', { name: 'All' }).className).toContain('bg-brand-tint');
+    expect(screen.getByRole('button', { name: 'Type' })).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });
 });
@@ -266,7 +269,7 @@ describe('row menu', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     await openMenu('Net worth over time');
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
-    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete report' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
     await waitFor(() =>
       expect(api.DELETE).toHaveBeenCalledWith('/api/v1/reports/{id}', { params: { path: { id: 'r2' } } }),
     );

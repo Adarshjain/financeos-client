@@ -69,10 +69,10 @@ describe('/investments/epf: data', () => {
     expect(screen.getAllByText('₹8,43,210').length).toBeGreaterThan(0);
     expect(screen.getByText('Passbook up to September 2026')).toBeInTheDocument();
     expect(screen.getByText('Northwind Labs · member ID …67890 · UAN …4321')).toBeInTheDocument();
-    expect(screen.getAllByText('Interest · FY 2025-26').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Interest · FY 25-26').length).toBeGreaterThan(0);
     expect(screen.getByText('Contoso Systems')).toBeInTheDocument();
     expect(screen.getByText('Pension (EPS)')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
   });
 
   it('shows the stale banner with the months missing', async () => {

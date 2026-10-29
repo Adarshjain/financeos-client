@@ -3,8 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import type { TopBarMenuItem } from '@/components/ds';
-import { GRID_GAP } from '@/components/ds';
+import { ActionBar, Button, GRID_GAP, Menu } from '@/components/ds';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import { DividendAddDialog } from '@/features/investments/dividends/DividendFormDialog';
 import { InstrumentEditDialog } from '@/features/investments/instruments/InstrumentEditDialog';
@@ -25,7 +24,7 @@ import {
   TradesCard,
 } from './HoldingCards';
 import type { HoldingPageData } from './holdingData';
-import { HoldingFigures } from './HoldingFigures';
+import { HoldingHero, PositionCard } from './HoldingFigures';
 import {
   holdingFigures,
   holdingHeader,
@@ -45,6 +44,8 @@ export interface HoldingScreenProps {
 }
 
 type HoldingDialog = 'trade' | 'dividend' | 'corporate-action' | 'price-history' | 'edit-instrument' | 'reset-instrument';
+
+const ASSET_WORDS: Record<string, string> = { stock: 'Stock', mutual_fund: 'Mutual fund', etf: 'ETF' };
 
 const EMPTY_SECTION = { rows: [], position: { page: 0, size: 1, totalElements: 0, totalPages: 0 } };
 
@@ -68,22 +69,36 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
 
   const id = holding.instrumentId;
   const ref = { id, name: holding.name, symbol: holding.symbol };
-  const addMenu: TopBarMenuItem[] = [
-    { id: 'trade', label: 'Record trade', onSelect: () => setDialog('trade') },
-    { id: 'dividend', label: 'Record dividend', onSelect: () => setDialog('dividend') },
-    { id: 'corporate-action', label: 'Record corporate action', onSelect: () => setDialog('corporate-action') },
-    { id: 'price', label: 'Record price', onSelect: () => setOverriding(true) },
-  ];
+  const figures = holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date());
+  const facts = [
+    ASSET_WORDS[holding.assetType] ?? 'Holding',
+    instrument?.exchange,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <>
-      <ShellPage crumb={subCrumb('investments')} title={header.title} backHref={HOLDINGS_HREF} addMenu={addMenu}>
+      <ShellPage crumb={subCrumb('investments')} title={header.title} backHref={HOLDINGS_HREF}>
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
-          <HoldingFigures
-            hero={holdingHero(holding)}
-            figures={holdingFigures(holding, instrument, trades?.position.totalElements ?? 0, now ? new Date(now) : new Date())}
-            onOverride={() => setOverriding(true)}
+          <HoldingHero hero={holdingHero(holding)} figures={figures} />
+          <ActionBar
+            info={facts}
+            actions={
+              <Button variant="primary" onClick={() => setDialog('trade')}>
+                Record trade
+              </Button>
+            }
+            menu={
+              <>
+                <Menu.Item onSelect={() => setDialog('dividend')}>Record dividend</Menu.Item>
+                <Menu.Item onSelect={() => setDialog('corporate-action')}>Record corporate action</Menu.Item>
+                <Menu.Item onSelect={() => setOverriding(true)}>Record price</Menu.Item>
+                {instrument ? <Menu.Item onSelect={() => setDialog('edit-instrument')}>Edit instrument</Menu.Item> : null}
+              </>
+            }
           />
+          <PositionCard figures={figures} onOverride={() => setOverriding(true)} />
           <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-8 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <PriceChartCard history={history} splits={splits} onOpenHistory={() => setDialog('price-history')} />
@@ -94,7 +109,7 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
             <div className="desk:col-span-4 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <DividendsCard instrumentId={id} initial={dividends ?? EMPTY_SECTION} onRecord={() => setDialog('dividend')} />
               <CorporateActionsCard instrumentId={id} initial={corporateActions ?? EMPTY_SECTION} onRecord={() => setDialog('corporate-action')} />
-              {instrument ? <InstrumentCard rows={instrumentRows(instrument)} onEdit={() => setDialog('edit-instrument')} /> : null}
+              {instrument ? <InstrumentCard rows={instrumentRows(instrument)} /> : null}
             </div>
           </div>
         </div>

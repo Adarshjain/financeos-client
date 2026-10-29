@@ -64,7 +64,7 @@ function ExistingWithdrawals({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
                 subtitle={[formatDate(o.entry.creditedOn, 'full'), ...epfOptionNotes(o)].join(' · ')}
                 trailing={
                   <Text variant="body-strong" as="span">
-                    {formatMoney(epfOptionAmount(o.entry), { decimals: 'auto' })}
+                    {formatMoney(epfOptionAmount(o.entry), { decimals: 'exact' })}
                   </Text>
                 }
               />
@@ -77,7 +77,7 @@ function ExistingWithdrawals({ epf }: { epf: UseEpfWithdrawalLinkResult }) {
           className="px-0"
           onClick={() => epf.setRecordTds(!epf.recordTds)}
           leading={<Checkbox checked={epf.recordTds} />}
-          title={`Record TDS of ${formatMoney(epf.tdsGap, { decimals: 'auto' })}`}
+          title={`Record TDS of ${formatMoney(epf.tdsGap, { decimals: 'exact' })}`}
         />
       ) : null}
     </>

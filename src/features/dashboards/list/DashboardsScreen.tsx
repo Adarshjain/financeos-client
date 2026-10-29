@@ -190,9 +190,9 @@ export function DashboardsScreen() {
               onRowSelect={(row) => router.push(row.href)}
               empty={
                 <EmptyState
-                  compact
-                  description="No dashboards match"
-                  action={{ label: 'Clear search', variant: 'link', onSelect: () => setSearch('') }}
+                  title="No dashboards match"
+                  description="Try a different search."
+                  action={{ label: 'Clear filters', variant: 'secondary', onSelect: () => setSearch('') }}
                 />
               }
               stickyHeader={false}
@@ -209,7 +209,7 @@ export function DashboardsScreen() {
           }}
           title={`Delete ${deleting.name}?`}
           description="Its widgets go with it; your saved reports stay. This can't be undone."
-          confirmLabel="Delete dashboard"
+          confirmLabel="Delete"
           confirmLoading={remove.isPending}
           onConfirm={() => remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}
         />
@@ -223,6 +223,7 @@ export function DashboardsListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ReportsTabs active="dashboards" />
+      <FilterBar search={{ value: '', onValueChange: noop }} />
       <Card>
         <DataTable
           columns={makeColumns({ onEdit: noop, onToggleDefault: noop, onDelete: noop })}

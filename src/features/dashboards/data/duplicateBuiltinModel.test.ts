@@ -37,7 +37,7 @@ describe('duplicateBuiltin', () => {
   });
 
   it('writes the window note in dd/mm/yyyy, and none without a window', () => {
-    expect(windowNote('2026-10-01')).toBe('This copy is fixed to the window open on 01/10/2026.');
+    expect(windowNote('2026-10-01')).toBe('This copy is fixed to the window open on 01/10/26.');
     expect(windowNote(null)).toBeNull();
   });
 });

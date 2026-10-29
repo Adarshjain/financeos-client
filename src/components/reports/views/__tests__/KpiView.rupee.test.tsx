@@ -47,7 +47,7 @@ describe('KPI values carry the rupee symbol', () => {
     ['a dashboard widget', 'widget' as const],
   ])('a summed amount on %s', (_, variant) => {
     render(<KpiView data={spend} variant={variant} />);
-    expect(screen.getByText('-₹1,23,456.50')).toBeInTheDocument();
+    expect(screen.getByText('−₹1,23,456.50')).toBeInTheDocument();
   });
 
   it('the net worth value, whose measure is not named like money', () => {
@@ -57,7 +57,7 @@ describe('KPI values carry the rupee symbol', () => {
 
   it('the tappable value that opens the underlying data', () => {
     render(<KpiView data={spend} variant="widget" onValueClick={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'View underlying data' })).toHaveTextContent('-₹1,23,456.50');
+    expect(screen.getByRole('button', { name: 'View underlying data' })).toHaveTextContent('−₹1,23,456.50');
   });
 
   it('the change and the previous value on the comparison line', () => {
@@ -73,7 +73,7 @@ describe('KPI values carry the rupee symbol', () => {
     ['the builder preview (flow)', false],
   ])('through ReportDataView in %s', (_, fill) => {
     render(<ReportDataView data={spend} fill={fill} />);
-    expect(screen.getByText('-₹1,23,456.50')).toBeInTheDocument();
+    expect(screen.getByText('−₹1,23,456.50')).toBeInTheDocument();
   });
 
   it('but a count stays a plain number', () => {

@@ -99,7 +99,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
     await expect(underlying.getByText('Breakdown fuel one')).toHaveCount(0);
     // Opened from a row, the dropdown is on that row's category (not All).
-    await expect(underlying.getByRole('button', { name: `Category: Bd Food ${tag}` })).toBeVisible();
+    await expect(underlying.getByRole('button', { name: `Bd Food ${tag}`, exact: true })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(underlying).toHaveCount(0);
 
@@ -107,13 +107,13 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await page.getByRole('button', { name: 'Underlying data' }).first().click();
     await expect(underlying.getByText('4 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
     await expect(underlying.getByText('Breakdown fuel one').first()).toBeVisible();
-    await underlying.getByRole('button', { name: 'Category: All' }).click();
+    await underlying.getByRole('button', { name: 'Category', exact: true }).click();
     await page.getByRole('option', { name: `Bd Food ${tag}` }).click();
     await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
     await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
     await expect(underlying.getByText('Breakdown fuel one')).toHaveCount(0);
     // Escape closes the dialog right after an entry was picked, once the popover is gone.
-    await underlying.getByRole('button', { name: `Category: Bd Food ${tag}` }).click();
+    await underlying.getByRole('button', { name: `Bd Food ${tag}`, exact: true }).click();
     await page.getByRole('option', { name: `Bd Fuel ${tag}` }).click();
     await expect(page.getByRole('option', { name: `Bd Fuel ${tag}` })).toHaveCount(0);
     await expect(underlying.getByText('Breakdown fuel one').first()).toBeVisible({ timeout: 45_000 });
@@ -195,7 +195,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await page.getByRole('menuitem', { name: 'Delete' }).click();
     await page
       .getByRole('dialog')
-      .getByRole('button', { name: 'Delete report' })
+      .getByRole('button', { name: 'Delete', exact: true })
       .click();
     await page.waitForURL(/\/reports$/);
     await expect(page.getByRole('table')).toBeVisible();
@@ -296,9 +296,11 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // The bar order is the report's; read which category the first bar is from the dialog's entry chip.
     await bars.first().click();
     const dialog = page.getByRole('dialog', { name: /^Underlying data/ });
-    const chip = dialog.getByRole('button', { name: /^Category: / });
+    // A changed chip shows only its value: the tapped bar's category.
+    const names = [...rowOf.keys()].map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const chip = dialog.getByRole('button', { name: new RegExp(`^(${names.join('|')})$`) }).first();
     await expect(chip).toBeVisible({ timeout: 45_000 });
-    const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).replace(/^Category: /, '').trim();
+    const tapped = ((await chip.getAttribute('aria-label')) ?? (await chip.innerText())).trim();
     expect(rowOf.has(tapped)).toBe(true);
     const other = [...rowOf.keys()].find((name) => name !== tapped)!;
     await expect(dialog.getByText('1 transaction makes up this figure')).toBeVisible({ timeout: 45_000 });

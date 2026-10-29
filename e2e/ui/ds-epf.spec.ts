@@ -31,7 +31,7 @@ const shown = (locator: Locator) => locator.locator('visible=true').first();
 
 /** A withdrawal row's title: "Partial withdrawal (Form 31)". */
 const WITHDRAWAL = /\(Form (31|19|10C)\)/;
-const plus = (page: Page) => page.getByRole('button', { name: 'Add', exact: true }).first();
+const plus = (page: Page) => page.getByRole('button', { name: 'Record EPF entry', exact: true }).first();
 const toast = (page: Page, text: string | RegExp) => page.locator('[data-sonner-toast]').filter({ hasText: text }).first();
 
 const upload = async (page: Page, lines = passbookLines(), name = 'synthetic-passbook.pdf') => {
@@ -116,8 +116,8 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toHaveCount(0);
       await expect(toast(page, 'Entry added')).toBeVisible();
 
-      // The phone hero shows the balance without a label; desktop's tile names it.
-      if (viewport.width >= 641) await expect(shown(page.getByText('EPF balance', { exact: true }))).toBeVisible();
+      // The hero names the balance at both sizes.
+      await expect(shown(page.getByText('EPF balance', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('₹5,00,000'))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(shown(page.getByText('Hand Added Labs'))).toBeVisible();
@@ -146,10 +146,10 @@ for (const viewport of VIEWPORTS) {
       await contribution(page, 'Added by you').click();
       const entry = page.getByRole('dialog').first();
       await expect(entry.getByText('Added by you. A passbook that has this month replaces it.')).toBeVisible();
-      await entry.getByRole('button', { name: 'Delete entry' }).click();
+      await entry.getByRole('button', { name: 'Delete', exact: true }).click();
       const confirm = page.getByRole('dialog', { name: 'Delete EPF entry?' });
       await expect(confirm).toBeVisible();
-      await confirm.getByRole('button', { name: 'Delete entry' }).click();
+      await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(toast(page, 'Entry deleted')).toBeVisible();
       await expect(shown(page.getByText('₹5,00,000'))).toBeVisible();
       await expect(page.getByText('₹5,13,150')).toHaveCount(0);
@@ -171,16 +171,16 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(page.getByText(/^Interest · FY/)).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'FY 2026-27', exact: true }).click();
-      await page.getByRole('option', { name: 'FY 2025-26' }).click();
+      await page.getByRole('button', { name: 'FY 26-27', exact: true }).click();
+      await page.getByRole('option', { name: 'FY 25-26' }).click();
       await page.waitForURL(/fy=2025/);
-      await expect(shown(page.getByText(/Interest · FY 2025-26/))).toBeVisible();
+      await expect(shown(page.getByText(/Interest · FY 25-26/))).toBeVisible();
       await expect(page.getByText('Opening balance')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'FY 2025-26', exact: true }).click();
+      await page.getByRole('button', { name: 'FY 25-26', exact: true }).click();
       await page.getByRole('option', { name: 'All years' }).click();
       await page.waitForURL(/fy=all/);
-      await expect(shown(page.getByText(/Interest · FY 2025-26/))).toBeVisible();
+      await expect(shown(page.getByText(/Interest · FY 25-26/))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
 
       // Employers card.
@@ -211,7 +211,7 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL('**/investments/epf');
       await expect(shown(page.getByText(PASSBOOK_BALANCE))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
-      await expect(shown(page.getByText(/Interest · FY 2025-26/))).toBeVisible();
+      await expect(shown(page.getByText(/Interest · FY 25-26/))).toBeVisible();
       await expect(shown(page.getByText('NORTHWIND LABS PRIVATE LIMITED'))).toBeVisible();
 
       // The same passbook again: nothing new.
@@ -292,7 +292,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(/From the passbook imported on/)).toBeVisible();
       await expect(dialog.getByText('Upload a newer passbook to change it.')).toBeVisible();
       await expect(dialog.getByRole('textbox', { name: 'Your share' })).toBeDisabled();
-      await expect(dialog.getByRole('button', { name: 'Delete entry' })).toHaveCount(0);
+      await expect(dialog.getByRole('button', { name: 'Delete', exact: true })).toHaveCount(0);
       await expect(dialog.getByRole('button', { name: 'Save entry' })).toHaveCount(0);
       await dialog.getByRole('button', { name: 'Close' }).filter({ hasText: 'Close' }).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -302,7 +302,7 @@ for (const viewport of VIEWPORTS) {
       dialog = page.getByRole('dialog').first();
       await expect(dialog.getByText('Only TDS, the note and the link can change.')).toBeVisible();
       await expect(dialog.getByRole('textbox', { name: 'Your share' })).toBeDisabled();
-      await expect(dialog.getByRole('button', { name: 'Delete entry' })).toHaveCount(0);
+      await expect(dialog.getByRole('button', { name: 'Delete', exact: true })).toHaveCount(0);
       await expect(dialog.getByRole('checkbox', { name: 'TDS was deducted' })).toBeEnabled();
       await dialog.getByRole('checkbox', { name: 'TDS was deducted' }).click();
       await dialog.getByRole('textbox', { name: 'TDS' }).fill('1800');

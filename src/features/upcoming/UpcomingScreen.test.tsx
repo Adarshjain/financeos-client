@@ -49,6 +49,12 @@ vi.mock('@/features/lendings/SettleDialog', () => ({
 
 import { useObligations } from '@/lib/query/hooks/useObligations';
 
+const pickKind = async (label: string) => {
+  await userEvent.click(screen.getByRole('button', { name: /^(Type|All|Card bills|EMIs|Lending|Statements)$/ }));
+  await userEvent.click(await screen.findByRole('option', { name: label }));
+};
+const headings = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
+
 const row = (o: Record<string, unknown>) => ({
   type: 'emi',
   status: 'upcoming',
@@ -83,7 +89,6 @@ function mockQuery(over: Record<string, unknown> = {}) {
   } as never);
 }
 
-const tile = (id: string) => screen.queryByTestId(`tile-${id}`);
 
 let replaceState: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
@@ -96,35 +101,49 @@ beforeEach(() => {
 });
 
 describe('UpcomingScreen totals', () => {
-  it('shows the four tiles with captions', () => {
+  it('shows Next 7 days as the headline with Overdue and Due back to you as figures', () => {
     render(<UpcomingScreen />);
-    expect(within(tile('overdue')!).getByText('₹36,603')).toBeInTheDocument();
-    expect(within(tile('overdue')!).getByText('1 EMI · 1 statement')).toBeInTheDocument();
-    expect(within(tile('next7')!).getByText('₹33,900')).toBeInTheDocument();
-    expect(within(tile('next7')!).getByText('1 card bill')).toBeInTheDocument();
-    expect(within(tile('month')!).getByText('4 items')).toBeInTheDocument();
-    expect(within(tile('dueBack')!).getByText('+₹15,000')).toBeInTheDocument();
-    expect(within(tile('dueBack')!).getByText('Rahul · 28 Oct')).toBeInTheDocument();
+    const hero = screen.getByTestId('upcoming-hero');
+    expect(within(hero).getByText('Next 7 days')).toBeInTheDocument();
+    expect(within(hero).getByText('₹33,900')).toBeInTheDocument();
+    expect(within(hero).getByText('1 card bill')).toBeInTheDocument();
+    expect(within(hero).getByText('₹36,603')).toBeInTheDocument();
+    expect(within(hero).getByText('1 EMI · 1 statement')).toBeInTheDocument();
+    expect(within(hero).getByText('+₹15,000')).toBeInTheDocument();
+    expect(within(hero).getByText('Rahul · 28 Oct')).toBeInTheDocument();
+    expect(within(hero).queryByText('This month')).toBeNull();
   });
 
-  it('follow the filter and hide a tile with nothing in it', () => {
+  it('follows the filter: EMIs only drops Due back to you and shows ₹0 for the headline', async () => {
     render(<UpcomingScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'EMIs' }));
-    expect(tile('overdue')).not.toBeNull();
-    expect(tile('next7')).toBeNull();
-    expect(tile('dueBack')).toBeNull();
+    await pickKind('EMIs');
+    const hero = screen.getByTestId('upcoming-hero');
+    expect(within(hero).getByText('Overdue')).toBeInTheDocument();
+    expect(within(hero).getByText('₹0')).toBeInTheDocument();
+    expect(within(hero).queryByText('Due back to you')).toBeNull();
   });
 });
 
 describe('UpcomingScreen filters and range', () => {
-  it('a kind chip filters the list in place and writes ?kind= to the URL', () => {
+  it('the Type dropdown chip filters the list in place and writes ?kind= to the URL; its × and "All" put it back', async () => {
     render(<UpcomingScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'Card bills' }));
+    await pickKind('Card bills');
     expect(screen.queryByText('Home loan EMI #14')).toBeNull();
     expect(screen.getByText('HDFC Regalia Gold bill')).toBeInTheDocument();
     expect(replaceState).toHaveBeenLastCalledWith(null, '', expect.stringMatching(/\?kind=card_bill$/));
-    fireEvent.click(screen.getByRole('button', { name: 'All' }));
+    expect(screen.getByRole('button', { name: 'Card bills' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(replaceState).toHaveBeenLastCalledWith(null, '', expect.not.stringContaining('kind'));
+    expect(screen.getByText('Home loan EMI #14')).toBeInTheDocument();
+  });
+
+  it('"Reset filters" at the row end shows only while something changed and puts both chips back', () => {
+    search = new URLSearchParams('kind=emi&months=6');
+    render(<UpcomingScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(useObligations).toHaveBeenLastCalledWith(3);
+    expect(screen.getByText('HDFC Regalia Gold bill')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset filters' })).toBeNull();
   });
 
   it('starts from the URL state and queries that many months', () => {
@@ -138,7 +157,7 @@ describe('UpcomingScreen filters and range', () => {
   it('defaults to 3 months and the range Select refetches with the picked range and updates the URL', async () => {
     render(<UpcomingScreen />);
     expect(useObligations).toHaveBeenLastCalledWith(3);
-    await userEvent.click(screen.getByRole('button', { name: 'Range' }));
+    await userEvent.click(screen.getByRole('button', { name: '3 months' }));
     await userEvent.click(await screen.findByText('6 months'));
     expect(useObligations).toHaveBeenLastCalledWith(6);
     expect(replaceState).toHaveBeenLastCalledWith(null, '', expect.stringMatching(/\?months=6$/));
@@ -148,16 +167,15 @@ describe('UpcomingScreen filters and range', () => {
 describe('UpcomingScreen list', () => {
   it('orders sections Overdue, Next 7 days, Later this month, Due date unknown, then months', () => {
     render(<UpcomingScreen />);
-    const text = document.body.textContent!;
-    const order = ['Overdue · 2', 'Next 7 days · 1', 'Later this month · 3', 'Due date unknown · 1', 'November · 1'].map((h) => text.indexOf(h));
-    expect(order.every((i) => i >= 0)).toBe(true);
-    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    const heads = headings();
+    const names = ['Overdue· 2', 'Next 7 days· 1', 'Later this month· 3', 'Due date unknown· 1', 'November· 1'];
+    expect(names.map((n) => heads.findIndex((h) => h.startsWith(n)))).toEqual([0, 1, 2, 3, 4]);
   });
 
   it('shows the section total on the right of its header', () => {
     render(<UpcomingScreen />);
-    expect(screen.getByText('Overdue · 2').parentElement).toHaveTextContent('₹36,603');
-    expect(screen.getByText('Due date unknown · 1').parentElement).toHaveTextContent('₹8,240');
+    expect(screen.getByRole('heading', { name: /^Overdue/ })).toHaveTextContent('₹36,603');
+    expect(screen.getByRole('heading', { name: /^Due date unknown/ })).toHaveTextContent('₹8,240');
   });
 
   it('folds months after the first into one line that expands in place', () => {
@@ -169,7 +187,7 @@ describe('UpcomingScreen list', () => {
     expect(screen.getByTestId('folded-2027-01')).toHaveTextContent('January · 1 · ₹200');
     fireEvent.click(within(folded).getByRole('button', { name: /Show/ }));
     expect(screen.getByText('Car loan EMI #9')).toBeInTheDocument();
-    expect(screen.getByText('December · 2')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^December/ })).toHaveTextContent('· 2');
     expect(screen.queryByTestId('folded-2026-12')).toBeNull();
     expect(screen.queryByText('Car loan EMI #11')).toBeNull();
   });
@@ -178,7 +196,7 @@ describe('UpcomingScreen list', () => {
     render(<UpcomingScreen />);
     expect(screen.getByText(/10 days overdue · SBI Cashback/)).toBeInTheDocument();
     expect(screen.getByText(/in 2 days · Amex Platinum/)).toBeInTheDocument();
-    expect(screen.getByText('Due date unknown')).toBeInTheDocument();
+    expect(screen.getAllByText('Due date unknown').length).toBeGreaterThan(0);
   });
 });
 
@@ -217,22 +235,20 @@ describe('UpcomingScreen row trailing', () => {
     expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
   });
 
-  it('lending rows get Settle plus a chevron to the person; Settle opens the sheet with direction and balance', () => {
+  it('lending rows get Settle; tapping the row opens the person; Settle opens the sheet with direction and balance', () => {
     render(<UpcomingScreen />);
     expect(screen.getAllByRole('button', { name: 'Settle' })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toEqual(
-      expect.arrayContaining(['/loans/lendings/C1', '/loans/lendings/C2']),
-    );
+    expect(screen.queryByRole('link', { name: 'Open' })).toBeNull();
     fireEvent.click(screen.getAllByRole('button', { name: 'Settle' })[1]);
     expect(screen.getByTestId('settle')).toHaveTextContent('C1|Rahul Sharma|lent|15000');
     fireEvent.click(screen.getAllByRole('button', { name: 'Settle' })[0]);
     expect(screen.getByTestId('settle')).toHaveTextContent('C2|Priya Nair|borrowed|12000');
   });
 
-  it('EMI rows link to the loan with the installment; card bills have no chevron', () => {
+  it('EMI and lending rows are tappable (no chevron); card bills are not', () => {
     render(<UpcomingScreen />);
-    expect(screen.getAllByRole('link', { name: 'Open' }).map((a) => a.getAttribute('href'))).toContain('/loans/L1?installment=14');
-    expect(screen.getAllByRole('link', { name: 'Open' })).toHaveLength(4);
+    expect(screen.queryByRole('link', { name: 'Open' })).toBeNull();
+    expect(screen.getAllByRole('button', { name: /EMI #14/ })).toHaveLength(1);
   });
 
   it('shows no type badges', () => {
@@ -267,26 +283,28 @@ describe('UpcomingScreen states', () => {
     mockQuery({ data: undefined, error: new Error('x'), refetch });
     render(<UpcomingScreen />);
     expect(screen.getByText("Couldn't load upcoming items.")).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Card bills' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Type' })).toBeInTheDocument();
     expect(screen.queryByText(/Nothing scheduled/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(refetch).toHaveBeenCalled();
   });
 
-  it('nothing in range reads "Nothing scheduled within the next N months."', () => {
+  it('nothing in range reads "Nothing scheduled" with the range in its hint', () => {
     mockQuery({ data: [] });
     render(<UpcomingScreen />);
-    expect(screen.getByText('Nothing scheduled within the next 3 months.')).toBeInTheDocument();
-    expect(screen.queryByTestId('tile-overdue')).toBeNull();
+    expect(screen.getByText('Nothing scheduled')).toBeInTheDocument();
+    expect(screen.getByText('Nothing is due within the next 3 months.')).toBeInTheDocument();
+    expect(screen.queryByTestId('upcoming-hero')).toBeNull();
   });
 
   it('a kind filter with no rows says so and Clear filters shows every kind again', () => {
     search = new URLSearchParams('kind=card_bill');
     mockQuery({ data: [row({ type: 'emi' })] });
     render(<UpcomingScreen />);
-    expect(screen.getByText('Nothing of this kind within the next 3 months.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing matches')).toBeInTheDocument();
+    expect(screen.getByText('Nothing of this kind is due within the next 3 months.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(screen.queryByText(/Nothing of this kind/)).toBeNull();
+    expect(screen.queryByText('Nothing matches')).toBeNull();
   });
 
   it('no filter and no rows has no Clear filters action', () => {
@@ -299,13 +317,13 @@ describe('UpcomingScreen states', () => {
     search = new URLSearchParams('months=1');
     mockQuery({ data: [] });
     render(<UpcomingScreen />);
-    expect(screen.getByText('Nothing scheduled within the next 1 month.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing is due within the next 1 month.')).toBeInTheDocument();
   });
 
   it('loading shows skeleton tiles and rows, no filters', () => {
     mockQuery({ data: undefined, isPending: true, isFetched: false });
     render(<UpcomingScreen />);
-    expect(screen.queryByRole('button', { name: 'All' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Type' })).toBeNull();
     expect(document.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(8);
   });
 });
@@ -321,9 +339,9 @@ describe('UpcomingScreen URL as the source of truth', () => {
     expect(useObligations).toHaveBeenLastCalledWith(3);
   });
 
-  it('keeps a filter the user just picked until the URL itself changes', () => {
+  it('keeps a filter the user just picked until the URL itself changes', async () => {
     const { rerender } = render(<UpcomingScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'EMIs' }));
+    await pickKind('EMIs');
     rerender(<UpcomingScreen />);
     expect(screen.queryByText('HDFC Regalia Gold bill')).toBeNull();
   });

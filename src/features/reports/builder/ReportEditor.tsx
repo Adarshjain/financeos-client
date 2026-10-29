@@ -256,7 +256,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
             'Dashboards that use it will show the report as unavailable.',
             'Your transactions and other data stay.',
           ]}
-          confirmLabel="Delete report"
+          confirmLabel="Delete"
           confirmLoading={actions.remove.isPending}
           onConfirm={() =>
             actions.remove.mutate(state.reportId as string, {

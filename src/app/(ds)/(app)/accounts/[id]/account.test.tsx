@@ -198,7 +198,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     loadCard.mockResolvedValue(overview());
     await renderOverview();
 
-    expect(screen.getByText('You owe')).toBeInTheDocument();
+    expect(screen.getByText('Amount you owe')).toBeInTheDocument();
     expect(screen.getByText('due 25 Oct · unbilled ₹0')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
     // The header's Edit and the Identifiers card's Edit both open the edit dialog on this page.
@@ -214,13 +214,13 @@ describe('/accounts/[id] credit-card Overview', () => {
 
     expect(screen.getByText('Limit & cycle')).toBeInTheDocument();
     expect(screen.getByText('Anchored to statement')).toBeInTheDocument();
-    expect(screen.getByText('14.8% of ₹3L · ₹2.56L free')).toBeInTheDocument();
-    expect(screen.getByText('Due 25 Oct · 12 days left')).toBeInTheDocument();
+    expect(screen.getByText('of ₹3L limit')).toBeInTheDocument();
+    expect(screen.getByText('12 days left')).toBeInTheDocument();
     expect(screen.getByText('12 d')).toBeInTheDocument();
     expect(screen.getByText('5 Sep statement')).toBeInTheDocument();
     expect(screen.getByText('Paid 18 Sep · on time')).toBeInTheDocument();
     expect(screen.getByText('₹46,800')).toBeInTheDocument();
-    expect(screen.getByText('Anniversary year 15 Mar → 14 Mar 2027')).toBeInTheDocument();
+    expect(screen.getByText('Anniversary year 15 Mar → 14 Mar 27')).toBeInTheDocument();
     expect(screen.getByText('2,180 pts ≈ ₹1,090')).toBeInTheDocument();
     expect(screen.getByText('Arjun Mehta')).toBeInTheDocument();
     expect(screen.getByText('Primary')).toBeInTheDocument();
@@ -233,7 +233,7 @@ describe('/accounts/[id] credit-card Overview', () => {
       'href',
       '/accounts/c1/cards?add=cardholder',
     );
-    expect(screen.getByRole('link', { name: /All/ })).toHaveAttribute('href', '/accounts/c1/statements');
+    expect(screen.getAllByRole('link', { name: /View all/ })[0]).toHaveAttribute('href', '/accounts/c1/statements');
   });
 
   it('shows Unbilled so far with No bill due and no Mark paid when nothing is due', async () => {
@@ -299,7 +299,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     loadCard.mockResolvedValue(overview({ rewards: null }));
     await renderOverview();
 
-    expect(screen.getByText('Closed 30 Jun 2026')).toBeInTheDocument();
+    expect(screen.getByText('Closed 30 Jun 26')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Mark paid' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(screen.getByText('Bills')).toBeInTheDocument();
@@ -374,7 +374,7 @@ describe('/accounts/[id] bank Overview', () => {
     expect(screen.getByText('interest ₹1,842 last quarter')).toBeInTheDocument();
     expect(screen.getByText('Latest 2 of 96')).toBeInTheDocument();
     expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('₹2,95,030').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹2,95,030.00').length).toBeGreaterThan(0);
 
     expect(screen.getByText('September 2026')).toBeInTheDocument();
     expect(screen.getByText('12 rows · closing ₹1,48,320 · uploaded 13 Oct')).toBeInTheDocument();
@@ -443,7 +443,7 @@ describe('/accounts/[id] bank Overview', () => {
     loadBank.mockResolvedValue(bankData());
     await renderOverview('b1');
 
-    expect(screen.getByText('Closed 30 Jun 2026')).toBeInTheDocument();
+    expect(screen.getByText('Closed 30 Jun 26')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Upload' })).toBeNull();
   });

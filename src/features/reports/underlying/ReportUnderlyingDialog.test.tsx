@@ -87,7 +87,7 @@ describe('cellText dates', () => {
   it('reads a calendar date as day and month, with the year when not current', () => {
     const year = new Date().getFullYear();
     expect(cellText(`${year}-10-05`, dateColumn)).toBe('5 Oct');
-    expect(cellText(`${year - 1}-10-05`, dateColumn)).toBe(`5 Oct ${year - 1}`);
+    expect(cellText(`${year - 1}-10-05`, dateColumn)).toBe(`5 Oct ${String(year - 1).slice(2)}`);
     expect(cellText('n/a', dateColumn)).toBe('n/a');
   });
 });
@@ -131,13 +131,13 @@ describe('ReportUnderlyingDialog dimension dropdown', () => {
   it('is not shown without entries', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} dimensionLabel="Category" onClose={vi.fn()} />);
     await screen.findByText('Underlying data · ₹97,044');
-    expect(screen.queryByRole('button', { name: /Category: All/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Category' })).toBeNull();
   });
 
-  it('starts at Category: All with the whole report, beside the sort control', async () => {
+  it('starts at the Category chip with the whole report, beside the sort control', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} dimensionLabel="Category" onClose={vi.fn()} />);
     await screen.findByText('Underlying data · ₹97,044');
-    const all = screen.getByRole('button', { name: /Category: All/ });
+    const all = screen.getByRole('button', { name: 'Category' });
     expect(all.closest('[class*="justify-end"]')).toBe(screen.getByRole('button', { name: /Sort/ }).closest('[class*="justify-end"]'));
     expect(call(0)[1].body).toEqual(request);
   });
@@ -145,24 +145,24 @@ describe('ReportUnderlyingDialog dimension dropdown', () => {
   it('lists the entries and narrows the rows to the one picked, then back to all', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} dimensionLabel="Category" onClose={vi.fn()} />);
     await screen.findByText('Underlying data · ₹97,044');
-    await user.click(screen.getByRole('button', { name: /Category: All/ }));
+    await user.click(screen.getByRole('button', { name: 'Category' }));
     expect(await screen.findByRole('option', { name: 'Food' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Rent' })).toBeInTheDocument();
     await user.click(screen.getByRole('option', { name: 'Rent' }));
     await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: rentRequest }));
-    expect(screen.getByRole('button', { name: 'Category: Rent' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rent' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Category: Rent' }));
+    await user.click(screen.getByRole('button', { name: 'Rent' }));
     await user.click(await screen.findByRole('option', { name: 'All' }));
     await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: request }));
   });
 
   it('opens on the row\'s entry, and All goes back to the whole report', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} entries={entries} initialEntry={1} dimensionLabel="Category" onClose={vi.fn()} />);
-    expect(await screen.findByRole('button', { name: 'Category: Rent' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Category: All' })).toBeNull();
+    expect(await screen.findByRole('button', { name: 'Rent' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Category' })).toBeNull();
     expect(vi.mocked(api.POST).mock.calls.at(0)?.[1]).toMatchObject({ body: rentRequest });
-    await user.click(screen.getByRole('button', { name: 'Category: Rent' }));
+    await user.click(screen.getByRole('button', { name: 'Rent' }));
     await user.click(await screen.findByRole('option', { name: 'All' }));
     await waitFor(() => expect(vi.mocked(api.POST).mock.calls.at(-1)?.[1]).toMatchObject({ body: request }));
   });
@@ -174,7 +174,7 @@ describe('ReportUnderlyingDialog dimension dropdown', () => {
     await waitFor(() => expect(lastQuery().page).toBe(1));
     await user.click(screen.getByRole('tab', { name: 'Previous period' }));
     await waitFor(() => expect(lastQuery().period).toBe('previous'));
-    await user.click(screen.getByRole('button', { name: /Category: All/ }));
+    await user.click(screen.getByRole('button', { name: 'Category' }));
     await user.click(await screen.findByRole('option', { name: 'Food' }));
     await waitFor(() => expect(lastQuery()).toMatchObject({ period: 'current', page: 0 }));
     await user.click(screen.getByRole('button', { name: 'Download CSV' }));

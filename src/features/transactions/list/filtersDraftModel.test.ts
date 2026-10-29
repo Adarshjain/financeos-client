@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Account } from '@/lib/account.types';
 
 import { activeFilterCount, activeFilterWords, amountLabel, filterAccounts, periodLabel, REASON_OPTIONS } from './filterOptionsModel';
-import { amountFromDraft, draftFromQuery, queryFromDraft } from './filtersDraftModel';
+import { amountFromDraft, changedFilters, draftFromQuery, queryFromDraft } from './filtersDraftModel';
 import { ALL_TIME, DEFAULT_QUERY } from './transactionsUrl';
 
 describe('draft', () => {
@@ -35,8 +35,8 @@ describe('draft', () => {
 
 describe('labels', () => {
   it('writes periods and amounts', () => {
-    expect(periodLabel({ kind: 'range', from: '2026-10-01', to: '2026-10-09' })).toBe('01/10/2026 – 09/10/2026');
-    expect(periodLabel({ kind: 'date', date: '2026-10-05' })).toBe('05/10/2026');
+    expect(periodLabel({ kind: 'range', from: '2026-10-01', to: '2026-10-09' })).toBe('01/10/26 – 09/10/26');
+    expect(periodLabel({ kind: 'date', date: '2026-10-05' })).toBe('05/10/26');
     expect(periodLabel({ kind: 'preset', id: 'last_14_days' })).toBe('Last 14 days');
     expect(amountLabel({ op: 'between', from: 500, to: 5000 })).toBe('₹500 – ₹5,000');
     expect(amountLabel({ op: 'greater_than', from: 99.5, to: null })).toBe('Over ₹99.50');
@@ -87,5 +87,25 @@ describe('every chip-row filter lives in the draft', () => {
     expect(activeFilterCount(DEFAULT_QUERY)).toBe(0);
     expect(activeFilterCount({ ...DEFAULT_QUERY, q: 'zz' })).toBe(0);
     expect(activeFilterCount({ ...full, period: { kind: 'preset', id: 'last_14_days' }, source: 'manual' })).toBe(8);
+  });
+});
+
+describe('changedFilters', () => {
+  const words = { period: 'Last 14 days', accounts: '2 accounts', categories: 'Groceries', type: 'Expense', amount: 'Over ₹500', review: 'Needs review', reason: 'Duplicate', source: 'Manual' };
+
+  it('is empty for the defaults', () => {
+    expect(changedFilters(draftFromQuery(DEFAULT_QUERY), words)).toEqual([]);
+  });
+
+  it('lists each moved filter with its section, and a reset patch that puts it back', () => {
+    const draft = { ...draftFromQuery(DEFAULT_QUERY), type: 'debit' as const, monitoring: true, accounts: ['a1', 'a2'] };
+    const changed = changedFilters(draft, words);
+    expect(changed.map((c) => [c.id, c.section])).toEqual([
+      ['accounts', 'accountCategory'],
+      ['type', 'accountCategory'],
+      ['monitoring', 'status'],
+    ]);
+    const type = changed.find((c) => c.id === 'type')!;
+    expect(changedFilters({ ...draft, ...type.reset }, words).some((c) => c.id === 'type')).toBe(false);
   });
 });

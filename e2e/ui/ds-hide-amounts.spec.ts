@@ -121,7 +121,7 @@ for (const viewport of VIEWPORTS) {
     test('inputs are not hidden: the amount typed in Add transaction stays readable', async ({ page }) => {
       await setHidden(page, true);
       await openTransactions(page);
-      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Add transaction', exact: true }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Add transaction' });
       await expect(dialog).toBeVisible();
       const amount = dialog.getByRole('textbox', { name: 'Amount', exact: true });

@@ -14,8 +14,8 @@ import {
 const defaults = parseInstrumentsUrl({});
 
 describe('Instruments URL state', () => {
-  it('starts on the first page, name A–Z, every type, 50 a page', () => {
-    expect(defaults).toEqual({ q: '', type: '', stale: false, sort: 'asc', page: 0, size: 50 });
+  it('starts on the first page, name A–Z, every type, 25 a page', () => {
+    expect(defaults).toEqual({ q: '', type: '', stale: false, sort: 'asc', page: 0, size: 25 });
   });
 
   it('reads search, type, stale, sort, page and size, and ignores junk', () => {
@@ -32,14 +32,14 @@ describe('Instruments URL state', () => {
 
   it('keeps defaults out of the address and round-trips the rest', () => {
     expect(instrumentsUrl(defaults)).toBe('/investments/instruments');
-    const state = { q: 'tata', type: 'stock' as const, stale: true, sort: 'desc' as const, page: 2, size: 25 };
+    const state = { q: 'tata', type: 'stock' as const, stale: true, sort: 'desc' as const, page: 2, size: 50 };
     const url = instrumentsUrl(state);
-    expect(url).toBe('/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=3&size=25');
+    expect(url).toBe('/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=3&size=50');
     expect(parseInstrumentsUrl(Object.fromEntries(new URL(url, 'http://x').searchParams))).toEqual(state);
   });
 
   it('builds the server request: name order only when descending, stale only when on', () => {
-    expect(instrumentsQuery(defaults)).toEqual({ page: 0, size: 50 });
+    expect(instrumentsQuery(defaults)).toEqual({ page: 0, size: 25 });
     expect(instrumentsQuery({ q: 'tata', type: 'etf', stale: true, sort: 'desc', page: 1, size: 25 })).toEqual({
       search: 'tata',
       type: 'etf',

@@ -36,11 +36,11 @@ describe('filters', () => {
   });
 
   it('labels the chip with the choice and its count', () => {
-    expect(filterChipLabel('Status', STATUS_OPTIONS, '')).toBe('Status: All');
-    expect(filterChipLabel('Status', STATUS_OPTIONS, 'FAILED')).toBe('Status: Failed');
-    expect(filterChipLabel('Status', STATUS_OPTIONS, 'active')).toBe('Status: Running');
-    expect(filterChipLabel('Status', STATUS_OPTIONS, 'SUCCEEDED')).toBe('Status: Succeeded');
-    expect(filterChipLabel('Type', TYPE_OPTIONS, 'GMAIL_SYNC')).toBe('Type: Gmail sync');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, '')).toBe('Status');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, 'FAILED')).toBe('Failed');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, 'active')).toBe('Running');
+    expect(filterChipLabel('Status', STATUS_OPTIONS, 'SUCCEEDED')).toBe('Succeeded');
+    expect(filterChipLabel('Type', TYPE_OPTIONS, 'GMAIL_SYNC')).toBe('Gmail sync');
   });
 });
 

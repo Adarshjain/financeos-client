@@ -62,7 +62,7 @@ export interface MonthCalendarProps
   weekdays?: string[];
   /** Events mode: items to show on their days; any outside the shown month are ignored */
   events?: CalendarEvent[];
-  /** Events mode: chips shown per day before "+N more" (default 3) */
+  /** Events mode: chips shown per day at desk width (below it a day shows its event count) before "+N more" (default 3) */
   maxEventsPerDay?: number;
   /** Events mode: words for the hidden-items count (default "+2 more") */
   moreLabel?: (count: number) => React.ReactNode;
@@ -286,16 +286,24 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                   {day}
                   {isToday && <> · {todayLabel}</>}
                 </span>
+                {dayEvents.length > 0 && (
+                  <span
+                    data-event-count=""
+                    className="self-start rounded-ds-xs bg-line-soft px-space-4 font-bold text-ink-3 desk:hidden"
+                  >
+                    {dayEvents.length}
+                  </span>
+                )}
                 {dayEvents.slice(0, maxEventsPerDay).map((ev) => (
                   <span
                     key={ev.id}
                     title={concealed ? concealText(ev.label) : ev.label}
                     className={cn(
-                      'block h-space-6 rounded-ds-xs font-bold desk:h-auto desk:truncate desk:px-space-6 desk:py-space-2',
+                      'hidden rounded-ds-xs px-space-6 py-space-2 font-bold desk:block desk:truncate',
                       eventToneStyles[ev.tone ?? 'brand'],
                     )}
                   >
-                    <span className="hidden desk:inline">{concealMoney(ev.label)}</span>
+                    {concealMoney(ev.label)}
                   </span>
                 ))}
                 {hidden > 0 && (

@@ -15,6 +15,16 @@ describe('Avatar component', () => {
     expect(screen.getByText('AM')).toBeInTheDocument();
   });
 
+  it('neutral initials sit on a light tile in dark mode', () => {
+    render(<Avatar>HD</Avatar>);
+    expect(screen.getByText('HD')).toHaveClass('dark:bg-ink', 'dark:text-on-brand');
+  });
+
+  it('a photo keeps a light tile in dark mode', () => {
+    const { container } = render(<Avatar src="/a.png" alt="A" tone="brand" />);
+    expect(container.firstChild).toHaveClass('dark:bg-ink');
+  });
+
   it('renders rounded variant with neutral tone (default)', () => {
     render(<Avatar variant="rounded" tone="neutral">HD</Avatar>);
     const el = screen.getByText('HD');

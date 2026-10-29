@@ -9,7 +9,7 @@ import { expect, test } from '../fixtures/test';
 
 async function openAddTransaction(page: Page) {
   await page.goto('/transactions');
-  await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Add transaction', exact: true }).first().click();
   const form = page.getByRole('dialog', { name: 'Add transaction' });
   await expect(form).toBeVisible({ timeout: 45_000 });
   // Hidden from the a11y tree while the keypad sheet is open over it.

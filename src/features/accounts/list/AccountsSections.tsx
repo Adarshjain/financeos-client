@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
@@ -72,22 +71,6 @@ export function NameCell({
   );
 }
 
-function OpenButton({ row }: { row: { id: string; name: string } }) {
-  return (
-    <Button
-      asChild
-      variant="ghost"
-      size="sm"
-      iconOnly
-      aria-label={`Open ${row.name}`}
-    >
-      <Link href={rowHref(row)}>
-        <Icon name="chevron-right" size="sm" />
-      </Link>
-    </Button>
-  );
-}
-
 /** Keeps a click on a control inside a row from also selecting the row (which would open the account). */
 function RowControls({ children }: { children: React.ReactNode }) {
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
@@ -131,16 +114,12 @@ export function ClosedToggleButton({
   onToggle: () => void;
 }) {
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="shrink-0 whitespace-nowrap"
-      onClick={onToggle}
-    >
-      {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
-      <span className="inline-block min-w-space-40 text-right">{showing ? 'Hide' : 'Show'}</span>
-      <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="xs" />
-    </Button>
+    <Text variant="label" as="span">
+      <Button variant="link" size="sm" className="shrink-0 whitespace-nowrap" onClick={onToggle}>
+        {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
+        <span className="inline-block min-w-space-40 text-right">{showing ? 'Hide' : 'Show'}</span>
+      </Button>
+    </Text>
   );
 }
 
@@ -255,7 +234,7 @@ const bankBaseColumns = [
   bankCh.display({
     id: 'asOf',
     header: 'As of',
-    meta: { size: 'sm', phone: 'hidden' },
+    meta: { size: 'md', phone: 'hidden' },
     cell: ({ row }) =>
       row.original.asOf ? (
         <Text variant="body" tone="ink-3">
@@ -275,7 +254,6 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
       cell: ({ row }) => (
         <RowControls>
           <EditButton onEdit={() => onEdit(row.original)} />
-          <OpenButton row={row.original} />
         </RowControls>
       ),
     }),
@@ -291,7 +269,7 @@ export function BankSection(props: SectionProps<BankRow>) {
   return (
     <Card
       title="Bank accounts"
-      subtitle="Balances anchor to the latest statement; later transactions are added on top"
+      subtitle="Anchored to the latest statement"
       action={
         <AddLink addType="bank_account">
           Add bank account
@@ -413,16 +391,6 @@ const cardColumns = [
     header: 'Rewards',
     meta: { size: 'sm', phone: 'hidden' },
     cell: ({ row }) => row.original.rewardsSlot,
-  }),
-  cardCh.display({
-    id: 'actions',
-    header: '',
-    meta: { size: 'sm', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <RowControls>
-        <OpenButton row={row.original} />
-      </RowControls>
-    ),
   }),
 ];
 

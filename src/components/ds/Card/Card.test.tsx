@@ -227,4 +227,40 @@ describe('Card inset variant', () => {
       expect(btn).toHaveClass('ring-2', 'ring-brand', 'hover:bg-hover', 'active:bg-pressed');
     });
   });
+
+  describe('interactive', () => {
+    it('with asChild gets hover, pressed and focus-ring classes', () => {
+      render(
+        <Card asChild interactive>
+          <button type="button">Open</button>
+        </Card>,
+      );
+      expect(screen.getByRole('button', { name: 'Open' })).toHaveClass(
+        'cursor-pointer',
+        'hover:bg-hover',
+        'active:bg-pressed',
+        'focus-visible:ring-focus-ring',
+      );
+    });
+
+    it('without asChild or interactive stays inert', () => {
+      render(
+        <>
+          <Card interactive data-testid="a" />
+          <Card data-testid="b" />
+        </>,
+      );
+      expect(screen.getByTestId('a')).not.toHaveClass('hover:bg-hover');
+      expect(screen.getByTestId('b')).not.toHaveClass('hover:bg-hover');
+    });
+
+    it('selected still implies pressable with asChild', () => {
+      render(
+        <Card asChild selected={false}>
+          <button type="button">Pick</button>
+        </Card>,
+      );
+      expect(screen.getByRole('button', { name: 'Pick' })).toHaveClass('hover:bg-hover');
+    });
+  });
 });

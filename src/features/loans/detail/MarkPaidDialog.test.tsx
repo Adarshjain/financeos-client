@@ -72,7 +72,7 @@ describe('MarkPaidDialog', () => {
     renderDialog();
     expectChosen('Record payment without a transaction');
     expect(amount()).toHaveValue('36603');
-    expect(paidOn()).toHaveValue('05/10/2026');
+    expect(paidOn()).toHaveValue('05/10/26');
     expect(screen.queryByRole('radio', { name: /Link the bank debit we found/ })).toBeNull();
     expect(choice(/Pick another bank debit/)).toBeInTheDocument();
   });
@@ -97,7 +97,7 @@ describe('MarkPaidDialog', () => {
     expectChosen('Link the bank debit we found');
     expect(screen.getAllByText('"SBI Home Loan EMI" · HDFC Bank Savings · 5 Oct · ₹39,052').length).toBeGreaterThan(0);
     expect(amount()).toHaveValue('39052');
-    expect(paidOn()).toHaveValue('05/10/2026');
+    expect(paidOn()).toHaveValue('05/10/26');
     expect(screen.getByText('₹2,449 more than EMI')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid & link' })).toBeInTheDocument();
   });
@@ -143,7 +143,7 @@ describe('MarkPaidDialog', () => {
     await user.click(choice(/Pick another bank debit/));
     await user.click(await screen.findByRole('radio', { name: /NACH EMI/ }));
     expect(amount()).toHaveValue('36603');
-    expect(paidOn()).toHaveValue('07/10/2026');
+    expect(paidOn()).toHaveValue('07/10/26');
     submit('Mark paid & link');
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ amount: '36603', paymentDate: '2026-10-07', transactionId: 't9' }));
     const body = (api.POST as Mock).mock.calls[0][1].body;

@@ -66,7 +66,7 @@ describe('/accounts add links', () => {
     await renderPage();
     const pushState = vi.spyOn(window.history, 'pushState');
     const replaceState = vi.spyOn(window.history, 'replaceState');
-    screen.getByRole('button', { name: 'Add' }).click();
+    screen.getByRole('button', { name: 'Add account' }).click();
     expect(await screen.findByText('add bank_account')).toBeInTheDocument();
     screen.getByRole('button', { name: 'close add' }).click();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -98,7 +98,8 @@ describe('/accounts add links', () => {
   it('opens Add from the empty state action, URL unchanged', async () => {
     loadMock.mockReturnValue({ ...base, accounts: [] });
     await renderPage();
-    screen.getByRole('button', { name: 'Add account' }).click();
+    const adds = screen.getAllByRole('button', { name: 'Add account' });
+    adds[adds.length - 1].click();
     expect(await screen.findByText('add bank_account')).toBeInTheDocument();
     urlStaysPut();
   });

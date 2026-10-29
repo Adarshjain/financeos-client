@@ -152,7 +152,7 @@ describe('/investments/dividends: data', () => {
   it('asks for no FY at all under All FYs', async () => {
     await renderPage({ fy: 'all' });
     expect(server.fetchDividends).toHaveBeenCalledWith({ ...FILTERS, fy: undefined }, 0, 25);
-    expect(screen.getAllByText('Declared').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Received this FY')).toBeNull();
     expect(screen.getByRole('button', { name: 'All FYs' })).toBeInTheDocument();
   });
 
@@ -177,7 +177,7 @@ describe('/investments/dividends: data', () => {
     await renderPage();
     expect(screen.getAllByText('HDFCBANK').length).toBeGreaterThan(0);
     // A figure that could not be read says so; it never reads as zero.
-    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(4);
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(3);
     expect(screen.queryByText('₹0')).toBeNull();
     expect(screen.queryByText(/^Total net/)).toBeNull();
     expect(screen.queryByText(/claim in ITR/)).toBeNull();
@@ -191,17 +191,15 @@ describe('/investments/dividends: data', () => {
 });
 
 describe('/investments/dividends: figures', () => {
-  it('draws the four figures, on the phone and as tiles', async () => {
+  it('draws the hero: received, then TDS and not received, with their captions', async () => {
     await renderPage();
-    for (const text of ['₹3,975', '₹1,980', '₹1,460']) expect(screen.getAllByText(text).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('₹370').length).toBeGreaterThan(0);
-    expect(screen.getByText('TDS ₹370 · claim in ITR')).toBeInTheDocument();
-    expect(screen.getAllByText('5 payouts').length).toBeGreaterThan(0);
+    for (const text of ['₹1,980', '₹370', '₹1,460']) expect(screen.getAllByText(text).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('claim in ITR').length).toBeGreaterThan(0);
     expect(screen.getAllByText('2 matched to bank credits').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ITC overdue · TCS awaiting').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/claim in ITR/).length).toBeGreaterThan(0);
     expect(screen.getByText('Received this FY')).toBeInTheDocument();
-    expect(screen.getAllByText('Declared · FY')).toHaveLength(2);
+    expect(screen.getByText('Not received')).toBeInTheDocument();
+    expect(screen.queryByText('Declared · FY')).toBeNull();
   });
 
   it('names the instruments of the statuses that have payouts only', async () => {
@@ -219,14 +217,14 @@ describe('/investments/dividends: the list', () => {
     expect(row).toBeTruthy();
     expect(screen.getAllByText('Received').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Awaiting').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('792').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('792.00').length).toBeGreaterThan(0);
     expect(screen.getByText('Total net ₹3,605 · TDS ₹370')).toBeInTheDocument();
     expect(screen.getByText('11 Jul')).toBeInTheDocument();
   });
 
   it('draws the phone line with the units, TDS and account', async () => {
     await renderPage();
-    expect(screen.getByText('11 Jul · ₹22 × 40 · TDS ₹88 · HDFC Savings')).toBeInTheDocument();
+    expect(screen.getByText('11 Jul · ₹22 × 40 · TDS ₹88.00 · HDFC Savings')).toBeInTheDocument();
     expect(screen.getByText(/29 Sep · ₹11 × 10/)).toBeInTheDocument();
   });
 
@@ -248,7 +246,7 @@ describe('/investments/dividends: the list', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Interest' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?type=interest', { scroll: false });
 
-    fireEvent.click(screen.getByRole('button', { name: 'All brokers' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Groww' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?broker=b2', { scroll: false });
   });
@@ -262,8 +260,8 @@ describe('/investments/dividends: the list', () => {
 
   it('shows the instrument the holding page linked to, and the x clears it', async () => {
     await renderPage({ instrumentId: IID });
-    expect(screen.getByText('Showing HDFCBANK')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /remove/i }));
+    expect(screen.queryByText('Showing HDFCBANK')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(router.push).toHaveBeenCalledWith('/investments/dividends', { scroll: false });
   });
 
@@ -274,7 +272,7 @@ describe('/investments/dividends: the list', () => {
     first.unmount();
 
     const second = await renderPage();
-    expect(screen.getByText('No dividends in FY 26-27.')).toBeInTheDocument();
+    expect(screen.getByText('No dividends in FY 26-27')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Show all FYs' }));
     expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?fy=all', { scroll: false });
     second.unmount();
@@ -302,9 +300,9 @@ describe('/investments/dividends: the list', () => {
 });
 
 describe('/investments/dividends: editing', () => {
-  it('opens the edit dialog from the pencil, and from "link a bank credit" on a phone row', async () => {
+  it('opens the edit dialog from the row, and from "link a bank credit" on a phone row', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit HDFCBANK dividend' }));
+    fireEvent.click(screen.getAllByText('HDFCBANK')[0]);
     expect(await screen.findByText('Edit dividend')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByText('Edit dividend')).toBeNull());
@@ -317,7 +315,7 @@ describe('/investments/dividends: editing', () => {
 
   it('refreshes the page after a change', async () => {
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit HDFCBANK dividend' }));
+    fireEvent.click(screen.getAllByText('HDFCBANK')[0]);
     fireEvent.click(await screen.findByRole('button', { name: 'Save dividend' }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
   });
@@ -385,7 +383,7 @@ describe('/investments/dividends: suggestions', () => {
     expect(screen.getByText('Paid on shares you held, not recorded yet')).toBeInTheDocument();
     expect(screen.getByText('TCS · ₹10 / share')).toBeInTheDocument();
     expect(screen.getByText('paid 5 Aug · 10 shares · ₹100')).toBeInTheDocument();
-    expect(screen.getByText('paid 28 Oct 2025 · 60 shares · ₹1,260')).toBeInTheDocument();
+    expect(screen.getByText('paid 28 Oct 25 · 60 shares · ₹1,260')).toBeInTheDocument();
     expect(screen.getByText('Checked 4 symbols.')).toBeInTheDocument();
   });
 
@@ -396,7 +394,7 @@ describe('/investments/dividends: suggestions', () => {
     fireEvent.click(within(row.parentElement!.parentElement as HTMLElement).getAllByRole('button', { name: 'Record' })[0]);
     expect(await screen.findByText('Record dividend', { selector: 'h2, [role="heading"], div' })).toBeInTheDocument();
     expect(actions.acceptDividendSuggestions).not.toHaveBeenCalled();
-    expect(await screen.findByLabelText(/^Pay date/)).toHaveValue('05/08/2026');
+    expect(await screen.findByLabelText(/^Pay date/)).toHaveValue('05/08/26');
     expect(screen.getByLabelText(/^Amount/)).toHaveValue('100');
     expect(screen.getByLabelText(/^Per unit/)).toHaveValue('10');
     expect(screen.getByLabelText(/^Notes/)).toHaveValue('Auto-detected dividend (10 units @ ₹10.00)');

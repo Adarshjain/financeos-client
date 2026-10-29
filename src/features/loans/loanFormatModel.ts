@@ -33,11 +33,12 @@ export function fyRangeLabel(fyStart: string, today: string): string {
   return `${MONTH_SHORT[s.m - 1]} ${s.y} – ${MONTH_SHORT[t.m - 1]} ${t.y}`;
 }
 
-/** One KpiTile of a Loans & lendings tab. */
-export interface TileModel {
+/** A Hero of a Loans & lendings tab: the big figure and up to three small ones. */
+export interface HeroModel {
   label: string;
   value: string;
-  context: string;
-  /** Green for money coming to you, red for trouble; absent = plain. */
+  /** Green for money coming to you, red for money you owe; absent = plain. */
   tone?: 'positive' | 'danger';
+  change?: { text: string; tone?: 'positive' | 'danger' };
+  figures: { label: string; value: string; tone?: 'positive' | 'danger'; caption?: string }[];
 }

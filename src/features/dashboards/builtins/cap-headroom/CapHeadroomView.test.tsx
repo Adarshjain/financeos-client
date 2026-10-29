@@ -39,7 +39,7 @@ describe('CapHeadroomView', () => {
 
   it('empty: no reward caps this cycle', () => {
     renderWithQuery(<CapHeadroomView {...view(rawTable(COLS, []))} />);
-    expect(screen.getByText('No reward caps this cycle')).toBeInTheDocument();
+    expect(screen.getByText("Caps on your cards' reward rules show up here as you spend.")).toBeInTheDocument();
   });
 
   it('data of another shape is not drawn', () => {

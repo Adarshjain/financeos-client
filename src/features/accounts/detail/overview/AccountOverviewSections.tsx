@@ -6,8 +6,6 @@ import React from 'react';
 import {
   Button,
   Card,
-  GRID_GAP,
-  KpiTile,
   ListField,
   ListRow,
   StatusWord,
@@ -18,21 +16,10 @@ import { appHref } from '@/features/shell/routes';
 import type {
   BrokerCashModel,
   GmailCardModel,
-  KpiModel,
   LinkedLine,
   StatementRowModel,
 } from './accountOverviewModel';
 import { HeaderLink } from './HeaderLink';
-
-export function FlowKpis({ tiles }: { tiles: KpiModel[] }) {
-  return (
-    <div className={`grid grid-cols-2 desk:grid-cols-3 ${GRID_GAP}`}>
-      {tiles.map((t) => (
-        <KpiTile key={t.label} label={t.label} value={t.value} context={t.context} />
-      ))}
-    </div>
-  );
-}
 
 export function StatementsCard({
   accountId,
@@ -54,7 +41,7 @@ export function StatementsCard({
       }
     >
       {row ? (
-        <ListRow asChild chevron>
+        <ListRow asChild>
           <Link href={appHref(`/accounts/${accountId}/statements?statement=${row.id}`)}>
             <span className="flex-1 min-w-0">
               <Text variant="body-strong" as="div">
@@ -125,7 +112,7 @@ export function BrokerCashCard({ model }: { model: BrokerCashModel }) {
       title="Cash"
       subtitle="Ledger balance at broker"
       action={
-        <HeaderLink href="/investments" chevron>
+        <HeaderLink href="/investments">
           Investments
         </HeaderLink>
       }

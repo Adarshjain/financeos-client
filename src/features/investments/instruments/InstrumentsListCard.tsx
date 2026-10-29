@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
-  Badge,
   Button,
   Card,
   createDataTableColumnHelper,
@@ -12,11 +11,12 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
   Pager,
   Select,
+  StatusWord,
   Text,
 } from '@/components/ds';
+import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Instrument } from '@/lib/types';
 
@@ -34,7 +34,6 @@ import {
 import { ResetInstrumentDialog } from './ResetInstrumentDialog';
 
 interface RowActions {
-  onEdit: (id: string) => void;
   onReset: (id: string) => void;
 }
 
@@ -65,7 +64,7 @@ function EditedLine({ row, onReset }: { row: InstrumentListRow; onReset: (id: st
 
 const ch = createDataTableColumnHelper<InstrumentListRow>();
 
-function columnsFor({ onEdit, onReset }: RowActions) {
+function columnsFor({ onReset }: RowActions) {
   return [
     ch.display({
       id: 'instrument',
@@ -87,9 +86,7 @@ function columnsFor({ onEdit, onReset }: RowActions) {
                 ) : null}
               </Text>
               {r.notHeld ? (
-                <Badge size="sm" className="shrink-0">
-                  Not held
-                </Badge>
+                <StatusWord className="shrink-0">Not held</StatusWord>
               ) : null}
             </span>
             {r.overridden ? (
@@ -106,9 +103,7 @@ function columnsFor({ onEdit, onReset }: RowActions) {
       header: 'Type',
       meta: { size: 'sm', phone: 'hidden' },
       cell: ({ row }) => (
-        <Badge variant="outline" size="sm">
-          {row.original.typeLabel}
-        </Badge>
+        <Text variant="body">{row.original.typeLabel}</Text>
       ),
     }),
     ch.display({
@@ -152,9 +147,7 @@ function columnsFor({ onEdit, onReset }: RowActions) {
       meta: { size: 'sm', phone: 'hidden' },
       cell: ({ row }) =>
         row.original.source ? (
-          <Badge size="sm" tone={row.original.source.tone}>
-            {row.original.source.label}
-          </Badge>
+          <StatusWord tone={row.original.source.tone}>{row.original.source.label}</StatusWord>
         ) : (
           <Text variant="body" tone="ink-3">{'—'}</Text>
         ),
@@ -162,28 +155,11 @@ function columnsFor({ onEdit, onReset }: RowActions) {
     ch.display({
       id: 'asOf',
       header: 'As of',
-      meta: { size: 'sm', phone: 'hidden' },
+      meta: { size: 'date', phone: 'hidden' },
       cell: ({ row }) => (
         <Text variant="body" tone={row.original.asOf ? 'ink-2' : 'ink-3'}>
           {row.original.asOf ?? '—'}
         </Text>
-      ),
-    }),
-    ch.display({
-      id: 'edit',
-      header: '',
-      meta: { size: 'xs', align: 'end', phone: 'hidden' },
-      cell: ({ row }) => (
-        <InRow>
-          <Button
-            variant="ghost"
-            size="sm"
-            iconOnly
-            aria-label={`Edit ${row.original.name}`}
-            icon={<Icon name="pencil-simple" size="sm" />}
-            onClick={() => onEdit(row.original.id)}
-          />
-        </InRow>
       ),
     }),
   ];
@@ -226,7 +202,7 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
   const byId = React.useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const rows = React.useMemo(() => items.map(instrumentListRow), [items]);
   const columns = React.useMemo(
-    () => columnsFor({ onEdit: (id) => setDialog({ kind: 'edit', id }), onReset: (id) => setDialog({ kind: 'reset', id }) }),
+    () => columnsFor({ onReset: (id) => setDialog({ kind: 'reset', id }) }),
     [],
   );
   const target = dialog && dialog.kind !== 'add' ? byId.get(dialog.id) : undefined;
@@ -251,16 +227,30 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar search={{ value: text, onValueChange: setText }}>
-        {TYPE_CHIPS.map((chip) => (
-          <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>
-            {chip.label}
-          </FilterChip>
-        ))}
-        <FilterChip className="shrink-0" selected={state.stale} onClick={() => go({ stale: !state.stale, page: 0 })}>
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+        changed={filtered}
+        onReset={() => go({ q: '', type: '', stale: false, page: 0 })}
+      >
+        <Select
+          value={state.type}
+          options={TYPE_CHIPS}
+          onValueChange={(v) => go({ type: (v ?? '') as InstrumentsUrlState['type'], page: 0 })}
+          trigger={
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
+              {TYPE_CHIPS.find((c) => c.value === state.type && c.value !== '')?.label ?? 'Type'}
+            </FilterChip>
+          }
+        />
+        <FilterChip
+          className="shrink-0"
+          changed={state.stale}
+          onReset={() => go({ stale: false, page: 0 })}
+          onClick={() => go({ stale: !state.stale, page: 0 })}
+        >
           Stale price
         </FilterChip>
-        <div className="shrink-0">
+        <div className="shrink-0 ml-auto">
           <Select
             value={state.sort}
             options={SORT_OPTIONS}
@@ -280,15 +270,19 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
           empty={
             catalogEmpty ? (
               <EmptyState
-                compact
-                description="No instruments yet. Add stocks, mutual funds and ETFs to track their prices."
-                action={{ label: 'Add instrument', variant: 'link', onSelect: () => setDialog({ kind: 'add', mode: 'catalog' }) }}
+                title="No instruments yet"
+                description="Add stocks, mutual funds and ETFs to track their prices."
+                action={{ label: 'Add instrument', variant: 'primary', onSelect: () => setDialog({ kind: 'add', mode: 'catalog' }) }}
               />
             ) : (
               <EmptyState
-                compact
-                description={state.page > 0 ? 'No more instruments.' : 'No instruments match'}
-                action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', type: '', stale: false, page: 0 }) } : undefined}
+                title={state.page > 0 ? 'No more instruments' : 'No instruments match'}
+                description={state.page > 0 ? 'This is past the last page.' : 'Try a different search or filter.'}
+                action={
+                  filtered
+                    ? { label: 'Clear filters', variant: 'secondary', onSelect: () => go({ q: '', type: '', stale: false, page: 0 }) }
+                    : undefined
+                }
               />
             )
           }
@@ -311,11 +305,14 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
   );
 }
 
-/** The instruments table while the page loads. */
+/** The filter row and instruments table while the page loads. */
 export function InstrumentsListSkeleton() {
   return (
-    <Card>
-      <DataTable columns={columnsFor({ onEdit: () => undefined, onReset: () => undefined })} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterRowSkeleton chips={2} />
+      <Card>
+        <DataTable columns={columnsFor({ onReset: () => undefined })} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
+      </Card>
+    </div>
   );
 }

@@ -106,7 +106,7 @@ function TradeForm(p: FormProps) {
         size="md"
         title={p.title}
         description={p.description}
-        tertiary={p.onDelete ? { label: 'Delete trade', tone: 'danger', onSelect: p.onDelete, disabled: p.submitting } : undefined}
+        tertiary={p.onDelete ? { label: 'Delete', tone: 'danger', onSelect: p.onDelete, disabled: p.submitting } : undefined}
         secondary={{ label: 'Cancel', onSelect: p.onCancel, disabled: p.submitting }}
         primary={{ label: p.submitLabel, type: 'submit', form: FORM_ID, loading: p.submitting, disabled: p.holdSubmit }}
       >
@@ -446,7 +446,7 @@ export function EditTradeDialog({ trade, onClose }: EditTradeDialogProps) {
         title={`Delete ${tradeLabel(trade)}?`}
         description="This trade leaves the tradebook and the holding is worked out again."
         impact={['Realised gains for the year are recalculated.', 'Other trades, prices and dividends of this instrument stay.']}
-        confirmLabel="Delete trade"
+        confirmLabel="Delete"
         confirmLoading={deleteTrade.isPending}
         onConfirm={() => void remove()}
       >

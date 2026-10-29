@@ -78,7 +78,7 @@ beforeEach(() => {
   http.DELETE.mockResolvedValue({});
 });
 
-const openEdit = () => fireEvent.click(screen.getByRole('button', { name: 'Edit HDFCBANK dividend' }));
+const openEdit = () => fireEvent.click(screen.getAllByText('HDFCBANK')[0]);
 
 describe('DividendsScreen: the edit dialog', () => {
   it('stays open on the payout it was opened on when a change takes the row out of the filtered list', async () => {
@@ -124,8 +124,8 @@ describe('DividendsScreen: the unrecorded credits are scanned again after a chan
   it('after a delete', async () => {
     renderWithQuery(<DividendsScreen {...props()} />);
     openEdit();
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete dividend' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete dividend' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(scan).toHaveBeenCalledTimes(2));
   });
 

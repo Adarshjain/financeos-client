@@ -31,11 +31,10 @@ export function ChatSkeleton({ conversation }: { conversation?: boolean }) {
               </>
             ) : (
               <>
-                <Skeleton width="60%" height={32} className="self-center" />
-                <Skeleton height={72} />
-                <div className="grid grid-cols-2 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-                  {Array.from({ length: 6 }, (_, i) => (
-                    <Skeleton key={i} height={92} />
+                <Skeleton width="60%" height={32} className="desk:self-center" />
+                <div className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-12">
+                  {Array.from({ length: 3 }, (_, i) => (
+                    <Skeleton key={i} height={72} />
                   ))}
                 </div>
               </>

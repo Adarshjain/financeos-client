@@ -247,7 +247,7 @@ describe('the row menu', () => {
     expect(screen.getByRole('button', { name: 'Save & recompute' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clone' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'End & clone' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
   });
 
   it('Clone opens a new rule prefilled from it', async () => {
@@ -256,7 +256,7 @@ describe('the row menu', () => {
     await pickMenu('Clone');
     await waitFor(() => expect(screen.getByText('Add rule')).toBeInTheDocument());
     expect(textbox('Name')).toHaveValue('5X on dining');
-    expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
   });
 
   it('a new rule has neither link', async () => {
@@ -288,7 +288,7 @@ describe('the row menu', () => {
     expect(screen.getByText('Delete rule "5X on dining"?')).toBeInTheDocument();
     expect(screen.getByText(/Historical reports will no longer see it/)).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();
-    fireEvent.click(lastButton('Delete rule'));
+    fireEvent.click(lastButton('Delete'));
     expect(remove).toHaveBeenCalledWith('r1', expect.anything());
     expect(toast).toHaveBeenCalledWith('Rule deleted');
   });
@@ -307,7 +307,7 @@ describe('refreshing the server figures', () => {
     renderSection();
     await pressRow('5X on dining');
     await pickMenu('Delete');
-    fireEvent.click(lastButton('Delete rule'));
+    fireEvent.click(lastButton('Delete'));
     expect(refresh).toHaveBeenCalledTimes(1);
     await openHeaderAction('Reorder');
     fireEvent.click(await screen.findByRole('button', { name: 'Move up Base' }));
@@ -469,7 +469,7 @@ describe('rule dialog', () => {
   it('has no Delete rule action in the dialog footer, only Cancel and Save', async () => {
     renderSection();
     await openRow('5X on dining');
-    expect(screen.queryByRole('button', { name: 'Delete rule' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 

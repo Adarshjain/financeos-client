@@ -5,6 +5,7 @@
   --ds-bg-canvas: #f5f6f8;
   --ds-bg-surface: #ffffff;
   --ds-bg-glass: color-mix(in srgb, var(--ds-bg-surface) 40%, transparent);
+  --ds-bg-glass-medium: color-mix(in srgb, var(--ds-bg-surface) 55%, transparent);
   --ds-bg-glass-strong: color-mix(in srgb, var(--ds-bg-surface) 85%, transparent);
   --ds-bg-sunken: #fafbfc;
   --ds-bg-subtle: #f8f9fb;
@@ -120,6 +121,7 @@
   --ds-bg-canvas: #0e1114;
   --ds-bg-surface: #161a1e;
   --ds-bg-glass: color-mix(in srgb, var(--ds-bg-surface) 40%, transparent);
+  --ds-bg-glass-medium: color-mix(in srgb, var(--ds-bg-surface) 55%, transparent);
   --ds-bg-glass-strong: color-mix(in srgb, var(--ds-bg-surface) 85%, transparent);
   --ds-bg-sunken: #12161a;
   --ds-bg-subtle: #1b2025;

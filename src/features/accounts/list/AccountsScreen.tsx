@@ -1,9 +1,6 @@
 import React, { Suspense } from 'react';
 
-import {
-  GRID_GAP,
-  KpiTile,
-} from '@/components/ds';
+import { GRID_GAP, Hero, Skeleton } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';
@@ -16,6 +13,7 @@ import {
   cashKpi,
   closedLineFor,
   groupAccounts,
+  investmentsKpi,
   walletRow,
 } from './accountsListModel';
 import {
@@ -26,9 +24,8 @@ import {
 } from './AccountsSections';
 import { AccountsEmpty } from './AccountsStates';
 import {
-  InvestmentsTile,
-  InvestmentsTileFallback,
-  NetWorthTile,
+  InvestmentsDelta,
+  NetWorthValue,
   streamedCardRow,
 } from './AccountsStreamed';
 
@@ -43,32 +40,33 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
     const sections = groupAccounts(data.accounts, today);
     const cash = cashKpi(sections);
     const cards = cardsKpi(sections);
+    const invest = investmentsKpi(sections, null);
     const cardRows = (cards: typeof sections.cards.open) =>
       cards.map((a) => streamedCardRow(cardBaseRow(a, today), streams, today));
 
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
-        <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
-          <KpiTile
-            label={cash.label}
-            value={cash.value}
-            context={cash.context}
-          />
-          <KpiTile
-            label={cards.label}
-            value={cards.value}
-            context={cards.context}
-          />
-          <Suspense fallback={<InvestmentsTileFallback sections={sections} />}>
-            <InvestmentsTile
-              sections={sections}
-              dayChangePct={streams.dayChangePct}
-            />
-          </Suspense>
-          <Suspense fallback={<KpiTile loading />}>
-            <NetWorthTile netWorth={streams.netWorth} />
-          </Suspense>
-        </div>
+        <Hero
+          label="Net worth"
+          value={
+            <Suspense fallback={<Skeleton width={180} height={40} />}>
+              <NetWorthValue netWorth={streams.netWorth} />
+            </Suspense>
+          }
+          figures={[
+            { label: cash.label, value: cash.value, caption: cash.context },
+            { label: cards.label, value: cards.value, tone: cards.tone, caption: cards.context },
+            {
+              label: invest.label,
+              value: invest.value,
+              caption: (
+                <Suspense fallback={null}>
+                  <InvestmentsDelta sections={sections} dayChangePct={streams.dayChangePct} />
+                </Suspense>
+              ),
+            },
+          ]}
+        />
 
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}

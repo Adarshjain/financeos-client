@@ -65,7 +65,7 @@ function eventRow(event: LoanEventResponse): EntryRow {
     kind: 'event',
     title,
     subtitle: [formatDate(event.effectiveDate, 'list'), mode].filter(Boolean).join(' · '),
-    amount: event.amount != null ? formatMoney(event.amount) : null,
+    amount: event.amount != null ? formatMoney(event.amount, { decimals: 'exact' }) : null,
   };
 }
 
@@ -75,7 +75,7 @@ function chargeRow(charge: LoanChargeResponse): EntryRow {
     kind: 'charge',
     title: chargeLabel(charge.chargeType),
     subtitle: [formatDate(charge.chargeDate, 'list'), charge.notes?.trim() || null].filter(Boolean).join(' · '),
-    amount: formatMoney(charge.amount),
+    amount: formatMoney(charge.amount, { decimals: 'exact' }),
   };
 }
 
@@ -98,14 +98,14 @@ export function deleteEntryCopy(row: EntryRow): { title: string; confirmLabel: s
   if (row.kind === 'event') {
     return {
       title: 'Delete event?',
-      confirmLabel: 'Delete event',
+      confirmLabel: 'Delete',
       description: `${row.title}, ${row.subtitle} goes.`,
       impact: ['The schedule is calculated again without it.', 'A linked bank transaction stays; only the link goes.'],
     };
   }
   return {
     title: 'Delete charge?',
-    confirmLabel: 'Delete charge',
+    confirmLabel: 'Delete',
     description: `${row.title}${row.amount ? ` of ${row.amount}` : ''}, ${row.subtitle} goes.`,
     impact: ['It no longer counts toward the loan\'s costs.', 'A linked bank transaction stays; only the link goes.'],
   };

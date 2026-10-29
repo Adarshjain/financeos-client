@@ -24,7 +24,7 @@ export type FilterChipSize = 'sm' | 'md';
 export type FilterChipShape = 'pill' | 'rounded';
 
 export interface FilterChipProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'onReset'> {
   /** Controlled selected state */
   selected?: boolean;
   /** Initial selected state when uncontrolled */
@@ -47,6 +47,13 @@ export interface FilterChipProps
   removable?: boolean;
   /** Callback fired when remove button is clicked */
   onRemove?: (e: React.MouseEvent) => void;
+  /**
+   * The user moved this filter off its default: the chip turns dark (ink fill) and, with `onReset`, shows a ×.
+   * Pass only the value as the label ("Stocks", not "Type: Stocks"). A chip on its default stays plain.
+   */
+  changed?: boolean;
+  /** Changed chips only: the × puts the filter back to its default. */
+  onReset?: (e: React.MouseEvent) => void;
 }
 
 export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
@@ -64,6 +71,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
       count,
       removable = false,
       onRemove,
+      changed = false,
+      onReset,
       disabled = false,
       className,
       onClick,
@@ -90,7 +99,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     const radiusLeftClass = isRounded ? 'rounded-l-ds-md' : 'rounded-l-ds-pill';
     const radiusRightClass = isRounded ? 'rounded-r-ds-md' : 'rounded-r-ds-pill';
 
-    const showRemove = removable || Boolean(onRemove);
+    const showReset = changed && Boolean(onReset);
+    const showRemove = removable || Boolean(onRemove) || showReset;
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       onClick?.(e);
@@ -101,7 +111,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
 
     const handleRemoveClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      onRemove?.(e);
+      if (showReset) onReset?.(e);
+      else onRemove?.(e);
     };
 
     const countNode =
@@ -116,20 +127,27 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     ) : null;
 
     const toneClasses = cn(
-      isDashed &&
+      changed &&
+        'border-transparent bg-ink text-on-brand hover:bg-ink active:bg-ink',
+      !changed &&
+        isDashed &&
         'border-dashed border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
-      !isDashed &&
+      !changed &&
+        !isDashed &&
         !isSoft &&
         'border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
-      !isDashed &&
+      !changed &&
+        !isDashed &&
         isSoft &&
         isAmber &&
         'bg-warning-tint border-warning-border text-warning hover:bg-warning-tint',
-      !isDashed &&
+      !changed &&
+        !isDashed &&
         isSoft &&
         tone === 'neutral' &&
         'bg-subtle border-line-strong text-ink hover:bg-subtle',
-      !isDashed &&
+      !changed &&
+        !isDashed &&
         isSoft &&
         !isAmber &&
         tone !== 'neutral' &&
@@ -167,7 +185,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
           <button
             type="button"
             disabled={disabled}
-            aria-label="Remove filter"
+            aria-label={showReset ? 'Reset filter' : 'Remove filter'}
             onClick={handleRemoveClick}
             className={cn(
               'inline-flex items-center justify-center h-full pl-space-2 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed',

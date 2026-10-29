@@ -2,8 +2,7 @@ import React from 'react';
 
 import {
   Card,
-  GRID_GAP,
-  KpiTile,
+  Hero,
   ListRow,
   Skeleton,
 } from '@/components/ds';
@@ -12,12 +11,7 @@ import {
 export function UpcomingSkeleton() {
   return (
     <>
-      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-        <KpiTile loading />
-      </div>
+      <Hero.Skeleton label change figures={2} />
       <UpcomingRowsSkeleton />
     </>
   );

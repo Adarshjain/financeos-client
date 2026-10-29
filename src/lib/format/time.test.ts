@@ -42,10 +42,10 @@ describe('formatDateTime', () => {
     expect(formatDateTime(`${thisYear}-10-12T20:00:00Z`)).toBe('13 Oct, 1:30 am');
   });
   it('reads a zone-less datetime as IST, so the date and the time agree', () => {
-    expect(formatDateTime('2001-10-13T00:30:00')).toBe('13 Oct 2001, 12:30 am');
+    expect(formatDateTime('2001-10-13T00:30:00')).toBe('13 Oct 01, 12:30 am');
   });
   it('adds the year for another year', () => {
-    expect(formatDateTime('2001-10-13T10:00:00Z')).toBe('13 Oct 2001, 3:30 pm');
+    expect(formatDateTime('2001-10-13T10:00:00Z')).toBe('13 Oct 01, 3:30 pm');
   });
   it('returns empty for missing or invalid input', () => {
     expect(formatDateTime(null)).toBe('');

@@ -11,7 +11,7 @@ import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
 import { replaceUrl } from '@/lib/urlState';
 
-import type { ObligationItem, ObligationKindFilter } from './obligationsModel';
+import { DEFAULT_OBLIGATION_MONTHS, type ObligationItem, type ObligationKindFilter } from './obligationsModel';
 import { UpcomingFilters } from './UpcomingFilters';
 import { UpcomingList } from './UpcomingList';
 import {
@@ -69,6 +69,12 @@ export function UpcomingScreen() {
     syncUrl({ kind, months: next });
   };
 
+  const resetFilters = () => {
+    const next = { kind: 'all' as const, months: DEFAULT_OBLIGATION_MONTHS };
+    setState(next);
+    syncUrl(next);
+  };
+
   const failed = Boolean(error) && !data;
   const retry = { label: 'Retry', onSelect: () => void refetch() };
 
@@ -84,6 +90,7 @@ export function UpcomingScreen() {
           months={months}
           onKindChange={changeKind}
           onMonthsChange={changeMonths}
+          onReset={resetFilters}
         />
         {error ? (
           <Banner tone="danger" action={retry}>
@@ -93,11 +100,11 @@ export function UpcomingScreen() {
         {failed ? null : items.length === 0 ? (
           <Card>
             <EmptyState
-              size="sm"
+              title={kind === 'all' ? 'Nothing scheduled' : 'Nothing matches'}
               description={
                 kind === 'all'
-                  ? `Nothing scheduled within the next ${monthsLabel(months)}.`
-                  : `Nothing of this kind within the next ${monthsLabel(months)}.`
+                  ? `Nothing is due within the next ${monthsLabel(months)}.`
+                  : `Nothing of this kind is due within the next ${monthsLabel(months)}.`
               }
               action={
                 kind === 'all'

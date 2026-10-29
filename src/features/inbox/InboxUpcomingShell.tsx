@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
+import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 import { activeInboxUpcomingTab, inboxUpcomingTabs } from './inboxUpcomingTabs';
@@ -25,7 +26,7 @@ export function InboxUpcomingShell({ children }: { children: React.ReactNode }) 
   }));
 
   return (
-    <ShellPage title={tab.title} flushTop>
+    <ShellPage crumb={tab.id === 'inbox' ? undefined : areaCrumb('notifications')} title={tab.title} flushTop>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Tabs items={items} value={tab.id} />
         {children}

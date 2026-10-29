@@ -45,7 +45,7 @@ const REVIEW_TYPE_WORDS: Record<Exclude<ReviewType, 'NEEDS_REVIEW'>, string> = {
   NA: 'Not applicable',
 };
 
-const rupees = (value: number) => formatMoney(Math.abs(value), { decimals: 'auto' });
+const rupees = (value: number) => formatMoney(Math.abs(value), { decimals: 'exact' });
 
 /** The reasons as words, "Needs review" when it has none. */
 function reasonItems(t: Transaction): StatusWordItem[] {
@@ -99,13 +99,13 @@ export function rewardsWords(t: Transaction): string | null {
 
 /** "₹2,95,030 after" (no "bal" prefix), or null when the balance is unknown. */
 export function balanceAfterWords(t: Transaction): string | null {
-  return t.balance != null ? `${formatMoney(t.balance)} after` : null;
+  return t.balance != null ? `${formatMoney(t.balance, { decimals: 'exact' })} after` : null;
 }
 
 /** "Bank says ₹144.86 · differs by ₹144.02", or null when the running balance matches the bank's. */
 export function bankBalanceWords(t: Transaction): string | null {
   if (t.bankBalance == null) return null;
-  const bank = formatMoney(t.bankBalance, { decimals: 'auto' });
+  const bank = formatMoney(t.bankBalance, { decimals: 'exact' });
   const diff = t.balance != null ? ` · differs by ${rupees(t.bankBalance - t.balance)}` : '';
   return `Bank says ${bank}${diff}`;
 }
@@ -147,7 +147,7 @@ export function linkRows(
     for (const m of link.members) {
       if (m.transactionId === transactionId) continue;
       const role = m.roleLabel || getDerivedRoleLabel(link.type as LinkType, m.isAnchor);
-      const signed = formatMoney(m.signedAmount, { decimals: 'auto', sign: 'always' });
+      const signed = formatMoney(m.signedAmount, { decimals: 'exact', sign: 'always' });
       rows.push({
         kind: 'transaction',
         key: `${link.id}:${m.transactionId}`,

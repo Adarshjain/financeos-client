@@ -212,18 +212,18 @@ describe('useEpfWithdrawalLink new mode', () => {
   it('shows what lands in the bank: the shares less TDS, with the shares kept as the gross', async () => {
     const { result } = setup();
     act(() => result.current.setMode('new'));
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹40,000.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹40,000.00.');
     act(() => result.current.setTds('11260'));
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹40,000.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹40,000.00.');
     act(() => result.current.setTdsOn(true));
     expect(result.current.employee).toBe('40000');
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,740.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,740.00.');
     act(() => result.current.setKind('PENSION'));
     act(() => result.current.setPension('28400'));
     act(() => result.current.setTds('0'));
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,400.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,400.00.');
     act(() => result.current.setTdsOn(false));
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,400.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹28,400.00.');
   });
 
   it('fills a final settlement from the employer balance, in either order of choosing', async () => {
@@ -234,10 +234,10 @@ describe('useEpfWithdrawalLink new mode', () => {
     act(() => result.current.setEmployerId('emp2'));
     expect(result.current.employee).toBe('61800');
     expect(result.current.employer).toBe('50800');
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹1,12,600.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹1,12,600.00.');
     act(() => result.current.setTds('11260'));
     act(() => result.current.setTdsOn(true));
-    expect(result.current.receivedCaption).toBe('Received in bank: ₹1,01,340.');
+    expect(result.current.receivedCaption).toBe('Received in bank: ₹1,01,340.00.');
   });
 
   it('does not touch the shares of a partial withdrawal when an employer is chosen', async () => {

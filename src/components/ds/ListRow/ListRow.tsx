@@ -30,7 +30,7 @@ export interface ListRowProps
   subtitle?: React.ReactNode;
   /** Trailing element: action button, icon, etc. */
   trailing?: React.ReactNode;
-  /** If true, appends a chevron arrow indicator at the end */
+  /** Keeps a chevron at the end for a phone navigation list (Settings, More); shown only below desktop. Rows never get one on their own, so leave it off when the row tap is the same as another control on the row. */
   chevron?: boolean;
   /** Actions rendered in a trailing kebab (More options) menu */
   actions?: ListRowAction[];
@@ -138,7 +138,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
             <Icon
               name="chevron-right"
               size="sm"
-              className="text-ink-4 shrink-0"
+              className="text-ink-4 shrink-0 desk:hidden"
             />
           )}
         </div>

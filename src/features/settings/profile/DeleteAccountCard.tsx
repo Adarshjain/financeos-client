@@ -55,7 +55,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
           description="Everything below is erased and you are signed out everywhere. This can't be undone."
           secondary={{ label: 'Cancel', disabled: f.isDeleting, onSelect: f.close }}
           primary={{
-            label: f.isDeleting ? 'Deleting account…' : f.isBusy ? 'Retry deletion' : 'Delete account',
+            label: f.isDeleting ? 'Deleting account…' : f.isBusy ? 'Retry deletion' : 'Delete',
             tone: 'danger',
             type: 'submit',
             form: FORM_ID,

@@ -437,7 +437,7 @@ export function RuleDialog({
                         {!last && f.tierRows.length > 2 ? (
                           <Button
                             type="button"
-                            variant="link"
+                            variant="link" size="sm"
                             onClick={() => f.setTierRows((rows) => rows.filter((_, i) => i !== index))}
                           >
                             Remove tier
@@ -449,7 +449,7 @@ export function RuleDialog({
                   <div>
                     <Button
                       type="button"
-                      variant="link"
+                      variant="link" size="sm"
                       onClick={() =>
                         f.setTierRows((rows) => [...rows.slice(0, -1), { upTo: '', rate: '' }, rows[rows.length - 1]])
                       }

@@ -72,7 +72,6 @@ export function CardUtilisationBody({ params, className }: BuiltinBodyProps) {
     ) : (
       <EmptyState
         compact
-        title="No open credit cards yet"
         description="Add a credit card to see how much of its limit you're using."
         action={{ label: 'Go to accounts', href: appHref('/accounts'), variant: 'link' }}
       />

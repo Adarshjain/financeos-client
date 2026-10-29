@@ -61,7 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       className,
       variant = 'secondary',
-      size = 'md',
+      size: sizeProp,
       layout = 'inline',
       fullWidth = false,
       iconOnly = false,
@@ -78,6 +78,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const isLink = variant === 'link' || variant === 'danger-link';
+    const size: ButtonSize = sizeProp ?? 'md';
     const asChildContent = asChild && React.isValidElement(children)
       ? (children as React.ReactElement<{ children?: React.ReactNode }>).props.children
       : children;
@@ -103,8 +104,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
 
+    // Links carry no height or padding: `size` only sets their text (sm = label, md/xl = body).
+    // Without a `size` a link inherits the text around it.
     const sizeClasses = isLink
-      ? ''
+      ? sizeProp === 'sm'
+        ? 'text-label'
+        : sizeProp
+          ? 'text-body'
+          : ''
       : isStacked
         ? 'h-space-64 px-space-8 py-space-8 gap-space-4 rounded-ds-lg text-label font-semibold flex-col items-center justify-center text-center'
         : {

@@ -85,7 +85,7 @@ describe('CardUtilisationBody', () => {
   it('no open cards: an empty state that goes to accounts', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: [account({})] } as never);
     renderWithQuery(<CardUtilisationBody {...bodyProps('card_utilisation')} />);
-    expect(await screen.findByText('No open credit cards yet')).toBeInTheDocument();
+    expect(await screen.findByText("Add a credit card to see how much of its limit you're using.")).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 });

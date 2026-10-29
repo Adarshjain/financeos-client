@@ -4,6 +4,7 @@ import React from 'react';
 
 import {
   Button,
+  Card as DsCard,
   EmptyState,
   GRID_GAP,
   showToast,
@@ -119,27 +120,20 @@ export function CardsTab({
         </Text>
       ) : null}
 
-      {empty ? (
-        isBank ? (
-          <EmptyState
-            title="No debit cards yet"
-            action={{
-              label: 'Add your debit card',
-              onSelect: () => setDialog({ kind: 'addPrimaryCard' }),
-              variant: 'primary',
-            }}
-          />
-        ) : (
-          <EmptyState title="No cardholders yet" />
-        )
-      ) : null}
+      <div className="flex justify-end">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setDialog({ kind: isBank && empty ? 'addPrimaryCard' : 'addHolder' })}
+        >
+          {isBank ? (empty ? 'Add your debit card' : 'Add joint holder') : 'Add add-on cardholder'}
+        </Button>
+      </div>
 
-      {!(isBank && empty) ? (
-        <div className="flex justify-end">
-          <Button variant="secondary" size="sm" onClick={() => setDialog({ kind: 'addHolder' })}>
-            {isBank ? 'Add joint holder' : 'Add add-on cardholder'}
-          </Button>
-        </div>
+      {empty ? (
+        <DsCard>
+          <EmptyState title={isBank ? 'No debit cards yet' : 'No cardholders yet'} />
+        </DsCard>
       ) : null}
 
       {model.open.length > 0 ? (

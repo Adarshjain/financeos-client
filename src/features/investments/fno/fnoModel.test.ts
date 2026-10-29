@@ -103,7 +103,7 @@ describe('F&O figures', () => {
       ['September', '+₹6,266', 100],
       ['October', '+₹4,190', 67],
     ]);
-    expect(rows.every((r) => r.barTone === 'brand')).toBe(true);
+    expect(rows.every((r) => r.barTone === 'positive')).toBe(true);
   });
 
   it('draws a losing month with a danger bar', () => {

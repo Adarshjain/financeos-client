@@ -5,7 +5,6 @@ import React from 'react';
 
 import {
   Badge,
-  Button,
   Card,
   Conceal,
   createDataTableColumnHelper,
@@ -13,11 +12,11 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
-  Icon,
   Pager,
   Select,
   Text,
 } from '@/components/ds';
+import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { CorporateActionItem } from '@/lib/investments.types';
 
@@ -35,12 +34,12 @@ import {
 
 const ch = createDataTableColumnHelper<CorporateActionListRow>();
 
-function columns(onEdit: (row: CorporateActionListRow) => void) {
+function columns() {
   return [
     ch.display({
       id: 'date',
       header: 'Ex date',
-      meta: { size: 'sm', phone: 'hidden' },
+      meta: { size: 'date', phone: 'hidden' },
       cell: ({ row }) => <Text variant="body">{row.original.date}</Text>,
     }),
     ch.display({
@@ -87,25 +86,6 @@ function columns(onEdit: (row: CorporateActionListRow) => void) {
         </Text>
       ),
     }),
-    ch.display({
-      id: 'edit',
-      header: '',
-      meta: { size: 'xs', align: 'end', phone: 'hidden' },
-      cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          aria-label={`Edit ${row.original.title} ${row.original.typeLabel}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(row.original);
-          }}
-        >
-          <Icon name="pencil-simple" size="sm" />
-        </Button>
-      ),
-    }),
   ];
 }
 
@@ -136,11 +116,12 @@ export interface CorporateActionsListProps {
 export function CorporateActionsList({ state, items, totalElements, totalPages }: CorporateActionsListProps) {
   const router = useRouter();
   const [editing, setEditing] = React.useState<CorporateActionItem | null>(null);
+  const [adding, setAdding] = React.useState(false);
   const go = (next: Partial<CorporateActionsUrlState>) => router.push(corporateActionsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
 
   const rows = React.useMemo(() => items.map(corporateActionListRow), [items]);
-  const tableColumns = React.useMemo(() => columns((row) => setEditing(row.item)), []);
+  const tableColumns = React.useMemo(() => columns(), []);
   const sortLabel = SORT_OPTIONS.find((o) => o.value === state.sort)?.label ?? SORT_OPTIONS[0].label;
   const filtered = state.q !== '' || state.type !== '';
 
@@ -161,22 +142,33 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <FilterBar search={{ value: text, onValueChange: setText }}>
-        {TYPE_CHIPS.map((chip) => (
-          <FilterChip key={chip.value || 'all'} className="shrink-0" selected={state.type === chip.value} onClick={() => go({ type: chip.value, page: 0 })}>
-            {chip.label}
-          </FilterChip>
-        ))}
+      <FilterBar
+        search={{ value: text, onValueChange: setText }}
+        changed={filtered}
+        onReset={() => go({ q: '', type: '', page: 0 })}
+      >
         <Select
-          value={state.sort}
-          options={SORT_OPTIONS}
-          onValueChange={(v) => go({ sort: v as CorporateActionsUrlState['sort'], page: 0 })}
+          value={state.type}
+          options={TYPE_CHIPS}
+          onValueChange={(v) => go({ type: (v ?? '') as CorporateActionsUrlState['type'], page: 0 })}
           trigger={
-            <FilterChip hasDropdown className="shrink-0">
-              {sortLabel}
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
+              {TYPE_CHIPS.find((c) => c.value === state.type && c.value !== '')?.label ?? 'Type'}
             </FilterChip>
           }
         />
+        <div className="shrink-0 ml-auto">
+          <Select
+            value={state.sort}
+            options={SORT_OPTIONS}
+            onValueChange={(v) => go({ sort: v as CorporateActionsUrlState['sort'], page: 0 })}
+            trigger={
+              <FilterChip hasDropdown className="shrink-0">
+                {sortLabel}
+              </FilterChip>
+            }
+          />
+        </div>
       </FilterBar>
       <Card>
         <DataTable
@@ -187,11 +179,19 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
           phoneSub={(row) => <PhoneSub row={row} />}
           onRowSelect={(row) => setEditing(row.item)}
           empty={
-            <EmptyState
-              compact
-              description={filtered ? 'No corporate actions match' : 'No corporate actions yet. Splits, bonus issues, demergers and mergers show here.'}
-              action={filtered ? { label: 'Clear filters', variant: 'link', href: corporateActionsUrl({ ...state, q: '', type: '', page: 0 }) } : undefined}
-            />
+            filtered ? (
+              <EmptyState
+                title="No corporate actions match"
+                description="Try a different search or filter."
+                action={{ label: 'Clear filters', variant: 'secondary', href: corporateActionsUrl({ ...state, q: '', type: '', page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title="No corporate actions yet"
+                description="Splits, bonus issues, demergers and mergers show here."
+                action={{ label: 'Record corporate action', variant: 'primary', onSelect: () => setAdding(true) }}
+              />
+            )
           }
           stickyHeader={false}
         />
@@ -208,16 +208,20 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
           </Card.Row>
         ))}
       </Card>
+      {adding ? <CorporateActionDialog onClose={() => setAdding(false)} /> : null}
       {editing ? <CorporateActionDialog key={editing.id} action={editing} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }
 
-/** The list while the page loads. */
+/** The filter row and list while the page loads. */
 export function CorporateActionsSkeleton() {
   return (
-    <Card>
-      <DataTable columns={columns(() => undefined)} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <FilterRowSkeleton chips={1} />
+      <Card>
+        <DataTable columns={columns()} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />
+      </Card>
+    </div>
   );
 }

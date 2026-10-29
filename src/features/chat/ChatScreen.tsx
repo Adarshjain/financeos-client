@@ -3,12 +3,12 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Card, cn, MessageBubble, PromptField, showToast, Text } from '@/components/ds';
+import { cn, MessageBubble, PromptField, showToast } from '@/components/ds';
 import { areaCrumb, crumbMap } from '@/features/shell/navigation';
 import { replaceCurrentRoute } from '@/features/shell/navigationStore';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
-import { timeInAppZone } from '@/lib/date-range';
+import { formatTime } from '@/lib/format';
 import { replaceUrl } from '@/lib/urlState';
 
 import { ChatAnswer } from './ChatAnswer';
@@ -16,7 +16,6 @@ import { UNTITLED_CHAT, withNewChat, withoutChat, withQuestion, withTitle } from
 import { ChatHistoryPane } from './ChatHistoryPane';
 import type { Conversation, ConversationSummary } from './conversation.types';
 import { deleteConversation, renameConversation } from './conversationActions';
-import { STARTERS } from './starters';
 import { useConversation } from './useConversation';
 
 export interface ChatScreenProps {
@@ -163,7 +162,8 @@ function ChatSession({
       backHref={started ? CHAT_HREF : REPORTS_HREF}
     >
       <div className="flex flex-col desk:flex-row desk:items-start gap-space-8 desk:gap-space-24">
-        <aside className={cn('order-3 desk:order-1 desk:w-72 desk:shrink-0 flex flex-col gap-space-8 desk:sticky desk:top-safe-56 desk:self-start desk:max-h-dvh desk:overflow-y-auto', started && 'max-desk:hidden')}>
+        <aside className={cn('order-3 desk:order-1 desk:w-72 desk:shrink-0 flex flex-col gap-space-8 desk:sticky desk:top-safe-56 desk:self-start desk:max-h-dvh desk:overflow-y-auto', started ? 'max-desk:hidden' : 'max-desk:pb-space-96')}>
+          {/* Phone: room under the last recent chat for the composer docked at the bottom. */}
           <ChatHistoryPane
             conversations={list}
             currentId={currentId}
@@ -178,34 +178,14 @@ function ChatSession({
         </aside>
 
         <div className="max-desk:contents desk:order-2 desk:flex desk:flex-1 desk:min-w-0 desk:flex-col desk:items-center">
-          {!started ? (
-            <>
-              <div className={cn(COLUMN, 'order-1 desk:pt-space-64 desk:pb-space-8')}>
-                <Text as="h1" variant="page-title" family="display" className="desk:text-center">
-                  What do you want to know?
-                </Text>
-              </div>
-              <div className={cn(COLUMN, 'order-2 desk:order-3 flex gap-space-12 overflow-x-auto desk:overflow-visible desk:grid desk:grid-cols-3 desk:pt-space-12')}>
-                {STARTERS.map((s) => (
-                  <Card key={s.prompt} asChild className="max-desk:w-container-xs max-desk:shrink-0">
-                    <button type="button" className="flex flex-col items-start gap-space-6 p-space-16" onClick={() => send(s.prompt)}>
-                      <Text variant="overline" tone="ink-3" align="start">
-                        {s.category}
-                      </Text>
-                      <Text variant="body" align="start">{s.prompt}</Text>
-                    </button>
-                  </Card>
-                ))}
-              </div>
-            </>
-          ) : (
+          {started ? (
             <div className={cn(COLUMN, 'order-1 flex flex-col gap-space-8 desk:gap-space-20 desk:pb-space-24 max-desk:pb-space-96')}>
               {records.map((r, i) =>
                 r.kind === 'user' ? (
                   <MessageBubble
                     key={r.id}
                     ref={i === lastUserIndex ? lastUserRef : undefined}
-                    meta={r.createdAt ? timeInAppZone(r.createdAt) : undefined}
+                    meta={r.createdAt ? formatTime(r.createdAt) : undefined}
                     className="scroll-mt-space-64"
                   >
                     {r.text}
@@ -223,12 +203,13 @@ function ChatSession({
                 ),
               )}
             </div>
-          )}
+          ) : null}
 
           <div className={cn(
               COLUMN,
-              'z-sticky pt-space-8 pb-safe-12 desk:pb-space-16 max-desk:order-5 max-desk:fixed max-desk:inset-x-0 max-desk:bottom-0 max-desk:px-space-16 desk:sticky desk:bottom-0',
-              !started ? 'desk:order-2' : 'order-2',
+              'z-sticky pt-space-8 desk:pb-space-16 max-desk:order-5 max-desk:fixed max-desk:inset-x-0 max-desk:bottom-0 max-desk:px-space-16 desk:sticky desk:bottom-0',
+              // Home and a conversation both hide the phone tab bar: the composer docks at the bottom edge, safe area below it.
+              !started ? 'desk:order-2 max-desk:pb-safe-12' : 'order-2 max-desk:pb-safe-12',
             )}>
             <PromptField
               placeholder={placeholder}

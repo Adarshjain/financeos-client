@@ -36,7 +36,7 @@ describe('LendingBalancesBody', () => {
   it('asks the server for the top people with a balance, biggest |net| first', async () => {
     respond([]);
     renderWithQuery(<LendingBalancesBody />);
-    await screen.findByText('All square');
+    await screen.findByText('Nobody owes you and you owe nobody.');
     expect(api.GET).toHaveBeenCalledWith('/api/v1/counterparties', {
       params: { query: { page: 0, size: LENDING_BALANCES_TOP, outstanding: true, sort: ['net'] } },
     });
@@ -45,7 +45,7 @@ describe('LendingBalancesBody', () => {
   it('nobody owing is All square with a way to Lendings', async () => {
     respond([]);
     renderWithQuery(<LendingBalancesBody />);
-    expect(await screen.findByText('All square')).toBeInTheDocument();
+    expect(await screen.findByText('Nobody owes you and you owe nobody.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', expect.stringContaining('/loans/lendings'));
   });
 

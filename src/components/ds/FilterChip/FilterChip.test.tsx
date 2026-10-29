@@ -155,4 +155,28 @@ describe('FilterChip', () => {
     expect(main).toHaveClass('rounded-l-ds-pill');
     expect(remove).toHaveClass('rounded-r-ds-pill');
   });
+
+  it('a changed chip is dark, shows the value and its x resets it', () => {
+    const onReset = vi.fn();
+    const { container } = render(
+      <FilterChip changed onReset={onReset}>
+        Stocks
+      </FilterChip>,
+    );
+    expect(container.firstChild).toHaveClass('bg-ink', 'text-on-brand');
+    expect(screen.getByText('Stocks')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('a chip on its default is plain and has no x', () => {
+    const { container } = render(<FilterChip>Type</FilterChip>);
+    expect(container.querySelector('button')).not.toHaveClass('bg-ink');
+    expect(screen.queryByRole('button', { name: 'Reset filter' })).toBeNull();
+  });
+
+  it('changed without onReset has no x', () => {
+    render(<FilterChip changed>Stocks</FilterChip>);
+    expect(screen.queryByRole('button', { name: 'Reset filter' })).toBeNull();
+  });
 });

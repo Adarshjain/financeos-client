@@ -93,7 +93,7 @@ export function useBulkTransactionMutations({ accounts, onDone }: BulkTransactio
         }}
         title={copy?.title ?? ''}
         impact={copy?.impact}
-        confirmLabel={copy?.confirmLabel ?? 'Delete transaction'}
+        confirmLabel={copy?.confirmLabel ?? 'Delete'}
         confirmLoading={del.isPending}
         onConfirm={() => void confirmDelete()}
       >

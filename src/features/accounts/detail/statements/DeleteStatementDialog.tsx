@@ -62,7 +62,7 @@ export function DeleteStatementDialog({
       impact={preview.data ? deletionImpact(preview.data) : undefined}
       previewLoading={preview.isLoading}
       checkingMessage="Checking what this statement added…"
-      confirmLabel="Delete statement"
+      confirmLabel="Delete"
       confirmLoading={remove.isPending}
       confirmDisabled={!preview.data}
       onConfirm={confirm}

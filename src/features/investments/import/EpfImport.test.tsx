@@ -157,11 +157,11 @@ describe('EPF passbook import: review', () => {
     expect(await screen.findByText(/5 entries in this passbook: 2 new, 1 replaces an entry you added, 2 are already here\./)).toBeInTheDocument();
     expect(screen.getByText(/Pension figures are kept but not added to the balance\./)).toBeInTheDocument();
     expect(epfCalls.preview).toHaveBeenCalledWith({ files: [pdf], assign: [] });
-    expect(screen.getByText('Northwind Labs · FY 2026-27')).toBeInTheDocument();
+    expect(screen.getByText('Northwind Labs · FY 26-27')).toBeInTheDocument();
     expect(screen.getByText('Member ID …67890 · UAN …4321 · up to September 2026')).toBeInTheDocument();
     expect(screen.getAllByText('September 2026')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('FY 2025-26')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('1 Apr 2026')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('FY 25-26')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('1 Apr 26')[0]).toBeInTheDocument();
     expect(screen.getByText('₹56,180')).toBeInTheDocument();
     expect(screen.getAllByText('₹13,150').length).toBeGreaterThan(0);
     expect(screen.getAllByText('New').length).toBeGreaterThan(0);
@@ -355,8 +355,8 @@ describe('EPF passbook import: several passbooks', () => {
     await user.upload(input(), [pdf, pdf3, pdf2]);
     expect(screen.getByRole('button', { name: 'Preview passbooks' })).toBeEnabled();
     await user.click(screen.getByRole('button', { name: 'Preview passbooks' }));
-    expect(await screen.findByText('Northwind Labs · FY 2026-27')).toBeInTheDocument();
-    expect(screen.getByText('Fabrikam Ltd · FY 2026-27')).toBeInTheDocument();
+    expect(await screen.findByText('Northwind Labs · FY 26-27')).toBeInTheDocument();
+    expect(screen.getByText('Fabrikam Ltd · FY 26-27')).toBeInTheDocument();
     expect(screen.getAllByRole('table')).toHaveLength(2);
     expect(epfCalls.preview).toHaveBeenCalledWith({ files: [pdf, pdf3, pdf2], assign: [] });
     expect(screen.getByText(`From ${pdf.name}, ${pdf3.name}`)).toBeInTheDocument();
@@ -372,7 +372,7 @@ describe('EPF passbook import: several passbooks', () => {
     await upload();
     await readPassbook();
     expect(await screen.findByText('Not imported: notes.pdf (Not an EPFO passbook.)')).toBeInTheDocument();
-    expect(screen.getByText('Fabrikam Ltd · FY 2026-27')).toBeInTheDocument();
+    expect(screen.getByText('Fabrikam Ltd · FY 26-27')).toBeInTheDocument();
   });
 
   it('stays on the upload with a danger banner per refused file when none can be read; Choose other files clears the queue', async () => {

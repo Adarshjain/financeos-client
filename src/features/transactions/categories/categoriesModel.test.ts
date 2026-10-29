@@ -25,7 +25,7 @@ describe('uncategorizedData', () => {
     const data = uncategorizedData({ content: [t], totalElements: 23 }, '/x');
     expect(data?.count).toBe(23);
     expect(data?.reviewHref).toBe('/x');
-    expect(data?.rows).toEqual([{ id: 't1', description: 'IKEA India', detail: '3 Oct · ₹7,430' }]);
+    expect(data?.rows).toEqual([{ id: 't1', description: 'IKEA India', detail: '3 Oct · ₹7,430.00' }]);
   });
 });
 

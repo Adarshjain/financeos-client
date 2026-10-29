@@ -37,7 +37,7 @@ describe('PriceDialog editing a manual price', () => {
     open();
     const date = screen.getByLabelText('As of') as HTMLInputElement;
     expect(date.disabled).toBe(false);
-    expect(date.value).toBe('10/10/2026');
+    expect(date.value).toBe('10/10/26');
   });
 
   it('sends no asOf when only the amount changed', async () => {
@@ -59,7 +59,7 @@ describe('PriceDialog editing a manual price', () => {
   });
 
   it('shows a DUPLICATE 409 on the date field and stays open', async () => {
-    const message = 'A price for 3 Oct 2026 already exists. Edit that one instead.';
+    const message = 'A price for 3 Oct 26 already exists. Edit that one instead.';
     api.PUT.mockRejectedValue(new ApiError(409, { code: 'DUPLICATE', message, timestamp: '2026-10-25T00:00:00Z' }));
     open();
     fireEvent.change(screen.getByLabelText('As of'), { target: { value: '03/10/2026' } });

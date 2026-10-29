@@ -165,8 +165,8 @@ describe('buildStatementRow', () => {
   it('describes an open card statement with opening and due', () => {
     const row = buildStatementRow(stmt('b', '2026-10-05'), bill(), true, 'b');
     expect(row).toMatchObject({
-      title: '5 Oct 2026',
-      caption: 'Upload · 8 lines · opening ₹46,800 · due ₹44,319',
+      title: '5 Oct 26',
+      caption: 'Upload · 8 lines · opening ₹46,800.00 · due ₹44,319.00',
       undo: false,
       selected: true,
       verdict: { label: 'Auto ingested' },
@@ -178,18 +178,18 @@ describe('buildStatementRow', () => {
     const paid = bill({ status: 'PAID', totalAmountDue: 46800, paidMarkedOn: '2026-09-18' });
     const email = stmt('c', '2026-09-05', { source: 'gmail', transactionCount: 14 });
     const row = buildStatementRow(email, paid, true, 'b');
-    expect(row.caption).toBe('Email · 14 lines · ₹46,800 · paid 18 Sep');
+    expect(row.caption).toBe('Email · 14 lines · ₹46,800.00 · paid 18 Sep');
     expect(row.undo).toBe(false);
     expect(row.selected).toBe(false);
 
     const manual = buildStatementRow(email, { ...paid, paidSource: 'MANUAL' }, true, null);
-    expect(manual.caption).toBe('Email · 14 lines · ₹46,800 · paid 18 Sep · marked by you');
+    expect(manual.caption).toBe('Email · 14 lines · ₹46,800.00 · paid 18 Sep · marked by you');
     expect(manual.undo).toBe(true);
   });
 
   it('keeps only the title facts when the bill is missing', () => {
     const row = buildStatementRow(stmt('b', '2026-10-05'), null, true, null);
-    expect(row.caption).toBe('Upload · 8 lines · opening ₹46,800');
+    expect(row.caption).toBe('Upload · 8 lines · opening ₹46,800.00');
     expect(row.badge).toBeNull();
   });
 
@@ -200,7 +200,7 @@ describe('buildStatementRow', () => {
       false,
       null
     );
-    expect(row.caption).toBe('Upload · 8 lines · closing ₹1,25,000');
+    expect(row.caption).toBe('Upload · 8 lines · closing ₹1,25,000.40');
     expect(row.badge).toBeNull();
     expect(row.undo).toBe(false);
   });
@@ -245,7 +245,7 @@ describe('buildStatementRow missing details', () => {
 
 describe('signedRupees', () => {
   it('puts the minus before the rupee sign', () => {
-    expect(signedRupees(-1200)).toBe('−₹1,200');
-    expect(signedRupees(1200)).toBe('₹1,200');
+    expect(signedRupees(-1200)).toBe('−₹1,200.00');
+    expect(signedRupees(1200)).toBe('₹1,200.00');
   });
 });

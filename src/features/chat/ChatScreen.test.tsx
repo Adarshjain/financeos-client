@@ -60,20 +60,21 @@ beforeEach(() => {
 const props = { conversations: [summary('c1', 'Spend in the last 90 days', 2)], today: '2026-10-26' };
 
 describe('ChatScreen, a new chat', () => {
-  it('shows the headline, the composer and the six starters with their categories', () => {
+  it('shows the composer and no suggestion cards', () => {
     render(<ChatScreen {...props} />);
-    expect(screen.getByRole('heading', { name: 'What do you want to know?' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Ask about your money…')).toBeInTheDocument();
-    for (const c of ['Spending', 'Cards', 'Net worth', 'Investments', 'Lending', 'Reports']) expect(screen.getByText(c)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Who still owes me money, and how much\?/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Make a report of my monthly spend by category\./ })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /^(SPENDING|CARDS|NET WORTH|INVESTMENTS|LENDING|REPORTS|Spending|Cards|Net worth|Investments|Lending|Reports)/ })).toHaveLength(6);
+    expect(screen.queryByRole('heading', { name: 'What do you want to know?' })).toBeNull();
+    expect(screen.queryByText('Net worth')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Who still owes me money/ })).toBeNull();
   });
 
-  it('sends a starter when it is clicked', () => {
+  it('docks the phone composer at the screen edge on the empty chat and in an open conversation', () => {
+    const { unmount } = render(<ChatScreen {...props} />);
+    expect(screen.getByPlaceholderText('Ask about your money…').closest('.max-desk\\:fixed')).toHaveClass('max-desk:pb-safe-12');
+    unmount();
+    convo.state = { ...convo.state, conversationId: 'c1', records: [{ kind: 'user', id: 'u', text: 'hi' }] };
     render(<ChatScreen {...props} />);
-    fireEvent.click(screen.getByRole('button', { name: /Which credit card gives the best rewards/ }));
-    expect(convo.send).toHaveBeenCalledWith('Which credit card gives the best rewards for ₹5,000 dining?');
+    expect(screen.getByPlaceholderText('Ask about your money…').closest('.max-desk\\:fixed')).toHaveClass('max-desk:pb-safe-12');
   });
 
   it('sends what is typed on Enter', () => {
@@ -174,7 +175,7 @@ describe('ChatScreen, history', () => {
     render(<ChatScreen {...props} initial={stored} />);
     await userEvent.click(screen.getByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete chat' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete chat' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(actions.remove).toHaveBeenCalledWith('c1'));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/chat'));
   });
@@ -192,8 +193,8 @@ describe('ChatScreen, a conversation', () => {
     convo.state = { ...convo.state, conversationId: 'c1', title: 'Spend', records };
     render(<ChatScreen {...props} initial={stored} />);
     expect(screen.getByText('Where did my money go?')).toBeInTheDocument();
-    expect(screen.getByText('14:05')).toBeInTheDocument();
-    expect(screen.getByText('14:07')).toBeInTheDocument();
+    expect(screen.getByText('2:05 pm')).toBeInTheDocument();
+    expect(screen.getByText('2:07 pm')).toBeInTheDocument();
     expect(screen.getByText('On food.')).toBeInTheDocument();
     expect(screen.getByText('On trains.')).toBeInTheDocument();
   });
@@ -249,6 +250,7 @@ describe('ChatScreen, a conversation', () => {
     convo.state = { ...convo.state, conversationId: null, records: [] };
     nav.pathname = '/chat';
     rerender(<ChatScreen {...props} />);
-    expect(screen.getByRole('heading', { name: 'What do you want to know?' })).toBeInTheDocument();
+    expect(screen.queryByText('On food.')).toBeNull();
+    expect(screen.getByPlaceholderText('Ask about your money…')).toBeInTheDocument();
   });
 });

@@ -95,7 +95,7 @@ describe('AddLendingDialog', () => {
     expect(screen.getByRole('combobox', { name: /^Person/ })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Entry type/ })).toHaveTextContent('I lent money');
     expect(amount()).toHaveValue('');
-    expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
+    expect(screen.getByLabelText('Date')).toHaveValue('13/10/26');
     expect(screen.getByLabelText(/Expected return date/)).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^Notes/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Record entry' })).toBeInTheDocument();

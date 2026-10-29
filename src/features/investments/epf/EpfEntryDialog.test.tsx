@@ -58,18 +58,18 @@ describe('EpfEntryDialog: adding', () => {
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Contribution');
     expect(screen.getByRole('combobox', { name: /^Employer/ })).toHaveTextContent('Northwind Labs');
     expect(screen.getByRole('combobox', { name: /^Wage month/ })).toHaveTextContent('October 2026');
-    expect(field('Credited on')).toHaveValue('15/11/2026');
+    expect(field('Credited on')).toHaveValue('15/11/26');
     expect(field('Your share')).toHaveValue('7200');
     expect(field('Employer share')).toHaveValue('5950');
     expect(field('Pension')).toHaveValue('1250');
     expect(screen.getByText('Filled from your last contribution. Pension is not added to the balance.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete entry' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
   });
 
   it('starts empty when there is no contribution to fill from', () => {
     renderWithQuery(<EpfEntryDialog employers={employers} onClose={vi.fn()} />);
     expect(field('Your share')).toHaveValue('');
-    expect(field('Credited on')).toHaveValue('27/10/2026');
+    expect(field('Credited on')).toHaveValue('27/10/26');
     expect(screen.queryByText(/Filled from your last contribution/)).toBeNull();
   });
 
@@ -106,8 +106,8 @@ describe('EpfEntryDialog: adding', () => {
     expect(screen.getByText('Use the closing balance from your last passbook. Later entries add to it.')).toBeInTheDocument();
 
     await choose(/^Type/, 'Interest');
-    expect(screen.getByRole('combobox', { name: /^For year/ })).toHaveTextContent('FY 2025-26');
-    expect(screen.getByText('Replaces the estimate for FY 2025-26.')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /^For year/ })).toHaveTextContent('FY 25-26');
+    expect(screen.getByText('Replaces the estimate for FY 25-26.')).toBeInTheDocument();
 
     await choose(/^Type/, 'Transfer in');
     expect(screen.getByRole('combobox', { name: /^To employer/ })).toBeInTheDocument();
@@ -267,11 +267,11 @@ describe('EpfEntryDialog: an entry you added', () => {
   it('asks before deleting, says what goes, then deletes', async () => {
     const onClose = vi.fn();
     renderWithQuery(<EpfEntryDialog entry={manualContribution()} employers={employers} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete entry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(await screen.findByText('Delete EPF entry?')).toBeInTheDocument();
     expect(screen.getByText('This entry you added goes, and the balance drops by ₹13,150. Entries from the passbook stay. This can\'t be undone.')).toBeInTheDocument();
     expect(http.DELETE).not.toHaveBeenCalled();
-    const confirm = screen.getAllByRole('button', { name: 'Delete entry' }).at(-1)!;
+    const confirm = screen.getAllByRole('button', { name: 'Delete' }).at(-1)!;
     fireEvent.click(confirm);
     await waitFor(() => expect(http.DELETE).toHaveBeenCalledWith('/api/v1/epf/entries/{id}', { params: { path: { id: 'n2' } } }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -299,14 +299,14 @@ describe('EpfEntryDialog: an entry imported from the passbook', () => {
     for (const name of [/^Type/, /^Employer/, /^Wage month/]) expect(screen.getByRole('combobox', { name })).toBeDisabled();
     for (const name of ['Credited on', 'Your share', 'Employer share', 'Pension']) expect(field(name)).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Delete entry' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' }).at(-1)!);
     expect(onClose).toHaveBeenCalled();
   });
 
   it('locks an imported interest the same way', () => {
     renderWithQuery(<EpfEntryDialog entry={interest()} employers={employers} onClose={vi.fn()} />);
-    expect(screen.getByText('Interest · FY 2025-26')).toBeInTheDocument();
+    expect(screen.getByText('Interest · FY 25-26')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^For year/ })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
   });
@@ -343,7 +343,7 @@ describe('EpfEntryDialog: an entry imported from the passbook', () => {
 
   it('has no Delete entry', () => {
     renderWithQuery(<EpfEntryDialog entry={imported()} employers={employers} onClose={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: 'Delete entry' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 });
@@ -358,7 +358,7 @@ describe('EpfEntryDialog: the bank credit of a withdrawal', () => {
   it('shows the suggested match with Link and Not this one', async () => {
     renderWithQuery(<EpfEntryDialog entry={withdrawal({ suggestion: bankCredit() })} employers={employers} onClose={vi.fn()} />);
     expect(screen.getByText('NEFT CR EPFO MUMBAI')).toBeInTheDocument();
-    expect(screen.getByText('HDFC Bank ••4521 · 24 Feb 2025')).toBeInTheDocument();
+    expect(screen.getByText('HDFC Bank ••4521 · 24 Feb 25')).toBeInTheDocument();
     expect(screen.getByText('+₹40,000')).toBeInTheDocument();
     expect(screen.getByText('Suggested match')).toBeInTheDocument();
     expect(screen.getByText(/Not this one shows the next likely credit;/)).toBeInTheDocument();

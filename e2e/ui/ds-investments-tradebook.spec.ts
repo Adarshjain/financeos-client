@@ -12,8 +12,14 @@ const VIEWPORTS = [
   { name: 'phone 390px', width: 390, height: 844, phone: true },
 ];
 
-/** Both Pagers (above and below the list) show this range and total. */
+/** Both Pagers (above and below the list) show this range and total; a list that fits one page (25) has no Pager and just its rows. */
 async function expectPager(page: import('@playwright/test').Page, range: string, total: number) {
+  if (total <= 25) {
+    await expect(page.getByRole('navigation', { name: 'Pagination' })).toHaveCount(0);
+    // A trade row is a button holding cells, on both layouts.
+    await expect(page.getByRole('button').filter({ has: page.getByRole('cell') })).toHaveCount(total);
+    return;
+  }
   const pagers = page.getByRole('navigation', { name: 'Pagination' });
   await expect(pagers).toHaveCount(2);
   for (const pager of await pagers.all()) {
@@ -37,10 +43,9 @@ for (const viewport of VIEWPORTS) {
       seeded = await seedTradebook(makeApi(currentUser.cookie));
     });
 
-    /** Opens the trade behind a row: the pencil on desktop, a tap on phone. */
+    /** Opens the trade behind a row: a tap on the row, on both layouts (the row has no pencil). */
     async function openTrade(page: import('@playwright/test').Page, row: Locator) {
-      if (viewport.phone) await row.click();
-      else await row.getByRole('button', { name: /^Edit .* trade$/ }).click();
+      await row.click();
       return page.getByRole('dialog');
     }
 
@@ -80,20 +85,25 @@ for (const viewport of VIEWPORTS) {
     test('the filters are one URL change each and answered by the server', async ({ page }) => {
       await page.goto('/investments/tradebook?fy=all');
 
-      await page.getByRole('button', { name: seeded.groww.name, exact: true }).click();
+      await page.getByRole('button', { name: 'Broker', exact: true }).click();
+      await page.getByRole('option', { name: seeded.groww.name, exact: true }).click();
       await page.waitForURL(new RegExp(`broker=${seeded.groww.id}`));
       // Groww holds the 13 even-numbered buys and the fund.
       await expectPager(page, '1–14', 14);
-      await page.getByRole('button', { name: 'All brokers', exact: true }).click();
+      // All years is itself off the default, so its × is there too; the chip just picked comes first.
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).first().click();
       await page.waitForURL((url) => url.search === '?fy=all');
 
-      await page.getByRole('button', { name: 'Sell', exact: true }).click();
+      await page.getByRole('button', { name: 'Type', exact: true }).click();
+      await page.getByRole('option', { name: 'Sell', exact: true }).click();
       await page.waitForURL(/type=sell/);
       await expectPager(page, '1–1', 1);
-      await page.getByRole('button', { name: 'Buy', exact: true }).click();
+      await page.getByRole('button', { name: 'Sell', exact: true }).click();
+      await page.getByRole('option', { name: 'Buy', exact: true }).click();
       await page.waitForURL(/type=buy/);
       await expectPager(page, '1–25', seeded.total - 1);
-      await page.getByRole('button', { name: 'Buy', exact: true }).click();
+      // All years is itself off the default, so its × is there too; the chip just picked comes first.
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).first().click();
       await page.waitForURL((url) => url.search === '?fy=all');
 
       await page.getByRole('button', { name: /All years/ }).click();
@@ -127,7 +137,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(`${seeded.fund.name} · ${seeded.groww.name} · prices in ₹`)).toBeVisible();
       await expect(dialog.getByLabel('Qty')).toHaveValue('50');
       await expect(dialog.getByLabel('Price')).toHaveValue('100.00');
-      await expect(dialog.getByLabel('Date')).toHaveValue('05/10/2026');
+      await expect(dialog.getByLabel('Date')).toHaveValue('05/10/26');
       await expect(dialog.getByText('Value ₹5,000 · charges ₹0')).toBeVisible();
 
       // Nothing is sent for a quantity of zero.
@@ -151,7 +161,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments/tradebook?type=sell');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.stock.symbol })));
       await expect(dialog.getByRole('radio', { name: 'Sell' })).toBeChecked();
-      await dialog.getByRole('button', { name: 'Delete trade', exact: true }).click();
+      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
 
       const confirm = page.getByRole('dialog').last();
       await expect(confirm.getByText(`Delete ${seeded.stock.symbol} · 1 Oct sell?`)).toBeVisible();
@@ -159,8 +169,8 @@ for (const viewport of VIEWPORTS) {
       await confirm.getByRole('button', { name: 'Cancel' }).click();
       await expect(page.getByText('Edit trade')).toBeVisible();
 
-      await dialog.getByRole('button', { name: 'Delete trade', exact: true }).click();
-      await page.getByRole('dialog').last().getByRole('button', { name: 'Delete trade' }).click();
+      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog').last().getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Trade deleted')).toBeVisible();
       await expect(page.getByText('No trades match')).toBeVisible();
     });

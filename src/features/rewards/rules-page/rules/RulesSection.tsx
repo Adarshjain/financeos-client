@@ -273,7 +273,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
         onOpenChange={(o) => (o ? undefined : setDeleting(null))}
         title={`Delete rule "${deleting?.name ?? ''}"?`}
         description="Historical reports will no longer see it. Your transactions stay. This can't be undone."
-        confirmLabel="Delete rule"
+        confirmLabel="Delete"
         loading={remove.isPending}
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}

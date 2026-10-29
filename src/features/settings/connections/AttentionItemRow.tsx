@@ -80,7 +80,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
         </Text>
         <div>
           <Text variant="label" as="span">
-            <Button variant="link" aria-expanded={showDetails} onClick={() => setShowDetails((v) => !v)}>
+            <Button variant="link" size="sm" aria-expanded={showDetails} onClick={() => setShowDetails((v) => !v)}>
               {showDetails ? 'Hide details' : 'Details'}
             </Button>
           </Text>

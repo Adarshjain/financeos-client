@@ -11,8 +11,8 @@ import {
   expectedText,
   lastEntryText,
   lendingRow,
+  lendingsHero,
   lendingsUrl,
-  lendingTiles,
   parseLendingsUrl,
   phoneSubText,
   sideOf,
@@ -52,13 +52,13 @@ describe('URL state', () => {
       page: 2,
       size: 50,
     });
-    expect(parseLendingsUrl({ filter: 'bogus', page: '-1', size: '7' })).toEqual({ q: '', filter: 'all', page: 0, size: 25 });
+    expect(parseLendingsUrl({ filter: 'bogus', page: '-1', size: '10' })).toEqual({ q: '', filter: 'all', page: 0, size: 25 });
   });
 
   it('builds the tab URL with only non-default parts', () => {
     expect(lendingsUrl({ q: '', filter: 'all', page: 0, size: 25 })).toBe('/loans/lendings');
-    expect(lendingsUrl({ q: 'pri', filter: 'settled', page: 1, size: 10 })).toBe(
-      '/loans/lendings?q=pri&filter=settled&page=2&size=10',
+    expect(lendingsUrl({ q: 'pri', filter: 'settled', page: 1, size: 50 })).toBe(
+      '/loans/lendings?q=pri&filter=settled&page=2&size=50',
     );
   });
 
@@ -70,7 +70,7 @@ describe('URL state', () => {
   });
 });
 
-describe('lendingTiles', () => {
+describe('lendingsHero', () => {
   const summary: CounterpartySummary = {
     owedToYou: 19200,
     owedToYouCount: 2,
@@ -80,40 +80,25 @@ describe('lendingTiles', () => {
     expectedBack: { amount: 15000, count: 1, nextName: 'Rahul', nextDate: '2026-10-28' },
   };
 
-  it('fills the four tiles from the summary', () => {
-    expect(lendingTiles(summary)).toEqual([
-      { label: 'Owed to you', value: '₹19,200', context: '2 people', tone: 'positive' },
-      { label: 'You owe', value: '₹1,12,000', context: '2 people', tone: undefined },
-      { label: 'Due this month', value: '₹12,000', context: 'Priya · 23 Oct' },
-      { label: 'Expected back', value: '₹15,000', context: 'Rahul · 28 Oct', tone: 'positive' },
-    ]);
+  it('puts what is owed net in the hero, red when it is you who owes', () => {
+    expect(lendingsHero(summary, 3)).toEqual({
+      label: 'Owed to you (net)',
+      value: '−₹92,800',
+      tone: 'danger',
+      figures: [
+        { label: 'You owe', value: '₹1,12,000', tone: 'danger', caption: '2 people' },
+        { label: 'Settled', value: '3 people' },
+      ],
+    });
   });
 
-  it('says so when a tile has nothing', () => {
-    const empty = lendingTiles({
-      owedToYou: 0,
-      owedToYouCount: 0,
-      youOwe: 0,
-      youOweCount: 0,
-      dueThisMonth: { amount: 0, count: 0 },
-      expectedBack: { amount: 0, count: 0 },
+  it('is green when the net is yours and plain at zero, and dashes an unread settled count', () => {
+    expect(lendingsHero({ ...summary, youOwe: 0, youOweCount: 0 }, null)).toMatchObject({
+      value: '₹19,200',
+      tone: 'positive',
+      figures: [{ value: '₹0', tone: undefined }, { value: '—' }],
     });
-    expect(empty.map((t) => [t.value, t.context, t.tone])).toEqual([
-      ['₹0', '0 people', undefined],
-      ['₹0', '0 people', undefined],
-      ['₹0', 'Nothing due', undefined],
-      ['₹0', 'Nothing expected', undefined],
-    ]);
-  });
-
-  it('falls back to a count when the next name is unknown, and singularises', () => {
-    const tiles = lendingTiles({
-      ...summary,
-      owedToYouCount: 1,
-      dueThisMonth: { amount: 500, count: 2, nextName: null, nextDate: null },
-    });
-    expect(tiles[0].context).toBe('1 person');
-    expect(tiles[2].context).toBe('2 entries');
+    expect(lendingsHero({ ...summary, owedToYou: 0, youOwe: 0 }, 0).tone).toBeUndefined();
   });
 });
 
@@ -194,9 +179,9 @@ describe('lendingRow', () => {
     expect(row).toMatchObject({
       side: 'owe',
       directionLabel: 'You owe',
-      directionTone: 'warning',
+      directionTone: 'danger',
       balance: '12,000',
-      balanceTone: 'ink',
+      balanceTone: 'danger',
       expected: '23 Oct · in 10 d',
       lastEntry: '23 Sep · borrowed',
       phoneSub: 'due 23 Oct · last entry 23 Sep',

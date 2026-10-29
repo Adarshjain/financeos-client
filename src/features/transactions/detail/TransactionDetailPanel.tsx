@@ -311,9 +311,9 @@ function DetailContent({
         onOpenChange={(open) => {
           if (!deletePending) setDeleting(open);
         }}
-        title={`Delete ${title} · ${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}?`}
+        title={`Delete ${title} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}?`}
         impact={deleteImpact(t)}
-        confirmLabel="Delete transaction"
+        confirmLabel="Delete"
         confirmLoading={deletePending}
         onConfirm={() => deleteMutation.mutate()}
       >
@@ -327,7 +327,7 @@ function DetailContent({
         }}
         title="Remove this settlement?"
         description="The installment goes back to unpaid; the transaction stays."
-        confirmLabel="Remove settlement"
+        confirmLabel="Remove"
         confirmLoading={removing !== null && unlink.busyKey === `${removing.kind}:${removing.id}`}
         onConfirm={() => {
           const ref = removing;

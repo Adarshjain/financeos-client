@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 
-import { KpiTile, Skeleton, StatusWord, Text } from '@/components/ds';
+import { Conceal, Skeleton, StatusWord, Text } from '@/components/ds';
 import type { CardBillResponse } from '@/lib/api/types';
 
 import type { AccountsListData } from './accountsListData';
@@ -19,33 +19,36 @@ import type { CardListRow } from './AccountsSections';
 // accounts render at once and these fill in as their data arrives. A failed request resolves to
 // null and each piece then degrades exactly as before.
 
-export async function NetWorthTile({
-  netWorth,
-}: Pick<AccountsListData, 'netWorth'>) {
+export async function NetWorthValue({ netWorth }: Pick<AccountsListData, 'netWorth'>) {
   const value = await netWorth;
   if (value === null) {
-    return <KpiTile label="Net worth" error="Couldn't load net worth. Try again." />;
+    return (
+      <Text variant="body" tone="danger" as="span">
+        Couldn&apos;t load net worth. Try again.
+      </Text>
+    );
   }
-  const kpi = netWorthKpi(value);
-  return <KpiTile label={kpi.label} value={kpi.value} />;
+  const text = netWorthKpi(value).value;
+  return value < 0 ? (
+    <Text variant="hero-figure" family="display" tone="danger" as="span">
+      <Conceal>{text}</Conceal>
+    </Text>
+  ) : (
+    <Conceal>{text}</Conceal>
+  );
 }
 
-export async function InvestmentsTile({
+export async function InvestmentsDelta({
   sections,
   dayChangePct,
 }: Pick<AccountsListData, 'dayChangePct'> & { sections: AccountSections }) {
-  const kpi = investmentsKpi(sections, await dayChangePct);
-  return <KpiTile label={kpi.label} value={kpi.value} delta={kpi.delta} />;
-}
-
-/** The investments tile without its delta: the value comes from the accounts, so it shows at once. */
-export function InvestmentsTileFallback({
-  sections,
-}: {
-  sections: AccountSections;
-}) {
-  const kpi = investmentsKpi(sections, null);
-  return <KpiTile label={kpi.label} value={kpi.value} />;
+  const delta = investmentsKpi(sections, await dayChangePct).delta;
+  if (!delta) return null;
+  return (
+    <>
+      <span>{delta.value}</span> {delta.period}
+    </>
+  );
 }
 
 async function billFor(

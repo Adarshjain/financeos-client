@@ -88,7 +88,7 @@ describe('financial-year selection', () => {
 
   it('sums the year: EMIs, principal and interest', () => {
     expect(fySummary(schedule, '2026')).toEqual({ emis: 6, principal: 6 * 7728, interest: 6 * 28875 });
-    expect(fySummaryLine(schedule, '2026')).toBe('FY 26-27 · 6 EMIs · principal ₹46,368 · interest ₹1,73,250');
+    expect(fySummaryLine(schedule, '2026')).toBe('6 EMIs · principal ₹46,368');
     expect(fySummaryLine([installment(1, '2026-05-05')], '2026')).toContain('1 EMI ·');
   });
 });
@@ -99,16 +99,16 @@ describe('buildScheduleRows', () => {
     const overdue = rows.find((r) => r.seq === 14)!;
     expect(overdue).toMatchObject({
       due: '5 Oct',
-      opening: '42,00,055',
-      emi: '36,603',
-      interest: '28,875',
-      principal: '7,728',
-      closing: '41,92,327',
+      opening: '42,00,055.00',
+      emi: '36,603.00',
+      interest: '28,875.00',
+      principal: '7,728.00',
+      closing: '41,92,327.00',
       status: { label: 'Overdue 8 d', tone: 'danger' },
       overdue: true,
       settled: false,
       payment: null,
-      phoneSub: 'interest 28,875 · principal 7,728',
+      phoneSub: 'interest 28,875.00 · principal 7,728.00',
       fy: '2026',
     });
     expect(rows.find((r) => r.seq === 13)).toMatchObject({ settled: true, payment: { id: 'p13' } });
@@ -216,15 +216,15 @@ describe('fySplits', () => {
   });
 });
 
-describe('whole-rupee rows', () => {
-  it('rounds paise away on the table and the phone line', () => {
+describe('paise rows', () => {
+  it('keeps the paise on the table and the phone line', () => {
     const [row] = buildScheduleRows(
       loanFixture(),
       [installment(1, '2026-05-05', { openingBalance: 4448680.4, emi: 44186.01, interest: 31414.66, principal: 12771.34, closingBalance: 4435909.06 })],
       [],
       TODAY,
     );
-    expect(row).toMatchObject({ opening: '44,48,680', emi: '44,186', interest: '31,415', principal: '12,771', closing: '44,35,909' });
-    expect(row.phoneSub).toBe('interest 31,415 · principal 12,771');
+    expect(row).toMatchObject({ opening: '44,48,680.40', emi: '44,186.01', interest: '31,414.66', principal: '12,771.34', closing: '44,35,909.06' });
+    expect(row.phoneSub).toBe('interest 31,414.66 · principal 12,771.34');
   });
 });

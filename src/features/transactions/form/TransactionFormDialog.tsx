@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Dialog, showToast } from '@/components/ds';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
+import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Account } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -77,6 +78,8 @@ export function TransactionFormDialog({
     };
   });
   const [errors, setErrors] = React.useState<FormErrors>({});
+  const [touched, setTouched] = React.useState(false);
+  const guard = useDiscardGuard({ dirty: touched, onClose });
   // The accounts may still be loading when Add opens from somewhere that does not have them (search, the shell):
   // start on the wanted account once they arrive, unless one was picked meanwhile.
   const [defaultPending, setDefaultPending] = React.useState(!transaction && defaultAccountId !== '' && values.accountId === '');
@@ -112,6 +115,7 @@ export function TransactionFormDialog({
   const cardOptions = getCardOptions(selectedAccount, selectedAccount?.type === AccountType.BANK_ACCOUNT, transaction, today);
 
   const change = (patch: Partial<TransactionFormValues>) => {
+    setTouched(true);
     setValues((v) => ({ ...v, ...patch }));
     setErrors((e) => {
       const next = { ...e };
@@ -206,11 +210,12 @@ export function TransactionFormDialog({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+    <>
+    <Dialog open onOpenChange={(open) => (open ? undefined : guard.requestClose())}>
       <Dialog.Content
         size="md"
         title={isUpdate ? 'Edit transaction' : 'Add transaction'}
-        secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
+        secondary={{ label: 'Cancel', onSelect: guard.requestClose, disabled: saving }}
         primary={{ label: isUpdate ? 'Save transaction' : 'Add transaction', type: 'submit', form: FORM_ID, loading: saving }}
       >
         <Dialog.Body>
@@ -240,9 +245,10 @@ export function TransactionFormDialog({
               reviewError={reviewError}
               onChange={change}
               onAccountChange={pickAccount}
-              onCategoriesChange={(ids) =>
-                setSelectedCategories(ids.map((id) => localCategories.find((c) => c.id === id)).filter((c) => c !== undefined))
-              }
+              onCategoriesChange={(ids) => {
+                setTouched(true);
+                setSelectedCategories(ids.map((id) => localCategories.find((c) => c.id === id)).filter((c) => c !== undefined));
+              }}
               onCreateCategory={(name) => void createCategory(name)}
               onDescriptionBlur={handleDescriptionBlur}
               onAddAccount={addAccount}
@@ -251,5 +257,7 @@ export function TransactionFormDialog({
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>
+    {guard.node}
+    </>
   );
 }

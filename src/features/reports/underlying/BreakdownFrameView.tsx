@@ -219,7 +219,6 @@ function SectionTable({
       { value: `${c.key},asc`, label: `${c.label} (ascending)` },
     ]),
   ];
-  const sortedColumn = sort ? raw?.columns.find((c) => c.key === sort.key) : null;
 
   return (
     <section className="flex flex-col gap-space-8" aria-label={section.label}>
@@ -231,8 +230,8 @@ function SectionTable({
             options={sortOptions}
             onValueChange={changeSort}
             trigger={
-              <FilterChip hasDropdown selected={sort !== null}>
-                {sortedColumn ? `Sort: ${sortedColumn.label.toLowerCase()}` : 'Sort'}
+              <FilterChip hasDropdown changed={sort !== null} onReset={() => changeSort(DEFAULT_SORT)}>
+                {sort ? (sortOptions.find((o) => o.value === `${sort.key},${sort.direction}`)?.label ?? 'Sort') : 'Sort'}
               </FilterChip>
             }
           />

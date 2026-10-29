@@ -68,6 +68,6 @@ describe('AccountsView — bank account and wallet totals', () => {
 
     renderWithQuery(<AccountsView />);
 
-    expect(await screen.findByText('Total: -₹2K')).toBeInTheDocument();
+    expect(await screen.findByText('Total: −₹2K')).toBeInTheDocument();
   });
 });

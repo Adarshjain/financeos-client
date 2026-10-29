@@ -40,13 +40,13 @@ beforeEach(() => {
 
 describe('/loans/lendings/[id]', () => {
   it('loads this person for the page and size in the URL and hands the view its data, today and your name', async () => {
-    await renderPage({ page: '3', size: '10' });
+    await renderPage({ page: '3', size: '50' });
     expect(screen.getByText('person view')).toBeInTheDocument();
-    expect(loadPersonPage).toHaveBeenCalledWith('p1', { page: 2, size: 10 });
+    expect(loadPersonPage).toHaveBeenCalledWith('p1', { page: 2, size: 50 });
     expect(viewProps?.cp.name).toBe('Rahul Sharma');
     expect(viewProps?.today).toBe('2026-10-13');
     expect(viewProps?.myName).toBe('Adarsh');
-    expect(viewProps?.state).toEqual({ page: 2, size: 10 });
+    expect(viewProps?.state).toEqual({ page: 2, size: 50 });
   });
 
   it('hands the view the page the loader clamped to', async () => {

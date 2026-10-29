@@ -48,7 +48,7 @@ describe('/investments/corporate-actions', () => {
   it('lists the actions with date, instrument, type, ratio and effect', async () => {
     await renderPage();
     expect(server.fetchCorporateActionsPage).toHaveBeenCalledWith({ type: undefined, search: undefined, sort: 'newest', page: 0, size: 25 });
-    for (const text of ['INFY · Infosys', '10 Jun 2025', 'Bonus', '1 : 1', /30 → 60/]) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
+    for (const text of ['INFY · Infosys', '10 Jun 25', 'Bonus', '1 : 1', /30 → 60/]) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Note: record date 11 Jun 25').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ITC').length).toBeGreaterThan(0);
   });
@@ -63,8 +63,19 @@ describe('/investments/corporate-actions', () => {
   it('puts a type chip in the address and goes back to the first page', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([bonus], { page: 1, totalElements: 30, totalPages: 2 }));
     await renderPage({ page: '2' });
-    fireEvent.click(screen.getByRole('button', { name: 'Demerger' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Type' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Demerger' }));
     expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?type=demerger', { scroll: false });
+  });
+
+  it('shows a changed type as just its value with a x that resets it, and a Reset filters link', async () => {
+    server.fetchCorporateActionsPage.mockResolvedValue(pageOf([demerger]));
+    await renderPage({ type: 'demerger' });
+    expect(screen.queryByText('Type: Demerger')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
+    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
   });
 
   it('puts a sort choice in the address', async () => {
@@ -106,17 +117,15 @@ describe('/investments/corporate-actions', () => {
     expect(screen.getByText("Couldn't load corporate actions")).toBeInTheDocument();
   });
 
-  it('opens a saved action in the edit dialog from its pencil and from its row', async () => {
+  it('opens a saved action in the edit dialog from its row', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([demerger]));
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit ITC Demerger' }));
+    fireEvent.click(screen.getAllByText('ITC')[0]);
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Edit corporate action')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Delete corporate action' })).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    fireEvent.click(screen.getAllByText('ITC')[0]);
-    expect(await screen.findByText('Edit corporate action')).toBeInTheDocument();
   });
 });
 

@@ -145,7 +145,7 @@ export function NotificationsScreen() {
   }
 
   return (
-    <ShellPage crumb={areaCrumb('notifications')} title="Notifications">
+    <ShellPage crumb={areaCrumb('notifications')} title="Notifications" backHref={appHref('/inbox')}>
       {body}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <Dialog.Content

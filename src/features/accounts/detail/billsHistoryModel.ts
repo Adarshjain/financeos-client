@@ -46,7 +46,7 @@ export function buildBillRow(entry: BillEntry): BillRowModel {
     muted: false,
   };
   if (!bill) return row;
-  row.amount = bill.totalAmountDue != null ? formatMoney(bill.totalAmountDue) : null;
+  row.amount = bill.totalAmountDue != null ? formatMoney(bill.totalAmountDue, { decimals: 'exact' }) : null;
   switch (bill.status) {
     case 'PAID': {
       const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);

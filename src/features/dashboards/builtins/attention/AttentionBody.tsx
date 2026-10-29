@@ -28,7 +28,7 @@ export function AttentionBody({ className }: BuiltinBodyProps) {
   } else if (error) {
     body = <BuiltinError message={getErrorMessage(error, "Couldn't load your inbox.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
   } else if (rows.length === 0) {
-    body = <EmptyState compact title="All clear" description="Nothing needs you right now." />;
+    body = <EmptyState compact description="Nothing needs you right now." />;
   } else {
     body = (
       <>

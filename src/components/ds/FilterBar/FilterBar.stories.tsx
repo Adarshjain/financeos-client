@@ -83,3 +83,19 @@ export const ChipsOnly: Story = {
   args: { withSearch: false },
   render: (args) => <Row text="" placeholder={args.placeholder} withSearch={false} onText={fn()} />,
 };
+
+export const WithReset: Story = {
+  name: 'Changed: Reset filters',
+  parameters: { docs: { description: { story: '`changed` + `onReset` show the "Reset filters" link at the row end; it is absent while every chip is on its default.' } } },
+  render: function Render(args) {
+    const [type, setType] = React.useState<string | null>('Stocks');
+    return (
+      <FilterBar search={{ value: '', onValueChange: fn(), placeholder: args.placeholder }} changed={type !== null} onReset={() => setType(null)}>
+        <FilterChip hasDropdown className="shrink-0" changed={type !== null} onReset={() => setType(null)}>
+          {type ?? 'Type'}
+        </FilterChip>
+        <FilterChip hasDropdown className="shrink-0">Account</FilterChip>
+      </FilterBar>
+    );
+  },
+};

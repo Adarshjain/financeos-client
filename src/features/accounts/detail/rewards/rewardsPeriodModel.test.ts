@@ -68,7 +68,7 @@ describe('isIsoDate', () => {
   it('accepts only real calendar dates', () => {
     expect(isIsoDate('2026-02-28')).toBe(true);
     expect(isIsoDate('2026-02-30')).toBe(false);
-    expect(isIsoDate('13/10/2026')).toBe(false);
+    expect(isIsoDate('13/10/26')).toBe(false);
     expect(isIsoDate(undefined)).toBe(false);
   });
 });

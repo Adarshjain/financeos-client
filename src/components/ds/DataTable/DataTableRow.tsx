@@ -254,7 +254,7 @@ function DataTableRowInner<Row extends RowData>(
           >
             {isMain && hasLead ? (
               <div className="flex items-center gap-space-10 min-w-0">
-                <div className="hidden desk:block shrink-0">{lead}</div>
+                <div className="hidden desk:flex items-center shrink-0">{lead}</div>
                 <div className="min-w-0 flex-1">
                   <CellContent render={cell.column.columnDef.cell} ctx={cell.getContext()} />
                 </div>

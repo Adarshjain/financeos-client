@@ -10,7 +10,7 @@ import type { SortClause, TableColumn, TableRow } from '@/lib/reports.types';
 import type { UnderlyingSource } from './underlying.types';
 
 /** Rows per page in the dialog's tables. */
-export const UNDERLYING_PAGE_SIZE = 25;
+export const UNDERLYING_PAGE_SIZE = 5;
 
 /** Per datasource, the column printed beside the name instead of in its own (net worth: the kind). */
 const SUBTITLE_KEYS: Record<string, string> = { net_worth: 'kind' };

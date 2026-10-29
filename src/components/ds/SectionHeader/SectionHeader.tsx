@@ -20,7 +20,9 @@ export interface SectionHeaderProps
   action?: React.ReactNode;
   /** Whether the header is sticky (default true for variant='strong', false for others). */
   sticky?: boolean;
-  /** Optional border-top toggle (default: true for band). */
+  /** A sticky header is frosted glass (content shows through, blurred); false keeps its own solid ground. Defaults to true. */
+  glass?: boolean;
+  /** Hairline above the header (default: true for band, false for strong). Strong + true draws a top and a bottom hairline. */
   borderTop?: boolean;
   /** Primary label text or content. */
   children?: React.ReactNode;
@@ -46,7 +48,8 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       meta,
       action,
       sticky,
-      borderTop = true,
+      borderTop,
+      glass = true,
       ...props
     },
     ref,
@@ -72,8 +75,9 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
             : isDanger
               ? 'text-danger'
               : 'text-ink-4',
-          isStrong ? !borderTop && 'border-t-0' : borderTop && 'border-t',
-          isSticky && 'sticky top-sticky-offset z-sticky glass:bg-glass glass:backdrop-blur-glass glass:backdrop-saturate-glass',
+          (borderTop ?? !isStrong) && 'border-t',
+          isSticky && 'sticky top-sticky-offset z-sticky',
+          isSticky && glass && 'glass:bg-glass glass:backdrop-blur-glass glass:backdrop-saturate-glass',
           className,
         )}
         {...props}

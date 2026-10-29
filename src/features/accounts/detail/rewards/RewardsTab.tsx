@@ -4,7 +4,7 @@ import React from 'react';
 import {
   Button,
   GRID_GAP,
-  KpiTile,
+  Hero,
 } from '@/components/ds';
 import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
 import { LoadError } from '@/features/shell/LoadError';
@@ -32,7 +32,7 @@ import { CardholdersCard, MilestonesCard, RulesCard } from './RewardsSections';
 import { RewardsEmpty } from './RewardsStates';
 
 /**
- * The Rewards tab (boards D-account-rewards, D-account-rewards-empty): period, banners, KPI tiles, earning lines,
+ * The Rewards tab (boards D-account-rewards, D-account-rewards-empty): period, banners, hero, earning lines,
  * milestones and rules. One component for Accounts → card → Rewards and for the Rewards card page; `basePath` is
  * the page's own URL, which every address change (period, rule chip, pager) is made on.
  */
@@ -63,6 +63,7 @@ export function RewardsTab({
 
   const preset = query.period;
   const kpis = buildKpis(report, window, preset);
+  const gross = kpis.find((k) => k.key === 'gross') ?? kpis[0];
   const ruleRows = ruleLines(rules, report);
   const extras = Object.fromEntries(ruleRows.map((r) => [r.id, ruleExtras(r.id, rules, report)]));
   const completed = completedMilestones(report.milestones);
@@ -73,27 +74,26 @@ export function RewardsTab({
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <RewardsPeriodControl basePath={basePath} query={query} window={window} today={today} />
       <RewardsBanners accountId={account.id} banners={rewardsBanners(report)} />
-      <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
-        {kpis.map((k) => (
-          <KpiTile
-            key={k.key}
-            label={k.label}
-            value={k.value}
-            context={
-              k.needsPointValue ? (
+      <Hero
+        label="Earned"
+        value={gross.value}
+        change={{
+          text: (
+            <>
+              Gross, before fees and discounts{gross.context ? ` · ${gross.context}` : ''}
+              {gross.needsPointValue ? (
                 <>
-                  {k.context ? `${k.context} · ` : ''}
+                  {' · '}
                   <Button asChild variant="link" size="sm">
                     <Link href={appHref(`/rewards/rules?account=${account.id}`)}>Set point value</Link>
                   </Button>
                 </>
-              ) : (
-                k.context
-              )
-            }
-          />
-        ))}
-      </div>
+              ) : null}
+            </>
+          ),
+        }}
+        figures={kpis.filter((k) => k.key !== 'gross').map((k) => ({ label: k.label, value: k.value, tone: k.tone, caption: k.context }))}
+      />
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 min-w-0">
           {lines ? (

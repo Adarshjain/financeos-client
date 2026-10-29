@@ -164,7 +164,7 @@ describe('BillsDueBody', () => {
   it('no cards at all: an empty state that goes to accounts', async () => {
     seed([]);
     render();
-    expect(await screen.findByText('No credit cards yet')).toBeInTheDocument();
+    expect(await screen.findByText('Add a credit card to track its bills here.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 

@@ -20,10 +20,9 @@ for (const viewport of VIEWPORTS) {
     let currentUser: CreatedUser;
     let seeded: SeededInstruments;
 
-    /** Desktop has a pencil on each row; on phone the row itself opens the edit. */
+    /** The row itself opens the edit, on both layouts (no pencil). */
     async function openEdit(page: Page, name: string) {
-      if (viewport.phone) await shown(page.getByText(name, { exact: false })).click();
-      else await page.getByRole('button', { name: `Edit ${name}`, exact: true }).click();
+      await shown(page.getByText(name, { exact: false })).click();
       return page.getByRole('dialog', { name: 'Edit instrument' });
     }
 
@@ -63,12 +62,13 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL(new RegExp(`q=${seeded.tag}`));
       await expect(shown(page.getByText(seeded.held.name))).toBeVisible();
 
-      await page.getByRole('button', { name: /^Funds/ }).click();
+      await page.getByRole('button', { name: 'Type', exact: true }).click();
+      await page.getByRole('option', { name: 'Funds', exact: true }).click();
       await page.waitForURL(/type=mutual_fund/);
       await expect(shown(page.getByText(seeded.fund.name))).toBeVisible();
       await expect(page.getByText(seeded.held.name)).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'All types' }).click();
+      await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
       await page.waitForURL((url) => !url.search.includes('type='));
       await page.getByRole('button', { name: 'Stale price' }).click();
       await page.waitForURL(/stale=1/);

@@ -17,7 +17,7 @@ const IMPORT_HREF = '/transactions/import';
 function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Text variant="label" as="span">
-      <Button asChild variant="link">
+      <Button asChild variant="link" size="sm">
         <Link href={href}>{children}</Link>
       </Button>
     </Text>

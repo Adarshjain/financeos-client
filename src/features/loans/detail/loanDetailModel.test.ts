@@ -7,7 +7,7 @@ import {
   emiChange,
   linkedLine,
   loanHeader,
-  loanTiles,
+  loanHero,
   monthsSaved,
   nextEmi,
   repaidPct,
@@ -17,32 +17,17 @@ import {
 pinClock();
 
 describe('loanHeader', () => {
-  it('says the status and rate in words and lists the particulars in order', () => {
-    const header = loanHeader(loanFixture(), scheduleFixture(), 'HDFC Bank Savings', TODAY);
-    expect(header.status).toEqual({ label: 'Active', tone: 'success' });
-    expect(header.rate).toBe('Floating 8.25%');
-    expect(header.meta).toBe(
-      'State Bank of India · #SBIHL00482913 · started 1 Aug 2025 · ends January 2045 · paid from HDFC Bank Savings',
-    );
+  it('shows the lender while the loan is active', () => {
+    expect(loanHeader(loanFixture(), scheduleFixture(), TODAY).info).toBe('State Bank of India');
   });
 
-  it('leaves out what the loan does not have', () => {
-    const header = loanHeader(
-      loanFixture({ lender: null, loanAccountNumber: null, projectedEndDate: null, rateType: 'fixed', currentAnnualRatePct: 9 }),
-      [],
-      null,
-      TODAY,
-    );
-    expect(header.rate).toBe('Fixed 9%');
-    expect(header.meta).toBe('started 1 Aug 2025');
+  it('shows nothing when there is no lender', () => {
+    expect(loanHeader(loanFixture({ lender: null }), [], TODAY).info).toBeNull();
   });
 
-  it('names closed and foreclosed loans', () => {
-    expect(loanHeader(loanFixture({ status: 'closed' }), [], null, TODAY).status).toEqual({ label: 'Closed', tone: 'neutral' });
-    expect(loanHeader(loanFixture({ status: 'foreclosed' }), [], null, TODAY).status).toEqual({
-      label: 'Foreclosed',
-      tone: 'danger',
-    });
+  it('names closed and foreclosed loans instead of the lender', () => {
+    expect(loanHeader(loanFixture({ status: 'closed' }), [], TODAY).info).toBe('Closed');
+    expect(loanHeader(loanFixture({ status: 'foreclosed' }), [], TODAY).info).toBe('Foreclosed');
   });
 });
 
@@ -50,7 +35,7 @@ describe('nextEmi', () => {
   it('leads with the first overdue EMI and how long ago it was due', () => {
     expect(nextEmi(loanFixture(), scheduleFixture(), '2026-10-13')).toEqual({
       eyebrow: 'EMI #14 overdue',
-      amount: '₹36,603',
+      amount: '₹36,603.00',
       overdue: true,
       context: 'was due 5 Oct · 8 days ago',
     });
@@ -64,7 +49,7 @@ describe('nextEmi', () => {
     const schedule = scheduleFixture().map((i) => (i.seq === 14 ? { ...i, status: 'settled' as const } : i));
     expect(nextEmi(loanFixture(), schedule, '2026-10-13')).toEqual({
       eyebrow: 'EMI #15 due',
-      amount: '₹36,603',
+      amount: '₹36,603.00',
       overdue: false,
       context: 'due 5 Nov · in 23 days',
     });
@@ -81,27 +66,28 @@ describe('nextEmi', () => {
   });
 });
 
-describe('tiles', () => {
-  it('Outstanding says what was borrowed and how much is repaid', () => {
-    const [outstanding] = loanTiles(loanFixture(), []).tiles;
-    expect(outstanding).toEqual({ label: 'Outstanding', value: '₹41,92,327', context: 'of ₹45,00,000 · 6.8% repaid' });
-    expect(repaidPct(loanFixture())).toBeCloseTo(6.837, 2);
-  });
+describe('hero', () => {
+  const hero = (over = {}, events: ReturnType<typeof eventFixture>[] = []) => {
+    const loan = loanFixture(over);
+    return loanHero(loan, events, nextEmi(loan, scheduleFixture(), TODAY));
+  };
 
-  it('Outstanding has no repaid share without a principal', () => {
-    const [outstanding] = loanTiles(loanFixture({ principal: 0, outstandingPrincipal: 0 }), []).tiles;
-    expect(outstanding.context).toBeUndefined();
+  it('Outstanding is to the paisa and the bar says how much is repaid of the principal', () => {
+    const h = hero();
+    expect(h.outstanding).toBe('₹41,92,327.00');
+    expect(h.timeline.today).toBe('Today · 6.8% of ₹45,00,000 repaid');
+    expect(repaidPct(loanFixture())).toBeCloseTo(6.837, 2);
     expect(repaidPct(loanFixture({ principal: 0 }))).toBe(0);
   });
 
-  it('Current EMI says what it was only when it changed, and why', () => {
+  it('EMI says what it was only when it changed, and why', () => {
     const cut = [eventFixture({ id: 'r', eventType: 'rate_change', effectiveDate: '2026-08-01', newAnnualRatePct: 8.25, adjustmentMode: 'reduce_emi' })];
-    expect(loanTiles(loanFixture(), cut).tiles[1]).toEqual({
-      label: 'Current EMI',
-      value: '₹36,603',
-      context: 'was ₹39,052 before the rate cut',
+    expect(hero({}, cut).figures[0]).toEqual({
+      label: 'EMI',
+      value: '₹36,603.00',
+      caption: 'was ₹39,052.00 before the rate cut',
     });
-    expect(loanTiles(loanFixture({ currentEmi: 39052 }), cut).tiles[1].context).toBeUndefined();
+    expect(hero({ currentEmi: 39052 }, cut).figures[0].caption).toBeUndefined();
   });
 
   it('names a rate rise and a prepayment that reduced the EMI', () => {
@@ -111,7 +97,7 @@ describe('tiles', () => {
     expect(emiChange(loanFixture(), prepay)).toEqual({ was: 39052, cause: 'prepayment' });
   });
 
-  it('Current EMI reads each rate change against the one before it', () => {
+  it('reads each rate change against the one before it', () => {
     const events = [
       eventFixture({ id: 'a', eventType: 'rate_change', effectiveDate: '2026-02-01', newAnnualRatePct: 9, adjustmentMode: 'reduce_emi' }),
       eventFixture({ id: 'b', eventType: 'rate_change', effectiveDate: '2026-08-01', newAnnualRatePct: 8.25, adjustmentMode: 'reduce_emi' }),
@@ -119,35 +105,35 @@ describe('tiles', () => {
     expect(emiChange(loanFixture(), events)?.cause).toBe('rate cut');
   });
 
-  it('Interest paid shows the effective APR when the server has one', () => {
-    expect(loanTiles(loanFixture(), []).tiles[2]).toEqual({
-      label: 'Interest paid',
-      value: '₹4,02,834',
-      context: 'effective APR 8.72%',
-    });
-    expect(loanTiles(loanFixture({ effectiveAprPct: null }), []).tiles[2].context).toBeUndefined();
+  it('Rate shows the current rate and its type', () => {
+    expect(hero().figures[1]).toEqual({ label: 'Rate', value: '8.25% floating' });
   });
 
-  it('Timeline counts paid of total and names months saved only when there are some', () => {
-    expect(loanTiles(loanFixture({ totalInstallments: 233 }), []).tiles[3]).toEqual({
-      label: 'Timeline',
-      value: '13 / 233',
-      context: '7 months saved by prepayment',
+  it('Months left counts the unpaid EMIs and names months saved only when there are some', () => {
+    expect(hero({ totalInstallments: 233 }).figures[2]).toEqual({
+      label: 'Months left',
+      value: '220',
+      caption: '7 months saved by prepayment',
     });
     expect(monthsSaved(loanFixture({ totalInstallments: 239 }))).toBe(1);
-    expect(loanTiles(loanFixture({ totalInstallments: 239 }), []).tiles[3].context).toBe('1 month saved by prepayment');
-    expect(loanTiles(loanFixture({ totalInstallments: 240 }), []).tiles[3].context).toBeUndefined();
-    expect(loanTiles(loanFixture({ totalInstallments: 250 }), []).tiles[3].context).toBeUndefined();
+    expect(hero({ totalInstallments: 239 }).figures[2].caption).toBe('1 month saved by prepayment');
+    expect(hero({ totalInstallments: 240 }).figures[2].caption).toBeUndefined();
+    expect(hero({ totalInstallments: 250 }).figures[2].caption).toBeUndefined();
   });
 
-  it('the bar runs from the start month to the end month with today in the middle', () => {
-    expect(loanTiles(loanFixture(), []).timeline).toEqual({
+  it('carries the next EMI line, red when overdue, and none for a closed loan', () => {
+    const overdue = loanHero(loanFixture(), [], nextEmi(loanFixture(), scheduleFixture(), '2026-12-01'));
+    expect(overdue.next?.text.startsWith('EMI #')).toBe(true);
+    expect(hero({ status: 'closed' }).next).toBeNull();
+  });
+
+  it('the bar runs from the start month to the end month', () => {
+    expect(hero().timeline).toMatchObject({
       pct: expect.closeTo(6.837, 2),
       start: 'August 2025',
-      today: 'Today · EMI 13 settled',
       end: 'January 2045',
     });
-    expect(loanTiles(loanFixture({ projectedEndDate: null }), []).timeline.end).toBe('—');
+    expect(hero({ projectedEndDate: null }).timeline.end).toBe('—');
   });
 });
 

@@ -11,7 +11,7 @@ import {
 import { EpfAddDialog } from './EpfAddDialog';
 import { EpfEmployerDialog } from './EpfEmployerDialog';
 import { EpfEntryDialog } from './EpfEntryDialog';
-import { EpfHero, EpfTiles } from './EpfFigures';
+import { EpfHero } from './EpfFigures';
 import {
   type EpfEmployer,
   type EpfEmployerRow,
@@ -46,7 +46,7 @@ export interface EpfScreenProps {
   latestContribution: EpfLatestContribution | null;
 }
 
-/** The EPF tab: the figures, the passbook, the employers and the pension card, and the dialogs they open. */
+/** The EPF tab: the hero, the passbook, the employers and the pension card, and the dialogs they open. */
 export function EpfScreen({
   state,
   summary,
@@ -111,7 +111,6 @@ export function EpfScreen({
     <>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <EpfHero figures={figures} />
-        <EpfTiles figures={figures} />
         <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-2 min-w-0">
             <EpfPassbookCard

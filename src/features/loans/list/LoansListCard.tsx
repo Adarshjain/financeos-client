@@ -1,20 +1,19 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Icon, Pager, ProgressBar, showToast, StatusWord, Text } from '@/components/ds';
+import { Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Pager, ProgressBar, showToast, StatusWord, Text } from '@/components/ds';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
+import { LoanFormDialog } from '../form/LoanFormDialog';
 import { loadClosedLoans } from './closedLoanActions';
 import {
   type LoanRow,
-  LOANS_SIZE_OPTIONS,
   loansUrl,
   type LoansUrlState,
 } from './loansListModel';
@@ -73,7 +72,7 @@ const columns = [
   ch.display({
     id: 'next',
     header: 'Next',
-    meta: { size: 'md', phone: 'status' },
+    meta: { size: 'date', phone: 'status' },
     cell: ({ row }) => {
       const next = row.original.next;
       if (next.kind === 'overdue') return <StatusWord tone="danger">{next.label}</StatusWord>;
@@ -81,18 +80,6 @@ const columns = [
       if (next.kind === 'none') return <Text variant="body" tone="ink-3">—</Text>;
       return <Text variant="body">{next.label}</Text>;
     },
-  }),
-  ch.display({
-    id: 'open',
-    header: '',
-    meta: { size: 'xs', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => (
-      <Button asChild variant="ghost" size="sm" iconOnly aria-label={`Open ${row.original.name}`}>
-        <Link href={row.original.href} prefetch={false}>
-          <Icon name="chevron-right" size="sm" />
-        </Link>
-      </Button>
-    ),
   }),
 ];
 
@@ -108,6 +95,7 @@ export interface LoansListCardProps {
 /** The loans table under its search. Closed loans load into place when "Show" is pressed. */
 export function LoansListCard({ state, rows, totalElements, totalPages, closedLine }: LoansListCardProps) {
   const router = useRouter();
+  const [adding, setAdding] = React.useState(false);
   const go = (next: Partial<LoansUrlState>) => router.push(loansUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   // The closed rows belong to the search and the server data they were loaded for: a new search or a
@@ -153,8 +141,6 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
       totalElements={totalElements}
       totalPages={totalPages}
       unit="loans"
-      sizeOptions={LOANS_SIZE_OPTIONS}
-      sizeLabel={(n) => `${n} / page`}
       onPageChange={(page) => go({ page })}
       onSizeChange={(size) => go({ size, page: 0 })}
     />
@@ -164,6 +150,8 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <FilterBar
         search={{ value: text, onValueChange: setText }}
+        changed={state.q !== ''}
+        onReset={() => go({ q: '', page: 0 })}
       />
       <Card>
         <DataTable
@@ -177,16 +165,25 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
           phoneSub={(row) => row.phoneSub}
           onRowSelect={(row) => router.push(row.href)}
           empty={
-            <EmptyState
-              compact
-              description={state.q ? 'No loans match' : 'No loans yet. Add a loan to track its EMIs.'}
-              action={state.q ? { label: 'Clear filters', variant: 'link', onSelect: () => go({ q: '', page: 0 }) } : undefined}
-            />
+            state.q ? (
+              <EmptyState
+                title="No loans match"
+                description="Try another name or lender."
+                action={{ label: 'Clear filters', variant: 'secondary', onSelect: () => go({ q: '', page: 0 }) }}
+              />
+            ) : (
+              <EmptyState
+                title="No loans yet"
+                description="Add a loan to track its EMIs."
+                action={{ label: 'Add loan', variant: 'primary', onSelect: () => setAdding(true) }}
+              />
+            )
           }
           stickyHeader={false}
         />
         <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} />
       </Card>
+      {adding ? <LoanFormDialog onClose={() => setAdding(false)} /> : null}
     </div>
   );
 }

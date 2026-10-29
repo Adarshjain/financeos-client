@@ -240,23 +240,6 @@ export function dividendsFigures(
   };
 }
 
-export interface DividendsTile {
-  label: string;
-  value: string;
-  context?: string;
-  tone?: Tone;
-}
-
-/** The four desktop tiles: Declared, Received, TDS, Not received. */
-export function dividendsTiles(f: DividendsFigures): DividendsTile[] {
-  return [
-    { label: f.fy ? 'Declared · FY' : 'Declared', value: f.declared.value, context: f.declared.context },
-    { label: 'Received', value: f.received.value, context: f.received.context, tone: f.received.value === UNAVAILABLE ? undefined : 'positive' },
-    { label: 'TDS', value: f.tds.value, context: f.tds.context },
-    { label: 'Not received', value: f.notReceived.value, context: f.notReceived.context, tone: f.notReceived.tone },
-  ];
-}
-
 // ---- The list -------------------------------------------------------------------
 
 /** "₹11", "₹5.50", "₹7.5025": a per-unit figure with the decimals it needs (at least two when not whole). */
@@ -331,12 +314,12 @@ export function dividendListRow(d: Dividend): DividendListRow {
     payDate: formatDate(d.payDate, 'list'),
     payDay,
     perUnit: perUnit ? formatMoney(perUnit, { decimals: 'exact', symbol: false }) : '—',
-    gross: formatMoney(gross, { decimals: 'auto', symbol: false }),
-    tds: formatMoney(tds, { decimals: 'auto', symbol: false }),
-    net: formatMoney(gross - tds, { decimals: 'auto', symbol: false }),
+    gross: formatMoney(gross, { decimals: 'exact', symbol: false }),
+    tds: formatMoney(tds, { decimals: 'exact', symbol: false }),
+    net: formatMoney(gross - tds, { decimals: 'exact', symbol: false }),
     receipt: receiptWord(d.receiptStatus),
     unitsLine: perUnit && units ? `${perUnitText(perUnit)} × ${formatQuantity(units)}` : null,
-    tdsLine: tds > 0 ? `TDS ${formatMoney(tds)}` : null,
+    tdsLine: tds > 0 ? `TDS ${formatMoney(tds, { decimals: 'exact' })}` : null,
     account: d.transaction?.accountName ?? null,
     canLink: !d.transaction && (d.receiptStatus === 'awaiting' || d.receiptStatus === 'overdue'),
     noBankNote: d.receiptStatus === 'unverifiable' ? `no statement covers ${payDay}` : null,

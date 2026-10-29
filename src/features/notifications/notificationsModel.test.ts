@@ -4,7 +4,7 @@ import type { AppNotification } from '@/lib/api/types';
 
 import { dayHeading, groupByDay, notificationHref, timeLabel, timeOrDateLabel } from './notificationsModel';
 
-const NOW = new Date('2026-10-21T06:00:00Z'); // 11:30 IST on 21 Oct 2026
+const NOW = new Date('2026-10-21T06:00:00Z'); // 11:30 IST on 21 Oct 26
 
 function n(over: Partial<AppNotification> & { kind: string }): AppNotification {
   return { id: 'n', title: 't', body: 'b', createdAt: '2026-10-21T04:00:00Z', read: false, refs: {}, ...over } as AppNotification;
@@ -52,7 +52,7 @@ describe('days and times (IST)', () => {
     expect(dayHeading('2026-10-21T04:00:00Z', NOW)).toBe('Today');
     expect(dayHeading('2026-10-20T10:00:00Z', NOW)).toBe('Yesterday');
     expect(dayHeading('2026-10-13T10:00:00Z', NOW)).toBe('13 Oct');
-    expect(dayHeading('2025-10-13T10:00:00Z', NOW)).toBe('13 Oct 2025');
+    expect(dayHeading('2025-10-13T10:00:00Z', NOW)).toBe('13 Oct 25');
   });
 
   it('uses the IST day, not UTC: 00:30 IST is still the previous UTC day', () => {
@@ -75,6 +75,6 @@ describe('days and times (IST)', () => {
   it('timeOrDateLabel: time today, date otherwise', () => {
     expect(timeOrDateLabel('2026-10-21T08:35:00Z', NOW)).toBe('2:05 pm');
     expect(timeOrDateLabel('2026-10-13T10:00:00Z', NOW)).toBe('13 Oct');
-    expect(timeOrDateLabel('2025-10-13T10:00:00Z', NOW)).toBe('13 Oct 2025');
+    expect(timeOrDateLabel('2025-10-13T10:00:00Z', NOW)).toBe('13 Oct 25');
   });
 });

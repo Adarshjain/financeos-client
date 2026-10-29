@@ -394,7 +394,7 @@ function AggTableFields({ catalog, state, dispatch, issues }: SectionProps) {
           </div>
         ))}
         <div>
-          <Button variant="link" onClick={() => apply({ measures: [...agg.measures, { id: newDraftId() }] })}>
+          <Button variant="link" size="sm" onClick={() => apply({ measures: [...agg.measures, { id: newDraftId() }] })}>
             Add measure
           </Button>
         </div>
@@ -444,7 +444,7 @@ function DimensionList({
       ))}
       {drafts.length === 0 && error ? <FieldError message={error} /> : null}
       <div>
-        <Button variant="link" onClick={() => onChange([...drafts, { id: newDraftId() }])}>
+        <Button variant="link" size="sm" onClick={() => onChange([...drafts, { id: newDraftId() }])}>
           {addLabel}
         </Button>
       </div>

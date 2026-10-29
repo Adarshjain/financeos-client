@@ -15,12 +15,9 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 }));
 
 describe('ShellPage top-bar actions', () => {
-  it('shows Ask the data linking to the live route and no Notifications', () => {
+  it('has no Ask the data shortcut (it lives in the rail and the phone Menu) and no Notifications link', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);
-    expect(screen.getByRole('link', { name: 'Ask the data' })).toHaveAttribute(
-      'href',
-      '/chat',
-    );
+    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
   });
 
@@ -45,7 +42,7 @@ describe('ShellPage top-bar actions', () => {
     const links = screen
       .getAllByRole('link')
       .map((l) => l.getAttribute('aria-label'));
-    expect(links).toEqual(['Ask the data', 'Add account']);
+    expect(links).toEqual(['Add account']);
     const add = screen.getByRole('link', { name: 'Add account' });
     expect(add).toHaveAttribute('href', '/accounts/new');
     expect(add.querySelector('span.hidden.desk\\:inline')?.textContent).toBe(
@@ -62,7 +59,7 @@ describe('ShellPage top-bar actions', () => {
         content
       </ShellPage>,
     );
-    expect(screen.getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(['Ask the data']);
+    expect(screen.queryAllByRole('link')).toEqual([]);
     screen.getByRole('button', { name: 'Add account' }).click();
     expect(onAdd).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
@@ -71,9 +68,7 @@ describe('ShellPage top-bar actions', () => {
 
   it('renders only the shared actions when the page has no add', () => {
     render(<ShellPage title="Home">content</ShellPage>);
-    expect(
-      screen.getAllByRole('link').map((l) => l.getAttribute('aria-label')),
-    ).toEqual(['Ask the data']);
+    expect(screen.queryAllByRole('link')).toEqual([]);
   });
 });
 
@@ -111,7 +106,7 @@ describe('ShellPage back', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('detail pages (backHref) have no Notifications, Search or Ask the data in the bar', () => {
+  it('detail pages (backHref) have no Notifications or Search in the bar', () => {
     render(<ShellPage title="Detail" backHref="/accounts" addHref="/x/new" addLabel="Add thing">content</ShellPage>);
     expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Notifications' })).toBeNull();
@@ -128,14 +123,36 @@ describe('ShellPage back', () => {
   });
 });
 
-describe('ShellPage on the Ask the data pages', () => {
-  it('leaves the Ask the data shortcut out of the bar (it is the current page)', async () => {
-    vi.resetModules();
-    vi.doMock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }), usePathname: () => '/chat/c1' }));
-    const { ShellPage: Page } = await import('./ShellPage');
-    render(<Page title="Spend">content</Page>);
-    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
-    vi.doUnmock('next/navigation');
+describe('ShellPage crumb depth', () => {
+  it('a crumb two or more deep gives the back arrow to its list, no backHref needed', () => {
+    render(<ShellPage title="Import" crumb="Money / Transactions / Import">content</ShellPage>);
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/transactions');
+    expect(screen.getByText('Money / Transactions')).toBeInTheDocument();
+  });
+
+  it('an explicit backHref wins over the crumb', () => {
+    render(<ShellPage title="Loan" crumb="Owe & lend / Loans" backHref="/elsewhere">content</ShellPage>);
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/elsewhere');
+  });
+
+  it('a tabbed page (flushTop) gets no derived back arrow: tabs are siblings', () => {
+    render(<ShellPage title="Rules" crumb="Money / Transactions / Rules" flushTop>content</ShellPage>);
+    expect(screen.queryByRole('link', { name: 'Back' })).toBeNull();
+  });
+
+  it('a tabbed page with an explicit backHref still gets it', () => {
+    render(<ShellPage title="Account" crumb="Money / Accounts" backHref="/accounts" flushTop>content</ShellPage>);
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/accounts');
+  });
+
+  it('a list (one-segment crumb) has no back arrow', () => {
+    render(<ShellPage title="Accounts" crumb="Money">content</ShellPage>);
+    expect(screen.queryByRole('link', { name: 'Back' })).toBeNull();
+  });
+
+  it('the crumb never repeats the title', () => {
+    render(<ShellPage title="Notifications" crumb="Inbox / Notifications">content</ShellPage>);
+    expect(screen.queryByText('Inbox / Notifications')).toBeNull();
+    expect(screen.getByText('Inbox')).toBeInTheDocument();
   });
 });

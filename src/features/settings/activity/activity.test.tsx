@@ -71,21 +71,21 @@ beforeEach(() => {
 });
 
 describe('filters', () => {
-  it('shows "Status: All" and "Type: All" by default', () => {
+  it('shows "Status" and "Type" chips by default', () => {
     render(<ActivityScreen {...props} />);
-    expect(screen.getByRole('button', { name: /Status: All/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Type: All/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Status' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Type' })).toBeInTheDocument();
   });
 
   it('shows the choice on the chip, with no count', () => {
     render(<ActivityScreen {...props} statusFilter="FAILED" typeFilter="GMAIL_SYNC" />);
-    expect(screen.getByRole('button', { name: /^Status: Failed$/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Type: Gmail sync/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Failed' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gmail sync' })).toBeInTheDocument();
   });
 
   it('lists every status without counts, and navigates on pick', () => {
     render(<ActivityScreen {...props} />);
-    fireEvent.click(screen.getByRole('button', { name: /Status: All/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Status' }));
     const options = screen.getAllByRole('option');
     expect(options.map((o) => o.textContent)).toEqual(['All statuses', 'Running', 'Succeeded', 'Failed', 'Cancelled']);
     fireEvent.click(screen.getByRole('option', { name: /Failed/ }));
@@ -94,7 +94,7 @@ describe('filters', () => {
 
   it('lists all six types and navigates on pick, keeping the status and resetting the page', () => {
     render(<ActivityScreen {...props} statusFilter="SUCCEEDED" page={3} />);
-    fireEvent.click(screen.getByRole('button', { name: /Type: All/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Type' }));
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
       'All types',
       'Statement ingest',
@@ -110,7 +110,7 @@ describe('filters', () => {
 
   it('choosing all statuses clears the filter', () => {
     render(<ActivityScreen {...props} statusFilter="FAILED" />);
-    fireEvent.click(screen.getByRole('button', { name: /Status: Failed/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Failed' }));
     fireEvent.click(screen.getByRole('option', { name: 'All statuses' }));
     expect(push).toHaveBeenCalledWith('/settings/activity', { scroll: false });
   });
@@ -134,7 +134,7 @@ describe('list', () => {
     jobs = [job({})];
     totalElements = 1;
     render(<ActivityScreen {...props} />);
-    for (const h of ['Job', 'Started', 'Took', 'Result', 'Status']) expect(screen.getByText(h)).toBeInTheDocument();
+    for (const h of ['Job', 'Started', 'Took', 'Result', 'Status']) expect(screen.getAllByText(h).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Gmail sync').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/arjun@gmail.test/).length).toBeGreaterThan(0);
     expect(screen.getByText(/^today \d{1,2}:\d{2} (am|pm)$/)).toBeInTheDocument();
@@ -229,6 +229,19 @@ describe('pager', () => {
     const pickers = screen.getAllByRole('button', { name: 'Rows per page' });
     expect(pickers).toHaveLength(2);
     expect(pickers[0]).toHaveTextContent('25');
+  });
+
+  it('is hidden when every job fits one page', () => {
+    totalElements = 10;
+    render(<ActivityScreen {...props} />);
+    expect(screen.queryByRole('button', { name: 'Rows per page' })).toBeNull();
+  });
+
+  it('only offers 25, 50 and 100 rows a page', () => {
+    render(<ActivityScreen {...props} />);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(expect.arrayContaining([expect.stringMatching(/25/), expect.stringMatching(/50/), expect.stringMatching(/100/)]));
+    expect(screen.queryByRole('option', { name: /^10\b/ })).toBeNull();
   });
 
   it('changing the size goes to page 0 with ?size=', () => {

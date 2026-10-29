@@ -17,7 +17,8 @@ import {
 import type React from 'react';
 
 export interface DataTableColumnMeta {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'fill';
+  /** 'date' is wide enough for "Wed 13 Oct 26" without truncating */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'date' | 'fill';
   grow?: number;
   align?: 'start' | 'end';
   wrap?: boolean;

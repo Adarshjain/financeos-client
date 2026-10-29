@@ -1,4 +1,4 @@
-import { fyRangeLabel, ordinal, type TileModel } from '@/features/loans/loanFormatModel';
+import type { HeroModel } from '@/features/loans/loanFormatModel';
 import { paymentItemFor } from '@/features/loans/loanPaymentsBatchModel';
 import { LOANS_HREF } from '@/features/loans/loansLendingsTabs';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
@@ -9,7 +9,7 @@ import type { BatchLoanPaymentItem, LoanMatchSuggestions, LoanResponse, LoansSum
 
 // ---- URL state -------------------------------------------------------------
 
-export const LOANS_SIZE_OPTIONS = [10, 25, 50];
+export const LOANS_SIZE_OPTIONS = [25, 50, 100];
 
 export interface LoansUrlState {
   q: string;
@@ -34,39 +34,42 @@ export function loansUrl(state: LoansUrlState): string {
   return text ? `${LOANS_HREF}?${text}` : LOANS_HREF;
 }
 
-// ---- Tiles -----------------------------------------------------------------
+// ---- Hero ------------------------------------------------------------------
+
+/** The date of the next EMI from the days of the month the active loans' EMIs fall on, or null when there are none. */
+export function nextEmiDate(emiDueDays: readonly number[], today: string): string | null {
+  const days = [...new Set(emiDueDays)].sort((a, b) => a - b);
+  if (days.length === 0) return null;
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  const day = Number(today.slice(8, 10));
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const lastDay = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const thisMonth = days.find((d) => Math.min(d, lastDay(year, month)) >= day);
+  if (thisMonth !== undefined) return `${year}-${pad(month)}-${pad(Math.min(thisMonth, lastDay(year, month)))}`;
+  const ny = month === 12 ? year + 1 : year;
+  const nm = month === 12 ? 1 : month + 1;
+  return `${ny}-${pad(nm)}-${pad(Math.min(days[0], lastDay(ny, nm)))}`;
+}
 
 /**
- * The four Loans tiles. Outstanding is the sum of the active loans' outstanding (`totalOutstanding`; the
- * summary's `borrowedOutstanding` is the lendings figure), in lakh-compact form (the board's "₹50.5L");
- * a tile with nothing in it reads ₹0 with a plain "Nothing …" line.
+ * The Loans hero: total outstanding (whole rupees) with the overdue amount as its change line when there is one,
+ * then what the EMIs come to a month and when the next one falls.
  */
-export function loanTiles(summary: LoansSummaryDetail, today: string): TileModel[] {
-  const days = [...new Set(summary.emiDueDays)].sort((a, b) => a - b);
-  const loans = formatCount(summary.activeLoanCount, ['loan', 'loans']);
-  return [
-    {
-      label: 'Outstanding',
-      value: formatMoney(summary.totalOutstanding, { compact: true }),
-      context: `of ${formatMoney(summary.borrowedPrincipal, { compact: true })} borrowed`,
-    },
-    {
-      label: 'EMIs per month',
-      value: formatMoney(summary.monthlyEmiTotal),
-      context: days.length > 0 ? `${loans} · ${days.map(ordinal).join(', ')}` : loans,
-    },
-    {
-      label: 'Overdue',
-      value: formatMoney(summary.overdueAmount),
-      context: summary.overdueCount > 0 ? `${formatCount(summary.overdueCount, ['EMI', 'EMIs'])} unpaid` : 'Nothing overdue',
-      tone: summary.overdueAmount > 0 ? 'danger' : undefined,
-    },
-    {
-      label: 'Interest this FY',
-      value: formatMoney(summary.interestPaidThisFy),
-      context: fyRangeLabel(summary.fyStart, today),
-    },
-  ];
+export function loansHero(summary: LoansSummaryDetail, today: string): HeroModel {
+  const next = nextEmiDate(summary.emiDueDays, today);
+  return {
+    label: 'Total outstanding',
+    value: formatMoney(summary.totalOutstanding),
+    change:
+      summary.overdueAmount > 0
+        ? { text: `${formatMoney(summary.overdueAmount)} overdue · ${formatCount(summary.overdueCount, ['EMI', 'EMIs'])}`, tone: 'danger' }
+        : undefined,
+    figures: [
+      { label: 'EMIs a month', value: formatMoney(summary.monthlyEmiTotal), caption: formatCount(summary.activeLoanCount, ['loan', 'loans']) },
+      { label: 'Next EMI', value: next ? formatDate(next, 'list') : '—' },
+    ],
+  };
 }
 
 // ---- Rows ------------------------------------------------------------------

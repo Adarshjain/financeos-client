@@ -1,86 +1,41 @@
 import React from 'react';
 
-import { Card, Conceal, KpiTile, ListRow, ProgressBar, Text } from '@/components/ds';
+import { Card, Conceal, Hero, ListRow, ProgressBar, Text } from '@/components/ds';
 
 import type { FnoFiguresModel, PnlBarRow, UnderlyingRow } from './fnoModel';
 
-/** The phone's headline: the year's realised P&L, then Win rate and Charges side by side. Desktop shows tiles instead. */
-export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresModel; allYears?: boolean }) {
+/** The headline: the year's realised P&L (green or red), then Win rate and Charges. A summary that failed to load says so. Same at both sizes. */
+export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresModel | null; allYears?: boolean }) {
+  if (!figures) {
+    return (
+      <Hero
+        label={realisedLabel(allYears)}
+        value="—"
+        change={{ text: "Couldn't load this summary. Try again.", tone: 'danger' }}
+        figures={[
+          { label: 'Win rate', value: '—' },
+          { label: 'Charges', value: '—' },
+        ]}
+      />
+    );
+  }
   return (
-    <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
-      <div className="flex flex-col gap-space-2">
-        <Text variant="label" tone="ink-3" as="div">
-          {realisedLabel(allYears)}
-        </Text>
-        <Text variant="hero-figure" family="display" tone={figures.realised.tone} as="div">
-          <Conceal>{figures.realised.text}</Conceal>
-        </Text>
-        <Text variant="label" tone="ink-3" as="div">
-          {figures.realisedSub}
-        </Text>
-      </div>
-      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        <div className="flex flex-col gap-space-2 min-w-0">
-          <Text variant="label" tone="ink-3" as="div">
-            Win rate
-          </Text>
-          <Text variant="figure" as="div">
-            {figures.winRate}
-          </Text>
-          <Text variant="caption" tone="ink-3" as="div">
-            {figures.winSub}
-          </Text>
-        </div>
-        <div className="flex flex-col gap-space-2 min-w-0">
-          <Text variant="label" tone="ink-3" as="div">
-            Charges
-          </Text>
-          <Text variant="figure" as="div">
-            <Conceal>{figures.charges}</Conceal>
-          </Text>
-          <Text variant="caption" tone="ink-3" as="div">
-            {figures.chargesSub}
-          </Text>
-        </div>
-      </div>
-    </div>
+    <Hero
+      label={realisedLabel(allYears)}
+      value={<Conceal>{figures.realised.text}</Conceal>}
+      valueTone={figures.realised.tone}
+      change={{ text: figures.realisedSub, tone: 'ink-3' }}
+      figures={[
+        { label: 'Win rate', value: figures.winRate, caption: figures.winSub },
+        { label: 'Charges', value: <Conceal>{figures.charges}</Conceal>, caption: figures.chargesSub },
+      ]}
+    />
   );
 }
 
 /** The realised figure's label: the financial year, or every year. */
 export function realisedLabel(allYears: boolean): string {
   return allYears ? 'Realised · all years' : 'Realised · FY';
-}
-
-/** The three desktop tiles. A summary that failed to load (null) says so in each. */
-export function FnoTiles({ figures, allYears = false }: { figures: FnoFiguresModel | null; allYears?: boolean }) {
-  return (
-    <div className="max-desk:hidden grid grid-cols-3 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-      {figures ? (
-        <>
-          <KpiTile
-            label={realisedLabel(allYears)}
-            value={
-              figures.realised.tone ? (
-                <Text as="span" variant="figure" tone={figures.realised.tone}>
-                  <Conceal>{figures.realised.text}</Conceal>
-                </Text>
-              ) : (
-                figures.realised.text
-              )
-            }
-            context={figures.realisedSub}
-          />
-          <KpiTile label="Win rate" value={figures.winRate} context={figures.winSub} />
-          <KpiTile label="Charges" value={figures.charges} context={figures.chargesSub} />
-        </>
-      ) : (
-        [realisedLabel(allYears), 'Win rate', 'Charges'].map((label) => (
-          <KpiTile key={label} label={label} error="Couldn't load this figure. Try again." />
-        ))
-      )}
-    </div>
-  );
 }
 
 /** The months with a result, each a bar sized against the biggest month. */

@@ -44,6 +44,10 @@ const meta: Meta<typeof SectionHeader> = {
       control: 'boolean',
       description: 'Sticky positioning',
     },
+    glass: {
+      control: 'boolean',
+      description: 'Sticky header is frosted glass; false keeps a solid ground',
+    },
     borderTop: {
       control: 'boolean',
       description: 'Border-top toggle',
@@ -65,6 +69,17 @@ export const Strong: Story = {
     children: '12 Oct',
     meta: 'Mon',
     sticky: true,
+  },
+};
+
+export const StickySolid: Story = {
+  args: {
+    variant: 'strong',
+    children: '12 Oct',
+    meta: 'Mon',
+    sticky: true,
+    glass: false,
+    borderTop: true,
   },
 };
 

@@ -218,14 +218,14 @@ describe('/accounts/[id]/statements', () => {
     await renderPage();
 
     expect(screen.getByText('Each statement is a bill')).toBeInTheDocument();
-    expect(screen.getByText('Upload · 8 lines · opening ₹46,800 · due ₹44,319')).toBeInTheDocument();
-    expect(screen.getByText('Email · 14 lines · ₹46,800 · paid 18 Sep')).toBeInTheDocument();
+    expect(screen.getByText('Upload · 8 lines · opening ₹46,800.00 · due ₹44,319.00')).toBeInTheDocument();
+    expect(screen.getByText('Email · 14 lines · ₹46,800.00 · paid 18 Sep')).toBeInTheDocument();
     expect(screen.getAllByText('Auto ingested')).toHaveLength(2);
     expect(screen.getByText('Needs review')).toBeInTheDocument();
     expect(screen.getByText('Due 25 Oct')).toBeInTheDocument();
     expect(screen.getAllByText('Paid').length).toBeGreaterThan(0);
 
-    expect(screen.getByText('Statement · 5 Oct 2026')).toBeInTheDocument();
+    expect(screen.getByText('Statement · 5 Oct 26')).toBeInTheDocument();
     expect(screen.getByText(/Period 6 Sep → 5 Oct · Regalia-Gold-statement.pdf · uploaded 13 Oct/)).toBeInTheDocument();
     expect(screen.getByText('Checksum OK')).toBeInTheDocument();
     expect(screen.getByText('Total due')).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('/accounts/[id]/statements', () => {
     expect(screen.getAllByText('Linked').length).toBeGreaterThan(0);
     expect(screen.getAllByText('New').length).toBeGreaterThan(0);
     expect(screen.getAllByText('+45.00').length).toBeGreaterThan(0);
-    expect(screen.getByText('Closing balance ₹44,319 · matches ledger')).toBeInTheDocument();
+    expect(screen.getByText('Closing balance ₹44,319.00 · matches ledger')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
     // The actions live in the detail card's menu only, not as buttons at the bottom.
     expect(screen.queryByRole('button', { name: 'Edit details' })).toBeNull();
@@ -254,7 +254,7 @@ describe('/accounts/[id]/statements', () => {
     loadData.mockResolvedValue(data({ detail: withBalance }));
     await renderPage();
     expect(screen.getByText('Balance after')).toBeInTheDocument();
-    expect(screen.getByText('₹12,500')).toBeInTheDocument();
+    expect(screen.getByText('₹12,500.00')).toBeInTheDocument();
   });
 
   it('passes the url params to the loader', async () => {
@@ -279,7 +279,7 @@ describe('/accounts/[id]/statements', () => {
     expect(screen.getByText('Lines')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Mark paid' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit details' })).toBeNull();
-    expect(screen.getByText('Closing balance ₹44,319 · ledger ₹43,000')).toBeInTheDocument();
+    expect(screen.getByText('Closing balance ₹44,319.00 · ledger ₹43,000.00')).toBeInTheDocument();
   });
 
   it('is not found for other account types or a missing account', async () => {
@@ -326,7 +326,7 @@ describe('/accounts/[id]/statements', () => {
 
   it('opens another statement through the url, keeping the year', async () => {
     await renderPage();
-    await user.click(screen.getByText('5 Sep 2026'));
+    await user.click(screen.getByText('5 Sep 26'));
     expect(push).toHaveBeenCalledWith('/accounts/c1/statements?statement=s2&fy=26-27');
   });
 
@@ -370,7 +370,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     const field = within(dialog).getByLabelText('Due date');
-    expect(field).toHaveValue('25/10/2026');
+    expect(field).toHaveValue('25/10/26');
 
     await user.clear(field);
     await user.type(field, '30/10/2026');
@@ -410,10 +410,10 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Edit details')).toBeInTheDocument();
-    expect(within(dialog).getByText('Statement · 5 Oct 2026')).toBeInTheDocument();
-    expect(within(dialog).getByLabelText('Period start')).toHaveValue('06/09/2026');
-    expect(within(dialog).getByLabelText('Period end')).toHaveValue('05/10/2026');
-    expect(within(dialog).getByLabelText('Due date')).toHaveValue('25/10/2026');
+    expect(within(dialog).getByText('Statement · 5 Oct 26')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Period start')).toHaveValue('06/09/26');
+    expect(within(dialog).getByLabelText('Period end')).toHaveValue('05/10/26');
+    expect(within(dialog).getByLabelText('Due date')).toHaveValue('25/10/26');
     expect(within(dialog).getByLabelText('Total due')).toHaveValue('44319');
     expect(within(dialog).getByLabelText('Minimum due')).toHaveValue('2500');
 
@@ -503,7 +503,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete statement' }));
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Removes the 5 Oct 2026 statement and what it added to this account.')).toBeInTheDocument();
+    expect(within(dialog).getByText('Removes the 5 Oct 26 statement and what it added to this account.')).toBeInTheDocument();
     expect(await within(dialog).findByText('6 transactions it created will be deleted.')).toBeInTheDocument();
     expect(within(dialog).getByText('2 email alerts go back to review as unreconciled.')).toBeInTheDocument();
     expect(within(dialog).getByText('You can upload the same file again afterwards.')).toBeInTheDocument();

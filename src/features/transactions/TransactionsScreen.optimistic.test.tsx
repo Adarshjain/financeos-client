@@ -256,7 +256,7 @@ describe('TransactionsScreen instant approve', () => {
 describe('TransactionsScreen instant delete', () => {
   const confirmSwipeDelete = () => {
     swipe('BigBasket', 'swipe-left');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
   };
 
   it('a swiped delete removes the row and closes the confirm before the server answers', async () => {
@@ -286,7 +286,7 @@ describe('TransactionsScreen instant delete', () => {
     const d = hold();
     setup({ needsReviewCount: 2 }, transactions);
     swipe('Swiggy', 'swipe-left');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(present('Swiggy')).toBe(false));
     expect(badge()).toBe(1);
     await act(async () => d.reject(new Error('boom')));
@@ -371,15 +371,18 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
     const d = hold();
     // Kept in the cache with nobody watching, so the badge's number can be read.
     const queryClient = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity } } });
-    renderWithQuery(<TransactionsScreen {...propsFor({ needsReviewCount: 2 })} />, { queryClient });
-    expect(screen.getAllByText('/ 4').length).toBeGreaterThan(0);
+    // More than one page of results, so the pager shows.
+    const base = propsFor({ needsReviewCount: 2 });
+    const list = base.list.ok ? { ...base.list, totalElements: 44, totalPages: 2 } : base.list;
+    renderWithQuery(<TransactionsScreen {...base} list={list} />, { queryClient });
+    expect(screen.getAllByText('/ 44').length).toBeGreaterThan(0);
     swipe('Swiggy', 'swipe-left');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(present('Swiggy')).toBe(false));
-    expect(screen.getAllByText('/ 3').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('/ 43').length).toBeGreaterThan(0);
     expect(queryClient.getQueryData(keys.transactions.needsReviewCount())).toBe(1);
     await act(async () => d.reject(new Error('boom')));
-    await waitFor(() => expect(screen.getAllByText('/ 4').length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getAllByText('/ 44').length).toBeGreaterThan(0));
     expect(queryClient.getQueryData(keys.transactions.needsReviewCount())).toBe(2);
   });
 

@@ -26,6 +26,20 @@ export function DsIndexScreen() {
           </ListRow>
         </Card>
 
+        {/* Components built as a page */}
+        <Card>
+          <SectionHeader borderTop={false}>Components</SectionHeader>
+          <ListRow asChild title="Hero" subtitle="/ds/hero" chevron>
+            <Link href="/ds/hero" />
+          </ListRow>
+          <ListRow asChild title="Figures" subtitle="/ds/figures" chevron>
+            <Link href="/ds/figures" />
+          </ListRow>
+          <ListRow asChild title="ActionBar" subtitle="/ds/action-bar" chevron>
+            <Link href="/ds/action-bar" />
+          </ListRow>
+        </Card>
+
         {/* Signed in section */}
         <Card>
           <SectionHeader borderTop={false}>Signed in</SectionHeader>

@@ -173,8 +173,8 @@ describe('MilestonesSection', () => {
     save();
     expect(toast).toHaveBeenLastCalledWith('A one-time milestone needs both a start date and a deadline.', { tone: 'danger' });
     choose('Cardholder scope', 'Arjun (•••• 4521)');
-    expect(screen.getByLabelText('Offer start')).toHaveValue('10/01/2026');
-    expect(screen.getByLabelText('Offer deadline')).toHaveValue('10/04/2026');
+    expect(screen.getByLabelText('Offer start')).toHaveValue('10/01/26');
+    expect(screen.getByLabelText('Offer deadline')).toHaveValue('10/04/26');
     save();
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ windowType: 'ONE_TIME', cardholderId: 'h1', activeFrom: '2026-01-10', activeTo: '2026-04-10' }),
@@ -234,10 +234,10 @@ describe('MilestonesSection', () => {
   it('deletes after confirming', () => {
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByText('Quarterly voucher'));
-    fireEvent.click(screen.getByRole('button', { name: 'Delete milestone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.getByText('Delete milestone "Quarterly voucher"?')).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();
-    const buttons = screen.getAllByRole('button', { name: 'Delete milestone' });
+    const buttons = screen.getAllByRole('button', { name: 'Delete' });
     fireEvent.click(buttons[buttons.length - 1]);
     expect(remove).toHaveBeenCalledWith('m1', expect.anything());
     expect(toast).toHaveBeenCalledWith('Milestone deleted');

@@ -3,7 +3,7 @@ import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pag
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import type { components } from '@/lib/api/schema';
-import { formatDate, formatMoney, formatPercent } from '@/lib/format';
+import { formatDate, formatMoney, formatPercent, fyLabel } from '@/lib/format';
 
 
 type Schemas = components['schemas'];
@@ -73,10 +73,8 @@ export function effectiveFy(state: EpfUrlState, fys: number[]): number | undefin
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** "FY 2026-27" from the year it starts in. */
-export function epfFyLabel(start: number): string {
-  return `FY ${start}-${String(start + 1).slice(-2)}`;
-}
+/** "FY 26-27" from the year it starts in. */
+export const epfFyLabel = fyLabel;
 
 /** The date `months` calendar months later, the day kept (or the month's last day). */
 export function addMonths(iso: string, months: number): string {

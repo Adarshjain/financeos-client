@@ -56,7 +56,7 @@ describe('useReportPreview', () => {
     api.POST.mockResolvedValue({ data: { type: 'TABLE', mode: 'raw', columns: [], rows: [], page: { number: 0, size: 25, totalElements: 0, totalPages: 0 } } });
     const { result } = renderHook(() => useReportPreview({ request: table, signature: 't', valid: true }));
     await act(async () => result.current.run());
-    expect(api.POST.mock.calls[0][1].params.query).toEqual({ page: 0, size: 50 });
+    expect(api.POST.mock.calls[0][1].params.query).toEqual({ page: 0, size: 25 });
     await act(async () => result.current.changeSize(25));
     expect(api.POST.mock.calls[1][1].params.query).toEqual({ page: 0, size: 25 });
     await act(async () => result.current.changeSort({ key: 'date', direction: 'desc' }));
@@ -73,13 +73,13 @@ describe('useReportPreview', () => {
   });
 
   it('drops the sort and the page when the definition changed since the shown run', async () => {
-    api.POST.mockResolvedValue({ data: { type: 'TABLE', mode: 'raw', columns: [], rows: [], page: { number: 0, size: 50, totalElements: 0, totalPages: 0 } } });
+    api.POST.mockResolvedValue({ data: { type: 'TABLE', mode: 'raw', columns: [], rows: [], page: { number: 0, size: 25, totalElements: 0, totalPages: 0 } } });
     const { result, rerender } = renderHook(({ sig }) => useReportPreview({ request: table, signature: sig, valid: true }), { initialProps: { sig: 't1' } });
     await act(async () => result.current.run());
     await act(async () => result.current.changeSort({ key: 'date', direction: 'asc' }));
     rerender({ sig: 't2' });
     await act(async () => result.current.run());
-    expect(api.POST.mock.calls[2][1].params.query).toEqual({ page: 0, size: 50 });
+    expect(api.POST.mock.calls[2][1].params.query).toEqual({ page: 0, size: 25 });
   });
 
   it('keeps what was on screen and reports the failure when a run fails', async () => {
@@ -93,7 +93,7 @@ describe('useReportPreview', () => {
 
   it('pages a stale result by the definition it was run with, not the edited draft', async () => {
     const edited: RunReportRequest = { ...table, definition: { mode: 'raw', columns: ['date', 'amount'], filters: [] } };
-    api.POST.mockResolvedValue({ data: { type: 'TABLE', mode: 'raw', columns: [], rows: [], page: { number: 0, size: 50, totalElements: 0, totalPages: 0 } } });
+    api.POST.mockResolvedValue({ data: { type: 'TABLE', mode: 'raw', columns: [], rows: [], page: { number: 0, size: 25, totalElements: 0, totalPages: 0 } } });
     const { result, rerender } = renderHook(({ req, sig }) => useReportPreview({ request: req, signature: sig, valid: true }), {
       initialProps: { req: table, sig: 't1' },
     });

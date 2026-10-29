@@ -1,8 +1,16 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SettleDialog } from './SettleDialog';
+
+const user = userEvent.setup({ pointerEventsCheck: 0 });
+const entryType = () => screen.getByRole('combobox', { name: /Entry type/ });
+const chooseType = async (name: string) => {
+  await user.click(entryType());
+  await user.click(await screen.findByRole('option', { name }));
+};
 
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
@@ -91,14 +99,14 @@ describe('SettleDialog', () => {
     expect(screen.getByText('Settle up with Priya')).toBeInTheDocument();
     expect(screen.getByText("Balance ₹12,000 in Priya's favour")).toBeInTheDocument();
     expect(amount()).toHaveValue('12000');
-    expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
-    expect(screen.getByRole('radio', { name: 'Paid' })).toBeChecked();
+    expect(screen.getByLabelText('Date')).toHaveValue('13/10/26');
+    expect(entryType()).toHaveTextContent('Paid');
   });
 
   it('says the balance is in your favour when they owe you', () => {
     renderDialog('lent');
     expect(screen.getByText('Balance ₹12,000 in your favour')).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Received' })).toBeChecked();
+    expect(entryType()).toHaveTextContent('Received');
   });
 
   it('records a settlement when they owe you: borrowed direction, settlement kind', async () => {
@@ -131,7 +139,7 @@ describe('SettleDialog', () => {
 
   it('the "more" segment records a new principal entry and the button says Record entry', async () => {
     renderDialog('lent');
-    fireEvent.click(screen.getByRole('radio', { name: 'Lent more' }));
+    await chooseType('Lent more');
     expect(screen.queryByRole('button', { name: 'Record settlement' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
@@ -141,7 +149,7 @@ describe('SettleDialog', () => {
 
   it('the "more" segment when you owe them is a borrowed principal', async () => {
     renderDialog('borrowed');
-    fireEvent.click(screen.getByRole('radio', { name: 'Borrowed more' }));
+    await chooseType('Borrowed more');
     fireEvent.click(screen.getByRole('button', { name: 'Record entry' }));
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ direction: 'borrowed', kind: 'principal' })),
@@ -194,7 +202,7 @@ describe('SettleDialog', () => {
   it('no warning on the "more" segment', async () => {
     renderDialog('lent', 12000);
     setAmount('20000');
-    fireEvent.click(screen.getByRole('radio', { name: 'Lent more' }));
+    await chooseType('Lent more');
     expect(screen.queryByText(/more than/)).toBeNull();
   });
 
@@ -235,10 +243,10 @@ describe('SettleDialog', () => {
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'tx1' })));
   });
 
-  it('forgets the pick when the segment flips the money direction', () => {
+  it('forgets the pick when the segment flips the money direction', async () => {
     renderDialog('lent');
     fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Lent more' }));
+    await chooseType('Lent more');
     expect(screen.getByText('no transaction')).toBeInTheDocument();
     expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'lent');
   });

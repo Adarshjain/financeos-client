@@ -147,7 +147,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Never Matches earned nothing this period')).toBeVisible();
   });
 
-  test('card page: Transactions pages at 10 and a rule chip in its header filters the lines', async ({ page }) => {
+  test('card page: Transactions hide the pager while they fit one page and a rule chip in its header filters the lines', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const { account: card } = await createRewardCard(api, { name: 'Ds Filter Card', anniversaryDate: anniversary() });
@@ -159,7 +159,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.goto(`/rewards/cards/${card.id}`);
     await expect(page.getByRole('main').getByText('Transactions', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText('Ds Filter Line').first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Rows per page' }).first()).toContainText('10');
+    await expect(page.getByRole('button', { name: 'Rows per page' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'All rules' }).click();
     await page.getByRole('option', { name: 'Ds Filter Idle' }).click();
@@ -295,7 +295,7 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog', { name: /Delete rule "Ds Cloned Rule"/ });
     await expect(confirm).toBeVisible();
-    await confirm.getByRole('button', { name: 'Delete rule' }).click();
+    await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(toast(page, 'Rule deleted')).toBeVisible();
     await expect(page.getByText('Ds Cloned Rule', { exact: true })).toHaveCount(0);
   });
@@ -387,10 +387,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await expect(page.getByText('Ds Dining Pool 2', { exact: true })).toBeVisible();
 
     await page.getByText('Ds Dining Pool 2', { exact: true }).click();
-    await page.getByRole('dialog', { name: /Edit cap/ }).getByRole('button', { name: 'Delete cap' }).click();
+    await page.getByRole('dialog', { name: /Edit cap/ }).getByRole('button', { name: 'Delete', exact: true }).click();
     const confirmCap = page.getByRole('dialog', { name: /Delete cap "/ });
     await expect(confirmCap).toBeVisible();
-    await confirmCap.getByRole('button', { name: 'Delete cap' }).click();
+    await confirmCap.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(toast(page, 'Cap deleted')).toBeVisible();
     await expect(page.getByText('Ds Dining Pool 2', { exact: true })).toHaveCount(0);
 
@@ -430,10 +430,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     // Delete both through their dialogs.
     for (const name of ['Ds Welcome Offer', 'Ds Quarterly 60k']) {
       await page.getByText(name, { exact: true }).click();
-      await page.getByRole('dialog', { name: /Edit milestone/ }).getByRole('button', { name: 'Delete milestone' }).click();
+      await page.getByRole('dialog', { name: /Edit milestone/ }).getByRole('button', { name: 'Delete', exact: true }).click();
       const confirm = page.getByRole('dialog', { name: /Delete milestone "/ });
       await expect(confirm).toBeVisible();
-      await confirm.getByRole('button', { name: 'Delete milestone' }).click();
+      await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(toast(page, 'Milestone deleted')).toBeVisible();
       await expect(page.getByText(name, { exact: true })).toHaveCount(0);
     }

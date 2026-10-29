@@ -26,7 +26,6 @@ import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { useHideAmounts } from './hideAmounts';
 import {
   getActiveNavItem,
-  hidesTabBar,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
@@ -37,6 +36,7 @@ import { useOpenQuickAddDialog } from './quickAdd';
 import { RAIL_COLLAPSED_COOKIE } from './railCollapsedName';
 import { appHref, DS_HOME_HREF } from './routes';
 import { useSearch } from './search/SearchProvider';
+import { useTabBarHidden } from './tabBarStore';
 import { useHideOnScroll } from './useHideOnScroll';
 
 const subscribeNever = () => () => undefined;
@@ -91,6 +91,7 @@ export function ShellTabBar({
   user: ShellUser;
 }) {
   const pathname = usePathname();
+  const tabBarHidden = useTabBarHidden();
   // A clicked nav item reads as current at once, before the page commits.
   const pendingPath = usePendingPath();
   const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
@@ -119,7 +120,7 @@ export function ShellTabBar({
   const initials = getInitials(profileText);
 
   // The Ask the data pages dock their own composer where the bar floats.
-  if (hidesTabBar(pathname)) return null;
+  if (tabBarHidden) return null;
 
   return (
     <>

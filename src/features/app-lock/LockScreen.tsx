@@ -117,7 +117,7 @@ export function LockScreen({ from }: { from: string }) {
         <Button variant="primary" size="xl" fullWidth loading={busy} loadingLabel="Checking…" onClick={() => unlock()}>
           Unlock
         </Button>
-        <Button variant="link" onClick={() => void logoutToDinero()}>
+        <Button variant="link" size="sm" onClick={() => void logoutToDinero()}>
           Sign out
         </Button>
       </div>

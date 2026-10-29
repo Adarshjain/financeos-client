@@ -96,7 +96,7 @@ function renderView(props: Partial<PersonScreenProps> = {}) {
   );
 }
 
-const topBarAdd = () => screen.getAllByRole('button', { name: 'Add' })[0];
+const topBarAdd = () => screen.getAllByRole('button', { name: 'Add entry' })[0];
 const openMenu = () => user.click(screen.getAllByRole('button', { name: 'More actions' })[0]);
 const row = (title: string) => screen.getAllByRole('button').find((b) => b.getAttribute('role') === 'button' && within(b).queryByText(title))!;
 
@@ -116,10 +116,11 @@ describe('header', () => {
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
     expect(screen.getByText('Owe & lend / Lendings')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
-    expect(screen.getByText('College friend · 4 entries since May 2026')).toBeInTheDocument();
-    expect(screen.getByText('Owes you')).toBeInTheDocument();
-    expect(screen.getByText('₹15,000')).toBeInTheDocument();
-    expect(screen.getByText('expected 28 Oct · in 15 days')).toBeInTheDocument();
+    expect(screen.getAllByText('College friend').length).toBeGreaterThan(0);
+    expect(screen.getByText('Owed to you')).toBeInTheDocument();
+    expect(screen.getAllByText('₹15,000').length).toBeGreaterThan(0);
+    expect(screen.queryByText('You owe')).toBeNull();
+    expect(screen.queryByText(/entries since/)).toBeNull();
     expect(screen.getByRole('button', { name: 'Settle up' })).toBeInTheDocument();
   });
 
@@ -129,7 +130,7 @@ describe('header', () => {
     expect(screen.queryByRole('button', { name: 'Export' })).toBeNull();
     expect(screen.queryByText('All time')).toBeNull();
     expect(screen.queryByText(/remind/i)).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Delete person' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
   });
 
   it('hides Settle up once the balance is zero', () => {
@@ -191,7 +192,7 @@ describe('ledger', () => {
 describe('expected return, person and matching cards', () => {
   it('shows the expected date with the Export ledger share row, and the person details', () => {
     renderView();
-    expect(screen.getByText('28 Oct 2026')).toBeInTheDocument();
+    expect(screen.getByText('28 Oct 26')).toBeInTheDocument();
     expect(screen.getByText('Share')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Change' })).toBeNull();
     expect(screen.getByText('May 2026')).toBeInTheDocument();
@@ -317,11 +318,11 @@ describe('delete person', () => {
   it('asks first, saying what goes, and returns to Lendings once deleted', async () => {
     renderView();
     await openMenu();
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete person' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('Rahul Sharma goes.')).toBeInTheDocument();
     expect(screen.getByText('Their whole ledger goes (4 entries).')).toBeInTheDocument();
     expect(m.deleteCp.mutateAsync).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Delete person' }));
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteCp.mutateAsync).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Person deleted');
     expect(router.push).toHaveBeenCalledWith('/loans/lendings');
@@ -330,7 +331,7 @@ describe('delete person', () => {
   it('can be cancelled', async () => {
     renderView();
     await openMenu();
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete person' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     await user.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(m.deleteCp.mutateAsync).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
@@ -356,9 +357,10 @@ describe('entries', () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 
-  it('the pencil opens the same dialog', async () => {
+  it('the row opens the edit dialog and has no pencil beside it', async () => {
     renderView();
-    await user.click(screen.getByRole('button', { name: 'Edit Laptop advance' }));
+    expect(screen.queryByRole('button', { name: 'Edit Laptop advance' })).toBeNull();
+    await user.click(row('Laptop advance'));
     expect(await screen.findByText('Edit ledger entry')).toBeInTheDocument();
   });
 
@@ -402,10 +404,10 @@ describe('entries', () => {
   it('asks before deleting an entry, then deletes it, says so and refreshes', async () => {
     renderView();
     await user.click(row('Laptop advance'));
-    await user.click(await screen.findByRole('button', { name: 'Delete entry' }));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
     expect(await screen.findByText('This lent entry of ₹25,000 goes.')).toBeInTheDocument();
     expect(m.deleteLending.mutateAsync).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Delete entry' }));
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteLending.mutateAsync).toHaveBeenCalledWith('e2'));
     expect(toast).toHaveBeenCalledWith('Entry deleted');
     expect(router.refresh).toHaveBeenCalled();

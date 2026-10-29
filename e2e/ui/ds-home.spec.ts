@@ -82,7 +82,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByPlaceholder('Search').fill('zzz');
       await expect(page.getByText('No dashboards match')).toBeVisible();
       // The empty state's action (the field has its own clear button too).
-      await page.getByText('Clear search', { exact: true }).click();
+      await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
       await expect(rowOf(page, 'Ds home')).toHaveCount(1);
 
       // The Reports tab is the Dinero Reports list, and its Dashboards tab comes back here.
@@ -151,7 +151,7 @@ for (const viewport of VIEWPORTS) {
 
       await openMenu(page, 'Ds money');
       await page.getByRole('menuitem', { name: 'Delete dashboard' }).click();
-      await page.getByRole('dialog', { name: 'Delete Ds money?' }).getByRole('button', { name: 'Delete dashboard' }).click();
+      await page.getByRole('dialog', { name: 'Delete Ds money?' }).getByRole('button', { name: 'Delete', exact: true }).click();
       await expect(page.getByText('Dashboard deleted')).toBeVisible();
       await expect(rowOf(page, 'Ds money')).toHaveCount(0);
       await expect(page.getByRole('tab', { name: /^Dashboards$/ })).toBeVisible();

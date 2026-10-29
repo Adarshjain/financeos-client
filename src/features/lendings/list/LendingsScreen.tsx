@@ -1,16 +1,14 @@
 import React from 'react';
 
+import { HeroBlock } from '@/features/loans/HeroBlock';
 import type { fetchPeople, fetchPeopleSummary } from '@/features/loans/loansServerApi';
-import { TileGrid } from '@/features/loans/TileGrid';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Loaded } from '@/features/shell/loadHelpers';
 import { ListTransition } from '@/lib/viewTransition';
 
 import { LendingsListCard } from './LendingsListCard';
-import { lendingRow, type LendingsUrlState, lendingTiles, type TransferRow, type UnrecordedRow } from './lendingsListModel';
+import { lendingRow, lendingsHero, type LendingsUrlState, type TransferRow, type UnrecordedRow } from './lendingsListModel';
 import { UnlinkedTransfersCard } from './UnlinkedTransfersCard';
-
-const TILE_LABELS = ['Owed to you', 'You owe', 'Due this month', 'Expected back'];
 
 export interface LendingsScreenProps {
   state: LendingsUrlState;
@@ -19,19 +17,17 @@ export interface LendingsScreenProps {
   list: Loaded<Awaited<ReturnType<typeof fetchPeople>>>;
   /** The figures, or null when they could not be read. */
   summary: Awaited<ReturnType<typeof fetchPeopleSummary>> | null;
+  /** How many people are settled, or null when it could not be read. */
+  settledCount: number | null;
   transfers: TransferRow[];
   unrecordedTransfers: UnrecordedRow[];
 }
 
-/** The Lendings tab: the figures, the people ledger and the transfers waiting to be linked. */
-export function LendingsScreen({ state, today, list, summary, transfers, unrecordedTransfers }: LendingsScreenProps) {
+/** The Lendings tab: the hero, the people ledger and the transfers waiting to be linked. */
+export function LendingsScreen({ state, today, list, summary, settledCount, transfers, unrecordedTransfers }: LendingsScreenProps) {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <TileGrid
-        tiles={summary ? lendingTiles(summary) : null}
-        labels={TILE_LABELS}
-        error="Couldn't load this figure. Try again."
-      />
+      <HeroBlock hero={summary ? lendingsHero(summary, settledCount) : null} error="Couldn't load the figures. Try again." />
       {list.ok ? (
         <ListTransition>
           <LendingsListCard

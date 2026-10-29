@@ -115,7 +115,7 @@ export function TransactionsListPane({
 
   return (
     <>
-      <ShellPage crumb={areaCrumb('transactions')} title="Transactions" flushTop onAdd={onAdd}>
+      <ShellPage crumb={areaCrumb('transactions')} title="Transactions" flushTop onAdd={onAdd} addLabel="Add transaction">
         <div className="flex">
           <div className="flex min-w-0 flex-1 flex-col gap-space-8 desk:gap-space-16">
             {selectionHeader ? (

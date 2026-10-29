@@ -44,6 +44,17 @@ beforeEach(() => {
 });
 
 describe('LoanEditDialog', () => {
+  it('closes on Cancel at once when unchanged, and asks "Discard changes?" once a field changed', async () => {
+    render(<LoanEditDialog loan={loanFixture()} termsLocked={false} onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Discard changes?')).toBeNull();
+    fireEvent.change(field('Loan name'), { target: { value: 'Renamed' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Discard changes?')).toBeInTheDocument();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('opens filled from the loan', () => {
     render(<LoanEditDialog loan={loanFixture()} termsLocked={false} onClose={onClose} />);
     expect(screen.getByText('Edit loan')).toBeInTheDocument();
@@ -51,7 +62,7 @@ describe('LoanEditDialog', () => {
     expect(field('Lender')).toHaveValue('State Bank of India');
     expect(field('Principal')).toHaveValue('4500000');
     expect(field('Tenure')).toHaveValue('240');
-    expect(screen.getByLabelText('Disbursal date')).toHaveValue('01/08/2025');
+    expect(screen.getByLabelText('Disbursal date')).toHaveValue('01/08/25');
     expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Floating rate');
     expect(screen.getByRole('combobox', { name: /^Payment bank account/ })).toHaveTextContent('HDFC Savings');
   });

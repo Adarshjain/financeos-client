@@ -104,7 +104,7 @@ export const ErrorState: Story = {
     today: '2026-10-13',
     label: 'Statement date',
     defaultValue: '2026-10-15',
-    error: 'Enter a valid date in dd/mm/yyyy format.',
+    error: 'Enter a valid date in dd/mm/yy format.',
   },
 };
 

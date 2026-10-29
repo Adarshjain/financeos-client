@@ -54,10 +54,10 @@ describe('CorporateActionDialog: recording', () => {
     expect(screen.getByText('Record corporate action')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toHaveTextContent('ITC');
     expect(screen.getByRole('combobox', { name: /^Action/ })).toHaveTextContent('Stock split');
-    expect(screen.getByLabelText('Ex-date')).toHaveValue('13/10/2026');
+    expect(screen.getByLabelText('Ex-date')).toHaveValue('13/10/26');
     expect(field('Before')).toHaveValue('1');
     expect(field('After')).toHaveValue('2');
-    expect(screen.queryByRole('button', { name: 'Delete corporate action' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Record split' })).toBeInTheDocument();
   });
 
@@ -233,11 +233,11 @@ describe('CorporateActionDialog: editing and deleting', () => {
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toBeDisabled();
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toHaveTextContent('ITC');
     expect(screen.getByRole('combobox', { name: /^Child instrument/ })).toHaveTextContent('ITC Hotels');
-    expect(screen.getByLabelText('Ex-date')).toHaveValue('06/01/2025');
+    expect(screen.getByLabelText('Ex-date')).toHaveValue('06/01/25');
     expect(field('Held')).toHaveValue('10');
     expect(field('Received')).toHaveValue('1');
     expect(field('Cost allocation %')).toHaveValue('1.5');
-    expect(screen.getByRole('button', { name: 'Delete corporate action' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save demerger' })).toBeInTheDocument();
   });
 
@@ -255,11 +255,11 @@ describe('CorporateActionDialog: editing and deleting', () => {
 
   it('asks before deleting and deletes after the confirmation', async () => {
     renderWithQuery(<CorporateActionDialog action={split} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete corporate action' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByRole('dialog');
     expect(within(confirm).getByText(/Your trades and dividends stay/)).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete corporate action' }));
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(api.DELETE).toHaveBeenCalledWith('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
       params: { path: { instrumentId: 'i-itc', id: 'ca-2' } },
@@ -269,7 +269,7 @@ describe('CorporateActionDialog: editing and deleting', () => {
 
   it('keeps the action when the confirmation is cancelled', async () => {
     renderWithQuery(<CorporateActionDialog action={split} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete corporate action' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByRole('dialog');
     fireEvent.click(within(confirm).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Delete corporate action?' })).toBeNull());

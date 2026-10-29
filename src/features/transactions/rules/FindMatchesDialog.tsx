@@ -20,7 +20,7 @@ import { applyRule } from './ruleActions';
 import { RULE_JOB_TYPE, ruleMatchSentence } from './rulesModel';
 import { useRuleMatches } from './useRuleMatches';
 
-export const MATCHES_PAGE_SIZE = 20;
+export const MATCHES_PAGE_SIZE = 5;
 
 export interface FindMatchesDialogProps {
   rule: CategoryRule;

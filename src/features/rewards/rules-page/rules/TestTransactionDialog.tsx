@@ -101,7 +101,7 @@ export function TestTransactionDialog({ accountId, categories, today, onClose }:
               />
             </div>
             <div>
-              <Button type="button" variant="link" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
+              <Button type="button" variant="link" size="sm" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
                 More options
               </Button>
             </div>

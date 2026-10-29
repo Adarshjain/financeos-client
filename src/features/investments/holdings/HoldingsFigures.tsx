@@ -1,75 +1,26 @@
 import React from 'react';
 
-import { Card, Conceal, KpiTile, ListRow, ProgressBar, Text } from '@/components/ds';
+import { Card, Conceal, Hero, ListRow, ProgressBar, Text } from '@/components/ds';
 
-import { type HoldingsHeroModel, type HoldingsTile, type Mover, type TaxCardModel } from './holdingsModel';
+import { type HoldingsHeroModel, type Mover, type TaxCardModel } from './holdingsModel';
 
-/** The phone's headline: current value (no label), today's move, then Invested and Unrealised P&L side by side. Desktop shows tiles instead. */
+/** The headline: current value with today's move, then Invested and Unrealised P&L. Same at both sizes. */
 export function HoldingsHero({ hero }: { hero: HoldingsHeroModel }) {
   return (
-    <div className="desk:hidden flex flex-col gap-space-8 desk:gap-space-12">
-      <div className="flex flex-col gap-space-2">
-        <Text variant="hero-figure" family="display" as="div">
-          {hero.value}
-        </Text>
-        {hero.day ? (
-          <Text variant="label" tone={hero.day.tone} as="div">
-            {hero.day.text}
-          </Text>
-        ) : null}
-      </div>
-      <div className="grid grid-cols-2 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-        <div className="flex flex-col gap-space-2 min-w-0">
-          <Text variant="label" tone="ink-3" as="div">
-            Invested
-          </Text>
-          <Text variant="figure" as="div">
-            {hero.invested}
-          </Text>
-        </div>
-        <div className="flex flex-col gap-space-2 min-w-0">
-          <Text variant="label" tone="ink-3" as="div">
-            Unrealised P&amp;L
-          </Text>
-          <Text variant="figure" tone={hero.unrealised.tone} as="div">
-            {hero.unrealised.text}
-          </Text>
-          {hero.unrealisedSub ? (
-            <Text variant="caption" tone="ink-3" as="div">
-              {hero.unrealisedSub}
-            </Text>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** The four desktop tiles. A tile that failed to load (null) says so under its label. */
-export function HoldingsTiles({ tiles, failedLabels }: { tiles: (HoldingsTile | null)[]; failedLabels: string[] }) {
-  return (
-    <div className="max-desk:hidden grid grid-cols-4 gap-x-space-16 gap-y-space-8 desk:gap-y-space-16">
-      {tiles.map((tile, i) =>
-        tile ? (
-          <KpiTile
-            key={tile.label}
-            label={tile.label}
-            value={
-              tile.tone ? (
-                <Text as="span" variant="figure" tone={tile.tone}>
-                  {tile.value}
-                </Text>
-              ) : (
-                tile.value
-              )
-            }
-            context={tile.context}
-          />
-        ) : (
-          <KpiTile key={failedLabels[i]} label={failedLabels[i]} error="Couldn't load this figure. Try again." />
-        ),
-      )}
-    </div>
+    <Hero
+      label="Current value"
+      value={<Conceal>{hero.value}</Conceal>}
+      change={hero.day ? { text: <Conceal>{hero.day.text}</Conceal>, tone: hero.day.tone } : undefined}
+      figures={[
+        { label: 'Invested', value: <Conceal>{hero.invested}</Conceal> },
+        {
+          label: 'Unrealised P&L',
+          value: <Conceal>{hero.unrealised.text}</Conceal>,
+          tone: hero.unrealised.tone,
+          caption: hero.unrealisedSub ? <Conceal>{hero.unrealisedSub}</Conceal> : undefined,
+        },
+      ]}
+    />
   );
 }
 

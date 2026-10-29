@@ -133,7 +133,7 @@ function data(over: Partial<RewardsTabData> = {}): RewardsTabData {
       last: false,
       empty: false,
     },
-    query: { page: 0, size: 10 },
+    query: { page: 0, size: 25 },
     ...over,
   };
 }
@@ -158,7 +158,7 @@ describe('/accounts/[id]/rewards', () => {
     expect(screen.getByText('Eligible spend')).toBeDefined();
     expect(screen.getAllByText('₹83,764').length).toBe(2);
     expect(screen.getByText('30 of 30 transactions earned')).toBeDefined();
-    expect(screen.getByText('≈ ₹1,090 at ₹0.50 / pt')).toBeDefined();
+    expect(screen.getByText(/≈ ₹1,090 at ₹0.50 \/ pt/)).toBeDefined();
     expect(screen.getByText('1.3%')).toBeDefined();
     expect(screen.getByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeDefined();
 
@@ -215,7 +215,7 @@ describe('/accounts/[id]/rewards', () => {
     expect(push).toHaveBeenCalledWith('/accounts/c1/rewards?rule=r1');
 
     push.mockClear();
-    loadData.mockResolvedValue(data({ query: { ruleId: 'r1', page: 1, size: 10 } }));
+    loadData.mockResolvedValue(data({ query: { ruleId: 'r1', page: 1, size: 25 } }));
     await renderPage({ rule: 'r1' });
     fireEvent.click(screen.getByRole('button', { name: '5X' }));
     fireEvent.click(screen.getByRole('option', { name: 'All rules' }));

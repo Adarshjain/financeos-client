@@ -104,13 +104,21 @@ describe('RulesScreen', () => {
     expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1);
   });
 
-  it('shows the three status chips with no counts and writes the status to the address', () => {
+  it('the status is one dropdown chip with no counts and writes the status to the address', () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    expect(screen.getByRole('button', { name: 'All' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Verified' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Unverified' }));
-    expect(router.push).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Verified' }));
+    expect(screen.getByRole('option', { name: 'All' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('option', { name: 'Verified' }));
     expect(router.push).toHaveBeenCalledWith('?status=verified', { scroll: false });
+  });
+
+  it('a status off its default shows a changed chip; Reset filters and the chip x put it back', () => {
+    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, status: 'all' } })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
+    expect(router.push).toHaveBeenCalledWith('?', { scroll: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(router.push).toHaveBeenCalledTimes(2);
   });
 
   it('a filter resets the page and keeps the rest of the address', () => {
@@ -118,6 +126,13 @@ describe('RulesScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Source' }));
     fireEvent.click(screen.getByRole('option', { name: 'Created by you' }));
     expect(router.push).toHaveBeenCalledWith('?status=all&source=USER', { scroll: false });
+  });
+
+  it('Reset filters keeps the search text', () => {
+    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, q: 'dunzo', source: 'USER' } })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
+    expect(router.push).toHaveBeenCalledWith(expect.stringContaining('q=dunzo'), { scroll: false });
+    expect(router.push).toHaveBeenCalledWith(expect.not.stringContaining('source'), { scroll: false });
   });
 
   it('has no Usage or Sort filter', () => {
@@ -307,10 +322,10 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props()} />);
     expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete rule' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(await screen.findByText('Delete rule?')).toBeTruthy();
     expect(http.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete rule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(http.DELETE).toHaveBeenCalledWith('/api/v1/rules/{id}', { params: { path: { id: 'r1' } } }));
     await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Rule deleted'));
   });
@@ -355,7 +370,7 @@ describe('RulesScreen', () => {
     );
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit rule' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     expect(await screen.findByText('Edit rule · Dunzo')).toBeTruthy();
     expect(screen.getByText(/Changing the pattern unlinks the 4 transactions/)).toBeTruthy();
     expect(await screen.findByText('Matches now · 2', {}, { timeout: 3000 })).toBeTruthy();
@@ -403,7 +418,7 @@ describe('RulesScreen', () => {
     http.PUT.mockResolvedValue({ data: {} });
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit rule' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     await screen.findByText('Edit rule · Dunzo');
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ab' } });
     fireEvent.change(screen.getByLabelText(/MCC code/), { target: { value: '58' } });
@@ -450,8 +465,8 @@ describe('RulesScreen', () => {
     fireEvent.click(screen.getByLabelText('Select Lenskart'));
     expect(await screen.findByText('2 selected')).toBeTruthy();
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete rule' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete rule' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     expect(await screen.findByText('1 selected')).toBeTruthy();
     fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
     await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/verify', { body: { ruleIds: ['r3'] } }));
@@ -481,7 +496,7 @@ describe('RulesScreen', () => {
     });
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit rule' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     expect(await screen.findByText('Matches now · 1')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'DUNZO NEW' } });
     expect(await screen.findByText('Finding matches…', {}, { timeout: 3000 })).toBeTruthy();

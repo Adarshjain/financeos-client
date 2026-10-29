@@ -114,7 +114,7 @@ export function WhichCard({ data, today }: { data: WhichCardData; today: string 
               />
             </div>
             <div>
-              <Button type="button" variant="link" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
+              <Button type="button" variant="link" size="sm" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen}>
                 More options
               </Button>
             </div>

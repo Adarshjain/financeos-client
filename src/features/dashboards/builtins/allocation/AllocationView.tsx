@@ -33,7 +33,7 @@ export function AllocationSkeleton() {
 export function AllocationView({ data }: TemplateViewProps) {
   const donut = React.useMemo(() => (data.type === 'CHART' ? allocationDonut(data as ChartData) : null), [data]);
   const [opened, setOpened] = React.useState<{ key: string; label: string; value: number } | null>(null);
-  if (!donut) return <EmptyState compact title="No open holdings to split yet" />;
+  if (!donut) return <EmptyState compact description="No open holdings to split yet" />;
   return (
     <div className="px-space-16 pb-space-12" data-testid="allocation-view">
       <Chart

@@ -60,8 +60,8 @@ describe('url state', () => {
 
   it('lists the FYs with every year last, adding one the list lacks', () => {
     expect(fyOptions([2026, 2025], 2026)).toEqual([
-      { value: '2026', label: 'FY 2026-27' },
-      { value: '2025', label: 'FY 2025-26' },
+      { value: '2026', label: 'FY 26-27' },
+      { value: '2025', label: 'FY 25-26' },
       { value: 'all', label: 'All years' },
     ]);
     expect(fyOptions([2026], 2024).map((o) => o.value)).toEqual(['2026', '2024', 'all']);
@@ -90,7 +90,7 @@ describe('figures', () => {
     expect(f.balance).toMatchObject({ value: '₹8,43,210', context: 'Passbook up to September 2026', phoneContext: 'Up to September 2026' });
     expect(f.contributed).toMatchObject({ value: '₹78,900', context: 'You ₹43,200 · employer ₹35,700', phoneContext: 'You ₹43,200' });
     expect(f.interest).toEqual({ value: '≈ ₹32,880', context: 'Estimate at 8.25% · credited after 31 Mar' });
-    expect(f.lastInterest).toMatchObject({ value: '₹56,180', context: 'FY 2025-26 at 8.25% · 18 Aug', phoneContext: 'FY 2025-26' });
+    expect(f.lastInterest).toMatchObject({ value: '₹56,180', context: 'FY 25-26 at 8.25% · 18 Aug', phoneContext: 'FY 25-26' });
   });
 
   it('shows ₹0 and "No balance yet" with no balance, and dashes with nothing credited', () => {
@@ -135,14 +135,14 @@ describe('passbook rows', () => {
   it('draws interest with its year and rate and no wage month or pension', () => {
     expect(epfRow(interest())).toMatchObject({
       wageMonth: '—',
-      title: 'Interest · FY 2025-26 · 8.25%',
-      phoneTitle: 'Interest · FY 2025-26',
+      title: 'Interest · FY 25-26 · 8.25%',
+      phoneTitle: 'Interest · FY 25-26',
       phoneSub: 'Passbook · 8.25%',
       employee: '+₹32,410',
       pension: '—',
       amount: '+₹56,180',
     });
-    expect(epfRow({ ...interest(), interestRate: null })).toMatchObject({ title: 'Interest · FY 2025-26', phoneSub: 'Passbook' });
+    expect(epfRow({ ...interest(), interestRate: null })).toMatchObject({ title: 'Interest · FY 25-26', phoneSub: 'Passbook' });
   });
 
   it('draws an opening balance unsigned, with no as-of date', () => {
@@ -175,9 +175,9 @@ describe('passbook rows', () => {
 describe('employers', () => {
   it('words each status', () => {
     expect(employerRow(employer())).toMatchObject({ line: 'Member ID …67890 · since September 2023', balance: '₹8,43,210', status: 'Current' });
-    expect(employerRow(transferred())).toMatchObject({ line: 'June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023', balance: '₹0', status: 'Transferred' });
-    expect(employerRow(settled())).toMatchObject({ line: 'April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018', status: 'Settled' });
-    expect(employerRow(settled({ pensionWithdrawn: false })).line).toBe('April 2016 – May 2018 · final settlement 12 Sep 2018');
+    expect(employerRow(transferred())).toMatchObject({ line: 'June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 23', balance: '₹0', status: 'Transferred' });
+    expect(employerRow(settled())).toMatchObject({ line: 'April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 18', status: 'Settled' });
+    expect(employerRow(settled({ pensionWithdrawn: false })).line).toBe('April 2016 – May 2018 · final settlement 12 Sep 18');
     expect(employerRow(employer({ status: 'LEFT', leftOn: '2024-01-31', statusDate: null })).line).toBe('September 2023 – January 2024 · left');
   });
 
@@ -267,6 +267,6 @@ describe('the entry form', () => {
   });
 
   it('words a bank credit line', () => {
-    expect(creditLine(bankCredit())).toBe('HDFC Bank ••4521 · 24 Feb 2025');
+    expect(creditLine(bankCredit())).toBe('HDFC Bank ••4521 · 24 Feb 25');
   });
 });

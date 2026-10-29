@@ -11,7 +11,7 @@ import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 // ---- URL state ---------------------------------------------------------------
 
 export const HOLDINGS_SIZE_OPTIONS = [25, 50, 100];
-export const HOLDINGS_DEFAULT_SIZE = 50;
+export const HOLDINGS_DEFAULT_SIZE = 25;
 
 export interface HoldingsUrlState {
   q: string;
@@ -83,12 +83,12 @@ export const TYPE_OPTIONS: { value: InstrumentType | ''; label: string }[] = [
 
 /** One Sort option: the key and its direction, encoded as `key:dir` for the Select. */
 export const SORT_OPTIONS: { value: string; label: string; sort: HoldingsSort; dir: HoldingsSortDir }[] = [
-  { value: 'name:asc', label: 'Name: A to Z', sort: 'name', dir: 'asc' },
-  { value: 'name:desc', label: 'Name: Z to A', sort: 'name', dir: 'desc' },
-  { value: 'return_pct:desc', label: '% return: high to low', sort: 'return_pct', dir: 'desc' },
-  { value: 'return_pct:asc', label: '% return: low to high', sort: 'return_pct', dir: 'asc' },
-  { value: 'return_abs:desc', label: '₹ return: high to low', sort: 'return_abs', dir: 'desc' },
-  { value: 'return_abs:asc', label: '₹ return: low to high', sort: 'return_abs', dir: 'asc' },
+  { value: 'name:asc', label: 'Name A–Z', sort: 'name', dir: 'asc' },
+  { value: 'name:desc', label: 'Name Z–A', sort: 'name', dir: 'desc' },
+  { value: 'return_pct:desc', label: 'Best % return', sort: 'return_pct', dir: 'desc' },
+  { value: 'return_pct:asc', label: 'Worst % return', sort: 'return_pct', dir: 'asc' },
+  { value: 'return_abs:desc', label: 'Best ₹ return', sort: 'return_abs', dir: 'desc' },
+  { value: 'return_abs:asc', label: 'Worst ₹ return', sort: 'return_abs', dir: 'asc' },
 ];
 
 /** The Select value of a state's sort and direction. */
@@ -151,46 +151,6 @@ export function heroModel(header: HoldingsHeader, now: Date = new Date()): Holdi
       ? priceTimeLabel(formatDate(header.priceAsOf, 'list'), header.priceAt, now) || `Prices as of ${formatDate(header.priceAsOf, 'list')}`
       : null,
   };
-}
-
-export interface HoldingsTile {
-  label: string;
-  value: string;
-  tone?: 'positive' | 'danger';
-  context?: string;
-}
-
-/** The four desktop tiles. Realised comes from the tax-harvest endpoint; null when that failed. */
-export function holdingsTiles(
-  header: HoldingsHeader,
-  /** Open holdings (the groups' counts); merged-away rows are not holdings. */
-  holdingCount: number,
-  tax: TaxHarvestResponse | null,
-): (HoldingsTile | null)[] {
-  const hero = heroModel(header);
-  const realised = tax ? tax.realised : null;
-  const ltcg = realised ? realised.ltcg - realised.ltcl : 0;
-  const stcg = realised ? realised.stcg - realised.stcl : 0;
-  return [
-    {
-      label: 'Current value',
-      value: hero.value,
-      context: hero.day?.text,
-    },
-    { label: 'Invested', value: hero.invested, context: `${holdingCount} ${holdingCount === 1 ? 'holding' : 'holdings'}` },
-    { label: 'Unrealised P&L', value: hero.unrealised.text, tone: hero.unrealised.tone, context: hero.unrealisedSub ?? undefined },
-    realised
-      ? {
-          label: 'Realised this FY',
-          value: signedRealised(ltcg + stcg),
-          context: `LTCG ${signedRealised(ltcg)} · STCG ${signedRealised(stcg)}`,
-        }
-      : null,
-  ];
-}
-
-function signedRealised(value: number): string {
-  return value < 0 ? formatMoney(value, { sign: 'always' }) : formatMoney(value);
 }
 
 // ---- Rows --------------------------------------------------------------------

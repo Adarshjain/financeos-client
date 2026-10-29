@@ -25,7 +25,14 @@ const monthYear = (iso: string) => `${LONG_MONTHS[Number(iso.slice(5, 7)) - 1]} 
 const SEARCH = 'Search';
 
 const row = (page: Page, text: string | RegExp) => page.getByRole('row').filter({ hasText: text });
-const needsReviewChip = (page: Page) => page.getByRole('button', { name: 'Needs review', exact: true });
+/** The Status dropdown chip (holds Monitoring, Needs review, Up to statement); it says the picked name once changed. */
+const needsReviewChip = (page: Page) => page.getByRole('button', { name: /^(Status|Needs review|\d+ selected)$/ });
+/** Opens the Status chip and flips Needs review; the picks apply on Done. */
+const toggleNeedsReview = async (page: Page) => {
+  await needsReviewChip(page).click();
+  await page.getByRole('option', { name: 'Needs review' }).click();
+  await page.getByRole('button', { name: /Done/ }).click();
+};
 
 /** Puts a transaction in Needs review with the given reasons. */
 async function flag(api: ApiClient, t: TransactionResponse, reasons: Reason[]) {
@@ -148,7 +155,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).toBeVisible();
 
       await dialog.getByRole('textbox', { name: 'From' }).fill('1000');
-      await expect(dialog.getByRole('button', { name: phone ? /^Show \d+$/ : /^Show \d+ transactions?$/ })).toBeVisible();
+      await expect(dialog.getByRole('button', { name: /^Show \d+ results?$/ })).toBeVisible();
       expect(page.url()).not.toContain('amount');
 
       await dialog.getByRole('button', { name: /^Show/ }).click();
@@ -162,12 +169,13 @@ for (const viewport of VIEWPORTS) {
       await expect(row(page, 'Rent Advance')).toHaveCount(0);
       await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
 
-      // Cancel: a changed draft never reaches the URL.
+      // Closing: a changed draft never reaches the URL.
       const applied = page.url();
       await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
       await expect(dialog).toBeVisible();
       await dialog.getByRole('textbox', { name: 'From' }).fill('5');
-      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      // The dialog's × is desktop-only; Escape closes it at both widths.
+      await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
       expect(page.url()).toBe(applied);
     });
@@ -191,6 +199,8 @@ for (const viewport of VIEWPORTS) {
       test('search by text and by number updates the URL q and narrows the list', async ({ page }) => {
         await seedList();
         await open(page);
+        // The loading frame has a search field of its own: wait for the rows so only the real one is left.
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1, { timeout: 45_000 });
         const search = page.getByPlaceholder(SEARCH);
 
         await search.fill('swiggy');
@@ -208,19 +218,19 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
 
-      test('the Needs review chip (no count) toggles the URL and narrows the list', async ({ page }) => {
+      test('Needs review in the Status chip toggles the URL and narrows the list', async ({ page }) => {
         await seedList();
         await open(page);
         await expect(needsReviewChip(page)).toBeVisible();
 
-        await needsReviewChip(page).click();
+        await toggleNeedsReview(page);
         await page.waitForURL(/[?&]review=needs_review/);
         await expect(row(page, 'Uber Ride')).toHaveCount(1);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
         await expect(needsReviewChip(page)).toBeVisible();
 
-        await needsReviewChip(page).click();
+        await toggleNeedsReview(page);
         await page.waitForURL((u) => !u.search.includes('review='));
         await expect(row(page, 'Rent Advance')).toHaveCount(1);
       });
@@ -230,14 +240,14 @@ for (const viewport of VIEWPORTS) {
         await open(page);
         expect(new URL(page.url()).searchParams.has('period')).toBe(false);
         await expect(page.getByRole('button', { name: 'Period' })).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Remove filter' })).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Reset filter', exact: true })).toHaveCount(0);
         await expect(row(page, 'Old Furniture')).toHaveCount(1);
 
         await open(page, '?period=last_14_days');
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toBeVisible();
         await expect(row(page, 'Old Furniture')).toHaveCount(0);
 
-        await page.getByRole('button', { name: 'Remove filter' }).click();
+        await page.getByRole('button', { name: 'Reset filter', exact: true }).click();
         await page.waitForURL((u) => !u.search.includes('period='));
         await expect(row(page, 'Old Furniture')).toHaveCount(1);
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toHaveCount(0);
@@ -250,8 +260,7 @@ for (const viewport of VIEWPORTS) {
 
         await page.getByRole('button', { name: 'Period' }).click();
         await expect(page.getByRole('dialog', { name: 'Filters' })).toHaveCount(0);
-        await expect(page.getByRole('radio', { name: 'Single date' })).toBeVisible();
-        await expect(page.getByRole('radio', { name: 'Range' })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: 'Period type' })).toBeVisible();
         await page.getByRole('combobox', { name: 'Preset' }).click();
         await page.getByRole('option', { name: 'Last 14 days' }).click();
         await page.getByRole('button', { name: 'Apply', exact: true }).click();
@@ -324,7 +333,7 @@ for (const viewport of VIEWPORTS) {
       test('Add: the + creates a debit with the amount field and the row appears', async ({ page }) => {
         await seedList();
         await open(page);
-        await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+        await page.getByRole('button', { name: 'Add transaction', exact: true }).first().click();
         const dialog = page.getByRole('dialog', { name: 'Add transaction' });
         await expect(dialog).toBeVisible();
 
@@ -384,7 +393,7 @@ for (const viewport of VIEWPORTS) {
 
         const confirm = page.getByRole('dialog', { name: /^Delete Rent Advance/ });
         await expect(confirm).toBeVisible();
-        await confirm.getByRole('button', { name: 'Delete transaction' }).click();
+        await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
 
         await expect(page.getByText('Transaction deleted').first()).toBeVisible();
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
@@ -478,7 +487,7 @@ for (const viewport of VIEWPORTS) {
         await expect(dialog).not.toBeVisible();
         await expect(page.getByText('2 selected')).toHaveCount(0);
         // Nothing is left in review: the Needs review view lists neither row.
-        await needsReviewChip(page).click();
+        await toggleNeedsReview(page);
         await page.waitForURL(/[?&]review=needs_review/);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
         await expect(row(page, 'Uber Ride')).toHaveCount(0);
@@ -498,7 +507,7 @@ for (const viewport of VIEWPORTS) {
 
         // A clean run through the dialog ends in the "Approved" toast, which offers Undo.
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
-        await needsReviewChip(page).click();
+        await toggleNeedsReview(page);
         await page.waitForURL(/[?&]review=needs_review/);
         await expect(row(page, 'Uber Ride')).toHaveCount(0);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
@@ -581,21 +590,20 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('dialog')).toHaveCount(0);
       });
 
-      test('All filters opens the Filters dialog with Cancel, Clear all and Show in the footer', async ({ page }) => {
+      test('All filters opens the Filters dialog with Reset to defaults and Show in the footer', async ({ page }) => {
         await seedList();
         await open(page);
         // Phone shows only Period, Account and All filters.
         await expect(page.getByRole('button', { name: 'Period' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Account' })).toBeVisible();
         await expect(page.getByRole('button', { name: /^Type/ })).not.toBeVisible();
-        await expect(page.getByRole('button', { name: /^Needs review/ })).not.toBeVisible();
+        await expect(page.getByRole('button', { name: /^Status/ })).not.toBeVisible();
 
         await page.getByRole('button', { name: /^All filters/ }).click();
         const dialog = page.getByRole('dialog', { name: 'Filters' });
         await expect(dialog).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Clear all', exact: true })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: /^Show \d+$/ })).toBeVisible();
+        await expect(dialog.getByRole('button', { name: 'Reset to defaults', exact: true })).toBeVisible();
+        await expect(dialog.getByRole('button', { name: /^Show (\d+ )?results?$/ })).toBeVisible();
       });
 
       test('focusing the search expands it inside the chip row', async ({ page }) => {
@@ -664,7 +672,7 @@ for (const viewport of VIEWPORTS) {
         const confirm = page.getByRole('dialog', { name: /^Delete Rent Advance/ });
         await expect(confirm).toBeVisible();
 
-        await confirm.getByRole('button', { name: 'Delete transaction' }).click();
+        await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
@@ -726,7 +734,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Delete' }).click();
         const confirm = page.getByRole('dialog', { name: /^Delete Rent Advance/ });
         await expect(confirm).toBeVisible();
-        await confirm.getByRole('button', { name: 'Delete transaction' }).click();
+        await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
         await expect(row(page, 'Rent Advance')).toHaveCount(0);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
       });
@@ -734,7 +742,7 @@ for (const viewport of VIEWPORTS) {
       test('Add transaction: Add account opens the account dialog on top, the new account is selected and Save works', async ({ page }) => {
         await seedList();
         await open(page);
-        await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+        await page.getByRole('button', { name: 'Add transaction', exact: true }).first().click();
         const dialog = page.getByRole('dialog', { name: 'Add transaction' });
         await expect(dialog).toBeVisible();
         await dialog.getByRole('textbox', { name: 'Amount', exact: true }).fill('321');

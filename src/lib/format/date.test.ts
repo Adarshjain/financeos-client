@@ -16,36 +16,38 @@ describe('formatDate', () => {
   });
 
   it('formats full, input and month', () => {
-    expect(formatDate('2026-10-13', 'full')).toBe('13 Oct 2026');
-    expect(formatDate('2026-01-05', 'input')).toBe('05/01/2026');
+    expect(formatDate('2026-10-13', 'full')).toBe('13 Oct 26');
+    expect(formatDate('2026-01-05', 'input')).toBe('05/01/26');
+    expect(formatDate('1995-05-13', 'input')).toBe('13/05/1995');
+    expect(formatDate('2100-01-05', 'input')).toBe('05/01/2100');
     expect(formatDate('2026-10-13', 'month')).toBe('October 2026');
-    expect(formatDate('2026-09-01', 'full')).toBe('1 Sep 2026');
+    expect(formatDate('2026-09-01', 'full')).toBe('1 Sep 26');
   });
 
   it('list omits the current year and adds any other', () => {
     expect(formatDate('2026-10-13', 'list', T)).toBe('13 Oct');
-    expect(formatDate('2025-10-13', 'list', T)).toBe('13 Oct 2025');
-    expect(formatDate('2027-01-01', 'list', T)).toBe('1 Jan 2027');
-    expect(formatDate('2026-12-31', 'list', { today: '2027-01-01' })).toBe('31 Dec 2026');
+    expect(formatDate('2025-10-13', 'list', T)).toBe('13 Oct 25');
+    expect(formatDate('2027-01-01', 'list', T)).toBe('1 Jan 27');
+    expect(formatDate('2026-12-31', 'list', { today: '2027-01-01' })).toBe('31 Dec 26');
   });
 
   it('uses a calendar date as-is, with or without a time and no offset', () => {
-    expect(formatDate('2026-10-13T23:30:00', 'full')).toBe('13 Oct 2026');
-    expect(formatDate('2026-10-13T00:00:00.000', 'input')).toBe('13/10/2026');
+    expect(formatDate('2026-10-13T23:30:00', 'full')).toBe('13 Oct 26');
+    expect(formatDate('2026-10-13T00:00:00.000', 'input')).toBe('13/10/26');
   });
 
   it('converts an instant to its IST date', () => {
-    expect(formatDate('2026-10-12T20:00:00Z', 'full')).toBe('13 Oct 2026');
-    expect(formatDate('2026-10-12T20:00:00.000+00:00', 'input')).toBe('13/10/2026');
-    expect(formatDate('2026-10-13T01:00:00-05:00', 'full')).toBe('13 Oct 2026');
-    expect(formatDate('2026-10-12T18:29:59Z', 'full')).toBe('12 Oct 2026');
-    expect(formatDate(new Date('2026-10-12T20:00:00Z'), 'full')).toBe('13 Oct 2026');
+    expect(formatDate('2026-10-12T20:00:00Z', 'full')).toBe('13 Oct 26');
+    expect(formatDate('2026-10-12T20:00:00.000+00:00', 'input')).toBe('13/10/26');
+    expect(formatDate('2026-10-13T01:00:00-05:00', 'full')).toBe('13 Oct 26');
+    expect(formatDate('2026-10-12T18:29:59Z', 'full')).toBe('12 Oct 26');
+    expect(formatDate(new Date('2026-10-12T20:00:00Z'), 'full')).toBe('13 Oct 26');
   });
 
   describe('weekday', () => {
     it('adds the weekday, and the year when not current', () => {
       expect(formatDate('2026-10-14', 'weekday', T)).toBe('Wed 14 Oct');
-      expect(formatDate('2027-01-03', 'weekday', T)).toBe('Sun 3 Jan 2027');
+      expect(formatDate('2027-01-03', 'weekday', T)).toBe('Sun 3 Jan 27');
     });
     it('reads an instant in IST', () => {
       expect(formatDate('2026-10-13T20:00:00Z', 'weekday', T)).toBe('Wed 14 Oct');
@@ -68,7 +70,7 @@ describe('formatDate', () => {
       expect(formatDate('2026-09-30', 'relative', { today: '2026-10-01' })).toBe('Yesterday');
       expect(formatDate('2026-02-28', 'relative', { today: '2026-03-01' })).toBe('Yesterday');
       expect(formatDate('2025-12-31', 'relative', { today: '2026-01-01' })).toBe('Yesterday');
-      expect(formatDate('2025-12-30', 'relative', { today: '2026-01-01' })).toBe('30 Dec 2025');
+      expect(formatDate('2025-12-30', 'relative', { today: '2026-01-01' })).toBe('30 Dec 25');
     });
     it('reads an instant in IST', () => {
       expect(formatDate('2026-10-12T20:00:00Z', 'relative', T)).toBe('Today');

@@ -79,7 +79,7 @@ for (const viewport of VIEWPORTS) {
       if (currentUser?.cookie) await resetLlm(makeApi(currentUser.cookie));
     });
 
-    test('a starter shows live steps, then the answer with KPI and table, the meta line and the steps', async ({ page }) => {
+    test('a question shows live steps, then the answer with KPI and table, the meta line and the steps', async ({ page }) => {
       test.slow();
       const api = makeApi(currentUser.cookie);
       await scriptChat(api, [
@@ -88,10 +88,9 @@ for (const viewport of VIEWPORTS) {
       ]);
       await page.goto('/chat');
       await expect(page).toHaveTitle('Ask the data · FinanceOS');
-      await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
-      await expect(page.getByText('Spending', { exact: true })).toBeVisible();
+      await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
 
-      await page.getByRole('button', { name: STARTER }).click();
+      await ask(page, STARTER);
 
       // While answering: the user's question, a live step and the stop button.
       await expect(page.getByText(STARTER, { exact: true }).first()).toBeVisible();
@@ -248,9 +247,9 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Delete chat' }).click();
         await expect(page.getByText('Delete “Renamed chat”?')).toBeVisible();
         await expect(page.getByText('The chat and its answers go. Reports you saved from it stay.')).toBeVisible();
-        await page.getByRole('button', { name: 'Delete chat' }).click();
+        await page.getByRole('button', { name: 'Delete', exact: true }).click();
         await expect(page).toHaveURL(/\/chat$/);
-        await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
+        await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
         await expect(page.locator('aside').getByText('Renamed chat')).toHaveCount(0);
       });
     }
@@ -364,10 +363,10 @@ for (const viewport of VIEWPORTS) {
         test.slow();
         const report = await createReport(makeApi(currentUser.cookie), { name: 'Doomed KPI', type: 'KPI', datasource: 'transactions', definition: kpiDefinition } as never);
         await askForDraft(page, { mode: 'delete', reportId: report.id, name: 'Doomed KPI' });
-        await page.getByRole('button', { name: 'Delete report' }).click();
+        await page.getByRole('button', { name: 'Delete report', exact: true }).click();
         await expect(page.getByText('Delete “Doomed KPI”?')).toBeVisible();
         await expect(page.getByText('The report and its widget on Home go. Your transactions stay.')).toBeVisible();
-        await page.getByRole('button', { name: 'Delete report' }).last().click();
+        await page.getByRole('button', { name: 'Delete', exact: true }).last().click();
         await expect(page.getByText('Report deleted')).toBeVisible();
         await page.goto('/reports');
         await expect(reportRow(page, 'Doomed KPI')).toHaveCount(0);
@@ -375,11 +374,11 @@ for (const viewport of VIEWPORTS) {
     }
 
     if (phone) {
-      test('phone: home, a conversation without the tab bar, and back', async ({ page }) => {
+      test('phone: no tab bar on home or in a conversation, and back', async ({ page }) => {
         test.slow();
         await scriptChat(makeApi(currentUser.cookie), [{ action: 'final_answer', answer: 'Phone answer.' }]);
         await page.goto('/chat');
-        await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
+        await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
         await expect(page.getByRole('tab', { name: /Menu/ })).toHaveCount(0);
         await ask(page, 'Phone question');
         await answer(page, 'Phone answer.');
@@ -387,9 +386,10 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText(TITLE).first()).toBeVisible();
 
         await page.getByRole('link', { name: 'Back' }).or(page.getByRole('button', { name: 'Back' })).first().click();
-        await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
+        await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
         await expect(page.getByText('Recent chats')).toBeVisible();
         await expect(page.getByText(TITLE)).toBeVisible();
+        await expect(page.getByRole('tab', { name: /Menu/ })).toHaveCount(0);
         await page.getByText(TITLE).click();
         await answer(page, 'Phone answer.');
       });

@@ -34,6 +34,7 @@ export function LoansLendingsShell({ children }: { children: React.ReactNode }) 
       <ShellPage
         crumb={areaCrumb('loans')}
         title={tab.title}
+        addLabel={tab.id === 'loans' ? 'Add loan' : 'Add lending'}
         flushTop
         onAdd={tab.id === 'loans' ? () => setAddingLoan(true) : () => addLending.open()}
       >

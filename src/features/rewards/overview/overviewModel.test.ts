@@ -75,12 +75,12 @@ describe('buildOverview', () => {
       bankId: 'hdfc',
       identity: '••7741',
       year: 'Anniversary year 15 Mar 26 – 14 Mar 27',
-      subtitle: '••7741 · Anniversary year 15 Mar 26 – 14 Mar 27',
+      subtitle: '••7741 · 15 Mar 26 – 14 Mar 27',
       href: '/rewards/cards/a',
       setValueHref: '/rewards/rules?account=a',
     });
     expect(c).toMatchObject({ bankId: null, identity: '', year: 'Calendar year 1 Jan – 31 Dec' });
-    expect(c.subtitle).toBe('Calendar year 1 Jan – 31 Dec');
+    expect(c.subtitle).toBe('1 Jan – 31 Dec');
   });
 
   it('never writes the bank name in the card line, known or not; a card with no last four has none', () => {

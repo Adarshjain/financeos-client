@@ -1,6 +1,7 @@
 // Pure helpers the cards & spending built-ins share: typed reads of report rows, the ad-hoc KPI
 // request their drills open, whole-day arithmetic and rupee/count formatting.
 
+import { formatMoney } from '@/lib/format';
 import type { FilterClause, RunReportRequest, TableRow } from '@/lib/reports.types';
 
 /** A row cell as a string ('' when absent). */
@@ -40,9 +41,7 @@ export function formatCount(value: number): string {
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value);
 }
 
-const WHOLE_RUPEES = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-
 /** Rupees without paise ("₹14,100"), for summary figures whose drill shows the exact amount. */
 export function formatRupees(value: number): string {
-  return WHOLE_RUPEES.format(value);
+  return formatMoney(value);
 }

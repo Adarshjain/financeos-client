@@ -3,7 +3,7 @@ import { formatDate } from '@/lib/format';
 import { parseDateInput } from '../utils';
 
 /**
- * Formats a typed raw input or ISO string into a display dd/mm/yyyy string.
+ * Formats a typed raw input or ISO string into a display dd/mm/yy string.
  */
 export function formatDateInput(val?: string): string {
   if (!val) return '';
@@ -16,8 +16,20 @@ export function formatDateInput(val?: string): string {
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
 }
 
+/** Masks up to 8 typed digits as dd/mm/yy or dd/mm/yyyy. */
+function maskDate(digits: string): string {
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+/** A typed date is complete with a two-digit or a four-digit year. */
+const isCompleteDigits = (digits: string) => digits.length === 6 || digits.length === 8;
+
 /**
- * Formats a raw range input into display "dd/mm/yyyy – dd/mm/yyyy".
+ * Formats a raw range input into display "dd/mm/yy – dd/mm/yy" (four-digit years also accepted with separators).
+ * Digits only: the start is the first 6 digits (dd/mm/yy) and " – " is inserted after it. A start typed or pasted
+ * with a four-digit year ("13/10/2026") keeps its 8 digits.
  */
 export function formatRangeInput(val?: string): {
   display: string;
@@ -26,44 +38,39 @@ export function formatRangeInput(val?: string): {
 } {
   if (!val) return { display: '', startDate: '', endDate: '' };
 
-  const digits = val.replace(/\D/g, '').slice(0, 16);
-  const startDigits = digits.slice(0, 8);
-  const endDigits = digits.slice(8, 16);
-
-  let startFormatted = '';
-  if (startDigits.length <= 2) {
-    startFormatted = startDigits;
-  } else if (startDigits.length <= 4) {
-    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2)}`;
+  const sides = val.split(/[–-]/);
+  let startDigits: string;
+  let endDigits: string;
+  let startDone: boolean;
+  if (sides.length > 1 && isCompleteDigits(sides[0].replace(/\D/g, '').slice(0, 8))) {
+    startDigits = sides[0].replace(/\D/g, '').slice(0, 8);
+    endDigits = sides[1].replace(/\D/g, '').slice(0, 8);
+    startDone = true;
   } else {
-    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2, 4)}/${startDigits.slice(4)}`;
+    const digits = val.replace(/\D/g, '').slice(0, 16);
+    const startLen = /^\s*\d{1,2}\/\d{1,2}\/\d{4}/.test(val) ? 8 : 6;
+    startDigits = digits.slice(0, startLen);
+    endDigits = digits.slice(startLen, startLen + 8);
+    startDone = startDigits.length === startLen;
   }
 
-  let endFormatted = '';
-  if (endDigits.length > 0) {
-    if (endDigits.length <= 2) {
-      endFormatted = endDigits;
-    } else if (endDigits.length <= 4) {
-      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2)}`;
-    } else {
-      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2, 4)}/${endDigits.slice(4)}`;
-    }
-  }
+  const startFormatted = maskDate(startDigits);
+  const endFormatted = startDone ? maskDate(endDigits) : '';
 
   let display = startFormatted;
-  if (startDigits.length === 8) {
+  if (startDone) {
     display = endFormatted ? `${startFormatted} – ${endFormatted}` : `${startFormatted} – `;
   }
 
   return {
     display,
-    startDate: startDigits.length === 8 ? startFormatted : '',
-    endDate: endDigits.length === 8 ? endFormatted : '',
+    startDate: startDone ? startFormatted : '',
+    endDate: startDone && isCompleteDigits(endDigits) ? endFormatted : '',
   };
 }
 
 /**
- * Checks if a typed dd/mm/yyyy string is a valid complete date.
+ * Checks if a typed dd/mm/yy or dd/mm/yyyy string is a valid complete date.
  * Returns the ISO yyyy-mm-dd string if valid, otherwise null.
  */
 export function isValidDateInput(val?: string): string | null {

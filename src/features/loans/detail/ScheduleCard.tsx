@@ -39,7 +39,7 @@ function columnsFor(onMarkPaid: (inst: InstallmentDto) => void) {
     helper.display({
       id: 'due',
       header: 'Due',
-      meta: { size: 'sm', phone: 'main' },
+      meta: { size: 'date', phone: 'main' },
       cell: ({ row }) => (
         <>
           {row.original.due}

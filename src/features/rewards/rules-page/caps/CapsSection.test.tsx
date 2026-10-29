@@ -137,10 +137,10 @@ describe('CapsSection', () => {
     rules = [];
     render(<CapsSection accountId="a1" />);
     fireEvent.click(screen.getByText('Dining & grocery cap'));
-    fireEvent.click(screen.getByRole('button', { name: 'Delete cap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.getByText('Delete cap "Dining & grocery cap"?')).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();
-    const buttons = screen.getAllByRole('button', { name: 'Delete cap' });
+    const buttons = screen.getAllByRole('button', { name: 'Delete' });
     fireEvent.click(buttons[buttons.length - 1]);
     expect(remove).toHaveBeenCalledWith('c1', expect.anything());
     expect(toast).toHaveBeenCalledWith('Cap deleted');
@@ -149,9 +149,9 @@ describe('CapsSection', () => {
   it('will not confirm deleting a cap that rules still use', () => {
     render(<CapsSection accountId="a1" />);
     fireEvent.click(screen.getByText('Dining & grocery cap'));
-    fireEvent.click(screen.getByRole('button', { name: 'Delete cap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.getByText(/Detach them first/)).toBeInTheDocument();
-    const buttons = screen.getAllByRole('button', { name: 'Delete cap' });
+    const buttons = screen.getAllByRole('button', { name: 'Delete' });
     expect(buttons[buttons.length - 1]).toBeDisabled();
   });
 });

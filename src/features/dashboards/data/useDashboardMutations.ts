@@ -84,7 +84,11 @@ export function useDeleteDashboard() {
   return useMutation({
     mutationFn: (id: string) => unwrapAction(deleteDashboard(id)),
     onSuccess: (_res, id) => {
-      invalidateDashboardLists(queryClient, id);
+      // The deleted dashboard's own query is dropped, never invalidated: the page is still mounted until it
+      // navigates away and a refetch of the gone id would flash an error.
+      void queryClient.cancelQueries({ queryKey: keys.dashboards.byId(id) });
+      queryClient.removeQueries({ queryKey: keys.dashboards.byId(id) });
+      invalidateDashboardLists(queryClient);
       showToast('Dashboard deleted');
     },
     onError: (e) => showToast(getErrorMessage(e, "Couldn't delete the dashboard. Try again."), { tone: 'danger' }),

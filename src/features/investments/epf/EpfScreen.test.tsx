@@ -62,9 +62,9 @@ beforeEach(() => {
 });
 
 describe('EpfScreen: the figures', () => {
-  it('shows the four tiles with their captions', () => {
+  it('shows the hero: the balance, then contributed this FY and interest so far, with their captions', () => {
     renderWithQuery(<EpfScreen {...props()} />);
-    for (const text of ['EPF balance', 'Contributed this FY', 'Interest so far this FY', 'Last interest credited']) {
+    for (const text of ['EPF balance', 'Contributed this FY', 'Interest so far']) {
       expect(screen.getAllByText(text).length).toBeGreaterThan(0);
     }
     expect(screen.getAllByText('₹8,43,210').length).toBeGreaterThan(0);
@@ -73,23 +73,12 @@ describe('EpfScreen: the figures', () => {
     expect(screen.getByText('You ₹43,200 · employer ₹35,700')).toBeInTheDocument();
     expect(screen.getAllByText('≈ ₹32,880').length).toBeGreaterThan(0);
     expect(screen.getByText('Estimate at 8.25% · credited after 31 Mar')).toBeInTheDocument();
-    expect(screen.getAllByText('₹56,180').length).toBeGreaterThan(0);
-    expect(screen.getByText('FY 2025-26 at 8.25% · 18 Aug')).toBeInTheDocument();
   });
 
-  it('shows the phone hero: the balance, then contributed, interest so far and last interest', () => {
+  it('has no tiles any more: the last interest credited is not a figure of the hero', () => {
     renderWithQuery(<EpfScreen {...props()} />);
-    expect(screen.getByText('Up to September 2026')).toBeInTheDocument();
-    expect(screen.getByText('You ₹43,200')).toBeInTheDocument();
-    expect(screen.getByText('Interest so far')).toBeInTheDocument();
-    expect(screen.getByText('Estimate at 8.25%')).toBeInTheDocument();
-    expect(screen.getByText('Last interest ₹56,180 · FY 2025-26')).toBeInTheDocument();
-  });
-
-  it('leaves the last interest line out of the phone hero when nothing was credited yet', () => {
-    const sum = summary({ lastInterest: undefined });
-    renderWithQuery(<EpfScreen {...props({ summary: sum, figures: epfFigures(sum) })} />);
-    expect(screen.queryByText(/^Last interest ₹/)).toBeNull();
+    expect(screen.queryByText('Last interest credited')).toBeNull();
+    expect(screen.queryByText('Interest so far this FY')).toBeNull();
   });
 
   it('shows ₹0 and "No balance yet" with no balance', () => {
@@ -105,8 +94,7 @@ describe('EpfScreen: the figures', () => {
       </ConcealProvider>,
     );
     expect(screen.queryByText('₹78,900')).toBeNull();
-    expect(screen.queryByText('₹56,180')).toBeNull();
-    expect(screen.getAllByText('₹ —').length).toBeGreaterThanOrEqual(4);
+    expect(screen.getAllByText('₹ —').length).toBeGreaterThanOrEqual(3);
   });
 });
 
@@ -157,7 +145,7 @@ describe('EpfScreen: the passbook', () => {
     expect(screen.getAllByText('+₹7,200').length).toBeGreaterThan(0);
     expect(screen.getAllByText('+₹5,950').length).toBeGreaterThan(0);
     expect(screen.getAllByText('₹1,250').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Interest · FY 2025-26').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Interest · FY 25-26').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Opening balance').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Added by you').length).toBeGreaterThan(0);
     expect(screen.getAllByText('₹4,10,920').length).toBeGreaterThan(0);
@@ -207,7 +195,8 @@ describe('EpfScreen: the passbook', () => {
 
   it('shows an empty line when the period has no entries', () => {
     renderWithQuery(<EpfScreen {...props({ totalElements: 0 }, [])} />);
-    expect(screen.getByText('No entries in this period.')).toBeInTheDocument();
+    expect(screen.getByText('No entries in this period')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clear filters' })).toBeInTheDocument();
   });
 
   it('Upload passbook in the header goes to Import with the EPF type', () => {
@@ -232,21 +221,21 @@ describe('EpfScreen: the stale banner', () => {
 describe('EpfScreen: the FY and employer choices and the pager', () => {
   it('changes the FY in the address and goes back to the first page', async () => {
     renderWithQuery(<EpfScreen {...props({}, base, [employer()], parseEpfUrl({ page: '1' }))} />);
-    fireEvent.click(screen.getByRole('button', { name: 'FY 2026-27' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'FY 2025-26' }));
+    fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'FY 25-26' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2025', { scroll: false });
   });
 
   it('offers every year', async () => {
     renderWithQuery(<EpfScreen {...props()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'FY 2026-27' }));
+    fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'All years' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=all', { scroll: false });
   });
 
   it('has no employer select with a single employer', () => {
     renderWithQuery(<EpfScreen {...props()} />);
-    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'All employers' })).not.toBeInTheDocument();
   });
 
@@ -265,7 +254,7 @@ describe('EpfScreen: the FY and employer choices and the pager', () => {
         )}
       />,
     );
-    expect(screen.getByRole('button', { name: 'FY 2026-27' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
     fireEvent.click(await screen.findByRole('option', { name: 'Contoso Systems' }));
     expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2026&employer=e2', { scroll: false });
@@ -309,8 +298,8 @@ describe('EpfScreen: the employers card', () => {
     expect(screen.getByText('Current')).toBeInTheDocument();
     expect(screen.getByText('Transferred')).toBeInTheDocument();
     expect(screen.getByText('Settled')).toBeInTheDocument();
-    expect(screen.getByText('June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 2023')).toBeInTheDocument();
-    expect(screen.getByText('April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 2018')).toBeInTheDocument();
+    expect(screen.getByText('June 2018 – August 2023 · ₹3,12,400 moved to Northwind Labs on 11 Oct 23')).toBeInTheDocument();
+    expect(screen.getByText('April 2016 – May 2018 · final settlement and pension withdrawn 12 Sep 18')).toBeInTheDocument();
   });
 
   it('Add employer opens the employer form and saves it', async () => {

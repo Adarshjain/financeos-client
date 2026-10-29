@@ -8,7 +8,6 @@ import {
   allocationModel,
   heroModel,
   holdingsQuery,
-  holdingsTiles,
   holdingsUrl,
   type HoldingsUrlState,
   taxCardModel,
@@ -53,7 +52,6 @@ export async function loadHoldingsScreen(state: HoldingsUrlState): Promise<Loade
     data: {
       state,
       hero,
-      tiles: holdingsTiles(header, groups.reduce((n, g) => n + g.count, 0), tax),
       rows: holdings,
       groups,
       totalElements,

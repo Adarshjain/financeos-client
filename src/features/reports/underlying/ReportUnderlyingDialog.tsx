@@ -226,8 +226,8 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
     ...(entries ?? []).map((e, i) => ({ value: String(i), label: e.label })),
   ];
   const entryText = entryOptions.find((o) => o.value === entry)?.label ?? allLabel;
-  const entryChip = dimensionLabel ? `${dimensionLabel}: ${entryText}` : entryText;
-  const sortedColumn = sort ? raw?.columns.find((c) => c.key === sort.key) : null;
+  // The chip's name while it is on All, only the value once a category is picked.
+  const entryChip = entry === ALL_ENTRIES && dimensionLabel ? dimensionLabel : entryText;
   const footer = data ? excludedLine(data.notCounted) : null;
 
   const groupColumn = raw?.columns.find((c) => c.key === data?.groupField);
@@ -323,7 +323,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                     options={entryOptions}
                     onValueChange={changeEntry}
                     trigger={
-                      <FilterChip hasDropdown selected={entry !== ALL_ENTRIES}>
+                      <FilterChip hasDropdown changed={entry !== ALL_ENTRIES} onReset={() => changeEntry(ALL_ENTRIES)}>
                         {entryChip}
                       </FilterChip>
                     }
@@ -334,8 +334,8 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                   options={sortOptions}
                   onValueChange={changeSort}
                   trigger={
-                    <FilterChip hasDropdown selected={sort !== null}>
-                      {sortedColumn ? `Sort: ${sortedColumn.label.toLowerCase()}` : 'Sort'}
+                    <FilterChip hasDropdown changed={sort !== null} onReset={() => changeSort(DEFAULT_SORT)}>
+                      {sort ? (sortOptions.find((o) => o.value === sortValue(sort))?.label ?? 'Sort') : 'Sort'}
                     </FilterChip>
                   }
                 />

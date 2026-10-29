@@ -4,7 +4,7 @@ import type { AppNotification } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatTime } from '@/lib/format';
 
-export const NOTIFICATIONS_PAGE_SIZE = 20;
+export const NOTIFICATIONS_PAGE_SIZE = 25;
 
 /** The 0-based page (the API's) of a query string: the address counts from 1 and omits the first page. */
 export function pageFromSearch(search: string): number {
@@ -44,11 +44,11 @@ function addDays(day: string, delta: number): string {
   return new Date(Date.UTC(y, m - 1, d + delta)).toISOString().slice(0, 10);
 }
 
-/** "13 Oct", with the year when it is not the current one ("13 Oct 2025"). */
+/** "13 Oct", with the year when it is not the current one ("13 Oct 25"). */
 function dayLabel(day: string, today: string): string {
   const [y, m, d] = day.split('-').map(Number);
   const base = `${d} ${MONTHS[m - 1]}`;
-  return y === Number(today.slice(0, 4)) ? base : `${base} ${y}`;
+  return y === Number(today.slice(0, 4)) ? base : `${base} ${String(y % 100).padStart(2, '0')}`;
 }
 
 /** "Today", "Yesterday" or "13 Oct" for the IST day of the instant. */

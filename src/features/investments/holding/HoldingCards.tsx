@@ -52,7 +52,7 @@ const tradeColumns = [
   ch.display({
     id: 'date',
     header: 'Date',
-    meta: { size: 'sm', phone: 'hidden' },
+    meta: { size: 'date', phone: 'hidden' },
     cell: ({ row }) => <Text variant="body">{row.original.date}</Text>,
   }),
   ch.display({
@@ -246,9 +246,9 @@ export function CorporateActionsCard({
 
 // ---- Instrument ------------------------------------------------------------------------------
 
-export function InstrumentCard({ rows, onEdit }: { rows: InstrumentRow[]; onEdit: () => void }) {
+export function InstrumentCard({ rows }: { rows: InstrumentRow[] }) {
   return (
-    <Card title="Instrument" subtitle="Shared catalog entry" action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onEdit}>Edit</ActionButton></Text>}>
+    <Card title="Instrument" subtitle="Shared catalog entry">
       {rows.map((r) => (
         <ListRow key={r.label} title={r.label} trailing={<Text variant="body">{r.value}</Text>} />
       ))}

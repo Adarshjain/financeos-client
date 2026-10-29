@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { formatDateRangeForFilename } from '../date-range';
 
-// The system clock is pinned to 9 Oct 2026 (IST) so every case that WOULD get a
+// The system clock is pinned to 9 Oct 26 (IST) so every case that WOULD get a
 // today-relative label from formatDateRange() proves the filename variant
 // ignores today.
 const name = (from: string | Date | null, to: string | Date | null) => formatDateRangeForFilename(from, to);
