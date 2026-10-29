@@ -23,7 +23,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 
 const preview = vi.hoisted(() => vi.fn());
-vi.mock('./corporateActions', async (orig) => ({ ...(await orig<typeof import('./corporateActions')>()), loadCorporateActionPreview: preview }));
+vi.mock('./corporateActionActions', async (orig) => ({ ...(await orig<typeof import('./corporateActionActions')>()), loadCorporateActionPreview: preview }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/server', () => ({ serverApi: api }));

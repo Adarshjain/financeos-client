@@ -6,7 +6,7 @@ import { unwrapAction } from '@/lib/actionResult';
 import type { CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 
-import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActions';
+import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActionActions';
 
 /** Create, update and delete of one instrument's corporate actions; each refreshes every investment query on success. */
 export function useCorporateActionMutations(instrumentId: string | undefined) {
