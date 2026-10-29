@@ -160,10 +160,11 @@ test.describe('Background Jobs UI (@ui)', () => {
     const cancelledRow = ruleRows.filter({ hasText: 'CANCELLED' });
     await expect(cancelledRow).toBeVisible({ timeout: 20000 });
 
+    // Retry runs through a server action, so the browser posts the job id to the page, not to /api/v1/jobs/<id>/retry.
     await clickUntilRequest(
       page,
       cancelledRow.getByRole('button', { name: /Retry/i }),
-      /\/api\/v1\/jobs\/[^/]+\/retry/
+      (request) => request.headers()['next-action'] !== undefined && (request.postData() ?? '').includes(ruleJobId)
     );
     await expect(page.getByText(/Job retried/i)).toBeVisible();
 
@@ -188,9 +189,10 @@ test.describe('Background Jobs UI (@ui)', () => {
       },
     ]);
 
-    await uploadStatements(api, account.id, [
+    const uploadRes = await uploadStatements(api, account.id, [
       { filename: 'cancel-ui-test.pdf', buffer: pdf },
     ]);
+    const jobId = (uploadRes.data as { jobId: string }).jobId;
 
     await page.goto('/legacy/settings/activity');
 
@@ -198,7 +200,12 @@ test.describe('Background Jobs UI (@ui)', () => {
     const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();
     await expect(cancelBtn).toBeVisible({ timeout: 15000 });
 
-    await clickUntilRequest(page, cancelBtn, /\/api\/v1\/jobs\/[^/]+\/cancel/);
+    // Cancel runs through a server action, so the browser posts the job id to the page, not to /api/v1/jobs/<id>/cancel.
+    await clickUntilRequest(
+      page,
+      cancelBtn,
+      (request) => request.headers()['next-action'] !== undefined && (request.postData() ?? '').includes(jobId)
+    );
 
     // Verify cancellation toast
     await expect(page.getByText(/Cancellation requested/i)).toBeVisible();
