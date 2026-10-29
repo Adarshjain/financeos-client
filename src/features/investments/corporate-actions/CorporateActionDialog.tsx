@@ -25,6 +25,7 @@ import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { isBadRequest } from '../badRequest';
 import { InstrumentSelect } from '../InstrumentSelect';
+import { loadCorporateActionPreview } from './corporateActionActions';
 import {
   type CorporateActionForm,
   type FormErrors,
@@ -39,7 +40,6 @@ import {
 } from './corporateActionFormModel';
 import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from './corporateActionGone';
 import { ratioText } from './corporateActionRatioModel';
-import { loadCorporateActionPreview } from './corporateActionActions';
 import { KIND_LABELS, type PreviewLine, previewLines } from './corporateActionsModel';
 import { useCorporateActionMutations } from './useCorporateActionMutations';
 
