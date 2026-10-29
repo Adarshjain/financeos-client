@@ -118,7 +118,7 @@ export const WithAction: Story = {
     tone: 'danger',
     children: 'Failed to load upcoming items.',
     action: {
-      label: 'Try again',
+      label: 'Retry',
       onSelect: fn(),
     },
     onDismiss: undefined,

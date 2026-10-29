@@ -5,6 +5,7 @@ import {
   getIngestFromDate,
   supportsIngestion,
 } from '@/lib/account.types';
+import { formatCount } from '@/lib/format';
 import { AccountType, type FinancialPosition } from '@/lib/types';
 
 export const LIMIT_POOL_NONE = 'none';
@@ -218,7 +219,7 @@ export function otherPoolMembers(
 }
 
 export function otherPoolMembersNote(others: number): string {
-  return `Changing the name or amount also changes it for the ${others} other ${others === 1 ? 'account' : 'accounts'} sharing this limit.`;
+  return `Changing the name or amount also changes it for the ${formatCount(others, ['other account', 'other accounts'])} sharing this limit.`;
 }
 
 /** Money as typed: blank is undefined, commas are ignored, anything else non-numeric is NaN. */
@@ -240,7 +241,7 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
   if (!type) return errors;
   const fields = new Set(fieldsFor(type, values.limitPoolChoice));
 
-  if (!values.name.trim()) errors.name = 'Name is required';
+  if (!values.name.trim()) errors.name = 'Enter a name.';
 
   const checkOptionalAmount = (key: 'openingBalance' | 'cashBalance') => {
     if (fields.has(key) && Number.isNaN(parseAmount(values[key]))) errors[key] = INVALID_AMOUNT;
@@ -266,7 +267,7 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
     }
     if (pooled) {
       const name = values.limitPoolName.trim();
-      if (!name) errors.limitPoolName = 'Name is required';
+      if (!name) errors.limitPoolName = 'Enter a name.';
       else if (name.length > 150) errors.limitPoolName = 'Use 150 characters or fewer.';
       const amount = parseAmount(values.limitPoolLimit);
       if (amount === undefined || Number.isNaN(amount) || amount <= 0) {
@@ -275,7 +276,7 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
     }
   }
 
-  if (type === AccountType.BROKER && !values.provider.trim()) errors.provider = 'Provider is required.';
+  if (type === AccountType.BROKER && !values.provider.trim()) errors.provider = 'Enter a provider.';
 
   return errors;
 }
@@ -342,12 +343,6 @@ export function movesIngestLater(account: Account, nextIso: string): boolean {
   const current = getIngestFromDate(account);
   if (!supportsIngestion(account.type) || !current || !nextIso) return false;
   return nextIso > current.split('T')[0];
-}
-
-/** yyyy-mm-dd as dd/mm/yyyy. */
-export function formatDmy(iso: string): string {
-  const [y, m, d] = iso.split('T')[0].split('-');
-  return y && m && d ? `${d}/${m}/${y}` : iso;
 }
 
 export const IDENTIFIER_LENGTH_ERROR = 'Identifiers are 2 to 32 characters.';

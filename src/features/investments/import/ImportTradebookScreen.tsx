@@ -62,7 +62,6 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
   const importable = preview ? importableTotal(preview.sections) : 0;
   const nothingNew = importable === 0;
   const several = epf.files.length > 1;
-  const router = useRouter();
   return (
     <ShellPage crumb={subCrumb('investments')} title="Import tradebook" backHref={TRADEBOOK_HREF}>
       <div className="mx-auto flex max-w-container-md flex-col gap-space-8 desk:gap-space-16 pb-space-48">
@@ -86,7 +85,7 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
           actions={
             step === 1
               ? [
-                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, onSelect: () => router.push(TRADEBOOK_HREF) },
+                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, href: TRADEBOOK_HREF },
                   {
                     id: 'preview',
                     label: isPreviewing ? (several ? 'Reading passbooks…' : 'Reading passbook…') : several ? 'Preview passbooks' : 'Preview passbook',
@@ -110,7 +109,7 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
                   ]
                 : [
                     { id: 'another', label: 'Import another', variant: 'secondary', onSelect: epf.reset },
-                    { id: 'open', label: 'Open EPF', variant: 'primary', onSelect: () => router.push(EPF_HREF) },
+                    { id: 'open', label: 'Open EPF', variant: 'primary', href: EPF_HREF },
                   ]
           }
         />
@@ -122,7 +121,6 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
 function TradebookScreen({ brokers, wizard, onModeChange }: { brokers: Broker[]; wizard: Wizard; onModeChange: (mode: ImportMode) => void }) {
   const { step, mode, isPreviewing, isCommitting, commitResult } = wizard;
   const blocked = (mode === 'mf_cas' ? wizard.casUnresolvedCount : wizard.unresolvedCount) > 0;
-  const router = useRouter();
 
   return (
     <ShellPage crumb={subCrumb('investments')} title="Import tradebook" backHref={TRADEBOOK_HREF}>
@@ -142,7 +140,7 @@ function TradebookScreen({ brokers, wizard, onModeChange }: { brokers: Broker[];
           actions={
             step === 1
               ? [
-                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, onSelect: () => router.push(TRADEBOOK_HREF) },
+                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, href: TRADEBOOK_HREF },
                   {
                     id: 'preview',
                     label: isPreviewing ? 'Reconciling & parsing files…' : 'Preview reconciliation',
@@ -164,7 +162,7 @@ function TradebookScreen({ brokers, wizard, onModeChange }: { brokers: Broker[];
                       onSelect: () => void wizard.handleCommitSubmit(),
                     },
                   ]
-                : [{ id: 'done', label: 'Done & view portfolio', variant: 'primary', onSelect: () => router.push(HOLDINGS_HREF) }]
+                : [{ id: 'done', label: 'Done & view portfolio', variant: 'primary', href: HOLDINGS_HREF }]
           }
         />
       </div>

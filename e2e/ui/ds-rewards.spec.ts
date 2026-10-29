@@ -356,10 +356,10 @@ test.describe('/ds Rewards, desktop 1440px (@ui)', () => {
     await settings.getByLabel(/^Point value/).fill('0.5');
     await settings.getByRole('button', { name: 'Save settings' }).click();
     await expect(toast(page, 'Card settings saved')).toBeVisible();
-    await expect(page.getByText('₹0.5/pt', { exact: true })).toBeVisible();
+    await expect(page.getByText('₹0.50/pt', { exact: true })).toBeVisible();
 
     await page.reload();
-    await expect(page.getByText('₹0.5/pt', { exact: true })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByText('₹0.50/pt', { exact: true })).toBeVisible({ timeout: 45_000 });
   });
 
   test('rules: caps and milestones (incl. a one-time offer) create, edit and delete', async ({ page }) => {

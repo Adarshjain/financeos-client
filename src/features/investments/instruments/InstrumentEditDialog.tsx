@@ -45,12 +45,12 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
 
   const picked = (c: InstrumentCandidate) => {
     change(candidatePatch(c));
-    showToast(`Filled from “${c.name}”. Review and save.`);
+    showToast(`Filled from “${c.name}”. Review and save`);
   };
 
   const submit = async () => {
     if (!values.name.trim()) {
-      setErrors({ fields: { name: 'Name is required' }, form: null });
+      setErrors({ fields: { name: 'Enter a name.' }, form: null });
       return;
     }
     const clearError = identifierClearError(instrument, values);

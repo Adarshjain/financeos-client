@@ -11,6 +11,7 @@ import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { activityUrl } from '@/features/settings/activity/activityModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { formatCount } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import type { ApplyRuleResult, CategoryRule } from '@/lib/rules.types';
 
@@ -62,7 +63,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
     setJobId(null);
     if (job.status === 'SUCCEEDED' && job.result) {
       const n = job.result.appliedCount;
-      showToast(`Rule applied to ${n} ${n === 1 ? 'transaction' : 'transactions'}`, {
+      showToast(`Rule applied to ${formatCount(n, ['transaction', 'transactions'])}`, {
         action: {
           label: 'View',
           href: activityUrl({ statusFilter: '', typeFilter: RULE_JOB_TYPE, size: 25 }, { job: job.id }),
@@ -130,7 +131,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
                   setPicked([]);
                 }}
                 leading={<Checkbox checked={all} tabIndex={-1} aria-hidden="true" />}
-                title={`Select all ${total} ${total === 1 ? 'match' : 'matches'}`}
+                title={`Select all ${formatCount(total, ['match', 'matches'])}`}
               />
               <div>
                 {rows.map((txn) => (

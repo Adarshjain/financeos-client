@@ -1,12 +1,13 @@
 import { todayInAppZone } from '@/lib/date-range';
 
-export type DateStyle = 'list' | 'full' | 'input' | 'relative' | 'month';
+export type DateStyle = 'list' | 'full' | 'input' | 'relative' | 'month' | 'weekday';
 
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const MONTH_LONG = [
+export const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const MONTH_LONG = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const IST_OFFSET_MS = 330 * 60 * 1000;
 
 type Ymd = { y: number; m: number; d: number };
@@ -52,8 +53,8 @@ function dayBefore({ y, m, d }: Ymd): Ymd {
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /**
- * One date, five styles: list "13 Oct" (adds the year when it is not the current one), full "13 Oct 2026",
- * input "13/10/2026", month "October 2026", relative "Today" / "Yesterday" else the list form
+ * One date, six styles: list "13 Oct" (adds the year when it is not the current one), full "13 Oct 2026",
+ * input "13/10/2026", month "October 2026", weekday "Tue 13 Oct" (year added when not current), relative "Today" / "Yesterday" else the list form
  * (inline: lower-case, for mid-sentence use). A plain date is used as-is; an instant is read in IST.
  */
 export function formatDate(
@@ -71,6 +72,8 @@ export function formatDate(
       return `${short} ${ymd.y}`;
     case 'input':
       return `${pad(ymd.d)}/${pad(ymd.m)}/${ymd.y}`;
+    case 'weekday':
+      return `${WEEKDAY_SHORT[new Date(Date.UTC(ymd.y, ymd.m - 1, ymd.d)).getUTCDay()]} ${list()}`;
     case 'month':
       return `${MONTH_LONG[ymd.m - 1]} ${ymd.y}`;
     case 'relative': {

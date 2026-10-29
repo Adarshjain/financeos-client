@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import React from 'react';
 
 import { Banner, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, StatusWord, StatusWords, Text } from '@/components/ds';
@@ -82,7 +82,6 @@ export interface StatementDetailCardProps {
 
 /** The right pane: the selected statement with its totals, its lines and its actions. */
 export function StatementDetailCard({ accountId, fy, model }: StatementDetailCardProps) {
-  const router = useRouter();
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
@@ -146,8 +145,8 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
         <div className="px-space-16 pb-space-10">
           <Banner tone="warning" action={{ label: 'Fill in', onSelect: () => setEditOpen(true) }}>
             {model.missingBanner}{' '}
-            <Button variant="link" size="sm" onClick={() => router.push(`/transactions/import?account=${accountId}`)}>
-              Re-upload to retry
+            <Button variant="link" size="sm" asChild>
+              <Link href={`/transactions/import?account=${accountId}`}>Re-upload to retry</Link>
             </Button>
           </Banner>
         </div>

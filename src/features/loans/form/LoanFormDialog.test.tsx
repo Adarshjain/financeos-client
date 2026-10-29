@@ -75,8 +75,8 @@ describe('LoanFormDialog', () => {
     render(<LoanFormDialog onClose={onClose} />);
     create();
     for (const message of [
-      'Loan name is required',
-      'Lender is required',
+      'Enter a loan name.',
+      'Enter a lender.',
       'Principal must be greater than zero',
       'Annual rate % must be greater than zero',
       'Tenure must be at least 1 month',
@@ -89,10 +89,10 @@ describe('LoanFormDialog', () => {
   it('clears a field error once that field is edited', async () => {
     render(<LoanFormDialog onClose={onClose} />);
     create();
-    expect(await screen.findByText('Loan name is required')).toBeInTheDocument();
+    expect(await screen.findByText('Enter a loan name.')).toBeInTheDocument();
     fill('Loan name', 'Car');
-    expect(screen.queryByText('Loan name is required')).toBeNull();
-    expect(screen.getByText('Lender is required')).toBeInTheDocument();
+    expect(screen.queryByText('Enter a loan name.')).toBeNull();
+    expect(screen.getByText('Enter a lender.')).toBeInTheDocument();
   });
 
   it('creates the loan with the typed values, then closes, refreshes and says so', async () => {

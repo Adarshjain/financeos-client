@@ -82,7 +82,7 @@ export function useAiSettings() {
     setTestingKeyId(key.id);
     try {
       const result = await testMutation.mutateAsync({ id: key.id });
-      if (result.ok) showToast('Verified', { tone: 'success' });
+      if (result.ok) showToast('Key verified', { tone: 'success' });
       else showToast(result.error ? `Couldn't verify the key: ${result.error}` : "Couldn't verify the key. Try again.", { tone: 'danger' });
     } catch (err) {
       showToast(getErrorMessage(err, "Couldn't verify the key. Try again."), { tone: 'danger' });

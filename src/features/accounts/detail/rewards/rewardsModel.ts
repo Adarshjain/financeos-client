@@ -2,7 +2,7 @@ import { daysBetween } from '@/features/accounts/detail/overview/overviewDatesMo
 import type { RewardsWindow } from '@/features/accounts/detail/overview/rewardsWindowModel';
 import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { formatDateRangeCompressed } from '@/lib/date-range';
-import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
+import { formatCount, formatDate, formatMoney, formatPercent, pluralize } from '@/lib/format';
 import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
 import { REASON_META } from '@/lib/rewards.types';
 
@@ -11,7 +11,7 @@ import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type
 export type { RewardsWindow };
 
 export const PAGE_SIZES = [10, 25, 50, 100] as const;
-export const DEFAULT_PAGE_SIZE = 10;
+export const REWARDS_TXN_PAGE_SIZE = 10;
 
 function pts(n: number): string {
   return formatCount(n, 'pts');
@@ -124,7 +124,7 @@ export function parseRewardsQuery(
     period,
     from: period === 'CUSTOM' && isIsoDate(from) ? from : undefined,
     to: period === 'CUSTOM' && isIsoDate(to) ? to : undefined,
-    ...parsePage(params ?? {}, { size: DEFAULT_PAGE_SIZE, sizes: PAGE_SIZES }),
+    ...parsePage(params ?? {}, { size: REWARDS_TXN_PAGE_SIZE, sizes: PAGE_SIZES }),
   };
 }
 
@@ -140,7 +140,7 @@ export function rewardsHref(base: string, query: RewardsQuery): string {
     }
   }
   setPageParam(params, query.page);
-  if (query.size !== DEFAULT_PAGE_SIZE) params.set('size', String(query.size));
+  if (query.size !== REWARDS_TXN_PAGE_SIZE) params.set('size', String(query.size));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
@@ -295,7 +295,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
     status = pace.pacePerDay >= pace.needPerDay ? { label: 'On track', tone: 'success' } : { label: 'Behind', tone: 'warning' };
   }
 
-  const caption: string[] = [`${pct}%`];
+  const caption: string[] = [formatPercent(pct, { decimals: 0 })];
   if (m.windowType === 'ONE_TIME') caption.push(`One-time ${formatDateRangeCompressed(m.windowStart, m.windowEnd)}`);
   if (m.achieved && m.payoutDate) caption.push(`credited ${formatDate(m.payoutDate, 'list')}`);
   if (pace && !m.achieved) {
@@ -442,7 +442,7 @@ export function ruleDescription(rule: RewardRule): string {
   else if (rule.merchantPattern) parts.push(`"${rule.merchantPattern}"`);
 
   if (rule.tiers?.length) parts.push('tiered');
-  else if (rule.accrualType === 'PERCENT' && rule.percentRate != null) parts.push(`${rule.percentRate}%`);
+  else if (rule.accrualType === 'PERCENT' && rule.percentRate != null) parts.push(formatPercent(rule.percentRate, { decimals: 2 }));
   else if (rule.accrualType === 'SLAB' && rule.pointsPerSlab != null && rule.slabSize != null) {
     parts.push(`${cash ? formatMoney(rule.pointsPerSlab) : formatCount(rule.pointsPerSlab, 'pts')} / ${formatMoney(rule.slabSize)}`);
   }
@@ -505,7 +505,7 @@ export function rewardsBanners(report: RewardReport): RewardsBanner[] {
   if (n > 0) {
     banners.push({
       key: 'unattributed',
-      text: `${formatCount(n, ['transaction', 'transactions'])} on this multi-card account ${n === 1 ? 'is' : 'are'} unattributed and could not match card-scoped rules or limits.`,
+      text: `${formatCount(n, ['transaction', 'transactions'])} on this multi-card account ${pluralize(n, 'is', 'are')} unattributed and could not match card-scoped rules or limits.`,
       action: { label: 'Manage cards' },
     });
   }

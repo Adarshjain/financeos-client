@@ -1,7 +1,6 @@
 'use client';
 
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type {
@@ -79,11 +78,10 @@ function writeSwitch(s: Settings, w: Switch, value: boolean | undefined): Settin
  * Kind and mute switches move at once and save behind it. Each switch remembers what the server last
  * confirmed, so a failure puts it back to that (not to a neighbouring toggle's optimistic state), and an
  * answer only touches its own switch (never replaces the whole view, which could carry another toggle's
- * stale value). The page refreshes once, when the last write in flight settles, success or not.
+ * stale value).
  */
 export function useNotificationSettingsMutations() {
   const qc = useQueryClient();
-  const router = useRouter();
   const key = keys.settings.notifications();
   const book = () => {
     let m = tracked.get(qc);
@@ -117,9 +115,6 @@ export function useNotificationSettingsMutations() {
     if (server !== 'failed') entry.confirmed = server;
     if (entry.inFlight === 0) setCached((s) => writeSwitch(s, w, entry.confirmed));
   };
-  const settled = () => {
-    if (qc.isMutating({ mutationKey: WRITE_KEY }) <= 1) router.refresh();
-  };
   /** A write that is not a switch: its own fields go into the cache, nothing else. */
   const mergeFields = (server: Settings, fields: (keyof Settings)[]) =>
     setCached((s) => ({ ...s, ...Object.fromEntries(fields.map((f) => [f, server[f]])) }));
@@ -142,28 +137,24 @@ export function useNotificationSettingsMutations() {
     onError: (_e, body) => {
       for (const { w } of kindSwitches(body)) finish(w, 'failed');
     },
-    onSettled: settled,
   });
 
   const subscribe = useMutation({
     mutationKey: WRITE_KEY,
     mutationFn: (body: PushSubscriptionRequest) => unwrapAction(subscribePush(body)),
     onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
-    onSettled: settled,
   });
 
   const unsubscribe = useMutation({
     mutationKey: WRITE_KEY,
     mutationFn: (endpoint: string) => unwrapAction(unsubscribePush(endpoint)),
     onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
-    onSettled: settled,
   });
 
   const removeDevice = useMutation({
     mutationKey: WRITE_KEY,
     mutationFn: (endpoint: string) => unwrapAction(removePushDevice(endpoint)),
     onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
-    onSettled: settled,
   });
 
   const mute = useMutation({
@@ -178,7 +169,6 @@ export function useNotificationSettingsMutations() {
       void qc.invalidateQueries({ queryKey: keys.bills.all });
     },
     onError: (_e, { accountId }) => finish({ type: 'account', id: accountId }, 'failed'),
-    onSettled: settled,
   });
 
   const muteLoan = useMutation({
@@ -193,7 +183,6 @@ export function useNotificationSettingsMutations() {
       void qc.invalidateQueries({ queryKey: keys.loans.all });
     },
     onError: (_e, { loanId }) => finish({ type: 'loan', id: loanId }, 'failed'),
-    onSettled: settled,
   });
 
   const sendTest = useMutation({

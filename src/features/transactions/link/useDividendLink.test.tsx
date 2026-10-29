@@ -168,7 +168,7 @@ describe('useDividendLink existing mode', () => {
     await waitFor(() => expect(result.current.loadingDividends).toBe(false));
     expect(result.current.canSubmit).toBe(false);
     act(() => result.current.handleSubmit());
-    expect(toast.error).toHaveBeenCalledWith('Select a dividend to link');
+    expect(toast.error).toHaveBeenCalledWith('Pick a dividend to link.');
     expect(api.PUT).not.toHaveBeenCalled();
   });
 

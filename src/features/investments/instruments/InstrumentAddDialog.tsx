@@ -76,7 +76,7 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
 
   const submit = async () => {
     if (!values.name.trim()) {
-      setErrors({ fields: { name: 'Name is required' }, form: null });
+      setErrors({ fields: { name: 'Enter a name.' }, form: null });
       return;
     }
     setErrors({ fields: {}, form: null });

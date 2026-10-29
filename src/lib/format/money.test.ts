@@ -94,6 +94,15 @@ describe('formatMoney', () => {
     });
   });
 
+  it("'unit' shows 2 to 4 decimals, trimming zeros past 2", () => {
+    expect(formatMoney(0.25, { decimals: 'unit' })).toBe('₹0.25');
+    expect(formatMoney(5, { decimals: 'unit' })).toBe('₹5.00');
+    expect(formatMoney(7.5025, { decimals: 'unit' })).toBe('₹7.5025');
+    expect(formatMoney(7.5, { decimals: 'unit' })).toBe('₹7.50');
+    expect(formatMoney(1234.56789, { decimals: 'unit' })).toBe('₹1,234.5679');
+    expect(formatMoney(-0.5, { decimals: 'unit' })).toBe('−₹0.50');
+  });
+
   it('symbol false drops the rupee sign', () => {
     expect(formatMoney(1234, { symbol: false })).toBe('1,234');
     expect(formatMoney(-1234, { symbol: false })).toBe('−1,234');

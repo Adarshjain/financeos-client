@@ -9,7 +9,7 @@ import { EmptyState, Text } from '@/components/ds';
 import { BarRow, type BarRowTone, BuiltinNote, BuiltinPager } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { appHref } from '@/features/shell/routes';
-import { formatCount, formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import { isRawTableData } from '@/lib/reports.helpers';
 
 import { type CapItem, capItems, type CapTone } from './capHeadroomModel';
@@ -57,7 +57,7 @@ export function CapHeadroomView({ data, loading, onPageChange }: TemplateViewPro
           }
           trailing={
             <Text variant="body-strong" tone={TEXT[it.tone]}>
-              {it.tone === 'hit' ? 'Cap hit' : `${Math.floor(it.pct ?? 0)}%`}
+              {it.tone === 'hit' ? 'Cap hit' : formatPercent(Math.floor(it.pct ?? 0), { decimals: 0 })}
             </Text>
           }
           value={it.pct ?? 0}

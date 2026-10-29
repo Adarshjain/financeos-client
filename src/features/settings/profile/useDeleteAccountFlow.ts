@@ -1,6 +1,8 @@
+import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { watchSession } from '@/lib/authExpiry';
+import { ActionError, unwrapAction } from '@/lib/actionResult';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UserResponse } from '@/lib/types';
 
 import { deleteAccount } from './profileActions';
@@ -15,11 +17,34 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
   const [confirmEmail, setConfirmEmail] = useState('');
   const [confirmPhrase, setConfirmPhrase] = useState('');
 
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const hasPassword = !!user.hasPassword;
+
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      unwrapAction(
+        deleteAccount(
+          {
+            password: hasPassword ? password : undefined,
+            confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
+          },
+          toDinero,
+        ),
+      ),
+    // On success the action redirects to /login?deleted=1.
+    onError: (e) => {
+      // In Next.js, redirect throws a NEXT_REDIRECT digest which is not an error to show.
+      const digest = e instanceof Error ? (e as Error & { digest?: string }).digest : undefined;
+      if (digest?.startsWith('NEXT_REDIRECT')) return;
+      // Match on the code, not the message: the message is human copy that will be
+      // reworded, and matching it by substring silently stops working when it is.
+      setIsBusy(e instanceof ActionError && e.code === 'ACCOUNT_DELETE_BUSY');
+      setError(getErrorMessage(e, "Couldn't delete the account. Try again."));
+    },
+  });
+  const isDeleting = deleteMutation.isPending;
 
   const handleOpen = () => {
     setPassword('');
@@ -27,6 +52,7 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
     setConfirmPhrase('');
     setError(null);
     setIsBusy(false);
+    deleteMutation.reset();
     setOpen(true);
   };
 
@@ -37,35 +63,11 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
   const isPhraseValid = confirmPhrase.trim() === 'DELETE';
   const canSubmit = isAuthValid && isPhraseValid && !isDeleting;
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!canSubmit) return;
-    setIsDeleting(true);
     setError(null);
     setIsBusy(false);
-
-    try {
-      const res = await watchSession(deleteAccount({
-        password: hasPassword ? password : undefined,
-        confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
-      }, toDinero));
-
-      if (!res.success) {
-        setIsDeleting(false);
-        // Match on the code, not the message: the message is human copy that will be
-        // reworded, and matching it by substring silently stops working when it is.
-        setIsBusy(res.error.code === 'ACCOUNT_DELETE_BUSY');
-        setError(res.error.message || "Couldn't delete the account. Try again.");
-      }
-      // If success, Next.js action redirects to /login?deleted=1
-    } catch (e: unknown) {
-      // In Next.js, redirect throws a NEXT_REDIRECT digest which must not be caught as an error
-      const digest = e instanceof Error ? (e as Error & { digest?: string }).digest : undefined;
-      if (digest?.startsWith('NEXT_REDIRECT')) {
-        throw e;
-      }
-      setIsDeleting(false);
-      setError(e instanceof Error ? e.message : "Couldn't delete the account. Try again.");
-    }
+    deleteMutation.mutate();
   };
 
   /** Closing is ignored while the deletion is in flight. */

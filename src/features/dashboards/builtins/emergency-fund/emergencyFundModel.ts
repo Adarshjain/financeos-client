@@ -1,6 +1,6 @@
 // The emergency fund's wording: month names for the bars, "4.2 months", and why there is no figure yet.
 
-import { formatCount, formatQuantity } from '@/lib/format';
+import { formatCount, formatQuantity, pluralize } from '@/lib/format';
 import type { EmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -14,7 +14,7 @@ export function monthName(month: string, withYear = false): string {
 
 /** "4.2 months" / "1 month". */
 export function formatMonthsCovered(months: number): string {
-  return `${formatQuantity(months, 1)} ${months === 1 ? 'month' : 'months'}`;
+  return `${formatQuantity(months, 1)} ${pluralize(months, 'month', 'months')}`;
 }
 
 /** Why there is no months-covered figure yet. */

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
 import {
@@ -37,7 +38,6 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
   const [renaming, setRenaming] = React.useState<HistoryRow | null>(null);
   const [deleting, setDeleting] = React.useState<HistoryRow | null>(null);
   const [name, setName] = React.useState('');
-  const [pending, setPending] = React.useState(false);
   const groups = groupConversations(conversations, today);
   const trimmed = name.trim();
   const valid = trimmed.length >= 1 && trimmed.length <= TITLE_MAX;
@@ -47,20 +47,28 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
     setRenaming(row);
   };
 
-  const submitRename = async () => {
+  const renameMutation = useMutation({
+    mutationFn: ({ id, title }: { id: string; title: string }) => onRename(id, title),
+    onSuccess: (ok) => {
+      if (ok) setRenaming(null);
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => onDelete(id),
+    onSuccess: (ok) => {
+      if (ok) setDeleting(null);
+    },
+  });
+  const pending = renameMutation.isPending || deleteMutation.isPending;
+
+  const submitRename = () => {
     if (!renaming || !valid || pending) return;
-    setPending(true);
-    const ok = await onRename(renaming.id, trimmed);
-    setPending(false);
-    if (ok) setRenaming(null);
+    renameMutation.mutate({ id: renaming.id, title: trimmed });
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleting || pending) return;
-    setPending(true);
-    const ok = await onDelete(deleting.id);
-    setPending(false);
-    if (ok) setDeleting(null);
+    deleteMutation.mutate(deleting.id);
   };
 
   return (
@@ -129,7 +137,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
                 id={RENAME_FORM_ID}
                 onSubmit={(e) => {
                   e.preventDefault();
-                  void submitRename();
+                  submitRename();
                 }}
               >
                 <TextField label="Name" name="title" value={name} maxLength={TITLE_MAX} onChange={(e) => setName(e.target.value)} autoFocus />
@@ -149,7 +157,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
           description="The chat and its answers go. Reports you saved from it stay. This can't be undone."
           confirmLabel="Delete chat"
           confirmLoading={pending}
-          onConfirm={() => void confirmDelete()}
+          onConfirm={() => confirmDelete()}
         />
       ) : null}
     </>

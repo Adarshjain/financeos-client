@@ -1,5 +1,5 @@
 import { amountExpressionValue } from '@/lib/amountExpression';
-import { formatCount,formatDate, formatMoney, formatPercent } from '@/lib/format';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type {
   RewardCardRecommendation,
   RewardRecommendationRequest,
@@ -104,7 +104,7 @@ export function resultTitle(
 }
 
 export function cardsEvaluated(count: number): string {
-  return `${count} card${count === 1 ? '' : 's'} evaluated`;
+  return `${formatCount(count, ['card', 'cards'])} evaluated`;
 }
 
 export interface Note {

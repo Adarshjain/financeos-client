@@ -6,6 +6,7 @@ import React from 'react';
 import { Button, Card, Conceal, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
+import { formatCount } from '@/lib/format';
 import type { DividendSuggestion, DividendSuggestionsResponse } from '@/lib/types';
 
 import { acceptDividendSuggestions, scanDividendSuggestions } from './dividendsActions';
@@ -170,7 +171,7 @@ export function SuggestionsCard({ brokerAccountId, onRecord }: SuggestionsCardPr
       )}
       {scan.data ? (
         <Text variant="caption" tone="ink-3" as="div" className="px-space-16 py-space-8">
-          {`Checked ${checked} ${checked === 1 ? 'symbol' : 'symbols'}${skipped.length > 0 ? `. Couldn't check ${skipped.join(', ')}` : ''}.`}
+          {`Checked ${formatCount(checked, ['symbol', 'symbols'])}${skipped.length > 0 ? `. Couldn't check ${skipped.join(', ')}` : ''}.`}
         </Text>
       ) : null}
     </Card>

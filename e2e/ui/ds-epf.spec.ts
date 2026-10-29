@@ -207,7 +207,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByText(`Imported ${PASSBOOK_ENTRIES} entries`)).toBeVisible({ timeout: 45_000 });
       await expect(page.getByText(new RegExp(`EPF balance is now ${PASSBOOK_BALANCE}`))).toBeVisible();
-      await page.getByRole('button', { name: 'Open EPF' }).click();
+      await page.getByRole('link', { name: 'Open EPF' }).click();
       await page.waitForURL('**/investments/epf');
       await expect(shown(page.getByText(PASSBOOK_BALANCE))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
@@ -272,7 +272,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: /^Import \d+ entries$/ }).click();
 
       await expect(page.getByText(/across 2 employers/)).toBeVisible({ timeout: 45_000 });
-      await page.getByRole('button', { name: 'Open EPF' }).click();
+      await page.getByRole('link', { name: 'Open EPF' }).click();
       await page.waitForURL('**/investments/epf');
       await expect(shown(page.getByText('NORTHWIND LABS PRIVATE LIMITED'))).toBeVisible();
     });

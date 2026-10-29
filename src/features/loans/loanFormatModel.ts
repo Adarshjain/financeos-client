@@ -1,4 +1,4 @@
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+import { MONTH_SHORT } from '@/lib/format';
 
 const DAY_MS = 86_400_000;
 
@@ -28,9 +28,9 @@ export function fyRangeLabel(fyStart: string, today: string): string {
   const s = parts(fyStart);
   const t = parts(today);
   if (!s || !t) return '';
-  if (s.y === t.y && s.m === t.m) return `${MONTHS[t.m - 1]} ${t.y}`;
-  if (s.y === t.y) return `${MONTHS[s.m - 1]} – ${MONTHS[t.m - 1]} ${t.y}`;
-  return `${MONTHS[s.m - 1]} ${s.y} – ${MONTHS[t.m - 1]} ${t.y}`;
+  if (s.y === t.y && s.m === t.m) return `${MONTH_SHORT[t.m - 1]} ${t.y}`;
+  if (s.y === t.y) return `${MONTH_SHORT[s.m - 1]} – ${MONTH_SHORT[t.m - 1]} ${t.y}`;
+  return `${MONTH_SHORT[s.m - 1]} ${s.y} – ${MONTH_SHORT[t.m - 1]} ${t.y}`;
 }
 
 /** One KpiTile of a Loans & lendings tab. */

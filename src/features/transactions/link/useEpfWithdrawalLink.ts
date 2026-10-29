@@ -241,7 +241,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
 
   const handleSubmit = () => {
     if (!canSubmit) {
-      notify.error(mode === 'existing' ? 'Select a withdrawal to link' : 'Check the withdrawal details');
+      notify.error(mode === 'existing' ? 'Pick a withdrawal to link.' : 'Check the withdrawal details.');
       return;
     }
     submitMutation.mutate();

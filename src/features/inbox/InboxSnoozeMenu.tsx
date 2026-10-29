@@ -4,17 +4,13 @@ import React from 'react';
 
 import { Button, DateField, Icon, ListRow, Popover, Text } from '@/components/ds';
 import { todayInAppZone } from '@/lib/date-range';
-import { parseCalendarDate } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 
 import { appTodayPlus, SNOOZE_PRESETS } from './inboxModel';
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 /** "Wed 14 Oct": the hint beside each preset. */
 export function snoozeHint(iso: string): string {
-  const d = parseCalendarDate(iso);
-  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  return formatDate(iso, 'weekday');
 }
 
 interface InboxSnoozeMenuProps {

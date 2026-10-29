@@ -1,7 +1,7 @@
 import { daysBetween } from '@/features/loans/loanFormatModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
-import type { SearchParamsRecord } from '@/features/shell/searchParams';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
 import type { CounterpartyResponse, LedgerEntryResponse, LendingDirection } from '@/lib/lending.types';
 import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
@@ -18,6 +18,11 @@ export interface PersonUrlState {
 
 export function parsePersonUrl(params: SearchParamsRecord): PersonUrlState {
   return parsePage(params, { sizes: LEDGER_SIZE_OPTIONS });
+}
+
+/** `?export=1` (from the "money due back" push) opens Export ledger on load. */
+export function parseOpenExport(params: SearchParamsRecord): boolean {
+  return first(params.export) === '1';
 }
 
 /** The person page's own path (Dinero when built). */

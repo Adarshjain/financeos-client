@@ -112,7 +112,7 @@ for (const viewport of VIEWPORTS) {
     test('Delete asks first, keeps the action on Cancel and removes it on confirm', async ({ page }) => {
       await page.goto('/investments/corporate-actions?type=bonus');
       await shown(page.getByText(`${seeded.infy.symbol} · ${seeded.infy.name}`)).click();
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete corporate action', exact: true }).click();
 
       const confirm = page.getByRole('dialog', { name: 'Delete corporate action' });
       await expect(confirm.getByText(/Your trades and dividends stay/)).toBeVisible();
@@ -120,7 +120,7 @@ for (const viewport of VIEWPORTS) {
       await expect(confirm).toHaveCount(0);
       await expect(page.getByRole('dialog').getByText('Edit corporate action')).toBeVisible();
 
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete corporate action', exact: true }).click();
       await page.getByRole('dialog', { name: 'Delete corporate action' }).getByRole('button', { name: 'Delete corporate action' }).click();
       await expect(page.getByText('Corporate action deleted')).toBeVisible();
       await expect(page.getByText(seeded.infy.symbol, { exact: false })).toHaveCount(0);

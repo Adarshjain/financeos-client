@@ -25,21 +25,21 @@ function setup() {
   return renderHook(() => useNotificationSettingsMutations(), { wrapper });
 }
 
-describe('useNotificationSettingsMutations router refresh', () => {
+describe('useNotificationSettingsMutations router (the settings are a query, so nothing refreshes it)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.PUT).mockResolvedValue({ data: {} } as never);
     vi.mocked(api.POST).mockResolvedValue({ data: {} } as never);
   });
 
-  it('refreshes once for each settings write, including mutes', async () => {
+  it('does not refresh the router for any settings write, including mutes', async () => {
     const { result } = setup();
     await act(() => result.current.update.mutateAsync({} as never));
     await act(() => result.current.subscribe.mutateAsync({} as never));
     await act(() => result.current.unsubscribe.mutateAsync('https://push/e'));
     await act(() => result.current.mute.mutateAsync({ accountId: 'a1', muted: true }));
     await act(() => result.current.muteLoan.mutateAsync({ loanId: 'l1', muted: true }));
-    expect(routerRefresh).toHaveBeenCalledTimes(5);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('does not refresh for the test push', async () => {
@@ -96,7 +96,7 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
       await p;
     });
     expect(cached().kinds.EMI_OVERDUE).toBe(false);
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('puts a kind switch back when the save fails', async () => {
@@ -106,8 +106,7 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
       await result.current.update.mutateAsync({ kinds: { EMI_OVERDUE: false } }).catch(() => undefined);
     });
     expect(cached().kinds.EMI_OVERDUE).toBe(true);
-    // The page is read again after a failure too, so nothing stale is left behind.
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('does not move anything for a non-switch field (it keeps waiting)', async () => {
@@ -144,7 +143,7 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
     });
   });
 
-  it('keeps a second toggle when the first one fails, and refreshes only after the last settles', async () => {
+  it('keeps a second toggle when the first one fails, ', async () => {
     const first = deferred<never>();
     const second = deferred<{ data: NotificationSettingsResponse }>();
     vi.mocked(api.PUT)
@@ -170,7 +169,7 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
       second.resolve({ data: { ...base, kinds: { EMI_OVERDUE: true, BILL_OVERDUE: false } } });
       await p2;
     });
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('a response only touches its own switch: a late answer for one kind never undoes another still in flight', async () => {
@@ -199,10 +198,11 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
     await act(async () => {
       second.resolve({ data: { ...base, kinds: { EMI_OVERDUE: false, BILL_OVERDUE: false } } });
     });
-    await vi.waitFor(() => expect(routerRefresh).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(cached().kinds.BILL_OVERDUE).toBe(false));
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
-  it('two toggles of one switch that both fail end at the server value, and the page is read once', async () => {
+  it('two toggles of one switch that both fail end at the server value', async () => {
     const first = deferred<never>();
     const second = deferred<never>();
     vi.mocked(api.PUT)
@@ -227,6 +227,6 @@ describe('useNotificationSettingsMutations optimistic switches', () => {
       await p2;
     });
     expect(cached().kinds.EMI_OVERDUE).toBe(true);
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 });

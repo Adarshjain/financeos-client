@@ -179,7 +179,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           size="sm"
           title={editing ? 'Edit corporate action' : 'Record corporate action'}
           description="Quantity and cost update when you save."
-          tertiary={editing ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
+          tertiary={editing ? { label: 'Delete corporate action', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
         >

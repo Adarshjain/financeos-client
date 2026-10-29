@@ -13,16 +13,10 @@ import { BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { widgetParams } from '@/lib/dashboards.helpers';
-import { formatMoney } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import { isChartData } from '@/lib/reports.helpers';
 
 import { daySpendRequest } from './heatmap.requests';
-
-/** "2026-10-09" → "09/10/2026". */
-function displayDay(iso: string): string {
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
 
 export function SpendHeatmapView({ widget, data, loading }: TemplateViewProps) {
   const [day, setDay] = React.useState<{ date: string; amount: number } | null>(null);
@@ -52,7 +46,7 @@ export function SpendHeatmapView({ widget, data, loading }: TemplateViewProps) {
       {day ? (
         <LazyReportUnderlyingDialog
           request={daySpendRequest(day.date)}
-          title={`Spending on ${displayDay(day.date)} · ${formatMoney(day.amount)}`}
+          title={`Spending on ${formatDate(day.date, 'input')} · ${formatMoney(day.amount)}`}
           onClose={() => setDay(null)}
         />
       ) : null}

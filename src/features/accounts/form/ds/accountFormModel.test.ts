@@ -10,7 +10,6 @@ import {
   diffIdentifiers,
   emptyValues,
   fieldsFor,
-  formatDmy,
   LIMIT_POOL_NEW,
   LIMIT_POOL_NONE,
   movesIngestLater,
@@ -100,7 +99,7 @@ describe('validateAccountForm', () => {
   });
 
   it('requires a name', () => {
-    expect(validateAccountForm({ ...emptyValues(AccountType.GENERIC) }).name).toBe('Name is required');
+    expect(validateAccountForm({ ...emptyValues(AccountType.GENERIC) }).name).toBe('Enter a name.');
     expect(validateAccountForm({ ...emptyValues(AccountType.GENERIC), name: 'Paytm' })).toEqual({});
   });
 
@@ -127,7 +126,7 @@ describe('validateAccountForm', () => {
   it('makes the own limit optional inside a pool and requires pool name and amount', () => {
     const empty = validateAccountForm(card({ creditLimit: '', limitPoolChoice: LIMIT_POOL_NEW }));
     expect(empty.creditLimit).toBeUndefined();
-    expect(empty.limitPoolName).toBe('Name is required');
+    expect(empty.limitPoolName).toBe('Enter a name.');
     expect(empty.limitPoolLimit).toBe('Enter an amount above ₹0');
     const zero = validateAccountForm(card({ limitPoolChoice: LIMIT_POOL_NEW, limitPoolName: 'A', limitPoolLimit: '0' }));
     expect(zero.limitPoolLimit).toBe('Enter an amount above ₹0');
@@ -151,7 +150,7 @@ describe('validateAccountForm', () => {
 
   it('requires a broker provider', () => {
     const v = { ...emptyValues(AccountType.BROKER), name: 'Z' };
-    expect(validateAccountForm(v).provider).toBe('Provider is required.');
+    expect(validateAccountForm(v).provider).toBe('Enter a provider.');
     expect(validateAccountForm({ ...v, provider: 'Zerodha' })).toEqual({});
   });
 });
@@ -368,12 +367,5 @@ describe('identifiers', () => {
       remove: [{ id: 'i1', value: '7741' }],
     });
     expect(diffIdentifiers([], ['A1'])).toEqual({ add: ['A1'], remove: [] });
-  });
-});
-
-describe('dates', () => {
-  it('writes an ISO date as dd/mm/yyyy', () => {
-    expect(formatDmy('2026-08-01')).toBe('01/08/2026');
-    expect(formatDmy('2026-08-01T00:00:00Z')).toBe('01/08/2026');
   });
 });

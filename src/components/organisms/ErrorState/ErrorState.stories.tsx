@@ -17,7 +17,7 @@ const meta: Meta<StoryArgs> = {
     docs: {
       description: {
         component:
-          'A request failed: what failed, one sentence, Try again and Copy reference. The copy button puts the reference on the clipboard and calls onCopyReference (see Actions). The rest of the page keeps rendering around it. Clear the action label or the reference in Controls to remove that button.',
+          'A request failed: what failed, one sentence, Retry and Copy reference. The copy button puts the reference on the clipboard and calls onCopyReference (see Actions). The rest of the page keeps rendering around it. Clear the action label or the reference in Controls to remove that button.',
       },
     },
   },

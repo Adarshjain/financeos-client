@@ -52,7 +52,7 @@ test.describe('Statement details on the card statements page (@ui)', () => {
     await expect(main.getByText('Details missing').first()).toBeVisible();
     const banner = main.getByText(/Missing from this statement: .*due date/);
     await expect(banner).toBeVisible();
-    await expect(main.getByRole('button', { name: 'Re-upload to retry' })).toBeVisible();
+    await expect(main.getByRole('link', { name: 'Re-upload to retry' })).toBeVisible();
     const fillIn = main.getByRole('button', { name: 'Fill in' });
     await expect(fillIn).toBeVisible();
 

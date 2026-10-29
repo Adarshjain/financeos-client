@@ -89,6 +89,7 @@ export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {
   dashboards: [],
 };
 
+// Browser fetch on purpose (documented exception): server actions run one at a time per tab and would queue search.
 /** Searches every group for `q` (already trimmed, 3 to 100 characters). Rejects on any non-2xx answer. */
 export async function fetchGlobalSearch(q: string, signal?: AbortSignal): Promise<GlobalSearchResult> {
   const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}`, {

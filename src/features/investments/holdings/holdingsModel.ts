@@ -288,7 +288,7 @@ export function groupBands(groups: readonly HoldingsGroup[]): Map<InstrumentType
         key: g.assetType,
         name: GROUP_NAMES[g.assetType],
         total: formatMoney(g.value),
-        share: all > 0 ? `${Math.round((g.value / all) * 100)}%` : '0%',
+        share: all > 0 ? formatPercent((g.value / all) * 100, { decimals: 0 }) : '0%',
       },
     ]),
   );
@@ -302,7 +302,7 @@ export function allocationModel(groups: readonly HoldingsGroup[]) {
     .filter((g) => g.value > 0)
     .map((g, i) => ({
       value: g.value,
-      label: `${GROUP_NAMES[g.assetType]} ${all > 0 ? Math.round((g.value / all) * 100) : 0}%`,
+      label: `${GROUP_NAMES[g.assetType]} ${all > 0 ? formatPercent((g.value / all) * 100, { decimals: 0 }) : '0%'}`,
       color: chartColors[i % chartColors.length],
     }));
 }

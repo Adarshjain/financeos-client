@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-import { Button, Card, Icon, Text, useConcealed } from '@/components/ds';
+import { Button, Card, Icon, Text } from '@/components/ds';
+import { Amount } from '@/components/organisms';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabelsModel';
 import { appHref } from '@/features/shell/routes';
-import { formatDate, formatMoney, formatTime } from '@/lib/format';
+import { formatDate, formatTime } from '@/lib/format';
 import type { SyncMessageResult } from '@/lib/types';
 
 const CONNECTIONS_HREF = appHref('/settings/connections');
@@ -84,7 +85,6 @@ function Outcome({ message }: { message: SyncMessageResult }) {
 
 /** One email of a sync run: who sent it, which account it landed on, what happened and what to do about it. */
 export function SyncMessage({ message }: { message: SyncMessageResult }) {
-  const concealed = useConcealed();
   const more = message.createdCount - message.transactions.length;
   return (
     <Card.Row className="flex-col items-stretch" data-testid="sync-message">
@@ -139,9 +139,17 @@ export function SyncMessage({ message }: { message: SyncMessageResult }) {
               <Text variant="caption" tone="ink-2" truncate>
                 {formatDate(t.date, 'list')} {t.description || '—'}
               </Text>
-              <Text variant="caption" tone={t.type === 'CREDIT' && !concealed ? 'positive' : 'ink'} className="shrink-0">
-                {formatMoney(t.amount, { decimals: 'exact', sign: t.type === 'CREDIT' ? 'always' : 'auto' }) || '—'}
-              </Text>
+              {t.amount == null || t.amount === '' || Number.isNaN(Number(t.amount)) ? (
+                <Text variant="caption" className="shrink-0">—</Text>
+              ) : (
+                <Amount
+                  value={Number(t.amount)}
+                  direction={t.type === 'CREDIT' ? 'credit' : 'debit'}
+                  decimals="exact"
+                  variant="caption"
+                  className="shrink-0"
+                />
+              )}
             </li>
           ))}
           {more > 0 ? (

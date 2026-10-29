@@ -1,4 +1,5 @@
 import { batchFailureLabel } from '@/features/transactions/catalog';
+import { formatCount } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 /** The reasons `batch-review` can clear or re-add. */
@@ -51,7 +52,7 @@ export function mapBatchSkips(skippedIds: string[] | undefined, txns: { content:
 }
 
 export function approveTitle(count: number): string {
-  return `Approve ${count} ${count === 1 ? 'transaction' : 'transactions'}`;
+  return `Approve ${formatCount(count, ['transaction', 'transactions'])}`;
 }
 
 export function approvedMessage(count: number): string {

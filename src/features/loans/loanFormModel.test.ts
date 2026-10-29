@@ -36,8 +36,8 @@ describe('emptyLoanValues', () => {
 describe('loanProblems', () => {
   it('lists every missing field of a new loan, in field order, with Legacy wording', () => {
     expect(loanProblems(emptyLoanValues('2026-10-21'), false)).toEqual([
-      { field: 'name', message: 'Loan name is required' },
-      { field: 'lender', message: 'Lender is required' },
+      { field: 'name', message: 'Enter a loan name.' },
+      { field: 'lender', message: 'Enter a lender.' },
       { field: 'principal', message: 'Principal must be greater than zero' },
       { field: 'annualRatePct', message: 'Annual rate % must be greater than zero' },
       { field: 'tenureMonths', message: 'Tenure must be at least 1 month' },

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
@@ -10,7 +9,7 @@ import {
   showToast,
   Text,
 } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { LoadError } from '@/features/shell/LoadError';
 import type { Card, Cardholder } from '@/lib/account.types';
 import { replaceUrl } from '@/lib/urlState';
 
@@ -55,7 +54,6 @@ export function CardsTab({
   stats,
   model,
 }: CardsTabProps) {
-  const router = useRouter();
   const actions = useCardholderMutations(accountId, isBank);
   const [dialog, setDialog] = React.useState<DialogState | null>(null);
 
@@ -75,11 +73,7 @@ export function CardsTab({
 
   if (!cardholders || !model) {
     return (
-      <ErrorState
-        title="Couldn't load cardholders"
-        description="Try again. If it keeps failing, quote the reference."
-        action={{ label: 'Retry', onSelect: () => router.refresh() }}
-      />
+      <LoadError what="cardholders" />
     );
   }
 

@@ -40,16 +40,12 @@ import {
   mainIndexOf,
   partitionByGroup,
   saveBlob,
-  shortDate,
   UNDERLYING_PAGE_SIZE,
   underlyingCsvFilename,
 } from './underlyingModel';
 import type { UnderlyingEntry } from './underlyingRequest';
 import { useBreakdownStack } from './useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
-
-// Kept importable from here: the helpers moved to underlyingModel.ts.
-export { shortDate };
 
 type Row = Record<string, unknown> & { __row: string };
 const ch = createDataTableColumnHelper<Row>();

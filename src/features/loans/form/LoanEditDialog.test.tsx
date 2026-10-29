@@ -95,8 +95,8 @@ describe('LoanEditDialog', () => {
     fireEvent.change(field('Loan name'), { target: { value: ' ' } });
     fireEvent.change(field('Lender'), { target: { value: '' } });
     save();
-    expect(await screen.findByText('Loan name is required')).toBeInTheDocument();
-    expect(screen.getByText('Lender is required')).toBeInTheDocument();
+    expect(await screen.findByText('Enter a loan name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter a lender.')).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 

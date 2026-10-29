@@ -4,6 +4,7 @@
 import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { formatCell } from '@/features/reports/view/cellsModel';
 import { formatDateRangeForFilename, todayInAppZone } from '@/lib/date-range';
+import { formatDate } from '@/lib/format';
 import type { SortClause, TableColumn, TableRow } from '@/lib/reports.types';
 
 import type { UnderlyingSource } from './underlying.types';
@@ -138,17 +139,9 @@ export function groupTotal(totals: Record<string, number> | null | undefined, va
   return typeof total === 'number' ? total : undefined;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** "2026-10-13" as "13 Oct"; anything else as it came. */
-export function shortDate(value: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]}` : value;
-}
-
 /** A cell as this table prints it: dates as "13 Oct", everything else as every report table does. */
 export function cellText(value: unknown, column: TableColumn): string {
-  if (column.type === 'date' && typeof value === 'string' && value !== '') return shortDate(value);
+  if (column.type === 'date' && typeof value === 'string' && value !== '') return formatDate(value, 'list') || value;
   return formatCell(value, column);
 }
 

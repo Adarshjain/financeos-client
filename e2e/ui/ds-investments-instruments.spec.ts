@@ -152,7 +152,7 @@ for (const viewport of VIEWPORTS) {
       const dialog = await openEdit(page, seeded.held.name);
       await dialog.getByLabel('Name', { exact: true }).fill('');
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
-      await expect(dialog.getByText('Name is required')).toBeVisible();
+      await expect(dialog.getByText('Enter a name.')).toBeVisible();
       await dialog.getByLabel('Name', { exact: true }).fill(seeded.held.name);
       await dialog.getByLabel('ISIN', { exact: true }).fill('');
       await dialog.getByRole('button', { name: 'Save instrument' }).click();
@@ -166,7 +166,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByLabel('Exchange')).toHaveValue('NSE');
 
       await dialog.getByRole('button', { name: 'Add instrument' }).click();
-      await expect(dialog.getByText('Name is required')).toBeVisible();
+      await expect(dialog.getByText('Enter a name.')).toBeVisible();
 
       const name = `${seeded.tag} Added By Hand`;
       await dialog.getByLabel('Name', { exact: true }).fill(name);

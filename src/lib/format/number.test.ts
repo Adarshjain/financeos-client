@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCount, formatPercent, formatQuantity, pluralize } from './number';
+import { formatCompact, formatCount, formatPercent, formatQuantity, pluralize } from './number';
 
 describe('formatPercent', () => {
   it('returns empty for null and NaN', () => {
@@ -74,5 +74,26 @@ describe('formatQuantity', () => {
   it('returns empty for null and NaN', () => {
     expect(formatQuantity(null)).toBe('');
     expect(formatQuantity(NaN)).toBe('');
+  });
+});
+
+describe('formatCompact', () => {
+  it('shortens thousands, lakhs and crores', () => {
+    expect(formatCompact(950)).toBe('950');
+    expect(formatCompact(1250)).toBe('1.25K');
+    expect(formatCompact(350000)).toBe('3.5L');
+    expect(formatCompact(12000000)).toBe('1.2Cr');
+  });
+  it('uses a true minus', () => {
+    expect(formatCompact(-350000)).toBe('−3.5L');
+    expect(formatCompact(-1.5)).toBe('−1.5');
+  });
+  it('keeps fractions below a thousand (axis steps)', () => {
+    expect(formatCompact(0.5)).toBe('0.5');
+    expect(formatCompact(1.5)).toBe('1.5');
+  });
+  it('returns empty for null and non-finite', () => {
+    expect(formatCompact(null)).toBe('');
+    expect(formatCompact(Infinity)).toBe('');
   });
 });

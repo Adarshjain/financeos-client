@@ -133,7 +133,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
         return;
       }
       if (result.data.length === 0) {
-        showToast('No closed loans match.');
+        showToast('No closed loans match');
         setWantClosed(false);
         return;
       }

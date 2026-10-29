@@ -93,7 +93,7 @@ describe('useEpfWithdrawalLink existing mode', () => {
     await waitFor(() => expect(result.current.options).toHaveLength(1));
     expect(result.current.selectedId).toBe('');
     act(() => result.current.handleSubmit());
-    expect(toast.error).toHaveBeenCalledWith('Select a withdrawal to link');
+    expect(toast.error).toHaveBeenCalledWith('Pick a withdrawal to link.');
     expect(api.PUT).not.toHaveBeenCalled();
   });
 

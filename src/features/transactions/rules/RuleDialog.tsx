@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Dialog, Select, TextField } from '@/components/ds';
 import type { Category } from '@/lib/categories.types';
+import { formatCount } from '@/lib/format';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { CategoryRule, MatchType } from '@/lib/rules.types';
@@ -91,7 +92,7 @@ export function RuleDialog({ rule, categories: initialCategories, onClose }: Rul
         title={rule ? `Edit rule · ${ruleName(rule)}` : 'Add rule'}
         description={
           rule && rule.appliedCount > 0
-            ? `Changing the pattern unlinks the ${rule.appliedCount} ${rule.appliedCount === 1 ? 'transaction' : 'transactions'} it categorized; they keep their category.`
+            ? `Changing the pattern unlinks the ${formatCount(rule.appliedCount, ['transaction', 'transactions'])} it categorized; they keep their category.`
             : undefined
         }
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}

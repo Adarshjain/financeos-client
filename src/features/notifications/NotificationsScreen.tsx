@@ -15,7 +15,7 @@ import {
   SectionHeader,
   Text,
 } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { LoadError } from '@/features/shell/LoadError';
 import { areaCrumb } from '@/features/shell/navigation';
 import { pageHref } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
@@ -96,11 +96,7 @@ export function NotificationsScreen() {
   } else if (error) {
     body = (
       <Card>
-        <ErrorState
-          title="Couldn't load notifications"
-          description="The server did not answer. Nothing was lost."
-          action={{ label: 'Retry', onSelect: () => void refetch() }}
-        />
+        <LoadError what="notifications" retry={() => void refetch()} />
       </Card>
     );
   } else if (items.length === 0) {

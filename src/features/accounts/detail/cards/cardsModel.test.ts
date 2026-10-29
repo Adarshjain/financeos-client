@@ -143,7 +143,7 @@ describe('holderMenu', () => {
     const fresh = { ...addon, transactionCount: 0 };
     const menu = holderMenu(fresh, TODAY);
     expect(menu.map((i) => i.id)).toEqual(['edit', 'reassign', 'close', 'delete']);
-    expect(menu[3]).toMatchObject({ destructive: true, separatorBefore: true });
+    expect(menu[3]).toMatchObject({ tone: 'danger', separatorBefore: true });
   });
 
   it('offers Add a card only when the holder has no active card', () => {

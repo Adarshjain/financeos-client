@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import React from 'react';
 
@@ -9,7 +9,8 @@ import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
-import { ApiError } from '@/lib/api/client'; // Exception: draftActions.ts writes through the browser client (see its note), so a gone report arrives as an ApiError.
+import { ApiError } from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/api/errorMessage'; // Exception: draftActions.ts writes through the browser client (see its note), so a gone report arrives as an ApiError.
 import { formatCount } from '@/lib/format';
 import { storeSavedDashboard,useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
@@ -47,8 +48,7 @@ function ignoreGone(e: unknown): null {
   throw e;
 }
 
-/** The error's own message (a plain Error from a mutation carries user-facing copy), else the fixed fallback. */
-const messageOf = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback);
+const UNDO_KEY = ['chat-draft', 'undo'];
 
 /** A report the assistant drafted: preview, then save, add to Home, update or delete, with the outcome kept in the chat. */
 export function ChatReportDraftCard({ draft, draftResult, conversationId, messageId }: ChatReportDraftCardProps) {
@@ -63,13 +63,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   );
 
   const [result, setResult] = React.useState<DraftResult | null>(activeResult(draftResult));
-  const [busy, setBusy] = React.useState<'save' | 'home' | 'update' | 'delete' | 'undo' | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const busyRef = React.useRef(false);
-  const setBusyTo = (next: typeof busy) => {
-    busyRef.current = next !== null;
-    setBusy(next);
-  };
   const [confirming, setConfirming] = React.useState(false);
   // The report as it was before this card updated it: what Undo puts back (kept for this visit only).
   const [previous, setPrevious] = React.useState<ReportResponse | null>(null);
@@ -117,8 +111,6 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
     };
   }, [isDelete, malformed, result, draft.reportId]);
 
-  if (malformed) return null;
-
   // A deleted or removed report takes its widget with it, so the dashboards refetch too.
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: keys.reports.all });
@@ -140,16 +132,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
     remember({ action: 'undone' });
     refresh();
   };
-  const fail = (e: unknown, fallback: string) => {
-    setError(messageOf(e, fallback));
-    setBusyTo(null);
-  };
-
-  const undo = async (done: DraftResult, before: ReportResponse | null) => {
-    if (busyRef.current) return;
-    setBusyTo('undo');
-    setError(null);
-    try {
+  const undoMutation = useMutation({
+    mutationKey: UNDO_KEY,
+    mutationFn: async ({ done, before }: { done: DraftResult; before: ReportResponse | null }) => {
       if (done.action === 'saved-home' && done.createdDashboard && done.dashboardId) {
         await removeDashboard(done.dashboardId).catch(ignoreGone);
       } else if (done.action === 'saved-home' && done.dashboardId && done.widgetId) {
@@ -158,71 +143,95 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
       }
       if ((done.action === 'saved' || done.action === 'saved-home') && done.reportId) await removeReport(done.reportId).catch(ignoreGone);
       if (done.action === 'updated' && before) await restoreReport(before);
-      undone();
-    } catch (e) {
-      showToast(messageOf(e, "Couldn't undo. Try again."), { tone: 'danger' });
-    }
-    setBusyTo(null);
+    },
+    onSuccess: undone,
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' }),
+  });
+  const undo = (done: DraftResult, before: ReportResponse | null) => {
+    // Asked of the cache, not of this render: the toast's Undo outlives the render that made it.
+    if (queryClient.isMutating({ mutationKey: UNDO_KEY }) > 0) return;
+    setError(null);
+    undoMutation.mutate({ done, before });
   };
 
-  const save = async (toHome: boolean) => {
-    if (busy) return;
-    setBusyTo(toHome ? 'home' : 'save');
-    setError(null);
-    let report: ReportResponse;
-    try {
-      report = await saveDraftAsReport(draft);
-    } catch (e) {
-      return fail(e, "Couldn't save the report. Try again.");
-    }
-    let done: DraftResult = { action: 'saved', reportId: report.id, reportName: report.name };
-    if (toHome) {
-      try {
-        const { saved, widgetId } = home ? await addReportWidget(home.id, report) : await createHomeWithReport(report);
-        storeSavedDashboard(queryClient, saved);
-        done = { action: 'saved-home', reportId: report.id, reportName: report.name, widgetId, dashboardId: saved.id ?? home?.id, ...(home ? {} : { createdDashboard: true }) };
-      } catch {
-        showToast("Report saved, but couldn't add it to Home.", { tone: 'danger' });
+  const saveMutation = useMutation({
+    mutationFn: async (toHome: boolean) => {
+      const report = await saveDraftAsReport(draft);
+      let done: DraftResult = { action: 'saved', reportId: report.id, reportName: report.name };
+      if (toHome) {
+        try {
+          const { saved, widgetId } = home ? await addReportWidget(home.id, report) : await createHomeWithReport(report);
+          storeSavedDashboard(queryClient, saved);
+          done = { action: 'saved-home', reportId: report.id, reportName: report.name, widgetId, dashboardId: saved.id ?? home?.id, ...(home ? {} : { createdDashboard: true }) };
+        } catch {
+          showToast("Report saved, but couldn't add it to Home.", { tone: 'danger' });
+        }
       }
-    }
-    finish(done);
-    setBusyTo(null);
-    showToast(done.action === 'saved-home' ? 'Report saved and added to Home' : 'Report saved', {
-      action: { label: 'Undo', onSelect: () => void undo(done, null) },
-    });
+      return done;
+    },
+    onSuccess: (done) => {
+      finish(done);
+      showToast(done.action === 'saved-home' ? 'Report saved and added to Home' : 'Report saved', {
+        action: { label: 'Undo', onSelect: () => undo(done, null) },
+      });
+    },
+    onError: (e) => setError(getErrorMessage(e, "Couldn't save the report. Try again.")),
+  });
+  const save = (toHome: boolean) => {
+    if (busy) return;
+    setError(null);
+    saveMutation.mutate(toHome);
   };
 
-  const update = async () => {
-    if (busy || !draft.reportId) return;
-    setBusyTo('update');
-    setError(null);
-    try {
-      const before = await getReport(draft.reportId);
-      await applyDraftUpdate(draft.reportId, draft);
-      const done: DraftResult = { action: 'updated', reportId: draft.reportId, reportName: draft.name };
+  const updateMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      const before = await getReport(reportId);
+      await applyDraftUpdate(reportId, draft);
+      return { before, done: { action: 'updated', reportId, reportName: draft.name } as DraftResult };
+    },
+    onSuccess: ({ before, done }) => {
       setPrevious(before);
       finish(done);
-      showToast('Report updated', { action: { label: 'Undo', onSelect: () => void undo(done, before) } });
-    } catch (e) {
-      return fail(e, "Couldn't update the report. Try again.");
-    }
-    setBusyTo(null);
+      showToast('Report updated', { action: { label: 'Undo', onSelect: () => undo(done, before) } });
+    },
+    onError: (e) => setError(getErrorMessage(e, "Couldn't update the report. Try again.")),
+  });
+  const update = () => {
+    if (busy || !draft.reportId) return;
+    setError(null);
+    updateMutation.mutate(draft.reportId);
   };
 
-  const remove = async () => {
+  const removeMutation = useMutation({
+    mutationFn: (reportId: string) => removeReport(reportId),
+    onSuccess: (_data, reportId) => {
+      setConfirming(false);
+      finish({ action: 'deleted', reportId, reportName: draft.name ?? deleteName ?? undefined });
+    },
+    onError: (e) => {
+      setConfirming(false);
+      setError(getErrorMessage(e, "Couldn't delete the report. Try again."));
+    },
+  });
+  const busy = saveMutation.isPending
+    ? saveMutation.variables
+      ? 'home'
+      : 'save'
+    : updateMutation.isPending
+      ? 'update'
+      : removeMutation.isPending
+        ? 'delete'
+        : undoMutation.isPending
+          ? 'undo'
+          : null;
+
+  const remove = () => {
     if (busy || !draft.reportId) return;
-    setBusyTo('delete');
     setError(null);
-    try {
-      await removeReport(draft.reportId);
-      setConfirming(false);
-      finish({ action: 'deleted', reportId: draft.reportId, reportName: draft.name ?? deleteName ?? undefined });
-    } catch (e) {
-      setConfirming(false);
-      return fail(e, "Couldn't delete the report. Try again.");
-    }
-    setBusyTo(null);
+    removeMutation.mutate(draft.reportId);
   };
+
+  if (malformed) return null;
 
   const title = draft.name ?? deleteName ?? 'this report';
   const overline = isDelete ? 'Delete report' : isUpdate ? 'Change to your report' : 'Report draft';
@@ -290,7 +299,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
             </Text>
             {canUndo ? (
               <Text variant="label" as="span">
-                <Button variant="link" loading={busy === 'undo'} onClick={() => void undo(result, previous)}>
+                <Button variant="link" loading={busy === 'undo'} onClick={() => undo(result, previous)}>
                   Undo
                 </Button>
               </Text>
@@ -305,17 +314,17 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
             ) : null}
             {isCreate ? (
               // Off until the dashboards list is in: before that "no default" can't be told apart, and a second Home would be made.
-              <Button variant="secondary" size="sm" loading={busy === 'home'} disabled={Boolean(busy) || previewBlocks || !dashboards.isSuccess} onClick={() => void save(true)}>
+              <Button variant="secondary" size="sm" loading={busy === 'home'} disabled={Boolean(busy) || previewBlocks || !dashboards.isSuccess} onClick={() => save(true)}>
                 Add to Home
               </Button>
             ) : null}
             {isCreate ? (
-              <Button variant="primary" size="sm" loading={busy === 'save'} disabled={Boolean(busy) || previewBlocks} onClick={() => void save(false)}>
+              <Button variant="primary" size="sm" loading={busy === 'save'} disabled={Boolean(busy) || previewBlocks} onClick={() => save(false)}>
                 Save as report
               </Button>
             ) : null}
             {isUpdate ? (
-              <Button variant="primary" size="sm" loading={busy === 'update'} disabled={Boolean(busy) || previewBlocks} onClick={() => void update()}>
+              <Button variant="primary" size="sm" loading={busy === 'update'} disabled={Boolean(busy) || previewBlocks} onClick={() => update()}>
                 Update report
               </Button>
             ) : null}
@@ -338,7 +347,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
           description="The report and its widget on Home go. Your transactions stay. This can't be undone."
           confirmLabel="Delete report"
           confirmLoading={busy === 'delete'}
-          onConfirm={() => void remove()}
+          onConfirm={() => remove()}
         />
       ) : null}
     </>

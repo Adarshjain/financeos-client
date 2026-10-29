@@ -124,7 +124,7 @@ describe('DividendsScreen: the unrecorded credits are scanned again after a chan
   it('after a delete', async () => {
     renderWithQuery(<DividendsScreen {...props()} />);
     openEdit();
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete dividend' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete dividend' }));
     await waitFor(() => expect(scan).toHaveBeenCalledTimes(2));
   });

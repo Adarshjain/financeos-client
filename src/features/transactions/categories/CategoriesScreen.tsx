@@ -16,7 +16,7 @@ import {
   Pager,
   Text,
 } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { LoadError } from '@/features/shell/LoadError';
 import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
@@ -81,12 +81,7 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
           />
         ) : null}
         {categories === null ? (
-          <ErrorState
-            title="Couldn't load categories"
-            description="Retry, and quote the reference if it keeps failing."
-            action={{ label: 'Retry', onSelect: () => router.refresh() }}
-            reference={reference}
-          />
+          <LoadError what="categories" reference={reference} />
         ) : (
           <>
             <FilterBar

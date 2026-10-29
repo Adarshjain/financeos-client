@@ -9,6 +9,7 @@ import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.
 // Stays on the browser client: a multipart upload (server actions cap bodies at 1 MB and would double the transfer).
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
+import { formatCount } from '@/lib/format';
 import { notify } from '@/lib/notify';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -122,7 +123,7 @@ export function useIngestForm({
 
     if (validFiles.length > 0) {
       setFiles((prev) => [...prev, ...validFiles]);
-      notify.success(`Added ${validFiles.length} file(s) to the queue.`);
+      notify.success(`Added ${formatCount(validFiles.length, ['file', 'files'])} to the queue`);
     }
   };
 
@@ -172,7 +173,7 @@ export function useIngestForm({
     }
 
     const toastId = notify.loading(
-      `Uploading ${files.length} file${files.length === 1 ? '' : 's'}…`
+      `Uploading ${formatCount(files.length, ['file', 'files'])}…`
     );
     try {
       const response = await ingestMutation.mutateAsync({
@@ -184,7 +185,7 @@ export function useIngestForm({
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         setFiles([]);
-        notify.info('Upload complete — processing in the background.', {
+        notify.info('Upload complete — processing in the background', {
           id: toastId,
         });
       } else {

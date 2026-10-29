@@ -1,4 +1,5 @@
 import { api } from '@/lib/api/client';
+import { AppError } from '@/lib/appError';
 import { reportWidgetResponse, toDashboardWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { putWidgets } from '@/lib/query/hooks/useDashboards';
@@ -37,7 +38,7 @@ export async function runDraftPreview(draft: ChatReportDraft): Promise<ReportDat
 
 export async function getReport(id: string): Promise<ReportResponse> {
   const { data } = await api.GET('/api/v1/reports/{id}', { params: { path: { id } } });
-  if (!data) throw new Error('Report not found');
+  if (!data) throw new AppError('Report not found');
   return data as ReportResponse;
 }
 
@@ -66,7 +67,7 @@ export async function removeReport(id: string): Promise<void> {
 
 async function freshDashboard(id: string): Promise<DashboardResponse> {
   const { data } = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id } } });
-  if (!data) throw new Error('Dashboard not found');
+  if (!data) throw new AppError('Dashboard not found');
   return data as DashboardResponse;
 }
 

@@ -26,7 +26,7 @@ function statusWord(state: BillCardState): React.ReactNode {
   if (state.phase === 'awaiting') {
     return state.statementLate ? <StatusWord tone="warning">Statement late</StatusWord> : 'unbilled';
   }
-  return state.phase === 'overdue' ? <StatusWord tone="warning">Overdue</StatusWord> : null;
+  return state.phase === 'overdue' ? <StatusWord tone="danger">Overdue</StatusWord> : null;
 }
 
 function BillRow({ state, highlighted }: { state: BillCardState; highlighted: boolean }) {

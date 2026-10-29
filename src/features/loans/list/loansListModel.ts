@@ -4,7 +4,7 @@ import { LOANS_HREF } from '@/features/loans/loansLendingsTabs';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
-import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
+import { formatCount, formatDate, formatMoney, formatPercent, MONTH_LONG } from '@/lib/format';
 import type { BatchLoanPaymentItem, LoanMatchSuggestions, LoanResponse, LoansSummaryDetail } from '@/lib/loan.types';
 
 // ---- URL state -------------------------------------------------------------
@@ -177,10 +177,6 @@ export interface MatchBanner {
   actionLabel: string;
 }
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
 /** One to ten in words, digits beyond. */
@@ -210,7 +206,7 @@ export function matchBanner(matches: readonly LoanMatchSuggestions[]): MatchBann
   const one = count === 1;
   const lead =
     dueMonths.size === 1
-      ? `${MONTH_NAMES[Number([...dueMonths][0].slice(5, 7)) - 1]} ${one ? 'EMI is' : 'EMIs are'}`
+      ? `${MONTH_LONG[Number([...dueMonths][0].slice(5, 7)) - 1]} ${one ? 'EMI is' : 'EMIs are'}`
       : `${capital(numberWord(count))} ${one ? 'EMI is' : 'EMIs are'}`;
   const when = joinDates(debitDates);
   const rest = one

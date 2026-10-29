@@ -52,7 +52,7 @@ export function AddCardDialog({
       submitLabel={submitLabel}
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error}
     >
       <TextField
@@ -111,7 +111,7 @@ export function ReplaceCardDialog({
       submitLabel="Replace card"
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error}
     >
       <Text variant="body" tone="ink-2" as="p">
@@ -174,7 +174,7 @@ export function CloseDialog({
       submitLabel={submitLabel}
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error}
     >
       <Text variant="body" tone="ink-2" as="p">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 
 import { Card, ListRow, Select, showToast, Switch, Text } from '@/components/ds';
@@ -48,7 +49,6 @@ function announce() {
 export function AppLockCard({ status }: { status: AppLockStatus }) {
   const [armed, setArmed] = useState(status.armed);
   const [lockAfter, setLockAfter] = useState(String(status.lockAfterSeconds ?? DEFAULT_LOCK_AFTER));
-  const [busy, setBusy] = useState(false);
   const [support, setSupport] = useState<Support>('checking');
 
   useEffect(() => {
@@ -102,14 +102,11 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
     }
   };
 
-  const onToggle = async (next: boolean) => {
+  const toggleMutation = useMutation({ mutationFn: (next: boolean) => (next ? turnOn() : turnOff()) });
+  const busy = toggleMutation.isPending;
+  const onToggle = (next: boolean) => {
     if (busy) return;
-    setBusy(true);
-    try {
-      await (next ? turnOn() : turnOff());
-    } finally {
-      setBusy(false);
-    }
+    toggleMutation.mutate(next);
   };
 
   const onLockAfter = async (value: string | string[]) => {
@@ -138,7 +135,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
             aria-label="Unlock with Face ID or fingerprint"
             checked={armed}
             disabled={busy || !canToggle}
-            onCheckedChange={(next) => void onToggle(next)}
+            onCheckedChange={onToggle}
           />
         }
       />

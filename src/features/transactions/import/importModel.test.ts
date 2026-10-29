@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import type { JobResponse } from '@/lib/types';
 
-import { importJobTitle, importTotals, importUrl, isJobId, parseImportPage, recentImportsSince } from './importModel';
+import { importJobTitle, importTotals, importUrl, isJobId, parseImportAccount, parseImportPage, recentImportsSince } from './importModel';
 
 const file = (filename: string, linesParsed: number) => ({ filename, status: 'SUCCESS' as const, linesParsed, errorMessage: null });
 const job = (files: ReturnType<typeof file>[], status: JobResponse['status'] = 'SUCCEEDED') =>
   ({ id: 'j', type: 'STATEMENT_INGEST', status, result: { filesProcessed: files.length, totalCreated: 5, totalDuplicatesFound: 2, fileDetails: files } }) as JobResponse;
 
 describe('importModel', () => {
+  it('reads the starting account from ?account=, the first of a repeated key', () => {
+    expect(parseImportAccount({ account: 'a1' })).toBe('a1');
+    expect(parseImportAccount({ account: ['a2', 'a1'] })).toBe('a2');
+    expect(parseImportAccount({})).toBeUndefined();
+  });
+
   it('titles a job by its file, "n files" for several, and a plain name before it has a result', () => {
     expect(importJobTitle(job([file('a.pdf', 3)]))).toBe('a.pdf');
     expect(importJobTitle(job([file('a.pdf', 3), file('b.pdf', 4)]))).toBe('2 files');

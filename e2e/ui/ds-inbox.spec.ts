@@ -71,7 +71,7 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     await row(page, 'review').click({ button: 'right' });
     await expect(page.getByRole('menuitem', { name: 'Snooze' })).toHaveCount(0);
     await page.getByRole('menuitem', { name: 'Dismiss' }).click();
-    await expectToast(page, 'Dismissed');
+    await expectToast(page, 'Item dismissed');
     await expect(row(page, 'review')).toHaveCount(0);
 
     await toastAction(page, 'Undo').click();

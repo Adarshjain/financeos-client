@@ -31,7 +31,7 @@ export type HolderMenuId = 'edit' | 'reassign' | 'addCard' | 'close' | 'reopen' 
 export interface HolderMenuItem {
   id: HolderMenuId;
   label: string;
-  destructive?: boolean;
+  tone?: 'danger';
   separatorBefore?: boolean;
 }
 
@@ -173,7 +173,7 @@ export function holderMenu(holder: Cardholder, today: string): HolderMenuItem[] 
   if (!closed && !activePlastic(holder)) items.push({ id: 'addCard', label: 'Add a card' });
   if (!closed && addon) items.push({ id: 'close', label: 'Close cardholder' });
   if (addon && !holder.transactionCount) {
-    items.push({ id: 'delete', label: 'Delete cardholder', destructive: true, separatorBefore: true });
+    items.push({ id: 'delete', label: 'Delete cardholder', tone: 'danger', separatorBefore: true });
   }
   return items;
 }

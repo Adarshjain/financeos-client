@@ -1,3 +1,5 @@
+import { formatMoney } from './money';
+
 const NF_COUNT = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 const MINUS = '−';
 
@@ -39,4 +41,12 @@ export function formatQuantity(value: number | null | undefined, maxDecimals = 4
   if (value === null || value === undefined || Number.isNaN(value)) return '';
   const text = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: maxDecimals }).format(value);
   return text === '-0' ? '0' : text;
+}
+
+/** A compact count for axis ticks, same rules as compact money without the symbol: 1250 → "1.25K", −3,50,000 → "−3.5L". */
+export function formatCompact(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '';
+  // Below 1000 keep fractions (axis steps of 0.5); the compact money path would round them away.
+  if (Math.abs(value) < 1000) return formatQuantity(value, 2).replace(/^-/, '−');
+  return formatMoney(value, { compact: 'k', symbol: false });
 }

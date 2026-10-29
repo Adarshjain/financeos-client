@@ -20,6 +20,7 @@ import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { distinctLimitPools } from '@/lib/creditLimitPools';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatDate } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 
@@ -34,7 +35,6 @@ import {
   diffIdentifiers,
   emptyValues,
   fieldsFor,
-  formatDmy,
   type FormErrors,
   identifiersFailedMessage,
   movesIngestLater,
@@ -385,14 +385,14 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
         open={cleanup !== null}
         onOpenChange={(open) => (open ? undefined : setCleanup(null))}
         title="Delete earlier Gmail transactions?"
-        description={cleanup ? `You moved "Import emails from" to ${formatDmy(cleanup.before)}.` : undefined}
+        description={cleanup ? `You moved "Import emails from" to ${formatDate(cleanup.before, 'input')}.` : undefined}
         confirmLabel="Delete & save"
         confirmLoading={saving}
         onConfirm={confirmCleanup}
       >
         {cleanup ? (
           <Text variant="body" tone="ink-2" as="p">
-            Delete {cleanup.count} Gmail-imported transactions before {formatDmy(cleanup.before)}? Statement imports are
+            Delete {cleanup.count} Gmail-imported transactions before {formatDate(cleanup.before, 'input')}? Statement imports are
             not affected.
           </Text>
         ) : null}

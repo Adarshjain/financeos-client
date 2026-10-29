@@ -4,6 +4,7 @@
 // Mounted only while open. Save hands the change to the dashboard (view mode saves it straight away, edit mode
 // takes it into the draft); a failed save keeps the dialog open.
 
+import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
 import { Dialog, showToast, TextField } from '@/components/ds';
@@ -39,24 +40,14 @@ export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClo
   const form = useBuiltinParamsForm(def ?? NO_PARAMS, widgetParams(widget));
   const name = def?.label ?? widget.report?.name ?? '';
   const [title, setTitle] = React.useState(widget.title ?? '');
-  const [saving, setSaving] = React.useState(false);
-  // State updates are async: the ref stops a second press before the re-render disables the button.
-  const inFlight = React.useRef(false);
+  const saveMutation = useMutation({
+    mutationFn: (change: WidgetSettingsChange) => Promise.resolve(onSave(change)),
+    onSuccess: onClose,
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't save the widget settings. Try again."), { tone: 'danger' }),
+  });
+  const saving = saveMutation.isPending;
 
-  const save = async () => {
-    if (inFlight.current) return;
-    inFlight.current = true;
-    setSaving(true);
-    try {
-      await onSave({ ...(def ? { params: form.params() } : {}), title: title.trim() || null });
-      onClose();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't save the widget settings. Try again."), { tone: 'danger' });
-    } finally {
-      inFlight.current = false;
-      setSaving(false);
-    }
-  };
+  const save = () => saveMutation.mutate({ ...(def ? { params: form.params() } : {}), title: title.trim() || null });
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
@@ -73,7 +64,7 @@ export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClo
             className="flex flex-col gap-space-8 desk:gap-space-12"
             onSubmit={(e) => {
               e.preventDefault();
-              if (form.valid) void save();
+              if (form.valid) save();
             }}
           >
             <ParamFields form={form} />

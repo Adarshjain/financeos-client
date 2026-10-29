@@ -184,7 +184,7 @@ export function useDividendLink({
       return;
     }
     if (!canSubmit) {
-      notify.error(mode === 'existing' ? 'Select a dividend to link' : 'Check the dividend details');
+      notify.error(mode === 'existing' ? 'Pick a dividend to link.' : 'Check the dividend details.');
       return;
     }
     submitMutation.mutate();

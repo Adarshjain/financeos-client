@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 
 import { loadJob } from '@/features/jobs/jobActions';
 import { unwrapAction } from '@/lib/actionResult';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobStatus } from '@/lib/types';
 
@@ -55,7 +56,7 @@ export function useJobStatusPolling<T = unknown>(
   }, [jobId, job]);
 
   const isPolling = Boolean(jobId) && !(job && TERMINAL.has(job.status));
-  const error = query.error instanceof Error ? query.error.message : null;
+  const error = query.error ? getErrorMessage(query.error, '') || null : null;
 
   return { job, isPolling, error };
 }

@@ -14,6 +14,7 @@ import {
   EmptyState,
   FilterBar,
   FilterChip,
+  KpiTile,
   Pager,
   Select,
   Text,
@@ -260,18 +261,26 @@ export function EpfPassbookCard({
   );
 }
 
-/** The table while the page loads. */
+/** The tiles and the table while the page loads. */
 export function EpfPassbookSkeleton() {
   return (
-    <Card>
-      <DataTable
-        columns={columns}
-        data={[]}
-        getRowId={(row) => row.id}
-        size="sm"
-        loading
-        skeletonRows={5}
-      />
-    </Card>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="max-desk:hidden grid grid-cols-4 gap-space-16">
+        <KpiTile loading />
+        <KpiTile loading />
+        <KpiTile loading />
+        <KpiTile loading />
+      </div>
+      <Card>
+        <DataTable
+          columns={columns}
+          data={[]}
+          getRowId={(row) => row.id}
+          size="sm"
+          loading
+          skeletonRows={5}
+        />
+      </Card>
+    </div>
   );
 }

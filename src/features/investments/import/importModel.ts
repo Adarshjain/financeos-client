@@ -42,9 +42,9 @@ export function reconcileCopy(mode: ImportMode) {
   const zerodha = mode === 'reconcile_zerodha';
   return {
     taxTitle: `1. ${zerodha ? 'Zerodha Tax P&L' : 'Groww Capital Gains'} (XLSX)`,
-    taxZone: `Upload ${zerodha ? 'Tax P&L' : 'Capital Gains'} XLSX file(s)`,
+    taxZone: `Upload ${zerodha ? 'Tax P&L' : 'Capital Gains'} XLSX files`,
     tradebookTitle: `2. ${zerodha ? 'Zerodha Tradebook' : 'Groww Order History'}`,
-    tradebookZone: `Upload ${zerodha ? 'Tradebook CSV' : 'Order History XLSX'} file(s)`,
+    tradebookZone: `Upload ${zerodha ? 'Tradebook CSV' : 'Order History XLSX'} files`,
     tradebookAccept: zerodha ? '.csv' : '.xlsx,.xls,.csv',
   };
 }

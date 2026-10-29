@@ -1,6 +1,5 @@
 import { requireAccount } from '@/features/accounts/detail/accountRoute';
 import { loadCardsData } from '@/features/accounts/detail/cards/cardsData';
-import { buildCardsModel } from '@/features/accounts/detail/cards/cardsModel';
 import { CardsTab } from '@/features/accounts/detail/cards/CardsTab';
 import { todayInAppZone } from '@/lib/date-range';
 import { AccountType } from '@/lib/types';
@@ -17,16 +16,7 @@ export default async function DsAccountCardsPage({
   const isBank = account.type === AccountType.BANK_ACCOUNT;
 
   const today = todayInAppZone();
-  const { cardholders, stats } = await loadCardsData(account.id);
-  const model = cardholders
-    ? buildCardsModel({
-        cardholders,
-        stats,
-        isBank,
-        creditCard: account.type === AccountType.CREDIT_CARD ? account : null,
-        today,
-      })
-    : null;
+  const { cardholders, stats, model } = await loadCardsData(account, today);
 
   return (
     <CardsTab

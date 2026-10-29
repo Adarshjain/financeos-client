@@ -85,8 +85,8 @@ export interface LoanProblem {
  */
 export function loanProblems(values: LoanFormValues, isEdit: boolean): LoanProblem[] {
   const problems: LoanProblem[] = [];
-  if (!values.name.trim()) problems.push({ field: 'name', message: 'Loan name is required' });
-  if (!values.lender.trim()) problems.push({ field: 'lender', message: 'Lender is required' });
+  if (!values.name.trim()) problems.push({ field: 'name', message: 'Enter a loan name.' });
+  if (!values.lender.trim()) problems.push({ field: 'lender', message: 'Enter a lender.' });
   const principalOk = Number.isFinite(Number(values.principal)) && Number(values.principal) > 0;
   const emiBad = values.emiAmount !== '' && !(Number.isFinite(Number(values.emiAmount)) && Number(values.emiAmount) > 0);
   if (isEdit) {

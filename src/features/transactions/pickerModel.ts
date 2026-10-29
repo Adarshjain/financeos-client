@@ -1,4 +1,4 @@
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatCount, formatDate, formatMoney } from '@/lib/format';
 
 /** What the picker needs of a transaction: both a full `Transaction` and a lending's transaction summary fit. */
 export interface PickerSummaryLike {
@@ -30,8 +30,8 @@ export function sharedNote(
 ): string | null {
   if (excludeAnyObligationRef || refCount <= 0) return null;
   return shareableKind === 'DIVIDEND'
-    ? `also linked to ${refCount} dividend${refCount === 1 ? '' : 's'}`
-    : `also linked to ${refCount} ledger entr${refCount === 1 ? 'y' : 'ies'}`;
+    ? `also linked to ${formatCount(refCount, ['dividend', 'dividends'])}`
+    : `also linked to ${formatCount(refCount, ['ledger entry', 'ledger entries'])}`;
 }
 
 /** The hint under an empty result list: the caller's rule, else the direction's. */

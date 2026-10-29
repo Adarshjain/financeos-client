@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { WidgetResponse } from '@/lib/dashboards.types';
+import { renderWithQuery as render } from '@/test/renderWithQuery';
 
 import { WidgetSettingsDialog } from './WidgetSettingsDialog';
 

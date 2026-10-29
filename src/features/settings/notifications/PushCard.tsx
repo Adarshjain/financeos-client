@@ -97,7 +97,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
       <SettingsToggle
         flush={false}
         label="Push notifications"
-        description="Master switch for every device"
+        description="Master switch for every device."
         checked={settings.pushEnabled}
         disabled={pending}
         onCheckedChange={(v) => void save({ pushEnabled: v })}

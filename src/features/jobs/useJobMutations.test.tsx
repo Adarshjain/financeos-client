@@ -26,18 +26,21 @@ function setup(options?: Parameters<typeof useJobMutations>[0]) {
   return renderHook(() => useJobMutations(options), { wrapper });
 }
 
-describe('useJobMutations router refresh', () => {
+describe('useJobMutations router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.POST).mockResolvedValue({ data: { id: 'j2' } } as never);
   });
 
-  it('refreshes the router after cancel and after retry', async () => {
+  it('does not refresh the router after cancel or retry (the jobs are a query)', async () => {
     const { result } = setup();
     act(() => result.current.cancel('j1'));
-    await waitFor(() => expect(routerRefresh).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.POST).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.busy).toBe(false));
     act(() => result.current.retry('j1'));
-    await waitFor(() => expect(routerRefresh).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.POST).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.busy).toBe(false));
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it('does not refresh when the call fails', async () => {

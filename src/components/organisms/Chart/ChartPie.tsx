@@ -9,8 +9,9 @@ import { forwardRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { cn, Text } from '@/components/ds';
-import { formatShare, seriesLabel } from '@/lib/charts/chart-series';
+import { seriesLabel } from '@/lib/charts/chart-series';
 import { useElementSize } from '@/lib/charts/useElementSize';
+import { formatPercent } from '@/lib/format';
 
 import type { ChartEntry, ChartInput } from './Chart';
 import {
@@ -30,6 +31,12 @@ import { useMergedRef } from './mergeRefs';
 
 /** Below this width the legend stacks under the pie instead of beside it. */
 const STACK_BELOW_PX = 360;
+
+/** A slice's share of the pie: whole percent, "<1%" for slivers. */
+function shareText(ratio: number): string {
+  const pct = ratio * 100;
+  return pct > 0 && pct < 1 ? '<1%' : formatPercent(pct, { decimals: 0 });
+}
 
 interface Slice {
   name: string;
@@ -250,7 +257,7 @@ export const ChartPie = forwardRef<HTMLDivElement, ChartPieProps>(function Chart
                     align="end"
                     className="w-space-32"
                   >
-                    {formatShare(s.value / total)}
+                    {shareText(s.value / total)}
                   </Text>
                 </>
               );

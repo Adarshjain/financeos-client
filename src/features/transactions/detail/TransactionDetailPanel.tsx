@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -147,7 +147,6 @@ function DetailContent({
   const queryClient = useQueryClient();
   const unlink = useTransactionUnlink(t.id);
   const [deleting, setDeleting] = React.useState(false);
-  const [deletePending, setDeletePending] = React.useState(false);
   const [removing, setRemoving] = React.useState<ObligationRef | null>(null);
 
   const { data: links = [], isError: linksFailed, refetch: refetchLinks } = useQuery({
@@ -168,10 +167,9 @@ function DetailContent({
   const raw = t.description && t.sourcedDescription && t.sourcedDescription !== t.description ? t.sourcedDescription : undefined;
   const categories = t.categories ?? [];
 
-  const confirmDelete = async () => {
-    setDeletePending(true);
-    try {
-      await deleteTransaction(t.id);
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteTransaction(t.id),
+    onSuccess: () => {
       showToast('Transaction deleted');
       setDeleting(false);
       // Close first, and forget what is cached for it, so nothing asks the server about the deleted id again.
@@ -181,12 +179,10 @@ function DetailContent({
       void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       void invalidateMoneyQueries(queryClient);
       router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't delete the transaction. Try again."), { tone: 'danger' });
-    } finally {
-      setDeletePending(false);
-    }
-  };
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't delete the transaction. Try again."), { tone: 'danger' }),
+  });
+  const deletePending = deleteMutation.isPending;
 
   const renderRow = (row: LinkRow) => {
     const busy = unlink.busyKey === (row.kind === 'transaction' ? row.link.id : row.key);
@@ -319,7 +315,7 @@ function DetailContent({
         impact={deleteImpact(t)}
         confirmLabel="Delete transaction"
         confirmLoading={deletePending}
-        onConfirm={() => void confirmDelete()}
+        onConfirm={() => deleteMutation.mutate()}
       >
         <IrreversibleNote />
       </ConfirmDialog>

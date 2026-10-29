@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Badge, Banner, Card, Divider, EmptyState, SectionHeader, Text } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { LoadError } from '@/features/shell/LoadError';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
@@ -52,11 +52,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   } else if (error) {
     body = (
       <Card>
-        <ErrorState
-          title="Couldn't load the inbox"
-          description="The server did not answer. Your items are safe."
-          action={{ label: 'Retry', onSelect: () => void refetch() }}
-        />
+        <LoadError what="the inbox" retry={() => void refetch()} />
       </Card>
     );
   } else if (items.length === 0) {

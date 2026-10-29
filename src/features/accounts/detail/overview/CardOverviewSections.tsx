@@ -12,6 +12,7 @@ import {
   Text,
 } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
+import { formatPercent } from '@/lib/format';
 
 import { accountHref } from '../accountTabsModel';
 import type { BillRowModel } from '../billsHistoryModel';
@@ -145,7 +146,7 @@ export function RewardsCard({ accountId, model }: { accountId: string; model: Re
         <ListRow
           key={m.id}
           title={m.label}
-          trailing={<Text variant="body-strong">{m.pct}%</Text>}
+          trailing={<Text variant="body-strong">{formatPercent(m.pct, { decimals: 0 })}</Text>}
           subtitle={
             <>
               <ProgressBar value={m.pct} />

@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, Text, useConcealed } from '@/components/ds';
-import { formatDate, formatMoney } from '@/lib/format';
+import { Button, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Amount } from '@/components/organisms';
+import { formatDate } from '@/lib/format';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';
 import type { RuleApplyResult as RuleApplyData } from '@/lib/types';
@@ -16,12 +17,15 @@ type Txn = NonNullable<RuleApplyData['transactions']>[number];
 const ch = createDataTableColumnHelper<Txn>();
 
 function AmountCell({ type, amount }: { type?: string | null; amount?: string | number | null }) {
-  const concealed = useConcealed();
-  const credit = type === 'CREDIT';
+  if (amount == null || amount === '' || Number.isNaN(Number(amount))) return <Text variant="body">—</Text>;
   return (
-    <Text variant="body" tone={credit && !concealed ? 'positive' : 'ink'} fraction="small">
-      {formatMoney(amount, { decimals: 'exact', sign: credit ? 'always' : 'auto' }) || '—'}
-    </Text>
+    <Amount
+      value={Number(amount)}
+      direction={type === 'CREDIT' ? 'credit' : 'debit'}
+      decimals="exact"
+      variant="body"
+      fraction="small"
+    />
   );
 }
 const columns = [

@@ -29,7 +29,7 @@ export function useNotificationMutations() {
   const undo = async (id: string) => {
     try {
       await restore.mutateAsync(id);
-      showToast('Restored');
+      showToast('Notification restored');
     } catch {
       showToast("Couldn't restore. Try again.", { tone: 'danger' });
     }

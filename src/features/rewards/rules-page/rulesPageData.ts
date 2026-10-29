@@ -2,6 +2,7 @@ import { dehydrate,type DehydratedState } from '@tanstack/react-query';
 
 import { rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWindowModel';
 import { type Loaded, loaded, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { serverApi } from '@/lib/api/server';
 import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
@@ -15,6 +16,11 @@ export interface RulesPageData {
   state: DehydratedState;
   /** The card's reward-year figures; null when the report could not load. */
   usage: RulesUsage | null;
+}
+
+/** `?account=`: the card whose rules show. */
+export function parseRulesUrl(params: SearchParamsRecord): { account: string | undefined } {
+  return { account: first(params.account) };
 }
 
 /**

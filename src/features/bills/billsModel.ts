@@ -1,4 +1,5 @@
 import type { BillStatus, CardBillResponse } from '@/lib/api/types';
+import { formatCount } from '@/lib/format';
 
 export type BadgeTone = 'destructive' | 'warning' | 'success' | 'slate' | 'info';
 
@@ -54,7 +55,7 @@ export function billDueText(bill: Pick<CardBillResponse, 'status' | 'daysUntilDu
       return 'Awaiting statement';
     case 'OVERDUE': {
       const n = days == null ? 1 : Math.max(1, -days);
-      return `Overdue by ${n} ${n === 1 ? 'day' : 'days'}`;
+      return `Overdue by ${formatCount(n, ['day', 'days'])}`;
     }
     default:
       if (days == null) return 'Due';

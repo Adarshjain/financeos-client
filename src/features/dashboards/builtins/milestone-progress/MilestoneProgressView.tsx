@@ -10,6 +10,7 @@ import { BarRow, BuiltinNote, BuiltinPager } from '@/features/dashboards/builtin
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { appHref } from '@/features/shell/routes';
 import { todayInAppZone } from '@/lib/date-range';
+import { formatPercent } from '@/lib/format';
 import { isRawTableData } from '@/lib/reports.helpers';
 
 import { nearestPerCard } from './milestoneProgressModel';
@@ -39,7 +40,7 @@ export function MilestoneProgressView({ data, loading, onPageChange }: TemplateV
               <Text tone="ink-3"> · {it.milestone}</Text>
             </>
           }
-          trailing={<Text variant="body-strong">{Math.floor(it.pct)}%</Text>}
+          trailing={<Text variant="body-strong">{formatPercent(Math.floor(it.pct), { decimals: 0 })}</Text>}
           value={it.pct}
         />
       ))}

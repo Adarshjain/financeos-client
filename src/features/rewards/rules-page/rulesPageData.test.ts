@@ -5,7 +5,7 @@ import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
-import { loadRulesPageData as loadRulesPage } from './rulesPageData';
+import { loadRulesPageData as loadRulesPage, parseRulesUrl } from './rulesPageData';
 
 const GET = vi.fn();
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: (...a: unknown[]) => GET(...a) } }));
@@ -118,5 +118,13 @@ describe('loadRulesPageData', () => {
     const none = await loadRulesPageData(undefined, '2026-10-24');
     expect(none).toMatchObject({ accountId: '', usage: null });
     expect(api.report).not.toHaveBeenCalled();
+  });
+});
+
+describe('parseRulesUrl', () => {
+  it('reads the card from ?account=, the first of a repeated key', () => {
+    expect(parseRulesUrl({ account: 'b' })).toEqual({ account: 'b' });
+    expect(parseRulesUrl({ account: ['b', 'a'] })).toEqual({ account: 'b' });
+    expect(parseRulesUrl({})).toEqual({ account: undefined });
   });
 });

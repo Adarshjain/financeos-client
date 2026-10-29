@@ -124,11 +124,10 @@ describe('list', () => {
 
   it('offers Clear filters only when a filter is set', () => {
     const { unmount } = render(<ActivityScreen {...props} />);
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Clear filters' })).toBeNull();
     unmount();
     render(<ActivityScreen {...props} statusFilter="FAILED" typeFilter="GMAIL_SYNC" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(push).toHaveBeenCalledWith('/settings/activity', { scroll: false });
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/settings/activity');
   });
 
   it('shows Job with its subject, Started, Took, Result and Status', () => {

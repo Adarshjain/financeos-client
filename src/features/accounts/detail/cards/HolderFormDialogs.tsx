@@ -74,7 +74,7 @@ export function AddHolderDialog({
       submitLabel={isBank ? 'Add joint holder' : 'Add cardholder'}
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error}
     >
       <TextField label="Name" value={name} onValueChange={setName} error={errors.name} />
@@ -175,7 +175,7 @@ export function EditHolderDialog({
       submitLabel="Save cardholder"
       onSubmit={handle}
       onClose={onClose}
-      pending={pending}
+      loading={pending}
       error={error}
     >
       <TextField label="Name" value={name} onValueChange={setName} />
