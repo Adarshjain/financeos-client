@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeLoansLendingsTab, isLoanDetailPath, isPersonDetailPath, loansLendingsTabs } from './loansLendingsTabs';
+import { activeLoansLendingsTab, loansLendingsTabs } from './loansLendingsTabs';
 
 describe('loansLendingsTabs', () => {
   it('lists Lendings first, then Loans, on the Dinero routes', () => {
@@ -19,21 +19,5 @@ describe('loansLendingsTabs', () => {
     expect(activeLoansLendingsTab('/loans/lendings/').id).toBe('lendings');
     expect(activeLoansLendingsTab('/loans').id).toBe('loans');
     expect(activeLoansLendingsTab(null).id).toBe('loans');
-  });
-});
-
-describe('isPersonDetailPath', () => {
-  it("is true for one person's page and not for the tabs, a loan or a deeper path", () => {
-    expect(isPersonDetailPath('/loans/lendings/p1')).toBe(true);
-    expect(isPersonDetailPath('/loans/lendings/p1/')).toBe(true);
-    expect(isPersonDetailPath('/loans/lendings')).toBe(false);
-    expect(isPersonDetailPath('/loans/lendings/p1/extra')).toBe(false);
-    expect(isPersonDetailPath('/loans/l1')).toBe(false);
-    expect(isPersonDetailPath(null)).toBe(false);
-  });
-
-  it('keeps the loan check apart: a person is not a loan and a loan is not a person', () => {
-    expect(isLoanDetailPath('/loans/lendings/p1')).toBe(false);
-    expect(isPersonDetailPath('/loans/l1')).toBe(false);
   });
 });

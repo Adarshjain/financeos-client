@@ -21,7 +21,7 @@ interface AttentionCardProps {
   archivedData: PagedAttention | null;
   archivedPage: number;
   onArchivedPageChange: (page: number) => void;
-  onRetryItem: (ledgerId: string) => void;
+  retryItem: (ledgerId: string) => void;
   onArchive: (ledgerId: string) => void;
   onUnarchive: (ledgerId: string) => void;
   /** Opened from the "needs attention" push: scroll the card into view. */
@@ -61,7 +61,7 @@ export function AttentionCard({
   archivedData,
   archivedPage,
   onArchivedPageChange,
-  onRetryItem,
+  retryItem,
   onArchive,
   onUnarchive,
   autoScroll = false,
@@ -84,7 +84,7 @@ export function AttentionCard({
   const data = archivedView ? archivedData : attentionData;
   const page = archivedView ? archivedPage : attentionPage;
   const go = archivedView ? onArchivedPageChange : onPageChange;
-  const rowHandlers = { onRetryItem, onAssign: setAssigning, onArchive, onUnarchive };
+  const rowHandlers = { retryItem, onAssign: setAssigning, onArchive, onUnarchive };
 
   return (
     <>

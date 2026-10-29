@@ -6,12 +6,12 @@ import { categoriesUrl, clampedCategoriesUrl, parseCategoriesUrl, uncategorizedD
 
 describe('categories address', () => {
   it('reads the first q and a valid page, falling back to the first page', () => {
-    expect(parseCategoriesUrl({ q: [' a ', 'b'], page: '2' })).toEqual({ q: 'a', page: 2 });
+    expect(parseCategoriesUrl({ q: [' a ', 'b'], page: '3' })).toEqual({ q: 'a', page: 2 });
     expect(parseCategoriesUrl({ page: '-1' })).toEqual({ q: '', page: 0 });
     expect(parseCategoriesUrl({ page: 'x' })).toEqual({ q: '', page: 0 });
   });
   it('writes q and page, leaving defaults out', () => {
-    expect(categoriesUrl({ q: 'a b', page: 1 })).toBe('?q=a+b&page=1');
+    expect(categoriesUrl({ q: 'a b', page: 1 })).toBe('?q=a+b&page=2');
     expect(categoriesUrl({ q: '', page: 0 })).toBe('?');
   });
 });
@@ -32,7 +32,7 @@ describe('uncategorizedData', () => {
 describe('clampedCategoriesUrl', () => {
   const empty = { content: [], totalPages: 2 };
   it('goes to the last page when the page asked for is past the end', () => {
-    expect(clampedCategoriesUrl({ q: 'a', page: 9 }, empty)).toBe('?q=a&page=1');
+    expect(clampedCategoriesUrl({ q: 'a', page: 9 }, empty)).toBe('?q=a&page=2');
     expect(clampedCategoriesUrl({ q: '', page: 2 }, { content: [], totalPages: 1 })).toBe('?');
   });
   it('stays put when the page has rows, is in range, or nothing exists', () => {

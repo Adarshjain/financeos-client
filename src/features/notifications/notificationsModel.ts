@@ -1,3 +1,4 @@
+import { parsePage } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import type { AppNotification } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
@@ -5,10 +6,9 @@ import { formatTime } from '@/lib/format';
 
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
-/** `?page=` is 0-based like the API; the URL omits page 0. */
-export function parsePage(search: string): number {
-  const n = Number.parseInt(new URLSearchParams(search).get('page') ?? '', 10);
-  return Number.isFinite(n) && n > 0 ? n : 0;
+/** The 0-based page (the API's) of a query string: the address counts from 1 and omits the first page. */
+export function pageFromSearch(search: string): number {
+  return parsePage(Object.fromEntries(new URLSearchParams(search))).page;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

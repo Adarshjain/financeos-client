@@ -1,3 +1,4 @@
+import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { formatDateRangeCompressed } from '@/lib/date-range';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
@@ -114,8 +115,6 @@ export function parseRewardsQuery(
   knownRuleIds: readonly string[]
 ): RewardsQuery {
   const rule = first(params?.rule);
-  const page = Number(first(params?.page));
-  const size = Number(first(params?.size));
   const rawPeriod = first(params?.period);
   const period = rawPeriod && isRangePreset(rawPeriod) && rawPeriod !== DEFAULT_PERIOD ? rawPeriod : undefined;
   const from = first(params?.from);
@@ -125,8 +124,7 @@ export function parseRewardsQuery(
     period,
     from: period === 'CUSTOM' && isIsoDate(from) ? from : undefined,
     to: period === 'CUSTOM' && isIsoDate(to) ? to : undefined,
-    page: Number.isInteger(page) && page >= 1 ? page - 1 : 0,
-    size: (PAGE_SIZES as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE,
+    ...parsePage(params ?? {}, { size: DEFAULT_PAGE_SIZE, sizes: PAGE_SIZES }),
   };
 }
 
@@ -141,7 +139,7 @@ export function rewardsHref(base: string, query: RewardsQuery): string {
       if (query.to) params.set('to', query.to);
     }
   }
-  if (query.page > 0) params.set('page', String(query.page + 1));
+  setPageParam(params, query.page);
   if (query.size !== DEFAULT_PAGE_SIZE) params.set('size', String(query.size));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;

@@ -121,7 +121,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('columnheader', { name: 'Job' })).toHaveCount(0);
 
       await page.getByRole('button', { name: 'Page 2' }).first().click();
-      await expect(page).toHaveURL(/\/transactions\/import\?page=1/);
+      await expect(page).toHaveURL(/\/transactions\/import\?page=2/);
       await expect(page.getByText('stmt-2.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
     });
 

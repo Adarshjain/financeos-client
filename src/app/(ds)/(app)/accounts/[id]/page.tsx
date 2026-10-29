@@ -1,6 +1,4 @@
-import { notFound } from 'next/navigation';
-
-import { loadAccount } from '@/features/accounts/detail/accountData';
+import { requireAccount } from '@/features/accounts/detail/accountRoute';
 import { AccountOverview } from '@/features/accounts/detail/overview/AccountOverview';
 import { todayInAppZone } from '@/lib/date-range';
 
@@ -9,8 +7,6 @@ export default async function DsAccountOverviewPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const account = await loadAccount(id);
-  if (!account) notFound();
+  const account = await requireAccount((await params).id);
   return <AccountOverview account={account} today={todayInAppZone()} />;
 }

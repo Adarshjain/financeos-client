@@ -19,7 +19,7 @@ describe('Instruments URL state', () => {
   });
 
   it('reads search, type, stale, sort, page and size, and ignores junk', () => {
-    expect(parseInstrumentsUrl({ q: ' tata ', type: 'etf', stale: '1', sort: 'desc', page: '3', size: '100' })).toEqual({
+    expect(parseInstrumentsUrl({ q: ' tata ', type: 'etf', stale: '1', sort: 'desc', page: '4', size: '100' })).toEqual({
       q: 'tata',
       type: 'etf',
       stale: true,
@@ -34,7 +34,7 @@ describe('Instruments URL state', () => {
     expect(instrumentsUrl(defaults)).toBe('/investments/instruments');
     const state = { q: 'tata', type: 'stock' as const, stale: true, sort: 'desc' as const, page: 2, size: 25 };
     const url = instrumentsUrl(state);
-    expect(url).toBe('/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=2&size=25');
+    expect(url).toBe('/investments/instruments?q=tata&type=stock&stale=1&sort=desc&page=3&size=25');
     expect(parseInstrumentsUrl(Object.fromEntries(new URL(url, 'http://x').searchParams))).toEqual(state);
   });
 

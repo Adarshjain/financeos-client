@@ -5,7 +5,7 @@ import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
-import { loadRulesPageData } from './rulesPageData';
+import { loadRulesPageData as loadRulesPage } from './rulesPageData';
 
 const GET = vi.fn();
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: (...a: unknown[]) => GET(...a) } }));
@@ -32,9 +32,15 @@ vi.mock('@/lib/apiClient', () => ({
 let qc: QueryClient;
 vi.mock('@/lib/query', async (orig) => ({ ...(await orig<typeof import('@/lib/query')>()), getQueryClient: () => qc }));
 vi.mock('@/features/shell/loadHelpers', () => ({
-  orNull: (p: Promise<unknown>) => p.catch(() => null),
+  loaded: (p: Promise<unknown>) => p.then((data) => ({ ok: true, data }), () => ({ ok: false, reference: 'req-1' })),
   signInIfPrefetchFailed: vi.fn(),
 }));
+
+/** The loaded data, or null when the load failed. */
+async function loadRulesPageData(...args: Parameters<typeof loadRulesPage>) {
+  const result = await loadRulesPage(...args);
+  return result.ok ? result.data : null;
+}
 
 const card = (id: string, name: string, extra: Partial<Account> = {}) =>
   ({ id, type: AccountType.CREDIT_CARD, name, balance: 0, creditLimit: 1, ...extra }) as Account;
@@ -107,6 +113,7 @@ describe('loadRulesPageData', () => {
   it('is null when the accounts cannot load, and empty when none can earn', async () => {
     api.accounts.mockRejectedValue(new Error('down'));
     expect(await loadRulesPageData(undefined, '2026-10-24')).toBeNull();
+    expect(await loadRulesPage(undefined, '2026-10-24')).toEqual({ ok: false, reference: 'req-1' });
     api.accounts.mockResolvedValue([{ id: 'x', type: AccountType.BROKER, name: 'Zerodha', balance: 0 }]);
     const none = await loadRulesPageData(undefined, '2026-10-24');
     expect(none).toMatchObject({ accountId: '', usage: null });

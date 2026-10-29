@@ -177,11 +177,11 @@ describe('/accounts/[id] layout', () => {
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
   });
 
-  it('raises not-found when the account request fails', async () => {
+  it('raises not-found from the layout when the account request fails', async () => {
     loadAccount.mockResolvedValue(null);
     await expect(
-      DsAccountLayout({ params: Promise.resolve({ id: 'gone' }), children: null }),
-    ).rejects.toBeInstanceOf(NotFoundSignal);
+      DsAccountLayout({ params: Promise.resolve({ id: 'gone' }), children: <p>bare page</p> }),
+    ).rejects.toThrow();
     expect(notFound).toHaveBeenCalled();
   });
 });

@@ -9,6 +9,7 @@ import { AccountType } from '@/lib/types';
 
 import DsAccountsPage from './page';
 import {
+  openScreen,
   type PlainListData,
   renderShellHtml,
   resolveDeep,
@@ -50,7 +51,7 @@ const never = <T,>() => new Promise<T>(() => {});
 
 async function resolved() {
   const ui = await DsAccountsPage();
-  return render((await resolveDeep(ui)) as React.ReactElement);
+  return render((await resolveDeep(openScreen(ui))) as React.ReactElement);
 }
 
 describe('/accounts streaming', () => {

@@ -1,20 +1,18 @@
 import React from 'react';
 
 import { loadNewReport } from '@/features/reports/builder/editorData';
+import { parseNewReportUrl } from '@/features/reports/builder/newReportUrl';
 import { ReportEditor } from '@/features/reports/builder/ReportEditor';
-import { REPORTS_HREF } from '@/features/reports/list/reportsList';
-import { ReportsLoadError } from '@/features/reports/list/ReportsLoadError';
-import { ShellPage } from '@/features/shell/ShellPage';
+import { ReportEditorLoadError } from '@/features/reports/builder/ReportEditorLoadError';
+import type { SearchParams } from '@/features/shell/searchParams';
+
+export const metadata = { title: 'Add report' };
 
 /** /reports/new: the editor on a blank report, or on a template (`?template=`, read here so the first render has it). */
-export default async function DsNewReportPage({ searchParams }: { searchParams: Promise<{ template?: string | string[] }> }) {
-  const { template } = await searchParams;
+export default async function DsNewReportPage({ searchParams }: { searchParams: SearchParams }) {
+  const { template } = parseNewReportUrl(await searchParams);
   const result = await loadNewReport();
-  if (!result.ok) return (
-      <ShellPage crumb="Insights / Reports" title="Add report" backHref={REPORTS_HREF}>
-        <ReportsLoadError reference={result.reference} />
-      </ShellPage>
-    );
+  if (!result.ok) return <ReportEditorLoadError title="Add report" reference={result.reference} />;
   // Keyed on the template, so a different `?template=` starts a fresh draft instead of keeping the old one.
-  return <ReportEditor key={Array.isArray(template) ? template[0] : (template ?? '')} catalog={result.data.catalog} templateId={template} />;
+  return <ReportEditor key={template ?? ''} catalog={result.data.catalog} templateId={template} />;
 }

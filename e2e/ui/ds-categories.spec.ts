@@ -114,7 +114,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/transactions/categories');
       await expect(page.getByText('Cat 10')).toBeVisible();
       await page.getByRole('button', { name: 'Page 2' }).first().click();
-      await expect(page).toHaveURL(/page=1/);
+      await expect(page).toHaveURL(/page=2/);
       await expect(page.getByText('Rent', { exact: true })).toBeVisible();
       await expect(page.getByText('Cat 10')).toHaveCount(0);
     });
@@ -123,7 +123,7 @@ for (const viewport of VIEWPORTS) {
       const api = makeApi(user.cookie);
       for (let i = 10; i < 49; i++) await createCategory(api, `Cat ${i}`);
       // 2 seeded + 39 = 41 categories: the third page holds exactly one (Rent).
-      await page.goto('/transactions/categories?page=2');
+      await page.goto('/transactions/categories?page=3');
       await expect(page.getByRole('button', { name: /^Actions for / })).toHaveCount(phone ? 0 : 1);
       if (phone) {
         await page.getByText('Rent', { exact: true }).click();
@@ -133,7 +133,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Delete' }).click();
       }
       await page.getByRole('dialog', { name: /^Delete / }).getByRole('button', { name: 'Delete category' }).click();
-      await expect(page).toHaveURL(/page=1/);
+      await expect(page).toHaveURL(/page=2/);
       await expect(page.getByText('Dining out')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Page 2' }).first()).toBeVisible();
     });

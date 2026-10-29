@@ -4,7 +4,7 @@ import React from 'react';
 import { OfflineContent } from './OfflineContent';
 
 export const metadata: Metadata = {
-  title: 'Offline · FinanceOS',
+  title: 'Offline',
 };
 
 export default function DsOfflinePage() {

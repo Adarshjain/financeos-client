@@ -23,19 +23,3 @@ export function activeLoansLendingsTab(pathname: string | null | undefined): Loa
   if (path === LENDINGS_HREF || path.startsWith(`${LENDINGS_HREF}/`)) return loansLendingsTabs[0];
   return loansLendingsTabs[1];
 }
-
-/** A loan's own page (`/loans/<id>`): it carries its own top bar and sits outside the tab frame. */
-export function isLoanDetailPath(pathname: string | null | undefined): boolean {
-  const path = (pathname ?? '').replace(/\/+$/, '');
-  if (!path.startsWith(`${LOANS_HREF}/`)) return false;
-  const rest = path.slice(LOANS_HREF.length + 1);
-  return rest !== '' && !rest.includes('/') && rest !== 'lendings';
-}
-
-/** A person's own page (`/loans/lendings/<id>`): like a loan's page it carries its own top bar, outside the tab frame. */
-export function isPersonDetailPath(pathname: string | null | undefined): boolean {
-  const path = (pathname ?? '').replace(/\/+$/, '');
-  if (!path.startsWith(`${LENDINGS_HREF}/`)) return false;
-  const rest = path.slice(LENDINGS_HREF.length + 1);
-  return rest !== '' && !rest.includes('/');
-}

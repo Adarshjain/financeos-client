@@ -60,6 +60,7 @@ for (const viewport of VIEWPORTS) {
     test('Lendings: tiles show the seeded totals, chips filter on the server and search narrows', async ({ page }) => {
       await seedPeople();
       await page.goto('/loans/lendings');
+      await expect(page).toHaveTitle('Lendings · FinanceOS');
 
       await expect(page.getByText('₹15,000').first()).toBeVisible(); // Owed to you
       await expect(page.getByText('₹12,000').first()).toBeVisible(); // You owe

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -13,18 +12,16 @@ import {
   Pager,
   SelectionBar,
   type SelectOption,
-  type TabItem,
-  Tabs,
 } from '@/components/ds';
 import { ErrorState, RuleCard } from '@/components/organisms';
-import { appHref } from '@/features/shell/routes';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Category } from '@/lib/categories.types';
 import type { CategoryRule } from '@/lib/rules.types';
 
 import { ChoiceChip } from '../list/FilterChips';
-import { TRANSACTION_TABS } from '../list/TransactionsView';
+import { TransactionsTabs } from '../TransactionsTabs';
 import { FindMatchesDialog } from './FindMatchesDialog';
 import { RuleDialog } from './RuleDialog';
 import { RuleJobsCard } from './RuleJobsCard';
@@ -97,13 +94,6 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
     router.push(rulesUrl({ ...state, ...(resetPage ? { page: 0 } : {}), ...patch }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q }));
 
-  const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
-    value: t.value,
-    label: t.label,
-    asChild: true,
-    children: <Link href={appHref(t.href)} prefetch={false} />,
-  }));
-
   const categoryOptions: SelectOption[] = [
     { value: ANY, label: 'Any category' },
     ...[...(categories ?? [])].sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ value: c.id, label: c.name })),
@@ -129,9 +119,9 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
   const allOnPage = pageSelectable.length > 0 && pageSelectable.every((id) => ids.includes(id));
 
   return (
-    <ShellPage crumb="Money / Transactions" title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
+    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => setDialog({ kind: 'add' })}>
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
-        <Tabs items={tabs} value="rules" />
+        <TransactionsTabs />
         <FilterBar size="md"
           search={{ value: text, onValueChange: setText }}
         >

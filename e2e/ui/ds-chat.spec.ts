@@ -87,6 +87,7 @@ for (const viewport of VIEWPORTS) {
         { delayMs: 2500, action: 'final_answer', answer: 'You are owed **₹12,500** in total.', blocks },
       ]);
       await page.goto('/chat');
+      await expect(page).toHaveTitle('Ask the data · FinanceOS');
       await expect(page.getByRole('heading', { name: 'What do you want to know?' })).toBeVisible();
       await expect(page.getByText('Spending', { exact: true })).toBeVisible();
 

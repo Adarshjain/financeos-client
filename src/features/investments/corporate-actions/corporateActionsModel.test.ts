@@ -26,14 +26,14 @@ describe('corporate actions URL state', () => {
   });
 
   it('keeps the search (trimmed), kind, sort, page and size', () => {
-    const state = parseCorporateActionsUrl({ q: ' infy ', type: 'merger', sort: 'name', page: '2', size: '50' });
+    const state = parseCorporateActionsUrl({ q: ' infy ', type: 'merger', sort: 'name', page: '3', size: '50' });
     expect(state).toEqual({ q: 'infy', type: 'merger', sort: 'name', page: 2, size: 50 });
   });
 
   it('leaves defaults out of the address and writes the rest', () => {
     expect(corporateActionsUrl(parseCorporateActionsUrl({}))).toBe(CORPORATE_ACTIONS_HREF);
     expect(corporateActionsUrl({ q: 'itc', type: 'split', sort: 'oldest', page: 1, size: 50 })).toBe(
-      `${CORPORATE_ACTIONS_HREF}?q=itc&type=split&sort=oldest&page=1&size=50`,
+      `${CORPORATE_ACTIONS_HREF}?q=itc&type=split&sort=oldest&page=2&size=50`,
     );
   });
 

@@ -1,5 +1,7 @@
 import { fyStartYear } from '@/features/loans/detail/financialYear';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import type { components } from '@/lib/api/schema';
 import { formatDate, formatMoney, formatPercent } from '@/lib/format';
 
@@ -18,7 +20,6 @@ export type EpfLatestContribution = Schemas['EpfLatestContribution'];
 
 export const EPF_HREF = `${DS_PREFIX}/investments/epf`;
 export const EPF_SIZE_OPTIONS = [25, 50, 100];
-export const EPF_DEFAULT_SIZE = 25;
 /** The Import page with the EPF passbook type chosen. */
 export const EPF_IMPORT_TYPE = 'epf';
 
@@ -31,21 +32,14 @@ export interface EpfUrlState {
   size: number;
 }
 
-export const DEFAULT_EPF_URL: EpfUrlState = { fy: null, employer: '', page: 0, size: EPF_DEFAULT_SIZE };
+export const DEFAULT_EPF_URL: EpfUrlState = { fy: null, employer: '', page: 0, size: DEFAULT_PAGE_SIZE };
 
-const pageNo = (value: string | undefined) => {
-  const n = Math.floor(Number(value));
-  return Number.isFinite(n) && n > 0 ? n : 0;
-};
-
-export function parseEpfUrl(params: { fy?: string; employer?: string; page?: string; size?: string }): EpfUrlState {
-  const size = Number(params.size);
-  const year = Number(params.fy);
+export function parseEpfUrl(params: SearchParamsRecord): EpfUrlState {
+  const year = Number(first(params.fy));
   return {
-    fy: params.fy === 'all' ? 'all' : /^\d{4}$/.test(params.fy ?? '') && year > 1900 ? year : null,
-    employer: (params.employer ?? '').trim(),
-    page: pageNo(params.page),
-    size: EPF_SIZE_OPTIONS.includes(size) ? size : EPF_DEFAULT_SIZE,
+    fy: first(params.fy) === 'all' ? 'all' : /^\d{4}$/.test(first(params.fy) ?? '') && year > 1900 ? year : null,
+    employer: (first(params.employer) ?? '').trim(),
+    ...parsePage(params, { size: DEFAULT_PAGE_SIZE, sizes: EPF_SIZE_OPTIONS }),
   };
 }
 
@@ -54,8 +48,8 @@ export function epfUrl(state: EpfUrlState): string {
   const query = new URLSearchParams();
   if (state.fy !== null) query.set('fy', String(state.fy));
   if (state.employer) query.set('employer', state.employer);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== EPF_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${EPF_HREF}?${text}` : EPF_HREF;
 }

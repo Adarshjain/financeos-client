@@ -1,3 +1,5 @@
+import { parsePage, setPageParam } from '@/features/shell/pagination';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
@@ -33,26 +35,15 @@ export function defaultSortDir(sort: HoldingsSort): HoldingsSortDir {
   return sort === 'name' ? 'asc' : 'desc';
 }
 
-export function parseHoldingsUrl(params: {
-  q?: string;
-  type?: string;
-  broker?: string;
-  sort?: string;
-  dir?: string;
-  page?: string;
-  size?: string;
-}): HoldingsUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
-  const sort = SORTS.includes(params.sort as HoldingsSort) ? (params.sort as HoldingsSort) : 'name';
+export function parseHoldingsUrl(params: SearchParamsRecord): HoldingsUrlState {
+  const sort = SORTS.includes(first(params.sort) as HoldingsSort) ? (first(params.sort) as HoldingsSort) : 'name';
   return {
-    q: (params.q ?? '').trim(),
-    type: TYPES.includes(params.type as InstrumentType) ? (params.type as InstrumentType) : '',
-    broker: (params.broker ?? '').trim(),
+    q: (first(params.q) ?? '').trim(),
+    type: TYPES.includes(first(params.type) as InstrumentType) ? (first(params.type) as InstrumentType) : '',
+    broker: (first(params.broker) ?? '').trim(),
     sort,
-    dir: DIRS.includes(params.dir as HoldingsSortDir) ? (params.dir as HoldingsSortDir) : defaultSortDir(sort),
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: HOLDINGS_SIZE_OPTIONS.includes(size) ? size : HOLDINGS_DEFAULT_SIZE,
+    dir: DIRS.includes(first(params.dir) as HoldingsSortDir) ? (first(params.dir) as HoldingsSortDir) : defaultSortDir(sort),
+    ...parsePage(params, { size: HOLDINGS_DEFAULT_SIZE, sizes: HOLDINGS_SIZE_OPTIONS }),
   };
 }
 
@@ -64,7 +55,7 @@ export function holdingsUrl(state: HoldingsUrlState): string {
   if (state.broker) query.set('broker', state.broker);
   if (state.sort !== 'name') query.set('sort', state.sort);
   if (state.dir !== defaultSortDir(state.sort)) query.set('dir', state.dir);
-  if (state.page > 0) query.set('page', String(state.page));
+  setPageParam(query, state.page);
   if (state.size !== HOLDINGS_DEFAULT_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${HOLDINGS_HREF}?${text}` : HOLDINGS_HREF;

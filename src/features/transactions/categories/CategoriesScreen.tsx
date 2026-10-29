@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -18,19 +17,17 @@ import {
   Menu,
   MenuItem,
   Pager,
-  type TabItem,
-  Tabs,
   Text,
 } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
-import { appHref } from '@/features/shell/routes';
+import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { CategoryDialog } from '../category/CategoryDialog';
-import { TRANSACTION_TABS } from '../list/TransactionsView';
+import { TransactionsTabs } from '../TransactionsTabs';
 import { CATEGORIES_PAGE_SIZE, type CategoriesPage, categoriesUrl, type CategoriesUrlState, type UncategorizedData } from './categoriesModel';
 import { CategoryNameDialog } from './CategoryNameDialog';
 import { UncategorizedCard } from './UncategorizedCard';
@@ -61,13 +58,6 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
   const { create, rename, remove } = useCategoryMutations({ onCreated: close, onRenamed: close, onDeleted: close });
   const { text, setText } = useSearchText(state.q, (q) => router.replace(categoriesUrl({ q, page: 0 }), { scroll: false }));
 
-  const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
-    value: t.value,
-    label: t.label,
-    asChild: true,
-    children: <Link href={appHref(t.href)} prefetch={false} />,
-  }));
-
   const pager = (borderPosition: 'top' | 'bottom') =>
     categories ? (
       <Pager
@@ -82,9 +72,9 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
     ) : null;
 
   return (
-    <ShellPage crumb="Money" title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })}>
+    <ShellPage crumb={areaCrumb('transactions')} title="Categories" flushTop onAdd={() => setDialog({ kind: 'create' })}>
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
-        <Tabs items={tabs} value="categories" />
+        <TransactionsTabs />
         {uncategorized ? (
           <UncategorizedCard
             count={uncategorized.count}

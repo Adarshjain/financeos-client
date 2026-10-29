@@ -213,7 +213,7 @@ describe('TransactionsView', () => {
   it('pages and sizes through the address', () => {
     setup();
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 2' })[0]);
-    expect(lastUrl()).toBe('/transactions?page=1');
+    expect(lastUrl()).toBe('/transactions?page=2');
   });
 
   it('opens the Filters dialog from + More and shows the live count; Show writes the address', async () => {

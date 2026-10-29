@@ -1,10 +1,13 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import { appHref } from '@/features/shell/routes';
 import { getOptionalSession } from '@/lib/auth';
 
 import { SignupForm } from './SignupForm';
+
+export const metadata: Metadata = { title: 'Create account' };
 
 export default async function DsSignupPage() {
   const session = await getOptionalSession();
@@ -12,5 +15,9 @@ export default async function DsSignupPage() {
     redirect(appHref('/dashboard'));
   }
 
-  return <SignupForm />;
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  );
 }

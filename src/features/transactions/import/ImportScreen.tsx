@@ -10,15 +10,16 @@ import { AccountPicker, JobsHistory } from '@/components/organisms';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Account } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
+import { TransactionsTabs } from '../TransactionsTabs';
 import { formatFileSize, MAX_REQUEST_MB } from './fileLimits';
 import { IMPORT_ACTIVITY_HREF, IMPORT_JOB_TYPE, importJobHref, importUrl, RECENT_IMPORTS_SIZE } from './importModel';
-import { ImportTabs } from './ImportTabs';
 import { useIngestForm } from './useIngestForm';
 
 const IMPORT_ACCOUNT_TYPES: readonly AccountType[] = [AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD];
@@ -80,14 +81,14 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
 
   return (
     <ShellPage
-      crumb="Money / Transactions"
+      crumb={subCrumb('transactions', 'Import')}
       title="Import"
       flushTop
       onAdd={chooseFiles}
       addLabel="Add statements"
     >
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
-        <ImportTabs />
+        <TransactionsTabs />
         <div className="grid grid-cols-1 items-start gap-x-space-12 gap-y-space-8 desk:grid-cols-12 desk:gap-space-16">
           <Card className="desk:col-span-7">
             <form

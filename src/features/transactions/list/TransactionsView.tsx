@@ -1,12 +1,12 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { type TabItem, Tabs } from '@/components/ds';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
+import { LoadError } from '@/features/shell/LoadError';
+import { areaCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
@@ -14,19 +14,12 @@ import { seedNeedsReviewCount } from '@/features/transactions/useNeedsReviewCoun
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 
+import { TransactionsTabs } from '../TransactionsTabs';
 import { FilterChips } from './FilterChips';
 import { FiltersDialog } from './FiltersDialog';
 import type { TransactionListRow } from './transactionRows';
 import { TransactionsList } from './TransactionsList';
-import { TransactionsLoadError } from './TransactionsLoadError';
 import { type TransactionsQuery, transactionsUrl } from './transactionsUrl';
-
-export const TRANSACTION_TABS = [
-  { value: 'all', label: 'All', href: '/transactions' },
-  { value: 'rules', label: 'Rules', href: '/rules' },
-  { value: 'categories', label: 'Categories', href: '/rules/categories' },
-  { value: 'import', label: 'Import', href: '/transactions/import' },
-];
 
 export type TransactionsListResult =
   | {
@@ -120,27 +113,20 @@ export function TransactionsView({
     });
   const { text, setText } = useSearchText(query.q, (q) => go({ q }));
 
-  const tabs: TabItem[] = TRANSACTION_TABS.map((t) => ({
-    value: t.value,
-    label: t.label,
-    asChild: true,
-    children: <Link href={appHref(t.href)} prefetch={false} />,
-  }));
-
   return (
     <>
-      <ShellPage crumb="Money" title="Transactions" flushTop onAdd={onAdd}>
+      <ShellPage crumb={areaCrumb('transactions')} title="Transactions" flushTop onAdd={onAdd}>
         <div className="flex">
           <div className="flex min-w-0 flex-1 flex-col gap-space-8 desk:gap-space-16">
             {selectionHeader ? (
               <>
                 <div className="desk:hidden">
-                  <Tabs items={tabs} value="all" />
+                  <TransactionsTabs />
                 </div>
                 {selectionHeader}
               </>
             ) : (
-              <Tabs items={tabs} value="all" />
+              <TransactionsTabs />
             )}
             <FilterChips
               query={query}
@@ -170,7 +156,7 @@ export function TransactionsView({
                 wrapRow={wrapRow}
               />
             ) : (
-              <TransactionsLoadError reference={list.reference} />
+              <LoadError what="transactions" reference={list.reference} />
             )}
           </div>
           {detailOpen ? (

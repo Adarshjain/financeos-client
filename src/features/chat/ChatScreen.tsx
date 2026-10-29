@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card, cn, MessageBubble, PromptField, showToast, Text } from '@/components/ds';
+import { areaCrumb, crumbMap } from '@/features/shell/navigation';
 import { replaceCurrentRoute } from '@/features/shell/navigationStore';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -31,7 +32,7 @@ export interface ChatScreenProps {
 const CHAT_HREF = appHref('/chat');
 const REPORTS_HREF = appHref('/reports');
 /** Every column child stops at the thread width on desktop. */
-const COLUMN = 'desk:w-full desk:max-w-container-lg';
+const COLUMN = 'desk:w-full desk:max-w-container-md';
 
 /**
  * One chat page. Going to a new chat from an open one (the +, Back, deleting the open chat) lands on the same page
@@ -148,11 +149,11 @@ function ChatSession({
       crumb={
         started ? (
           <>
-            <span className="desk:hidden">Ask the data</span>
-            <span className="max-desk:hidden">Insights</span>
+            <span className="desk:hidden">{crumbMap.chat.label}</span>
+            <span className="max-desk:hidden">{areaCrumb('chat')}</span>
           </>
         ) : (
-          'Insights'
+          areaCrumb('chat')
         )
       }
       title={title}

@@ -7,6 +7,7 @@ import { expect, test } from '../fixtures/test';
 test.describe('/ds Offline page (@ui)', () => {
   test('renders the offline notice with design-system EmptyState and Retry button', async ({ page }) => {
     await page.goto(`${E2E_CLIENT_URL}/offline`);
+    await expect(page).toHaveTitle('Offline · FinanceOS');
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
     await expect(
       page.getByText("Check your connection.")

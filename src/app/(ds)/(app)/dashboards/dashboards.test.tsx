@@ -55,7 +55,7 @@ describe('/dashboards/[id]', () => {
   it('says the dashboard is not found, with a way back', () => {
     renderWithQuery(<DashboardNotFound />);
     expect(screen.getByText('Dashboard not found')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Go to Dashboards' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Back to dashboards' })).toBeInTheDocument();
   });
 
   it('shows the dashboard\'s shape while it loads', () => {

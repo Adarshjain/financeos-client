@@ -1,5 +1,6 @@
 import { chartTypeLabel } from '@/features/reports/chartTypeLabels';
 import { appHref } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatCount, formatDate } from '@/lib/format';
 import type { ReportDashboardRef, ReportSummaryResponse, ReportType } from '@/lib/reports.types';
@@ -40,6 +41,11 @@ export const TYPE_CHIPS: { type: ReportKind; label: string }[] = [
 /** The type filter in the URL (`?type=`); anything else is All. */
 export function parseReportsType(params: { type?: string }): ReportKind | undefined {
   return REPORT_KINDS.find((t) => t === params.type);
+}
+
+/** What a /reports address asks for: `?type=` sets the chip of the first render. */
+export function parseReportsUrl(params: SearchParamsRecord): { type: ReportKind | undefined } {
+  return { type: parseReportsType({ type: first(params.type) }) };
 }
 
 /** The Reports list URL for a type filter; All has no query string. */

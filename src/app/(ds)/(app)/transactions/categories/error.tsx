@@ -1,17 +1,6 @@
 'use client';
 
-import React from 'react';
+import { areaError } from '@/features/shell/areaError';
+import { areaCrumb } from '@/features/shell/navigation';
 
-import { PageError } from '@/features/shell/PageError';
-
-export default function DsCategoriesError({
-  error,
-  reset,
-  unstable_retry,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-  unstable_retry?: () => void;
-}) {
-  return <PageError error={error} reset={reset} unstable_retry={unstable_retry} what="categories" shell={{ crumb: 'Money', title: 'Categories' }} />;
-}
+export default areaError({ what: 'categories', crumb: areaCrumb('transactions'), title: 'Categories' });

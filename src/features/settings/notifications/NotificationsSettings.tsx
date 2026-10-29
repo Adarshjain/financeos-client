@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import { LoadError } from '@/features/shell/LoadError';
 import type { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';
@@ -64,7 +64,7 @@ export function NotificationsSettings() {
 
   if (settingsQuery.isLoading && !settings) return <NotificationsSkeleton />;
   if (!settings) {
-    return <Banner tone="danger">Couldn&apos;t load notification settings. Try again.</Banner>;
+    return <LoadError what="notification settings" retry={() => void settingsQuery.refetch()} />;
   }
   return <Loaded settings={settings} cards={cards} loans={loansQuery.data ?? []} />;
 }

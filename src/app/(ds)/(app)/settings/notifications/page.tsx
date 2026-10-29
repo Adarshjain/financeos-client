@@ -6,6 +6,8 @@ import { accountsApi, notificationsApi } from '@/lib/apiClient';
 import { requireAuth } from '@/lib/auth';
 import { getQueryClient, keys } from '@/lib/query';
 
+export const metadata = { title: 'Notifications' };
+
 export default async function DsSettingsNotificationsPage() {
   await requireAuth();
 

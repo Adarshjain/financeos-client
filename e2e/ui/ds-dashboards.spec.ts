@@ -277,6 +277,7 @@ for (const viewport of VIEWPORTS) {
       const { dashboard } = await seedBoard('Ds back guarded');
       // Arrive by an in-app navigation, so Back stays in the app.
       await page.goto('/dashboards');
+      await expect(page).toHaveTitle('Dashboards · FinanceOS');
       await page.getByRole('main').getByText('Ds back guarded', { exact: true }).first().click();
       await expect(page).toHaveURL(new RegExp(`/dashboards/${dashboard.id}$`));
       await page.getByRole('button', { name: 'Edit', exact: true }).click();

@@ -1,6 +1,8 @@
 import { fyRangeLabel, ordinal, type TileModel } from '@/features/loans/loanFormat';
 import { LOANS_HREF } from '@/features/loans/loansLendingsTabs';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { BatchLoanPaymentItem, LoanMatchSuggestions, LoanResponse, LoansSummaryDetail } from '@/lib/loan.types';
 
@@ -9,7 +11,6 @@ import { paymentItemFor } from '../loanPaymentsBatch';
 // ---- URL state -------------------------------------------------------------
 
 export const LOANS_SIZE_OPTIONS = [10, 25, 50];
-export const LOANS_DEFAULT_SIZE = 25;
 
 export interface LoansUrlState {
   q: string;
@@ -17,13 +18,10 @@ export interface LoansUrlState {
   size: number;
 }
 
-export function parseLoansUrl(params: { q?: string; page?: string; size?: string }): LoansUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
+export function parseLoansUrl(params: SearchParamsRecord): LoansUrlState {
   return {
-    q: (params.q ?? '').trim(),
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: LOANS_SIZE_OPTIONS.includes(size) ? size : LOANS_DEFAULT_SIZE,
+    q: (first(params.q) ?? '').trim(),
+    ...parsePage(params, { sizes: LOANS_SIZE_OPTIONS }),
   };
 }
 
@@ -31,8 +29,8 @@ export function parseLoansUrl(params: { q?: string; page?: string; size?: string
 export function loansUrl(state: LoansUrlState): string {
   const query = new URLSearchParams();
   if (state.q) query.set('q', state.q);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== LOANS_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${LOANS_HREF}?${text}` : LOANS_HREF;
 }

@@ -46,7 +46,7 @@ function person(over: Partial<CounterpartyListItem> = {}): CounterpartyListItem 
 describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
     expect(parseLendingsUrl({})).toEqual({ q: '', filter: 'all', page: 0, size: 25 });
-    expect(parseLendingsUrl({ q: ' pri ', filter: 'owe', page: '2', size: '50' })).toEqual({
+    expect(parseLendingsUrl({ q: ' pri ', filter: 'owe', page: '3', size: '50' })).toEqual({
       q: 'pri',
       filter: 'owe',
       page: 2,
@@ -58,7 +58,7 @@ describe('URL state', () => {
   it('builds the tab URL with only non-default parts', () => {
     expect(lendingsUrl({ q: '', filter: 'all', page: 0, size: 25 })).toBe('/loans/lendings');
     expect(lendingsUrl({ q: 'pri', filter: 'settled', page: 1, size: 10 })).toBe(
-      '/loans/lendings?q=pri&filter=settled&page=1&size=10',
+      '/loans/lendings?q=pri&filter=settled&page=2&size=10',
     );
   });
 

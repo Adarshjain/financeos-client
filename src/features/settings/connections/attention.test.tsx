@@ -51,7 +51,7 @@ function setup(over: Partial<React.ComponentProps<typeof AttentionCard>> = {}) {
     archivedData: null,
     archivedPage: 0,
     onArchivedPageChange: vi.fn(),
-    onRetryItem: vi.fn(),
+    retryItem: vi.fn(),
     onArchive: vi.fn(),
     onUnarchive: vi.fn(),
     ...over,
@@ -98,7 +98,7 @@ describe('AttentionCard', () => {
     const p = setup();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
-    expect(p.onRetryItem).toHaveBeenCalledWith('i1');
+    expect(p.retryItem).toHaveBeenCalledWith('i1');
     expect(p.onArchive).toHaveBeenCalledWith('i1');
   });
 
@@ -166,7 +166,7 @@ describe('AttentionCard', () => {
       onPageChange: vi.fn(),
       archivedPage: 0,
       onArchivedPageChange: vi.fn(),
-      onRetryItem: vi.fn(),
+      retryItem: vi.fn(),
       onArchive: vi.fn(),
       onUnarchive: vi.fn(),
     };

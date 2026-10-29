@@ -129,7 +129,7 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props({ rules: { rows: rules, totalElements: 64, totalPages: 3 } })} />);
     expect(screen.getAllByText(/64/).length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 2' })[0]);
-    expect(router.push).toHaveBeenCalledWith('?page=1', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('?page=2', { scroll: false });
   });
 
   it('says so when nothing matches, offering to clear the filters, and when the load failed', () => {

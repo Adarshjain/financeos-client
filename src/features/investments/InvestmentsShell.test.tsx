@@ -142,11 +142,4 @@ describe('InvestmentsShell', () => {
       unmount();
     }
   });
-
-  it("renders a holding's own page without the tab strip", () => {
-    pathname = '/investments/i1';
-    renderShell();
-    expect(screen.getByText('tab body')).toBeInTheDocument();
-    expect(screen.queryByRole('tab')).toBeNull();
-  });
 });

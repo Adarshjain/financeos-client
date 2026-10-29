@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import React from 'react';
 
 import { loaded, orNull } from '@/features/shell/loadHelpers';
+import type { SearchParams } from '@/features/shell/searchParams';
 import {
   clampedRulesUrl,
   parseRulesUrl,
@@ -10,6 +11,8 @@ import {
 import { RulesScreen } from '@/features/transactions/rules/RulesScreen';
 import { categoriesApi, rulesApi } from '@/lib/apiClient';
 
+export const metadata = { title: 'Rules' };
+
 /**
  * /transactions/rules: one page of rules, filtered by the address (it opens on Unverified), with the
  * categories the filter and the form need. The server reads the address once and fetches them together.
@@ -17,7 +20,7 @@ import { categoriesApi, rulesApi } from '@/lib/apiClient';
 export default async function DsRulesPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
   const state = parseRulesUrl(await searchParams);
   const [result, categories] = await Promise.all([

@@ -17,6 +17,25 @@ export function UpcomingSkeleton() {
   );
 }
 
+/** The Upcoming list while it loads: the totals and rows. */
+export function UpcomingPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <UpcomingSkeleton />
+    </div>
+  );
+}
+
+/** The Upcoming calendar while it loads: the month header and rows. */
+export function UpcomingCalendarSkeleton() {
+  return (
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <Card title={<Skeleton width={140} height={16} />} subtitle={<Skeleton width={120} height={12} />} />
+      <UpcomingRowsSkeleton />
+    </div>
+  );
+}
+
 export function UpcomingRowsSkeleton() {
   return (
     <Card>

@@ -29,7 +29,7 @@ describe('F&O URL state', () => {
 
   it('reads every filter and ignores values it does not know', () => {
     expect(parseFnoUrl({ contract: 'OPT' }).contract).toBe('OPT');
-    expect(parseFnoUrl({ q: ' nifty ', contract: 'PE', broker: 'b2', fy: '2025', sort: 'pnl_desc', page: '2', size: '50' })).toEqual({
+    expect(parseFnoUrl({ q: ' nifty ', contract: 'PE', broker: 'b2', fy: '2025', sort: 'pnl_desc', page: '3', size: '50' })).toEqual({
       q: 'nifty',
       contract: 'PE',
       broker: 'b2',
@@ -49,13 +49,13 @@ describe('F&O URL state', () => {
 
   it('keeps defaults out of the address and puts the rest in', () => {
     expect(fnoUrl(parseFnoUrl({}))).toBe(FNO_HREF);
-    expect(fnoUrl(parseFnoUrl({ q: 'NIFTY', contract: 'CE', broker: 'b1', fy: '2025', sort: 'oldest', page: '1', size: '100' }))).toBe(
-      `${FNO_HREF}?q=NIFTY&contract=CE&broker=b1&fy=2025&sort=oldest&page=1&size=100`,
+    expect(fnoUrl(parseFnoUrl({ q: 'NIFTY', contract: 'CE', broker: 'b1', fy: '2025', sort: 'oldest', page: '2', size: '100' }))).toBe(
+      `${FNO_HREF}?q=NIFTY&contract=CE&broker=b1&fy=2025&sort=oldest&page=2&size=100`,
     );
   });
 
   it('asks the server for the year, the contract, the broker, the underlying, the sort and the page', () => {
-    expect(fnoQuery(parseFnoUrl({ q: 'NIFTY', contract: 'FUT', broker: 'b1', sort: 'pnl_asc', page: '1' }))).toEqual({
+    expect(fnoQuery(parseFnoUrl({ q: 'NIFTY', contract: 'FUT', broker: 'b1', sort: 'pnl_asc', page: '2' }))).toEqual({
       fy: 2026,
       optionType: 'FUT',
       brokerAccountId: 'b1',

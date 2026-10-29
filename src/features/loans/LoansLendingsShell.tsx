@@ -6,10 +6,11 @@ import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
+import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 import { LoanFormDialog } from './form/LoanFormDialog';
-import { activeLoansLendingsTab, isLoanDetailPath, isPersonDetailPath, loansLendingsTabs } from './loansLendingsTabs';
+import { activeLoansLendingsTab, loansLendingsTabs } from './loansLendingsTabs';
 
 /**
  * The frame shared by `/loans` and `/loans/lendings`, applied by the route layout: the top bar
@@ -17,13 +18,6 @@ import { activeLoansLendingsTab, isLoanDetailPath, isPersonDetailPath, loansLend
  * tabs, then the tab's page.
  */
 export function LoansLendingsShell({ children }: { children: React.ReactNode }) {
-  // A loan's or a person's own page has its own top bar: it renders on its own, without the tabs.
-  const pathname = usePathname();
-  if (isLoanDetailPath(pathname) || isPersonDetailPath(pathname)) return <>{children}</>;
-  return <LoansLendingsFrame>{children}</LoansLendingsFrame>;
-}
-
-function LoansLendingsFrame({ children }: { children: React.ReactNode }) {
   const tab = activeLoansLendingsTab(usePathname());
   const addLending = useAddLending();
   const [addingLoan, setAddingLoan] = React.useState(false);
@@ -38,7 +32,7 @@ function LoansLendingsFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ShellPage
-        crumb="Owe & lend"
+        crumb={areaCrumb('loans')}
         title={tab.title}
         flushTop
         onAdd={tab.id === 'loans' ? () => setAddingLoan(true) : () => addLending.open()}

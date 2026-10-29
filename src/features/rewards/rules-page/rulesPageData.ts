@@ -1,7 +1,7 @@
 import { dehydrate,type DehydratedState } from '@tanstack/react-query';
 
 import { rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWindow';
-import { orNull, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
+import { type Loaded, loaded, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { serverApi } from '@/lib/api/server';
 import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
@@ -20,24 +20,25 @@ export interface RulesPageData {
 /**
  * Everything the Earning rules page needs, loaded before the first render: the accounts and categories, the chosen card's
  * rules, caps, milestones and config (hydrated, so nothing loads twice), and its reward-year report for the usage bars.
- * Null when the accounts could not load.
+ * Not ok (with the request reference) when the accounts could not load.
  */
 export async function loadRulesPageData(
   requested: string | string[] | undefined,
   today: string
-): Promise<RulesPageData | null> {
-  const [accounts, categories] = await Promise.all([
-    orNull(accountsApi.list()),
+): Promise<Loaded<RulesPageData>> {
+  const [accountsResult, categories] = await Promise.all([
+    loaded(accountsApi.list()),
     categoriesApi.list().catch(() => []),
   ]);
-  if (!accounts) return null;
+  if (!accountsResult.ok) return accountsResult;
+  const accounts = accountsResult.data;
   const account = pickRewardsAccount(rewardEligibleAccounts(accounts), requested);
   const accountId = account?.id ?? '';
 
   const qc = getQueryClient();
   qc.setQueryData(keys.accounts.list(), accounts);
   qc.setQueryData(keys.categories.list(), categories);
-  if (!account) return { accountId, state: dehydrate(qc), usage: null };
+  if (!account) return { ok: true, data: { accountId, state: dehydrate(qc), usage: null } };
 
   const [, totals] = await Promise.all([
     Promise.all([
@@ -56,5 +57,5 @@ export async function loadRulesPageData(
   const report = await rewardsApi.getReport(accountId, window.from, window.to).catch(() => null);
   const rules = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listRules>>>(keys.rewards.rules(accountId)) ?? [];
   const caps = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listCapBuckets>>>(keys.rewards.capBuckets(accountId)) ?? [];
-  return { accountId, state: dehydrate(qc), usage: report ? buildUsage(report, rules, caps, today) : null };
+  return { ok: true, data: { accountId, state: dehydrate(qc), usage: report ? buildUsage(report, rules, caps, today) : null } };
 }

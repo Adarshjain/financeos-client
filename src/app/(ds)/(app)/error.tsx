@@ -2,8 +2,10 @@
 
 import React, { useEffect } from 'react';
 
-import { PageError } from '@/features/shell/PageError';
+import { areaError } from '@/features/shell/areaError';
 import { APP_LOCKED_EVENT, isAppLockedResult } from '@/lib/appLock';
+
+const Boundary = areaError({ title: 'Error' });
 
 /** Any /ds page without its own error boundary: the shell stays, the page says what failed. */
 export default function DsAppError({
@@ -29,5 +31,5 @@ export default function DsAppError({
       .catch(() => undefined);
   }, [error]);
 
-  return <PageError error={error} reset={reset} unstable_retry={unstable_retry} shell={{ title: 'Error' }} />;
+  return <Boundary error={error} reset={reset} unstable_retry={unstable_retry} />;
 }

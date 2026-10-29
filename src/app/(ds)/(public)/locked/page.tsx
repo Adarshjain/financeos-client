@@ -2,20 +2,18 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
+import { parseLockedUrl } from '@/features/appLock/lockedUrl';
 import { LockScreen } from '@/features/appLock/LockScreen';
-import { appHref, isSafeLocalPath } from '@/features/shell/routes';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { ApiError, appLockApi } from '@/lib/apiClient';
-import { isLockRoute } from '@/lib/appLock';
 import { redirectToSignIn } from '@/lib/auth';
 
 export const metadata: Metadata = {
-  title: 'Locked · FinanceOS',
+  title: 'Locked',
 };
 
-export default async function DsLockedPage({ searchParams }: { searchParams?: Promise<{ from?: string | string[] }> }) {
-  const params = searchParams ? await searchParams : undefined;
-  const requested = typeof params?.from === 'string' ? params.from : undefined;
-  const from = requested && isSafeLocalPath(requested) && !isLockRoute(requested.split(/[?#]/)[0]) ? requested : appHref('/dashboard');
+export default async function DsLockedPage({ searchParams }: { searchParams: SearchParams }) {
+  const { from } = parseLockedUrl(await searchParams);
 
   let locked: boolean;
   try {

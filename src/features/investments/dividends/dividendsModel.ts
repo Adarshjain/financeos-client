@@ -1,5 +1,7 @@
 import { fyStartYear as fyStartOf } from '@/features/loans/detail/financialYear';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { DividendFilters, DividendInstrumentTotal, DividendReceiptFilter } from '@/lib/investments.types';
 import type { Dividend, DividendReceiptStatus, DividendReceiptSummary, DividendSuggestion, DividendSummary, DividendType } from '@/lib/types';
@@ -13,7 +15,6 @@ import type { MatchReason, UnrecordedCredit } from './receiptTypes';
 export const DIVIDENDS_HREF = `${DS_PREFIX}/investments/dividends`;
 
 export const DIVIDENDS_SIZE_OPTIONS = [25, 50, 100];
-export const DIVIDENDS_DEFAULT_SIZE = 25;
 /** The by-instrument card pages in tens. */
 export const BY_INSTRUMENT_SIZE = 10;
 /** Financial years the by-instrument card covers. */
@@ -41,7 +42,7 @@ export const DEFAULT_DIVIDENDS_URL: DividendsUrlState = {
   receipt: '',
   instrument: '',
   page: 0,
-  size: DIVIDENDS_DEFAULT_SIZE,
+  size: DEFAULT_PAGE_SIZE,
   ipage: 0,
 };
 
@@ -50,32 +51,16 @@ const RECEIPTS: DividendReceiptFilter[] = ['received', 'received_untracked', 'no
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const pageNo = (value: string | undefined) => {
-  const n = Math.floor(Number(value));
-  return Number.isFinite(n) && n > 0 ? n : 0;
-};
-
-export function parseDividendsUrl(params: {
-  fy?: string;
-  broker?: string;
-  type?: string;
-  receipt?: string;
-  instrumentId?: string;
-  page?: string;
-  size?: string;
-  ip?: string;
-}): DividendsUrlState {
-  const size = Number(params.size);
-  const year = Number(params.fy);
+export function parseDividendsUrl(params: SearchParamsRecord): DividendsUrlState {
+  const year = Number(first(params.fy));
   return {
-    fy: params.fy === 'all' ? 'all' : /^\d{4}$/.test(params.fy ?? '') && year > 1900 ? year : null,
-    broker: (params.broker ?? '').trim(),
-    type: TYPES.includes(params.type as DividendType) ? (params.type as DividendType) : '',
-    receipt: RECEIPTS.includes(params.receipt as DividendReceiptFilter) ? (params.receipt as DividendReceiptFilter) : '',
-    instrument: UUID.test((params.instrumentId ?? '').trim()) ? (params.instrumentId ?? '').trim() : '',
-    page: pageNo(params.page),
-    size: DIVIDENDS_SIZE_OPTIONS.includes(size) ? size : DIVIDENDS_DEFAULT_SIZE,
-    ipage: pageNo(params.ip),
+    fy: first(params.fy) === 'all' ? 'all' : /^\d{4}$/.test(first(params.fy) ?? '') && year > 1900 ? year : null,
+    broker: (first(params.broker) ?? '').trim(),
+    type: TYPES.includes(first(params.type) as DividendType) ? (first(params.type) as DividendType) : '',
+    receipt: RECEIPTS.includes(first(params.receipt) as DividendReceiptFilter) ? (first(params.receipt) as DividendReceiptFilter) : '',
+    instrument: UUID.test((first(params.instrumentId) ?? '').trim()) ? (first(params.instrumentId) ?? '').trim() : '',
+    ...parsePage(params, { size: DEFAULT_PAGE_SIZE, sizes: DIVIDENDS_SIZE_OPTIONS }),
+    ipage: parsePage({ page: first(params.ip) }).page,
   };
 }
 
@@ -87,9 +72,9 @@ export function dividendsUrl(state: DividendsUrlState): string {
   if (state.type) query.set('type', state.type);
   if (state.receipt) query.set('receipt', state.receipt);
   if (state.instrument) query.set('instrumentId', state.instrument);
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== DIVIDENDS_DEFAULT_SIZE) query.set('size', String(state.size));
-  if (state.ipage > 0) query.set('ip', String(state.ipage));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
+  if (state.ipage > 0) query.set('ip', String(state.ipage + 1));
   const text = query.toString();
   return text ? `${DIVIDENDS_HREF}?${text}` : DIVIDENDS_HREF;
 }

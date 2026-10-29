@@ -51,7 +51,7 @@ describe('activityUrl', () => {
   });
   it('keeps status, type, page, size and job', () => {
     expect(activityUrl({ statusFilter: 'FAILED', typeFilter: 'GMAIL_SYNC', size: 50 }, { newPage: 2, job: 'abc' })).toBe(
-      '/settings/activity?status=FAILED&type=GMAIL_SYNC&page=2&size=50&job=abc',
+      '/settings/activity?status=FAILED&type=GMAIL_SYNC&page=3&size=50&job=abc',
     );
   });
   it('a filter change resets the page and drops the job', () => {

@@ -1,5 +1,7 @@
 import { daysBetween } from '@/features/loans/loanFormat';
+import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
+import type { SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatCount, formatDate, formatMoney, initialsOf } from '@/lib/format';
 import type { CounterpartyResponse, LedgerEntryResponse, LendingDirection } from '@/lib/lending.types';
 import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
@@ -8,20 +10,14 @@ import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEn
 // ---- URL state -------------------------------------------------------------
 
 export const LEDGER_SIZE_OPTIONS = [10, 25, 50];
-export const LEDGER_DEFAULT_SIZE = 25;
 
 export interface PersonUrlState {
   page: number;
   size: number;
 }
 
-export function parsePersonUrl(params: { page?: string; size?: string }): PersonUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
-  return {
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: LEDGER_SIZE_OPTIONS.includes(size) ? size : LEDGER_DEFAULT_SIZE,
-  };
+export function parsePersonUrl(params: SearchParamsRecord): PersonUrlState {
+  return parsePage(params, { sizes: LEDGER_SIZE_OPTIONS });
 }
 
 /** The person page's own path (Dinero when built). */
@@ -32,8 +28,8 @@ export function personHref(id: string): string {
 /** The person page URL for a state: defaults stay out of the query string. */
 export function personUrl(id: string, state: PersonUrlState): string {
   const query = new URLSearchParams();
-  if (state.page > 0) query.set('page', String(state.page));
-  if (state.size !== LEDGER_DEFAULT_SIZE) query.set('size', String(state.size));
+  setPageParam(query, state.page);
+  if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${personHref(id)}?${text}` : personHref(id);
 }

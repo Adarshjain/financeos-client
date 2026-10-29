@@ -1,6 +1,4 @@
-import { notFound } from 'next/navigation';
-
-import { loadAccount } from '@/features/accounts/detail/accountData';
+import { requireAccount } from '@/features/accounts/detail/accountRoute';
 import { loadCardsData } from '@/features/accounts/detail/cards/cardsData';
 import { buildCardsModel } from '@/features/accounts/detail/cards/cardsModel';
 import { CardsTab } from '@/features/accounts/detail/cards/CardsTab';
@@ -12,11 +10,11 @@ export default async function DsAccountCardsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const account = await loadAccount(id);
-  if (!account) notFound();
+  const account = await requireAccount(
+    (await params).id,
+    (a) => a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.CREDIT_CARD
+  );
   const isBank = account.type === AccountType.BANK_ACCOUNT;
-  if (!isBank && account.type !== AccountType.CREDIT_CARD) notFound();
 
   const today = todayInAppZone();
   const { cardholders, stats } = await loadCardsData(account.id);

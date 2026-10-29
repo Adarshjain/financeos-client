@@ -1,9 +1,9 @@
 import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { DEFAULT_PAGE_SIZE } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import type { JobResponse } from '@/lib/types';
 
 export const ACTIVITY_HREF = appHref('/settings/activity');
-export const ACTIVITY_DEFAULT_SIZE = 25;
 export const ACTIVITY_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /** The status filter values the URL and the API use today; '' is every status, 'active' is pending plus running. */
@@ -38,7 +38,7 @@ export function activityUrl(
   overrides: { newStatus?: string; newType?: string; newPage?: number; job?: string | null } = {},
 ): string {
   const { job, ...rest } = overrides;
-  const base = buildJobsFilterUrl(current, rest, { base: ACTIVITY_HREF, defaultSize: ACTIVITY_DEFAULT_SIZE });
+  const base = buildJobsFilterUrl(current, rest, { base: ACTIVITY_HREF, defaultSize: DEFAULT_PAGE_SIZE, oneBasedPage: true });
   if (!job) return base;
   return `${base}${base.includes('?') ? '&' : '?'}job=${encodeURIComponent(job)}`;
 }

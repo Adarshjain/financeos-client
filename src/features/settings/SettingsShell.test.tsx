@@ -44,10 +44,10 @@ describe('SettingsShell', () => {
     expect(tabs.map((t) => t.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true', 'false', 'false', 'false']);
   });
 
-  it('titles Profile "Settings" with no crumb, and starts flush with the tabs', () => {
+  it('titles Profile "Settings" with the Settings crumb, and starts flush with the tabs', () => {
     const { container } = render(<SettingsShell>body</SettingsShell>);
     expect(screen.getByRole('heading')).toHaveTextContent('Settings');
-    expect(screen.getByTestId('crumb')).toBeEmptyDOMElement();
+    expect(screen.getByTestId('crumb')).toHaveTextContent('Settings');
     expect(container.firstElementChild).toHaveAttribute('data-flush', 'true');
     expect(screen.getByText('body')).toBeInTheDocument();
   });

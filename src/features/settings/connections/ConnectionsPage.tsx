@@ -61,7 +61,7 @@ export function ConnectionsPage({
               archivedData={g.archivedData}
               archivedPage={g.archivedPage}
               onArchivedPageChange={g.setArchivedPage}
-              onRetryItem={g.handleRetryAttentionItem}
+              retryItem={g.handleRetryAttentionItem}
               onArchive={g.handleArchiveAttentionItem}
               onUnarchive={g.handleUnarchiveAttentionItem}
               autoScroll={focusAttention}

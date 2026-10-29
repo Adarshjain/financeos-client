@@ -40,7 +40,7 @@ beforeEach(() => {
 
 describe('/loans/lendings/[id]', () => {
   it('loads this person for the page and size in the URL and hands the view its data, today and your name', async () => {
-    await renderPage({ page: '2', size: '10' });
+    await renderPage({ page: '3', size: '10' });
     expect(screen.getByText('person view')).toBeInTheDocument();
     expect(loadPersonPage).toHaveBeenCalledWith('p1', { page: 2, size: 10 });
     expect(viewProps?.cp.name).toBe('Rahul Sharma');
@@ -55,7 +55,7 @@ describe('/loans/lendings/[id]', () => {
       ledger: ledgerFixture(entriesFixture()),
       state: { page: 1, size: 10 },
     });
-    await renderPage({ page: '99', size: '10' });
+    await renderPage({ page: '100', size: '10' });
     expect(viewProps?.state).toEqual({ page: 1, size: 10 });
   });
 

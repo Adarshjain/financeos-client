@@ -30,18 +30,20 @@ describe('importModel', () => {
     expect(isJobId('../settings')).toBe(false);
   });
 
-  it('reads the page from the address: 0-based, and the first page for anything unusable', () => {
-    expect(parseImportPage('3')).toBe(3);
-    expect(parseImportPage(['2', '5'])).toBe(2);
-    expect(parseImportPage(undefined)).toBe(0);
-    expect(parseImportPage('-1')).toBe(0);
-    expect(parseImportPage('abc')).toBe(0);
+  it('reads the page from the address: 1-based into a 0-based page, and the first page for anything unusable', () => {
+    expect(parseImportPage({ page: '3' })).toBe(2);
+    expect(parseImportPage({ page: ['2', '5'] })).toBe(1);
+    expect(parseImportPage({})).toBe(0);
+    expect(parseImportPage({ page: '1' })).toBe(0);
+    expect(parseImportPage({ page: '0' })).toBe(0);
+    expect(parseImportPage({ page: '-1' })).toBe(0);
+    expect(parseImportPage({ page: 'abc' })).toBe(0);
   });
 
   it('builds the Import address with the page and account only when set', () => {
     expect(importUrl()).toMatch(/\/transactions\/import$/);
     expect(importUrl({ page: 0 })).toMatch(/\/transactions\/import$/);
-    expect(importUrl({ page: 2 })).toMatch(/\/transactions\/import\?page=2$/);
-    expect(importUrl({ account: 'a1', page: 1 })).toMatch(/\?account=a1&page=1$/);
+    expect(importUrl({ page: 2 })).toMatch(/\/transactions\/import\?page=3$/);
+    expect(importUrl({ account: 'a1', page: 1 })).toMatch(/\?account=a1&page=2$/);
   });
 });

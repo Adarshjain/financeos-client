@@ -1,9 +1,8 @@
-import { notFound } from 'next/navigation';
-
-import { loadAccount } from '@/features/accounts/detail/accountData';
+import { requireAccount } from '@/features/accounts/detail/accountRoute';
 import { accountTabsFor } from '@/features/accounts/detail/accountTabsModel';
-import { loadRewardsTabData, type RewardsSearchParams } from '@/features/accounts/detail/rewards/rewardsData';
+import { loadRewardsTabData } from '@/features/accounts/detail/rewards/rewardsData';
 import { RewardsTab } from '@/features/accounts/detail/rewards/RewardsTab';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
 
 export default async function DsAccountRewardsPage({
@@ -11,12 +10,10 @@ export default async function DsAccountRewardsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<RewardsSearchParams>;
+  searchParams: SearchParams;
 }) {
-  const { id } = await params;
-  const account = await loadAccount(id);
-  if (!account || !accountTabsFor(account.type).some((t) => t.id === 'rewards')) notFound();
+  const account = await requireAccount((await params).id, (a) => accountTabsFor(a.type).some((t) => t.id === 'rewards'));
   const today = todayInAppZone();
-  const data = await loadRewardsTabData(account, today, searchParams ? await searchParams : undefined);
+  const data = await loadRewardsTabData(account, today, await searchParams);
   return <RewardsTab account={account} today={today} data={data} />;
 }

@@ -1,18 +1,13 @@
 'use client';
 
-import React from 'react';
+import { areaNotFound } from '@/features/shell/areaNotFound';
+import { areaCrumb, crumbMap } from '@/features/shell/navigation';
 
-import { PageNotFound } from '@/features/shell/PageNotFound';
-
-/** Shown when an account id does not exist. It sits above [id] because the account layout is what raises it. */
-export default function DsAccountNotFound() {
-  return (
-    <PageNotFound
-      what="Account"
-      description="It may have been deleted."
-      backPath="/accounts"
-      backLabel="Back to accounts"
-      shell={{ crumb: 'Money', title: 'Accounts' }}
-    />
-  );
-}
+/** A missing account: it sits above [id] because the account layout is what raises it. */
+export default areaNotFound({
+  what: 'Account',
+  crumb: areaCrumb('accounts'),
+  title: crumbMap.accounts.label,
+  backHref: crumbMap.accounts.href,
+  backLabel: 'Back to accounts',
+});

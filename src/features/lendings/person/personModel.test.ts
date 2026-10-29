@@ -26,7 +26,7 @@ const TODAY = '2026-10-13';
 describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
     expect(parsePersonUrl({})).toEqual({ page: 0, size: 25 });
-    expect(parsePersonUrl({ page: '2', size: '50' })).toEqual({ page: 2, size: 50 });
+    expect(parsePersonUrl({ page: '3', size: '50' })).toEqual({ page: 2, size: 50 });
     expect(parsePersonUrl({ page: '-1', size: '7' })).toEqual({ page: 0, size: 25 });
     expect(parsePersonUrl({ page: 'x' })).toEqual({ page: 0, size: 25 });
   });
@@ -34,7 +34,7 @@ describe('URL state', () => {
   it('builds the person URL on the Dinero page with defaults left out', () => {
     expect(personHref('p1')).toBe('/loans/lendings/p1');
     expect(personUrl('p1', { page: 0, size: 25 })).toBe('/loans/lendings/p1');
-    expect(personUrl('p1', { page: 2, size: 10 })).toBe('/loans/lendings/p1?page=2&size=10');
+    expect(personUrl('p1', { page: 2, size: 10 })).toBe('/loans/lendings/p1?page=3&size=10');
   });
 });
 

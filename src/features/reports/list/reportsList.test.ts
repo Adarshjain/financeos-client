@@ -6,6 +6,7 @@ import {
   areaOf,
   filterRows,
   parseReportsType,
+  parseReportsUrl,
   reportRow,
   reportRows,
   reportsUrl,
@@ -31,6 +32,12 @@ describe('type filter in the URL', () => {
     expect(parseReportsType({ type: 'CHART' })).toBe('CHART');
     expect(parseReportsType({ type: 'chart' })).toBeUndefined();
     expect(parseReportsType({})).toBeUndefined();
+  });
+
+  it('reads the type from the address, the first of a repeated key', () => {
+    expect(parseReportsUrl({ type: 'KPI' })).toEqual({ type: 'KPI' });
+    expect(parseReportsUrl({ type: ['CHART', 'KPI'] })).toEqual({ type: 'CHART' });
+    expect(parseReportsUrl({})).toEqual({ type: undefined });
   });
 
   it('reads Breakdown, which is a chart subtype but its own chip', () => {

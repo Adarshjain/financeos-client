@@ -1,4 +1,6 @@
+import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
+import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney } from '@/lib/format';
 import { INSTRUMENT_MAX_PAGE_SIZE, type InstrumentListQuery, instrumentListQuery } from '@/lib/instrumentList';
 import type { Instrument, InstrumentType } from '@/lib/types';
@@ -28,23 +30,13 @@ export interface InstrumentsUrlState {
 
 const TYPES: InstrumentType[] = ['stock', 'mutual_fund', 'etf'];
 
-export function parseInstrumentsUrl(params: {
-  q?: string;
-  type?: string;
-  stale?: string;
-  sort?: string;
-  page?: string;
-  size?: string;
-}): InstrumentsUrlState {
-  const page = Math.floor(Number(params.page));
-  const size = Number(params.size);
+export function parseInstrumentsUrl(params: SearchParamsRecord): InstrumentsUrlState {
   return {
-    q: (params.q ?? '').trim(),
-    type: TYPES.includes(params.type as InstrumentType) ? (params.type as InstrumentType) : '',
-    stale: params.stale === '1',
-    sort: params.sort === 'desc' ? 'desc' : 'asc',
-    page: Number.isFinite(page) && page > 0 ? page : 0,
-    size: INSTRUMENTS_SIZE_OPTIONS.includes(size) ? size : INSTRUMENTS_DEFAULT_SIZE,
+    q: (first(params.q) ?? '').trim(),
+    type: TYPES.includes(first(params.type) as InstrumentType) ? (first(params.type) as InstrumentType) : '',
+    stale: first(params.stale) === '1',
+    sort: first(params.sort) === 'desc' ? 'desc' : 'asc',
+    ...parsePage(params, { size: INSTRUMENTS_DEFAULT_SIZE, sizes: INSTRUMENTS_SIZE_OPTIONS }),
   };
 }
 
@@ -55,7 +47,7 @@ export function instrumentsUrl(state: InstrumentsUrlState): string {
   if (state.type) query.set('type', state.type);
   if (state.stale) query.set('stale', '1');
   if (state.sort === 'desc') query.set('sort', 'desc');
-  if (state.page > 0) query.set('page', String(state.page));
+  setPageParam(query, state.page);
   if (state.size !== INSTRUMENTS_DEFAULT_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${INSTRUMENTS_HREF}?${text}` : INSTRUMENTS_HREF;

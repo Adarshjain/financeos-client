@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, Select } from '@/components/ds';
+import { areaCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
@@ -44,9 +45,9 @@ export function HomeScreen() {
 
   if (!active) {
     return (
-      <ShellPage title="Home">
+      <ShellPage crumb={areaCrumb('home')} title="Home">
         <EmptyState title="No default dashboard" description="Home shows your default dashboard. Restore the built-in Home or pick another.">
-          <div className="flex w-full max-w-sm flex-col gap-space-8">
+          <div className="flex w-full max-w-container-sm flex-col gap-space-8">
             <Button variant="primary" loading={restoreHome.pending} onClick={restoreHome.restore}>
               Restore default Home
             </Button>
@@ -94,7 +95,7 @@ export function HomeScreen() {
   );
 
   return (
-    <ShellPage title={switcher}>
+    <ShellPage crumb={areaCrumb('home')} title={switcher}>
       {active.widgets.length === 0 ? (
         <EmptyState
           title="No widgets yet"

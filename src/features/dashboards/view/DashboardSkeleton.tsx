@@ -1,14 +1,15 @@
 import React from 'react';
 
 import { Skeleton } from '@/components/ds';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
-import { DASHBOARDS_CRUMB, DASHBOARDS_HREF } from '../routes';
+import { DASHBOARDS_HREF } from '../routes';
 
 /** A dashboard's shape while it loads: the count line, then rows of widgets. */
 export function DashboardSkeleton({ title }: { title: string }) {
   return (
-    <ShellPage crumb={DASHBOARDS_CRUMB} title={title} backHref={DASHBOARDS_HREF}>
+    <ShellPage crumb={subCrumb('dashboards')} title={title} backHref={DASHBOARDS_HREF}>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton height={16} width="20%" />
         <div className="grid grid-cols-2 desk:grid-cols-12 gap-x-space-12 gap-y-space-8 desk:gap-space-16">

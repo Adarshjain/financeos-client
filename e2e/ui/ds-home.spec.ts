@@ -180,6 +180,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: no greeting or page title; the switcher sits in the top bar with no ⋯ menu and the widgets start the page', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
       await page.goto('/dashboard');
+      await expect(page).toHaveTitle('Home · FinanceOS');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       await expect(page.getByText(/^Good (morning|afternoon|evening)/)).toHaveCount(0);
       await expect(page.getByText(/synced|things? needs? you/)).toHaveCount(0);

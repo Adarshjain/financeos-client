@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, ConfirmDialog, EmptyState, showToast, Text, TextField } from '@/components/ds';
+import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import { isTextWidget } from '@/lib/dashboards.helpers';
@@ -27,7 +28,7 @@ import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIss
 import { widgetBuiltinKey } from '../frame/widgetFrame.model';
 import { WidgetSettingsDialog } from '../frame/WidgetSettingsDialog';
 import { WidgetPicker } from '../picker/WidgetPicker';
-import { dashboardHref,DASHBOARDS_CRUMB, DASHBOARDS_HREF } from '../routes';
+import { dashboardHref, DASHBOARDS_HREF } from '../routes';
 import { DashboardEditActions } from './DashboardEditActions';
 import { DashboardEditGrid } from './DashboardEditGrid';
 import { DashboardWidgets } from './DashboardWidgets';
@@ -162,7 +163,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const count = (saved?.widgets ?? []).filter((w) => !isTextWidget(w)).length;
 
   return (
-    <ShellPage crumb={DASHBOARDS_CRUMB} title={shownName}
+    <ShellPage crumb={subCrumb('dashboards')} title={shownName}
       backHref={DASHBOARDS_HREF}
       addMenu={
         editing

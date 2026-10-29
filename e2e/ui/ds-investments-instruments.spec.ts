@@ -95,12 +95,12 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(`${prefix} 27`)).toHaveCount(0);
 
       await page.getByRole('button', { name: /next/i }).first().click();
-      await page.waitForURL(/page=1/);
+      await page.waitForURL(/page=2/);
       await expect(shown(page.getByText(`${prefix} 27`))).toBeVisible();
       await expect(page.getByText(`${prefix} 01`)).toHaveCount(0);
 
       await page.goto(`/investments/instruments?q=${prefix}&size=25&page=9`);
-      await page.waitForURL(/page=1/);
+      await page.waitForURL(/page=2/);
       await expect(shown(page.getByText(`${prefix} 27`))).toBeVisible();
     });
 

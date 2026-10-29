@@ -2,18 +2,20 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
 import { InboxPage } from '@/features/inbox/InboxPage';
+import { parseInboxUrl } from '@/features/inbox/inboxUrl';
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
+import type { SearchParams } from '@/features/shell/searchParams';
 import { inboxApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
+
+export const metadata = { title: 'Inbox' };
 
 export default async function DsInboxPage({
   searchParams,
 }: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const item = params?.item;
-  const highlightKey = (Array.isArray(item) ? item[0] : item) || null;
+  const { highlightKey } = parseInboxUrl(await searchParams);
 
   // A failed prefetch is not fatal: the page loads (and reports errors) on the client.
   const queryClient = getQueryClient();

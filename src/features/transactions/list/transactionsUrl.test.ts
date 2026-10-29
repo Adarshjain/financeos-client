@@ -117,7 +117,7 @@ describe('transactionsUrl', () => {
 
   it('keeps a stable param order', () => {
     const a = transactionsSearch({ ...DEFAULT_QUERY, page: 1, type: 'credit', q: 'x' });
-    expect(a).toBe('q=x&type=credit&page=1');
+    expect(a).toBe('q=x&type=credit&page=2');
   });
 });
 

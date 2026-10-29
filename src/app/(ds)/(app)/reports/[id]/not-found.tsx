@@ -1,16 +1,12 @@
-import React from 'react';
+'use client';
 
-import { REPORTS_HREF } from '@/features/reports/list/reportsList';
-import { PageNotFound } from '@/features/shell/PageNotFound';
+import { areaNotFound } from '@/features/shell/areaNotFound';
+import { crumbMap, subCrumb } from '@/features/shell/navigation';
 
-export default function DsReportNotFound() {
-  return (
-    <PageNotFound
-      what="Report"
-      description="It may have been deleted."
-      backPath="/reports"
-      backLabel="Go to Reports"
-      shell={{ crumb: 'Insights / Reports', title: 'Report', backHref: REPORTS_HREF }}
-    />
-  );
-}
+export default areaNotFound({
+  what: 'Report',
+  crumb: subCrumb('reports'),
+  title: 'Report',
+  backHref: crumbMap.reports.href,
+  backLabel: 'Back to reports',
+});

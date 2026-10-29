@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeInvestmentsTab, holdingHref, HOLDINGS_HREF, investmentsTabHref, investmentsTabs, isHoldingDetailPath } from './investmentsTabs';
+import { activeInvestmentsTab, holdingHref, investmentsTabHref, investmentsTabs } from './investmentsTabs';
 
 describe('investments tabs', () => {
   it('lists the seven tabs in owner order', () => {
@@ -38,19 +38,7 @@ describe('investments tabs', () => {
     expect(activeInvestmentsTab(null)).toBe('holdings');
   });
 
-  it("recognises a holding's own page and no other path", () => {
+  it("builds a holding's own page address", () => {
     expect(holdingHref('i1')).toBe('/investments/i1');
-    expect(isHoldingDetailPath('/investments/i1')).toBe(true);
-    expect(isHoldingDetailPath('/investments/i1/')).toBe(true);
-    expect(isHoldingDetailPath(HOLDINGS_HREF)).toBe(false);
-    expect(isHoldingDetailPath('/investments/epf')).toBe(false);
-    expect(isHoldingDetailPath('/investments/i1/extra')).toBe(false);
-    expect(isHoldingDetailPath(null)).toBe(false);
-  });
-
-  it('does not take a tab page for a holding', () => {
-    for (const seg of ['tradebook', 'dividends', 'fno', 'corporate-actions', 'instruments']) {
-      expect(isHoldingDetailPath(`/investments/${seg}`)).toBe(false);
-    }
   });
 });
