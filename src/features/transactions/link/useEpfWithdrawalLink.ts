@@ -38,7 +38,7 @@ const FORM_WORDS: Record<EpfWithdrawalKind, string> = {
 };
 
 /** Query key of the unlinked withdrawals offered for one transaction. */
-export const epfWithdrawalsKey = (transactionId: string) => ['epf', 'withdrawals', transactionId] as const;
+export const epfWithdrawalsKey = (transactionId: string) => keys.epf.withdrawals(transactionId);
 
 /** "Final settlement · Globex Retail". */
 export function epfOptionTitle(entry: Schemas['EpfEntryResponse']): string {
@@ -127,7 +127,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
     enabled: open && Boolean(transactionId),
   });
   const employersQuery = useQuery({
-    queryKey: ['epf', 'employers'],
+    queryKey: keys.epf.employers(),
     queryFn: async () => (await api.GET('/api/v1/epf/employers')).data ?? [],
     enabled: open && mode === 'new',
   });
@@ -235,7 +235,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
     onSuccess: () => {
       notify.success(mode === 'existing' ? 'EPF withdrawal linked' : 'EPF withdrawal recorded and linked');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: ['epf'] });
+      queryClient.invalidateQueries({ queryKey: keys.epf.all });
       invalidateInvestmentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: keys.inbox.all });
       onOpenChange(false);
@@ -244,7 +244,7 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
     onError: (err: unknown) => {
       if (err instanceof LinkAfterCreateError) {
         // The withdrawal exists now; keep the dialog open so a retry only re-links.
-        queryClient.invalidateQueries({ queryKey: ['epf'] });
+        queryClient.invalidateQueries({ queryKey: keys.epf.all });
         toastError(err.original, "EPF withdrawal recorded, but couldn't link it. Try again.");
         return;
       }

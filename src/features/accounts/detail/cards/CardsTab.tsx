@@ -6,6 +6,7 @@ import React from 'react';
 import { Button, EmptyState, showToast, Text } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import type { Card, Cardholder } from '@/lib/account.types';
+import { replaceUrl } from '@/lib/urlState';
 
 import { AddCardDialog, CloseDialog, ReplaceCardDialog } from './CardFormDialogs';
 import { type CardsModel, type HolderMenuId, holderName, type HolderStats } from './cardsModel';
@@ -61,7 +62,7 @@ export function CardsTab({
     setDialog({ kind: 'addHolder' });
     query.delete('add');
     const rest = query.toString();
-    window.history.replaceState(null, '', rest ? `${pathname}?${rest}` : pathname);
+    replaceUrl(rest ? `${pathname}?${rest}` : pathname);
   }, []);
 
   const closeDialog = () => setDialog(null);

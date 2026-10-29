@@ -6,7 +6,7 @@ import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as So
 import { markDineroToaster } from '@/lib/toastTarget';
 
 import { type BannerTone,bannerToneStyles } from '../Banner/toneStyles';
-import { Button } from '../Button/Button';
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { cn } from '../cn';
 import { concealText, useConcealedAnywhere } from '../Conceal/Conceal';
 
@@ -16,8 +16,8 @@ export interface ToastProps
   tone?: BannerTone;
   /** Toast message */
   message?: React.ReactNode;
-  /** Single action button on the right: action={{ label, onSelect }} */
-  action?: { label: React.ReactNode; onSelect: () => void };
+  /** Single action button on the right: action={{ label, onSelect }}, or { label, href } for a link */
+  action?: { label: React.ReactNode } & ActionTarget;
 }
 
 export const Toast = forwardRef<HTMLDivElement, ToastProps>(
@@ -52,17 +52,17 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
       >
         <span className="flex-1 min-w-0">{concealed && typeof shown === 'string' ? concealText(shown) : shown}</span>
         {action && (
-          <Button
-            type="button"
+          <ActionButton
             variant="link"
-            onClick={action.onSelect}
+            href={action.href}
+            onSelect={action.onSelect}
             className={cn(
               'ml-auto shrink-0',
               isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit',
             )}
           >
             {action.label}
-          </Button>
+          </ActionButton>
         )}
       </div>
     );
@@ -108,7 +108,7 @@ export function Toaster({
 export interface ShowToastOptions {
   id?: string;
   tone?: BannerTone;
-  action?: { label: React.ReactNode; onSelect: () => void };
+  action?: { label: React.ReactNode } & ActionTarget;
   duration?: number;
   onDismiss?: () => void;
 }
@@ -131,8 +131,9 @@ export function showToast(
           options?.action
             ? {
                 label: options.action.label,
+                href: options.action.href,
                 onSelect: () => {
-                  options.action?.onSelect();
+                  options.action?.onSelect?.();
                   sonnerToast.dismiss(id);
                 },
               }

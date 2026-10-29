@@ -1,6 +1,6 @@
 import { isLegacyPath, legacyHref } from '@/features/shell/routes';
-import { ApiError } from '@/lib/api/client';
-import { AppError } from '@/lib/appError';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import { copyText } from '@/lib/copyText';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { navigateTo } from '@/lib/diagnostics/navigate';
 import { refOf } from '@/lib/diagnostics/ref';
@@ -14,21 +14,10 @@ function debugHref(ref: string): string {
 }
 
 function extractErrorMessage(e: unknown, fallback: string): string {
-  if (e instanceof ApiError) {
-    if (e.response && e.response.message && e.response.message.trim()) {
-      return e.response.message;
-    }
-    if (e.message && e.message.trim()) {
-      return e.message;
-    }
-  } else if (e instanceof AppError) {
-    if (e.message && e.message.trim()) {
-      return e.message;
-    }
-  } else if (e instanceof Error) {
-    if (e.message && e.message.trim()) {
-      return e.message;
-    }
+  const known = getErrorMessage(e, '');
+  if (known.trim()) return known;
+  if (e instanceof Error) {
+    if (e.message && e.message.trim()) return e.message;
   } else if (typeof e === 'string' && e.trim()) {
     return e;
   } else if (e && typeof e === 'object' && 'message' in e && typeof (e as { message: unknown }).message === 'string') {
@@ -52,9 +41,7 @@ export function toastError(e: unknown, fallback: string): void {
           label: 'Copy ID',
           onClick: (ev: React.MouseEvent) => {
             ev.preventDefault();
-            if (navigator?.clipboard) {
-              navigator.clipboard.writeText(ref);
-            }
+            void copyText(ref);
           },
         }
       : undefined,
@@ -83,9 +70,7 @@ export function toastErrorResult(error: ErrorResponse, fallback: string): void {
           label: 'Copy ID',
           onClick: (ev: React.MouseEvent) => {
             ev.preventDefault();
-            if (navigator?.clipboard) {
-              navigator.clipboard.writeText(ref);
-            }
+            void copyText(ref);
           },
         }
       : undefined,

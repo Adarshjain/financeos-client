@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { EmptyState } from '@/components/ds';
@@ -30,13 +29,12 @@ export function PageNotFound({
   backLabel = 'Go to Home',
   shell,
 }: PageNotFoundProps) {
-  const router = useRouter();
   const body = (
     <EmptyState
       illustration={<Illustration variant="notfound" />}
       title={`${what} not found`}
       description={description}
-      action={{ label: backLabel, onSelect: () => router.push(backPath ? appHref(backPath) : DS_HOME_HREF) }}
+      action={{ label: backLabel, href: backPath ? appHref(backPath) : DS_HOME_HREF }}
     />
   );
   return shell ? <ShellPage {...shell}>{body}</ShellPage> : body;

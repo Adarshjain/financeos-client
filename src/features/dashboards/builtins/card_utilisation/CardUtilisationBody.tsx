@@ -4,7 +4,6 @@
 // from the server), most utilised first, cards at or over 30% flagged, and an overall row when there are
 // several cards.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, StatusWord, Text } from '@/components/ds';
@@ -56,7 +55,6 @@ function owedLine(row: UtilisationRow, onOpen: (row: UtilisationRow) => void) {
 }
 
 export function CardUtilisationBody({ params, className }: BuiltinBodyProps) {
-  const router = useRouter();
   const accountId = stringParam(params, 'accountId');
   const [open, setOpen] = React.useState<UtilisationRow | null>(null);
   const { data: accounts, isLoading, error, refetch } = useAccounts();
@@ -76,7 +74,7 @@ export function CardUtilisationBody({ params, className }: BuiltinBodyProps) {
         compact
         title="No open credit cards yet"
         description="Add a credit card to see how much of its limit you're using."
-        action={{ label: 'Go to accounts', onSelect: () => router.push(appHref('/accounts')), variant: 'link' }}
+        action={{ label: 'Go to accounts', href: appHref('/accounts'), variant: 'link' }}
       />
     );
   } else {

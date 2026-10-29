@@ -9,6 +9,7 @@ import { replaceCurrentRoute } from '@/features/shell/navigationStore';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { timeInAppZone } from '@/lib/date-range';
+import { replaceUrl } from '@/lib/urlState';
 
 import { ChatAnswer } from './ChatAnswer';
 import { UNTITLED_CHAT, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistory';
@@ -75,7 +76,7 @@ function ChatSession({
       // The URL follows the chat without a reload or a refetch.
       const href = appHref(`/chat/${id}`);
       replaceCurrentRoute(href);
-      window.history.replaceState(null, '', href);
+      replaceUrl(href);
     },
     onQuestionSent: () => {
       if (createdRef.current) setList((prev) => withQuestion(prev, createdRef.current as string));
@@ -231,7 +232,7 @@ function ChatSession({
             )}>
             <PromptField
               placeholder={placeholder}
-              busy={busy}
+              loading={busy}
               onSubmit={send}
               onStop={stop}
               hint={busy ? 'Answering · you can type the next question' : undefined}

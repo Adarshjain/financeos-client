@@ -1,6 +1,7 @@
 export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './Banner/Banner';
+export * from './Button/ActionButton';
 export * from './Button/Button';
 export * from './Card/Card';
 export * from './Checkbox/Checkbox';
@@ -23,6 +24,7 @@ export * from './Icon/Icon';
 export * from './Kbd/Kbd';
 export * from './Keypad/Keypad';
 export * from './KpiTile/KpiTile';
+export * from './LinkProvider';
 export * from './ListField/ListField';
 export * from './ListRow/ListRow';
 export * from './Menu/ContextMenu';

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card, EmptyState } from '@/components/ds';
@@ -62,7 +61,6 @@ export function EpfView({
   stale,
   latestContribution,
 }: EpfViewProps) {
-  const router = useRouter();
   const [opened, setOpened] = React.useState<EpfEntry | null>(null);
   const [adding, setAdding] = React.useState(false);
   const [employer, setEmployer] = React.useState<EpfEmployer | 'new' | null>(
@@ -92,7 +90,7 @@ export function EpfView({
             action={{
               label: 'Upload passbook',
               variant: 'primary',
-              onSelect: () => router.push(EPF_UPLOAD_HREF),
+              href: EPF_UPLOAD_HREF,
             }}
             secondaryAction={{
               label: 'Add opening balance',

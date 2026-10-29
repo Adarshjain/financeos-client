@@ -4,7 +4,7 @@
 // the amount to pay, or the unbilled spend while the statement is expected (an overdue bill or a late statement
 // says so in colour). Rows are read-only: marking paid and setting details live on the Inbox.
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, StatusWord, Text } from '@/components/ds';
@@ -58,7 +58,6 @@ function BillRow({ state, highlighted }: { state: BillCardState; highlighted: bo
 }
 
 export function BillsDueBody({ params, className }: BuiltinBodyProps) {
-  const router = useRouter();
   const accountId = stringParam(params, 'accountId');
   const { data: bills = [], isLoading, error, refetch } = useBills(undefined, { accountId });
   const searchParams = useSearchParams();
@@ -96,7 +95,7 @@ export function BillsDueBody({ params, className }: BuiltinBodyProps) {
         compact
         title="No credit cards yet"
         description="Add a credit card to track its bills here."
-        action={{ label: 'Go to accounts', onSelect: () => router.push(appHref('/accounts')), variant: 'link' }}
+        action={{ label: 'Go to accounts', href: appHref('/accounts'), variant: 'link' }}
       />
     );
   } else {

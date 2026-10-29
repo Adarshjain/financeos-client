@@ -63,11 +63,11 @@ describe('route error and not-found pages', () => {
   it('generic not-found offers Home; account not-found offers the accounts list', () => {
     const { unmount } = render(<DsAppNotFound />);
     expect(screen.getByText('Page not found')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Go to Home' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to Home' })).toBeInTheDocument();
     unmount();
     render(<AccountNotFound />);
     expect(screen.getByText('Account not found')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Back to accounts' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to accounts' })).toBeInTheDocument();
   });
 });
 
@@ -85,11 +85,11 @@ describe('area boundaries and the app bar', () => {
   it('every [id] not-found offers its area as the way back', () => {
     const { unmount } = render(<ChatNotFound />);
     expect(screen.getByText('Chat not found')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Back to Ask the data' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to Ask the data' })).toBeInTheDocument();
     unmount();
     render(<HoldingNotFound />);
     expect(screen.getByText('Holding not found')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Back to investments' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to investments' })).toBeInTheDocument();
   });
 
   it('a missing account brings its own bar; a tab the account has none of sits under the account bar', () => {

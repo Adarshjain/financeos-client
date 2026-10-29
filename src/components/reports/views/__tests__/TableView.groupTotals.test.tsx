@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 
 import { TableView } from '../TableView';
 
@@ -30,7 +30,7 @@ describe('TableView hideGroupColumn', () => {
   it('leaves the group column out while grouped', () => {
     render(<TableView data={data()} groupField="side" hideGroupColumn />);
     expect(headerTexts()).toEqual(['Name', 'Value']);
-    expect(within(bodyRows()[1]).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Savings', formatMoney(10000)]);
+    expect(within(bodyRows()[1]).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Savings', formatMoney(10000, { decimals: 'auto' })]);
   });
 
   it('shows the group column when not grouped', () => {
@@ -57,10 +57,10 @@ describe('TableView group totals', () => {
     );
     const rows = bodyRows();
     const asset = within(rows[0]).getAllByRole('cell');
-    expect(asset.map((c) => c.textContent)).toEqual(['Asset', formatMoney(16000)]);
+    expect(asset.map((c) => c.textContent)).toEqual(['Asset', formatMoney(16000, { decimals: 'auto' })]);
     // Aligned like the figures under it, which sit at the cell's start.
     expect(asset[1]).not.toHaveClass('text-right');
-    expect(within(rows[3]).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Liability', formatMoney(500)]);
+    expect(within(rows[3]).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Liability', formatMoney(500, { decimals: 'auto' })]);
   });
 
   it('pads the columns after the total column with an empty cell', () => {
@@ -80,7 +80,7 @@ describe('TableView group totals', () => {
       />,
     );
     const cells = within(bodyRows()[0]).getAllByRole('cell');
-    expect(cells.map((c) => c.textContent)).toEqual(['Asset', formatMoney(16000), '']);
+    expect(cells.map((c) => c.textContent)).toEqual(['Asset', formatMoney(16000, { decimals: 'auto' }), '']);
     expect(cells[2]).toHaveAttribute('colspan', '2');
   });
 
@@ -99,7 +99,7 @@ describe('TableView group totals', () => {
         groupTotalKey="value"
       />,
     );
-    expect(within(bodyRows()[0]).getAllByRole('cell').map((c) => c.textContent)).toEqual([`Asset${formatMoney(16000)}`]);
+    expect(within(bodyRows()[0]).getAllByRole('cell').map((c) => c.textContent)).toEqual([`Asset${formatMoney(16000, { decimals: 'auto' })}`]);
   });
 
   it('falls back to the plain full-width header for a group without a total', () => {

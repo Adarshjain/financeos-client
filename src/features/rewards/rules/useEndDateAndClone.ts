@@ -2,15 +2,15 @@
 
 import { useUpdateRewardRule } from '@/features/rewards/queries/useRewardRulesQueries';
 import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
 import { RewardRule } from '@/lib/rewards.types';
-import { toCalendarDate } from '@/lib/utils';
 
 /** Ends a rule today (activeTo) and hands the updated rule to onEnded so the caller can open a successor form. */
 export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notify: RewardNotifier = sonnerRewardNotifier) {
   const updateRule = useUpdateRewardRule();
   return (rule: RewardRule) => {
-    const today = toCalendarDate(new Date());
+    const today = todayInAppZone();
     if (rule.activeFrom && rule.activeFrom >= today) {
       notify.error('Rule starts today or later — just edit it directly.');
       return;

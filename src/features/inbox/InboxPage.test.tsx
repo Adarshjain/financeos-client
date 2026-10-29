@@ -120,10 +120,8 @@ describe('InboxPage', () => {
     expect(
       screen.getByText('Nothing needs you right now. New bills, statements and reviews show up here.'),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Upcoming' }));
-    expect(push).toHaveBeenLastCalledWith('/upcoming');
-    fireEvent.click(screen.getByRole('button', { name: 'Transactions' }));
-    expect(push).toHaveBeenLastCalledWith('/transactions');
+    expect(screen.getByRole('link', { name: 'Upcoming' })).toHaveAttribute('href', '/upcoming');
+    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
   });
 
   it('renders Act now and Needs a look in order with counts, no Updates, no summary line', async () => {

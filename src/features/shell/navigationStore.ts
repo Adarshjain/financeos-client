@@ -107,7 +107,7 @@ function commitEntry(pathname: string) {
   }
 }
 
-/** The current page's URL was rewritten in place (history.replaceState): the entry takes the new pathname, and the route commit that follows adds nothing. */
+/** The current page's URL was rewritten in place (replaceUrl): the entry takes the new pathname, and the route commit that follows adds nothing. */
 export function replaceCurrentRoute(pathname: string) {
   if (cursor >= 0) entries[cursor] = pathname;
 }

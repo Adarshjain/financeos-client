@@ -53,7 +53,7 @@ const actions = vi.hoisted(() => ({
 vi.mock('@/features/investments/dividends/dividendsActions', () => actions);
 
 const download = vi.hoisted(() => ({ downloadCsv: vi.fn() }));
-vi.mock('@/features/investments/downloadCsv', () => download);
+vi.mock('@/lib/downloadCsv', () => download);
 
 const unrecorded = vi.hoisted(() => ({
   state: { items: [] as unknown[], fetched: true, loading: false, isError: false, error: null, scan: vi.fn(), handleRecorded: vi.fn() },

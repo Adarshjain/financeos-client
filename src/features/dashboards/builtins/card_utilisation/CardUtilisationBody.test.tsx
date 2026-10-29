@@ -83,7 +83,6 @@ describe('CardUtilisationBody', () => {
     vi.mocked(api.GET).mockResolvedValue({ data: [account({})] } as never);
     renderWithQuery(<CardUtilisationBody {...bodyProps('card_utilisation')} />);
     expect(await screen.findByText('No open credit cards yet')).toBeInTheDocument();
-    await userEvent.setup({ advanceTimers: vi.advanceTimersByTime }).click(screen.getByRole('button', { name: 'Go to accounts' }));
-    expect(push).toHaveBeenCalledWith(expect.stringMatching(/\/accounts$/));
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 });

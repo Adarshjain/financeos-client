@@ -69,8 +69,8 @@ async function openList() {
 
 describe('positionLabel', () => {
   it('describes who owes whom, settled, and no-entries', () => {
-    expect(positionLabel(rahul)).toBe('Owes you ₹1,200.00');
-    expect(positionLabel(priya)).toBe('You owe ₹500.00');
+    expect(positionLabel(rahul)).toBe('Owes you ₹1,200');
+    expect(positionLabel(priya)).toBe('You owe ₹500');
     expect(positionLabel(amit)).toBe('Settled');
     expect(positionLabel(cp({ id: 'x', name: 'X' }))).toBe('No entries yet');
   });
@@ -98,8 +98,8 @@ describe('CounterpartyPicker — empty state (searching)', () => {
     const list = await screen.findByRole('listbox');
     await waitFor(() => expect(within(list).getAllByRole('option')).toHaveLength(3));
     expect(within(list).getByText('Rahul Sharma')).toBeInTheDocument();
-    expect(within(list).getByText('Owes you ₹1,200.00 · 2 entries')).toBeInTheDocument();
-    expect(within(list).getByText('You owe ₹500.00 · 1 entry')).toBeInTheDocument();
+    expect(within(list).getByText('Owes you ₹1,200 · 2 entries')).toBeInTheDocument();
+    expect(within(list).getByText('You owe ₹500 · 1 entry')).toBeInTheDocument();
     expect(within(list).getByText('Settled · 4 entries')).toBeInTheDocument();
     expect(api.GET).toHaveBeenCalledWith('/api/v1/counterparties', {
       params: { query: { page: 0, size: COUNTERPARTY_SEARCH_PAGE_SIZE } },
@@ -230,7 +230,7 @@ describe('CounterpartyPicker — selected chip', () => {
     const { onChange } = renderPicker({ value });
 
     expect(screen.getByText('Rahul Sharma')).toBeInTheDocument();
-    expect(screen.getByText('Owes you ₹1,200.00 · 2 entries')).toBeInTheDocument();
+    expect(screen.getByText('Owes you ₹1,200 · 2 entries')).toBeInTheDocument();
     expect(screen.queryByText('Suggested')).not.toBeInTheDocument();
     expect(screen.queryByText('New')).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();

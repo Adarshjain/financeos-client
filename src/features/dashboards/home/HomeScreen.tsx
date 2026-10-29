@@ -86,9 +86,9 @@ export function HomeScreen() {
           ...(active.isDefault
             ? []
             : [{ label: 'Set as default', onSelect: () => toggleDefault.mutate({ id: active.id, makeDefault: true, updatedAt: active.updatedAt }) }]),
-          { label: 'Edit dashboard', onSelect: () => router.push(editDashboardHref(active.id)) },
-          { label: 'Add dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) },
-          { label: 'View all dashboards', onSelect: () => router.push(DASHBOARDS_HREF) },
+          { label: 'Edit dashboard', href: editDashboardHref(active.id) },
+          { label: 'Add dashboard', href: NEW_DASHBOARD_HREF },
+          { label: 'View all dashboards', href: DASHBOARDS_HREF },
         ]}
       />
     </div>

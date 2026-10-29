@@ -191,7 +191,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
             <EmptyState
               compact
               description={filtered ? 'No corporate actions match' : 'No corporate actions yet. Splits, bonus issues, demergers and mergers show here.'}
-              action={filtered ? { label: 'Clear filters', variant: 'link', onSelect: () => router.push(corporateActionsUrl({ ...state, q: '', type: '', page: 0 })) } : undefined}
+              action={filtered ? { label: 'Clear filters', variant: 'link', href: corporateActionsUrl({ ...state, q: '', type: '', page: 0 }) } : undefined}
             />
           }
           stickyHeader={false}

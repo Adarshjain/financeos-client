@@ -123,14 +123,13 @@ describe('EpfView: no EPF yet', () => {
 
   it('leads with Upload passbook, then Add opening balance', () => {
     renderWithQuery(<EpfView {...empty()} />);
-    const labels = screen.getAllByRole('button').map((b) => b.textContent);
+    const labels = Array.from(document.querySelectorAll('a, button')).map((b) => b.textContent);
     expect(labels.indexOf('Upload passbook')).toBeLessThan(labels.indexOf('Add opening balance'));
   });
 
   it('Upload passbook goes to Import with the EPF type', () => {
     renderWithQuery(<EpfView {...empty()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Upload passbook' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/import?type=epf');
+    expect(screen.getByRole('link', { name: 'Upload passbook' })).toHaveAttribute('href', '/investments/import?type=epf');
   });
 
   it('Add opening balance opens Record entry on Opening balance', async () => {
@@ -221,8 +220,7 @@ describe('EpfView: the stale banner', () => {
   it('names the months to bring in and links to Upload passbook', () => {
     renderWithQuery(<EpfView {...props({ stale: { through: '2026-07-01', missing: missingMonths('2026-07-01', today) } })} />);
     expect(screen.getByText('Your passbook is up to July 2026. Upload a newer one to bring in Aug and Sep.')).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Upload passbook' })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/import?type=epf');
+    expect(screen.getAllByRole('link', { name: 'Upload passbook' })[0]).toHaveAttribute('href', '/investments/import?type=epf');
   });
 
   it('is not shown when the passbook is current', () => {

@@ -4,6 +4,7 @@ export interface RewardsWindow {
   calendarYear: boolean;
 }
 
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function iso(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }

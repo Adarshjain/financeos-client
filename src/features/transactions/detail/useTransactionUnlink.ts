@@ -45,7 +45,7 @@ export function useTransactionUnlink(transactionId: string) {
 
   /** EPF dialogs and the Inbox suggestions read their own queries; a link or unlink makes them stale. */
   const refreshEpf = () => {
-    void queryClient.invalidateQueries({ queryKey: ['epf'] });
+    void queryClient.invalidateQueries({ queryKey: keys.epf.all });
     void queryClient.invalidateQueries({ queryKey: keys.inbox.all });
   };
 

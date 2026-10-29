@@ -18,6 +18,7 @@ import {
   MenuItem,
   Text,
 } from '@/components/ds';
+import { replaceUrl } from '@/lib/urlState';
 
 import { AddToDashboardDialog } from './AddToDashboardDialog';
 import { ReportsAside } from './ReportsAside';
@@ -179,7 +180,7 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
   /** Filtering is client-side: set the chip and the URL (shareable, reload-safe) without asking the server again. */
   const setType = (next?: ReportKind) => {
     setTypeState(next);
-    window.history.replaceState(null, '', reportsUrl(next));
+    replaceUrl(reportsUrl(next));
   };
   const [deleting, setDeleting] = React.useState<ReportRow | null>(null);
   const [adding, setAdding] = React.useState<ReportRow | null>(null);

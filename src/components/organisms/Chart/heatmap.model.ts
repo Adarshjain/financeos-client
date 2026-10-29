@@ -57,6 +57,7 @@ function toMs(date: string): number {
   return Date.UTC(y, m - 1, d);
 }
 
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function fromMs(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }

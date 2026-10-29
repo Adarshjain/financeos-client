@@ -58,7 +58,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Merger', exact: true }).click();
       await page.waitForURL(/type=merger/);
       await expect(page.getByText('No corporate actions match')).toBeVisible();
-      await page.getByRole('button', { name: 'Clear filters' }).click();
+      await page.getByRole('link', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: false }))).toBeVisible();
 

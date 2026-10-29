@@ -75,7 +75,7 @@ describe('notify with a Dinero toaster mounted', () => {
     expect(message).toBe('Failed (Ref abc)');
     expect(opts?.duration).toBe(8000);
     expect(opts?.action?.label).toBe('Copy ID');
-    opts?.action?.onSelect();
+    opts?.action?.onSelect?.();
     expect(onClick).toHaveBeenCalled();
   });
 

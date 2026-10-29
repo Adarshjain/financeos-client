@@ -118,6 +118,7 @@ export function useOptimisticLayer({ transactions, list, accounts, query, needsR
           send: (request) => {
             const waits = change.ids.map((id) => tails.current.get(id)).filter((p) => p !== undefined);
             const run = waits.length === 0 ? request() : Promise.all(waits).then(request);
+            // The chain only orders later requests; the failure itself is reported through `run`.
             const tail = run.catch(() => undefined);
             for (const id of change.ids) tails.current.set(id, tail);
             return run;

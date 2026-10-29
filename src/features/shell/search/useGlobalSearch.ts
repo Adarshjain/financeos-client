@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
+
 import { EMPTY_SEARCH_RESULT, fetchGlobalSearch, type GlobalSearchResult, SEARCH_MAX_CHARS, SEARCH_MIN_CHARS } from './searchApi';
 
-export const SEARCH_DEBOUNCE_MS = 200;
+export { SEARCH_DEBOUNCE_MS };
 export const SEARCH_CACHE_SIZE = 20;
 
 export interface GlobalSearchState {
@@ -23,6 +25,7 @@ export interface GlobalSearchState {
  */
 export function useGlobalSearch(query: string): GlobalSearchState {
   const trimmed = query.trim();
+  const settled = useDebouncedValue(trimmed, SEARCH_DEBOUNCE_MS, '');
   const [version, setVersion] = useState(0);
   const [cache] = useState(() => new Map<string, GlobalSearchResult>());
   // What is on screen and the query it answers. Adjusted while rendering (a cache hit, text too short), so
@@ -41,33 +44,30 @@ export function useGlobalSearch(query: string): GlobalSearchState {
   };
 
   useEffect(() => {
-    if (!long) return;
-    const cached = cache.get(trimmed);
+    const settledLong = settled.length >= SEARCH_MIN_CHARS && settled.length <= SEARCH_MAX_CHARS;
+    // Typing on aborts the older request at once; the new text is searched when the pause settles on it.
+    if (!settledLong || settled !== trimmed) return;
+    const cached = cache.get(settled);
     if (cached) {
       // Most recently used goes last, so the oldest is the one dropped.
-      cache.delete(trimmed);
-      cache.set(trimmed, cached);
+      cache.delete(settled);
+      cache.set(settled, cached);
       return;
     }
     const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetchGlobalSearch(trimmed, controller.signal)
-        .then((result) => {
-          if (controller.signal.aborted) return;
-          cache.set(trimmed, result);
-          if (cache.size > SEARCH_CACHE_SIZE) cache.delete(cache.keys().next().value as string);
-          setShown({ key: trimmed, result });
-        })
-        .catch(() => {
-          if (controller.signal.aborted) return;
-          setShown({ key: trimmed, result: EMPTY_SEARCH_RESULT });
-        });
-    }, SEARCH_DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [trimmed, long, cache, version]);
+    fetchGlobalSearch(settled, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        cache.set(settled, result);
+        if (cache.size > SEARCH_CACHE_SIZE) cache.delete(cache.keys().next().value as string);
+        setShown({ key: settled, result });
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setShown({ key: settled, result: EMPTY_SEARCH_RESULT });
+      });
+    return () => controller.abort();
+  }, [settled, trimmed, cache, version]);
 
   return { result: long ? shown.result : null, loading: long && shown.key !== trimmed, reset };
 }

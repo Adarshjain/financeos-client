@@ -31,7 +31,7 @@ const meta: Meta<typeof PromptField> = {
     hint: { control: 'text' },
     sendLabel: { control: 'text' },
     stopLabel: { control: 'text' },
-    busy: { control: 'boolean' },
+    loading: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
   args: {
@@ -80,7 +80,7 @@ export const MultiLine: Story = {
 };
 
 export const Busy: Story = {
-  args: { busy: true, defaultValue: 'What did I spend on food last month?', hint: 'Answering…' },
+  args: { loading: true, defaultValue: 'What did I spend on food last month?', hint: 'Answering…' },
 };
 
 export const Disabled: Story = {

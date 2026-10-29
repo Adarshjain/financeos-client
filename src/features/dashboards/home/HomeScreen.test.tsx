@@ -110,19 +110,18 @@ describe('HomeScreen', () => {
   it('the switcher ends with View all dashboards', async () => {
     render([home, money]);
     await user.click(screen.getByTestId('home-switch'));
-    await user.click(screen.getByRole('button', { name: 'View all dashboards' }));
-    expect(router.push).toHaveBeenCalledWith('/dashboards');
+    expect(screen.getByRole('link', { name: 'View all dashboards' })).toHaveAttribute('href', '/dashboards');
   });
 
   it('the switcher of the default dashboard has Add widget, Edit dashboard and Add dashboard, with no Set as default', async () => {
     render([home]);
     await user.click(screen.getByTestId('home-switch'));
     expect(screen.queryByRole('button', { name: 'Set as default' })).toBeNull();
-    for (const name of ['Add widget', 'Edit dashboard', 'Add dashboard', 'View all dashboards']) {
-      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add widget' })).toBeInTheDocument();
+    for (const name of ['Edit dashboard', 'Add dashboard', 'View all dashboards']) {
+      expect(screen.getByRole('link', { name })).toBeInTheDocument();
     }
-    await user.click(screen.getByRole('button', { name: 'Edit dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/dashboards/home?edit=1');
+    expect(screen.getByRole('link', { name: 'Edit dashboard' })).toHaveAttribute('href', '/dashboards/home?edit=1');
   });
 
   it('the switcher of a dashboard that is not the default offers Set as default, which saves it as the default', async () => {
@@ -142,8 +141,7 @@ describe('HomeScreen', () => {
   it('Add dashboard goes to the create page', async () => {
     render([home]);
     await user.click(screen.getByTestId('home-switch'));
-    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/dashboards/new');
+    expect(screen.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
   });
 
   it('Add widget saves the pick straight to the dashboard and the toast Undo removes it again', async () => {

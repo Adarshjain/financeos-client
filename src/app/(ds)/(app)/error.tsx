@@ -28,7 +28,7 @@ export default function DsAppError({
       .then((status: { armed?: boolean; locked?: boolean } | null) => {
         if (status?.armed && status.locked) window.dispatchEvent(new CustomEvent(APP_LOCKED_EVENT));
       })
-      .catch(() => undefined);
+      .catch(() => undefined); // Offline or a blip: the error screen stands as it is.
   }, [error]);
 
   return <Boundary error={error} reset={reset} unstable_retry={unstable_retry} />;

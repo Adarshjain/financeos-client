@@ -107,12 +107,10 @@ describe('EmergencyFundBody', () => {
   });
 
   it('no bank or cash account: an empty state that goes to accounts', async () => {
-    const user = userEvent.setup();
     serve(fund({ accounts: [] }));
     render();
     expect(await screen.findByText('No bank or cash accounts yet')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Go to accounts' }));
-    expect(push).toHaveBeenCalledWith(expect.stringMatching(/\/accounts$/));
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 
   it('every bank and cash account excluded: says to include one', async () => {

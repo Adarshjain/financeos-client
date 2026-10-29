@@ -66,6 +66,7 @@ export async function loadStatementsData(
   }
   const view = buildStatementsView(statements, params.fy, params.statement, today);
 
+  // Bills and the current bill are optional pieces; the statement detail failing is surfaced as 'failed'.
   const [detail, billList, current] = await Promise.all([
     view.selectedId ? loadDetail(view.selectedId).catch(() => 'failed' as const) : Promise.resolve(null),
     isCard && view.inFy.length > 0 ? loadBills(account.id, view.fy).catch(() => []) : Promise.resolve([]),

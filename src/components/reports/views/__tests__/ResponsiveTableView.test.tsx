@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 import { stubPhone } from '@/test/stubPhone';
 
 import { ResponsiveTableView } from '../ResponsiveTableView';
@@ -27,7 +27,7 @@ describe('ResponsiveTableView', () => {
     render(<ResponsiveTableView data={data} groupField="side" groupTotals={{ asset: 100 }} valueKey="value" hideRowCount />);
     expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
     const groupRow = screen.getAllByRole('row')[1];
-    expect(within(groupRow).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Asset', formatMoney(100)]);
+    expect(within(groupRow).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Asset', formatMoney(100, { decimals: 'auto' })]);
     expect(screen.queryByText('1 row')).not.toBeInTheDocument();
   });
 

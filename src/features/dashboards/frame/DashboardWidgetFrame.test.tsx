@@ -206,8 +206,7 @@ describe('DashboardWidgetFrame menus', () => {
     await waitFor(() => expect(showToast).toHaveBeenCalled());
     expect(vi.mocked(api.POST)).toHaveBeenNthCalledWith(1, '/api/v1/dashboards/builtins/{key}/definition', { params: { path: { key: 'upcoming' } }, body: { params: { days: 30 } } });
     expect(showToast.mock.calls[0][0]).toBe('Report "Upcoming" saved');
-    showToast.mock.calls[0][1].action.onSelect();
-    expect(push).toHaveBeenCalledWith('/reports/rep-9');
+    expect(showToast.mock.calls[0][1].action).toEqual({ label: 'Open', href: '/reports/rep-9' });
   });
 
   it('a component built-in whose body links to its page has no View full page (here, no menu at all)', async () => {

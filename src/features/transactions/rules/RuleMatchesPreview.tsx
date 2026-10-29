@@ -6,13 +6,12 @@ import { Button, Card, EmptyState, Icon, Pager, Skeleton, Text } from '@/compone
 import { ErrorState } from '@/components/organisms';
 import type { MatchType } from '@/lib/rules.types';
 import { validatePattern } from '@/lib/rules.validate';
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { MatchRow } from './MatchRow';
 import { useRuleMatches } from './useRuleMatches';
 
 export const PREVIEW_PAGE_SIZE = 10;
-const PREVIEW_DEBOUNCE_MS = 400;
 
 export interface RuleMatchesPreviewProps {
   matchType: MatchType;
@@ -27,7 +26,7 @@ export interface RuleMatchesPreviewProps {
  * as it is typed (after a pause); Refresh matches asks again.
  */
 export function RuleMatchesPreview({ matchType, pattern, ruleId }: RuleMatchesPreviewProps) {
-  const settled = useDebouncedValue(pattern.trim(), PREVIEW_DEBOUNCE_MS);
+  const settled = useDebouncedValue(pattern.trim(), SEARCH_DEBOUNCE_MS);
   const usable = settled !== '' && validatePattern(matchType, settled) === null;
   const { page, setPage, matches, loading, failed, fetching, refetch } = useRuleMatches({
     merchantKey: settled,

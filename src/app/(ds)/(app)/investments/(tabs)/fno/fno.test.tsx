@@ -41,7 +41,7 @@ vi.mock('@/features/investments/investmentsServerApi', () => shared);
 const exportAction = vi.hoisted(() => vi.fn());
 vi.mock('@/features/investments/fno/fnoActions', () => ({ exportFnoCsv: exportAction }));
 const download = vi.hoisted(() => vi.fn());
-vi.mock('@/features/investments/downloadCsv', () => ({ downloadCsv: download }));
+vi.mock('@/lib/downloadCsv', () => ({ downloadCsv: download }));
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn(), GET: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
@@ -197,8 +197,7 @@ describe('/investments/fno: page', () => {
     server.fetchFnoPage.mockResolvedValue(fnoPage([]));
     await renderPage({ contract: 'PE', q: 'XYZ' });
     expect(screen.getByText('No trades match')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenLastCalledWith(FNO_HREF);
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', FNO_HREF);
   });
 
   it('says when the year has no trades and offers no clear-filters', async () => {

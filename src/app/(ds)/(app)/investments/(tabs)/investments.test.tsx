@@ -218,8 +218,7 @@ describe('/investments Holdings: rows', () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { groups: [] }));
     await renderPage({ q: 'zzz' });
     expect(screen.getByText('No holdings match')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('/investments');
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments');
   });
 
   it('invites a first trade when there are no holdings at all', async () => {

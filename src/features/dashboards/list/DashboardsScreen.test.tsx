@@ -197,8 +197,7 @@ describe('DashboardsScreen', () => {
     api.POST.mockResolvedValue({ data: home });
     render([]);
     expect(screen.getByText('No dashboards yet')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Add dashboard' }));
-    expect(router.push).toHaveBeenCalledWith('/dashboards/new');
+    expect(screen.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
     await user.click(screen.getByRole('button', { name: 'Restore default Home' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
   });

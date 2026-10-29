@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { formatDate, formatMoney } from '@/lib/format';
 import type { TableColumn } from '@/lib/reports.types';
-import { formatDate, formatMoney } from '@/lib/utils';
 
 import { cardLayout, cardMetaLine } from '../tableCards.helpers';
 
@@ -71,7 +71,7 @@ describe('cardMetaLine', () => {
   it('formats each value like the table and joins them with a middle dot', () => {
     expect(
       cardMetaLine({ date: '2026-10-05', account: 'HDFC', kind: 'bank_account', excluded: true, price: 12.5 }, meta),
-    ).toBe([formatDate('2026-10-05'), 'HDFC', 'Bank account', 'Excluded', formatMoney(12.5)].join(' · '));
+    ).toBe([formatDate('2026-10-05', 'list'), 'HDFC', 'Bank account', 'Excluded', formatMoney(12.5, { decimals: 'auto' })].join(' · '));
   });
 
   it('names a true boolean by its column label and skips a false one', () => {
@@ -83,7 +83,7 @@ describe('cardMetaLine', () => {
 
   it('skips empty values', () => {
     expect(cardMetaLine({ date: null, account: '', kind: undefined, excluded: false, price: 3 }, meta)).toBe(
-      formatMoney(3),
+      formatMoney(3, { decimals: 'auto' }),
     );
   });
 

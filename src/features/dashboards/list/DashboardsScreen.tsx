@@ -171,7 +171,7 @@ export function DashboardsScreen() {
           <EmptyState
             title="No dashboards yet"
             description="Make one from built-in widgets and your saved reports."
-            action={{ label: 'Add dashboard', onSelect: () => router.push(NEW_DASHBOARD_HREF) }}
+            action={{ label: 'Add dashboard', href: NEW_DASHBOARD_HREF }}
             secondaryAction={{ label: 'Restore default Home', onSelect: home.restore }}
           />
         </Card>

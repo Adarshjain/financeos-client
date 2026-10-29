@@ -5,7 +5,6 @@
 // "View all" goes to the Lendings page when more people have balances. Content only; the frame draws the card.
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, Skeleton } from '@/components/ds';
@@ -37,7 +36,6 @@ export function LendingBalancesSkeleton() {
 
 export function LendingBalancesBody() {
   const { data, isLoading, error, refetch } = useOutstandingCounterparties(LENDING_BALANCES_TOP);
-  const router = useRouter();
   const [opened, setOpened] = React.useState<CounterpartyResponse | null>(null);
   const people = data?.content ?? [];
   const more = (data?.totalElements ?? 0) > people.length;
@@ -50,7 +48,7 @@ export function LendingBalancesBody() {
         compact
         title="All square"
         description="Nobody owes you and you owe nobody."
-        action={{ label: 'Go to lendings', variant: 'link', onSelect: () => router.push(appHref('/loans/lendings')) }}
+        action={{ label: 'Go to lendings', variant: 'link', href: appHref('/loans/lendings') }}
       />
     );
   }

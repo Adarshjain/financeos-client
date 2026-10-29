@@ -21,6 +21,7 @@ import { formatCount } from '@/lib/format';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
+import { replaceUrl } from '@/lib/urlState';
 
 import { SAVE_FAILED, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '../data/useDashboardActions';
 import { textWidgetResponse } from '../editor/dashboardEditor.helpers';
@@ -80,7 +81,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
     const url = new URL(window.location.href);
     if (!url.searchParams.has('edit')) return;
     url.searchParams.delete('edit');
-    window.history.replaceState(null, '', url);
+    replaceUrl(url);
   }, [startEditing]);
 
   // After a failed Save: the first thing marked in red takes focus.

@@ -9,6 +9,7 @@ vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')
 
 import type { RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
 import { api } from '@/lib/api/client';
+import { formatDate } from '@/lib/format';
 import { renderWithQuery } from '@/test/renderWithQuery';
 import { stubPhone } from '@/test/stubPhone';
 
@@ -107,8 +108,8 @@ describe('RowBreakdownView section on a phone', () => {
     const section = await screen.findByRole('region', { name: 'Transactions' });
     expect(within(section).queryByRole('table')).not.toBeInTheDocument();
     const card = within(section).getByRole('button', { name: /Salary/ });
-    expect(within(card).getByText('₹7,000.00')).toHaveClass('font-semibold');
-    expect(within(card).getByText('1 Oct 26 · 2 · 3')).toBeInTheDocument();
+    expect(within(card).getByText('₹7,000')).toHaveClass('font-semibold');
+    expect(within(card).getByText(`${formatDate('2026-10-01', 'list')} · 2 · 3`)).toBeInTheDocument();
     expect(screen.queryByText('30 rows')).not.toBeInTheDocument();
   });
 

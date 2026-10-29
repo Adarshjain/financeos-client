@@ -94,8 +94,7 @@ describe('/investments/corporate-actions', () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([]));
     await renderPage({ type: 'merger', q: 'zzz' });
     expect(screen.getByText('No corporate actions match')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions');
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/corporate-actions');
   });
 
   it('shows the load error instead of the list', async () => {

@@ -2,6 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
 import { cn } from '../cn';
@@ -20,10 +21,7 @@ export interface WidgetMenuItem {
   destructive?: boolean;
 }
 
-export interface WidgetAction {
-  label: string;
-  onSelect: () => void;
-}
+export type WidgetAction = { label: string } & ActionTarget;
 
 export interface WidgetProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -133,15 +131,15 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                 {action ? (
                   <>
                     {' '}
-                    <Button
-                      type="button"
+                    <ActionButton
                       variant="link"
                       size="sm"
-                      onClick={action.onSelect}
+                      href={action.href}
+                      onSelect={action.onSelect}
                       className="text-label text-ink font-bold"
                     >
                       {action.label}
-                    </Button>
+                    </ActionButton>
                   </>
                 ) : null}
               </div>
@@ -162,15 +160,15 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                 {action ? (
                   <>
                     {' '}
-                    <Button
-                      type="button"
+                    <ActionButton
                       variant="link"
                       size="sm"
-                      onClick={action.onSelect}
+                      href={action.href}
+                      onSelect={action.onSelect}
                       className="text-label text-ink font-bold"
                     >
                       {action.label}
-                    </Button>
+                    </ActionButton>
                   </>
                 ) : null}
               </div>

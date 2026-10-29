@@ -47,6 +47,7 @@ function ignoreGone(e: unknown): null {
   throw e;
 }
 
+/** The error's own message (a plain Error from a mutation carries user-facing copy), else the fixed fallback. */
 const messageOf = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback);
 
 /** A report the assistant drafted: preview, then save, add to Home, update or delete, with the outcome kept in the chat. */
@@ -110,7 +111,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
       if (!active || !r) return;
       setDashboardCount(r.dashboards.length);
       setDeleteName(r.name);
-    }).catch(() => undefined);
+    }).catch(() => undefined); // Only the delete dialog's extra detail; Delete works without it.
     return () => {
       active = false;
     };

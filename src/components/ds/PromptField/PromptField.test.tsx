@@ -56,10 +56,10 @@ describe('PromptField', () => {
     expect(area()).toHaveValue('hi');
   });
 
-  it('shows stop while busy, calls onStop and does not submit', () => {
+  it('shows stop while loading, calls onStop and does not submit', () => {
     const onSubmit = vi.fn();
     const onStop = vi.fn();
-    render(<PromptField busy defaultValue="hi" onSubmit={onSubmit} onStop={onStop} />);
+    render(<PromptField loading defaultValue="hi" onSubmit={onSubmit} onStop={onStop} />);
     expect(screen.queryByRole('button', { name: 'Send' })).toBeNull();
     fireEvent.keyDown(area(), { key: 'Enter' });
     expect(onSubmit).not.toHaveBeenCalled();

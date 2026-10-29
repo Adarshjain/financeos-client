@@ -21,11 +21,13 @@ import {
   Text,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import { AppError } from '@/lib/appError';
 import { watchSession } from '@/lib/authExpiry';
+import { downloadCsv } from '@/lib/downloadCsv';
 import type { DividendFilters } from '@/lib/investments.types';
 import { AccountType } from '@/lib/types';
 
-import { downloadCsv } from '../downloadCsv';
 import { exportDividendsCsv } from './dividendsActions';
 import {
   type DividendListRow,
@@ -177,10 +179,10 @@ export function DividendsListCard({
     setExporting(true);
     try {
       const result = await watchSession(exportDividendsCsv(exportFilters));
-      if (!result.success) throw new Error(result.error.message);
+      if (!result.success) throw new AppError(result.error.message);
       downloadCsv(result.data.csv, result.data.filename);
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "Couldn't export the dividends. Try again.", { tone: 'danger' });
+      showToast(getErrorMessage(e, "Couldn't export the dividends. Try again."), { tone: 'danger' });
     } finally {
       setExporting(false);
     }
