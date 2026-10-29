@@ -45,7 +45,8 @@ vi.mock('@/components/ds', async () => {
   return { ...actual, showToast: (...a: unknown[]) => showToast(...a) };
 });
 
-const iso = (daysAgo: number) => new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+// Relative to pinClock's instant: the fixtures are built at import, before the clock is pinned.
+const iso = (daysAgo: number) => new Date(Date.parse('2026-10-29T06:00:00Z') - daysAgo * 86_400_000).toISOString();
 
 const gemini1: LlmKeyDto = {
   id: 'g1', createdAt: iso(30), keyLast4: 'k3Qa', label: 'Personal', lastUsedAt: iso(0), position: 1, provider: 'gemini', status: 'ACTIVE',
