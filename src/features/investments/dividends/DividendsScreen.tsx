@@ -9,10 +9,10 @@ import {
   GRID_GAP,
 } from '@/components/ds';
 import type { DividendFilters } from '@/lib/investments.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Dividend } from '@/lib/types';
 
-import { DividendAddDialog, DividendEditDialog, type DividendPrefill } from './DividendFormDialog';
-import { DividendReconcileDialog } from './DividendReconcileDialog';
+import type { DividendPrefill } from './DividendFormDialog';
 import { DividendsHero } from './DividendsFigures';
 import { DividendsListCard } from './DividendsListCard';
 import {
@@ -28,6 +28,9 @@ import {
 } from './dividendsModel';
 import { ByInstrumentCard, dropSuggestions, SuggestionsCard } from './DividendsSideCards';
 import { useUnrecordedCredits } from './useUnrecordedCredits';
+
+const loadDividendForms = () => import('./DividendFormDialog');
+const loadReconcileDialog = () => import('./DividendReconcileDialog').then((m) => m.DividendReconcileDialog);
 
 export interface DividendsScreenProps {
   state: DividendsUrlState;
@@ -70,6 +73,9 @@ export function DividendsScreen({
   const [opened, setOpened] = React.useState<Dividend | null>(null);
   const [recording, setRecording] = React.useState<{ prefill: DividendPrefill; suggestionKey?: string } | null>(null);
   const [reconciling, setReconciling] = React.useState(false);
+  // The dividend forms and Reconcile are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: forms, run: runForms } = useLazyDialog(loadDividendForms);
+  const { Component: DividendReconcileDialog, run: runReconcile } = useLazyDialog(loadReconcileDialog);
 
   const unrecorded = useUnrecordedCredits();
   const { scan } = unrecorded;
@@ -88,7 +94,7 @@ export function DividendsScreen({
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <DividendsHero figures={figures} />
       {banner ? (
-        <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', onSelect: () => setReconciling(true) }}>
+        <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', onSelect: () => void runReconcile(() => setReconciling(true)) }}>
           {banner.detail}
         </Banner>
       ) : null}
@@ -104,7 +110,11 @@ export function DividendsScreen({
         instrumentLabel={instrumentLabel}
         totalsLine={totalsLine}
         exportFilters={exportFilters}
-        onEdit={(id) => setOpened(dividends.find((d) => d.id === id) ?? null)}
+        onEdit={(id) => {
+          const next = dividends.find((d) => d.id === id) ?? null;
+          if (next) void runForms(() => setOpened(next));
+          else setOpened(null);
+        }}
       />
       <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
         <ByInstrumentCard
@@ -115,7 +125,7 @@ export function DividendsScreen({
           brokerAccountId={brokerAccountId}
           onRecord={(s) => {
             const row = suggestionRow(s);
-            setRecording({
+            void runForms(() => setRecording({
               suggestionKey: row.key,
               prefill: {
                 brokerAccountId: s.brokerAccountId,
@@ -126,17 +136,17 @@ export function DividendsScreen({
                 payDate: s.exDate,
                 notes: suggestionNote(s),
               },
-            });
+            }));
           }}
         />
       </div>
 
-      {editing ? <DividendEditDialog dividend={editing} onClose={() => setOpened(null)} onChanged={afterChange} /> : null}
-      {reconciling ? (
+      {editing && forms ? <forms.DividendEditDialog dividend={editing} onClose={() => setOpened(null)} onChanged={afterChange} /> : null}
+      {reconciling && DividendReconcileDialog ? (
         <DividendReconcileDialog
           unrecorded={unrecorded}
           today={today}
-          onRecord={(prefill) => setRecording({ prefill })}
+          onRecord={(prefill) => void runForms(() => setRecording({ prefill }))}
           onChanged={() => {
             router.refresh();
             afterChange();
@@ -144,8 +154,8 @@ export function DividendsScreen({
           onClose={() => setReconciling(false)}
         />
       ) : null}
-      {recording ? (
-        <DividendAddDialog
+      {recording && forms ? (
+        <forms.DividendAddDialog
           prefill={recording.prefill}
           onSaved={() => {
             if (recording.suggestionKey) dropSuggestions(qc, brokerAccountId, [recording.suggestionKey]);

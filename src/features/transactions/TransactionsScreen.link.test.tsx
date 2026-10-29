@@ -104,19 +104,19 @@ vi.mock('./link/LinkTransactionsDialog', () => ({
 beforeEach(() => vi.clearAllMocks());
 
 describe('TransactionsScreen, Link to…', () => {
-  it('opens the Link dialog on the detail transaction from Link to…, keeping the detail behind it', () => {
+  it('opens the Link dialog on the detail transaction from Link to…, keeping the detail behind it', async () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Link to…' }));
-    expect(screen.getByText('linking BigBasket')).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Link to…' }));
+    expect(await screen.findByText('linking BigBasket')).toBeInTheDocument();
     expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
   });
 
   it('refreshes the list once the link is made, and closes the dialog', async () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Link to…' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Finish link' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Link to…' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Finish link' }));
     expect(router.refresh).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByTestId('link-dialog')).toBeNull());
   });

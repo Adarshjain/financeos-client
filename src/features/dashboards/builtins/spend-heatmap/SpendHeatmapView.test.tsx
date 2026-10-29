@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/components/organisms', () => ({
+vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: (p: { months?: number; data: { chartType: string; categories: string[] }; onSelectEntry?: (e: { key: string; label: string; value: number }) => void }) => (
     <button
       type="button"
@@ -41,9 +41,9 @@ const chart = (categories: string[], values: (number | null)[]): ChartData =>
 const view = (data: ChartData | ReturnType<typeof kpi>) => ({ widget: widget('spend_heatmap'), data, onPageChange: vi.fn() });
 
 describe('SpendHeatmapView', () => {
-  it('draws the data as a Chart heatmap', () => {
+  it('draws the data as a Chart heatmap', async () => {
     renderWithQuery(<SpendHeatmapView {...view(chart(['2026-10-08', '2026-10-09'], [400, 1250]))} />);
-    expect(screen.getByTestId('chart')).toHaveAttribute('data-type', 'heatmap');
+    expect(await screen.findByTestId('chart')).toHaveAttribute('data-type', 'heatmap');
     expect(screen.getByTestId('chart')).toHaveAttribute('data-categories', '2026-10-08,2026-10-09');
   });
 

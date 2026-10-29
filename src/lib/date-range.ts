@@ -40,10 +40,22 @@ export interface DateRangeOptions {
   endExclusive?: boolean;
 }
 
+/** Intl.DateTimeFormat construction is costly; build each distinct formatter once, on first use. */
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+function dateTimeFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const cacheKey = `${locale}|${JSON.stringify(options)}`;
+  let format = dateTimeFormats.get(cacheKey);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, options);
+    dateTimeFormats.set(cacheKey, format);
+  }
+  return format;
+}
+
 /** Today's calendar date (YYYY-MM-DD) in the app zone. */
 export function todayInAppZone(now: Date = new Date()): string {
   // en-CA formats as YYYY-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
+  return dateTimeFormat('en-CA', {
     timeZone: APP_ZONE,
     year: 'numeric',
     month: '2-digit',
@@ -53,7 +65,7 @@ export function todayInAppZone(now: Date = new Date()): string {
 
 /** The clock time (HH:mm, 24-hour) of an instant in the app zone. */
 export function timeInAppZone(instant: string | Date): string {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(
+  const parts = dateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(
     typeof instant === 'string' ? new Date(instant) : instant,
   );
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
@@ -62,13 +74,13 @@ export function timeInAppZone(instant: string | Date): string {
 
 /** The hour of day (0-23) in the app zone. */
 export function hourInAppZone(now: Date = new Date()): number {
-  const hour = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', hour12: false }).format(now);
+  const hour = dateTimeFormat('en-GB', { timeZone: APP_ZONE, hour: '2-digit', hour12: false }).format(now);
   return Number(hour) % 24;
 }
 
 /** "Tuesday 13 Oct": the weekday, day and month of `now` in the app zone. */
 export function weekdayDayMonthInAppZone(now: Date = new Date()): string {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: APP_ZONE, weekday: 'long', day: 'numeric', month: 'short' }).formatToParts(now);
+  const parts = dateTimeFormat('en-GB', { timeZone: APP_ZONE, weekday: 'long', day: 'numeric', month: 'short' }).formatToParts(now);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   return `${get('weekday')} ${get('day')} ${get('month')}`;
 }

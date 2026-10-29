@@ -7,10 +7,9 @@ import {
   EmptyState,
   GRID_GAP,
 } from '@/components/ds';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { EpfAddDialog } from './EpfAddDialog';
-import { EpfEmployerDialog } from './EpfEmployerDialog';
-import { EpfEntryDialog } from './EpfEntryDialog';
+import { loadEpfAddDialog } from '../lazyDialogs';
 import { EpfHero } from './EpfFigures';
 import {
   type EpfEmployer,
@@ -24,6 +23,9 @@ import {
 } from './epfModel';
 import { EPF_UPLOAD_HREF, EpfPassbookCard } from './EpfPassbookCard';
 import { EpfEmployersCard, EpfPensionCard } from './EpfSideCards';
+
+const loadEpfEntryDialog = () => import('./EpfEntryDialog').then((m) => m.EpfEntryDialog);
+const loadEpfEmployerDialog = () => import('./EpfEmployerDialog').then((m) => m.EpfEmployerDialog);
 
 export interface EpfScreenProps {
   state: EpfUrlState;
@@ -67,6 +69,10 @@ export function EpfScreen({
 }: EpfScreenProps) {
   const [opened, setOpened] = React.useState<EpfEntry | null>(null);
   const [adding, setAdding] = React.useState(false);
+  // The EPF forms are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: EpfAddDialog, run: runAdd } = useLazyDialog(loadEpfAddDialog);
+  const { Component: EpfEntryDialog, run: runEntry } = useLazyDialog(loadEpfEntryDialog);
+  const { Component: EpfEmployerDialog, run: runEmployer } = useLazyDialog(loadEpfEmployerDialog);
   const [employer, setEmployer] = React.useState<EpfEmployer | 'new' | null>(
     null
   );
@@ -77,7 +83,7 @@ export function EpfScreen({
     : null;
 
   // Add entry sits outside both layouts, so adding the first employer (which ends the empty state) keeps it open.
-  const addDialog = adding ? (
+  const addDialog = adding && EpfAddDialog ? (
     <EpfAddDialog
       initialType="OPENING_BALANCE"
       onClose={() => setAdding(false)}
@@ -98,7 +104,7 @@ export function EpfScreen({
             }}
             secondaryAction={{
               label: 'Add opening balance',
-              onSelect: () => setAdding(true),
+              onSelect: () => void runAdd(() => setAdding(true)),
             }}
           />
         </Card>
@@ -124,18 +130,22 @@ export function EpfScreen({
               employerOptions={employerOptions}
               employerValue={employerValue}
               stale={stale}
-              onOpen={(id) =>
-                setOpened(entries.find((e) => e.id === id) ?? null)
-              }
+              onOpen={(id) => {
+                const next = entries.find((e) => e.id === id) ?? null;
+                if (next) void runEntry(() => setOpened(next));
+                else setOpened(null);
+              }}
             />
           </div>
           <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <EpfEmployersCard
               rows={employerRows}
-              onAdd={() => setEmployer('new')}
-              onEdit={(id) =>
-                setEmployer(employers.find((e) => e.id === id) ?? null)
-              }
+              onAdd={() => void runEmployer(() => setEmployer('new'))}
+              onEdit={(id) => {
+                const next = employers.find((e) => e.id === id) ?? null;
+                if (next) void runEmployer(() => setEmployer(next));
+                else setEmployer(null);
+              }}
             />
             {summary.pension ? (
               <EpfPensionCard pension={summary.pension} />
@@ -143,7 +153,7 @@ export function EpfScreen({
           </div>
         </div>
 
-        {open ? (
+        {open && EpfEntryDialog ? (
           <EpfEntryDialog
             entry={open}
             employers={employers}
@@ -151,7 +161,7 @@ export function EpfScreen({
             onClose={() => setOpened(null)}
           />
         ) : null}
-        {employer ? (
+        {employer && EpfEmployerDialog ? (
           <EpfEmployerDialog
             employer={employer === 'new' ? null : employer}
             onClose={() => setEmployer(null)}

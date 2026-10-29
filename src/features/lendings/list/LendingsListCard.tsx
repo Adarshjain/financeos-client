@@ -164,7 +164,7 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
               <EmptyState
                 title="No lendings yet"
                 description="Add a lending to start a ledger."
-                action={{ label: 'Add lending', variant: 'primary', onSelect: () => addLending.open() }}
+                action={{ label: 'Add lending', variant: 'primary', onSelect: () => void addLending.open() }}
               />
             )
           }

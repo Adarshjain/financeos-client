@@ -71,7 +71,9 @@ export function formatDate(
   const ymd = toYmd(value);
   if (!ymd) return '';
   const short = `${ymd.d} ${MONTH_SHORT[ymd.m - 1]}`;
-  const today = toYmd(opts.today ?? todayInAppZone()) ?? istParts(new Date()).ymd;
+  // Only list, weekday and relative read today; the other styles skip computing it.
+  const needsToday = style === 'list' || style === 'weekday' || style === 'relative';
+  const today = needsToday ? (toYmd(opts.today ?? todayInAppZone()) ?? istParts(new Date()).ymd) : ymd;
   const list = () => (ymd.y === today.y ? short : `${short} ${yy(ymd.y)}`);
   switch (style) {
     case 'full':

@@ -46,22 +46,28 @@ export async function loadRulesPageData(
   qc.setQueryData(keys.categories.list(), categories);
   if (!account) return { ok: true, data: { accountId, state: dehydrate(qc), usage: null } };
 
-  const [, totals] = await Promise.all([
+  // The card's own reward year (as its rewards page reports it) decides the report's window, so the totals and then the
+  // report run as one chain beside the prefetches instead of after them.
+  const usageReport = serverApi
+    .GET('/api/v1/rewards/totals')
+    .then((r) => r.data ?? null, () => null)
+    .then((totals) => {
+      const mine = totals?.find((t) => t.accountId === accountId);
+      const window = mine ? { from: mine.from, to: mine.to } : rewardsWindowFor(accountAnniversaryDate(account), today);
+      // The usage strip is optional: a failed report only hides it.
+      return rewardsApi.getReport(accountId, window.from, window.to).catch(() => null);
+    });
+  const [, report] = await Promise.all([
     Promise.all([
       qc.prefetchQuery({ queryKey: keys.rewards.rules(accountId), queryFn: () => rewardsApi.listRules(accountId) }),
       qc.prefetchQuery({ queryKey: keys.rewards.capBuckets(accountId), queryFn: () => rewardsApi.listCapBuckets(accountId) }),
       qc.prefetchQuery({ queryKey: keys.rewards.milestones(accountId), queryFn: () => rewardsApi.listMilestones(accountId) }),
       qc.prefetchQuery({ queryKey: keys.rewards.config(accountId), queryFn: () => rewardsApi.getAccountConfig(accountId) }),
     ]),
-    serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null),
+    usageReport,
   ]);
   await signInIfPrefetchFailed(qc, keys.rewards.rules(accountId));
 
-  // The card's own reward year, as its rewards page reports it.
-  const mine = totals?.find((t) => t.accountId === accountId);
-  const window = mine ? { from: mine.from, to: mine.to } : rewardsWindowFor(accountAnniversaryDate(account), today);
-  // The usage strip is optional: a failed report only hides it.
-  const report = await rewardsApi.getReport(accountId, window.from, window.to).catch(() => null);
   const rules = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listRules>>>(keys.rewards.rules(accountId)) ?? [];
   const caps = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listCapBuckets>>>(keys.rewards.capBuckets(accountId)) ?? [];
   return { ok: true, data: { accountId, state: dehydrate(qc), usage: report ? buildUsage(report, rules, caps, today) : null } };

@@ -20,7 +20,7 @@ vi.mock('@/features/investments/tradebook/TradeDialog', () => ({
 }));
 
 describe('More sheet Quick add Lending', () => {
-  it('opens the Add lending dialog from state, closes the sheet and leaves the URL alone', () => {
+  it('opens the Add lending dialog from state, closes the sheet and leaves the URL alone', async () => {
     render(
       <AddLendingProvider>
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
@@ -31,12 +31,12 @@ describe('More sheet Quick add Lending', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Lending/i }));
 
-    expect(screen.getByText('lending dialog')).toBeInTheDocument();
+    expect(await screen.findByText('lending dialog')).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('Trade closes the sheet and opens Record trade from state', () => {
+  it('Trade closes the sheet and opens Record trade from state', async () => {
     render(
       <AddTradeProvider>
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
@@ -45,7 +45,7 @@ describe('More sheet Quick add Lending', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Menu/i }));
     fireEvent.click(screen.getByRole('button', { name: /Trade/i }));
 
-    expect(screen.getByText('trade dialog')).toBeInTheDocument();
+    expect(await screen.findByText('trade dialog')).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });

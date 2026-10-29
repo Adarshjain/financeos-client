@@ -14,12 +14,15 @@ import { TransactionsTabs } from '@/features/transactions/TransactionsTabs';
 import { seedNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { FilterChips } from './FilterChips';
-import { FiltersDialog } from './FiltersDialog';
 import type { TransactionListRow } from './transactionRowsModel';
 import { TransactionsList } from './TransactionsList';
 import { type TransactionsQuery, transactionsUrl } from './transactionsUrl';
+
+// The Filters dialog is not in the page: it loads when a filter control is pressed (see useLazyDialog).
+const loadFiltersDialog = () => import('./FiltersDialog').then((m) => m.FiltersDialog);
 
 export type TransactionsListResult =
   | {
@@ -43,6 +46,8 @@ export interface TransactionsListPaneProps {
   needsReviewCount: number | null;
   /** The app bar's +: opens Add transaction (piece 3 wires it). */
   onAdd?: () => void;
+  /** The + shows its loading state while the Add transaction code loads. */
+  addLoading?: boolean;
   /** A row was pressed (piece 2 opens the detail). */
   onOpenDetail?: (id: string) => void;
   /** The row open in the detail pane. */
@@ -73,6 +78,7 @@ export function TransactionsListPane({
   categories,
   needsReviewCount,
   onAdd = noop,
+  addLoading,
   onOpenDetail,
   openId,
   onEditCategories,
@@ -87,6 +93,7 @@ export function TransactionsListPane({
   const accountDialogs = useAccountDialogs();
   const [pending, startTransition] = React.useTransition();
   const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const { Component: FiltersDialog, run: runFilters } = useLazyDialog(loadFiltersDialog);
 
   // The nav badge reads the same number, so it does not ask again. Seeded in render so it is there before the
   // rail's query subscribes; the effect keeps it current when the number changes later.
@@ -115,7 +122,7 @@ export function TransactionsListPane({
 
   return (
     <>
-      <ShellPage crumb={areaCrumb('transactions')} title="Transactions" flushTop onAdd={onAdd} addLabel="Add transaction">
+      <ShellPage crumb={areaCrumb('transactions')} title="Transactions" flushTop onAdd={onAdd} addLoading={addLoading} addLabel="Add transaction">
         <div className="flex">
           <div className="flex min-w-0 flex-1 flex-col gap-space-8 desk:gap-space-16">
             {selectionHeader ? (
@@ -134,7 +141,7 @@ export function TransactionsListPane({
               accounts={accounts}
               categories={categories}
               onChange={go}
-              onOpenFilters={() => setFiltersOpen(true)}
+              onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
               search={{ value: text, onValueChange: setText }}
             />
             {list.ok ? (
@@ -167,7 +174,7 @@ export function TransactionsListPane({
           ) : null}
         </div>
       </ShellPage>
-      {filtersOpen ? (
+      {filtersOpen && FiltersDialog ? (
         <FiltersDialog
           query={query}
           today={today}

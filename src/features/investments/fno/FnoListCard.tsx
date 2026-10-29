@@ -26,11 +26,12 @@ import type { Broker } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import { downloadCsv } from '@/lib/downloadCsv';
 import type { FnoSummary } from '@/lib/investments.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType, type FnoTradeResponse } from '@/lib/types';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
+import { loadFnoAddDialog, loadFnoTradeDialog } from '../lazyDialogs';
 import { exportFnoCsv } from './fnoActions';
-import { FnoAddDialog } from './FnoAddDialog';
 import {
   CONTRACT_CHIPS,
   currentFy,
@@ -46,7 +47,6 @@ import {
   realisedLine,
   SORT_OPTIONS,
 } from './fnoModel';
-import { FnoTradeDialog } from './FnoTradeDialog';
 
 const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];
 const ALL_BROKERS: SelectOption[] = [{ value: '', label: 'All brokers' }];
@@ -169,6 +169,8 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
   const [editing, setEditing] = React.useState<FnoTradeResponse | null>(null);
   const [exporting, setExporting] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
+  const { Component: FnoAddDialog, run: runAdd } = useLazyDialog(loadFnoAddDialog);
+  const { Component: FnoTradeDialog, run: runEdit } = useLazyDialog(loadFnoTradeDialog);
 
   const rows = React.useMemo(() => trades.map(fnoListRow), [trades]);
   const byId = React.useMemo(() => new Map(trades.map((t) => [t.id, t])), [trades]);
@@ -268,7 +270,11 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
               <Conceal>{row.line}</Conceal>
             </Text>
           )}
-          onRowSelect={(row) => setEditing(byId.get(row.id) ?? null)}
+          onRowSelect={(row) => {
+            const trade = byId.get(row.id) ?? null;
+            if (trade) void runEdit(() => setEditing(trade));
+            else setEditing(null);
+          }}
           footer={
             rows.length > 0 ? (
               <div className="flex flex-col items-start gap-space-4 px-space-16 py-space-10 desk:flex-row desk:items-center desk:justify-between desk:gap-space-12">
@@ -300,15 +306,15 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
               <EmptyState
                 title={state.fy == null ? 'No F&O trades yet' : `No F&O trades in ${fnoFyLabel(state.fy)}`}
                 description="Log a trade or import a broker Tax P&L statement."
-                action={{ label: 'Record F&O trade', variant: 'primary', onSelect: () => setAdding(true) }}
+                action={{ label: 'Record F&O trade', variant: 'primary', onSelect: () => void runAdd(() => setAdding(true)) }}
               />
             )
           }
           stickyHeader={false}
         />
       </Card>
-      {adding ? <FnoAddDialog onClose={() => setAdding(false)} /> : null}
-      {editing ? <FnoTradeDialog trade={editing} brokers={brokers} onClose={() => setEditing(null)} /> : null}
+      {adding && FnoAddDialog ? <FnoAddDialog onClose={() => setAdding(false)} /> : null}
+      {editing && FnoTradeDialog ? <FnoTradeDialog trade={editing} brokers={brokers} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }

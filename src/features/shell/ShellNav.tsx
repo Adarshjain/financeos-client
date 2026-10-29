@@ -33,7 +33,7 @@ import {
   shellTabBarItems,
 } from './navigation';
 import { usePendingPath } from './navigationStore';
-import { useOpenQuickAddDialog } from './quickAdd';
+import { useOpenQuickAddDialog, useQuickAddLoading } from './quickAdd';
 import { RAIL_COLLAPSED_COOKIE } from './railCollapsedName';
 import { appHref, DS_HOME_HREF } from './routes';
 import { useSearch } from './search/SearchProvider';
@@ -58,8 +58,8 @@ type NavCount = { count: number; countTone: 'danger' | 'warning' };
  * nothing while a count loads or is zero.
  */
 function useNavCounts(): Record<string, NavCount> {
-  const { data: inbox } = useInboxSummary();
-  const { data: review } = useNeedsReviewCount();
+  const { data: inbox } = useInboxSummary({ shell: true });
+  const { data: review } = useNeedsReviewCount({ shell: true });
   // Pages seed these counts into the cache while they render, so what the rail and the tab bar find in it depends on
   // their order in the tree and on when each hydrates. Counts therefore wait for hydration: the server and the first
   // client render both draw none, and they show at once after it.
@@ -96,6 +96,7 @@ export function ShellTabBar({
   const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
   const counts = useNavCounts();
   const openQuickAdd = useOpenQuickAddDialog();
+  const quickAddLoading = useQuickAddLoading();
   const { hidden, setHidden } = useHideAmounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -148,10 +149,12 @@ export function ShellTabBar({
                       variant="secondary"
                       layout="stacked"
                       icon={<Icon name={item.icon} size="lg" />}
-                      onClick={() => {
-                        setMoreOpen(false);
-                        openQuickAdd(item.dialog!);
-                      }}
+                      loading={quickAddLoading.isLoading(item.dialog)}
+                      onPointerDown={() => quickAddLoading.preload(item.dialog!)}
+                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && quickAddLoading.preload(item.dialog!)}
+                      // The sheet stays open, showing the pressed tile's loading state, until the dialog's code is ready;
+                      // it closes in the same update that opens the dialog, so the two modals never stack.
+                      onClick={() => void openQuickAdd(item.dialog!, () => setMoreOpen(false))}
                     >
                       {item.label}
                     </Button>

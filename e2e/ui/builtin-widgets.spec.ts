@@ -117,7 +117,7 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
 
     const widget = viewCard(page, 'Shortcuts');
     const tiles = widget.getByRole('list', { name: 'Shortcuts' }).getByRole('listitem');
-    await expect(tiles).toHaveText(['Add transaction', 'Needs Review', 'Import', 'Upcoming']);
+    await expect(tiles).toHaveText(['Add transaction', 'Needs review', 'Import', 'Upcoming']);
 
     // Configure: add Record lending and the bank account, move Record lending up, drop Import.
     await openMenu(page, widget, 'Widget settings');
@@ -125,7 +125,7 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     const editor = settings.getByTestId('shortcuts-params-editor');
     await expect(editor).toContainText('4 of 12');
     const chosen = editor.getByRole('list', { name: 'Chosen shortcuts' }).getByRole('listitem');
-    await expect(chosen).toHaveText(['Add transaction', 'Needs Review', 'Import', 'Upcoming']);
+    await expect(chosen).toHaveText(['Add transaction', 'Needs review', 'Import', 'Upcoming']);
     const search = editor.getByLabel('Add or remove');
     await search.fill('Record');
     await editor.getByRole('checkbox', { name: 'Record lending', exact: true }).check();
@@ -133,14 +133,14 @@ test.describe('Built-in widgets on a dashboard (@ui)', () => {
     await editor.getByRole('checkbox', { name: 'Shortcut Bank', exact: true }).check();
     await search.fill('');
     await editor.getByRole('checkbox', { name: 'Import', exact: true }).uncheck();
-    await expect(chosen).toHaveText(['Add transaction', 'Needs Review', 'Upcoming', 'Record lending', 'Shortcut Bank']);
+    await expect(chosen).toHaveText(['Add transaction', 'Needs review', 'Upcoming', 'Record lending', 'Shortcut Bank']);
     await editor.getByRole('button', { name: 'Move Record lending up' }).click();
-    await expect(chosen).toHaveText(['Add transaction', 'Needs Review', 'Record lending', 'Upcoming', 'Shortcut Bank']);
+    await expect(chosen).toHaveText(['Add transaction', 'Needs review', 'Record lending', 'Upcoming', 'Shortcut Bank']);
     await expect(editor).toContainText('5 of 12');
     await settings.getByRole('button', { name: 'Save' }).click();
     await expect(settings).toHaveCount(0);
 
-    await expect(tiles).toHaveText(['Add transaction', 'Needs Review', 'Record lending', 'Upcoming', 'Shortcut Bank']);
+    await expect(tiles).toHaveText(['Add transaction', 'Needs review', 'Record lending', 'Upcoming', 'Shortcut Bank']);
     expect(await widgetParams(api, id, 'sc')).toEqual({
       items: ['action:add-transaction', 'page:/transactions/review', 'action:record-lending', 'page:/upcoming', `account:${bank.id}`],
     });

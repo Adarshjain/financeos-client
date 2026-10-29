@@ -19,6 +19,8 @@ export interface ShellPageProps {
   addHref?: string;
   /** A same-page add: the + calls this (e.g. opens a dialog) instead of navigating. Wins over addHref. */
   onAdd?: () => void;
+  /** The + shows its loading state while its dialog code loads (only with onAdd). */
+  addLoading?: boolean;
   /** The + opens a dropdown of these rows instead of one add. Wins over onAdd and addHref. */
   addMenu?: TopBarMenuItem[];
   addLabel?: string;
@@ -73,6 +75,7 @@ export function ShellPage({
   crumb: crumbProp,
   addHref,
   onAdd,
+  addLoading,
   addMenu,
   addLabel,
   backHref: backHrefProp,
@@ -108,6 +111,7 @@ export function ShellPage({
             showLabel: true,
             labelIconSize: 'xs' as const,
             onSelect: onAdd,
+            loading: addLoading,
           },
         ]
       : addHref

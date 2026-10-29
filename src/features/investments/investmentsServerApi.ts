@@ -38,9 +38,9 @@ export function fetchPricesPage(instrumentId: string, page: number, size: number
   return instrumentsApi.pricesPage(instrumentId, { page, size });
 }
 
-/** Every stored price of the instrument, for the chart. */
-export function fetchPriceHistory(instrumentId: string): Promise<PriceHistoryPoint[]> {
-  return instrumentsApi.getPriceHistory(instrumentId);
+/** The instrument's stored prices for the chart; with `maxPoints` the server thins them, keeping first and last. */
+export function fetchPriceHistory(instrumentId: string, maxPoints?: number): Promise<PriceHistoryPoint[]> {
+  return instrumentsApi.getPriceHistory(instrumentId, maxPoints);
 }
 
 export function fetchInstrumentTrades(instrumentId: string, page: number, size: number): Promise<PagedInvestmentTransactionResponse> {

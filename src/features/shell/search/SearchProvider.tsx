@@ -4,14 +4,18 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { SearchPalette } from '@/components/ds';
-import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { shellFooterItems, shellQuickAddItems, shellRailGroups } from '../navigation';
-import { useOpenQuickAddDialog } from '../quickAdd';
+import { useOpenQuickAddDialog, useQuickAddLoading } from '../quickAdd';
 import { appHref } from '../routes';
 import { buildSearchGroups, type SearchAction, searchHint, type SearchPage } from './searchItems';
 import { useGlobalSearch } from './useGlobalSearch';
+
+// Mark paid opens from a search action: its code is not in the page and loads when the action is picked.
+// Once loaded it stays mounted, so its close animation still plays.
+const loadMarkPaidDialog = () => import('@/features/bills/MarkPaidDialog').then((m) => m.MarkPaidDialog);
 
 interface SearchValue {
   open: () => void;
@@ -30,10 +34,12 @@ const PAGES: SearchPage[] = [...shellRailGroups.flatMap((g) => g.items), ...shel
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const openQuickAdd = useOpenQuickAddDialog();
+  const quickAddLoading = useQuickAddLoading();
   const addTransaction = useAddTransaction();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const { result, loading, reset } = useGlobalSearch(query);
+  const { Component: MarkPaidDialog, run: runMarkPaid, preload: preloadMarkPaid } = useLazyDialog(loadMarkPaidDialog);
   const [markPaid, setMarkPaid] = React.useState<{ statementId: string; cardName: string; remaining: number } | null>(null);
 
   const actions: SearchAction[] = shellQuickAddItems.map((item) => ({
@@ -47,14 +53,23 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     },
   }));
   const groups = buildSearchGroups({ query, result, pages: PAGES, actions, go: (href) => router.push(href),
-    onMarkBillPaid: setMarkPaid,
+    onMarkBillPaid: (bill) => {
+      preloadMarkPaid();
+      void runMarkPaid(() => setMarkPaid(bill));
+    },
     onAddTransaction: (accountId) => addTransaction.open({ defaultAccountId: accountId }),
   });
 
   // Opening starts fresh: a bill paid or a transaction added elsewhere since would leave cached answers stale.
+  // The palette offers the Quick add dialogs (and Add transaction on an account): their code starts loading as it
+  // opens, so a pick opens the dialog at once instead of after the palette has already closed.
+  const preloadDialogs = () => {
+    for (const item of shellQuickAddItems) if (item.dialog && !item.disabled) quickAddLoading.preload(item.dialog);
+  };
   const value: SearchValue = {
     open: () => {
       reset();
+      preloadDialogs();
       setOpen(true);
     },
   };
@@ -62,19 +77,24 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   return (
     <SearchContext.Provider value={value}>
       {children}
-      <MarkPaidDialog
-        open={markPaid !== null}
-        onOpenChange={(next) => !next && setMarkPaid(null)}
-        statementId={markPaid?.statementId ?? ''}
-        cardName={markPaid?.cardName ?? ''}
-        remaining={markPaid?.remaining ?? null}
-        // The cached answers still show this bill as unpaid (or paid, after an undo).
-        onMarked={reset}
-      />
+      {MarkPaidDialog ? (
+        <MarkPaidDialog
+          open={markPaid !== null}
+          onOpenChange={(next) => !next && setMarkPaid(null)}
+          statementId={markPaid?.statementId ?? ''}
+          cardName={markPaid?.cardName ?? ''}
+          remaining={markPaid?.remaining ?? null}
+          // The cached answers still show this bill as unpaid (or paid, after an undo).
+          onMarked={reset}
+        />
+      ) : null}
       <SearchPalette
         open={open}
         onOpenChange={(next) => {
-          if (next) reset();
+          if (next) {
+            reset();
+            preloadDialogs();
+          }
           setOpen(next);
           if (!next) setQuery('');
         }}

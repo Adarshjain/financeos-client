@@ -29,6 +29,8 @@ export interface TopBarAction {
   /** A plain action with an `href` renders a link (the app's link through LinkProvider) with the same look; `onSelect` still runs on click. Not for menu, popover or asChild actions. */
   href?: string;
   variant?: 'default' | 'primary';
+  /** Shows the button's loading state (spinner) and ignores presses, e.g. while the action's dialog code loads. Plain actions only. */
+  loading?: boolean;
   shortcut?: string;
   showLabel?: boolean;
   /** Icon size while the label shows (desktop form); the icon-only phone form keeps md. */
@@ -40,7 +42,7 @@ export interface TopBarAction {
   /** Draws a danger dot on the button (something unread). */
   dot?: boolean;
   /** Opens a dropdown from the button; never asChild. */
-  popover?: { content: React.ReactNode; onOpenChange?: (open: boolean) => void };
+  popover?: { content: React.ReactNode; onOpenChange?: (open: boolean) => void; /** Called on pointer-enter or focus of the trigger so the content's data can be warmed before it opens. */ onWarm?: () => void };
   /** Opens a Menu of these rows from the button (align end); never asChild or popover. */
   menu?: TopBarMenuItem[];
 }
@@ -262,6 +264,8 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                         iconOnly={!hasLabel}
                         aria-label={action.label}
                         onClick={action.onSelect}
+                        onPointerEnter={action.popover.onWarm}
+                        onFocus={action.popover.onWarm}
                         dot={action.dot}
                         className={buttonClasses}
                       >
@@ -305,6 +309,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   aria-label={action.label}
                   href={action.href}
                   onSelect={action.onSelect}
+                  loading={action.loading}
                   dot={action.dot}
                   className={buttonClasses}
                 >

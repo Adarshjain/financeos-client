@@ -25,15 +25,15 @@ function Openers() {
 }
 
 describe('AddLendingProvider openFor', () => {
-  it('opens the dialog with that person, and a plain open afterwards starts without one', () => {
+  it('opens the dialog with that person, and a plain open afterwards starts without one', async () => {
     render(
       <AddLendingProvider>
         <Openers />
       </AddLendingProvider>,
     );
     fireEvent.click(screen.getByText('open for Rahul'));
-    expect(screen.getByText('dialog for Rahul Sharma')).toBeInTheDocument();
+    expect(await screen.findByText('dialog for Rahul Sharma')).toBeInTheDocument();
     fireEvent.click(screen.getByText('open plain'));
-    expect(screen.getByText('dialog for nobody')).toBeInTheDocument();
+    expect(await screen.findByText('dialog for nobody')).toBeInTheDocument();
   });
 });

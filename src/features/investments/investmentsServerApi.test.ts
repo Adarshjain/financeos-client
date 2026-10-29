@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const api = vi.hoisted(() => ({
   getTrades: vi.fn(),
   getHoldings: vi.fn(),
+  getPriceHistory: vi.fn(),
 }));
 vi.mock('@/lib/apiClient', () => ({
   investmentsApi: api,
@@ -10,11 +11,11 @@ vi.mock('@/lib/apiClient', () => ({
   corporateActionsApi: {},
   accountsApi: {},
   fnoApi: {},
-  instrumentsApi: {},
+  instrumentsApi: { getPriceHistory: api.getPriceHistory },
   jobsApi: {},
 }));
 
-import { fetchHoldings, fetchInstrumentTrades } from './investmentsServerApi';
+import { fetchHoldings, fetchInstrumentTrades, fetchPriceHistory } from './investmentsServerApi';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -37,5 +38,15 @@ describe('fetchHoldings', () => {
     api.getHoldings.mockResolvedValue({ holdings: [] });
     await fetchHoldings({ sort: 'name', page: 0, size: 50 });
     expect(api.getHoldings.mock.calls[0][0]).not.toHaveProperty('dir');
+  });
+});
+
+describe('fetchPriceHistory', () => {
+  it('passes the chart point cap through, and none when not given', async () => {
+    api.getPriceHistory.mockResolvedValue([]);
+    await fetchPriceHistory('i1', 200);
+    expect(api.getPriceHistory).toHaveBeenLastCalledWith('i1', 200);
+    await fetchPriceHistory('i1');
+    expect(api.getPriceHistory).toHaveBeenLastCalledWith('i1', undefined);
   });
 });

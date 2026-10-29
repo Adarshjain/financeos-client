@@ -131,16 +131,13 @@ export function useReviewBrowser(accounts: Account[], initialFilters?: ReviewIni
     }),
     queryFn: async () => {
       const unfilteredFilters = filters.filter((f) => f.field !== 'coveredByStatement');
-      const { data } = await api.POST('/api/v1/transactions/search', {
+      const { data } = await api.POST('/api/v1/transactions/count', {
         body: {
           filters: unfilteredFilters,
           search: debouncedSearch || undefined,
         },
-        params: {
-          query: { page: 0, size: 1, sort: [sortBy] },
-        },
       });
-      return data ?? null;
+      return data ? { totalElements: data.count } : null;
     },
     enabled: appliedOnlyUpToLastStatement && appliedAccountIds.length > 0,
   });

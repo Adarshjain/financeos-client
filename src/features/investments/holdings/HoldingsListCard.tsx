@@ -18,11 +18,12 @@ import {
   Text,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
-import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs';
+import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -238,6 +239,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   const listRows = React.useMemo(() => rows.map(holdingListRow), [rows]);
   const bands = React.useMemo(() => groupBands(groups), [groups]);
   const [merging, setMerging] = React.useState<InstrumentRef | null>(null);
+  const { Component: CorporateActionDialog, run: runMerge } = useLazyDialog(loadCorporateActionDialog);
   const byId = React.useMemo(() => new Map(rows.map((r) => [r.instrumentId, r])), [rows]);
 
   const brokerAccounts = React.useMemo(() => brokers.map((b) => ({ id: b.id, name: b.name, type: AccountType.BROKER })), [brokers]);
@@ -262,7 +264,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   const filtered = state.q !== '' || state.type !== '' || state.broker !== '';
   const recordMerger = (instrumentId: string) => {
     const row = byId.get(instrumentId);
-    if (row) setMerging({ id: row.instrumentId, name: row.name, symbol: row.symbol });
+    if (row) void runMerge(() => setMerging({ id: row.instrumentId, name: row.name, symbol: row.symbol }));
   };
 
   return (
@@ -348,7 +350,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
         />
       </Card>
     </div>
-    {merging ? <CorporateActionDialog instrument={merging} type="merger" onClose={() => setMerging(null)} /> : null}
+    {merging && CorporateActionDialog ? <CorporateActionDialog instrument={merging} type="merger" onClose={() => setMerging(null)} /> : null}
     </RecordMergerContext.Provider>
   );
 }

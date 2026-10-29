@@ -5,9 +5,16 @@ export function hm12(hour: number, minute: number): string {
   return `${h12}:${String(minute).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
 }
 
+const formats = new Map<string, Intl.DateTimeFormat>();
+
 /** The time of day of an instant in the given zone (IST by default), e.g. "3:30 pm". */
 export function clock12(at: Date, timeZone = 'Asia/Kolkata'): string {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(at);
+  let format = formats.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+    formats.set(timeZone, format);
+  }
+  const parts = format.formatToParts(at);
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0');
   return hm12(get('hour'), get('minute'));
 }

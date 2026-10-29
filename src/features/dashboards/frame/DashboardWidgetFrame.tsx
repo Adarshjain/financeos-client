@@ -12,12 +12,14 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Text, Widget } from '@/components/ds';
+import { loadWidgetSettings } from '@/features/dashboards/lazyDialogs';
 import { reportHref } from '@/features/reports/list/reportsListModel';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import type { UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { appHref } from '@/features/shell/routes';
 import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { builtinPieces } from '../builtins/registry';
 import { useDuplicateBuiltinReport } from '../data/useDashboardMutations';
@@ -26,8 +28,7 @@ import { ReportWidgetBody } from './ReportWidgetBody';
 import { useReportWidget } from './useReportWidget';
 import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrameModel';
 import { WidgetHeaderActions } from './WidgetHeaderActions';
-import { type WidgetSettingsChange, WidgetSettingsDialog } from './WidgetSettingsDialog';
-import { WidgetUnderlying } from './WidgetUnderlying';
+import type { WidgetSettingsChange } from './WidgetSettingsDialog';
 
 export const REPORT_GONE_TITLE = 'This report is no longer available';
 export const REPORT_GONE = 'It was deleted. Remove the widget or pick another report.';
@@ -48,6 +49,8 @@ export interface DashboardWidgetFrameProps {
 
 type Overlay = 'underlying' | 'settings' | null;
 
+const loadWidgetUnderlying = () => import('./WidgetUnderlying').then((m) => m.WidgetUnderlying);
+
 export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing = false, issue, onSaveSettings }: DashboardWidgetFrameProps) {
   const router = useRouter();
   const { ref, inView } = useInView();
@@ -57,6 +60,9 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   // What the underlying dialog opens on: a chart entry or row's request; null = the whole report.
   const [target, setTarget] = React.useState<UnderlyingTarget | null>(null);
   const close = React.useCallback(() => setOverlay(null), []);
+  // The settings and underlying-data dialogs are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: WidgetSettingsDialog, run: runSettings } = useLazyDialog(loadWidgetSettings);
+  const { Component: WidgetUnderlying, run: runUnderlying } = useLazyDialog(loadWidgetUnderlying);
 
   const builtin = isBuiltinWidget(widget);
   const key = widgetBuiltinKey(widget);
@@ -79,13 +85,18 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const failed = loadsHere && state.error ? state.error : undefined;
 
   const openUnderlying = (next: UnderlyingTarget | null = null) => {
-    setTarget(next);
-    setOverlay('underlying');
+    const show = () => {
+      setTarget(next);
+      setOverlay('underlying');
+    };
+    // A KPI built-in has its own lazy dialog; the others wait for WidgetUnderlying's code.
+    if (kpiBuiltin) show();
+    else void runUnderlying(show);
   };
 
   const select = (item: WidgetMenuItemId) => {
     if (item === 'edit-report' && widget.reportId) router.push(reportHref(widget.reportId));
-    else if (item === 'settings') setOverlay('settings');
+    else if (item === 'settings') void runSettings(() => setOverlay('settings'));
     else if (item === 'duplicate' && key) duplicate.mutate({ builtinKey: key, params: widgetParams(widget) });
     else if (item === 'full-page') {
       if (href) router.push(appHref(href));
@@ -165,8 +176,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
           onClose={close}
         />
       ) : null}
-      {overlay === 'underlying' && !kpiBuiltin ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
-      {overlay === 'settings' && def && onSaveSettings ? (
+      {overlay === 'underlying' && !kpiBuiltin && WidgetUnderlying ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
+      {overlay === 'settings' && def && onSaveSettings && WidgetSettingsDialog ? (
         <WidgetSettingsDialog widget={widget} def={def} dashboardName={dashboardName} onSave={onSaveSettings} onClose={close} />
       ) : null}
     </>

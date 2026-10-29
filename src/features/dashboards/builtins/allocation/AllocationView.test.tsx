@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const chartProps = vi.hoisted(() => ({ last: null as unknown }));
-vi.mock('@/components/organisms', () => ({
+vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: (p: { data: unknown; money?: boolean }) => {
     chartProps.last = p;
     return <div data-testid="chart" />;
@@ -57,9 +57,9 @@ describe('allocationDonut', () => {
 });
 
 describe('AllocationView', () => {
-  it('draws the donut with the Chart organism, values as money', () => {
+  it('draws the donut with the Chart organism, values as money', async () => {
     render(view(chart([['EQUITY', 75], ['DEBT', 25]])));
-    expect(screen.getByTestId('chart')).toBeInTheDocument();
+    expect(await screen.findByTestId('chart')).toBeInTheDocument();
     expect(chartProps.last).toMatchObject({ money: true, data: { chartType: 'donut', categories: ['Equity', 'Debt'] } });
   });
 

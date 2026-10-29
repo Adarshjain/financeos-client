@@ -100,11 +100,10 @@ describe('/investments Holdings: data', () => {
     expect(server.fetchHoldings).toHaveBeenCalledTimes(1);
   });
 
-  it('looks wider for today\'s movers when the list has more pages', async () => {
+  it('reads one holdings request even when the list has more pages: movers come from the response', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
     await renderPage({ page: '2' });
-    expect(server.fetchHoldings).toHaveBeenCalledTimes(2);
-    expect(server.fetchHoldings).toHaveBeenLastCalledWith(expect.objectContaining({ page: 0, size: 200, sort: 'name' }));
+    expect(server.fetchHoldings).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -131,7 +130,12 @@ describe('/investments Holdings: figures', () => {
 
   it('shows the Allocation, Tax this FY and Top movers cards', async () => {
     server.fetchHoldings.mockResolvedValue(
-      holdingsResponse([holdingRow({ instrumentId: 'a', symbol: 'INFY', dayChange: 1860 }), holdingRow({ instrumentId: 'b', symbol: 'TCS', dayChange: -280 })]),
+      holdingsResponse([holdingRow({ instrumentId: 'a', symbol: 'INFY', dayChange: 1860 }), holdingRow({ instrumentId: 'b', symbol: 'TCS', dayChange: -280 })], {
+        movers: [
+          { instrumentId: 'a', symbol: 'INFY', name: 'Infosys', dayChange: 1860 },
+          { instrumentId: 'b', symbol: 'TCS', name: 'TCS', dayChange: -280 },
+        ],
+      }),
     );
     await renderPage();
     expect(screen.getByText('Allocation')).toBeInTheDocument();
@@ -193,7 +197,7 @@ describe('/investments Holdings: rows', () => {
     expect(buttons.length).toBeGreaterThan(0);
     expect(screen.queryByTestId('action-dialog')).toBeNull();
     fireEvent.click(buttons[0]);
-    expect(JSON.parse(screen.getByTestId('action-dialog').textContent ?? '{}')).toEqual({
+    expect(JSON.parse((await screen.findByTestId('action-dialog')).textContent ?? '{}')).toEqual({
       instrument: { id: 'i-sintex', name: 'Sintex', symbol: 'SINTEX' },
       type: 'merger',
     });
@@ -354,19 +358,17 @@ describe('/investments Holdings: filters go to the URL', () => {
 });
 
 describe('/investments Holdings: whole-portfolio figures', () => {
-  const stockOnly = holdingsResponse(rows, { groups: [{ assetType: 'stock', value: 401290, count: 8 }] });
-  const whole = holdingsResponse([], { groups, totalElements: 13 });
+  const stockOnly = holdingsResponse(rows, { groups: [{ assetType: 'stock', value: 401290, count: 8 }], portfolioGroups: groups });
 
-  it('reads the unfiltered groups too when a type filter is on, keeping the broker filter', async () => {
-    server.fetchHoldings.mockImplementation(async (q: { assetType?: string }) => (q.assetType ? stockOnly : whole));
+  it('reads the whole-portfolio groups from the same request when a type filter is on', async () => {
+    server.fetchHoldings.mockResolvedValue(stockOnly);
     await renderPage({ type: 'stock', broker: 'b2', q: 'inf' });
-    expect(server.fetchHoldings).toHaveBeenCalledTimes(2);
+    expect(server.fetchHoldings).toHaveBeenCalledTimes(1);
     expect(server.fetchHoldings).toHaveBeenCalledWith(expect.objectContaining({ assetType: 'stock', brokerAccountId: 'b2', search: 'inf' }));
-    expect(server.fetchHoldings).toHaveBeenCalledWith({ brokerAccountId: 'b2', sort: 'name', page: 0, size: 1 });
   });
 
   it('keeps the full Allocation while one type is filtered', async () => {
-    server.fetchHoldings.mockImplementation(async (q: { assetType?: string }) => (q.assetType ? stockOnly : whole));
+    server.fetchHoldings.mockResolvedValue(stockOnly);
     await renderPage({ type: 'stock' });
     expect(screen.getAllByText('Stocks 63%').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Mutual funds 31%').length).toBeGreaterThan(0);

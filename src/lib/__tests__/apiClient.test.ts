@@ -21,6 +21,7 @@ import {
   reportsApi,
   rewardsApi,
   rulesApi,
+  shellApi,
   statementsApi,
   transactionLinksApi,
   transactionsApi,
@@ -184,6 +185,27 @@ describe('apiClient (Server API Client Modernization & Coverage)', () => {
 
       fetchSpy.mockResolvedValueOnce(mockResponse(200, { updatedCount: 5 }));
       expect(await transactionsApi.bulkReattributeCard({ accountId: 'a1', cardId: 'c1' })).toEqual({ updatedCount: 5 });
+    });
+
+    it('counts matching transactions with a POST to /transactions/count and no rows', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { count: 42 }));
+      expect(await transactionsApi.count({ filters: [] })).toBe(42);
+      const req = fetchSpy.mock.calls[0][0] as Request;
+      expect(new URL(req.url).pathname).toBe('/api/v1/transactions/count');
+      expect(req.method).toBe('POST');
+      expect(new URL(req.url).search).toBe('');
+    });
+
+    it('reads the shell counts, a part null when it failed server-side', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { inbox: null, needsReview: 3, notificationsUnread: null, appLock: null }));
+      expect(await shellApi.counts()).toEqual({ inbox: null, needsReview: 3, notificationsUnread: null, appLock: null });
+      expect(new URL((fetchSpy.mock.calls[0][0] as Request).url).pathname).toBe('/api/v1/shell/counts');
+    });
+
+    it('asks for the reward report without dates when none are given', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { windowFrom: '2026-03-15', windowTo: '2027-03-14', defaultedWindow: true }));
+      await rewardsApi.getReport('a1');
+      expect(new URL((fetchSpy.mock.calls[0][0] as Request).url).search).toBe('?accountId=a1');
     });
 
     it('handles transaction links create, list and delete', async () => {

@@ -31,7 +31,8 @@ export function ShortcutsBody({ ids }: { ids: readonly string[] }) {
   const { items, pending } = useShortcuts(ids);
   const addTransaction = useAddTransaction();
   const addLending = useAddLending();
-  const launch = (id: DialogActionId) => (id === 'add-transaction' ? addTransaction.open() : addLending.open());
+  const launch = (id: DialogActionId) => void (id === 'add-transaction' ? addTransaction.open() : addLending.open());
+  const loadingId = (id: DialogActionId) => (id === 'add-transaction' ? addTransaction.loading : addLending.loading);
 
   if (items.length === 0 && pending) return <ShortcutsSkeleton />;
   if (items.length === 0) {
@@ -40,13 +41,13 @@ export function ShortcutsBody({ ids }: { ids: readonly string[] }) {
   return (
     <div className={GRID} data-testid="shortcuts-widget">
       {items.map((item) => (
-        <Tile key={item.id} item={item} onLaunch={launch} />
+        <Tile key={item.id} item={item} onLaunch={launch} loading={Boolean(item.actionId && loadingId(item.actionId))} />
       ))}
     </div>
   );
 }
 
-function Tile({ item, onLaunch }: { item: ShortcutItem; onLaunch: (id: DialogActionId) => void }) {
+function Tile({ item, onLaunch, loading }: { item: ShortcutItem; onLaunch: (id: DialogActionId) => void; loading: boolean }) {
   if (item.href) {
     return (
       <Button asChild fullWidth title={item.label}>
@@ -55,7 +56,7 @@ function Tile({ item, onLaunch }: { item: ShortcutItem; onLaunch: (id: DialogAct
     );
   }
   return (
-    <Button fullWidth title={item.label} onClick={() => item.actionId && onLaunch(item.actionId)}>
+    <Button fullWidth title={item.label} loading={loading} onClick={() => item.actionId && onLaunch(item.actionId)}>
       {item.label}
     </Button>
   );

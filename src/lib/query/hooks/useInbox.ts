@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { unwrapAction } from '@/lib/actionResult';
 import type { InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { loadInbox, loadInboxSummary } from '@/lib/query/actions/inboxActions';
+import { useShellCounts } from '@/lib/query/hooks/useShellCounts';
 import { keys } from '@/lib/query/keys';
 
 /**
@@ -25,14 +26,20 @@ export function useInbox() {
   });
 }
 
-/** The badge counts behind the Inbox nav entries; polled once a minute. */
-export function useInboxSummary() {
+/**
+ * The badge counts behind the Inbox nav entries; polled once a minute. `shell` is for the /ds shell: its one combined
+ * poll (`useShellCounts`) loads and refreshes this entry, so this hook neither polls nor fetches until that has answered
+ * (it then fetches only if the shell call left this entry empty).
+ */
+export function useInboxSummary({ shell = false }: { shell?: boolean } = {}) {
+  const shellCounts = useShellCounts({ enabled: shell });
   return useQuery({
     queryKey: keys.inbox.summary(),
     queryFn: async (): Promise<InboxSummaryResponse> => {
       return unwrapAction(loadInboxSummary());
     },
-    refetchInterval: 60_000,
+    enabled: !shell || shellCounts.status !== 'pending',
+    refetchInterval: shell ? false : 60_000,
     staleTime: 30_000,
   });
 }

@@ -104,11 +104,11 @@ beforeEach(() => {
 });
 
 describe('TransactionsScreen', () => {
-  it('opens the detail from a row, reserving room beside the list, without touching the address', () => {
+  it('opens the detail from a row, reserving room beside the list, without touching the address', async () => {
     setup();
     expect(spacer()).toBeNull();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
+    expect(await screen.findByText('UPI/BIGBASKET')).toBeInTheDocument();
     expect(screen.getByText('Monday 12 October 2026')).toBeInTheDocument();
     expect(spacer()).not.toBeNull();
     expect(router.push).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe('TransactionsScreen', () => {
   it('swaps the detail when another row is pressed, and closes it', async () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
+    expect(await screen.findByText('UPI/BIGBASKET')).toBeInTheDocument();
     fireEvent.click(screen.getAllByText('Uber')[0]);
     expect(screen.getByText('UBER INDIA')).toBeInTheDocument();
     expect(screen.queryByText('UPI/BIGBASKET')).toBeNull();
@@ -126,26 +126,26 @@ describe('TransactionsScreen', () => {
     await waitFor(() => expect(spacer()).toBeNull());
   });
 
-  it('opens Add transaction from the app bar +, on the one account the list is filtered to', () => {
+  it('opens Add transaction from the app bar +, on the one account the list is filtered to', async () => {
     setup({ query: { ...DEFAULT_QUERY, accounts: ['a1'] } });
     fireEvent.click(screen.getByRole('button', { name: 'Add transaction' }));
-    expect(screen.getByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Add transaction' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Bank Savings');
   });
 
-  it('opens the Set category dialog from a row\'s Set category, not the Edit form', () => {
+  it('opens the Set category dialog from a row\'s Set category, not the Edit form', async () => {
     setup();
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    expect(screen.getByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
     expect(screen.queryByText('Edit transaction')).toBeNull();
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('opens Edit from the detail, keeping the detail behind it', () => {
+  it('opens Edit from the detail, keeping the detail behind it', async () => {
     setup();
     fireEvent.click(screen.getAllByText('BigBasket')[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    expect(screen.getByText('Edit transaction')).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    expect(await screen.findByText('Edit transaction')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^Description/ })).toHaveValue('BigBasket');
     expect(spacer()).not.toBeNull();
   });

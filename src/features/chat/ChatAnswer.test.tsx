@@ -14,7 +14,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 vi.mock('./ChatReportDraftSlot', () => ({
   ChatReportDraftSlot: (p: { draft: { name: string }; conversationId: string; messageId: string }) => <div>{`draft slot: ${p.draft.name} ${p.conversationId} ${p.messageId}`}</div>,
 }));
-vi.mock('@/components/organisms', () => ({ Chart: ({ data }: { data: { chartType: string } }) => <div>chart:{data.chartType}</div> }));
+vi.mock('@/components/organisms/Chart/Chart', () => ({ Chart: ({ data }: { data: { chartType: string } }) => <div>chart:{data.chartType}</div> }));
 
 const writeText = vi.fn(() => Promise.resolve());
 beforeEach(() => {
@@ -42,7 +42,7 @@ function setup(over: Partial<AssistantRecord> = {}, props: Partial<ChatAnswerPro
 }
 
 describe('ChatAnswer, blocks in board order', () => {
-  it('draws stats, prose, chart and table, then the meta line', () => {
+  it('draws stats, prose, chart and table, then the meta line', async () => {
     setup({
       blocks: {
         stats: [{ label: 'Spent · 90 days', value: '₹1,84,320', delta: '+8% vs before', sentiment: 'bad' }],
@@ -50,6 +50,7 @@ describe('ChatAnswer, blocks in board order', () => {
         tables: [{ title: 'Where it went', columns: [{ key: 'c', label: 'Category' }], rows: [{ c: 'Food' }] }],
       },
     });
+    await screen.findByText('chart:bar');
     const text = document.body.textContent ?? '';
     const at = (s: string) => text.indexOf(s);
     expect(at('Spent · 90 days')).toBeGreaterThan(-1);

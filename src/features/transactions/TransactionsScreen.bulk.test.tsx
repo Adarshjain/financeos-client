@@ -222,7 +222,7 @@ describe('TransactionsScreen selection and bulk actions', () => {
     vi.mocked(api.POST).mockResolvedValue({ data: { keptId: 't3', reviewType: 'MANUALLY_REVIEWED', remainingReasons: [] } } as never);
     setup();
     fireEvent.click(screen.getAllByText('Swiggy')[0]);
-    expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
+    expect(await screen.findByText('UPI/BIGBASKET')).toBeInTheDocument();
     tick('Swiggy');
     tick('IKEA');
     fireEvent.click(barButton(/^Merge/));
@@ -272,12 +272,12 @@ describe('TransactionsScreen selection and bulk actions', () => {
     expect(showToast).not.toHaveBeenCalled();
   });
 
-  it('Link opens the multi-transaction dialog for the selection', () => {
+  it('Link opens the multi-transaction dialog for the selection', async () => {
     setup();
     tick('BigBasket');
     tick('Swiggy');
     fireEvent.click(barButton(/^Link/));
-    expect(screen.getByText('Link 2 transactions')).toBeInTheDocument();
+    expect(await screen.findByText('Link 2 transactions')).toBeInTheDocument();
   });
 });
 

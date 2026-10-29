@@ -43,5 +43,5 @@ export const groups: HoldingsGroup[] = [
 ];
 
 export function holdingsResponse(rows: HoldingRow[], over: Partial<HoldingsResponse> = {}): HoldingsResponse {
-  return { header, groups, holdings: rows, page: 0, size: 50, totalElements: rows.length, totalPages: 1, ...over };
+  return { header, groups, holdings: rows, page: 0, size: 50, totalElements: rows.length, totalPages: 1, movers: [], portfolioGroups: groups, ...over };
 }

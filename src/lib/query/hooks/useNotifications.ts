@@ -14,11 +14,13 @@ import {
   markNotificationsRead,
   restoreNotification,
 } from '@/lib/query/actions/notificationActions';
+import { useShellCounts } from '@/lib/query/hooks/useShellCounts';
 import { keys } from '@/lib/query/keys';
 
 /** One page of the notification feed, newest first (page is 0-based). Refetches on window focus. */
-export function useNotificationFeed(page: number, size: number) {
+export function useNotificationFeed(page: number, size: number, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: keys.notifications.feed(page, size),
     queryFn: async (): Promise<NotificationFeedPage> => {
       return unwrapAction(loadNotificationFeed(page, size));
@@ -26,16 +28,22 @@ export function useNotificationFeed(page: number, size: number) {
   });
 }
 
-/** The unread count behind the bell's dot; polled once a minute and on window focus. */
-export function useNotificationSummary() {
+/**
+ * The unread count behind the bell's dot; polled once a minute and on window focus. `shell` is for the /ds shell: its one
+ * combined poll (`useShellCounts`) loads and refreshes this entry, so this hook neither polls nor fetches until that has
+ * answered (it then fetches only if the shell call left this entry empty).
+ */
+export function useNotificationSummary({ shell = false }: { shell?: boolean } = {}) {
+  const shellCounts = useShellCounts({ enabled: shell });
   return useQuery({
     queryKey: keys.notifications.summary(),
     queryFn: async (): Promise<NotificationFeedSummary> => {
       return unwrapAction(loadNotificationSummary());
     },
-    refetchInterval: 60_000,
+    enabled: !shell || shellCounts.status !== 'pending',
+    refetchInterval: shell ? false : 60_000,
     staleTime: 30_000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: !shell,
   });
 }
 

@@ -94,6 +94,17 @@ export interface HoldingsResponse {
   size: number;
   totalElements: number;
   totalPages: number;
+  /** Up to three biggest day moves over the whole filtered set, biggest first. */
+  movers: HoldingsMover[];
+  /** Groups for the broker filter alone (the type filter is not applied). */
+  portfolioGroups: HoldingsGroup[];
+}
+
+export interface HoldingsMover {
+  instrumentId: string;
+  symbol: string | null;
+  name: string;
+  dayChange: number;
 }
 
 export type HoldingTerm = 'long' | 'short' | 'slab' | 'mixed';

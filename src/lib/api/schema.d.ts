@@ -3866,6 +3866,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shell/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["counts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/statements/{statementId}": {
         parameters: {
             query?: never;
@@ -3976,6 +3992,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["bulkReattributeCard"];
+        trace?: never;
+    };
+    "/api/v1/transactions/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["countTransactions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/transactions/merge": {
@@ -6094,8 +6126,10 @@ export interface components {
             groups: components["schemas"]["Group"][];
             header: components["schemas"]["Header"];
             holdings: components["schemas"]["Row"][];
+            movers: components["schemas"]["Mover"][];
             /** Format: int32 */
             page: number;
+            portfolioGroups: components["schemas"]["Group"][];
             /** Format: int32 */
             size: number;
             /** Format: int64 */
@@ -6842,6 +6876,13 @@ export interface components {
         MonthPnl: {
             month: string;
             pnl: number;
+        };
+        Mover: {
+            dayChange: number;
+            /** Format: uuid */
+            instrumentId: string;
+            name: string;
+            symbol?: string | null;
         };
         MuteAccountRequest: {
             muted: boolean;
@@ -7803,12 +7844,18 @@ export interface components {
         RewardReportResponse: {
             anniversaryFallback: boolean;
             byCard: components["schemas"]["CardBreakdown"][];
+            calendarYearFallback: boolean;
             cycleFallback: boolean;
+            defaultedWindow: boolean;
             milestones: components["schemas"]["MilestoneStatus"][];
             /** Format: int32 */
             perCardAttributionIncomplete: number;
             rules: components["schemas"]["RuleBreakdown"][];
             summary: components["schemas"]["Summary"];
+            /** Format: date */
+            windowFrom?: string | null;
+            /** Format: date */
+            windowTo?: string | null;
         };
         RewardRuleRequest: {
             /** Format: uuid */
@@ -8186,6 +8233,14 @@ export interface components {
         SetDividendReceiptStatusRequest: {
             /** @enum {string|null} */
             status?: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable" | null;
+        };
+        ShellCountsResponse: {
+            appLock?: components["schemas"]["AppLockStatusResponse"];
+            inbox?: components["schemas"]["InboxSummaryResponse"];
+            /** Format: int64 */
+            needsReview?: number | null;
+            /** Format: int64 */
+            notificationsUnread?: number | null;
         };
         SignupRequest: {
             email: string;
@@ -13726,6 +13781,7 @@ export interface operations {
             query?: {
                 from?: string;
                 to?: string;
+                maxPoints?: number;
             };
             header?: never;
             path: {
@@ -18411,8 +18467,8 @@ export interface operations {
         parameters: {
             query: {
                 accountId: string;
-                from: string;
-                to: string;
+                from?: string;
+                to?: string;
             };
             header?: never;
             path?: never;
@@ -18813,6 +18869,35 @@ export interface operations {
             };
         };
     };
+    counts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShellCountsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getStatementById: {
         parameters: {
             query?: never;
@@ -19123,6 +19208,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BulkReattributeResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    countTransactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransactionSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: number;
+                    };
                 };
             };
             /** @description Error response */

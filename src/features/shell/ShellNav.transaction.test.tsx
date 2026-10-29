@@ -19,7 +19,7 @@ vi.mock('@/features/transactions/form/TransactionFormDialog', () => ({
 }));
 
 describe('More sheet Quick add Transaction', () => {
-  it('opens the Add transaction form from state, closes the sheet, leaves the URL alone, and closes after saving', () => {
+  it('opens the Add transaction form from state, closes the sheet, leaves the URL alone, and closes after saving', async () => {
     render(
       <AddTransactionProvider today="2026-10-22">
         <ShellTabBar user={{ email: 'arjun@example.test' }} />
@@ -28,7 +28,7 @@ describe('More sheet Quick add Transaction', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Menu/i }));
     fireEvent.click(screen.getByRole('button', { name: /Transaction/i }));
 
-    expect(screen.getByText('transaction form')).toBeInTheDocument();
+    expect(await screen.findByText('transaction form')).toBeInTheDocument();
     expect(formProps.mock.calls[0][0]).toMatchObject({ today: '2026-10-22' });
     expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();

@@ -155,11 +155,11 @@ describe('Card settings', () => {
     expect(within(card()).getByText('Default (₹0.25/pt)')).toBeInTheDocument();
   });
 
-  it('opens the account’s own edit from the Anniversary fact’s Edit link', () => {
+  it('opens the account’s own edit from the Anniversary fact’s Edit link', async () => {
     render(<RewardsRulesScreen accountId="a1" usage={usage} today="2026-10-24" />);
     expect(screen.queryByRole('button', { name: 'Edit card' })).not.toBeInTheDocument();
     fireEvent.click(within(card()).getAllByRole('button', { name: 'Edit' })[1]);
-    expect(screen.getByText('Edit account dialog for HDFC Regalia Gold')).toBeInTheDocument();
+    expect(await screen.findByText('Edit account dialog for HDFC Regalia Gold')).toBeInTheDocument();
   });
 
   it('saves reward type and point value together, from the dialog, not as you type', () => {

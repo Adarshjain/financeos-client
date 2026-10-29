@@ -63,22 +63,22 @@ describe('LoansLendingsShell', () => {
     expect(screen.getByRole('tab', { name: /Loans/ })).toHaveAttribute('data-state', 'inactive');
   });
 
-  it('titles the bar "Loans & lendings" on the Lendings tab too and its + opens Add lending', () => {
+  it('titles the bar "Loans & lendings" on the Lendings tab too and its + opens Add lending', async () => {
     renderShell();
     expect(screen.getAllByText('Loans & lendings').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Owe & lend').length).toBeGreaterThan(0);
     fireEvent.click(add('Add lending'));
-    expect(screen.getByText('lending dialog')).toBeInTheDocument();
+    expect(await screen.findByText('lending dialog')).toBeInTheDocument();
     expect(screen.queryByText('loan dialog')).toBeNull();
   });
 
-  it('titles the bar "Loans & lendings" on the Loans tab and its + opens Add loan', () => {
+  it('titles the bar "Loans & lendings" on the Loans tab and its + opens Add loan', async () => {
     pathname = '/loans';
     renderShell();
     expect(screen.getAllByText('Loans & lendings').length).toBeGreaterThan(0);
     expect(screen.getByRole('tab', { name: /Loans/ })).toHaveAttribute('data-state', 'active');
     fireEvent.click(add('Add loan'));
-    expect(screen.getByText('loan dialog')).toBeInTheDocument();
+    expect(await screen.findByText('loan dialog')).toBeInTheDocument();
     expect(screen.queryByText('lending dialog')).toBeNull();
     fireEvent.click(screen.getByText('close loan'));
     expect(screen.queryByText('loan dialog')).toBeNull();

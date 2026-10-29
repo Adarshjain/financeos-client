@@ -9,7 +9,6 @@ import type { SearchParams } from '@/features/shell/searchParams';
 import { IMPORT_JOB_TYPE, importUrl, parseImportAccount, parseImportPage, RECENT_IMPORTS_SIZE, recentImportsSince } from '@/features/transactions/import/importModel';
 import { ImportScreen } from '@/features/transactions/import/ImportScreen';
 import { accountsApi, jobsApi } from '@/lib/apiClient';
-import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
 import { getQueryClient, keys } from '@/lib/query';
 
@@ -21,7 +20,6 @@ export default async function DsImportPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireAuth();
   const params = await searchParams;
   const initialAccountId = parseImportAccount(params);
   const since = recentImportsSince(todayInAppZone());

@@ -13,15 +13,16 @@ import { Button, EmptyState, Select } from '@/components/ds';
 import { useAddWidgetNow, useRestoreHome, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { withTitle } from '@/features/dashboards/editor/editorStateModel';
+import { loadWidgetPicker } from '@/features/dashboards/lazyDialogs';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
-import { WidgetPicker } from '../picker/WidgetPicker';
 import { DASHBOARDS_HREF, editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
 import { DashboardWidgets } from '../view/DashboardWidgets';
 
@@ -34,6 +35,8 @@ export function HomeScreen() {
   // The pick is tracked by id so the shown dashboard follows the cache (Widget settings, Add widget).
   const [currentId, setCurrentId] = React.useState<string | null>(null);
   const [picking, setPicking] = React.useState(false);
+  const { Component: WidgetPicker, run: runPicker } = useLazyDialog(loadWidgetPicker);
+  const openPicker = () => void runPicker(() => setPicking(true));
   const reports = useReportsList({ enabled: picking }).data;
   const add = useAddWidgetNow();
   const restoreHome = useRestoreHome(() => router.refresh());
@@ -81,7 +84,7 @@ export function HomeScreen() {
         options={dashboards.map((d) => ({ value: d.id, label: d.name }))}
         onValueChange={(value) => setCurrentId(value as string)}
         actions={[
-          { label: 'Add widget', disabled: add.isPending, onSelect: () => setPicking(true) },
+          { label: 'Add widget', disabled: add.isPending, onSelect: openPicker },
           ...(active.isDefault
             ? []
             : [{ label: 'Set as default', onSelect: () => toggleDefault.mutate({ id: active.id, makeDefault: true, updatedAt: active.updatedAt }) }]),
@@ -99,13 +102,13 @@ export function HomeScreen() {
         <EmptyState
           title="No widgets yet"
           description="Use Add widget to put built-ins or your saved reports here."
-          action={{ label: 'Add widget', onSelect: () => !add.isPending && setPicking(true) }}
+          action={{ label: 'Add widget', onSelect: () => !add.isPending && openPicker() }}
         />
       ) : (
         <DashboardWidgets widgets={active.widgets} catalog={catalog} dashboardName={active.name} onSaveSettings={add.isPending ? undefined : saveSettings} />
       )}
 
-      {picking ? (
+      {picking && WidgetPicker ? (
         <WidgetPicker reports={reports ?? []} onAddBuiltin={addBuiltin} onAddReport={addReport} onClose={() => setPicking(false)} />
       ) : null}
     </ShellPage>

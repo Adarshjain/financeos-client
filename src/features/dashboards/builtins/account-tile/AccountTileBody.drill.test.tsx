@@ -14,7 +14,7 @@ vi.mock('@/features/reports/underlying/LazyReportUnderlyingDialogs', () => ({
     <button type="button" data-testid="breakdown" data-datasource={p.datasource} data-row-id={p.rowId} data-title={p.title} onClick={p.onClose} />
   ),
 }));
-vi.mock('@/components/organisms', () => ({
+vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: (p: { data: { chartType: string; categories: string[]; series: { data: number[] }[] } }) => (
     <div data-testid="chart" data-type={p.data.chartType} data-categories={p.data.categories.join(',')} data-values={JSON.stringify(p.data.series[0].data)} />
   ),

@@ -110,10 +110,11 @@ describe('MilestonesSection', () => {
     expect(screen.getByText(/No milestones yet/)).toBeInTheDocument();
   });
 
-  it('creates a milestone, preselecting the card’s reward type', () => {
+  it('creates a milestone, preselecting the card’s reward type', async () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await screen.findByRole('dialog');
     expect(screen.getByRole('combobox', { name: /^Paid as/ })).toHaveTextContent('Reward points');
     fireEvent.change(textbox('Name'), { target: { value: 'Spend 4L' } });
     fireEvent.change(textbox('Threshold'), { target: { value: '400000' } });
@@ -141,10 +142,11 @@ describe('MilestonesSection', () => {
     expect(toast).toHaveBeenCalledWith('Milestone created');
   });
 
-  it('validates as Legacy does', () => {
+  it('validates as Legacy does', async () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await screen.findByRole('dialog');
     save();
     expect(toast).toHaveBeenLastCalledWith('Milestone name is required.', { tone: 'danger' });
     fireEvent.change(textbox('Name'), { target: { value: 'X' } });
@@ -160,10 +162,11 @@ describe('MilestonesSection', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
-  it('asks for start and deadline on a one-time offer, and fills 90 days when a card is picked', () => {
+  it('asks for start and deadline on a one-time offer, and fills 90 days when a card is picked', async () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await screen.findByRole('dialog');
     choose('Window', 'One-time (welcome offer)');
     expect(screen.getByLabelText('Offer start')).toBeInTheDocument();
     expect(screen.getByLabelText('Offer deadline')).toBeInTheDocument();
@@ -182,10 +185,11 @@ describe('MilestonesSection', () => {
     );
   });
 
-  it('hides the amount, paid-as and timing for a tracker-only milestone', () => {
+  it('hides the amount, paid-as and timing for a tracker-only milestone', async () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await screen.findByRole('dialog');
     expect(screen.getByRole('combobox', { name: /^Credited/ })).toBeInTheDocument();
     choose('Payout', 'Tracker only (e.g. fee waiver)');
     expect(screen.queryByRole('combobox', { name: /^Paid as/ })).not.toBeInTheDocument();
@@ -200,10 +204,11 @@ describe('MilestonesSection', () => {
     );
   });
 
-  it('shows the minimum amount only when counting transactions', () => {
+  it('shows the minimum amount only when counting transactions', async () => {
     list = [];
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await screen.findByRole('dialog');
     expect(screen.queryByRole('textbox', { name: /^Minimum transaction amount/ })).not.toBeInTheDocument();
     choose('Counts', 'Transaction count');
     fireEvent.change(textbox('Minimum transaction amount'), { target: { value: '1500' } });
@@ -217,9 +222,10 @@ describe('MilestonesSection', () => {
     );
   });
 
-  it('opens a row filled in, and saves an edit', () => {
+  it('opens a row filled in, and saves an edit', async () => {
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByText('Quarterly voucher'));
+    await screen.findByRole('dialog');
     expect(textbox('Name')).toHaveValue('Quarterly voucher');
     expect(textbox('Threshold')).toHaveValue('100000');
     fireEvent.change(textbox('Payout value'), { target: { value: '2000' } });
@@ -231,9 +237,10 @@ describe('MilestonesSection', () => {
     expect(toast).toHaveBeenCalledWith('Milestone updated');
   });
 
-  it('deletes after confirming', () => {
+  it('deletes after confirming', async () => {
     render(<MilestonesSection accountId="a1" />);
     fireEvent.click(screen.getByText('Quarterly voucher'));
+    await screen.findByRole('dialog');
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.getByText('Delete milestone "Quarterly voucher"?')).toBeInTheDocument();
     expect(remove).not.toHaveBeenCalled();

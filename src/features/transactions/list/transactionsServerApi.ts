@@ -9,16 +9,14 @@ export function fetchTransactionsPage(query: TransactionsQuery): Promise<PagedTr
   return transactionsApi.search(buildSearchBody(query), searchPaging(query));
 }
 
-/** How many transactions match a query, whatever page it is on (a one-row search). */
-export async function fetchMatchingCount(query: TransactionsQuery): Promise<number> {
-  const result = await transactionsApi.search(buildSearchBody(query), { ...searchPaging(query), page: 0, size: 1 });
-  return result.totalElements;
+/** How many transactions match a query, whatever page it is on. */
+export function fetchMatchingCount(query: TransactionsQuery): Promise<number> {
+  return transactionsApi.count(buildSearchBody(query));
 }
 
 /** Everything that needs review: the "Needs review" chip and the Transactions nav badge. */
-export async function fetchNeedsReviewCount(): Promise<number> {
-  const result = await transactionsApi.search(NEEDS_REVIEW_BODY, { page: 0, size: 1 });
-  return result.totalElements;
+export function fetchNeedsReviewCount(): Promise<number> {
+  return transactionsApi.count(NEEDS_REVIEW_BODY);
 }
 
 export const fetchAccounts = accountsApi.list;

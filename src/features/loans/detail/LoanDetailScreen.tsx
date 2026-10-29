@@ -3,23 +3,20 @@
 import React from 'react';
 
 import { ActionBar, Button, ConfirmDialog, GRID_GAP, Menu } from '@/components/ds';
-import { LoanEditDialog } from '@/features/loans/form/LoanEditDialog';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { InstallmentDto, LoanDetailResponse, LoanEventType } from '@/lib/loan.types';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
-import { ChargeFormDialog } from './ChargeFormDialog';
 import { EntriesCard } from './EntriesCard';
 import { deleteEntryCopy, type EntryRow, entryRows } from './entriesModel';
-import { EventFormDialog } from './EventFormDialog';
 import { LinkedEmiDialog } from './LinkedEmiDialog';
 import { linkedLine, loanHeader, loanHero, termsLocked } from './loanDetailModel';
 import { LoanHero } from './LoanHero';
-import { MarkPaidDialog } from './MarkPaidDialog';
 import { MatchingCard } from './MatchingCard';
 import { foundDebit } from './payModel';
 import { ScheduleCard } from './ScheduleCard';
@@ -36,11 +33,21 @@ export interface LoanDetailScreenProps {
   highlightSeq: number | null;
 }
 
+const loadLoanEditDialog = () => import('@/features/loans/form/LoanEditDialog').then((m) => m.LoanEditDialog);
+const loadMarkPaidDialog = () => import('./MarkPaidDialog').then((m) => m.MarkPaidDialog);
+const loadEventFormDialog = () => import('./EventFormDialog').then((m) => m.EventFormDialog);
+const loadChargeFormDialog = () => import('./ChargeFormDialog').then((m) => m.ChargeFormDialog);
+
 /** One loan: header, hero, schedule, events and charges, and matching, with the forms they open. */
 export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: LoanDetailScreenProps) {
   const { loan, events, charges } = detail;
   const actions = useLoanDetailMutations(loan.id);
 
+  // The loan's forms are not in the page: each loads when opened (see useLazyDialog).
+  const { Component: LoanEditDialog, run: runEdit } = useLazyDialog(loadLoanEditDialog);
+  const { Component: MarkPaidDialog, run: runPaid } = useLazyDialog(loadMarkPaidDialog);
+  const { Component: EventFormDialog, run: runEvent } = useLazyDialog(loadEventFormDialog);
+  const { Component: ChargeFormDialog, run: runCharge } = useLazyDialog(loadChargeFormDialog);
   const [fyChoice, setFyChoice] = React.useState<string | null>(null);
   const [editing, setEditing] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
@@ -61,7 +68,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
 
   const openMarkPaid = React.useCallback(
     (inst: InstallmentDto) => {
-      setPaying(inst);
+      void runPaid(() => setPaying(inst));
       // The server looks for the debit while the form is already on screen.
       if (!actions.matches) {
         setSearching(true);
@@ -69,7 +76,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actions.matches],
+    [actions.matches, runPaid],
   );
   const openRow = React.useCallback(
     (row: ScheduleRow) => (row.settled ? setLinked(row.installment) : openMarkPaid(row.installment)),
@@ -88,7 +95,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         }
         backHref={appHref('/loans')}
         addLabel="Add event"
-        onAdd={() => setEventType('rate_change')}
+        onAdd={() => void runEvent(() => setEventType('rate_change'))}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <LoanHero model={hero} />
@@ -96,14 +103,14 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
             info={header.info}
             actions={
               closed ? null : (
-                <Button variant="secondary" onClick={() => setEventType('prepayment')}>
+                <Button variant="secondary" onClick={() => void runEvent(() => setEventType('prepayment'))}>
                   Prepay
                 </Button>
               )
             }
             menu={
               <>
-                <Menu.Item onSelect={() => setEditing(true)}>Edit loan</Menu.Item>
+                <Menu.Item onSelect={() => void runEdit(() => setEditing(true))}>Edit loan</Menu.Item>
                 {closed ? (
                   <Menu.Item onSelect={() => void actions.reopenLoan()}>Reopen loan</Menu.Item>
                 ) : (
@@ -131,8 +138,8 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
               <SplitCard splits={splits} />
               <EntriesCard
                 rows={entries}
-                onAddEvent={setEventType}
-                onAddCharge={() => setAddingCharge(true)}
+                onAddEvent={(type) => void runEvent(() => setEventType(type))}
+                onAddCharge={() => void runCharge(() => setAddingCharge(true))}
                 onDelete={setDeletingEntry}
               />
               <MatchingCard
@@ -148,11 +155,11 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         </div>
       </ShellPage>
 
-      {editing ? (
+      {editing && LoanEditDialog ? (
         <LoanEditDialog loan={loan} termsLocked={termsLocked(events, schedule)} onClose={() => setEditing(false)} />
       ) : null}
 
-      {paying ? (
+      {paying && MarkPaidDialog ? (
         <MarkPaidDialog
           key={paying.seq}
           installment={paying}
@@ -177,7 +184,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         />
       ) : null}
 
-      {eventType ? (
+      {eventType && EventFormDialog ? (
         <EventFormDialog
           today={today}
           initialType={eventType}
@@ -187,7 +194,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         />
       ) : null}
 
-      {addingCharge ? (
+      {addingCharge && ChargeFormDialog ? (
         <ChargeFormDialog
           today={today}
           submitting={actions.pending.charge}

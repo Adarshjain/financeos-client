@@ -17,7 +17,11 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationMutations: () => ({ markRead: { mutate: vi.fn() } }),
 }));
 const openDialog = vi.hoisted(() => vi.fn());
-vi.mock('../quickAdd', () => ({ useOpenQuickAddDialog: () => openDialog }));
+const preloadDialog = vi.hoisted(() => vi.fn());
+vi.mock('../quickAdd', () => ({
+  useOpenQuickAddDialog: () => openDialog,
+  useQuickAddLoading: () => ({ preload: preloadDialog, isLoading: () => false }),
+}));
 const markPaidProps = vi.hoisted(() => ({ last: null as null | Record<string, unknown> }));
 vi.mock('@/features/bills/MarkPaidDialog', () => ({
   MarkPaidDialog: (props: Record<string, unknown> & { open: boolean; onMarked: () => void }) => {
@@ -49,6 +53,7 @@ const field = () => screen.getByRole('searchbox');
 beforeEach(() => {
   router.push.mockReset();
   openDialog.mockReset();
+  preloadDialog.mockReset();
   addTransaction.open.mockReset();
   fetchMock.mockReset();
   fetchMock.mockResolvedValue({
@@ -73,6 +78,19 @@ describe('SearchProvider', () => {
     renderShell();
     fireEvent.click(screen.getByRole('button', { name: 'Search' }));
     expect(palette()).toBeInTheDocument();
+  });
+
+  it('starts loading the Quick add dialogs as it opens, from a button or ⌘K, and not before', () => {
+    renderShell();
+    expect(preloadDialog).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(preloadDialog.mock.calls.map(([d]) => d).sort()).toEqual(['lending', 'trade', 'transaction']);
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    expect(palette()).toBeNull();
+    preloadDialog.mockReset();
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    expect(palette()).toBeInTheDocument();
+    expect(preloadDialog).toHaveBeenCalledWith('transaction');
   });
 
   it('toggles with ⌘K and Ctrl+K', () => {
@@ -199,7 +217,7 @@ describe('SearchProvider', () => {
       fireEvent.click(await screen.findByRole('option', { name: 'Mark HDFC Regalia Gold bill paid' }));
 
       expect(palette()).toBeNull();
-      expect(screen.getByText('mark paid dialog')).toBeInTheDocument();
+      expect(await screen.findByText('mark paid dialog')).toBeInTheDocument();
       expect(markPaidProps.last).toMatchObject({
         open: true,
         statementId: 's1',

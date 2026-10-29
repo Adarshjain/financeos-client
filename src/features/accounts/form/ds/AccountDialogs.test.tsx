@@ -45,10 +45,10 @@ describe('AccountDialogs', () => {
     expect(screen.queryByText(/dialog/)).toBeNull();
   });
 
-  it('passes onCreated through only when asked, so other callers keep navigating', () => {
+  it('passes onCreated through only when asked, so other callers keep navigating', async () => {
     render(<AccountDialogs><Triggers /></AccountDialogs>);
     click('add default');
-    expect(screen.getByText('navigates')).toBeInTheDocument();
+    expect(await screen.findByText('navigates')).toBeInTheDocument();
     click('close');
     click('add quiet');
     expect(screen.getByText('no navigate')).toBeInTheDocument();

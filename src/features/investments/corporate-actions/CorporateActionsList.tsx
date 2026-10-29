@@ -17,10 +17,11 @@ import {
   Text,
 } from '@/components/ds';
 import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
+import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { CorporateActionItem } from '@/lib/investments.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { CorporateActionDialog } from './CorporateActionDialog';
 import {
   APPLY_RULES,
   CORPORATE_ACTIONS_SIZE_OPTIONS,
@@ -117,6 +118,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
   const router = useRouter();
   const [editing, setEditing] = React.useState<CorporateActionItem | null>(null);
   const [adding, setAdding] = React.useState(false);
+  const { Component: CorporateActionDialog, run } = useLazyDialog(loadCorporateActionDialog);
   const go = (next: Partial<CorporateActionsUrlState>) => router.push(corporateActionsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
 
@@ -177,7 +179,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
           getRowId={(row) => row.id}
           pager={pager}
           phoneSub={(row) => <PhoneSub row={row} />}
-          onRowSelect={(row) => setEditing(row.item)}
+          onRowSelect={(row) => void run(() => setEditing(row.item))}
           empty={
             filtered ? (
               <EmptyState
@@ -189,7 +191,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
               <EmptyState
                 title="No corporate actions yet"
                 description="Splits, bonus issues, demergers and mergers show here."
-                action={{ label: 'Record corporate action', variant: 'primary', onSelect: () => setAdding(true) }}
+                action={{ label: 'Record corporate action', variant: 'primary', onSelect: () => void run(() => setAdding(true)) }}
               />
             )
           }
@@ -208,8 +210,8 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
           </Card.Row>
         ))}
       </Card>
-      {adding ? <CorporateActionDialog onClose={() => setAdding(false)} /> : null}
-      {editing ? <CorporateActionDialog key={editing.id} action={editing} onClose={() => setEditing(null)} /> : null}
+      {adding && CorporateActionDialog ? <CorporateActionDialog onClose={() => setAdding(false)} /> : null}
+      {editing && CorporateActionDialog ? <CorporateActionDialog key={editing.id} action={editing} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }

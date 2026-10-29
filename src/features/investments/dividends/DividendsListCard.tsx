@@ -26,10 +26,11 @@ import { AppError } from '@/lib/appError';
 import { watchSession } from '@/lib/authExpiry';
 import { downloadCsv } from '@/lib/downloadCsv';
 import type { DividendFilters } from '@/lib/investments.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType } from '@/lib/types';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
-import { DividendAddDialog } from './DividendFormDialog';
+import { loadDividendAddDialog } from '../lazyDialogs';
 import { exportDividendsCsv } from './dividendsActions';
 import {
   type DividendListRow,
@@ -155,6 +156,7 @@ export function DividendsListCard({
   const router = useRouter();
   const [exporting, setExporting] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
+  const { Component: DividendAddDialog, run: runAdd } = useLazyDialog(loadDividendAddDialog);
   const go = (next: Partial<DividendsUrlState>) => router.push(dividendsUrl({ ...state, ...next }), { scroll: false });
 
   const columns = React.useMemo(() => buildColumns(), []);
@@ -209,7 +211,7 @@ export function DividendsListCard({
     <EmptyState
       title="No dividends yet"
       description="Record a dividend to see what you have received."
-      action={{ label: 'Record dividend', variant: 'primary', onSelect: () => setAdding(true) }}
+      action={{ label: 'Record dividend', variant: 'primary', onSelect: () => void runAdd(() => setAdding(true)) }}
     />
   );
 
@@ -318,7 +320,7 @@ export function DividendsListCard({
           stickyHeader={false}
         />
       </Card>
-    {adding ? <DividendAddDialog onClose={() => setAdding(false)} /> : null}
+    {adding && DividendAddDialog ? <DividendAddDialog onClose={() => setAdding(false)} /> : null}
     </div>
   );
 }

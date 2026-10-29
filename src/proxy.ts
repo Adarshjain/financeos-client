@@ -69,12 +69,13 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - _next/static, _next/image, favicon.ico
+     * - static public folders (icons, brand, banks, images, splash, handbook) and the service worker (serwist, sw.js)
+     * - manifest.webmanifest and any path with a file extension (public files), which are all public anyway
+     * Page routes have no dot, so auth runs for every page exactly as before.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon\\.ico|icons/|brand/|banks/|images/|splash/|handbook(?:/|$)|serwist(?:/|$)|manifest\\.webmanifest|.*\\.[^/]+$).*)',
   ],
 };

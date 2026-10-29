@@ -12,6 +12,7 @@ import {
   holdingsQuery,
   holdingsUrl,
   mergedLine,
+  moversFromResponse,
   parseHoldingsUrl,
   SORT_OPTIONS,
   sortFromValue,
@@ -255,6 +256,20 @@ describe('topMovers', () => {
       { id: 'a', symbol: 'INFY', amount: '+₹1,860', tone: 'positive' },
       { id: 'b', symbol: 'RELIANCE', amount: '+₹1,230', tone: 'positive' },
       { id: 'c', symbol: 'TCS', amount: '−₹280', tone: 'danger' },
+    ]);
+  });
+});
+
+describe('moversFromResponse', () => {
+  it("shows the server's movers in order, falling back to the name when there is no symbol", () => {
+    expect(
+      moversFromResponse([
+        { instrumentId: 'a', symbol: 'INFY', name: 'Infosys', dayChange: 1860 },
+        { instrumentId: 'b', symbol: null, name: 'Parag Parikh Flexi', dayChange: -280 },
+      ]),
+    ).toEqual([
+      { id: 'a', symbol: 'INFY', amount: '+₹1,860', tone: 'positive' },
+      { id: 'b', symbol: 'Parag Parikh Flexi', amount: '−₹280', tone: 'danger' },
     ]);
   });
 });

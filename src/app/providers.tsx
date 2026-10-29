@@ -19,7 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryProvider>
         {/* Registering in dev would have the worker serve stale precached
             assets across HMR reloads. */}
-        <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
+        <SerwistProvider swUrl="/serwist/sw.js" disable={isDev} cacheOnNavigation={false}>
           {children}
         </SerwistProvider>
         <FaroRouteTracker />

@@ -201,6 +201,23 @@ describe('TopBar dot and popover actions', () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
+  it('calls onWarm when the popover trigger is hovered or focused, without opening it', () => {
+    const onWarm = vi.fn();
+    render(
+      <TopBar
+        title="Home"
+        actions={[
+          { id: 'n', icon: 'notifications', label: 'Notifications', popover: { content: <div>Bill due tomorrow</div>, onWarm } },
+        ]}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Notifications' });
+    fireEvent.pointerEnter(trigger);
+    fireEvent.focus(trigger);
+    expect(onWarm).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText('Bill due tomorrow')).not.toBeInTheDocument();
+  });
+
   it('leaves actions without a popover unchanged', () => {
     const onSelect = vi.fn();
     render(<TopBar title="Home" actions={[{ id: 's', icon: 'search', label: 'Search', onSelect }]} />);
@@ -300,5 +317,15 @@ describe('TopBar phoneOnly actions', () => {
     );
     expect(screen.getByRole('button', { name: 'Search' })).toHaveClass('desk:hidden');
     expect(screen.getByRole('button', { name: 'Ask' })).not.toHaveClass('desk:hidden');
+  });
+
+  it('a loading action shows the busy state and ignores presses', () => {
+    const onSelect = vi.fn();
+    render(<TopBar title="Home" actions={[{ id: 'add', icon: 'add', label: 'Add', loading: true, onSelect }]} />);
+    const button = screen.getByRole('button', { name: 'Add' });
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

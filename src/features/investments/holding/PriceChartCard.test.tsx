@@ -17,9 +17,9 @@ const history = [
 ];
 
 describe('PriceChartCard', () => {
-  it('fits the y-axis to the prices and fills its frame', () => {
+  it('fits the y-axis to the prices and fills its frame', async () => {
     render(<PriceChartCard onOpenHistory={vi.fn()} history={history as never} />);
-    expect(screen.getByTestId('chart')).toBeInTheDocument();
+    expect(await screen.findByTestId('chart')).toBeInTheDocument();
     expect(chart).toHaveBeenCalledWith(
       expect.objectContaining({
         yDomain: 'data',

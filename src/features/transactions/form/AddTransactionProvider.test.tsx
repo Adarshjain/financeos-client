@@ -52,7 +52,7 @@ describe('AddTransactionProvider', () => {
     );
     expect(screen.queryByText('Add transaction')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('open add'));
-    expect(screen.getAllByText('Add transaction')).toHaveLength(2);
+    await waitFor(() => expect(screen.getAllByText('Add transaction')).toHaveLength(2), { timeout: 5000 });
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Savings');
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '50' } });
     await userEvent.setup({ pointerEventsCheck: 0 }).click(screen.getByRole('button', { name: 'Add transaction' }));

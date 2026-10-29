@@ -17,11 +17,12 @@ import {
   Text,
 } from '@/components/ds';
 import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
+import { loadInstrumentAddDialog, loadInstrumentEditDialog, loadResetInstrumentDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Instrument } from '@/lib/types';
 
-import { InstrumentAddDialog, type InstrumentAddMode } from './InstrumentAddDialog';
-import { InstrumentEditDialog } from './InstrumentEditDialog';
+import type { InstrumentAddMode } from './InstrumentAddDialog';
 import {
   type InstrumentListRow,
   instrumentListRow,
@@ -31,7 +32,6 @@ import {
   SORT_OPTIONS,
   TYPE_CHIPS,
 } from './instrumentsModel';
-import { ResetInstrumentDialog } from './ResetInstrumentDialog';
 
 interface RowActions {
   onReset: (id: string) => void;
@@ -198,12 +198,18 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
   const go = (next: Partial<InstrumentsUrlState>) => router.push(instrumentsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [dialog, setDialog] = React.useState<DialogState>(null);
+  const { Component: InstrumentAddDialog, run: runAdd } = useLazyDialog(loadInstrumentAddDialog);
+  const { Component: InstrumentEditDialog, run: runEdit } = useLazyDialog(loadInstrumentEditDialog);
+  const { Component: ResetInstrumentDialog, run: runReset } = useLazyDialog(loadResetInstrumentDialog);
+  // Each dialog loads when it is opened; the list's own rows and buttons stay as they were.
+  const openDialog = (next: NonNullable<DialogState>) =>
+    void (next.kind === 'add' ? runAdd : next.kind === 'edit' ? runEdit : runReset)(() => setDialog(next));
 
   const byId = React.useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const rows = React.useMemo(() => items.map(instrumentListRow), [items]);
   const columns = React.useMemo(
-    () => columnsFor({ onReset: (id) => setDialog({ kind: 'reset', id }) }),
-    [],
+    () => columnsFor({ onReset: (id) => void runReset(() => setDialog({ kind: 'reset', id })) }),
+    [runReset],
   );
   const target = dialog && dialog.kind !== 'add' ? byId.get(dialog.id) : undefined;
   const close = () => setDialog(null);
@@ -265,14 +271,14 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
           data={rows}
           getRowId={(row) => row.id}
           pager={pager}
-          phoneSub={(row) => <PhoneSub row={row} onReset={(id) => setDialog({ kind: 'reset', id })} />}
-          onRowSelect={(row) => setDialog({ kind: 'edit', id: row.id })}
+          phoneSub={(row) => <PhoneSub row={row} onReset={(id) => openDialog({ kind: 'reset', id })} />}
+          onRowSelect={(row) => openDialog({ kind: 'edit', id: row.id })}
           empty={
             catalogEmpty ? (
               <EmptyState
                 title="No instruments yet"
                 description="Add stocks, mutual funds and ETFs to track their prices."
-                action={{ label: 'Add instrument', variant: 'primary', onSelect: () => setDialog({ kind: 'add', mode: 'catalog' }) }}
+                action={{ label: 'Add instrument', variant: 'primary', onSelect: () => openDialog({ kind: 'add', mode: 'catalog' }) }}
               />
             ) : (
               <EmptyState
@@ -291,16 +297,16 @@ export function InstrumentsListCard({ state, items, totalElements, totalPages, c
       </Card>
       <Text variant="label" tone="ink-3" as="div">
         {'Adding an instrument searches the AMFI and Yahoo catalogs as you type and creates the entry on pick. If it isn’t there, '}
-        <Button variant="link" size="sm" onClick={() => setDialog({ kind: 'add', mode: 'manual' })}>
+        <Button variant="link" size="sm" onClick={() => openDialog({ kind: 'add', mode: 'manual' })}>
           enter it by hand
         </Button>
         {' with a Yahoo symbol or an AMFI code.'}
       </Text>
-      {dialog?.kind === 'add' ? <InstrumentAddDialog initialMode={dialog.mode} onClose={close} /> : null}
-      {dialog?.kind === 'edit' && target ? (
-        <InstrumentEditDialog instrument={target} onClose={close} onReset={() => setDialog({ kind: 'reset', id: target.id })} />
+      {dialog?.kind === 'add' && InstrumentAddDialog ? <InstrumentAddDialog initialMode={dialog.mode} onClose={close} /> : null}
+      {dialog?.kind === 'edit' && target && InstrumentEditDialog ? (
+        <InstrumentEditDialog instrument={target} onClose={close} onReset={() => openDialog({ kind: 'reset', id: target.id })} />
       ) : null}
-      {dialog?.kind === 'reset' && target ? <ResetInstrumentDialog instrument={target} onClose={close} /> : null}
+      {dialog?.kind === 'reset' && target && ResetInstrumentDialog ? <ResetInstrumentDialog instrument={target} onClose={close} /> : null}
     </div>
   );
 }

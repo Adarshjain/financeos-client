@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Button, Card, EmptyState, Icon, SegmentedControl } from '@/components/ds';
-import { Chart } from '@/components/organisms/Chart/Chart';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import type { PriceHistoryPoint } from '@/lib/types';
 
 import { adjustForSplits, CHART_RANGES, type ChartRange, priceChartData, pricesInRange, type PriceSplit, RANGE_TITLES } from './priceChartModel';

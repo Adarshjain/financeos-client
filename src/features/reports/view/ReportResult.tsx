@@ -4,11 +4,11 @@ import type { ColumnDef } from '@tanstack/react-table';
 import React from 'react';
 
 import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
-import { Chart } from '@/components/organisms/Chart/Chart';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { formatPercent } from '@/lib/format';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import { isChartData, isKpiData, isPivotTableData, isRawTableData, valueLabel } from '@/lib/reports.helpers';
 import type {
   ChartData,

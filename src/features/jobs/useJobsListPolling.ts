@@ -5,13 +5,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { loadJobs } from '@/features/jobs/jobActions';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
+import { jobsPollInterval } from '@/features/jobs/jobsPollInterval';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';
 
-// One steady cadence whether or not a job is active, so a job enqueued by another tab or a
-// background trigger shows up within a poll, not only the ones this page announced.
-const POLL_INTERVAL_MS = 5_000;
+// 5s while a job is active (or one announced here has not shown its end yet), else 30s, so a job
+// enqueued by another tab or a background trigger still shows up within 30s.
 
 interface UseJobsListPollingOptions {
   types?: JobType[];
@@ -37,7 +37,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
     queryFn: async () => {
       return unwrapAction(loadJobs({ type: typeParam, size, sort: ['createdAt,desc'] }));
     },
-    refetchInterval: POLL_INTERVAL_MS,
+    refetchInterval: (q) => jobsPollInterval(q.state.data?.content, announcedJobIdsRef.current.size > 0),
     refetchIntervalInBackground: false,
   });
 

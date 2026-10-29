@@ -6,6 +6,7 @@ import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } fr
 import { useRewardAccountConfig } from '@/features/rewards/queries/useRewardAccountConfigQueries';
 import { useDeleteRewardMilestone, useRewardMilestones } from '@/features/rewards/queries/useRewardMilestonesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { RewardMilestone } from '@/lib/rewards.types';
@@ -13,11 +14,12 @@ import { AccountType } from '@/lib/types';
 
 import type { MilestoneUsage } from '../rulesPageModel';
 import { useRefreshUsage } from '../rulesRefresh';
-import { MilestoneDialog } from './MilestoneDialog';
 import { milestoneDetail, milestoneSummary } from './milestoneModel';
 
 const paidWhen = (m: RewardMilestone) =>
   m.payoutType === 'CASH_VALUE' && m.payoutTiming === 'WINDOW_END' ? 'received at window end' : null;
+
+const loadMilestoneDialog = () => import('./MilestoneDialog').then((m) => m.MilestoneDialog);
 
 type Open = { mode: 'new' } | { mode: 'edit'; id: string } | null;
 
@@ -36,6 +38,7 @@ export function MilestonesSection({
   const remove = useDeleteRewardMilestone();
   const refresh = useRefreshUsage();
   const [open, setOpen] = React.useState<Open>(null);
+  const { Component: MilestoneDialog, run: runMilestone } = useLazyDialog(loadMilestoneDialog);
   const [deleting, setDeleting] = React.useState<RewardMilestone | null>(null);
 
   const editing = open?.mode === 'edit' ? milestones.find((m) => m.id === open.id) : undefined;
@@ -60,7 +63,7 @@ export function MilestonesSection({
       subtitle="Bonuses for hitting a spend threshold"
       action={
         <Text variant="label" as="div">
-          <Button variant="link" size="sm" disabled={!accountId} onClick={() => setOpen({ mode: 'new' })}>
+          <Button variant="link" size="sm" disabled={!accountId} onClick={() => void runMilestone(() => setOpen({ mode: 'new' }))}>
             Add milestone
           </Button>
         </Text>
@@ -80,7 +83,7 @@ export function MilestonesSection({
             subtitle={[milestoneSummary(m), milestoneDetail(m), usage?.[m.id]?.range, usage?.[m.id] ? paidWhen(m) : null]
               .filter(Boolean)
               .join(' · ')}
-            onClick={() => setOpen({ mode: 'edit', id: m.id })}
+            onClick={() => void runMilestone(() => setOpen({ mode: 'edit', id: m.id }))}
           >
             {usage?.[m.id] ? (
               <div className="mt-space-8 flex w-full flex-col gap-space-4">
@@ -94,7 +97,7 @@ export function MilestonesSection({
         ))
       )}
 
-      {open?.mode === 'new' || editing ? (
+      {(open?.mode === 'new' || editing) && MilestoneDialog ? (
         <MilestoneDialog
           key={editing?.id ?? 'new'}
           accountId={accountId}

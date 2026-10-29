@@ -34,8 +34,11 @@ export const loadPerson = cache(async (id: string): Promise<PersonCounterparty> 
  * throws to the route's error state.
  */
 export const loadPersonPage = cache(async (id: string, state: PersonUrlState): Promise<PersonPageData> => {
+  // The ledger does not depend on the person read, so both start together; the person's failure (a 404, a sign-in) still wins.
+  const firstLedger = counterpartiesApi.ledger(id, state.page, state.size);
+  firstLedger.catch(() => undefined);
   const cp = await loadPerson(id);
-  let ledger = await counterpartiesApi.ledger(id, state.page, state.size);
+  let ledger = await firstLedger;
   const totalPages = ledger.entries.totalPages;
   if (totalPages > 0 && state.page >= totalPages) {
     state = { ...state, page: clampPage(state.page, totalPages) };

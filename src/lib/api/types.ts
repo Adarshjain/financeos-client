@@ -9,6 +9,8 @@ export type LoginRequest = Schemas['LoginRequest'];
 export type GoogleAuthStartResponse = Schemas['GoogleAuthStartResponse'];
 export type UserResponse = Schemas['UserResponse'];
 export type AppLockStatus = Schemas['AppLockStatusResponse'];
+/** GET /shell/counts: every part is null when it failed server-side. */
+export type ShellCounts = Schemas['ShellCountsResponse'];
 export type DeleteAccountRequest = Schemas['DeleteAccountRequest'];
 export type DeletionSummaryResponse = Schemas['DeletionSummaryResponse'];
 

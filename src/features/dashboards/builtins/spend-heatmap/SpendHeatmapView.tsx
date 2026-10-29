@@ -7,13 +7,13 @@
 import React from 'react';
 
 import { EmptyState } from '@/components/ds';
-import { Chart } from '@/components/organisms';
 import { heatmapMonths, spendByDay } from '@/components/organisms/Chart/heatmap.model';
 import { BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import { formatDate, formatMoney } from '@/lib/format';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import { isChartData } from '@/lib/reports.helpers';
 
 import { daySpendRequest } from './heatmapRequestsModel';

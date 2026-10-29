@@ -42,16 +42,16 @@ describe('useJobsListPolling cadence', () => {
     vi.useRealTimers();
   });
 
-  it('polls an idle list every 5s', async () => {
+  it('polls an idle list every 30s', async () => {
     renderPolling();
     await advance(0);
     expect(getCalls()).toBe(1);
 
-    await advance(4_999);
+    await advance(29_999);
     expect(getCalls()).toBe(1);
     await advance(1);
     expect(getCalls()).toBe(2);
-    await advance(5_000);
+    await advance(30_000);
     expect(getCalls()).toBe(3);
   });
 

@@ -144,9 +144,9 @@ const chart = (over: Partial<ChartData> = {}): ChartData => ({
 });
 
 describe('chart result', () => {
-  it('draws a chart through the Chart organism', () => {
+  it('draws a chart through the Chart organism', async () => {
     render(<ReportResult data={chart()} catalog={catalog} />);
-    expect(screen.getByTestId('chart')).toHaveAttribute('data-type', 'bar');
+    expect(await screen.findByTestId('chart')).toHaveAttribute('data-type', 'bar');
   });
 
   it('tells the chart whether the measure is money from the catalog, and leaves it open without one', () => {

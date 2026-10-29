@@ -8,7 +8,6 @@
 import React from 'react';
 
 import { Button, EmptyState, Text } from '@/components/ds';
-import { Chart } from '@/components/organisms';
 import { BuiltinError } from '@/features/dashboards/builtins/BuiltinParts';
 import type { BuiltinBodyProps } from '@/features/dashboards/builtins/types';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
@@ -17,6 +16,7 @@ import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatCount, formatMoney } from '@/lib/format';
+import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { type EmergencyFund, useEmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import type { RunReportRequest } from '@/lib/reports.types';

@@ -1,5 +1,6 @@
 import { formatMoney } from './money';
 
+const quantityFormats = new Map<number, Intl.NumberFormat>();
 const NF_COUNT = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 const MINUS = '−';
 
@@ -39,7 +40,12 @@ export function formatCount(
 /** A quantity (units, shares): up to maxDecimals, trailing zeros trimmed. */
 export function formatQuantity(value: number | null | undefined, maxDecimals = 4): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '';
-  const text = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: maxDecimals }).format(value);
+  let format = quantityFormats.get(maxDecimals);
+  if (!format) {
+    format = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: maxDecimals });
+    quantityFormats.set(maxDecimals, format);
+  }
+  const text = format.format(value);
   return text === '-0' ? '0' : text;
 }
 

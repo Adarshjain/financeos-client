@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { ContextMenu, Icon, SwipeActions } from '@/components/ds';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Transaction } from '@/lib/transaction.types';
 import { replaceUrl } from '@/lib/urlState';
 
@@ -11,17 +12,13 @@ import { isApprovable } from './bulk/bulkModel';
 import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
 import { useBulkSelection } from './bulk/useBulkSelection';
 import { useBulkTransactionMutations } from './bulk/useBulkTransactionMutations';
-import { CategoryDialog } from './category/CategoryDialog';
-import { TransactionDetailPanel } from './detail/TransactionDetailPanel';
 import { useAddTransaction } from './form/AddTransactionProvider';
-import { TransactionFormDialog } from './form/TransactionFormDialog';
 import { defaultAccountId } from './form/transactionFormModel';
-import { LinkTransactionsDialog } from './link/LinkTransactionsDialog';
 import { TransactionsListPane, type TransactionsListPaneProps } from './list/TransactionsListPane';
 import { parseTxn, transactionsUrl } from './list/transactionsUrl';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
 
-export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
+export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
 }
@@ -31,6 +28,12 @@ function isGone(error: unknown): boolean {
   const status = (error as { status?: number } | null)?.status;
   return status === 404 || status === 403;
 }
+
+// The panel and its dialogs are not in the page: each loads when the user opens it (see useLazyDialog).
+const loadDetailPanel = () => import('./detail/TransactionDetailPanel').then((m) => m.TransactionDetailPanel);
+const loadCategoryDialog = () => import('./category/CategoryDialog').then((m) => m.CategoryDialog);
+const loadFormDialog = () => import('./form/TransactionFormDialog').then((m) => m.TransactionFormDialog);
+const loadLinkDialog = () => import('./link/LinkTransactionsDialog').then((m) => m.LinkTransactionsDialog);
 
 type FormState = { transaction: Transaction } | null;
 
@@ -68,10 +71,21 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
     setTxnInUrl(false);
     replaceUrl(transactionsUrl({ ...view.query, txn: null }), { keepState: true });
   };
+  const detail = useLazyDialog(loadDetailPanel);
+  const categoryDialog = useLazyDialog(loadCategoryDialog);
+  const formDialog = useLazyDialog(loadFormDialog);
+  const linkDialog = useLazyDialog(loadLinkDialog);
   const setDetailId = (id: string | null) => {
     if (id !== view.query.txn || id === null) dropTxn();
-    setDetailIdState(id);
+    // The first open waits for the panel's code; closing never does.
+    if (id === null) setDetailIdState(null);
+    else void detail.run(() => setDetailIdState(id));
   };
+  // A link with ?txn (on load, or a later one) loads the panel at once; the state is already set by then.
+  const loadDetail = detail.run;
+  React.useEffect(() => {
+    if (detailId !== null) void loadDetail(() => undefined);
+  }, [detailId, loadDetail]);
   const [form, setForm] = React.useState<FormState>(null);
   const [categorising, setCategorising] = React.useState<Transaction | null>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
@@ -92,14 +106,15 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
 
   const editCategories = (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
-    if (transaction) setCategorising(transaction);
+    if (transaction) void categoryDialog.run(() => setCategorising(transaction));
   };
 
   return (
     <>
       <TransactionsListPane
         {...view}
-        onAdd={() => addTransaction.open({ defaultAccountId: defaultAccountId(view.query.accounts) })}
+        onAdd={() => void addTransaction.open({ defaultAccountId: defaultAccountId(view.query.accounts) })}
+        addLoading={addTransaction.loading}
         onOpenDetail={setDetailId}
         openId={detailId ?? undefined}
         detailOpen={detailId !== null}
@@ -138,26 +153,28 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
         pageCount={pageIds.length}
         onSelectAll={selection.selectAll}
         onClear={selection.clear}
-        onLink={() => setLinking(selected)}
+        onLink={() => void linkDialog.run(() => setLinking(selected))}
         onMerge={() => selected.length === 2 && actions.merge([selected[0], selected[1]])}
         onApprove={() => actions.approve(selected.filter(isApprovable))}
         onDelete={() => actions.remove(selected, true)}
       />
       {actions.dialogs}
-      <TransactionDetailPanel
+      {detail.Component ? (
+      <detail.Component
         transactionId={detailId}
         pageTransactions={transactions}
         accounts={view.accounts}
         onOpenTransaction={setDetailId}
         onClose={() => setDetailId(null)}
         onLoadFailed={txnInUrl ? (error) => isGone(error) && setDetailId(null) : undefined}
-        onEdit={(transaction) => setForm({ transaction })}
+        onEdit={(transaction) => void formDialog.run(() => setForm({ transaction }))}
         onDeleted={() => setDetailId(null)}
-        onLink={(t) => setLinking([t])}
+        onLink={(t) => void linkDialog.run(() => setLinking([t]))}
         onReview={actions.reviewInDialog}
       />
-      {linking ? (
-        <LinkTransactionsDialog
+      ) : null}
+      {linking && linkDialog.Component ? (
+        <linkDialog.Component
           key={linking.map((t) => t.id).join()}
           transactions={linking}
           onClose={() => setLinking(null)}
@@ -167,9 +184,9 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
           }}
         />
       ) : null}
-      {categorising ? <CategoryDialog key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}
-      {form ? (
-        <TransactionFormDialog
+      {categorising && categoryDialog.Component ? <categoryDialog.Component key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}
+      {form && formDialog.Component ? (
+        <formDialog.Component
           key={form.transaction.id}
           transaction={form.transaction}
           today={view.today}

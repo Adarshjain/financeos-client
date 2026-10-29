@@ -17,7 +17,7 @@ vi.mock('@/features/reports/underlying/ReportUnderlyingDialog', () => ({
     </div>
   ),
 }));
-vi.mock('@/components/organisms', () => ({
+vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: ({ onSelectEntry }: { onSelectEntry?: (e: { key: string; label: string; seriesKey?: string; value: number }) => void }) => (
     <div>
       <button onClick={() => onSelectEntry?.({ key: 'Jun', label: 'Jun', seriesKey: 'Outflow', value: 72000 })}>press Jun</button>

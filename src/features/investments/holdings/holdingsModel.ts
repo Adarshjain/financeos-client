@@ -2,7 +2,7 @@ import { fyLabel, moveTone, priceTimeLabel, unitWord } from '@/features/investme
 import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
-import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
+import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsMover, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
@@ -318,6 +318,11 @@ export interface Mover {
   symbol: string;
   amount: string;
   tone: Tone;
+}
+
+/** The server's top movers (already the three biggest, biggest first) as card rows. */
+export function moversFromResponse(movers: readonly HoldingsMover[]): Mover[] {
+  return movers.map((m) => ({ id: m.instrumentId, symbol: m.symbol || m.name, amount: formatMoney(m.dayChange, { sign: 'always' }), tone: moveTone(m.dayChange) }));
 }
 
 /** The three biggest day moves in rupees, up or down. */

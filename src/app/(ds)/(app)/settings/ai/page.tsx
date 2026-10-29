@@ -2,22 +2,22 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
 import { AiSettings } from '@/features/settings/ai/AiSettings';
+import { guardSession } from '@/features/shell/loadHelpers';
 import { llmKeysApi, llmRoutingApi } from '@/lib/apiClient';
-import { requireAuth } from '@/lib/auth';
 import { getQueryClient, keys } from '@/lib/query';
 
 export const metadata = { title: 'AI' };
 
 export default async function DsSettingsAiPage() {
-  await requireAuth();
-
-  const [llmKeys, catalog, routingOptions, routing, health] = await Promise.all([
-    llmKeysApi.list(),
-    llmRoutingApi.getCatalog(),
-    llmRoutingApi.getRoutingOptions(),
-    llmRoutingApi.getRouting(),
-    llmRoutingApi.getHealth(),
-  ]);
+  const [llmKeys, catalog, routingOptions, routing, health] = await guardSession(
+    Promise.all([
+      llmKeysApi.list(),
+      llmRoutingApi.getCatalog(),
+      llmRoutingApi.getRoutingOptions(),
+      llmRoutingApi.getRouting(),
+      llmRoutingApi.getHealth(),
+    ]),
+  );
 
   const queryClient = getQueryClient();
   queryClient.setQueryData(keys.settings.llmKeys(), llmKeys);

@@ -7,17 +7,20 @@ import {
   GRID_GAP,
 } from '@/components/ds';
 import type { LlmKeyDto } from '@/lib/api/types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { AddKeyDialog } from './AddKeyDialog';
 import { buildHealthRows, type KeyRow } from './aiModel';
 import { DeleteKeyDialog } from './DeleteKeyDialog';
 import { HealthCard } from './HealthCard';
 import { buildProviderOptions } from './providersModel';
 import { RoutingCard } from './RoutingCard';
-import { RoutingEditorDialog } from './RoutingEditorDialog';
 import type { RoutingGroupEditor } from './routingGroupsModel';
 import { useAiSettings } from './useAiSettings';
 import { YourKeysCard } from './YourKeysCard';
+
+// The key and routing editors are not in the page: each loads when it is first opened (see useLazyDialog).
+const loadAddKeyDialog = () => import('./AddKeyDialog').then((m) => m.AddKeyDialog);
+const loadRoutingEditorDialog = () => import('./RoutingEditorDialog').then((m) => m.RoutingEditorDialog);
 
 /** The AI tab: your keys and routing on the left, model health on the right (phone: keys, routing, health). */
 export function AiSettings() {
@@ -32,6 +35,14 @@ export function AiSettings() {
   const onAdd = useCallback((providerId?: string) => latest.current.openAdd(providerId), []);
   const onTest = useCallback((key: LlmKeyDto) => void latest.current.testKey(key), []);
   const onMove = useCallback((row: KeyRow, delta: number) => void latest.current.moveKey(row, delta), []);
+
+  const { Component: AddKeyDialog, run: runAddKey } = useLazyDialog(loadAddKeyDialog);
+  const { Component: RoutingEditorDialog, run: runRouting } = useLazyDialog(loadRoutingEditorDialog);
+  const addOpen = s.addOpen;
+  useEffect(() => {
+    // Once loaded the dialogs stay mounted, so their close animation plays; a failed load backs the open state out.
+    if (addOpen) void runAddKey(() => undefined).then((ok) => !ok && latest.current.setAddOpen(false));
+  }, [addOpen, runAddKey]);
 
   const providers = useMemo(() => buildProviderOptions(s.keysList), [s.keysList]);
   const healthRows = useMemo(
@@ -78,6 +89,10 @@ export function AiSettings() {
       ]
     : [];
   const editing = groups.find((g) => g.editing) ?? null;
+  const editingGroup = editing?.group ?? null;
+  useEffect(() => {
+    if (editingGroup) void runRouting(() => undefined).then((ok) => !ok && (editingGroup === 'chat' ? latest.current.setChatEditing(false) : latest.current.setDefaultEditing(false)));
+  }, [editingGroup, runRouting]);
   const topError = s.error ?? s.actionError;
 
   return (
@@ -104,6 +119,7 @@ export function AiSettings() {
         </div>
       </div>
 
+      {AddKeyDialog ? (
       <AddKeyDialog
         open={s.addOpen}
         onOpenChange={s.setAddOpen}
@@ -118,18 +134,21 @@ export function AiSettings() {
         trainingWarning={s.trainingWarning}
         onSubmit={() => void s.submitAdd()}
       />
+      ) : null}
       <DeleteKeyDialog
         keyToDelete={s.keyToDelete}
         deleting={s.deleting}
         onCancel={() => s.setKeyToDelete(null)}
         onConfirm={() => void s.confirmDelete()}
       />
+      {RoutingEditorDialog ? (
       <RoutingEditorDialog
         group={editing}
         routingOptions={s.routingOptions}
         providers={providers}
         error={editing ? s.routingError : null}
       />
+      ) : null}
     </>
   );
 }

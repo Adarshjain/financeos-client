@@ -2,17 +2,29 @@
 
 import React from 'react';
 
-import { AccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { TransactionFormDialog } from './TransactionFormDialog';
+// The dialog code is not in the page: it loads when the user presses a trigger (see useLazyDialog).
+const loadAddTransaction = () =>
+  Promise.all([
+    import('@/features/accounts/form/ds/AccountDialogs').then((m) => m.AccountDialogs),
+    import('./TransactionFormDialog').then((m) => m.TransactionFormDialog),
+  ]);
 
 interface AddTransactionApi {
-  /** Opens Add transaction in place; the URL never changes. `defaultAccountId` starts the form on that account. */
-  open: (options?: { defaultAccountId?: string }) => void;
+  /**
+   * Opens Add transaction in place; the URL never changes. `defaultAccountId` starts the form on that account.
+   * The first press loads the dialog code (`loading` is true meanwhile); resolves to whether it opened.
+   */
+  open: (options?: { defaultAccountId?: string; beforeOpen?: () => void }) => Promise<boolean>;
+  /** Starts loading the dialog code; call it on pointerdown of a trigger. */
+  preload: () => void;
+  /** True while a press waits for the dialog code: the pressed control shows its loading state. */
+  loading: boolean;
 }
 
-const AddTransactionContext = React.createContext<AddTransactionApi>({ open: () => {} });
+const AddTransactionContext = React.createContext<AddTransactionApi>({ open: () => Promise.resolve(true), preload: () => {}, loading: false });
 
 export function useAddTransaction(): AddTransactionApi {
   return React.useContext(AddTransactionContext);
@@ -25,14 +37,21 @@ export function useAddTransaction(): AddTransactionApi {
  */
 export function AddTransactionProvider({ today, children }: { today: string; children: React.ReactNode }) {
   const [state, setState] = React.useState<{ defaultAccountId: string } | null>(null);
+  const lazy = useLazyDialog(loadAddTransaction);
+  const { run, preload, loading } = lazy;
   const api = React.useMemo<AddTransactionApi>(
-    () => ({ open: (options) => setState({ defaultAccountId: options?.defaultAccountId ?? '' }) }),
-    [],
+    () => ({ open: (options) =>
+        run(() => {
+          options?.beforeOpen?.();
+          setState({ defaultAccountId: options?.defaultAccountId ?? '' });
+        }), preload, loading }),
+    [run, preload, loading],
   );
+  const [AccountDialogs, TransactionFormDialog] = lazy.Component ?? [null, null];
   return (
     <AddTransactionContext.Provider value={api}>
       {children}
-      {state ? (
+      {state && AccountDialogs && TransactionFormDialog ? (
         // The provider sits above every page's own AccountDialogs, so the dialog brings one: Add account opens nested on top.
         <AccountDialogs>
           <TransactionFormDialog

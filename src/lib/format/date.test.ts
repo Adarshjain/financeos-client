@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { formatDate } from './date';
 
@@ -75,5 +75,29 @@ describe('formatDate', () => {
     it('reads an instant in IST', () => {
       expect(formatDate('2026-10-12T20:00:00Z', 'relative', T)).toBe('Today');
     });
+  });
+});
+
+describe('formatDate formatter reuse', () => {
+  it('builds no Intl.DateTimeFormat for styles that do not need today, and one across many calls for those that do', () => {
+    const Real = Intl.DateTimeFormat;
+    const spy = vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (this: unknown, ...args: ConstructorParameters<typeof Real>) {
+      return new Real(...args);
+    } as unknown as typeof Intl.DateTimeFormat);
+    for (let i = 0; i < 50; i++) {
+      formatDate('2026-10-13', 'full');
+      formatDate('2026-10-13', 'input');
+      formatDate('2026-10-13', 'month');
+    }
+    expect(spy).not.toHaveBeenCalled();
+    for (let i = 0; i < 50; i++) formatDate('2026-10-13', 'list');
+    expect(spy.mock.calls.length).toBeLessThanOrEqual(1);
+    spy.mockRestore();
+  });
+
+  it('formats the same on repeated calls', () => {
+    expect(formatDate('2026-10-13', 'list', { today: '2026-10-14' })).toBe('13 Oct');
+    expect(formatDate('2026-10-13', 'list', { today: '2026-10-14' })).toBe('13 Oct');
+    expect(formatDate('2025-10-13', 'weekday', { today: '2026-10-14' })).toBe('Mon 13 Oct 25');
   });
 });

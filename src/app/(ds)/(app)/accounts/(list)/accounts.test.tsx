@@ -159,7 +159,7 @@ describe('/accounts', () => {
 
     expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    expect(screen.getByText('edit dialog HDFC Savings')).toBeDefined();
+    expect(await screen.findByText('edit dialog HDFC Savings')).toBeDefined();
     expect(push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
     expect(screen.queryByText(/edit dialog/)).toBeNull();

@@ -8,8 +8,9 @@ import { type TabItem, Tabs } from '@/components/ds';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { LoanFormDialog } from './form/LoanFormDialog';
+import { loadLoanFormDialog } from './lazyDialogs';
 import { activeLoansLendingsTab, loansLendingsTabs } from './loansLendingsTabs';
 
 /**
@@ -21,6 +22,7 @@ export function LoansLendingsShell({ children }: { children: React.ReactNode }) 
   const tab = activeLoansLendingsTab(usePathname());
   const addLending = useAddLending();
   const [addingLoan, setAddingLoan] = React.useState(false);
+  const { Component: LoanFormDialog, run: runLoan, loading: loanLoading } = useLazyDialog(loadLoanFormDialog);
 
   const items: TabItem[] = loansLendingsTabs.map((t) => ({
     value: t.id,
@@ -36,14 +38,15 @@ export function LoansLendingsShell({ children }: { children: React.ReactNode }) 
         title={tab.title}
         addLabel={tab.id === 'loans' ? 'Add loan' : 'Add lending'}
         flushTop
-        onAdd={tab.id === 'loans' ? () => setAddingLoan(true) : () => addLending.open()}
+        onAdd={tab.id === 'loans' ? () => void runLoan(() => setAddingLoan(true)) : () => void addLending.open()}
+        addLoading={tab.id === 'loans' ? loanLoading : addLending.loading}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <Tabs items={items} value={tab.id} />
           {children}
         </div>
       </ShellPage>
-      {addingLoan ? <LoanFormDialog onClose={() => setAddingLoan(false)} /> : null}
+      {addingLoan && LoanFormDialog ? <LoanFormDialog onClose={() => setAddingLoan(false)} /> : null}
     </>
   );
 }
