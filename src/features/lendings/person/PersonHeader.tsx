@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { Avatar, Button, Icon, Menu, Text } from '@/components/ds';
+import { avatarToneFor } from '@/features/lendings/list/lendingsListModel';
 
-import { avatarToneFor } from '../list/lendingsList';
 import type { PersonHeaderModel } from './personModel';
 
 export interface PersonHeaderProps {

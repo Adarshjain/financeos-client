@@ -1,11 +1,11 @@
+import { type RewardsWindow,rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWindowModel';
 import type { Account } from '@/lib/account.types';
 import { serverApi } from '@/lib/api/server';
 import { rewardsApi } from '@/lib/apiClient';
 import { accountAnniversaryDate, type PagedRewardLines, type RewardReport, type RewardRule } from '@/lib/rewards.types';
 
-import { type RewardsWindow,rewardsWindowFor } from '../overview/rewardsWindow';
 import { clampedPage, parseRewardsQuery, type RewardsQuery } from './rewardsModel';
-import { resolvePeriod } from './rewardsPeriod';
+import { resolvePeriod } from './rewardsPeriodModel';
 
 export interface RewardsTabData {
   window: RewardsWindow;

@@ -1,4 +1,4 @@
-import { fyStartYear } from '@/features/loans/detail/financialYear';
+import { fyStartYear } from '@/features/loans/detail/financialYearModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';

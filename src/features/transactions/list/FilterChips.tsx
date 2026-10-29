@@ -30,12 +30,12 @@ import {
   SORT_OPTIONS,
   sourceLabel,
   TYPE_OPTIONS,
-} from './filterOptions';
+} from './filterOptionsModel';
 import {
   draftFromQuery,
   type FiltersDraft,
   queryFromDraft,
-} from './filtersDraft';
+} from './filtersDraftModel';
 import { type PeriodDraft, PeriodEditor } from './PeriodEditor';
 import {
   isAllTime,

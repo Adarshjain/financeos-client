@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, Card, ListField, ListRow, showToast, StatusWord, Text } from '@/components/ds';
+import { type TransferRow, transferRows } from '@/features/lendings/list/lendingsListModel';
 import { watchSession } from '@/lib/authExpiry';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
-import { type TransferRow, transferRows } from '../list/lendingsList';
 import { useTransferLink } from '../list/useTransferLink';
 import { loadPersonMatches } from './matchActions';
 

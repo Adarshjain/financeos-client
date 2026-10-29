@@ -1,4 +1,4 @@
-import { deriveBillCardState } from '@/features/bills/billCardState';
+import { deriveBillCardState } from '@/features/bills/billCardStateModel';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
 import { formatDate, formatMoney } from '@/lib/format';

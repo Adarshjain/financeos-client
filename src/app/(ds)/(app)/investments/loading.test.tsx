@@ -3,7 +3,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import DsInvestmentsLoading from './(tabs)/loading';
-import DsHoldingLoading from './[instrumentId]/loading';
+import DsHoldingLoading from './[id]/loading';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/investments',

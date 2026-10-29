@@ -10,8 +10,8 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
-vi.mock('./underlying.helpers', async () => {
-  const actual = await vi.importActual<typeof import('./underlying.helpers')>('./underlying.helpers');
+vi.mock('./underlyingModel', async () => {
+  const actual = await vi.importActual<typeof import('./underlyingModel')>('./underlyingModel');
   return { ...actual, saveBlob: vi.fn() };
 });
 
@@ -20,8 +20,8 @@ import type { RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { ReportUnderlyingDialog, shortDate } from './ReportUnderlyingDialog';
-import { saveBlob } from './underlying.helpers';
 import type { KpiUnderlyingResponse } from './underlying.types';
+import { saveBlob } from './underlyingModel';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 

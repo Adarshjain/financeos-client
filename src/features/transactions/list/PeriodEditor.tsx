@@ -4,8 +4,8 @@ import React from 'react';
 
 import { DateField, SegmentedControl, Select } from '@/components/ds';
 
-import { PERIOD_OPTIONS } from './filterOptions';
-import type { FiltersDraft, PeriodMode } from './filtersDraft';
+import { PERIOD_OPTIONS } from './filterOptionsModel';
+import type { FiltersDraft, PeriodMode } from './filtersDraftModel';
 import type { PeriodPresetId } from './transactionsUrl';
 
 const PERIOD_MODES = [

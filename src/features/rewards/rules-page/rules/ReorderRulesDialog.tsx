@@ -3,10 +3,10 @@
 import React from 'react';
 
 import { Dialog, ReorderList, showToast, Text } from '@/components/ds';
+import { useReorderRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { RewardRule } from '@/lib/rewards.types';
 
-import { useReorderRewardRules } from '../../queries/useRewardRulesQueries';
 import { useRefreshUsage } from '../rulesRefresh';
 
 export interface ReorderRulesDialogProps {

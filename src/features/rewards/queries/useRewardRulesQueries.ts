@@ -2,18 +2,17 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { unwrapAction } from '@/lib/actionResult';
-import { invalidateRewardQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-import type { ReorderRewardRulesRequest, RewardRuleRequest } from '@/lib/rewards.types';
-
 import {
   createRewardRule,
   deleteRewardRule,
   loadRewardRules,
   reorderRewardRules,
   updateRewardRule,
-} from '../actions';
+} from '@/features/rewards/rewardActions';
+import { unwrapAction } from '@/lib/actionResult';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
+import type { ReorderRewardRulesRequest, RewardRuleRequest } from '@/lib/rewards.types';
 
 export function useRewardRules(accountId: string) {
   return useQuery({

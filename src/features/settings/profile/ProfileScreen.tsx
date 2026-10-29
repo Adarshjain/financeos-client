@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AppLockCard } from '@/features/appLock/AppLockCard';
+import { AppLockCard } from '@/features/app-lock/AppLockCard';
 import type { AppLockStatus } from '@/lib/api/types';
 import type { UserResponse } from '@/lib/types';
 

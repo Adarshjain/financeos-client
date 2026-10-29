@@ -1,4 +1,4 @@
-import { firstNameOf } from '@/features/lendings/settle';
+import { firstNameOf } from '@/features/lendings/settleModel';
 import { formatDate, formatMoney } from '@/lib/format';
 
 import {
@@ -9,7 +9,7 @@ import {
   type ObligationKindFilter,
   obligationWindows,
   sumAmounts,
-} from './obligations';
+} from './obligationsModel';
 
 export function parseKind(value: string | null | undefined): ObligationKindFilter {
   return OBLIGATION_KINDS.find((k) => k.value === value)?.value ?? 'all';

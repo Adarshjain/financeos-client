@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
-import { loadBill, loadBills, markBillPaid, unmarkBillPaid, updateBillDetails } from '@/lib/query/actions/bills';
+import { loadBill, loadBills, markBillPaid, unmarkBillPaid, updateBillDetails } from '@/lib/query/actions/billActions';
 import { keys } from '@/lib/query/keys';
 
 /**

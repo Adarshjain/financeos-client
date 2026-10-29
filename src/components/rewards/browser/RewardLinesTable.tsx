@@ -2,7 +2,7 @@
 
 import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatEarned, lineDescription } from '@/features/rewards/browser/helpers';
+import { formatEarned, lineDescription } from '@/features/rewards/browser/browserModel';
 import { PagedRewardLines, REASON_META, RewardLine } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 

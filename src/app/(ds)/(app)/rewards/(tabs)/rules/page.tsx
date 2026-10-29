@@ -1,6 +1,6 @@
 import { HydrationBoundary } from '@tanstack/react-query';
 
-import { RulesPage } from '@/features/rewards/rules-page/RulesPage';
+import { RewardsRulesScreen } from '@/features/rewards/rules-page/RewardsRulesScreen';
 import { loadRulesPageData } from '@/features/rewards/rules-page/rulesPageData';
 import { LoadError } from '@/features/shell/LoadError';
 import type { SearchParams } from '@/features/shell/searchParams';
@@ -18,7 +18,7 @@ export default async function DsRewardRulesPage({
   const data = result.data;
   return (
     <HydrationBoundary state={data.state}>
-      <RulesPage accountId={data.accountId} usage={data.usage} today={today} />
+      <RewardsRulesScreen accountId={data.accountId} usage={data.usage} today={today} />
     </HydrationBoundary>
   );
 }

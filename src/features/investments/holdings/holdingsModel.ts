@@ -1,3 +1,4 @@
+import { fyLabel, moveTone, priceTimeLabel, unitWord } from '@/features/investments/investmentsFormatModel';
 import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
@@ -5,7 +6,6 @@ import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsQuery, Holdings
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InstrumentType } from '@/lib/types';
 
-import { fyLabel, moveTone, priceTimeLabel, unitWord } from '../investmentsFormat';
 import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------

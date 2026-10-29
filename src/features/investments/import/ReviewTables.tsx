@@ -3,10 +3,10 @@
 import React from 'react';
 
 import { Badge, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { formatMoney } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
 
-import { moveTone } from '../investmentsFormat';
 import {
   applySelection,
   type CasRow,

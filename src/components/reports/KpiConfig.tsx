@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { KpiDraft } from '@/features/reports/builder/builderReducer';
+import type { KpiDraft } from '@/features/reports/builder/builderReducerModel';
 import type { ComparisonDisplay, DatasourceCatalog } from '@/lib/reports.types';
 
 import { MeasureRefEditor } from './MeasureRefEditor';

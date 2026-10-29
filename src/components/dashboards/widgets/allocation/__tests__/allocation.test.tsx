@@ -13,7 +13,7 @@ import type { WidgetResponse } from '@/lib/dashboards.types';
 import type { ChartData, KpiData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { positionsValueRequest } from '../../investmentsLoansKit/kit';
+import { positionsValueRequest } from '../../investments-loans-kit/kit';
 import { allocationSlices, ASSET_CLASSES, formatShare, NO_CLASS, sliceFilter } from '../allocation';
 import { AllocationView } from '../AllocationView';
 

@@ -11,13 +11,13 @@ import { watchSession } from '@/lib/authExpiry';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
-import { loadClosedLoans } from './closedLoansAction';
+import { loadClosedLoans } from './closedLoanActions';
 import {
   type LoanRow,
   LOANS_SIZE_OPTIONS,
   loansUrl,
   type LoansUrlState,
-} from './loansList';
+} from './loansListModel';
 
 const ch = createDataTableColumnHelper<LoanRow>();
 

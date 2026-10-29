@@ -8,7 +8,7 @@ import {
   OBLIGATION_KINDS,
   OBLIGATION_MONTH_OPTIONS,
   type ObligationKindFilter,
-} from './obligations';
+} from './obligationsModel';
 import { monthsLabel } from './upcomingModel';
 
 export interface UpcomingFiltersProps {

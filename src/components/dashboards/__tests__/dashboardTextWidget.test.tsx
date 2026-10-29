@@ -41,7 +41,7 @@ import {
   updateTextWidget,
   widthStops,
   withHeaderOnTop,
-} from '@/features/dashboards/editor/dashboardEditor.helpers';
+} from '@/features/dashboards/editor/dashboardEditorModel';
 import { api } from '@/lib/api/client';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { createTestQueryClient } from '@/test/renderWithQuery';

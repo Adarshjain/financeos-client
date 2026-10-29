@@ -8,7 +8,7 @@ import {
   AUTO_ASSET_CLASS,
   INSTRUMENT_FIELD_LIMITS as LIMITS,
   type InstrumentFormField,
-} from '@/features/investments/instruments/instrumentEdit';
+} from '@/features/investments/instruments/instrumentEditModel';
 import type { InstrumentType } from '@/lib/types';
 
 export interface EditInstrumentValues {

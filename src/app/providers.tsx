@@ -3,7 +3,7 @@ import { SerwistProvider } from '@serwist/turbopack/react';
 import { FaroRouteTracker } from '@/components/FaroRouteTracker';
 import { QueryProvider } from '@/components/QueryProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { AppLockWatcher } from '@/features/appLock/AppLockWatcher';
+import { AppLockWatcher } from '@/features/app-lock/AppLockWatcher';
 
 const isDev = process.env.NODE_ENV === 'development';
 

@@ -9,7 +9,7 @@ import {
   loadPortfolioSummary,
   loadPositions,
   loadTaxHarvest,
-} from '@/lib/query/actions/investments';
+} from '@/lib/query/actions/investmentActions';
 import { keys } from '@/lib/query/keys';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InvestmentSummary, Position } from '@/lib/types';

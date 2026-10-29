@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { billCardLabel, billDueText, billStatusLabel, billStatusTone, countActionable } from '@/features/bills/bills.helpers';
+import { billCardLabel, billDueText, billStatusLabel, billStatusTone, countActionable } from '@/features/bills/billsModel';
 import type { CardBillResponse } from '@/lib/api/types';
 
 const base = { accountName: 'HDFC Regalia', last4: '4321' } as CardBillResponse;

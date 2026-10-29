@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { appTodayPlus, SNOOZE_PRESETS } from '@/features/inbox/inbox.helpers';
+import { appTodayPlus, SNOOZE_PRESETS } from '@/features/inbox/inboxModel';
 
 interface SnoozeMenuProps {
   title: string;

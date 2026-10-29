@@ -3,8 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { loadReportFieldValues } from '@/features/reports/actions';
 import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions } from '@/features/reports/builder/catalog';
+import { loadReportFieldValues } from '@/features/reports/reportActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';

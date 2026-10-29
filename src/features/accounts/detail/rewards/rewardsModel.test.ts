@@ -17,7 +17,7 @@ import {
   ruleLines,
   windowLabel,
 } from './rewardsModel';
-import { capitalize } from './rewardsPeriod';
+import { capitalize } from './rewardsPeriodModel';
 
 pinClock();
 

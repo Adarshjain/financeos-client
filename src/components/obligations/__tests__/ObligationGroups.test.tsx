@@ -7,7 +7,7 @@ import {
   bucketObligations,
   type ObligationItem,
   sumAmounts,
-} from '@/features/upcoming/obligations';
+} from '@/features/upcoming/obligationsModel';
 import { formatMoney } from '@/lib/utils';
 
 import { ObligationGroups } from '../ObligationGroups';

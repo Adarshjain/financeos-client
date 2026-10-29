@@ -8,7 +8,7 @@ vi.mock('@/features/dashboards/home/HomeScreen', () => ({
   HomeScreen: () => <div data-testid="home" />,
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
-vi.mock('@/features/notifications/useNotificationsAction', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
+vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 

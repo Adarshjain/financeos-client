@@ -1,6 +1,6 @@
 import { dehydrate,type DehydratedState } from '@tanstack/react-query';
 
-import { rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWindow';
+import { rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWindowModel';
 import { type Loaded, loaded, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { serverApi } from '@/lib/api/server';
 import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';

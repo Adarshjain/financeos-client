@@ -6,7 +6,7 @@ import React from 'react';
 
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
 import { Logo } from '@/components/organisms';
-import { useNotificationsAction } from '@/features/notifications/useNotificationsAction';
+import { useNotificationsAction } from '@/features/notifications/useNotificationMutations';
 
 import { isChatPath } from './navigation';
 import { hasInAppHistory } from './navigationStore';

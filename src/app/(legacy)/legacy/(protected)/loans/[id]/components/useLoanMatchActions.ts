@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 
-import { paymentItemFor } from '@/features/loans/loanPaymentsBatch';
+import { paymentItemFor } from '@/features/loans/loanPaymentsBatchModel';
 import { useLoanMutations } from '@/features/loans/useLoanMutations';
 
 import { useLoanQueries } from './useLoanQueries';

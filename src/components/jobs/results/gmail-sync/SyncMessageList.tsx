@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { MESSAGE_GROUPS, type MessageGroup } from '@/features/jobs/syncLabels';
+import { MESSAGE_GROUPS, type MessageGroup } from '@/features/jobs/syncLabelsModel';
 import type { SyncMessageResult } from '@/lib/types';
 
 import { SyncMessageRow } from './SyncMessageRow';

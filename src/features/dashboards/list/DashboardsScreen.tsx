@@ -20,13 +20,13 @@ import {
   Menu,
   Text,
 } from '@/components/ds';
+import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 
-import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '../data/useDashboardActions';
 import { editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
-import { canRestoreHome, type DashboardRow, dashboardRows, filterDashboardRows } from './dashboardsList';
+import { canRestoreHome, type DashboardRow, dashboardRows, filterDashboardRows } from './dashboardsListModel';
 
 /** A press on a control inside a row must not also open the row. */
 const stop = (e: React.SyntheticEvent) => e.stopPropagation();

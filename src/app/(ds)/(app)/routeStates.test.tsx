@@ -13,7 +13,7 @@ import DashboardsListError from './dashboards/(list)/error';
 import DsAppError from './error';
 import InboxError from './inbox/error';
 import InvestmentsError from './investments/(tabs)/error';
-import HoldingNotFound from './investments/[instrumentId]/not-found';
+import HoldingNotFound from './investments/[id]/not-found';
 import LoansError from './loans/(tabs)/error';
 import LoanError from './loans/[id]/error';
 import PersonError from './loans/lendings/[id]/error';

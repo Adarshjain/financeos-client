@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 
 import { Button, createDataTableColumnHelper, DataTable, ProgressBar, type ProgressBarColor, Text } from '@/components/ds';
-import { formatMeasure } from '@/features/reports/measureFormat';
+import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { formatCount, formatPercent } from '@/lib/format';
 import { labelChartData, valueLabel } from '@/lib/reports.helpers';
 import type { BreakdownBars, BreakdownColumn, BreakdownSubRow } from '@/lib/reports.types';

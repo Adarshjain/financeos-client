@@ -30,7 +30,7 @@ import {
   settleEntryType,
   type SettleSegment,
   settleSegmentOptions,
-} from './settle';
+} from './settleModel';
 import { useCreateLending } from './useCreateLending';
 
 export interface SettleDialogProps {

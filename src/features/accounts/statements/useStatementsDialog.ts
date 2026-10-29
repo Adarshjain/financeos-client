@@ -3,13 +3,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { loadAccountStatements, loadCardCycleSummary, loadStatementDetail } from '@/features/accounts/accountActions';
 import { Account } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
-
-import { loadAccountStatements, loadCardCycleSummary, loadStatementDetail } from '../actions';
 
 export function useStatementsDialog(account: Account) {
   const qc = useQueryClient();

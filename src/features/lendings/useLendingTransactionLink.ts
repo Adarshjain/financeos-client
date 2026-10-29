@@ -7,7 +7,7 @@ import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { linkLendingEntryTransaction, unlinkLendingEntryTransaction } from './actions';
+import { linkLendingEntryTransaction, unlinkLendingEntryTransaction } from './lendingActions';
 
 interface LinkOptions {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { parseReportsUrl, reportRows } from '@/features/reports/list/reportsList';
 import { loadReportsList } from '@/features/reports/list/reportsListData';
+import { parseReportsUrl, reportRows } from '@/features/reports/list/reportsListModel';
 import { ReportsScreen } from '@/features/reports/list/ReportsScreen';
 import { LoadError } from '@/features/shell/LoadError';
 import type { SearchParams } from '@/features/shell/searchParams';

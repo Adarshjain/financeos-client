@@ -6,7 +6,7 @@ import React from 'react';
 import { DateField, Select } from '@/components/ds';
 
 import { rewardsHref, type RewardsQuery } from './rewardsModel';
-import { DEFAULT_PERIOD, RANGE_PRESET_LABELS, RANGE_PRESETS, type RangePreset } from './rewardsPeriod';
+import { DEFAULT_PERIOD, RANGE_PRESET_LABELS, RANGE_PRESETS, type RangePreset } from './rewardsPeriodModel';
 
 const OPTIONS = RANGE_PRESETS.map((p) => ({ value: p, label: RANGE_PRESET_LABELS[p] }));
 

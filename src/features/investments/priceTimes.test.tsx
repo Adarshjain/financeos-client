@@ -8,7 +8,7 @@ import { holdingFigures, priceRow } from './holding/holdingModel';
 import { header } from './holdings/holdings.fixtures';
 import { heroModel } from './holdings/holdingsModel';
 import { PricesLine } from './holdings/PricesLine';
-import { priceTimeLabel } from './investmentsFormat';
+import { priceTimeLabel } from './investmentsFormatModel';
 
 pinClock();
 

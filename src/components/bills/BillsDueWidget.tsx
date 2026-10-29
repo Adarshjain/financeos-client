@@ -8,8 +8,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
-import { useBillsWidgetActions } from '@/features/bills/useBillsWidgetActions';
+import { buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardStateModel';
+import { useBillsWidgetMutations } from '@/features/bills/useBillsWidgetMutations';
 import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -41,7 +41,7 @@ export function BillsDueWidget({ accountId, highlightStatementId, className }: B
     statementId: highlightStatementId ?? searchParams?.get('bill') ?? null,
     accountId: searchParams?.get('card') ?? null,
   };
-  const { rowActions, markPaidDialog, detailsDialog } = useBillsWidgetActions();
+  const { rowActions, markPaidDialog, detailsDialog } = useBillsWidgetMutations();
 
   const today = todayInAppZone();
   const model = React.useMemo(() => buildBillsWidgetModel(bills, today), [bills, today]);

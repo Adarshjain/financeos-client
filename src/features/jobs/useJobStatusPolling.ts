@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
-import { loadJob } from '@/features/jobs/actions';
+import { loadJob } from '@/features/jobs/jobActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobStatus } from '@/lib/types';

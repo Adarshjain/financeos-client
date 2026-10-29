@@ -14,7 +14,7 @@ vi.mock('@/actions/auth', () => ({ logoutToDinero: (...a: unknown[]) => logout(.
 
 const deleteAccount = vi.fn();
 const get = vi.fn();
-vi.mock('./actions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
+vi.mock('./profileActions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
 vi.mock('./deletionSummaryActions', () => ({
   loadDeletionSummary: async () => ({ success: true, data: (await get())?.data ?? null }),
 }));

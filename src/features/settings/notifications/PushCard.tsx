@@ -9,7 +9,7 @@ import type { NotificationSettingsResponse } from '@/lib/api/types';
 import { notify } from '@/lib/notify';
 
 import { useSaveSettings } from './KindsCard';
-import { addedOn, describeBrowser } from './notificationSettings.helpers';
+import { addedOn, describeBrowser } from './notificationSettingsModel';
 import { useNotificationSettingsMutations } from './useNotificationSettings';
 import type { ThisBrowser } from './useThisBrowser';
 

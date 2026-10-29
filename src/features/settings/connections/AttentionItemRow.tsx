@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Badge, Button, Card, ListField, Text } from '@/components/ds';
 import { formatDate, formatDateTime } from '@/lib/format';
 
-import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItem.helpers';
+import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 
 interface AttentionItemRowProps {
   item: AttentionItem;

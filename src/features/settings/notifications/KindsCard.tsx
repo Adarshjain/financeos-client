@@ -9,7 +9,7 @@ import type { NotificationSettingsResponse, UpdateNotificationSettingsRequest } 
 import { notify } from '@/lib/notify';
 
 import type { KindGroup, KindRow } from './notificationKinds';
-import { isKindEnabled } from './notificationSettings.helpers';
+import { isKindEnabled } from './notificationSettingsModel';
 import { useNotificationSettingsMutations } from './useNotificationSettings';
 
 /** Saves a settings change at once, toasting a failure. Shared by every card on the page. */

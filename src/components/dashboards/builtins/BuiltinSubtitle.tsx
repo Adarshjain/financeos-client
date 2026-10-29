@@ -3,7 +3,7 @@
 // The muted one-liner under a built-in widget's title, and the lookups some
 // built-ins need for it (a single card's name).
 
-import { cardNameText } from '@/features/dashboards/builtins/subtitles';
+import { cardNameText } from '@/features/dashboards/builtins/subtitlesModel';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 export const SUBTITLE_CLASS = 'truncate text-2xs leading-4 text-slate-500 dark:text-slate-400';

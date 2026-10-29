@@ -3,7 +3,7 @@ import React from 'react';
 
 import { loadPerson, loadPersonPage } from '@/features/lendings/person/personData';
 import { parsePersonUrl } from '@/features/lendings/person/personModel';
-import { PersonView } from '@/features/lendings/person/PersonView';
+import { PersonScreen } from '@/features/lendings/person/PersonScreen';
 import { first, type SearchParams } from '@/features/shell/searchParams';
 import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
@@ -26,7 +26,7 @@ export default async function DsPersonPage({ params, searchParams }: Params & { 
     loadPersonPage(id, parsePersonUrl(query)),
   ]);
   return (
-    <PersonView
+    <PersonScreen
       cp={cp}
       ledger={ledger}
       state={state}

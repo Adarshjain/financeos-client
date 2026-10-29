@@ -7,7 +7,7 @@ import type { Transaction } from '@/lib/transaction.types';
 
 import { approveChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
-import { approvedMessage, type ClearableReason } from './reviewHelpers';
+import { approvedMessage, type ClearableReason } from './reviewModel';
 import { useBatchReview } from './useBatchReview';
 import { useUndoApprove } from './useUndoApprove';
 

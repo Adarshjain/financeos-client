@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
-import { loadBalanceSeries } from '@/lib/query/actions/accounts';
+import { loadBalanceSeries } from '@/lib/query/actions/accountActions';
 import { keys } from '@/lib/query/keys';
 
 /** One day's end-of-day balance (same sign convention as the account's `balance`). */

@@ -13,7 +13,7 @@ import { useInbox } from '@/lib/query/hooks/useInbox';
 
 import { BuiltinError } from '../BuiltinParts';
 import type { BuiltinBodyProps } from '../types';
-import { inboxItemHref, inboxWidgetRows } from './attentionRows';
+import { inboxItemHref, inboxWidgetRows } from './attentionRowsModel';
 import { AttentionSkeleton } from './AttentionSkeleton';
 
 export function AttentionBody({ className }: BuiltinBodyProps) {

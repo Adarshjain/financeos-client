@@ -4,11 +4,11 @@ import { Loader2, RotateCcw, XCircle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useJobActions } from '@/features/jobs/useJobActions';
+import { useJobMutations } from '@/features/jobs/useJobMutations';
 import type { JobResponse } from '@/lib/types';
 
 export function JobRowActions({ job }: { job: JobResponse }) {
-  const { cancel, retry, busy: loading } = useJobActions();
+  const { cancel, retry, busy: loading } = useJobMutations();
 
   if (job.status === 'PENDING' || job.status === 'RUNNING') {
     return (

@@ -3,16 +3,16 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { detailFixture, scheduleFixture } from '@/features/loans/detail/loanDetail.fixtures';
-import type { LoanDetailViewProps } from '@/features/loans/detail/LoanDetailView';
+import type { LoanDetailScreenProps } from '@/features/loans/detail/LoanDetailScreen';
 
 import DsLoanPage from './page';
 
 const loadLoanPage = vi.hoisted(() => vi.fn());
 vi.mock('@/features/loans/detail/loanDetailData', () => ({ loadLoanPage }));
 
-let viewProps: LoanDetailViewProps | undefined;
-vi.mock('@/features/loans/detail/LoanDetailView', () => ({
-  LoanDetailView: (props: LoanDetailViewProps) => {
+let viewProps: LoanDetailScreenProps | undefined;
+vi.mock('@/features/loans/detail/LoanDetailScreen', () => ({
+  LoanDetailScreen: (props: LoanDetailScreenProps) => {
     viewProps = props;
     return <p>loan view</p>;
   },

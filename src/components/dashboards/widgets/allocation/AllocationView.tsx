@@ -15,7 +15,7 @@ import { useElementSize } from '@/lib/charts/useElementSize';
 import type { ChartData } from '@/lib/reports.types';
 
 import type { TemplateViewProps } from '../../builtins/registry';
-import { positionsValueRequest, rupees, WidgetEmpty } from '../investmentsLoansKit/kit';
+import { positionsValueRequest, rupees, WidgetEmpty } from '../investments-loans-kit/kit';
 import { type AllocationSlice, allocationSlices, formatShare, sliceFilter } from './allocation';
 
 /** Below this width the ₹ figures go compact (₹12.5L). */

@@ -1,4 +1,4 @@
-import { billStatusLabel } from '@/features/bills/bills.helpers';
+import { billStatusLabel } from '@/features/bills/billsModel';
 import type { CardBillResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate,formatMoney } from '@/lib/format';

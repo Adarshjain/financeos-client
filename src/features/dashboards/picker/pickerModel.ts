@@ -2,11 +2,11 @@
 // width a new widget would start at.
 
 import { WIDGET_GRID_WIDTHS, type WidgetGridWidth, widgetGridWidthFromColumns } from '@/components/ds';
+import { stepForMinimum, WIDTH_LABELS } from '@/features/dashboards/layout/widgetLayoutModel';
 import { DASHBOARD_GRID_COLUMNS, HALF_WIDTH, newBuiltinWidth } from '@/lib/dashboards.helpers';
 import type { BuiltinParamResponse, BuiltinWidgetResponse } from '@/lib/dashboards.types';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
-import { stepForMinimum, WIDTH_LABELS } from '../layout/widgetLayout';
 import { paramLabel } from '../params/paramsModel';
 
 /** The width step a new built-in starts at: full when its minimum is the whole grid, a quarter when it allows one, else half (or its minimum). */

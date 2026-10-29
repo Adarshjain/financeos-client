@@ -13,8 +13,8 @@ import { JobErrorBody } from './JobErrorBody';
 const cancel = vi.fn();
 const retry = vi.fn();
 let busy = false;
-vi.mock('@/features/jobs/useJobActions', () => ({
-  useJobActions: () => ({ cancel, retry, busy }),
+vi.mock('@/features/jobs/useJobMutations', () => ({
+  useJobMutations: () => ({ cancel, retry, busy }),
 }));
 
 const job = (over: Partial<JobResponse> = {}): JobResponse =>

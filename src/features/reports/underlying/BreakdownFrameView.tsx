@@ -24,9 +24,9 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { SortClause } from '@/lib/reports.types';
 
-import { type BreakdownRowHandlers, rowClickHandler } from './breakdownRows';
-import { cellText, formatAmount, mainIndexOf, UNDERLYING_PAGE_SIZE } from './underlying.helpers';
+import { type BreakdownRowHandlers, rowClickHandler } from './breakdownRowsModel';
 import type { BreakdownSectionData, BreakdownStep } from './underlying.types';
+import { cellText, formatAmount, mainIndexOf, UNDERLYING_PAGE_SIZE } from './underlyingModel';
 import { useBreakdownSection, useRowBreakdown } from './useRowBreakdown';
 
 export interface BreakdownFrameViewProps extends BreakdownRowHandlers {

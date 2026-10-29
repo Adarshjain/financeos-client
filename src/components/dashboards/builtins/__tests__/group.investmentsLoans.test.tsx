@@ -18,22 +18,22 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('../../widgets/portfolio_snapshot/PortfolioSnapshotWidget', () => ({
+vi.mock('../../widgets/portfolio-snapshot/PortfolioSnapshotWidget', () => ({
   PortfolioSnapshotWidget: () => <div data-testid="body" data-which="portfolio" />,
 }));
-vi.mock('../../widgets/top_movers/TopMoversWidget', () => ({
+vi.mock('../../widgets/top-movers/TopMoversWidget', () => ({
   TopMoversWidget: ({ n }: { n: number }) => <div data-testid="body" data-which="movers" data-n={n} />,
 }));
-vi.mock('../../widgets/tax_harvest/TaxHarvestWidget', () => ({
+vi.mock('../../widgets/tax-harvest/TaxHarvestWidget', () => ({
   TaxHarvestWidget: () => <div data-testid="body" data-which="tax" />,
 }));
-vi.mock('../../widgets/lending_balances/LendingBalancesWidget', () => ({
+vi.mock('../../widgets/lending-balances/LendingBalancesWidget', () => ({
   LendingBalancesWidget: () => <div data-testid="body" data-which="lending" />,
 }));
 vi.mock('../../widgets/shortcuts/ShortcutsWidget', () => ({
   ShortcutsWidget: ({ ids }: { ids: string[] }) => <div data-testid="body" data-which="shortcuts" data-ids={ids.join(',')} />,
 }));
-vi.mock('../../widgets/loan_payoff/LoanPayoffWidget', () => ({
+vi.mock('../../widgets/loan-payoff/LoanPayoffWidget', () => ({
   LoanPayoffWidget: ({ loanId }: { loanId: string | null }) => <div data-testid="body" data-which="loan" data-loan={loanId ?? 'all'} />,
   LoanNameSubtitle: ({ loanId }: { loanId: string }) => <p>{`loan ${loanId}`}</p>,
 }));

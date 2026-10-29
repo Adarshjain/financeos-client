@@ -31,7 +31,7 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
-import { TaxHarvestWidget } from '@/components/dashboards/widgets/tax_harvest/TaxHarvestWidget';
+import { TaxHarvestWidget } from '@/components/dashboards/widgets/tax-harvest/TaxHarvestWidget';
 import { api } from '@/lib/api/client';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

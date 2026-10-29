@@ -16,7 +16,7 @@ import {
   obligationHref,
   type ObligationItem,
   obligationTitle,
-} from '@/features/upcoming/obligations';
+} from '@/features/upcoming/obligationsModel';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 

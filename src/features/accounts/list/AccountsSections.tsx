@@ -28,7 +28,7 @@ import type {
   BrokerRow,
   CardBaseRow,
   WalletRow,
-} from './accountsList';
+} from './accountsListModel';
 
 const ACCOUNTS_HREF = appHref('/accounts');
 

@@ -8,8 +8,8 @@ import type { Instrument, PriceHistoryPoint } from '@/lib/types';
 
 import { fetchHolding, fetchInstrument, fetchInstrumentCorporateActions, fetchPriceHistory, fetchSellEstimate } from '../investmentsServerApi';
 import type { CorporateActionRowModel, DividendRowModel, HoldingSection, TradeRow } from './holdingModel';
-import { corporateActionsPage, dividendsSection, tradesSection } from './holdingSections';
-import { type PriceSplit, splitsOf } from './priceChart';
+import { corporateActionsPage, dividendsSection, tradesSection } from './holdingSectionsModel';
+import { type PriceSplit, splitsOf } from './priceChartModel';
 
 export interface HoldingPageData {
   holding: HoldingDetail;

@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/format';
+import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import type { SortClause } from '@/lib/reports.types';
 

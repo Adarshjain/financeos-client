@@ -3,7 +3,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { entriesFixture, ledgerFixture, personFixture } from '@/features/lendings/person/personModel.fixtures';
-import type { PersonViewProps } from '@/features/lendings/person/PersonView';
+import type { PersonScreenProps } from '@/features/lendings/person/PersonScreen';
 
 import DsPersonPage from './page';
 
@@ -11,9 +11,9 @@ const loadPersonPage = vi.hoisted(() => vi.fn());
 vi.mock('@/features/lendings/person/personData', () => ({ loadPersonPage }));
 vi.mock('@/lib/auth', () => ({ requireAuth: async () => ({ displayName: 'Adarsh' }) }));
 
-let viewProps: PersonViewProps | undefined;
-vi.mock('@/features/lendings/person/PersonView', () => ({
-  PersonView: (props: PersonViewProps) => {
+let viewProps: PersonScreenProps | undefined;
+vi.mock('@/features/lendings/person/PersonScreen', () => ({
+  PersonScreen: (props: PersonScreenProps) => {
     viewProps = props;
     return <p>person view</p>;
   },

@@ -1,7 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
-import { InboxPage } from '@/features/inbox/InboxPage';
+import { InboxScreen } from '@/features/inbox/InboxScreen';
 import { parseInboxUrl } from '@/features/inbox/inboxUrl';
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
@@ -28,7 +28,7 @@ export default async function DsInboxPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <InboxPage highlightKey={highlightKey} />
+      <InboxScreen highlightKey={highlightKey} />
     </HydrationBoundary>
   );
 }

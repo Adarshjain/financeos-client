@@ -2,11 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { AccountRequest, CloseAccountRequest } from '@/lib/account.types';
-import { unwrapAction } from '@/lib/actionResult';
-import { invalidateMoneyQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-
 import {
   closeAccount,
   createAccountWithIdentifiers,
@@ -15,7 +10,11 @@ import {
   previewGmailCleanup,
   reopenAccount,
   updateAccount,
-} from '../actions';
+} from '@/features/accounts/accountActions';
+import { AccountRequest, CloseAccountRequest } from '@/lib/account.types';
+import { unwrapAction } from '@/lib/actionResult';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
 
 /**
  * Every account-lifecycle mutation the account form (and its danger-zone /

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { deleteStatement, loadStatementDeletionPreview } from '@/features/accounts/accountActions';
 import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
 import {
@@ -10,8 +11,6 @@ import {
   invalidateRewardQueries,
 } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
-
-import { deleteStatement, loadStatementDeletionPreview } from '../actions';
 
 export type StatementDeletionPreview = components['schemas']['StatementDeletionPreviewResponse'];
 export type StatementDeletionResult = components['schemas']['StatementDeletionResponse'];

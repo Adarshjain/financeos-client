@@ -7,7 +7,7 @@ import {
   loadOutstandingCounterparties,
   searchCounterparties,
   suggestCounterparty,
-} from '@/lib/query/actions/counterparties';
+} from '@/lib/query/actions/counterpartyActions';
 import { keys } from '@/lib/query/keys';
 
 /** One short page is all a picker needs: the search box narrows the rest. */

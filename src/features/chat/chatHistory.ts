@@ -1,4 +1,4 @@
-import { relativeDay } from '@/features/accounts/list/accountsList';
+import { relativeDay } from '@/features/accounts/list/accountsListModel';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatCount, formatDate, formatTime } from '@/lib/format';
 

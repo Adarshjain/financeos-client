@@ -24,8 +24,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import type { BuilderState } from '@/features/reports/builder/builderReducer';
-import { buildRunRequest, validationErrors } from '@/features/reports/builder/serialize';
+import type { BuilderState } from '@/features/reports/builder/builderReducerModel';
+import { buildRunRequest, validationErrors } from '@/features/reports/builder/serializeModel';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';

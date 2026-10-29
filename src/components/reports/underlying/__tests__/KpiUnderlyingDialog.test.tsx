@@ -19,8 +19,8 @@ vi.mock('../UnderlyingTransactionDialog', () => ({
 
 import { toast } from 'sonner';
 
-import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
+import { formatAmount } from '@/features/reports/underlying/underlyingModel';
 import { api, ApiError } from '@/lib/api/client';
 import type { KpiData, RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

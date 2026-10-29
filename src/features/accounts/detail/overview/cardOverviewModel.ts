@@ -1,4 +1,5 @@
-import { deriveBillCardState } from '@/features/bills/billCardState';
+import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
+import { deriveBillCardState } from '@/features/bills/billCardStateModel';
 import {
   type Cardholder,
   type CreditCard,
@@ -12,8 +13,7 @@ import type { Transaction } from '@/lib/transaction.types';
 import { utilisationTone } from '@/lib/utilisation';
 
 import { paidTiming } from '../billsHistoryModel';
-import { currentMilestones } from '../milestones';
-import { daysBetween } from './dates';
+import { daysBetween } from './overviewDatesModel';
 
 export type MeterTone = 'brand' | 'warning' | 'danger';
 export type TextTone = 'ink-3' | 'warning' | 'danger';

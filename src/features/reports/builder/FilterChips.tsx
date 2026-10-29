@@ -8,13 +8,13 @@ import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
 import { type DynamicOptions, fieldByName, filterableFields, operatorsForField, valueKind } from './catalog';
 import { ConfigSection } from './ConfigSection';
-import { defaultFilterClause } from './filterClause';
-import { describeFilter } from './filterLabel';
+import { defaultFilterClause } from './filterClauseModel';
+import { describeFilter } from './filterLabelModel';
 import { FilterValueEditor } from './FilterValueEditor';
-import { filterBlockedReason } from './guards';
-import { humanizeToken } from './labels';
+import { filterBlockedReason } from './guardsModel';
+import { humanizeToken } from './labelsModel';
 import { FieldError, PAIR, PickSelect } from './pickers';
-import { isFilterComplete } from './serialize';
+import { isFilterComplete } from './serializeModel';
 
 /** One filter's editor: field, operator, then the value editor that pair needs. */
 function FilterForm({

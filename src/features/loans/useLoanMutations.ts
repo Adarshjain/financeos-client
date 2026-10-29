@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatch';
+import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatchModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -23,7 +23,7 @@ import {
   deleteLoanEvent,
   deleteLoanPayment,
   reopenLoan as reopenLoanAction,
-} from './actions';
+} from './loanActions';
 
 export interface LoanMutationOptions {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */

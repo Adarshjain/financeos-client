@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
-import { loadReportsList } from '@/lib/query/actions/reports';
+import { loadReportsList } from '@/lib/query/actions/reportActions';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 

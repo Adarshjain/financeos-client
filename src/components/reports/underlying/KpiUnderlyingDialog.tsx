@@ -33,18 +33,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import type {
+  KpiUnderlyingResponse,
+  UnderlyingPeriod,
+  UnderlyingSource,
+} from '@/features/reports/underlying/underlying.types';
 import {
   formatKpiValue,
   saveBlob,
   UNDERLYING_PAGE_SIZE,
   underlyingCsvFilename,
   underlyingSubtitleKey,
-} from '@/features/reports/underlying/underlying.helpers';
-import type {
-  KpiUnderlyingResponse,
-  UnderlyingPeriod,
-  UnderlyingSource,
-} from '@/features/reports/underlying/underlying.types';
+} from '@/features/reports/underlying/underlyingModel';
 import { useBreakdownStack } from '@/features/reports/underlying/useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from '@/features/reports/underlying/useKpiUnderlying';
 import { getErrorMessage } from '@/lib/api/errorMessage';

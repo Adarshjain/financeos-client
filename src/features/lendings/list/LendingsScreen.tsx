@@ -6,8 +6,8 @@ import { LoadError } from '@/features/shell/LoadError';
 import type { Loaded } from '@/features/shell/loadHelpers';
 import { ListTransition } from '@/lib/viewTransition';
 
-import { lendingRow, type LendingsUrlState, lendingTiles, type TransferRow, type UnrecordedRow } from './lendingsList';
 import { LendingsListCard } from './LendingsListCard';
+import { lendingRow, type LendingsUrlState, lendingTiles, type TransferRow, type UnrecordedRow } from './lendingsListModel';
 import { UnlinkedTransfersCard } from './UnlinkedTransfersCard';
 
 const TILE_LABELS = ['Owed to you', 'You owe', 'Due this month', 'Expected back'];

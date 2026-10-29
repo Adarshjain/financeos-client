@@ -10,7 +10,7 @@ import {
   describeAttentionItem,
   formatDateTime,
   gmailMessageUrl,
-} from '@/features/settings/connections/attentionItem.helpers';
+} from '@/features/settings/connections/attentionItemModel';
 import { cn, formatDate } from '@/lib/utils';
 
 interface AttentionItemRowProps {

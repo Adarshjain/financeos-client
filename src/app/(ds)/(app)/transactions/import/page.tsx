@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
-import { buildJobsQueryParams } from '@/features/jobs/jobUtils';
+import { buildJobsQueryParams } from '@/features/jobs/jobsFilterModel';
 import { guardSession } from '@/features/shell/loadHelpers';
 import { clampPage } from '@/features/shell/pagination';
 import { first, type SearchParams } from '@/features/shell/searchParams';

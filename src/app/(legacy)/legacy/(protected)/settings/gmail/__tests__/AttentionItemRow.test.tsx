@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { AttentionItem } from '@/features/settings/connections/attentionItem.helpers';
+import type { AttentionItem } from '@/features/settings/connections/attentionItemModel';
 
 import { AttentionItemRow } from '../AttentionItemRow';
 

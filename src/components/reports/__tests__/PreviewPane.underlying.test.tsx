@@ -29,7 +29,7 @@ vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
 }));
 
 import { PreviewPane } from '@/components/reports/PreviewPane';
-import { type BuilderState, initialBuilderState } from '@/features/reports/builder/builderReducer';
+import { type BuilderState, initialBuilderState } from '@/features/reports/builder/builderReducerModel';
 import { api } from '@/lib/api/client';
 import type { DatasourceCatalog, KpiData, TableData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

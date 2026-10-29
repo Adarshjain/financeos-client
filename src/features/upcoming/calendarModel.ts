@@ -1,6 +1,6 @@
 import { formatCount, formatDate, formatMoney } from '@/lib/format';
 
-import { type ObligationItem, obligationTitle, sumAmounts } from './obligations';
+import { type ObligationItem, obligationTitle, sumAmounts } from './obligationsModel';
 
 /** The calendar shows the current month and this many after it (twelve months fetched in all). */
 export const CALENDAR_MAX_OFFSET = 11;

@@ -2,19 +2,19 @@ import { render, screen } from '@testing-library/react';
 import { isValidElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('./portfolio_snapshot/PortfolioSnapshotBody', () => ({
+vi.mock('./portfolio-snapshot/PortfolioSnapshotBody', () => ({
   PortfolioSnapshotBody: () => <div data-testid="body" data-which="portfolio" />,
   PortfolioSnapshotSkeleton: () => <div data-testid="skeleton" data-which="portfolio" />,
 }));
-vi.mock('./top_movers/TopMoversBody', () => ({
+vi.mock('./top-movers/TopMoversBody', () => ({
   TopMoversBody: ({ n }: { n: number }) => <div data-testid="body" data-which="movers" data-n={n} />,
   TopMoversSkeleton: () => <div data-testid="skeleton" />,
 }));
-vi.mock('./tax_harvest/TaxHarvestBody', () => ({
+vi.mock('./tax-harvest/TaxHarvestBody', () => ({
   TaxHarvestBody: () => <div data-testid="body" data-which="tax" />,
   TaxHarvestSkeleton: () => <div data-testid="skeleton" />,
 }));
-vi.mock('./lending_balances/LendingBalancesBody', () => ({
+vi.mock('./lending-balances/LendingBalancesBody', () => ({
   LendingBalancesBody: () => <div data-testid="body" data-which="lending" />,
   LendingBalancesSkeleton: () => <div data-testid="skeleton" />,
 }));
@@ -22,7 +22,7 @@ vi.mock('./shortcuts/ShortcutsBody', () => ({
   ShortcutsBody: ({ ids }: { ids: string[] }) => <div data-testid="body" data-which="shortcuts" data-ids={ids.join(',')} />,
   ShortcutsSkeleton: () => <div data-testid="skeleton" />,
 }));
-vi.mock('./loan_payoff/LoanPayoffBody', () => ({
+vi.mock('./loan-payoff/LoanPayoffBody', () => ({
   LoanPayoffBody: ({ loanId }: { loanId: string | null }) => <div data-testid="body" data-which="loan" data-loan={loanId ?? 'all'} />,
   LoanPayoffSkeleton: () => <div data-testid="skeleton" />,
   LoanNameSubtitle: ({ loanId }: { loanId: string }) => <>{`loan ${loanId}`}</>,

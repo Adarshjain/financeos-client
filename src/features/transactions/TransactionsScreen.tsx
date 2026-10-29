@@ -10,18 +10,18 @@ import { replaceUrl } from '@/lib/urlState';
 import { isApprovable } from './bulk/bulkModel';
 import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
 import { useBulkSelection } from './bulk/useBulkSelection';
-import { useTransactionActions } from './bulk/useTransactionActions';
+import { useBulkTransactionMutations } from './bulk/useBulkTransactionMutations';
 import { CategoryDialog } from './category/CategoryDialog';
 import { TransactionDetailPanel } from './detail/TransactionDetailPanel';
 import { useAddTransaction } from './form/AddTransactionProvider';
 import { TransactionFormDialog } from './form/TransactionFormDialog';
 import { defaultAccountId } from './form/transactionFormModel';
 import { LinkTransactionsDialog } from './link/LinkTransactionsDialog';
+import { TransactionsListPane, type TransactionsListPaneProps } from './list/TransactionsListPane';
 import { parseTxn, transactionsUrl } from './list/transactionsUrl';
-import { TransactionsView, type TransactionsViewProps } from './list/TransactionsView';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
 
-export interface TransactionsScreenProps extends Omit<TransactionsViewProps, 'onAdd' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
+export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
 }
@@ -82,7 +82,7 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
   // Another page, filter, sort or page size starts with nothing selected.
   const selection = useBulkSelection(transactionsUrl(view.query), pageIds);
   const selected = selection.ids.map((id) => byId.get(id)).filter((t): t is Transaction => t !== undefined);
-  const actions = useTransactionActions({
+  const actions = useBulkTransactionMutations({
     accounts: view.accounts,
     onDone: ({ kind, ids, fromBar }) => {
       if (fromBar) selection.clear();
@@ -97,7 +97,7 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
 
   return (
     <>
-      <TransactionsView
+      <TransactionsListPane
         {...view}
         onAdd={() => addTransaction.open({ defaultAccountId: defaultAccountId(view.query.accounts) })}
         onOpenDetail={setDetailId}

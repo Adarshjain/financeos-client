@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
-import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/format';
+import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
 import { type Loaded, loaded, signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import { ApiError } from '@/lib/api/client';
 import { reportsApi } from '@/lib/apiClient';

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Button, Checkbox, DateField, Dialog, Reveal, Select, showToast, Text, TextField } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
-import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
+import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutations';
 import { BreakdownContent } from '@/features/rewards/which-card/WhichCardBreakdownDialog';
 import {
   ANY,

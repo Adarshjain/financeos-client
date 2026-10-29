@@ -8,7 +8,7 @@
 import React from 'react';
 
 import { showToast } from '@/components/ds';
-import { workingCatalog } from '@/features/reports/builder/editorState';
+import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
 import { categoryEntries, type UnderlyingTarget, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { widgetTitle } from '@/lib/dashboards.helpers';

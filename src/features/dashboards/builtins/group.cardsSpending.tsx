@@ -13,35 +13,35 @@ import { heatmapMonths } from '@/components/organisms/Chart/heatmap.model';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { AccountTileBody } from './account_tile/AccountTileBody';
-import { AccountTileSkeleton } from './account_tile/AccountTileSkeleton';
+import { AccountTileBody } from './account-tile/AccountTileBody';
+import { AccountTileSkeleton } from './account-tile/AccountTileSkeleton';
 import { AccountTypeSubtitle, CardNameSubtitle } from './AccountSubtitles';
 import { AttentionBody } from './attention/AttentionBody';
 import { AttentionSkeleton } from './attention/AttentionSkeleton';
 import { AttentionSubtitle } from './attention/AttentionSubtitle';
-import { BillsDueBody } from './bills_due/BillsDueBody';
-import { BillsDueSkeleton } from './bills_due/BillsDueSkeleton';
-import { CapHeadroomSkeleton } from './cap_headroom/CapHeadroomSkeleton';
-import { CapHeadroomView } from './cap_headroom/CapHeadroomView';
-import { CardUtilisationBody } from './card_utilisation/CardUtilisationBody';
-import { CardUtilisationSkeleton } from './card_utilisation/CardUtilisationSkeleton';
-import { EmergencyFundBody } from './emergency_fund/EmergencyFundBody';
-import { EmergencyFundSkeleton } from './emergency_fund/EmergencyFundSkeleton';
-import { MilestoneProgressSkeleton } from './milestone_progress/MilestoneProgressSkeleton';
-import { MilestoneProgressView } from './milestone_progress/MilestoneProgressView';
-import { NetWorthSkeleton } from './net_worth/NetWorthSkeleton';
-import { NetWorthView } from './net_worth/NetWorthView';
-import { RewardsEarnedSkeleton } from './rewards_earned/RewardsEarnedSkeleton';
-import { RewardsEarnedView } from './rewards_earned/RewardsEarnedView';
-import { SpendHeatmapSkeleton } from './spend_heatmap/SpendHeatmapSkeleton';
-import { SpendHeatmapView } from './spend_heatmap/SpendHeatmapView';
+import { BillsDueBody } from './bills-due/BillsDueBody';
+import { BillsDueSkeleton } from './bills-due/BillsDueSkeleton';
+import { CapHeadroomSkeleton } from './cap-headroom/CapHeadroomSkeleton';
+import { CapHeadroomView } from './cap-headroom/CapHeadroomView';
+import { CardUtilisationBody } from './card-utilisation/CardUtilisationBody';
+import { CardUtilisationSkeleton } from './card-utilisation/CardUtilisationSkeleton';
+import { EmergencyFundBody } from './emergency-fund/EmergencyFundBody';
+import { EmergencyFundSkeleton } from './emergency-fund/EmergencyFundSkeleton';
+import { MilestoneProgressSkeleton } from './milestone-progress/MilestoneProgressSkeleton';
+import { MilestoneProgressView } from './milestone-progress/MilestoneProgressView';
+import { NetWorthSkeleton } from './net-worth/NetWorthSkeleton';
+import { NetWorthView } from './net-worth/NetWorthView';
+import { RewardsEarnedSkeleton } from './rewards-earned/RewardsEarnedSkeleton';
+import { RewardsEarnedView } from './rewards-earned/RewardsEarnedView';
+import { SpendHeatmapSkeleton } from './spend-heatmap/SpendHeatmapSkeleton';
+import { SpendHeatmapView } from './spend-heatmap/SpendHeatmapView';
 import {
   ALL_CARDS_SUBTITLE,
   monthsSubtitle,
   NET_WORTH_SUBTITLE,
   stringParam,
   upcomingSubtitle,
-} from './subtitles';
+} from './subtitlesModel';
 import type { DineroBuiltin } from './types';
 import { UpcomingSkeleton } from './upcoming/UpcomingSkeleton';
 import { UpcomingView } from './upcoming/UpcomingView';

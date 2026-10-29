@@ -6,7 +6,7 @@ import { createDomainAction } from '@/lib/domainApi';
 import type { CreateLendingRequest, LendingResponse } from '@/lib/lending.types';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanPaymentResponse, LoanResponse } from '@/lib/loan.types';
 
-import type { DividendRow, UNRESOLVED_RECEIPTS } from './dividendLinkHelpers';
+import type { DividendRow, UNRESOLVED_RECEIPTS } from './dividendLinkModel';
 
 // EPF withdrawal
 

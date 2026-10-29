@@ -3,12 +3,12 @@
 import React from 'react';
 
 import { Button } from '@/components/ds';
-import { useJobActions } from '@/features/jobs/useJobActions';
+import { useJobMutations } from '@/features/jobs/useJobMutations';
 import type { JobResponse } from '@/lib/types';
 
 /** Cancel on an active job (disabled once cancelling), Retry on a failed or cancelled one. */
 export function JobActions({ job, onRetried }: { job: JobResponse; onRetried?: (job: { id: string }) => void }) {
-  const { cancel, retry, busy } = useJobActions({ onRetried });
+  const { cancel, retry, busy } = useJobMutations({ onRetried });
 
   if (job.status === 'PENDING' || job.status === 'RUNNING') {
     return (

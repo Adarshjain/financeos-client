@@ -8,14 +8,14 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { loadUnderlying } from '@/features/reports/actions';
+import { loadUnderlying } from '@/features/reports/reportActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { api } from '@/lib/api/client'; // binary CSV download: a server action would double the transfer
 import { keys } from '@/lib/query/keys';
 import type { SortClause } from '@/lib/reports.types';
 
-import { sortParam, sourceKey } from './underlying.helpers';
 import type { KpiUnderlyingResponse, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
+import { sortParam, sourceKey } from './underlyingModel';
 
 export interface UnderlyingQuery {
   period: UnderlyingPeriod;

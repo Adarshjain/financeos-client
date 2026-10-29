@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { billCardLabel } from '@/features/bills/bills.helpers';
+import { billCardLabel } from '@/features/bills/billsModel';
 import type { CardBillResponse, MarkBillPaidRequest } from '@/lib/api/types';
 import { formatNullableMoney, sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
 

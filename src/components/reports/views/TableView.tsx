@@ -18,8 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { groupLabel, groupTotal } from '@/features/reports/underlying/underlying.helpers';
-import { formatCell } from '@/features/reports/view/cells';
+import { groupLabel, groupTotal } from '@/features/reports/underlying/underlyingModel';
+import { formatCell } from '@/features/reports/view/cellsModel';
 import type {
   SortClause,
   TableColumn,

@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { loadJobs } from '@/features/jobs/actions';
+import { loadJobs } from '@/features/jobs/jobActions';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';

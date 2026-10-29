@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 
 import { Button, Card, Icon, Text, useConcealed } from '@/components/ds';
-import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabels';
+import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabelsModel';
 import { appHref } from '@/features/shell/routes';
 import { formatDate, formatMoney, formatTime } from '@/lib/format';
 import type { SyncMessageResult } from '@/lib/types';

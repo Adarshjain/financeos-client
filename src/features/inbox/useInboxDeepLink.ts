@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { InboxItemResponse } from '@/lib/api/types';
 
-import { inboxRowId } from './inbox.helpers';
+import { inboxRowId } from './inboxModel';
 
 /**
  * Resolve the ?item= deep link once, against the first loaded list: scroll to the row when it is

@@ -5,7 +5,7 @@ import React from 'react';
 import { DateField, ListRow, Radio, Select, Skeleton, Text } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
 import { differenceWords } from '@/features/loans/detail/payModel';
-import { daysBetween } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormatModel';
 import { amountExpressionProps, amountExpressionValue } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate, formatMoney } from '@/lib/format';

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { Card, Checkbox, Dialog, ListRow } from '@/components/ds';
 
-import { approveTitle, type ClearableReason, countReasons } from './reviewHelpers';
+import { approveTitle, type ClearableReason, countReasons } from './reviewModel';
 import { ReviewSummaryDialog } from './ReviewSummaryDialog';
 import { type ReviewTxn, useApproveTransactions } from './useApproveTransactions';
 

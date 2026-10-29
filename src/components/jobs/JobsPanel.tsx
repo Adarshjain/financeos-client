@@ -8,7 +8,7 @@ import { JobRowActions } from '@/components/jobs/JobRowActions';
 import { JobStatusPill } from '@/components/jobs/JobStatusPill';
 import { JobResultDetails } from '@/components/jobs/results';
 import { Button } from '@/components/ui/button';
-import { formatDuration, getJobTypeLabel } from '@/features/jobs/jobUtils';
+import { formatDuration, getJobTypeLabel } from '@/features/jobs/jobsFilterModel';
 import { useJobsListPolling } from '@/features/jobs/useJobsListPolling';
 import { legacyHref } from '@/features/shell/routes';
 import type { JobType } from '@/lib/types';

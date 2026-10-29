@@ -17,7 +17,7 @@ const actions = vi.hoisted(() => ({
   reopenLoan: vi.fn(),
   deleteLoan: vi.fn(),
 }));
-vi.mock('./actions', () => actions);
+vi.mock('./loanActions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 

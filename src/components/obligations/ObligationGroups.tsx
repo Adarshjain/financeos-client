@@ -1,6 +1,6 @@
 import { AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 
-import { bucketObligations, type ObligationItem, sumAmounts } from '@/features/upcoming/obligations';
+import { bucketObligations, type ObligationItem, sumAmounts } from '@/features/upcoming/obligationsModel';
 import { formatMoney } from '@/lib/utils';
 
 import { ObligationRow } from './ObligationRow';

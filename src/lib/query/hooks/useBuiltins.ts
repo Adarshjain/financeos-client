@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { BuiltinWidgetResponse } from '@/lib/dashboards.types';
-import { loadBuiltins } from '@/lib/query/actions/dashboards';
+import { loadBuiltins } from '@/lib/query/actions/dashboardActions';
 import { keys } from '@/lib/query/keys';
 
 /**

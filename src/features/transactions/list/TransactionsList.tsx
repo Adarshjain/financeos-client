@@ -6,8 +6,8 @@ import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
 import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
-import { activeFilterWords } from './filterOptions';
-import { dayHeader, monthBand, type TransactionListRow } from './transactionRows';
+import { activeFilterWords } from './filterOptionsModel';
+import { dayHeader, monthBand, type TransactionListRow } from './transactionRowsModel';
 import { clearedQuery, isUnfiltered, type SortId, SORTS, TRANSACTIONS_SIZE_OPTIONS, type TransactionsQuery } from './transactionsUrl';
 
 type SortState = { id: string; desc: boolean } | null;

@@ -13,14 +13,14 @@ import { createElement } from 'react';
 import { widgetParams } from '@/lib/dashboards.helpers';
 
 import { AllocationSkeleton, AllocationView } from './allocation/AllocationView';
-import { LendingBalancesBody, LendingBalancesSkeleton } from './lending_balances/LendingBalancesBody';
-import { LoanNameSubtitle, LoanPayoffBody, LoanPayoffSkeleton } from './loan_payoff/LoanPayoffBody';
-import { PortfolioSnapshotBody, PortfolioSnapshotSkeleton } from './portfolio_snapshot/PortfolioSnapshotBody';
+import { LendingBalancesBody, LendingBalancesSkeleton } from './lending-balances/LendingBalancesBody';
+import { LoanNameSubtitle, LoanPayoffBody, LoanPayoffSkeleton } from './loan-payoff/LoanPayoffBody';
+import { PortfolioSnapshotBody, PortfolioSnapshotSkeleton } from './portfolio-snapshot/PortfolioSnapshotBody';
 import { ShortcutsBody, ShortcutsSkeleton } from './shortcuts/ShortcutsBody';
 import { shortcutIds } from './shortcuts/shortcutsParams';
-import { TaxHarvestBody, TaxHarvestSkeleton } from './tax_harvest/TaxHarvestBody';
-import { moversCount } from './top_movers/topMovers';
-import { TopMoversBody, TopMoversSkeleton } from './top_movers/TopMoversBody';
+import { TaxHarvestBody, TaxHarvestSkeleton } from './tax-harvest/TaxHarvestBody';
+import { TopMoversBody, TopMoversSkeleton } from './top-movers/TopMoversBody';
+import { moversCount } from './top-movers/topMoversModel';
 import type { BuiltinBodyProps, DineroBuiltin } from './types';
 
 export const INVESTMENTS_LOANS_BUILTINS: Readonly<Record<string, DineroBuiltin>> = {

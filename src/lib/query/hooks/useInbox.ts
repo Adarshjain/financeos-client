@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
-import { loadInbox, loadInboxSummary } from '@/lib/query/actions/inbox';
+import { loadInbox, loadInboxSummary } from '@/lib/query/actions/inboxActions';
 import { keys } from '@/lib/query/keys';
 
 /**

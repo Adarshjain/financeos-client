@@ -7,7 +7,7 @@ import { ConfirmDialog, showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument } from '@/lib/types';
 
-import { describeOverriddenFields } from './instrumentEdit';
+import { describeOverriddenFields } from './instrumentEditModel';
 import { useResetInstrumentOverrides } from './useInstrumentEdit';
 
 export interface ResetInstrumentDialogProps {

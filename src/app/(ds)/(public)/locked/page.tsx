@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
-import { parseLockedUrl } from '@/features/appLock/lockedUrl';
-import { LockScreen } from '@/features/appLock/LockScreen';
+import { parseLockedUrl } from '@/features/app-lock/lockedUrl';
+import { LockScreen } from '@/features/app-lock/LockScreen';
 import type { SearchParams } from '@/features/shell/searchParams';
 import { ApiError, appLockApi } from '@/lib/apiClient';
 import { redirectToSignIn } from '@/lib/auth';

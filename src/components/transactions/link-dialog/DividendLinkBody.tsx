@@ -3,7 +3,7 @@
 import { ReceiptStatusBadge } from '@/app/(legacy)/legacy/(protected)/investments/dividend-receipts/ReceiptStatusBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { expectedNet } from '@/features/transactions/link/dividendLinkHelpers';
+import { expectedNet } from '@/features/transactions/link/dividendLinkModel';
 import type { UseDividendLinkResult } from '@/features/transactions/link/useDividendLink';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';

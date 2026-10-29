@@ -12,6 +12,7 @@ import {
   TextArea,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
+import type { PickerSummaryLike } from '@/features/transactions/pickerModel';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';
@@ -28,8 +29,7 @@ import {
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
 
-import type { PickerSummaryLike } from '../../transactions/pickerModel';
-import type { EntryChange } from './usePersonActions';
+import type { EntryChange } from './usePersonMutations';
 
 const FORM_ID = 'edit-entry-form';
 

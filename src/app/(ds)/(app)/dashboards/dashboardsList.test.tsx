@@ -9,7 +9,7 @@ vi.mock('@/features/dashboards/list/DashboardsScreen', () => ({
   DashboardsListSkeleton: () => <div data-testid="skeleton" />,
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboards', useSearchParams: () => new URLSearchParams() }));
-vi.mock('@/features/notifications/useNotificationsAction', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
+vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 

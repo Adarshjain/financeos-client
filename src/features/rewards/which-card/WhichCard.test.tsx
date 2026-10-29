@@ -8,7 +8,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { WhichCard } from './WhichCard';
 
 const recommend = vi.fn();
-vi.mock('@/features/rewards/actions', () => ({ recommendRewardCards: (...a: unknown[]) => recommend(...a) }));
+vi.mock('@/features/rewards/rewardActions', () => ({ recommendRewardCards: (...a: unknown[]) => recommend(...a) }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),

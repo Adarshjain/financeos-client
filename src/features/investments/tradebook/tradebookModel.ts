@@ -1,4 +1,5 @@
-import { fyStartYear } from '@/features/loans/detail/financialYear';
+import { fyLabel } from '@/features/investments/investmentsFormatModel';
+import { fyStartYear } from '@/features/loans/detail/financialYearModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
@@ -7,8 +8,6 @@ import { formatDate, formatDateTime, formatMoney, formatQuantity } from '@/lib/f
 import type { TradesQuery } from '@/lib/investments.types';
 import type { JobResponse } from '@/lib/jobs.types';
 import type { ImportCommitResult, InvestmentTransactionResponse } from '@/lib/types';
-
-import { fyLabel } from '../investmentsFormat';
 
 /** The Tradebook page's own address (always the Dinero route, whatever the tab links point at). */
 export const TRADEBOOK_HREF = `${DS_PREFIX}/investments/tradebook`;

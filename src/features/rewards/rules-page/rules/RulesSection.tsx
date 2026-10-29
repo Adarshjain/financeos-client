@@ -14,8 +14,11 @@ import {
   Text,
 } from '@/components/ds';
 import { useRewardsAdd } from '@/features/rewards/overview/RewardsAdd';
+import { useRewardAccountConfig } from '@/features/rewards/queries/useRewardAccountConfigQueries';
+import { useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBucketsQueries';
+import { useDeleteRewardRule, useRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
-import { accrualSummary } from '@/features/rewards/rules/manager/helpers';
+import { accrualSummary } from '@/features/rewards/rules/manager/managerModel';
 import { useEndDateAndClone } from '@/features/rewards/rules/useEndDateAndClone';
 import { formatDateRange } from '@/lib/date-range';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -23,9 +26,6 @@ import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { RewardRule } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
-import { useRewardAccountConfig } from '../../queries/useRewardAccountConfigQueries';
-import { useRewardCapBuckets } from '../../queries/useRewardCapBucketsQueries';
-import { useDeleteRewardRule, useRewardRules } from '../../queries/useRewardRulesQueries';
 import { appliesTo, capWords, isEnded, ruleSubtitle, type RulesUsage } from '../rulesPageModel';
 import { useRefreshUsage } from '../rulesRefresh';
 import { ReorderRulesDialog } from './ReorderRulesDialog';

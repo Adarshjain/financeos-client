@@ -18,6 +18,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
+import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
@@ -30,7 +31,6 @@ import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { InstrumentAddDialog } from '../instruments/InstrumentAddDialog';
 import { InstrumentSelect } from '../InstrumentSelect';
-import type { InstrumentRef } from '../investmentsFormat';
 import {
   allCharges,
   CHARGE_FIELDS,

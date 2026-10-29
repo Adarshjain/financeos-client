@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { getMobileNavContext, isNavItemActive, NAV_ITEMS } from '@/components/layout/navigation';
-import { formatBadge } from '@/features/inbox/inbox.helpers';
+import { formatBadge } from '@/features/inbox/inboxModel';
 import { legacyHref } from '@/features/shell/routes';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';

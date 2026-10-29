@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import type { ObligationItem } from '@/features/upcoming/obligations';
+import type { ObligationItem } from '@/features/upcoming/obligationsModel';
 import { formatMoney } from '@/lib/utils';
 
 import { TotalsStrip } from '../TotalsStrip';

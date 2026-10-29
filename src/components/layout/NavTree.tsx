@@ -16,7 +16,7 @@ import {
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from '@/components/layout/navigation';
-import { formatBadge } from '@/features/inbox/inbox.helpers';
+import { formatBadge } from '@/features/inbox/inboxModel';
 import { legacyHref } from '@/features/shell/routes';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';

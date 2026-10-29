@@ -3,11 +3,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { batchReviewTransactions } from '@/features/transactions/transactionActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 
-import { batchReviewTransactions } from '../actions';
-import type { ClearableReason } from './reviewHelpers';
+import type { ClearableReason } from './reviewModel';
 
 export interface BatchReviewInput {
   ids: string[];

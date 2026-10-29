@@ -8,8 +8,8 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import { candidateKey,CatalogSearch } from './CatalogSearch';
-import { INSTRUMENT_FIELD_LIMITS as LIMITS, type InstrumentFormErrors,instrumentFormErrors } from './instrumentEdit';
-import { defaultYahooSymbol, emptyInstrumentForm, type InstrumentFormValues, instrumentRequest } from './instrumentForm';
+import { INSTRUMENT_FIELD_LIMITS as LIMITS, type InstrumentFormErrors,instrumentFormErrors } from './instrumentEditModel';
+import { defaultYahooSymbol, emptyInstrumentForm, type InstrumentFormValues, instrumentRequest } from './instrumentFormModel';
 import { TYPE_OPTIONS } from './instrumentsModel';
 import { useResolveInstrumentMutation } from './useCatalogSearch';
 import { useCreateInstrument } from './useCreateInstrument';

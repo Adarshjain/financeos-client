@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { isMarketOpen } from './marketHours';
+import { isMarketOpen } from './marketHoursModel';
 
 /** How often an open, visible page re-reads its prices. A default the owner may change. */
 export const LIVE_REFRESH_MS = 5 * 60_000;

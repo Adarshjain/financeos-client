@@ -8,7 +8,7 @@ import type { InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import { candidateKey } from './instruments/CatalogSearch';
 import { useCatalogSearch, useResolveInstrumentMutation } from './instruments/useCatalogSearch';
-import { instrumentLabel, type InstrumentRef, TYPE_WORDS } from './investmentsFormat';
+import { instrumentLabel, type InstrumentRef, TYPE_WORDS } from './investmentsFormatModel';
 
 function candidateOption(c: InstrumentCandidate): SelectOption {
   return {

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { watchSession } from '@/lib/authExpiry';
 import type { UserResponse } from '@/lib/types';
 
-import { deleteAccount } from './actions';
+import { deleteAccount } from './profileActions';
 import { useDeletionSummary } from './useDeletionSummary';
 
 /** The delete-account dialog's state and submit: summary, fields, validation, busy/error handling. */

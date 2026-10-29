@@ -6,7 +6,7 @@ import { Button, ReorderList, SegmentedControl, Select } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import type { BreakdownBars, BreakdownColumn, DatasourceCatalog, SortClause } from '@/lib/reports.types';
 
-import { defaultBreakdownColumns } from './breakdownColumns';
+import { defaultBreakdownColumns } from './breakdownColumnsModel';
 import {
   type AggTableDraft,
   type BuilderAction,
@@ -14,14 +14,14 @@ import {
   type DimensionDraft,
   type MeasureDraft,
   newDraftId,
-} from './builderReducer';
+} from './builderReducerModel';
 import { columnsFor, fieldByName, isDateFieldName } from './catalog';
 import { ConfigSection } from './ConfigSection';
-import type { GuardMeasure } from './guards';
-import { AGGREGATION_LABELS } from './labels';
-import { chartTypeOptions, dimensionOptions, granularityOptions } from './options';
+import type { GuardMeasure } from './guardsModel';
+import { AGGREGATION_LABELS } from './labelsModel';
+import { chartTypeOptions, dimensionOptions, granularityOptions } from './optionsModel';
 import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton, RevealPair } from './pickers';
-import { aggregatedColumnKey, hasSeries,type IssueKey, SUB_LIMIT_MAX, TOP_N_MAX } from './serialize';
+import { aggregatedColumnKey, hasSeries,type IssueKey, SUB_LIMIT_MAX, TOP_N_MAX } from './serializeModel';
 
 export type Issues = Partial<Record<IssueKey, string>>;
 

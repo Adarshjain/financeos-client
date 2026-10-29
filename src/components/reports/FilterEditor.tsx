@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type { DynamicOptions } from '@/features/reports/builder/catalog';
 import { filterableFields, operatorsForField } from '@/features/reports/builder/catalog';
-import { defaultFilterClause } from '@/features/reports/builder/filterClause';
+import { defaultFilterClause } from '@/features/reports/builder/filterClauseModel';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
 import { FilterRow } from './FilterRow';

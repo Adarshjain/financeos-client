@@ -9,8 +9,8 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
-import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type { BreakdownSectionData, RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
+import { formatAmount } from '@/features/reports/underlying/underlyingModel';
 import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

@@ -1,9 +1,9 @@
 import type { SelectOption } from '@/components/ds';
+import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { type Broker, isAccountClosed } from '@/lib/account.types';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';
 
-import { moveTone } from '../investmentsFormat';
 import type { ImportAssetScope, ImportMode, RowState } from './types';
 
 export const IMPORT_STEPS = [

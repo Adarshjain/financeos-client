@@ -9,7 +9,7 @@ import type { FieldDefinition, FilterValue } from '@/lib/reports.types';
 
 import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions, enumOptionsFor, type valueKind } from './catalog';
 import { PAIR } from './pickers';
-import { staleOptions } from './staleDynamicValue';
+import { staleOptions } from './staleDynamicValueModel';
 
 export interface FilterValueEditorProps {
   kind: ReturnType<typeof valueKind>;

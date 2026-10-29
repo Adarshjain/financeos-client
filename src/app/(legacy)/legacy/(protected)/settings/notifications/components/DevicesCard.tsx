@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { isThisDevice } from '@/features/settings/notifications/notificationSettings.helpers';
+import { isThisDevice } from '@/features/settings/notifications/notificationSettingsModel';
 import { getCurrentPushSubscription, unsubscribeFromPush } from '@/features/settings/notifications/push';
 import { useNotificationSettingsMutations } from '@/features/settings/notifications/useNotificationSettings';
 import { getErrorMessage } from '@/lib/api/errorMessage';

@@ -1,14 +1,14 @@
 'use client';
 
 // "Duplicate as my report" for a built-in template widget (the request lives in
-// `@/features/dashboards/data/duplicateBuiltin`): on success a toast offers to open the new report; a template
+// `@/features/dashboards/data/duplicateBuiltinModel`): on success a toast offers to open the new report; a template
 // whose rows depend on a reward window says the copy is fixed to it.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltin';
+import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltinModel';
 import { legacyHref } from '@/features/shell/routes';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';

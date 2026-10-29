@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { ASK_HREF, reportRows } from './reportsList';
+import { ASK_HREF, reportRows } from './reportsListModel';
 import { ReportsScreen, type ReportsScreenProps } from './ReportsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };

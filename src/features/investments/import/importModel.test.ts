@@ -23,7 +23,7 @@ import {
   sortExecutions,
   unmappedMessage,
 } from './importModel';
-import { buildInitialCasRowStates, buildInitialFnoRowStates, buildInitialReconcileRowStates } from './importWizardHelpers';
+import { buildInitialCasRowStates, buildInitialFnoRowStates, buildInitialReconcileRowStates } from './importWizardModel';
 import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getUnresolvedRows } from './types';
 
 pinClock();

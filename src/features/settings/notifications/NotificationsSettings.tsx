@@ -11,10 +11,10 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
-import { loadActiveLoans } from './actions';
 import { BillsCard } from './BillsCard';
 import { KindsCard } from './KindsCard';
 import { MutedCard } from './MutedCard';
+import { loadActiveLoans } from './notificationActions';
 import { KIND_GROUPS } from './notificationKinds';
 import { NotificationsSkeleton } from './NotificationsSkeleton';
 import { PushCard } from './PushCard';

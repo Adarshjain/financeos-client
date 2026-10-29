@@ -8,7 +8,7 @@ vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/c
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
-vi.mock('@/features/notifications/useNotificationsAction', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
+vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({

@@ -15,7 +15,7 @@ import {
   shiftMonth,
   shortAmount,
 } from './calendarModel';
-import type { ObligationItem } from './obligations';
+import type { ObligationItem } from './obligationsModel';
 
 const item = (o: Partial<ObligationItem>): ObligationItem =>
   ({ type: 'emi', status: 'upcoming', date: '2026-10-25', amount: 100, title: 'row', ...o }) as ObligationItem;

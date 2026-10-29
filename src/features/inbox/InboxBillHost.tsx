@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { showToast } from '@/components/ds';
-import { billCardLabel } from '@/features/bills/bills.helpers';
+import { billCardLabel } from '@/features/bills/billsModel';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { StatementDetailsDialog } from '@/features/bills/StatementDetailsDialog';
 import { getErrorMessage } from '@/lib/api/errorMessage';

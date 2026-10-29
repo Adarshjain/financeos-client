@@ -10,12 +10,12 @@ vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
   ),
 }));
 
-import { CapHeadroomView } from '@/components/dashboards/widgets/cap_headroom/CapHeadroomView';
-import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone_progress/MilestoneProgressView';
-import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
-import { capTone } from '@/features/dashboards/builtins/cap_headroom/capHeadroom.model';
-import { nearestPerCard } from '@/features/dashboards/builtins/milestone_progress/milestoneProgress.model';
-import { buildRewardsEarned, nativeText, rewardsRequest } from '@/features/dashboards/builtins/rewards_earned/rewardsEarned.model';
+import { CapHeadroomView } from '@/components/dashboards/widgets/cap-headroom/CapHeadroomView';
+import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone-progress/MilestoneProgressView';
+import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards-earned/RewardsEarnedView';
+import { capTone } from '@/features/dashboards/builtins/cap-headroom/capHeadroomModel';
+import { nearestPerCard } from '@/features/dashboards/builtins/milestone-progress/milestoneProgressModel';
+import { buildRewardsEarned, nativeText, rewardsRequest } from '@/features/dashboards/builtins/rewards-earned/rewardsEarnedModel';
 import type { ReportData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

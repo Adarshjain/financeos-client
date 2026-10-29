@@ -5,7 +5,7 @@ import { LoansListCard } from './LoansListCard';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
-vi.mock('./closedLoansAction', () => ({ loadClosedLoans: vi.fn() }));
+vi.mock('./closedLoanActions', () => ({ loadClosedLoans: vi.fn() }));
 
 const base = { rows: [], totalElements: 0, totalPages: 0, closedLine: '' };
 

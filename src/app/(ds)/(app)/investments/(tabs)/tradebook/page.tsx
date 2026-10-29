@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { parseTradebookUrl } from '@/features/investments/tradebook/tradebookModel';
+import { TradebookScreen } from '@/features/investments/tradebook/TradebookScreen';
 import { loadTradebookScreen } from '@/features/investments/tradebook/tradebookScreenData';
-import { TradebookView } from '@/features/investments/tradebook/TradebookView';
 import { LoadError } from '@/features/shell/LoadError';
 import type { SearchParams } from '@/features/shell/searchParams';
 
@@ -10,5 +10,5 @@ import type { SearchParams } from '@/features/shell/searchParams';
 export default async function DsTradebookPage({ searchParams }: { searchParams: SearchParams }) {
   const result = await loadTradebookScreen(parseTradebookUrl(await searchParams));
   if (!result.ok) return <LoadError what="trades" reference={result.reference} />;
-  return <TradebookView {...result.data} />;
+  return <TradebookScreen {...result.data} />;
 }

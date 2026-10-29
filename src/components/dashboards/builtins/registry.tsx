@@ -39,7 +39,7 @@ import { type ComponentType, createElement, type ReactElement } from 'react';
 
 import { BillsDueWidget } from '@/components/bills/BillsDueWidget';
 import { InboxWidget } from '@/components/inbox/InboxWidget';
-import { ALL_CARDS_SUBTITLE, ATTENTION_SUBTITLE, NET_WORTH_SUBTITLE, upcomingSubtitle } from '@/features/dashboards/builtins/subtitles';
+import { ALL_CARDS_SUBTITLE, ATTENTION_SUBTITLE, NET_WORTH_SUBTITLE, upcomingSubtitle } from '@/features/dashboards/builtins/subtitlesModel';
 import {
   BUILTIN_ATTENTION,
   BUILTIN_BILLS_DUE,

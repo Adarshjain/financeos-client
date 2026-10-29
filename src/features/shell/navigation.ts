@@ -1,4 +1,4 @@
-import type { IconName } from '@/components/ds/Icon/Icon';
+import type { IconName } from '@/components/ds';
 
 import { appHref, normalisePathname } from './routes';
 

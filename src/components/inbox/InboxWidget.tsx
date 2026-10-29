@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRows';
+import { inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRowsModel';
 import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
 import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';

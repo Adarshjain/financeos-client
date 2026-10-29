@@ -18,7 +18,7 @@ import {
   mergeDividends,
   pickBestDividend,
   UNRESOLVED_RECEIPTS,
-} from './dividendLinkHelpers';
+} from './dividendLinkModel';
 import { createDividend, linkDividend, loadDividendPages } from './linkActions';
 
 const AMOUNT_ERROR = 'Enter an amount above ₹0.';

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
-import { loadEmergencyFund } from '@/lib/query/actions/insights';
+import { loadEmergencyFund } from '@/lib/query/actions/insightActions';
 import { keys } from '@/lib/query/keys';
 
 /** One of the last six full months: `month` is YYYY-MM; `beforeHistory` months (before the first liquid-account transaction) are left out of the median. */

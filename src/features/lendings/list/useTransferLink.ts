@@ -6,7 +6,7 @@ import { showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '../useLendingTransactionLink';
-import type { TransferRow } from './lendingsList';
+import type { TransferRow } from './lendingsListModel';
 
 /**
  * Linking suggested bank transfers to ledger entries, shared by the Lendings tab and a person's Matching card.

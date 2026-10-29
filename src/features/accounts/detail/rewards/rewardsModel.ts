@@ -1,12 +1,12 @@
+import { daysBetween } from '@/features/accounts/detail/overview/overviewDatesModel';
+import type { RewardsWindow } from '@/features/accounts/detail/overview/rewardsWindowModel';
 import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { formatDateRangeCompressed } from '@/lib/date-range';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { CapWindow, MilestoneStatus, RewardLine, RewardReport, RewardRule, RewardRuleBreakdown } from '@/lib/rewards.types';
 import { REASON_META } from '@/lib/rewards.types';
 
-import { daysBetween } from '../overview/dates';
-import type { RewardsWindow } from '../overview/rewardsWindow';
-import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriod';
+import { capitalize, DEFAULT_PERIOD, isIsoDate, isRangePreset, periodWords, type RangePreset } from './rewardsPeriodModel';
 
 export type { RewardsWindow };
 

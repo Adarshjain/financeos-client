@@ -6,7 +6,7 @@ import type { CardBillResponse } from '@/lib/api/types';
 import { accountsApi, billsApi, dashboardsApi, investmentsApi } from '@/lib/apiClient';
 import { BUILTIN_NET_WORTH } from '@/lib/dashboards.helpers';
 
-import type { RewardTotal } from './accountsList';
+import type { RewardTotal } from './accountsListModel';
 
 async function rewardTotals(): Promise<RewardTotal[]> {
   const { data } = await serverApi.GET('/api/v1/rewards/totals');

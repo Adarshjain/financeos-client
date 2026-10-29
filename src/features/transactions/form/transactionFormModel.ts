@@ -9,7 +9,7 @@ import type {
 import { parseCalendarDate } from '@/lib/utils';
 
 import { isValidMcc } from './mcc';
-import { buildTransactionRequest, parseNonNegativeAmount } from './transactionCRUD.helpers';
+import { buildTransactionRequest, parseNonNegativeAmount } from './transactionCrudModel';
 
 /** The Card dropdown's "no card" entry. */
 export const NO_CARD = 'NONE';

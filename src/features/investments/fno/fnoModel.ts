@@ -1,4 +1,5 @@
-import { fyStartYear } from '@/features/loans/detail/financialYear';
+import { fyLabel, moveTone } from '@/features/investments/investmentsFormatModel';
+import { fyStartYear } from '@/features/loans/detail/financialYearModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
@@ -7,7 +8,6 @@ import { formatDate, formatMoney, formatPercent, formatQuantity } from '@/lib/fo
 import type { FnoPageQuery, FnoSort, FnoSummary } from '@/lib/investments.types';
 import type { FnoTradeResponse } from '@/lib/types';
 
-import { fyLabel, moveTone } from '../investmentsFormat';
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
 
 /** The F&O tab. */

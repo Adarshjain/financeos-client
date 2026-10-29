@@ -6,10 +6,10 @@ import { Banner, ConfirmDialog, DateField, Select } from '@/components/ds';
 import type { Card, Cardholder } from '@/lib/account.types';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
-import { buildReassign, reassignSources, UNATTRIBUTED } from './cardsForms';
+import { buildReassign, reassignSources, UNATTRIBUTED } from './cardsFormsModel';
 import { holderName } from './cardsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
-import type { ActionResult } from './useCardholderActions';
+import type { ActionResult } from './useCardholderMutations';
 
 const iso = (v: string | { start?: string; end?: string }) => (typeof v === 'string' ? v : '');
 

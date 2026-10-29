@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { PagedSection } from '@/components/reports/views/PagedSection';
-import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { buildJobsFilterUrl } from '@/features/jobs/jobsFilterModel';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 
 import { JobsDesktopTable } from './JobsDesktopTable';

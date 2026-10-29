@@ -17,7 +17,7 @@ vi.mock('../InboxBillDialogs', async () => {
   };
 });
 
-import { INBOX_WIDGET_ROW_LIMIT, inboxItemHref, inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRows';
+import { INBOX_WIDGET_ROW_LIMIT, inboxItemHref, inboxWidgetRows } from '@/features/dashboards/builtins/attention/attentionRowsModel';
 import { api } from '@/lib/api/client';
 import type { InboxItemResponse, InboxResponse } from '@/lib/api/types';
 import { renderWithQuery } from '@/test/renderWithQuery';

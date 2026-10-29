@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { BuilderState } from '@/features/reports/builder/builderReducer';
-import { initialBuilderState } from '@/features/reports/builder/builderReducer';
+import type { BuilderState } from '@/features/reports/builder/builderReducerModel';
+import { initialBuilderState } from '@/features/reports/builder/builderReducerModel';
 import {
   aggregatedColumnKey,
   buildCreateRequest,
@@ -10,7 +10,7 @@ import {
   isMinimalValid,
   serializeDefinition,
   validationErrors,
-} from '@/features/reports/builder/serialize';
+} from '@/features/reports/builder/serializeModel';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
 // Minimal catalog: `date` is the only date-typed field, which is what

@@ -1,6 +1,6 @@
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 
-import { parseInstallmentParam } from './installmentParam';
+import { parseInstallmentParam } from './installmentParamModel';
 
 export interface LoanUrl {
   /** The EMI to highlight (`?installment=N`), or null. */

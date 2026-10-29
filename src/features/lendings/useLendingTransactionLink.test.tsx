@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { keys } from '@/lib/query/keys';
 
 const actions = vi.hoisted(() => ({ linkLendingEntryTransaction: vi.fn(), unlinkLendingEntryTransaction: vi.fn() }));
-vi.mock('./actions', () => actions);
+vi.mock('./lendingActions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 

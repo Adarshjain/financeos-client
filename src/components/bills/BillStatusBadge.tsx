@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { billStatusLabel, billStatusTone } from '@/features/bills/bills.helpers';
+import { billStatusLabel, billStatusTone } from '@/features/bills/billsModel';
 import type { BillStatus } from '@/lib/api/types';
 
 interface BillStatusBadgeProps {

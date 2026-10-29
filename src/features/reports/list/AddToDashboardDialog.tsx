@@ -6,7 +6,7 @@ import { Dialog, Select } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 
-import type { ReportRow } from './reportsList';
+import type { ReportRow } from './reportsListModel';
 
 export interface AddToDashboardDialogProps {
   report: ReportRow;

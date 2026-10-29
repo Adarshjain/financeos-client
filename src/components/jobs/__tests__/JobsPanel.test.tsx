@@ -3,7 +3,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { emitJobStarted } from '@/features/jobs/jobsBus';
-import { formatDuration } from '@/features/jobs/jobUtils';
+import { formatDuration } from '@/features/jobs/jobsFilterModel';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

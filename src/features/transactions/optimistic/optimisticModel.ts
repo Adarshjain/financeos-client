@@ -1,10 +1,10 @@
+import type { TransactionListRow } from '@/features/transactions/list/transactionRowsModel';
+import { transactionRow } from '@/features/transactions/list/transactionRowsModel';
 import type { Account } from '@/lib/account.types';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 import type { TransactionFormValues } from '../form/transactionFormModel';
 import { NO_CARD, NO_CHANNEL, signedAmount, valuesFromTransaction } from '../form/transactionFormModel';
-import type { TransactionListRow } from '../list/transactionRows';
-import { transactionRow } from '../list/transactionRows';
 import type { TransactionsQuery } from '../list/transactionsUrl';
 
 /** The row goes away (deleted). */

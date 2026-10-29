@@ -5,7 +5,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import type { AttentionItem } from '@/features/settings/connections/attentionItem.helpers';
+import type { AttentionItem } from '@/features/settings/connections/attentionItemModel';
 import type { Schemas } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 

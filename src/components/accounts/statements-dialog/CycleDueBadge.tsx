@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { cycleSummaryDaysUntilDue } from '@/features/accounts/statements/cycleSummaryDue';
+import { cycleSummaryDaysUntilDue } from '@/features/accounts/statements/cycleSummaryDueModel';
 import { useBill } from '@/lib/query/hooks/useBills';
 
 interface CycleDueBadgeProps {

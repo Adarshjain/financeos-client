@@ -14,7 +14,7 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { loadBuiltinWidgetData, loadReportWidgetData } from '@/features/dashboards/actions';
+import { loadBuiltinWidgetData, loadReportWidgetData } from '@/features/dashboards/dashboardActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import {

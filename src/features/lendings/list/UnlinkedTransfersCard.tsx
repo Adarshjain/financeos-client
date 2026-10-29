@@ -7,7 +7,7 @@ import { Button, Card, ListRow, showToast, StatusWord } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { useDeleteLending, useRecordSettlement } from '../useRecordSettlement';
-import type { TransferRow, UnrecordedRow } from './lendingsList';
+import type { TransferRow, UnrecordedRow } from './lendingsListModel';
 import { useTransferLink } from './useTransferLink';
 
 /**

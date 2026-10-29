@@ -6,7 +6,7 @@ import React from 'react';
 
 import { Banner, Button, Card, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
 import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
-import { workingCatalog } from '@/features/reports/builder/editorState';
+import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { appHref } from '@/features/shell/routes';
 import { ApiError } from '@/lib/api/client'; // Exception: draftActions.ts writes through the browser client (see its note), so a gone report arrives as an ApiError.

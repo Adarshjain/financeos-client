@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { runAdHocReport } from '@/features/reports/actions';
-import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/format';
+import { runAdHocReport } from '@/features/reports/reportActions';
+import { DEFAULT_PAGE_SIZE } from '@/features/reports/view/viewFormatModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData } from '@/lib/reports.helpers';

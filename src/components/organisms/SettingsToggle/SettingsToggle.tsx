@@ -2,8 +2,7 @@
 
 import React, { forwardRef, useId } from 'react';
 
-import { ListRow, Switch, Text } from '@/components/ds';
-import { cn } from '@/components/ds/cn';
+import { cn, ListRow, Switch, Text } from '@/components/ds';
 
 export interface SettingsToggleProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'title'> {

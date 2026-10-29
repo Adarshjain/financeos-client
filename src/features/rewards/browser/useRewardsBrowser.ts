@@ -7,7 +7,7 @@ import { Account } from '@/lib/account.types';
 import { accountAnniversaryDate, RewardLine } from '@/lib/rewards.types';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
-import { isRangePreset, presetRange, RangePreset } from './helpers';
+import { isRangePreset, presetRange, RangePreset } from './browserModel';
 
 interface UseRewardsBrowserProps {
   accounts: Account[];

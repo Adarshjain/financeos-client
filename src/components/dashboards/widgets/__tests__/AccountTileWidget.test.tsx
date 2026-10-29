@@ -20,7 +20,7 @@ import {
   AccountTileWidget,
   AccountTypeSubtitle,
   trendValues,
-} from '@/components/dashboards/widgets/account_tile/AccountTileWidget';
+} from '@/components/dashboards/widgets/account-tile/AccountTileWidget';
 import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

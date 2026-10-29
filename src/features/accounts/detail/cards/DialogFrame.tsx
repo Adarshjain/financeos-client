@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Banner, Dialog } from '@/components/ds';
 
-import type { ActionResult } from './useCardholderActions';
+import type { ActionResult } from './useCardholderMutations';
 
 /** Runs a mutation from a dialog: closes on success, keeps the dialog open and shows the message on failure. */
 export function useDialogSubmit(onClose: () => void) {

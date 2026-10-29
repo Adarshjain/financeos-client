@@ -2,15 +2,15 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { ReportDataView } from '@/components/reports/views/ReportDataView';
+import type { ChatReportDraft } from '@/features/chat/chat.types';
+import { isMalformedDraft } from '@/features/chat/draftModel';
 import {
   createReport,
   deleteReport,
   runAdHocReport,
   updateReport,
-} from '@/actions/reports';
-import { ReportDataView } from '@/components/reports/views/ReportDataView';
-import type { ChatReportDraft } from '@/features/chat/chat.types';
-import { isMalformedDraft } from '@/features/chat/draftModel';
+} from '@/features/reports/legacyReportActions';
 import type {
   ReportData,
   ReportDefinition,

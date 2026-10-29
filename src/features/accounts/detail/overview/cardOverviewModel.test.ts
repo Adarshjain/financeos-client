@@ -15,7 +15,7 @@ import {
   buildRewards,
   meterTone,
 } from './cardOverviewModel';
-import { daysBetween } from './dates';
+import { daysBetween } from './overviewDatesModel';
 
 pinClock();
 

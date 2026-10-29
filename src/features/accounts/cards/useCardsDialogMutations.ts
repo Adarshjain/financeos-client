@@ -3,18 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  CloseCardholderRequest,
-  CloseCardRequest,
-  CreateCardholderRequest,
-  CreateCardRequest,
-  ReplaceCardRequest,
-  UpdateCardholderRequest,
-} from '@/lib/account.types';
-import { unwrapAction } from '@/lib/actionResult';
-import { keys } from '@/lib/query/keys';
-import { BulkReattributeCardRequest } from '@/lib/transaction.types';
-
-import {
   addAddonCardholder,
   addCard,
   addPrimaryCard,
@@ -27,7 +15,18 @@ import {
   reopenCardholder,
   replaceCard,
   updateCardholder,
-} from '../actions';
+} from '@/features/accounts/accountActions';
+import {
+  CloseCardholderRequest,
+  CloseCardRequest,
+  CreateCardholderRequest,
+  CreateCardRequest,
+  ReplaceCardRequest,
+  UpdateCardholderRequest,
+} from '@/lib/account.types';
+import { unwrapAction } from '@/lib/actionResult';
+import { keys } from '@/lib/query/keys';
+import { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
 /**
  * Reads and mutations for the cards dialog. Everything here is keyed on

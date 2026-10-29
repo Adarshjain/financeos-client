@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { buildJobsFilterUrl, buildJobsQueryParams } from '@/features/jobs/jobUtils';
+import { buildJobsFilterUrl, buildJobsQueryParams } from '@/features/jobs/jobsFilterModel';
 import { legacyHref } from '@/features/shell/routes';
 import { jobsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';

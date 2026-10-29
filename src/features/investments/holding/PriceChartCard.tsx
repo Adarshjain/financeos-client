@@ -6,7 +6,7 @@ import { Button, Card, EmptyState, Icon, SegmentedControl } from '@/components/d
 import { Chart } from '@/components/organisms/Chart/Chart';
 import type { PriceHistoryPoint } from '@/lib/types';
 
-import { adjustForSplits, CHART_RANGES, type ChartRange, priceChartData, pricesInRange, type PriceSplit, RANGE_TITLES } from './priceChart';
+import { adjustForSplits, CHART_RANGES, type ChartRange, priceChartData, pricesInRange, type PriceSplit, RANGE_TITLES } from './priceChartModel';
 
 // The Dinero scale has no chart-height step (h-72 is dropped), so the frame takes the chart's height from its width: 16:9 on the phone, 21:9 on desktop.
 /** "Price · 1 year": the daily close over a range, from the stored price history. */

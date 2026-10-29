@@ -12,7 +12,7 @@ import { serverApi as api } from '@/lib/api/server';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { type DividendRow } from './dividendLinkHelpers';
+import { type DividendRow } from './dividendLinkModel';
 import { useDividendLink } from './useDividendLink';
 
 type Mock = ReturnType<typeof vi.fn>;

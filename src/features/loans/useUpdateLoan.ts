@@ -7,7 +7,7 @@ import type { LoanResponse, UpdateLoanRequest } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { updateLoan } from './actions';
+import { updateLoan } from './loanActions';
 
 /**
  * Updates a loan (PUT /api/v1/loans/{id}) and refreshes every loan query. `onError` replaces the default

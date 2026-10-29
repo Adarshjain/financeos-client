@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button, Card, ListRow, Text } from '@/components/ds';
 
-import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reportsList';
+import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reportsListModel';
 
 /** "Start from a template" and "Ask instead", under the list. */
 export function ReportsAside() {

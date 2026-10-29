@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { KpiTile } from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 
+import type { AccountsListData, AccountsResult } from './accountsListData';
 import {
   bankRow,
   brokerRow,
@@ -13,8 +14,7 @@ import {
   closedLineFor,
   groupAccounts,
   walletRow,
-} from './accountsList';
-import type { AccountsListData, AccountsResult } from './accountsListData';
+} from './accountsListModel';
 import {
   BankSection,
   BrokersSection,

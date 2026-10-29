@@ -3,13 +3,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
+import { categorizeDescription } from '@/features/transactions/transactionActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { Category } from '@/lib/categories.types';
 import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { categorizeDescription } from '../actions';
 import { createCategory as createCategoryAction } from '../categories/categoryActions';
 
 interface UseCategorySuggestionsProps {

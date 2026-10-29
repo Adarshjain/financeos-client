@@ -57,18 +57,18 @@ const remove = vi.fn();
 const reorder = vi.fn();
 const recommend = vi.fn();
 let recommendData: unknown;
-vi.mock('../../queries/useRewardRulesQueries', () => ({
+vi.mock('@/features/rewards/queries/useRewardRulesQueries', () => ({
   useRewardRules: () => ({ data: rules }),
   useCreateRewardRule: () => ({ mutate: create, isPending: false }),
   useUpdateRewardRule: () => ({ mutate: update, isPending: false }),
   useDeleteRewardRule: () => ({ mutate: remove, isPending: false }),
   useReorderRewardRules: () => ({ mutate: reorder, isPending: false }),
 }));
-vi.mock('../../queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: caps, isLoading: capsLoading }) }));
-vi.mock('../../queries/useRewardAccountConfigQueries', () => ({
+vi.mock('@/features/rewards/queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: caps, isLoading: capsLoading }) }));
+vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({
   useRewardAccountConfig: () => ({ data: { defaultRewardType: 'POINTS' } }),
 }));
-vi.mock('@/features/rewards/queries/useRewardRecommendMutation', () => ({
+vi.mock('@/features/rewards/queries/useRewardRecommendMutations', () => ({
   useRecommendCards: () => ({ mutate: recommend, isPending: false, data: recommendData }),
 }));
 vi.mock('@/lib/query/hooks/useCategories', () => ({

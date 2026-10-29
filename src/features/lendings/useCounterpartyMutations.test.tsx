@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./actions', () => ({
+vi.mock('./lendingActions', () => ({
   createLendingEntry: vi.fn(),
   updateLendingEntry: vi.fn(),
   deleteLendingEntry: vi.fn(),
@@ -28,7 +28,7 @@ import {
   unlinkLendingEntryTransaction,
   updateCounterparty,
   updateLendingEntry,
-} from './actions';
+} from './lendingActions';
 import { useCounterpartyMutations } from './useCounterpartyMutations';
 
 const ok = (data: unknown = undefined) => ({ success: true, data }) as never;

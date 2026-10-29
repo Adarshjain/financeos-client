@@ -4,12 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
+import { undoApproveTransactions } from '@/features/transactions/transactionActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { components } from '@/lib/api/schema';
 import { keys } from '@/lib/query/keys';
-
-import { undoApproveTransactions } from '../actions';
 
 export type ClearedTransaction = components['schemas']['ClearedTransaction'];
 export type VerifiedRule = components['schemas']['VerifiedRuleChange'];

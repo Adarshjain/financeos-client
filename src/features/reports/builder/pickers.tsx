@@ -6,8 +6,8 @@ import { Button, Icon, Reveal, Select, type SelectOption, Text, TextField } from
 import type { Aggregation, ComparisonDisplay, DatasourceCatalog, DimensionRef, Granularity, ReportType } from '@/lib/reports.types';
 
 import { fieldByName, isDateFieldName } from './catalog';
-import type { GuardMeasure } from './guards';
-import { aggregationOptions, dimensionOptions, granularityOptions, measureOptions, NONE, parseCount } from './options';
+import type { GuardMeasure } from './guardsModel';
+import { aggregationOptions, dimensionOptions, granularityOptions, measureOptions, NONE, parseCount } from './optionsModel';
 
 /** The grid of a row of two fields, side by side at every width. */
 export const PAIR = 'grid grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-y-space-12';

@@ -7,13 +7,13 @@
 import React from 'react';
 
 import { Button, Icon, WidgetGrid, type WidgetGridItem, type WidgetGridLayoutItem } from '@/components/ds';
+import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
+import { toGridLayout, widthStepOf } from '@/features/dashboards/layout/widgetLayoutModel';
 import { isBuiltinWidget, isTextWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 
 import { DashboardWidgetFrame } from '../frame/DashboardWidgetFrame';
 import { HeaderWidget } from '../frame/HeaderWidget';
-import { widgetBuiltinKey } from '../frame/widgetFrame.model';
-import { toGridLayout, widthStepOf } from '../layout/widgetLayout';
 
 export interface DashboardEditGridProps {
   widgets: readonly WidgetResponse[];

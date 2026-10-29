@@ -6,7 +6,7 @@ import { Button, Card, Pager, Text } from '@/components/ds';
 import type { Schemas } from '@/lib/api/types';
 
 import { AssignDialog } from './AssignDialog';
-import type { AttentionItem } from './attentionItem.helpers';
+import type { AttentionItem } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
 
 type PagedAttention = Schemas['PageGmailAttentionItemResponse'];

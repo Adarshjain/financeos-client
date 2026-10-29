@@ -2,8 +2,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { LoanRow } from './loansList';
 import { LoansListCard, type LoansListCardProps } from './LoansListCard';
+import type { LoanRow } from './loansListModel';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
@@ -15,7 +15,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 
 const loadClosedLoans = vi.hoisted(() => vi.fn());
-vi.mock('./closedLoansAction', () => ({ loadClosedLoans }));
+vi.mock('./closedLoanActions', () => ({ loadClosedLoans }));
 
 const row = (id: string, name: string, closed = false): LoanRow => ({
   id,

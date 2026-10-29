@@ -1,4 +1,4 @@
-import { daysBetween } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormatModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import type { SearchParamsRecord } from '@/features/shell/searchParams';

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ConcealProvider } from '@/components/ds';
 import { catalogFixture } from '@/features/reports/builder/editor.fixtures';
-import { workingCatalog } from '@/features/reports/builder/editorState';
+import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import type { ChartData, KpiData, PivotTableData, TableData } from '@/lib/reports.types';
 
 import { ReportResult } from './ReportResult';
