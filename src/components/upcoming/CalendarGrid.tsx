@@ -7,7 +7,7 @@ import { type RowActions } from '@/components/obligations/ObligationGroups';
 import { ObligationRow } from '@/components/obligations/ObligationRow';
 import { Button } from '@/components/ui/button';
 import { groupByDate } from '@/features/upcoming/calendarModel';
-import type { ObligationItem } from '@/features/upcoming/obligations';
+import type { ObligationItem } from '@/features/upcoming/obligationsModel';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
 const DOT: Record<string, string> = {

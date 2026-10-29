@@ -5,7 +5,7 @@ import * as React from 'react';
 import { AccountForm } from '@/components/accounts/AccountForm';
 import DayPicker from '@/components/DayPicker';
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
-import { TRANSACTION_ACCOUNT_TYPES } from '@/features/transactions/form/transactionCRUD.helpers';
+import { TRANSACTION_ACCOUNT_TYPES } from '@/features/transactions/form/transactionCrudModel';
 import { Transaction } from '@/lib/transaction.types';
 
 import { AccountCategorySection } from './crud/AccountCategorySection';

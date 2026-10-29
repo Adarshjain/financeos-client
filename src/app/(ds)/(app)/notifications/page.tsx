@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
 import { NOTIFICATIONS_PAGE_SIZE } from '@/features/notifications/notificationsModel';
-import { NotificationsPage } from '@/features/notifications/NotificationsPage';
+import { NotificationsScreen } from '@/features/notifications/NotificationsScreen';
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { parsePage } from '@/features/shell/pagination';
 import type { SearchParams } from '@/features/shell/searchParams';
@@ -28,7 +28,7 @@ export default async function DsNotificationsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotificationsPage />
+      <NotificationsScreen />
     </HydrationBoundary>
   );
 }

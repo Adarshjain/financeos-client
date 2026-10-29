@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KpiTile, Text } from '@/components/ds';
 
-import type { TileModel } from './loanFormat';
+import type { TileModel } from './loanFormatModel';
 
 /** The four tiles of a tab. `tiles` null = the summary request failed: each tile says so under its label. */
 export function TileGrid({

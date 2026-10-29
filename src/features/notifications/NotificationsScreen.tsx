@@ -1,0 +1,218 @@
+'use client';
+
+import { useRouter, useSearchParams } from 'next/navigation';
+import React from 'react';
+
+import {
+  Button,
+  Card,
+  Dialog,
+  Divider,
+  EmptyState,
+  Icon,
+  ListRow,
+  Pager,
+  SectionHeader,
+  Text,
+} from '@/components/ds';
+import { ErrorState } from '@/components/organisms';
+import { areaCrumb } from '@/features/shell/navigation';
+import { pageHref } from '@/features/shell/pagination';
+import { appHref } from '@/features/shell/routes';
+import { ShellPage } from '@/features/shell/ShellPage';
+import { useUrlState } from '@/features/upcoming/useUrlState';
+import type { AppNotification } from '@/lib/api/types';
+import { useNotificationFeed, useNotificationMutations as useFeedMutations } from '@/lib/query/hooks/useNotifications';
+import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
+
+import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, pageFromSearch, timeLabel } from './notificationsModel';
+import { NotificationsSkeleton } from './NotificationsSkeleton';
+import { useNotificationMutations } from './useNotificationMutations';
+
+/** /notifications: the full feed by day, newest first, with clear one, clear all and a pager. */
+export function NotificationsScreen() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [page, setPage] = useUrlState(searchParams.toString(), pageFromSearch);
+  const { data, isLoading, isFetching, error, refetch } = useNotificationFeed(page, NOTIFICATIONS_PAGE_SIZE);
+  const { markRead } = useFeedMutations();
+  const { clearOne, clearEverything, clearing, clearingAll } = useNotificationMutations();
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [seen, setSeen] = React.useState<{ page: number; unreadIds: ReadonlySet<string> } | null>(null);
+
+  const items = React.useMemo(() => data?.content ?? [], [data]);
+  // Clearing one takes it out of the cache at once; the deferred rows let it fold away.
+  const shownItems = useDeferredRows(items);
+  const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
+
+  // Rows unread when this page loaded stay highlighted, then the page marks what it shows as read.
+  const loaded = data !== undefined;
+  if (loaded && seen?.page !== page) {
+    setSeen({ page, unreadIds: new Set(items.filter((n) => !n.read).map((n) => n.id)) });
+  }
+  const unreadCount = seen?.page === page ? seen.unreadIds.size : 0;
+  const newestCreatedAt = items[0]?.createdAt;
+  const markedFor = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    if (!loaded || markedFor.current === page) return;
+    markedFor.current = page;
+    // The newest row's timestamp exactly as the server sent it.
+    if (unreadCount > 0 && newestCreatedAt) markRead.mutate(newestCreatedAt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, page, unreadCount, newestCreatedAt]);
+
+  const goToPage = React.useCallback(
+    (p: number, replace = false) => {
+      setPage(p);
+      const url = appHref(pageHref('/notifications', {}, p));
+      if (replace) router.replace(url, { scroll: false });
+      else router.push(url, { scroll: false });
+    },
+    [router, setPage],
+  );
+
+  // Clearing the last row of a later page leaves it empty: step back once the server agrees.
+  React.useEffect(() => {
+    if (loaded && !clearing && !isFetching && items.length === 0 && page > 0) goToPage(page - 1, true);
+  }, [loaded, clearing, isFetching, items.length, page, goToPage]);
+
+  const pager =
+    totalPages > 1 ? (
+      <Pager
+        variant="compact"
+        page={page}
+        size={NOTIFICATIONS_PAGE_SIZE}
+        totalElements={totalElements}
+        totalPages={totalPages}
+        unit="notifications"
+        onPageChange={goToPage}
+      />
+    ) : null;
+
+  let body: React.ReactNode;
+  if (isLoading) {
+    body = <NotificationsSkeleton />;
+  } else if (error) {
+    body = (
+      <Card>
+        <ErrorState
+          title="Couldn't load notifications"
+          description="The server did not answer. Nothing was lost."
+          action={{ label: 'Retry', onSelect: () => void refetch() }}
+        />
+      </Card>
+    );
+  } else if (items.length === 0) {
+    body = (
+      <Card>
+        <EmptyState title="No notifications yet" description="Finished imports, syncs and rewards show up here." />
+      </Card>
+    );
+  } else {
+    body = (
+      <ListTransition>
+        <Card
+          action={
+            <Text variant="label" as="span">
+              <Button variant="link" size="sm" onClick={() => setConfirmOpen(true)}>
+                Clear all
+              </Button>
+            </Text>
+          }
+        >
+          {pager}
+          {groupByDay(shownItems).map((group) => (
+            <RowTransition key={group.label}>
+              <section data-testid="notification-day">
+                <SectionHeader as="h2" variant="strong" sticky={false} borderTop={false}>
+                  {group.label}
+                </SectionHeader>
+                {group.items.map((n, index) => (
+                  <RowTransition key={n.id}>
+                    {index > 0 ? <Divider /> : null}
+                    <NotificationRow
+                      n={n}
+                      highlighted={seen?.page === page && seen.unreadIds.has(n.id)}
+                      onOpen={(href) => router.push(href)}
+                      onClear={() => void clearOne(n)}
+                    />
+                  </RowTransition>
+                ))}
+              </section>
+            </RowTransition>
+          ))}
+          {pager}
+        </Card>
+      </ListTransition>
+    );
+  }
+
+  return (
+    <ShellPage crumb={areaCrumb('notifications')} title="Notifications">
+      {body}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <Dialog.Content
+          size="sm"
+          title="Clear all notifications?"
+          description={`This removes ${totalElements === 1 ? '1 notification' : `all ${totalElements} notifications`}. New ones still show up here.`}
+          secondary={{ label: 'Cancel', onSelect: () => setConfirmOpen(false) }}
+          primary={{
+            label: 'Clear all',
+            tone: 'danger',
+            disabled: clearingAll,
+            onSelect: () => {
+              void clearEverything().then((ok) => {
+                if (ok) {
+                  setConfirmOpen(false);
+                  goToPage(0, true);
+                }
+              });
+            },
+          }}
+        />
+      </Dialog>
+    </ShellPage>
+  );
+}
+
+interface NotificationRowProps {
+  n: AppNotification;
+  highlighted: boolean;
+  onOpen: (href: string) => void;
+  onClear: () => void;
+}
+
+function NotificationRow({ n, highlighted, onOpen, onClear }: NotificationRowProps) {
+  const href = notificationHref(n);
+  return (
+    <ListRow
+      data-testid="notification-row"
+      wrap
+      borderTop={false}
+      highlighted={highlighted}
+      title={n.title}
+      subtitle={n.body || undefined}
+      clickable={href !== null}
+      onClick={href ? () => onOpen(href) : undefined}
+      trailing={
+        <>
+          <Text variant="caption" tone="ink-3">
+            {timeLabel(n.createdAt)}
+          </Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            aria-label="Clear"
+            icon={<Icon name="close" size="sm" />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+          />
+        </>
+      }
+    />
+  );
+}

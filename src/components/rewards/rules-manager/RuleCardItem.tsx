@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { accrualSummary, capSummary, matchSummary } from '@/features/rewards/rules/manager/helpers';
+import { accrualSummary, capSummary, matchSummary } from '@/features/rewards/rules/manager/managerModel';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { RewardRule } from '@/lib/rewards.types';
 import { cn } from '@/lib/utils';

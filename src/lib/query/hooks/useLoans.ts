@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
-import { loadActiveLoans } from '@/lib/query/actions/loans';
+import { loadActiveLoans } from '@/lib/query/actions/loanActions';
 import { keys } from '@/lib/query/keys';
 
 /** The first page of active loans: what a loan picker offers (same page as the payment-link dialog's). */

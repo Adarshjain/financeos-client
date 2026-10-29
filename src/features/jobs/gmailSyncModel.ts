@@ -1,6 +1,6 @@
 import type { SyncSummary } from '@/lib/types';
 
-import { describeCounts, PARKED_STATUSES, SKIPPED_STATUSES } from './syncLabels';
+import { describeCounts, PARKED_STATUSES, SKIPPED_STATUSES } from './syncLabelsModel';
 
 /** The address inside a "Name <a@b.c>" From header, or the header itself. */
 export function formatFromHeader(from: string): string {

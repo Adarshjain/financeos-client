@@ -12,6 +12,10 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, ConfirmDialog, EmptyState, showToast, Text, TextField } from '@/components/ds';
+import { SAVE_FAILED, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
+import { textWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
+import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIssues } from '@/features/dashboards/editor/editorStateModel';
+import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
@@ -23,10 +27,6 @@ import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { replaceUrl } from '@/lib/urlState';
 
-import { SAVE_FAILED, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '../data/useDashboardActions';
-import { textWidgetResponse } from '../editor/dashboardEditor.helpers';
-import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIssues } from '../editor/editorState';
-import { widgetBuiltinKey } from '../frame/widgetFrame.model';
 import { WidgetSettingsDialog } from '../frame/WidgetSettingsDialog';
 import { WidgetPicker } from '../picker/WidgetPicker';
 import { dashboardHref, DASHBOARDS_HREF } from '../routes';

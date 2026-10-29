@@ -12,7 +12,7 @@ vi.mock('@/features/dashboards/view/DashboardScreen', () => ({
   ),
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboards/d1', useSearchParams: () => new URLSearchParams() }));
-vi.mock('@/features/notifications/useNotificationsAction', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
+vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 

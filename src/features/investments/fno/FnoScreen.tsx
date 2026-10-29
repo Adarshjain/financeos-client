@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { fyLabel } from '@/features/investments/investmentsFormat';
+import { fyLabel } from '@/features/investments/investmentsFormatModel';
 
 import { FnoHero, FnoTiles, MonthCard, UnderlyingCard } from './FnoFigures';
 import { FnoListCard, type FnoListCardProps } from './FnoListCard';

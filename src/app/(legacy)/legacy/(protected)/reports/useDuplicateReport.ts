@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { duplicateReport } from '@/features/reports/duplicateReport';
+import { duplicateReport } from '@/features/reports/duplicateReportModel';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 

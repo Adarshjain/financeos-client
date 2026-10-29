@@ -11,7 +11,7 @@ import { CalendarGrid } from '@/components/upcoming/CalendarGrid';
 import { MarkPaidHost } from '@/components/upcoming/MarkPaidHost';
 import { TotalsStrip } from '@/components/upcoming/TotalsStrip';
 import { UpcomingControls } from '@/components/upcoming/UpcomingControls';
-import type { ObligationKindFilter } from '@/features/upcoming/obligations';
+import type { ObligationKindFilter } from '@/features/upcoming/obligationsModel';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
 

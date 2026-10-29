@@ -4,13 +4,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import type { TransactionListRow } from '@/features/transactions/list/transactionRowsModel';
+import type { TransactionsListResult } from '@/features/transactions/list/TransactionsListPane';
 import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
-import type { TransactionListRow } from '../list/transactionRows';
 import type { TransactionsQuery } from '../list/transactionsUrl';
-import type { TransactionsListResult } from '../list/TransactionsView';
 import { applyChanges, applyTo, type OptimisticChange } from './optimisticModel';
 
 /**

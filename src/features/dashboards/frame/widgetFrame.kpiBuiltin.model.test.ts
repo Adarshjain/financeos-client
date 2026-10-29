@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { KPI_BUILTIN_KEYS, widgetMenuItems } from './widgetFrame.model';
+import { KPI_BUILTIN_KEYS, widgetMenuItems } from './widgetFrameModel';
 
 const builtin = (key: string, kind: 'template' | 'component'): WidgetResponse =>
   ({

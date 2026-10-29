@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { buildJobsFilterUrl } from '@/features/jobs/jobsFilterModel';
 
 export { JobErrorDetails, JobRowActions };
 

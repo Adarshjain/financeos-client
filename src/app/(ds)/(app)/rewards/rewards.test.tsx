@@ -11,7 +11,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 
 import Layout from './(tabs)/layout';
 import OverviewPage from './(tabs)/page';
-import CardPage from './cards/[accountId]/page';
+import CardPage from './cards/[id]/page';
 
 // Ranges drop the year of the current one, so the clock is fixed.
 beforeAll(() => {
@@ -229,7 +229,7 @@ describe('/rewards/cards/[accountId]', () => {
   });
 
   const renderCard = async (searchParams = {}) =>
-    renderWithQuery(await CardPage({ params: Promise.resolve({ accountId: 'c1' }), searchParams: Promise.resolve(searchParams) }));
+    renderWithQuery(await CardPage({ params: Promise.resolve({ id: 'c1' }), searchParams: Promise.resolve(searchParams) }));
 
   it('is the card’s rewards body under its own top bar, back to Rewards, on its own address', async () => {
     await renderCard({ period: 'LAST_MONTH' });

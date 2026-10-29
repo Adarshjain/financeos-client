@@ -17,7 +17,7 @@ const redirectToSignIn = vi.fn(async () => {
   throw new Error('REDIRECT:/login');
 });
 vi.mock('@/lib/auth', () => ({ redirectToSignIn: () => redirectToSignIn() }));
-vi.mock('@/features/appLock/LockScreen', () => ({ LockScreen: () => null }));
+vi.mock('@/features/app-lock/LockScreen', () => ({ LockScreen: () => null }));
 
 import { ApiError } from '@/lib/apiClient';
 

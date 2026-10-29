@@ -2,7 +2,7 @@ import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
 
 import { fetchLoanMatches, fetchLoans, fetchLoansSummary } from '../loansServerApi';
-import type { LoansUrlState } from './loansList';
+import type { LoansUrlState } from './loansListModel';
 import type { LoansScreenProps } from './LoansScreen';
 
 /** What the Loans tab shows for the address's search and page: the page of loans, the figures and the match offers. */

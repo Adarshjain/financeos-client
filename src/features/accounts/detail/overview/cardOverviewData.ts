@@ -9,7 +9,7 @@ import type { Transaction } from '@/lib/transaction.types';
 import { loadBillsHistory } from '../billsHistory';
 import { type BillEntry } from '../billsHistoryModel';
 import type { CardholderStats } from './cardOverviewModel';
-import { type RewardsWindow, rewardsWindowFor } from './rewardsWindow';
+import { type RewardsWindow, rewardsWindowFor } from './rewardsWindowModel';
 
 export const RECENT_TRANSACTIONS = 8;
 

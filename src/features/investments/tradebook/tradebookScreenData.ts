@@ -6,11 +6,11 @@ import { clampPage } from '@/features/shell/pagination';
 import { todayInAppZone } from '@/lib/date-range';
 
 import { jobLine, tradebookQuery, tradebookRow, tradebookUrl, type TradebookUrlState } from './tradebookModel';
+import type { TradebookScreenProps } from './TradebookScreen';
 import { fetchLastImportJob, fetchLastReconcileJob, fetchTradebookPage } from './tradebookServerApi';
-import type { TradebookViewProps } from './TradebookView';
 
 /** What the Tradebook view shows for the address's search, filters and page. A page past the end redirects to the last one. */
-export async function loadTradebookScreen(state: TradebookUrlState): Promise<Loaded<TradebookViewProps>> {
+export async function loadTradebookScreen(state: TradebookUrlState): Promise<Loaded<TradebookScreenProps>> {
   const [list, brokers, lastImport, lastReconcile] = await Promise.all([
     loaded(fetchTradebookPage(tradebookQuery(state))),
     orNull(fetchBrokers()),

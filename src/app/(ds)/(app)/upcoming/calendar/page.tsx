@@ -3,7 +3,7 @@ import React from 'react';
 
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
-import { UpcomingCalendarView } from '@/features/upcoming/UpcomingCalendarView';
+import { UpcomingCalendarScreen } from '@/features/upcoming/UpcomingCalendarScreen';
 import { parseUpcomingCalendarUrl } from '@/features/upcoming/upcomingUrl';
 import { obligationsApi } from '@/lib/apiClient';
 import { todayInAppZone } from '@/lib/date-range';
@@ -29,7 +29,7 @@ export default async function DsUpcomingCalendarPage({
   await signInIfPrefetchFailed(qc, keys.obligations.upcoming({ months }));
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <UpcomingCalendarView />
+      <UpcomingCalendarScreen />
     </HydrationBoundary>
   );
 }

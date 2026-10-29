@@ -8,7 +8,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { CreateLendingRequest } from '@/lib/types';
 
-import { createLendingEntry } from './actions';
+import { createLendingEntry } from './lendingActions';
 
 /**
  * Records one lending ledger entry (POST /api/v1/lendings) and refreshes everything it moves:

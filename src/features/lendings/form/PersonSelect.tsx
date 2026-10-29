@@ -3,11 +3,10 @@
 import React from 'react';
 
 import { Select, type SelectOption } from '@/components/ds';
+import { entriesLabel, positionLabel } from '@/features/lendings/lendingEntryFormModel';
 import { type CounterpartyResponse, type CounterpartySelection } from '@/lib/lending.types';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
-
-import { entriesLabel, positionLabel } from '../lendingEntryForm';
 
 const NEW_PREFIX = 'new:';
 

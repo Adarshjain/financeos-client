@@ -11,7 +11,7 @@ import type {
 } from '@/lib/investments.types';
 
 import { INVESTMENTS_PATH } from '../investmentsTabs';
-import { ratioText } from './corporateActionRatio';
+import { ratioText } from './corporateActionRatioModel';
 
 // ---- URL state ---------------------------------------------------------------
 

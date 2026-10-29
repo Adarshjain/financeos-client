@@ -21,7 +21,7 @@ import {
   subscribePush,
   unsubscribePush,
   updateNotificationSettings,
-} from './actions';
+} from './notificationActions';
 
 export function useNotificationSettings(initialData?: NotificationSettingsResponse) {
   return useQuery({

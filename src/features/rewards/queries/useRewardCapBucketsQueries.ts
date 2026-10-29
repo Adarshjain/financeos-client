@@ -2,17 +2,16 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { unwrapAction } from '@/lib/actionResult';
-import { invalidateRewardQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-import type { RewardCapBucketRequest } from '@/lib/rewards.types';
-
 import {
   createRewardCapBucket,
   deleteRewardCapBucket,
   loadRewardCapBuckets,
   updateRewardCapBucket,
-} from '../actions';
+} from '@/features/rewards/rewardActions';
+import { unwrapAction } from '@/lib/actionResult';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
+import type { RewardCapBucketRequest } from '@/lib/rewards.types';
 
 export function useRewardCapBuckets(accountId: string) {
   return useQuery({

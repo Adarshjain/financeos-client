@@ -12,7 +12,7 @@ import {
   OBLIGATION_KINDS as KINDS,
   OBLIGATION_MONTH_OPTIONS,
   type ObligationKindFilter,
-} from '@/features/upcoming/obligations';
+} from '@/features/upcoming/obligationsModel';
 
 export function UpcomingControls({
   months,

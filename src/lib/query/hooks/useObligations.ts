@@ -3,7 +3,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { unwrapAction } from '@/lib/actionResult';
-import { loadUpcomingObligations } from '@/lib/query/actions/obligations';
+import { loadUpcomingObligations } from '@/lib/query/actions/obligationActions';
 import { keys } from '@/lib/query/keys';
 
 /** Upcoming dated obligations within `months`. Key matches the /upcoming server prefetch. */

@@ -14,8 +14,8 @@ vi.mock('@/lib/api/client', async () => {
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 vi.mock('../UnderlyingTransactionDialog', () => ({ UnderlyingTransactionDialog: () => null }));
 
-import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type { KpiUnderlyingResponse, UnderlyingSource } from '@/features/reports/underlying/underlying.types';
+import { formatAmount } from '@/features/reports/underlying/underlyingModel';
 import { api, ApiError } from '@/lib/api/client';
 import type { RunReportRequest } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

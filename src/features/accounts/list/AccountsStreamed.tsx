@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { KpiTile, Skeleton, StatusWord, Text } from '@/components/ds';
 import type { CardBillResponse } from '@/lib/api/types';
 
+import type { AccountsListData } from './accountsListData';
 import {
   type AccountSections,
   type CardBaseRow,
@@ -11,8 +12,7 @@ import {
   nextBillBadge,
   rewardsText,
   type RewardTotal,
-} from './accountsList';
-import type { AccountsListData } from './accountsListData';
+} from './accountsListModel';
 import type { CardListRow } from './AccountsSections';
 
 // Small async Server Components: each awaits one promise that the page already started, so the

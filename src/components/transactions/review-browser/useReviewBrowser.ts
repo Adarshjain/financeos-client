@@ -4,7 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { getPresentReasons, mapBatchFailures, mapBatchSkips } from '@/features/transactions/review/reviewHelpers';
+import { getPresentReasons, mapBatchFailures, mapBatchSkips } from '@/features/transactions/review/reviewModel';
 import { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';

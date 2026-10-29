@@ -25,6 +25,7 @@ import {
   type NotReceivedStatus,
   totalsLine,
 } from './dividendsModel';
+import type { DividendsScreenProps } from './DividendsScreen';
 import {
   fetchByInstrument,
   fetchDividends,
@@ -32,7 +33,6 @@ import {
   fetchReceiptSummary,
   fetchSymbolsByReceipt,
 } from './dividendsServerApi';
-import type { DividendsViewProps } from './DividendsView';
 
 /** The receipt buckets, then (in the same pass as the other reads) the few instruments behind each "Not received" status. */
 async function readReceipts(filters: DividendFilters) {
@@ -47,7 +47,7 @@ async function readReceipts(filters: DividendFilters) {
 }
 
 /** What the Dividends view shows for the address's FY, filters and pages. A page past the end redirects to the last one. */
-export async function loadDividendsScreen(state: DividendsUrlState): Promise<Loaded<DividendsViewProps>> {
+export async function loadDividendsScreen(state: DividendsUrlState): Promise<Loaded<DividendsScreenProps>> {
   const today = todayInAppZone();
   const currentFy = fyStartOf(today);
   const fy = effectiveFy(state, today);

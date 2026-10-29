@@ -9,15 +9,15 @@
 
 import { createElement } from 'react';
 
-import { AccountTileWidget, AccountTypeSubtitle } from '@/components/dashboards/widgets/account_tile/AccountTileWidget';
-import { CapHeadroomView } from '@/components/dashboards/widgets/cap_headroom/CapHeadroomView';
-import { CardUtilisationWidget } from '@/components/dashboards/widgets/card_utilisation/CardUtilisationWidget';
-import { EmergencyFundWidget } from '@/components/dashboards/widgets/emergency_fund/EmergencyFundWidget';
-import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone_progress/MilestoneProgressView';
-import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
-import { SpendHeatmapView } from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+import { AccountTileWidget, AccountTypeSubtitle } from '@/components/dashboards/widgets/account-tile/AccountTileWidget';
+import { CapHeadroomView } from '@/components/dashboards/widgets/cap-headroom/CapHeadroomView';
+import { CardUtilisationWidget } from '@/components/dashboards/widgets/card-utilisation/CardUtilisationWidget';
+import { EmergencyFundWidget } from '@/components/dashboards/widgets/emergency-fund/EmergencyFundWidget';
+import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone-progress/MilestoneProgressView';
+import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards-earned/RewardsEarnedView';
+import { SpendHeatmapView } from '@/components/dashboards/widgets/spend-heatmap/SpendHeatmapView';
 import { heatmapMonths } from '@/components/organisms/Chart/heatmap.model';
-import { ALL_CARDS_SUBTITLE, monthsSubtitle, stringParam } from '@/features/dashboards/builtins/subtitles';
+import { ALL_CARDS_SUBTITLE, monthsSubtitle, stringParam } from '@/features/dashboards/builtins/subtitlesModel';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 

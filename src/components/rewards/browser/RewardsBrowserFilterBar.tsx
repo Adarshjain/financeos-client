@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RANGE_PRESET_LABELS, RANGE_PRESETS, RangePreset } from '@/features/rewards/browser/helpers';
+import { RANGE_PRESET_LABELS, RANGE_PRESETS, RangePreset } from '@/features/rewards/browser/browserModel';
 import { Account } from '@/lib/account.types';
 import { RewardReport } from '@/lib/rewards.types';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';

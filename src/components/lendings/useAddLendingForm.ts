@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryForm';
+import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryFormModel';
 import { api } from '@/lib/api/client';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CounterpartyResponse, CounterpartySelection, CreateLendingRequest } from '@/lib/lending.types';

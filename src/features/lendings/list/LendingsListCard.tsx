@@ -29,7 +29,7 @@ import {
   LENDINGS_SIZE_OPTIONS,
   lendingsUrl,
   type LendingsUrlState,
-} from './lendingsList';
+} from './lendingsListModel';
 
 const ch = createDataTableColumnHelper<LendingRow>();
 

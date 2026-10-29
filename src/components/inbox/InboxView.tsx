@@ -7,10 +7,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { headerCounts, INBOX_SECTIONS } from '@/features/inbox/inbox.helpers';
 import { type PendingBillAction, toPendingBillAction } from '@/features/inbox/inboxBillAction';
-import { useInboxActions } from '@/features/inbox/useInboxActions';
+import { headerCounts, INBOX_SECTIONS } from '@/features/inbox/inboxModel';
 import { useInboxDeepLink } from '@/features/inbox/useInboxDeepLink';
+import { useInboxMutations } from '@/features/inbox/useInboxMutations';
 import { legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
@@ -27,7 +27,7 @@ interface InboxViewProps {
 /** The Inbox: a grouped action list (Act now, Needs a look, Info), not a feed. */
 export function InboxView({ highlightKey = null }: InboxViewProps) {
   const { data, isLoading, error } = useInbox();
-  const { snooze, dismiss } = useInboxActions();
+  const { snooze, dismiss } = useInboxMutations();
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 

@@ -4,9 +4,8 @@
 
 import React from 'react';
 
+import { ATTENTION_SUBTITLE } from '@/features/dashboards/builtins/subtitlesModel';
 import { useInbox } from '@/lib/query/hooks/useInbox';
-
-import { ATTENTION_SUBTITLE } from '../subtitles';
 
 export function AttentionSubtitle() {
   const { data } = useInbox();

@@ -1,4 +1,4 @@
-import { deletionImpactItems, deletionNote } from '@/features/accounts/statements/deletionImpact';
+import { deletionImpactItems, deletionNote } from '@/features/accounts/statements/deletionImpactModel';
 import type { CardBillResponse, Schemas } from '@/lib/api/types';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 

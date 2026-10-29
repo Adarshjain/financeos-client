@@ -1,9 +1,8 @@
+import { ratioText } from '@/features/investments/corporate-actions/corporateActionRatioModel';
+import { moveTone, priceTimeLabel, unitWord } from '@/features/investments/investmentsFormatModel';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
-
-import { ratioText } from '../corporate-actions/corporateActionRatio';
-import { moveTone, priceTimeLabel, unitWord } from '../investmentsFormat';
 
 // ---- Sections ------------------------------------------------------------------
 

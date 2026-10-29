@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Text, Widget } from '@/components/ds';
-import { reportHref } from '@/features/reports/list/reportsList';
+import { reportHref } from '@/features/reports/list/reportsListModel';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import type { UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { appHref } from '@/features/shell/routes';
@@ -24,7 +24,7 @@ import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
 import { useDuplicateBuiltinReport } from './useDuplicateBuiltinReport';
 import { useReportWidget } from './useReportWidget';
-import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrame.model';
+import { BUILTIN_GONE, isKpiBuiltinWidget, widgetBuiltinKey, widgetHref, type WidgetMenuItemId, widgetMenuItems, widgetOpensUnderlying, widgetSubtitle } from './widgetFrameModel';
 import { WidgetHeaderActions } from './WidgetHeaderActions';
 import { type WidgetSettingsChange, WidgetSettingsDialog } from './WidgetSettingsDialog';
 import { WidgetUnderlying } from './WidgetUnderlying';

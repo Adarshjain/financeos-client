@@ -13,7 +13,7 @@ import {
   restoreHomeDashboard,
   saveDashboard,
   saveDefaultDashboard,
-} from '@/lib/query/actions/dashboards';
+} from '@/lib/query/actions/dashboardActions';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 

@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { legacyHref } from '@/features/shell/routes';
 import { cn } from '@/lib/utils';
 
-import { WidgetBody, WidgetEmpty } from '../investmentsLoansKit/kit';
+import { WidgetBody, WidgetEmpty } from '../investments-loans-kit/kit';
 
 const GRID = 'grid grid-cols-4 gap-2 md:[grid-template-columns:repeat(auto-fill,minmax(6.5rem,1fr))]';
 const TILE =

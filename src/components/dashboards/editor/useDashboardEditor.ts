@@ -14,7 +14,7 @@ import {
   toggleWidth,
   updateTextWidget,
   withHeaderOnTop,
-} from '@/features/dashboards/editor/dashboardEditor.helpers';
+} from '@/features/dashboards/editor/dashboardEditorModel';
 import { legacyHref } from '@/features/shell/routes';
 import { api } from '@/lib/api/client';
 import { toDashboardWidget, validateWidgets } from '@/lib/dashboards.helpers';
@@ -31,7 +31,7 @@ import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 
-export { editSignature } from '@/features/dashboards/editor/dashboardEditor.helpers';
+export { editSignature } from '@/features/dashboards/editor/dashboardEditorModel';
 
 interface UseDashboardEditorProps {
   mode: 'create' | 'edit';

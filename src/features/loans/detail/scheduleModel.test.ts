@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { fyGroupKey,fyLabel, fyStartYear } from './financialYear';
+import { fyGroupKey,fyLabel, fyStartYear } from './financialYearModel';
 import { eventFixture, installment, loanFixture, scheduleFixture, TODAY } from './loanDetail.fixtures';
 import {
   buildScheduleRows,

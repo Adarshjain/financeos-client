@@ -3,7 +3,7 @@
 import { Hash, LineChart, Table2 } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { BuilderAction, BuilderState } from '@/features/reports/builder/builderReducer';
+import type { BuilderAction, BuilderState } from '@/features/reports/builder/builderReducerModel';
 import type { DynamicOptions } from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog, ReportType } from '@/lib/reports.types';
 

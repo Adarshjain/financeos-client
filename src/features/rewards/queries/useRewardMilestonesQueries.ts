@@ -2,17 +2,16 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { unwrapAction } from '@/lib/actionResult';
-import { invalidateRewardQueries } from '@/lib/query/invalidate';
-import { keys } from '@/lib/query/keys';
-import type { RewardMilestoneRequest } from '@/lib/rewards.types';
-
 import {
   createRewardMilestone,
   deleteRewardMilestone,
   loadRewardMilestones,
   updateRewardMilestone,
-} from '../actions';
+} from '@/features/rewards/rewardActions';
+import { unwrapAction } from '@/lib/actionResult';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
+import type { RewardMilestoneRequest } from '@/lib/rewards.types';
 
 export function useRewardMilestones(accountId: string) {
   return useQuery({

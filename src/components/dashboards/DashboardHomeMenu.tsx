@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditor.helpers';
+import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { legacyHref } from '@/features/shell/routes';
 import type { BuiltinWidgetResponse, DashboardResponse, WidgetParams } from '@/lib/dashboards.types';
 import { useAddDashboardWidget, useSetDefaultDashboard } from '@/lib/query/hooks/useDashboards';

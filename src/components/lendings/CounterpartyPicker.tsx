@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { entriesLabel, positionLabel } from '@/features/lendings/lendingEntryForm';
+import { entriesLabel, positionLabel } from '@/features/lendings/lendingEntryFormModel';
 import type { CounterpartyResponse, CounterpartySelection } from '@/lib/lending.types';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';

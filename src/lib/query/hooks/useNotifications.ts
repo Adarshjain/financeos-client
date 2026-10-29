@@ -13,7 +13,7 @@ import {
   loadNotificationSummary,
   markNotificationsRead,
   restoreNotification,
-} from '@/lib/query/actions/notifications';
+} from '@/lib/query/actions/notificationActions';
 import { keys } from '@/lib/query/keys';
 
 /** One page of the notification feed, newest first (page is 0-based). Refetches on window focus. */

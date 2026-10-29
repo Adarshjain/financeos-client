@@ -5,8 +5,8 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { DimensionDraft } from '@/features/reports/builder/builderReducer';
-import { newDraftId } from '@/features/reports/builder/builderReducer';
+import type { DimensionDraft } from '@/features/reports/builder/builderReducerModel';
+import { newDraftId } from '@/features/reports/builder/builderReducerModel';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
 import { DimensionRefEditor } from '../DimensionRefEditor';

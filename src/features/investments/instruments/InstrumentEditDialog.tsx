@@ -16,8 +16,8 @@ import {
   type InstrumentFormErrors,
   instrumentFormErrors,
   isOverridden,
-} from './instrumentEdit';
-import { assetClassChange, candidatePatch, editValuesOf, type InstrumentEditValues, instrumentRequest } from './instrumentForm';
+} from './instrumentEditModel';
+import { assetClassChange, candidatePatch, editValuesOf, type InstrumentEditValues, instrumentRequest } from './instrumentFormModel';
 import { TYPE_OPTIONS } from './instrumentsModel';
 import { type UpdateInstrumentResult, useUpdateInstrument } from './useInstrumentEdit';
 

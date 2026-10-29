@@ -12,7 +12,7 @@ import {
   getDefaultCardIdForAccount,
   getSelectableAccounts,
   parseNonNegativeAmount,
-} from '@/features/transactions/form/transactionCRUD.helpers';
+} from '@/features/transactions/form/transactionCrudModel';
 import { useCategorySuggestions } from '@/features/transactions/form/useCategorySuggestions';
 import { useTransactionMutations } from '@/features/transactions/form/useTransactionMutations';
 import type { Account } from '@/lib/account.types';

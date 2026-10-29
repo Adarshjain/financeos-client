@@ -15,13 +15,13 @@ vi.mock('@/components/reports/underlying/KpiUnderlyingDialog', () => ({
   ),
 }));
 
-import { EmergencyFundWidget } from '@/components/dashboards/widgets/emergency_fund/EmergencyFundWidget';
-import { formatMonthsCovered, monthName } from '@/features/dashboards/builtins/emergency_fund/emergencyFund.model';
+import { EmergencyFundWidget } from '@/components/dashboards/widgets/emergency-fund/EmergencyFundWidget';
 import {
   liquidBalanceRequest,
   monthBounds,
   monthOutflowRequest,
-} from '@/features/dashboards/builtins/emergency_fund/emergencyFund.requests';
+} from '@/features/dashboards/builtins/emergency-fund/emergencyFund.requests';
+import { formatMonthsCovered, monthName } from '@/features/dashboards/builtins/emergency-fund/emergencyFundModel';
 import { api, ApiError } from '@/lib/api/client';
 import type { EmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import { renderWithQuery } from '@/test/renderWithQuery';

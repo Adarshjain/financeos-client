@@ -1,6 +1,6 @@
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
-import { type BillActionType, isBillAction } from './inbox.helpers';
+import { type BillActionType, isBillAction } from './inboxModel';
 
 export interface PendingBillAction {
   type: BillActionType;

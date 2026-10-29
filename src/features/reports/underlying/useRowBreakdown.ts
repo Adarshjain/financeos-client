@@ -5,9 +5,9 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { loadBreakdownSection, loadRowBreakdown } from '@/features/reports/actions';
-import { UNDERLYING_PAGE_SIZE } from '@/features/reports/underlying/underlying.helpers';
+import { loadBreakdownSection, loadRowBreakdown } from '@/features/reports/reportActions';
 import type { RowBreakdownResponse } from '@/features/reports/underlying/underlying.types';
+import { UNDERLYING_PAGE_SIZE } from '@/features/reports/underlying/underlyingModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';

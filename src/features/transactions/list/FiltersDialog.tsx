@@ -29,8 +29,8 @@ import {
   SORT_ORDER_OPTIONS,
   SOURCE_OPTIONS,
   TYPE_OPTIONS,
-} from './filterOptions';
-import { draftFromQuery, type FiltersDraft, queryFromDraft } from './filtersDraft';
+} from './filterOptionsModel';
+import { draftFromQuery, type FiltersDraft, queryFromDraft } from './filtersDraftModel';
 import { PeriodEditor } from './PeriodEditor';
 import { loadMatchingCount } from './transactionsActions';
 import {

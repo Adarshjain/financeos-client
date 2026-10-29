@@ -2,7 +2,7 @@ import { fetchAccounts, fetchPeople, fetchPeopleMatches, fetchPeopleSummary, fet
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 import { todayInAppZone } from '@/lib/date-range';
 
-import { directionFor, type LendingsUrlState, transferRows, unrecordedRows } from './lendingsList';
+import { directionFor, type LendingsUrlState, transferRows, unrecordedRows } from './lendingsListModel';
 import type { LendingsScreenProps } from './LendingsScreen';
 
 /** What the Lendings tab shows for the address's search, filter and page. */

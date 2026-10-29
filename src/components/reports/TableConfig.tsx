@@ -13,7 +13,7 @@ import type {
   AggTableDraft,
   RawTableDraft,
   TableDraft,
-} from '@/features/reports/builder/builderReducer';
+} from '@/features/reports/builder/builderReducerModel';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
 import { AggTableConfig } from './table-config/AggTableConfig';

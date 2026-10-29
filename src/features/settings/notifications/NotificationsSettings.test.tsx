@@ -8,7 +8,7 @@ import { AccountType } from '@/lib/types';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 import { ALL_KIND_KEYS, BILLS_KINDS, KIND_GROUPS } from './notificationKinds';
-import { KIND_OPTIONS } from './notificationSettings.helpers';
+import { KIND_OPTIONS } from './notificationSettingsModel';
 import { NotificationsSettings } from './NotificationsSettings';
 
 const routerRefresh = vi.hoisted(() => vi.fn());

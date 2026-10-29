@@ -9,8 +9,7 @@
 
 import { forwardRef, useMemo } from 'react';
 
-import { Text } from '@/components/ds';
-import { cn } from '@/components/ds/cn';
+import { cn, Text } from '@/components/ds';
 import { useElementSize } from '@/lib/charts/useElementSize';
 import { todayInAppZone } from '@/lib/date-range';
 import type { ChartData } from '@/lib/reports.types';

@@ -23,7 +23,7 @@ import {
   Tabs,
   Text,
 } from '@/components/ds';
-import { formatMeasure } from '@/features/reports/measureFormat';
+import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';
 import { formatCount, pluralize } from '@/lib/format';
@@ -31,6 +31,7 @@ import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { RunReportRequest, SortClause, TableRow } from '@/lib/reports.types';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
+import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
 import {
   asFormat,
   cellText,
@@ -42,13 +43,12 @@ import {
   shortDate,
   UNDERLYING_PAGE_SIZE,
   underlyingCsvFilename,
-} from './underlying.helpers';
-import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
+} from './underlyingModel';
 import type { UnderlyingEntry } from './underlyingRequest';
 import { useBreakdownStack } from './useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
-// Kept importable from here: the helpers moved to underlying.helpers.ts.
+// Kept importable from here: the helpers moved to underlyingModel.ts.
 export { shortDate };
 
 type Row = Record<string, unknown> & { __row: string };

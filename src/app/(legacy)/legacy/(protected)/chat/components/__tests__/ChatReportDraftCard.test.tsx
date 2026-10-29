@@ -2,12 +2,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as reportsActions from '@/actions/reports';
 import type { ChatReportDraft } from '@/features/chat/chat.types';
+import * as reportsActions from '@/features/reports/legacyReportActions';
 
 import { ChatReportDraftCard } from '../ChatReportDraftCard';
 
-vi.mock('@/actions/reports', () => ({
+vi.mock('@/features/reports/legacyReportActions', () => ({
   createReport: vi.fn(),
   updateReport: vi.fn(),
   deleteReport: vi.fn(),

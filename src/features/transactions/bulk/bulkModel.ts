@@ -1,5 +1,5 @@
 import { deleteImpact } from '@/features/transactions/detail/transactionDetail';
-import { REASON_WORDS } from '@/features/transactions/list/transactionRows';
+import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
 import { formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fieldsFor, isDateFieldName } from '@/features/reports/builder/catalog';
-import { GRANULARITY_LABELS } from '@/features/reports/builder/labels';
+import { GRANULARITY_LABELS } from '@/features/reports/builder/labelsModel';
 import type {
   DatasourceCatalog,
   DimensionRef,

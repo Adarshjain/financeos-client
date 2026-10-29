@@ -4,23 +4,23 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
-import { REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { REPORTS_HREF } from '@/features/reports/list/reportsListModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStore';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { ReportCatalog, ReportData, ReportResponse } from '@/lib/reports.types';
 
-import type { BuilderAction } from './builderReducer';
+import type { BuilderAction } from './builderReducerModel';
 import { EditorActions } from './EditorActions';
-import { initialEditorState, makeEditorReducer, snapshot, workingCatalog } from './editorState';
-import { guardProblems } from './guards';
+import { initialEditorState, makeEditorReducer, snapshot, workingCatalog } from './editorStateModel';
+import { guardProblems } from './guardsModel';
 import { ReportConfigCard } from './ReportConfigCard';
 import { ReportPreviewCard } from './ReportPreviewCard';
-import { buildCreateRequest, buildRunRequest, buildUpdateRequest, validationIssues } from './serialize';
+import { buildCreateRequest, buildRunRequest, buildUpdateRequest, validationIssues } from './serializeModel';
 import type { Issues } from './typeOptions';
 import { useReportDynamicOptions } from './useReportDynamicOptions';
-import { useReportEditorActions } from './useReportEditorActions';
+import { useReportEditorMutations } from './useReportEditorMutations';
 import { useReportPreview } from './useReportPreview';
 
 export interface ReportEditorProps {
@@ -47,7 +47,7 @@ function firstPerKey(issues: ReturnType<typeof validationIssues>): Issues {
  */
 export function ReportEditor({ catalog: allDatasources, report, initialResult, templateId }: ReportEditorProps) {
   const router = useRouter();
-  const actions = useReportEditorActions();
+  const actions = useReportEditorMutations();
 
   const [initial] = React.useState(() => initialEditorState({ catalog: allDatasources, report, templateId }));
   const reducer = React.useMemo(() => makeEditorReducer(allDatasources), [allDatasources]);

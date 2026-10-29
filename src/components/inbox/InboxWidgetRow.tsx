@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { inboxItemHref } from '@/features/dashboards/builtins/attention/attentionRows';
-import { actionHref, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
+import { inboxItemHref } from '@/features/dashboards/builtins/attention/attentionRowsModel';
+import { actionHref, isBillAction, primaryActions } from '@/features/inbox/inboxModel';
 import { legacyHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 import { cn, formatMoney } from '@/lib/utils';

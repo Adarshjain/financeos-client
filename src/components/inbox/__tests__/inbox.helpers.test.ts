@@ -12,7 +12,7 @@ import {
   primaryActions,
   SNOOZE_PRESETS,
   summarise,
-} from '@/features/inbox/inbox.helpers';
+} from '@/features/inbox/inboxModel';
 
 import { severityStripeClass } from '../severityStripe';
 import { action, DISMISS, item, SNOOZE } from './fixtures';

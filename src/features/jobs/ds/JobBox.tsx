@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Badge, Button, Card, Icon, Text } from '@/components/ds';
 import { isActiveJob, JOB_STATUS_BADGE, jobTimeLabel } from '@/features/jobs/jobModel';
-import { formatDuration } from '@/features/jobs/jobUtils';
+import { formatDuration } from '@/features/jobs/jobsFilterModel';
 import type { JobResponse } from '@/lib/types';
 
 interface JobBoxProps {

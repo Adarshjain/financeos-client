@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { fyGroupKey } from '@/features/loans/detail/financialYear';
+import { fyGroupKey } from '@/features/loans/detail/financialYearModel';
 import { InstallmentDto } from '@/lib/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 

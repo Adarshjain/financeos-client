@@ -6,8 +6,8 @@ import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { AddTransactionProvider } from './form/AddTransactionProvider';
-import type { TransactionListRow } from './list/transactionRows';
-import { transactionRows } from './list/transactionRows';
+import type { TransactionListRow } from './list/transactionRowsModel';
+import { transactionRows } from './list/transactionRowsModel';
 import { DEFAULT_QUERY } from './list/transactionsUrl';
 import { TransactionsScreen, type TransactionsScreenProps } from './TransactionsScreen';
 

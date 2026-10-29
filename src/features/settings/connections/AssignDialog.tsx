@@ -6,7 +6,7 @@ import { Banner, Dialog, Text } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 
-import type { AttentionItem } from './attentionItem.helpers';
+import type { AttentionItem } from './attentionItemModel';
 import { useAssignAccount } from './useAssignAccount';
 
 const FORM_ID = 'assign-account-form';

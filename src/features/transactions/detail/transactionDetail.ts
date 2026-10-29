@@ -1,4 +1,5 @@
 import type { StatusWordItem } from '@/components/ds';
+import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
 import { formatDate, formatMoney } from '@/lib/format';
 import { obligationRefHref } from '@/lib/obligationRefHref';
 import { getDerivedRoleLabel } from '@/lib/transaction.helpers';
@@ -12,7 +13,6 @@ import type {
 } from '@/lib/transaction.types';
 
 import { CHANNEL_LABELS } from '../form/constants';
-import { REASON_WORDS } from '../list/transactionRows';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = [

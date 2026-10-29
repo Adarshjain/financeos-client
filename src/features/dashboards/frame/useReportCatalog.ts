@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { loadReportCatalog } from '@/features/dashboards/actions';
+import { loadReportCatalog } from '@/features/dashboards/dashboardActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 

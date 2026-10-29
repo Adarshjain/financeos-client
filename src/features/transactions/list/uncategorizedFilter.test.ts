@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeFilterCount, activeFilterWords } from './filterOptions';
-import { draftFromQuery, queryFromDraft } from './filtersDraft';
+import { activeFilterCount, activeFilterWords } from './filterOptionsModel';
+import { draftFromQuery, queryFromDraft } from './filtersDraftModel';
 import { buildFilters } from './transactionsRequest';
 import { DEFAULT_QUERY, parseTransactionsUrl, transactionsUrl } from './transactionsUrl';
 

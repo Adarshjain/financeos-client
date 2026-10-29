@@ -4,8 +4,8 @@
 // term, and the bold "=" result that matches the listed value. "info" steps are
 // standalone facts (open quantity, latest price…) shown muted, outside the sum.
 
-import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type { BreakdownStep } from '@/features/reports/underlying/underlying.types';
+import { formatAmount } from '@/features/reports/underlying/underlyingModel';
 import { cn } from '@/lib/utils';
 
 const SIGNS: Record<string, string> = {

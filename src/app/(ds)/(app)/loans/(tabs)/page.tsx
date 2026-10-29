@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { parseLoansUrl } from '@/features/loans/list/loansList';
+import { parseLoansUrl } from '@/features/loans/list/loansListModel';
 import { LoansScreen } from '@/features/loans/list/LoansScreen';
 import { loadLoansScreen } from '@/features/loans/list/loansScreenData';
 import type { SearchParams } from '@/features/shell/searchParams';

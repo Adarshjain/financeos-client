@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { parseDividendsUrl } from '@/features/investments/dividends/dividendsModel';
+import { DividendsScreen } from '@/features/investments/dividends/DividendsScreen';
 import { loadDividendsScreen } from '@/features/investments/dividends/dividendsScreenData';
-import { DividendsView } from '@/features/investments/dividends/DividendsView';
 import { LoadError } from '@/features/shell/LoadError';
 import type { SearchParams } from '@/features/shell/searchParams';
 
@@ -10,5 +10,5 @@ import type { SearchParams } from '@/features/shell/searchParams';
 export default async function DsDividendsPage({ searchParams }: { searchParams: SearchParams }) {
   const result = await loadDividendsScreen(parseDividendsUrl(await searchParams));
   if (!result.ok) return <LoadError what="dividends" reference={result.reference} />;
-  return <DividendsView {...result.data} />;
+  return <DividendsScreen {...result.data} />;
 }

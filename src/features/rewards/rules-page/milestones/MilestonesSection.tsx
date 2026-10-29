@@ -3,14 +3,14 @@
 import React from 'react';
 
 import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
+import { useRewardAccountConfig } from '@/features/rewards/queries/useRewardAccountConfigQueries';
+import { useDeleteRewardMilestone, useRewardMilestones } from '@/features/rewards/queries/useRewardMilestonesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { RewardMilestone } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
-import { useRewardAccountConfig } from '../../queries/useRewardAccountConfigQueries';
-import { useDeleteRewardMilestone, useRewardMilestones } from '../../queries/useRewardMilestonesQueries';
 import type { MilestoneUsage } from '../rulesPageModel';
 import { useRefreshUsage } from '../rulesRefresh';
 import { MilestoneDialog } from './MilestoneDialog';

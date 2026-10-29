@@ -3,7 +3,7 @@
 import { CalendarClock, CheckCircle2, Undo2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import type { BillRowActions } from '@/features/bills/useBillsWidgetActions';
+import type { BillRowActions } from '@/features/bills/useBillsWidgetMutations';
 import type { CardBillResponse } from '@/lib/api/types';
 
 interface BillCardActionsProps {

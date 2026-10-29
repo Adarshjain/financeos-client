@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ObligationItem } from './obligations';
+import type { ObligationItem } from './obligationsModel';
 import {
   buildTiles,
   countsByType,

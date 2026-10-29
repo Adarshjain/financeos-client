@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { actionHref, canDismiss, canSnooze, isBillAction, primaryActions } from '@/features/inbox/inbox.helpers';
+import { actionHref, canDismiss, canSnooze, isBillAction, primaryActions } from '@/features/inbox/inboxModel';
 import { legacyHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 

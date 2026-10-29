@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
+import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutations';
 import { toastError } from '@/lib/toastError';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { toCalendarDate } from '@/lib/utils';

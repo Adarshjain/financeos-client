@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cycleSummaryDaysUntilDue } from '@/features/accounts/statements/cycleSummaryDue';
+import { cycleSummaryDaysUntilDue } from '@/features/accounts/statements/cycleSummaryDueModel';
 
 describe('cycleSummaryDaysUntilDue', () => {
   it('shows nothing while the bill is still loading, even when the summary date is past', () => {

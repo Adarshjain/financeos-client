@@ -9,7 +9,7 @@ import type { Category } from '@/lib/categories.types';
 import type { TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
-import { readRuleTest } from './ruleTestReading';
+import { readRuleTest } from './ruleTestReadingModel';
 
 const NONE = 'NONE';
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);

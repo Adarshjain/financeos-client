@@ -15,8 +15,8 @@ vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   ),
 }));
 
-import { CardUtilisationWidget } from '@/components/dashboards/widgets/card_utilisation/CardUtilisationWidget';
-import { buildUtilisationModel, cardOwed } from '@/features/dashboards/builtins/card_utilisation/cardUtilisation.model';
+import { CardUtilisationWidget } from '@/components/dashboards/widgets/card-utilisation/CardUtilisationWidget';
+import { buildUtilisationModel, cardOwed } from '@/features/dashboards/builtins/card-utilisation/cardUtilisationModel';
 import type { Account } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { aggsFor, fieldsFor } from '@/features/reports/builder/catalog';
-import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
+import { AGGREGATION_LABELS } from '@/features/reports/builder/labelsModel';
 import type {
   Aggregation,
   DatasourceCatalog,

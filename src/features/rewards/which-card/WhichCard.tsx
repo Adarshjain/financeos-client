@@ -16,7 +16,7 @@ import {
   TextField,
 } from '@/components/ds';
 import { AccountPicker, AmountField } from '@/components/organisms';
-import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutation';
+import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutations';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { AccountType } from '@/lib/types';

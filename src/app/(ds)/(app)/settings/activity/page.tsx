@@ -1,8 +1,8 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import React from 'react';
 
-import { buildJobsQueryParams } from '@/features/jobs/jobUtils';
-import { ActivityPage } from '@/features/settings/activity/ActivityPage';
+import { buildJobsQueryParams } from '@/features/jobs/jobsFilterModel';
+import { ActivityScreen } from '@/features/settings/activity/ActivityScreen';
 import { parseActivityUrl } from '@/features/settings/activity/activityUrl';
 import type { SearchParams } from '@/features/shell/searchParams';
 import { jobsApi } from '@/lib/apiClient';
@@ -28,7 +28,7 @@ export default async function DsSettingsActivityPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ActivityPage statusFilter={statusFilter} typeFilter={typeFilter} page={page} size={size} jobId={jobId} />
+      <ActivityScreen statusFilter={statusFilter} typeFilter={typeFilter} page={page} size={size} jobId={jobId} />
     </HydrationBoundary>
   );
 }

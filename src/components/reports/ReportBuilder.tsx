@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { builderReducer, hydrateState, initialBuilderState } from '@/features/reports/builder/builderReducer';
-import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from '@/features/reports/builder/serialize';
+import { builderReducer, hydrateState, initialBuilderState } from '@/features/reports/builder/builderReducerModel';
+import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from '@/features/reports/builder/serializeModel';
 import { useReportDynamicOptions } from '@/features/reports/builder/useReportDynamicOptions';
 import { legacyHref } from '@/features/shell/routes';
 import { api, ApiError } from '@/lib/api/client';

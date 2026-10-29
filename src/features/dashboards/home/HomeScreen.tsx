@@ -10,6 +10,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, Select } from '@/components/ds';
+import { useAddWidgetNow, useRestoreHome, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
+import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
+import { withTitle } from '@/features/dashboards/editor/editorStateModel';
 import { areaCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
@@ -19,9 +22,6 @@ import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
-import { useAddWidgetNow, useRestoreHome, useSaveWidgetSettings, useToggleDefault } from '../data/useDashboardActions';
-import { builtinWidgetResponse, reportWidgetResponse } from '../editor/dashboardEditor.helpers';
-import { withTitle } from '../editor/editorState';
 import { WidgetPicker } from '../picker/WidgetPicker';
 import { DASHBOARDS_HREF, editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
 import { DashboardWidgets } from '../view/DashboardWidgets';

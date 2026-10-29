@@ -5,7 +5,7 @@ import { formatDate, formatMoney } from '@/lib/format';
 import { INSTRUMENT_MAX_PAGE_SIZE, type InstrumentListQuery, instrumentListQuery } from '@/lib/instrumentList';
 import type { Instrument, InstrumentType } from '@/lib/types';
 
-import { describeOverriddenFields, isOverridden } from './instrumentEdit';
+import { describeOverriddenFields, isOverridden } from './instrumentEditModel';
 
 // ---- URL state ---------------------------------------------------------------
 

@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ChartDraft } from '@/features/reports/builder/builderReducer';
-import { CHART_TYPE_LABELS } from '@/features/reports/builder/labels';
+import type { ChartDraft } from '@/features/reports/builder/builderReducerModel';
+import { CHART_TYPE_LABELS } from '@/features/reports/builder/labelsModel';
 import type { ChartDefinition, DatasourceCatalog } from '@/lib/reports.types';
 
 import { DimensionRefEditor } from './DimensionRefEditor';

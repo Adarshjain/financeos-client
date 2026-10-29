@@ -14,6 +14,7 @@ import {
   TextArea,
 } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
+import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryFormModel';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -29,7 +30,6 @@ import {
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { buildCreateLendingRequest, lendingEntryProblem } from '../lendingEntryForm';
 import { useCreateLending } from '../useCreateLending';
 import { PersonSelect } from './PersonSelect';
 

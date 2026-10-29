@@ -7,7 +7,7 @@ import type { CreateLoanRequest, LoanResponse } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { createLoan } from './actions';
+import { createLoan } from './loanActions';
 
 /**
  * Creates a loan (POST /api/v1/loans) and refreshes every loan query. `onError` replaces the default

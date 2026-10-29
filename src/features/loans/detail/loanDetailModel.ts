@@ -1,4 +1,4 @@
-import { daysBetween } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormatModel';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { InstallmentDto, LoanEventResponse, LoanResponse } from '@/lib/loan.types';
 

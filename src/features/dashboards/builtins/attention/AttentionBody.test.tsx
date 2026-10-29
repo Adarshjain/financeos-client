@@ -15,7 +15,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { bodyProps } from '../testFixtures';
 import { AttentionBody } from './AttentionBody';
-import { INBOX_WIDGET_ROW_LIMIT, inboxItemHref, inboxWidgetRows } from './attentionRows';
+import { INBOX_WIDGET_ROW_LIMIT, inboxItemHref, inboxWidgetRows } from './attentionRowsModel';
 
 const MARK_PAID = action({ type: 'mark_paid', label: 'Mark paid', payload: { statementId: 's1' } });
 const REVIEW = action({ type: 'review', label: 'Review', href: '/transactions?status=review' });

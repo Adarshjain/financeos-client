@@ -7,7 +7,7 @@ import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { deleteLendingEntry, recordCounterpartySettlement } from './actions';
+import { deleteLendingEntry, recordCounterpartySettlement } from './lendingActions';
 
 interface Options {
   /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */

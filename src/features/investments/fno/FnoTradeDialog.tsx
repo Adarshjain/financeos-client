@@ -31,7 +31,7 @@ import {
   netModel,
   toRequest,
   validateForm,
-} from './fnoTradeForm';
+} from './fnoTradeFormModel';
 import { useCreateFnoTrade, useDeleteFnoTrade, useUpdateFnoTrade } from './useFnoTradeMutations';
 
 const BROKER_TYPES: readonly AccountType[] = [AccountType.BROKER];

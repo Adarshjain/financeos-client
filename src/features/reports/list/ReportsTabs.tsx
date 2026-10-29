@@ -5,7 +5,7 @@ import React from 'react';
 
 import { type TabItem, Tabs } from '@/components/ds';
 
-import { DASHBOARDS_HREF, REPORTS_HREF } from './reportsList';
+import { DASHBOARDS_HREF, REPORTS_HREF } from './reportsListModel';
 
 export interface ReportsTabsProps {
   /** Which tab is current; default Reports. */

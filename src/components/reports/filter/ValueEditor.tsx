@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import type { DynamicOptions } from '@/features/reports/builder/catalog';
 import { DYNAMIC_OPTIONS_FAILED, enumOptionsFor, valueKind } from '@/features/reports/builder/catalog';
-import { staleOptions } from '@/features/reports/builder/staleDynamicValue';
+import { staleOptions } from '@/features/reports/builder/staleDynamicValueModel';
 import {
   dateBetween,
   numberBetween,

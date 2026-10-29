@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { formatDateTime } from '@/features/jobs/syncLabels';
+import { formatDateTime } from '@/features/jobs/syncLabelsModel';
 import type { SyncSummary } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 

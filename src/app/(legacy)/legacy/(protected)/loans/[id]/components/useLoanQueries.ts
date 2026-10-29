@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { fyGroupKey } from '@/features/loans/detail/financialYear';
+import { fyGroupKey } from '@/features/loans/detail/financialYearModel';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type {

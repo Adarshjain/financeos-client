@@ -6,7 +6,7 @@ import { Button, Card, Icon, ListRow, SectionHeader, Text } from '@/components/d
 import { formatMoney } from '@/lib/format';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
-import { bucketObligations, type ObligationItem, sumAmounts } from './obligations';
+import { bucketObligations, type ObligationItem, sumAmounts } from './obligationsModel';
 import { foldedMonthLine } from './upcomingModel';
 import { UpcomingRow } from './UpcomingRow';
 

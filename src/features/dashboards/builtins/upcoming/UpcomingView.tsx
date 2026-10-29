@@ -6,14 +6,14 @@
 import React from 'react';
 
 import { DateTile, EmptyState, ListRow, Text } from '@/components/ds';
-import { formatCell } from '@/features/reports/view/cells';
+import { cellText } from '@/features/dashboards/builtins/builtinModel';
+import { formatCell } from '@/features/reports/view/cellsModel';
 import { isRawTableData } from '@/lib/reports.helpers';
 import type { TableRow } from '@/lib/reports.types';
 
-import { cellText } from '../builtin.helpers';
 import { BuiltinNote, BuiltinPager } from '../BuiltinParts';
 import type { TemplateViewProps } from '../types';
-import { upcomingKindLabel } from './upcoming.model';
+import { upcomingKindLabel } from './upcomingModel';
 
 const MONTH_SHORT = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 

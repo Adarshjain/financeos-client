@@ -6,7 +6,7 @@ import React from 'react';
 import { Button, DateTile, Icon, ListRow, StatusWord, Text } from '@/components/ds';
 import { appHref } from '@/features/shell/routes';
 
-import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligations';
+import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';
 import { rowAmount, rowDate, rowSubtitleParts } from './upcomingModel';
 
 export interface UpcomingRowProps {

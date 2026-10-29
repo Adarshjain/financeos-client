@@ -5,9 +5,9 @@ import React from 'react';
 import { DateField, Text, TextField } from '@/components/ds';
 import type { Card, CreateCardRequest, ReplaceCardRequest } from '@/lib/account.types';
 
-import { buildAddCard, buildClose, buildReplaceCard, digitsOnly, futureDateError } from './cardsForms';
+import { buildAddCard, buildClose, buildReplaceCard, digitsOnly, futureDateError } from './cardsFormsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
-import type { ActionResult } from './useCardholderActions';
+import type { ActionResult } from './useCardholderMutations';
 
 const iso = (v: string | { start?: string; end?: string }) => (typeof v === 'string' ? v : '');
 

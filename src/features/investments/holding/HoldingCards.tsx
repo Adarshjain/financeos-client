@@ -15,10 +15,10 @@ import {
   Text,
   TextField,
 } from '@/components/ds';
+import { fyLabel } from '@/features/investments/investmentsFormatModel';
 import { formatQuantity } from '@/lib/format';
 import type { PagePosition, SellEstimate } from '@/lib/investments.types';
 
-import { fyLabel } from '../investmentsFormat';
 import { loadCorporateActionsPage, loadDividendsPage, loadTradesPage } from './holdingActions';
 import {
   type CorporateActionRowModel,
@@ -28,7 +28,7 @@ import {
   sellLine,
   type TradeRow,
 } from './holdingModel';
-import { checkQuantity, quantityStep, sanitizeQuantityInput, sellFigures, taxFreeQuantity } from './sellMath';
+import { checkQuantity, quantityStep, sanitizeQuantityInput, sellFigures, taxFreeQuantity } from './sellMathModel';
 import { useSectionPage } from './useSectionPage';
 
 function SectionPager({ position, onPageChange }: { position: PagePosition; onPageChange: (page: number) => void }) {

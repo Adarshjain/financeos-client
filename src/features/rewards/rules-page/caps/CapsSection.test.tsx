@@ -31,13 +31,13 @@ let rules: Partial<RewardRule>[] = [];
 const create = vi.fn();
 const update = vi.fn();
 const remove = vi.fn();
-vi.mock('../../queries/useRewardCapBucketsQueries', () => ({
+vi.mock('@/features/rewards/queries/useRewardCapBucketsQueries', () => ({
   useRewardCapBuckets: () => ({ data: caps }),
   useCreateRewardCapBucket: () => ({ mutate: create, isPending: false }),
   useUpdateRewardCapBucket: () => ({ mutate: update, isPending: false }),
   useDeleteRewardCapBucket: () => ({ mutate: remove, isPending: false }),
 }));
-vi.mock('../../queries/useRewardRulesQueries', () => ({ useRewardRules: () => ({ data: rules }) }));
+vi.mock('@/features/rewards/queries/useRewardRulesQueries', () => ({ useRewardRules: () => ({ data: rules }) }));
 
 const succeed = (...args: unknown[]) => (args[1] as { onSuccess: () => void }).onSuccess();
 

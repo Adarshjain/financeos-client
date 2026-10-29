@@ -3,7 +3,7 @@
 import { createDomainAction } from '@/lib/domainApi';
 
 import type { CorporateActionRowModel, DividendRowModel, HoldingSection, PriceRowModel, TradeRow } from './holdingModel';
-import { corporateActionsSection, dividendsSection, pricesSection, tradesSection } from './holdingSections';
+import { corporateActionsSection, dividendsSection, pricesSection, tradesSection } from './holdingSectionsModel';
 
 /** Page `page` of a holding's trades, for the Trades card's pager. */
 export const loadTradesPage = createDomainAction(

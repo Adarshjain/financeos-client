@@ -7,8 +7,8 @@ import { ListTransition } from '@/lib/viewTransition';
 import type { fetchLoanMatches, fetchLoans, fetchLoansSummary } from '../loansServerApi';
 import { TileGrid } from '../TileGrid';
 import { LoanMatchBanner } from './LoanMatchBanner';
-import { closedLoansLine, loanRow, type LoansUrlState,loanTiles } from './loansList';
 import { LoansListCard } from './LoansListCard';
+import { closedLoansLine, loanRow, type LoansUrlState,loanTiles } from './loansListModel';
 
 const TILE_LABELS = ['Outstanding', 'EMIs per month', 'Overdue', 'Interest this FY'];
 

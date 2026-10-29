@@ -6,11 +6,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { showToast } from '@/components/ds';
-import { reportHref } from '@/features/reports/list/reportsList';
+import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltinModel';
+import { reportHref } from '@/features/reports/list/reportsListModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
-
-import { duplicateBuiltin, windowNote } from '../data/duplicateBuiltin';
 
 export function useDuplicateBuiltinReport() {
   const queryClient = useQueryClient();

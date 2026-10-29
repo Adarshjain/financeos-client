@@ -3,9 +3,9 @@
 import { CreditCard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import type { BillCardState } from '@/features/bills/billCardState';
-import { billCardLabel, billDueText } from '@/features/bills/bills.helpers';
-import type { BillRowActions } from '@/features/bills/useBillsWidgetActions';
+import type { BillCardState } from '@/features/bills/billCardStateModel';
+import { billCardLabel, billDueText } from '@/features/bills/billsModel';
+import type { BillRowActions } from '@/features/bills/useBillsWidgetMutations';
 import type { CardBillResponse } from '@/lib/api/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 

@@ -28,9 +28,9 @@ import {
   type ReportRow,
   reportsUrl,
   TYPE_CHIPS,
-} from './reportsList';
+} from './reportsListModel';
 import { ReportsTabs } from './ReportsTabs';
-import { useReportActions } from './useReportActions';
+import { useReportMutations } from './useReportMutations';
 
 /** A press on a control inside a row must not also open the row. */
 const stop = (e: React.SyntheticEvent) => e.stopPropagation();
@@ -165,7 +165,7 @@ export interface ReportsScreenProps {
 /** The Reports list: tabs, then search and the type chips in one row over the grouped table, then templates and Ask instead. */
 export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
   const router = useRouter();
-  const actions = useReportActions();
+  const actions = useReportMutations();
   const [search, setSearch] = React.useState('');
   const [type, setTypeState] = React.useState<ReportKind | undefined>(initialType);
   // Back/forward (or any other URL change) after load brings the chip with it.

@@ -15,7 +15,7 @@ import {
   toggleWidth,
   widthStops,
   widthToggleLabel,
-} from '@/features/dashboards/editor/dashboardEditor.helpers';
+} from '@/features/dashboards/editor/dashboardEditorModel';
 import { api } from '@/lib/api/client';
 import { newBuiltinWidget, QUARTER_WIDTH } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';

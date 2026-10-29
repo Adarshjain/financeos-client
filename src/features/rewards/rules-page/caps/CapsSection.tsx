@@ -3,11 +3,11 @@
 import React from 'react';
 
 import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
+import { useDeleteRewardCapBucket, useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBucketsQueries';
+import { useRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { RewardCapBucket } from '@/lib/rewards.types';
 
-import { useDeleteRewardCapBucket, useRewardCapBuckets } from '../../queries/useRewardCapBucketsQueries';
-import { useRewardRules } from '../../queries/useRewardRulesQueries';
 import type { CapUsage } from '../rulesPageModel';
 import { useRefreshUsage } from '../rulesRefresh';
 import { CapDialog } from './CapDialog';

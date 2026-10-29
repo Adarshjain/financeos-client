@@ -8,7 +8,7 @@ import { DiagnosticsProvider } from '@/lib/diagnostics/DiagnosticsProvider';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { DebugView } from './DebugView';
+import { DebugScreen } from './DebugScreen';
 import { LocalFailuresCard } from './LocalFailuresCard';
 
 // The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
@@ -76,16 +76,16 @@ afterEach(() => {
   Object.assign(navigator, { share: undefined });
 });
 
-describe('DebugView lookup', () => {
+describe('DebugScreen lookup', () => {
   it('non-admin sees the admin note, no form, and never calls the API', () => {
-    renderWithQuery(<DebugView admin={false} initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin={false} initialRef="HM6HK5G6" />);
     expect(screen.getByText('Look-ups are for admins. Send the reference to the developer.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Look up' })).not.toBeInTheDocument();
     expect(api.GET).not.toHaveBeenCalled();
   });
 
   it('admin sees the form with the hint, type options and a disabled Look up when empty', () => {
-    renderWithQuery(<DebugView admin />);
+    renderWithQuery(<DebugScreen admin />);
     expect(screen.getByText(/Enter a request id or an error id/)).toBeInTheDocument();
     for (const name of ['Auto-detect', 'Error ID', 'Request ID']) {
       expect(screen.getByRole('radio', { name })).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe('DebugView lookup', () => {
 
   it('submitting trims the ref and writes ref and type to the URL', async () => {
     mockLookup(lookup);
-    renderWithQuery(<DebugView admin />);
+    renderWithQuery(<DebugScreen admin />);
     fireEvent.change(screen.getByLabelText('Reference'), { target: { value: '  HM6HK5G6 ' } });
     fireEvent.click(screen.getByRole('radio', { name: 'Error ID' }));
     fireEvent.click(screen.getByRole('button', { name: 'Look up' }));
@@ -108,7 +108,7 @@ describe('DebugView lookup', () => {
 
   it('renders the request, root cause and timeline cards', async () => {
     mockLookup(lookup);
-    renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin initialRef="HM6HK5G6" />);
     expect(await screen.findByText('Request')).toBeInTheDocument();
     expect(screen.getByText('f80e0834c4af440681b0')).toBeInTheDocument();
     expect(screen.getByText('400')).toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('DebugView lookup', () => {
 
   it('expands a timeline line to its fields and stack trace', async () => {
     mockLookup(lookup);
-    renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin initialRef="HM6HK5G6" />);
     fireEvent.click(await screen.findByRole('button', { name: 'Show details' }));
     expect(screen.getByText('datasource: tx')).toBeInTheDocument();
     expect(screen.getByText('at Foo.bar(Foo.java:1)')).toBeInTheDocument();
@@ -138,13 +138,13 @@ describe('DebugView lookup', () => {
 
   it('shows the truncated note', async () => {
     mockLookup({ ...lookup, truncated: true });
-    renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin initialRef="HM6HK5G6" />);
     expect(await screen.findByText('Truncated to first 500 lines')).toBeInTheDocument();
   });
 
   it('Copy raw fetches the raw endpoint and copies JSON; failure toasts an error', async () => {
     mockLookup(lookup);
-    renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin initialRef="HM6HK5G6" />);
     const raw = [{ line: 'x' }];
     vi.mocked(api.GET).mockResolvedValueOnce({ data: raw, error: undefined, response: new Response() } as never);
     fireEvent.click(await screen.findByRole('button', { name: 'Copy raw' }));
@@ -161,7 +161,7 @@ describe('DebugView lookup', () => {
 
   it('says so, with Retry, when the look-up fails', async () => {
     mockLookup(undefined, new Error('Loki credentials lack read scope.'));
-    renderWithQuery(<DebugView admin initialRef="HM6HK5G6" />);
+    renderWithQuery(<DebugScreen admin initialRef="HM6HK5G6" />);
     expect(await screen.findByText("Couldn't load that reference")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
@@ -174,7 +174,7 @@ describe('DebugView lookup', () => {
       timeline: [],
       rootCause: { kind: 'NOT_FOUND_IN_LOGS', headline: 'Nothing found for this reference', detail: '', hints: ['Check the id'] },
     });
-    renderWithQuery(<DebugView admin initialRef="ZZZZZZZZ" />);
+    renderWithQuery(<DebugScreen admin initialRef="ZZZZZZZZ" />);
     expect(await screen.findByText('Nothing found for this reference')).toBeInTheDocument();
     expect(screen.getByText('Check the id')).toBeInTheDocument();
     expect(screen.queryByText('Request')).not.toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('DebugView lookup', () => {
   it('tapping a local failure fills the lookup, updates the URL and highlights the row (admin)', async () => {
     mockLookup(lookup);
     errorLog.record('Validation error', { ref: 'HM6HK5G6', status: 400, code: 'VALIDATION_ERROR' });
-    renderWithQuery(<DebugView admin />);
+    renderWithQuery(<DebugScreen admin />);
     fireEvent.click(screen.getByText('HM6HK5G6'));
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/settings/debug?ref=HM6HK5G6'));
     expect(screen.getByLabelText('Reference')).toHaveValue('HM6HK5G6');
@@ -193,7 +193,7 @@ describe('DebugView lookup', () => {
 
   it('tapping a local failure as a non-admin copies it without calling the API', () => {
     errorLog.record('Validation error', { ref: 'HM6HK5G6', status: 400, code: 'VALIDATION_ERROR' });
-    renderWithQuery(<DebugView admin={false} />);
+    renderWithQuery(<DebugScreen admin={false} />);
     fireEvent.click(screen.getByText('HM6HK5G6'));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('HM6HK5G6');
     expect(api.GET).not.toHaveBeenCalled();

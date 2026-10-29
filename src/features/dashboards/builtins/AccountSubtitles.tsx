@@ -8,7 +8,7 @@ import React from 'react';
 import { accountTypeLabel } from '@/features/accounts/form/ds/accountFormModel';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
-import { accountTypeText, cardNameText } from './subtitles';
+import { accountTypeText, cardNameText } from './subtitlesModel';
 
 /** A card-scoped widget's subtitle: that card's name ("One card" until the list loads or when it is gone). */
 export function CardNameSubtitle({ accountId }: { accountId: string }) {

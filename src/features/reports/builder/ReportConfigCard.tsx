@@ -5,12 +5,12 @@ import React from 'react';
 import { SegmentedControl, Select, TextArea, TextField } from '@/components/ds';
 import type { DatasourceCatalog, ReportCatalog, ReportType } from '@/lib/reports.types';
 
-import type { BuilderAction, BuilderState } from './builderReducer';
+import type { BuilderAction, BuilderState } from './builderReducerModel';
 import type { DynamicOptions } from './catalog';
 import { ConfigSection } from './ConfigSection';
-import { workingCatalog } from './editorState';
+import { workingCatalog } from './editorStateModel';
 import { FilterChips } from './FilterChips';
-import { datasourceGroups, FORMAT_OPTIONS } from './options';
+import { datasourceGroups, FORMAT_OPTIONS } from './optionsModel';
 import { ChartOptions, type Issues, KpiOptions, TableOptions } from './typeOptions';
 
 export interface ReportConfigCardProps {

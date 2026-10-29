@@ -21,11 +21,11 @@ import {
 } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
 import { CorporateActionDialog } from '@/features/investments/corporate-actions/CorporateActionDialog';
+import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
 import { AccountType } from '@/lib/types';
 
-import type { InstrumentRef } from '../investmentsFormat';
 import {
   groupBands,
   type HoldingListRow,

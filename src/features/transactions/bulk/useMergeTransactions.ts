@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
 import { reviewReasonLabel } from '@/features/transactions/catalog';
+import { mergeTransactions } from '@/features/transactions/transactionActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { MergeTransactionsResponse } from '@/lib/transaction.types';
 
-import { mergeTransactions } from '../actions';
 import { mergedMessage } from './bulkModel';
 
 /**

@@ -2,7 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fyLabel } from '@/features/investments/investmentsFormat';
+import { fyLabel } from '@/features/investments/investmentsFormatModel';
 import { fundBuy, job, stockBuy, trade, tradesPage } from '@/features/investments/tradebook/tradebook.fixtures';
 import { currentFy } from '@/features/investments/tradebook/tradebookModel';
 import { renderWithQuery } from '@/test/renderWithQuery';

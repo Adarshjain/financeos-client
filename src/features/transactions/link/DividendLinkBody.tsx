@@ -20,7 +20,7 @@ import { formatDate, formatMoney } from '@/lib/format';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
-import { expectedNet } from './dividendLinkHelpers';
+import { expectedNet } from './dividendLinkModel';
 import type { DividendLinkMode, UseDividendLinkResult } from './useDividendLink';
 
 const RECEIPT_WORDS: Record<string, string> = {

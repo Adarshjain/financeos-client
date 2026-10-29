@@ -10,8 +10,8 @@
 import { CardSortBar,TableCardList } from '@/components/reports/views/TableCardList';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { TableView } from '@/components/reports/views/TableView';
-import { groupLabel, groupTotal, partitionByGroup } from '@/features/reports/underlying/underlying.helpers';
-import { formatCell } from '@/features/reports/view/cells';
+import { groupLabel, groupTotal, partitionByGroup } from '@/features/reports/underlying/underlyingModel';
+import { formatCell } from '@/features/reports/view/cellsModel';
 import type { SortClause, TableData, TableRow } from '@/lib/reports.types';
 import { BELOW_SM_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 

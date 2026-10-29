@@ -18,10 +18,10 @@ import {
   digitsOnly,
   type EditHolderBody,
   futureDateError,
-} from './cardsForms';
+} from './cardsFormsModel';
 import { roleLabel } from './cardsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
-import type { ActionResult } from './useCardholderActions';
+import type { ActionResult } from './useCardholderMutations';
 
 const RELATIONSHIP_OPTIONS = Object.entries(RELATIONSHIP_LABELS)
   .filter(([value]) => value !== 'SELF')

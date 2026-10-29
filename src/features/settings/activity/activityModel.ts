@@ -1,4 +1,4 @@
-import { buildJobsFilterUrl } from '@/features/jobs/jobUtils';
+import { buildJobsFilterUrl } from '@/features/jobs/jobsFilterModel';
 import { DEFAULT_PAGE_SIZE } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import type { JobResponse } from '@/lib/types';

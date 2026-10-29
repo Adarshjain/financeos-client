@@ -1,9 +1,8 @@
+import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import type { CreateCorporateActionRequest } from '@/lib/api/types';
 import type { CorporateActionItem, CorporateActionKind } from '@/lib/investments.types';
 
-import type { InstrumentRef } from '../investmentsFormat';
-
-export { instrumentLabel, type InstrumentRef } from '../investmentsFormat';
+export { instrumentLabel, type InstrumentRef } from '@/features/investments/investmentsFormatModel';
 
 export interface CorporateActionForm {
   instrument: InstrumentRef | null;

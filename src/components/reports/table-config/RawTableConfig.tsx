@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Label } from '@/components/ui/label';
-import type { RawTableDraft } from '@/features/reports/builder/builderReducer';
+import type { RawTableDraft } from '@/features/reports/builder/builderReducerModel';
 import { columnsFor, fieldByName } from '@/features/reports/builder/catalog';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 

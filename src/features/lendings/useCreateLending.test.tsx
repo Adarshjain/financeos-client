@@ -3,13 +3,13 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./actions', () => ({ createLendingEntry: vi.fn() }));
+vi.mock('./lendingActions', () => ({ createLendingEntry: vi.fn() }));
 vi.mock('@/lib/toastError', () => ({ toastError: vi.fn() }));
 
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import { createLendingEntry } from './actions';
+import { createLendingEntry } from './lendingActions';
 import { useCreateLending } from './useCreateLending';
 
 const body = { counterpartyId: 'c1', direction: 'lent', kind: 'principal', amount: 5, entryDate: '2026-10-13' } as const;

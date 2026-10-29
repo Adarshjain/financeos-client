@@ -3,8 +3,8 @@ import React from 'react';
 
 import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
+import { UpcomingScreen } from '@/features/upcoming/UpcomingScreen';
 import { parseUpcomingUrl } from '@/features/upcoming/upcomingUrl';
-import { UpcomingView } from '@/features/upcoming/UpcomingView';
 import { obligationsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
@@ -28,7 +28,7 @@ export default async function DsUpcomingPage({
   await signInIfPrefetchFailed(qc, keys.obligations.upcoming({ months }));
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <UpcomingView />
+      <UpcomingScreen />
     </HydrationBoundary>
   );
 }

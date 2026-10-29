@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { describeOverriddenFields, isOverridden } from '@/features/investments/instruments/instrumentEdit';
+import { describeOverriddenFields, isOverridden } from '@/features/investments/instruments/instrumentEditModel';
 import { useResetInstrumentOverrides } from '@/features/investments/instruments/useInstrumentEdit';
 import type { Instrument } from '@/lib/types';
 

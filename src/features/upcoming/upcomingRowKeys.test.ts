@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ObligationItem } from './obligations';
+import type { ObligationItem } from './obligationsModel';
 import { upcomingRowKeys } from './UpcomingList';
 
 const item = (over: Record<string, unknown>) => ({ type: 'card_bill', ...over }) as unknown as ObligationItem;

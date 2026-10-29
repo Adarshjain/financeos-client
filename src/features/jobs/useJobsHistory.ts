@@ -2,8 +2,8 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { loadJobs } from '@/features/jobs/actions';
-import { buildJobsQueryParams } from '@/features/jobs/jobUtils';
+import { loadJobs } from '@/features/jobs/jobActions';
+import { buildJobsQueryParams } from '@/features/jobs/jobsFilterModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse } from '@/lib/types';

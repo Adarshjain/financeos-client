@@ -8,8 +8,7 @@
 import { forwardRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-import { Text } from '@/components/ds';
-import { cn } from '@/components/ds/cn';
+import { cn, Text } from '@/components/ds';
 import { formatShare, seriesLabel } from '@/lib/charts/chart-series';
 import { useElementSize } from '@/lib/charts/useElementSize';
 

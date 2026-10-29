@@ -2,7 +2,8 @@ import React from 'react';
 
 import { loaded, orNull } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
-import { transactionRows } from '@/features/transactions/list/transactionRows';
+import { transactionRows } from '@/features/transactions/list/transactionRowsModel';
+import type { TransactionsListResult } from '@/features/transactions/list/TransactionsListPane';
 import {
   fetchAccounts,
   fetchCategories,
@@ -10,7 +11,6 @@ import {
   fetchTransactionsPage,
 } from '@/features/transactions/list/transactionsServerApi';
 import { parseTransactionsUrl } from '@/features/transactions/list/transactionsUrl';
-import type { TransactionsListResult } from '@/features/transactions/list/TransactionsView';
 import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
 import { todayInAppZone } from '@/lib/date-range';
 

@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { groupLabel, groupTotal } from '@/features/reports/underlying/underlying.helpers';
-import { formatCell } from '@/features/reports/view/cells';
+import { groupLabel, groupTotal } from '@/features/reports/underlying/underlyingModel';
+import { formatCell } from '@/features/reports/view/cellsModel';
 import type { SortClause, TableColumn, TableData, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 

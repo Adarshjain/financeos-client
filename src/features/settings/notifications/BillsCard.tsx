@@ -8,7 +8,7 @@ import { notify } from '@/lib/notify';
 
 import { KindSwitches, useSaveSettings } from './KindsCard';
 import { BILLS_KINDS } from './notificationKinds';
-import { hourLabel, OFFSET_CHOICES, offsetLabel, offsetsSummary, toggleOffset } from './notificationSettings.helpers';
+import { hourLabel, OFFSET_CHOICES, offsetLabel, offsetsSummary, toggleOffset } from './notificationSettingsModel';
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: hourLabel(h) }));
 

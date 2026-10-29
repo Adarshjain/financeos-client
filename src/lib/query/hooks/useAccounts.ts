@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import type { Account } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';
-import { loadAccount, loadAccounts } from '@/lib/query/actions/accounts';
+import { loadAccount, loadAccounts } from '@/lib/query/actions/accountActions';
 import { keys } from '@/lib/query/keys';
 
 export function useAccounts(initialData?: Account[], { enabled = true }: { enabled?: boolean } = {}) {

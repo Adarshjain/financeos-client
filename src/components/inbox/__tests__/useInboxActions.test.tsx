@@ -12,7 +12,7 @@ vi.mock('@/lib/api/client', async () => {
 const toastMock = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('sonner', () => ({ toast: toastMock }));
 
-import { useInboxActions } from '@/features/inbox/useInboxActions';
+import { useInboxMutations } from '@/features/inbox/useInboxMutations';
 import { api } from '@/lib/api/client';
 import type { InboxResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
@@ -51,11 +51,11 @@ function setup(seed = true) {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={qc}>{children}</QueryClientProvider>
   );
-  const hook = renderHook(() => useInboxActions(), { wrapper: Wrapper });
+  const hook = renderHook(() => useInboxMutations(), { wrapper: Wrapper });
   return { qc, hook };
 }
 
-describe('useInboxActions', () => {
+describe('useInboxMutations', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(api.GET).mockResolvedValue({ data: undefined } as never);

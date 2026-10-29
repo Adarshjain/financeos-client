@@ -11,7 +11,7 @@ import type {
   UpdateLendingRequest,
 } from '@/lib/types';
 
-import { deleteCounterparty, deleteLendingEntry, updateCounterparty, updateLendingEntry } from './actions';
+import { deleteCounterparty, deleteLendingEntry, updateCounterparty, updateLendingEntry } from './lendingActions';
 import { useCreateLending } from './useCreateLending';
 import { useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingTransactionLink';
 

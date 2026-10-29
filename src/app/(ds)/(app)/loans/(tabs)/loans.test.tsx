@@ -27,13 +27,13 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 }));
 
 const batch = vi.hoisted(() => vi.fn());
-vi.mock('@/features/loans/loanPaymentsBatch', async (orig) => ({
-  ...(await orig<typeof import('@/features/loans/loanPaymentsBatch')>()),
+vi.mock('@/features/loans/loanPaymentsBatchModel', async (orig) => ({
+  ...(await orig<typeof import('@/features/loans/loanPaymentsBatchModel')>()),
   postLoanPaymentsBatch: batch,
 }));
 
 const loadClosedLoans = vi.hoisted(() => vi.fn());
-vi.mock('@/features/loans/list/closedLoansAction', () => ({ loadClosedLoans }));
+vi.mock('@/features/loans/list/closedLoanActions', () => ({ loadClosedLoans }));
 
 const server = vi.hoisted(() => ({
   fetchLoans: vi.fn(),

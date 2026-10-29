@@ -5,7 +5,7 @@ import React from 'react';
 
 import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
 import { Chart } from '@/components/organisms/Chart/Chart';
-import { formatMeasure } from '@/features/reports/measureFormat';
+import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';
 import { formatPercent } from '@/lib/format';
@@ -24,8 +24,8 @@ import type {
 } from '@/lib/reports.types';
 import { signed } from '@/lib/reports/signed';
 
-import { formatCell } from './cells';
-import { PAGE_SIZES } from './format';
+import { formatCell } from './cellsModel';
+import { PAGE_SIZES } from './viewFormatModel';
 
 /** A raw table cell as the preview prints it: numbers as {@link previewValue}, everything else as the table does. */
 function cellText(value: unknown, column: TableColumn, catalog: DatasourceCatalog | undefined): string {

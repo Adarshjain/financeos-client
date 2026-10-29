@@ -14,7 +14,7 @@ import { DeleteCardDialog, DeleteHolderDialog, ReassignDialog } from './HolderAc
 import { ClosedHolders, HolderCard } from './HolderCard';
 import { AddHolderDialog, EditHolderDialog } from './HolderFormDialogs';
 import { SharedLimitCard } from './SharedLimitCard';
-import { useCardholderActions } from './useCardholderActions';
+import { useCardholderMutations } from './useCardholderMutations';
 
 type DialogState =
   | { kind: 'addHolder' }
@@ -50,7 +50,7 @@ export function CardsTab({
   model,
 }: CardsTabProps) {
   const router = useRouter();
-  const actions = useCardholderActions(accountId, isBank);
+  const actions = useCardholderMutations(accountId, isBank);
   const [dialog, setDialog] = React.useState<DialogState | null>(null);
 
   // The overview's Cardholders "Add" links here with ?add=cardholder: open once on load, then clear it

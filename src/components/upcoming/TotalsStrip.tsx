@@ -1,4 +1,4 @@
-import { type ObligationItem, obligationWindows, sumAmounts } from '@/features/upcoming/obligations';
+import { type ObligationItem, obligationWindows, sumAmounts } from '@/features/upcoming/obligationsModel';
 import { formatMoney } from '@/lib/utils';
 
 function Stat({ label, value, danger }: { label: string; value: number; danger?: boolean }) {

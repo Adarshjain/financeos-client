@@ -41,13 +41,13 @@ let list: RewardMilestone[] = [];
 const create = vi.fn();
 const update = vi.fn();
 const remove = vi.fn();
-vi.mock('../../queries/useRewardMilestonesQueries', () => ({
+vi.mock('@/features/rewards/queries/useRewardMilestonesQueries', () => ({
   useRewardMilestones: () => ({ data: list }),
   useCreateRewardMilestone: () => ({ mutate: create, isPending: false }),
   useUpdateRewardMilestone: () => ({ mutate: update, isPending: false }),
   useDeleteRewardMilestone: () => ({ mutate: remove, isPending: false }),
 }));
-vi.mock('../../queries/useRewardAccountConfigQueries', () => ({
+vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({
   useRewardAccountConfig: () => ({ data: { defaultRewardType: 'POINTS' } }),
 }));
 vi.mock('@/lib/query/hooks/useCategories', () => ({

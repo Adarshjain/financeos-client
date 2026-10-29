@@ -2,11 +2,11 @@ import Link from 'next/link';
 import React from 'react';
 
 import { Button, KpiTile } from '@/components/ds';
+import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
 import { LoadError } from '@/features/shell/LoadError';
 import { appHref } from '@/features/shell/routes';
 
 import { accountHref } from '../accountTabsModel';
-import { currentMilestones } from '../milestones';
 import { EarningLines } from './EarningLines';
 import { RewardsBanners } from './RewardsBanners';
 import type { RewardsTabData } from './rewardsData';
@@ -22,8 +22,8 @@ import {
   ruleExtras,
   ruleLines,
 } from './rewardsModel';
-import { capitalize, periodWords } from './rewardsPeriod';
 import { RewardsPeriodControl } from './RewardsPeriodControl';
+import { capitalize, periodWords } from './rewardsPeriodModel';
 import { CardholdersCard, MilestonesCard, RulesCard } from './RewardsSections';
 import { RewardsEmpty } from './RewardsStates';
 

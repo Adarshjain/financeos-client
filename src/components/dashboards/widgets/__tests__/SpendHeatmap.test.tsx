@@ -15,7 +15,7 @@ import {
   fitGrid,
   SpendHeatmapView,
   visibleMonthLabels,
-} from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+} from '@/components/dashboards/widgets/spend-heatmap/SpendHeatmapView';
 import {
   buildHeatmap,
   heatmapMonths,

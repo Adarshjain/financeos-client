@@ -6,13 +6,13 @@
 import React from 'react';
 
 import { WidgetGrid, type WidgetGridItem } from '@/components/ds';
+import { orderWidgets, widthStepOf } from '@/features/dashboards/layout/widgetLayoutModel';
 import { isTextWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 
 import { DashboardWidgetFrame } from '../frame/DashboardWidgetFrame';
 import { HeaderWidget } from '../frame/HeaderWidget';
 import type { WidgetSettingsChange } from '../frame/WidgetSettingsDialog';
-import { orderWidgets, widthStepOf } from '../layout/widgetLayout';
 
 export interface DashboardWidgetsProps {
   widgets: readonly WidgetResponse[];

@@ -9,13 +9,13 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatAmount } from '@/features/reports/underlying/underlying.helpers';
 import type {
   KpiUnderlyingResponse,
   UnderlyingExcludedItem,
   UnderlyingFilterChip,
   UnderlyingPeriod,
 } from '@/features/reports/underlying/underlying.types';
+import { formatAmount } from '@/features/reports/underlying/underlyingModel';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { cn } from '@/lib/utils';
 

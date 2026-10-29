@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Card, Skeleton } from '@/components/ds';
-import { REPORTS_HREF } from '@/features/reports/list/reportsList';
+import { REPORTS_HREF } from '@/features/reports/list/reportsListModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 

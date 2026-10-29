@@ -3,7 +3,7 @@
 import { Clock, X } from 'lucide-react';
 
 import { type SwipeAction, SwipeActionRow } from '@/components/ui/swipe-action-row';
-import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from '@/features/inbox/inbox.helpers';
+import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from '@/features/inbox/inboxModel';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 

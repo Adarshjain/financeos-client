@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { transactionRows } from '@/features/transactions/list/transactionRowsModel';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { emptyValues, valuesFromTransaction } from '../form/transactionFormModel';
-import { transactionRows } from '../list/transactionRows';
 import { applyChanges, approveChange, mergeOntoLatest, patchChange, patchFromValues, removeChange } from './optimisticModel';
 
 const t = (over: Partial<Transaction>): Transaction =>

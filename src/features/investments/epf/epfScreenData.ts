@@ -16,11 +16,11 @@ import {
   missingMonths,
   passbookSubtitle,
 } from './epfModel';
+import type { EpfScreenProps } from './EpfScreen';
 import { fetchEpfEmployers, fetchEpfEntries, fetchEpfFys, fetchEpfSummary } from './epfServerApi';
-import type { EpfViewProps } from './EpfView';
 
 /** What the EPF view shows for the address's FY, employer and page. A page past the end redirects to the last one. */
-export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfViewProps>> {
+export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfScreenProps>> {
   const today = todayInAppZone();
 
   const [summary, employers] = await Promise.all([loaded(fetchEpfSummary()), loaded(fetchEpfEmployers())]);

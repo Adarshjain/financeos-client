@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { BuilderState } from '@/features/reports/builder/builderReducer';
-import { initialBuilderState } from '@/features/reports/builder/builderReducer';
-import { validationErrors } from '@/features/reports/builder/serialize';
+import type { BuilderState } from '@/features/reports/builder/builderReducerModel';
+import { initialBuilderState } from '@/features/reports/builder/builderReducerModel';
+import { validationErrors } from '@/features/reports/builder/serializeModel';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
 const operators = {

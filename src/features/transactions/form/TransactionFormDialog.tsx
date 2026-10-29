@@ -19,7 +19,7 @@ import {
   getCardOptions,
   getDefaultCardIdForAccount,
   getSelectableAccounts,
-} from './transactionCRUD.helpers';
+} from './transactionCrudModel';
 import { TransactionFormFields } from './TransactionFormFields';
 import {
   buildRequest,

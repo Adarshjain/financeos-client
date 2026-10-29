@@ -8,22 +8,22 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
-vi.mock('@/components/dashboards/widgets/card_utilisation/CardUtilisationWidget', () => ({
+vi.mock('@/components/dashboards/widgets/card-utilisation/CardUtilisationWidget', () => ({
   CardUtilisationWidget: ({ accountId, className }: { accountId?: string | null; className?: string }) => (
     <div data-testid="card-util" data-account={accountId ?? 'none'} className={className} />
   ),
 }));
-vi.mock('@/components/dashboards/widgets/emergency_fund/EmergencyFundWidget', () => ({
+vi.mock('@/components/dashboards/widgets/emergency-fund/EmergencyFundWidget', () => ({
   EmergencyFundWidget: ({ className }: { className?: string }) => <div data-testid="emergency" className={className} />,
 }));
 
 import { CARDS_SPENDING_ENTRIES, CARDS_SPENDING_VIEWS } from '@/components/dashboards/builtins/group.cardsSpending';
 import { builtinEntry, templateView } from '@/components/dashboards/builtins/registry';
 import { DashboardWidgetView } from '@/components/dashboards/DashboardWidgetView';
-import { CapHeadroomView } from '@/components/dashboards/widgets/cap_headroom/CapHeadroomView';
-import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone_progress/MilestoneProgressView';
-import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards_earned/RewardsEarnedView';
-import { SpendHeatmapView } from '@/components/dashboards/widgets/spend_heatmap/SpendHeatmapView';
+import { CapHeadroomView } from '@/components/dashboards/widgets/cap-headroom/CapHeadroomView';
+import { MilestoneProgressView } from '@/components/dashboards/widgets/milestone-progress/MilestoneProgressView';
+import { RewardsEarnedView } from '@/components/dashboards/widgets/rewards-earned/RewardsEarnedView';
+import { SpendHeatmapView } from '@/components/dashboards/widgets/spend-heatmap/SpendHeatmapView';
 import { api } from '@/lib/api/client';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import { useBalanceSeries } from '@/lib/query/hooks/useBalanceSeries';

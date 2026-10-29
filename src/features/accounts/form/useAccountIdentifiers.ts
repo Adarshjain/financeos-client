@@ -2,11 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { addAccountIdentifier, loadAccountIdentifiers, removeAccountIdentifier } from '@/features/accounts/accountActions';
 import { unwrapAction } from '@/lib/actionResult';
 import type { AccountIdentifierResponse, CreateAccountIdentifierRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
-
-import { addAccountIdentifier, loadAccountIdentifiers, removeAccountIdentifier } from '../actions';
 
 export function useAccountIdentifiers(accountId?: string) {
   const qc = useQueryClient();

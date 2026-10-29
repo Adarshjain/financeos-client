@@ -6,8 +6,8 @@ import React from 'react';
 import { Button, ContextMenu, Icon, ListRow, SwipeActions } from '@/components/ds';
 import type { InboxItemResponse } from '@/lib/api/types';
 
-import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inbox.helpers';
-import { type RowButton, rowButtons } from './inboxRows';
+import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inboxModel';
+import { type RowButton, rowButtons } from './inboxRowsModel';
 import { InboxSnoozeMenu } from './InboxSnoozeMenu';
 
 export interface InboxRowProps {

@@ -8,7 +8,7 @@ import {
   obligationHref,
   type ObligationItem,
   obligationTitle,
-} from '@/features/upcoming/obligations';
+} from '@/features/upcoming/obligationsModel';
 import { formatDate, formatMoney } from '@/lib/utils';
 
 import { ObligationRow } from '../ObligationRow';

@@ -4,9 +4,9 @@ import { CheckCircle2, ChevronDown } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { BillCardState } from '@/features/bills/billCardState';
-import { billCardLabel } from '@/features/bills/bills.helpers';
-import type { BillRowActions } from '@/features/bills/useBillsWidgetActions';
+import type { BillCardState } from '@/features/bills/billCardStateModel';
+import { billCardLabel } from '@/features/bills/billsModel';
+import type { BillRowActions } from '@/features/bills/useBillsWidgetMutations';
 import { cn, formatDate } from '@/lib/utils';
 
 import { canUndoPaid, UndoPaidButton } from './BillCardRow';

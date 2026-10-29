@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
-import { accountNeedsBank } from '@/features/accounts/accountBank';
+import { accountNeedsBank } from '@/features/accounts/accountBankModel';
 import type { Account } from '@/lib/account.types';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';

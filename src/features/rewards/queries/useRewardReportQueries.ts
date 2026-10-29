@@ -2,10 +2,9 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
+import { loadRewardLines, loadRewardReport, type RewardLinesParams } from '@/features/rewards/rewardActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
-
-import { loadRewardLines, loadRewardReport, type RewardLinesParams } from '../actions';
 
 export type { RewardLinesParams };
 

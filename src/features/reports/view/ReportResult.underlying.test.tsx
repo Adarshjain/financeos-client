@@ -4,7 +4,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { catalogFixture } from '@/features/reports/builder/editor.fixtures';
-import { workingCatalog } from '@/features/reports/builder/editorState';
+import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import type { PivotTableData } from '@/lib/reports.types';
 
 import { ReportResult } from './ReportResult';

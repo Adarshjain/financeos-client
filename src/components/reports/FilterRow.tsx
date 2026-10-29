@@ -22,8 +22,8 @@ import {
   operatorsForField,
   valueKind,
 } from '@/features/reports/builder/catalog';
-import { defaultFilterClause } from '@/features/reports/builder/filterClause';
-import { humanizeToken } from '@/features/reports/builder/labels';
+import { defaultFilterClause } from '@/features/reports/builder/filterClauseModel';
+import { humanizeToken } from '@/features/reports/builder/labelsModel';
 import {
   buildFilter,
   dateBetween,

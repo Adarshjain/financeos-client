@@ -2,7 +2,7 @@ import { showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDate } from '@/lib/format';
 
-import type { InboxNotifier } from './useInboxActions';
+import type { InboxNotifier } from './useInboxMutations';
 
 /** The Dinero Toasts for snooze, dismiss and undo (copy from board P-inbox-states). */
 export const dsInboxNotifier: InboxNotifier = {

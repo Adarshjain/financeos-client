@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import React from 'react';
 
 import { loadLoanPage } from '@/features/loans/detail/loanDetailData';
-import { LoanDetailView } from '@/features/loans/detail/LoanDetailView';
+import { LoanDetailScreen } from '@/features/loans/detail/LoanDetailScreen';
 import { parseLoanUrl } from '@/features/loans/detail/loanUrl';
 import type { SearchParams } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
@@ -20,7 +20,7 @@ export default async function DsLoanPage({ params, searchParams }: Params & { se
   const { highlightSeq } = parseLoanUrl(await searchParams);
   const { detail, schedule, paymentAccountName } = await loadLoanPage(id);
   return (
-    <LoanDetailView
+    <LoanDetailScreen
       detail={detail}
       schedule={schedule}
       paymentAccountName={paymentAccountName}

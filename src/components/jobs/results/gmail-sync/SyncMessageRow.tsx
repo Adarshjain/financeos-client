@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { formatDateTime, STATUS_LABELS } from '@/features/jobs/syncLabels';
+import { formatDateTime, STATUS_LABELS } from '@/features/jobs/syncLabelsModel';
 import { legacyHref } from '@/features/shell/routes';
 import type { SyncMessageResult } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';

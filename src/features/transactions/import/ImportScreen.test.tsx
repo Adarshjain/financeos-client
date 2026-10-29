@@ -18,7 +18,7 @@ vi.mock('@/features/shell/ShellPage', () => ({
 vi.mock('@/features/transactions/form/AddTransactionProvider', () => ({ useAddTransaction: () => ({ open: vi.fn() }) }));
 vi.mock('@/lib/query', () => ({ useAccounts: (a: unknown) => ({ data: a }) }));
 vi.mock('@/features/jobs/jobsBus', () => ({ subscribeJobStarted: () => () => {} }));
-vi.mock('@/features/jobs/useJobActions', () => ({ useJobActions: () => ({ cancel: vi.fn(), retry: vi.fn(), busy: false }) }));
+vi.mock('@/features/jobs/useJobMutations', () => ({ useJobMutations: () => ({ cancel: vi.fn(), retry: vi.fn(), busy: false }) }));
 
 let jobs: JobResponse[] = [];
 let totalPages = 1;

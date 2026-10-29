@@ -5,7 +5,7 @@ import { JobStatusPill } from '@/components/jobs/JobStatusPill';
 import {
   formatDuration,
   getJobTypeLabel,
-} from '@/features/jobs/jobUtils';
+} from '@/features/jobs/jobsFilterModel';
 import type { JobResponse } from '@/lib/types';
 
 import {

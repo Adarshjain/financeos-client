@@ -1,5 +1,5 @@
 import { capTone, milestonePace } from '@/features/accounts/detail/rewards/rewardsModel';
-import { accrualSummary } from '@/features/rewards/rules/manager/helpers';
+import { accrualSummary } from '@/features/rewards/rules/manager/managerModel';
 import { formatCount,formatDate, formatMoney } from '@/lib/format';
 import type { RewardCapBucket, RewardReport, RewardRule, RewardType } from '@/lib/rewards.types';
 

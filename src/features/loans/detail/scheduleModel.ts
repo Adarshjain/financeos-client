@@ -1,8 +1,8 @@
-import { daysBetween } from '@/features/loans/loanFormat';
+import { daysBetween } from '@/features/loans/loanFormatModel';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto, LoanEventResponse, LoanResponse } from '@/lib/loan.types';
 
-import { fyLabel, fyStartYear } from './financialYear';
+import { fyLabel, fyStartYear } from './financialYearModel';
 import { ratePct } from './loanDetailModel';
 
 /** An EMI due within this many days reads "In n d"; further out it is just upcoming. */

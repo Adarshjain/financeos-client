@@ -1,4 +1,5 @@
-import { fyStartYear as fyStartOf } from '@/features/loans/detail/financialYear';
+import { fyLabel } from '@/features/investments/investmentsFormatModel';
+import { fyStartYear as fyStartOf } from '@/features/loans/detail/financialYearModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
@@ -6,7 +7,6 @@ import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { DividendFilters, DividendInstrumentTotal, DividendReceiptFilter } from '@/lib/investments.types';
 import type { Dividend, DividendReceiptStatus, DividendReceiptSummary, DividendSuggestion, DividendSummary, DividendType } from '@/lib/types';
 
-import { fyLabel } from '../investmentsFormat';
 import type { MatchReason, UnrecordedCredit } from './receiptTypes';
 
 // ---- URL state ---------------------------------------------------------------

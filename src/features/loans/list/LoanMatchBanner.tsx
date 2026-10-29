@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner, showToast } from '@/components/ds';
+import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatchModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanMatchSuggestions } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
 
-import { postLoanPaymentsBatch } from '../loanPaymentsBatch';
-import { matchBanner, paidToast, singleCandidateBatches } from './loansList';
+import { matchBanner, paidToast, singleCandidateBatches } from './loansListModel';
 
 /**
  * "n EMIs aren't marked paid": every installment that has exactly one matching bank debit. Link all

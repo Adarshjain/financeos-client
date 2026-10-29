@@ -3,11 +3,11 @@
 import React from 'react';
 
 import { Dialog, Select, showToast, TextField } from '@/components/ds';
+import { useCreateRewardCapBucket, useUpdateRewardCapBucket } from '@/features/rewards/queries/useRewardCapBucketsQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
-import { useCreateRewardCapBucket, useUpdateRewardCapBucket } from '../../queries/useRewardCapBucketsQueries';
 import { useRefreshUsage } from '../rulesRefresh';
 import { CAP_WINDOW_OPTIONS, COUNTER_SCOPE_OPTIONS, REWARD_TYPE_OPTIONS } from './capModel';
 

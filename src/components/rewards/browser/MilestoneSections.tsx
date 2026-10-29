@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { milestonePayoutTotal, milestoneProgressText } from '@/features/rewards/browser/helpers';
+import { milestonePayoutTotal, milestoneProgressText } from '@/features/rewards/browser/browserModel';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { MilestoneStatus } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';

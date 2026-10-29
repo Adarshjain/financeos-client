@@ -6,7 +6,7 @@ import React from 'react';
 
 import { Button, Icon, Menu } from '@/components/ds';
 
-import type { WidgetMenuItemId } from './widgetFrame.model';
+import type { WidgetMenuItemId } from './widgetFrameModel';
 
 const LABELS: Record<WidgetMenuItemId, string> = {
   'edit-report': 'Edit report',

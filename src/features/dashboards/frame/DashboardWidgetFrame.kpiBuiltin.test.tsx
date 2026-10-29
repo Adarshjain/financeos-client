@@ -15,7 +15,7 @@ vi.mock('@/lib/api/client', async () => {
 });
 const useWidgetData = vi.hoisted(() => vi.fn());
 vi.mock('../data/useWidgetData', () => ({ useWidgetData }));
-vi.mock('../builtins/net_worth/useNetWorthParts', () => ({ useNetWorthParts: () => ({ data: null }) }));
+vi.mock('@/features/dashboards/builtins/net-worth/useNetWorthParts', () => ({ useNetWorthParts: () => ({ data: null }) }));
 const dialog = vi.hoisted(() => vi.fn());
 vi.mock('@/features/reports/underlying/LazyReportUnderlyingDialogs', () => ({
   LazyReportUnderlyingDialog: (props: Record<string, unknown>) => {

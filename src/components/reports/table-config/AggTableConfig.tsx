@@ -9,11 +9,11 @@ import type {
   AggTableDraft,
   DimensionDraft,
   MeasureDraft,
-} from '@/features/reports/builder/builderReducer';
-import { newDraftId } from '@/features/reports/builder/builderReducer';
+} from '@/features/reports/builder/builderReducerModel';
+import { newDraftId } from '@/features/reports/builder/builderReducerModel';
 import { fieldByName } from '@/features/reports/builder/catalog';
-import { AGGREGATION_LABELS } from '@/features/reports/builder/labels';
-import { aggregatedColumnKey } from '@/features/reports/builder/serialize';
+import { AGGREGATION_LABELS } from '@/features/reports/builder/labelsModel';
+import { aggregatedColumnKey } from '@/features/reports/builder/serializeModel';
 import type { Aggregation, DatasourceCatalog } from '@/lib/reports.types';
 
 import { MeasureRefEditor } from '../MeasureRefEditor';

@@ -13,7 +13,7 @@ import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { feedPage, notif, serve } from './notificationsTestUtils';
-import { useNotificationsAction } from './useNotificationsAction';
+import { useNotificationsAction } from './useNotificationMutations';
 
 const routerRefresh = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', async (importOriginal) => ({

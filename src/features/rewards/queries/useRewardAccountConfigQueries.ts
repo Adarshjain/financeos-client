@@ -2,12 +2,11 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { loadRewardAccountConfig, updateRewardAccountConfig } from '@/features/rewards/rewardActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { RewardAccountConfigRequest } from '@/lib/rewards.types';
-
-import { loadRewardAccountConfig, updateRewardAccountConfig } from '../actions';
 
 export function useRewardAccountConfig(accountId: string) {
   return useQuery({

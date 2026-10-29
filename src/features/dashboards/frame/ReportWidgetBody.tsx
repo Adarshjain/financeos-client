@@ -7,7 +7,7 @@
 import React from 'react';
 
 import { Skeleton } from '@/components/ds';
-import { workingCatalog } from '@/features/reports/builder/editorState';
+import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { categoryTarget, tableRowRequest, type UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import type { WidgetResponse } from '@/lib/dashboards.types';
