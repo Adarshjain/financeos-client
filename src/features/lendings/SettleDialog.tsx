@@ -33,6 +33,8 @@ import {
 } from './settleModel';
 import { useCreateLending } from './useCreateLending';
 
+const FORM_ID = 'settle-form';
+
 export interface SettleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -143,70 +145,79 @@ export function SettleDialog({
         }}
         primary={{
           label: segment === 'settle' ? 'Record settlement' : 'Record entry',
-          onSelect: submit,
+          type: 'submit', form: FORM_ID,
           loading: createLending.isPending,
         }}
       >
         <Dialog.Body>
-          <SegmentedControl
-            fullWidth
-            aria-label="Entry type"
-            options={settleSegmentOptions(direction)}
-            value={segment}
-            onValueChange={(v) => {
-              const next = v as SettleSegment;
-              // The picker's debit/credit filter follows the money's direction, so a pick may stop fitting.
-              if (directionOf(settleEntryType(direction, next)) !== directionOf(entryType)) setTransaction(null);
-              setSegment(next);
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!createLending.isPending) void submit();
             }}
-          />
-          <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-            <AmountField
-              ref={amountRef}
-              label="Amount"
-              prefix="₹"
-              inputMode="decimal"
-              value={amount}
-              {...amountExpressionProps(amount, setAmount, () => {
-                setQuick('custom');
-                setAmountError(null);
-              })}
-              error={amountError ?? undefined}
+          >
+            <SegmentedControl
+              fullWidth
+              aria-label="Entry type"
+              options={settleSegmentOptions(direction)}
+              value={segment}
+              onValueChange={(v) => {
+                const next = v as SettleSegment;
+                // The picker's debit/credit filter follows the money's direction, so a pick may stop fitting.
+                if (directionOf(settleEntryType(direction, next)) !== directionOf(entryType)) setTransaction(null);
+                setSegment(next);
+              }}
             />
-            <DateField
-              label="Date"
-              today={todayInAppZone()}
-              value={date}
-              onValueChange={(v) => setDate(typeof v === 'string' ? v : '')}
-            />
-          </div>
-          {segment === 'settle' ? (
-            <div className="flex gap-space-8">
-              <FilterChip selected={quick === 'full'} onClick={() => pick('full')}>
-                {`Full ${formatMoney(balance, { decimals: 'auto' })}`}
-              </FilterChip>
-              <FilterChip selected={quick === 'half'} onClick={() => pick('half')}>
-                Half
-              </FilterChip>
-              <FilterChip selected={quick === 'custom'} onClick={() => pick('custom')}>
-                Custom
-              </FilterChip>
+            <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
+              <AmountField
+                ref={amountRef}
+                label="Amount"
+                prefix="₹"
+                inputMode="decimal"
+                value={amount}
+                {...amountExpressionProps(amount, setAmount, () => {
+                  setQuick('custom');
+                  setAmountError(null);
+                })}
+                error={amountError ?? undefined}
+              />
+              <DateField
+                label="Date"
+                today={todayInAppZone()}
+                value={date}
+                onValueChange={(v) => setDate(typeof v === 'string' ? v : '')}
+              />
             </div>
-          ) : null}
-          <TextField label="Note" value={note} onValueChange={setNote} placeholder="Optional" />
-          <TransactionPickerField
-            value={transaction}
-            onSelect={setTransaction}
-            onClear={() => setTransaction(null)}
-            direction={directionOf(entryType)}
-            suggestAmount={Number.isFinite(parsed) && parsed > 0 ? parsed : null}
-            suggestDate={date || null}
-          />
-          {warning ? (
-            <Text variant="label" tone="warning">
-              {warning}
-            </Text>
-          ) : null}
+            {segment === 'settle' ? (
+              <div className="flex gap-space-8">
+                <FilterChip selected={quick === 'full'} onClick={() => pick('full')}>
+                  {`Full ${formatMoney(balance, { decimals: 'auto' })}`}
+                </FilterChip>
+                <FilterChip selected={quick === 'half'} onClick={() => pick('half')}>
+                  Half
+                </FilterChip>
+                <FilterChip selected={quick === 'custom'} onClick={() => pick('custom')}>
+                  Custom
+                </FilterChip>
+              </div>
+            ) : null}
+            <TextField label="Note" value={note} onValueChange={setNote} placeholder="Optional" />
+            <TransactionPickerField
+              value={transaction}
+              onSelect={setTransaction}
+              onClear={() => setTransaction(null)}
+              direction={directionOf(entryType)}
+              suggestAmount={Number.isFinite(parsed) && parsed > 0 ? parsed : null}
+              suggestDate={date || null}
+            />
+            {warning ? (
+              <Text variant="label" tone="warning">
+                {warning}
+              </Text>
+            ) : null}
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

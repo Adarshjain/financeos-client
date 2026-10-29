@@ -5,6 +5,7 @@ import { loaded, orNull } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
 import {
   clampedRulesUrl,
+  hasRuleFilters,
   parseRulesUrl,
   rulesRequest,
 } from '@/features/transactions/rules/rulesModel';
@@ -29,6 +30,9 @@ export default async function DsRulesPage({
   ]);
   const clamped = result.ok ? clampedRulesUrl(state, result.data) : null;
   if (clamped) redirect(clamped);
+  // An empty status tab says "no rules yet" only for a user with none at all: ask whether the other tabs hold any.
+  const emptyTab = result.ok && result.data.content.length === 0 && state.status !== 'all' && !hasRuleFilters(state);
+  const everywhere = emptyTab ? await orNull(rulesApi.list({ ...rulesRequest(state, 'all'), page: 0, size: 1 })) : null;
   return (
     <RulesScreen
       rules={
@@ -38,6 +42,7 @@ export default async function DsRulesPage({
       }
       reference={result.ok ? undefined : result.reference}
       state={state}
+      hasRulesElsewhere={(everywhere?.totalElements ?? 0) > 0}
       categories={categories}
     />
   );

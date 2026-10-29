@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { GRID_GAP } from '@/components/ds';
 import { type BankAccount, isAccountClosed } from '@/lib/account.types';
 
 import { IdentifiersCard } from '../IdentifiersCard';
@@ -33,7 +34,7 @@ export async function BankOverview({ account, today }: { account: BankAccount; t
         accountName={account.name}
         model={buildHeaderModel(account, null, today)}
       />
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
           {data.flow ? <FlowKpis tiles={buildFlowKpis(data.flow)} /> : null}
           {data.recent ? (

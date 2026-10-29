@@ -18,7 +18,11 @@ import { AmountField, SettingsToggle } from '@/components/organisms';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { formatDate, formatMoney } from '@/lib/format';
 import { ENTRY_TYPE_SHORT, toEntryType } from '@/lib/lendingEntry';
-import { directionLabels, type ExportableEntry, type LendingExportToggles } from '@/lib/lendingExport';
+import {
+  directionLabels,
+  type ExportableEntry,
+  type LendingExportToggles,
+} from '@/lib/lendingExport';
 
 import { type ExportLedgerState, useExportLedger } from '../useExportLedger';
 
@@ -29,10 +33,19 @@ const TOGGLE_LABELS: Record<keyof LendingExportToggles, string> = {
   includeRunningBalance: 'Running balance after each entry',
 };
 
-const notify = (message: string, tone: 'success' | 'danger') => showToast(message, { tone });
+const notify = (message: string, tone: 'success' | 'danger') =>
+  showToast(message, { tone });
 
 function EntryChecklist({ state }: { state: ExportLedgerState }) {
-  const { entries, selectedIds, toggleEntry, selectAll, selectNone, selectSinceSettled, sinceSettledAvailable } = state;
+  const {
+    entries,
+    selectedIds,
+    toggleEntry,
+    selectAll,
+    selectNone,
+    selectSinceSettled,
+    sinceSettledAvailable,
+  } = state;
   return (
     <div className="flex flex-col gap-space-8">
       <div className="flex flex-wrap items-center gap-x-space-12 gap-y-space-4">
@@ -50,20 +63,31 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
         <Button variant="link" size="sm" onClick={selectNone}>
           None
         </Button>
-        <Text variant="caption" tone="ink-3" as="span" className="ml-auto" data-testid="export-selected-count">
+        <Text
+          variant="caption"
+          tone="ink-3"
+          as="span"
+          className="ml-auto"
+          data-testid="export-selected-count"
+        >
           {`${selectedIds.size} selected`}
         </Text>
       </div>
       <Card>
         {entries.map((entry: ExportableEntry) => {
-          const label = ENTRY_TYPE_SHORT[toEntryType(entry.direction, entry.kind)];
+          const label =
+            ENTRY_TYPE_SHORT[toEntryType(entry.direction, entry.kind)];
           const id = `export-entry-${entry.id}`;
           return (
             <ListRow
               key={entry.id}
               wrap
               leading={
-                <Checkbox id={id} checked={selectedIds.has(entry.id)} onCheckedChange={() => toggleEntry(entry.id)} />
+                <Checkbox
+                  id={id}
+                  checked={selectedIds.has(entry.id)}
+                  onCheckedChange={() => toggleEntry(entry.id)}
+                />
               }
               title={
                 <label htmlFor={id} className="flex flex-wrap gap-x-space-12">
@@ -117,7 +141,12 @@ function Options({ state }: { state: ExportLedgerState }) {
   return (
     <>
       <div className="grid grid-cols-1 desk:grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-        <TextField label="Your name" value={myName} onValueChange={setMyName} placeholder="Blank reads as “I / me”" />
+        <TextField
+          label="Your name"
+          value={myName}
+          onValueChange={setMyName}
+          placeholder="Blank reads as “I / me”"
+        />
         <TextField
           label="Their name"
           value={theirName}
@@ -167,14 +196,16 @@ function Options({ state }: { state: ExportLedgerState }) {
         </Text>
       </div>
       <div className="grid grid-cols-1 desk:grid-cols-2 desk:gap-x-space-24">
-        {(Object.keys(TOGGLE_LABELS) as (keyof LendingExportToggles)[]).map((key) => (
-          <SettingsToggle
-            key={key}
-            label={TOGGLE_LABELS[key]}
-            checked={toggles[key]}
-            onCheckedChange={(v) => setToggle(key, v)}
-          />
-        ))}
+        {(Object.keys(TOGGLE_LABELS) as (keyof LendingExportToggles)[]).map(
+          (key) => (
+            <SettingsToggle
+              key={key}
+              label={TOGGLE_LABELS[key]}
+              checked={toggles[key]}
+              onCheckedChange={(v) => setToggle(key, v)}
+            />
+          )
+        )}
       </div>
     </>
   );
@@ -193,33 +224,53 @@ export interface ExportLedgerDialogProps {
  * Pick entries, name the parties, set an opening balance, and Share or Copy the resulting plain text. Mounted only
  * while open so every opening starts fresh. Where the browser cannot share, Copy takes Share's place.
  */
-export function ExportLedgerDialog({ entries, theirName, defaultMyName, onClose }: ExportLedgerDialogProps) {
+export function ExportLedgerDialog({
+  entries,
+  theirName,
+  defaultMyName,
+  onClose,
+}: ExportLedgerDialogProps) {
   const state = useExportLedger({ entries, theirName, defaultMyName, notify });
   const disabled = state.noneSelected || Boolean(state.openingError);
+  const formId = React.useId();
+  const run = state.canShare ? state.share : state.copy;
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
       <Dialog.Content
         size="md"
         title="Export ledger"
         description="Pick the entries to include. The text below updates as you go."
-        secondary={state.canShare ? { label: 'Copy', onSelect: state.copy, disabled } : undefined}
+        secondary={
+          state.canShare
+            ? { label: 'Copy', onSelect: state.copy, disabled }
+            : undefined
+        }
         primary={
           state.canShare
-            ? { label: 'Share', onSelect: state.share, disabled }
-            : { label: 'Copy', onSelect: state.copy, disabled }
+            ? { label: 'Share', type: 'submit', form: formId, disabled }
+            : { label: 'Copy', type: 'submit', form: formId, disabled }
         }
       >
         <Dialog.Body>
-          <EntryChecklist state={state} />
-          <Options state={state} />
-          <TextArea
-            label="Preview"
-            readOnly
-            minRows={8}
-            maxRows={10}
-            value={state.text}
-            data-testid="ledger-export-preview"
-          />
+          <form
+            id={formId}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!disabled) void run();
+            }}
+          >
+            <EntryChecklist state={state} />
+            <Options state={state} />
+            <TextArea
+              label="Preview"
+              readOnly
+              minRows={8}
+              maxRows={10}
+              value={state.text}
+              data-testid="ledger-export-preview"
+            />
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

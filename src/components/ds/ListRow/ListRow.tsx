@@ -44,6 +44,8 @@ export interface ListRowProps
   clickable?: boolean;
   /** If true, title and subtitle wrap instead of truncating */
   wrap?: boolean;
+  /** If true, drops the side gutter and the transparent left rail, for a row whose container already pads it */
+  flush?: boolean;
 }
 
 export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
@@ -62,6 +64,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       borderTop = true,
       clickable = false,
       wrap = false,
+      flush = false,
       asChild = false,
       onClick,
       onKeyDown,
@@ -85,10 +88,10 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
         };
 
     const classes = cn(
-      'flex items-center gap-space-12 px-space-16 py-space-10 text-body relative transition-colors font-text no-underline text-inherit',
+      'flex items-center gap-space-12 py-space-10 text-body relative transition-colors font-text no-underline text-inherit',
       borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
       // The transparent 4px left border keeps rows aligned with DataTable rows, whose warning tone has a stripe.
-      'border-l-4 border-l-transparent',
+      flush ? 'px-0 border-l-0' : 'px-space-16 border-l-4 border-l-transparent',
       isHighlighted && 'bg-brand-tint',
       disabled && 'opacity-50 pointer-events-none',
       isInteractive &&

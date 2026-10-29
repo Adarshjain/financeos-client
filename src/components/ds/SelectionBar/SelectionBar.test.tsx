@@ -51,6 +51,25 @@ describe('SelectionBar', () => {
     expect(handleLink).toHaveBeenCalledTimes(1);
   });
 
+  it('renders an action with an href as a link and still calls onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <SelectionBar
+        count={2}
+        actions={[
+          { label: 'Open', href: '/open', onSelect },
+          { label: 'Back', variant: 'link', href: '/back' },
+        ]}
+        onClear={() => {}}
+      />,
+    );
+    const open = screen.getByRole('link', { name: 'Open' });
+    expect(open).toHaveAttribute('href', '/open');
+    fireEvent.click(open);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/back');
+  });
+
   it('disables actions marked disabled', () => {
     render(
       <SelectionBar

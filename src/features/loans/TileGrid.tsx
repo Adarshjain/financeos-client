@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { KpiTile, Text } from '@/components/ds';
+import {
+  GRID_GAP,
+  KpiTile,
+  Text,
+} from '@/components/ds';
 
 import type { TileModel } from './loanFormatModel';
 
@@ -15,7 +19,7 @@ export function TileGrid({
   error: string;
 }) {
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
       {tiles
         ? tiles.map((tile) => (
             <KpiTile
@@ -40,7 +44,7 @@ export function TileGrid({
 
 export function TileGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
       <KpiTile loading />
       <KpiTile loading />
       <KpiTile loading />

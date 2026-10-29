@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { KpiTile, Text } from '@/components/ds';
+import {
+  GRID_GAP,
+  KpiTile,
+  Text,
+} from '@/components/ds';
 
 import type { UpcomingTile } from './upcomingModel';
 
@@ -8,7 +12,7 @@ import type { UpcomingTile } from './upcomingModel';
 export function UpcomingTotals({ tiles }: { tiles: UpcomingTile[] }) {
   if (tiles.length === 0) return null;
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
       {tiles.map((t) => (
         <KpiTile
           key={t.id}

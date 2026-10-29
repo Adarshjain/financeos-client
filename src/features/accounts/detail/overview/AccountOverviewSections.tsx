@@ -6,6 +6,7 @@ import React from 'react';
 import {
   Button,
   Card,
+  GRID_GAP,
   KpiTile,
   ListField,
   ListRow,
@@ -25,7 +26,7 @@ import { HeaderLink } from './HeaderLink';
 
 export function FlowKpis({ tiles }: { tiles: KpiModel[] }) {
   return (
-    <div className="grid grid-cols-2 desk:grid-cols-3 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+    <div className={`grid grid-cols-2 desk:grid-cols-3 ${GRID_GAP}`}>
       {tiles.map((t) => (
         <KpiTile key={t.label} label={t.label} value={t.value} context={t.context} />
       ))}

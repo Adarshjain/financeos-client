@@ -102,6 +102,14 @@ describe('SettingsToggle alignment (UAT)', () => {
   });
 });
 
+describe('SettingsToggle flush', () => {
+  it('keeps the row gutter when flush is false', () => {
+    const { container } = render(<SettingsToggle label="Hide amounts" flush={false} />);
+    const row = container.firstChild as HTMLElement;
+    expect(row).toHaveClass('px-space-16', 'border-l-4');
+  });
+});
+
 describe('SettingsToggle wrapping', () => {
   it('wraps a long description instead of truncating it', () => {
     render(<SettingsToggle label="Statement arrived" description="The bill digest when a new statement lands" />);

@@ -165,6 +165,21 @@ describe('ListField', () => {
     expect(valueEl).toHaveClass('font-semibold');
   });
 
+  describe('flush', () => {
+    it('keeps the side gutter and left rail by default', () => {
+      render(<ListRow title="Row" />);
+      const row = screen.getByText('Row').closest('div[class*="px-"]') as HTMLElement;
+      expect(row).toHaveClass('px-space-16', 'border-l-4');
+    });
+
+    it('drops the gutter and rail when flush is set', () => {
+      render(<ListRow flush title="Row" />);
+      const row = screen.getByText('Row').closest('div[class*="px-"]') as HTMLElement;
+      expect(row).toHaveClass('px-0', 'border-l-0');
+      expect(row).not.toHaveClass('px-space-16');
+    });
+  });
+
   describe('wrap', () => {
     it('truncates title and subtitle by default', () => {
       render(<ListRow title="Send at" subtitle="A long line" />);

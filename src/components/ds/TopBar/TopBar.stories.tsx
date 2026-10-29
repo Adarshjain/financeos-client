@@ -79,6 +79,13 @@ export const PhoneOnlyAction: Story = {
   },
 };
 
+export const LinkAction: Story = {
+  args: {
+    title: 'Home',
+    actions: [{ id: 'inbox', icon: 'inbox', label: 'Inbox', href: '/inbox', onSelect: fn() }],
+  },
+};
+
 export const WithNotifications: Story = {
   args: {
     title: 'Home',

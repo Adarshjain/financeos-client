@@ -110,4 +110,12 @@ describe('StatementDetailsDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(updateDetails).not.toHaveBeenCalled();
   });
+
+  it('submitting the form from a field (Enter) saves', async () => {
+    renderDialog();
+    const input = screen.getByLabelText('Total due (₹)');
+    fireEvent.change(input, { target: { value: '500' } });
+    fireEvent.submit(input.closest('form') as HTMLFormElement);
+    await waitFor(() => expect(updateDetails).toHaveBeenCalledTimes(1));
+  });
 });

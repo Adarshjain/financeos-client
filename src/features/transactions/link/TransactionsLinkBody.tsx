@@ -76,7 +76,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
           const last4 = accountOf(accounts, t.accountId).last4;
           const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
           return (
-            <div key={t.id} className="flex items-center gap-space-8 border-t border-line-soft first:border-t-0">
+            <ListRow key={t.id} flush className="gap-space-8 py-0">
               <TransactionRow
                 compact
                 borderTop={false}
@@ -108,7 +108,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
               >
                 <Icon name="close" size="sm" />
               </Button>
-            </div>
+            </ListRow>
           );
         })}
       </div>

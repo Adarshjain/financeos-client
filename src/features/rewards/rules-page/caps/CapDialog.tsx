@@ -11,6 +11,8 @@ import { sanitizeDecimalInput } from '@/lib/utils';
 import { useRefreshUsage } from '../rulesRefresh';
 import { CAP_WINDOW_OPTIONS, COUNTER_SCOPE_OPTIONS, REWARD_TYPE_OPTIONS } from './capModel';
 
+const FORM_ID = 'cap-form';
+
 export interface CapDialogProps {
   accountId: string;
   /** The cap being edited; undefined creates a new one. */
@@ -61,45 +63,54 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
         title={cap ? `Edit cap · ${cap.name}` : 'Add cap'}
         tertiary={cap && onDelete ? { label: 'Delete cap', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: cap ? 'Save cap' : 'Add cap', onSelect: save, loading: pending }}
+        primary={{ label: cap ? 'Save cap' : 'Add cap', type: 'submit', form: FORM_ID, loading: pending }}
       >
         <Dialog.Body>
-          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
-            <TextField
-              className="desk:col-span-2"
-              label="Name"
-              placeholder="e.g. ACE combined cap"
-              value={name}
-              onValueChange={setName}
-            />
-            <TextField
-              label={`Cap ${rewardType === 'POINTS' ? '(pts)' : '(₹)'}`}
-              inputMode="decimal"
-              placeholder="e.g. 500"
-              value={amount}
-              onValueChange={(v) => setAmount(sanitizeDecimalInput(v))}
-            />
-            <Select
-              label="Window"
-              options={CAP_WINDOW_OPTIONS}
-              value={windowType}
-              onValueChange={(v) => setWindowType(v as CapWindow)}
-            />
-            <Select
-              label="Reward type"
-              options={REWARD_TYPE_OPTIONS}
-              value={rewardType}
-              disabled={usedByRules}
-              onValueChange={(v) => setRewardType(v as RewardType)}
-              helper="The reward type is the cap’s unit — only rules paying that type can share this cap. It can’t be changed while rules still use the cap."
-            />
-            <Select
-              label="Counter scope"
-              options={COUNTER_SCOPE_OPTIONS}
-              value={counterScope}
-              onValueChange={(v) => setCounterScope(v as CounterScope)}
-            />
-          </div>
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!pending) void save();
+            }}
+          >
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
+              <TextField
+                className="desk:col-span-2"
+                label="Name"
+                placeholder="e.g. ACE combined cap"
+                value={name}
+                onValueChange={setName}
+              />
+              <TextField
+                label={`Cap ${rewardType === 'POINTS' ? '(pts)' : '(₹)'}`}
+                inputMode="decimal"
+                placeholder="e.g. 500"
+                value={amount}
+                onValueChange={(v) => setAmount(sanitizeDecimalInput(v))}
+              />
+              <Select
+                label="Window"
+                options={CAP_WINDOW_OPTIONS}
+                value={windowType}
+                onValueChange={(v) => setWindowType(v as CapWindow)}
+              />
+              <Select
+                label="Reward type"
+                options={REWARD_TYPE_OPTIONS}
+                value={rewardType}
+                disabled={usedByRules}
+                onValueChange={(v) => setRewardType(v as RewardType)}
+                helper="The reward type is the cap’s unit — only rules paying that type can share this cap. It can’t be changed while rules still use the cap."
+              />
+              <Select
+                label="Counter scope"
+                options={COUNTER_SCOPE_OPTIONS}
+                value={counterScope}
+                onValueChange={(v) => setCounterScope(v as CounterScope)}
+              />
+            </div>
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

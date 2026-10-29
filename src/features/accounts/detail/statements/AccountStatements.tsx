@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import {
+  Banner,
+  GRID_GAP,
+} from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
@@ -39,7 +42,7 @@ export async function AccountStatements({
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       {data.markPaid ? <MarkPaidAction accountName={account.name} target={data.markPaid} /> : null}
-      <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-5 min-w-0">
           <StatementsListCard
             accountId={account.id}

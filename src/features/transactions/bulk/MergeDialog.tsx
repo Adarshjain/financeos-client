@@ -63,7 +63,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
             }}
             compact
             borderTop={false}
-            className="bg-transparent px-0 hover:bg-transparent"
+            className="px-0"
             description={t.description || t.sourcedDescription || '—'}
             date={formatDate(t.date, 'list')}
             account={accountName(t.accountId)}

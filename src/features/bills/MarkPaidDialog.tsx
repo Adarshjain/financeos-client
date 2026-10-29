@@ -17,6 +17,8 @@ import { todayInAppZone } from '@/lib/date-range';
 import { formatMoney } from '@/lib/format';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
+const FORM_ID = 'bill-mark-paid-form';
+
 export interface MarkPaidDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -127,34 +129,43 @@ export function MarkPaidDialog({
           onSelect: () => onOpenChange(false),
           disabled: markPaid.isPending,
         }}
-        primary={{ label: 'Mark paid', onSelect: submit, loading: markPaid.isPending }}
+        primary={{ label: 'Mark paid', type: 'submit', form: FORM_ID, loading: markPaid.isPending }}
       >
         <Dialog.Body>
-          <SegmentedControl
-            fullWidth
-            aria-label="Payment type"
-            options={[...MODES]}
-            value={mode}
-            onValueChange={(v) => setMode(v as Mode)}
-          />
-          {mode === 'part' ? (
-            <AmountField
-              label="Amount paid"
-              prefix="₹"
-              inputMode="decimal"
-              value={amount}
-              {...amountExpressionProps(amount, setAmount)}
-              error={amountError ?? undefined}
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!markPaid.isPending) void submit();
+            }}
+          >
+            <SegmentedControl
+              fullWidth
+              aria-label="Payment type"
+              options={[...MODES]}
+              value={mode}
+              onValueChange={(v) => setMode(v as Mode)}
             />
-          ) : null}
-          <DateField
-            label="Paid on"
-            today={today}
-            maxDate={today}
-            value={paidOn}
-            onValueChange={(v) => setPaidOn(typeof v === 'string' ? v : '')}
-            error={dateError ?? undefined}
-          />
+            {mode === 'part' ? (
+              <AmountField
+                label="Amount paid"
+                prefix="₹"
+                inputMode="decimal"
+                value={amount}
+                {...amountExpressionProps(amount, setAmount)}
+                error={amountError ?? undefined}
+              />
+            ) : null}
+            <DateField
+              label="Paid on"
+              today={today}
+              maxDate={today}
+              value={paidOn}
+              onValueChange={(v) => setPaidOn(typeof v === 'string' ? v : '')}
+              error={dateError ?? undefined}
+            />
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import {
+  Card,
+  GRID_GAP,
+  Skeleton,
+} from '@/components/ds';
 
 function SkeletonCard({ rows }: { rows: number }) {
   return (
@@ -20,7 +24,7 @@ function SkeletonCard({ rows }: { rows: number }) {
 /** Loading shape of the Notifications tab; shared by the route's loading.tsx and the client query. */
 export function NotificationsSkeleton() {
   return (
-    <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16" data-testid="notifications-skeleton">
+    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`} data-testid="notifications-skeleton">
       <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
         <SkeletonCard rows={4} />
         <SkeletonCard rows={7} />

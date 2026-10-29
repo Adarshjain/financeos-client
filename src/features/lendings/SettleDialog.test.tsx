@@ -287,4 +287,12 @@ describe('SettleDialog amount arithmetic', () => {
     expect(screen.getByText('Amount must be greater than zero')).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
   });
+
+  it('submitting the form from a field (Enter) records the settlement', async () => {
+    renderDialog('lent', 15000);
+    fireEvent.submit(amount().closest('form') as HTMLFormElement);
+    await waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ kind: 'settlement', amount: 15000 })),
+    );
+  });
 });

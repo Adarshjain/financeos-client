@@ -79,7 +79,7 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
           key={row.key}
           data-testid="rewards-row"
           borderTop={false}
-          className="border-l-0 px-0"
+          flush
           title={row.card}
           trailing={<CardFigure row={row} onOpen={() => setDrill({ title: `${title} · ${row.card} · ${formatMoney(row.cash + row.pointsValue)}`, cardId: row.cardId })} />}
         />

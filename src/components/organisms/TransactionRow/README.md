@@ -45,7 +45,7 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 - `selected?: boolean`: Controlled selected state
 - `onSelectedChange?: (selected: boolean) => void`: Selection change callback
 - `selectionMode?: boolean`: Phone selection mode (displays trailing eye button)
-- `onDetail?: () => void`: Detail callback when trailing eye button is clicked
+- `onOpenDetail?: () => void`: Detail callback when trailing eye button is clicked
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
 - `compact?: boolean`: The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette). No table cells and no checkbox; the `date` joins the grey context line (first) and categories ride it as text. Pass `leading` for a radio or checkbox and `role`/`aria-*` for the picker's semantics.
@@ -56,12 +56,12 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 | Gesture | Outside selection mode | In selection mode |
 |---|---|---|
 | **Long-press** (phone layout, 500ms, touch or mouse, pointer held still on the item) | Selects the item **while the pointer is still down**, which turns on selection mode. Releasing afterwards does **nothing**: no tap, no toggle, no detail. | Selects the item if it isn't selected. Releasing does nothing. |
-| **Tap** (press and release quickly) | Calls `onDetail` (opens the item). **Never selects.** | Toggles the item's selection. |
+| **Tap** (press and release quickly) | Calls `onOpenDetail` (opens the item). **Never selects.** | Toggles the item's selection. |
 | **Enter / Space** on the focused item | Same as tap. | Same as tap. |
 | **Scroll or swipe** (the pointer moves more than 10px, or the browser takes the gesture) | Cancels: no long-press, no tap. | Same. |
 | **Press on a control inside the item** (checkbox, eye, Approve, ⋮ menu, category chip) | Only that control acts; the item doesn't. | Same. |
 
-These gestures belong to the **phone layout** (below `desk`), with touch or mouse. In the desktop layout there is no long-press: a press always calls `onDetail`, even in selection mode, and the checkbox selects (owner, 2026-10-18).
+These gestures belong to the **phone layout** (below `desk`), with touch or mouse. In the desktop layout there is no long-press: a press always calls `onOpenDetail`, even in selection mode, and the checkbox selects (owner, 2026-10-18).
 
 ## Not here
 - Swipe: the page wraps the row in SwipeActions. The row has no swipe props.

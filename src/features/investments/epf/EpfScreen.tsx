@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Card, EmptyState } from '@/components/ds';
+import {
+  Card,
+  EmptyState,
+  GRID_GAP,
+} from '@/components/ds';
 
 import { EpfAddDialog } from './EpfAddDialog';
 import { EpfEmployerDialog } from './EpfEmployerDialog';
@@ -108,7 +112,7 @@ export function EpfScreen({
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <EpfHero figures={figures} />
         <EpfTiles figures={figures} />
-        <div className="grid grid-cols-1 desk:grid-cols-3 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-2 min-w-0">
             <EpfPassbookCard
               state={state}

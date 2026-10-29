@@ -29,6 +29,8 @@ import {
   PAYOUT_TYPE_OPTIONS,
 } from './milestoneModel';
 
+const FORM_ID = 'milestone-form';
+
 export interface MilestoneDialogProps {
   accountId: string;
   /** The milestone being edited; undefined creates a new one. */
@@ -111,131 +113,140 @@ export function MilestoneDialog({
           milestone && onDelete ? { label: 'Delete milestone', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined
         }
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
-        primary={{ label: milestone ? 'Save milestone' : 'Add milestone', onSelect: f.onSubmit, loading: pending }}
+        primary={{ label: milestone ? 'Save milestone' : 'Add milestone', type: 'submit', form: FORM_ID, loading: pending }}
       >
         <Dialog.Body>
-          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
-            <TextField label="Name" placeholder="e.g. ₹50k quarterly voucher" value={f.name} onValueChange={f.setName} />
-            <Select
-              label="Window"
-              options={MILESTONE_WINDOW_OPTIONS}
-              value={f.windowType}
-              onValueChange={(v) => f.setWindowType(v as MilestoneWindow)}
-            />
-            {cardholders.length > 0 ? (
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!pending) void f.onSubmit();
+            }}
+          >
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
+              <TextField label="Name" placeholder="e.g. ₹50k quarterly voucher" value={f.name} onValueChange={f.setName} />
               <Select
-                className="desk:col-span-2"
-                label="Cardholder scope"
-                options={holderOptions}
-                value={f.cardId ?? ALL_HOLDERS}
-                onValueChange={(v) => pickHolder(v as string)}
+                label="Window"
+                options={MILESTONE_WINDOW_OPTIONS}
+                value={f.windowType}
+                onValueChange={(v) => f.setWindowType(v as MilestoneWindow)}
               />
-            ) : null}
-            <DateField
-              label={oneTime ? 'Offer start' : 'Active from'}
-              optional={!oneTime}
-              today={todayInAppZone()}
-              value={iso(f.activeFrom)}
-              onValueChange={pickDate(f.setActiveFrom)}
-            />
-            <DateField
-              label={oneTime ? 'Offer deadline' : 'Active until'}
-              optional={!oneTime}
-              today={todayInAppZone()}
-              value={iso(f.activeTo)}
-              onValueChange={pickDate(f.setActiveTo)}
-            />
-            {oneTime ? (
-              <Text variant="caption" tone="ink-3" as="p" className="desk:col-span-2">
-                The offer period IS the one-time window — spend counts from start until the day before the deadline.
-              </Text>
-            ) : null}
-            <Select
-              label="Counts"
-              options={BASIS_OPTIONS}
-              value={f.basis}
-              onValueChange={(v) => f.setBasis(v as MilestoneBasis)}
-            />
-            <TextField
-              label={`Threshold ${f.basis === 'SPEND' ? '₹' : '(transactions)'}`}
-              inputMode="decimal"
-              placeholder={f.basis === 'SPEND' ? 'e.g. 50000' : 'e.g. 4'}
-              value={f.threshold}
-              onValueChange={(v) => f.setThreshold(sanitizeDecimalInput(v))}
-            />
-            {f.basis === 'TXN_COUNT' ? (
+              {cardholders.length > 0 ? (
+                <Select
+                  className="desk:col-span-2"
+                  label="Cardholder scope"
+                  options={holderOptions}
+                  value={f.cardId ?? ALL_HOLDERS}
+                  onValueChange={(v) => pickHolder(v as string)}
+                />
+              ) : null}
+              <DateField
+                label={oneTime ? 'Offer start' : 'Active from'}
+                optional={!oneTime}
+                today={todayInAppZone()}
+                value={iso(f.activeFrom)}
+                onValueChange={pickDate(f.setActiveFrom)}
+              />
+              <DateField
+                label={oneTime ? 'Offer deadline' : 'Active until'}
+                optional={!oneTime}
+                today={todayInAppZone()}
+                value={iso(f.activeTo)}
+                onValueChange={pickDate(f.setActiveTo)}
+              />
+              {oneTime ? (
+                <Text variant="caption" tone="ink-3" as="p" className="desk:col-span-2">
+                  The offer period IS the one-time window — spend counts from start until the day before the deadline.
+                </Text>
+              ) : null}
+              <Select
+                label="Counts"
+                options={BASIS_OPTIONS}
+                value={f.basis}
+                onValueChange={(v) => f.setBasis(v as MilestoneBasis)}
+              />
               <TextField
-                label="Minimum transaction amount ₹"
-                optional
+                label={`Threshold ${f.basis === 'SPEND' ? '₹' : '(transactions)'}`}
                 inputMode="decimal"
-                placeholder="e.g. 1500"
-                value={f.minTxnAmount}
-                onValueChange={(v) => f.setMinTxnAmount(sanitizeDecimalInput(v))}
+                placeholder={f.basis === 'SPEND' ? 'e.g. 50000' : 'e.g. 4'}
+                value={f.threshold}
+                onValueChange={(v) => f.setThreshold(sanitizeDecimalInput(v))}
               />
-            ) : null}
-            <Select
-              label="Payout"
-              options={PAYOUT_TYPE_OPTIONS}
-              value={f.payoutType}
-              onValueChange={(v) => f.setPayoutType(v as MilestonePayoutType)}
-            />
-            {f.payoutType === 'CASH_VALUE' ? (
-              <>
-                <Select
-                  label="Paid as"
-                  options={PAID_AS_OPTIONS}
-                  value={f.rewardType}
-                  onValueChange={(v) => f.setRewardType(v as RewardType)}
-                />
+              {f.basis === 'TXN_COUNT' ? (
                 <TextField
-                  label={`Payout value ${f.rewardType === 'POINTS' ? '(pts)' : '₹'}`}
+                  label="Minimum transaction amount ₹"
+                  optional
                   inputMode="decimal"
-                  placeholder="e.g. 1000"
-                  value={f.payoutValue}
-                  onValueChange={(v) => f.setPayoutValue(sanitizeDecimalInput(v))}
+                  placeholder="e.g. 1500"
+                  value={f.minTxnAmount}
+                  onValueChange={(v) => f.setMinTxnAmount(sanitizeDecimalInput(v))}
                 />
-                <Select
-                  label="Credited"
-                  options={PAYOUT_TIMING_OPTIONS}
-                  value={f.payoutTiming}
-                  onValueChange={(v) => f.setPayoutTiming(v as MilestonePayoutTiming)}
-                />
-              </>
-            ) : null}
-          </div>
-          <SectionHeader variant="band">
-            Eligible spend — independent from earn rules; leave empty to count everything
-          </SectionHeader>
-          <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
-            <Select
-              label="Count only these categories"
-              multiple
-              searchable
-              options={categoryOptions}
-              value={f.includeCategories.map((c) => c.id)}
-              onValueChange={(v) => f.setIncludeCategories(toCategories(v as string[]))}
-            />
-            <TextField
-              label="Count only these MCCs"
-              placeholder="Comma-separated, e.g. 5812, 5814"
-              value={f.includeMccs}
-              onValueChange={f.setIncludeMccs}
-            />
-            <Select
-              label="Never count these categories"
-              multiple
-              searchable
-              options={categoryOptions}
-              value={f.excludeCategories.map((c) => c.id)}
-              onValueChange={(v) => f.setExcludeCategories(toCategories(v as string[]))}
-            />
-            <TextField
-              label="Never count these MCCs"
-              placeholder="e.g. 6513, 6540 (rent, wallet)"
-              value={f.excludeMccs}
-              onValueChange={f.setExcludeMccs}
-            />
-          </div>
+              ) : null}
+              <Select
+                label="Payout"
+                options={PAYOUT_TYPE_OPTIONS}
+                value={f.payoutType}
+                onValueChange={(v) => f.setPayoutType(v as MilestonePayoutType)}
+              />
+              {f.payoutType === 'CASH_VALUE' ? (
+                <>
+                  <Select
+                    label="Paid as"
+                    options={PAID_AS_OPTIONS}
+                    value={f.rewardType}
+                    onValueChange={(v) => f.setRewardType(v as RewardType)}
+                  />
+                  <TextField
+                    label={`Payout value ${f.rewardType === 'POINTS' ? '(pts)' : '₹'}`}
+                    inputMode="decimal"
+                    placeholder="e.g. 1000"
+                    value={f.payoutValue}
+                    onValueChange={(v) => f.setPayoutValue(sanitizeDecimalInput(v))}
+                  />
+                  <Select
+                    label="Credited"
+                    options={PAYOUT_TIMING_OPTIONS}
+                    value={f.payoutTiming}
+                    onValueChange={(v) => f.setPayoutTiming(v as MilestonePayoutTiming)}
+                  />
+                </>
+              ) : null}
+            </div>
+            <SectionHeader variant="band">
+              Eligible spend — independent from earn rules; leave empty to count everything
+            </SectionHeader>
+            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
+              <Select
+                label="Count only these categories"
+                multiple
+                searchable
+                options={categoryOptions}
+                value={f.includeCategories.map((c) => c.id)}
+                onValueChange={(v) => f.setIncludeCategories(toCategories(v as string[]))}
+              />
+              <TextField
+                label="Count only these MCCs"
+                placeholder="Comma-separated, e.g. 5812, 5814"
+                value={f.includeMccs}
+                onValueChange={f.setIncludeMccs}
+              />
+              <Select
+                label="Never count these categories"
+                multiple
+                searchable
+                options={categoryOptions}
+                value={f.excludeCategories.map((c) => c.id)}
+                onValueChange={(v) => f.setExcludeCategories(toCategories(v as string[]))}
+              />
+              <TextField
+                label="Never count these MCCs"
+                placeholder="e.g. 6513, 6540 (rent, wallet)"
+                value={f.excludeMccs}
+                onValueChange={f.setExcludeMccs}
+              />
+            </div>
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

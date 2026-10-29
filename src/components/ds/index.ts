@@ -19,6 +19,7 @@ export * from './DropZone/DropZone';
 export * from './EmptyState/EmptyState';
 export * from './FilterBar/FilterBar';
 export * from './FilterChip/FilterChip';
+export * from './gridGap';
 export * from './Highlight/Highlight';
 export * from './Icon/Icon';
 export * from './Kbd/Kbd';

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, FilterChip, Icon, Select } from '@/components/ds';
+import { Button, FilterBar, FilterChip, Icon, Select } from '@/components/ds';
 
 import {
   OBLIGATION_KINDS,
@@ -18,38 +18,34 @@ export interface UpcomingFiltersProps {
   onMonthsChange: (months: number) => void;
 }
 
-/** Kind chips (scroll sideways on phone, never wrap) and, at the row's right end, the range Select. */
+/** Kind chips and the range Select in one FilterBar row (it scrolls sideways when it overflows). */
 export function UpcomingFilters({ kind, months, onKindChange, onMonthsChange }: UpcomingFiltersProps) {
   return (
-    <div className="flex items-center gap-space-8">
-      <div className="flex flex-1 min-w-0 gap-space-8 overflow-x-auto">
-        {OBLIGATION_KINDS.map((k) => (
-          <FilterChip
-            key={k.value}
-            className="shrink-0"
-            selected={kind === k.value}
-            onClick={() => onKindChange(k.value)}
-          >
-            {k.label}
-          </FilterChip>
-        ))}
-      </div>
-      <div className="shrink-0">
-        <Select
-          value={String(months)}
-          options={OBLIGATION_MONTH_OPTIONS.map((m) => ({
-            value: String(m),
-            label: monthsLabel(m),
-          }))}
-          onValueChange={(v) => onMonthsChange(Number(v))}
-          trigger={
-            <Button variant="secondary" size="sm" aria-label="Range">
-              {monthsLabel(months)}
-              <Icon name="chevron-down" size="xs" />
-            </Button>
-          }
-        />
-      </div>
-    </div>
+    <FilterBar>
+      {OBLIGATION_KINDS.map((k) => (
+        <FilterChip
+          key={k.value}
+          className="shrink-0"
+          selected={kind === k.value}
+          onClick={() => onKindChange(k.value)}
+        >
+          {k.label}
+        </FilterChip>
+      ))}
+      <Select
+        value={String(months)}
+        options={OBLIGATION_MONTH_OPTIONS.map((m) => ({
+          value: String(m),
+          label: monthsLabel(m),
+        }))}
+        onValueChange={(v) => onMonthsChange(Number(v))}
+        trigger={
+          <Button variant="secondary" size="sm" aria-label="Range" className="shrink-0">
+            {monthsLabel(months)}
+            <Icon name="chevron-down" size="xs" />
+          </Button>
+        }
+      />
+    </FilterBar>
   );
 }

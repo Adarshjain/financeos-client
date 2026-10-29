@@ -17,7 +17,7 @@ Long-press a row to start, tap to add or remove, the eye icon opens the item's d
 ## Props
 - `count?`: number selected; omitted = page-action use (no count bubble or text, no ×, no Esc, never exits). `onClear?`: draws the × (and Esc with `count`) when given. `summary?: ReactNode`: under the count, or the leading content without `count`.
 - Action `variant?` (`primary | secondary | link | danger | danger-filled | danger-link`) draws a plain Button at its natural width and `loading?` shows its spinner; without `variant` the bulk-action look is unchanged.
-- `actions`: `{ id, icon, label, hint?, count?, tone?, disabled?, onSelect }[]` from the page. `count` renders as a solid count bubble after the label on desktop (hidden on phone, still in the aria-label). `hint` shows under the label on phone ("the pair", "clear Duplicate") and, on desktop, inline after the label only for a disabled action, as its reason ("needs exactly 2"); stories show hints exactly as the preview does.
+- `actions`: `{ id, icon, label, hint?, count?, tone?, disabled?, onSelect?, href?, variant?, loading? }[]` (an `href` renders the action as a link through LinkProvider, same look; `onSelect` still runs on click) from the page. `count` renders as a solid count bubble after the label on desktop (hidden on phone, still in the aria-label). `hint` shows under the label on phone ("the pair", "clear Duplicate") and, on desktop, inline after the label only for a disabled action, as its reason ("needs exactly 2"); stories show hints exactly as the preview does.
 
 ## Page actions example
 ```tsx

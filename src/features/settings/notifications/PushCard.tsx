@@ -95,8 +95,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
       }
     >
       <SettingsToggle
-        // ListRow keeps a 4px left rail; match it so switches line up with the other rows.
-        className="px-space-16 border-l-4 border-l-transparent"
+        flush={false}
         label="Push notifications"
         description="Master switch for every device"
         checked={settings.pushEnabled}

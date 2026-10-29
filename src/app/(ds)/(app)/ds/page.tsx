@@ -66,7 +66,7 @@ export default function DsIndexPage() {
             <Link href="/investments" />
           </ListRow>
           {/* A holding's page needs a real id: open one from Holdings. */}
-          <ListRow asChild title="Holding detail" subtitle="/investments/[instrumentId]" chevron>
+          <ListRow asChild title="Holding detail" subtitle="/investments/[id]" chevron>
             <Link href="/investments" />
           </ListRow>
           <ListRow asChild title="Tradebook" subtitle="/investments/tradebook" chevron>

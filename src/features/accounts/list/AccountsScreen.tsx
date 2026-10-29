@@ -1,6 +1,9 @@
 import React, { Suspense } from 'react';
 
-import { KpiTile } from '@/components/ds';
+import {
+  GRID_GAP,
+  KpiTile,
+} from '@/components/ds';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';
@@ -45,7 +48,7 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
 
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
-        <div className="grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-2 desk:grid-cols-4 ${GRID_GAP}`}>
           <KpiTile
             label={cash.label}
             value={cash.value}
@@ -80,7 +83,7 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
           closedLine={closedLineFor(sections.cards.closed)}
         />
 
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
           <BrokersSection
             rows={sections.brokers.open.map((a) => brokerRow(a, today))}
             closedRows={sections.brokers.closed.map((a) => brokerRow(a, today))}

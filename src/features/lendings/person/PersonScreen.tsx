@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ConfirmDialog } from '@/components/ds';
+import {
+  ConfirmDialog,
+  GRID_GAP,
+} from '@/components/ds';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { firstNameOf } from '@/features/lendings/settleModel';
@@ -92,7 +95,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
             onExport={() => setExporting(true)}
             onDelete={() => setDeletingPerson(true)}
           />
-          <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+          <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
             <div className="desk:col-span-7 min-w-0">
               <LedgerCard
                 firstName={firstNameOf(cp.name)}

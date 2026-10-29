@@ -68,7 +68,7 @@ const meta: Meta<typeof RuleCard> = {
   },
   args: {
     onApprove: fn(),
-    onDetail: fn(),
+    onOpenDetail: fn(),
   },
 };
 

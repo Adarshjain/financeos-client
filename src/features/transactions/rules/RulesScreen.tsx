@@ -55,6 +55,8 @@ export interface RulesScreenProps {
   rules: RulesPage | null;
   reference?: string;
   state: RulesUrlState;
+  /** An empty status tab while other tabs hold rules: it says nothing matches, not "No rules yet". */
+  hasRulesElsewhere?: boolean;
   /** Null when they could not be loaded: the Category chip is then off. */
   categories: Category[] | null;
 }
@@ -73,7 +75,7 @@ const STATUS_CHIPS: { id: RuleStatus; label: string }[] = [
 ];
 
 /** /transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
-export function RulesScreen({ rules, reference, state, categories }: RulesScreenProps) {
+export function RulesScreen({ rules, reference, state, categories, hasRulesElsewhere = false }: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
   const [picked, setPicked] = React.useState<{ key: string; ids: string[] }>({ key: '', ids: [] });
@@ -115,6 +117,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
       />
   ) : null;
 
+  const noMatch = hasRuleFilters(state) || hasRulesElsewhere;
   const pageSelectable = rules?.rows.filter((r) => !r.verified).map((r) => r.id) ?? [];
   const allOnPage = pageSelectable.length > 0 && pageSelectable.every((id) => ids.includes(id));
 
@@ -170,9 +173,9 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
           />
         ) : rules.rows.length === 0 ? (
           <EmptyState
-            title={hasRuleFilters(state) ? 'No rules match' : 'No rules yet'}
+            title={noMatch ? 'No rules match' : 'No rules yet'}
             description={
-              hasRuleFilters(state)
+              noMatch
                 ? 'Try adjusting your search or filters.'
                 : 'Transactions you import will generate rules automatically, or add one with the + at the top.'
             }
@@ -213,7 +216,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
                     selected={ids.includes(rule.id)}
                     onSelectedChange={(on) => setIds(on ? [...ids, rule.id] : ids.filter((id) => id !== rule.id))}
                     selectionMode={ids.length > 0}
-                    onDetail={() => setDialog({ kind: 'edit', rule })}
+                    onOpenDetail={() => setDialog({ kind: 'edit', rule })}
                   />
                 );
               })}

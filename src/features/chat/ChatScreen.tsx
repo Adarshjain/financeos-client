@@ -188,11 +188,11 @@ function ChatSession({
               <div className={cn(COLUMN, 'order-2 desk:order-3 flex gap-space-12 overflow-x-auto desk:overflow-visible desk:grid desk:grid-cols-3 desk:pt-space-12')}>
                 {STARTERS.map((s) => (
                   <Card key={s.prompt} asChild className="max-desk:w-container-xs max-desk:shrink-0">
-                    <button type="button" className="text-left flex flex-col gap-space-6 p-space-16 desk:p-space-16" onClick={() => send(s.prompt)}>
-                      <Text variant="overline" tone="ink-3">
+                    <button type="button" className="flex flex-col items-start gap-space-6 p-space-16" onClick={() => send(s.prompt)}>
+                      <Text variant="overline" tone="ink-3" align="start">
                         {s.category}
                       </Text>
-                      <Text variant="body">{s.prompt}</Text>
+                      <Text variant="body" align="start">{s.prompt}</Text>
                     </button>
                   </Card>
                 ))}

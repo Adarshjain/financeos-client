@@ -89,7 +89,7 @@ export interface TransactionRowProps
   /** Selection mode: displays trailing eye icon to view details */
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked to view detail */
-  onDetail?: (point?: PressPoint) => void;
+  onOpenDetail?: (point?: PressPoint) => void;
 
   /** Trailing chevron indicator */
   chevron?: boolean;
@@ -138,7 +138,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       selected: selectedProp,
       onSelectedChange,
       selectionMode = false,
-      onDetail,
+      onOpenDetail,
       chevron = false,
       borderTop = true,
       query,
@@ -185,9 +185,9 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const isWarning = tone === 'warning';
     const isSelectable = Boolean(selectable);
 
-    const showEye = selectionMode && Boolean(onDetail);
+    const showEye = selectionMode && Boolean(onOpenDetail);
     // A selectable row keeps its eye mounted so it slides in and out with selection mode instead of popping.
-    const hasEye = Boolean(onDetail) && (isSelectable || selectionMode);
+    const hasEye = Boolean(onOpenDetail) && (isSelectable || selectionMode);
     const eyeOnly = hasEye && !chevron;
 
     const { itemProps, nestedControlProps } = useSelectableItem({
@@ -195,7 +195,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      onOpenDetail: onDetail,
+      onOpenDetail,
       disabled,
     });
 
@@ -556,7 +556,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => onDetail?.(clickPoint(e))}
+                      onClick={(e) => onOpenDetail?.(clickPoint(e))}
                       aria-label="View transaction details"
                       className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
                     >

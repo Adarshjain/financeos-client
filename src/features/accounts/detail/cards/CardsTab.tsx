@@ -3,7 +3,13 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, showToast, Text } from '@/components/ds';
+import {
+  Button,
+  EmptyState,
+  GRID_GAP,
+  showToast,
+  Text,
+} from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import type { Card, Cardholder } from '@/lib/account.types';
 import { replaceUrl } from '@/lib/urlState';
@@ -143,7 +149,7 @@ export function CardsTab({
       ) : null}
 
       {model.open.length > 0 ? (
-        <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-x-space-12 gap-y-space-8 desk:gap-space-16">
+        <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
           {model.open.map((m) => (
             <HolderCard
               key={m.id}

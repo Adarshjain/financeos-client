@@ -4,6 +4,7 @@ Rows inside cards. `row` is a flexible line (leading mark, a text block that gro
 
 ## Props
 - `wrap?: boolean` (default `false`; title and subtitle wrap instead of truncating, long words break; trailing keeps its width and stays vertically centred)
+- `flush?: boolean` (default `false`; drops the side gutter and the transparent left rail, for a row whose container already pads it)
 
 ## Use
 - Primary line `body-strong`, secondary line in `ink-3`.
@@ -17,7 +18,7 @@ Rows inside cards. `row` is a flexible line (leading mark, a text block that gro
 Avatar (leading avatar and icon tile), DateTile (leading date), Badge, Icon (chevron, kebab), Button (trailing action), Menu (actions dropdown menu).
 
 ## Variants
-- Leading: badge, date tile, avatar, icon tile or nothing. Trailing: action, trailing node, chevron, actions menu. Highlighted, disabled, wrap (owner, 2026-10-20).
+- Leading: badge, date tile, avatar, icon tile or nothing. Trailing: action, trailing node, chevron, actions menu. Highlighted, disabled, wrap (owner, 2026-10-20), flush.
 
 ## Hidden amounts
 Under a `ConcealProvider` with `concealed`, each ₹ amount in title, subtitle and trailing reads "₹ —". See Conceal.

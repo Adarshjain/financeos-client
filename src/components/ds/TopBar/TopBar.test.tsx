@@ -57,6 +57,20 @@ describe('TopBar component', () => {
     expect(backLink).toHaveAttribute('href', '/dashboard');
   });
 
+  it('renders a plain action with an href as a link and still calls onSelect', () => {
+    const onSelect = vi.fn();
+    render(<TopBar title="Home" actions={[{ id: 'inbox', icon: 'inbox', label: 'Inbox', href: '/inbox', onSelect }]} />);
+    const link = screen.getByRole('link', { name: 'Inbox' });
+    expect(link).toHaveAttribute('href', '/inbox');
+    fireEvent.click(link);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a plain action without an href as a button', () => {
+    render(<TopBar title="Home" actions={[{ id: 'inbox', icon: 'inbox', label: 'Inbox', onSelect: vi.fn() }]} />);
+    expect(screen.getByRole('button', { name: 'Inbox' })).toBeInTheDocument();
+  });
+
   it('renders actions passed through props and handles callbacks', () => {
     const handleAdd = vi.fn();
     const handleChat = vi.fn();

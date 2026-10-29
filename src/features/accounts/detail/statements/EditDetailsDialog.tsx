@@ -23,6 +23,8 @@ import {
   type DetailsValues,
 } from './detailModel';
 
+const FORM_ID = 'statement-edit-details-form';
+
 export interface EditDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -117,16 +119,25 @@ export function EditDetailsDialog({
         }}
         primary={{
           label: 'Save details',
-          onSelect: submit,
+          type: 'submit', form: FORM_ID,
           loading: updateDetails.isPending,
         }}
       >
         <Dialog.Body>
-          {date('periodStart', 'Period start')}
-          {date('periodEnd', 'Period end')}
-          {date('dueDate', 'Due date', errors.form)}
-          {amount('totalDue', 'Total due')}
-          {amount('minimumDue', 'Minimum due')}
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!updateDetails.isPending) void submit();
+            }}
+          >
+            {date('periodStart', 'Period start')}
+            {date('periodEnd', 'Period end')}
+            {date('dueDate', 'Due date', errors.form)}
+            {amount('totalDue', 'Total due')}
+            {amount('minimumDue', 'Minimum due')}
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

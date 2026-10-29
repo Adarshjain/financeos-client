@@ -73,7 +73,7 @@ export interface RuleCardProps
   /** Selection mode (phone): shows trailing eye icon replacing Approve and kebab menu */
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked in selection mode */
-  onDetail?: (point?: PressPoint) => void;
+  onOpenDetail?: (point?: PressPoint) => void;
 }
 
 export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
@@ -98,7 +98,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       selected: selectedProp,
       onSelectedChange,
       selectionMode = false,
-      onDetail,
+      onOpenDetail,
       className,
       children,
       ...props
@@ -114,14 +114,14 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     });
 
     const isSelectable = Boolean(selectable);
-    const showEye = selectionMode && Boolean(onDetail);
+    const showEye = selectionMode && Boolean(onOpenDetail);
 
     const { itemProps, nestedControlProps } = useSelectableItem({
       selectable,
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      onOpenDetail: onDetail,
+      onOpenDetail,
     });
 
     const effectiveApprove =
@@ -163,7 +163,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             size="sm"
             variant="ghost"
             iconOnly
-            onClick={(e) => onDetail?.(clickPoint(e))}
+            onClick={(e) => onOpenDetail?.(clickPoint(e))}
             aria-label="View rule details"
             className="text-brand-strong shrink-0"
           >

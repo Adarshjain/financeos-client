@@ -48,8 +48,7 @@ export function AppearanceCard() {
         }
       />
       <SettingsToggle
-        // ListRow keeps a 4px left rail; match it so the switch lines up with the other rows.
-        className="px-space-16 border-l-4 border-l-transparent"
+        flush={false}
         borderTop
         label="Hide amounts"
         description="Show ₹ — instead of balances and amounts."

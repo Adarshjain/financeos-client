@@ -14,6 +14,8 @@ import { useRewardAccountConfig, useUpdateRewardAccountConfig } from '../queries
 import { rewardTypeWord } from './rulesPageModel';
 import { useRefreshUsage } from './rulesRefresh';
 
+const FORM_ID = 'card-settings-form';
+
 const REWARD_TYPE_OPTIONS = [
   { value: 'CASH', label: 'Cash ₹' },
   { value: 'POINTS', label: 'Reward points' },
@@ -139,25 +141,34 @@ export function CardSettingsDialog({ accountId, rewardType, pointValue, onClose 
         title="Card settings"
         description="Apply to every rule on this card."
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: update.isPending }}
-        primary={{ label: 'Save settings', onSelect: save, loading: update.isPending }}
+        primary={{ label: 'Save settings', type: 'submit', form: FORM_ID, loading: update.isPending }}
       >
         <Dialog.Body>
-          <Select
-            label="Rewards paid as"
-            options={REWARD_TYPE_OPTIONS}
-            value={type}
-            onValueChange={(v) => setType((Array.isArray(v) ? v[0] : v) as RewardType)}
-          />
-          {type === 'CASH' ? null : (
-            <TextField
-              label="Point value (₹/pt)"
-              optional
-              inputMode="decimal"
-              placeholder="0.25 (default)"
-              value={value}
-              onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
+          <form
+            id={FORM_ID}
+            className="flex flex-col gap-space-8 desk:gap-space-12"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!update.isPending) void save();
+            }}
+          >
+            <Select
+              label="Rewards paid as"
+              options={REWARD_TYPE_OPTIONS}
+              value={type}
+              onValueChange={(v) => setType((Array.isArray(v) ? v[0] : v) as RewardType)}
             />
-          )}
+            {type === 'CASH' ? null : (
+              <TextField
+                label="Point value (₹/pt)"
+                optional
+                inputMode="decimal"
+                placeholder="0.25 (default)"
+                value={value}
+                onValueChange={(v) => setValue(sanitizeDecimalInput(v))}
+              />
+            )}
+          </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>
