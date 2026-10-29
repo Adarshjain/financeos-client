@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { deletionImpactItems, deletionNote } from '@/features/accounts/statements/deletionImpactModel';
-import { type StatementDeletionPreview, useDeleteStatement } from '@/features/accounts/statements/useDeleteStatement';
+import { type StatementDeletionPreview, useDeleteStatement } from '@/features/accounts/statements/useStatementMutations';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { StatementSource } from '@/lib/statement.types';
 import { toastError } from '@/lib/toastError';

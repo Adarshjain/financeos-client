@@ -35,7 +35,7 @@ const api = vi.hoisted(() => ({
 vi.mock('./transactionDetailApi', () => api);
 
 const lending = vi.hoisted(() => ({ link: vi.fn(), unlink: vi.fn() }));
-vi.mock('@/features/lendings/useLendingTransactionLink', () => ({
+vi.mock('@/features/lendings/useLendingMutations', () => ({
   useLinkLendingTransaction: () => ({ mutateAsync: lending.link }),
   useUnlinkLendingTransaction: () => ({ mutateAsync: lending.unlink }),
 }));

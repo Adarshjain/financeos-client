@@ -16,7 +16,7 @@ import { widgetParams } from '@/lib/dashboards.helpers';
 import { formatDate, formatMoney } from '@/lib/format';
 import { isChartData } from '@/lib/reports.helpers';
 
-import { daySpendRequest } from './heatmap.requests';
+import { daySpendRequest } from './heatmapRequestsModel';
 
 export function SpendHeatmapView({ widget, data, loading }: TemplateViewProps) {
   const [day, setDay] = React.useState<{ date: string; amount: number } | null>(null);

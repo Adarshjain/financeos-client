@@ -4,7 +4,7 @@ import { Info, ShieldAlert } from 'lucide-react';
 import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { buildProviderOptions, PROVIDERS } from '@/features/settings/ai/providers';
+import { buildProviderOptions, PROVIDERS } from '@/features/settings/ai/providersModel';
 
 import { AddKeyDialog } from './components/AddKeyDialog';
 import { DeleteKeyDialog } from './components/DeleteKeyDialog';

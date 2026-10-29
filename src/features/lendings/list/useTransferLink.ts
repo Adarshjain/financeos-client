@@ -5,7 +5,7 @@ import React from 'react';
 import { showToast } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
-import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '../useLendingTransactionLink';
+import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '../useLendingMutations';
 import type { TransferRow } from './lendingsListModel';
 
 /**

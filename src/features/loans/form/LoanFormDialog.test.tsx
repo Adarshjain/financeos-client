@@ -24,7 +24,7 @@ vi.mock('@/lib/date-range', async (orig) => ({
 
 const mutateAsync = vi.fn();
 let onErrorOption: ((e: unknown) => void) | undefined;
-vi.mock('../useCreateLoan', () => ({
+vi.mock('../useLoanMutations', () => ({
   useCreateLoan: (opts?: { onError?: (e: unknown) => void }) => {
     onErrorOption = opts?.onError;
     return { mutateAsync, isPending: false };

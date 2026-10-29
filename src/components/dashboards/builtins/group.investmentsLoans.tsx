@@ -8,7 +8,7 @@
 
 import { createElement } from 'react';
 
-import { shortcutIds } from '@/features/dashboards/builtins/shortcuts/shortcutsParams';
+import { shortcutIds } from '@/features/dashboards/builtins/shortcuts/shortcutsParamsModel';
 import { moversCount } from '@/features/dashboards/builtins/top-movers/topMoversModel';
 import { widgetParams } from '@/lib/dashboards.helpers';
 

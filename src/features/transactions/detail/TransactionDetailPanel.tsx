@@ -30,6 +30,7 @@ import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
 
 import { isApprovable } from '../bulk/bulkModel';
+import { deleteTransaction, fetchTransactionLinks } from './transactionDetailApi';
 import {
   balanceAfterWords,
   bankBalanceWords,
@@ -42,8 +43,7 @@ import {
   rewardsWords,
   sourceWords,
   statusItems,
-} from './transactionDetail';
-import { deleteTransaction, fetchTransactionLinks } from './transactionDetailApi';
+} from './transactionDetailModel';
 import { useDetailTransaction } from './useDetailTransaction';
 import { useTransactionUnlink } from './useTransactionUnlink';
 

@@ -22,7 +22,7 @@ import {
   chargeProblems,
   emptyChargeValues,
 } from './eventFormModel';
-import { type ChargeValues, prefillAmount, prefillDate } from './loanRequests';
+import { type ChargeValues, prefillAmount, prefillDate } from './loanRequestsModel';
 
 const FORM_ID = 'loan-charge-form';
 

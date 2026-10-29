@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CardBillResponse } from '@/lib/api/types';
 
-import { loadBillsHistory } from './billsHistory';
+import { loadBillsHistory } from './billsHistoryData';
 
 const get = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: get } }));

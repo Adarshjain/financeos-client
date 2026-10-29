@@ -6,7 +6,7 @@ import React from 'react';
 import { Button, Card, ListRow, showToast, StatusWord } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
-import { useDeleteLending, useRecordSettlement } from '../useRecordSettlement';
+import { useDeleteLending, useRecordSettlement } from '../useLendingMutations';
 import type { TransferRow, UnrecordedRow } from './lendingsListModel';
 import { useTransferLink } from './useTransferLink';
 

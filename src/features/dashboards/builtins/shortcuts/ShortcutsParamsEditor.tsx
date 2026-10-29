@@ -10,7 +10,7 @@ import { ReorderList, Select, type SelectGroup, Text } from '@/components/ds';
 
 import type { BuiltinParamsEditorProps } from '../types';
 import { type ShortcutKind, useShortcutCatalog } from './shortcutsCatalog';
-import { ITEMS_PARAM, itemsSpec } from './shortcutsParams';
+import { ITEMS_PARAM, itemsSpec } from './shortcutsParamsModel';
 
 const GROUPS: Array<{ kind: ShortcutKind; label: string }> = [
   { kind: 'page', label: 'Pages' },

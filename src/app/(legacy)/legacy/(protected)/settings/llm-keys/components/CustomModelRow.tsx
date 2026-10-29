@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ProviderOption } from '@/features/settings/ai/providers';
+import type { ProviderOption } from '@/features/settings/ai/providersModel';
 import type { CustomModelInput } from '@/features/settings/ai/useLlmRoutingEditor';
 
 

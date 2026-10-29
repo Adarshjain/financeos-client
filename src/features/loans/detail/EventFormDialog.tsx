@@ -18,7 +18,7 @@ import {
   eventProblems,
   eventTransactionHint,
 } from './eventFormModel';
-import { type EventValues, isCashEvent, prefillAmount, prefillDate } from './loanRequests';
+import { type EventValues, isCashEvent, prefillAmount, prefillDate } from './loanRequestsModel';
 
 const FORM_ID = 'loan-event-form';
 

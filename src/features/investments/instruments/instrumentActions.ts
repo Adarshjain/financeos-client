@@ -11,7 +11,7 @@ import type {
   ResolveInstrumentRequest,
 } from '@/lib/types';
 
-import type { UpdateInstrumentResult } from './useInstrumentEdit';
+import type { UpdateInstrumentResult } from './useInstrumentMutations';
 
 /** AMFI / Yahoo candidates for the typed text. */
 export const searchCatalog = createDomainAction(

@@ -15,6 +15,7 @@ import type {
   MatchSuggestionsResponse,
 } from '@/lib/loan.types';
 
+import { loadLoanMatches } from './loanMatchActions';
 import {
   buildChargeRequest,
   buildEventRequest,
@@ -22,8 +23,7 @@ import {
   type ChargeValues,
   type EventValues,
   type PaymentValues,
-} from './loanRequests';
-import { loadLoanMatches } from './matchActions';
+} from './loanRequestsModel';
 import { nothingFound } from './matchModel';
 
 const NO_MATCHES = 'No matching bank transactions (±7 days)';

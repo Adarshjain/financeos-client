@@ -37,7 +37,7 @@ const m = vi.hoisted(() => {
   };
 });
 vi.mock('@/features/lendings/useCounterpartyMutations', () => ({ useCounterpartyMutations: () => m }));
-vi.mock('@/features/lendings/useLendingTransactionLink', () => ({
+vi.mock('@/features/lendings/useLendingMutations', () => ({
   useLinkLendingTransaction: () => m.linkTransaction,
   useUnlinkLendingTransaction: () => m.unlinkTransaction,
 }));
@@ -64,7 +64,7 @@ vi.mock('@/features/transactions/TransactionPickerField', () => ({
   ),
 }));
 const loadPersonMatches = vi.hoisted(() => vi.fn());
-vi.mock('./matchActions', () => ({ loadPersonMatches }));
+vi.mock('./personMatchActions', () => ({ loadPersonMatches }));
 const loadPersonLedger = vi.hoisted(() => vi.fn());
 vi.mock('./ledgerActions', () => ({ loadPersonLedger }));
 

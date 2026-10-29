@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import React from 'react';
 
 import { loadChatList, loadConversation } from '@/features/chat/chatData';
-import { UNTITLED_CHAT } from '@/features/chat/chatHistory';
+import { UNTITLED_CHAT } from '@/features/chat/chatHistoryModel';
 import { ChatScreen } from '@/features/chat/ChatScreen';
 import { todayInAppZone } from '@/lib/date-range';
 

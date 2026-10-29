@@ -30,7 +30,7 @@ import {
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { useCreateLending } from '../useCreateLending';
+import { useCreateLending } from '../useLendingMutations';
 import { PersonSelect } from './PersonSelect';
 
 const FORM_ID = 'add-lending-form';

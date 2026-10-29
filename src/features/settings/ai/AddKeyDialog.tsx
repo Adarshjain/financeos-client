@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Banner, Button, Dialog, Select, TextField } from '@/components/ds';
 
-import { PROVIDERS } from './providers';
+import { PROVIDERS } from './providersModel';
 
 const FORM_ID = 'add-llm-key-form';
 

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { buildLinkRequest, disabledLinkKinds } from '@/features/transactions/link/linkModel';
-import { useCreateTransactionLink } from '@/features/transactions/link/useCreateTransactionLink';
+import { useCreateTransactionLink } from '@/features/transactions/link/useTransactionLinkMutations';
 import { Account } from '@/lib/account.types';
 import { isRecordKind, LinkKind, LinkType, Transaction } from '@/lib/transaction.types';
 

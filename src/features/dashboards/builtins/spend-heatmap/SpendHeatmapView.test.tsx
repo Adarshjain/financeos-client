@@ -24,7 +24,7 @@ import { kpi, widget } from '@/features/dashboards/builtins/testFixtures';
 import type { ChartData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { daySpendRequest } from './heatmap.requests';
+import { daySpendRequest } from './heatmapRequestsModel';
 import { SpendHeatmapView } from './SpendHeatmapView';
 
 const chart = (categories: string[], values: (number | null)[]): ChartData =>

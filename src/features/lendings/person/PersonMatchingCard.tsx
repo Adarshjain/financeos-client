@@ -11,7 +11,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 import { useTransferLink } from '../list/useTransferLink';
-import { loadPersonMatches } from './matchActions';
+import { loadPersonMatches } from './personMatchActions';
 
 export interface PersonMatchingCardProps {
   counterpartyId: string;

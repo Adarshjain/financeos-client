@@ -8,7 +8,7 @@ import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
-import type { PendingBillAction } from './inboxBillAction';
+import type { PendingBillAction } from './inboxBillActions';
 import { InboxBillHost } from './InboxBillHost';
 import { INBOX_SECTIONS, type InboxSectionKey } from './inboxModel';
 import { dsInboxNotifier } from './inboxNotifier';

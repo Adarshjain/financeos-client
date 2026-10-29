@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatchModel';
 import { unwrapAction } from '@/lib/actionResult';
+import type { CreateLoanRequest, LoanResponse, UpdateLoanRequest } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {
@@ -18,11 +19,13 @@ import {
   addLoanEvent,
   addLoanPayment,
   closeLoan as closeLoanAction,
+  createLoan,
   deleteLoan as deleteLoanAction,
   deleteLoanCharge,
   deleteLoanEvent,
   deleteLoanPayment,
   reopenLoan as reopenLoanAction,
+  updateLoan,
 } from './loanActions';
 
 export interface LoanMutationOptions {
@@ -122,4 +125,31 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
     reopenLoan,
     deleteLoan,
   };
+}
+
+/**
+ * Creates a loan (POST /api/v1/loans) and refreshes every loan query. `onError` replaces the default
+ * Legacy error toast, for pages whose toasts come from another toaster.
+ */
+export function useCreateLoan(options?: { onError?: (e: unknown) => void }) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateLoanRequest): Promise<LoanResponse> => unwrapAction(createLoan(body)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't create loan. Try again.")),
+  });
+}
+
+/**
+ * Updates a loan (PUT /api/v1/loans/{id}) and refreshes every loan query. `onError` replaces the default
+ * Legacy error toast, for pages whose toasts come from another toaster.
+ */
+export function useUpdateLoan(options?: { onError?: (e: unknown) => void }) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateLoanRequest }): Promise<LoanResponse> =>
+      unwrapAction(updateLoan(id, body)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
+    onError: options?.onError ?? ((e: unknown) => toastError(e, "Couldn't update loan. Try again.")),
+  });
 }

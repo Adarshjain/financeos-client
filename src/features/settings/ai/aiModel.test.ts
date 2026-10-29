@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { LlmBucketHealthDto, LlmKeyDto, LlmRoutingDto, RoutingOptionDto } from '@/lib/api/types';
 
 import { buildHealthRows, buildKeyRows, formatCooldownTime, formatLastUsed, providerLine, routingParts } from './aiModel';
-import { buildProviderOptions, showTrainingWarning } from './providers';
+import { buildProviderOptions, showTrainingWarning } from './providersModel';
 
 const key = (over: Partial<LlmKeyDto>): LlmKeyDto => ({
   id: 'k1',

@@ -23,7 +23,7 @@ import {
   type InstrumentFormErrors,
   instrumentFormErrors,
 } from '@/features/investments/instruments/instrumentEditModel';
-import { useUpdateInstrument } from '@/features/investments/instruments/useInstrumentEdit';
+import { useUpdateInstrument } from '@/features/investments/instruments/useInstrumentMutations';
 import { toastError } from '@/lib/toastError';
 import { AssetClass, Instrument, InstrumentCandidate } from '@/lib/types';
 

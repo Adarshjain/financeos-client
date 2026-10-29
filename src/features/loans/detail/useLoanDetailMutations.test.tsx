@@ -37,7 +37,7 @@ vi.mock('@/features/loans/useLoanMutations', () => ({
 }));
 
 const loadLoanMatches = vi.hoisted(() => vi.fn());
-vi.mock('./matchActions', () => ({ loadLoanMatches }));
+vi.mock('./loanMatchActions', () => ({ loadLoanMatches }));
 
 const tx = (id: string): Transaction =>
   ({ id, date: '2026-10-05', amount: -39052, description: 'SBI Home Loan EMI', accountId: 'b1' }) as Transaction;

@@ -19,7 +19,7 @@ import {
 } from './instrumentEditModel';
 import { assetClassChange, candidatePatch, editValuesOf, type InstrumentEditValues, instrumentRequest } from './instrumentFormModel';
 import { TYPE_OPTIONS } from './instrumentsModel';
-import { type UpdateInstrumentResult, useUpdateInstrument } from './useInstrumentEdit';
+import { type UpdateInstrumentResult, useUpdateInstrument } from './useInstrumentMutations';
 
 const FORM_ID = 'instrument-edit-form';
 const NO_ERRORS: InstrumentFormErrors = { fields: {}, form: null };

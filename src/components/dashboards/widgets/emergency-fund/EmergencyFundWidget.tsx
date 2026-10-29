@@ -15,8 +15,8 @@ import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnd
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatRupees } from '@/features/dashboards/builtins/builtinModel';
-import { liquidBalanceRequest, monthOutflowRequest } from '@/features/dashboards/builtins/emergency-fund/emergencyFund.requests';
 import { formatMonthsCovered, monthName, noFigureReason } from '@/features/dashboards/builtins/emergency-fund/emergencyFundModel';
+import { liquidBalanceRequest, monthOutflowRequest } from '@/features/dashboards/builtins/emergency-fund/emergencyFundRequestsModel';
 import { legacyHref } from '@/features/shell/routes';
 import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';

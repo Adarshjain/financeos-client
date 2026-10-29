@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ProviderConfig } from '@/features/settings/ai/providers';
+import type { ProviderConfig } from '@/features/settings/ai/providersModel';
 import type { LlmKeyDto, TestKeyResponse } from '@/lib/api/types';
 
 

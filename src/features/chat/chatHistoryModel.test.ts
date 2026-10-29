@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { timeInAppZone } from '@/lib/date-range';
 
-import { groupConversations, MAX_CHATS, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistory';
+import { groupConversations, MAX_CHATS, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistoryModel';
 import type { ConversationSummary } from './conversation.types';
 
 const chat = (id: string, updatedAt: string, over: Partial<ConversationSummary> = {}): ConversationSummary => ({

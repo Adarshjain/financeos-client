@@ -10,7 +10,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
 import { createLendingEntry } from './lendingActions';
-import { useCreateLending } from './useCreateLending';
+import { useCreateLending } from './useLendingMutations';
 
 const body = { counterpartyId: 'c1', direction: 'lent', kind: 'principal', amount: 5, entryDate: '2026-10-13' } as const;
 

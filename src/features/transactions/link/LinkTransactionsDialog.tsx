@@ -21,12 +21,12 @@ import {
 } from './linkModel';
 import { LoanPaymentLinkBody } from './LoanPaymentLinkBody';
 import { TransactionsLinkBody } from './TransactionsLinkBody';
-import { useCreateTransactionLink } from './useCreateTransactionLink';
 import { useDividendLink } from './useDividendLink';
 import { useEpfWithdrawalLink } from './useEpfWithdrawalLink';
 import { useLinkMembers } from './useLinkMembers';
 import { useLoanPaymentLink } from './useLoanPaymentLink';
 import { useRecordLending } from './useRecordLending';
+import { useCreateTransactionLink } from './useTransactionLinkMutations';
 
 export interface LinkTransactionsDialogProps {
   /** One transaction opens "Link … to…"; several (from the selection bar) open the multi-transaction form. */

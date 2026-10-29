@@ -8,8 +8,10 @@ import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-q
 
 import { showToast } from '@/components/ds';
 import { deleteDashboard, saveDashboard, saveDashboardWidgets, setDashboardDefault } from '@/features/dashboards/dashboardActions';
+import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltinModel';
 import type { saveBody } from '@/features/dashboards/editor/editorStateModel';
 import type { WidgetSettingsChange } from '@/features/dashboards/frame/WidgetSettingsDialog';
+import { reportHref } from '@/features/reports/list/reportsListModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
@@ -139,5 +141,20 @@ export function useAddWidgetNow() {
       });
     },
     onError: (e) => showToast(getErrorMessage(e, "Couldn't add the widget. Try again."), { tone: 'danger' }),
+  });
+}
+
+export function useDuplicateBuiltinReport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: duplicateBuiltin,
+    onSuccess: ({ report, windowAsOf }) => {
+      void queryClient.invalidateQueries({ queryKey: keys.reports.all });
+      const note = windowNote(windowAsOf);
+      showToast(`Report "${report.name}" saved${note ? `. ${note.replace(/\.$/, '')}` : ''}`, {
+        action: { label: 'Open', href: reportHref(report.id) },
+      });
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't copy the widget as a report. Try again."), { tone: 'danger' }),
   });
 }

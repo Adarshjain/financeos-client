@@ -44,10 +44,13 @@ const m = vi.hoisted(() => {
     deleteLoan: mutation(),
   };
 });
-vi.mock('@/features/loans/useLoanMutations', () => ({ useLoanMutations: () => m }));
+vi.mock('@/features/loans/useLoanMutations', async (importActual) => ({
+  ...(await importActual<typeof import('@/features/loans/useLoanMutations')>()),
+  useLoanMutations: () => m,
+}));
 
 const loadLoanMatches = vi.hoisted(() => vi.fn());
-vi.mock('./matchActions', () => ({ loadLoanMatches }));
+vi.mock('./loanMatchActions', () => ({ loadLoanMatches }));
 
 import { api } from '@/lib/api/client';
 import type { InstallmentDto } from '@/lib/loan.types';

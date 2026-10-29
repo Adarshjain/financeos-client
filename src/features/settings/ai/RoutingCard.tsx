@@ -5,7 +5,7 @@ import React from 'react';
 import { Badge, Banner, Button, Card, Icon, ListRow, Text } from '@/components/ds';
 
 import { routingParts } from './aiModel';
-import type { RoutingGroupEditor } from './routingGroups';
+import type { RoutingGroupEditor } from './routingGroupsModel';
 
 function OrderLine({ group }: { group: RoutingGroupEditor }) {
   const parts = routingParts(group.dto.entries);

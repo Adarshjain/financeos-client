@@ -11,7 +11,7 @@ import type { LoanResponse } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 import { buildUpdateLoanRequest, type LoanFormValues, loanProblems, loanValuesFrom } from '../loanFormModel';
-import { useUpdateLoan } from '../useUpdateLoan';
+import { useUpdateLoan } from '../useLoanMutations';
 import { type LoanFormErrors, LoanFormFields } from './LoanFormFields';
 
 const FORM_ID = 'loan-edit-form';

@@ -14,7 +14,7 @@ import {
   rewardsWords,
   sourceWords,
   statusItems,
-} from './transactionDetail';
+} from './transactionDetailModel';
 
 pinClock();
 

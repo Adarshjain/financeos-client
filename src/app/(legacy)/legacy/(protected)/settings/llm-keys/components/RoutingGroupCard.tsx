@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { ProviderOption } from '@/features/settings/ai/providers';
+import type { ProviderOption } from '@/features/settings/ai/providersModel';
 import { type CustomModelInput, draftEntryKey, isCustomEntry } from '@/features/settings/ai/useLlmRoutingEditor';
 import type { Schemas } from '@/lib/api/types';
 
