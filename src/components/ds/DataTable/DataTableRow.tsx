@@ -5,7 +5,7 @@ import {
   type RowData,
   type Table,
 } from '@tanstack/react-table';
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import { mergeProps } from 'react-aria';
 
 import { Button } from '../Button/Button';
@@ -16,7 +16,8 @@ import { Icon } from '../Icon/Icon';
 import { clickPoint, useSelectableItem } from '../useSelectableItem';
 import type { DataTableColumnMeta, DataTableFeatures } from './types';
 
-export interface DataTableRowComponentProps<Row extends RowData> {
+export interface DataTableRowComponentProps<Row extends RowData>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   row: TanStackRow<DataTableFeatures, Row>;
   table: Table<DataTableFeatures, Row>;
   selectable?: boolean;
@@ -44,7 +45,8 @@ function CellContent({ render, ctx }: { render: unknown; ctx: unknown }) {
   return <>{concealMoney(content)}</>;
 }
 
-export function DataTableRow<Row extends RowData>({
+function DataTableRowInner<Row extends RowData>(
+  {
   row,
   table,
   selectable = false,
@@ -62,8 +64,17 @@ export function DataTableRow<Row extends RowData>({
   busy = false,
   size = 'md',
   first = false,
-}: DataTableRowComponentProps<Row>) {
-  const rowRef = useRef<HTMLDivElement>(null);
+  className,
+  ...props
+}: DataTableRowComponentProps<Row>,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const setRefs = (node: HTMLDivElement | null) => {
+    rowRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) ref.current = node;
+  };
 
   useEffect(() => {
     if (highlighted && rowRef.current) {
@@ -95,7 +106,7 @@ export function DataTableRow<Row extends RowData>({
     selected: isSelected,
     onSelectedChange: (next) => onRowSelectionToggle(row.id, next),
     selectionMode: isSelectionMode,
-    onPress: handleRowPress,
+    onOpenDetail: handleRowPress,
     disabled: rowState?.disabled,
   });
 
@@ -110,7 +121,7 @@ export function DataTableRow<Row extends RowData>({
 
   return (
     <div
-      ref={rowRef}
+      ref={setRefs}
       role={onRowSelect ? 'button' : 'row'}
       aria-selected={selectable ? isSelected : undefined}
       tabIndex={isClickable ? 0 : undefined}
@@ -147,8 +158,9 @@ export function DataTableRow<Row extends RowData>({
         isClickable &&
           (isSelected || isHighlighted || isWarning) &&
           'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
+        className,
       )}
-      {...mergeProps(itemProps)}
+      {...mergeProps(props, itemProps)}
     >
       {row.getVisibleCells().map((cell) => {
         if (cell.column.id === '__select') {
@@ -301,3 +313,9 @@ export function DataTableRow<Row extends RowData>({
     </div>
   );
 }
+
+export const DataTableRow = forwardRef(DataTableRowInner) as <Row extends RowData>(
+  p: DataTableRowComponentProps<Row> & React.RefAttributes<HTMLDivElement>,
+) => React.ReactElement;
+
+Object.defineProperty(DataTableRow, 'displayName', { value: 'DataTableRow' });

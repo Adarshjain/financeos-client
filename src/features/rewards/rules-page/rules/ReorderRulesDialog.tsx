@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, ReorderList, showToast, Text } from '@/components/ds';
+import { Dialog, ReorderList, showToast, Text } from '@/components/ds';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { RewardRule } from '@/lib/rewards.types';
 
@@ -42,14 +42,14 @@ export function ReorderRulesDialog({ accountId, rules, onClose }: ReorderRulesDi
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Reorder rules"
         description="The first rule that matches a transaction earns. Move a rule up to check it sooner."
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: reorder.isPending }}
         primary={{ label: 'Save order', onSelect: save, loading: reorder.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <ReorderList
             items={rules.map((r) => ({ id: r.id, title: r.name, ariaLabel: r.name }))}
             value={order}
@@ -60,8 +60,8 @@ export function ReorderRulesDialog({ accountId, rules, onClose }: ReorderRulesDi
               Add a second rule to change the order.
             </Text>
           ) : null}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

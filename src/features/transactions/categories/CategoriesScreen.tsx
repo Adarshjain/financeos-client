@@ -8,14 +8,11 @@ import {
   Card,
   ConfirmDialog,
   Dialog,
-  DialogBody,
-  DialogContent,
   EmptyState,
   FilterBar,
   Icon,
   ListRow,
   Menu,
-  MenuItem,
   Pager,
   Text,
 } from '@/components/ds';
@@ -124,10 +121,10 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
                             </Button>
                           }
                         >
-                          <MenuItem onSelect={() => setDialog({ kind: 'rename', category })}>Rename</MenuItem>
-                          <MenuItem destructive onSelect={() => setDialog({ kind: 'delete', category })}>
+                          <Menu.Item onSelect={() => setDialog({ kind: 'rename', category })}>Rename</Menu.Item>
+                          <Menu.Item tone="danger" onSelect={() => setDialog({ kind: 'delete', category })}>
                             Delete
-                          </MenuItem>
+                          </Menu.Item>
                         </Menu>
                       </div>
                     }
@@ -154,23 +151,23 @@ export function CategoriesScreen({ categories, reference, state, uncategorized }
       ) : null}
       {dialog?.kind === 'actions' ? (
         <Dialog open onOpenChange={(open) => (open ? undefined : close())}>
-          <DialogContent
+          <Dialog.Content
             size="sm"
             title={dialog.category.name}
             tertiary={{ label: 'Cancel', onSelect: close }}
             secondary={{ label: 'Rename', onSelect: () => setDialog({ kind: 'rename', category: dialog.category }) }}
             primary={{
               label: 'Delete',
-              destructive: true,
+              tone: 'danger',
               onSelect: () => setDialog({ kind: 'delete', category: dialog.category }),
             }}
           >
-            <DialogBody>
+            <Dialog.Body>
               <Text variant="body" tone="ink-3">
                 Rename this category or delete it.
               </Text>
-            </DialogBody>
-          </DialogContent>
+            </Dialog.Body>
+          </Dialog.Content>
         </Dialog>
       ) : null}
       <ConfirmDialog

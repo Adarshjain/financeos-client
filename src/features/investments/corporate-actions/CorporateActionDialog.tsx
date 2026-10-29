@@ -8,8 +8,6 @@ import {
   ConfirmDialog,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   ListRow,
   Select,
   showToast,
@@ -177,7 +175,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
   return (
     <>
       <Dialog open onOpenChange={(open) => (open || confirmingDelete ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={editing ? 'Edit corporate action' : 'Record corporate action'}
           description="Quantity and cost update when you save."
@@ -185,7 +183,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
           primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <form
               id={FORM_ID}
               noValidate
@@ -285,8 +283,8 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
               ) : null}
               {previewKey ? <AfterSaving state={shownPreview} lines={lines} loading={settling} /> : null}
             </form>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
       {confirmingDelete && action ? (
         <ConfirmDialog

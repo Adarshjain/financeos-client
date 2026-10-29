@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Text } from '@/components/ds';
+import { Dialog, Text } from '@/components/ds';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto } from '@/lib/loan.types';
 
@@ -17,14 +17,14 @@ export function LinkedEmiDialog({ installment, onUnlink, onClose }: LinkedEmiDia
   const payment = installment.payment;
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={`EMI #${installment.seq}`}
         description="Paid and linked to a bank transaction."
         secondary={{ label: 'Cancel', onSelect: onClose }}
         primary={{ label: 'Unlink', onSelect: onUnlink }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {payment ? (
             <Text variant="body" as="p">
               {`Paid ${formatMoney(payment.amount, { decimals: 'auto' })} on ${formatDate(payment.paymentDate, 'full')}`}
@@ -33,8 +33,8 @@ export function LinkedEmiDialog({ installment, onUnlink, onClose }: LinkedEmiDia
           <Text variant="caption" tone="ink-3" as="p">
             Unlinking marks the EMI unpaid again. You can undo it right after.
           </Text>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

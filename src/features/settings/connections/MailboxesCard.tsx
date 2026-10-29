@@ -8,10 +8,6 @@ import {
   Banner,
   Button,
   Card,
-  CardHeader,
-  CardRow,
-  CardSubtitle,
-  CardTitle,
   ConfirmDialog,
   EmptyState,
   StatusWord,
@@ -46,7 +42,7 @@ function MailboxRow({
 }) {
   const failed = authFailedLine(conn);
   return (
-    <CardRow
+    <Card.Row
       data-testid="mailbox-row"
       className="flex-col items-stretch desk:flex-row desk:items-center desk:justify-between"
     >
@@ -84,7 +80,7 @@ function MailboxRow({
           Disconnect
         </Button>
       </div>
-    </CardRow>
+    </Card.Row>
   );
 }
 
@@ -108,10 +104,10 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
   return (
     <>
       <Card>
-        <CardHeader className="max-desk:flex-col max-desk:items-start">
+        <Card.Header className="max-desk:flex-col max-desk:items-start">
           <div className="min-w-0">
-            <CardTitle>Mailboxes</CardTitle>
-            <CardSubtitle>Read-only access to bank alert emails</CardSubtitle>
+            <Card.Title>Mailboxes</Card.Title>
+            <Card.Subtitle>Read-only access to bank alert emails</Card.Subtitle>
           </div>
           <div className="shrink-0 flex items-center gap-space-12">
             {connections.length > 0 ? (
@@ -134,7 +130,7 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
               </Button>
             </Text>
           </div>
-        </CardHeader>
+        </Card.Header>
 
         {connections.length === 0 ? (
           <EmptyState

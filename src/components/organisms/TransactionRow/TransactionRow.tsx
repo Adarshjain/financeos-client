@@ -195,7 +195,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      onPress: onDetail,
+      onOpenDetail: onDetail,
       disabled,
     });
 

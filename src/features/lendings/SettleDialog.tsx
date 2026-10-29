@@ -5,8 +5,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   FilterChip,
   SegmentedControl,
   showToast,
@@ -134,7 +132,7 @@ export function SettleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={`Settle up with ${first}`}
         description={settleBalanceLine(direction, balance, first)}
@@ -149,7 +147,7 @@ export function SettleDialog({
           loading: createLending.isPending,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <SegmentedControl
             fullWidth
             aria-label="Entry type"
@@ -209,8 +207,8 @@ export function SettleDialog({
               {warning}
             </Text>
           ) : null}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

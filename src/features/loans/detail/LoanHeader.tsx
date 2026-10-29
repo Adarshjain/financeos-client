@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Button, Icon, Menu, MenuItem, Text } from '@/components/ds';
+import { Badge, Button, Icon, Menu, Text } from '@/components/ds';
 
 import type { LoanHeaderModel } from './loanDetailModel';
 
@@ -64,15 +64,15 @@ export function LoanHeader({ header, canPrepay, closed, onPrepay, onEdit, onClos
               </Button>
             }
           >
-            <MenuItem onSelect={onEdit}>Edit loan</MenuItem>
+            <Menu.Item onSelect={onEdit}>Edit loan</Menu.Item>
             {closed ? (
-              <MenuItem onSelect={onReopen}>Reopen loan</MenuItem>
+              <Menu.Item onSelect={onReopen}>Reopen loan</Menu.Item>
             ) : (
-              <MenuItem onSelect={onClose}>Close loan</MenuItem>
+              <Menu.Item onSelect={onClose}>Close loan</Menu.Item>
             )}
-            <MenuItem destructive onSelect={onDelete}>
+            <Menu.Item tone="danger" onSelect={onDelete}>
               Delete loan
-            </MenuItem>
+            </Menu.Item>
           </Menu>
         </div>
       </div>

@@ -4,13 +4,8 @@ import React from 'react';
 
 import {
   Card,
-  CardHeader,
-  CardSubtitle,
-  CardTitle,
   ConfirmDialog,
   Dialog,
-  DialogBody,
-  DialogContent,
   Icon,
   ListRow,
   SectionHeader,
@@ -71,12 +66,12 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
   return (
     <>
       <Card>
-        <CardHeader>
+        <Card.Header>
           <div className="min-w-0">
-            <CardTitle>Recent chats</CardTitle>
-            <CardSubtitle truncate={false}>{`Your last ${MAX_CHATS} chats are kept. A new chat removes the oldest.`}</CardSubtitle>
+            <Card.Title>Recent chats</Card.Title>
+            <Card.Subtitle truncate={false}>{`Your last ${MAX_CHATS} chats are kept. A new chat removes the oldest.`}</Card.Subtitle>
           </div>
-        </CardHeader>
+        </Card.Header>
         {groups.map((group) => (
           <div key={group.id}>
             <SectionHeader variant="band" className="max-desk:hidden">
@@ -107,7 +102,7 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
                   }}
                   actions={[
                     { id: 'rename', label: 'Rename', onSelect: () => startRename(row) },
-                    { id: 'delete', label: 'Delete chat', destructive: true, onSelect: () => setDeleting(row) },
+                    { id: 'delete', label: 'Delete chat', tone: 'danger', onSelect: () => setDeleting(row) },
                   ]}
                 />
               );
@@ -123,13 +118,13 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
 
       {renaming ? (
         <Dialog open onOpenChange={(open) => (open || pending ? undefined : setRenaming(null))}>
-          <DialogContent
+          <Dialog.Content
             size="sm"
             title="Rename chat"
             secondary={{ label: 'Cancel', onSelect: () => setRenaming(null), disabled: pending }}
             primary={{ label: 'Save name', type: 'submit', form: RENAME_FORM_ID, loading: pending, disabled: pending || !valid || trimmed === renaming.title }}
           >
-            <DialogBody>
+            <Dialog.Body>
               <form
                 id={RENAME_FORM_ID}
                 onSubmit={(e) => {
@@ -139,8 +134,8 @@ export function ChatHistoryPane({ conversations, currentId, answeringId, today, 
               >
                 <TextField label="Name" name="title" value={name} maxLength={TITLE_MAX} onChange={(e) => setName(e.target.value)} autoFocus />
               </form>
-            </DialogBody>
-          </DialogContent>
+            </Dialog.Body>
+          </Dialog.Content>
         </Dialog>
       ) : null}
 

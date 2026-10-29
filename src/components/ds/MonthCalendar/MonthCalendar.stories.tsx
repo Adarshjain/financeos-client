@@ -7,7 +7,6 @@ import {
   Button,
   type CalendarEvent,
   Card,
-  CardHeader,
   formatMonth,
   Icon,
   ListRow,
@@ -190,7 +189,7 @@ export const UpcomingCalendar: Story = {
 
         {typeof value === 'string' && (
           <Card className="p-0">
-            <CardHeader
+            <Card.Header
               title={`${weekday(value)} ${formatDate(value, 'list')}`}
               subtitle={dayItems.length ? 'Tap a day to see its items' : 'Nothing due on this day'}
             />

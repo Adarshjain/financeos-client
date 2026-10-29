@@ -52,6 +52,7 @@ The list frame for every table of records: column headers with sort, a selection
   - `id` and `header`;
   - `cell` or an accessor;
   - `meta: { size?: 'xs' | 'sm' | 'md' | 'lg' | 'fill', grow?: number, align?: 'start' | 'end', wrap?: boolean, phone?: 'main' | 'amount' | 'status' | 'hidden', sortable?: boolean }`.
+- Parts: `DataTable.Header` and `DataTable.Row` (the table's own header row and body row; both take native div props and a ref).
 - `data`, and `getRowId(row)` (required; a stable id).
 - `sort?: { id: string; desc: boolean } | null`, `defaultSort`, `onSortChange`: through `useControllableState`.
 - `sortMode?: 'server' | 'client'` (default `'server'`).

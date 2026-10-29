@@ -14,8 +14,6 @@ import {
   createDataTableColumnHelper,
   DataTable,
   Dialog,
-  DialogBody,
-  DialogContent,
   EmptyState,
   FilterChip,
   Pager,
@@ -270,7 +268,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
+      <Dialog.Content
         size="xl"
         title={customTitle ?? (figure ? `Underlying data · ${figure}` : 'Underlying data')}
         description={description}
@@ -278,7 +276,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
         tertiary={top ? undefined : { label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
         secondary={{ label: 'Close', onSelect: onClose }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {top ? (
             <BreakdownFrameView
               key={`${nav.stack.length}:${top.rowId}`}
@@ -373,8 +371,8 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
           ) : null}
             </>
           )}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

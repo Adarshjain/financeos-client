@@ -15,7 +15,6 @@ import {
   FilterChip,
   Icon,
   Menu,
-  MenuItem,
   Text,
 } from '@/components/ds';
 import { replaceUrl } from '@/lib/urlState';
@@ -59,14 +58,14 @@ function RowMenu({ row, actions }: { row: ReportRow; actions: RowActions }) {
         </Button>
       }
     >
-      <MenuItem onSelect={() => actions.onEdit(row)}>Edit</MenuItem>
-      <MenuItem disabled={actions.duplicating} onSelect={() => actions.onDuplicate(row)}>
+      <Menu.Item onSelect={() => actions.onEdit(row)}>Edit</Menu.Item>
+      <Menu.Item disabled={actions.duplicating} onSelect={() => actions.onDuplicate(row)}>
         Duplicate
-      </MenuItem>
-      <MenuItem onSelect={() => actions.onAddToDashboard(row)}>Add to dashboard</MenuItem>
-      <MenuItem destructive onSelect={() => actions.onDelete(row)}>
+      </Menu.Item>
+      <Menu.Item onSelect={() => actions.onAddToDashboard(row)}>Add to dashboard</Menu.Item>
+      <Menu.Item tone="danger" onSelect={() => actions.onDelete(row)}>
         Delete
-      </MenuItem>
+      </Menu.Item>
     </Menu>
   );
 }

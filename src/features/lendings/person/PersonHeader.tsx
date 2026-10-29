@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Avatar, Button, Icon, Menu, MenuItem, Text } from '@/components/ds';
+import { Avatar, Button, Icon, Menu, Text } from '@/components/ds';
 
 import { avatarToneFor } from '../list/lendingsList';
 import type { PersonHeaderModel } from './personModel';
@@ -58,13 +58,13 @@ export function PersonHeader({ name, header, canSettle, canExport, onSettle, onE
               </Button>
             }
           >
-            <MenuItem onSelect={onEdit}>Edit person</MenuItem>
-            <MenuItem disabled={!canExport} onSelect={onExport}>
+            <Menu.Item onSelect={onEdit}>Edit person</Menu.Item>
+            <Menu.Item disabled={!canExport} onSelect={onExport}>
               Export ledger
-            </MenuItem>
-            <MenuItem destructive onSelect={onDelete}>
+            </Menu.Item>
+            <Menu.Item tone="danger" onSelect={onDelete}>
               Delete person
-            </MenuItem>
+            </Menu.Item>
           </Menu>
         </div>
       </div>

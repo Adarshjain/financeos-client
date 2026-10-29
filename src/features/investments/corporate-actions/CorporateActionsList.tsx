@@ -7,7 +7,6 @@ import {
   Badge,
   Button,
   Card,
-  CardRow,
   Conceal,
   createDataTableColumnHelper,
   DataTable,
@@ -199,14 +198,14 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
       </Card>
       <Card title="How each type is applied" subtitle="So XIRR and gains stay honest">
         {APPLY_RULES.map((rule) => (
-          <CardRow key={rule.label} className="items-baseline">
+          <Card.Row key={rule.label} className="items-baseline">
             <Text variant="body" tone="ink-3" as="div" className="w-1/3 shrink-0 desk:w-48">
               {rule.label}
             </Text>
             <Text variant="body" align="end" as="div" className="flex-1 min-w-0">
               {rule.text}
             </Text>
-          </CardRow>
+          </Card.Row>
         ))}
       </Card>
       {editing ? <CorporateActionDialog key={editing.id} action={editing} onClose={() => setEditing(null)} /> : null}

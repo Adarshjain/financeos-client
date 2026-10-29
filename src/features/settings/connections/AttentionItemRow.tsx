@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Badge, Button, Card, CardRow, ListField, Text } from '@/components/ds';
+import { Badge, Button, Card, ListField, Text } from '@/components/ds';
 import { formatDate, formatDateTime } from '@/lib/format';
 
 import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItem.helpers';
@@ -57,7 +57,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
   const emailDate = item.internalDate ?? item.discoveredAt;
 
   return (
-    <CardRow
+    <Card.Row
       data-testid="attention-item"
       className="flex-col items-stretch desk:flex-row desk:items-start desk:justify-between"
     >
@@ -109,6 +109,6 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
           </>
         )}
       </div>
-    </CardRow>
+    </Card.Row>
   );
 }

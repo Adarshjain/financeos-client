@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { ConfirmDialog, Dialog, DialogBody, DialogContent, TextField } from '@/components/ds';
+import { ConfirmDialog, Dialog, TextField } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import type { GmailSenderResponse } from '@/lib/api/types';
 
@@ -59,7 +59,7 @@ export function SenderDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={editingSender ? 'Edit allowed sender' : 'Add allowed sender'}
           tertiary={
@@ -75,7 +75,7 @@ export function SenderDialog({
             disabled: submittingSender,
           }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <form id={FORM_ID} className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={onSubmit}>
               <TextField
                 label="Sender name"
@@ -100,8 +100,8 @@ export function SenderDialog({
                 onCheckedChange={setSenderEnabled}
               />
             </form>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
 
       <ConfirmDialog

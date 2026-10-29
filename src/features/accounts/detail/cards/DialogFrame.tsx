@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Dialog, DialogBody, DialogContent } from '@/components/ds';
+import { Banner, Dialog } from '@/components/ds';
 
 import type { ActionResult } from './useCardholderActions';
 
@@ -43,18 +43,18 @@ export function DialogFrame({
 }) {
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={title}
         description={description}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: submitLabel, onSelect: onSubmit, loading: pending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           {error ? <Banner tone="danger">{error}</Banner> : null}
           {children}
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

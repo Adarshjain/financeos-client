@@ -7,8 +7,6 @@ import {
   Card,
   Checkbox,
   Dialog,
-  DialogBody,
-  DialogContent,
   ListRow,
   Select,
   showToast,
@@ -200,7 +198,7 @@ export function ExportLedgerDialog({ entries, theirName, defaultMyName, onClose 
   const disabled = state.noneSelected || Boolean(state.openingError);
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Export ledger"
         description="Pick the entries to include. The text below updates as you go."
@@ -211,7 +209,7 @@ export function ExportLedgerDialog({ entries, theirName, defaultMyName, onClose 
             : { label: 'Copy', onSelect: state.copy, disabled }
         }
       >
-        <DialogBody>
+        <Dialog.Body>
           <EntryChecklist state={state} />
           <Options state={state} />
           <TextArea
@@ -222,8 +220,8 @@ export function ExportLedgerDialog({ entries, theirName, defaultMyName, onClose 
             value={state.text}
             data-testid="ledger-export-preview"
           />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

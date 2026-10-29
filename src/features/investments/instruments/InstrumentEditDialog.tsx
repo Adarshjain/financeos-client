@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Select, showToast, Text, TextField } from '@/components/ds';
+import { Dialog, Select, showToast, Text, TextField } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
@@ -82,7 +82,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Edit instrument"
         description="Changes apply to your account only."
@@ -90,7 +90,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Save instrument', type: 'submit', form: FORM_ID, loading: submitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-12">
             <CatalogSearch type={values.type} hint={false} placeholder="Search AMFI or Yahoo to fix or fill identifiers…" onPick={picked} />
             <form
@@ -130,8 +130,8 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
               ) : null}
             </form>
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

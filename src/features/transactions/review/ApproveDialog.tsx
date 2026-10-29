@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { Card, Checkbox, Dialog, DialogBody, DialogContent, ListRow } from '@/components/ds';
+import { Card, Checkbox, Dialog, ListRow } from '@/components/ds';
 
 import { approveTitle, type ClearableReason, countReasons } from './reviewHelpers';
 import { ReviewSummaryDialog } from './ReviewSummaryDialog';
@@ -57,7 +57,7 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={approveTitle(total)}
           description="Tick the reasons to clear. Each transaction is marked manually reviewed for those; any other flag it carries stays."
@@ -69,7 +69,7 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
             loading: isPending,
           }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <Card>
               {rows.map((r) => {
                 const id = `approve-reason-${r.reason}`;
@@ -90,8 +90,8 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
                 );
               })}
             </Card>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
       <ReviewSummaryDialog summary={summary} onClose={closeSummary} />
     </>

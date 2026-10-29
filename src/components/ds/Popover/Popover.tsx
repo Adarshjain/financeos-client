@@ -10,11 +10,11 @@ import { useControllableState } from '../useControllableState';
 /** Gap kept to the viewport edge on each side. Mirrors the space-20 step (20px) used by container-viewport-inset; there is no JS token export to derive it from. */
 const VIEWPORT_GUTTER = 20;
 
-export const PopoverRoot = PopoverPrimitive.Root;
-export const PopoverTrigger = PopoverPrimitive.Trigger;
-export const PopoverPortal = PopoverPrimitive.Portal;
-export const PopoverClose = PopoverPrimitive.Close;
-export const PopoverAnchor = PopoverPrimitive.Anchor;
+const PopoverRoot = PopoverPrimitive.Root;
+const PopoverTrigger = PopoverPrimitive.Trigger;
+const PopoverPortal = PopoverPrimitive.Portal;
+const PopoverClose = PopoverPrimitive.Close;
+const PopoverAnchor = PopoverPrimitive.Anchor;
 
 export interface PopoverContentProps
   extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {
@@ -26,7 +26,7 @@ export interface PopoverContentProps
 export const LIST_WIDTH_CLASS =
   'w-max min-w-container-xs max-w-container-viewport-inset desk:max-w-container-viewport-inset';
 
-export const PopoverContent = forwardRef<
+const PopoverContent = forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   PopoverContentProps
 >(
@@ -84,14 +84,7 @@ export interface PopoverProps extends PopoverPrimitive.PopoverProps {
   contentProps?: Omit<PopoverContentProps, 'align' | 'side' | 'sideOffset' | 'className'>;
 }
 
-export const Popover: React.FC<PopoverProps> & {
-  Root: typeof PopoverPrimitive.Root;
-  Trigger: typeof PopoverPrimitive.Trigger;
-  Content: typeof PopoverContent;
-  Portal: typeof PopoverPrimitive.Portal;
-  Close: typeof PopoverPrimitive.Close;
-  Anchor: typeof PopoverPrimitive.Anchor;
-} = ({
+const PopoverImpl: React.FC<PopoverProps> = ({
   trigger,
   children,
   contentClassName,
@@ -152,10 +145,13 @@ export const Popover: React.FC<PopoverProps> & {
   );
 };
 
-Popover.displayName = 'Popover';
-Popover.Root = PopoverPrimitive.Root;
-Popover.Trigger = PopoverPrimitive.Trigger;
-Popover.Content = PopoverContent;
-Popover.Portal = PopoverPrimitive.Portal;
-Popover.Close = PopoverPrimitive.Close;
-Popover.Anchor = PopoverPrimitive.Anchor;
+PopoverImpl.displayName = 'Popover';
+
+export const Popover = Object.assign(PopoverImpl, {
+  Root: PopoverRoot,
+  Trigger: PopoverTrigger,
+  Content: PopoverContent,
+  Portal: PopoverPortal,
+  Close: PopoverClose,
+  Anchor: PopoverAnchor,
+});

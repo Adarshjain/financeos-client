@@ -64,9 +64,9 @@ describe('useSheetDrag', () => {
     expect(result.current.dragOffset).toBe(0);
   });
 
-  it('triggers onClose when released past threshold', () => {
-    const onClose = vi.fn();
-    const { result } = renderHook(() => useSheetDrag({ onClose, threshold: 80 }));
+  it('triggers onDismiss when released past threshold', () => {
+    const onDismiss = vi.fn();
+    const { result } = renderHook(() => useSheetDrag({ onDismiss, threshold: 80 }));
 
     act(() => {
       result.current.dragProps.onPointerDown({
@@ -90,16 +90,16 @@ describe('useSheetDrag', () => {
       } as unknown as React.PointerEvent<HTMLDivElement>);
     });
 
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
     expect(result.current.isDragging).toBe(false);
     // Keeps offset for exit animation
     expect(result.current.dragOffset).toBe(90);
   });
 
   it('springs back to 0 when released before threshold', () => {
-    const onClose = vi.fn();
+    const onDismiss = vi.fn();
     const { result } = renderHook(() =>
-      useSheetDrag({ onClose, threshold: 80, velocityThreshold: 999 }),
+      useSheetDrag({ onDismiss, threshold: 80, velocityThreshold: 999 }),
     );
 
     act(() => {
@@ -124,14 +124,14 @@ describe('useSheetDrag', () => {
       } as unknown as React.PointerEvent<HTMLDivElement>);
     });
 
-    expect(onClose).not.toHaveBeenCalled();
+    expect(onDismiss).not.toHaveBeenCalled();
     expect(result.current.isDragging).toBe(false);
     expect(result.current.dragOffset).toBe(0);
   });
 
   it('resets dragOffset and isDragging when reset is called', () => {
-    const onClose = vi.fn();
-    const { result } = renderHook(() => useSheetDrag({ onClose, threshold: 50 }));
+    const onDismiss = vi.fn();
+    const { result } = renderHook(() => useSheetDrag({ onDismiss, threshold: 50 }));
 
     act(() => {
       result.current.dragProps.onPointerDown({
@@ -165,9 +165,9 @@ describe('useSheetDrag', () => {
     expect(result.current.isDragging).toBe(false);
   });
 
-  it('springs back to 0 without calling onClose when drag is interrupted by onPointerCancel', () => {
-    const onClose = vi.fn();
-    const { result } = renderHook(() => useSheetDrag({ onClose, threshold: 80 }));
+  it('springs back to 0 without calling onDismiss when drag is interrupted by onPointerCancel', () => {
+    const onDismiss = vi.fn();
+    const { result } = renderHook(() => useSheetDrag({ onDismiss, threshold: 80 }));
 
     act(() => {
       result.current.dragProps.onPointerDown({
@@ -193,7 +193,7 @@ describe('useSheetDrag', () => {
       } as unknown as React.PointerEvent<HTMLDivElement>);
     });
 
-    expect(onClose).not.toHaveBeenCalled();
+    expect(onDismiss).not.toHaveBeenCalled();
     expect(result.current.isDragging).toBe(false);
     expect(result.current.dragOffset).toBe(0);
   });

@@ -6,7 +6,7 @@
 // a level; the root has no Back) or, with `onOpenTransaction`, a transaction. The dialog is open while it is
 // mounted, like ReportUnderlyingDialog; each opening starts at the root.
 
-import { Dialog, DialogBody, DialogContent } from '@/components/ds';
+import { Dialog } from '@/components/ds';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
 import { useBreakdownStack } from './useBreakdownStack';
@@ -31,8 +31,8 @@ export function ReportRowBreakdownDialog({ datasource, rowId, title, onOpenTrans
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent size="xl" title={title} secondary={{ label: 'Close', onSelect: onClose }}>
-        <DialogBody>
+      <Dialog.Content size="xl" title={title} secondary={{ label: 'Close', onSelect: onClose }}>
+        <Dialog.Body>
           <BreakdownFrameView
             key={`${nav.stack.length}:${top.rowId}`}
             datasource={top.datasource}
@@ -42,8 +42,8 @@ export function ReportRowBreakdownDialog({ datasource, rowId, title, onOpenTrans
             onOpenBreakdown={nav.push}
             transactionsOpen={onOpenTransaction !== undefined}
           />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

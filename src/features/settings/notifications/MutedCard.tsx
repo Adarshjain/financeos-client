@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, CardEmpty, CardSection, ListRow, Switch, Text } from '@/components/ds';
+import { Card, ListRow, Switch, Text } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';
@@ -40,9 +40,9 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
 
   return (
     <Card title="Muted" subtitle="Per card or loan">
-      <CardSection>Cards</CardSection>
+      <Card.Section>Cards</Card.Section>
       {cards.length === 0 ? (
-        <CardEmpty>No open credit cards yet</CardEmpty>
+        <Card.Empty>No open credit cards yet</Card.Empty>
       ) : (
         cards.map((card) => (
           <ListRow
@@ -58,9 +58,9 @@ export function MutedCard({ settings, cards, loans }: MutedCardProps) {
           />
         ))
       )}
-      <CardSection>Loans</CardSection>
+      <Card.Section>Loans</Card.Section>
       {loans.length === 0 ? (
-        <CardEmpty>No active loans yet</CardEmpty>
+        <Card.Empty>No active loans yet</Card.Empty>
       ) : (
         loans.map((loan) => (
           <ListRow

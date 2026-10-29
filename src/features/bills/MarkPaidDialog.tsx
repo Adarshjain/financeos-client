@@ -6,8 +6,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   SegmentedControl,
   showToast,
 } from '@/components/ds';
@@ -118,7 +116,7 @@ export function MarkPaidDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Mark bill as paid"
         description={
@@ -131,7 +129,7 @@ export function MarkPaidDialog({
         }}
         primary={{ label: 'Mark paid', onSelect: submit, loading: markPaid.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <SegmentedControl
             fullWidth
             aria-label="Payment type"
@@ -157,8 +155,8 @@ export function MarkPaidDialog({
             onValueChange={(v) => setPaidOn(typeof v === 'string' ? v : '')}
             error={dateError ?? undefined}
           />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

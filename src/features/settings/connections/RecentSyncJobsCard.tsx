@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Badge, Button, Card, CardEmpty, Text } from '@/components/ds';
+import { Badge, Button, Card, Text } from '@/components/ds';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { GmailSyncResult } from '@/features/jobs/ds/GmailSyncResult';
 import { JobActions } from '@/features/jobs/ds/JobActions';
@@ -36,9 +36,9 @@ export function RecentSyncJobsCard() {
       }
     >
       {loading ? (
-        <CardEmpty>Loading jobs…</CardEmpty>
+        <Card.Empty>Loading jobs…</Card.Empty>
       ) : jobs.length === 0 ? (
-        <CardEmpty>No recent sync jobs yet</CardEmpty>
+        <Card.Empty>No recent sync jobs yet</Card.Empty>
       ) : (
         <div className="flex flex-col gap-space-8 px-space-16 pb-space-16">
           {jobs.map((job) => {

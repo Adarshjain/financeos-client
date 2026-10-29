@@ -5,7 +5,7 @@
 // the chart is a real list (name, value, share) and doubles as its text
 // equivalent; hovering a row or slice dims the rest.
 
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { Text } from '@/components/ds';
@@ -27,6 +27,7 @@ import {
   chartColor,
 } from './chartTokens';
 import { chartValueFormat } from './chartValueFormat';
+import { useMergedRef } from './mergeRefs';
 
 /** Below this width the legend stacks under the pie instead of beside it. */
 const STACK_BELOW_PX = 360;
@@ -41,22 +42,30 @@ interface Slice {
   folded?: string[];
 }
 
-export function ChartPie({
-  data,
-  fill,
-  money,
-  donut,
-  onSelectEntry,
-  canSelectEntry,
-}: {
+export interface ChartPieProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   data: ChartInput;
   fill?: boolean;
   money: boolean;
   donut: boolean;
   onSelectEntry?: (entry: ChartEntry) => void;
   canSelectEntry?: (entry: ChartEntry) => boolean;
-}) {
-  const [frameRef, { width, height }] = useElementSize<HTMLDivElement>();
+}
+
+export const ChartPie = forwardRef<HTMLDivElement, ChartPieProps>(function ChartPie(
+  {
+  data,
+  fill,
+  money,
+  donut,
+  onSelectEntry,
+  canSelectEntry,
+  className,
+  ...props
+},
+  ref,
+) {
+  const [sizeRef, { width, height }] = useElementSize<HTMLDivElement>();
+  const frameRef = useMergedRef(sizeRef, ref);
   const [active, setActive] = useState<number | null>(null);
   const format = chartValueFormat(money);
 
@@ -123,8 +132,10 @@ export function ChartPie({
           ? 'h-full min-h-0'
           : stacked
             ? ''
-            : 'aspect-video desk:aspect-wide'
+            : 'aspect-video desk:aspect-wide',
+        className
       )}
+      {...props}
     >
       {!legendCoversAll && <ChartDataTable data={data} />}
       <div
@@ -266,4 +277,4 @@ export function ChartPie({
       </ul>
     </div>
   );
-}
+});

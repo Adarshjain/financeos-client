@@ -19,11 +19,11 @@ function Item(o: UseSelectableItemOptions) {
 }
 
 function setup(o: UseSelectableItemOptions = {}) {
-  const onPress = vi.fn();
+  const onOpenDetail = vi.fn();
   const onSelectedChange = vi.fn();
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-  render(<Item selectable onPress={onPress} onSelectedChange={onSelectedChange} {...o} />);
-  return { user, onPress, onSelectedChange, item: screen.getByTestId('item') };
+  render(<Item selectable onOpenDetail={onOpenDetail} onSelectedChange={onSelectedChange} {...o} />);
+  return { user, onOpenDetail, onSelectedChange, item: screen.getByTestId('item') };
 }
 // jsdom rects are all zero; React Aria only counts a release as a press when it lands inside the target rect.
 const giveSize = (el: HTMLElement) => {
@@ -46,81 +46,81 @@ describe.each([
   ['touch', '[TouchA>]', '[/TouchA]'],
   ['mouse', '[MouseLeft>]', '[/MouseLeft]'],
 ])('%s press', (_n, down, up) => {
-  it('release at 300ms is a tap (onPress), not a long-press', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+  it('release at 300ms is a tap (onOpenDetail), not a long-press', async () => {
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
     adv(300);
     await user.pointer({ keys: up, target: item });
     adv(600);
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
-  it('tap outside selection mode: onPress only, never select', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+  it('tap outside selection mode: onOpenDetail only, never select', async () => {
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
     await user.pointer({ keys: up, target: item });
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
   it('20px move between down and up: no tap, no long-press', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     giveSize(item);
     await user.pointer({ keys: down, target: item, coords: { clientX: 10, clientY: 10 } });
     await user.pointer({ target: item, coords: { clientX: 30, clientY: 10 } });
     adv(600);
     await user.pointer({ keys: up, target: item, coords: { clientX: 30, clientY: 10 } });
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
   it('swipe with pointer capture (item never sees the moves): still no tap, no long-press', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     giveSize(item);
     await user.pointer({ keys: down, target: item, coords: { clientX: 10, clientY: 10 } });
     // pointermove delivered to the capturing ancestor/document, not to the item
     await user.pointer({ target: document.body, coords: { clientX: 40, clientY: 10 } });
     adv(600);
     await user.pointer({ keys: up, target: item, coords: { clientX: 40, clientY: 10 } });
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
   it('a 5px wobble is still a tap', async () => {
-    const { user, item, onPress } = setup();
+    const { user, item, onOpenDetail } = setup();
     giveSize(item);
     await user.pointer({ keys: down, target: item, coords: { clientX: 10, clientY: 10 } });
     await user.pointer({ target: item, coords: { clientX: 15, clientY: 12 } });
     await user.pointer({ keys: up, target: item, coords: { clientX: 15, clientY: 12 } });
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
-  it('selectable:false -> long-press nothing, tap calls onPress', async () => {
-    const { user, item, onPress, onSelectedChange } = setup({ selectable: false });
+  it('selectable:false -> long-press nothing, tap calls onOpenDetail', async () => {
+    const { user, item, onOpenDetail, onSelectedChange } = setup({ selectable: false });
     await user.pointer({ keys: down, target: item });
     adv(600);
     await user.pointer({ keys: up, target: item });
     expect(onSelectedChange).not.toHaveBeenCalled();
     // React Aria: no long-press registered, so the slow release is an ordinary press.
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     await user.pointer({ keys: down, target: item });
     await user.pointer({ keys: up, target: item });
-    expect(onPress).toHaveBeenCalledTimes(2);
+    expect(onOpenDetail).toHaveBeenCalledTimes(2);
   });
   it('disabled -> nothing fires', async () => {
-    const { user, item, onPress, onSelectedChange } = setup({ disabled: true });
+    const { user, item, onOpenDetail, onSelectedChange } = setup({ disabled: true });
     await user.pointer({ keys: down, target: item });
     adv(600);
     await user.pointer({ keys: up, target: item });
     await user.pointer({ keys: down, target: item });
     await user.pointer({ keys: up, target: item });
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
   it('inner button press acts alone', async () => {
-    const { user, onPress, onSelectedChange } = setup({ selectionMode: true });
+    const { user, onOpenDetail, onSelectedChange } = setup({ selectionMode: true });
     const btn = screen.getByRole('button', { name: 'inner' });
     await user.pointer({ keys: down, target: btn });
     adv(600);
     await user.pointer({ keys: up, target: btn });
     await user.click(btn);
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
 });
@@ -132,7 +132,7 @@ describe.each([
 ])('phone layout, %s: long-press and selection', (_n, down, up) => {
   beforeEach(() => stubLayout('phone'));
   it('selects before release; release triggers nothing more', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
     expect(onSelectedChange).not.toHaveBeenCalled();
     adv(500);
@@ -140,23 +140,23 @@ describe.each([
     expect(onSelectedChange).toHaveBeenCalledWith(true);
     await user.pointer({ keys: up, target: item });
     expect(onSelectedChange).toHaveBeenCalledTimes(1);
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
   });
-  it('tap in selection mode toggles on and off, no onPress', async () => {
+  it('tap in selection mode toggles on and off, no onOpenDetail', async () => {
     const a = setup({ selectionMode: true, selected: false });
     await a.user.pointer({ keys: down, target: a.item });
     await a.user.pointer({ keys: up, target: a.item });
     expect(a.onSelectedChange).toHaveBeenCalledWith(true);
-    expect(a.onPress).not.toHaveBeenCalled();
+    expect(a.onOpenDetail).not.toHaveBeenCalled();
     document.body.innerHTML = '';
     const b = setup({ selectionMode: true, selected: true });
     await b.user.pointer({ keys: down, target: b.item });
     await b.user.pointer({ keys: up, target: b.item });
     expect(b.onSelectedChange).toHaveBeenCalledWith(false);
-    expect(b.onPress).not.toHaveBeenCalled();
+    expect(b.onOpenDetail).not.toHaveBeenCalled();
   });
   it('iOS: long-press w/o click, then a separate quick tap works', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
     adv(500);
     await user.pointer({ keys: up, target: item });
@@ -164,7 +164,7 @@ describe.each([
     adv(1000);
     await user.pointer({ keys: down, target: item });
     await user.pointer({ keys: up, target: item });
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -175,26 +175,26 @@ describe.each([
 ])('desktop layout, %s', (_n, down, up) => {
   beforeEach(() => stubLayout('desktop'));
   it('holding past the threshold does not select; the release opens the item', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     giveSize(item);
     await user.pointer({ keys: down, target: item });
     adv(800);
     expect(onSelectedChange).not.toHaveBeenCalled();
     await user.pointer({ keys: up, target: item });
     expect(onSelectedChange).not.toHaveBeenCalled();
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
   it('a press in selection mode opens the item and never toggles', async () => {
     const a = setup({ selectionMode: true, selected: false });
     await a.user.pointer({ keys: down, target: a.item });
     await a.user.pointer({ keys: up, target: a.item });
-    expect(a.onPress).toHaveBeenCalledTimes(1);
+    expect(a.onOpenDetail).toHaveBeenCalledTimes(1);
     expect(a.onSelectedChange).not.toHaveBeenCalled();
     document.body.innerHTML = '';
     const b = setup({ selectionMode: true, selected: true });
     await b.user.pointer({ keys: down, target: b.item });
     await b.user.pointer({ keys: up, target: b.item });
-    expect(b.onPress).toHaveBeenCalledTimes(1);
+    expect(b.onOpenDetail).toHaveBeenCalledTimes(1);
     expect(b.onSelectedChange).not.toHaveBeenCalled();
   });
 });
@@ -202,54 +202,54 @@ describe.each([
 describe('Ctrl+press', () => {
   it('desktop layout: a Ctrl+click (the macOS right-click) does not open the item', async () => {
     stubLayout('desktop');
-    const { user, item, onPress } = setup();
+    const { user, item, onOpenDetail } = setup();
     giveSize(item);
     await user.keyboard('{Control>}');
     await user.pointer({ keys: '[MouseLeft>]', target: item });
     await user.pointer({ keys: '[/MouseLeft]', target: item });
     await user.keyboard('{/Control}');
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
   });
   it('desktop layout: a plain click still opens it', async () => {
     stubLayout('desktop');
-    const { user, item, onPress } = setup();
+    const { user, item, onOpenDetail } = setup();
     giveSize(item);
     await user.pointer({ keys: '[MouseLeft>]', target: item });
     await user.pointer({ keys: '[/MouseLeft]', target: item });
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('keyboard', () => {
   it('Enter/Space on the inner button does not trigger the item', async () => {
-    const { user, onPress, onSelectedChange } = setup({ selectionMode: true });
+    const { user, onOpenDetail, onSelectedChange } = setup({ selectionMode: true });
     screen.getByRole('button', { name: 'inner' }).focus();
     await user.keyboard('{Enter} ');
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
-  it.each([['{Enter}'], [' ']])('%s outside selection mode -> onPress', async (k) => {
-    const { user, item, onPress, onSelectedChange } = setup();
+  it.each([['{Enter}'], [' ']])('%s outside selection mode -> onOpenDetail', async (k) => {
+    const { user, item, onOpenDetail, onSelectedChange } = setup();
     item.focus();
     await user.keyboard(k);
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
   it.each([['{Enter}'], [' ']])('%s in selection mode, phone layout -> toggles', async (k) => {
     stubLayout('phone');
-    const { user, item, onPress, onSelectedChange } = setup({ selectionMode: true, selected: true });
+    const { user, item, onOpenDetail, onSelectedChange } = setup({ selectionMode: true, selected: true });
     item.focus();
     await user.keyboard(k);
     expect(onSelectedChange).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).toHaveBeenCalledWith(false);
-    expect(onPress).not.toHaveBeenCalled();
+    expect(onOpenDetail).not.toHaveBeenCalled();
   });
-  it.each([['{Enter}'], [' ']])('%s in selection mode, desktop layout -> onPress', async (k) => {
+  it.each([['{Enter}'], [' ']])('%s in selection mode, desktop layout -> onOpenDetail', async (k) => {
     stubLayout('desktop');
-    const { user, item, onPress, onSelectedChange } = setup({ selectionMode: true, selected: true });
+    const { user, item, onOpenDetail, onSelectedChange } = setup({ selectionMode: true, selected: true });
     item.focus();
     await user.keyboard(k);
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
 });
@@ -260,7 +260,7 @@ describe('propagation', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(
       <div onPointerDown={() => seen.push('down')} onPointerUp={() => seen.push('up')}>
-        <Item selectable onPress={() => {}} onSelectedChange={() => {}} />
+        <Item selectable onOpenDetail={() => {}} onSelectedChange={() => {}} />
       </div>,
     );
     const item = screen.getByTestId('item');

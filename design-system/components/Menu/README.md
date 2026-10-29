@@ -20,11 +20,11 @@ Both open the same Popover with the same item rows, so they look identical. They
 ## Props
 - `<Menu>`:
   - `trigger?: React.ReactNode`: trigger element wrapped in `Menu.Trigger asChild`.
-  - `children?: React.ReactNode`: items and groups inside `MenuContent`.
+  - `children?: React.ReactNode`: items and groups inside `Menu.Content`.
   - `align?: 'start' | 'center' | 'end'`: alignment relative to trigger (`default: 'start'`).
   - `side?: 'top' | 'bottom' | 'left' | 'right'`: preferred side (`default: 'bottom'`).
   - `sideOffset?: number`: distance from trigger in pixels (`default: 4`).
-  - `contentClassName?: string`: class applied to `MenuContent`.
+  - `contentClassName?: string`: class applied to `Menu.Content`.
   - `contentProps?: Omit<MenuContentProps, 'align' | 'side' | 'sideOffset' | 'className'>`: props forwarded to Radix Content.
   - `open?: boolean`: controlled open state.
   - `defaultOpen?: boolean`: uncontrolled initial open state.
@@ -34,7 +34,8 @@ Both open the same Popover with the same item rows, so they look identical. They
   - `items: { id: string; label: string; onSelect: () => void; tone?: 'default' | 'danger'; disabled?: boolean }[]`: the actions, in order; none = the browser's own menu stays.
   - `children?: React.ReactNode`: the row a right-click opens the menu from. Leave it out when you drive the menu with `open` and `point`.
   - `open?: boolean`, `point?: { x: number; y: number } | null` (viewport coordinates), `onOpenChange?: (open: boolean) => void`: controlled. The menu opens at `point` in either layout. Press a DataTable row with `onRowSelect={(row, point) => setMenu({ row, point })}` and render `<ContextMenu open={!!menu} point={menu?.point} onOpenChange={(o) => !o && setMenu(null)} items={…} />`; the row fires only the page's `onRowSelect`.
-- Subcomponents: `Menu.Item`, `Menu.Separator`, `Menu.Group`, `Menu.Label`, `Menu.Trigger`, `Menu.Content`.
+- Parts: `Menu.Root`, `Menu.Trigger`, `Menu.Content`, `Menu.Item`, `Menu.Separator`, `Menu.Group`, `Menu.Label`, `Menu.Portal`, `Menu.RadioGroup`, `Menu.Sub`, `Menu.SubTrigger`, `Menu.SubContent`; no separate exports.
+- `Menu.Item`: `tone?: 'neutral' | 'danger'` (`danger` for delete and other destructive rows), `onSelect` for the press (no `onClick`), `icon`, `hint`, `active`, `disabled`, `asChild`.
 
 ## Variants
 - Standard action items (Edit, Duplicate, Delete).

@@ -7,8 +7,6 @@ import {
   ConfirmDialog,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   Select,
   showToast,
   Skeleton,
@@ -144,7 +142,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title={editing ? 'Edit dividend' : 'Record dividend'}
           description={title}
@@ -152,7 +150,7 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
           primary={{ label: editing ? 'Save dividend' : 'Record dividend', type: 'submit', form: FORM_ID, loading: submitting }}
         >
-          <DialogBody>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-16">
               <form
                 id={FORM_ID}
@@ -232,8 +230,8 @@ function DividendForm({ options, dividend, prefill, onClose, onSaved }: FieldsPr
                 <DividendReceiptSection dividend={dividend} amount={amount} tds={tds} onUseTds={setTds} mutations={mutations} onChanged={onSaved} />
               ) : null}
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
 
       {dividend ? (
@@ -276,29 +274,29 @@ export function DividendAddDialog({ onClose, prefill, onSaved }: DividendAddDial
   if (query.isPending) {
     return (
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent size="sm" title="Record dividend" secondary={{ label: 'Cancel', onSelect: onClose }}>
-          <DialogBody>
+        <Dialog.Content size="sm" title="Record dividend" secondary={{ label: 'Cancel', onSelect: onClose }}>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-12">
               <Skeleton height={32} />
               <Skeleton height={32} />
               <Skeleton height={32} />
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   }
   if (query.isError) {
     return (
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title="Record dividend"
           description="Couldn't load the accounts and holdings. Close this and try again."
           secondary={{ label: 'Close', onSelect: onClose }}
         >
-          <DialogBody>{null}</DialogBody>
-        </DialogContent>
+          <Dialog.Body>{null}</Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   }

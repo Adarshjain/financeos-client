@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, showToast, TextField } from '@/components/ds';
+import { Dialog, showToast, TextField } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
@@ -58,18 +58,18 @@ export function WidgetSettingsDialog({ widget, def, dashboardName, onSave, onClo
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={`Widget settings · ${name}`}
         description={dashboardName ? `Changes this widget on ${dashboardName} only.` : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
         primary={{ label: 'Save widget', onSelect: () => void save(), disabled: !form.valid || saving, loading: saving }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <ParamFields form={form} />
           <TextField label="Title" optional placeholder={name} value={title} onValueChange={setTitle} />
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

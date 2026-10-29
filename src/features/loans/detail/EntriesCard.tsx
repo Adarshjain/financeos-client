@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, EmptyState, FilterChip, ListRow, Menu, MenuItem, Text } from '@/components/ds';
+import { Card, EmptyState, FilterChip, ListRow, Menu, Text } from '@/components/ds';
 import type { LoanEventType } from '@/lib/loan.types';
 
 import { entriesCount,type EntryRow } from './entriesModel';
@@ -22,10 +22,10 @@ export function EntriesCard({ rows, onAddEvent, onAddCharge, onDelete }: Entries
       subtitle={entriesCount(rows.length)}
       action={
         <Menu align="end" trigger={<FilterChip hasDropdown>Add</FilterChip>}>
-          <MenuItem onSelect={() => onAddEvent('rate_change')}>Rate change</MenuItem>
-          <MenuItem onSelect={() => onAddEvent('prepayment')}>Prepayment</MenuItem>
-          <MenuItem onSelect={() => onAddEvent('foreclosure')}>Foreclosure</MenuItem>
-          <MenuItem onSelect={onAddCharge}>Charge</MenuItem>
+          <Menu.Item onSelect={() => onAddEvent('rate_change')}>Rate change</Menu.Item>
+          <Menu.Item onSelect={() => onAddEvent('prepayment')}>Prepayment</Menu.Item>
+          <Menu.Item onSelect={() => onAddEvent('foreclosure')}>Foreclosure</Menu.Item>
+          <Menu.Item onSelect={onAddCharge}>Charge</Menu.Item>
         </Menu>
       }
     >
@@ -43,7 +43,7 @@ export function EntriesCard({ rows, onAddEvent, onAddCharge, onDelete }: Entries
                 {row.amount ?? '—'}
               </Text>
             }
-            actions={[{ id: 'delete', label: row.kind === 'event' ? 'Delete event' : 'Delete charge', destructive: true, onSelect: () => onDelete(row) }]}
+            actions={[{ id: 'delete', label: row.kind === 'event' ? 'Delete event' : 'Delete charge', tone: 'danger', onSelect: () => onDelete(row) }]}
           />
         ))
       )}

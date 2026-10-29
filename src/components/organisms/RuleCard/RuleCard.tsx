@@ -13,9 +13,6 @@ import {
   cn,
   Icon,
   Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
   StatusWords,
   useControllableState,
   useSelectableItem,
@@ -24,7 +21,7 @@ import {
 export interface RuleCardMenuItem {
   label: React.ReactNode;
   onSelect?: () => void;
-  destructive?: boolean;
+  tone?: 'neutral' | 'danger';
 }
 
 export interface RuleCardApproveAction {
@@ -43,8 +40,8 @@ export interface RuleCardProps
   /** Usage count shown at top right, e.g. 4, 31, 1 */
   usedCount?: number | string;
 
-  /** Verification status: 'unverified' (default, amber) or 'verified' (green/brand-strong) */
-  status?: 'unverified' | 'verified';
+  /** Verification: `warning` (default, amber, unverified) or `success` (green/brand-strong, verified) */
+  tone?: 'warning' | 'success';
   /** Provenance / source, e.g. "LLM-generated", "Created by you" */
   source?: React.ReactNode;
   /** MCC code, e.g. "MCC 5812" */
@@ -86,7 +83,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       matchType,
       pattern,
       usedCount,
-      status = 'unverified',
+      tone = 'warning',
       source,
       mcc,
       statusLine,
@@ -108,7 +105,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     },
     ref,
   ) => {
-    const isVerified = status === 'verified';
+    const isVerified = tone === 'success';
 
     const [selected, setSelected] = useControllableState({
       value: selectedProp,
@@ -124,7 +121,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      onPress: onDetail,
+      onOpenDetail: onDetail,
     });
 
     const effectiveApprove =
@@ -197,18 +194,18 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
 
             {hasMenu && (
               <Menu.Root>
-                <MenuTrigger asChild>
+                <Menu.Trigger asChild>
                   <Button size="sm" variant="ghost" iconOnly aria-label="Rule actions">
                     <Icon name="more" size="sm" />
                   </Button>
-                </MenuTrigger>
-                <MenuContent align="end">
+                </Menu.Trigger>
+                <Menu.Content align="end">
                   {menuItems.map((menuItem, idx) => (
-                    <MenuItem key={idx} destructive={menuItem.destructive} onSelect={menuItem.onSelect}>
+                    <Menu.Item key={idx} tone={menuItem.tone} onSelect={menuItem.onSelect}>
                       {menuItem.label}
-                    </MenuItem>
+                    </Menu.Item>
                   ))}
-                </MenuContent>
+                </Menu.Content>
               </Menu.Root>
             )}
           </div>

@@ -107,7 +107,7 @@ export const WithActions: Story = {
     actions: [
       { id: 'edit', label: 'Edit', onSelect: fn() },
       { id: 'pause', label: 'Pause rule', onSelect: fn() },
-      { id: 'delete', label: 'Delete rule', onSelect: fn(), destructive: true },
+      { id: 'delete', label: 'Delete rule', onSelect: fn(), tone: 'danger' },
     ],
   },
 };

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Select, showToast, TextField } from '@/components/ds';
+import { Dialog, Select, showToast, TextField } from '@/components/ds';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
@@ -56,14 +56,14 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title={cap ? `Edit cap · ${cap.name}` : 'Add cap'}
         tertiary={cap && onDelete ? { label: 'Delete cap', tone: 'danger', onSelect: onDelete, disabled: pending } : undefined}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: cap ? 'Save cap' : 'Add cap', onSelect: save, loading: pending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <TextField
               className="desk:col-span-2"
@@ -100,8 +100,8 @@ export function CapDialog({ accountId, cap, usedByRules, onClose, onDelete }: Ca
               onValueChange={(v) => setCounterScope(v as CounterScope)}
             />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

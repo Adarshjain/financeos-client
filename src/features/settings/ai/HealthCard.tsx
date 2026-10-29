@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Card, CardHeader, CardSubtitle, CardTitle, ListRow, StatusWord, Text } from '@/components/ds';
+import { Card, ListRow, StatusWord, Text } from '@/components/ds';
 
 import { type HealthRow, maskedKey } from './aiModel';
 
@@ -8,12 +8,12 @@ import { type HealthRow, maskedKey } from './aiModel';
 export function HealthCard({ rows }: { rows: HealthRow[] }) {
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <div className="min-w-0">
-          <CardTitle>Health</CardTitle>
-          <CardSubtitle truncate={false}>A model that keeps failing rests for a while and is skipped</CardSubtitle>
+          <Card.Title>Health</Card.Title>
+          <Card.Subtitle truncate={false}>A model that keeps failing rests for a while and is skipped</Card.Subtitle>
         </div>
-      </CardHeader>
+      </Card.Header>
       {rows.map((row) => (
         <ListRow
           wrap

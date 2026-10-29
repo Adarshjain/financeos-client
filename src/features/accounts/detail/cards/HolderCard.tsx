@@ -7,14 +7,9 @@ import {
   Badge,
   Button,
   Card,
-  CardHeader,
-  CardRow,
-  CardSection,
   Icon,
   ListRow,
   Menu,
-  MenuItem,
-  MenuSeparator,
   StatusWord,
   Text,
 } from '@/components/ds';
@@ -46,10 +41,10 @@ export function HolderMenu({
     >
       {items.map((item) => (
         <React.Fragment key={item.id}>
-          {item.separatorBefore ? <MenuSeparator /> : null}
-          <MenuItem destructive={item.destructive} onSelect={() => onSelect(item.id)}>
+          {item.separatorBefore ? <Menu.Separator /> : null}
+          <Menu.Item tone={item.destructive ? 'danger' : 'neutral'} onSelect={() => onSelect(item.id)}>
             {item.label}
-          </MenuItem>
+          </Menu.Item>
         </React.Fragment>
       ))}
     </Menu>
@@ -136,7 +131,7 @@ export function HolderCard({
 }) {
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <Avatar
           variant="circle"
           tone={model.primary ? 'neutral' : 'brand'}
@@ -154,7 +149,7 @@ export function HolderCard({
           </Text>
         </div>
         <HolderMenu items={model.menu} onSelect={(id) => onMenu(model.id, id)} />
-      </CardHeader>
+      </Card.Header>
       {model.stats.length > 0 ? (
         <div className={`px-space-16 pt-space-4 pb-space-12 grid grid-cols-2 gap-space-8 ${model.statColumns === 3 ? 'desk:grid-cols-3' : 'desk:grid-cols-4'}`}>
           {model.stats.map((stat) => (
@@ -162,7 +157,7 @@ export function HolderCard({
           ))}
         </div>
       ) : null}
-      <CardSection>{model.plasticsLabel}</CardSection>
+      <Card.Section>{model.plasticsLabel}</Card.Section>
       {model.plastics.map((plastic) => (
         <PlasticRow
           key={plastic.id}
@@ -174,14 +169,14 @@ export function HolderCard({
         />
       ))}
       {model.closeFooter ? (
-        <CardRow>
+        <Card.Row>
           <Text variant="label" tone="ink-3" className="flex-1">
             Close this cardholder when the add-on is cancelled; history stays.
           </Text>
           <Button variant="danger" size="sm" onClick={() => onCloseHolder(model.id)}>
             Close cardholder
           </Button>
-        </CardRow>
+        </Card.Row>
       ) : null}
     </Card>
   );

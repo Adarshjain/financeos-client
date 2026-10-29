@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Button, Dialog, DialogBody, DialogContent, Select, TextField } from '@/components/ds';
+import { Banner, Button, Dialog, Select, TextField } from '@/components/ds';
 
 import { PROVIDERS } from './providers';
 
@@ -30,7 +30,7 @@ export function AddKeyDialog(p: AddKeyDialogProps) {
 
   return (
     <Dialog open={p.open} onOpenChange={p.onOpenChange}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         dismissible={!p.submitting}
         title="Add key"
@@ -43,7 +43,7 @@ export function AddKeyDialog(p: AddKeyDialogProps) {
           disabled: p.submitting || !p.apiKey.trim(),
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -104,8 +104,8 @@ export function AddKeyDialog(p: AddKeyDialogProps) {
               autoComplete="off"
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

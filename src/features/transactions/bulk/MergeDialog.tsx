@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Badge, Banner, Card, Dialog, DialogBody, DialogContent } from '@/components/ds';
+import { Badge, Banner, Card, Dialog } from '@/components/ds';
 import { TransactionRow } from '@/components/organisms';
 import type { Account } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -81,7 +81,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
 
   return (
     <Dialog open onOpenChange={(open) => !open && !merge.isPending && onClose()}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Merge transactions"
         description="Tap the one to keep. Fields it is missing are copied from the other, and its review reasons are cleared."
@@ -93,7 +93,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
           loading: merge.isPending,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-12">
             {warning ? (
               <Banner tone={warning.kind === 'blocked' ? 'danger' : 'warning'} title={warning.title}>
@@ -105,8 +105,8 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
               {card(b)}
             </div>
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

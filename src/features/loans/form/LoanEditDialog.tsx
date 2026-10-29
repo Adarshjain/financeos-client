@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { Banner, Dialog, showToast } from '@/components/ds';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
@@ -69,13 +69,13 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Edit loan"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: updateLoan.isPending }}
         primary={{ label: 'Save loan', type: 'submit', form: FORM_ID, loading: updateLoan.isPending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -96,8 +96,8 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
               termsLocked={termsLocked}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

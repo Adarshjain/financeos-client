@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Button, Card, CardFooter, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, MenuItem, StatusWord, StatusWords, Text } from '@/components/ds';
+import { Banner, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, StatusWord, StatusWords, Text } from '@/components/ds';
 import { Amount } from '@/components/organisms';
 
 import { DeleteStatementDialog } from './DeleteStatementDialog';
@@ -111,10 +111,10 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
             </Button>
           }
         >
-          {model.isCard ? <MenuItem onSelect={() => setEditOpen(true)}>Edit details</MenuItem> : null}
-          <MenuItem destructive onSelect={() => setDeleteOpen(true)}>
+          {model.isCard ? <Menu.Item onSelect={() => setEditOpen(true)}>Edit details</Menu.Item> : null}
+          <Menu.Item tone="danger" onSelect={() => setDeleteOpen(true)}>
             Delete statement
-          </MenuItem>
+          </Menu.Item>
         </Menu>
       }
     >
@@ -166,11 +166,11 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
         empty={<EmptyState compact title="No transactions linked yet" />}
       />
       {model.ledgerLine ? (
-        <CardFooter>
+        <Card.Footer>
           <Text variant="body" tone="ink-3" as="span">
             {model.ledgerLine}
           </Text>
-        </CardFooter>
+        </Card.Footer>
       ) : null}
       {model.isCard ? (
         <EditDetailsDialog

@@ -5,8 +5,6 @@ import React from 'react';
 
 import {
   Dialog,
-  DialogBody,
-  DialogContent,
   ListRow,
   Reveal,
   SectionHeader,
@@ -109,7 +107,7 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Filters"
         description="Every filter combines with the others."
@@ -117,7 +115,7 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
         secondary={{ label: 'Clear all', onSelect: clearAll }}
         primary={{ label: showLabel, onSelect: () => onApply(draftQuery) }}
       >
-        <DialogBody className="p-0 gap-0 desk:gap-0">
+        <Dialog.Body className="p-0 gap-0 desk:gap-0">
           <SectionHeader borderTop={false}>Date</SectionHeader>
           <div className="px-space-16 desk:px-space-20 py-space-12">
             <PeriodEditor draft={draft} today={today} onChange={set} />
@@ -270,8 +268,8 @@ export function FiltersDialog({ query, today, accounts, categories, onApply, onC
               onValueChange={(sort) => set({ sort: sort as SortId })}
             />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, CardRow } from '@/components/ds';
+import { Card } from '@/components/ds';
 import { Chart } from '@/components/organisms';
 
 import type { ChatChartBlock } from './chat.types';
@@ -12,11 +12,11 @@ export function ChatChartCard({ chart }: { chart: ChatChartBlock }) {
   if (!chart.categories?.length || !chart.series?.length) return null;
   return (
     <Card title={chart.title}>
-      <CardRow>
+      <Card.Row>
         <div className="w-full min-w-0">
           <Chart data={chart} />
         </div>
-      </CardRow>
+      </Card.Row>
     </Card>
   );
 }

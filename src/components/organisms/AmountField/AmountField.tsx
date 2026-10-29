@@ -4,8 +4,6 @@ import React, { forwardRef, useState } from 'react';
 
 import {
   Dialog,
-  DialogBody,
-  DialogContent,
   Keypad,
   Text,
   TextField,
@@ -98,13 +96,13 @@ export const AmountField = forwardRef<HTMLInputElement, AmountFieldProps>(
           }}
         />
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent
+          <Dialog.Content
             size="sm"
             title={title}
             onCloseAutoFocus={(e) => e.preventDefault()}
             primary={{ label: 'Apply', onSelect: apply, disabled: !valid }}
           >
-            <DialogBody>
+            <Dialog.Body>
               <div className="flex flex-col items-end gap-space-4 py-space-8">
                 <Text variant="hero-figure" as="p" data-testid="amount-keypad-display">
                   {/* "₹" and the number are separate children so Text's amount masking never matches. */}
@@ -115,8 +113,8 @@ export const AmountField = forwardRef<HTMLInputElement, AmountFieldProps>(
                 </Text>
               </div>
               <Keypad value={draft} onValueChange={setDraft} operators={OPERATORS} />
-            </DialogBody>
-          </DialogContent>
+            </Dialog.Body>
+          </Dialog.Content>
         </Dialog>
       </>
     );

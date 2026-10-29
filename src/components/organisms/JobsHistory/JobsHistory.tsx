@@ -17,7 +17,7 @@ import {
 import { formatCount } from '@/lib/format';
 import type { FileIngestionResult, JobResponse } from '@/lib/types';
 
-export interface JobsHistoryProps {
+export interface JobsHistoryProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   jobs: JobResponse[];
   /** Where View goes for a job. */
   openHref: (job: JobResponse) => string;
@@ -81,7 +81,10 @@ function ViewLink({ href }: { href: string }) {
 }
 
 /** A list of background jobs (Settings › Activity, Import › Recent imports). Put it in a Card. */
-export function JobsHistory({ jobs, openHref, onOpen, pager, empty, loading, skeletonRows, compact }: JobsHistoryProps) {
+export const JobsHistory = React.forwardRef<HTMLDivElement, JobsHistoryProps>(function JobsHistory(
+  { jobs, openHref, onOpen, pager, empty, loading, skeletonRows, compact, ...props },
+  ref,
+) {
   const columns = React.useMemo(
     () =>
       compact
@@ -186,6 +189,8 @@ export function JobsHistory({ jobs, openHref, onOpen, pager, empty, loading, ske
 
   return (
     <DataTable
+      ref={ref}
+      {...props}
       columns={columns}
       data={jobs}
       getRowId={(j) => j.id}
@@ -199,4 +204,4 @@ export function JobsHistory({ jobs, openHref, onOpen, pager, empty, loading, ske
       hideHeader={compact}
     />
   );
-}
+});

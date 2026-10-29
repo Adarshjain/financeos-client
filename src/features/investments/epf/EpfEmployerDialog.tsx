@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { DateField, Dialog, DialogBody, DialogContent, showToast, TextField } from '@/components/ds';
+import { DateField, Dialog, showToast, TextField } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 
@@ -52,13 +52,13 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={editing ? 'Edit employer' : 'Add employer'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: editing ? 'Save employer' : 'Add employer', type: 'submit', form: FORM_ID, loading: pending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -89,8 +89,8 @@ export function EpfEmployerDialog({ employer, onClose, onSaved }: EpfEmployerDia
               <DateField label="Left on" today={today} value={leftOn} onValueChange={(v) => setLeftOn(typeof v === 'string' ? v : '')} />
             </div>
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

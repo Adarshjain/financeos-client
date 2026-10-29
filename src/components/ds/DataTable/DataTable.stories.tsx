@@ -13,8 +13,6 @@ import {
   DataTable,
   type DataTableProps,
   Dialog,
-  DialogBody,
-  DialogContent,
   EmptyState,
   Pager,
   Text,
@@ -632,16 +630,16 @@ export const InDialog: Story = {
   render: function Render(args) {
     return (
       <Dialog defaultOpen>
-        <DialogContent size="lg" title="View underlying data">
-          <DialogBody className="p-0 max-h-space-96 overflow-y-auto">
+        <Dialog.Content size="lg" title="View underlying data">
+          <Dialog.Body className="p-0 max-h-space-96 overflow-y-auto">
             <DataTable<Holding>
               columns={args.columns}
               data={args.data}
               getRowId={args.getRowId}
               stickyHeader
             />
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   },

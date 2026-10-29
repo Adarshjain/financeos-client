@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Dialog, DialogBody, DialogContent } from '@/components/ds';
+import { Dialog } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
@@ -41,14 +41,14 @@ vi.mock('@/features/accounts/form/ds/AccountFormDialog', () => ({
     };
     return (
       <Dialog open onOpenChange={(o) => (o ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title="Add account dialog"
           secondary={{ label: 'Cancel account', onSelect: onClose }}
           primary={{ label: 'Create account', onSelect: create }}
         >
-          <DialogBody>Account form</DialogBody>
-        </DialogContent>
+          <Dialog.Body>Account form</Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   },

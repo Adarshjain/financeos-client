@@ -10,8 +10,6 @@ import {
   ConfirmDialog,
   DataTable,
   Dialog,
-  DialogBody,
-  DialogContent,
   EmptyState,
   Icon,
   ListRow,
@@ -881,7 +879,7 @@ export const TransactionsList: StoryObj = {
           onOpenChange={(open) => !open && updateArgs({ detailId: null })}
         >
           {detail && (
-            <DialogContent
+            <Dialog.Content
               title={detail.description}
               description={longDate(detail.day)}
               primary={
@@ -898,7 +896,7 @@ export const TransactionsList: StoryObj = {
                 onSelect: () => askDelete([detail.id]),
               }}
             >
-              <DialogBody>
+              <Dialog.Body>
                 <Text
                   as="p"
                   variant="figure"
@@ -943,8 +941,8 @@ export const TransactionsList: StoryObj = {
                     <ListRow title="Source" trailing={detail.provenance} />
                   )}
                 </div>
-              </DialogBody>
-            </DialogContent>
+              </Dialog.Body>
+            </Dialog.Content>
           )}
         </Dialog>
 
@@ -953,7 +951,7 @@ export const TransactionsList: StoryObj = {
           onOpenChange={(open) => !open && updateArgs({ categoryEditId: null })}
         >
           {editing && (
-            <DialogContent
+            <Dialog.Content
               size="sm"
               title="Set category"
               description={`${editing.description} · ₹${formatAmount(editing)}`}
@@ -973,7 +971,7 @@ export const TransactionsList: StoryObj = {
                 onSelect: () => updateArgs({ categoryEditId: null }),
               }}
             >
-              <DialogBody>
+              <Dialog.Body>
                 <Select
                   label="Categories"
                   placeholder="Pick categories"
@@ -985,8 +983,8 @@ export const TransactionsList: StoryObj = {
                     updateArgs({ categoryDraft: Array.isArray(v) ? v : [v] })
                   }
                 />
-              </DialogBody>
-            </DialogContent>
+              </Dialog.Body>
+            </Dialog.Content>
           )}
         </Dialog>
 

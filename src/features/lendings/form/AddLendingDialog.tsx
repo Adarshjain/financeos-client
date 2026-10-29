@@ -6,8 +6,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   Select,
   type SelectGroup,
   type SelectOption,
@@ -110,7 +108,7 @@ export function AddLendingDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Record ledger entry"
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: createLending.isPending }}
@@ -121,7 +119,7 @@ export function AddLendingDialog({
           loading: createLending.isPending,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -202,8 +200,8 @@ export function AddLendingDialog({
               minRows={2}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

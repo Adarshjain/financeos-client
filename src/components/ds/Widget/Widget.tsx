@@ -9,16 +9,13 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import {
   Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
 } from '../Menu/Menu';
 import { Skeleton } from '../Skeleton/Skeleton';
 
 export interface WidgetMenuItem {
   label: React.ReactNode;
   onSelect?: () => void;
-  destructive?: boolean;
+  tone?: 'neutral' | 'danger';
 }
 
 export type WidgetAction = { label: string } & ActionTarget;
@@ -77,7 +74,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       if (menuItems && menuItems.length > 0) {
         return (
           <Menu.Root>
-            <MenuTrigger asChild>
+            <Menu.Trigger asChild>
               <Button
                 type="button"
                 size="sm"
@@ -88,18 +85,18 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
               >
                 <Icon name="more" size="sm" />
               </Button>
-            </MenuTrigger>
-            <MenuContent align="end">
+            </Menu.Trigger>
+            <Menu.Content align="end">
               {menuItems.map((item, idx) => (
-                <MenuItem
+                <Menu.Item
                   key={idx}
-                  destructive={item.destructive}
+                  tone={item.tone}
                   onSelect={item.onSelect}
                 >
                   {item.label}
-                </MenuItem>
+                </Menu.Item>
               ))}
-            </MenuContent>
+            </Menu.Content>
           </Menu.Root>
         );
       }

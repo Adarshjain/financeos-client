@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, Card, CardRow, ListRow, Text } from '@/components/ds';
+import { Button, Card, ListRow, Text } from '@/components/ds';
 
 import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reportsList';
 
@@ -25,7 +25,7 @@ export function ReportsAside() {
         ))}
       </Card>
       <Card title="Ask instead" subtitle="Chat turns a question into a saved report">
-        <CardRow>
+        <Card.Row>
           <div className="flex flex-col gap-space-8 min-w-0 flex-1">
             <Text variant="body" tone="ink-3">
               &ldquo;{ASK_EXAMPLE}&rdquo;
@@ -43,7 +43,7 @@ export function ReportsAside() {
               </Link>
             </Button>
           </div>
-        </CardRow>
+        </Card.Row>
       </Card>
     </div>
   );

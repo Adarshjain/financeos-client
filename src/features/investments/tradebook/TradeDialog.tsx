@@ -10,8 +10,6 @@ import {
   ConfirmDialog,
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   SegmentedControl,
   Select,
   type SelectOption,
@@ -104,7 +102,7 @@ function TradeForm(p: FormProps) {
   const chargesShown = p.editing || showCharges;
   return (
     <Dialog open onOpenChange={(open) => (open || p.submitting ? undefined : p.onCancel())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title={p.title}
         description={p.description}
@@ -112,7 +110,7 @@ function TradeForm(p: FormProps) {
         secondary={{ label: 'Cancel', onSelect: p.onCancel, disabled: p.submitting }}
         primary={{ label: p.submitLabel, type: 'submit', form: FORM_ID, loading: p.submitting, disabled: p.holdSubmit }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -186,8 +184,8 @@ function TradeForm(p: FormProps) {
               </div>
             )}
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }
@@ -255,8 +253,8 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
   if (!isLoading && brokers.length === 0) {
     return (
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent size="sm" title="Record trade" secondary={{ label: 'Cancel', onSelect: onClose }}>
-          <DialogBody>
+        <Dialog.Content size="sm" title="Record trade" secondary={{ label: 'Cancel', onSelect: onClose }}>
+          <Dialog.Body>
             <div className="flex flex-col gap-space-8 desk:gap-space-12 items-start">
               <Text variant="body" tone="ink-2" as="p">
                 You need at least one broker account to record trades.
@@ -265,8 +263,8 @@ export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, 
                 <Link href={appHref('/accounts')}>Add a broker account</Link>
               </Button>
             </div>
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   }

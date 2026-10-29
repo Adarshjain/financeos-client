@@ -1,7 +1,7 @@
 'use client';
 
 import { flexRender, type RowData, type Table } from '@tanstack/react-table';
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { Checkbox } from '../Checkbox/Checkbox';
@@ -9,7 +9,8 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import type { DataTableColumnMeta, DataTableFeatures } from './types';
 
-export interface DataTableHeaderProps<Row extends RowData> {
+export interface DataTableHeaderProps<Row extends RowData>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   table: Table<DataTableFeatures, Row>;
   allSelected?: boolean;
   onHeaderCheckboxChange: (checked: boolean | 'indeterminate') => void;
@@ -18,25 +19,33 @@ export interface DataTableHeaderProps<Row extends RowData> {
   closed?: boolean;
 }
 
-export function DataTableHeader<Row extends RowData>({
-  table,
-  allSelected = false,
-  onHeaderCheckboxChange,
-  stickyHeader = true,
-  closed = false,
-}: DataTableHeaderProps<Row>) {
+function DataTableHeaderInner<Row extends RowData>(
+  {
+    table,
+    allSelected = false,
+    onHeaderCheckboxChange,
+    stickyHeader = true,
+    closed = false,
+    className,
+    ...props
+  }: DataTableHeaderProps<Row>,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
   return (
     <>
-      {table.getHeaderGroups().map((headerGroup) => (
+      {table.getHeaderGroups().map((headerGroup, index) => (
         <div
           key={headerGroup.id}
+          ref={index === 0 ? ref : undefined}
           role="row"
           className={cn(
             'hidden desk:grid desk:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
             // With no top border on the first row, the header carries the line under it.
             closed && 'border-b border-line-soft',
             stickyHeader && 'desk:sticky desk:top-sticky-offset desk:z-sticky',
+            className,
           )}
+          {...props}
         >
           {headerGroup.headers.map((header) => {
             const meta = header.column.columnDef.meta as
@@ -121,3 +130,9 @@ export function DataTableHeader<Row extends RowData>({
     </>
   );
 }
+
+export const DataTableHeader = forwardRef(DataTableHeaderInner) as <Row extends RowData>(
+  p: DataTableHeaderProps<Row> & React.RefAttributes<HTMLDivElement>,
+) => React.ReactElement;
+
+Object.defineProperty(DataTableHeader, 'displayName', { value: 'DataTableHeader' });

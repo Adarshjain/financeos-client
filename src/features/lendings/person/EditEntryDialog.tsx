@@ -5,8 +5,6 @@ import React from 'react';
 import {
   DateField,
   Dialog,
-  DialogBody,
-  DialogContent,
   Select,
   type SelectGroup,
   type SelectOption,
@@ -103,14 +101,14 @@ export function EditEntryDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="md"
         title="Edit ledger entry"
         tertiary={{ label: 'Delete entry', tone: 'danger', onSelect: () => onDelete(entry), disabled: submitting }}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: 'Save entry', type: 'submit', form: FORM_ID, loading: submitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -170,8 +168,8 @@ export function EditEntryDialog({
             )}
             <TextArea label="Notes" optional value={notes} onValueChange={setNotes} minRows={2} />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

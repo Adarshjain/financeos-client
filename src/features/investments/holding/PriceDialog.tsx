@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { DateField, Dialog, DialogBody, DialogContent, showToast } from '@/components/ds';
+import { DateField, Dialog, showToast } from '@/components/ds';
 import { AmountField } from '@/components/organisms';
 import { ActionError } from '@/lib/actionResult';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
@@ -75,14 +75,14 @@ export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: Pr
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title={editing ? 'Edit manual price' : 'Record price'}
         description={name}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={{ label: editing ? 'Save price' : 'Record price', type: 'submit', form: FORM_ID, loading: submitting }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form
             id={FORM_ID}
             noValidate
@@ -116,8 +116,8 @@ export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: Pr
               error={error}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

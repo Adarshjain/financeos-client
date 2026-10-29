@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, Skeleton } from '@/components/ds';
+import { Dialog, Skeleton } from '@/components/ds';
 import { watchSession } from '@/lib/authExpiry';
 import { keys } from '@/lib/query/keys';
 
@@ -31,13 +31,13 @@ export function EpfAddDialog({ onClose, initialType }: EpfAddDialogProps) {
   if (query.isPending || query.isError) {
     return (
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           title="Record EPF entry"
           description={query.isError ? "Couldn't load the employers. Close this and try again." : undefined}
           secondary={{ label: query.isError ? 'Close' : 'Cancel', onSelect: onClose }}
         >
-          <DialogBody>
+          <Dialog.Body>
             {query.isError ? null : (
               <div className="flex flex-col gap-space-8 desk:gap-space-12">
                 <Skeleton height={32} />
@@ -45,8 +45,8 @@ export function EpfAddDialog({ onClose, initialType }: EpfAddDialogProps) {
                 <Skeleton height={32} />
               </div>
             )}
-          </DialogBody>
-        </DialogContent>
+          </Dialog.Body>
+        </Dialog.Content>
       </Dialog>
     );
   }

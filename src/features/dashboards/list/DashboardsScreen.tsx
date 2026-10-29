@@ -18,7 +18,6 @@ import {
   FilterBar,
   Icon,
   Menu,
-  MenuItem,
   Text,
 } from '@/components/ds';
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
@@ -53,11 +52,11 @@ function RowMenu({ row, actions }: { row: DashboardRow; actions: RowActions }) {
         </Button>
       }
     >
-      <MenuItem onSelect={() => actions.onEdit(row)}>Edit</MenuItem>
-      <MenuItem onSelect={() => actions.onToggleDefault(row)}>{row.isDefault ? 'Clear default' : 'Set as default'}</MenuItem>
-      <MenuItem destructive onSelect={() => actions.onDelete(row)}>
+      <Menu.Item onSelect={() => actions.onEdit(row)}>Edit</Menu.Item>
+      <Menu.Item onSelect={() => actions.onToggleDefault(row)}>{row.isDefault ? 'Clear default' : 'Set as default'}</Menu.Item>
+      <Menu.Item tone="danger" onSelect={() => actions.onDelete(row)}>
         Delete dashboard
-      </MenuItem>
+      </Menu.Item>
     </Menu>
   );
 }

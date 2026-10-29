@@ -246,8 +246,13 @@ function DataTableInner<Row extends RowData>(
   );
 }
 
-export const DataTable = forwardRef(DataTableInner) as <Row extends RowData>(
+const DataTableRoot = forwardRef(DataTableInner) as <Row extends RowData>(
   p: DataTableProps<Row> & { ref?: React.Ref<HTMLDivElement> },
 ) => React.ReactElement;
 
-Object.defineProperty(DataTable, 'displayName', { value: 'DataTable' });
+Object.defineProperty(DataTableRoot, 'displayName', { value: 'DataTable' });
+
+export const DataTable = Object.assign(DataTableRoot, {
+  Header: DataTableHeader,
+  Row: DataTableRow,
+});

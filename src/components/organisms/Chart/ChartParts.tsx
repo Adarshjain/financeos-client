@@ -1,8 +1,9 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 
 import { Card, Text } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
 import type { ChartData } from '@/lib/reports.types';
 
 /** Colour key for a series: a short stroke for lines, a small square otherwise. Drawn as SVG so any CSS colour works. */
@@ -157,16 +158,21 @@ export function ChartDataTable({
 }
 
 /** Shown when there is nothing to draw. */
-export function ChartEmpty() {
+export const ChartEmpty = forwardRef<HTMLElement, Omit<React.HTMLAttributes<HTMLElement>, 'children'>>(function ChartEmpty(
+  { className, ...props },
+  ref,
+) {
   return (
     <Text
+      ref={ref}
+      {...props}
       as="p"
       variant="body"
       tone="ink-3"
       align="center"
-      className="py-space-32"
+      className={cn('py-space-32', className)}
     >
       No data for this configuration.
     </Text>
   );
-}
+});

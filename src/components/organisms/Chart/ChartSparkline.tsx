@@ -3,8 +3,10 @@
 // Sparkline: one series as a small area trend with no axes, grid, legend or
 // tooltip. Fills its container's width at a fixed small height; chart-1.
 
-import { useId } from 'react';
+import { forwardRef, useId } from 'react';
 import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts';
+
+import { cn } from '@/components/ds/cn';
 
 import type { ChartInput } from './Chart';
 import { ChartDataTable } from './ChartParts';
@@ -14,7 +16,14 @@ import { chartColor } from './chartTokens';
 const [top, right, bottom, left] = [2, 2, 2, 2];
 const MARGIN = { top, right, bottom, left };
 
-export function ChartSparkline({ data }: { data: ChartInput }) {
+export interface ChartSparklineProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+  data: ChartInput;
+}
+
+export const ChartSparkline = forwardRef<HTMLDivElement, ChartSparklineProps>(function ChartSparkline(
+  { data, className, ...props },
+  ref,
+) {
   const gradientId = useId().replace(/:/g, '');
   const first = data.series[0];
   const color = chartColor(0);
@@ -23,7 +32,7 @@ export function ChartSparkline({ data }: { data: ChartInput }) {
     value: first.data[i] ?? null,
   }));
   return (
-    <div className="h-space-48 w-full min-w-0">
+    <div ref={ref} className={cn('h-space-48 w-full min-w-0', className)} {...props}>
       <ChartDataTable data={{ categories: data.categories, series: [first] }} />
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={rows} margin={MARGIN}>
@@ -56,4 +65,4 @@ export function ChartSparkline({ data }: { data: ChartInput }) {
       </ResponsiveContainer>
     </div>
   );
-}
+});

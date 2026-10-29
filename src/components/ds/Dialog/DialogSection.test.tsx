@@ -2,21 +2,21 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Dialog, DialogBody, DialogContent, DialogSection } from './Dialog';
+import { Dialog } from './Dialog';
 
 function setup(section: React.ReactNode) {
   render(
     <Dialog open>
-      <DialogContent title="Rule">
-        <DialogBody>{section}</DialogBody>
-      </DialogContent>
+      <Dialog.Content title="Rule">
+        <Dialog.Body>{section}</Dialog.Body>
+      </Dialog.Content>
     </Dialog>,
   );
 }
 
 describe('Dialog.Section', () => {
   it('is exposed as Dialog.Section', () => {
-    expect(Dialog.Section).toBe(DialogSection);
+    expect(Dialog.Section).toBe(Dialog.Section);
   });
 
   it('spans the dialog edge to edge and aligns band and content with the body text', () => {

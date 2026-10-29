@@ -9,9 +9,6 @@ import {
   Icon,
   ListRow,
   Menu,
-  MenuGroup,
-  MenuItem,
-  MenuSeparator,
 } from '@/components/ds';
 
 const meta: Meta<typeof Menu> = {
@@ -94,10 +91,10 @@ export const Default: Story = {
     trigger: defaultTrigger,
     children: (
       <>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Duplicate</MenuItem>
-        <MenuSeparator />
-        <MenuItem destructive>Delete</MenuItem>
+        <Menu.Item>Edit</Menu.Item>
+        <Menu.Item>Duplicate</Menu.Item>
+        <Menu.Separator />
+        <Menu.Item tone="danger">Delete</Menu.Item>
       </>
     ),
   },
@@ -108,21 +105,21 @@ export const WithIconsAndHints: Story = {
     trigger: defaultTrigger,
     children: (
       <>
-        <MenuItem
+        <Menu.Item
           icon={<Icon name="add" size="sm" />}
           hint="⌘N"
         >
           New item
-        </MenuItem>
-        <MenuItem
+        </Menu.Item>
+        <Menu.Item
           icon={<Icon name="view" size="sm" />}
           hint="⌘E"
         >
           Quick view
-        </MenuItem>
-        <MenuItem icon={<Icon name="calendar" size="sm" />}>
+        </Menu.Item>
+        <Menu.Item icon={<Icon name="calendar" size="sm" />}>
           Schedule
-        </MenuItem>
+        </Menu.Item>
       </>
     ),
   },
@@ -133,12 +130,12 @@ export const DisabledItem: Story = {
     trigger: defaultTrigger,
     children: (
       <>
-        <MenuItem>Edit details</MenuItem>
-        <MenuItem>Reassign category</MenuItem>
-        <MenuSeparator />
-        <MenuItem disabled hint="In use">
+        <Menu.Item>Edit details</Menu.Item>
+        <Menu.Item>Reassign category</Menu.Item>
+        <Menu.Separator />
+        <Menu.Item disabled hint="In use">
           Delete rule
-        </MenuItem>
+        </Menu.Item>
       </>
     ),
   },
@@ -149,17 +146,17 @@ export const Sectioned: Story = {
     trigger: defaultTrigger,
     children: (
       <>
-        <MenuGroup label="Preferences">
-          <MenuItem active hint="Default">
+        <Menu.Group label="Preferences">
+          <Menu.Item active hint="Default">
             Primary view
-          </MenuItem>
-          <MenuItem>Compact layout</MenuItem>
-        </MenuGroup>
-        <MenuSeparator />
-        <MenuGroup label="Actions">
-          <MenuItem>Export data</MenuItem>
-          <MenuItem destructive>Archive all</MenuItem>
-        </MenuGroup>
+          </Menu.Item>
+          <Menu.Item>Compact layout</Menu.Item>
+        </Menu.Group>
+        <Menu.Separator />
+        <Menu.Group label="Actions">
+          <Menu.Item>Export data</Menu.Item>
+          <Menu.Item tone="danger">Archive all</Menu.Item>
+        </Menu.Group>
       </>
     ),
   },
@@ -174,10 +171,10 @@ export const LabelledTrigger: Story = {
     ),
     children: (
       <>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Duplicate</MenuItem>
-        <MenuSeparator />
-        <MenuItem destructive>Delete</MenuItem>
+        <Menu.Item>Edit</Menu.Item>
+        <Menu.Item>Duplicate</Menu.Item>
+        <Menu.Separator />
+        <Menu.Item tone="danger">Delete</Menu.Item>
       </>
     ),
   },

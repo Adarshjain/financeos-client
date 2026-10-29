@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Card, Dialog, DialogBody, DialogContent, ListRow, StatusWords, Text } from '@/components/ds';
+import { Card, Dialog, ListRow, StatusWords, Text } from '@/components/ds';
 
 import type { LineDetail } from './rewardsModel';
 
@@ -10,8 +10,8 @@ import type { LineDetail } from './rewardsModel';
 export function RewardLineDialog({ detail, onClose }: { detail: LineDetail; onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent size="sm" title="Reward calculation" primary={{ label: 'Close', onSelect: onClose }}>
-        <DialogBody>
+      <Dialog.Content size="sm" title="Reward calculation" primary={{ label: 'Close', onSelect: onClose }}>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-2">
             <Text variant="body-strong" as="div">
               {detail.title}
@@ -33,8 +33,8 @@ export function RewardLineDialog({ detail, onClose }: { detail: LineDetail; onCl
               {detail.reason.explain}
             </Text>
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

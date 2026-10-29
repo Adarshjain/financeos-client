@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Dialog, DialogBody, DialogContent, Text } from '@/components/ds';
+import { Banner, Dialog, Text } from '@/components/ds';
 import { AccountPicker } from '@/components/organisms';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 
@@ -22,7 +22,7 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
         if (!open && !a.isPending) onClose();
       }}
     >
-      <DialogContent
+      <Dialog.Content
         size="sm"
         dismissible={!a.isPending}
         title="Assign account identifier"
@@ -34,7 +34,7 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
           disabled: a.isPending || !a.effectiveAccountId,
         }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <form id={FORM_ID} noValidate className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={a.submit}>
             <Text variant="body" tone="ink-2" as="p">
               Emails referencing <strong>••{item?.extractedLast4 || '????'}</strong> will be remembered for this account.
@@ -50,8 +50,8 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
               disabled={a.loadingAccounts || a.isPending}
             />
           </form>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner, Button, Card, CardEmpty, ListRow, Text } from '@/components/ds';
+import { Banner, Button, Card, ListRow, Text } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
@@ -125,7 +125,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
           )
         }
       />
-      {devices.length === 0 ? <CardEmpty>No devices yet</CardEmpty> : null}
+      {devices.length === 0 ? <Card.Empty>No devices yet</Card.Empty> : null}
       {others.map((device) => (
         <ListRow
           key={device.endpoint}

@@ -10,7 +10,6 @@ import {
   Card,
   cn,
   Dialog,
-  DialogContent,
   Icon,
   Kbd,
   ListRow,
@@ -125,12 +124,12 @@ export function ShellTabBar({
   return (
     <>
       <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
-        <DialogContent
+        <Dialog.Content
           size="sm"
           srTitle="Menu"
           showClose={false}
           background="canvas"
-          onClose={() => setMoreOpen(false)}
+          onDismiss={() => setMoreOpen(false)}
           className="desk:hidden"
         >
           <div className="px-space-16 pt-space-8 pb-safe-24 overflow-y-auto space-y-space-8 desk:space-y-space-12">
@@ -243,7 +242,7 @@ export function ShellTabBar({
               </ListRow>
             </Card>
           </div>
-        </DialogContent>
+        </Dialog.Content>
       </Dialog>
 
       <TabBar

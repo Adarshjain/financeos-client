@@ -27,7 +27,7 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 - `matchType: ReactNode`: Match type ("Contains", "Starts with", "Exact")
 - `pattern?: ReactNode`: Match pattern string
 - `usedCount?: number | string`: Usage count shown at top right
-- `status?: 'unverified' | 'verified'`: Verification status (default `'unverified'`)
+- `tone?: 'warning' | 'success'`: Verification (`warning` = unverified, default; `success` = verified)
 - `source?: ReactNode`: Provenance or source
 - `mcc?: ReactNode`: MCC code
 - `statusLine?: ReactNode`: Custom status line override
@@ -36,7 +36,7 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 - `approveAction?: RuleCardApproveAction`: Approve action object `{ label, onSelect }`
 - `onApprove?: () => void`: Approve callback
 - `approveLabel?: string`: Approve button label (default `'Approve'`)
-- `menuItems?: RuleCardMenuItem[]`: Kebab menu options `[{ label, onSelect, destructive? }]`
+- `menuItems?: RuleCardMenuItem[]`: Kebab menu options `[{ label, onSelect, tone?: 'danger' }]`
 - `selectable?: boolean`: Whether the card is selectable
 - `defaultSelected?: boolean`: Default selected state for uncontrolled usage
 - `selected?: boolean`: Controlled selected state

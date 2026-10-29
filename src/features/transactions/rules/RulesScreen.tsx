@@ -199,7 +199,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
                     matchType={line.matchType}
                     pattern={line.pattern}
                     usedCount={rule.appliedCount}
-                    status={rule.verified ? 'verified' : 'unverified'}
+                    tone={rule.verified ? 'success' : 'warning'}
                     source={SOURCE_LABEL[rule.source]}
                     mcc={rule.mcc ? `MCC ${rule.mcc}` : undefined}
                     categories={rule.categories.map((c) => c.name)}
@@ -207,7 +207,7 @@ export function RulesScreen({ rules, reference, state, categories }: RulesScreen
                     menuItems={[
                       { label: 'Find matches', onSelect: () => setDialog({ kind: 'matches', rule }) },
                       { label: 'Edit rule', onSelect: () => setDialog({ kind: 'edit', rule }) },
-                      { label: 'Delete rule', destructive: true, onSelect: () => setDialog({ kind: 'delete', rule }) },
+                      { label: 'Delete rule', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
                     ]}
                     selectable={!rule.verified}
                     selected={ids.includes(rule.id)}

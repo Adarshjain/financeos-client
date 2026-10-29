@@ -7,7 +7,7 @@ A list of background jobs, used by Settings › Activity (full) and Import › R
 - Compact: no header row (a single column needs none). The job's file name over one status line (a coloured word, when it started, what it did) and View. A running job shows its note and a ProgressBar in place of the line.
 
 ## Props
-- `jobs`, `openHref(job)` (where View goes), `onOpen?(job)` (row press), `pager?`, `empty?`, `loading?`, `skeletonRows?`, `compact?`.
+- `jobs`, `openHref(job)` (where View goes), `onOpen?(job)` (row press), `pager?`, `empty?`, `loading?`, `skeletonRows?`, `compact?`; native div props and a ref reach the table.
 
 ## Built from
 DataTable, Badge, Button, Text, ProgressBar (through the active-job body).

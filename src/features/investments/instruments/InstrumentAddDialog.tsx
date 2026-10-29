@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, DialogBody, DialogContent, SegmentedControl, Select, showToast, Text, TextField } from '@/components/ds';
+import { Dialog, SegmentedControl, Select, showToast, Text, TextField } from '@/components/ds';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
@@ -95,14 +95,14 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="sm"
         title="Add instrument"
         description={mode === 'manual' ? 'Not in the catalog? Enter it by hand.' : 'Search the live AMFI and Yahoo catalogs and pick.'}
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: submitting }}
         primary={mode === 'manual' ? { label: 'Add instrument', type: 'submit', form: FORM_ID, loading: submitting } : undefined}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="flex flex-col gap-space-8 desk:gap-space-16">
             <SegmentedControl
               fullWidth
@@ -161,8 +161,8 @@ export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreate
               </form>
             )}
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

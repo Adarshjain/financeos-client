@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { DateField, Dialog, DialogBody, DialogContent, SectionHeader, Select, Text, TextField } from '@/components/ds';
+import { DateField, Dialog, SectionHeader, Select, Text, TextField } from '@/components/ds';
 import { useRewardMilestoneForm } from '@/features/rewards/milestones/useRewardMilestoneForm';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { Cardholder } from '@/lib/account.types';
@@ -104,7 +104,7 @@ export function MilestoneDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent
+      <Dialog.Content
         size="lg"
         title={milestone ? `Edit milestone · ${milestone.name}` : 'Add milestone'}
         tertiary={
@@ -113,7 +113,7 @@ export function MilestoneDialog({
         secondary={{ label: 'Cancel', onSelect: onClose, disabled: pending }}
         primary={{ label: milestone ? 'Save milestone' : 'Add milestone', onSelect: f.onSubmit, loading: pending }}
       >
-        <DialogBody>
+        <Dialog.Body>
           <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-2">
             <TextField label="Name" placeholder="e.g. ₹50k quarterly voucher" value={f.name} onValueChange={f.setName} />
             <Select
@@ -236,8 +236,8 @@ export function MilestoneDialog({
               onValueChange={f.setExcludeMccs}
             />
           </div>
-        </DialogBody>
-      </DialogContent>
+        </Dialog.Body>
+      </Dialog.Content>
     </Dialog>
   );
 }

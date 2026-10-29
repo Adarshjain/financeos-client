@@ -7,7 +7,7 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
-import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from '../Menu/Menu';
+import { Menu } from '../Menu/Menu';
 
 export { ListField, type ListFieldProps } from '../ListField/ListField';
 
@@ -15,7 +15,7 @@ export interface ListRowAction {
   id: string;
   label: React.ReactNode;
   onSelect: () => void;
-  destructive?: boolean;
+  tone?: 'neutral' | 'danger';
 }
 
 export interface ListRowProps
@@ -103,8 +103,8 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
         <div className="shrink-0 flex items-center gap-space-8 ml-auto tabular-nums">
           {concealMoney(trailing)}
           {hasActions && (
-            <MenuRoot>
-              <MenuTrigger
+            <Menu.Root>
+              <Menu.Trigger
                 asChild
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
@@ -117,19 +117,19 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
                   icon={<Icon name="more" size="sm" />}
                   className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
                 />
-              </MenuTrigger>
-              <MenuContent align="end">
+              </Menu.Trigger>
+              <Menu.Content align="end">
                 {actions.map((act) => (
-                  <MenuItem
+                  <Menu.Item
                     key={act.id}
                     onSelect={() => act.onSelect()}
-                    destructive={act.destructive}
+                    tone={act.tone}
                   >
                     {act.label}
-                  </MenuItem>
+                  </Menu.Item>
                 ))}
-              </MenuContent>
-            </MenuRoot>
+              </Menu.Content>
+            </Menu.Root>
           )}
           {chevron && (
             <Icon
