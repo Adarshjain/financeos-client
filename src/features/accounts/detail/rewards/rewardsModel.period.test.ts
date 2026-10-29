@@ -79,7 +79,7 @@ describe('period in the address', () => {
 });
 
 describe('points with no point value', () => {
-  const gross = (summary: object) => buildKpis({ ...report, summary: { ...report.summary, ...summary } }, window)[1];
+  const gross = (summary: object) => buildKpis({ ...report, summary: { ...report.summary, ...summary } })[1];
   it('shows rupees plus points and asks for the point value', () => {
     expect(gross({ cashbackInr: 340, grossValueInr: 340 })).toMatchObject({ value: '₹340 + 400 pts', needsPointValue: true });
   });

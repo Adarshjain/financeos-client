@@ -509,7 +509,7 @@ describe('/accounts/[id]/statements', () => {
     expect(within(dialog).getByText('You can upload the same file again afterwards.')).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Delete statement' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() =>
       expect(api.DELETE).toHaveBeenCalledWith('/api/v1/accounts/{accountId}/statements/{statementId}', {
         params: { path: { accountId: 'c1', statementId: 's3' } },
@@ -527,7 +527,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete statement' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Checking what this statement added…')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Delete statement' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Delete' })).toBeDisabled();
   });
 
   it('has a loading skeleton', () => {

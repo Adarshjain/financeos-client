@@ -179,16 +179,8 @@ export function isChatPath(pathname: string | null | undefined): boolean {
   return /^\/chat(\/|$)/.test(normalisePathname(pathname));
 }
 
-/**
- * Routes with no phone tab bar: Ask the data (home and a conversation, each docks its own composer at the bottom) and
- * the create/edit pages (new report, a report, new dashboard), whose sticky action footer takes the bottom edge.
- * A dashboard's edit mode is state, not a route: it asks through `useHideTabBar`.
- */
-export function hidesTabBar(pathname: string | null | undefined): boolean {
-  if (!pathname) return false;
-  const path = normalisePathname(pathname);
-  return isChatPath(path) || /^\/reports\/[^/]+$/.test(path) || path === '/dashboards/new';
-}
+/** Routes with no phone tab bar: the Ask the data pages dock their own composer at the bottom. */
+export const hidesTabBar = isChatPath;
 
 export type CrumbArea =
   | 'home'

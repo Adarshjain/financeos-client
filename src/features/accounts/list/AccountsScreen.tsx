@@ -54,7 +54,7 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
             </Suspense>
           }
           figures={[
-            { label: cash.label, value: cash.value, caption: cash.context },
+            { label: cash.label, value: cash.value },
             { label: cards.label, value: cards.value, tone: cards.tone, caption: cards.context },
             {
               label: invest.label,

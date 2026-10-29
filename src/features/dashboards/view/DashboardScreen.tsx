@@ -18,7 +18,6 @@ import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIss
 import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
-import { useHideTabBar } from '@/features/shell/tabBarStore';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { BuiltinWidgetResponse, DashboardResponse } from '@/lib/dashboards.types';
 import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
@@ -76,8 +75,6 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const toggleDefault = useToggleDefault(setSaved);
 
   const dirty = editorSignature(state) !== baseline;
-  // Editing ends in a sticky Cancel/Save footer on the bottom edge: no phone tab bar under it.
-  useHideTabBar(editing);
   const guard = useLeaveGuard(editing && dirty);
 
   // The list's Edit link opens editing with ?edit=1: take the flag off the address so a reload after saving shows the dashboard.
@@ -234,7 +231,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           <ActionBar
             info={saved.description || undefined}
             actions={
-              <Button variant="primary" onClick={startEdit}>
+              <Button variant="secondary" onClick={startEdit}>
                 Edit
               </Button>
             }

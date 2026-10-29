@@ -204,10 +204,9 @@ export interface DividendsFigures {
   notReceived: { value: string; context?: string; tone: Tone };
 }
 
-/** "2 matched to bank credits", plus the untracked ones when there are any. */
-function matchedLine(received: number, untracked: number): string {
-  const base = `${received} matched to ${received === 1 ? 'a bank credit' : 'bank credits'}`;
-  return untracked > 0 ? `${base} · incl. ${untracked} untracked` : base;
+/** "incl. 2 untracked" when some receipts have no bank credit behind them; nothing otherwise. */
+function untrackedLine(untracked: number): string {
+  return untracked > 0 ? `incl. ${untracked} untracked` : '';
 }
 
 /** What a figure that could not be read shows. */
@@ -230,10 +229,10 @@ export function dividendsFigures(
     received: receipts
       ? {
           value: formatMoney((received?.receivedAmount ?? 0) + (untracked?.receivedAmount ?? 0)),
-          context: matchedLine(received?.count ?? 0, untracked?.count ?? 0),
+          context: untrackedLine(untracked?.count ?? 0),
         }
       : { value: UNAVAILABLE, context: '' },
-    tds: totals ? { value: formatMoney(totals.tds), context: 'claim in ITR' } : { value: UNAVAILABLE, context: '' },
+    tds: totals ? { value: formatMoney(totals.tds), context: '' } : { value: UNAVAILABLE, context: '' },
     notReceived: receipts
       ? { value: formatMoney(open), context: notReceivedNote(notReceivedCounts(receipts), names), tone: open > 0 ? 'warning' : undefined }
       : { value: UNAVAILABLE, context: undefined, tone: undefined },

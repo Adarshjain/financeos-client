@@ -101,7 +101,7 @@ describe('/rewards', () => {
     await renderOverview();
     expect(screen.getByText('Earned this year')).toBeDefined();
     expect(screen.getByText('₹1,502 + 1,040 pts')).toBeDefined();
-    expect(screen.getByText('Each card over its own reward year')).toBeDefined();
+    expect(screen.queryByText('Each card over its own reward year')).toBeNull();
     expect(screen.getByText('HDFC Regalia')).toBeDefined();
     expect(screen.getAllByText('HDFC Bank · ••7741 · Anniversary year 15 Mar 26 – 14 Mar 27').length).toBeGreaterThan(0);
     expect(screen.getByText('15 Mar 26 – 14 Mar 27')).toBeDefined();

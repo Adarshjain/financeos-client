@@ -38,30 +38,14 @@ export function monthsLabel(months: number): string {
   return `${months} month${months === 1 ? '' : 's'}`;
 }
 
-const TYPE_NOUN: [ObligationItem['type'], string, string][] = [
-  ['card_bill', 'card bill', 'card bills'],
-  ['emi', 'EMI', 'EMIs'],
-  ['lending_due', 'lending', 'lendings'],
-  ['statement_expected', 'statement', 'statements'],
-];
-
-/** "3 EMIs · 1 statement". */
-export function countsByType(items: ObligationItem[]): string {
-  return TYPE_NOUN.map(([type, one, many]) => {
-    const n = items.filter((i) => i.type === type).length;
-    return n === 0 ? null : `${n} ${n === 1 ? one : many}`;
-  })
-    .filter(Boolean)
-    .join(' · ');
-}
-
 export interface UpcomingTile {
   id: 'overdue' | 'next7' | 'month' | 'dueBack';
   label: string;
   /** The formatted figure. */
   value: string;
   tone: 'danger' | 'ink' | 'positive';
-  caption: string;
+  /** Only a fact the figure does not carry: who and when for Due back. */
+  caption?: string;
 }
 
 /**
@@ -78,7 +62,6 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
       label: 'Overdue',
       value: formatMoney(sumAmounts(w.overdue)),
       tone: 'danger',
-      caption: countsByType(w.overdue),
     });
   }
   if (w.next7.length > 0) {
@@ -87,7 +70,6 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
       label: 'Next 7 days',
       value: formatMoney(sumAmounts(w.next7)),
       tone: 'ink',
-      caption: countsByType(w.next7),
     });
   }
   if (w.thisMonth.length > 0) {
@@ -96,7 +78,6 @@ export function buildTiles(items: ObligationItem[], today: string): UpcomingTile
       label: 'This month',
       value: formatMoney(sumAmounts(w.thisMonth)),
       tone: 'ink',
-      caption: `${w.thisMonth.length} item${w.thisMonth.length === 1 ? '' : 's'}`,
     });
   }
   if (dueBack.length > 0) {

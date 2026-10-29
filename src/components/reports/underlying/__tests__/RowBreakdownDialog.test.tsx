@@ -104,7 +104,7 @@ describe('RowBreakdownDialog', () => {
     expect(screen.getByRole('heading', { name: 'Net worth' })).toBeInTheDocument();
     expect(await screen.findByText('Zerodha')).toBeInTheDocument();
     expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, {
-      params: { path: { name: 'net_worth', rowId: 'b1' }, query: { size: 25 } },
+      params: { path: { name: 'net_worth', rowId: 'b1' }, query: { size: 5 } },
     });
     expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
   });
@@ -120,7 +120,7 @@ describe('RowBreakdownDialog', () => {
     fireEvent.click(await screen.findByText('INFY holding'));
     expect(await screen.findByText('Infosys')).toBeInTheDocument();
     expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, {
-      params: { path: { name: 'positions', rowId: 'h1' }, query: { size: 25 } },
+      params: { path: { name: 'positions', rowId: 'h1' }, query: { size: 5 } },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByText('Zerodha')).toBeInTheDocument();

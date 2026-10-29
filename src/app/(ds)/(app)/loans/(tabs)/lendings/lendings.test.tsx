@@ -140,7 +140,7 @@ describe('/loans/lendings', () => {
 
   it('shows the hero from the summary: what is owed net, what you owe and how many are settled', async () => {
     await renderPage();
-    for (const text of ['Owed to you (net)', '−₹92,800', 'You owe', '₹1,12,000', '2 people', 'Settled', '4 people']) {
+    for (const text of ['Owed to you (net)', '−₹92,800', 'You owe', '₹1,12,000', 'Settled', '4 people']) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
     expect(server.fetchPeople).toHaveBeenCalledWith({ direction: 'SETTLED', size: 1 });

@@ -69,7 +69,6 @@ const config: Config = {
         canvas: 'var(--ds-bg-canvas)',
         surface: 'var(--ds-bg-surface)',
         glass: 'var(--ds-bg-glass)',
-        'glass-medium': 'var(--ds-bg-glass-medium)',
         'glass-strong': 'var(--ds-bg-glass-strong)',
         sunken: 'var(--ds-bg-sunken)',
         subtle: 'var(--ds-bg-subtle)',

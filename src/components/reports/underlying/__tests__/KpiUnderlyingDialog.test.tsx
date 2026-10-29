@@ -308,10 +308,10 @@ describe('KpiUnderlyingDialog', () => {
   });
 
   describe('table', () => {
-    it('requests 25-row pages of the current period in the default order', async () => {
+    it('requests 5-row pages of the current period in the default order', async () => {
       render();
       await screen.findByText('Coffee');
-      expect(underlyingCalls()[0]).toEqual({ period: 'current', page: 0, size: 25, sort: undefined });
+      expect(underlyingCalls()[0]).toEqual({ period: 'current', page: 0, size: 5, sort: undefined });
     });
 
     it('pages on the server', async () => {
@@ -325,7 +325,7 @@ describe('KpiUnderlyingDialog', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Next page' }));
       await waitFor(() => expect(underlyingCalls().at(-1)).toMatchObject({ page: 1 }));
       fireEvent.click(screen.getByRole('button', { name: 'Amount' }));
-      await waitFor(() => expect(underlyingCalls().at(-1)).toEqual({ period: 'current', page: 0, size: 25, sort: 'amount,asc' }));
+      await waitFor(() => expect(underlyingCalls().at(-1)).toEqual({ period: 'current', page: 0, size: 5, sort: 'amount,asc' }));
     });
 
     it('dims the table while a new sort loads, then shows the sorted rows', async () => {
@@ -437,7 +437,7 @@ describe('KpiUnderlyingDialog', () => {
       expect(screen.queryByText('Fuel')).not.toBeInTheDocument();
       // The underlying response names the datasource.
       expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, {
-        params: { path: { name: 'transactions', rowId: 't1' }, query: { size: 25 } },
+        params: { path: { name: 'transactions', rowId: 't1' }, query: { size: 5 } },
       });
       fireEvent.click(screen.getByRole('button', { name: 'Back' }));
       expect(await screen.findByText('Fuel')).toBeInTheDocument();
@@ -451,7 +451,7 @@ describe('KpiUnderlyingDialog', () => {
       expect(await screen.findByText('Coffee account')).toBeInTheDocument();
       expect(api.GET).toHaveBeenCalledTimes(1);
       expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, {
-        params: { path: { name: 'net_worth', rowId: 't1' }, query: { size: 25 } },
+        params: { path: { name: 'net_worth', rowId: 't1' }, query: { size: 5 } },
       });
     });
 

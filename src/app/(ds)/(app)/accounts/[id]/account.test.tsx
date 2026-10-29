@@ -199,7 +199,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     await renderOverview();
 
     expect(screen.getByText('Amount you owe')).toBeInTheDocument();
-    expect(screen.getByText('due 25 Oct · unbilled ₹0')).toBeInTheDocument();
+    expect(screen.getByText('Next statement 5 Nov')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
     // The header's Edit and the Identifiers card's Edit both open the edit dialog on this page.
     const edits = screen.getAllByRole('button', { name: 'Edit' });
@@ -236,7 +236,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     expect(screen.getAllByRole('link', { name: /View all/ })[0]).toHaveAttribute('href', '/accounts/c1/statements');
   });
 
-  it('shows Unbilled so far with No bill due and no Mark paid when nothing is due', async () => {
+  it('shows Unbilled so far with the next statement date and no Mark paid when nothing is due', async () => {
     loadCard.mockResolvedValue(
       overview({
         bill: { ...bill, status: 'PAID', unbilledAmount: 6224, paidMarkedOn: '2026-09-18', paymentDueDate: '2026-09-25' },
@@ -245,7 +245,7 @@ describe('/accounts/[id] credit-card Overview', () => {
     await renderOverview();
 
     expect(screen.getByText('Unbilled so far')).toBeInTheDocument();
-    expect(screen.getByText('No bill due')).toBeInTheDocument();
+    expect(screen.getByText('Next statement 5 Nov')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Mark paid' })).toBeNull();
     // Once in the Current bill stat and once on the 5 Oct statement row.
     expect(screen.getAllByText('Paid 18 Sep · on time').length).toBeGreaterThan(0);
@@ -469,7 +469,7 @@ describe('/accounts/[id] wallet Overview', () => {
     await renderOverview('w1');
 
     expect(screen.getByText('₹2,844')).toBeInTheDocument();
-    expect(screen.getByText('Manual balance · last entry 12 Oct')).toBeInTheDocument();
+    expect(screen.getByText('last entry 12 Oct')).toBeInTheDocument();
     expect(screen.getByText('Recent entries')).toBeInTheDocument();
     expect(screen.getByText('Latest 2 of 18')).toBeInTheDocument();
     expect(screen.queryByText('Details')).toBeNull();
@@ -484,7 +484,7 @@ describe('/accounts/[id] wallet Overview', () => {
     await renderOverview('w1');
 
     expect(screen.queryByText('Recent entries')).toBeNull();
-    expect(screen.getByText('Manual balance')).toBeInTheDocument();
+    expect(screen.getByText('Balance')).toBeInTheDocument();
     expect(screen.queryByText('Details')).toBeNull();
   });
 });
@@ -510,7 +510,7 @@ describe('/accounts/[id] broker Overview', () => {
 
     expect(screen.getByText('Portfolio value')).toBeInTheDocument();
     expect(screen.getByText('₹4,28,439')).toBeInTheDocument();
-    expect(screen.getByText('cash ₹12,500')).toBeInTheDocument();
+    expect(screen.getByText('₹12,500')).toBeInTheDocument();
     expect(screen.getByText('Available')).toBeInTheDocument();
     expect(screen.getByText('₹18,500 · 9 Oct · NEFT CR Freelance')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Investments/ })).toHaveAttribute('href', '/investments');

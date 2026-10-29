@@ -62,7 +62,7 @@ export function RewardsTab({
   }
 
   const preset = query.period;
-  const kpis = buildKpis(report, window, preset);
+  const kpis = buildKpis(report);
   const gross = kpis.find((k) => k.key === 'gross') ?? kpis[0];
   const ruleRows = ruleLines(rules, report);
   const extras = Object.fromEntries(ruleRows.map((r) => [r.id, ruleExtras(r.id, rules, report)]));
@@ -77,21 +77,25 @@ export function RewardsTab({
       <Hero
         label="Earned"
         value={gross.value}
-        change={{
-          text: (
-            <>
-              Gross, before fees and discounts{gross.context ? ` · ${gross.context}` : ''}
-              {gross.needsPointValue ? (
-                <>
-                  {' · '}
-                  <Button asChild variant="link" size="sm">
-                    <Link href={appHref(`/rewards/rules?account=${account.id}`)}>Set point value</Link>
-                  </Button>
-                </>
-              ) : null}
-            </>
-          ),
-        }}
+        change={
+          gross.context || gross.needsPointValue
+            ? {
+                text: (
+                  <>
+                    {gross.context}
+                    {gross.needsPointValue ? (
+                      <>
+                        {gross.context ? ' · ' : ''}
+                        <Button asChild variant="link" size="sm">
+                          <Link href={appHref(`/rewards/rules?account=${account.id}`)}>Set point value</Link>
+                        </Button>
+                      </>
+                    ) : null}
+                  </>
+                ),
+              }
+            : undefined
+        }
         figures={kpis.filter((k) => k.key !== 'gross').map((k) => ({ label: k.label, value: k.value, tone: k.tone, caption: k.context }))}
       />
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>

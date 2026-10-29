@@ -25,7 +25,7 @@ describe('hero price line', () => {
 
 describe('holding LTP line', () => {
   const ctx = (priceAt: string | null, now: Date, extra = {}) =>
-    holdingFigures({ ...holding, priceAsOf: '2026-10-13', priceAt, ...extra }, null, 0, now).find((f) => f.id === 'ltp')!.context;
+    holdingFigures({ ...holding, priceAsOf: '2026-10-13', priceAt, ...extra }, null, now).find((f) => f.id === 'ltp')!.context;
   it('says Live / Closed in place of the source when the price has a time', () => {
     expect(ctx('2026-10-13T11:45:00+05:30', OPEN)).toBe('Live · 11:45 am');
     expect(ctx('2026-10-13T15:30:00+05:30', CLOSED)).toBe('Closed · 13 Oct, 3:30 pm');

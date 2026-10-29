@@ -77,12 +77,7 @@ describe('KPI sums', () => {
   it('cash adds open banks and asset wallets, including excluded ones, never closed or liability', () => {
     const kpi = cashKpi(sections);
     expect(kpi.value).toBe('₹2,000');
-    expect(kpi.context).toBe('2 banks · 2 wallets');
-  });
-
-  it('uses singular nouns for one bank and one wallet', () => {
-    const one = groupAccounts([bank(), wallet()], TODAY);
-    expect(cashKpi(one).context).toBe('1 bank · 1 wallet');
+    expect(kpi.context).toBeUndefined();
   });
 
   it('investments sums open brokers only', () => {

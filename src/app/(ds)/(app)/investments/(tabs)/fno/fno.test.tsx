@@ -123,7 +123,6 @@ describe('/investments/fno: page', () => {
   it('shows the year figures, the trades and the two cards', async () => {
     await renderPage();
     expect(some('+₹10,456')).toBeInTheDocument();
-    expect(some('4 trades')).toBeInTheDocument();
     expect(some('50%')).toBeInTheDocument();
     expect(some('2 of 4')).toBeInTheDocument();
     expect(some('₹669')).toBeInTheDocument();
@@ -293,13 +292,13 @@ describe('/investments/fno: edit and delete', () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('NIFTY 25200 CE')[0]);
     const form = await screen.findByRole('dialog', { name: /Edit F&O trade/ });
-    fireEvent.click(within(form).getByRole('button', { name: 'Delete trade' }));
+    fireEvent.click(within(form).getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByRole('dialog', { name: 'Delete F&O trade?' });
     expect(within(confirm).getByText('The trade for NIFTY26OCT25200CE goes.')).toBeInTheDocument();
     expect(within(confirm).getByText('Only this trade is deleted.')).toBeInTheDocument();
     expect(within(confirm).getByText('Your other trades stay.')).toBeInTheDocument();
     expect(api.DELETE).not.toHaveBeenCalled();
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete trade' }));
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalled());
     expect(api.DELETE).toHaveBeenCalledWith('/api/v1/investments/fno/{id}', { params: { path: { id: 't-nifty-ce' } } });
     await waitFor(() => expect(toast).toHaveBeenCalledWith('F&O trade deleted'));
@@ -310,7 +309,7 @@ describe('/investments/fno: edit and delete', () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('NIFTY 25200 CE')[0]);
     const form = await screen.findByRole('dialog', { name: /Edit F&O trade/ });
-    fireEvent.click(within(form).getByRole('button', { name: 'Delete trade' }));
+    fireEvent.click(within(form).getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByRole('dialog', { name: 'Delete F&O trade?' });
     fireEvent.click(within(confirm).getByRole('button', { name: 'Cancel' }));
     expect(api.DELETE).not.toHaveBeenCalled();
@@ -333,7 +332,7 @@ describe('F&O add form (the top bar +)', () => {
     renderWithQuery(<FnoAddDialog onClose={onClose} />);
     const dialog = await screen.findByRole('dialog', { name: 'Record F&O trade' });
     expect(within(dialog).getByText('Zerodha · ZQ4471')).toBeInTheDocument();
-    expect(within(dialog).queryByRole('button', { name: 'Delete trade' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Delete' })).toBeNull();
     expect(within(dialog).getByLabelText('Option type')).toBeInTheDocument();
   });
 

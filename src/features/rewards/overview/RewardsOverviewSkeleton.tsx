@@ -6,7 +6,7 @@ import { Card, Hero, Skeleton } from '@/components/ds';
 export function RewardsOverviewSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <Hero.Skeleton label change />
+      <Hero.Skeleton label />
       <Card>
         <div className="p-space-16 flex flex-col gap-space-8 desk:gap-space-12">
           {Array.from({ length: 4 }, (_, i) => (

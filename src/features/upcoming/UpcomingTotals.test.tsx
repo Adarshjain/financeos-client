@@ -9,7 +9,6 @@ const tile = (id: UpcomingTile['id'], over: Partial<UpcomingTile> = {}): Upcomin
   label: id,
   value: '₹1',
   tone: 'ink',
-  caption: 'c',
   ...over,
 });
 
@@ -19,22 +18,20 @@ describe('UpcomingTotals', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('Next 7 days is the headline with its count line; Overdue and Due back are the figures', () => {
+  it('Next 7 days is the headline; Overdue and Due back are the figures, with a caption only where the tile has one', () => {
     render(
       <UpcomingTotals
         tiles={[
-          tile('overdue', { label: 'Overdue', value: '₹9', tone: 'danger', caption: '1 EMI' }),
-          tile('next7', { label: 'Next 7 days', value: '₹33,900', caption: '2 EMIs' }),
-          tile('month', { label: 'This month', value: '₹5', caption: '3 items' }),
+          tile('overdue', { label: 'Overdue', value: '₹9', tone: 'danger' }),
+          tile('next7', { label: 'Next 7 days', value: '₹33,900' }),
+          tile('month', { label: 'This month', value: '₹5' }),
           tile('dueBack', { label: 'Due back to you', value: '+₹15,000', tone: 'positive', caption: 'Priya · 31 Dec' }),
         ]}
       />,
     );
     expect(screen.getByText('Next 7 days')).toBeInTheDocument();
     expect(screen.getByText('₹33,900')).toBeInTheDocument();
-    expect(screen.getByText('2 EMIs')).toBeInTheDocument();
     expect(screen.getByText('Overdue')).toBeInTheDocument();
-    expect(screen.getByText('1 EMI')).toBeInTheDocument();
     expect(screen.getByText('Due back to you')).toBeInTheDocument();
     expect(screen.getByText('Priya · 31 Dec')).toBeInTheDocument();
     expect(screen.queryByText('This month')).toBeNull();

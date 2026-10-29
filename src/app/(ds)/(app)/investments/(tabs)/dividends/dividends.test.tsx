@@ -191,11 +191,11 @@ describe('/investments/dividends: data', () => {
 });
 
 describe('/investments/dividends: figures', () => {
-  it('draws the hero: received, then TDS and not received, with their captions', async () => {
+  it('draws the hero: received, then TDS and not received, with a caption only where it adds a fact', async () => {
     await renderPage();
     for (const text of ['₹1,980', '₹370', '₹1,460']) expect(screen.getAllByText(text).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('claim in ITR').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('2 matched to bank credits').length).toBeGreaterThan(0);
+    expect(screen.queryByText('claim in ITR')).toBeNull();
+    expect(screen.queryByText(/matched to bank credits/)).toBeNull();
     expect(screen.getAllByText('ITC overdue · TCS awaiting').length).toBeGreaterThan(0);
     expect(screen.getByText('Received this FY')).toBeInTheDocument();
     expect(screen.getByText('Not received')).toBeInTheDocument();

@@ -160,7 +160,7 @@ describe('/accounts/[id]/rewards', () => {
     expect(screen.getByText('30 of 30 transactions earned')).toBeDefined();
     expect(screen.getByText(/≈ ₹1,090 at ₹0.50 \/ pt/)).toBeDefined();
     expect(screen.getByText('1.3%')).toBeDefined();
-    expect(screen.getByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeDefined();
+    expect(screen.queryByText('Anniversary year 15 Mar 26 – 14 Mar 27')).toBeNull();
 
     expect(screen.getByText('Transactions')).toBeDefined();
     expect(screen.getByText('30 lines · This anniversary year')).toBeDefined();

@@ -6,7 +6,7 @@ The phone transaction row: merchant and amount on top, a context line and catego
 - Line 1: description (`heading`) · amount (700, tabular, credits `positive`). Running balance sits under the amount in `caption`, as the bare amount ("₹2,95,030", no "bal" prefix; owner 2026-10-17).
 - Line 2, the context line, in this order: **account name first**, plastic (••7741), then amber review words, a note, blue link/record words, then grey provenance.
 - Categories (owner, 2026-10-22): no own line on phone. They end the grey context line as text: the first category, then "+n" if more; "Set category" as an amber word when none is set. Tappable when the handlers are given. Desktop keeps the Category cell with badges. The description is semibold (600, owner 10-22) and never truncated (wraps). Amount is `title` on phone, `heading` on desktop. The amount and balance stay top-right.
-- Checkbox on desktop when selectable. Trailing eye icon in selection mode.
+- Checkbox on desktop when selectable. Trailing chevron or eye icon in selection mode.
 
 ## Word colours
 - Amber (`warning`, 700): needs you. Review reasons (Unreconciled, Category unverified, Duplicate, Date corrected) and Watching.
@@ -46,6 +46,7 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 - `onSelectedChange?: (selected: boolean) => void`: Selection change callback
 - `selectionMode?: boolean`: Phone selection mode (displays trailing eye button)
 - `onOpenDetail?: () => void`: Detail callback when trailing eye button is clicked
+- `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
 - `compact?: boolean`: The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette). No table cells and no checkbox; the `date` joins the grey context line (first) and categories ride it as text. Pass `leading` for a radio or checkbox and `role`/`aria-*` for the picker's semantics.
 - `query?: string`: Search text. Matches in string `description`, `account`, each `categories` label, `amount`, `note`, `plastic` and `contextLine` get the Highlight marker stroke (phone and desktop). ReactNode values are left alone. `createTransactionColumns(query)` gives the DataTable columns the same marks on description, category, account and amount (`transactionColumns` is the same without a query).

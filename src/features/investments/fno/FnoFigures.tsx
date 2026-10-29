@@ -24,10 +24,9 @@ export function FnoHero({ figures, allYears = false }: { figures: FnoFiguresMode
       label={realisedLabel(allYears)}
       value={<Conceal>{figures.realised.text}</Conceal>}
       valueTone={figures.realised.tone}
-      change={{ text: figures.realisedSub, tone: 'ink-3' }}
       figures={[
         { label: 'Win rate', value: figures.winRate, caption: figures.winSub },
-        { label: 'Charges', value: <Conceal>{figures.charges}</Conceal>, caption: figures.chargesSub },
+        { label: 'Charges', value: <Conceal>{figures.charges}</Conceal> },
       ]}
     />
   );

@@ -18,27 +18,35 @@ export interface FiguresProps extends React.HTMLAttributes<HTMLDivElement> {
   figures: Figure[];
   /** How many figures sit across from desk up: 3 (default) or 4. Always two across on a phone. */
   columns?: 3 | 4;
+  /** `md` (default) is the Hero's look; `sm` steps the figure text down and tightens the gaps, for a card. */
+  size?: 'sm' | 'md';
 }
 
-const COLUMNS: Record<3 | 4, string> = {
-  3: 'grid grid-cols-2 desk:grid-cols-3 gap-x-space-16 gap-y-space-8',
-  4: 'grid grid-cols-2 desk:grid-cols-4 gap-x-space-16 gap-y-space-8',
+const COLUMNS: Record<'sm' | 'md', Record<3 | 4, string>> = {
+  md: {
+    3: 'grid grid-cols-2 desk:grid-cols-3 gap-x-space-16 gap-y-space-8',
+    4: 'grid grid-cols-2 desk:grid-cols-4 gap-x-space-16 gap-y-space-8',
+  },
+  sm: {
+    3: 'grid grid-cols-2 desk:grid-cols-3 gap-x-space-12 gap-y-space-6',
+    4: 'grid grid-cols-2 desk:grid-cols-4 gap-x-space-12 gap-y-space-6',
+  },
 };
 
 /**
  * Figures: a grid of small figures, each a label over a strong figure with an optional tone and caption.
  * Equal columns, no dividers. The Hero draws its small figures with it; use it alone to present a set of numbers.
  */
-const FiguresRoot = forwardRef<HTMLDivElement, FiguresProps>(({ figures, columns = 3, className, ...props }, ref) => {
+const FiguresRoot = forwardRef<HTMLDivElement, FiguresProps>(({ figures, columns = 3, size = 'md', className, ...props }, ref) => {
   if (figures.length === 0) return null;
   return (
-    <div ref={ref} className={cn(COLUMNS[columns], className)} {...props}>
+    <div ref={ref} className={cn(COLUMNS[size][columns], className)} {...props}>
       {figures.map((f, i) => (
         <div key={i} className="flex flex-col gap-space-2 min-w-0">
           <Text variant="label" tone="ink-3" as="div">
             {f.label}
           </Text>
-          <Text variant="figure" tone={f.tone} as="div">
+          <Text variant={size === 'sm' ? 'title' : 'figure'} tone={f.tone} as="div">
             {concealMoney(f.value)}
           </Text>
           {f.caption ? (
@@ -58,17 +66,18 @@ export interface FiguresSkeletonProps extends React.HTMLAttributes<HTMLDivElemen
   /** How many figures the loaded grid has. */
   count: number;
   columns?: 3 | 4;
+  size?: 'sm' | 'md';
 }
 
 /** The Figures loading state, with the same grid and line heights. */
-const FiguresSkeleton = forwardRef<HTMLDivElement, FiguresSkeletonProps>(({ count, columns = 3, className, ...props }, ref) => {
+const FiguresSkeleton = forwardRef<HTMLDivElement, FiguresSkeletonProps>(({ count, columns = 3, size = 'md', className, ...props }, ref) => {
   if (count <= 0) return null;
   return (
-    <div ref={ref} aria-hidden="true" className={cn(COLUMNS[columns], className)} {...props}>
+    <div ref={ref} aria-hidden="true" className={cn(COLUMNS[size][columns], className)} {...props}>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="flex flex-col gap-space-2 min-w-0">
           <Skeleton width={72} height={16} />
-          <Skeleton width={100} height={24} />
+          <Skeleton width={100} height={size === 'sm' ? 22 : 24} />
         </div>
       ))}
     </div>

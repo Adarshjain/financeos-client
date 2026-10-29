@@ -25,11 +25,11 @@ describe('useRowBreakdown', () => {
     vi.mocked(api.GET).mockResolvedValue({ data: { title: 'HDFC' } } as never);
   });
 
-  it('reads the breakdown with 25-row sections', async () => {
+  it('reads the breakdown with 5-row sections', async () => {
     const { result } = renderHook(() => useRowBreakdown('net_worth', 'a1'), { wrapper: Wrapper });
     await waitFor(() => expect(result.current.data).toEqual({ title: 'HDFC' }));
     expect(api.GET).toHaveBeenCalledWith('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown', {
-      params: { path: { name: 'net_worth', rowId: 'a1' }, query: { size: 25 } },
+      params: { path: { name: 'net_worth', rowId: 'a1' }, query: { size: 5 } },
     });
   });
 

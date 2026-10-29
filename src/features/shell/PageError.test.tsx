@@ -51,6 +51,6 @@ describe('PageError', () => {
 
   it('keeps the app bar when given a shell', () => {
     render(<PageError error={new Error('x')} reset={vi.fn()} shell={{ title: 'Transactions' }} />);
-    expect(screen.getByRole('link', { name: 'Ask the data' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
   });
 });

@@ -51,8 +51,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByRole('tab', { name: 'Dividends' })).toBeVisible();
       await expect(shown(page.getByText(/^Received( this FY)?$/))).toBeVisible();
-      await expect(shown(page.getByText(/matched to (a )?bank credits?/))).toBeVisible();
-      await expect(shown(page.getByText('claim in ITR').or(page.getByText(/TDS ₹.* · claim in ITR/)))).toBeVisible();
+      await expect(shown(page.getByText('TDS', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('Not received', { exact: true }))).toBeVisible();
 
       // The FY is the current one, and each payout shows its receipt word.
@@ -82,7 +81,7 @@ for (const viewport of VIEWPORTS) {
       await expect(rowOf(page, seeded.awaiting.symbol)).toBeVisible();
       await expect(rowsOf(page, seeded.received.symbol)).toHaveCount(0);
       // The figures keep reading the whole year.
-      await expect(shown(page.getByText(/matched to (a )?bank credits?/))).toBeVisible();
+      await expect(shown(page.getByText(/^Received( this FY)?$/))).toBeVisible();
 
       await page.getByRole('button', { name: 'Awaiting', exact: true }).click();
       await page.getByRole('option', { name: 'All receipts' }).click();

@@ -68,30 +68,28 @@ const rule2: RewardRule = { ...baseRule, id: 'r2', name: 'Base', priority: 10, s
 
 describe('buildKpis', () => {
   it('builds the four tiles from the report', () => {
-    const [eligible, gross, adjustments, effective] = buildKpis(report, window);
+    const [eligible, gross, adjustments, effective] = buildKpis(report);
     expect(eligible).toMatchObject({ value: '₹83,764', context: '30 of 30 transactions earned' });
     expect(gross).toMatchObject({ value: '2,180 pts', context: '≈ ₹1,090 at ₹0.50 / pt' });
-    expect(adjustments).toMatchObject({ value: '₹0', context: 'no fees netted' });
-    expect(effective).toMatchObject({ value: '1.3%', context: 'Anniversary year 15 Mar 26 – 14 Mar 27' });
-  });
-  it('names the calendar year when there is no anniversary', () => {
-    const k = buildKpis(report, { from: '2026-01-01', to: '2026-12-31', calendarYear: true });
-    expect(k[3].context).toBe('Calendar year 1 Jan – 31 Dec');
+    expect(adjustments).toMatchObject({ value: '₹0' });
+    expect(adjustments.context).toBeUndefined();
+    expect(effective).toMatchObject({ value: '1.3%' });
+    expect(effective.context).toBeUndefined();
   });
   it('nets discounts against fees and lists both', () => {
-    const k = buildKpis({ ...report, summary: { ...report.summary, fees: 590, discounts: 100 } }, window);
+    const k = buildKpis({ ...report, summary: { ...report.summary, fees: 590, discounts: 100 } });
     expect(k[2]).toMatchObject({ value: '−₹490', context: '₹590 fees · ₹100 discounts', tone: 'danger' });
-    expect(buildKpis(report, window)[2].tone).toBeUndefined();
+    expect(buildKpis(report)[2].tone).toBeUndefined();
   });
   it('leaves out effective return when the report has none, and shows cashback for cashback cards', () => {
-    const k = buildKpis({ ...report, summary: { ...report.summary, points: 0, pointsValueInr: null, cashbackInr: 340, grossValueInr: 340, effectivePct: null } }, window);
+    const k = buildKpis({ ...report, summary: { ...report.summary, points: 0, pointsValueInr: null, cashbackInr: 340, grossValueInr: 340, effectivePct: null } });
     expect(k.map((t) => t.key)).toEqual(['eligible', 'gross', 'adjustments']);
     expect(k[1]).toMatchObject({ value: '₹340', context: undefined });
   });
 });
 
 describe('gross rewards with cash milestones', () => {
-  const gross = (over: object) => buildKpis({ ...report, summary: { ...report.summary, ...over } }, window)[1];
+  const gross = (over: object) => buildKpis({ ...report, summary: { ...report.summary, ...over } })[1];
   it('adds cash milestones to the points context', () => {
     expect(gross({ milestonesInr: 500, grossValueInr: 1590 })).toMatchObject({ value: '2,180 pts', context: '≈ ₹1,590 at ₹0.50 / pt · ₹500 milestones' });
   });

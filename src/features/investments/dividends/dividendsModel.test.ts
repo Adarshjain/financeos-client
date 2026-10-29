@@ -92,12 +92,12 @@ describe('the financial year', () => {
 describe('the figures', () => {
   const totals = { gross: 3975, tds: 370, net: 3605, count: 5 };
 
-  it('declares the FY, counts what matched bank credits and adds up what is not received', () => {
+  it('declares the FY, leaves the captions off what needs none and adds up what is not received', () => {
     const f = dividendsFigures(2026, totals, receipts(), { overdue: ['ITC'], awaiting: ['TCS'] });
     expect(f.fy).toBe('FY 26-27');
     expect(f.declared).toEqual({ value: '₹3,975', context: '5 payouts' });
-    expect(f.received).toEqual({ value: '₹1,980', context: '2 matched to bank credits' });
-    expect(f.tds).toEqual({ value: '₹370', context: 'claim in ITR' });
+    expect(f.received).toEqual({ value: '₹1,980', context: '' });
+    expect(f.tds).toEqual({ value: '₹370', context: '' });
     expect(f.notReceived).toEqual({ value: '₹1,460', context: 'ITC overdue · TCS awaiting', tone: 'warning' });
   });
 
@@ -113,7 +113,7 @@ describe('the figures', () => {
       }),
       {},
     );
-    expect(f.received).toEqual({ value: '₹800', context: '1 matched to a bank credit · incl. 2 untracked' });
+    expect(f.received).toEqual({ value: '₹800', context: 'incl. 2 untracked' });
     expect(f.notReceived).toEqual({ value: '₹0', context: undefined, tone: undefined });
   });
 

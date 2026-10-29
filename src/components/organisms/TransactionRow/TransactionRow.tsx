@@ -91,6 +91,9 @@ export interface TransactionRowProps
   /** Callback when trailing eye icon is clicked to view detail */
   onOpenDetail?: (point?: PressPoint) => void;
 
+  /** Trailing chevron indicator */
+  chevron?: boolean;
+
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
 
@@ -136,6 +139,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       onSelectedChange,
       selectionMode = false,
       onOpenDetail,
+      chevron = false,
       borderTop = true,
       query,
       compact = false,
@@ -184,7 +188,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const showEye = selectionMode && Boolean(onOpenDetail);
     // A selectable row keeps its eye mounted so it slides in and out with selection mode instead of popping.
     const hasEye = Boolean(onOpenDetail) && (isSelectable || selectionMode);
-    const eyeOnly = hasEye;
+    const eyeOnly = hasEye && !chevron;
 
     const { itemProps, nestedControlProps } = useSelectableItem({
       selectable,
@@ -199,8 +203,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     // account name first, plastic, amber review words, note, blue link/record words, grey provenance
     const contextElements: React.ReactNode[] = [];
     const desktopContextElements: React.ReactNode[] = [];
-    // Phone: the row's one status sits under the amount (review word, else the linked record, else where it came from).
-    let phoneStatus: React.ReactNode = null;
 
     if (compact && date) {
       const el = <span key="date">{mark(date)}</span>;
@@ -213,7 +215,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     } else {
       if (account) {
         contextElements.push(
-          <span key="account" className={cn('min-w-0 truncate', accountLogo && 'inline-flex items-center gap-space-4')}>
+          <span key="account" className={accountLogo ? 'inline-flex items-center gap-space-4' : undefined}>
             {accountLogo}
             <span>
             {mark(account)}
@@ -231,7 +233,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {reviewStatus}
           </StatusWord>
         );
-        phoneStatus ??= el;
+        contextElements.push(el);
         desktopContextElements.push(el);
       }
 
@@ -241,6 +243,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {mark(note)}
           </span>
         );
+        contextElements.push(el);
         desktopContextElements.push(el);
       }
 
@@ -260,7 +263,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {label}
           </StatusWord>
         );
-        phoneStatus ??= el;
+        contextElements.push(el);
         desktopContextElements.push(el);
       }
 
@@ -270,7 +273,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {provenance}
           </StatusWord>
         );
-        phoneStatus ??= el;
+        contextElements.push(el);
         desktopContextElements.push(el);
       }
     }
@@ -371,13 +374,9 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       );
     };
     const phoneCategoryEl = phoneCategory();
-    // The running balance takes the spot under the amount; the status then moves up beside the account so it is never lost.
-    const statusBesideAccount = Boolean(phoneStatus) && Boolean(balance) && !concealed;
-    const phoneContextElements = [
-      ...contextElements,
-      ...(statusBesideAccount ? [<React.Fragment key="status">{phoneStatus}</React.Fragment>] : []),
-      ...(phoneCategoryEl ? [phoneCategoryEl] : []),
-    ];
+    const phoneContextElements = phoneCategoryEl
+      ? [...contextElements, phoneCategoryEl]
+      : contextElements;
 
     const isInteractive = Boolean(
       props.onClick || isSelectable || selectionMode || onSelectedChange,
@@ -458,7 +457,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               // Eye only: the spacing lives in the amount cell and the Reveal content, so the closed
               // eye (0 wide) leaves no gap. With a chevron the grid gap stays.
               eyeOnly ? 'gap-x-0' : 'gap-x-space-10',
-              hasEye
+              hasEye || chevron
                 ? 'grid-cols-fill-auto-auto'
                 : 'grid-cols-fill-auto',
             )}
@@ -476,7 +475,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               </div>
               {/* Phone context line (starts with the account) */}
               {phoneContextElements.length > 0 && (
-                <div className={cn('flex flex-nowrap items-center gap-x-space-4 mt-space-2 overflow-hidden whitespace-nowrap text-caption font-medium text-ink-3 min-w-0', desk('desk:hidden'))}>
+                <div className={cn('flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0', desk('desk:hidden'))}>
                   {phoneContextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
@@ -531,9 +530,9 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               )}
             >
               {concealed && amount !== undefined ? CONCEAL_PLACEHOLDER : markAmount(amount)}
-              {((balance && !concealed) || phoneStatus) && (
+              {balance && !concealed && (
                 <div className={cn('text-caption font-medium text-ink-3', desk('desk:hidden'))}>
-                  {balance && !concealed ? balance : phoneStatus}
+                  {balance}
                 </div>
               )}
             </div>
@@ -549,7 +548,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             )}
 
             {/* Phone Trailing eye icon in selection mode or chevron */}
-            {hasEye && (
+            {(hasEye || chevron) && (
               <div className={cn('col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3', desk('desk:hidden'))}>
                 {hasEye && (
                   <Reveal open={showEye} axis="x">
@@ -565,6 +564,13 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     </Button>
                     </span>
                   </Reveal>
+                )}
+                {chevron && (
+                  <Icon
+                    name="chevron-right"
+                    size="sm"
+                    className="text-ink-4 shrink-0"
+                  />
                 )}
               </div>
             )}

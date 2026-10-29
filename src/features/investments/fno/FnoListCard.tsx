@@ -317,7 +317,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
 export function FnoListSkeleton() {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      <Hero.Skeleton label change figures={2} />
+      <Hero.Skeleton label figures={2} />
       <FilterRowSkeleton chips={3} />
       <Card>
         <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={8} />

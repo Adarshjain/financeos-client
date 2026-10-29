@@ -129,31 +129,21 @@ type Tone = 'positive' | 'danger' | undefined;
 export interface FnoFiguresModel {
   /** "+₹10,456": the year's realised P&L. */
   realised: { text: string; tone: Tone };
-  /** "4 trades". */
-  realisedSub: string;
   /** "50%". */
   winRate: string;
   /** "2 of 4". */
   winSub: string;
   /** "₹669". */
   charges: string;
-  /** "4 trades". */
-  chargesSub: string;
-}
-
-function trades(count: number, word = 'trade'): string {
-  return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
 export function figuresModel(summary: FnoSummary): FnoFiguresModel {
   const count = summary.tradeCount;
   return {
     realised: { text: formatMoney(summary.realisedPnl, { sign: 'always' }), tone: moveTone(summary.realisedPnl) },
-    realisedSub: trades(count),
     winRate: formatPercent(summary.winRate),
     winSub: `${summary.winCount} of ${count}`,
     charges: formatMoney(Math.round(summary.totalCharges)),
-    chargesSub: trades(count),
   };
 }
 

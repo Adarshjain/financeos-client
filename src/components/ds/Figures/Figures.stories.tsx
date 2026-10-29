@@ -23,7 +23,7 @@ const meta: Meta<typeof Figures> = {
       </div>
     ),
   ],
-  argTypes: { columns: { control: 'inline-radio', options: [3, 4] } },
+  argTypes: { columns: { control: 'inline-radio', options: [3, 4] }, size: { control: 'inline-radio', options: ['sm', 'md'] } },
   args: {
     figures: [
       { label: 'Quantity', value: '120' },
@@ -42,6 +42,8 @@ export const Default: Story = {};
 
 export const FourAcross: Story = { args: { columns: 4 } };
 
+export const Small: Story = { args: { size: 'sm' } };
+
 export const Tones: Story = {
   args: {
     figures: [
@@ -53,6 +55,8 @@ export const Tones: Story = {
 };
 
 export const Skeleton: Story = { render: () => <Figures.Skeleton count={6} /> };
+
+export const SmallSkeleton: Story = { render: () => <Figures.Skeleton count={6} size="sm" /> };
 
 export const Concealed: Story = {
   decorators: [

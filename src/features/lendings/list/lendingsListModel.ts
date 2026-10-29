@@ -84,7 +84,6 @@ export function lendingsHero(summary: CounterpartySummary, settledCount: number 
         label: 'You owe',
         value: formatMoney(summary.youOwe),
         tone: summary.youOwe > 0 ? 'danger' : undefined,
-        caption: formatCount(summary.youOweCount, ['person', 'people']),
       },
       {
         label: 'Settled',

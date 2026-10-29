@@ -85,7 +85,7 @@ describe('RowBreakdownView', () => {
     renderWithQuery(<RowBreakdownView datasource="net_worth" rowId="a1" {...handlers()} />);
     expect(await screen.findByText('HDFC Savings')).toBeInTheDocument();
     expect(api.GET).toHaveBeenCalledWith(BREAKDOWN, {
-      params: { path: { name: 'net_worth', rowId: 'a1' }, query: { size: 25 } },
+      params: { path: { name: 'net_worth', rowId: 'a1' }, query: { size: 5 } },
     });
   });
 

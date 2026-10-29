@@ -106,9 +106,9 @@ describe('UpcomingScreen totals', () => {
     const hero = screen.getByTestId('upcoming-hero');
     expect(within(hero).getByText('Next 7 days')).toBeInTheDocument();
     expect(within(hero).getByText('₹33,900')).toBeInTheDocument();
-    expect(within(hero).getByText('1 card bill')).toBeInTheDocument();
+    expect(within(hero).queryByText('1 card bill')).toBeNull();
     expect(within(hero).getByText('₹36,603')).toBeInTheDocument();
-    expect(within(hero).getByText('1 EMI · 1 statement')).toBeInTheDocument();
+    expect(within(hero).queryByText('1 EMI · 1 statement')).toBeNull();
     expect(within(hero).getByText('+₹15,000')).toBeInTheDocument();
     expect(within(hero).getByText('Rahul · 28 Oct')).toBeInTheDocument();
     expect(within(hero).queryByText('This month')).toBeNull();

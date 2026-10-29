@@ -81,10 +81,11 @@ describe('EpfScreen: the figures', () => {
     expect(screen.queryByText('Interest so far this FY')).toBeNull();
   });
 
-  it('shows ₹0 and "No balance yet" with no balance', () => {
+  it('shows ₹0 with no balance and no caption under it', () => {
     const sum = summary({ balance: 0, interestEstimate: undefined, lastInterest: undefined, throughMonth: null });
     renderWithQuery(<EpfScreen {...props({ summary: sum, figures: epfFigures(sum) })} />);
-    expect(screen.getAllByText('No balance yet').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹0').length).toBeGreaterThan(0);
+    expect(screen.queryByText('No balance yet')).toBeNull();
   });
 
   it('hides every figure when amounts are hidden', () => {

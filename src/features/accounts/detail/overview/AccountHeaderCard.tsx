@@ -29,7 +29,7 @@ export function AccountHeaderCard({
         actions={
           <>
             {model.markPaid ? (
-              <Button variant="primary" onClick={() => setMarkPaidOpen(true)}>
+              <Button variant="secondary" onClick={() => setMarkPaidOpen(true)}>
                 Mark paid
               </Button>
             ) : null}

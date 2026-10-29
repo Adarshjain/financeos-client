@@ -74,12 +74,12 @@ describe('route error and not-found pages', () => {
 describe('area boundaries and the app bar', () => {
   it('a page that mounts its own bar keeps it when it fails', () => {
     render(<NotificationsError error={new Error('x')} reset={vi.fn()} />);
-    expect(screen.getByRole('link', { name: 'Ask the data' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
   });
 
   it('an area whose layout mounts the bar renders only the message, so the bar is not doubled', () => {
     render(<SettingsError error={new Error('x')} reset={vi.fn()} />);
-    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
   });
 
   it('every [id] not-found offers its area as the way back', () => {

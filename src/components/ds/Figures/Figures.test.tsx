@@ -26,6 +26,23 @@ describe('Figures', () => {
     expect(container.firstChild).toHaveClass('grid-cols-2', 'desk:grid-cols-4');
   });
 
+  it('steps the figure text down and tightens the gaps at size sm', () => {
+    const { container } = render(<Figures figures={[{ label: 'Qty', value: '5' }]} size="sm" />);
+    expect(screen.getByText('5')).toHaveClass('text-title');
+    expect(screen.getByText('5')).not.toHaveClass('text-figure');
+    expect(container.firstChild).toHaveClass('gap-x-space-12', 'gap-y-space-6');
+  });
+
+  it('keeps the Hero figure style at the default size', () => {
+    render(<Figures figures={[{ label: 'Qty', value: '5' }]} />);
+    expect(screen.getByText('5')).toHaveClass('text-figure');
+  });
+
+  it('Skeleton follows size', () => {
+    const { container } = render(<Figures.Skeleton count={3} size="sm" />);
+    expect(container.firstChild).toHaveClass('gap-x-space-12');
+  });
+
   it('renders nothing without figures', () => {
     const { container } = render(<Figures figures={[]} />);
     expect(container).toBeEmptyDOMElement();
