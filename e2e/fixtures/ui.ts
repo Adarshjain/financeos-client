@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Request } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 import { E2E_CLIENT_URL } from './config';
@@ -24,7 +24,11 @@ export async function openTransactions(page: Page): Promise<void> {
  * Server-rendered pages show their buttons before React hydrates, and a click that lands in that
  * window is silently dropped. Re-clicking is safe because a dropped click sent nothing.
  */
-export async function clickUntilRequest(page: Page, target: Locator, url: RegExp): Promise<void> {
+export async function clickUntilRequest(
+  page: Page,
+  target: Locator,
+  url: RegExp | ((request: Request) => boolean),
+): Promise<void> {
   await expect(async () => {
     await Promise.all([page.waitForRequest(url, { timeout: 2000 }), target.click()]);
   }).toPass({ timeout: 15000 });
