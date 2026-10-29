@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, redirect,
 
 const server = vi.hoisted(() => ({ fetchCorporateActionsPage: vi.fn(), fetchCorporateActionPreview: vi.fn() }));
 vi.mock('@/features/investments/corporate-actions/corporateActionsServerApi', () => server);
-vi.mock('@/features/investments/corporate-actions/corporateActions', () => ({ loadCorporateActionPreview: vi.fn().mockResolvedValue({ success: true, data: { holdings: [] } }) }));
+vi.mock('@/features/investments/corporate-actions/corporateActionActions', () => ({ loadCorporateActionPreview: vi.fn().mockResolvedValue({ success: true, data: { holdings: [] } }) }));
 vi.mock('@/features/investments/instruments/useCatalogSearch', () => ({
   useCatalogSearch: () => ({ results: [], isLoading: false, hasQuery: false }),
   useResolveInstrumentMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),

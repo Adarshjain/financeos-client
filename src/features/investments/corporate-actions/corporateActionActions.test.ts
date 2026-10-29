@@ -5,7 +5,7 @@ vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./corporateActionsServerApi', () => ({ fetchCorporateActionPreview: vi.fn() }));
 
-import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActions';
+import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActionActions';
 
 beforeEach(() => vi.resetAllMocks());
 

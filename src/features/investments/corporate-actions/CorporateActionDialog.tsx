@@ -39,7 +39,7 @@ import {
 } from './corporateActionFormModel';
 import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from './corporateActionGone';
 import { ratioText } from './corporateActionRatioModel';
-import { loadCorporateActionPreview } from './corporateActions';
+import { loadCorporateActionPreview } from './corporateActionActions';
 import { KIND_LABELS, type PreviewLine, previewLines } from './corporateActionsModel';
 import { useCorporateActionMutations } from './useCorporateActionMutations';
 
