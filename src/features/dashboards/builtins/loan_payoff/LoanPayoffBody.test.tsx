@@ -81,8 +81,7 @@ describe('LoanPayoffBody', () => {
     respond([]);
     renderWithQuery(<LoanPayoffBody loanId={null} />);
     expect(await screen.findByText('No active loans yet')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Go to loans' }));
-    expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/loans'));
+    expect(screen.getByRole('link', { name: 'Go to loans' })).toHaveAttribute('href', expect.stringContaining('/loans'));
   });
 
   it('per loan: name, amount left and a repaid bar only; the amount left opens the loan breakdown', async () => {

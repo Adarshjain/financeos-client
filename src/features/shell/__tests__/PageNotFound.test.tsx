@@ -19,15 +19,13 @@ describe('PageNotFound', () => {
   it('defaults to Page not found with a way back to Home', () => {
     render(<PageNotFound />);
     expect(screen.getByText('Page not found')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Go to Home' }));
-    expect(router.push).toHaveBeenCalledWith(DS_HOME_HREF);
+    expect(screen.getByRole('link', { name: 'Go to Home' })).toHaveAttribute('href', DS_HOME_HREF);
   });
 
   it('goes back to the given parent through appHref', () => {
     render(<PageNotFound what="Account" backPath="/accounts" backLabel="Back to accounts" />);
     expect(screen.getByText('Account not found')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Back to accounts' }));
-    expect(router.push).toHaveBeenCalledWith('/accounts');
+    expect(screen.getByRole('link', { name: 'Back to accounts' })).toHaveAttribute('href', '/accounts');
   });
 
   it('keeps the app bar when given a shell', () => {

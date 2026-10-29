@@ -63,7 +63,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
           action={{
             label: 'Upload statement',
             variant: 'link',
-            onSelect: () => router.push(`/transactions/import?account=${accountId}`),
+            href: `/transactions/import?account=${accountId}`,
           }}
         />
       ) : (

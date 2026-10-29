@@ -5,7 +5,6 @@
 // Content only; the dashboard frame draws the card.
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListField, ListRow, Skeleton, Text } from '@/components/ds';
@@ -47,7 +46,6 @@ export function PortfolioSnapshotBody() {
   const { data, isLoading, error, refetch } = usePortfolioSummary();
   const { data: positions } = usePositions();
   const holdings = React.useMemo(() => topHoldings(positions ?? []), [positions]);
-  const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
   if (isLoading) return <PortfolioSnapshotSkeleton />;
@@ -58,7 +56,7 @@ export function PortfolioSnapshotBody() {
         size="sm"
         title="No holdings yet"
         description="Add a trade or import from your broker to see your portfolio here."
-        action={{ label: 'Go to investments', variant: 'link', onSelect: () => router.push(HOLDINGS_HREF) }}
+        action={{ label: 'Go to investments', variant: 'link', href: HOLDINGS_HREF }}
       />
     );
   }

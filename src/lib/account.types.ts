@@ -1,3 +1,4 @@
+import { todayInAppZone } from '@/lib/date-range';
 import { AccountType, FinancialPosition } from '@/lib/types';
 
 export interface AccountRequestBase {
@@ -108,7 +109,7 @@ export interface AccountBase {
 
 export type AccountStatus = 'ACTIVE' | 'CLOSING' | 'CLOSED';
 
-export function getAccountStatus(account: AccountBase, asOf: string = new Date().toISOString().slice(0, 10)): AccountStatus {
+export function getAccountStatus(account: AccountBase, asOf: string = todayInAppZone()): AccountStatus {
   if (!account.closedOn) return 'ACTIVE';
   return account.closedOn > asOf ? 'CLOSING' : 'CLOSED';
 }
@@ -169,7 +170,7 @@ export interface Cardholder {
 export type AccountCard = Cardholder;
 
 /** True once a cardholder line has effectively ended — its own closure or its account's, whichever came first. */
-export function isCardholderClosed(cardholder: Cardholder, asOf: string = new Date().toISOString().split('T')[0]): boolean {
+export function isCardholderClosed(cardholder: Cardholder, asOf: string = todayInAppZone()): boolean {
   const effective = cardholder.effectiveClosedOn ?? cardholder.closedOn;
   return !!effective && effective <= asOf;
 }
@@ -179,7 +180,7 @@ export function isCardLineClosed(cardholder: Cardholder, asOf?: string): boolean
 }
 
 export function accountHasActiveCard(account: CreditCard): boolean {
-  if (account.closedOn && account.closedOn <= new Date().toISOString().split('T')[0]) {
+  if (account.closedOn && account.closedOn <= todayInAppZone()) {
     return false;
   }
   if (!account.cardholders || account.cardholders.length === 0) {

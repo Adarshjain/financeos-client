@@ -24,7 +24,7 @@ export function useEpfMutations() {
     await Promise.all([
       invalidateInvestmentQueries(qc),
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
-      qc.invalidateQueries({ queryKey: ['epf'] }),
+      qc.invalidateQueries({ queryKey: keys.epf.all }),
       qc.invalidateQueries({ queryKey: keys.inbox.all }),
     ]);
     router.refresh();

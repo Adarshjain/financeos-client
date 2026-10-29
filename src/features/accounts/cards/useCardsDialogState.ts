@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Card, Cardholder, CardholderRelationship } from '@/lib/account.types';
+import { todayInAppZone } from '@/lib/date-range';
 
 import { ViewState } from './types';
 
@@ -55,7 +56,7 @@ export function useCardsDialogState() {
   const startAddPrimary = () => {
     setView('addPrimary');
     setCardLast4('');
-    setIssuedOn(new Date().toISOString().split('T')[0]);
+    setIssuedOn(todayInAppZone());
     setFormError(null);
   };
 
@@ -65,8 +66,8 @@ export function useCardsDialogState() {
     setRelationship('SPOUSE');
     setSpendLimit('');
     setCardLast4('');
-    setOpenedOn(new Date().toISOString().split('T')[0]);
-    setIssuedOn(new Date().toISOString().split('T')[0]);
+    setOpenedOn(todayInAppZone());
+    setIssuedOn(todayInAppZone());
     setFormError(null);
   };
 
@@ -81,7 +82,7 @@ export function useCardsDialogState() {
 
   const startCloseCardholder = (ch: Cardholder) => {
     setTargetCardholder(ch);
-    setCloseDate(new Date().toISOString().split('T')[0]);
+    setCloseDate(todayInAppZone());
     setFormError(null);
     setView('closeCardholder');
   };
@@ -89,7 +90,7 @@ export function useCardsDialogState() {
   const startIssueCard = (ch: Cardholder) => {
     setTargetCardholder(ch);
     setCardLast4('');
-    setIssuedOn(new Date().toISOString().split('T')[0]);
+    setIssuedOn(todayInAppZone());
     setFormError(null);
     setView('issueCard');
   };
@@ -98,7 +99,7 @@ export function useCardsDialogState() {
     setTargetCardholder(ch);
     setTargetCard(card);
     setReplaceNewLast4('');
-    setReplaceIssuedOn(new Date().toISOString().split('T')[0]);
+    setReplaceIssuedOn(todayInAppZone());
     setFormError(null);
     setView('replaceCard');
   };
@@ -106,7 +107,7 @@ export function useCardsDialogState() {
   const startCloseCard = (ch: Cardholder, card: Card) => {
     setTargetCardholder(ch);
     setTargetCard(card);
-    setCloseDate(new Date().toISOString().split('T')[0]);
+    setCloseDate(todayInAppZone());
     setFormError(null);
     setView('closeCard');
   };

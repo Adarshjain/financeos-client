@@ -9,6 +9,7 @@ import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
+import { replaceUrl } from '@/lib/urlState';
 
 import type { ObligationItem, ObligationKindFilter } from './obligations';
 import { UpcomingFilters } from './UpcomingFilters';
@@ -57,7 +58,7 @@ export function UpcomingView() {
 
   const syncUrl = (next: { kind: ObligationKindFilter; months: number }) => {
     const search = upcomingSearch(window.location.search, next);
-    window.history.replaceState(window.history.state, '', `${window.location.pathname}${search}`);
+    replaceUrl(`${window.location.pathname}${search}`, { keepState: true });
   };
   const changeKind = (next: ObligationKindFilter) => {
     setState({ kind: next, months });

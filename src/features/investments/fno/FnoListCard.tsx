@@ -24,10 +24,10 @@ import { AccountPicker } from '@/components/organisms';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Broker } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
+import { downloadCsv } from '@/lib/downloadCsv';
 import type { FnoSummary } from '@/lib/investments.types';
 import { AccountType, type FnoTradeResponse } from '@/lib/types';
 
-import { downloadCsv } from '../downloadCsv';
 import { exportFnoCsv } from './fnoActions';
 import {
   CONTRACT_CHIPS,
@@ -303,7 +303,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
                   ? {
                       label: 'Clear filters',
                       variant: 'link',
-                      onSelect: () => router.push(fnoUrl({ ...state, q: '', contract: '', broker: '', page: 0 })),
+                      href: fnoUrl({ ...state, q: '', contract: '', broker: '', page: 0 }),
                     }
                   : undefined
               }

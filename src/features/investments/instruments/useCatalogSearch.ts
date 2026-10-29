@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 
 import { api } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
@@ -12,15 +11,11 @@ import type {
   InstrumentType,
   ResolveInstrumentRequest,
 } from '@/lib/types';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 /** Shared debounced AMFI/Yahoo catalog search, used by InstrumentSearchField and InstrumentTypeahead. */
 export function useCatalogSearch(rawQuery: string, type?: InstrumentType) {
-  const [debouncedQuery, setDebouncedQuery] = useState(rawQuery.trim());
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(rawQuery.trim()), 250);
-    return () => clearTimeout(timer);
-  }, [rawQuery]);
+  const debouncedQuery = useDebouncedValue(rawQuery.trim(), SEARCH_DEBOUNCE_MS);
 
   const enabled = debouncedQuery.length >= 2;
 

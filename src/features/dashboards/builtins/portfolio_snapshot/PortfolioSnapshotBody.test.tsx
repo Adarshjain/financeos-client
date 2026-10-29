@@ -95,8 +95,7 @@ describe('PortfolioSnapshotBody', () => {
     // Stacked and centred (title, description, action), not laid out in one row.
     expect(title.closest('div')?.className).toMatch(/flex-col/);
     expect(title.closest('div')?.className).toMatch(/text-center/);
-    await userEvent.click(screen.getByRole('button', { name: 'Go to investments' }));
-    expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/investments'));
+    expect(screen.getByRole('link', { name: 'Go to investments' })).toHaveAttribute('href', expect.stringContaining('/investments'));
   });
 
   it('the value opens the open holdings behind it, and closing unmounts the dialog', async () => {

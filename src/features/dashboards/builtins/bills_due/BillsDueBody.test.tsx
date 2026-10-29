@@ -161,8 +161,7 @@ describe('BillsDueBody', () => {
     seed([]);
     render();
     expect(await screen.findByText('No credit cards yet')).toBeInTheDocument();
-    await user().click(screen.getByRole('button', { name: 'Go to accounts' }));
-    expect(push).toHaveBeenCalledWith(expect.stringMatching(/\/accounts$/));
+    expect(screen.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', expect.stringMatching(/\/accounts$/));
   });
 
   it('a link from elsewhere (?card=) highlights that card and opens the group holding it', async () => {

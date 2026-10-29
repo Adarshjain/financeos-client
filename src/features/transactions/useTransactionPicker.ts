@@ -5,6 +5,7 @@ import * as React from 'react';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { FilterClause } from '@/lib/reports.types';
+import { SEARCH_DEBOUNCE_MS } from '@/lib/useDebouncedValue';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 /** Search-result shape: the full generated response, so `obligationRefs` and
@@ -150,7 +151,7 @@ export function useTransactionPicker({
         sentSearchRef.current = search;
         fetchResults(search, page, `${searchKey}|${page}`);
       },
-      search !== sentSearchRef.current ? 300 : 0
+      search !== sentSearchRef.current ? SEARCH_DEBOUNCE_MS : 0
     );
     return () => clearTimeout(timer);
   }, [active, search, page, searchKey, fetchResults]);

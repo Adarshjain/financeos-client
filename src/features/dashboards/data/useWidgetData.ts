@@ -14,7 +14,8 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import {
   builtinWidgetQueryParams,
   isBuiltinWidget,
@@ -75,11 +76,7 @@ export function useWidgetData(
   });
 
   const error = query.isError
-    ? query.error instanceof ApiError
-      ? query.error.response.message
-      : builtin
-        ? "Couldn't load the widget. Try again."
-        : "Couldn't run the report. Try again."
+    ? getErrorMessage(query.error, builtin ? "Couldn't load the widget. Try again." : "Couldn't run the report. Try again.")
     : null;
 
   return {

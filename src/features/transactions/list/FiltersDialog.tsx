@@ -19,7 +19,7 @@ import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import type { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
   AMOUNT_OP_OPTIONS,
@@ -43,11 +43,9 @@ import {
   type TypeFilter,
 } from './transactionsUrl';
 
-export const COUNT_DEBOUNCE_MS = 300;
-
 /** "Show 182 transactions": how many the dialog's draft matches, asked once the fields settle. */
 function useMatchingCount(draftQuery: TransactionsQuery): number | undefined {
-  const settled = useDebouncedValue(JSON.stringify({ ...draftQuery, page: 0 }), COUNT_DEBOUNCE_MS);
+  const settled = useDebouncedValue(JSON.stringify({ ...draftQuery, page: 0 }), SEARCH_DEBOUNCE_MS);
   const { data } = useQuery({
     queryKey: [...keys.transactions.lists(), 'count', settled],
     queryFn: async () => {

@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
-import { Button } from '../Button/Button';
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Text } from '../Text/Text';
@@ -17,17 +17,13 @@ export interface EmptyStateProps
   title?: React.ReactNode;
   /** Explanatory one-sentence description */
   description?: React.ReactNode;
-  /** Single action: action={{ label, onSelect, variant? }} */
+  /** Single action: action={{ label, onSelect, variant? }}, or { label, href, variant? } for a link */
   action?: {
     label: React.ReactNode;
-    onSelect: () => void;
     variant?: 'primary' | 'secondary' | 'link';
-  };
-  /** Second action, after the first: secondaryAction={{ label, onSelect }}. Always `secondary` (`link` when compact). */
-  secondaryAction?: {
-    label: React.ReactNode;
-    onSelect: () => void;
-  };
+  } & ActionTarget;
+  /** Second action, after the first: secondaryAction={{ label, onSelect }} or { label, href }. Always `secondary` (`link` when compact). */
+  secondaryAction?: { label: React.ReactNode } & ActionTarget;
   /** Compact single-line style for small panels or widget rows */
   compact?: boolean;
 }
@@ -70,24 +66,24 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
           ) : null}
           {children}
           {action ? (
-            <Button
-              type="button"
+            <ActionButton
               variant={action.variant ?? 'link'}
-              onClick={action.onSelect}
+              href={action.href}
+              onSelect={action.onSelect}
               className="text-inherit"
             >
               {action.label}
-            </Button>
+            </ActionButton>
           ) : null}
           {secondaryAction ? (
-            <Button
-              type="button"
+            <ActionButton
               variant="link"
-              onClick={secondaryAction.onSelect}
+              href={secondaryAction.href}
+              onSelect={secondaryAction.onSelect}
               className="text-inherit"
             >
               {secondaryAction.label}
-            </Button>
+            </ActionButton>
           ) : null}
         </div>
       );
@@ -126,22 +122,22 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
         {(action || secondaryAction) && (
           <div className="mt-space-8 flex items-center justify-center gap-space-8 flex-wrap">
             {action && (
-              <Button
-                type="button"
+              <ActionButton
                 variant={action.variant ?? 'primary'}
-                onClick={action.onSelect}
+                href={action.href}
+                onSelect={action.onSelect}
               >
                 {action.label}
-              </Button>
+              </ActionButton>
             )}
             {secondaryAction && (
-              <Button
-                type="button"
+              <ActionButton
                 variant="secondary"
-                onClick={secondaryAction.onSelect}
+                href={secondaryAction.href}
+                onSelect={secondaryAction.onSelect}
               >
                 {secondaryAction.label}
-              </Button>
+              </ActionButton>
             )}
           </div>
         )}

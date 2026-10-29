@@ -336,8 +336,7 @@ describe('/rewards/cards/[accountId]', () => {
     await renderCard();
     expect(screen.getByText(/statement-cycle caps fell back to calendar months/)).toBeDefined();
     expect(screen.getByText(/2 transactions on this multi-card account are unattributed/)).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Manage cards' }));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/cards');
+    expect(screen.getByRole('link', { name: 'Manage cards' })).toHaveAttribute('href', '/accounts/c1/cards');
   });
 
   it('opens a line’s computation in a dialog and closes it', async () => {

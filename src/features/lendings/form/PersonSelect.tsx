@@ -5,12 +5,11 @@ import React from 'react';
 import { Select, type SelectOption } from '@/components/ds';
 import { type CounterpartyResponse, type CounterpartySelection } from '@/lib/lending.types';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { entriesLabel, positionLabel } from '../lendingEntryForm';
 
 const NEW_PREFIX = 'new:';
-const SEARCH_DEBOUNCE_MS = 250;
 
 function personOption(cp: CounterpartyResponse): SelectOption {
   return { value: cp.id, label: cp.name, hint: `${positionLabel(cp)} · ${entriesLabel(cp.entryCount)}` };

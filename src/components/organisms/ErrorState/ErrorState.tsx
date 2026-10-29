@@ -3,6 +3,7 @@
 import React, { forwardRef } from 'react';
 
 import { EmptyState, type EmptyStateProps } from '@/components/ds';
+import { copyText } from '@/lib/copyText';
 
 export interface ErrorStateProps
   extends Omit<EmptyStateProps, 'title' | 'action' | 'secondaryAction' | 'compact' | 'children'> {
@@ -39,11 +40,8 @@ export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(
   ) => {
     const copy = async () => {
       if (!reference) return;
-      try {
-        await navigator.clipboard?.writeText(reference);
-      } catch {
-        // Clipboard blocked (permissions, insecure origin): the reference is still on screen to read out.
-      }
+      // A blocked clipboard is fine: the reference is still on screen to read out.
+      await copyText(reference);
       onCopyReference?.(reference);
     };
 

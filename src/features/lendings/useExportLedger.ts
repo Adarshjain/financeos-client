@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
 import { amountExpressionValue, sanitizeAmountExpressionInput } from '@/lib/amountExpression';
+import { copyText } from '@/lib/copyText';
+import { todayInAppZone } from '@/lib/date-range';
 import {
   buildLendingLedgerText,
   DEFAULT_LENDING_EXPORT_TOGGLES,
@@ -13,7 +15,6 @@ import {
   type LendingExportToggles,
   sinceLastSettledIds,
 } from '@/lib/lendingExport';
-import { toCalendarDate } from '@/lib/utils';
 
 /** Per-device conveniences only (your name + toggles); selection and opening balance never persist. */
 export const LENDING_EXPORT_STORAGE_KEY = 'financeos.lendingExport.v1';
@@ -69,8 +70,10 @@ interface UseExportLedgerArgs {
 const legacyNotify = (message: string, tone: 'success' | 'danger') =>
   tone === 'success' ? toast.success(message) : toast.error(message);
 
+const noopSubscribe = () => () => {};
+
 export function useExportLedger({ entries, theirName, defaultMyName, notify = legacyNotify }: UseExportLedgerArgs) {
-  const stored = useMemo(readStoredPrefs, []);
+  const stored = useMemo(() => readStoredPrefs(), []);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(entries.map((e) => e.id)));
   const [myName, setMyName] = useState(() => stored.myName ?? defaultMyName ?? '');
@@ -81,10 +84,11 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
   }));
   const [openingOverride, setOpeningOverride] = useState<OpeningOverride | null>(null);
 
-  const [canShare, setCanShare] = useState(false);
-  useEffect(() => {
-    setCanShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
-  }, []);
+  const canShare = useSyncExternalStore(
+    noopSubscribe,
+    () => typeof navigator.share === 'function',
+    () => false,
+  );
 
   useEffect(() => {
     writeStoredPrefs({ myName, toggles });
@@ -148,7 +152,7 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
   // --- text ----------------------------------------------------------------
   const cleanMyName = myName.trim() || null;
   const cleanTheirName = theirNameInput.trim() || null;
-  const today = toCalendarDate(new Date());
+  const today = todayInAppZone();
 
   const text = useMemo(
     () =>
@@ -165,13 +169,8 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = le
   // --- actions -------------------------------------------------------------
   const copy = useCallback(async () => {
     if (openingError) return;
-    try {
-      if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
-      await navigator.clipboard.writeText(text);
-      notify('Ledger copied', 'success');
-    } catch {
-      notify("Couldn't copy the ledger. Select the preview text and copy it manually.", 'danger');
-    }
+    if (await copyText(text)) notify('Ledger copied', 'success');
+    else notify("Couldn't copy the ledger. Select the preview text and copy it manually.", 'danger');
   }, [text, notify, openingError]);
 
   const share = useCallback(async () => {

@@ -4,7 +4,6 @@
 // of how much principal is repaid. The amount left opens the loan's breakdown.
 // Content only; the dashboard frame draws the card.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, ListRow, ProgressBar, Skeleton } from '@/components/ds';
@@ -53,7 +52,6 @@ function LoanRow({ loan, onOpen }: { loan: LoanResponse; onOpen: (loan: LoanResp
 
 export function LoanPayoffBody({ loanId }: { loanId: string | null }) {
   const { data: loans = [], isLoading, error, refetch } = useActiveLoans();
-  const router = useRouter();
   const [opened, setOpened] = React.useState<LoanResponse | null>(null);
   const shown = loanId ? loans.filter((l) => l.id === loanId) : loans;
 
@@ -64,7 +62,7 @@ export function LoanPayoffBody({ loanId }: { loanId: string | null }) {
       <EmptyState
         compact
         title={loanId ? 'This loan is closed or no longer exists' : 'No active loans yet'}
-        action={{ label: 'Go to loans', variant: 'link', onSelect: () => router.push(appHref('/loans')) }}
+        action={{ label: 'Go to loans', variant: 'link', href: appHref('/loans') }}
       />
     );
   }

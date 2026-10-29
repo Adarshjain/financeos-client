@@ -47,6 +47,7 @@ export function isIsoDate(value: string | undefined): value is string {
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function iso(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }

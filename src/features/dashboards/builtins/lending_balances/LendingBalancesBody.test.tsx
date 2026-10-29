@@ -43,8 +43,7 @@ describe('LendingBalancesBody', () => {
     respond([]);
     renderWithQuery(<LendingBalancesBody />);
     expect(await screen.findByText('All square')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Go to lendings' }));
-    expect(nav.push).toHaveBeenCalledWith(expect.stringContaining('/loans/lendings'));
+    expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', expect.stringContaining('/loans/lendings'));
   });
 
   it('rows read who owes whom with the amount; the amount opens the person breakdown', async () => {

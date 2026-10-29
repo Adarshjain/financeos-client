@@ -54,6 +54,7 @@ export async function loadRulesPageData(
   // The card's own reward year, as its rewards page reports it.
   const mine = totals?.find((t) => t.accountId === accountId);
   const window = mine ? { from: mine.from, to: mine.to } : rewardsWindowFor(accountAnniversaryDate(account), today);
+  // The usage strip is optional: a failed report only hides it.
   const report = await rewardsApi.getReport(accountId, window.from, window.to).catch(() => null);
   const rules = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listRules>>>(keys.rewards.rules(accountId)) ?? [];
   const caps = qc.getQueryData<Awaited<ReturnType<typeof rewardsApi.listCapBuckets>>>(keys.rewards.capBuckets(accountId)) ?? [];

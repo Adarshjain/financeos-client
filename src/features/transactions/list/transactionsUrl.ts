@@ -141,6 +141,7 @@ function many(value: string | string[] | undefined): string[] {
   return [...new Set(list.map((v) => v.trim()).filter(Boolean))];
 }
 
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function validDate(value: string): boolean {
   if (!ISO_DATE.test(value)) return false;
   const d = new Date(`${value}T00:00:00Z`);

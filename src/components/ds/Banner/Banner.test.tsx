@@ -147,3 +147,10 @@ describe('Banner', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });
 });
+
+describe('Banner action href', () => {
+  it('draws the action as a link when it has an href', () => {
+    render(<Banner action={{ label: 'Open upcoming', href: '/upcoming' }}>Heads up</Banner>);
+    expect(screen.getByRole('link', { name: 'Open upcoming' })).toHaveAttribute('href', '/upcoming');
+  });
+});

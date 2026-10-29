@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')).selectMock);
 
+import { formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 import { stubPhone } from '@/test/stubPhone';
 
 import { UnderlyingGroupTables, type UnderlyingGroupTablesProps } from '../UnderlyingGroupTables';
@@ -61,15 +61,15 @@ describe('UnderlyingGroupTables (desktop)', () => {
     expect(screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'))).toEqual(['Asset', 'Liability']);
     const asset = region('Asset');
     expect(within(asset).getByRole('heading', { level: 3 })).toHaveTextContent('Asset');
-    expect(within(asset).getByText(formatMoney(16000))).toHaveClass('tabular-nums');
+    expect(within(asset).getByText(formatMoney(16000, { decimals: 'auto' }))).toHaveClass('tabular-nums');
     expect(within(asset).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
     expect(bodyRows(asset).map(cellText)).toEqual([
-      ['Savings Bank account', formatMoney(10000)],
-      ['Broker Broker', formatMoney(6000)],
+      ['Savings Bank account', formatMoney(10000, { decimals: 'auto' })],
+      ['Broker Broker', formatMoney(6000, { decimals: 'auto' })],
     ]);
     const liability = region('Liability');
-    expect(within(liability).getByText(formatMoney(-500))).toBeInTheDocument();
-    expect(bodyRows(liability).map(cellText)).toEqual([['Card Credit card', formatMoney(500)]]);
+    expect(within(liability).getByText(formatMoney(-500, { decimals: 'auto' }))).toBeInTheDocument();
+    expect(bodyRows(liability).map(cellText)).toEqual([['Card Credit card', formatMoney(500, { decimals: 'auto' })]]);
     expect(screen.queryByRole('columnheader', { name: 'Side' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Kind' })).not.toBeInTheDocument();
   });
@@ -122,8 +122,8 @@ describe('UnderlyingGroupTables (desktop)', () => {
   it('heads a group plainly, in order of first appearance, when the response carries no totals', () => {
     renderTables({ groupTotals: {}, table: { ...table, rows: [table.rows[2], table.rows[0]] } });
     expect(screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'))).toEqual(['Liability', 'Asset']);
-    expect(screen.queryByText(formatMoney(16000))).not.toBeInTheDocument();
-    expect(screen.queryByText(formatMoney(-500))).not.toBeInTheDocument();
+    expect(screen.queryByText(formatMoney(16000, { decimals: 'auto' }))).not.toBeInTheDocument();
+    expect(screen.queryByText(formatMoney(-500, { decimals: 'auto' }))).not.toBeInTheDocument();
   });
 
   it('shows the name column plainly when the datasource folds nothing into it', () => {
@@ -142,10 +142,10 @@ describe('UnderlyingGroupTables (phone)', () => {
     // Neither the side (the section) nor the kind (beside the name) is a sort option.
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Default order', 'Name', 'Value']);
     const asset = region('Asset');
-    expect(within(asset).getByText(formatMoney(16000))).toBeInTheDocument();
+    expect(within(asset).getByText(formatMoney(16000, { decimals: 'auto' }))).toBeInTheDocument();
     const savings = within(asset).getByRole('button', { name: /Savings/ });
     expect(within(savings).getByText('Bank account')).toHaveClass('text-slate-500');
-    expect(within(savings).getByText(formatMoney(10000))).toHaveClass('font-semibold');
+    expect(within(savings).getByText(formatMoney(10000, { decimals: 'auto' }))).toHaveClass('font-semibold');
     expect(within(region('Liability')).getByRole('button', { name: /Card/ })).toBeInTheDocument();
   });
 

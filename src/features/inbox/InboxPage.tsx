@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge, Banner, Card, Divider, EmptyState, SectionHeader, Text } from '@/components/ds';
@@ -29,7 +28,6 @@ export interface InboxPageProps {
 
 /** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxPage({ highlightKey = null }: InboxPageProps) {
-  const router = useRouter();
   const { data, isLoading, error, refetch } = useInbox();
   const { snooze, dismiss, epfLink, epfDismiss } = useInboxActions(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
@@ -67,8 +65,8 @@ export function InboxPage({ highlightKey = null }: InboxPageProps) {
         <EmptyState
           title="All clear"
           description="Nothing needs you right now. New bills, statements and reviews show up here."
-          action={{ label: 'Upcoming', onSelect: () => router.push(UPCOMING_HREF), variant: 'secondary' }}
-          secondaryAction={{ label: 'Transactions', onSelect: () => router.push('/transactions') }}
+          action={{ label: 'Upcoming', href: UPCOMING_HREF, variant: 'secondary' }}
+          secondaryAction={{ label: 'Transactions', href: '/transactions' }}
         />
       </Card>
     );

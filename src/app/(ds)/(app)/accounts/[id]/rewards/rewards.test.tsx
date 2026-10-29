@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { RewardsTabData } from '@/features/accounts/detail/rewards/rewardsData';
@@ -230,8 +229,7 @@ describe('/accounts/[id]/rewards', () => {
 
     expect(screen.getByText('No reward rules on Paytm Wallet yet')).toBeDefined();
     expect(screen.getByText('Rewards earned here show once a rule covers this account.')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Add reward rule' }));
-    expect(push).toHaveBeenCalledWith('/rewards/rules?account=w1');
+    expect(screen.getByRole('link', { name: 'Add reward rule' })).toHaveAttribute('href', '/rewards/rules?account=w1');
   });
 
   it('shows an error with Retry when the report failed, and keeps the page when only the lines failed', async () => {

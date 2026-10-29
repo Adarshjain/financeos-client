@@ -164,8 +164,7 @@ describe('/investments/tradebook: rows', () => {
     unmount();
     await renderPage({ type: 'buy' });
     expect(screen.getByText('No trades match')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/tradebook');
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/tradebook');
   });
 
   it('draws the skeleton while loading', () => {

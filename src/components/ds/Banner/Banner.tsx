@@ -2,6 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
@@ -27,8 +28,8 @@ export interface BannerProps
   rounded?: BannerRounded;
   /** Optional bold lead-in title */
   title?: React.ReactNode;
-  /** Optional single action on the right: action={{ label, onSelect }} */
-  action?: { label: React.ReactNode; onSelect: () => void };
+  /** Optional single action on the right: action={{ label, onSelect }}, or { label, href } for a link */
+  action?: { label: React.ReactNode } & ActionTarget;
   /** Optional dismiss callback */
   onDismiss?: () => void;
 }
@@ -73,14 +74,14 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
           </div>
           {action ? (
             <div className="shrink-0 flex items-center">
-              <Button
-                type="button"
+              <ActionButton
                 variant="link"
-                onClick={action.onSelect}
+                href={action.href}
+                onSelect={action.onSelect}
                 className="text-inherit"
               >
                 {action.label}
-              </Button>
+              </ActionButton>
             </div>
           ) : null}
           {onDismiss ? (

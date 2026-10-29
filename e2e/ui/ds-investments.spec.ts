@@ -74,7 +74,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('option', { name: 'Mutual funds' }).click();
       await page.waitForURL(/type=mutual_fund/);
       await expect(page.getByText('No holdings match')).toBeVisible();
-      await page.getByRole('button', { name: 'Clear filters' }).click();
+      await page.getByRole('link', { name: 'Clear filters' }).click();
       await page.waitForURL((url) => url.search === '');
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
 

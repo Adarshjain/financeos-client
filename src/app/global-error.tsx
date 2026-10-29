@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { getFaro } from '@/instrumentation-client';
+import { copyText } from '@/lib/copyText';
 
 // global-error replaces the root layout entirely, so it must render its own
 // <html>/<body> and cannot rely on anything the root layout sets up (fonts,
@@ -61,9 +62,7 @@ export default function GlobalError({
               <p
                 className="ge-muted ge-ref"
                 onClick={() => {
-                  if (error.digest && navigator?.clipboard) {
-                    navigator.clipboard.writeText(error.digest);
-                  }
+                  if (error.digest) void copyText(error.digest);
                 }}
                 title="Click to copy"
               >

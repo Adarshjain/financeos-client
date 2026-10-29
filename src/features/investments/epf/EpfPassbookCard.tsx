@@ -218,7 +218,7 @@ export function EpfPassbookCard({
             className="mx-space-16 mb-space-12"
             action={{
               label: 'Upload passbook',
-              onSelect: () => router.push(EPF_UPLOAD_HREF),
+              href: EPF_UPLOAD_HREF,
             }}
           >
             {`Your passbook is up to ${formatDate(stale.through, 'month')}. Upload a newer one to bring in ${stale.missing || 'the latest months'}.`}

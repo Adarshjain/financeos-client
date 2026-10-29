@@ -297,8 +297,7 @@ describe('/accounts/[id]/statements', () => {
     loadData.mockResolvedValue({ ...data(), statements: [], view: buildStatementsView([], undefined, undefined, '2026-10-13') });
     await renderPage();
     expect(screen.getByText('No statements yet')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Upload statement' }));
-    expect(push).toHaveBeenCalledWith('/transactions/import?account=c1');
+    expect(screen.getByRole('link', { name: 'Upload statement' })).toHaveAttribute('href', '/transactions/import?account=c1');
   });
 
   it('shows a compact empty state for a year without statements', async () => {
@@ -313,8 +312,7 @@ describe('/accounts/[id]/statements', () => {
     await renderPage({ fy: '24-25' });
     expect(screen.getByText('No statements in FY 24-25')).toBeInTheDocument();
     expect(screen.queryByText(/^Statement · /)).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Upload statement' }));
-    expect(push).toHaveBeenCalledWith('/transactions/import?account=c1');
+    expect(screen.getByRole('link', { name: 'Upload statement' })).toHaveAttribute('href', '/transactions/import?account=c1');
   });
 
   it('says the detail failed to load when only its request failed', async () => {

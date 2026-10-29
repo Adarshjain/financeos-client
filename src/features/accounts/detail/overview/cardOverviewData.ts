@@ -53,7 +53,7 @@ async function loadRewards(account: CreditCard, today: string) {
   const mine = await serverApi
     .GET('/api/v1/rewards/totals')
     .then(({ data }) => data?.find((t) => t.accountId === account.id))
-    .catch(() => undefined);
+    .catch(() => undefined); // Falls back to the window computed from the anniversary date.
   const window: RewardsWindow = mine
     ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
     : rewardsWindowFor(account.anniversaryDate, today);

@@ -38,6 +38,7 @@ function dayOf(createdAt: string): string {
   return todayInAppZone(new Date(createdAt));
 }
 
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function addDays(day: string, delta: number): string {
   const [y, m, d] = day.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d + delta)).toISOString().slice(0, 10);

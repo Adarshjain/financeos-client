@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { pushUrl } from '@/lib/urlState';
+
 export interface LeaveGuard {
   /** Where the visitor tried to go, while the page waits for an answer; null otherwise. */
   pendingHref: string | null;
@@ -140,7 +142,7 @@ export function useLeaveGuard(active: boolean): LeaveGuard {
       forgetStep();
       pendingFromBack.current = index !== null && protectedIndex.current !== null && index < protectedIndex.current;
       e.stopImmediatePropagation();
-      window.history.pushState(protectedState.current, '', protectedHref.current);
+      pushUrl(protectedHref.current, protectedState.current);
       setPendingHref(target);
     };
 

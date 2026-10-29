@@ -2,9 +2,9 @@
 
 import React from 'react';
 
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
-export const SEARCH_DEBOUNCE_MS = 300;
+export { SEARCH_DEBOUNCE_MS };
 
 /**
  * The text of a search field, reported to `onCommit` once typing has paused. The list behind the

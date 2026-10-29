@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 
 import { Badge } from '../Badge/Badge';
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { Button } from '../Button/Button';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
@@ -42,11 +43,10 @@ export interface SelectGroup {
   options: SelectOption[];
 }
 
-export interface SelectAction {
+export type SelectAction = {
   label: React.ReactNode;
-  onSelect: () => void;
   disabled?: boolean;
-}
+} & ActionTarget;
 
 export interface SelectMenuProps {
   id?: string;
@@ -440,18 +440,18 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
             <div className="flex flex-col items-start gap-space-12 px-space-10 py-space-8 text-body text-ink">
               {actions.map((a, i) => (
-                <Button
+                <ActionButton
                   key={i}
-                  type="button"
                   variant="link"
                   disabled={a.disabled}
-                  onClick={() => {
+                  href={a.href}
+                  onSelect={() => {
                     onClose?.();
-                    a.onSelect();
+                    a.onSelect?.();
                   }}
                 >
                   {a.label}
-                </Button>
+                </ActionButton>
               ))}
             </div>
           </>

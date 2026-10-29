@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 
 import { TableView } from '../TableView';
 
@@ -29,14 +29,14 @@ describe('TableView subtitleKey', () => {
   it('folds the column into the first cell as a muted label and drops its own column', () => {
     render(<TableView data={data()} subtitleKey="kind" />);
     expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
-    expect(cellText(bodyRows()[0])).toEqual(['Savings Bank account', formatMoney(100)]);
+    expect(cellText(bodyRows()[0])).toEqual(['Savings Bank account', formatMoney(100, { decimals: 'auto' })]);
     expect(within(bodyRows()[0]).getByText('Bank account')).toHaveClass('text-slate-500');
     expect(screen.queryByText('bank_account')).not.toBeInTheDocument();
   });
 
   it('prints nothing beside the title when the row has no subtitle', () => {
     render(<TableView data={data()} subtitleKey="kind" />);
-    expect(cellText(bodyRows()[1])).toEqual(['Cash', formatMoney(50)]);
+    expect(cellText(bodyRows()[1])).toEqual(['Cash', formatMoney(50, { decimals: 'auto' })]);
   });
 
   it('keeps the subtitle inside a clickable row\'s button', () => {
@@ -49,7 +49,7 @@ describe('TableView subtitleKey', () => {
   it('ignores a key that is not a column', () => {
     render(<TableView data={data()} subtitleKey="missing" />);
     expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Kind', 'Value']);
-    expect(cellText(bodyRows()[0])).toEqual(['Savings', 'Bank account', formatMoney(100)]);
+    expect(cellText(bodyRows()[0])).toEqual(['Savings', 'Bank account', formatMoney(100, { decimals: 'auto' })]);
   });
 
   it('composes with a hidden group column', () => {
@@ -60,7 +60,7 @@ describe('TableView subtitleKey', () => {
     render(<TableView data={grouped} groupField="side" hideGroupColumn subtitleKey="kind" />);
     expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
     expect(cellText(bodyRows()[0])).toEqual(['Asset']);
-    expect(cellText(bodyRows()[1])).toEqual(['Savings Bank account', formatMoney(100)]);
+    expect(cellText(bodyRows()[1])).toEqual(['Savings Bank account', formatMoney(100, { decimals: 'auto' })]);
   });
 });
 

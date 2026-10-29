@@ -140,7 +140,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
     onMutate: (item) => hideRow(qc, item.key),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.transactions.all });
-      void qc.invalidateQueries({ queryKey: ['epf'] });
+      void qc.invalidateQueries({ queryKey: keys.epf.all });
       notifier.epfLinked?.();
     },
     onError: (e, _item, snapshot) => {
@@ -166,7 +166,7 @@ export function useInboxActions(notifier: InboxNotifier = sonnerInboxNotifier) {
     },
     onMutate: (item) => hideRow(qc, item.key),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['epf'] });
+      void qc.invalidateQueries({ queryKey: keys.epf.all });
       notifier.epfDismissed?.();
     },
     onError: (e, _item, snapshot) => {

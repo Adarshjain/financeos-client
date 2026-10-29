@@ -5,6 +5,7 @@ import React from 'react';
 
 import { ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
 
 import {
   addEpfFiles,
@@ -115,7 +116,7 @@ export function useEpfImport(notify: ImportWizardNotify) {
       setResult(data);
       setStep(3);
       invalidateInvestmentQueries(qc);
-      void qc.invalidateQueries({ queryKey: ['epf'] });
+      void qc.invalidateQueries({ queryKey: keys.epf.all });
     } catch (err) {
       notify.caught(err, "Couldn't commit import");
     } finally {

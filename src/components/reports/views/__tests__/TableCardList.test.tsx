@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')).selectMock);
 
+import { formatDate, formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatDate, formatMoney } from '@/lib/utils';
 
 import { TableCardList } from '../TableCardList';
 
@@ -35,10 +35,10 @@ describe('TableCardList cards', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     const first = cards()[0];
     expect(within(first).getByText('Coffee')).toBeInTheDocument();
-    expect(within(first).getByText(formatMoney(120))).toHaveClass('font-semibold');
-    expect(within(first).getByText([formatDate('2026-10-01'), 'Asset', 'HDFC'].join(' · '))).toHaveClass('text-slate-500');
+    expect(within(first).getByText(formatMoney(120, { decimals: 'auto' }))).toHaveClass('font-semibold');
+    expect(within(first).getByText([formatDate('2026-10-01', 'list'), 'Asset', 'HDFC'].join(' · '))).toHaveClass('text-slate-500');
     // An empty value leaves the meta line.
-    expect(within(cards()[1]).getByText([formatDate('2026-10-02'), 'Asset'].join(' · '))).toBeInTheDocument();
+    expect(within(cards()[1]).getByText([formatDate('2026-10-02', 'list'), 'Asset'].join(' · '))).toBeInTheDocument();
   });
 
   it('uses the named value column as the figure', () => {
@@ -56,7 +56,7 @@ describe('TableCardList cards', () => {
       />,
     );
     expect(within(cards()[0]).getByText('7')).toHaveClass('font-semibold');
-    expect(within(cards()[0]).getByText(formatMoney(100))).toHaveClass('text-slate-500');
+    expect(within(cards()[0]).getByText(formatMoney(100, { decimals: 'auto' }))).toHaveClass('text-slate-500');
   });
 
   it('says so when there are no rows', () => {
@@ -82,19 +82,19 @@ describe('TableCardList groups', () => {
   it('heads each run of a group with its label and total, and leaves the group column out of the cards', () => {
     render(<TableCardList data={data()} groupField="side" groupTotals={{ asset: 1020, liability: 500 }} />);
     const asset = screen.getByRole('region', { name: 'Asset' });
-    expect(within(asset).getByText(formatMoney(1020))).toBeInTheDocument();
+    expect(within(asset).getByText(formatMoney(1020, { decimals: 'auto' }))).toBeInTheDocument();
     expect(within(asset).getAllByRole('listitem')).toHaveLength(2);
-    expect(within(asset).getByText([formatDate('2026-10-01'), 'HDFC'].join(' · '))).toBeInTheDocument();
+    expect(within(asset).getByText([formatDate('2026-10-01', 'list'), 'HDFC'].join(' · '))).toBeInTheDocument();
     const liability = screen.getByRole('region', { name: 'Liability' });
     // The heading's total and the one card's value.
-    expect(within(liability).getAllByText(formatMoney(500))).toHaveLength(2);
+    expect(within(liability).getAllByText(formatMoney(500, { decimals: 'auto' }))).toHaveLength(2);
     expect(within(liability).getByText('Card')).toBeInTheDocument();
   });
 
   it('heads a group without a total by its label alone', () => {
     render(<TableCardList data={data()} groupField="side" groupTotals={{ asset: 1020 }} />);
     const liability = screen.getByRole('region', { name: 'Liability' });
-    expect(within(liability).getAllByText(formatMoney(500))).toHaveLength(1);
+    expect(within(liability).getAllByText(formatMoney(500, { decimals: 'auto' }))).toHaveLength(1);
   });
 
   it('draws no headings when ungrouped', () => {

@@ -21,7 +21,7 @@ export function useGmailMutations() {
   };
   const invalidateAttention = () => {
     router.refresh();
-    return qc.invalidateQueries({ queryKey: [...keys.settings.all, 'gmailAttention'] });
+    return qc.invalidateQueries({ queryKey: keys.settings.gmailAttentionAll() });
   };
 
   const startOAuthMutation = useMutation({

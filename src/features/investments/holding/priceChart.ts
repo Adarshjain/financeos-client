@@ -16,6 +16,7 @@ export const RANGE_TITLES: Record<ChartRange, string> = { '1m': '1 month', '3m':
 const MONTHS: Record<ChartRange, number | null> = { '1m': 1, '3m': 3, '1y': 12, all: null };
 
 /** The date `months` before `iso` (both YYYY-MM-DD). */
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
 function monthsBefore(iso: string, months: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCMonth(d.getUTCMonth() - months);

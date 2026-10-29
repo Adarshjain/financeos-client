@@ -5,7 +5,6 @@
 // accounts, and a month's bar opens that month's outflow. Months before the user's history are left empty,
 // not drawn as zero spend.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, Text } from '@/components/ds';
@@ -36,7 +35,6 @@ const LIQUID_TYPES: readonly string[] = [AccountType.BANK_ACCOUNT, AccountType.G
  * server leaves those out) — say which, so the way forward is right ("include one" vs "add one").
  */
 function NoLiquidAccounts() {
-  const router = useRouter();
   const { data } = useAccounts();
   const today = todayInAppZone();
   const allExcluded = (Array.isArray(data) ? data : []).some(
@@ -51,7 +49,7 @@ function NoLiquidAccounts() {
           ? 'Accounts marked excluded are left out. Include one to see how long your money would last.'
           : 'Add a bank account or wallet to see how long your money would last.'
       }
-      action={{ label: 'Go to accounts', onSelect: () => router.push(appHref('/accounts')), variant: 'link' }}
+      action={{ label: 'Go to accounts', href: appHref('/accounts'), variant: 'link' }}
     />
   );
 }

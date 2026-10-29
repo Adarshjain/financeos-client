@@ -5,7 +5,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import React from 'react';
 
-import { Root } from '@/components/ds';
+import { AppRoot } from '@/features/shell/AppRoot';
 
 import tokens from '../../../design-system/tokens.json';
 import { Providers } from '../providers';
@@ -84,7 +84,7 @@ export default function DesignSystemLayout({
     >
       <body className="antialiased" suppressHydrationWarning>
         <Providers>
-          <Root>{children}</Root>
+          <AppRoot>{children}</AppRoot>
         </Providers>
       </body>
     </html>

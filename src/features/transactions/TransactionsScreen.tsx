@@ -5,6 +5,7 @@ import React from 'react';
 
 import { ContextMenu, Icon, SwipeActions } from '@/components/ds';
 import type { Transaction } from '@/lib/transaction.types';
+import { replaceUrl } from '@/lib/urlState';
 
 import { isApprovable } from './bulk/bulkModel';
 import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
@@ -65,7 +66,7 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
   const dropTxn = () => {
     if (!txnInUrl) return;
     setTxnInUrl(false);
-    window.history.replaceState(window.history.state, '', transactionsUrl({ ...view.query, txn: null }));
+    replaceUrl(transactionsUrl({ ...view.query, txn: null }), { keepState: true });
   };
   const setDetailId = (id: string | null) => {
     if (id !== view.query.txn || id === null) dropTxn();

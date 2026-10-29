@@ -29,6 +29,7 @@ export const RECENT_IMPORTS_DAYS = 30;
 /** The instant Recent imports starts at: the start of the app-zone day `today` (YYYY-MM-DD) minus 30 days. */
 export function recentImportsSince(today: string): string {
   const [y, m, d] = today.split('-').map(Number);
+// Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
   const day = new Date(Date.UTC(y, m - 1, d - RECENT_IMPORTS_DAYS)).toISOString().slice(0, 10);
   // The app zone is Asia/Kolkata (UTC+05:30, no daylight saving).
   return new Date(`${day}T00:00:00+05:30`).toISOString();

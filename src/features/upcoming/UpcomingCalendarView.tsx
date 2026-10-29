@@ -8,6 +8,7 @@ import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
+import { replaceUrl } from '@/lib/urlState';
 
 import {
   CALENDAR_MAX_OFFSET,
@@ -71,7 +72,7 @@ export function UpcomingCalendarView() {
   const goTo = (next: string) => {
     setMonth(next);
     const search = calendarSearch(window.location.search, next, today);
-    window.history.replaceState(window.history.state, '', `${window.location.pathname}${search}`);
+    replaceUrl(`${window.location.pathname}${search}`, { keepState: true });
   };
 
   // A bill opened from a notification: show its month, select its day, bring its row into view.

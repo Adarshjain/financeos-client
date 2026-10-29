@@ -168,10 +168,23 @@ export const keys = {
     llmCatalog: () => [...keys.settings.all, 'llmCatalog'] as const,
     gmailConnection: () => [...keys.settings.all, 'gmailConnection'] as const,
     gmailSenders: () => [...keys.settings.all, 'gmailSenders'] as const,
+    /** Every Gmail attention query, whatever its params (for invalidation). */
+    gmailAttentionAll: () => [...keys.settings.all, 'gmailAttention'] as const,
     gmailAttention: (params: Record<string, unknown> = {}) => [...keys.settings.all, 'gmailAttention', params] as const,
     deletionSummary: () => [...keys.settings.all, 'deletionSummary'] as const,
     notifications: () => [...keys.settings.all, 'notifications'] as const,
     pushPublicKey: () => [...keys.settings.all, 'pushPublicKey'] as const,
+  },
+
+  epf: {
+    all: ['epf'] as const,
+    withdrawals: (transactionId: string) => [...keys.epf.all, 'withdrawals', transactionId] as const,
+    employers: () => [...keys.epf.all, 'employers'] as const,
+  },
+
+  diagnostics: {
+    all: ['diagnostics'] as const,
+    lookup: (ref: string, type: string) => [...keys.diagnostics.all, ref, type] as const,
   },
 
   bills: {

@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')).selectMock);
 
+import { formatMoney } from '@/lib/format';
 import type { TableData } from '@/lib/reports.types';
-import { formatMoney } from '@/lib/utils';
 
 import { TableCardList } from '../TableCardList';
 
@@ -36,7 +36,7 @@ describe('TableCardList subtitleKey', () => {
     // The meta line: the side alone.
     expect(within(first).getByText('Asset')).toBeInTheDocument();
     expect(within(first).queryByText(/Bank account · /)).not.toBeInTheDocument();
-    expect(within(first).getByText(formatMoney(100))).toHaveClass('font-semibold');
+    expect(within(first).getByText(formatMoney(100, { decimals: 'auto' }))).toHaveClass('font-semibold');
   });
 
   it('prints nothing beside a title whose row has no subtitle', () => {

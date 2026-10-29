@@ -14,10 +14,10 @@ export interface PromptFieldProps {
   onValueChange?: (value: string) => void;
   /** Called with the trimmed text on Enter (without Shift) or the send button. */
   onSubmit?: (value: string) => void;
-  /** Called by the stop button while `busy`. */
+  /** Called by the stop button while `loading`. */
   onStop?: () => void;
   /** An answer is running: the button becomes stop and submitting is off. */
-  busy?: boolean;
+  loading?: boolean;
   disabled?: boolean;
   placeholder?: string;
   /** Caption in the bar row, left of the button (desktop only). */
@@ -36,7 +36,7 @@ export const PromptField = forwardRef<HTMLTextAreaElement, PromptFieldProps>(
       onValueChange,
       onSubmit,
       onStop,
-      busy = false,
+      loading = false,
       disabled = false,
       placeholder = 'Ask…',
       hint,
@@ -56,7 +56,7 @@ export const PromptField = forwardRef<HTMLTextAreaElement, PromptFieldProps>(
 
     const submit = () => {
       const text = value.trim();
-      if (busy || disabled || !text) return;
+      if (loading || disabled || !text) return;
       onSubmit?.(text);
       if (!isControlled) setValue('');
     };
@@ -95,7 +95,7 @@ export const PromptField = forwardRef<HTMLTextAreaElement, PromptFieldProps>(
           {hint ? (
             <span className="hidden desk:block min-w-0 text-caption text-ink-faint">{hint}</span>
           ) : null}
-          {busy ? (
+          {loading ? (
             <Button
               type="button"
               variant="primary"

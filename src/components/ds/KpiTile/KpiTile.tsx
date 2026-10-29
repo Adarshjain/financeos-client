@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
-import { Button } from '../Button/Button';
+import { ActionButton, type ActionTarget } from '../Button/ActionButton';
 import { Card } from '../Card/Card';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
@@ -26,10 +26,7 @@ export interface KpiDelta {
   direction?: KpiDeltaDirection;
 }
 
-export interface KpiTileAction {
-  label: string;
-  onSelect: () => void;
-}
+export type KpiTileAction = { label: string } & ActionTarget;
 
 export interface KpiTileProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'children'> {
@@ -137,15 +134,15 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
             {action && (
               <>
                 {' · '}
-                <Button
-                  type="button"
+                <ActionButton
                   variant="ghost"
                   size="sm"
-                  onClick={action.onSelect}
+                  href={action.href}
+                  onSelect={action.onSelect}
                   className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
                 >
                   {action.label}
-                </Button>
+                </ActionButton>
               </>
             )}
           </div>

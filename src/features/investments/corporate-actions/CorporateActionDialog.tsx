@@ -24,7 +24,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CorporateActionItem, CorporateActionKind, CorporateActionPreview } from '@/lib/investments.types';
-import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { InstrumentSelect } from '../InstrumentSelect';
 import {
@@ -46,8 +46,6 @@ import { KIND_LABELS, type PreviewLine, previewLines } from './corporateActionsM
 import { useCorporateActionMutations } from './useCorporateActionMutations';
 
 const FORM_ID = 'corporate-action-form';
-/** How long the form rests before the effect is asked for again. */
-export const PREVIEW_DEBOUNCE_MS = 400;
 
 export interface CorporateActionDialogProps {
   onClose: () => void;
@@ -92,7 +90,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
   // Notes do not change the effect, so typing them never asks again. An edit replays as a replacement of the saved action.
   const body = React.useMemo(() => requestBody({ ...form, notes: '' }), [form]);
   const previewKey = form.instrument && body ? JSON.stringify([form.instrument.id, { ...body, excludeActionId: action?.id }]) : null;
-  const settledKey = useDebouncedValue(previewKey, PREVIEW_DEBOUNCE_MS);
+  const settledKey = useDebouncedValue(previewKey, SEARCH_DEBOUNCE_MS);
   const [preview, setPreview] = React.useState<PreviewState | null>(null);
   React.useEffect(() => {
     if (!settledKey) return;

@@ -54,7 +54,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
       showToast(`Rule applied to ${n} ${n === 1 ? 'transaction' : 'transactions'}`, {
         action: {
           label: 'View',
-          onSelect: () => router.push(activityUrl({ statusFilter: '', typeFilter: RULE_JOB_TYPE, size: 25 }, { job: job.id })),
+          href: activityUrl({ statusFilter: '', typeFilter: RULE_JOB_TYPE, size: 25 }, { job: job.id }),
         },
       });
       void queryClient.invalidateQueries({ queryKey: keys.rules.all });

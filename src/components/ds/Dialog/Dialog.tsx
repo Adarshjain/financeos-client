@@ -3,7 +3,7 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import React, { createContext, forwardRef, useCallback, useContext, useRef } from 'react';
 
-import { Button } from '../Button/Button';
+import { ActionButton } from '../Button/ActionButton';
 import { cn } from '../cn';
 import { concealMoney } from '../Conceal/concealMoney';
 import { Icon } from '../Icon/Icon';
@@ -174,6 +174,8 @@ DialogBleed.displayName = 'DialogBleed';
 export interface DialogAction {
   label: React.ReactNode;
   onSelect?: () => void;
+  /** Draws the action as a real link to this address (the app's link through LinkProvider); `onSelect` still runs on click. */
+  href?: string;
   type?: 'button' | 'submit';
   form?: string;
   disabled?: boolean;
@@ -214,7 +216,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
         {hasActions && (
           <div className="grid grid-flow-col auto-cols-fr gap-space-8 desk:flex desk:justify-end">
             {tertiary && (
-              <Button
+              <ActionButton
                 key="tertiary"
                 variant={tertiary.tone === 'danger' ? 'danger-ghost' : 'ghost'}
                 size="md"
@@ -223,14 +225,15 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={tertiary.disabled}
                 loading={tertiary.loading}
                 icon={tertiary.icon ? <Icon name={tertiary.icon} size="md" /> : undefined}
-                onClick={tertiary.onSelect}
+                href={tertiary.href}
+                onSelect={tertiary.onSelect}
                 className="w-full desk:w-auto"
               >
                 {tertiary.label}
-              </Button>
+              </ActionButton>
             )}
             {secondary && (
-              <Button
+              <ActionButton
                 key="secondary"
                 variant={secondary.tone === 'danger' ? 'danger-ghost' : 'ghost'}
                 size="md"
@@ -239,14 +242,15 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={secondary.disabled}
                 loading={secondary.loading}
                 icon={secondary.icon ? <Icon name={secondary.icon} size="md" /> : undefined}
-                onClick={secondary.onSelect}
+                href={secondary.href}
+                onSelect={secondary.onSelect}
                 className="w-full desk:w-auto"
               >
                 {secondary.label}
-              </Button>
+              </ActionButton>
             )}
             {primary && (
-              <Button
+              <ActionButton
                 key="primary"
                 variant={primary.destructive ? 'danger-filled' : 'primary'}
                 size="md"
@@ -255,11 +259,12 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={primary.disabled}
                 loading={primary.loading}
                 icon={primary.icon ? <Icon name={primary.icon} size="xs" /> : undefined}
-                onClick={primary.onSelect}
+                href={primary.href}
+                onSelect={primary.onSelect}
                 className="w-full desk:w-auto"
               >
                 {primary.label}
-              </Button>
+              </ActionButton>
             )}
           </div>
         )}

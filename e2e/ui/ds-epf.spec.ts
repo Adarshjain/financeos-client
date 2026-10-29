@@ -74,7 +74,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('tab', { name: /^EPF/ }).click();
       await page.waitForURL('**/investments/epf');
       await expect(page.getByText('No EPF yet')).toBeVisible();
-      await page.getByRole('button', { name: 'Upload passbook' }).click();
+      await page.getByRole('link', { name: 'Upload passbook' }).click();
       await page.waitForURL(/\/investments\/import\?type=epf/);
       await expect(page.getByText('Drop your EPFO passbook PDFs')).toBeVisible();
     });

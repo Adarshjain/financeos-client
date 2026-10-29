@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 import { isValidRef } from '@/lib/diagnostics/ref';
+import { keys } from '@/lib/query/keys';
 
 export function useDiagnosticsLookup(
   ref: string,
@@ -12,7 +13,7 @@ export function useDiagnosticsLookup(
   const enabled = admin && Boolean(ref) && isValidRef(ref);
 
   return useQuery<DiagnosticsLookupResponse>({
-    queryKey: ['diagnostics', ref, type],
+    queryKey: keys.diagnostics.lookup(ref, type),
     queryFn: async () => {
       const { data, error } = await api.GET('/api/v1/diagnostics/lookup', {
         params: {
