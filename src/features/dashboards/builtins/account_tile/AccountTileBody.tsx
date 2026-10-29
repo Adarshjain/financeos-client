@@ -11,7 +11,6 @@ import { Chart } from '@/components/organisms';
 import { buildHeaderModel } from '@/features/accounts/detail/overview/headerModel';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import type { Account } from '@/lib/account.types';
-import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
@@ -23,6 +22,12 @@ import { stringParam } from '../subtitles';
 import type { BuiltinBodyProps } from '../types';
 import { AccountTileSkeleton } from './AccountTileSkeleton';
 import { ACCOUNT_TILE_DAYS, trendValues } from './accountTrend';
+
+/** The server answered 404 (a thrown action error carries the server's code; the browser client's also its status). */
+function isNotFound(error: unknown): boolean {
+  const e = error as { status?: number; code?: string; response?: { code?: string } } | null;
+  return e?.status === 404 || e?.code === 'NOT_FOUND' || e?.response?.code === 'NOT_FOUND';
+}
 
 /** The last 30 days as a sparkline; nothing while loading, with fewer than two days, or when the series fails. */
 function Trend({ account }: { account: Account }) {
@@ -56,7 +61,7 @@ export function AccountTileBody({ params, className }: BuiltinBodyProps) {
     body = <AccountTileSkeleton />;
   } else if (error || !account) {
     body =
-      !account && (!error || (error instanceof ApiError && error.status === 404)) ? (
+      !account && (!error || isNotFound(error)) ? (
         <BuiltinNote>This account no longer exists.</BuiltinNote>
       ) : (
         <BuiltinError message={getErrorMessage(error, "Couldn't load the account.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />

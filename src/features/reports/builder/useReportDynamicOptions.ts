@@ -3,8 +3,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
+import { loadReportFieldValues } from '@/features/reports/actions';
 import { DYNAMIC_OPTIONS_FAILED, type DynamicOptions } from '@/features/reports/builder/catalog';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
@@ -29,12 +30,7 @@ export function useReportDynamicOptions(
 
   const { data, isError } = useQuery({
     queryKey: keys.reports.fieldValues(datasource),
-    queryFn: async () => {
-      const { data: body } = await api.GET('/api/v1/report/datasource/{name}/values', {
-        params: { path: { name: datasource } },
-      });
-      return body?.options ?? {};
-    },
+    queryFn: () => unwrapAction(loadReportFieldValues(datasource)),
     enabled: needed,
   });
 

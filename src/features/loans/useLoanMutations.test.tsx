@@ -5,8 +5,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { keys } from '@/lib/query/keys';
 
-const api = vi.hoisted(() => ({ POST: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', () => ({ api }));
+const actions = vi.hoisted(() => ({
+  addLoanPayment: vi.fn(),
+  addLoanPaymentsBatch: vi.fn(),
+  deleteLoanPayment: vi.fn(),
+  addLoanEvent: vi.fn(),
+  deleteLoanEvent: vi.fn(),
+  addLoanCharge: vi.fn(),
+  deleteLoanCharge: vi.fn(),
+  closeLoan: vi.fn(),
+  reopenLoan: vi.fn(),
+  deleteLoan: vi.fn(),
+}));
+vi.mock('./actions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 
@@ -22,41 +33,39 @@ function setup(options?: Parameters<typeof useLoanMutations>[1]) {
 }
 
 beforeEach(() => {
-  api.POST.mockReset();
-  api.DELETE.mockReset();
+  Object.values(actions).forEach((fn) => fn.mockReset());
   toastError.mockReset();
 });
 
 describe('useLoanMutations', () => {
   it('records a payment and refreshes the loans and the transactions it can link', async () => {
-    api.POST.mockResolvedValue({ data: { id: 'pay1' } });
+    actions.addLoanPayment.mockResolvedValue({ success: true, data: { id: 'pay1' } });
     const { result, invalidate } = setup();
     let created: unknown;
     await act(async () => {
       created = await result.current.addPayment.mutateAsync({ installmentSeq: 3, paymentDate: '2026-10-05', amount: 100 });
     });
     expect(created).toEqual({ id: 'pay1' });
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/loans/{id}/payments', {
-      params: { path: { id: 'l1' } },
-      body: { installmentSeq: 3, paymentDate: '2026-10-05', amount: 100 },
-    });
+    expect(actions.addLoanPayment).toHaveBeenCalledWith('l1', { installmentSeq: 3, paymentDate: '2026-10-05', amount: 100 });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.loans.all });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('closing refreshes the loans only', async () => {
-    api.POST.mockResolvedValue({});
+    actions.closeLoan.mockResolvedValue({ success: true, data: undefined });
     const { result, invalidate } = setup();
     await act(async () => {
       await result.current.closeLoan.mutateAsync();
     });
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/loans/{id}/close', { params: { path: { id: 'l1' } } });
+    expect(actions.closeLoan).toHaveBeenCalledWith('l1');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.loans.all });
     expect(invalidate).not.toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('deletes a payment, an event, a charge and the loan', async () => {
-    api.DELETE.mockResolvedValue({});
+    for (const fn of [actions.deleteLoanPayment, actions.deleteLoanEvent, actions.deleteLoanCharge, actions.deleteLoan]) {
+      fn.mockResolvedValue({ success: true, data: undefined });
+    }
     const { result } = setup();
     await act(async () => {
       await result.current.deletePayment.mutateAsync('p1');
@@ -64,16 +73,14 @@ describe('useLoanMutations', () => {
       await result.current.deleteCharge.mutateAsync('c1');
       await result.current.deleteLoan.mutateAsync();
     });
-    expect(api.DELETE.mock.calls.map((c) => c[0])).toEqual([
-      '/api/v1/loans/{id}/payments/{paymentId}',
-      '/api/v1/loans/{id}/events/{eventId}',
-      '/api/v1/loans/{id}/charges/{chargeId}',
-      '/api/v1/loans/{id}',
-    ]);
+    expect(actions.deleteLoanPayment).toHaveBeenCalledWith('l1', 'p1');
+    expect(actions.deleteLoanEvent).toHaveBeenCalledWith('l1', 'e1');
+    expect(actions.deleteLoanCharge).toHaveBeenCalledWith('l1', 'c1');
+    expect(actions.deleteLoan).toHaveBeenCalledWith('l1');
   });
 
   it('uses the Legacy error toast by default', async () => {
-    api.POST.mockRejectedValue(new Error('nope'));
+    actions.addLoanEvent.mockRejectedValue(new Error('nope'));
     const { result } = setup();
     await act(async () => {
       await result.current.addEvent.mutateAsync({ eventType: 'prepayment', effectiveDate: '2026-10-05' }).catch(() => undefined);
@@ -82,7 +89,7 @@ describe('useLoanMutations', () => {
   });
 
   it('lets the page replace the error toast and gives it the fallback message', async () => {
-    api.DELETE.mockRejectedValue(new Error('Cannot delete event: settled payment exists'));
+    actions.deleteLoanEvent.mockRejectedValue(new Error('Cannot delete event: settled payment exists'));
     const onError = vi.fn();
     const { result } = setup({ onError });
     await act(async () => {

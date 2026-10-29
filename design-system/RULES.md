@@ -108,7 +108,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 **API**
 5. **Prop names mean one thing everywhere:**
    - `variant` = visual style (`primary`, `secondary`…);
-   - `size` = `sm` | `md` | `lg`;
+   - `size` = a step on the `xs` < `sm` < `md` < `lg` < `xl` scale, each component offering only its own steps (owner, 2026-10-28): Button `sm|md|xl`; TextField `md|lg|xl`; SegmentedControl `sm|md|lg|xl`; Dialog `sm|md|lg|xl|full`; Avatar `sm|md|lg`; Icon `xs|sm|md|lg`; Badge, FilterChip, FilterBar, Select, EmptyState, ReorderList, DataTable rows `sm|md`. A new step is a new variant (§5.3);
    - `tone` = semantic colour (`neutral`, `success`, `warning`, `danger`, `info`).
 
    No `kind`, `status`, `type`, `appearance` or `intent` for these.

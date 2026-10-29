@@ -7,6 +7,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 const launcher = vi.hoisted(() => ({ launch: vi.fn(), prefetch: vi.fn(), pendingId: null as string | null }));
 vi.mock('@/components/shortcuts/actions', async () => {
   const actual = await vi.importActual<typeof import('@/components/shortcuts/actions')>('@/components/shortcuts/actions');

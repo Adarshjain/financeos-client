@@ -30,19 +30,14 @@ const post = vi.fn();
 const put = vi.fn();
 const patch = vi.fn();
 const del = vi.fn();
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return {
-    ...actual,
-    api: {
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: {
       GET: (...a: unknown[]) => get(...a),
       POST: (...a: unknown[]) => post(...a),
       PUT: (...a: unknown[]) => put(...a),
       PATCH: (...a: unknown[]) => patch(...a),
       DELETE: (...a: unknown[]) => del(...a),
-    },
-  };
-});
+    } }));
 
 const showToast = vi.fn();
 vi.mock('@/components/ds', async () => {

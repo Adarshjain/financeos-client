@@ -57,7 +57,7 @@ export function PushWarning({ settings, browser }: DevicesProps) {
 
 /** The master switch, then this browser and every other registered device. Removing a device needs no confirm. */
 export function PushCard({ settings, browser }: DevicesProps) {
-  const { unsubscribe } = useNotificationSettingsMutations();
+  const { unsubscribe, removeDevice } = useNotificationSettingsMutations();
   const { save, pending } = useSaveSettings();
   const devices = settings.devices ?? [];
   const env = browser.env;
@@ -68,7 +68,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
 
   const remove = async (endpoint: string) => {
     try {
-      await unsubscribe.mutateAsync(endpoint);
+      await removeDevice.mutateAsync(endpoint);
       notify.success('Device removed');
     } catch (e) {
       notify.error(getErrorMessage(e, "Couldn't remove the device. Try again."));
@@ -132,7 +132,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
           title={<Text variant="body-strong">{device.userAgent || 'Browser'}</Text>}
           subtitle={device.addedAt ? `added ${addedOn(device.addedAt)}` : undefined}
           trailing={
-            <Button variant="secondary" size="sm" disabled={unsubscribe.isPending || browser.checking} onClick={() => void remove(device.endpoint)}>
+            <Button variant="secondary" size="sm" disabled={unsubscribe.isPending || removeDevice.isPending || browser.checking} onClick={() => void remove(device.endpoint)}>
               Remove
             </Button>
           }

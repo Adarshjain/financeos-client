@@ -11,7 +11,6 @@ import {
   useRewardRules,
 } from '@/features/rewards/queries/useRewardRulesQueries';
 import { useEndDateAndClone } from '@/features/rewards/rules/useEndDateAndClone';
-import { ApiError } from '@/lib/api/client';
 import { formatMoney } from '@/lib/format';
 import { RewardRule, RewardType } from '@/lib/rewards.types';
 import { toastError } from '@/lib/toastError';

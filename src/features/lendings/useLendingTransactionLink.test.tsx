@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { keys } from '@/lib/query/keys';
 
-const api = vi.hoisted(() => ({ PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', () => ({ api }));
+const actions = vi.hoisted(() => ({ linkLendingEntryTransaction: vi.fn(), unlinkLendingEntryTransaction: vi.fn() }));
+vi.mock('./actions', () => actions);
 const toastError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/toastError', () => ({ toastError }));
 
@@ -22,25 +22,25 @@ function setup<T>(hook: () => T) {
 }
 
 beforeEach(() => {
-  api.PUT.mockReset();
-  api.DELETE.mockReset();
+  actions.linkLendingEntryTransaction.mockReset();
+  actions.unlinkLendingEntryTransaction.mockReset();
   toastError.mockReset();
 });
 
 describe('useLinkLendingTransaction', () => {
   it('puts the transaction on the entry and refreshes lendings and transactions', async () => {
-    api.PUT.mockResolvedValue({ data: { id: 'l1' } });
+    actions.linkLendingEntryTransaction.mockResolvedValue({ success: true, data: { id: 'l1' } });
     const { result, invalidate } = setup(() => useLinkLendingTransaction());
     await act(async () => {
       await result.current.mutateAsync({ id: 'l1', transactionId: 't1' });
     });
-    expect(api.PUT).toHaveBeenCalledWith('/api/v1/lendings/{id}/transaction', { params: { path: { id: 'l1' } }, body: { transactionId: 't1' } });
+    expect(actions.linkLendingEntryTransaction).toHaveBeenCalledWith('l1', 't1');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('uses the Legacy error toast unless the caller replaces it', async () => {
-    api.PUT.mockRejectedValue(new Error('nope'));
+    actions.linkLendingEntryTransaction.mockRejectedValue(new Error('nope'));
     const first = setup(() => useLinkLendingTransaction());
     await act(async () => {
       await first.result.current.mutateAsync({ id: 'l1', transactionId: 't1' }).catch(() => undefined);
@@ -58,17 +58,17 @@ describe('useLinkLendingTransaction', () => {
 
 describe('useUnlinkLendingTransaction', () => {
   it('detaches the transaction and refreshes lendings and transactions', async () => {
-    api.DELETE.mockResolvedValue({});
+    actions.unlinkLendingEntryTransaction.mockResolvedValue({ success: true, data: undefined });
     const { result, invalidate } = setup(() => useUnlinkLendingTransaction());
     await act(async () => {
       await result.current.mutateAsync('l1');
     });
-    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/lendings/{id}/transaction', { params: { path: { id: 'l1' } } });
+    expect(actions.unlinkLendingEntryTransaction).toHaveBeenCalledWith('l1');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
   });
 
   it('uses the Legacy error toast by default', async () => {
-    api.DELETE.mockRejectedValue(new Error('nope'));
+    actions.unlinkLendingEntryTransaction.mockRejectedValue(new Error('nope'));
     const { result } = setup(() => useUnlinkLendingTransaction());
     await act(async () => {
       await result.current.mutateAsync('l1').catch(() => undefined);

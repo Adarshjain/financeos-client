@@ -10,7 +10,7 @@ import { employerRow, epfFigures, epfRow, fyOptions, missingMonths, parseEpfUrl,
 import { EpfView, type EpfViewProps } from './EpfView';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-27' }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
@@ -22,10 +22,10 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
 }));
 
 const actions = vi.hoisted(() => ({ loadEpfFormOptions: vi.fn() }));
-vi.mock('./epfActions', () => actions);
+vi.mock('./epfActions', async (orig) => ({ ...(await orig<typeof import('./epfActions')>()), ...actions }));
 
 const http = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/api/client')>()), api: http }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const today = '2026-10-27';
 const base = [entry(), manualContribution(), interest(), opening()];

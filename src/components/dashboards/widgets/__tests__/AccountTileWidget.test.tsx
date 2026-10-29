@@ -6,6 +6,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('@/components/reports/underlying/RowBreakdownDialog', () => ({
   RowBreakdownDialog: ({ onOpenChange, ...p }: { onOpenChange: (o: boolean) => void }) => (
     <div data-testid="breakdown-dialog" data-props={JSON.stringify(p)}>

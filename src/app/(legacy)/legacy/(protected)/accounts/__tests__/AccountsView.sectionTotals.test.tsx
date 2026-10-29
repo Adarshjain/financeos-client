@@ -10,6 +10,7 @@ vi.mock('@/lib/api/client', async () => {
     api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() },
   };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 import { AccountsView } from '@/app/(legacy)/legacy/(protected)/accounts/components/AccountsView';
 import { api } from '@/lib/api/client';

@@ -11,7 +11,7 @@ import { refreshResultMessage, useRefreshPrices } from './useRefreshPrices';
 pinClock();
 
 const api = vi.hoisted(() => ({ POST: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 const bus = vi.hoisted(() => ({ emitJobStarted: vi.fn() }));
 vi.mock('@/features/jobs/jobsBus', () => bus);

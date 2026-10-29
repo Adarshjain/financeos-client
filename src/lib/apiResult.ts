@@ -17,7 +17,7 @@ export { AppError };
 export function toErrorResult(
   error: unknown,
   fallbackMessage: string,
-): { success: false; error: ErrorResponse } {
+): { success: false; error: ErrorResponse; status?: number } {
   if (error instanceof ApiError) {
     const errorResponse: ErrorResponse = {
       ...error.response,
@@ -30,7 +30,7 @@ export function toErrorResult(
       requestId: errorResponse.requestId,
       fallbackMessage,
     });
-    return { success: false, error: errorResponse };
+    return { success: false, error: errorResponse, status: error.status };
   }
   if (error instanceof AppError) {
     logger.log('ERROR', 'client.action.failed', {

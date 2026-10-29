@@ -24,6 +24,8 @@ vi.mock('@/lib/api/client', async () => {
     },
   };
 });
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock(
   '@/components/ui/select',
   async () => (await import('@/test/mockSelect')).selectMock

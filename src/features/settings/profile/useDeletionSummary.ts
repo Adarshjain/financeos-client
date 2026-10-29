@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { loadDeletionSummary } from '@/features/settings/profile/deletionSummaryActions';
+import { unwrapAction } from '@/lib/actionResult';
 import { formatCount } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import type { DeletionSummaryResponse } from '@/lib/types';
@@ -9,10 +10,7 @@ import type { DeletionSummaryResponse } from '@/lib/types';
 export function useDeletionSummary(enabled: boolean) {
   return useQuery({
     queryKey: keys.settings.deletionSummary(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/auth/me/deletion-summary');
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadDeletionSummary()),
     enabled,
     // A failed summary must not block the deletion flow, so no retries.
     retry: false,

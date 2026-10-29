@@ -7,11 +7,8 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { WhichCard } from './WhichCard';
 
-const POST = vi.fn();
-vi.mock('@/lib/api/client', async (orig) => ({
-  ...(await orig<typeof import('@/lib/api/client')>()),
-  api: { POST: (...a: unknown[]) => POST(...a) },
-}));
+const recommend = vi.fn();
+vi.mock('@/features/rewards/actions', () => ({ recommendRewardCards: (...a: unknown[]) => recommend(...a) }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
@@ -56,7 +53,7 @@ const rank = () => fireEvent.click(screen.getByRole('button', { name: 'Rank card
 
 describe('WhichCard', () => {
   beforeEach(() => {
-    POST.mockReset();
+    recommend.mockReset();
     showToast.mockReset();
   });
 
@@ -65,20 +62,21 @@ describe('WhichCard', () => {
     fireEvent.change(screen.getByLabelText(/Amount/), { target: { value: '' } });
     rank();
     expect(screen.getByText('Enter a spend amount above ₹0.')).toBeInTheDocument();
-    expect(POST).not.toHaveBeenCalled();
+    expect(recommend).not.toHaveBeenCalled();
   });
 
   it('sends the form and ranks the cards, the best first and badged', async () => {
-    POST.mockResolvedValue({
+    recommend.mockResolvedValue({
+      success: true,
       data: response([rec({}), rec({ accountId: 'b', accountName: 'SBI Cashback', rank: 2, totalValueInr: 45, effectiveRatePct: 1, ruleLines: [], milestones: [] })]),
     });
     renderPage();
     fireEvent.change(screen.getByLabelText(/Amount/), { target: { value: '4500' } });
     rank();
     expect(await screen.findByText('Ranked for ₹4,500 dining today')).toBeInTheDocument();
-    expect(POST).toHaveBeenCalledWith('/api/v1/reward-recommendations', {
-      body: expect.objectContaining({ amount: 4500, date: '2026-10-13', isEmi: false, isIntl: false }),
-    });
+    expect(recommend).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: 4500, date: '2026-10-13', isEmi: false, isIntl: false }),
+    );
     expect(screen.getByText('2 cards evaluated')).toBeInTheDocument();
     expect(screen.getByText('Best')).toBeInTheDocument();
     expect(screen.getByText('₹300')).toBeInTheDocument();
@@ -87,7 +85,7 @@ describe('WhichCard', () => {
   });
 
   it('opens the breakdown of the tapped card in a dialog and closes it', async () => {
-    POST.mockResolvedValue({ data: response([rec({})]) });
+    recommend.mockResolvedValue({ success: true, data: response([rec({})]) });
     renderPage();
     rank();
     fireEvent.click(await screen.findByText('HDFC Regalia'));
@@ -101,7 +99,8 @@ describe('WhichCard', () => {
   });
 
   it('notes a card with no reward rules', async () => {
-    POST.mockResolvedValue({
+    recommend.mockResolvedValue({
+      success: true,
       data: response([rec({ noRulesConfigured: true, totalValueInr: 0, effectiveRatePct: 0, ruleLines: [], milestones: [] })]),
     });
     renderPage();
@@ -110,7 +109,8 @@ describe('WhichCard', () => {
   });
 
   it('notes an assumed point value, and lists point values and the MCC under Assumptions', async () => {
-    POST.mockResolvedValue({
+    recommend.mockResolvedValue({
+      success: true,
       data: {
         ...response([rec({ pointValueSource: 'DEFAULT', pointValueInr: 0.25 })]),
         input: { amount: 4500, mcc: '5812' },
@@ -125,7 +125,8 @@ describe('WhichCard', () => {
   });
 
   it('lays the assumptions out as labelled facts: one column on phone, two from desktop', async () => {
-    POST.mockResolvedValue({
+    recommend.mockResolvedValue({
+      success: true,
       data: { ...response([rec({ pointValueSource: 'DEFAULT', pointValueInr: 0.25 })]), input: { amount: 4500, mcc: '5812' } },
     });
     renderPage();
@@ -147,7 +148,7 @@ describe('WhichCard', () => {
   });
 
   it('shows the Legacy error toast when the simulation fails', async () => {
-    POST.mockRejectedValue(new Error('boom'));
+    recommend.mockRejectedValue(new Error('boom'));
     renderPage();
     rank();
     await waitFor(() => expect(showToast).toHaveBeenCalledWith("Couldn't simulate card rewards. Try again.", { tone: 'danger' }));

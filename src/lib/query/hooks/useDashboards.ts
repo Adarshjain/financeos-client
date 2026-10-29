@@ -3,20 +3,24 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { DashboardResponse, UpdateDashboardRequest } from '@/lib/api/types';
 import { toDashboardWidget } from '@/lib/dashboards.helpers';
 import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
+import {
+  loadDashboard,
+  loadDashboards,
+  restoreHomeDashboard,
+  saveDashboard,
+  saveDefaultDashboard,
+} from '@/lib/query/actions/dashboards';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
 export function useDashboards(initialData?: DashboardResponse[], { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: keys.dashboards.list(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/dashboards');
-      return data ?? [];
-    },
+    queryFn: () => unwrapAction(loadDashboards()),
     initialData,
     enabled,
   });
@@ -25,12 +29,7 @@ export function useDashboards(initialData?: DashboardResponse[], { enabled = tru
 export function useDashboard(id: string, initialData?: DashboardResponse) {
   return useQuery({
     queryKey: keys.dashboards.byId(id),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/dashboards/{id}', {
-        params: { path: { id } },
-      });
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadDashboard(id)),
     enabled: Boolean(id),
     initialData,
   });
@@ -43,10 +42,7 @@ export function useDashboard(id: string, initialData?: DashboardResponse) {
 export function useRestoreHomeDashboard() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const { data } = await api.POST('/api/v1/dashboards/home/restore');
-      return data as DashboardResponse;
-    },
+    mutationFn: () => unwrapAction(restoreHomeDashboard()),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.dashboards.all }),
   });
 }
@@ -62,8 +58,7 @@ export async function putWidgets(dashboard: ShownDashboard, widgets: WidgetRespo
     isDefault: dashboard.isDefault,
     widgets: widgets.map(toDashboardWidget),
   };
-  const { data } = await api.PUT('/api/v1/dashboards/{id}', { params: { path: { id: dashboard.id } }, body });
-  return data as DashboardResponse;
+  return unwrapAction(saveDashboard(dashboard.id, body));
 }
 
 /** The detail and list caches take a saved dashboard; the summary (counts) refetches. */
@@ -130,25 +125,7 @@ export async function setDefaultDashboard({
   makeDefault: boolean;
   updatedAt: string;
 }) {
-  const { data: current } = await api.GET('/api/v1/dashboards/{id}', {
-    params: { path: { id } },
-  });
-  if (!current) throw new Error('Dashboard not found');
-  if (current.updatedAt !== updatedAt) {
-    throw new Error(
-      'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
-    );
-  }
-  const widgets = current.widgets.map(toDashboardWidget);
-  return api.PUT('/api/v1/dashboards/{id}', {
-    params: { path: { id } },
-    body: {
-      name: current.name,
-      description: current.description ?? undefined,
-      isDefault: makeDefault,
-      widgets,
-    },
-  });
+  return unwrapAction(saveDefaultDashboard(id, makeDefault, updatedAt));
 }
 
 export function useSetDefaultDashboard() {

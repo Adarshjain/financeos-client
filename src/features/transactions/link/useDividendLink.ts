@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { unwrapAction } from '@/lib/actionResult';
 import { amountExpressionValue } from '@/lib/amountExpression';
-import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { notify } from '@/lib/notify';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
@@ -13,13 +13,13 @@ import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
 
 import {
-  type DividendRow,
   filterDividends,
   impliedTds,
   mergeDividends,
   pickBestDividend,
   UNRESOLVED_RECEIPTS,
 } from './dividendLinkHelpers';
+import { createDividend, linkDividend, loadDividendPages } from './linkActions';
 
 const AMOUNT_ERROR = 'Enter an amount above ₹0.';
 
@@ -84,14 +84,8 @@ export function useDividendLink({
   const dividendsQuery = useQuery({
     queryKey: keys.investments.dividendsUnresolved(),
     queryFn: async () => {
-      const pages = await Promise.all(
-        UNRESOLVED_RECEIPTS.map((receipt) =>
-          api.GET('/api/v1/investments/dividends', {
-            params: { query: { receipt, page: 0, size: 50 } },
-          }),
-        ),
-      );
-      return mergeDividends(pages.map((p) => (p.data?.content ?? []) as DividendRow[]));
+      const pages = await unwrapAction(loadDividendPages([...UNRESOLVED_RECEIPTS]));
+      return mergeDividends(pages);
     },
     enabled: open,
   });
@@ -123,38 +117,26 @@ export function useDividendLink({
     mutationFn: async () => {
       const transactionId = transaction!.id;
       if (mode === 'existing') {
-        return api
-          .PUT('/api/v1/investments/dividends/{id}/transaction', {
-            params: { path: { id: selectedId } },
-            body: { transactionId, updateTds: recordTds },
-          })
-          .then((r) => r.data);
+        return unwrapAction(linkDividend(selectedId, transactionId, recordTds));
       }
       const [brokerAccountId, instrumentId] = holding.split('|');
       if (!createdIdRef.current) {
-        const created = await api
-          .POST('/api/v1/investments/dividends', {
-            body: {
-              brokerAccountId,
-              instrumentId,
-              type,
-              amount: numAmount!,
-              tds: numTds ?? undefined,
-              exDate: exDate || undefined,
-              payDate,
-              notes: notes.trim() || undefined,
-            },
-          })
-          .then((r) => r.data!);
+        const created = await unwrapAction(
+          createDividend({
+            brokerAccountId,
+            instrumentId,
+            type,
+            amount: numAmount!,
+            tds: numTds ?? undefined,
+            exDate: exDate || undefined,
+            payDate,
+            notes: notes.trim() || undefined,
+          }),
+        );
         createdIdRef.current = created.id;
       }
       try {
-        return await api
-          .PUT('/api/v1/investments/dividends/{id}/transaction', {
-            params: { path: { id: createdIdRef.current } },
-            body: { transactionId, updateTds: false },
-          })
-          .then((r) => r.data);
+        return await unwrapAction(linkDividend(createdIdRef.current, transactionId, false));
       } catch (err) {
         throw new LinkAfterCreateError(err);
       }

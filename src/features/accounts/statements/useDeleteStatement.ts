@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { components } from '@/lib/api/schema';
 import {
   invalidateLendingQueries,
@@ -10,6 +10,8 @@ import {
   invalidateRewardQueries,
 } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
+
+import { deleteStatement, loadStatementDeletionPreview } from '../actions';
 
 export type StatementDeletionPreview = components['schemas']['StatementDeletionPreviewResponse'];
 export type StatementDeletionResult = components['schemas']['StatementDeletionResponse'];
@@ -24,23 +26,13 @@ export function useDeleteStatement(accountId: string, statementId: string, confi
 
   const preview = useQuery({
     queryKey: [...keys.statements.detail(statementId), 'deletion-preview', accountId],
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview', {
-        params: { path: { accountId, statementId } },
-      });
-      return data as StatementDeletionPreview;
-    },
+    queryFn: () => unwrapAction(loadStatementDeletionPreview(accountId, statementId)),
     enabled: confirming,
     staleTime: 0,
   });
 
   const remove = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.DELETE('/api/v1/accounts/{accountId}/statements/{statementId}', {
-        params: { path: { accountId, statementId } },
-      });
-      return data as StatementDeletionResult;
-    },
+    mutationFn: () => unwrapAction(deleteStatement(accountId, statementId)),
   });
 
   // Called once the dialogs showing this statement have closed: refetching while they are open

@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 
+// The preview is a multipart upload on the browser client, so its failures arrive as ApiError.
 import { ApiError } from '@/lib/api/client';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -32,8 +33,6 @@ export function useEpfImport(notify: ImportWizardNotify) {
   const [uploadError, setUploadError] = React.useState<string | null>(null);
   const [queueError, setQueueError] = React.useState<string | null>(null);
   const [refusedAll, setRefusedAll] = React.useState<EpfRefusedFile[] | null>(null);
-  const [isPreviewing, setIsPreviewing] = React.useState(false);
-  const [isCommitting, setIsCommitting] = React.useState(false);
 
   const clearMessages = () => {
     setChoices({});
@@ -65,7 +64,6 @@ export function useEpfImport(notify: ImportWizardNotify) {
       notify.error('Select your EPFO passbook PDFs.');
       return;
     }
-    setIsPreviewing(true);
     setUploadError(null);
     setRefusedAll(null);
     try {
@@ -97,8 +95,6 @@ export function useEpfImport(notify: ImportWizardNotify) {
       } else {
         notify.caught(err, "Couldn't preview import");
       }
-    } finally {
-      setIsPreviewing(false);
     }
   };
 
@@ -110,7 +106,6 @@ export function useEpfImport(notify: ImportWizardNotify) {
 
   const commit = async () => {
     if (files.length === 0 || !preview) return;
-    setIsCommitting(true);
     try {
       const data = await commitMutation.mutateAsync({ files, assign: assignParams(preview.sections, choices) });
       setResult(data);
@@ -119,8 +114,6 @@ export function useEpfImport(notify: ImportWizardNotify) {
       void qc.invalidateQueries({ queryKey: keys.epf.all });
     } catch (err) {
       notify.caught(err, "Couldn't commit import");
-    } finally {
-      setIsCommitting(false);
     }
   };
 
@@ -145,8 +138,8 @@ export function useEpfImport(notify: ImportWizardNotify) {
     uploadError,
     queueError,
     refusedAll,
-    isPreviewing,
-    isCommitting,
+    isPreviewing: previewMutation.isPending,
+    isCommitting: commitMutation.isPending,
     handlePreviewSubmit,
     changeEmployer: (key: string, value: string) => void runPreview({ key, value }),
     commit,

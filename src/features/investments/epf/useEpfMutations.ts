@@ -3,13 +3,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 
-import type { EpfEmployer, EpfEntry, EpfEntryRequest } from './epfModel';
-
-type EmployerBody = { name: string; memberId?: string | null; joinedOn?: string | null; leftOn?: string | null };
+import {
+  createEpfEmployer,
+  createEpfEntry,
+  deleteEpfEntry,
+  dismissEpfSuggestion,
+  type EpfEmployerBody,
+  linkEpfEntryCredit,
+  unlinkEpfEntryCredit,
+  updateEpfEmployer,
+  updateEpfEntry,
+} from './epfActions';
+import type { EpfEntryRequest } from './epfModel';
 
 /**
  * Everything the user changes on the EPF tab: entries, employers, and the bank credit of a withdrawal. After a
@@ -18,7 +27,6 @@ type EmployerBody = { name: string; memberId?: string | null; joinedOn?: string 
 export function useEpfMutations() {
   const qc = useQueryClient();
   const router = useRouter();
-  const path = (id: string) => ({ params: { path: { id } } });
 
   const refresh = async () => {
     await Promise.all([
@@ -31,42 +39,29 @@ export function useEpfMutations() {
   };
 
   const createEntry = useMutation({
-    mutationFn: async (body: EpfEntryRequest) => (await api.POST('/api/v1/epf/entries', { body })).data as EpfEntry,
+    mutationFn: (body: EpfEntryRequest) => unwrapAction(createEpfEntry(body)),
   });
   const updateEntry = useMutation({
-    mutationFn: async (vars: { id: string; body: EpfEntryRequest }) =>
-      (await api.PUT('/api/v1/epf/entries/{id}', { ...path(vars.id), body: vars.body })).data as EpfEntry,
+    mutationFn: (vars: { id: string; body: EpfEntryRequest }) => unwrapAction(updateEpfEntry(vars.id, vars.body)),
   });
   const deleteEntry = useMutation({
-    mutationFn: async (id: string) => {
-      await api.DELETE('/api/v1/epf/entries/{id}', path(id));
-    },
+    mutationFn: (id: string) => unwrapAction(deleteEpfEntry(id)),
   });
   const link = useMutation({
-    mutationFn: async (vars: { id: string; transactionId: string; recordTds?: boolean }) =>
-      (
-        await api.PUT('/api/v1/epf/entries/{id}/transaction', {
-          ...path(vars.id),
-          body: { transactionId: vars.transactionId, recordTds: vars.recordTds ?? false },
-        })
-      ).data as EpfEntry,
+    mutationFn: (vars: { id: string; transactionId: string; recordTds?: boolean }) =>
+      unwrapAction(linkEpfEntryCredit(vars.id, vars.transactionId, vars.recordTds ?? false)),
   });
   const unlink = useMutation({
-    mutationFn: async (id: string) => {
-      await api.DELETE('/api/v1/epf/entries/{id}/transaction', path(id));
-    },
+    mutationFn: (id: string) => unwrapAction(unlinkEpfEntryCredit(id)),
   });
   const dismiss = useMutation({
-    mutationFn: async (vars: { id: string; transactionId: string }) => {
-      await api.POST('/api/v1/epf/entries/{id}/suggestion/dismiss', { ...path(vars.id), body: { transactionId: vars.transactionId } });
-    },
+    mutationFn: (vars: { id: string; transactionId: string }) => unwrapAction(dismissEpfSuggestion(vars.id, vars.transactionId)),
   });
   const createEmployer = useMutation({
-    mutationFn: async (body: EmployerBody) => (await api.POST('/api/v1/epf/employers', { body })).data as EpfEmployer,
+    mutationFn: (body: EpfEmployerBody) => unwrapAction(createEpfEmployer(body)),
   });
   const updateEmployer = useMutation({
-    mutationFn: async (vars: { id: string; body: EmployerBody }) =>
-      (await api.PUT('/api/v1/epf/employers/{id}', { ...path(vars.id), body: vars.body })).data as EpfEmployer,
+    mutationFn: (vars: { id: string; body: EpfEmployerBody }) => unwrapAction(updateEpfEmployer(vars.id, vars.body)),
   });
 
   return {

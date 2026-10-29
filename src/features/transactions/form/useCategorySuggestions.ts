@@ -3,11 +3,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { Category } from '@/lib/categories.types';
 import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
+
+import { categorizeDescription } from '../actions';
+import { createCategory as createCategoryAction } from '../categories/categoryActions';
 
 interface UseCategorySuggestionsProps {
   categories: Category[];
@@ -34,7 +37,6 @@ export function useCategorySuggestions({
   const [localCategories, setLocalCategories] = useState<Category[]>(
     categories ?? []
   );
-  const [creatingCategory, setCreatingCategory] = useState(false);
   const [suggestingCategories, setSuggestingCategories] = useState(false);
   const suggestedDescriptionRef = useRef<string | null>(null);
 
@@ -43,17 +45,13 @@ export function useCategorySuggestions({
   }, [categories]);
 
   const createCategoryMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const { data } = await api.POST('/api/v1/categories', { body: { name } });
-      return data!;
-    },
+    mutationFn: (name: string) => unwrapAction(createCategoryAction(name)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.categories.all });
     },
   });
 
   const createCategory = async (categoryName: string) => {
-    setCreatingCategory(true);
     try {
       const trimmed = categoryName.trim();
       if (!trimmed) {
@@ -65,8 +63,6 @@ export function useCategorySuggestions({
       setSelectedCategories((prev) => [...prev, newCategory]);
     } catch (err) {
       toastError(err, "Couldn't add the category. Try again.");
-    } finally {
-      setCreatingCategory(false);
     }
   };
 
@@ -84,7 +80,7 @@ export function useCategorySuggestions({
     suggestedDescriptionRef.current = description;
     setSuggestingCategories(true);
     try {
-      const { data } = await api.POST('/api/v1/categorize', { body: { description } });
+      const data = await unwrapAction(categorizeDescription(description));
       if (data && data.categories.length > 0) {
         const returnedCategories = data.categories;
         const newCategories = returnedCategories.filter(
@@ -117,7 +113,7 @@ export function useCategorySuggestions({
     localCategories,
     selectedCategories,
     setSelectedCategories,
-    creatingCategory,
+    creatingCategory: createCategoryMutation.isPending,
     suggestingCategories,
     createCategory,
     handleDescriptionBlur,

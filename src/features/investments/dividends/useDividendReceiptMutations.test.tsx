@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useDividendReceiptMutations } from './useDividendReceiptMutations';
 
 const api = vi.hoisted(() => ({ PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', () => ({ serverApi: api }));
 
 function setup() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

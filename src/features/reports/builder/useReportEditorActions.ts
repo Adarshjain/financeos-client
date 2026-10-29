@@ -4,11 +4,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
+import { createReport, deleteReport, updateReport } from '@/features/reports/actions';
 import { duplicateReport } from '@/features/reports/duplicateReport';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
-import type { CreateReportRequest, ReportResponse, UpdateReportRequest } from '@/lib/reports.types';
+import type { CreateReportRequest, UpdateReportRequest } from '@/lib/reports.types';
 
 /**
  * The editor's writes: create, update, duplicate (confirmed afterwards with a toast whose Undo deletes the copy)
@@ -30,28 +31,19 @@ export function useReportEditorActions() {
   const failed = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
 
   const create = useMutation({
-    mutationFn: (body: CreateReportRequest) =>
-      api
-        .POST('/api/v1/reports', { body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } } })
-        .then((r) => r.data as unknown as ReportResponse),
+    mutationFn: (body: CreateReportRequest) => unwrapAction(createReport(body)),
     onSuccess: changed,
     onError: failed("Couldn't save the report. Try again."),
   });
 
   const update = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateReportRequest }) =>
-      api
-        .PUT('/api/v1/reports/{id}', {
-          params: { path: { id } },
-          body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } },
-        })
-        .then((r) => r.data as unknown as ReportResponse),
+    mutationFn: ({ id, body }: { id: string; body: UpdateReportRequest }) => unwrapAction(updateReport(id, body)),
     onSuccess: changed,
     onError: failed("Couldn't save the report. Try again."),
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/reports/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteReport(id)),
     onSuccess: () => {
       showToast('Report deleted');
       invalidate();
@@ -60,7 +52,7 @@ export function useReportEditorActions() {
   });
 
   const undoDuplicate = useMutation({
-    mutationFn: (copyId: string) => api.DELETE('/api/v1/reports/{id}', { params: { path: { id: copyId } } }),
+    mutationFn: (copyId: string) => unwrapAction(deleteReport(copyId)),
     onSuccess: () => {
       showToast('Copy deleted');
       changed();

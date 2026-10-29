@@ -14,7 +14,8 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { loadBuiltinWidgetData, loadReportWidgetData } from '@/features/dashboards/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import {
   builtinWidgetQueryParams,
@@ -55,20 +56,10 @@ export function useWidgetData(
         : widgetQueryParams(reportId, isTable, page, size, sort),
     ),
     queryFn: async () => {
-      const pageQuery = isTable
-        ? { page, size, ...(sort ? { sort: sortQueryValue(sort) } : {}) }
-        : {};
-      if (builtin) {
-        const { data } = await api.POST('/api/v1/dashboards/builtins/{key}/data', {
-          params: { path: { key: builtinKey }, query: pageQuery },
-          // Only declared params — the server rejects anything else.
-          body: { params },
-        });
-        return asReportData(data);
-      }
-      const { data } = await api.POST('/api/v1/reports/{id}/data', {
-        params: { path: { id: reportId }, query: pageQuery },
-      });
+      const pageQuery = isTable ? { page, size, ...(sort ? { sort: sortQueryValue(sort) } : {}) } : undefined;
+      const data = await unwrapAction(
+        builtin ? loadBuiltinWidgetData(builtinKey, params, pageQuery) : loadReportWidgetData(reportId, pageQuery),
+      );
       return asReportData(data);
     },
     enabled: enabled && available && (builtin ? isTemplate : Boolean(reportId)),

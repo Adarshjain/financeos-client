@@ -8,7 +8,7 @@ import { DividendAddDialog, DividendEditDialog } from './DividendFormDialog';
 import { awaiting, dividend } from './dividends.fixtures';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
@@ -19,13 +19,10 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-13' }));
 
 const options = vi.hoisted(() => ({ load: vi.fn() }));
-vi.mock('./dividendsActions', () => ({ loadDividendFormOptions: options.load }));
+vi.mock('./dividendsActions', async (orig) => ({ ...(await orig<typeof import('./dividendsActions')>()), loadDividendFormOptions: options.load }));
 
 const http = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/api/client')>()),
-  api: http,
-}));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 // The picker has its own tests; here it can pick a credit.
 vi.mock('@/features/transactions/TransactionPickerField', () => ({

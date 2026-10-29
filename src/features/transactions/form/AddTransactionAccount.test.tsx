@@ -24,10 +24,7 @@ vi.mock('./useTransactionMutations', () => ({
 const categories = vi.hoisted(() => [] as { id: string; name: string }[]);
 vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
 const bank = { id: 'b1', type: AccountType.BANK_ACCOUNT, name: 'HDFC Savings', balance: 0, cardholders: [] } as unknown as Account;
-vi.mock('@/lib/api/client', async (orig) => ({
-  ...(await orig<typeof import('@/lib/api/client')>()),
-  api: { GET: vi.fn(async () => ({ data: [bank] })), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() },
-}));
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(async () => ({ data: [bank] })), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } }));
 // The real Add account form is covered by its own tests: this stand-in creates an account the way its mutation does.
 vi.mock('@/features/accounts/form/ds/AccountFormDialog', () => ({
   AccountFormDialog: function FakeAccountDialog({ onClose, onCreated }: { onClose: () => void; onCreated?: (a: Account) => void }) {

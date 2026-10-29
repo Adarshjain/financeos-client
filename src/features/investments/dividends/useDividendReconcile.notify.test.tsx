@@ -7,10 +7,7 @@ import { createTestQueryClient } from '@/test/renderWithQuery';
 import { useDividendReconcile } from './useDividendReconcile';
 
 const http = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn() }));
-vi.mock('@/lib/api/client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/api/client')>()),
-  api: http,
-}));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const sonner = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('sonner', () => ({ toast: sonner }));

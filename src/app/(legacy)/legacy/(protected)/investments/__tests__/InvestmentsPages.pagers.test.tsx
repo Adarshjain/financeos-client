@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -30,6 +30,8 @@ vi.mock('@/lib/api/client', async () => {
     },
   };
 });
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock(
   '@/components/ui/select',
   async () => (await import('@/test/mockSelect')).selectMock

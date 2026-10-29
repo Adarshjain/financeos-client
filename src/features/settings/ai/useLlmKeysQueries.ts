@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { loadLlmCatalog, loadLlmHealth, loadLlmKeys, loadLlmRouting, loadLlmRoutingOptions } from '@/features/settings/ai/llmActions';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 
@@ -15,27 +16,27 @@ import { keys } from '@/lib/query/keys';
 export function useLlmKeysQueries() {
   const keysQuery = useQuery({
     queryKey: keys.settings.llmKeys(),
-    queryFn: async () => (await api.GET('/api/v1/llm-keys')).data ?? [],
+    queryFn: () => unwrapAction(loadLlmKeys()),
   });
 
   const catalogQuery = useQuery({
     queryKey: keys.settings.llmCatalog(),
-    queryFn: async () => (await api.GET('/api/v1/llm/catalog')).data ?? [],
+    queryFn: () => unwrapAction(loadLlmCatalog()),
   });
 
   const routingOptionsQuery = useQuery({
     queryKey: keys.settings.llmRoutingOptions(),
-    queryFn: async () => (await api.GET('/api/v1/llm/routing-options')).data ?? [],
+    queryFn: () => unwrapAction(loadLlmRoutingOptions()),
   });
 
   const routingQuery = useQuery({
     queryKey: keys.settings.llmRouting(),
-    queryFn: async () => (await api.GET('/api/v1/llm/routing')).data ?? null,
+    queryFn: () => unwrapAction(loadLlmRouting()),
   });
 
   const healthQuery = useQuery({
     queryKey: keys.settings.llmHealth(),
-    queryFn: async () => (await api.GET('/api/v1/llm/health')).data ?? [],
+    queryFn: () => unwrapAction(loadLlmHealth()),
   });
 
   const queries = [keysQuery, catalogQuery, routingOptionsQuery, routingQuery, healthQuery];

@@ -11,6 +11,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => router,
   usePathname: () => '/transactions/categories',
   useSearchParams: () => new URLSearchParams(),
+  unstable_rethrow: () => undefined,
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
   useNotificationSummary: () => ({ data: { unread: 0 } }),
@@ -20,7 +21,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 const toasts = vi.hoisted(() => ({ showToast: vi.fn() }));
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<object>()), showToast: toasts.showToast }));
 const http = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<object>()), api: http }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const categories = [
   { id: 'c1', name: 'Food & dining' },

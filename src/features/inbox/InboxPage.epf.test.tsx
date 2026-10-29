@@ -2,10 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 const showToast = vi.hoisted(() => vi.fn());
 vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
@@ -22,7 +19,7 @@ vi.mock('@/components/ds/SwipeActions/SwipeActions', () => ({
   ),
 }));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { InboxPage } from './InboxPage';

@@ -2,18 +2,22 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { RewardCapBucketRequest } from '@/lib/rewards.types';
 
+import {
+  createRewardCapBucket,
+  deleteRewardCapBucket,
+  loadRewardCapBuckets,
+  updateRewardCapBucket,
+} from '../actions';
+
 export function useRewardCapBuckets(accountId: string) {
   return useQuery({
     queryKey: keys.rewards.capBuckets(accountId),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/reward-cap-buckets', { params: { query: { accountId } } });
-      return data ?? [];
-    },
+    queryFn: () => unwrapAction(loadRewardCapBuckets(accountId)),
     enabled: Boolean(accountId),
     placeholderData: keepPreviousData,
   });
@@ -22,8 +26,7 @@ export function useRewardCapBuckets(accountId: string) {
 export function useCreateRewardCapBucket() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: RewardCapBucketRequest) =>
-      api.POST('/api/v1/reward-cap-buckets', { body }).then((r) => r.data!),
+    mutationFn: (body: RewardCapBucketRequest) => unwrapAction(createRewardCapBucket(body)),
     onSuccess: () => invalidateRewardQueries(qc),
   });
 }
@@ -32,9 +35,7 @@ export function useUpdateRewardCapBucket() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: RewardCapBucketRequest }) =>
-      api
-        .PUT('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } }, body })
-        .then((r) => r.data!),
+      unwrapAction(updateRewardCapBucket(id, body)),
     onSuccess: () => invalidateRewardQueries(qc),
   });
 }
@@ -42,8 +43,7 @@ export function useUpdateRewardCapBucket() {
 export function useDeleteRewardCapBucket() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api.DELETE('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteRewardCapBucket(id)),
     onSuccess: () => invalidateRewardQueries(qc),
   });
 }

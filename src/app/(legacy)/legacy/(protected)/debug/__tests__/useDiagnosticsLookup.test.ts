@@ -7,9 +7,10 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 import { useDiagnosticsLookup } from '@/features/settings/debug/useDiagnosticsLookup';
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -83,18 +84,13 @@ describe('useDiagnosticsLookup', () => {
   });
 
   it('throws when api.GET returns error', async () => {
-    const mockError = new Error('503 Service Unavailable');
-    vi.mocked(api.GET).mockResolvedValue({
-      data: undefined,
-      error: mockError,
-      response: new Response(),
-    } as never);
+    vi.mocked(api.GET).mockRejectedValue(new ApiError(503, { code: 'SERVICE_UNAVAILABLE', message: '503 Service Unavailable' }));
 
     const { result } = renderHook(() => useDiagnosticsLookup('E2EERR01', 'auto', true), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error).toEqual(mockError);
+    expect(result.current.error).toMatchObject({ status: 503, message: '503 Service Unavailable' });
   });
 });

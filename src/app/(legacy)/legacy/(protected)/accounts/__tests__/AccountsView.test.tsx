@@ -16,6 +16,7 @@ vi.mock('@/lib/api/client', async () => {
     },
   };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 
 import { AccountsView } from '@/app/(legacy)/legacy/(protected)/accounts/components/AccountsView';

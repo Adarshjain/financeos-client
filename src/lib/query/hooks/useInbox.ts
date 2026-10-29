@@ -2,8 +2,9 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
+import { loadInbox, loadInboxSummary } from '@/lib/query/actions/inbox';
 import { keys } from '@/lib/query/keys';
 
 /**
@@ -16,8 +17,7 @@ export function useInbox() {
   return useQuery({
     queryKey: keys.inbox.list(),
     queryFn: async (): Promise<InboxResponse> => {
-      const { data } = await api.GET('/api/v1/inbox');
-      const inbox = data as InboxResponse;
+      const inbox = await unwrapAction(loadInbox());
       qc.setQueryData(keys.inbox.summary(), inbox.summary);
       return inbox;
     },
@@ -30,8 +30,7 @@ export function useInboxSummary() {
   return useQuery({
     queryKey: keys.inbox.summary(),
     queryFn: async (): Promise<InboxSummaryResponse> => {
-      const { data } = await api.GET('/api/v1/inbox/summary');
-      return data as InboxSummaryResponse;
+      return unwrapAction(loadInboxSummary());
     },
     refetchInterval: 60_000,
     staleTime: 30_000,

@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Transaction } from '@/lib/transaction.types';
 
-const api = vi.hoisted(() => ({ POST: vi.fn() }));
-vi.mock('@/lib/api/client', () => ({ api }));
+const actions = vi.hoisted(() => ({ addLoanPaymentsBatch: vi.fn() }));
+vi.mock('./actions', () => actions);
 
 import { paymentItemFor, postLoanPaymentsBatch } from './loanPaymentsBatch';
 
 beforeEach(() => {
-  api.POST.mockReset();
+  actions.addLoanPaymentsBatch.mockReset();
 });
 
 describe('paymentItemFor', () => {
@@ -25,14 +25,14 @@ describe('paymentItemFor', () => {
 
 describe('postLoanPaymentsBatch', () => {
   it('posts the items to the loan and counts them', async () => {
-    api.POST.mockResolvedValue({ data: {} });
+    actions.addLoanPaymentsBatch.mockResolvedValue({ success: true, data: { created: 1 } });
     const items = [{ installmentSeq: 1, paymentDate: '2026-10-05', amount: 1, transactionId: 't' }];
     await expect(postLoanPaymentsBatch('l1', { items })).resolves.toEqual({ created: 1 });
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/loans/{id}/payments/batch', { params: { path: { id: 'l1' } }, body: { items } });
+    expect(actions.addLoanPaymentsBatch).toHaveBeenCalledWith('l1', { items });
   });
 
   it('rejects when the request fails', async () => {
-    api.POST.mockRejectedValue(new Error('nope'));
+    actions.addLoanPaymentsBatch.mockRejectedValue(new Error('nope'));
     await expect(postLoanPaymentsBatch('l1', { items: [] })).rejects.toThrow('nope');
   });
 });

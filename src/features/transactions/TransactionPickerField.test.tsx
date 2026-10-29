@@ -3,16 +3,13 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 
 vi.mock('@/lib/query/hooks/useAccounts', () => ({
   useAccounts: () => ({ data: [{ id: 'a1', name: 'HDFC Savings', last4: '1234' }] }),
 }));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import type { PickerSummaryLike } from './pickerModel';

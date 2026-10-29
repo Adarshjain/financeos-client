@@ -4,7 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { api } from '@/lib/api/client';
+import { resetLlmRouting, saveLlmRouting, testLlmModel } from '@/features/settings/ai/llmActions';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LlmRoutingDto, LlmRoutingGroupDto, Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
@@ -88,19 +89,15 @@ export function useLlmRoutingEditor() {
 
   const saveMutation = useMutation({
     mutationFn: ({ group, entries }: { group: GroupType; entries: RoutingEntryRequest[] }) =>
-      api
-        .PUT('/api/v1/llm/routing/{group}', { params: { path: { group } }, body: { entries } })
-        .then((r) => r.data!),
+      unwrapAction(saveLlmRouting(group, entries)),
   });
 
   const resetMutation = useMutation({
-    mutationFn: (group: GroupType) =>
-      api.POST('/api/v1/llm/routing/{group}/reset', { params: { path: { group } } }).then((r) => r.data!),
+    mutationFn: (group: GroupType) => unwrapAction(resetLlmRouting(group)),
   });
 
   const testModelMutation = useMutation({
-    mutationFn: (body: TestModelRequest) =>
-      api.POST('/api/v1/llm/routing/test-model', { body }).then((r) => r.data!),
+    mutationFn: (body: TestModelRequest) => unwrapAction(testLlmModel(body)),
   });
 
   const patchGroup = (groupType: GroupType, patch: Partial<DraftState>) => {

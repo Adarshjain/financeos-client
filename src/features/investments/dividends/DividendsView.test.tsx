@@ -10,7 +10,7 @@ import { dividendFilters, dividendListRow, dividendsFigures, fyTotals, parseDivi
 import { DividendsView, type DividendsViewProps } from './DividendsView';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-23' }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
@@ -28,7 +28,7 @@ const actions = vi.hoisted(() => ({
   exportDividendsCsv: vi.fn(),
   loadDividendFormOptions: vi.fn(),
 }));
-vi.mock('./dividendsActions', () => actions);
+vi.mock('./dividendsActions', async (orig) => ({ ...(await orig<typeof import('./dividendsActions')>()), ...actions }));
 
 const scan = vi.hoisted(() => vi.fn());
 const unrecorded = vi.hoisted(() => ({ items: [] as unknown[] }));
@@ -45,7 +45,7 @@ vi.mock('./useDividendReconcile', () => ({
 }));
 
 const http = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/api/client')>()), api: http }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const state = parseDividendsUrl({});
 

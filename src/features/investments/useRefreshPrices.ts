@@ -5,11 +5,13 @@ import { useState } from 'react';
 
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { formatCount, formatDate } from '@/lib/format';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
-import type { EnqueueResponse, PriceRefreshResult } from '@/lib/types';
+import type { PriceRefreshResult } from '@/lib/types';
+
+import { startPriceRefresh } from './priceActions';
 
 /** How the refresh reports progress: the Legacy button sends it to the old toaster, Dinero to its own. */
 export interface RefreshNotifier {
@@ -63,8 +65,7 @@ export function useRefreshPrices({ notify, onSettled }: UseRefreshPricesOptions)
   });
 
   const refreshMutation = useMutation({
-    mutationFn: () =>
-      api.POST('/api/v1/investments/prices/refresh', { params: { query: {} } }).then((r) => r.data! as EnqueueResponse),
+    mutationFn: () => unwrapAction(startPriceRefresh()),
   });
 
   const refresh = async () => {

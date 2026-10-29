@@ -6,6 +6,7 @@ vi.mock('@/lib/api/client', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 const showToast = vi.hoisted(() => vi.fn());
 vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
@@ -16,6 +17,7 @@ const replace = vi.hoisted(() => vi.fn());
 const refresh = vi.hoisted(() => vi.fn());
 let search = '';
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => ({ push, replace, refresh }),
   useSearchParams: () => new URLSearchParams(search),
   usePathname: () => '/notifications',

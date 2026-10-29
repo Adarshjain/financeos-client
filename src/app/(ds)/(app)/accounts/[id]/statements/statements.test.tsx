@@ -24,6 +24,7 @@ const notFound = vi.fn(() => {
 const push = vi.fn();
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   notFound: () => notFound(),
   usePathname: () => '/accounts/c1/statements',
   useRouter: () => ({ push, refresh }),
@@ -50,6 +51,7 @@ vi.mock('@/lib/api/client', () => ({
   api,
   ApiError: class ApiError extends Error {},
 }));
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 vi.mock('@/lib/date-range', async (orig) => ({
   ...(await orig<typeof import('@/lib/date-range')>()),

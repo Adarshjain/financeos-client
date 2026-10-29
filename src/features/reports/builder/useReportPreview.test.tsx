@@ -5,6 +5,9 @@ import type { KpiData, RunReportRequest } from '@/lib/reports.types';
 
 import { useReportPreview } from './useReportPreview';
 
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const api = vi.hoisted(() => ({ POST: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 

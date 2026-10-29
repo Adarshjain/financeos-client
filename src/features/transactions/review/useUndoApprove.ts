@@ -1,13 +1,15 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { components } from '@/lib/api/schema';
 import { keys } from '@/lib/query/keys';
+
+import { undoApproveTransactions } from '../actions';
 
 export type ClearedTransaction = components['schemas']['ClearedTransaction'];
 export type VerifiedRule = components['schemas']['VerifiedRuleChange'];
@@ -21,21 +23,22 @@ export function useUndoApprove() {
   const qc = useQueryClient();
   const router = useRouter();
 
-  return async (approved: ClearedTransaction[], verifiedRules: VerifiedRule[]) => {
-    try {
-      const { data, error } = await api.POST('/api/v1/transactions/undo-approve', {
-        body: {
+  const mutation = useMutation({
+    mutationFn: ({ approved, verifiedRules }: { approved: ClearedTransaction[]; verifiedRules: VerifiedRule[] }) =>
+      unwrapAction(
+        undoApproveTransactions({
           approved,
           rules: verifiedRules.map((r) => ({ ruleId: r.ruleId, restore: r.clearedTransactions })),
-        },
-      });
-      if (error || !data) throw error ?? new Error("Couldn't undo. Try again.");
+        }),
+      ),
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.rules.all });
       qc.invalidateQueries({ queryKey: keys.transactions.all });
       qc.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
       router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' });
-    }
-  };
+    },
+    onError: (e) => showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' }),
+  });
+
+  return (approved: ClearedTransaction[], verifiedRules: VerifiedRule[]) => mutation.mutate({ approved, verifiedRules });
 }

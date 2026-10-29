@@ -4,20 +4,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
-import { api, ApiError } from '@/lib/api/client';
+import { ActionError, unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import type { CategoryRule } from '@/lib/rules.types';
 
-const isConflict = (error: unknown) =>
-  error instanceof ApiError &&
-  (error.response.code === 'CONFLICT' ||
-    (error.response.message || '').toLowerCase().includes('already exists') ||
-    (error.response.message || '').toLowerCase().includes('duplicate'));
+import { createRule, deleteRule, unverifyRule, updateRule, verifyRule, verifyRules } from './ruleActions';
 
-/** Most rows the server takes in one unverify call. */
-const RESTORE_CHUNK = 5000;
+// A second rule for the same pattern and match type trips the database's unique constraint, which the server answers
+// with code CONFLICT (GlobalExceptionHandler, DataIntegrityViolation); its message is generic, so only the code is read.
+const isConflict = (error: unknown) => error instanceof ActionError && error.response.code === 'CONFLICT';
+
+/** Rows sent per unverify call: under the server's own limit (5000), and small enough for a server action's 1 MB body. */
+const RESTORE_CHUNK = 2000;
 
 /** Add, edit, delete and approve rules. The list is server-rendered, so each success refreshes the page. */
 export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (id: string) => void; onVerified?: (ids: string[]) => void } = {}) {
@@ -30,7 +30,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
   const failed = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
 
   const create = useMutation({
-    mutationFn: (body: Schemas['CreateRuleRequest']) => api.POST('/api/v1/rules', { body }).then((r) => r.data),
+    mutationFn: (body: Schemas['CreateRuleRequest']) => unwrapAction(createRule(body)),
     onSuccess: () => {
       showToast('Rule created');
       handlers.onSaved?.();
@@ -44,7 +44,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
 
   const update = useMutation({
     mutationFn: ({ id, body }: { id: string; body: Schemas['UpdateRuleRequest'] }) =>
-      api.PUT('/api/v1/rules/{id}', { params: { path: { id } }, body }).then((r) => r.data),
+      unwrapAction(updateRule(id, body)),
     onSuccess: () => {
       showToast('Rule updated');
       handlers.onSaved?.();
@@ -54,7 +54,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
   });
 
   const remove = useMutation({
-    mutationFn: (rule: CategoryRule) => api.DELETE('/api/v1/rules/{id}', { params: { path: { id: rule.id } } }),
+    mutationFn: (rule: CategoryRule) => unwrapAction(deleteRule(rule.id)),
     onSuccess: (_data, rule) => {
       showToast('Rule deleted');
       handlers.onDeleted?.(rule.id);
@@ -71,11 +71,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
       const results = await Promise.allSettled(
         undo.map(async ({ id, restore }) => {
           for (let from = 0; from === 0 || from < restore.length; from += RESTORE_CHUNK) {
-            const { data, error } = await api.POST('/api/v1/rules/{id}/unverify', {
-              params: { path: { id } },
-              body: { transactionIds: [], restore: restore.slice(from, from + RESTORE_CHUNK) },
-            });
-            if (error || !data) throw error ?? new Error("Couldn't undo");
+            await unwrapAction(unverifyRule(id, restore.slice(from, from + RESTORE_CHUNK)));
           }
         }),
       );
@@ -97,7 +93,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
   });
 
   const verify = useMutation({
-    mutationFn: (rule: CategoryRule) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id: rule.id } } }).then((r) => r.data),
+    mutationFn: (rule: CategoryRule) => unwrapAction(verifyRule(rule.id)),
     onSuccess: (data, rule) => {
       showToast('Rule verified. Matching transactions are cleared from review.', {
         action: { label: 'Undo', onSelect: () => unverifyMany.mutate([{ id: rule.id, restore: data?.clearedTransactions ?? [] }]) },
@@ -109,7 +105,7 @@ export function useRuleMutations(handlers: { onSaved?: () => void; onDeleted?: (
   });
 
   const verifyMany = useMutation({
-    mutationFn: (ruleIds: string[]) => api.POST('/api/v1/rules/verify', { body: { ruleIds } }).then((r) => r.data!),
+    mutationFn: (ruleIds: string[]) => unwrapAction(verifyRules(ruleIds)),
     onSuccess: ({ verifiedCount, verifiedRules }, ruleIds) => {
       // Only rules that were unverified have an entry; the rest were already verified and stay so.
       const undo = (verifiedRules ?? []).map((v) => ({ id: v.ruleId, restore: v.clearedTransactions }));

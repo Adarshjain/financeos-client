@@ -8,7 +8,7 @@ import { keys } from '@/lib/query/keys';
 import { useEpfMutations } from './useEpfMutations';
 
 const router = { push: vi.fn(), refresh: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 
 describe('useEpfMutations.refresh', () => {
   it('re-reads the investment, transaction, EPF and inbox queries and the page', async () => {

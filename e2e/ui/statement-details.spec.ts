@@ -77,9 +77,7 @@ test.describe('Statement details on the card statements page (@ui)', () => {
     const [y, m, d] = istToday(10).split('-');
     await dialog.getByLabel('Due date').fill(`${d}/${m}/${y}`);
     await dialog.getByLabel('Due date').press('Tab');
-    const saved = page.waitForResponse((r) => r.url().includes('/details') && r.request().method() === 'PATCH');
     await dialog.getByRole('button', { name: 'Save' }).click();
-    const sr = await saved; expect(sr.status(), sr.url() + ' ' + (await sr.text())).toBe(200);
 
     await expectToast(page, 'Statement details saved');
     await expect(dialog).toBeHidden();

@@ -3,13 +3,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { unwrapAction } from '@/lib/actionResult';
 import { amountExpressionValue } from '@/lib/amountExpression';
-import { api } from '@/lib/api/client';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanResponse } from '@/lib/loan.types';
 import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+
+import { loadActiveLoans, loadLoanInstallments, payLoanInstallment } from './linkActions';
 
 interface UseLoanPaymentLinkProps {
   /** Undefined whenever the LOAN_PAYMENT link kind isn't the active/enabled one. */
@@ -87,26 +89,14 @@ export function useLoanPaymentLink({
 
   const loansQuery = useQuery({
     queryKey: keys.loans.list({ status: 'active', page: 0, size: 100 }),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/loans', {
-        params: { query: { status: 'active', page: 0, size: 100 } },
-      });
-      return (data?.content ?? []) as LoanResponse[];
-    },
+    queryFn: () => unwrapAction(loadActiveLoans()),
     enabled: open,
   });
   const loans = loansQuery.data ?? [];
 
   const scheduleQuery = useQuery({
     queryKey: keys.loans.schedule(loanId),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/loans/{id}/schedule', {
-        params: { path: { id: loanId } },
-      });
-      // The endpoint returns a map keyed by an internal grouping; in practice a
-      // flat list. Object.values(...).flat() is correct either way.
-      return Object.values((data ?? {}) as Record<string, InstallmentDto[]>).flat();
-    },
+    queryFn: () => unwrapAction(loadLoanInstallments(loanId)),
     enabled: open && Boolean(loanId),
   });
 
@@ -141,9 +131,7 @@ export function useLoanPaymentLink({
         installmentSeq,
         transactionId: transaction!.id,
       };
-      return api
-        .POST('/api/v1/loans/{id}/payments', { params: { path: { id: loanId } }, body })
-        .then((r) => r.data!);
+      return unwrapAction(payLoanInstallment(loanId, body));
     },
     onSuccess: (data) => {
       notify.success(`Installment #${data.installmentSeq} settled`);

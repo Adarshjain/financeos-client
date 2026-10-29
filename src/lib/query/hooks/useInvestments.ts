@@ -2,33 +2,22 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { type InstrumentListPage, type InstrumentListParams, instrumentListQuery } from '@/lib/instrumentList';
+import {
+  loadInstruments,
+  loadPortfolioSummary,
+  loadPositions,
+  loadTaxHarvest,
+} from '@/lib/query/actions/investments';
 import { keys } from '@/lib/query/keys';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type { InvestmentSummary, Position } from '@/lib/types';
 
-/**
- * Narrow raw positions payload array at boundary from unknown.
- */
-function asPositions(raw: unknown): Position[] {
-  return (raw ?? []) as Position[];
-}
-
-/**
- * Narrow the raw GET /instruments page at the boundary (a missing body reads as an empty page).
- */
-function asInstrumentPage(raw: unknown, size: number): InstrumentListPage {
-  return (raw ?? { items: [], page: 0, size, totalElements: 0, totalPages: 0 }) as InstrumentListPage;
-}
-
 export function usePositions(initialData?: Position[]) {
   return useQuery<Position[]>({
     queryKey: keys.investments.positions(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/investments/positions');
-      return asPositions(data?.positions);
-    },
+    queryFn: () => unwrapAction(loadPositions()),
     initialData,
   });
 }
@@ -42,10 +31,7 @@ export function useInstruments(params: InstrumentListParams = {}, initialData?: 
   const query = instrumentListQuery(params);
   return useQuery<InstrumentListPage>({
     queryKey: keys.investments.instruments({ ...query }),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/instruments', { params: { query } });
-      return asInstrumentPage(data, query.size);
-    },
+    queryFn: () => unwrapAction(loadInstruments(query)),
     initialData,
     placeholderData: keepPreviousData,
   });
@@ -60,10 +46,7 @@ export function useInstruments(params: InstrumentListParams = {}, initialData?: 
 export function usePortfolioSummary() {
   return useQuery<InvestmentSummary>({
     queryKey: keys.investments.summary(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/investments/summary');
-      return data as InvestmentSummary;
-    },
+    queryFn: () => unwrapAction(loadPortfolioSummary()),
   });
 }
 
@@ -71,9 +54,6 @@ export function usePortfolioSummary() {
 export function useTaxHarvest(params: { fy?: number; page: number; size: number }) {
   return useQuery<TaxHarvestResponse>({
     queryKey: keys.investments.taxHarvest(params),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/investments/tax/harvest', { params: { query: params } });
-      return data as unknown as TaxHarvestResponse;
-    },
+    queryFn: () => unwrapAction(loadTaxHarvest(params)),
   });
 }

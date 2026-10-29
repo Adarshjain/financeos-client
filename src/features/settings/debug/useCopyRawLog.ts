@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 
-import { api } from '@/lib/api/client';
+import { loadRawLog } from '@/features/settings/debug/diagnosticsActions';
+import { unwrapAction } from '@/lib/actionResult';
 import { copyText } from '@/lib/copyText';
 import { notify } from '@/lib/notify';
 
@@ -14,18 +15,8 @@ export function useCopyRawLog(currentRef: string | undefined, currentType: strin
     if (!currentRef) return;
     setCopying(true);
     try {
-      const { data, error } = await api.GET('/api/v1/diagnostics/lookup/raw', {
-        params: {
-          query: {
-            ref: currentRef,
-            type: currentType || 'auto',
-          },
-        },
-      });
-      if (error) {
-        throw error;
-      }
-      const rawText = JSON.stringify(data ?? [], null, 2);
+      const data = await unwrapAction(loadRawLog(currentRef, currentType));
+      const rawText = JSON.stringify(data, null, 2);
       if (!(await copyText(rawText))) throw new Error('clipboard unavailable');
       notify.success('Raw log entries copied to clipboard');
     } catch {

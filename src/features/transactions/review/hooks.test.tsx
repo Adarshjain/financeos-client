@@ -5,17 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const router = { refresh: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { POST: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { POST: vi.fn() } }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
   showToast: (...a: unknown[]) => showToast(...a),
 }));
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { keys } from '@/lib/query/keys';
 
 import { useApproveTransactions } from './useApproveTransactions';

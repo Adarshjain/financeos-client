@@ -3,7 +3,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type {
   NotificationSettingsResponse,
   PushSubscriptionRequest,
@@ -11,13 +11,22 @@ import type {
 } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
+import {
+  loadNotificationSettings,
+  loadPushPublicKey,
+  muteAccount,
+  muteLoanNotifications,
+  removePushDevice,
+  sendTestNotification,
+  subscribePush,
+  unsubscribePush,
+  updateNotificationSettings,
+} from './actions';
+
 export function useNotificationSettings(initialData?: NotificationSettingsResponse) {
   return useQuery({
     queryKey: keys.settings.notifications(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/notifications/settings');
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadNotificationSettings()),
     initialData,
   });
 }
@@ -25,10 +34,7 @@ export function useNotificationSettings(initialData?: NotificationSettingsRespon
 export function usePushPublicKey(enabled = true) {
   return useQuery({
     queryKey: keys.settings.pushPublicKey(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/notifications/push/public-key');
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadPushPublicKey()),
     enabled,
     staleTime: 60 * 60 * 1000,
   });
@@ -126,8 +132,7 @@ export function useNotificationSettingsMutations() {
 
   const update = useMutation({
     mutationKey: WRITE_KEY,
-    mutationFn: (body: UpdateNotificationSettingsRequest) =>
-      api.PUT('/api/v1/notifications/settings', { body }).then((r) => r.data!),
+    mutationFn: (body: UpdateNotificationSettingsRequest) => unwrapAction(updateNotificationSettings(body)),
     onMutate: (body) => begin(kindSwitches(body)),
     onSuccess: (server, body) => {
       for (const { w } of kindSwitches(body)) finish(w, readSwitch(server, w));
@@ -142,16 +147,21 @@ export function useNotificationSettingsMutations() {
 
   const subscribe = useMutation({
     mutationKey: WRITE_KEY,
-    mutationFn: (body: PushSubscriptionRequest) =>
-      api.POST('/api/v1/notifications/push/subscriptions', { body }).then((r) => r.data!),
+    mutationFn: (body: PushSubscriptionRequest) => unwrapAction(subscribePush(body)),
     onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
     onSettled: settled,
   });
 
   const unsubscribe = useMutation({
     mutationKey: WRITE_KEY,
-    mutationFn: (endpoint: string) =>
-      api.POST('/api/v1/notifications/push/subscriptions/remove', { body: { endpoint } }).then((r) => r.data!),
+    mutationFn: (endpoint: string) => unwrapAction(unsubscribePush(endpoint)),
+    onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
+    onSettled: settled,
+  });
+
+  const removeDevice = useMutation({
+    mutationKey: WRITE_KEY,
+    mutationFn: (endpoint: string) => unwrapAction(removePushDevice(endpoint)),
     onSuccess: (server) => mergeFields(server, ['devices', 'pushEnabled']),
     onSettled: settled,
   });
@@ -159,9 +169,7 @@ export function useNotificationSettingsMutations() {
   const mute = useMutation({
     mutationKey: WRITE_KEY,
     mutationFn: ({ accountId, muted }: { accountId: string; muted: boolean }) =>
-      api
-        .PUT('/api/v1/notifications/accounts/{accountId}/mute', { params: { path: { accountId } }, body: { muted } })
-        .then((r) => r.data!),
+      unwrapAction(muteAccount(accountId, muted)),
     onMutate: ({ accountId, muted }) => begin([{ w: { type: 'account', id: accountId }, value: muted }]),
     onSuccess: (server, { accountId }) => {
       const w: Switch = { type: 'account', id: accountId };
@@ -176,9 +184,7 @@ export function useNotificationSettingsMutations() {
   const muteLoan = useMutation({
     mutationKey: WRITE_KEY,
     mutationFn: ({ loanId, muted }: { loanId: string; muted: boolean }) =>
-      api
-        .PUT('/api/v1/notifications/loans/{loanId}/mute', { params: { path: { loanId } }, body: { muted } })
-        .then((r) => r.data!),
+      unwrapAction(muteLoanNotifications(loanId, muted)),
     onMutate: ({ loanId, muted }) => begin([{ w: { type: 'loan', id: loanId }, value: muted }]),
     onSuccess: (server, { loanId }) => {
       const w: Switch = { type: 'loan', id: loanId };
@@ -191,8 +197,8 @@ export function useNotificationSettingsMutations() {
   });
 
   const sendTest = useMutation({
-    mutationFn: () => api.POST('/api/v1/notifications/push/test').then((r) => r.data!),
+    mutationFn: () => unwrapAction(sendTestNotification()),
   });
 
-  return { update, subscribe, unsubscribe, mute, muteLoan, sendTest };
+  return { update, subscribe, unsubscribe, removeDevice, mute, muteLoan, sendTest };
 }

@@ -11,6 +11,7 @@ import DsLendingsPage from './page';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
+  unstable_rethrow: () => undefined,
   useRouter: () => router,
   usePathname: () => '/loans/lendings',
   useSearchParams: () => new URLSearchParams(),
@@ -29,6 +30,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
 
 const api = vi.hoisted(() => ({ PUT: vi.fn(), DELETE: vi.fn(), GET: vi.fn(), POST: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 const server = vi.hoisted(() => ({
   fetchPeople: vi.fn(),

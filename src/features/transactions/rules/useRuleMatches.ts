@@ -3,9 +3,11 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
-import type { MatchType, PagedRuleMatches } from '@/lib/rules.types';
+import type { MatchType } from '@/lib/rules.types';
+
+import { loadRuleMatches } from './ruleActions';
 
 /**
  * One page of the transactions a pattern matches (manually reviewed ones left out), fetched by the server a page at a time.
@@ -28,13 +30,7 @@ export function useRuleMatches({
 
   const query = useQuery({
     queryKey: keys.rules.preview({ merchantKey, matchType, page, size }),
-    queryFn: async () => {
-      const { data } = await api.POST('/api/v1/rules/preview-matches', {
-        params: { query: { page, size, sort: [] } },
-        body: { merchantKey, matchType },
-      });
-      return data as unknown as PagedRuleMatches;
-    },
+    queryFn: () => unwrapAction(loadRuleMatches(merchantKey, matchType, page, size)),
     enabled,
     placeholderData: keepPreviousData,
   });

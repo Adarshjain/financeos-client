@@ -13,10 +13,11 @@ const logout = vi.fn();
 vi.mock('@/actions/auth', () => ({ logoutToDinero: (...a: unknown[]) => logout(...a) }));
 
 const deleteAccount = vi.fn();
-vi.mock('./actions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
-
 const get = vi.fn();
-vi.mock('@/lib/api/client', () => ({ api: { GET: (...a: unknown[]) => get(...a) } }));
+vi.mock('./actions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
+vi.mock('./deletionSummaryActions', () => ({
+  loadDeletionSummary: async () => ({ success: true, data: (await get())?.data ?? null }),
+}));
 
 const setTheme = vi.fn();
 let theme: string | undefined = 'dark';

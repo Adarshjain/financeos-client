@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { loadSavedReport } from '@/features/dashboards/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 
 /**
@@ -12,10 +13,7 @@ import { keys } from '@/lib/query/keys';
 export function useSavedReport(reportId: string | null | undefined, enabled = true) {
   return useQuery({
     queryKey: keys.reports.byId(reportId ?? ''),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/reports/{id}', { params: { path: { id: reportId ?? '' } } });
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadSavedReport(reportId ?? '')),
     enabled: enabled && Boolean(reportId),
   });
 }

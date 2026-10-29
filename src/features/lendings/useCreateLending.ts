@@ -2,11 +2,13 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { CreateLendingRequest } from '@/lib/types';
+
+import { createLendingEntry } from './actions';
 
 /**
  * Records one lending ledger entry (POST /api/v1/lendings) and refreshes everything it moves:
@@ -16,8 +18,7 @@ import type { CreateLendingRequest } from '@/lib/types';
 export function useCreateLending(options?: { onError?: (e: unknown) => void }) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateLendingRequest) =>
-      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
+    mutationFn: (body: CreateLendingRequest) => unwrapAction(createLendingEntry(body)),
     onSuccess: () => {
       invalidateLendingQueries(qc);
       qc.invalidateQueries({ queryKey: keys.transactions.all });

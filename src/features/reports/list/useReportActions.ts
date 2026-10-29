@@ -4,11 +4,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds';
-import { api } from '@/lib/api/client';
+import { addReportToDashboard, removeWidgetFromDashboard } from '@/features/dashboards/actions';
+import { deleteReport } from '@/features/reports/actions';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { DashboardResponse } from '@/lib/api/types';
-import { reportWidgetResponse } from '@/lib/dashboards.helpers';
-import { putWidgets, storeSavedDashboard } from '@/lib/query/hooks/useDashboards';
+import { storeSavedDashboard } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
@@ -28,7 +28,7 @@ export function useReportActions() {
   const failed = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
 
   const remove = useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/reports/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteReport(id)),
     onSuccess: () => {
       showToast('Report deleted');
       done();
@@ -37,7 +37,7 @@ export function useReportActions() {
   });
 
   const undoDuplicate = useMutation({
-    mutationFn: (copyId: string) => api.DELETE('/api/v1/reports/{id}', { params: { path: { id: copyId } } }),
+    mutationFn: (copyId: string) => unwrapAction(deleteReport(copyId)),
     onSuccess: () => {
       showToast('Copy deleted');
       done();
@@ -56,19 +56,10 @@ export function useReportActions() {
     onError: failed("Couldn't duplicate the report. Try again."),
   });
 
-  // The dashboard is read fresh before every save, so a widget added or moved elsewhere since the list loaded is never overwritten.
-  const freshDashboard = async (id: string): Promise<DashboardResponse> => {
-    const { data } = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id } } });
-    if (!data) throw new Error('Dashboard not found');
-    return data;
-  };
-
+  // The server reads the dashboard fresh before every save, so a widget added or moved elsewhere since the list loaded is never overwritten.
   const removeWidget = useMutation({
-    mutationFn: async ({ dashboardId, widgetId }: { dashboardId: string; widgetId: string }) => {
-      const current = await freshDashboard(dashboardId);
-      if (!current.widgets.some((w) => w.id === widgetId)) return null;
-      return putWidgets(current, current.widgets.filter((w) => w.id !== widgetId));
-    },
+    mutationFn: ({ dashboardId, widgetId }: { dashboardId: string; widgetId: string }) =>
+      unwrapAction(removeWidgetFromDashboard(dashboardId, widgetId)),
     onSuccess: (saved) => {
       if (saved) storeSavedDashboard(queryClient, saved);
       showToast(saved ? `Removed from ${saved.name}` : 'Already removed');
@@ -78,12 +69,8 @@ export function useReportActions() {
   });
 
   const addToDashboard = useMutation({
-    mutationFn: async ({ dashboardId, report }: { dashboardId: string; report: Pick<ReportSummaryResponse, 'id' | 'name' | 'type'> }) => {
-      const current = await freshDashboard(dashboardId);
-      const widget = reportWidgetResponse(current.widgets, report);
-      const saved = await putWidgets(current, [...current.widgets, widget]);
-      return { saved, widgetId: widget.id };
-    },
+    mutationFn: ({ dashboardId, report }: { dashboardId: string; report: Pick<ReportSummaryResponse, 'id' | 'name' | 'type'> }) =>
+      unwrapAction(addReportToDashboard(dashboardId, report)),
     onSuccess: ({ saved, widgetId }) => {
       storeSavedDashboard(queryClient, saved);
       showToast(`Added to ${saved.name}`, {

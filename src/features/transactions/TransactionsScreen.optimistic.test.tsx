@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -56,10 +56,7 @@ vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: ac
 const categories = vi.hoisted(() => [{ id: 'c1', name: 'Groceries' }]);
 vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { POST: vi.fn(), GET: vi.fn() } };
-});
+vi.mock('@/lib/api/server', () => ({ serverApi: { POST: vi.fn(), GET: vi.fn() } }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),

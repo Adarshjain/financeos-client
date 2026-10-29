@@ -5,12 +5,13 @@ import React from 'react';
 
 import { LoadError } from '@/features/shell/LoadError';
 import type { Account } from '@/lib/account.types';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
+import { loadActiveLoans } from './actions';
 import { BillsCard } from './BillsCard';
 import { KindsCard } from './KindsCard';
 import { MutedCard } from './MutedCard';
@@ -54,10 +55,7 @@ export function NotificationsSettings() {
   const accountsQuery = useAccounts();
   const loansQuery = useQuery({
     queryKey: keys.loans.list(LOANS_PAGE),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/loans', { params: { query: LOANS_PAGE } });
-      return (data?.content ?? []) as LoanResponse[];
-    },
+    queryFn: () => unwrapAction(loadActiveLoans(LOANS_PAGE)),
   });
   const settings = settingsQuery.data ?? null;
   const cards = React.useMemo(() => pickCards(accountsQuery.data), [accountsQuery.data]);

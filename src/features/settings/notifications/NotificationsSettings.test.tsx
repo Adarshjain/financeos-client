@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
@@ -17,10 +17,8 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }));
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
-});
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const pushMocks = vi.hoisted(() => ({

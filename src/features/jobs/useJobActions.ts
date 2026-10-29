@@ -3,8 +3,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { cancelJob, retryJob } from '@/features/jobs/actions';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -15,8 +16,7 @@ export function useJobActions({ onRetried }: { onRetried?: (job: { id: string })
   const router = useRouter();
 
   const cancelMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.POST('/api/v1/jobs/{id}/cancel', { params: { path: { id } } }).then((r) => r.data!),
+    mutationFn: (id: string) => unwrapAction(cancelJob(id)),
     onSuccess: () => {
       notify.info('Cancellation requested');
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
@@ -26,8 +26,7 @@ export function useJobActions({ onRetried }: { onRetried?: (job: { id: string })
   });
 
   const retryMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.POST('/api/v1/jobs/{id}/retry', { params: { path: { id } } }).then((r) => r.data!),
+    mutationFn: (id: string) => unwrapAction(retryJob(id)),
     onSuccess: (retried) => {
       notify.success('Job retried');
       emitJobStarted(retried.id);

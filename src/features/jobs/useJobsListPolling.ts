@@ -3,8 +3,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { loadJobs } from '@/features/jobs/actions';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';
 
@@ -34,16 +35,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   const query = useQuery({
     queryKey,
     queryFn: async () => {
-      const { data } = await api.GET('/api/v1/jobs', {
-        params: {
-          query: {
-            type: typeParam,
-            size,
-            sort: ['createdAt,desc'],
-          },
-        },
-      });
-      return data ?? null;
+      return unwrapAction(loadJobs({ type: typeParam, size, sort: ['createdAt,desc'] }));
     },
     refetchInterval: POLL_INTERVAL_MS,
     refetchIntervalInBackground: false,

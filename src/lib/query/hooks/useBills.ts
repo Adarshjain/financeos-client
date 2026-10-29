@@ -2,8 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import type { CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
+import { loadBill, loadBills, markBillPaid, unmarkBillPaid, updateBillDetails } from '@/lib/query/actions/bills';
 import { keys } from '@/lib/query/keys';
 
 /**
@@ -14,12 +15,7 @@ export function useBills(initialData?: CardBillResponse[], options: { accountId?
   const accountId = options.accountId ?? null;
   return useQuery({
     queryKey: keys.bills.list(accountId ? { accountId } : {}),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/bills', {
-        params: { query: accountId ? { accountId } : {} },
-      });
-      return data ?? [];
-    },
+    queryFn: () => unwrapAction(loadBills(accountId)),
     initialData,
   });
 }
@@ -28,12 +24,7 @@ export function useBills(initialData?: CardBillResponse[], options: { accountId?
 export function useBill(statementId: string | null | undefined, enabled = true) {
   return useQuery({
     queryKey: keys.bills.byStatement(statementId ?? ''),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/bills/{statementId}', {
-        params: { path: { statementId: statementId as string } },
-      });
-      return data ?? null;
-    },
+    queryFn: () => unwrapAction(loadBill(statementId as string)),
     enabled: enabled && Boolean(statementId),
   });
 }
@@ -57,23 +48,18 @@ export function useBillMutations() {
 
   const markPaid = useMutation({
     mutationFn: ({ statementId, body }: { statementId: string; body?: MarkBillPaidRequest }) =>
-      api
-        .POST('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId } }, body: body ?? {} })
-        .then((r) => r.data!),
+      unwrapAction(markBillPaid(statementId, body ?? {})),
     onSuccess: settle,
   });
 
   const unmarkPaid = useMutation({
-    mutationFn: (statementId: string) =>
-      api.DELETE('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId } } }).then((r) => r.data!),
+    mutationFn: (statementId: string) => unwrapAction(unmarkBillPaid(statementId)),
     onSuccess: settle,
   });
 
   const updateDetails = useMutation({
     mutationFn: ({ statementId, body }: { statementId: string; body: UpdateBillDetailsRequest }) =>
-      api
-        .PATCH('/api/v1/bills/{statementId}/details', { params: { path: { statementId } }, body })
-        .then((r) => r.data!),
+      unwrapAction(updateBillDetails(statementId, body)),
     onSuccess: settle,
   });
 

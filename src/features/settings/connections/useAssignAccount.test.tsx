@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 
 import { useAssignAccount } from './useAssignAccount';
 
@@ -13,10 +13,8 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }));
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } };
-});
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function setup(initial: { id: string } | null) {

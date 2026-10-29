@@ -9,7 +9,7 @@ import { bankCredit, employer, entry, globexOpen, interest, latestContribution, 
 import { EpfEntryDialog } from './EpfEntryDialog';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-27' }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
 
@@ -20,7 +20,7 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
 }));
 
 const http = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/api/client')>()), api: http }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 // The picker has its own tests; here it can pick a credit.
 const picked = vi.hoisted(() => ({ credit: { id: 't9', amount: 40000, date: '2025-02-24', description: 'NEFT CR EPFO' } as Record<string, unknown> }));

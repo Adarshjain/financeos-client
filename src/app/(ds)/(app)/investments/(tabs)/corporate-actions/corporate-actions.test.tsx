@@ -13,7 +13,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({ redirect, useRouter: () => router, usePathname: () => '/investments/corporate-actions' }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, redirect, useRouter: () => router, usePathname: () => '/investments/corporate-actions' }));
 
 const server = vi.hoisted(() => ({ fetchCorporateActionsPage: vi.fn(), fetchCorporateActionPreview: vi.fn() }));
 vi.mock('@/features/investments/corporate-actions/corporateActionsServerApi', () => server);
@@ -25,6 +25,8 @@ vi.mock('@/features/investments/instruments/useCatalogSearch', () => ({
 
 const api = vi.hoisted(() => ({ POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
+// Dinero hooks reach the API through server actions, which use serverApi: the same mock.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
 async function renderPage(query: Record<string, string> = {}) {
   const ui = await DsCorporateActionsPage({ searchParams: Promise.resolve(query) });

@@ -8,6 +8,9 @@ import {
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const push = vi.fn();
+// The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
+vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push,

@@ -40,10 +40,7 @@ const categories = vi.hoisted(() => [
 ]);
 // Stable, like the query's own data: a fresh array per render would re-fire the category sync effect forever.
 vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
-vi.mock('@/lib/api/client', async (orig) => ({
-  ...(await orig<typeof import('@/lib/api/client')>()),
-  api: { GET: vi.fn(), POST: vi.fn(async () => ({ data: undefined })), PUT: vi.fn(), DELETE: vi.fn() },
-}));
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(async () => ({ data: undefined })), PUT: vi.fn(), DELETE: vi.fn() } }));
 
 const bank = { id: 'b1', type: AccountType.BANK_ACCOUNT, name: 'HDFC Savings', balance: 0, cardholders: [] } as unknown as Account;
 const card = {

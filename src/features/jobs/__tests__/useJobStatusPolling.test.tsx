@@ -3,16 +3,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual('@/lib/api/client');
-  return {
-    ...actual,
-    api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() },
-  };
-});
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import type { JobResponse } from '@/lib/types';
 
 function createWrapper() {

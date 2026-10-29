@@ -3,7 +3,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { api } from '@/lib/api/client';
+import { createLlmKey, deleteLlmKey, testLlmKey, updateLlmKeyPosition } from '@/features/settings/ai/llmActions';
+import { unwrapAction } from '@/lib/actionResult';
 import type { CreateLlmKeyRequest, LlmKeyDto } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
@@ -22,22 +23,19 @@ export function useLlmKeyMutations() {
   };
 
   const createMutation = useMutation({
-    mutationFn: (body: CreateLlmKeyRequest) => api.POST('/api/v1/llm-keys', { body }).then((r) => r.data!),
+    mutationFn: (body: CreateLlmKeyRequest) => unwrapAction(createLlmKey(body)),
     onSuccess: invalidateAll,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.DELETE('/api/v1/llm-keys/{id}', { params: { path: { id } } }),
+    mutationFn: (id: string) => unwrapAction(deleteLlmKey(id)),
     onSuccess: invalidateAll,
   });
 
   // The endpoint returns the reordered list for the key's provider — write it
   // straight into the cache instead of a full refetch.
   const updatePositionMutation = useMutation({
-    mutationFn: ({ id, position }: { id: string; position: number }) =>
-      api
-        .PATCH('/api/v1/llm-keys/{id}/position', { params: { path: { id } }, body: { position } })
-        .then((r) => r.data!),
+    mutationFn: ({ id, position }: { id: string; position: number }) => unwrapAction(updateLlmKeyPosition(id, position)),
     onSuccess: (updatedProviderKeys) => {
       router.refresh();
       qc.setQueryData(keys.settings.llmKeys(), (current: LlmKeyDto[] | undefined) => {
@@ -49,8 +47,7 @@ export function useLlmKeyMutations() {
   });
 
   const testMutation = useMutation({
-    mutationFn: ({ id, model }: { id: string; model?: string }) =>
-      api.POST('/api/v1/llm-keys/{id}/test', { params: { path: { id } }, body: { model } }).then((r) => r.data!),
+    mutationFn: ({ id, model }: { id: string; model?: string }) => unwrapAction(testLlmKey(id, model)),
   });
 
   return { createMutation, deleteMutation, updatePositionMutation, testMutation };

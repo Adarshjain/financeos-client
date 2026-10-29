@@ -1,22 +1,17 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
-import type {
-  ConfirmItem,
-  ConfirmResult,
-  DividendMatchCandidate,
-  DividendMatchItem,
-  DividendReconciliation,
-} from './receiptTypes';
+import { confirmDividendMatches, loadDividendReconciliation } from './dividendsActions';
+import type { ConfirmItem, DividendMatchCandidate, DividendMatchItem } from './receiptTypes';
 
 const MAX_SKIPPED_TOASTS = 3;
 
@@ -46,17 +41,10 @@ export function useDividendReconcile({ brokerAccountId, onLinked, notify }: UseD
 
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [tdsOverrides, setTdsOverrides] = useState<Record<string, boolean>>({});
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const [confirmingAll, setConfirmingAll] = useState(false);
 
   const query = useQuery({
     queryKey: keys.investments.dividendReconciliation(params),
-    queryFn: async () =>
-      (
-        await api.GET('/api/v1/investments/dividends/reconciliation', {
-          params: { query: params },
-        })
-      ).data as DividendReconciliation,
+    queryFn: () => unwrapAction(loadDividendReconciliation(params)),
     enabled: false,
   });
 
@@ -97,10 +85,7 @@ export function useDividendReconcile({ brokerAccountId, onLinked, notify }: UseD
   };
 
   const confirm = async (confirmItems: ConfirmItem[]) => {
-    const { data } = await api.POST('/api/v1/investments/dividends/reconciliation/confirm', {
-      body: { items: confirmItems },
-    });
-    const result = data as ConfirmResult;
+    const result = await unwrapAction(confirmDividendMatches(confirmItems));
     const skipped = result?.skipped ?? [];
     const say = (message: string, tone?: 'danger') => (notify ? notify(message, tone) : tone ? toast.error(message) : toast.success(message));
     say(`Linked ${result?.linked?.length ?? 0} of ${confirmItems.length}`);
@@ -122,32 +107,34 @@ export function useDividendReconcile({ brokerAccountId, onLinked, notify }: UseD
   const reportFailure = (err: unknown, fallback: string) =>
     notify ? notify(getErrorMessage(err, fallback), 'danger') : toastError(err, fallback);
 
+  // The confirm, the refresh and the re-read run as one mutation, so `isPending` covers all of it.
+  const confirmMutation = useMutation({
+    mutationFn: (vars: { items: ConfirmItem[]; dividendId?: string }) => confirm(vars.items),
+  });
+
   const confirmOne = async (dividendId: string) => {
     const item = items.find((i) => i.dividend.id === dividendId);
     const body = item ? toConfirmItem(item) : null;
     if (!body) return;
-    setConfirmingId(dividendId);
     try {
-      await confirm([body]);
+      await confirmMutation.mutateAsync({ items: [body], dividendId });
     } catch (err) {
       reportFailure(err, "Couldn't link dividend. Try again.");
-    } finally {
-      setConfirmingId(null);
     }
   };
 
   const confirmAll = async () => {
     const body = items.map(toConfirmItem).filter((i): i is ConfirmItem => i !== null);
     if (body.length === 0) return;
-    setConfirmingAll(true);
     try {
-      await confirm(body);
+      await confirmMutation.mutateAsync({ items: body });
     } catch (err) {
       reportFailure(err, "Couldn't link dividends. Try again.");
-    } finally {
-      setConfirmingAll(false);
     }
   };
+
+  const confirmingId = confirmMutation.isPending ? (confirmMutation.variables?.dividendId ?? null) : null;
+  const confirmingAll = confirmMutation.isPending && confirmMutation.variables?.dividendId === undefined;
 
   return {
     loading: query.isFetching,

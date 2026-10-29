@@ -3,7 +3,7 @@ import React from 'react';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { api } from '@/lib/api/client';
+import { serverApi as api } from '@/lib/api/server';
 import { DiagnosticsProvider } from '@/lib/diagnostics/DiagnosticsProvider';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -11,10 +11,8 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { DebugView } from './DebugView';
 import { LocalFailuresCard } from './LocalFailuresCard';
 
-vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
-  return { ...actual, api: { GET: vi.fn() } };
-});
+// The actions behind the hooks run `serverApi`; the tests drive it through the same mock shape.
+vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn() } }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), info: vi.fn(), error: vi.fn() } }));
 
@@ -60,7 +58,9 @@ const lookup = {
 };
 
 function mockLookup(data: unknown, error?: unknown) {
-  vi.mocked(api.GET).mockResolvedValue({ data, error, response: new Response() } as never);
+  // The server client throws on a failed response, so an error here is a rejection.
+  if (error) vi.mocked(api.GET).mockRejectedValue(error);
+  else vi.mocked(api.GET).mockResolvedValue({ data, error, response: new Response() } as never);
 }
 
 beforeEach(() => {
@@ -154,7 +154,7 @@ describe('DebugView lookup', () => {
     });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(JSON.stringify(raw, null, 2));
 
-    vi.mocked(api.GET).mockResolvedValueOnce({ data: undefined, error: new Error('x'), response: new Response() } as never);
+    vi.mocked(api.GET).mockRejectedValueOnce(new Error('x'));
     fireEvent.click(screen.getByRole('button', { name: 'Copy raw' }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy the raw log. Try again."));
   });

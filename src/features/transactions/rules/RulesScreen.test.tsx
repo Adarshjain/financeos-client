@@ -21,7 +21,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 const toasts = vi.hoisted(() => ({ showToast: vi.fn() }));
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<object>()), showToast: toasts.showToast }));
 const http = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
-vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<object>()), api: http }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const food = { id: 'c1', name: 'Food & dining' };
 const groceries = { id: 'c2', name: 'Groceries' };

@@ -7,12 +7,13 @@ import { useState } from 'react';
 import { showToast } from '@/components/ds';
 import { mapBatchFailures } from '@/features/transactions/review/reviewHelpers';
 import type { ReviewSummary } from '@/features/transactions/review/useApproveTransactions';
-import { api } from '@/lib/api/client';
+import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
+import { batchDeleteTransactions } from '../actions';
 import { removeChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import { deletedMessage } from './bulkModel';
@@ -31,11 +32,7 @@ export function useDeleteTransactions() {
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
   const mutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { data } = await api.POST('/api/v1/transactions/batch-delete', { body: { transactionIds: ids } });
-      if (!data) throw new Error('No response from the server');
-      return data;
-    },
+    mutationFn: (ids: string[]) => unwrapAction(batchDeleteTransactions(ids)),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       void queryClient.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
