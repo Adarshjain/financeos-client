@@ -141,3 +141,33 @@ export const payLoanInstallment = createDomainAction(
     return data! as LoanPaymentResponse;
   },
 );
+
+// Auto-link suggestions
+
+export const loadLinkSuggestions = createDomainAction(
+  { fallbackError: "Couldn't load the suggestions. Try again." },
+  async (): Promise<Schemas['LinkSuggestionResponse'][]> => {
+    const { data } = await serverApi.GET('/api/v1/link-suggestions');
+    return (data ?? []) as Schemas['LinkSuggestionResponse'][];
+  },
+);
+
+/** Accepts one candidate: the server creates a USER link. */
+export const acceptLinkSuggestion = createDomainAction(
+  { fallbackError: "Couldn't link the transactions. Try again." },
+  async (id: string, candidateId: string): Promise<Schemas['TransactionLinkResponse']> => {
+    const { data } = await serverApi.POST('/api/v1/link-suggestions/{id}/accept', {
+      params: { path: { id } },
+      body: { candidateId },
+    });
+    return data as Schemas['TransactionLinkResponse'];
+  },
+);
+
+/** Dismisses a suggestion; it is remembered and never suggested again. */
+export const dismissLinkSuggestion = createDomainAction(
+  { fallbackError: "Couldn't dismiss the suggestion. Try again." },
+  async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/link-suggestions/{id}', { params: { path: { id } } });
+  },
+);

@@ -91,7 +91,7 @@ describe('TransactionPicker loan-mode rendering', () => {
       data: pagedResponse([
         makeTxn({
           id: 'split-1',
-          obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' }],
+          obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' }],
         }),
       ]),
     });
@@ -118,7 +118,7 @@ describe('TransactionPicker loan-mode rendering', () => {
       data: pagedResponse([
         makeTxn({
           id: 'split-1',
-          obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' }],
+          obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' }],
         }),
       ]),
     });

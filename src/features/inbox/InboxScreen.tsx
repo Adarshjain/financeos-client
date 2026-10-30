@@ -10,7 +10,9 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
+import { loadLinkSuggestionsDialog } from '@/features/transactions/link/lazyDialogs';
 import type { InboxItemResponse } from '@/lib/api/types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
@@ -19,7 +21,7 @@ import { InboxBillHost } from './InboxBillHost';
 import { INBOX_SECTIONS, type InboxSectionKey } from './inboxModel';
 import { dsInboxNotifier } from './inboxNotifier';
 import { InboxRow } from './InboxRow';
-import { INBOX_SECTION_TITLES, pendingFor, type RowButton } from './inboxRowsModel';
+import { INBOX_SECTION_TITLES, type LinkSuggestionKind, pendingFor, type RowButton } from './inboxRowsModel';
 import { InboxSkeleton } from './InboxSkeleton';
 import { UPCOMING_HREF } from './inboxUpcomingTabs';
 import { useInboxDeepLink } from './useInboxDeepLink';
@@ -38,6 +40,8 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const { snooze, dismiss, epfLink, epfDismiss } = useInboxMutations(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
+  const [reviewKind, setReviewKind] = React.useState<LinkSuggestionKind | null>(null);
+  const { Component: LinkSuggestionsDialog, run: runSuggestions } = useLazyDialog(loadLinkSuggestionsDialog);
 
   // Updates live in Notifications; the server still sends them for Legacy.
   const items = React.useMemo(() => (data?.items ?? []).filter((i) => i.section !== 'info'), [data]);
@@ -48,6 +52,11 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
     if (button.epf === 'link') return epfLink(item);
     if (button.epf === 'dismiss') return epfDismiss(item);
+    if (button.suggestions) {
+      const kind = button.suggestions;
+      void runSuggestions(() => setReviewKind(kind));
+      return;
+    }
     const pending = pendingFor(item, button);
     if (pending) setPendingBill(pending);
   };
@@ -106,6 +115,9 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
       {deepLink.missing ? <Banner tone="info">That item is already handled.</Banner> : null}
       {body}
       <InboxBillHost pending={pendingBill} onClose={closeBill} />
+      {LinkSuggestionsDialog && reviewKind ? (
+        <LinkSuggestionsDialog kind={reviewKind} onClose={() => setReviewKind(null)} />
+      ) : null}
     </div>
   );
 }

@@ -40,6 +40,7 @@ const lendingWithTx: LendingResponse = {
   amount: 500,
   direction: 'lent',
   kind: 'principal',
+  origin: 'USER',
   entryDate: '2026-01-01',
   createdAt: '2026-01-01T00:00:00Z',
   expectedReturnDate: '2026-02-01',

@@ -239,6 +239,7 @@ describe('useRecordLending — party selection and suggestion', () => {
       amount: 300,
       direction: 'lent',
       kind: 'principal',
+      origin: 'USER',
       entryDate: '2026-04-01',
       createdAt: '2026-04-01T00:00:00Z',
     };

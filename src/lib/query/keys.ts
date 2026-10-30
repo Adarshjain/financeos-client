@@ -55,6 +55,11 @@ export const keys = {
     summary: () => [...keys.inbox.all, 'summary'] as const,
   },
 
+  /** GET /link-suggestions: the open auto-link suggestions the review dialog lists. */
+  linkSuggestions: {
+    all: ['link-suggestions'] as const,
+  },
+
   /** GET /shell/counts: the one poll that seeds the inbox, notifications and needs-review count keys. */
   shell: {
     counts: () => ['shell', 'counts'] as const,

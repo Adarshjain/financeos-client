@@ -30,6 +30,8 @@ export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): str
     case 'reward_milestone':
     case 'reward_cap':
       return accountId ? appHref(`/accounts/${accountId}/rewards`) : null;
+    case 'auto_linked':
+      return appHref('/transactions');
     default:
       return null;
   }

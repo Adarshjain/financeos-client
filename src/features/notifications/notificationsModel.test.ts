@@ -36,6 +36,10 @@ describe('notificationHref', () => {
     }
   });
 
+  it('auto_linked opens Transactions', () => {
+    expect(notificationHref(n({ kind: 'auto_linked' }))).toBe('/transactions');
+  });
+
   it('an unknown kind is not clickable', () => {
     expect(notificationHref(n({ kind: 'something_new' }))).toBeNull();
   });

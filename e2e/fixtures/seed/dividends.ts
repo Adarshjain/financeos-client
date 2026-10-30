@@ -83,6 +83,8 @@ export async function seedDividends(api: ApiClient): Promise<SeededDividends> {
   const matchableDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: matchable.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-10) });
   const matchableCredit = creditText(matchable.name);
   await createTransaction(api, bank.id, { amount: 900, date: istToday(-10), description: matchableCredit });
+  // A second credit that also fits net of TDS keeps the match ambiguous, so auto-linking leaves it for Reconcile.
+  await createTransaction(api, bank.id, { amount: 900, date: istToday(-12), description: `NACH CR ${uniqueSeedSuffix()}` });
 
   const unrecorded = await stock(api, broker, 'UNRC');
   const unrecordedCredit = creditText(unrecorded.name);

@@ -405,7 +405,7 @@ for (const viewport of VIEWPORTS) {
         const a = await createBankAccount(api, { name: 'Out Bank' });
         const b = await createBankAccount(api, { name: 'In Bank' });
         await createTransaction(api, a.id, { amount: -2000, date: todayString(-1), description: 'Transfer Out' });
-        await createTransaction(api, b.id, { amount: 2000, date: todayString(-1), description: 'Transfer In' });
+        await createTransaction(api, b.id, { amount: 2000, date: todayString(4), description: 'Transfer In' });
         await open(page);
 
         await row(page, 'Transfer Out').getByText('Transfer Out').click();
@@ -427,7 +427,7 @@ for (const viewport of VIEWPORTS) {
         const a = await createBankAccount(api, { name: 'Out Bank' });
         const b = await createBankAccount(api, { name: 'In Bank' });
         const out = await createTransaction(api, a.id, { amount: -2000, date: todayString(-1), description: 'Transfer Out' });
-        const into = await createTransaction(api, b.id, { amount: 2000, date: todayString(-1), description: 'Transfer In' });
+        const into = await createTransaction(api, b.id, { amount: 2000, date: todayString(4), description: 'Transfer In' });
         const linked = await api.POST('/api/v1/transaction-links', {
           body: { type: 'TRANSFER', members: [{ transactionId: out.id, isAnchor: true }, { transactionId: into.id }] },
         });
