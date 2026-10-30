@@ -689,7 +689,10 @@ describe('Dialog side panel (non-modal on desktop)', () => {
     const onOpenChange = renderPanel('modal');
     expect(screen.queryByTestId('dialog-backdrop')).toBeNull();
     await settle();
+    // Radix dismisses a modal on the click that follows the outside pointer-down.
     fireEvent.pointerDown(document.body);
+    fireEvent.click(document.body);
+    await settle();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
