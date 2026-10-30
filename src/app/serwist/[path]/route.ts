@@ -29,6 +29,11 @@ function offlineChunkFilter() {
   }
   const needed = new Set([...html.matchAll(/static\/[^"'\\\s?]+\.(?:js|css)/g)].map((m) => m[0]));
   if (needed.size === 0) return undefined;
+  // Next's nomodule polyfill bundle (~110 KB) is only fetched by browsers without ES modules; we target current ones.
+  for (const tag of html.matchAll(/<script[^>]*\bnoModule\b[^>]*>/gi)) {
+    const src = tag[0].match(/static\/[^"'\\\s?]+\.js/);
+    if (src) needed.delete(src[0]);
+  }
   return async (entries: ManifestEntry[]) => ({
     manifest: entries.filter((e) => {
       const i = e.url.indexOf('static/');
