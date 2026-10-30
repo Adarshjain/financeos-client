@@ -1,6 +1,6 @@
 'use client';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { batchFailureLabel } from '@/features/transactions/catalog';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Transaction } from '@/lib/transaction.types';

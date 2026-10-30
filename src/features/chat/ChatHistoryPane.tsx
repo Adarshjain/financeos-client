@@ -3,16 +3,13 @@
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
-import {
-  Card,
-  ConfirmDialog,
-  Dialog,
-  Icon,
-  ListRow,
-  SectionHeader,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 import { groupConversations, type HistoryRow,MAX_CHATS } from './chatHistoryModel';
 import type { ConversationSummary } from './conversation.types';

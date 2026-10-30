@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Button, Card, ConfirmDialog, ListRow, ProgressBar, showToast, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useDeleteRewardCapBucket, useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBucketsQueries';
 import { useRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';

@@ -2,18 +2,16 @@
 
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  Checkbox,
-  Dialog,
-  EmptyState,
-  SectionHeader,
-  Select,
-  showToast,
-  Skeleton,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { formatDate, formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { getAccountName } from '@/lib/utils';

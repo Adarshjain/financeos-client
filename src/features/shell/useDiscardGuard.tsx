@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { ConfirmDialog } from '@/components/ds';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 
 /**
  * Closing a form dialog with unsaved changes asks "Discard changes?" first. `requestClose` goes on Cancel, ×, the

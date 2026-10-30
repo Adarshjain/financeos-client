@@ -3,8 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
-import { Card, EmptyState, Pager } from '@/components/ds';
-import { JobsHistory } from '@/components/organisms';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import type { JobResponse } from '@/lib/types';
 

@@ -2,8 +2,16 @@
 
 import React from 'react';
 
-import { Button, Checkbox, DateField, Dialog, Reveal, Select, showToast, Text, TextField } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutations';
 import { BreakdownContent } from '@/features/rewards/which-card/WhichCardBreakdownDialog';
 import {

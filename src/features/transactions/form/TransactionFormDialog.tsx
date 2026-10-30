@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, showToast } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Account } from '@/lib/account.types';

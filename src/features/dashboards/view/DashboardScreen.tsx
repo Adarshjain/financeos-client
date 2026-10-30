@@ -11,7 +11,14 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ActionBar, Button, ConfirmDialog, EmptyState, Menu, showToast, Text, TextField } from '@/components/ds';
+import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
+import { Button } from '@/components/ds/Button/Button';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { SAVE_FAILED, useDeleteDashboard, useSaveDashboard, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { textWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { editorReducer, editorSignature, initialEditorState, saveBody, widgetIssues } from '@/features/dashboards/editor/editorStateModel';

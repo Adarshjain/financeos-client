@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { type CreditCard, isAccountClosed } from '@/lib/account.types';
 
 import { buildBillRows } from '../billsHistoryModel';

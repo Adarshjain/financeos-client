@@ -2,7 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Button, Card, Pager, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Text } from '@/components/ds/Text/Text';
 import type { Schemas } from '@/lib/api/types';
 
 import { AssignDialog } from './AssignDialog';

@@ -2,11 +2,9 @@
 
 import React from 'react';
 
-import {
-  Card,
-  EmptyState,
-  GRID_GAP,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { loadEpfAddDialog } from '../lazyDialogs';

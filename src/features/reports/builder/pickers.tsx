@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Button, Icon, Reveal, Select, type SelectOption, Text, TextField } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { Aggregation, ComparisonDisplay, DatasourceCatalog, DimensionRef, Granularity, ReportType } from '@/lib/reports.types';
 
 import { fieldByName, isDateFieldName } from './catalog';

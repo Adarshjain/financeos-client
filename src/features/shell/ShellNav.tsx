@@ -4,22 +4,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
-import {
-  Avatar,
-  Button,
-  Card,
-  cn,
-  Dialog,
-  Icon,
-  Kbd,
-  ListRow,
-  Rail,
-  Switch,
-  TabBar,
-  Text,
-  Tooltip,
-} from '@/components/ds';
-import { Logo } from '@/components/organisms';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { cn } from '@/components/ds/cn';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Kbd } from '@/components/ds/Kbd/Kbd';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Rail } from '@/components/ds/Rail/Rail';
+import { Switch } from '@/components/ds/Switch/Switch';
+import { TabBar } from '@/components/ds/TabBar/TabBar';
+import { Text } from '@/components/ds/Text/Text';
+import { Tooltip } from '@/components/ds/Tooltip/Tooltip';
+import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 

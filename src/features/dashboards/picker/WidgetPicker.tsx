@@ -7,15 +7,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 
-import {
-  ChoiceCard,
-  Dialog,
-  EmptyState,
-  Icon,
-  Skeleton,
-  Tabs,
-  TextField,
-} from '@/components/ds';
+import { ChoiceCard } from '@/components/ds/ChoiceCard/ChoiceCard';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Tabs } from '@/components/ds/Tabs/Tabs';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type {
   BuiltinWidgetResponse,
   WidgetParams,

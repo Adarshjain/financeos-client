@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { billCardLabel } from '@/features/bills/billsModel';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { StatementDetailsDialog } from '@/features/bills/StatementDetailsDialog';

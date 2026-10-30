@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { toastError } from '@/lib/toastError';

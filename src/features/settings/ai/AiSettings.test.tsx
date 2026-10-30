@@ -40,8 +40,8 @@ vi.mock('@/lib/api/server', () => ({ serverApi: {
     } }));
 
 const showToast = vi.fn();
-vi.mock('@/components/ds', async () => {
-  const actual = await vi.importActual<typeof import('@/components/ds')>('@/components/ds');
+vi.mock('@/components/ds/Toast/Toast', async () => {
+  const actual = await vi.importActual<typeof import('@/components/ds/Toast/Toast')>('@/components/ds/Toast/Toast');
   return { ...actual, showToast: (...a: unknown[]) => showToast(...a) };
 });
 

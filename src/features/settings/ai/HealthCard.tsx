@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { Card, ListRow, StatusWord, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import { type HealthRow, maskedKey } from './aiModel';
 

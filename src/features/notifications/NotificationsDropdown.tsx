@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, ListRow, Popover, Skeleton, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Popover } from '@/components/ds/Popover/Popover';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { useNotificationFeed } from '@/lib/query/hooks/useNotifications';
 

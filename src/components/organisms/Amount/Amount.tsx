@@ -2,7 +2,8 @@
 
 import React, { forwardRef } from 'react';
 
-import { CONCEAL_PLACEHOLDER, Text, type TextProps, useConcealed } from '@/components/ds';
+import { CONCEAL_PLACEHOLDER, useConcealed } from '@/components/ds/Conceal/Conceal';
+import { Text, type TextProps } from '@/components/ds/Text/Text';
 import { formatMoney, type MoneyOptions } from '@/lib/format';
 
 export interface AmountProps extends Omit<TextProps, 'tone' | 'children'> {

@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Banner, GRID_GAP,KpiTile } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
 
 import { skipRows, unmappedMessage } from './importModel';
 import { CasTable, ExecutionsTable, FnoTable } from './ReviewTables';

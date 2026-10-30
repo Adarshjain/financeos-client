@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { DateField, Select } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select } from '@/components/ds/Select/Select';
 
 import { rewardsHref, type RewardsQuery } from './rewardsModel';
 import { DEFAULT_PERIOD, presetLabel, RANGE_PRESETS, type RangePreset } from './rewardsPeriodModel';

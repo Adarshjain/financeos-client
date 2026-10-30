@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Button, Card, Conceal, Figures, Hero } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { Figures } from '@/components/ds/Figures/Figures';
+import { Hero } from '@/components/ds/Hero/Hero';
 
 import { HERO_FIGURE_IDS, type HoldingFigure, type HoldingHeroModel } from './holdingModel';
 

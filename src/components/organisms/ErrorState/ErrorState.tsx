@@ -2,7 +2,8 @@
 
 import React, { forwardRef } from 'react';
 
-import { type ActionTarget, EmptyState, type EmptyStateProps } from '@/components/ds';
+import { type ActionTarget } from '@/components/ds/Button/ActionButton';
+import { EmptyState, type EmptyStateProps } from '@/components/ds/EmptyState/EmptyState';
 import { copyText } from '@/lib/copyText';
 
 export interface ErrorStateProps

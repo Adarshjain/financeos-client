@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Card, Dialog, ListRow, ProgressBar, StatusWords, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { Breakdown } from './whichCardModel';
 

@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { Card, Hero, ProgressBar, SectionHeader } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 /** /ds/hero: the Hero component in its forms, at whatever width the window is. */

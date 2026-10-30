@@ -4,7 +4,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import React from 'react';
 
-import { Banner, Button, Card, ConfirmDialog, showToast, Skeleton, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useReportCatalog } from '@/features/dashboards/frame/useReportCatalog';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { ReportResult } from '@/features/reports/view/ReportResult';

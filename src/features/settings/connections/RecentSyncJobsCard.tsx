@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Badge, Button, Card, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { GmailSyncResult } from '@/features/jobs/ds/GmailSyncResult';
 import { JobActions } from '@/features/jobs/ds/JobActions';

@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { bankCredit, employer, entry, interest, latestContribution, manualContribution, opening, settled, summary, transferIn, transferred, withdrawal } from './epf.fixtures';

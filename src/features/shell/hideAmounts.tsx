@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 
 import { HIDE_AMOUNTS_COOKIE } from './hideAmountsName';
 

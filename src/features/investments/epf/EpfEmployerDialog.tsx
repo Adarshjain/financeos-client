@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { DateField, Dialog, showToast, TextField } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 

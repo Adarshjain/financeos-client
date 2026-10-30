@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ErrorState } from '@/components/organisms';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 
 export interface LoadErrorProps {
   /** What failed, as a noun phrase: "loans". The title reads "Couldn't load <what>". */

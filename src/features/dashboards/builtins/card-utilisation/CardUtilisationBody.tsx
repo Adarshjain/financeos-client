@@ -6,7 +6,10 @@
 
 import React from 'react';
 
-import { Button, EmptyState, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { BarRow, type BarRowTone, BuiltinError, BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import { stringParam } from '@/features/dashboards/builtins/subtitlesModel';
 import type { BuiltinBodyProps } from '@/features/dashboards/builtins/types';

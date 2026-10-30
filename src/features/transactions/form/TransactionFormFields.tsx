@@ -2,17 +2,16 @@
 
 import React from 'react';
 
-import {
-  DateField,
-  EmptyState,
-  SectionHeader,
-  SegmentedControl,
-  Select,
-  type SelectOption,
-  TextArea,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker, AmountField, SettingsToggle } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import type { Account } from '@/lib/account.types';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 import { amountExpressionProps } from '@/lib/amountExpression';

@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The tab's shape: the line under the tabs, the form, then the ranked cards. */
 export function WhichCardSkeleton() {

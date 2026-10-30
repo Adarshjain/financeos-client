@@ -3,7 +3,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 
-import { showToast, type TopBarAction } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { type TopBarAction } from '@/components/ds/TopBar/TopBar';
 import type { AppNotification, NotificationFeedPage } from '@/lib/api/types';
 import {
   useNotificationFeed,

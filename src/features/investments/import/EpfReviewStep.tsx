@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Banner, Card, createDataTableColumnHelper, DataTable, Select, StatusWord, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Select } from '@/components/ds/Select/Select';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import {
   countsLine,

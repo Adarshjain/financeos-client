@@ -3,15 +3,12 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Banner,
-  ConfirmDialog,
-  Dialog,
-  SegmentedControl,
-  type SelectOption,
-  showToast,
-  Text,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccountFormMutations } from '@/features/accounts/form/useAccountFormMutations';
 import { useAccountIdentifiers } from '@/features/accounts/form/useAccountIdentifiers';
 import { appHref } from '@/features/shell/routes';

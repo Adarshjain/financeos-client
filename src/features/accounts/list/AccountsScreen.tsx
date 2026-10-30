@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 
-import { GRID_GAP, Hero, Skeleton } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';

@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 
-import { Banner, Button, Icon, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 
 /** "Error details (CODE)" toggle in danger tone; open, it shows the code and message in monospace. */
 export function JobErrorBody({

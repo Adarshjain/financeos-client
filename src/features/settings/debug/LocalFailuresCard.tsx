@@ -2,7 +2,10 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { Button, Card, ListRow, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 import { failureLine } from './debugModel';
 import { useLocalFailures } from './useLocalFailures';

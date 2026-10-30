@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 
-import { Button, Card, ListField, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { formatDate, formatDateTime } from '@/lib/format';
 
 import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';

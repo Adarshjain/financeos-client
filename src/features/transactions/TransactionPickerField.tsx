@@ -2,11 +2,10 @@
 
 import React from 'react';
 
-import { Button, Skeleton, Text } from '@/components/ds';
-import {
-  TransactionPicker,
-  type TransactionPickerItem,
-} from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { TransactionPicker, type TransactionPickerItem } from '@/components/organisms/TransactionPicker/TransactionPicker';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
 

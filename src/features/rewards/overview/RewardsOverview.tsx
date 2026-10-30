@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Card, EmptyState, Hero } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Hero } from '@/components/ds/Hero/Hero';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { RewardsOverviewData } from './overviewData';

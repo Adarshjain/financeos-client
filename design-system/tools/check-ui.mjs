@@ -283,6 +283,9 @@ function check(lines, all = false, classes = true) {
     if (/^src\/components\/ds\//.test(file) && /from ['"]@\/components\/organisms/.test(text)) {
       errors.push({ file, line, rule: 'ds-imports-organism', why: 'Dinero never imports organisms (RULES §5b.1)', text: text.trim().slice(0, 160) });
     }
+    if (!/\.(?:stories|test)\.tsx?$/.test(file) && !/^src\/components\/(?:ds|organisms)\/index\.ts$/.test(file) && /from ['"]@\/components\/(?:ds|organisms)['"]/.test(text)) {
+      errors.push({ file, line, rule: 'barrel-import', why: 'import the component from its own module path (owner 2026-10-30); the barrel is for stories only', text: text.trim().slice(0, 160) });
+    }
     if (/\.stories\.tsx$/.test(file)) {
       for (const [id, re, why] of STORY_RULES) {
         if (re.test(text)) errors.push({ file, line, rule: id, why, text: text.trim().slice(0, 160) });
@@ -426,6 +429,9 @@ function selfTest() {
     ['src/components/ds/Badge/Badge.stories.tsx', '  args: { onClick: fn() },', 'story-callback', false],
     ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from './Badge';", 'story-import', true],
     ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from '@/components/ds';", 'story-import', false],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ds';", 'barrel-import', true],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ds/Card/Card';", 'barrel-import', false],
+    ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from '@/components/ds';", 'barrel-import', false],
     ['src/components/ds/Badge/Badge.stories.tsx', '  play: async ({ canvas }) => {', 'story-play', true],
     ['src/components/ds/Badge/Badge.stories.tsx', 'export const AllVariants: Story = {', 'story-allvariants', true],
     ['src/components/ds/Badge/Badge.stories.tsx', '<span className="font-text text-caption text-ink-3">Soft</span>', 'story-styling', true],

@@ -3,13 +3,11 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  DateField,
-  Dialog,
-  SegmentedControl,
-  showToast,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { MarkBillPaidRequest } from '@/lib/api/types';

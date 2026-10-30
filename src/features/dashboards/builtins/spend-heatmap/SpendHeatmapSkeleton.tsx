@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The calendar grid and its legend line. */
 export function SpendHeatmapSkeleton() {

@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Banner, Card, DropZone, Select, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { DropZone } from '@/components/ds/DropZone/DropZone';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
 
 import { EPF_ACCEPT } from './epfImportModel';
 import { MODE_OPTIONS, queuedFile } from './importModel';

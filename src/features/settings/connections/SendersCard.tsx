@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Button, Card, createDataTableColumnHelper, DataTable, EmptyState, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import type { GmailSenderResponse } from '@/lib/api/types';
 
 import { senderTitle } from './connectionsModel';

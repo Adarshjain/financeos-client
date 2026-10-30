@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { Badge, Card, ListField, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { Text } from '@/components/ds/Text/Text';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 
 import { formatWhenFull, requestUser, statusTone } from './debugModel';

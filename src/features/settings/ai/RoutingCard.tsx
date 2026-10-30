@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Badge, Banner, Button, Card, Icon, ListRow, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 import { routingParts } from './aiModel';
 import type { RoutingGroupEditor } from './routingGroupsModel';

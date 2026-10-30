@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Button, Card, ListRow, SectionHeader, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 import { formatMoney } from '@/lib/format';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 

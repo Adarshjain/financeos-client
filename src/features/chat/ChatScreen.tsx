@@ -3,7 +3,10 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
-import { cn, MessageBubble, PromptField, showToast } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
+import { MessageBubble } from '@/components/ds/MessageBubble/MessageBubble';
+import { PromptField } from '@/components/ds/PromptField/PromptField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { areaCrumb, crumbMap } from '@/features/shell/navigation';
 import { replaceCurrentRoute } from '@/features/shell/navigationStore';
 import { appHref } from '@/features/shell/routes';

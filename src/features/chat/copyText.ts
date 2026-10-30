@@ -1,4 +1,4 @@
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { copyText as writeToClipboard } from '@/lib/copyText';
 
 export const COPY_FAILED = "Couldn't copy. Try again.";

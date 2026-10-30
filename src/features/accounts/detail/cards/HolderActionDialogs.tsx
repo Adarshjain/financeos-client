@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Banner, ConfirmDialog, DateField, Select } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
 import type { Card, Cardholder } from '@/lib/account.types';
 import { pluralize } from '@/lib/format';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';

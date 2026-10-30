@@ -20,7 +20,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import { cn } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
 import { truncateLabel } from '@/lib/charts/chart-format';
 import {
   type FoldedSeries,

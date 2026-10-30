@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { DateField, Select } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select } from '@/components/ds/Select/Select';
 
 import { PERIOD_OPTIONS } from './filterOptionsModel';
 import type { FiltersDraft, PeriodMode } from './filtersDraftModel';

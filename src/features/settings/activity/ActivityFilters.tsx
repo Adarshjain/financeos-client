@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { FilterBar, FilterChip, Select } from '@/components/ds';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Select } from '@/components/ds/Select/Select';
 import { TYPE_OPTIONS } from '@/features/jobs/jobsModel';
 
 import {

@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Dialog, showToast } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { Transaction } from '@/lib/transaction.types';

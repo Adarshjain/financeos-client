@@ -2,8 +2,14 @@
 
 import React from 'react';
 
-import { Button, Checkbox, Icon, ListRow, Select, Text, TextField } from '@/components/ds';
-import { TransactionRow } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { LinkType, Transaction } from '@/lib/transaction.types';

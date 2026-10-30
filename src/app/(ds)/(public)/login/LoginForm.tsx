@@ -5,15 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import React, { useActionState, useState } from 'react';
 
 import { login, startGoogleSSO } from '@/actions/auth';
-import {
-  Banner,
-  Button,
-  Divider,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
-import { Illustration } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Divider } from '@/components/ds/Divider/Divider';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { Illustration } from '@/components/organisms/Illustration/Illustration';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function LoginForm() {

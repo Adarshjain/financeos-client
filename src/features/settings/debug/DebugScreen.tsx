@@ -2,11 +2,9 @@
 
 import React from 'react';
 
-import {
-  Card,
-  GRID_GAP,
-  Skeleton,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LoadError } from '@/features/shell/LoadError';
 
 import { LocalFailuresCard } from './LocalFailuresCard';

@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { areaCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';

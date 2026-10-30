@@ -1,7 +1,7 @@
 // What the Add widget picker lists and says: the cards' meta lines ("Half width · needs: card"), search, and the
 // width a new widget would start at.
 
-import { WIDGET_GRID_WIDTHS, type WidgetGridWidth, widgetGridWidthFromColumns } from '@/components/ds';
+import { WIDGET_GRID_WIDTHS, type WidgetGridWidth, widgetGridWidthFromColumns } from '@/components/ds/WidgetGrid/WidgetGrid';
 import { stepForMinimum, WIDTH_LABELS } from '@/features/dashboards/layout/widgetLayoutModel';
 import { DASHBOARD_GRID_COLUMNS, HALF_WIDTH, newBuiltinWidth } from '@/lib/dashboards.helpers';
 import type { BuiltinParamResponse, BuiltinWidgetResponse } from '@/lib/dashboards.types';

@@ -1,4 +1,5 @@
-import type { TransactionLink, TransactionRowData } from '@/components/organisms';
+import type { TransactionRowData } from '@/components/organisms/TransactionRow/transactionColumns';
+import type { TransactionLink } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction, TransactionSource } from '@/lib/transaction.types';

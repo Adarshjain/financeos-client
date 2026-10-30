@@ -3,14 +3,12 @@
 import Link from 'next/link';
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  ListField,
-  ListRow,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 
 import type {

@@ -2,14 +2,12 @@
 
 import React from 'react';
 
-import {
-  DateField,
-  Dialog,
-  ListRow,
-  Radio,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Radio } from '@/components/ds/Radio/Radio';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { resolveAmountExpression, sanitizeAmountExpressionInput } from '@/lib/amountExpression';
 import type { InstallmentDto } from '@/lib/loan.types';

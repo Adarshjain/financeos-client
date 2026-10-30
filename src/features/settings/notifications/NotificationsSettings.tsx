@@ -3,7 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { GRID_GAP, Text } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Account } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';

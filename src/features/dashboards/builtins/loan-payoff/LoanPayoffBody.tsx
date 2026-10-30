@@ -6,7 +6,11 @@
 
 import React from 'react';
 
-import { Button, EmptyState, ListRow, ProgressBar, Skeleton } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { BodyError } from '@/features/dashboards/builtins/investmentsLoansParts';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { appHref } from '@/features/shell/routes';

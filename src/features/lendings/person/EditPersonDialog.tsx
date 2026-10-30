@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Dialog, TextArea, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { CounterpartyResponse } from '@/lib/lending.types';
 
 const FORM_ID = 'edit-person-form';

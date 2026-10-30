@@ -2,8 +2,9 @@
 
 import React from 'react';
 
-import { Dialog, Select } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 
 import type { ReportRow } from './reportsListModel';

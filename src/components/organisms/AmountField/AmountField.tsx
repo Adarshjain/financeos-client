@@ -2,14 +2,11 @@
 
 import React, { forwardRef, useState } from 'react';
 
-import {
-  Dialog,
-  Keypad,
-  Text,
-  TextField,
-  type TextFieldProps,
-} from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Keypad } from '@/components/ds/Keypad/Keypad';
 import { isPhoneLayout } from '@/components/ds/phoneLayout';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField, type TextFieldProps } from '@/components/ds/TextField/TextField';
 import { evaluateAmountExpression, hasAmountOperator } from '@/lib/amountExpression';
 import { formatMoney } from '@/lib/format';
 

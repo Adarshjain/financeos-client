@@ -6,7 +6,8 @@
 
 import React from 'react';
 
-import { Button, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Text } from '@/components/ds/Text/Text';
 import { BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { formatMeasure } from '@/features/reports/measureFormatModel';

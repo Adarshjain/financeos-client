@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  ConfirmDialog,
-  ContextMenu,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  showToast,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ContextMenu } from '@/components/ds/Menu/ContextMenu';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useRewardsAdd } from '@/features/rewards/overview/RewardsAdd';
 import { useRewardAccountConfig } from '@/features/rewards/queries/useRewardAccountConfigQueries';
 import { useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBucketsQueries';

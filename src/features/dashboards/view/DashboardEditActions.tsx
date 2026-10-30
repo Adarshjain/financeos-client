@@ -5,7 +5,8 @@
 
 import React from 'react';
 
-import { SelectionBar, Text } from '@/components/ds';
+import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
+import { Text } from '@/components/ds/Text/Text';
 
 export interface DashboardEditActionsProps {
   /** A new dashboard: Cancel and Create instead of Discard and Save. */

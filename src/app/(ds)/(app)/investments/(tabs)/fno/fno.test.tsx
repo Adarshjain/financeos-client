@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { brokers, fnoPage, summary, trades } from '@/features/investments/fno/fno.fixtures';
 import { FnoAddDialog } from '@/features/investments/fno/FnoAddDialog';
 import { FNO_HREF } from '@/features/investments/fno/fnoModel';

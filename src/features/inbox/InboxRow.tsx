@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, ContextMenu, Icon, ListRow, SwipeActions } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ContextMenu } from '@/components/ds/Menu/ContextMenu';
+import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
 import type { InboxItemResponse } from '@/lib/api/types';
 
 import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inboxModel';

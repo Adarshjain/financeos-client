@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useDeleteStatement } from '@/features/accounts/statements/useStatementMutations';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';

@@ -1,4 +1,4 @@
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDate } from '@/lib/format';
 

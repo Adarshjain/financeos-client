@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { reviewReasonLabel } from '@/features/transactions/catalog';
 import { mapBatchFailures } from '@/features/transactions/review/reviewModel';
 import type { ReviewSummary } from '@/features/transactions/review/useApproveTransactions';

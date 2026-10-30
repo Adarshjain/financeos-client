@@ -2,10 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import {
-  Banner,
-  GRID_GAP,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import type { LlmKeyDto } from '@/lib/api/types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 

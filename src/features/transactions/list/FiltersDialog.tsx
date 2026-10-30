@@ -3,17 +3,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import {
-  Dialog,
-  FilterChip,
-  ListRow,
-  Reveal,
-  SectionHeader,
-  Select,
-  Switch,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Select } from '@/components/ds/Select/Select';
+import { Switch } from '@/components/ds/Switch/Switch';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import type { Category } from '@/lib/categories.types';

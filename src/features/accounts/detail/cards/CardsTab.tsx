@@ -2,14 +2,12 @@
 
 import React from 'react';
 
-import {
-  Button,
-  Card as DsCard,
-  EmptyState,
-  GRID_GAP,
-  showToast,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card as DsCard } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Card, Cardholder } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';

@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Card, Hero, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The overview's shape: the hero, then the card list. */
 export function RewardsOverviewSkeleton() {

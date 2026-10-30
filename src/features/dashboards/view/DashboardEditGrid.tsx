@@ -6,7 +6,9 @@
 
 import React from 'react';
 
-import { Button, Icon, WidgetGrid, type WidgetGridItem, type WidgetGridLayoutItem } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { WidgetGrid, type WidgetGridItem, type WidgetGridLayoutItem } from '@/components/ds/WidgetGrid/WidgetGrid';
 import { widgetBuiltinKey } from '@/features/dashboards/frame/widgetFrameModel';
 import { toGridLayout, widthStepOf } from '@/features/dashboards/layout/widgetLayoutModel';
 import { isBuiltinWidget, isTextWidget, widgetTitle } from '@/lib/dashboards.helpers';

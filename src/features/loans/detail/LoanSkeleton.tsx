@@ -1,11 +1,9 @@
 import React from 'react';
 
-import {
-  Card,
-  GRID_GAP,
-  Hero,
-  Skeleton,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { DetailLoadingTitle } from '@/features/shell/DetailLoadingTitle';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';

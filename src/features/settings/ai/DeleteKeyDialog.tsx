@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Dialog, Text } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
 import type { LlmKeyDto } from '@/lib/api/types';
 
 interface DeleteKeyDialogProps {

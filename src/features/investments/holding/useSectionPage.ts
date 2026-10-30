@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { watchSession } from '@/lib/authExpiry';
 import type { ApiResult } from '@/lib/types';
 

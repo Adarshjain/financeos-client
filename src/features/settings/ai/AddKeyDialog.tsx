@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Banner, Button, Dialog, Select, TextField } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 import { PROVIDERS } from './providersModel';
 

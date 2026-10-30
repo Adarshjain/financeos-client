@@ -7,7 +7,9 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, EmptyState, Skeleton } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { appHref } from '@/features/shell/routes';
 import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';

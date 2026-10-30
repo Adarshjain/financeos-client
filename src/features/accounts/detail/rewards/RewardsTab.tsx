@@ -1,11 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
 
-import {
-  Button,
-  GRID_GAP,
-  Hero,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Hero } from '@/components/ds/Hero/Hero';
 import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
 import { LoadError } from '@/features/shell/LoadError';
 import { appHref } from '@/features/shell/routes';

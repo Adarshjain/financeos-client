@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Button, Card, Checkbox, ListRow, showToast, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatMoney } from '@/lib/format';

@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** A card with a title line and `rows` lines of text, for the Settings skeletons. */
 export function SkeletonCard({ rows }: { rows: number }) {

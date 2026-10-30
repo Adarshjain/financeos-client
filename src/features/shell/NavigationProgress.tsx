@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-import { ProgressBar } from '@/components/ds';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
 
 import {
   commitRoute,

@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Card, FilterBar, ListRow, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 

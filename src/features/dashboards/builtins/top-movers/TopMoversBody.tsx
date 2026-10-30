@@ -7,7 +7,11 @@
 
 import React from 'react';
 
-import { EmptyState, ListRow, SegmentedControl, Skeleton, Text } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import { BodyError } from '@/features/dashboards/builtins/investmentsLoansParts';
 import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';

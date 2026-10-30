@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '@/features/lendings/useLendingMutations';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateInvestmentQueries, invalidateMoneyQueries } from '@/lib/query/invalidate';

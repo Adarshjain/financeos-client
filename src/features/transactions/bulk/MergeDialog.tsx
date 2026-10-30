@@ -2,8 +2,11 @@
 
 import React from 'react';
 
-import { Badge, Banner, Card, Dialog } from '@/components/ds';
-import { TransactionRow } from '@/components/organisms';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';

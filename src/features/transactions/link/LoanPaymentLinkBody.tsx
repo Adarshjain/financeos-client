@@ -2,8 +2,13 @@
 
 import React from 'react';
 
-import { DateField, ListRow, Radio, Select, Skeleton, Text } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Radio } from '@/components/ds/Radio/Radio';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { differenceWords } from '@/features/loans/detail/payModel';
 import { daysBetween } from '@/features/loans/loanFormatModel';
 import { amountExpressionProps, amountExpressionValue } from '@/lib/amountExpression';

@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { SegmentedControl, Select, TextArea, TextField } from '@/components/ds';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select } from '@/components/ds/Select/Select';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { DatasourceCatalog, ReportCatalog, ReportType } from '@/lib/reports.types';
 
 import type { BuilderAction, BuilderState } from './builderReducerModel';

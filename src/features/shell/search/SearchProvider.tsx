@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { SearchPalette } from '@/components/ds';
+import { SearchPalette } from '@/components/ds/SearchPalette/SearchPalette';
 import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 

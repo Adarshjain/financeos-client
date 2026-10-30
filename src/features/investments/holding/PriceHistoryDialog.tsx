@@ -3,7 +3,15 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Conceal, ConfirmDialog, Dialog, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';

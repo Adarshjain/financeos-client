@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { SectionHeader, Text } from '@/components/ds';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 
 /** One section of the editor's form: an optional titled header (with an optional link action at its end), then its fields. */
 export function ConfigSection({ title, action, children }: { title?: string; action?: React.ReactNode; children?: React.ReactNode }) {

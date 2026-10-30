@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Avatar, cn, Icon } from '@/components/ds';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { cn } from '@/components/ds/cn';
+import { Icon } from '@/components/ds/Icon/Icon';
 import { bankById } from '@/features/banks/banks';
 import { SPRITE_CELL, SPRITE_IDS } from '@/features/banks/bankSprite.generated';
 

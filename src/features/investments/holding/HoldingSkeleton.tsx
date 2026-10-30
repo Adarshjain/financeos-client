@@ -1,12 +1,10 @@
 import React from 'react';
 
-import {
-  Card,
-  Figures,
-  GRID_GAP,
-  Hero,
-  Skeleton,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Figures } from '@/components/ds/Figures/Figures';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

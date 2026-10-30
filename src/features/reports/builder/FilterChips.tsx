@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Button, FilterChip, Popover, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Popover } from '@/components/ds/Popover/Popover';
+import { Text } from '@/components/ds/Text/Text';
 import { buildFilter } from '@/lib/reports.helpers';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 

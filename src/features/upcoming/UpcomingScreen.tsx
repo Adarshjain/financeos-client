@@ -3,7 +3,9 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Card, EmptyState } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { SettleDialog } from '@/features/lendings/SettleDialog';

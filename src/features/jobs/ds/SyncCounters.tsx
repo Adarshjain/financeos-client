@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
 
 export type CounterTone = 'ink' | 'warning' | 'danger';
 

@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Button, Icon, Menu, SelectionBar, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
+import { Text } from '@/components/ds/Text/Text';
 
 export interface EditorActionsProps {
   /** The draft differs from what is saved: shows the "Unsaved changes" note. */

@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Banner, Button, FilterChip, Icon, KpiTile, StepList, type StepListStep, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
+import { StepList, type StepListStep } from '@/components/ds/StepList/StepList';
+import { Text } from '@/components/ds/Text/Text';
 
 import { answerText, type AssistantRecord, metaLine, stepLabel, stepMeta } from './answerModel';
 import { ChatChartCard } from './ChatChartCard';

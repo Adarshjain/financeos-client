@@ -7,7 +7,9 @@
 
 import React from 'react';
 
-import { Button, EmptyState, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Text } from '@/components/ds/Text/Text';
 import { BuiltinError } from '@/features/dashboards/builtins/BuiltinParts';
 import type { BuiltinBodyProps } from '@/features/dashboards/builtins/types';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Select, type SelectOption } from '@/components/ds';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
 import { entriesLabel, positionLabel } from '@/features/lendings/lendingEntryFormModel';
 import { type CounterpartyResponse, type CounterpartySelection } from '@/lib/lending.types';
 import { useCounterpartySearch } from '@/lib/query/hooks/useCounterparties';

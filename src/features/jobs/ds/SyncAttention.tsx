@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, Icon, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 import { formatFromHeader } from '@/features/jobs/gmailSyncModel';
 import { appHref } from '@/features/shell/routes';
 import { formatDate } from '@/lib/format';

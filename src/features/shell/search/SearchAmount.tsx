@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Amount } from '@/components/organisms';
+import { Amount } from '@/components/organisms/Amount/Amount';
 
 /**
  * A transaction amount in a search row: "₹24,990", or "+₹46,800" in the money-in tone; "₹ —" while amounts are hidden.

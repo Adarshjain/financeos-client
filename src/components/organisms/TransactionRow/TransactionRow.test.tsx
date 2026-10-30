@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DataTable, type DataTableColumnMeta } from '@/components/ds';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { type DataTableColumnMeta } from '@/components/ds/DataTable/types';
 import { stubLayout } from '@/test/stubLayout';
 
 import {

@@ -6,7 +6,9 @@
 
 import React from 'react';
 
-import { ReorderList, Select, type SelectGroup, Text } from '@/components/ds';
+import { ReorderList } from '@/components/ds/ReorderList/ReorderList';
+import { Select, type SelectGroup } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { BuiltinParamsEditorProps } from '../types';
 import { type ShortcutKind, useShortcutCatalog } from './shortcutsCatalog';

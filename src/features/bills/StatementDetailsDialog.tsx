@@ -3,13 +3,11 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Banner,
-  DateField,
-  Dialog,
-  showToast,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateBillDetailsRequest } from '@/lib/api/types';

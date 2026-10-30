@@ -1,4 +1,7 @@
-import { Conceal, createDataTableColumnHelper, Highlight, Text, useConcealed } from '@/components/ds';
+import { Conceal, useConcealed } from '@/components/ds/Conceal/Conceal';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Highlight } from '@/components/ds/Highlight/Highlight';
+import { Text } from '@/components/ds/Text/Text';
 
 export interface TransactionRowData {
   id: string;

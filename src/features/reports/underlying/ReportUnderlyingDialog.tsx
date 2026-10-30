@@ -9,20 +9,18 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  createDataTableColumnHelper,
-  DataTable,
-  Dialog,
-  EmptyState,
-  FilterChip,
-  Pager,
-  SectionHeader,
-  Select,
-  Skeleton,
-  Tabs,
-  Text,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Tabs } from '@/components/ds/Tabs/Tabs';
+import { Text } from '@/components/ds/Text/Text';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';

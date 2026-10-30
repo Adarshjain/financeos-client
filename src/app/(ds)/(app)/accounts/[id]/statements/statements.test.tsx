@@ -31,8 +31,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 const showToast = vi.fn();
-vi.mock('@/components/ds', async (orig) => ({
-  ...(await orig<typeof import('@/components/ds')>()),
+vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
+  ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
   showToast: (...args: unknown[]) => showToast(...args),
 }));
 

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { TextField } from '@/components/ds';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 import {
   amountExpressionProps,

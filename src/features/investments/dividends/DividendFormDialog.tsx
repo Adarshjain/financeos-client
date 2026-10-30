@@ -3,16 +3,14 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import {
-  ConfirmDialog,
-  DateField,
-  Dialog,
-  Select,
-  showToast,
-  Skeleton,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker, AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { type BankAccount, isAccountClosed } from '@/lib/account.types';
 
 import { IdentifiersCard } from '../IdentifiersCard';

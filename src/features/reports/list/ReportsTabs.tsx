@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { type TabItem, Tabs } from '@/components/ds';
+import { type TabItem, Tabs } from '@/components/ds/Tabs/Tabs';
 
 import { DASHBOARDS_HREF, REPORTS_HREF } from './reportsListModel';
 

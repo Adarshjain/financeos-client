@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import type { ChartProps } from '@/components/organisms/Chart/Chart';
 
 // Recharts is not in the page's JS: the Chart loads after hydration, with a skeleton of the chart's own frame

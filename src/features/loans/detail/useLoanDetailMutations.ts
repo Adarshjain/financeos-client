@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { paymentItemFor } from '@/features/loans/loanPaymentsBatchModel';
 import { useLoanMutations } from '@/features/loans/useLoanMutations';
 import { appHref } from '@/features/shell/routes';

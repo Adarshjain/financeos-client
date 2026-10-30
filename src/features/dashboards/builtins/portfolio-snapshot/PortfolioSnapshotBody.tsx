@@ -7,7 +7,12 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, EmptyState, ListField, ListRow, Skeleton, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import { num, positionsValueRequest } from '@/features/dashboards/builtins/investmentsLoansData';
 import { BodyError, LazyReportUnderlyingDialog } from '@/features/dashboards/builtins/investmentsLoansParts';
 import { moveTone } from '@/features/investments/investmentsFormatModel';

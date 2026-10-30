@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { Card, Conceal, Hero, ListRow, ProgressBar, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 
 import { type HoldingsHeroModel, type Mover, type TaxCardModel } from './holdingsModel';
 

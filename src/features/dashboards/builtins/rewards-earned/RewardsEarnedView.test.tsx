@@ -10,7 +10,7 @@ vi.mock('@/features/reports/underlying/ReportUnderlyingDialog', () => ({
   ),
 }));
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { kpi, pivot, widget } from '@/features/dashboards/builtins/testFixtures';
 import type { ReportData } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';

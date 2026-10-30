@@ -3,17 +3,13 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  DateField,
-  Dialog,
-  Select,
-  type SelectGroup,
-  type SelectOption,
-  showToast,
-  Text,
-  TextArea,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select, type SelectGroup, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryFormModel';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';

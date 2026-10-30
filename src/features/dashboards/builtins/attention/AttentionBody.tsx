@@ -6,7 +6,8 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { EmptyState, ListRow } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useInbox } from '@/lib/query/hooks/useInbox';

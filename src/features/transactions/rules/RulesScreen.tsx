@@ -3,16 +3,14 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  ConfirmDialog,
-  EmptyState,
-  FilterBar,
-  Icon,
-  Pager,
-  SelectionBar,
-  type SelectOption,
-} from '@/components/ds';
-import { RuleCard } from '@/components/organisms';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { type SelectOption } from '@/components/ds/Select/Select';
+import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
+import { RuleCard } from '@/components/organisms/RuleCard/RuleCard';
 import { LoadError } from '@/features/shell/LoadError';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

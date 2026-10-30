@@ -3,18 +3,16 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  Dialog,
-  Divider,
-  EmptyState,
-  Icon,
-  ListRow,
-  Pager,
-  SectionHeader,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Divider } from '@/components/ds/Divider/Divider';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
 import { areaCrumb } from '@/features/shell/navigation';
 import { pageHref } from '@/features/shell/pagination';

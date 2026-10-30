@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Button, Card, ListField, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { Text } from '@/components/ds/Text/Text';
 
 export interface ExpectedReturnCardProps {
   /** "28 Oct 2026", or null when no entry carries a date. */

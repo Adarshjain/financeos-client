@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Checkbox, Select, Text, TextField } from '@/components/ds';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { CHANNEL_OPTIONS } from '@/features/rewards/rules/form/constants';
 import type { useRewardRuleForm } from '@/features/rewards/rules/form/useRewardRuleForm';
 import type { Category } from '@/lib/categories.types';

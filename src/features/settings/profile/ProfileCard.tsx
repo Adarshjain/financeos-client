@@ -1,7 +1,10 @@
 import React from 'react';
 
 import { logoutToDinero } from '@/actions/auth';
-import { Avatar, Button, Card, ListRow } from '@/components/ds';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
 import type { UserResponse } from '@/lib/types';
 
 import { profileInitials, profileLines } from './profileModel';

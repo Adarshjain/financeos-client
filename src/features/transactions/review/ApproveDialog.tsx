@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from 'react';
 
-import { Card, Checkbox, Dialog, ListRow } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
 
 import { approveTitle, type ClearableReason, countReasons } from './reviewModel';
 import { ReviewSummaryDialog } from './ReviewSummaryDialog';

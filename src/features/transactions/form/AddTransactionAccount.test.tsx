@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Dialog } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
 import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';

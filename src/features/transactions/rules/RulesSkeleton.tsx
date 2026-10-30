@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Card, FilterBar, FilterChip, ListRow, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 

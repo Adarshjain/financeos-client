@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-import { Button, Card, Icon, Text } from '@/components/ds';
-import { Amount } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
+import { Amount } from '@/components/organisms/Amount/Amount';
 import { MESSAGE_GROUPS, type MessageGroup, STATUS_LABELS } from '@/features/jobs/syncLabelsModel';
 import { appHref } from '@/features/shell/routes';
 import { formatDate, formatTime } from '@/lib/format';

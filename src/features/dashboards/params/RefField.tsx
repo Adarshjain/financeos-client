@@ -7,8 +7,10 @@
 
 import React from 'react';
 
-import { Button, Select, type SelectOption, Text } from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { isAccountClosed } from '@/lib/account.types';
 import type { BuiltinParamResponse } from '@/lib/dashboards.types';
 import { todayInAppZone } from '@/lib/date-range';

@@ -5,7 +5,7 @@ import { ApiError } from '@/lib/api/client';
 import { dsRewardNotifier } from './rewardNotifier';
 
 const showToast = vi.fn();
-vi.mock('@/components/ds', () => ({ showToast: (...a: unknown[]) => showToast(...a) }));
+vi.mock('@/components/ds/Toast/Toast', () => ({ showToast: (...a: unknown[]) => showToast(...a) }));
 const record = vi.fn();
 vi.mock('@/lib/diagnostics/errorLog', () => ({ errorLog: { record: (...a: unknown[]) => record(...a) } }));
 

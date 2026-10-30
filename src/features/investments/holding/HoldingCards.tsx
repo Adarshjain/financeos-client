@@ -2,19 +2,17 @@
 
 import React from 'react';
 
-import {
-  ActionButton,
-  Badge,
-  Card,
-  Conceal,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  ListRow,
-  Pager,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { ActionButton } from '@/components/ds/Button/ActionButton';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { fyLabel } from '@/features/investments/investmentsFormatModel';
 import { formatQuantity } from '@/lib/format';
 import type { PagePosition, SellEstimate } from '@/lib/investments.types';

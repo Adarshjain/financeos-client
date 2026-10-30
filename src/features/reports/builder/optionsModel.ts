@@ -1,4 +1,4 @@
-import type { SelectGroup, SelectOption } from '@/components/ds';
+import type { SelectGroup, SelectOption } from '@/components/ds/Select/Select';
 import { areaOf } from '@/features/reports/list/reportsListModel';
 import type { Aggregation, ChartDefinition, DatasourceCatalog, DatasourceDef, Granularity, ReportType } from '@/lib/reports.types';
 

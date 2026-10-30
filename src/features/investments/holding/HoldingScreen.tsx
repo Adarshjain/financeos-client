@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ActionBar, Button, GRID_GAP, Menu } from '@/components/ds';
+import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
+import { Button } from '@/components/ds/Button/Button';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Menu } from '@/components/ds/Menu/Menu';
 import { holdingHref, HOLDINGS_HREF } from '@/features/investments/investmentsTabs';
 import {
   loadCorporateActionDialog,

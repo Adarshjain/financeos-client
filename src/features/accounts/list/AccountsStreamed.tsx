@@ -1,6 +1,9 @@
 import React, { Suspense } from 'react';
 
-import { Conceal, Skeleton, StatusWord, Text } from '@/components/ds';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import type { CardBillResponse } from '@/lib/api/types';
 
 import type { AccountsListData } from './accountsListData';

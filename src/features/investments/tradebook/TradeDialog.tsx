@@ -4,20 +4,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Banner,
-  Button,
-  ConfirmDialog,
-  DateField,
-  Dialog,
-  SegmentedControl,
-  Select,
-  type SelectOption,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';

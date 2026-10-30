@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import {
-  DateField,
-  ListRow,
-  Radio,
-  SegmentedControl,
-  Select,
-  Skeleton,
-  Text,
-  TextArea,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Radio } from '@/components/ds/Radio/Radio';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { PersonSelect } from '@/features/lendings/form/PersonSelect';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { todayInAppZone } from '@/lib/date-range';

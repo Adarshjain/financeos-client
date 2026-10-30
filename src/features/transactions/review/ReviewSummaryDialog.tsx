@@ -1,6 +1,10 @@
 'use client';
 
-import { Card, Dialog, ListRow, SectionHeader, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { ReviewSummary } from './useApproveTransactions';
 

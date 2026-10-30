@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { DateField, Select, TextField } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { todayInAppZone } from '@/lib/date-range';
 import { dateBetween, numberBetween, relativeAmount } from '@/lib/reports.helpers';
 import type { FieldDefinition, FilterValue } from '@/lib/reports.types';

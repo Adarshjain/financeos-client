@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-import { WidgetGrid, type WidgetGridItem } from '@/components/ds';
+import { WidgetGrid, type WidgetGridItem } from '@/components/ds/WidgetGrid/WidgetGrid';
 import { orderWidgets, widthStepOf } from '@/features/dashboards/layout/widgetLayoutModel';
 import { isTextWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';

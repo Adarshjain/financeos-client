@@ -2,20 +2,19 @@
 
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  Checkbox,
-  DateField,
-  ListRow,
-  Reveal,
-  Select,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker, AmountField } from '@/components/organisms';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { useRecommendCards } from '@/features/rewards/queries/useRewardRecommendMutations';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';

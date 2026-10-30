@@ -3,8 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { DateField, Dialog, showToast } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { ActionError } from '@/lib/actionResult';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';

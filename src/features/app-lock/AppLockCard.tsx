@@ -3,7 +3,12 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 
-import { Card, ListRow, Select, showToast, Switch, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Select } from '@/components/ds/Select/Select';
+import { Switch } from '@/components/ds/Switch/Switch';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import type { AppLockStatus } from '@/lib/api/types';
 import { APP_LOCK_CHANGED_EVENT, notifyIfAppLocked } from '@/lib/appLock';
 

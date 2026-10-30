@@ -2,19 +2,17 @@
 
 import React, { forwardRef } from 'react';
 
-import {
-  Checkbox,
-  cn,
-  Icon,
-  ListRow,
-  Pager,
-  Radio,
-  SegmentedControl,
-  Skeleton,
-  Text,
-  TextField,
-  useControllableState,
-} from '@/components/ds';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { cn } from '@/components/ds/cn';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Radio } from '@/components/ds/Radio/Radio';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { useControllableState } from '@/components/ds/useControllableState';
 
 import { TransactionRow } from '../TransactionRow/TransactionRow';
 

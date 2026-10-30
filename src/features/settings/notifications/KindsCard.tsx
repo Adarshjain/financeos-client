@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-import { Card } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { Card } from '@/components/ds/Card/Card';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse, UpdateNotificationSettingsRequest } from '@/lib/api/types';
 import { notify } from '@/lib/notify';

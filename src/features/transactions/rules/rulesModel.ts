@@ -1,4 +1,4 @@
-import type { SelectOption } from '@/components/ds';
+import type { SelectOption } from '@/components/ds/Select/Select';
 import { clampPage, DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';

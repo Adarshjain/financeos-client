@@ -2,8 +2,12 @@
 
 import React from 'react';
 
-import { Card, DataTable, EmptyState, Pager } from '@/components/ds';
-import { createTransactionColumns, TransactionRow, type TransactionRowData } from '@/components/organisms';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { createTransactionColumns, type TransactionRowData } from '@/components/organisms/TransactionRow/transactionColumns';
+import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 
 import { dayHeader, monthBand, type TransactionListRow } from './transactionRowsModel';

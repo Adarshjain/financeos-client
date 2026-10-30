@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Hero, Text } from '@/components/ds';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { HeroModel } from './loanFormatModel';
 

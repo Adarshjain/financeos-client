@@ -7,7 +7,9 @@
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
-import { Dialog, showToast, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { widgetParams } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetParams, WidgetResponse } from '@/lib/dashboards.types';

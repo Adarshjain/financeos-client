@@ -1,4 +1,4 @@
-import type { SelectGroup, SelectOption } from '@/components/ds';
+import type { SelectGroup, SelectOption } from '@/components/ds/Select/Select';
 import { accountTypeLabel } from '@/features/accounts/form/ds/accountFormModel';
 import { type AccountBase, isAccountClosed } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';

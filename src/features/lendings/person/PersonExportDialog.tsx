@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Dialog, showToast, Skeleton } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { watchSession } from '@/lib/authExpiry';
 import type { LedgerEntryResponse } from '@/lib/lending.types';
 

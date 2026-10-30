@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { fyLabel } from '@/features/investments/investmentsFormatModel';
 
 import { FnoHero, MonthCard, UnderlyingCard } from './FnoFigures';

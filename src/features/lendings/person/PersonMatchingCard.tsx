@@ -4,7 +4,13 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, ListField, ListRow, showToast, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { type TransferRow, transferRows } from '@/features/lendings/list/lendingsListModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';

@@ -2,8 +2,9 @@
 
 import React from 'react';
 
-import { Checkbox } from '@/components/ds';
-import { BankLogo, TransactionRow } from '@/components/organisms';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
+import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { bankById } from '@/features/banks/banks';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { RuleMatchTransaction } from '@/lib/rules.types';

@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Select, type SelectGroup, type SelectOption, showToast } from '@/components/ds';
+import { Select, type SelectGroup, type SelectOption } from '@/components/ds/Select/Select';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InstrumentCandidate, InstrumentType } from '@/lib/types';
 

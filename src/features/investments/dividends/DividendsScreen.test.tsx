@@ -2,7 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { awaiting, dividend, receipts, summary, unrecordedCredit } from './dividends.fixtures';

@@ -6,7 +6,8 @@
 
 import React from 'react';
 
-import { EmptyState, Skeleton } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { formatMoney } from '@/lib/format';
 import { LazyChart as Chart } from '@/lib/lazy/LazyChart';

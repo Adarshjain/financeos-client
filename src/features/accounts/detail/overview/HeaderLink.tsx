@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, Icon, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 
 /** A link in a card header: small link button in caption type, with a chevron when it opens another page. */

@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Card, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
 
 import { type EpfBatchResult, resultLine, resultTitle } from './epfImportModel';
 

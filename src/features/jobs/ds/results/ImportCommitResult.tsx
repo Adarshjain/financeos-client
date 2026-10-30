@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Text } from '@/components/ds';
+import { Text } from '@/components/ds/Text/Text';
 import type { ImportCommitResult as ImportCommitData } from '@/lib/types';
 
 import { ResultSection } from './ResultSection';

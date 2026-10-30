@@ -1,16 +1,14 @@
 import React from 'react';
 
-import {
-  Avatar,
-  Badge,
-  Card,
-  EmptyState,
-  ListField,
-  ListRow,
-  ProgressBar,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { formatPercent } from '@/lib/format';
 

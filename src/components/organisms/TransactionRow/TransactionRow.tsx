@@ -3,22 +3,18 @@
 import React, { forwardRef } from 'react';
 import { mergeProps } from 'react-aria';
 
-import type { PressPoint } from '@/components/ds';
-import {
-  Badge,
-  Button,
-  Checkbox,
-  clickPoint,
-  cn,
-  CONCEAL_PLACEHOLDER,
-  Highlight,
-  Icon,
-  Reveal,
-  StatusWord,
-  useConcealed,
-  useControllableState,
-  useSelectableItem,
-} from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { cn } from '@/components/ds/cn';
+import { CONCEAL_PLACEHOLDER, useConcealed } from '@/components/ds/Conceal/Conceal';
+import { Highlight } from '@/components/ds/Highlight/Highlight';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { useControllableState } from '@/components/ds/useControllableState';
+import type { PressPoint } from '@/components/ds/useSelectableItem';
+import { clickPoint, useSelectableItem } from '@/components/ds/useSelectableItem';
 
 export interface TransactionLink {
   label: React.ReactNode;

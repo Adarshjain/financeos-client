@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Button, Icon, SelectionBar } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { approveHint, isApprovable, mergeHint, selectionSummary } from './bulkModel';

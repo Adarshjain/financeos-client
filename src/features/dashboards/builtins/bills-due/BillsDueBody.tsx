@@ -7,7 +7,11 @@
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, ListRow, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { type BillCardState, buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardStateModel';
 import { billCardLabel } from '@/features/bills/billsModel';
 import { BuiltinError } from '@/features/dashboards/builtins/BuiltinParts';

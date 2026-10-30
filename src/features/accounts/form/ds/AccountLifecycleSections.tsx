@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Button, DateField, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Text } from '@/components/ds/Text/Text';
 import { formatDate } from '@/lib/format';
 
 function Heading({ children, tone = 'ink-3' }: { children: React.ReactNode; tone?: 'ink-3' | 'danger' }) {

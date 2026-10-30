@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Icon,
-  ListRow,
-  Menu,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import type {
   ClosedHolderModel,

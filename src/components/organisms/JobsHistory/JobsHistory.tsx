@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, StatusWord, Text, type TextProps } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text, type TextProps } from '@/components/ds/Text/Text';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { isActiveJob, JOB_STATUS_BADGE } from '@/features/jobs/jobModel';
 import {

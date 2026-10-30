@@ -6,7 +6,7 @@
 import { forwardRef, useId } from 'react';
 import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts';
 
-import { cn } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
 
 import type { ChartInput } from './Chart';
 import { ChartDataTable } from './ChartParts';

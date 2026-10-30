@@ -2,8 +2,10 @@
 
 import React from 'react';
 
-import { Banner, Dialog, Text } from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 
 import type { AttentionItem } from './attentionItemModel';

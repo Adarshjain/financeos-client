@@ -3,18 +3,16 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Card,
-  ConfirmDialog,
-  DateField,
-  Dialog,
-  SegmentedControl,
-  Select,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker, AmountField } from '@/components/organisms';
+import { Card } from '@/components/ds/Card/Card';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import type { Broker } from '@/lib/account.types';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';

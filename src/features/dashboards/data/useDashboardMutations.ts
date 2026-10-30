@@ -6,7 +6,7 @@
 
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { deleteDashboard, saveDashboard, saveDashboardWidgets, setDashboardDefault } from '@/features/dashboards/dashboardActions';
 import { duplicateBuiltin, windowNote } from '@/features/dashboards/data/duplicateBuiltinModel';
 import type { saveBody } from '@/features/dashboards/editor/editorStateModel';

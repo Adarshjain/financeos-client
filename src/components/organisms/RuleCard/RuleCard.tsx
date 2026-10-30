@@ -3,20 +3,17 @@
 import React, { forwardRef } from 'react';
 import { mergeProps } from 'react-aria';
 
-import type { PressPoint } from '@/components/ds';
-import {
-  Badge,
-  Button,
-  Card,
-  Checkbox,
-  clickPoint,
-  cn,
-  Icon,
-  Menu,
-  StatusWords,
-  useControllableState,
-  useSelectableItem,
-} from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { cn } from '@/components/ds/cn';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { useControllableState } from '@/components/ds/useControllableState';
+import type { PressPoint } from '@/components/ds/useSelectableItem';
+import { clickPoint, useSelectableItem } from '@/components/ds/useSelectableItem';
 
 export interface RuleCardMenuItem {
   label: React.ReactNode;

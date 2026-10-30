@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 
-import { cn } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
 
 export interface LogoProps extends React.HTMLAttributes<HTMLSpanElement> {
   /**

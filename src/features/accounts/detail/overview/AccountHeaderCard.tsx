@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { ActionBar, Button, Hero, type HeroFigure } from '@/components/ds';
+import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
+import { Button } from '@/components/ds/Button/Button';
+import { Hero, type HeroFigure } from '@/components/ds/Hero/Hero';
 import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 

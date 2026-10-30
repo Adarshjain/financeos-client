@@ -7,7 +7,7 @@
 
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
 import { categoryEntries, type UnderlyingTarget, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';

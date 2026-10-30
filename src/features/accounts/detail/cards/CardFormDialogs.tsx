@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { DateField, Text, TextField } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { Card, CreateCardRequest, ReplaceCardRequest } from '@/lib/account.types';
 
 import { buildAddCard, buildClose, buildReplaceCard, digitsOnly, futureDateError } from './cardsFormsModel';

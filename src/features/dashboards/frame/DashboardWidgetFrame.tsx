@@ -11,7 +11,8 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Text, Widget } from '@/components/ds';
+import { Text } from '@/components/ds/Text/Text';
+import { Widget } from '@/components/ds/Widget/Widget';
 import { loadWidgetSettings } from '@/features/dashboards/lazyDialogs';
 import { reportHref } from '@/features/reports/list/reportsListModel';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';

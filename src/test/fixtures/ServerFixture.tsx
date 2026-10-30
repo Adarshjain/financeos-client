@@ -1,4 +1,7 @@
-import { Badge, Banner, Card, SectionHeader } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 
 export function ServerFixture({
   header = 'Server Test',

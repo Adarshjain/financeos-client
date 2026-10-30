@@ -2,8 +2,12 @@
 
 import React from 'react';
 
-import { DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
-import { BankLogo, SettingsToggle } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';

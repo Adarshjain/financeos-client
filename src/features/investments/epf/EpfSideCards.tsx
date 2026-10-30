@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { Button, Card, Conceal, EmptyState, ListRow, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { EpfSummary } from './epfModel';
 import { type EpfEmployerRow, pensionCard } from './epfModel';

@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Banner, Button, Card, EmptyState, Skeleton, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';
 import { categoryEntries, categoryRequest, categoryTarget, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';

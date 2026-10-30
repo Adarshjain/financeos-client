@@ -7,7 +7,11 @@
 
 import React from 'react';
 
-import { Button, concealMoney, EmptyState, ListRow, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { concealMoney } from '@/components/ds/Conceal/concealMoney';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 import { BuiltinNote, BuiltinPager } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnderlyingDialog';

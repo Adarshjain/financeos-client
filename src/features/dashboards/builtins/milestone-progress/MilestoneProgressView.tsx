@@ -5,7 +5,8 @@
 
 import React from 'react';
 
-import { EmptyState, Text } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Text } from '@/components/ds/Text/Text';
 import { BarRow, BuiltinNote, BuiltinPager } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';
 import { appHref } from '@/features/shell/routes';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The account name, the label and the figure. */
 export function AccountTileSkeleton() {

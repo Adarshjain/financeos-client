@@ -2,10 +2,8 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  GRID_GAP,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { GRID_GAP } from '@/components/ds/gridGap';
 
 import { AttentionCard } from './AttentionCard';
 import { OAUTH_ERROR_FALLBACK, type OauthReturn, shortError } from './connectionsModel';
