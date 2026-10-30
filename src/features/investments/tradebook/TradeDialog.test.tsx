@@ -270,7 +270,7 @@ describe('Record trade', () => {
     expect(screen.queryByText('Choose an instrument')).toBeNull();
     resolved(infy);
     await waitFor(() => expect(screen.getByRole('combobox', { name: /Instrument/ }).textContent).toContain('Infosys'));
-    expect((screen.getByRole('button', { name: 'Record buy' }) as HTMLButtonElement).disabled).toBe(false);
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Record buy' }) as HTMLButtonElement).disabled).toBe(false));
   });
 
   it('closes on Escape when nothing is being saved', async () => {
