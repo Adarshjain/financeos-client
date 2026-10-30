@@ -18,6 +18,6 @@ export function chartColor(index: number): string {
   return `var(--ds-chart-${(index % CHART_SLOTS) + 1})`;
 }
 
-/** Plot margins in px (Recharts takes numbers); the right edge is set per width. */
+/** Plot margins in px; the right edge is set per width. */
 const [top, bottom, left] = [8, 0, 0];
 export const CHART_MARGIN = { top, bottom, left };

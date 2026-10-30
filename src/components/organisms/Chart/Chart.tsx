@@ -61,7 +61,7 @@ export interface ChartProps extends Omit<React.HTMLAttributes<HTMLDivElement>, '
 }
 
 /**
- * A report chart over Recharts, drawn in Dinero tokens: series in chart-1…chart-5 (the rest fold into
+ * A report chart drawn as our own SVG on d3-scale and d3-shape, in Dinero tokens: series in chart-1…chart-5 (the rest fold into
  * "Other" in chart-rest), a legend, a hover card and a hidden data table as the text equivalent.
  */
 export const Chart = forwardRef<HTMLDivElement, ChartProps>(function Chart(

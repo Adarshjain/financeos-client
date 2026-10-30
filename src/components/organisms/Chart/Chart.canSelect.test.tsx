@@ -1,39 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-// Recharts is mocked to stand-ins that expose the click handlers and the per-element class the chart passes down.
-vi.mock('recharts', () => {
-  const Wrap = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
-  return {
-    ResponsiveContainer: Wrap,
-    LineChart: Wrap,
-    AreaChart: Wrap,
-    BarChart: Wrap,
-    PieChart: Wrap,
-    Pie: ({ data, onClick, children }: { data: { name: string }[]; onClick?: (d: unknown, i: number) => void; children?: ReactNode }) => (
-      <div>
-        {data.map((s, i) => (
-          <button key={s.name} data-testid={`slice-${i}`} onClick={() => onClick?.(s, i)} />
-        ))}
-        {children}
-      </div>
-    ),
-    Cell: ({ className }: { className?: string }) => <i data-testid="cell" data-class={className ?? ''} />,
-    Line: () => null,
-    Area: () => null,
-    Bar: ({ onClick, children }: { onClick?: (d: unknown, i: number) => void; children?: ReactNode }) => (
-      <div>
-        <button data-testid="bar" onClick={() => onClick?.({ payload: { category: 'Feb' } }, 1)} />
-        {children}
-      </div>
-    ),
-    XAxis: () => null,
-    YAxis: () => null,
-    CartesianGrid: () => null,
-    Tooltip: () => null,
-  };
-});
 const size = vi.hoisted(() => ({ width: 800, height: 300 }));
 vi.mock('@/lib/charts/useElementSize', () => ({ useElementSize: () => [() => {}, size] }));
 vi.mock('@/lib/date-range', async (orig) => ({ ...(await orig<typeof import('@/lib/date-range')>()), todayInAppZone: () => '2026-10-13' }));
@@ -53,7 +20,10 @@ const heat = {
   series: [{ name: 'Spend', data: [1250, 300] }],
   measure: { field: 'spend', aggregation: 'sum' },
 } as unknown as ChartData;
-const cellClasses = () => screen.getAllByTestId('cell').map((c) => c.getAttribute('data-class'));
+// A bar or slice's press affordance is its class; one per mark.
+const cellClasses = () => Array.from(document.querySelectorAll('path[data-bar], path[data-slice]')).map((c) => c.getAttribute('class') ?? '');
+const barEl = (i: number) => document.querySelector(`path[data-bar="${i}"]`)!;
+const sliceEl = (i: number) => document.querySelector(`path[data-slice="${i}"]`)!;
 
 describe('Chart canSelectEntry', () => {
   it('leaves every entry pressable when absent', () => {
@@ -66,14 +36,14 @@ describe('Chart canSelectEntry', () => {
     const onSelectEntry = vi.fn();
     render(<Chart data={bar} onSelectEntry={onSelectEntry} canSelectEntry={(e) => e.key !== 'Feb'} />);
     expect(cellClasses()).toEqual([expect.stringContaining('cursor-pointer'), '', expect.stringContaining('cursor-pointer')]);
-    fireEvent.click(screen.getByTestId('bar'));
+    fireEvent.click(barEl(1));
     expect(onSelectEntry).not.toHaveBeenCalled();
   });
 
   it('presses an accepted bar', () => {
     const onSelectEntry = vi.fn();
     render(<Chart data={bar} onSelectEntry={onSelectEntry} canSelectEntry={(e) => e.key === 'Feb'} />);
-    fireEvent.click(screen.getByTestId('bar'));
+    fireEvent.click(barEl(1));
     expect(onSelectEntry).toHaveBeenCalledWith(expect.objectContaining({ key: 'Feb' }));
   });
 
@@ -82,9 +52,9 @@ describe('Chart canSelectEntry', () => {
     render(<Chart data={pie} onSelectEntry={onSelectEntry} canSelectEntry={(e) => e.key === 'Food'} />);
     expect(screen.getAllByRole('button').filter((b) => b.getAttribute('data-testid') === null)).toHaveLength(1);
     expect(cellClasses()).toEqual([expect.stringContaining('cursor-pointer'), '']);
-    fireEvent.click(screen.getByTestId('slice-1'));
+    fireEvent.click(sliceEl(1));
     expect(onSelectEntry).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByTestId('slice-0'));
+    fireEvent.click(sliceEl(0));
     expect(onSelectEntry).toHaveBeenCalledWith(expect.objectContaining({ key: 'Food' }));
   });
 
@@ -101,12 +71,12 @@ describe('Chart entry index', () => {
   it('reports the category index with a pressed slice, and keys repeated bar labels apart', () => {
     const onSelectEntry = vi.fn();
     render(<Chart data={{ ...pie, categories: ['Food', 'Travel'] }} onSelectEntry={onSelectEntry} />);
-    fireEvent.click(screen.getByTestId('slice-1'));
+    fireEvent.click(sliceEl(1));
     expect(onSelectEntry).toHaveBeenCalledWith(expect.objectContaining({ key: 'Travel', index: 1 }));
   });
 
   it('draws one cell per bar even when labels repeat', () => {
     render(<Chart data={{ ...bar, categories: ['Jan', 'Jan', 'Jan'] }} onSelectEntry={vi.fn()} />);
-    expect(screen.getAllByTestId('cell')).toHaveLength(3);
+    expect(cellClasses()).toHaveLength(3);
   });
 });
