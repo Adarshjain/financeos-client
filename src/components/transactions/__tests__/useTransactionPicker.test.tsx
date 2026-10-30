@@ -191,7 +191,7 @@ describe('useTransactionPicker candidate filtering and sorting', () => {
   it('hides candidates already claimed by a non-LENDING obligation ref', async () => {
     const loanClaimed = makeTxn({
       id: 'loan-claimed',
-      obligationRefs: [{ kind: 'LOAN_PAYMENT', id: 'op-1', label: 'EMI #2' }],
+      obligationRefs: [{ kind: 'LOAN_PAYMENT', id: 'op-1', label: 'EMI #2', origin: 'USER' }],
     });
     const clean = makeTxn({ id: 'clean' });
     (api.POST as Mock).mockResolvedValue({ data: pagedResponse([loanClaimed, clean]) });
@@ -206,7 +206,7 @@ describe('useTransactionPicker candidate filtering and sorting', () => {
   it('keeps candidates that only carry a LENDING obligation ref (split-bill allowed)', async () => {
     const alreadySplit = makeTxn({
       id: 'split',
-      obligationRefs: [{ kind: 'LENDING', id: 'op-2', label: 'Rahul Sharma' }],
+      obligationRefs: [{ kind: 'LENDING', id: 'op-2', label: 'Rahul Sharma', origin: 'USER' }],
     });
     (api.POST as Mock).mockResolvedValue({ data: pagedResponse([alreadySplit]) });
 

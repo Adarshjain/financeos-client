@@ -159,6 +159,7 @@ describe('TransactionLinkDialog LENDING kind', () => {
       amount: 300,
       direction: 'lent',
       kind: 'principal',
+      origin: 'USER',
       entryDate: '2026-07-01',
       createdAt: '2026-07-01T00:00:00Z',
       notes: 'Dinner unlinked entry',

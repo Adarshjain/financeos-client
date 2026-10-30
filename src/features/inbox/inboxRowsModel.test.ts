@@ -118,3 +118,22 @@ describe('rowButtons, EPF suggestion', () => {
     expect(rowButtons(epf({ key: 'epf:3', actions: [SNOOZE, DISMISS] })).map((b) => b.epf)).toEqual(['dismiss']);
   });
 });
+
+describe('rowButtons for link suggestions', () => {
+  it('a link_suggestion row has one Review link button that carries its suggestion kind', () => {
+    for (const kind of ['TRANSFER', 'CC_PAYMENT', 'REFUND'] as const) {
+      const row = item({
+        key: `link-suggestion:${kind}`,
+        kind: 'link_suggestion',
+        rowType: 'summary',
+        section: 'needs_look',
+        actions: [action({ type: 'review', label: 'Review', href: '/transactions/review' }), DISMISS],
+      });
+      expect(rowButtons(row)).toEqual([{ id: 'link_suggestion', label: 'Review', variant: 'link', suggestions: kind }]);
+    }
+  });
+
+  it('a link_suggestion row with an unknown key shows no button', () => {
+    expect(rowButtons(item({ key: 'link-suggestion:EMI', kind: 'link_suggestion' }))).toEqual([]);
+  });
+});

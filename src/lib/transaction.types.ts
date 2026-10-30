@@ -124,6 +124,8 @@ export interface ObligationRef {
   parentId?: string | null;
   label: string;
   amount?: number | null;
+  /** Who made the link: AUTO shows "Linked automatically". */
+  origin?: LinkOrigin;
 }
 
 export type Transaction = TransactionBase & {

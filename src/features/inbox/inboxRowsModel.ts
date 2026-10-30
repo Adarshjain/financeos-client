@@ -26,7 +26,19 @@ export interface RowButton {
   bill?: BillActionType;
   /** An EPF suggestion's own buttons: attach the credit, or say it is not this one. */
   epf?: 'link' | 'dismiss';
+  /** A link_suggestion row: opens the review dialog for this suggestion kind. */
+  suggestions?: LinkSuggestionKind;
   disabled?: boolean;
+}
+
+export type LinkSuggestionKind = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND';
+const LINK_SUGGESTION_KEY = 'link-suggestion:';
+
+/** The suggestion kind a link_suggestion row stands for (its key is `link-suggestion:<KIND>`), or null. */
+export function suggestionKindOf(item: InboxItemResponse): LinkSuggestionKind | null {
+  if (item.kind !== 'link_suggestion' || !item.key.startsWith(LINK_SUGGESTION_KEY)) return null;
+  const kind = item.key.slice(LINK_SUGGESTION_KEY.length);
+  return kind === 'TRANSFER' || kind === 'CC_PAYMENT' || kind === 'REFUND' ? kind : null;
 }
 
 const DOING = new Set(['mark_paid', 'upload', 'reconnect']);
@@ -74,6 +86,10 @@ function epfButtons(item: InboxItemResponse): RowButton[] {
 /** The row's buttons from the server's actions (snooze and dismiss are separate); a summary row shows one. */
 export function rowButtons(item: InboxItemResponse): RowButton[] {
   if (item.kind === 'epf_match') return epfButtons(item);
+  if (item.kind === 'link_suggestion') {
+    const suggestions = suggestionKindOf(item);
+    return suggestions ? [{ id: 'link_suggestion', label: 'Review', variant: 'link', suggestions }] : [];
+  }
   const actions = primaryActions(item).slice(0, item.rowType === 'summary' ? 1 : undefined);
   const buttons: RowButton[] = [];
   actions.forEach((action, index) => {

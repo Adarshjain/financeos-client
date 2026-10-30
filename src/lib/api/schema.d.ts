@@ -891,7 +891,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1745,7 +1745,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2661,6 +2661,54 @@ export interface paths {
         put: operations["linkTransaction"];
         post?: never;
         delete: operations["unlinkTransaction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/link-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/link-suggestions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["dismiss_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/link-suggestions/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["accept"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4078,6 +4126,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AcceptLinkSuggestionRequest: {
+            /** Format: uuid */
+            candidateId: string;
+        };
         AcceptSuggestionsRequest: {
             items: components["schemas"]["Item"][];
         };
@@ -5417,6 +5469,8 @@ export interface components {
             tds?: number | null;
             transaction?: components["schemas"]["DividendTransactionSummary"];
             /** @enum {string} */
+            transactionOrigin: "USER" | "AUTO" | "IMPORT";
+            /** @enum {string} */
             type: "dividend" | "interest" | "other";
         };
         DividendSuggestionsResponse: {
@@ -6553,6 +6607,8 @@ export interface components {
             /** @enum {string} */
             kind: "principal" | "settlement";
             notes?: string | null;
+            /** @enum {string} */
+            origin: "USER" | "AUTO" | "IMPORT";
             returnNotifiedKind?: string | null;
             /** Format: date */
             returnNotifiedOn?: string | null;
@@ -6579,6 +6635,14 @@ export interface components {
         LinkLendingTransactionRequest: {
             /** Format: uuid */
             transactionId: string;
+        };
+        LinkSuggestionResponse: {
+            candidates: components["schemas"]["TransactionSummary"][];
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND";
+            transaction: components["schemas"]["TransactionSummary"];
         };
         LiquidAccount: {
             balance: number;
@@ -6687,6 +6751,8 @@ export interface components {
             installmentSeq?: number | null;
             /** Format: uuid */
             loanId: string;
+            /** @enum {string} */
+            origin: "USER" | "AUTO" | "IMPORT";
             /** Format: date */
             paymentDate: string;
             /** Format: uuid */
@@ -6968,6 +7034,8 @@ export interface components {
             /** @enum {string} */
             kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND" | "EPF_WITHDRAWAL";
             label: string;
+            /** @enum {string} */
+            origin: "USER" | "AUTO" | "IMPORT";
             /** Format: uuid */
             parentId?: string | null;
         };
@@ -8681,6 +8749,17 @@ export interface components {
         TransactionSearchRequest: {
             filters?: components["schemas"]["FilterClause"][] | null;
             search?: string | null;
+        };
+        TransactionSummary: {
+            accountName: string;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            type: "DEBIT" | "CREDIT";
         };
         UnderlyingExcludedItem: {
             id: string;
@@ -11084,7 +11163,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -13290,7 +13369,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -15877,6 +15956,99 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LinkSuggestionResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptLinkSuggestionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransactionLinkResponse"];
+                };
             };
             /** @description Error response */
             default: {

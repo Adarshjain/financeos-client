@@ -228,6 +228,28 @@ describe('TransactionDetailPanel', () => {
       expect(p.onOpenTransaction).toHaveBeenCalledWith('t2');
     });
 
+    it('says "Linked automatically" only for a link made by auto-linking', async () => {
+      api.fetchTransactionLinks.mockResolvedValue([{ ...link, createdBy: 'AUTO' }]);
+      const p = props({ pageTransactions: [withLink()] });
+      const { unmount } = renderWithQuery(<TransactionDetailPanel {...p} />);
+      expect(await screen.findByText('Linked automatically')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Unlink' })).toBeInTheDocument();
+      unmount();
+      api.fetchTransactionLinks.mockResolvedValue([link]);
+      renderWithQuery(<TransactionDetailPanel {...p} />);
+      expect(await screen.findByText('Links')).toBeInTheDocument();
+      expect(screen.queryByText('Linked automatically')).not.toBeInTheDocument();
+    });
+
+    it('says "Linked automatically" on a record the auto-linker attached, not on a user one', () => {
+      const ref = (id: string, origin: 'USER' | 'AUTO') =>
+        ({ kind: 'LENDING', id, parentId: 'p1', label: `Lending ${id}`, origin }) as const;
+      renderWithQuery(
+        <TransactionDetailPanel {...props({ pageTransactions: [txn({ obligationRefs: [ref('e1', 'AUTO'), ref('e2', 'USER')] })] })} />,
+      );
+      expect(screen.getAllByText('Linked automatically')).toHaveLength(1);
+    });
+
     it('opens a record on its own page', async () => {
       const p = props({
         pageTransactions: [txn({ obligationRefs: [{ kind: 'LENDING', id: 'e1', parentId: 'p1', label: 'Lending · Priya Nair' }] })],

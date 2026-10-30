@@ -47,9 +47,9 @@ function pagedResponse(content: PickerTransaction[]) {
 
 type Ref = NonNullable<PickerTransaction['obligationRefs']>[number];
 
-const dividendRef: Ref = { kind: 'DIVIDEND', id: 'div-1', label: 'INFY dividend' };
-const lendingRef: Ref = { kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' };
-const loanRef: Ref = { kind: 'LOAN_PAYMENT', id: 'op-2', label: 'EMI #2' };
+const dividendRef: Ref = { kind: 'DIVIDEND', id: 'div-1', label: 'INFY dividend', origin: 'USER' };
+const lendingRef: Ref = { kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' };
+const loanRef: Ref = { kind: 'LOAN_PAYMENT', id: 'op-2', label: 'EMI #2', origin: 'USER' };
 
 async function candidateIds(props: Parameters<typeof useTransactionPicker>[0], rows: PickerTransaction[]) {
   (api.POST as Mock).mockResolvedValue({ data: pagedResponse(rows) });

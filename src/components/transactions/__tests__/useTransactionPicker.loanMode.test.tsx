@@ -98,7 +98,7 @@ describe('useTransactionPicker `excludeAnyObligationRef`', () => {
   it('hides a row carrying a LENDING-only obligation ref when excludeAnyObligationRef is true', async () => {
     const lendingRef = makeTxn({
       id: 'lending-ref',
-      obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' }],
+      obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' }],
     });
     const clean = makeTxn({ id: 'clean' });
     (api.POST as Mock).mockResolvedValue({ data: pagedResponse([lendingRef, clean]) });
@@ -115,7 +115,7 @@ describe('useTransactionPicker `excludeAnyObligationRef`', () => {
   it('hides a row carrying a non-LENDING obligation ref when excludeAnyObligationRef is true', async () => {
     const loanRef = makeTxn({
       id: 'loan-ref',
-      obligationRefs: [{ kind: 'LOAN_PAYMENT', id: 'op-1', label: 'EMI #2' }],
+      obligationRefs: [{ kind: 'LOAN_PAYMENT', id: 'op-1', label: 'EMI #2', origin: 'USER' }],
     });
     const clean = makeTxn({ id: 'clean' });
     (api.POST as Mock).mockResolvedValue({ data: pagedResponse([loanRef, clean]) });
@@ -132,7 +132,7 @@ describe('useTransactionPicker `excludeAnyObligationRef`', () => {
   it('keeps a row carrying only a LENDING obligation ref by default (excludeAnyObligationRef omitted)', async () => {
     const lendingRef = makeTxn({
       id: 'lending-ref',
-      obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' }],
+      obligationRefs: [{ kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' }],
     });
     (api.POST as Mock).mockResolvedValue({ data: pagedResponse([lendingRef]) });
 

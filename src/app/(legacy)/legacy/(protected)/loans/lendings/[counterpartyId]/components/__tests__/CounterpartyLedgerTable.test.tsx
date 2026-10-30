@@ -13,6 +13,7 @@ function makeEntry(overrides: Partial<LendingEntryWithBalance> = {}): LendingEnt
     amount: 500,
     direction: 'lent',
     kind: 'principal',
+    origin: 'USER',
     entryDate: '2026-01-05',
     createdAt: '2026-01-05T00:00:00Z',
     runningBalance: 500,

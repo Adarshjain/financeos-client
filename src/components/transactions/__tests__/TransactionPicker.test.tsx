@@ -176,8 +176,8 @@ describe('TransactionPicker', () => {
         makeTxn({
           id: 'split-1',
           obligationRefs: [
-            { kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma' },
-            { kind: 'LENDING', id: 'op-2', label: 'Priya Singh' },
+            { kind: 'LENDING', id: 'op-1', label: 'Rahul Sharma', origin: 'USER' },
+            { kind: 'LENDING', id: 'op-2', label: 'Priya Singh', origin: 'USER' },
           ],
         }),
       ]),

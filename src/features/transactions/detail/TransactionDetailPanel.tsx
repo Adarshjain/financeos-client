@@ -212,7 +212,16 @@ function DetailContent({
       ) : (
         row.title
       );
-    return <ListRow key={row.key} wrap title={name} subtitle={row.subtitle} trailing={unlinkButton} />;
+    const auto = (row.kind === 'transaction' ? row.link.createdBy : row.ref.origin) === 'AUTO';
+    const subtitle = auto
+      ? [
+          row.subtitle,
+          <Text key="auto" as="span" variant="label" tone="ink-3" className="block">
+            Linked automatically
+          </Text>,
+        ]
+      : row.subtitle;
+    return <ListRow key={row.key} wrap title={name} subtitle={subtitle} trailing={unlinkButton} />;
   };
 
   return (
