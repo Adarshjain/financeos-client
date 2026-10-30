@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, DateTile, ListRow, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DateTile } from '@/components/ds/DateTile/DateTile';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';

@@ -1,9 +1,7 @@
 import React from 'react';
 
-import {
-  Banner,
-  GRID_GAP,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text } from '@/components/ds';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 
 /** Where one job is shown: Settings → Activity, opened on that job. */

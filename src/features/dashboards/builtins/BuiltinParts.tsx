@@ -6,7 +6,12 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, ListRow, Pager, ProgressBar, type ProgressBarTone, Skeleton, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { ProgressBar, type ProgressBarTone } from '@/components/ds/ProgressBar/ProgressBar';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import type { TablePage } from '@/lib/reports.types';
 
 /** The failed state, as Widget draws it: what failed, then the way forward. */

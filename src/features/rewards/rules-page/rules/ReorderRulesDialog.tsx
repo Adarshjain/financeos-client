@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Dialog, ReorderList, showToast, Text } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ReorderList } from '@/components/ds/ReorderList/ReorderList';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useReorderRewardRules } from '@/features/rewards/queries/useRewardRulesQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { RewardRule } from '@/lib/rewards.types';

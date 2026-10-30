@@ -1,7 +1,9 @@
 import React from 'react';
 
-import { Icon, type IconName, type SearchPaletteGroup, type SearchPaletteItem } from '@/components/ds';
-import { TransactionRow } from '@/components/organisms';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { type IconName } from '@/components/ds/Icon/registry';
+import { type SearchPaletteGroup, type SearchPaletteItem } from '@/components/ds/SearchPalette/SearchPalette';
+import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { ALL_TIME, DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { supportsIngestion } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';

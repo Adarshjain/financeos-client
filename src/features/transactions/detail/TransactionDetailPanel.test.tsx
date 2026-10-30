@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import type { Account } from '@/lib/account.types';
 import type { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
 import { pinClock } from '@/test/pinClock';

@@ -3,16 +3,14 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  EmptyState,
-  FilterChip,
-  ListRow,
-  Select,
-  showToast,
-  StatusWord,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Select } from '@/components/ds/Select/Select';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 

@@ -1,4 +1,4 @@
-import type { SelectOption } from '@/components/ds';
+import type { SelectOption } from '@/components/ds/Select/Select';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';

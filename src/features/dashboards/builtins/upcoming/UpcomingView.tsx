@@ -5,7 +5,10 @@
 
 import React from 'react';
 
-import { DateTile, EmptyState, ListRow, Text } from '@/components/ds';
+import { DateTile } from '@/components/ds/DateTile/DateTile';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 import { cellText } from '@/features/dashboards/builtins/builtinModel';
 import { formatCell } from '@/features/reports/view/cellsModel';
 import { isRawTableData } from '@/lib/reports.helpers';

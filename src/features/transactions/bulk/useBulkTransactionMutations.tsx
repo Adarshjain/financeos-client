@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { ConfirmDialog } from '@/components/ds';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { ApproveDialog } from '@/features/transactions/review/ApproveDialog';
 import { ReviewSummaryDialog } from '@/features/transactions/review/ReviewSummaryDialog';

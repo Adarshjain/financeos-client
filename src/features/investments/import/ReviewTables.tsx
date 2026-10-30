@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Badge, Card, createDataTableColumnHelper, DataTable, SectionHeader, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { formatMoney } from '@/lib/format';
 import type { FnoTradePreview, ImportRow, ReconciledExecution } from '@/lib/types';

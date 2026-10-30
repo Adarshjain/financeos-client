@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Card, SelectionBar, Stepper } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
+import { Stepper } from '@/components/ds/Stepper/Stepper';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';

@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Card, EmptyState } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { appHref } from '@/features/shell/routes';
 
 export function RewardsEmpty({ accountId, accountName }: { accountId: string; accountName: string }) {

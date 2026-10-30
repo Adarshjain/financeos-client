@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Card, Figures, SectionHeader } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Figures } from '@/components/ds/Figures/Figures';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 const POSITION = [

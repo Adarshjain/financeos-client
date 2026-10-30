@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import React, { useActionState, useEffect, useState } from 'react';
 
 import { login, logoutToDinero } from '@/actions/auth';
-import { Banner, Dialog, TextField } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { AUTH_EXPIRED_EVENT, claimAuthExpired } from '@/lib/authExpiry';
 import type { ApiResult, UserResponse } from '@/lib/types';
 

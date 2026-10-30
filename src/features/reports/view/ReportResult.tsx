@@ -3,7 +3,14 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import React from 'react';
 
-import { Button, concealMoney, createDataTableColumnHelper, DataTable, type DataTableFeatures, EmptyState, KpiTile, Pager, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { concealMoney } from '@/components/ds/Conceal/concealMoney';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper, type DataTableFeatures } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Text } from '@/components/ds/Text/Text';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { resolveChartEntry } from '@/features/reports/underlying/underlyingRequest';
 import { formatComparedRange, formatDateRange } from '@/lib/date-range';

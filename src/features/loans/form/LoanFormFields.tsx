@@ -2,8 +2,12 @@
 
 import React from 'react';
 
-import { DateField, Select, type SelectOption, TextArea, TextField } from '@/components/ds';
-import { AccountPicker, AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { type Account, isAccountClosed } from '@/lib/account.types';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import type { LoanType, RateType } from '@/lib/loan.types';

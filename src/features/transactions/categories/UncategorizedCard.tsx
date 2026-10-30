@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, Card, Icon, ListRow, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 export interface UncategorizedRow {
   id: string;

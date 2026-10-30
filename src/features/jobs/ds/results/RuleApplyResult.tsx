@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
-import { Amount } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Text } from '@/components/ds/Text/Text';
+import { Amount } from '@/components/organisms/Amount/Amount';
 import { formatDate } from '@/lib/format';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { MatchType } from '@/lib/rules.types';

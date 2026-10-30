@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 
-import { Button, Icon, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 
 /** A titled, collapsible block inside a job result: "Title (n)" toggle, body when open. Nothing when empty. */
 export function ResultSection({

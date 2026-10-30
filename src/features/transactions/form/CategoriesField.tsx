@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Select } from '@/components/ds';
+import { Select } from '@/components/ds/Select/Select';
 import type { Category } from '@/lib/categories.types';
 
 export interface CategoriesFieldProps {

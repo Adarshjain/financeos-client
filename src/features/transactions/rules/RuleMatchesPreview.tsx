@@ -2,8 +2,14 @@
 
 import React from 'react';
 
-import { Button, Card, EmptyState, Icon, Pager, Skeleton, Text } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 import type { MatchType } from '@/lib/rules.types';
 import { validatePattern } from '@/lib/rules.validate';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';

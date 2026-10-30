@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 
 import type { MarkPaidTarget } from '../overview/headerModel';

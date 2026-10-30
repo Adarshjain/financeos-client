@@ -1,4 +1,4 @@
-import type { SelectOption } from '@/components/ds';
+import type { SelectOption } from '@/components/ds/Select/Select';
 import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { type Broker, isAccountClosed } from '@/lib/account.types';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';

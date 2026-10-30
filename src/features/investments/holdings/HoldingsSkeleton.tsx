@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Hero, Skeleton } from '@/components/ds';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 
 import { HoldingsListSkeleton } from './HoldingsListCard';

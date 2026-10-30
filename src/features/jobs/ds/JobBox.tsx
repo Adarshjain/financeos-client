@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Badge, Button, Card, Icon, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 import { isActiveJob, JOB_STATUS_BADGE, jobTimeLabel } from '@/features/jobs/jobModel';
 import { formatDuration } from '@/features/jobs/jobsFilterModel';
 import type { JobResponse } from '@/lib/types';

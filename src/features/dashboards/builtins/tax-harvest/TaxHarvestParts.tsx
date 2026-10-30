@@ -4,7 +4,11 @@
 // (each figure opens its realised lots), the figures after the pooled set-off, the harvesting summary lines
 // and one open lot.
 
-import { Button, ListField, ListRow, ProgressBar, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 import { moveTone } from '@/features/investments/investmentsFormatModel';
 import { formatCount, formatDate, formatMoney, pluralize } from '@/lib/format';
 import type { TaxHarvestLot, TaxHarvestResponse } from '@/lib/taxHarvest.types';

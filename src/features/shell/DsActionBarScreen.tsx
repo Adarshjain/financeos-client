@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { ActionBar, Button, Card, Menu, SectionHeader } from '@/components/ds';
+import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 /** /ds/action-bar: the ActionBar component in its forms, at whatever width the window is. */

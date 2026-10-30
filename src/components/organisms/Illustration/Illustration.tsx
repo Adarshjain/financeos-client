@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 
-import { cn, Icon } from '@/components/ds';
+import { cn } from '@/components/ds/cn';
+import { Icon } from '@/components/ds/Icon/Icon';
 
 import { Logo } from '../Logo/Logo';
 

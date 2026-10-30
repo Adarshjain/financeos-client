@@ -8,7 +8,7 @@ vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/c
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
-vi.mock('@/components/ds', async (orig) => ({ ...(await orig<typeof import('@/components/ds')>()), showToast: vi.fn() }));
+vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof import('@/components/ds/Toast/Toast')>()), showToast: vi.fn() }));
 
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';

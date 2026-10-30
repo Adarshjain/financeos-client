@@ -1,11 +1,9 @@
 import React from 'react';
 
-import {
-  Card,
-  Hero,
-  ListRow,
-  Skeleton,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** Totals and rows keep their places while the list loads. */
 export function UpcomingSkeleton() {

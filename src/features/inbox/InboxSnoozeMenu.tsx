@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Button, DateField, Icon, ListRow, Popover, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Popover } from '@/components/ds/Popover/Popover';
+import { Text } from '@/components/ds/Text/Text';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
 

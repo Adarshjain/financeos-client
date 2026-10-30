@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
-import { Banner, Button, createDataTableColumnHelper, DataTable, StatusWord, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { DuplicateDetail, FileIngestionResult, FileSummary } from '@/lib/types';
 

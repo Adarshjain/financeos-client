@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, Dialog, showToast } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';

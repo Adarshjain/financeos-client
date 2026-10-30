@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { FilterBar, FilterChip } from '@/components/ds';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 

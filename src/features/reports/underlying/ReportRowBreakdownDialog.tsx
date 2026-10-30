@@ -6,7 +6,7 @@
 // a level; the root has no Back) or, with `onOpenTransaction`, a transaction. The dialog is open while it is
 // mounted, like ReportUnderlyingDialog; each opening starts at the root.
 
-import { Dialog } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
 import { useBreakdownStack } from './useBreakdownStack';

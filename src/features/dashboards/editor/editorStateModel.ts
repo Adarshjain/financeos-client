@@ -2,7 +2,7 @@
 // server's response shape; their `layout.w` follows the width steps and x/y are re-flowed on save (see
 // layout/widgetLayout), so a draft is compared and written through `flowLayout`.
 
-import type { WidgetGridLayoutItem } from '@/components/ds';
+import type { WidgetGridLayoutItem } from '@/components/ds/WidgetGrid/WidgetGrid';
 import { applyGridLayout, flowLayout, normalizeWidgets } from '@/features/dashboards/layout/widgetLayoutModel';
 import { fieldErrors, fieldParams, initialRawValues, paramFieldKind, paramLabel } from '@/features/dashboards/params/paramsModel';
 import { isBuiltinWidget, isTextWidget, TEXT_DESCRIPTION_MAX, TEXT_TITLE_MAX, textDescription, toDashboardWidget, widgetMinW } from '@/lib/dashboards.helpers';

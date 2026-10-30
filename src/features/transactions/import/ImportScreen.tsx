@@ -5,8 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, DropZone, GRID_GAP, PageFooter, Pager, Text } from '@/components/ds';
-import { AccountPicker, JobsHistory } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DropZone } from '@/components/ds/DropZone/DropZone';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { PageFooter } from '@/components/ds/PageFooter/PageFooter';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Text } from '@/components/ds/Text/Text';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
 import { isActiveJob } from '@/features/jobs/jobModel';
 import { subscribeJobStarted } from '@/features/jobs/jobsBus';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';

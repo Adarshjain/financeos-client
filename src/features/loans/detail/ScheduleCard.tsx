@@ -2,7 +2,16 @@
 
 import React from 'react';
 
-import { Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterChip, Select, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Select } from '@/components/ds/Select/Select';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import type { InstallmentDto } from '@/lib/loan.types';
 
 import { fyOptions, fySummaryLine, type ScheduleRow } from './scheduleModel';

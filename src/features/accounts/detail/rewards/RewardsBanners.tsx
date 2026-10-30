@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
 
 import { accountHref } from '../accountTabsModel';
 import type { RewardsBanner } from './rewardsModel';

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
 
 import { useAccountDialogs } from './AccountDialogs';
 

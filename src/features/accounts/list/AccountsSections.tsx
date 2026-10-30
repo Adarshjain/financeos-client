@@ -3,18 +3,16 @@
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
-import {
-  Button,
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  Icon,
-  ProgressBar,
-  SectionHeader,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { appHref } from '@/features/shell/routes';

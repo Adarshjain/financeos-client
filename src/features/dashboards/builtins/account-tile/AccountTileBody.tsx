@@ -6,7 +6,8 @@
 
 import React from 'react';
 
-import { Button, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Text } from '@/components/ds/Text/Text';
 import { buildHeaderModel } from '@/features/accounts/detail/overview/headerModel';
 import { BuiltinError, BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import { stringParam } from '@/features/dashboards/builtins/subtitlesModel';

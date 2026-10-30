@@ -3,7 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { Dialog, Skeleton } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { watchSession } from '@/lib/authExpiry';
 import { keys } from '@/lib/query/keys';
 

@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { DateField, Dialog, SectionHeader, Select, Text, TextField } from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { useRewardMilestoneForm } from '@/features/rewards/milestones/useRewardMilestoneForm';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { Cardholder } from '@/lib/account.types';

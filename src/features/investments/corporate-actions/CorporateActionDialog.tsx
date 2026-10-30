@@ -3,18 +3,15 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Card,
-  ConfirmDialog,
-  DateField,
-  Dialog,
-  ListRow,
-  Select,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { Card } from '@/components/ds/Card/Card';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';

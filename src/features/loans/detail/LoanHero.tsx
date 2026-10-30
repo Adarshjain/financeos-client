@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { concealMoney, Hero, ProgressBar, Text } from '@/components/ds';
+import { concealMoney } from '@/components/ds/Conceal/concealMoney';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { LoanHeroModel } from './loanDetailModel';
 

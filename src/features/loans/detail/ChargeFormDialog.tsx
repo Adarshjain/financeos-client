@@ -2,13 +2,11 @@
 
 import React from 'react';
 
-import {
-  DateField,
-  Dialog,
-  Select,
-  TextArea,
-} from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { TextArea } from '@/components/ds/TextArea/TextArea';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import type { LoanChargeType } from '@/lib/loan.types';

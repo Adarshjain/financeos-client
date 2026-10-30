@@ -8,7 +8,7 @@ vi.mock('@/lib/api/client', async () => {
 });
 vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 
-import { TopBar } from '@/components/ds';
+import { TopBar } from '@/components/ds/TopBar/TopBar';
 import { api } from '@/lib/api/client';
 import { renderWithQuery } from '@/test/renderWithQuery';
 

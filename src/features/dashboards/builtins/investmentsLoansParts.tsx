@@ -5,7 +5,7 @@
 
 import dynamic from 'next/dynamic';
 
-import { ErrorState } from '@/components/organisms';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 /** A failed load inside a widget: "Couldn't load <what>", the reason, and Retry. The rest of the dashboard keeps rendering. */

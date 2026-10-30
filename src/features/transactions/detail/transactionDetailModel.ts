@@ -1,4 +1,4 @@
-import type { StatusWordItem } from '@/components/ds';
+import type { StatusWordItem } from '@/components/ds/StatusWords/StatusWords';
 import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
 import { formatDate, formatMoney, pluralize } from '@/lib/format';
 import { obligationRefHref } from '@/lib/obligationRefHref';

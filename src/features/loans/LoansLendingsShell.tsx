@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-import { type TabItem, Tabs } from '@/components/ds';
+import { type TabItem, Tabs } from '@/components/ds/Tabs/Tabs';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

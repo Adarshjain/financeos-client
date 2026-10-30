@@ -3,8 +3,18 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Banner, Button, Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Icon, Menu, StatusWord, StatusWords, Text } from '@/components/ds';
-import { Amount } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { StatusWord, StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { Amount } from '@/components/organisms/Amount/Amount';
 
 import { DeleteStatementDialog } from './DeleteStatementDialog';
 import type { LineRowModel, StatementDetailModel } from './detailModel';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { SkeletonCard } from '@/features/settings/SkeletonCard';
 
 /** Shown inside the Settings shell while the AI tab loads. */

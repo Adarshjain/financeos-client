@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React, { startTransition } from 'react';
 
-import { ErrorState, Illustration } from '@/components/organisms';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
+import { Illustration } from '@/components/organisms/Illustration/Illustration';
 
 import { ShellPage, type ShellPageProps } from './ShellPage';
 

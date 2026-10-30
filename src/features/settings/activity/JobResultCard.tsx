@@ -2,7 +2,9 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { Button, Card, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';

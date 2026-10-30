@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The months figure and its line, the balance line, then the month bars. */
 export function EmergencyFundSkeleton() {

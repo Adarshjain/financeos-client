@@ -6,7 +6,8 @@
 
 import React from 'react';
 
-import { Text, TextField } from '@/components/ds';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { TEXT_DESCRIPTION_MAX, TEXT_TITLE_MAX, textDescription, widgetTitle } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { EmptyState } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 
 export function AccountsEmpty() {

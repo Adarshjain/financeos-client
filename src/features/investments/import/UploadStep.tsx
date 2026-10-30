@@ -2,15 +2,13 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  Card,
-  DropZone,
-  GRID_GAP,
-  Select,
-  TextField,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { DropZone } from '@/components/ds/DropZone/DropZone';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { type Broker, isAccountClosed } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 

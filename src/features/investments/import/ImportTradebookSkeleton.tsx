@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { TRADEBOOK_HREF } from '@/features/investments/tradebook/tradebookModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

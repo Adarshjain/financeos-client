@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, ConfirmDialog, showToast, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { REPORTS_HREF } from '@/features/reports/list/reportsListModel';
 import { subCrumb } from '@/features/shell/navigation';
 import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStore';

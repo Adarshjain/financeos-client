@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Dialog, Text } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto } from '@/lib/loan.types';
 

@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { ProgressBar, Text } from '@/components/ds';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 import { jobProgress } from '@/features/jobs/jobModel';
 import type { JobResponse } from '@/lib/types';
 

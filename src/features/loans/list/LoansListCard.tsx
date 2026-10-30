@@ -3,7 +3,17 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, FilterBar, Pager, ProgressBar, showToast, StatusWord, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/list/AccountsSections';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';

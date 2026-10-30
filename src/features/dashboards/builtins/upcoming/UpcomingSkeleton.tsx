@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** Rows of a date tile, a title and an amount. */
 export function UpcomingSkeleton() {

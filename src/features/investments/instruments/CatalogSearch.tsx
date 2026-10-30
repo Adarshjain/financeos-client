@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Card, Icon, ListRow, SectionHeader, Text, TextField } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstrumentCandidate, InstrumentType } from '@/lib/types';
 

@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Dialog, Select, showToast, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useCreateRewardCapBucket, useUpdateRewardCapBucket } from '@/features/rewards/queries/useRewardCapBucketsQueries';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';

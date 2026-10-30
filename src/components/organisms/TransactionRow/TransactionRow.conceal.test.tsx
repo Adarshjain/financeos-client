@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { ConcealProvider, KpiTile, ListRow, Text } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 import { TransactionRow } from './TransactionRow';
 

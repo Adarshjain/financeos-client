@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Dialog, Select, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Category } from '@/lib/categories.types';
 import { formatCount } from '@/lib/format';

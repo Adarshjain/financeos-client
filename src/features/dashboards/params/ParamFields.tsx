@@ -6,7 +6,8 @@
 
 import React from 'react';
 
-import { Select, TextField } from '@/components/ds';
+import { Select } from '@/components/ds/Select/Select';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { BuiltinParamResponse } from '@/lib/dashboards.types';
 
 import { builtinParamsEditor } from '../builtins/registry';

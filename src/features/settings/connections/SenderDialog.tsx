@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 
-import { ConfirmDialog, Dialog, TextField } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import type { GmailSenderResponse } from '@/lib/api/types';
 
 const FORM_ID = 'sender-form';

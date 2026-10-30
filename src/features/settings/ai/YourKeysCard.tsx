@@ -2,16 +2,14 @@
 
 import React, { useMemo } from 'react';
 
-import {
-  Button,
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  Icon,
-  Menu,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import type { LlmKeyDto } from '@/lib/api/types';
 
 import { buildKeyRows, formatLastUsed, type KeyRow, maskedKey, providerLine } from './aiModel';

@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 
-import { Button, Card, Icon, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Text } from '@/components/ds/Text/Text';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 
 import { formatClock, timelineDepth } from './debugModel';

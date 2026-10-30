@@ -2,7 +2,9 @@
 
 import React, { useMemo } from 'react';
 
-import { createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Text } from '@/components/ds/Text/Text';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { PriceRefreshItem, PriceRefreshResult as PriceRefreshData } from '@/lib/types';
 

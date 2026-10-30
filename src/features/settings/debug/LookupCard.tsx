@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 
-import { Button, Card, SegmentedControl, Text, TextField } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 import { asRefType, REF_TYPE_OPTIONS, type RefType } from './debugModel';
 

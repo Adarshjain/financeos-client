@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, Card, Text } from '@/components/ds';
-import { JobsHistory } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
+import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import { activityUrl } from '@/features/settings/activity/activityModel';
 import type { JobResponse } from '@/lib/types';

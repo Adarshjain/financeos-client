@@ -3,21 +3,18 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  Conceal,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterBar,
-  FilterChip,
-  Pager,
-  Select,
-  type SelectOption,
-  Text,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
 import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs';
 import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';

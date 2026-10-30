@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 
-import { Button, Select, Text, TextField } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 import type { ProviderOption } from './providersModel';
 import type { CustomModelInput } from './useLlmRoutingEditor';

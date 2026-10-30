@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Hero } from '@/components/ds';
+import { Hero } from '@/components/ds/Hero/Hero';
 
 import { AccountsTablesSkeleton } from './AccountsSections';
 

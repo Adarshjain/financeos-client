@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Button, Card, GRID_GAP,ListRow, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 
 import { ASK_EXAMPLE, ASK_HREF, REPORT_TEMPLATES, templateHref } from './reportsListModel';
 

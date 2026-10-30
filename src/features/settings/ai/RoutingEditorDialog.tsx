@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Banner, Button, Dialog, Icon, ReorderList, Text } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ReorderList } from '@/components/ds/ReorderList/ReorderList';
+import { Text } from '@/components/ds/Text/Text';
 import type { RoutingOptionDto } from '@/lib/api/types';
 
 import { CustomModelFields } from './CustomModelFields';

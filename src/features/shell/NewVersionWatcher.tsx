@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { Banner, cn, Reveal } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { cn } from '@/components/ds/cn';
+import { Reveal } from '@/components/ds/Reveal/Reveal';
 
 import { fetchDeployedVersion, isChunkLoadError } from './newVersion';
 

@@ -13,7 +13,7 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }));
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useJobMutations } from '@/features/jobs/useJobMutations';
 import { serverApi as api } from '@/lib/api/server';
 import { markDineroToaster } from '@/lib/toastTarget';

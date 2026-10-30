@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-import { type TabItem, Tabs, type TopBarMenuItem } from '@/components/ds';
+import { type TabItem, Tabs } from '@/components/ds/Tabs/Tabs';
+import { type TopBarMenuItem } from '@/components/ds/TopBar/TopBar';
 import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';

@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Button, StatusWord, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import type { InstrumentType } from '@/lib/types';
 
 import { InstrumentSelect } from '../InstrumentSelect';

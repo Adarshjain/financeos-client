@@ -3,7 +3,9 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
-import { ContextMenu, Icon, SwipeActions } from '@/components/ds';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ContextMenu } from '@/components/ds/Menu/ContextMenu';
+import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Transaction } from '@/lib/transaction.types';
 import { replaceUrl } from '@/lib/urlState';

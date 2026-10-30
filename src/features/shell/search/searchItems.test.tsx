@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { pinClock } from '@/test/pinClock';
 
 import { EMPTY_SEARCH_RESULT, type GlobalSearchResult } from './searchApi';

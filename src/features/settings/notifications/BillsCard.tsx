@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Button, Card, Icon, ListRow, Select, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 import { notify } from '@/lib/notify';
 

@@ -3,24 +3,21 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  Conceal,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterBar,
-  FilterChip,
-  Hero,
-  Pager,
-  Select,
-  type SelectOption,
-  showToast,
-  Text,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { Broker } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';

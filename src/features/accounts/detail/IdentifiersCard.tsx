@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Badge, Card, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Card } from '@/components/ds/Card/Card';
+import { Text } from '@/components/ds/Text/Text';
 
 import { HeaderDialogLink } from './overview/HeaderLink';
 

@@ -2,16 +2,14 @@
 
 import React from 'react';
 
-import {
-  Button,
-  Checkbox,
-  DateField,
-  Dialog,
-  SegmentedControl,
-  Select,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import {
   CAP_WINDOW_LABELS,

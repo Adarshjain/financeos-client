@@ -2,7 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Conceal } from '@/components/ds';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
 
 import { HideAmountsProvider, useHideAmounts } from './hideAmounts';
 import { HIDE_AMOUNTS_COOKIE } from './hideAmountsName';

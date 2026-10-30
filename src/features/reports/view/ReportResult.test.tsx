@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ConcealProvider } from '@/components/ds';
+import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { catalogFixture } from '@/features/reports/builder/editor.fixtures';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import type { ChartData, KpiData, PivotTableData, TableData } from '@/lib/reports.types';

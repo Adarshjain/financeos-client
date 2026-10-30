@@ -2,8 +2,11 @@
 
 import React from 'react';
 
-import { Button, ReorderList, SegmentedControl, Select } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { ReorderList } from '@/components/ds/ReorderList/ReorderList';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select } from '@/components/ds/Select/Select';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import type { BreakdownBars, BreakdownColumn, DatasourceCatalog, SortClause } from '@/lib/reports.types';
 
 import { defaultBreakdownColumns } from './breakdownColumnsModel';

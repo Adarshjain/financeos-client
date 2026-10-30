@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Conceal, Hero } from '@/components/ds';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { Hero } from '@/components/ds/Hero/Hero';
 
 import type { EpfFigures } from './epfModel';
 

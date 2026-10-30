@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Card, Dialog, ListRow, StatusWords, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import type { LineDetail } from './rewardsModel';
 

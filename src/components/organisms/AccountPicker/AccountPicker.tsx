@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Select, type SelectGroup, type SelectOption, type SelectProps } from '@/components/ds';
+import { Select, type SelectGroup, type SelectOption, type SelectProps } from '@/components/ds/Select/Select';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { bankById } from '@/features/banks/banks';
 import { accountGroups, accountOption, type PickerAccount } from '@/lib/accounts/accountGroups';

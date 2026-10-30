@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Button, Card, EmptyState, Icon, SegmentedControl } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
 import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
 import type { PriceHistoryPoint } from '@/lib/types';
 

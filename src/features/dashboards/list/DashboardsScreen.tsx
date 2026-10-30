@@ -7,19 +7,17 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Card,
-  ConfirmDialog,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterBar,
-  Icon,
-  Menu,
-  Text,
-} from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { Text } from '@/components/ds/Text/Text';
 import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
 import type { DashboardResponse } from '@/lib/dashboards.types';

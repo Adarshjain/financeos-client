@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Dialog, Select, type SelectGroup, showToast } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select, type SelectGroup } from '@/components/ds/Select/Select';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { isRecordKind, type LinkKind, type Transaction } from '@/lib/transaction.types';
 

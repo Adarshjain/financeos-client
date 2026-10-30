@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds';
-import { Logo } from '@/components/organisms';
+import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds/TopBar/TopBar';
+import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNotificationsAction } from '@/features/notifications/useNotificationMutations';
 
 import { crumbParentHref, trimCrumb } from './crumbTrail';

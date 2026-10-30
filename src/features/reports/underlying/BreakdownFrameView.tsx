@@ -6,20 +6,18 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  Button,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterChip,
-  Icon,
-  ListRow,
-  Pager,
-  Select,
-  Skeleton,
-  Text,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Select } from '@/components/ds/Select/Select';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { SortClause } from '@/lib/reports.types';

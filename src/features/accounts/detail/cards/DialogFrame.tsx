@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Banner, Dialog } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
 
 import type { ActionResult } from './useCardholderMutations';
 

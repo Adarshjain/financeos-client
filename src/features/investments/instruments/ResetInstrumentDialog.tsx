@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { ConfirmDialog, showToast } from '@/components/ds';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument } from '@/lib/types';
 

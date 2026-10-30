@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Badge, Banner, Card, Divider, EmptyState, SectionHeader, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { Divider } from '@/components/ds/Divider/Divider';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';

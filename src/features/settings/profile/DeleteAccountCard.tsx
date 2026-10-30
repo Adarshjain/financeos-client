@@ -2,14 +2,12 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  Button,
-  Card,
-  Dialog,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import type { UserResponse } from '@/lib/types';
 
 import { useDeleteAccountFlow } from './useDeleteAccountFlow';

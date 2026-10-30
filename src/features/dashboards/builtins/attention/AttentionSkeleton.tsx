@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** Rows of a title over a context line, with a button at the end. */
 export function AttentionSkeleton() {

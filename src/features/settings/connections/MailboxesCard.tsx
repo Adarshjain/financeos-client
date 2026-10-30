@@ -2,17 +2,15 @@
 
 import React, { useState } from 'react';
 
-import {
-  Avatar,
-  Badge,
-  Banner,
-  Button,
-  Card,
-  ConfirmDialog,
-  EmptyState,
-  StatusWord,
-  Text,
-} from '@/components/ds';
+import { Avatar } from '@/components/ds/Avatar/Avatar';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import { authFailedLine, type GmailConnection, mailboxStatusLine } from './connectionsModel';
 

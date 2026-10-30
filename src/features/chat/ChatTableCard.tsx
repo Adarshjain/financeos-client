@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { Button, Card, createDataTableColumnHelper, DataTable, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Text } from '@/components/ds/Text/Text';
 import { formatCount } from '@/lib/format';
 
 import { formatAnswerCell, tableToTsv } from './answerModel';

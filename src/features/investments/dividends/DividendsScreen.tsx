@@ -4,10 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Banner,
-  GRID_GAP,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import type { DividendFilters } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Dividend } from '@/lib/types';

@@ -5,21 +5,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Badge,
-  Banner,
-  Button,
-  ConfirmDialog,
-  Dialog,
-  ListField,
-  ListRow,
-  SectionHeader,
-  showToast,
-  Skeleton,
-  StatusWords,
-  Text,
-} from '@/components/ds';
-import { Amount } from '@/components/organisms';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { Amount } from '@/components/organisms/Amount/Amount';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import type { Account } from '@/lib/account.types';

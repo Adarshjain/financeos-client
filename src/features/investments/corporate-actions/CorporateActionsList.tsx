@@ -3,19 +3,17 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Badge,
-  Card,
-  Conceal,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterBar,
-  FilterChip,
-  Pager,
-  Select,
-  Text,
-} from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
 import { FilterRowSkeleton } from '@/features/investments/FilterRowSkeleton';
 import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';

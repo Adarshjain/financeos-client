@@ -2,17 +2,12 @@
 
 import React from 'react';
 
-import {
-  Button,
-  FilterBar,
-  type FilterBarSearch,
-  FilterChip,
-  Popover,
-  Select,
-  type SelectGroup,
-  type SelectOption,
-} from '@/components/ds';
-import { AccountPicker } from '@/components/organisms';
+import { Button } from '@/components/ds/Button/Button';
+import { FilterBar, type FilterBarSearch } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Popover } from '@/components/ds/Popover/Popover';
+import { Select, type SelectGroup, type SelectOption } from '@/components/ds/Select/Select';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { AccountType } from '@/lib/types';

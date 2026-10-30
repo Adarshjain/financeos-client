@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** Card rows: a name over its due line, the amount and a button at the end. */
 export function BillsDueSkeleton() {

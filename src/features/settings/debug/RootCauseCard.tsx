@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Card, ListField, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { Text } from '@/components/ds/Text/Text';
 import type { DiagnosticsLookupResponse } from '@/lib/api/types';
 
 /** What failed first: where, why, the Oracle code and the knowledge-base hints. */

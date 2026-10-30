@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { EmptyState } from '@/components/ds';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { heatmapMonths, spendByDay } from '@/components/organisms/Chart/heatmap.model';
 import { BuiltinNote } from '@/features/dashboards/builtins/BuiltinParts';
 import type { TemplateViewProps } from '@/features/dashboards/builtins/types';

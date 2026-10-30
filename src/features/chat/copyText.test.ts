@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const toast = vi.fn();
-vi.mock('@/components/ds', () => ({ showToast: (...a: unknown[]) => toast(...a) }));
+vi.mock('@/components/ds/Toast/Toast', () => ({ showToast: (...a: unknown[]) => toast(...a) }));
 
 import { COPY_FAILED,copyText } from './copyText';
 

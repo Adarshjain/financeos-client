@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 
 import { useLinkLendingTransaction, useUnlinkLendingTransaction } from '../useLendingMutations';

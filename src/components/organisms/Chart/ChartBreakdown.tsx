@@ -2,7 +2,11 @@
 
 import React, { forwardRef } from 'react';
 
-import { Button, createDataTableColumnHelper, DataTable, ProgressBar, type ProgressBarColor, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { ProgressBar, type ProgressBarColor } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
 import { formatCount, formatPercent } from '@/lib/format';
 import { labelChartData, valueLabel } from '@/lib/reports.helpers';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { LivePriceRefresh } from '@/features/investments/LivePriceRefresh';
 
 import { AllocationCard, HoldingsHero, TaxCard, TopMoversCard } from './HoldingsFigures';

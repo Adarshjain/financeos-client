@@ -2,13 +2,11 @@
 
 import React from 'react';
 
-import {
-  Banner,
-  Card,
-  GRID_GAP,
-  KpiTile,
-  Text,
-} from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Card } from '@/components/ds/Card/Card';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
+import { Text } from '@/components/ds/Text/Text';
 import type { ImportCommitResult } from '@/lib/types';
 
 const lineOf = (item: { rowIndex: number; scrip?: string | null; reason: string }) =>

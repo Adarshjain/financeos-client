@@ -2,7 +2,13 @@
 
 import React from 'react';
 
-import { Button, Card, Dialog, Select, showToast, Text, TextField } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { formatDate, formatMoney } from '@/lib/format';

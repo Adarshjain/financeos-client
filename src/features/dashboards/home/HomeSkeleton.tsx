@@ -1,9 +1,7 @@
 import React from 'react';
 
-import {
-  GRID_GAP,
-  Skeleton,
-} from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 /** Home while it loads: rows of widgets. */

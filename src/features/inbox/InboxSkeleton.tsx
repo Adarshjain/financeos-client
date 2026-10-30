@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** Section shapes while the inbox loads: a header bar, then rows of square, two lines and a button. */
 export function InboxSkeleton() {

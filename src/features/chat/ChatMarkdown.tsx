@@ -2,7 +2,7 @@ import React from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { Text } from '@/components/ds';
+import { Text } from '@/components/ds/Text/Text';
 
 const components: Components = {
   p: ({ children }) => <Text as="p">{children}</Text>,

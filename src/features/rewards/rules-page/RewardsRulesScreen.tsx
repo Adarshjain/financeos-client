@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
-import { AccountPicker } from '@/components/organisms';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';

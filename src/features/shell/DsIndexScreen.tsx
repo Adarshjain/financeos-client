@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { Card, ListRow, SectionHeader } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 /** The /ds index: every screen of the design system, linked. */

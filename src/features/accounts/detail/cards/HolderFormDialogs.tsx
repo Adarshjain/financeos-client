@@ -2,8 +2,11 @@
 
 import React from 'react';
 
-import { DateField, Select, Text, TextField } from '@/components/ds';
-import { AmountField } from '@/components/organisms';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 import type {
   Cardholder,

@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { showToast } from '@/components/ds';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { duplicateReport } from '@/features/reports/duplicateReportModel';
 import { createReport, deleteReport, updateReport } from '@/features/reports/reportActions';
 import { unwrapAction } from '@/lib/actionResult';

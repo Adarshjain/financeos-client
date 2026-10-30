@@ -4,8 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { logoutToDinero } from '@/actions/auth';
-import { Banner, Button, Text } from '@/components/ds';
-import { Logo } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Text } from '@/components/ds/Text/Text';
+import { Logo } from '@/components/organisms/Logo/Logo';
 import { appHref } from '@/features/shell/routes';
 
 import { finishUnlock, startUnlock } from './appLockActions';

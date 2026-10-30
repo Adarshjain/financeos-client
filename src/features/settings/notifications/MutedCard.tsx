@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import { Card, ListRow, Switch, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Switch } from '@/components/ds/Switch/Switch';
+import { Text } from '@/components/ds/Text/Text';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanResponse, NotificationSettingsResponse } from '@/lib/api/types';

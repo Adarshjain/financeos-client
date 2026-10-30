@@ -3,19 +3,16 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import {
-  Button,
-  Card,
-  ConfirmDialog,
-  Dialog,
-  EmptyState,
-  FilterBar,
-  Icon,
-  ListRow,
-  Menu,
-  Pager,
-  Text,
-} from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { Icon } from '@/components/ds/Icon/Icon';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

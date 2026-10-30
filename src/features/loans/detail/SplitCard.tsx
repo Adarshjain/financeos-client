@@ -2,7 +2,9 @@
 
 import React from 'react';
 
-import { Card, ProgressBar, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { Text } from '@/components/ds/Text/Text';
 import { formatCount } from '@/lib/format';
 
 import type { FySplit } from './scheduleModel';

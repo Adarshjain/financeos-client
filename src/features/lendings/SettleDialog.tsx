@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import {
-  DateField,
-  Dialog,
-  FilterChip,
-  Select,
-  showToast,
-  Text,
-  TextField,
-} from '@/components/ds';
+import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { isPhoneLayout } from '@/components/ds/phoneLayout';
-import { AmountField } from '@/components/organisms';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';

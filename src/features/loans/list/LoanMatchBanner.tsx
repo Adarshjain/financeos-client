@@ -4,7 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Banner, showToast } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatchModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanMatchSuggestions } from '@/lib/loan.types';

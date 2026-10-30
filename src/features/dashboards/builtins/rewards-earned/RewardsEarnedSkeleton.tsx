@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { RowsSkeleton } from '@/features/dashboards/builtins/BuiltinParts';
 
 /** The headline figure, then one line per card. */

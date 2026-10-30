@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Card, Conceal, createDataTableColumnHelper, DataTable, EmptyState, Text, useConcealed } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal, useConcealed } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
 

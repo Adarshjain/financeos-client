@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Banner } from '@/components/ds';
+import { Banner } from '@/components/ds/Banner/Banner';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 

@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Button, Card, EmptyState, ListRow, Menu, Text } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Menu } from '@/components/ds/Menu/Menu';
+import { Text } from '@/components/ds/Text/Text';
 import type { LoanEventType } from '@/lib/loan.types';
 
 import { entriesCount,type EntryRow } from './entriesModel';

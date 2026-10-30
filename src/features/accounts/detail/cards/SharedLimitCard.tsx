@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, ListField } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListField } from '@/components/ds/ListField/ListField';
 
 import { HeaderDialogLink } from '../overview/HeaderLink';
 import type { SharedLimitModel } from './cardsModel';

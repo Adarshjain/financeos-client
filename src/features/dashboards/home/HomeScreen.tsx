@@ -9,7 +9,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Button, EmptyState, Select } from '@/components/ds';
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Select } from '@/components/ds/Select/Select';
 import { useAddWidgetNow, useRestoreHome, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { withTitle } from '@/features/dashboards/editor/editorStateModel';

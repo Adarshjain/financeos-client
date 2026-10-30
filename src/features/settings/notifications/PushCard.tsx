@@ -2,8 +2,12 @@
 
 import React from 'react';
 
-import { Banner, Button, Card, ListRow, Text } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
+import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
 import { notify } from '@/lib/notify';

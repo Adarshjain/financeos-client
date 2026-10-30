@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { ActionBar, Button, ConfirmDialog, GRID_GAP, Menu } from '@/components/ds';
+import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
+import { Button } from '@/components/ds/Button/Button';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { Menu } from '@/components/ds/Menu/Menu';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';

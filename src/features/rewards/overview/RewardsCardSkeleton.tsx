@@ -1,10 +1,8 @@
 import React from 'react';
 
-import {
-  Card,
-  Hero,
-  Skeleton,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { REWARDS_HREF } from '@/features/rewards/overview/rewardsTabs';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';

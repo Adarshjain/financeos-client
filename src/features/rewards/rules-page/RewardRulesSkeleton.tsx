@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, Skeleton } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 
 /** The Earning rules tab's shape: the card picker, the rules, caps and milestones, the settings. */
 export function RewardRulesSkeleton() {

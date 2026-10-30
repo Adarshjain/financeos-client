@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Badge, Banner, Button, Card, GRID_GAP,KpiTile, ListField, Text } from '@/components/ds';
+import { Badge } from '@/components/ds/Badge/Badge';
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { GRID_GAP } from '@/components/ds/gridGap';
+import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
+import { ListField } from '@/components/ds/ListField/ListField';
+import { Text } from '@/components/ds/Text/Text';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';

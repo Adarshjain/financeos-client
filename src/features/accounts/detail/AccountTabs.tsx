@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-import { type TabItem,Tabs } from '@/components/ds';
+import { type TabItem, Tabs } from '@/components/ds/Tabs/Tabs';
 import { AccountType } from '@/lib/types';
 
 import { accountHref, accountTabsFor, activeTabId } from './accountTabsModel';

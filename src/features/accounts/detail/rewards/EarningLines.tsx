@@ -3,17 +3,15 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import {
-  Card,
-  createDataTableColumnHelper,
-  DataTable,
-  EmptyState,
-  FilterChip,
-  Pager,
-  Select,
-  StatusWords,
-  Text,
-} from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Select } from '@/components/ds/Select/Select';
+import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 
 import { RewardLineDialog } from './RewardLineDialog';
 import { type LineRow, PAGE_SIZES, rewardsHref, type RewardsQuery, type RuleChip } from './rewardsModel';

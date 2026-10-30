@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { AppLockCard } from '@/features/app-lock/AppLockCard';
 import type { AppLockStatus } from '@/lib/api/types';
 import type { UserResponse } from '@/lib/types';

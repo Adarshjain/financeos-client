@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Dialog, Select, showToast, Text, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Select } from '@/components/ds/Select/Select';
+import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
+import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 

@@ -2,7 +2,12 @@
 
 import React from 'react';
 
-import { Card, ListRow, ProgressBar, SectionHeader, StatusWord, Text } from '@/components/ds';
+import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { RewardRule } from '@/lib/rewards.types';

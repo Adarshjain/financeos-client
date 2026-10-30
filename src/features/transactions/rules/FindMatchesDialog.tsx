@@ -4,8 +4,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Checkbox, Dialog, EmptyState, ListRow, Pager, showToast, Skeleton, Text } from '@/components/ds';
-import { ErrorState } from '@/components/organisms';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Pager } from '@/components/ds/Pager/Pager';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { activityUrl } from '@/features/settings/activity/activityModel';

@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { Skeleton } from '@/components/ds';
+import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { categoryTarget, tableRowRequest, type UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';

@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { Dialog, TextField } from '@/components/ds';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { TextField } from '@/components/ds/TextField/TextField';
 
 const FORM_ID = 'category-name-form';
 
