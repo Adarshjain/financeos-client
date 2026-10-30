@@ -6,14 +6,12 @@ import React from 'react';
 import { Button } from '@/components/ds/Button/Button';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Popover } from '@/components/ds/Popover/Popover';
-import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { useNotificationFeed } from '@/lib/query/hooks/useNotifications';
 
-import { notificationHref, timeOrDateLabel } from './notificationsModel';
-
-export const DROPDOWN_SIZE = 10;
+import { NotificationsDropdownSkeleton } from './NotificationsDropdownSkeleton';
+import { DROPDOWN_SIZE, notificationHref, timeOrDateLabel } from './notificationsModel';
 
 export interface NotificationsDropdownProps {
   /** Rows that were unread when the bell opened; they stay highlighted while it is open. */
@@ -27,16 +25,7 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
 
   let body: React.ReactNode;
   if (isLoading) {
-    body = (
-      <div data-testid="notifications-skeleton">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex flex-col gap-space-6 px-space-16 py-space-10">
-            <Skeleton height={14} width="70%" />
-            <Skeleton height={12} width="50%" />
-          </div>
-        ))}
-      </div>
-    );
+    body = <NotificationsDropdownSkeleton />;
   } else if (error) {
     body = (
       <div className="flex flex-col items-start gap-space-4 px-space-12 py-space-8">
