@@ -20,11 +20,13 @@ const figtree = localFont({
   weight: '500 800',
 });
 
+// Display face trimmed to what the Display type styles use: weights 700–800, opsz pinned at 24,
+// latin + ₹ + common punctuation only (anything else falls back to system-ui).
 const bricolageGrotesque = localFont({
-  src: '../fonts/BricolageGrotesque-latin-ext.woff2',
+  src: '../fonts/BricolageGrotesque-display.woff2',
   variable: '--ds-font-display',
   display: 'swap',
-  weight: '600 800',
+  weight: '700 800',
 });
 
 // The TopBar sits on bg-surface; the browser/status bar takes that token's value per theme.
