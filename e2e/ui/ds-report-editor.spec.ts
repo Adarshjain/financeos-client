@@ -290,7 +290,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     } as never);
 
     await page.goto(`/reports/${report.id}`);
-    const bars = page.locator('.recharts-bar-rectangle');
+    const bars = page.locator('[data-bar]');
     await expect(bars).toHaveCount(2, { timeout: 45_000 });
 
     // The bar order is the report's; read which category the first bar is from the dialog's entry chip.
