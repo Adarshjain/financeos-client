@@ -397,7 +397,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       const { dashboard, name, categories, rows } = await seedSplitBoard('bar');
       await page.goto(`/dashboards/${dashboard.id}`);
-      const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
+      const bars = widgetCard(page, 'wr').locator('[data-bar]');
       await expect(bars).toHaveCount(2, { timeout: 45_000 });
       await bars.first().click();
       const dialog = page.getByRole('dialog', { name: `Underlying data · ${name}` });
@@ -452,7 +452,7 @@ for (const viewport of VIEWPORTS) {
       const { dashboard } = await seedSplitBoard('bar');
       await page.goto(`/dashboards/${dashboard.id}?edit=1`);
       await expect(page.getByLabel('Dashboard name')).toBeVisible({ timeout: 45_000 });
-      const bars = widgetCard(page, 'wr').locator('.recharts-bar-rectangle');
+      const bars = widgetCard(page, 'wr').locator('[data-bar]');
       await expect(bars).toHaveCount(2, { timeout: 45_000 });
       // Edit mode makes widget content inert, so a tap on the bar reaches nothing.
       await expect.poll(() => bars.first().evaluate((el) => !!el.closest('[inert]')), { timeout: 15_000 }).toBe(true);
