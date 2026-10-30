@@ -1,6 +1,6 @@
 # Chart
 
-A report chart over Recharts, drawn in Dinero tokens. Renders a report's chart data as line, bar, stacked bar, area, pie, donut, breakdown, sparkline or heatmap. Built from Text, DataTable, ProgressBar and Button; the tooltip, legend and data table are drawn here, with tokens only.
+A report chart drawn as our own SVG on d3-scale and d3-shape, in Dinero tokens. Renders a report's chart data as line, bar, stacked bar, area, pie, donut, breakdown, sparkline or heatmap. Built from Text, DataTable, ProgressBar and Button; the tooltip, legend and data table are drawn here, with tokens only.
 
 ## Anatomy
 - Cartesian (line, area, bar, stacked bar): a legend above when there is more than one series, a hairline horizontal grid in `line`, no axis lines, axis labels in `ink-3`, compact ₹1.2L ticks on an auto-sized value axis, a hover card with a Total row for stacks.

@@ -1,66 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Recharts is mocked to stand-ins that expose the click handlers the chart passes down.
-vi.mock('recharts', () => {
-  const Wrap = ({ children }: { children?: ReactNode }) => (
-    <div>{children}</div>
-  );
-  return {
-    ResponsiveContainer: Wrap,
-    LineChart: Wrap,
-    AreaChart: Wrap,
-    BarChart: Wrap,
-    PieChart: Wrap,
-    Pie: ({
-      data,
-      onClick,
-      children,
-    }: {
-      data: { name: string }[];
-      onClick?: (d: unknown, i: number) => void;
-      children?: ReactNode;
-    }) => (
-      <div data-testid="pie">
-        {data.map((s, i) => (
-          <button
-            key={s.name}
-            data-testid={`slice-${i}`}
-            onClick={() => onClick?.(s, i)}
-          />
-        ))}
-        {children}
-      </div>
-    ),
-    Cell: () => null,
-    Line: () => null,
-    Area: ({ dataKey, fill, stroke }: { dataKey: string; fill?: string; stroke?: string }) => (
-      <span data-testid={`area-${dataKey}`} data-fill={fill} data-stroke={stroke} />
-    ),
-    Bar: ({
-      dataKey,
-      onClick,
-    }: {
-      dataKey: string;
-      onClick?: (d: unknown, i: number) => void;
-    }) => (
-      <button
-        data-testid={`bar-${dataKey}`}
-        data-pressable={onClick ? 'yes' : 'no'}
-        onClick={() => onClick?.({ payload: { category: 'Feb' } }, 1)}
-      />
-    ),
-    XAxis: () => null,
-    YAxis: ({ hide }: { hide?: boolean }) => (
-      <span data-testid="y-axis" data-hide={String(!!hide)} />
-    ),
-    CartesianGrid: () => <span data-testid="grid" />,
-    Tooltip: () => <span data-testid="tooltip" />,
-  };
-});
-
-const size = vi.hoisted(() => ({ width: 0, height: 0 }));
+const size = vi.hoisted(() => ({ width: 600, height: 240 }));
 vi.mock('@/lib/charts/useElementSize', () => ({
   useElementSize: () => [() => {}, size],
 }));
@@ -70,10 +11,13 @@ import { Chart } from '@/components/organisms/Chart/Chart';
 const months = ['Jan', 'Feb', 'Mar'];
 const sum = { field: 'amount', aggregation: 'sum' } as const;
 
-afterEach(() => {
-  size.width = 0;
-  size.height = 0;
+beforeEach(() => {
+  size.width = 600;
+  size.height = 240;
 });
+
+const bars = () => Array.from(document.querySelectorAll('path[data-bar]'));
+const slice = (i: number) => document.querySelector(`path[data-slice="${i}"]`)!;
 
 describe('Chart sparkline', () => {
   it('draws one series as an area in chart-1 with no axes, grid or tooltip', () => {
@@ -87,10 +31,12 @@ describe('Chart sparkline', () => {
         }}
       />
     );
-    expect(screen.getByTestId('area-value')).toHaveAttribute('data-stroke', 'var(--ds-chart-1)');
-    expect(screen.getByTestId('y-axis')).toHaveAttribute('data-hide', 'true');
-    expect(screen.queryByTestId('grid')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+    const container = document.body;
+    expect(container.querySelector('path[stroke="var(--ds-chart-1)"]')).toBeInTheDocument();
+    expect(container.querySelector('path[fill^="url(#"]')).toBeInTheDocument();
+    expect(container.querySelector('text')).toBeNull();
+    expect(container.querySelector('line')).toBeNull();
+    expect(container.querySelector('.z-floating')).toBeNull();
   });
 });
 
@@ -105,7 +51,7 @@ describe('Chart press', () => {
   it('reports the pressed bar as an entry', () => {
     const onSelectEntry = vi.fn();
     render(<Chart data={bar} onSelectEntry={onSelectEntry} />);
-    fireEvent.click(screen.getByTestId('bar-spend'));
+    fireEvent.click(bars()[1]);
     expect(onSelectEntry).toHaveBeenCalledWith({
       key: 'Feb',
       label: 'Feb',
@@ -117,7 +63,27 @@ describe('Chart press', () => {
 
   it('makes nothing pressable without a callback', () => {
     render(<Chart data={bar} />);
-    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-pressable', 'no');
+    expect(bars()).toHaveLength(3);
+    expect(bars().some((b) => b.getAttribute('class')?.includes('cursor-pointer'))).toBe(false);
+    fireEvent.click(bars()[1]);
+  });
+
+  it('reports a pressed line point from its hover dot, and not one canSelect rejects', () => {
+    const line = { ...bar, chartType: 'line' as const };
+    const onSelectEntry = vi.fn();
+    const { unmount } = render(<Chart data={line} onSelectEntry={onSelectEntry} />);
+    const svg = document.querySelector('svg.absolute')!;
+    fireEvent.pointerMove(svg, { clientX: 300, clientY: 100, pointerType: 'mouse' });
+    fireEvent.click(svg.querySelector('circle')!);
+    expect(onSelectEntry).toHaveBeenCalledWith({ key: 'Feb', label: 'Feb', seriesKey: 'Spend', value: 20, index: 1 });
+    unmount();
+
+    const rejecting = vi.fn();
+    render(<Chart data={line} onSelectEntry={rejecting} canSelectEntry={() => false} />);
+    const again = document.querySelector('svg.absolute')!;
+    fireEvent.pointerMove(again, { clientX: 300, clientY: 100, pointerType: 'mouse' });
+    fireEvent.click(again.querySelector('circle')!);
+    expect(rejecting).not.toHaveBeenCalled();
   });
 
   const pie = {
@@ -132,7 +98,7 @@ describe('Chart press', () => {
     size.height = 300;
     const onSelectEntry = vi.fn();
     render(<Chart data={pie} onSelectEntry={onSelectEntry} />);
-    fireEvent.click(screen.getByTestId('slice-1'));
+    fireEvent.click(slice(1));
     expect(onSelectEntry).toHaveBeenLastCalledWith({
       key: 'Travel',
       label: 'Travel',

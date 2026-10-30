@@ -1,72 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// Recharts is mocked down to inspectable stand-ins: series marks expose their
-// key/label/colour/shape, the Y axis exposes its ticks, pie cells their fill.
-vi.mock('recharts', () => {
-  const Wrap = ({ children }: { children?: ReactNode }) => (
-    <div>{children}</div>
-  );
-  const Series = (kind: string) => {
-    const Component = (p: {
-      dataKey: string;
-      name?: string;
-      fill?: string;
-      stroke?: string;
-      radius?: unknown;
-      stackId?: string;
-    }) => (
-      <span
-        data-testid={`${kind}-${p.dataKey}`}
-        data-name={p.name ?? ''}
-        data-color={kind === 'bar' ? p.fill : p.stroke}
-        data-radius={JSON.stringify(p.radius ?? null)}
-        data-stack={p.stackId ?? ''}
-      />
-    );
-    Component.displayName = `Mock${kind}`;
-    return Component;
-  };
-  return {
-    ResponsiveContainer: Wrap,
-    LineChart: Wrap,
-    AreaChart: Wrap,
-    BarChart: Wrap,
-    PieChart: Wrap,
-    Pie: ({ children }: { children?: ReactNode }) => (
-      <div data-testid="pie">{children}</div>
-    ),
-    Cell: ({ fill, fillOpacity }: { fill: string; fillOpacity: number }) => (
-      <span
-        data-testid="cell"
-        data-fill={fill}
-        data-opacity={String(fillOpacity)}
-      />
-    ),
-    Line: Series('line'),
-    Area: Series('area'),
-    Bar: Series('bar'),
-    XAxis: () => null,
-    YAxis: ({
-      ticks,
-      tick,
-    }: {
-      ticks?: number[];
-      tick?: { fill?: string };
-    }) => (
-      <span
-        data-testid="y-axis"
-        data-ticks={JSON.stringify(ticks ?? null)}
-        data-tick-fill={tick?.fill ?? ''}
-      />
-    ),
-    CartesianGrid: ({ stroke }: { stroke?: string }) => (
-      <span data-testid="grid" data-stroke={stroke ?? ''} />
-    ),
-    Tooltip: () => <span data-testid="tooltip" />,
-  };
-});
 
 const size = vi.hoisted(() => ({ width: 0, height: 0 }));
 vi.mock('@/lib/charts/useElementSize', () => ({
@@ -74,6 +7,23 @@ vi.mock('@/lib/charts/useElementSize', () => ({
 }));
 
 import { Chart } from '@/components/organisms/Chart/Chart';
+
+// The series group of a mark, by its label (a series named "spend" reads "Spend").
+const mark = (label: string) => document.querySelector(`g[data-series="${label}"]`);
+const marks = (kind: string) => document.querySelectorAll(`g[data-kind="${kind}"]`);
+// A bar series is filled; a line or area series is stroked.
+const colorOf = (label: string) => {
+  const g = mark(label)!;
+  return g.getAttribute('fill') ?? g.querySelector('path[stroke]')?.getAttribute('stroke');
+};
+const slices = () => Array.from(document.querySelectorAll('path[data-slice]'));
+const pieSvg = () => document.querySelector('svg[data-chart="pie"]');
+const hoverCard = () => document.querySelector<HTMLElement>('.z-floating');
+// Where a series' first bar path starts (after its left corner radius).
+const startX = (label: string) => Number(mark(label)!.querySelector('path')!.getAttribute('d')!.match(/^M([\d.]+)/)![1]);
+const arcRadii = (path: Element) => Array.from(path.getAttribute('d')!.matchAll(/A(\d+),/g), (m) => m[1]);
+const yAxis = () => document.querySelector('[data-part="y-axis"]') as HTMLElement;
+const yAxisTexts = () => Array.from(yAxis().querySelectorAll('text')).map((t) => t.textContent);
 
 const months = ['Jan', 'Feb', 'Mar'];
 const sumAmount = { field: 'amount', aggregation: 'sum' } as const;
@@ -84,6 +34,11 @@ beforeEach(() => {
 });
 
 describe('Chart cartesian', () => {
+  beforeEach(() => {
+    size.width = 600;
+    size.height = 240;
+  });
+
   const cats = ['Groceries', 'Entertainment', 'Transport', 'Dining out', 'Utilities'];
   const catData = {
     chartType: 'bar' as const,
@@ -95,19 +50,28 @@ describe('Chart cartesian', () => {
     size.width = 320;
     size.height = 240;
     render(<Chart data={catData} />);
-    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[0,4,4,0]');
+    // Names on the left in full: the left axis lists the categories, not value ticks.
+    expect(yAxisTexts()).toEqual(cats);
+    // ...and the right end of each bar is the rounded one.
+    expect(mark('Spend')).toHaveAttribute('data-radius', '0,4,4,0');
+    // Arc radii in path order (top-right, bottom-right, bottom-left, top-left): right side round.
+    expect(arcRadii(mark('Spend')!.querySelector('path')!)).toEqual(['4', '4', '0', '0']);
   });
 
   it('keeps bars upright when the names fit, and for a long series', () => {
     size.width = 600;
     size.height = 240;
     const { unmount } = render(<Chart data={catData} />);
-    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[4,4,0,0]');
+    expect(yAxis().dataset.ticks).toBeDefined();
+    expect(mark('Spend')).toHaveAttribute('data-radius', '4,4,0,0');
+    // Upright: top side round (top-right, bottom-right, bottom-left, top-left).
+    expect(arcRadii(mark('Spend')!.querySelector('path')!)).toEqual(['4', '0', '0', '4']);
+    expect(yAxisTexts()).not.toContain('Groceries');
     unmount();
     size.width = 320;
     const many = Array.from({ length: 14 }, (_, i) => `Category ${i}`);
     render(<Chart data={{ chartType: 'bar', categories: many, series: [{ name: 'spend', data: many.map(() => 1) }] }} />);
-    expect(screen.getByTestId('bar-spend')).toHaveAttribute('data-radius', '[4,4,0,0]');
+    expect(yAxisTexts()).not.toContain('Category 0');
   });
 
   it('shows no series legend for a single series', () => {
@@ -156,14 +120,8 @@ describe('Chart cartesian', () => {
         }}
       />
     );
-    expect(screen.getByTestId('bar-a')).toHaveAttribute(
-      'data-color',
-      'var(--ds-chart-1)'
-    );
-    expect(screen.getByTestId('bar-b')).toHaveAttribute(
-      'data-color',
-      'var(--ds-chart-2)'
-    );
+    expect(colorOf('A')).toBe('var(--ds-chart-1)');
+    expect(colorOf('B')).toBe('var(--ds-chart-2)');
   });
 
   it('rounds every grouped bar but only the top segment of a stack', () => {
@@ -174,11 +132,10 @@ describe('Chart cartesian', () => {
     const grouped = render(
       <Chart data={{ chartType: 'bar', categories: months, series }} />
     );
-    expect(screen.getByTestId('bar-a')).toHaveAttribute(
-      'data-radius',
-      '[4,4,0,0]'
-    );
-    expect(screen.getByTestId('bar-a')).toHaveAttribute('data-stack', '');
+    expect(mark('A')).toHaveAttribute('data-radius', '4,4,0,0');
+    expect(mark('B')).toHaveAttribute('data-radius', '4,4,0,0');
+    // Grouped bars sit side by side: the second series starts to the right of the first.
+    expect(startX('B')).toBeGreaterThan(startX('A'));
     grouped.unmount();
 
     render(
@@ -186,12 +143,10 @@ describe('Chart cartesian', () => {
         data={{ chartType: 'stackedBar', categories: months, series }}
       />
     );
-    expect(screen.getByTestId('bar-a')).toHaveAttribute('data-radius', '0');
-    expect(screen.getByTestId('bar-b')).toHaveAttribute(
-      'data-radius',
-      '[4,4,0,0]'
-    );
-    expect(screen.getByTestId('bar-a')).toHaveAttribute('data-stack', 'stack');
+    expect(mark('A')).toHaveAttribute('data-radius', '0,0,0,0');
+    expect(mark('B')).toHaveAttribute('data-radius', '4,4,0,0');
+    // A stack shares one column: both series start at the same x.
+    expect(startX('B') - startX('A')).toBeCloseTo(4, 5);
   });
 
   it('derives round Y ticks from the largest value, including zero', () => {
@@ -204,7 +159,7 @@ describe('Chart cartesian', () => {
         }}
       />
     );
-    expect(JSON.parse(screen.getByTestId('y-axis').dataset.ticks!)).toEqual([
+    expect(JSON.parse(yAxis().dataset.ticks!)).toEqual([
       0, 5000, 10000, 15000, 20000, 25000,
     ]);
   });
@@ -223,7 +178,7 @@ describe('Chart cartesian', () => {
       />
     );
     // Extent is -10K..50K (not -5K..30K): 20K steps fit it in four intervals.
-    expect(JSON.parse(screen.getByTestId('y-axis').dataset.ticks!)).toEqual([
+    expect(JSON.parse(yAxis().dataset.ticks!)).toEqual([
       -20000, 0, 20000, 40000, 60000,
     ]);
   });
@@ -246,18 +201,12 @@ describe('Chart cartesian', () => {
       />
     );
     // Four largest keep a slot; s0–s5 (the six smallest) fold.
-    for (const folded of ['bar-s0', 'bar-s1', 'bar-s2', 'bar-s5']) {
-      expect(screen.queryByTestId(folded)).not.toBeInTheDocument();
+    for (const folded of ['S0', 'S1', 'S2', 'S5']) {
+      expect(mark(folded)).toBeNull();
     }
-    expect(screen.getByTestId('bar-s6')).toHaveAttribute(
-      'data-color',
-      'var(--ds-chart-1)'
-    );
-    expect(screen.getByTestId('bar-Other')).toHaveAttribute(
-      'data-color',
-      'var(--ds-chart-rest)'
-    );
-    expect(screen.getAllByTestId(/^bar-/)).toHaveLength(5);
+    expect(colorOf('S6')).toBe('var(--ds-chart-1)');
+    expect(colorOf('Other')).toBe('var(--ds-chart-rest)');
+    expect(marks('bar')).toHaveLength(5);
   });
 
   it('keeps every series when the measure cannot be summed', () => {
@@ -277,8 +226,8 @@ describe('Chart cartesian', () => {
         }
       />
     );
-    expect(screen.getAllByTestId(/^line-/)).toHaveLength(9);
-    expect(screen.queryByTestId('line-Other')).not.toBeInTheDocument();
+    expect(marks('line')).toHaveLength(9);
+    expect(mark('Other')).toBeNull();
   });
 
   it('mirrors the data into the screen-reader table', () => {
@@ -297,14 +246,95 @@ describe('Chart cartesian', () => {
   });
 });
 
+describe('Chart hover card', () => {
+  beforeEach(() => {
+    size.width = 600;
+    size.height = 240;
+  });
+  const svg = () => document.querySelector('svg.absolute')!;
+  const two = [
+    { name: 'inflow', data: [10, 20, 30] },
+    { name: 'outflow', data: [1, 2, 3] },
+  ];
+
+  it('opens on a mouse move over a bar and names the category, series and values', () => {
+    render(<Chart data={{ chartType: 'stackedBar', categories: months, series: two }} />);
+    expect(hoverCard()).toBeNull();
+    fireEvent.pointerMove(svg(), { clientX: 300, clientY: 100, pointerType: 'mouse' });
+    const card = hoverCard()!;
+    // x=300 of a 600-wide plot with a left axis is the middle category.
+    expect(within(card).getByText('Feb')).toBeInTheDocument();
+    expect(within(card).getByText('Inflow')).toBeInTheDocument();
+    expect(within(card).getByText('20')).toBeInTheDocument();
+    expect(within(card).getByText('Total')).toBeInTheDocument();
+    expect(within(card).getByText('22')).toBeInTheDocument();
+  });
+
+  it('closes when a mouse leaves the chart', () => {
+    render(<Chart data={{ chartType: 'line', categories: months, series: two }} />);
+    fireEvent.pointerMove(svg(), { clientX: 300, clientY: 100, pointerType: 'mouse' });
+    expect(hoverCard()).not.toBeNull();
+    fireEvent.pointerLeave(svg(), { pointerType: 'mouse' });
+    expect(hoverCard()).toBeNull();
+  });
+
+  it('opens on a tap and stays open until a tap outside the chart', () => {
+    render(<Chart data={{ chartType: 'area', categories: months, series: two }} />);
+    fireEvent.pointerDown(svg(), { clientX: 300, clientY: 100, pointerType: 'touch' });
+    expect(hoverCard()).not.toBeNull();
+    fireEvent.pointerLeave(svg(), { pointerType: 'touch' });
+    expect(hoverCard()).not.toBeNull();
+    fireEvent.pointerDown(document.body, { pointerType: 'touch' });
+    expect(hoverCard()).toBeNull();
+  });
+
+  it('does not open from a pointer outside the plot', () => {
+    render(<Chart data={{ chartType: 'bar', categories: months, series: two }} />);
+    fireEvent.pointerMove(svg(), { clientX: 2, clientY: 100, pointerType: 'mouse' });
+    expect(hoverCard()).toBeNull();
+  });
+
+  it('drops a hovered point that a refetch removed, instead of an empty card', () => {
+    const wide = { chartType: 'line' as const, categories: months, series: two };
+    const { rerender } = render(<Chart data={wide} />);
+    fireEvent.pointerMove(svg(), { clientX: 500, clientY: 100, pointerType: 'mouse' });
+    expect(hoverCard()).not.toBeNull();
+    rerender(<Chart data={{ ...wide, categories: ['Jan'], series: [{ name: 'inflow', data: [1] }, { name: 'outflow', data: [2] }] }} />);
+    expect(hoverCard()).toBeNull();
+  });
+
+  it('keeps the card inside a narrow chart even when flipped', () => {
+    size.width = 120;
+    size.height = 240;
+    const offset = vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(100);
+    render(<Chart data={{ chartType: 'line', categories: months, series: two }} />);
+    fireEvent.pointerMove(svg(), { clientX: 60, clientY: 100, pointerType: 'mouse' });
+    const left = parseFloat(hoverCard()!.style.left);
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(left + 100).toBeLessThanOrEqual(120);
+    offset.mockRestore();
+  });
+
+  it('draws one dot per series at the hovered point of a line', () => {
+    render(<Chart data={{ chartType: 'line', categories: months, series: two }} />);
+    expect(svg().querySelectorAll('circle')).toHaveLength(0);
+    fireEvent.pointerMove(svg(), { clientX: 300, clientY: 100, pointerType: 'mouse' });
+    expect(svg().querySelectorAll('circle')).toHaveLength(2);
+  });
+});
+
 describe('Chart yDomain prop', () => {
+  beforeEach(() => {
+    size.width = 600;
+    size.height = 240;
+  });
+
   const rising = {
     chartType: 'line' as const,
     categories: months,
     series: [{ name: 'p', data: [1000, 1010, 1040] }],
   };
-  const ticks = () =>
-    JSON.parse(screen.getByTestId('y-axis').getAttribute('data-ticks')!);
+  const ticks = () => JSON.parse(yAxis().getAttribute('data-ticks')!);
 
   it('includes zero by default and for yDomain "zero"', () => {
     const { unmount } = render(<Chart data={rising} />);
@@ -341,6 +371,11 @@ describe('Chart yDomain prop', () => {
 });
 
 describe('Chart axis and grid colours', () => {
+  beforeEach(() => {
+    size.width = 600;
+    size.height = 240;
+  });
+
   const data = {
     chartType: 'line' as const,
     categories: months,
@@ -349,14 +384,8 @@ describe('Chart axis and grid colours', () => {
 
   it('keeps the Dinero tokens by default', () => {
     render(<Chart data={data} />);
-    expect(screen.getByTestId('y-axis')).toHaveAttribute(
-      'data-tick-fill',
-      'var(--ds-ink-3)'
-    );
-    expect(screen.getByTestId('grid')).toHaveAttribute(
-      'data-stroke',
-      'var(--ds-line)'
-    );
+    expect(yAxis()).toHaveAttribute('fill', 'var(--ds-ink-3)');
+    expect(document.querySelector('[data-part="grid"] line')).toHaveAttribute('stroke', 'var(--ds-line)');
   });
 });
 
@@ -448,23 +477,21 @@ describe('Chart pie / donut', () => {
     const other = screen.getByText('Other (6)').closest('li')!;
     expect(other).toHaveAttribute('title', 'c4, c5, c6, c7, c8, c9');
     expect(other).toHaveTextContent('561');
-    const cells = screen.getAllByTestId('cell');
+    const cells = slices();
     expect(cells).toHaveLength(5);
-    expect(cells[4]).toHaveAttribute('data-fill', 'var(--ds-chart-rest)');
+    expect(cells[4]).toHaveAttribute('fill', 'var(--ds-chart-rest)');
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
   it('renders no pie until the frame is measured, then sizes it from the frame', () => {
     const { rerender, container } = render(<Chart data={pie()} />);
-    expect(screen.queryByTestId('pie')).not.toBeInTheDocument();
+    expect(pieSvg()).toBeNull();
 
     size.width = 600;
     size.height = 288;
     rerender(<Chart data={pie({ chartType: 'pie' })} />);
-    expect(screen.getByTestId('pie')).toBeInTheDocument();
-    const pieBox = screen
-      .getByTestId('pie')
-      .closest('.relative') as HTMLElement;
+    expect(pieSvg()).toBeInTheDocument();
+    const pieBox = pieSvg()!.closest('.relative') as HTMLElement;
     expect(pieBox).toHaveStyle({ width: '270px', height: '270px' });
     expect(container.firstChild).not.toHaveClass('flex-col');
   });
@@ -474,9 +501,7 @@ describe('Chart pie / donut', () => {
     size.height = 400;
     const { container } = render(<Chart data={pie()} />);
     expect(container.firstChild).toHaveClass('flex-col');
-    expect(screen.getByTestId('pie').closest('.relative')).toHaveClass(
-      'w-full'
-    );
+    expect(pieSvg()!.closest('.relative')).toHaveClass('w-full');
   });
 
   it('donut shows the total in the centre and the hovered slice instead', () => {
@@ -487,26 +512,43 @@ describe('Chart pie / donut', () => {
     );
     expect(screen.getByText('Total')).toBeInTheDocument();
     expect(screen.getByText('₹10K')).toBeInTheDocument();
-    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+    // A donut has no hover card: the centre label tells the hovered slice.
+    fireEvent.mouseEnter(slices()[1]);
+    fireEvent.pointerMove(slices()[1], { clientX: 20, clientY: 20 });
+    expect(hoverCard()).toBeNull();
+    fireEvent.mouseLeave(slices()[1]);
 
     const travelRow = screen.getByText('Travel').closest('li')!;
     fireEvent.mouseEnter(travelRow);
     expect(screen.getByText('₹6K')).toBeInTheDocument();
     expect(screen.queryByText('Total')).not.toBeInTheDocument();
-    const opacities = screen
-      .getAllByTestId('cell')
-      .map((c) => c.dataset.opacity);
+    const opacities = slices().map((c) => c.getAttribute('fill-opacity'));
     expect(opacities).toEqual(['1', '0.35', '0.35']);
 
     fireEvent.mouseLeave(travelRow);
     expect(screen.getByText('Total')).toBeInTheDocument();
   });
 
+  it('opens the pie card on a stationary touch tap, with no move', () => {
+    size.width = 600;
+    size.height = 288;
+    render(<Chart data={pie()} />);
+    expect(hoverCard()).toBeNull();
+    fireEvent.pointerDown(slices()[0], { clientX: 20, clientY: 20, pointerType: 'touch' });
+    expect(within(hoverCard()!).getByText('Travel')).toBeInTheDocument();
+  });
+
   it('plain pie keeps a hover tooltip and has no centre label', () => {
     size.width = 600;
     size.height = 288;
     render(<Chart data={pie()} />);
-    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
+    expect(hoverCard()).toBeNull();
+    fireEvent.mouseEnter(slices()[0]);
+    fireEvent.pointerMove(slices()[0], { clientX: 20, clientY: 20 });
+    expect(within(hoverCard()!).getByText('Travel')).toBeInTheDocument();
+    expect(within(hoverCard()!).getByText('6,000')).toBeInTheDocument();
+    fireEvent.mouseLeave(slices()[0]);
+    expect(hoverCard()).toBeNull();
     expect(screen.queryByText('Total')).not.toBeInTheDocument();
   });
 });

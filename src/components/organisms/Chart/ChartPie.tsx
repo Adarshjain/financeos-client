@@ -5,8 +5,8 @@
 // the chart is a real list (name, value, share) and doubles as its text
 // equivalent; hovering a row or slice dims the rest.
 
-import { forwardRef, useState } from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { arc, pie as d3Pie } from 'd3-shape';
+import { forwardRef, useId, useState } from 'react';
 
 import { cn } from '@/components/ds/cn';
 import { Text } from '@/components/ds/Text/Text';
@@ -15,6 +15,7 @@ import { useElementSize } from '@/lib/charts/useElementSize';
 import { formatPercent } from '@/lib/format';
 
 import type { ChartEntry, ChartInput } from './Chart';
+import { ChartFloat } from './ChartFloat';
 import {
   ChartDataTable,
   ChartEmpty,
@@ -29,6 +30,7 @@ import {
 } from './chartTokens';
 import { chartValueFormat } from './chartValueFormat';
 import { useMergedRef } from './mergeRefs';
+import { useReveal } from './useReveal';
 
 /** Below this width the legend stacks under the pie instead of beside it. */
 const STACK_BELOW_PX = 360;
@@ -47,6 +49,125 @@ interface Slice {
   index?: number;
   /** Names folded into an "Other" slice. */
   folded?: string[];
+}
+
+/** Share of the half-size the ring reaches out to, and where a donut's hole starts (of that radius). */
+const OUTER_RATIO = 0.93;
+const HOLE_RATIO = 0.64;
+const DONUT_CORNER = 4;
+
+/** The mask that reveals the ring: a stroke sweeping round from 12 o'clock. Mounts with the SVG, so the sweep plays on the first painted frame. */
+function SweepCircle({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+  const revealed = useReveal();
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={r / 2}
+      fill="none"
+      stroke="white"
+      strokeWidth={r}
+      pathLength={1}
+      strokeDasharray={1}
+      strokeDashoffset={revealed ? 0 : 1}
+      transform={`rotate(-90 ${cx} ${cy})`}
+      className="transition-all duration-slow ease-out motion-reduce:transition-none"
+    />
+  );
+}
+
+/** The pie's SVG: measures its own box, so a stacked (phone) layout can size it by CSS alone. */
+function PieSvg({
+  slices,
+  donut,
+  active,
+  onActive,
+  pressable,
+  press,
+  tooltip,
+}: {
+  slices: Slice[];
+  donut: boolean;
+  active: number | null;
+  onActive: (i: number | null) => void;
+  pressable: (s: Slice) => boolean;
+  press: (s: Slice) => void;
+  /** Hover card for a slice (plain pie only); absent = none. */
+  tooltip?: (s: Slice) => React.ReactNode;
+}) {
+  const uid = useId().replace(/:/g, '');
+  const [boxRef, { width, height }] = useElementSize<HTMLDivElement>();
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const radius = (Math.min(width, height) / 2) * OUTER_RATIO;
+  const arcs = d3Pie<Slice>()
+    .sort(null)
+    .value((s) => s.value)(slices);
+  const ring = arc<(typeof arcs)[number]>()
+    .innerRadius(donut ? radius * HOLE_RATIO : 0)
+    .outerRadius(radius)
+    .cornerRadius(donut ? DONUT_CORNER : 0);
+  const track = (e: React.MouseEvent<SVGElement>) => {
+    const box = svgBox(e.currentTarget);
+    setPointer({ x: e.clientX - box.left, y: e.clientY - box.top });
+  };
+  const maskId = `${uid}-sweep`;
+  const hovered = active !== null ? slices[active] : null;
+
+  return (
+    <div ref={boxRef} className="absolute inset-0">
+      {width > 0 && height > 0 && (
+        <svg width={width} height={height} data-chart="pie" className="block overflow-visible">
+          <defs>
+            {/* The ring is revealed by a stroke that sweeps round from 12 o'clock. */}
+            <mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={width} height={height}>
+              <SweepCircle cx={width / 2} cy={height / 2} r={radius} />
+            </mask>
+          </defs>
+          <g mask={`url(#${maskId})`}>
+            <g transform={`translate(${width / 2} ${height / 2})`}>
+            {arcs.map((a, i) => (
+              <path
+                key={a.data.name}
+                d={ring(a) ?? ''}
+                data-slice={i}
+                fill={a.data.color}
+                fillOpacity={active === null || active === i ? 1 : 0.35}
+                stroke={CHART_SURFACE_COLOR}
+                strokeWidth={2}
+                className={pressable(a.data) ? 'cursor-pointer active:opacity-80' : undefined}
+                onMouseEnter={(e) => {
+                  onActive(i);
+                  track(e);
+                }}
+                onMouseLeave={() => {
+                  onActive(null);
+                  setPointer(null);
+                }}
+                onPointerMove={track}
+                onPointerDown={(e) => {
+                  // A stationary touch tap has no move: it still opens the card.
+                  onActive(i);
+                  track(e);
+                }}
+                onClick={() => press(a.data)}
+              />
+            ))}
+            </g>
+          </g>
+        </svg>
+      )}
+      {tooltip && hovered && pointer && (
+        <ChartFloat x={pointer.x} y={pointer.y} width={width} height={height}>
+          {tooltip(hovered)}
+        </ChartFloat>
+      )}
+    </div>
+  );
+}
+
+/** The bounding box of the SVG a mark sits in (pointer coordinates are relative to it). */
+function svgBox(el: SVGElement) {
+  return (el.ownerSVGElement ?? el).getBoundingClientRect();
 }
 
 export interface ChartPieProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -155,50 +276,26 @@ export const ChartPie = forwardRef<HTMLDivElement, ChartPieProps>(function Chart
         }
       >
         {measured && (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={slices}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                startAngle={90}
-                endAngle={-270}
-                outerRadius="96%"
-                innerRadius={donut ? '64%' : 0}
-                cornerRadius={donut ? 4 : 0}
-                stroke={CHART_SURFACE_COLOR}
-                strokeWidth={2}
-                animationDuration={450}
-                onMouseEnter={(_, i) => setActive(i)}
-                onMouseLeave={() => setActive(null)}
-                onClick={
-                  onSelectEntry
-                    ? (_, i) => press(slices[i])
-                    : undefined
-                }
-              >
-                {slices.map((s, i) => (
-                  <Cell
-                    key={s.name}
-                    fill={s.color}
-                    className={
-                      pressable(s) ? 'cursor-pointer active:opacity-80' : undefined
-                    }
-                    fillOpacity={active === null || active === i ? 1 : 0.35}
-                  />
-                ))}
-              </Pie>
-              {!donut && (
-                <Tooltip
-                  content={
-                    <ChartTooltip format={format.full} colors={colors} />
-                  }
-                />
-              )}
-            </PieChart>
-          </ResponsiveContainer>
+          <PieSvg
+            slices={slices}
+            donut={donut}
+            active={active}
+            onActive={setActive}
+            pressable={pressable}
+            press={press}
+            tooltip={
+              donut
+                ? undefined
+                : (s) => (
+                    <ChartTooltip
+                      active
+                      payload={[{ name: s.name, value: s.value, color: s.color }]}
+                      format={format.full}
+                      colors={colors}
+                    />
+                  )
+            }
+          />
         )}
         {measured && donut && (
           <div

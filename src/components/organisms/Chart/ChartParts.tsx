@@ -43,13 +43,13 @@ export interface ChartTooltipProps {
   payload?: ReadonlyArray<TooltipItem>;
   label?: string | number;
   format: (value: number) => string;
-  /** Explicit colour per series name; falls back to what Recharts reports. */
+  /** Explicit colour per series name; falls back to the payload item's own colour. */
   colors?: Record<string, string>;
   /** Adds a "Total" row (stacked bars). */
   showTotal?: boolean;
 }
 
-/** Hover card shared by every chart. Pass it as an element to Recharts' Tooltip, which injects active, payload and label. */
+/** Hover card shared by every chart. The chart passes the active flag, the hovered category as the label and one payload item per series. */
 export function ChartTooltip({
   active,
   payload,
