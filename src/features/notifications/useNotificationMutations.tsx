@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
@@ -13,7 +14,12 @@ import {
 } from '@/lib/query/hooks/useNotifications';
 import { keys } from '@/lib/query/keys';
 
-import { DROPDOWN_SIZE, NotificationsDropdown } from './NotificationsDropdown';
+import { NotificationsDropdownSkeleton } from './NotificationsDropdownSkeleton';
+import { DROPDOWN_SIZE } from './notificationsModel';
+
+// The dropdown's rows are not in every page's JS: they load when the bell is first hovered, focused or opened.
+const loadDropdown = () => import('./NotificationsDropdown').then((m) => m.NotificationsDropdown);
+const NotificationsDropdown = dynamic(loadDropdown, { ssr: false, loading: () => <NotificationsDropdownSkeleton /> });
 
 type FeedEntry = [readonly unknown[], NotificationFeedPage | undefined];
 
@@ -88,6 +94,7 @@ export function useNotificationsAction(): TopBarAction {
 
   // refetch() works while the query is disabled; skip it when a fresh copy is cached or one is already on its way.
   const warm = () => {
+    void loadDropdown();
     if ((!feed.data || feed.isStale) && !feed.isFetching) void feed.refetch({ cancelRefetch: false });
   };
 

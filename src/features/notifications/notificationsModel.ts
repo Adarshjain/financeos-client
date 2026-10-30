@@ -5,6 +5,8 @@ import { todayInAppZone } from '@/lib/date-range';
 import { formatTime } from '@/lib/format';
 
 export const NOTIFICATIONS_PAGE_SIZE = 25;
+/** Rows in the bell's dropdown. */
+export const DROPDOWN_SIZE = 10;
 
 /** The 0-based page (the API's) of a query string: the address counts from 1 and omits the first page. */
 export function pageFromSearch(search: string): number {
