@@ -212,7 +212,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
           onAdded={selection.clear}
         />
       ) : null}
-      {sorting && sortDialog.Component ? <sortDialog.Component count={view.uncategorized?.count ?? 0} onClose={() => setSorting(false)} /> : null}
+      {sorting && sortDialog.Component ? <sortDialog.Component count={view.uncategorized?.count ?? 0} groupCount={view.uncategorized?.groupCount} onClose={() => setSorting(false)} /> : null}
       {categorising && categoryDialog.Component ? <categoryDialog.Component key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}
       {form && formDialog.Component ? (
         <formDialog.Component

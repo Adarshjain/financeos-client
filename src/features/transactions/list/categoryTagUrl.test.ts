@@ -13,9 +13,10 @@ describe('category, sub-category, tag and untagged in the address', () => {
     expect(transactionsUrl({ ...DEFAULT_QUERY, untagged: true })).toBe('/transactions?untagged=1');
   });
 
-  it('drops picks the address also negates: uncategorized wins over categories, untagged over tags', () => {
+  it('keeps uncategorized beside categories and untagged beside tags', () => {
     const q = parseTransactionsUrl({ uncategorized: '1', category: 'food', subcategory: 'food.dining', untagged: '1', tag: 't1' });
-    expect(q).toMatchObject({ uncategorized: true, categories: [], subcategories: [], untagged: true, tags: [] });
+    expect(q).toMatchObject({ uncategorized: true, categories: ['food'], subcategories: ['food.dining'], untagged: true, tags: ['t1'] });
+    expect(transactionsUrl(q)).toBe('/transactions?category=food&subcategory=food.dining&uncategorized=1&tag=t1&untagged=1');
   });
 });
 
@@ -28,8 +29,12 @@ describe('the list request', () => {
     ]);
   });
 
-  it('sends Untagged as the untagged flag', () => {
+  it('sends Untagged as the untagged flag, beside the tags', () => {
     expect(buildFilters({ ...DEFAULT_QUERY, untagged: true })).toEqual([{ field: 'untagged', operator: 'is', value: true }]);
+    expect(buildFilters({ ...DEFAULT_QUERY, untagged: true, tags: ['t1'] })).toEqual([
+      { field: 'untagged', operator: 'is', value: true },
+      { field: 'tag', operator: 'is', value: 't1' },
+    ]);
   });
 
   it('counts and words the new filters', () => {

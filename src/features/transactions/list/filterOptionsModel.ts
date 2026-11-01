@@ -125,7 +125,7 @@ export function activeFilterWords(query: TransactionsQuery): string {
   if (!(query.period.kind === 'preset' && query.period.id === 'all_time')) words.push(periodLabel(query.period));
   if (query.q) words.push(`“${query.q}”`);
   if (query.accounts.length > 0) words.push(formatCount(query.accounts.length, ['account', 'accounts']));
-  const picked = query.categories.length + query.subcategories.length;
+  const picked = query.categories.length || query.subcategories.length;
   if (picked > 0) words.push(formatCount(picked, ['category', 'categories']));
   if (query.uncategorized) words.push('uncategorized');
   if (query.tags.length > 0) words.push(formatCount(query.tags.length, ['tag', 'tags']));

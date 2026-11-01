@@ -196,17 +196,16 @@ export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery
   const type = one(params.type);
   const source = one(params.source) as TransactionSource;
   const sort = SORTS.find((s) => s.id === one(params.sort));
-  // The server ANDs filters: no category and a picked category (or no tag and a picked tag) could only give an empty list.
   const uncategorized = one(params.uncategorized) === '1';
   const untagged = one(params.untagged) === '1';
   return {
     q: one(params.q).trim(),
     period: parsePeriod(params),
     accounts: many(params.account),
-    categories: uncategorized ? [] : many(params.category),
-    subcategories: uncategorized ? [] : many(params.subcategory),
+    categories: many(params.category),
+    subcategories: many(params.subcategory),
     uncategorized,
-    tags: untagged ? [] : many(params.tag),
+    tags: many(params.tag),
     untagged,
     type: type === 'debit' || type === 'credit' ? type : 'all',
     amount: parseAmount(params),

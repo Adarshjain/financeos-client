@@ -12,7 +12,6 @@ import type { Account } from '@/lib/account.types';
 import type { CategoryDef } from '@/lib/categoryList.types';
 import type { Tag } from '@/lib/tags.types';
 import type { AccountType } from '@/lib/types';
-import type { CategoryCounts } from '@/lib/uncategorized.types';
 
 import { CategoryFilterChip, TagsFilterChip } from './CategoryFilterChips';
 import { categoryFilterOf } from './categoryFilterModel';
@@ -248,8 +247,8 @@ export interface FilterChipsProps {
   categories: Tag[] | null;
   /** The fixed category list (the Category chip); null when it could not be loaded. */
   categoryList?: CategoryDef[] | null;
-  /** Transactions per category; without them the Category chip lists no counts. */
-  categoryCounts?: CategoryCounts | null;
+  /** How many transactions have no category: the count beside Uncategorized in the Category chip. */
+  uncategorizedCount?: number | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
   /** The search field: the row's first item, so the search and the chips share one sideways scroller. */
@@ -269,7 +268,7 @@ export function FilterChips({
   accounts,
   categories,
   categoryList = null,
-  categoryCounts,
+  uncategorizedCount,
   onChange,
   onOpenFilters,
   search,
@@ -317,7 +316,7 @@ export function FilterChips({
       <CategoryFilterChip
         value={categoryFilterOf(query)}
         categories={categoryList}
-        counts={categoryCounts}
+        uncategorizedCount={uncategorizedCount}
         onCommit={(f) => onChange(f)}
       />
       <TagsFilterChip

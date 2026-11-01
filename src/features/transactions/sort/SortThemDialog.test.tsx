@@ -52,7 +52,7 @@ beforeEach(() => {
 
 const setup = () => {
   const onClose = vi.fn();
-  renderWithQuery(<SortThemDialog count={23} onClose={onClose} />);
+  renderWithQuery(<SortThemDialog count={23} groupCount={2} onClose={onClose} />);
   return { onClose, user: userEvent.setup({ pointerEventsCheck: 0 }) };
 };
 
@@ -66,7 +66,16 @@ describe('SortThemDialog', () => {
     const oneOffs = screen.getByText('One-offs');
     expect(oneOffs.compareDocumentPosition(screen.getByText('PAI ELECTRICALS')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText('28 Oct · ₹740')).toBeInTheDocument();
+    // The groups page counts groups and one-offs together: 3 items less the 2 groups of two or more.
+    expect(oneOffs.parentElement).toHaveTextContent(/One-offs\s*1/i);
     expect(screen.getByRole('button', { name: 'Save 0 groups' })).toBeDisabled();
+  });
+
+  it('counts the one-offs from the whole list, not the page: total less the groups of two or more', async () => {
+    mocks.groups.mockResolvedValue(ok({ content: [PAI], totalElements: 33, totalPages: 2, size: 25, number: 0 }));
+    setup();
+    await screen.findByText('PAI ELECTRICALS');
+    expect(screen.getByText('One-offs').parentElement).toHaveTextContent(/One-offs\s*31/i);
   });
 
   it('opens a shop: Category field, every transaction ticked, rule on, Set for stays off until a category is picked', async () => {

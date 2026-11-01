@@ -12,8 +12,8 @@ describe('the Uncategorized filter', () => {
     expect(transactionsUrl(q)).toBe('/transactions?uncategorized=1');
     expect(parseTransactionsUrl({}).uncategorized).toBe(false);
   });
-  it('sends the valueless is_empty clause on category', () => {
-    expect(buildFilters({ ...DEFAULT_QUERY, uncategorized: true })).toEqual([{ field: 'category', operator: 'is_empty' }]);
+  it('sends the uncategorized flag', () => {
+    expect(buildFilters({ ...DEFAULT_QUERY, uncategorized: true })).toEqual([{ field: 'uncategorized', operator: 'is', value: true }]);
   });
   it('counts as an active filter', () => {
     expect(activeFilterCount({ ...DEFAULT_QUERY, uncategorized: true })).toBe(1);
@@ -21,15 +21,16 @@ describe('the Uncategorized filter', () => {
   });
 });
 
-describe('Uncategorized and category picks are exclusive', () => {
-  it('drops picked categories from the address when uncategorized is set', () => {
-    const q = parseTransactionsUrl({ uncategorized: '1', category: ['Rent'] });
+describe('Uncategorized and category picks combine', () => {
+  it('keeps picked categories in the address beside uncategorized', () => {
+    const q = parseTransactionsUrl({ uncategorized: '1', category: ['rent'] });
     expect(q.uncategorized).toBe(true);
-    expect(q.categories).toEqual([]);
+    expect(q.categories).toEqual(['rent']);
   });
-  it('sends only is_empty if both ever reach the request', () => {
-    expect(buildFilters({ ...DEFAULT_QUERY, uncategorized: true, categories: ['Rent'] })).toEqual([
-      { field: 'category', operator: 'is_empty' },
+  it('sends both, for the server to OR', () => {
+    expect(buildFilters({ ...DEFAULT_QUERY, uncategorized: true, categories: ['rent'] })).toEqual([
+      { field: 'uncategorized', operator: 'is', value: true },
+      { field: 'category', operator: 'is', value: 'rent' },
     ]);
   });
   it('the Filters dialog leaves uncategorized and categories alone (the Category chip owns them)', () => {

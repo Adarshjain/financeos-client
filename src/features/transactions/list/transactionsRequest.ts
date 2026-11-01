@@ -24,9 +24,12 @@ export function buildFilters(query: TransactionsQuery): FilterClause[] {
   const clauses: (FilterClause | null)[] = [
     periodClause(query.period),
     pickClause('accountId', query.accounts),
-    query.uncategorized ? { field: 'category', operator: 'is_empty' } : pickClause('category', query.categories),
-    query.uncategorized ? null : pickClause('subcategory', query.subcategories),
-    query.untagged ? { field: 'untagged', operator: 'is', value: true } : pickClause('tag', query.tags),
+    // The server ORs these inside one dimension: Uncategorized, categories and narrowed sub-categories; Untagged and tags.
+    query.uncategorized ? { field: 'uncategorized', operator: 'is', value: true } : null,
+    pickClause('category', query.categories),
+    pickClause('subcategory', query.subcategories),
+    query.untagged ? { field: 'untagged', operator: 'is', value: true } : null,
+    pickClause('tag', query.tags),
     query.type === 'all' ? null : { field: 'type', operator: 'is', value: query.type === 'debit' ? 'DEBIT' : 'CREDIT' },
     query.amount ? amountClause(query.amount) : null,
     query.review ? { field: 'reviewType', operator: 'is', value: query.review } : null,
