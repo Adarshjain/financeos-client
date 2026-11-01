@@ -6,7 +6,6 @@ export type UpdateDashboardRequest = components['schemas']['UpdateDashboardReque
 export type WidgetResponse = components['schemas']['WidgetResponse'];
 export type WidgetLayout = components['schemas']['WidgetLayout'];
 export type DashboardWidget = components['schemas']['DashboardWidget'];
-export type DashboardSummary = components['schemas']['DashboardSummary'];
 export type BuiltinWidgetResponse = components['schemas']['BuiltinWidgetResponse'];
 export type BuiltinParamResponse = components['schemas']['BuiltinParamResponse'];
 export type BuiltinRefResponse = components['schemas']['BuiltinRefResponse'];
