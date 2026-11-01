@@ -108,7 +108,7 @@ test.describe('Reward reports API (@api)', () => {
     const txns = await fieldValues(api, 'transactions');
     expect(txns.card).toEqual(expect.arrayContaining(['Unattributed', `Values Card •••• ${cards[0].last4}`]));
     expect(txns.account).toEqual(['Values Card']);
-    expect(txns.category).toEqual(['Dining']);
+    expect(txns.tag).toEqual(['Dining']);
 
     // Datasources with no rows for this user still answer, with empty lists.
     expect(await fieldValues(api, 'lendings')).toEqual({ counterpartyName: [], transactionAccount: [] });
@@ -395,7 +395,11 @@ test.describe('Reward reports API (@api)', () => {
     const link = await api.POST('/api/v1/transaction-links', {
       body: { type: 'CC_PAYMENT', members: [{ transactionId: pay.id, isAnchor: true }, { transactionId: paid.id, isAnchor: false }] } as never,
     });
-    expectStatus(link, 201);
+    if (link.response.status !== 201) {
+      // The background auto-linker paired the same-amount debit and credit first.
+      const existing = await api.GET('/api/v1/transaction-links', { params: { query: { transactionId: pay.id } } });
+      expect(existing.data?.map((l) => l.type)).toEqual(['CC_PAYMENT']);
+    }
     await spend(api, account.id, { amount: 1000, date: day(month, 5), categoryIds: [food.id], cardId: cards[0].id });
 
     const byLink = await chart(api, 'transactions', 'linkType', 'amount', []);
@@ -405,12 +409,12 @@ test.describe('Reward reports API (@api)', () => {
     const byCardAndCategory = (await runAdHoc(api, {
       type: 'CHART',
       datasource: 'transactions',
-      definition: { chartType: 'stackedBar', dimension: { field: 'card' }, series: { field: 'category' }, measure: { field: 'amount', aggregation: 'sum' }, filters: [] },
+      definition: { chartType: 'stackedBar', dimension: { field: 'card' }, series: { field: 'tag' }, measure: { field: 'amount', aggregation: 'sum' }, filters: [] },
     } as never)) as unknown as { categories: string[]; series: Array<{ name: string; data: number[] }> };
     const food1 = byCardAndCategory.series.find((s) => s.name === 'Food')!;
     expect(food1.data[byCardAndCategory.categories.indexOf(`Link Card •••• ${cards[0].last4}`)]).toBe(-1000);
     expect(await kpi(api, 'transactions', 'amount', [
-      { field: 'category', operator: 'is', value: 'Food' },
+      { field: 'tag', operator: 'is', value: 'Food' },
       { field: 'card', operator: 'is', value: `Link Card •••• ${cards[0].last4}` },
     ], 'count')).toBe(1);
   });

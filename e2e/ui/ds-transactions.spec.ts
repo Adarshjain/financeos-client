@@ -5,12 +5,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { resetLlm, setLlmMode } from '../fixtures/control';
-import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
-import { scriptCategorize } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
-import { createCategory } from '../fixtures/seed/categories';
-import { uploadAndIngest } from '../fixtures/seed/statements';
 import type { TransactionResponse } from '../fixtures/seed/transactions';
 import { createTransaction, searchAll, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
@@ -50,18 +45,6 @@ async function flag(api: ApiClient, t: TransactionResponse, reasons: Reason[]) {
   if (res.response.status !== 200) throw new Error(`flag failed (${res.response.status}): ${JSON.stringify(res.error)}`);
 }
 
-const undoSpec: BankSpec = {
-  bank: 'HDFC Bank',
-  accountLast10: '5566778899',
-  periodStart: '2026-04-01',
-  periodEnd: '2026-04-30',
-  opening: 20000,
-  rows: [
-    { date: '2026-04-09', description: 'OLA CABS RIDE', debit: 260 },
-    { date: '2026-04-12', description: 'OLA CABS RIDE', debit: 310 },
-  ],
-};
-
 const VIEWPORTS = [
   { name: 'desktop 1440px', tag: '@ui', width: 1440, height: 900 },
   { name: 'phone 390px', tag: '@ui @mobile', width: 390, height: 844 },
@@ -81,7 +64,7 @@ for (const viewport of VIEWPORTS) {
 
     /**
      * One bank account with four recent rows and one old one. Uber Ride needs review for Duplicate,
-     * Swiggy Dinner for Category unverified: one reason each, so both approve with one tap.
+     * Swiggy Dinner for Date corrected: one reason each, so both approve with one tap.
      */
     async function seedList() {
       const api = makeApi(currentUser.cookie);
@@ -271,28 +254,29 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('button', { name: 'Last 14 days' })).toBeVisible();
       });
 
-      test('Set category on a row opens the small dialog; Save shows the category and it survives a reload', async ({ page }) => {
+      test('Set category on a row opens the category picker; a tap saves and the row shows it, and it survives a reload', async ({ page }) => {
         const { api } = await seedList();
-        const food = await createCategory(api, 'Groceries E2E');
+        const unsorted = await createTransaction(api, (await api.GET('/api/v1/accounts')).data![0].id, {
+          amount: -275,
+          date: todayString(-1),
+          description: 'Zxqv Plinth Traders',
+        });
         await open(page);
 
-        await row(page, 'Rent Advance').getByText('Set category').locator('visible=true').click();
-        const dialog = page.getByRole('dialog', { name: 'Set category' });
-        await expect(dialog).toBeVisible();
+        await row(page, 'Zxqv Plinth Traders').getByText('Set category').locator('visible=true').click();
+        const picker = page.getByRole('dialog', { name: 'Category' });
+        await expect(picker).toBeVisible();
         await expect(page.getByRole('dialog', { name: 'Edit transaction' })).toHaveCount(0);
-        await dialog.getByRole('combobox', { name: 'Categories' }).click();
-        await page.getByRole('option', { name: food.name }).click();
-        await page.keyboard.press('Escape');
-        await expect(dialog).toBeVisible();
-        await dialog.getByRole('button', { name: 'Set category', exact: true }).click();
-        await expect(dialog).not.toBeVisible();
-        await expect(row(page, 'Rent Advance')).toContainText(food.name);
+        await picker.getByRole('button', { name: 'Gifts', exact: true }).click();
+        await expect(picker).not.toBeVisible();
+        await expect(row(page, 'Zxqv Plinth Traders')).toContainText('Gifts');
 
-        // The row updates optimistically and the save goes out after the dialog closes: reload until it has landed.
+        // The row updates optimistically and the save goes out after the picker closes: reload until it has landed.
         await expect(async () => {
           await open(page);
-          await expect(row(page, 'Rent Advance')).toContainText(food.name, { timeout: 3_000 });
+          await expect(row(page, 'Zxqv Plinth Traders')).toContainText('Gifts', { timeout: 3_000 });
         }).toPass({ timeout: 30_000 });
+        expect((await searchAll(api)).find((t) => t.id === unsorted.id)?.category?.key).toBe('gifts');
       });
 
       test('the pager moves to the next page through the URL', async ({ page }) => {
@@ -769,45 +753,3 @@ for (const viewport of VIEWPORTS) {
     }
   });
 }
-
-test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
-  test('approving a row of an unverified rule clears its sibling too; Undo brings both back with their reasons', async ({
-    context,
-    request,
-    page,
-  }) => {
-    const user = await createUser(request, 'ui-ds-undo');
-    await loginContext(context, user.cookie);
-    await page.setViewportSize({ width: 1440, height: 900 });
-    const api = makeApi(user.cookie);
-    await resetLlm(api);
-    await setLlmMode(api, 'SCHEMA_DEFAULT');
-    await scriptCategorize(api, [
-      { index: 0, merchantKey: 'OLA CABS', displayName: 'Ola Cabs', categoryNames: ['Travel'] },
-      { index: 1, merchantKey: 'OLA CABS', displayName: 'Ola Cabs', categoryNames: ['Travel'] },
-    ]);
-    const account = await createBankAccount(api, { name: 'Undo Account' });
-    const { job } = await uploadAndIngest(api, account.id, [{ filename: 'undo.pdf', buffer: await genBankPdf(undoSpec) }]);
-    expect(job.status).toBe('SUCCEEDED');
-    const flagged = async () =>
-      (await searchAll(api)).filter((t) => t.reviewType === 'NEEDS_REVIEW' && t.reviewReasons?.includes('DATE_CORRECTED'));
-    expect(await flagged()).toHaveLength(2);
-
-    await page.goto('/transactions');
-    await expect(page).toHaveTitle('Transactions · FinanceOS');
-    await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
-    await expect(needsReviewChip(page)).toBeVisible();
-
-    await page.getByRole('checkbox', { name: /^Select .*Ola/i }).first().click();
-    await page.getByRole('button', { name: 'Approve 1' }).click();
-    const dialog = page.getByRole('dialog').filter({ hasText: 'Tick the reasons to clear' });
-    await dialog.getByRole('button', { name: 'Approve 1' }).click();
-    // The rule is verified, so the other Ola row is cleared as well.
-    await expect(needsReviewChip(page)).toBeVisible();
-    await expect.poll(async () => (await flagged()).length).toBe(0);
-
-    await page.getByRole('button', { name: 'Undo' }).click();
-    await expect(needsReviewChip(page)).toBeVisible();
-    await expect.poll(async () => (await flagged()).length).toBe(2);
-  });
-});

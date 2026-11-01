@@ -2,11 +2,10 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { resetLlm, scriptLlm, setLlmMode } from '../fixtures/control';
+import { resetLlm, setLlmMode } from '../fixtures/control';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
-import { categorizeScript } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
-import { uploadAndIngest, uploadStatements } from '../fixtures/seed/statements';
+import { genSlowStatementPdf, uploadAndIngest, uploadStatements } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
 import { clickUntilRequest } from '../fixtures/ui';
 
@@ -84,23 +83,12 @@ test.describe('Background Jobs UI (@ui)', () => {
   test('/settings/activity: retry a CANCELLED job from row action -> spawns new completing job', async ({
     page,
   }) => {
-    // The retried job waits out the 15s LLM delay holding both worker slots
+    // The retried job waits for the two big statements to free the worker slots
     test.slow();
     const api = makeApi(currentUser.cookie);
     const account = await createBankAccount(api, { name: 'Jobs Retry Bank' });
-    // One PDF per upload, each for its own period: a second statement for the same account and
-    // period is skipped as already ingested, so that job never calls the LLM and frees its worker
-    // slot at once.
-    const pdfA = await genBankPdf(standardBankSpec);
-    const pdfB = await genBankPdf({
-      ...standardBankSpec,
-      periodStart: '2026-05-01',
-      periodEnd: '2026-05-31',
-      rows: [
-        { date: '2026-05-08', description: 'RENT TRANSFER', debit: 12000.0 },
-        { date: '2026-05-20', description: 'ELECTRICITY BILL', debit: 2200.0 },
-      ],
-    });
+    // Two big statements keep both worker slots busy for a few seconds each
+    const slow = await genSlowStatementPdf();
 
     // 1. Create rule first so it's ready to apply
     const { createRule } = await import('../fixtures/seed/categories');
@@ -108,37 +96,11 @@ test.describe('Background Jobs UI (@ui)', () => {
       merchantKey: 'UI_RETRY_MERCHANT',
     });
 
-    // 2. Temporarily fill worker concurrency slots with delayed jobs
-    await scriptLlm(api, '*', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 15000,
-      },
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 15000,
-      },
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 15000,
-      },
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 15000,
-      },
-    ]);
+    // 2. Fill the worker's concurrency slots
 
     // Each upload is one job; the worker has 2 slots, so two delayed jobs fill it.
-    await uploadStatements(api, account.id, [{ filename: 'ui-slot1.pdf', buffer: pdfA }]);
-    await uploadStatements(api, account.id, [{ filename: 'ui-slot2.pdf', buffer: pdfB }]);
+    await uploadStatements(api, account.id, [{ filename: 'ui-slot1.pdf', buffer: slow }]);
+    await uploadStatements(api, account.id, [{ filename: 'ui-slot2.pdf', buffer: slow }]);
 
     // 3. Trigger apply while slots are full -> queued in PENDING
     const applyRes = await api.POST('/api/v1/rules/{id}/apply', {
@@ -175,17 +137,8 @@ test.describe('Background Jobs UI (@ui)', () => {
   }) => {
     const api = makeApi(currentUser.cookie);
     const account = await createBankAccount(api, { name: 'Jobs Cancel Bank' });
-    const pdf = await genBankPdf(standardBankSpec);
-
-    // Delay LLM response by 15000ms
-    await scriptLlm(api, 'categorize', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 15000,
-      },
-    ]);
+    // A big statement keeps the ingest job RUNNING while the page is open
+    const pdf = await genSlowStatementPdf();
 
     const uploadRes = await uploadStatements(api, account.id, [
       { filename: 'cancel-ui-test.pdf', buffer: pdf },

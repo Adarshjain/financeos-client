@@ -415,7 +415,8 @@ test.describe('Template built-in data with params (@api)', () => {
     await createTransaction(api, bank.id, { amount: -999, date: istToday(-5), description: 'Heat excluded', isTransactionExcluded: true });
     await createTransaction(api, bank.id, { amount: 5000, date: istToday(), description: 'Heat salary' });
     const out = await createTransaction(api, bank.id, { amount: -700, date: istToday(-3), description: 'Heat transfer out' });
-    const inn = await createTransaction(api, other.id, { amount: 700, date: istToday(-3), description: 'Heat transfer in' });
+    // Dated well apart from the debit so the background auto-linker (same amount, credit within 1 day before to 2 after) leaves the pair to this test.
+    const inn = await createTransaction(api, other.id, { amount: 700, date: istToday(-20), description: 'Heat transfer in' });
     await linkTransactions(api, 'TRANSFER', out.id, inn.id);
 
     const byDefault = heatmapDays(await builtinData(api, 'spend_heatmap'));

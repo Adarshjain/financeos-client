@@ -2,7 +2,7 @@ import type { ApiClient } from '../fixtures/api';
 import { expectStatus } from '../fixtures/api';
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
 import { runSaved } from '../fixtures/seed/reports';
-import { createCategory, createTransaction } from '../fixtures/seed/transactions';
+import { createTransaction } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, newUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -130,22 +130,23 @@ test.describe('Home dashboard seeding (@api)', () => {
     const { api } = await newUser(request, 'home-chart');
     const bank = await createBankAccount(api, { name: 'Spend Bank' });
     const card = await createCreditCard(api, { name: 'Spend Card', last4: '8201' });
-    const food = await createCategory(api, 'Spend Food');
-    const fun = await createCategory(api, 'Spend Fun');
-
-    await createTransaction(api, bank.id, { amount: -1200, description: 'Groceries', tagIds: [food.id] });
-    await createTransaction(api, bank.id, { amount: -300, description: 'Food again', tagIds: [food.id] });
-    await createTransaction(api, bank.id, { amount: -700, description: 'Movie', tagIds: [fun.id] });
-    await createTransaction(api, bank.id, { amount: -9999, description: 'Excluded spend', tagIds: [fun.id], isTransactionExcluded: true });
-    await createTransaction(api, bank.id, { amount: 5000, description: 'Salary', tagIds: [fun.id] });
-    const payDebit = await createTransaction(api, bank.id, { amount: -4000, description: 'Card bill pay', tagIds: [fun.id] });
+    // Fixed categories chosen explicitly, so no arrival rule decides what the chart groups by.
+    await createTransaction(api, bank.id, { amount: -1200, description: 'Spend A', categoryKey: 'groceries' });
+    await createTransaction(api, bank.id, { amount: -300, description: 'Spend B', categoryKey: 'food' });
+    await createTransaction(api, bank.id, { amount: -700, description: 'Spend C', categoryKey: 'entertainment' });
+    const excluded = await createTransaction(api, bank.id, { amount: -9999, description: 'Excluded spend', categoryKey: 'entertainment' });
+    expectStatus(await api.PUT('/api/v1/transactions/{id}', { params: { path: { id: excluded.id } }, body: { date: excluded.date, amount: -9999, isTransactionExcluded: true } }), 200);
+    await createTransaction(api, bank.id, { amount: 5000, description: 'Pay in', categoryKey: 'salary' });
+    const payDebit = await createTransaction(api, bank.id, { amount: -4000, description: 'Card bill pay', categoryKey: 'entertainment' });
     const payCredit = await createTransaction(api, card.id, { amount: 4000, description: 'Payment received' });
-    expectStatus(
-      await api.POST('/api/v1/transaction-links', {
-        body: { type: 'CC_PAYMENT', members: [{ transactionId: payDebit.id, isAnchor: true }, { transactionId: payCredit.id, isAnchor: false }] },
-      }),
-      201,
-    );
+    // The auto-linker pairs a same-amount debit and credit in the background; link by hand only if it has not yet.
+    const linkRes = await api.POST('/api/v1/transaction-links', {
+      body: { type: 'CC_PAYMENT', members: [{ transactionId: payDebit.id, isAnchor: true }, { transactionId: payCredit.id, isAnchor: false }] },
+    });
+    if (linkRes.response.status !== 201) {
+      const existing = await api.GET('/api/v1/transaction-links', { params: { query: { transactionId: payDebit.id } } });
+      expect(existing.data?.map((l) => l.type)).toEqual(['CC_PAYMENT']);
+    }
 
     const [home] = await listDashboards(api);
     const reportId = home.widgets.find((w) => w.id === 'spend_this_month')!.reportId!;
@@ -154,7 +155,7 @@ test.describe('Home dashboard seeding (@api)', () => {
     data.categories.forEach((c, i) => {
       byCategory[c] = Number(data.series[0].data[i] ?? 0);
     });
-    expect(byCategory).toEqual({ 'Spend Food': 1500, 'Spend Fun': 700 });
+    expect(byCategory).toEqual({ Groceries: 1200, Food: 300, Entertainment: 700 });
   });
 });
 

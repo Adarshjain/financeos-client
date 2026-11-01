@@ -80,7 +80,7 @@ test.describe('Spend measure (@api)', () => {
     expect(await kpi(api, 'transactions', 'amount', []), 'the signed amount keeps its sign').toBe(-850);
     expect(await kpi(api, 'transactions', 'spend', [{ field: 'type', operator: 'is', value: 'DEBIT' }])).toBe(1250);
     expect(await kpi(api, 'transactions', 'spend', [], 'count')).toBe(3);
-    expect(await chart(api, 'transactions', 'category', 'spend')).toEqual({ 'Spend Measure Cat': 850 });
+    expect(await chart(api, 'transactions', 'tag', 'spend')).toEqual({ 'Spend Measure Cat': 850 });
   });
 
   test('a saved report may use the spend measure', async ({ request }) => {

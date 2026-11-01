@@ -52,10 +52,10 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     });
     await expect(page.getByText('Unsaved changes')).toHaveCount(0);
 
-    // Configure: a Chart on Transactions, spend by category, top 5 and the rest as Other.
-    await page.getByLabel('Report name').fill('Ds editor spend by category');
+    // Configure: a Chart on Transactions, spend by tag, top 5 and the rest as Other.
+    await page.getByLabel('Report name').fill('Ds editor spend by tag');
     await page.getByRole('radio', { name: 'Chart' }).click();
-    await pick(page, 'Dimension (X-axis)', 'Category');
+    await pick(page, 'Dimension (X-axis)', 'Tag');
     await pick(page, 'Measure (Y-axis)', 'Spend');
     await pick(page, 'Aggregation', 'Sum');
     await page.getByLabel('Show top').fill('5');
@@ -107,7 +107,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await page.getByRole('button', { name: 'Underlying data' }).first().click();
     await expect(underlying.getByText('4 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
     await expect(underlying.getByText('Breakdown fuel one').first()).toBeVisible();
-    await underlying.getByRole('button', { name: 'Category', exact: true }).click();
+    await underlying.getByRole('button', { name: 'Tag', exact: true }).click();
     await page.getByRole('option', { name: `Bd Food ${tag}` }).click();
     await expect(underlying.getByText('2 transactions make up this figure')).toBeVisible({ timeout: 45_000 });
     await expect(underlying.getByText('Breakdown food one').first()).toBeVisible();
@@ -136,13 +136,13 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // Create writes the report and takes the visitor back to the list it was opened from, which shows it.
     await page.getByRole('button', { name: 'Add report' }).click();
     await page.waitForURL(/\/reports$/, { timeout: 45_000 });
-    await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('table').getByText('Ds editor spend by tag', { exact: true })).toBeVisible({ timeout: 45_000 });
 
     // Reopened from the list: format and datasource are fixed, the saved settings are back.
     await page.goto('/reports');
     await page
       .getByRole('table')
-      .getByText('Ds editor spend by category', { exact: true })
+      .getByText('Ds editor spend by tag', { exact: true })
       .click();
     await page.waitForURL(/\/reports\/[0-9a-f-]{36}$/);
     await expect(page.getByRole('radio', { name: 'Chart' })).toBeDisabled();
@@ -177,7 +177,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     // The saved Top N stuck.
     await page
       .getByRole('table')
-      .getByText('Ds editor spend by category', { exact: true })
+      .getByText('Ds editor spend by tag', { exact: true })
       .click();
     await expect(page.getByLabel('Show top')).toHaveValue('8');
 
@@ -186,7 +186,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await page.getByRole('button', { name: 'Save report' }).click();
     await page.waitForURL(/\/reports$/);
     await expect(page.getByRole('table').getByText('Ds editor renamed report', { exact: true })).toBeVisible({ timeout: 45_000 });
-    await expect(page.getByRole('table').getByText('Ds editor spend by category', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('table').getByText('Ds editor spend by tag', { exact: true })).toHaveCount(0);
     await page.getByRole('table').getByText('Ds editor renamed report', { exact: true }).click();
     await page.waitForURL(/\/reports\/[0-9a-f-]{36}$/);
 
@@ -202,7 +202,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
     await expect(
       page
         .getByRole('table')
-        .getByText('Ds editor spend by category', { exact: true })
+        .getByText('Ds editor spend by tag', { exact: true })
     ).toHaveCount(0);
   });
 
@@ -283,7 +283,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       datasource: 'transactions',
       definition: {
         chartType: 'bar',
-        dimension: { field: 'category' },
+        dimension: { field: 'tag' },
         measure: { field: 'spend', aggregation: 'sum' },
         filters: [{ field: 'date', operator: 'this_month' }],
       },

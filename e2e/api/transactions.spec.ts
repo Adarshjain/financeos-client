@@ -33,6 +33,11 @@ const TRANSACTION_KEYS = new Set([
   'description',
   'sourcedDescription',
   'tags',
+  'category',
+  'subcategory',
+  'categorySource',
+  'categorySetAt',
+  'categoryRule',
   'source',
   'isTransactionUnderMonitoring',
   'monitoringReason',
@@ -566,15 +571,15 @@ test.describe('Transactions API (@api)', () => {
       expect(fCardPos.data?.totalElements).toBe(1);
       expect(fCardPos.data?.content?.[0].id).toBe(txn2.id);
 
-      // 3. category filter (by category name)
+      // 3. tag filter (by tag id; the old per-user "category" filter is now "tag")
       const fCatPos = await user.api.POST('/api/v1/transactions/search', {
-        body: { filters: [{ field: 'category', operator: 'is', value: cat.name }] },
+        body: { filters: [{ field: 'tag', operator: 'is', value: cat.id }] },
       });
       expect(fCatPos.data?.totalElements).toBe(1);
       expect(fCatPos.data?.content?.[0].id).toBe(txn2.id);
 
       const fCatNeg = await user.api.POST('/api/v1/transactions/search', {
-        body: { filters: [{ field: 'category', operator: 'is', value: 'NonExistentCategory' }] },
+        body: { filters: [{ field: 'tag', operator: 'is', value: '00000000-0000-0000-0000-000000000000' }] },
       });
       expect(fCatNeg.data?.totalElements).toBe(0);
 

@@ -47,7 +47,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     const definition = {
       measure: 'spend',
       aggregation: 'sum',
-      filters: [{ field: 'category', operator: 'in', value: [ds.food.name, ds.travel.name] }, inMonth(ds.current)],
+      filters: [{ field: 'tag', operator: 'in', value: [ds.food.name, ds.travel.name] }, inMonth(ds.current)],
       comparison: PREVIOUS_PERIOD,
     };
     const report = await createReport(api, { name: 'VUD saved', type: 'KPI', datasource: 'transactions', definition } as never);
@@ -78,7 +78,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       sortDirection: null,
     });
     expect(current.filters).toEqual([
-      { field: 'category', fieldLabel: 'Category', operator: 'in', text: `in ${ds.food.name}, ${ds.travel.name}` },
+      { field: 'tag', fieldLabel: 'Tag', operator: 'in', text: `in ${ds.food.name}, ${ds.travel.name}` },
       {
         field: 'date',
         fieldLabel: 'Date',
@@ -96,10 +96,10 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     ]);
     // Newest first by default; each row carries its transaction id for the row action.
     expect(table.rows).toEqual([
-      { id: ds.ids.Bus, date: dayOf(ds.current, 18), description: 'Bus', account: ds.account.name, category: ds.travel.name, spend: 100 },
-      { id: ds.ids.Uber, date: dayOf(ds.current, 12), description: 'Uber', account: ds.account.name, category: ds.travel.name, spend: 300 },
-      { id: ds.ids.Zomato, date: dayOf(ds.current, 8), description: 'Zomato', account: ds.account.name, category: ds.food.name, spend: 700 },
-      { id: ds.ids.Swiggy, date: dayOf(ds.current, 3), description: 'Swiggy', account: ds.account.name, category: ds.food.name, spend: 700 },
+      { id: ds.ids.Bus, date: dayOf(ds.current, 18), description: 'Bus', account: ds.account.name, category: 'Transport', spend: 100 },
+      { id: ds.ids.Uber, date: dayOf(ds.current, 12), description: 'Uber', account: ds.account.name, category: 'Transport', spend: 300 },
+      { id: ds.ids.Zomato, date: dayOf(ds.current, 8), description: 'Zomato', account: ds.account.name, category: 'Food', spend: 700 },
+      { id: ds.ids.Swiggy, date: dayOf(ds.current, 3), description: 'Swiggy', account: ds.account.name, category: 'Food', spend: 700 },
     ]);
     expect(table.page).toEqual({ number: 0, size: 25, totalElements: 4, totalPages: 1 });
 
@@ -211,8 +211,8 @@ test.describe('KPI underlying data: transactions (@api)', () => {
         measure: 'spend',
         aggregation: 'sum',
         filters: [
-          { field: 'category', operator: 'in', value: [ds.food.name, ds.travel.name] },
-          { field: 'category', operator: 'not_in', value: ['Rent'] },
+          { field: 'tag', operator: 'in', value: [ds.food.name, ds.travel.name] },
+          { field: 'tag', operator: 'not_in', value: ['Rent'] },
           { field: 'account', operator: 'is', value: ds.account.name },
           { field: 'accountType', operator: 'is_not', value: 'credit_card' },
           debits,
@@ -226,8 +226,8 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       })
     );
     expect(res.filters.map((f) => [f.fieldLabel, f.text])).toEqual([
-      ['Category', `in ${ds.food.name}, ${ds.travel.name}`],
-      ['Category', 'not in Rent'],
+      ['Tag', `in ${ds.food.name}, ${ds.travel.name}`],
+      ['Tag', 'not in Rent'],
       ['Account', `is ${ds.account.name}`],
       ['Account Type', 'is not credit_card'],
       ['Type', 'is DEBIT'],
@@ -698,7 +698,7 @@ test.describe('Category-filtered transactions count each transaction once (@api)
       tagIds: [food.id],
     });
     await createTransaction(api, bank.id, { amount: -900, date: dayOf(month, 7), description: 'CO Other' });
-    const filters: Filter[] = [debits, inMonth(month), { field: 'category', operator: 'in', value: [food.name, travel.name] }];
+    const filters: Filter[] = [debits, inMonth(month), { field: 'tag', operator: 'in', value: [food.name, travel.name] }];
 
     for (const [aggregation, value] of [
       ['sum', 700],
@@ -823,7 +823,7 @@ test.describe('KPI underlying data: CSV (@api)', () => {
     const month = fixedMonth();
     const bank = await createBankAccount(api, { name: 'CSV Bank', openingBalance: 0 });
     await createTransaction(api, bank.id, { amount: -1234.5, date: dayOf(month, 2), description: '=SUM(A1:A9)' });
-    await createTransaction(api, bank.id, { amount: -20, date: dayOf(month, 3), description: 'Zomato, food' });
+    await createTransaction(api, bank.id, { amount: -20, date: dayOf(month, 3), description: 'Plain, comma' });
     await createTransaction(api, bank.id, { amount: -7, date: dayOf(month, 4), description: 'Say "hi"' });
     await createTransaction(api, bank.id, { amount: -0.1, date: dayOf(month, 5), description: '+91 call' });
     await createTransaction(api, bank.id, { amount: -1, date: dayOf(month, 6), description: '@handle' });
@@ -842,7 +842,7 @@ test.describe('KPI underlying data: CSV (@api)', () => {
       `${d(6)},'@handle,CSV Bank,,-1.00`,
       `${d(5)},'+91 call,CSV Bank,,-0.10`,
       `${d(4)},"Say ""hi""",CSV Bank,,-7.00`,
-      `${d(3)},"Zomato, food",CSV Bank,,-20.00`,
+      `${d(3)},"Plain, comma",CSV Bank,,-20.00`,
       `${d(2)},'=SUM(A1:A9),CSV Bank,,-1234.50`,
     ]);
 
@@ -878,8 +878,8 @@ test.describe('KPI underlying data: CSV (@api)', () => {
       datasource: 'transactions',
       definition: { measure: 'spend', aggregation: 'sum', filters: [debits, inMonth(ds.current)], comparison: PREVIOUS_PERIOD },
     } as never);
-    const travel = ds.travel.name;
-    const food = ds.food.name;
+    const travel = 'Transport';
+    const food = 'Food';
     const bank = ds.account.name;
     const d = (m: { year: number; month: number }, day: number) => ddmmyyyy(dayOf(m, day));
 

@@ -111,7 +111,9 @@ test.describe('Rules & Categories UI (@ui)', () => {
     ).toBe(false);
   });
 
-  test('/rules: create rule, preview matches dialog, verify toggle, edit, and delete', async ({
+  // Skipped: Legacy-only page (/legacy/rules). The rules redesign removed verify and the Merchant key and moved the
+  // category to the fixed list, so its old form no longer saves; the Dinero Tags tab is covered by ds-rules.spec.ts.
+  test.skip('/rules: create rule, preview matches dialog, verify toggle, edit, and delete', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);

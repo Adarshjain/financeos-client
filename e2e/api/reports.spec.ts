@@ -456,7 +456,7 @@ test.describe('Reports API (@api)', () => {
         measure: 'amount',
         aggregation: 'sum' as const,
         filters: [
-          { field: 'category', operator: 'is', value: ds.foodCat.name },
+          { field: 'tag', operator: 'is', value: ds.foodCat.name },
           { field: 'type', operator: 'is', value: 'DEBIT' },
           { field: 'date', operator: 'between', value: { from: ds.currentMonth.from, to: ds.currentMonth.to } },
         ],
@@ -510,7 +510,7 @@ test.describe('Reports API (@api)', () => {
         datasource: 'transactions',
         definition: {
           chartType: 'bar',
-          dimension: { field: 'category' },
+          dimension: { field: 'tag' },
           measure: { field: 'amount', aggregation: 'sum' },
           filters: [
             { field: 'type', operator: 'is', value: 'DEBIT' },
@@ -521,7 +521,7 @@ test.describe('Reports API (@api)', () => {
 
       expect(barData.type).toBe('CHART');
       expect(barData.chartType).toBe('bar');
-      expect(barData.dimension).toBe('category');
+      expect(barData.dimension).toBe('tag');
       expect(barData.categories).toContain(ds.foodCat.name);
       expect(barData.categories).toContain(ds.travelCat.name);
 

@@ -1,10 +1,10 @@
 import { expectStatus, waitForJob } from '../fixtures/api';
-import { resetLlm, scriptLlm, setLlmMode } from '../fixtures/control';
+import { resetLlm, setLlmMode } from '../fixtures/control';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
-import { categorizeScript } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import {
   FileIngestionResult,
+  genSlowStatementPdf,
   uploadAndIngest,
   uploadStatements,
 } from '../fixtures/seed/statements';
@@ -133,18 +133,8 @@ test.describe('Jobs API', () => {
     api,
   }) => {
     const account = await createBankAccount(api, { name: 'Active Job Account' });
-    const pdf = await genBankPdf(bankSpecA);
-
-    // Delay LLM response by 6000ms to keep job in RUNNING state
-    await scriptLlm(api, 'categorize', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-          { index: 1, merchantKey: 'GROCERY', categoryNames: ['Groceries'] },
-        ]),
-        delayMs: 6000,
-      },
-    ]);
+    // A big statement keeps the ingest job RUNNING for a few seconds
+    const pdf = await genSlowStatementPdf();
 
     const uploadRes = await uploadStatements(api, account.id, [
       { filename: 'active-stmt.pdf', buffer: pdf },
@@ -171,7 +161,7 @@ test.describe('Jobs API', () => {
     expect(runningJobFound).toBe(true);
 
     // Wait for completion cleanly
-    const finalJob = await waitForJob(api, activeJobId, { timeoutMs: 15000 });
+    const finalJob = await waitForJob(api, activeJobId, { timeoutMs: 30000 });
     expect(['SUCCEEDED', 'CANCELLED']).toContain(finalJob.status);
   });
 
@@ -222,17 +212,8 @@ test.describe('Jobs API', () => {
     request,
   }) => {
     const account = await createBankAccount(api, { name: 'Cancel Account' });
-    const pdf = await genBankPdf(bankSpecA);
-
-    // Delay LLM response by 8000ms so we can cancel mid-execution
-    await scriptLlm(api, 'categorize', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 8000,
-      },
-    ]);
+    // A big statement keeps the ingest job RUNNING long enough to cancel it mid-execution
+    const pdf = await genSlowStatementPdf();
 
     const uploadRes = await uploadStatements(api, account.id, [
       { filename: 'cancel-stmt.pdf', buffer: pdf },
@@ -263,11 +244,9 @@ test.describe('Jobs API', () => {
 
     // Wait for job to reach a terminal state
     const finishedJob = await waitForJob(api, jobId, {
-      timeoutMs: 15000,
+      timeoutMs: 30000,
     });
-    // [SERVER FINDING]: In FileIngestionService, checkCancelled() is only checked before the file loop,
-    // not after batchCategorize. Thus a running ingest job that receives cancel during LLM delay completes
-    // and ends in SUCCEEDED with cancelRequested=true, unless worker stops mid-file.
+    // A running ingest job that receives cancel may finish its file first, so it ends CANCELLED or SUCCEEDED.
     expect(['CANCELLED', 'SUCCEEDED']).toContain(finishedJob.status);
 
     // Cancelling a completed job in terminal status -> 400
@@ -296,27 +275,13 @@ test.describe('Jobs API', () => {
     const account = await createBankAccount(api, { name: 'Retry Account' });
     const pdf = await genBankPdf(bankSpecA);
 
-    // 1. Temporarily fill worker concurrency slots with 2 1500ms delayed jobs
-    await scriptLlm(api, 'categorize', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 1500,
-      },
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 1500,
-      },
-    ]);
-
+    // 1. Fill the worker's two concurrency slots with two big statements, each a few seconds of ingest
+    const slow = await genSlowStatementPdf();
     await uploadStatements(api, account.id, [
-      { filename: 'slot1.pdf', buffer: pdf },
+      { filename: 'slot1.pdf', buffer: slow },
     ]);
     await uploadStatements(api, account.id, [
-      { filename: 'slot2.pdf', buffer: pdf },
+      { filename: 'slot2.pdf', buffer: slow },
     ]);
 
     // 2. Create rule and trigger apply while slots are occupied -> queued in PENDING
@@ -338,7 +303,7 @@ test.describe('Jobs API', () => {
     });
     expectStatus(cancelRes, 200);
 
-    const cancelledJob = await waitForJob(api, ruleJobId, { timeoutMs: 15000 });
+    const cancelledJob = await waitForJob(api, ruleJobId, { timeoutMs: 40000 });
 
     // If cancelled, test retrying it
     if (cancelledJob.status === 'CANCELLED') {
@@ -352,7 +317,7 @@ test.describe('Jobs API', () => {
       expect(newJob.attempt).toBe(0);
       expect(['PENDING', 'RUNNING', 'SUCCEEDED']).toContain(newJob.status);
 
-      const retriedJob = await waitForJob(api, newJob.id, { timeoutMs: 15000 });
+      const retriedJob = await waitForJob(api, newJob.id, { timeoutMs: 40000 });
       expect(retriedJob.status).toBe('SUCCEEDED');
     }
 
@@ -381,17 +346,8 @@ test.describe('Jobs API', () => {
     const account = await createBankAccount(api, {
       name: 'Expired Artifacts Account',
     });
-    const pdf = await genBankPdf(bankSpecA);
-
-    // Delay LLM response to start a job
-    await scriptLlm(api, 'categorize', [
-      {
-        json: categorizeScript([
-          { index: 0, merchantKey: 'SALARY', categoryNames: ['Salary'] },
-        ]),
-        delayMs: 6000,
-      },
-    ]);
+    // A big statement so the job is still PENDING or RUNNING when it is cancelled
+    const pdf = await genSlowStatementPdf();
 
     const uploadRes = await uploadStatements(api, account.id, [
       { filename: 'expired-test.pdf', buffer: pdf },
@@ -406,7 +362,7 @@ test.describe('Jobs API', () => {
     });
 
     const terminalJob = await waitForJob(api, jobId, {
-      timeoutMs: 15000,
+      timeoutMs: 40000,
     });
 
     if (terminalJob.status === 'CANCELLED') {

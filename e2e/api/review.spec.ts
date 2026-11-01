@@ -31,13 +31,13 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     periodEnd: '2026-04-30',
     opening: 50000.0,
     rows: [
-      // Repeated in the overlapping statement (also gets CATEGORY_UNVERIFIED via LLM categorization) -> TWO REASONS
+      // Repeated in the overlapping statement -> ONE REASON
       { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
 
-      // Single row (gets CATEGORY_UNVERIFIED via LLM categorization) -> ONE REASON
+      // Single row -> NO REASON, auto-reviewed
       { date: '2026-04-12', description: 'UBER TRIP MUMBAI AIRPORT', debit: 1250.0 },
 
-      // Repeated in the overlapping statement -> TWO REASONS
+      // Repeated in the overlapping statement -> ONE REASON
       { date: '2026-04-20', description: 'AMAZON PAY INDIA PURCHASE', debit: 3499.0 },
     ],
   };
@@ -57,7 +57,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     { filename: `${name}-overlap.pdf`, buffer: await genBankPdf(overlapBankSpec) },
   ];
 
-  test('Ingest-produced review reasons: DUPLICATE_SUSPECT and CATEGORY_UNVERIFIED populated with reviewType=NEEDS_REVIEW', async ({
+  test('Ingest-produced review reasons: DUPLICATE_SUSPECT populated with reviewType=NEEDS_REVIEW, clean rows auto-reviewed', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
@@ -74,10 +74,11 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     ]);
     expect(txns.length).toBe(5);
 
-    // All 5 rows should have reviewType = NEEDS_REVIEW
-    for (const t of txns) {
-      expect(t.reviewType).toBe('NEEDS_REVIEW');
-      expect(t.reviewReasons?.length).toBeGreaterThanOrEqual(1);
+    // The 4 duplicate rows need review; the single Uber row has no reason and is auto-reviewed
+    const flagged = txns.filter((t) => t.reviewType === 'NEEDS_REVIEW');
+    expect(flagged.length).toBe(4);
+    for (const t of flagged) {
+      expect(t.reviewReasons).toEqual(['DUPLICATE_SUSPECT']);
     }
 
     // Duplicate rows carry DUPLICATE_SUSPECT
@@ -87,16 +88,15 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     expect(blueTokaiRows.length).toBe(2);
     for (const s of blueTokaiRows) {
       expect(s.reviewReasons).toContain('DUPLICATE_SUSPECT');
-      expect(s.reviewReasons).toContain('DATE_CORRECTED');
     }
 
-    // Single row carries CATEGORY_UNVERIFIED but not DUPLICATE_SUSPECT
+    // Single row carries no review reason and is auto-reviewed
     const uberRow = txns.find((t) =>
       (t.sourcedDescription || t.description || '').includes('UBER')
     );
     expect(uberRow).toBeDefined();
-    expect(uberRow?.reviewReasons).toContain('DATE_CORRECTED');
-    expect(uberRow?.reviewReasons).not.toContain('DUPLICATE_SUSPECT');
+    expect(uberRow?.reviewReasons ?? []).toEqual([]);
+    expect(uberRow?.reviewType).toBe('AUTO_REVIEWED');
   });
 
   test('Batch review reason-scoped partial resolution: reason matching, skips, two-reason state transition', async ({
@@ -161,28 +161,12 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
       true
     );
 
-    // 2. Verify blueTokaiRows[0] remains NEEDS_REVIEW with CATEGORY_UNVERIFIED (since only DUPLICATE_SUSPECT was cleared)
+    // 2. blueTokaiRows[0] had only DUPLICATE_SUSPECT, so clearing it makes the row MANUALLY_REVIEWED
+    // with reviewedAt populated and no reasons left
     const after1 = await findById(api, blueTokaiRows[0].id);
-    expect(after1?.reviewType).toBe('NEEDS_REVIEW');
-    expect(after1?.reviewReasons).not.toContain('DUPLICATE_SUSPECT');
-    expect(after1?.reviewReasons).toContain('DATE_CORRECTED');
-
-    // 3. Clear remaining reason CATEGORY_UNVERIFIED on blueTokaiRows[0]
-    const batch2Res = await api.POST('/api/v1/transactions/batch-review', {
-      body: {
-        transactionIds: [blueTokaiRows[0].id],
-        reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['DATE_CORRECTED'],
-      },
-    });
-    expectStatus(batch2Res, 200);
-    expect(batch2Res.data?.succeededIds).toContain(blueTokaiRows[0].id);
-
-    // 4. Verify blueTokaiRows[0] is now MANUALLY_REVIEWED with reviewedAt populated and empty reviewReasons
-    const after2 = await findById(api, blueTokaiRows[0].id);
-    expect(after2?.reviewType).toBe('MANUALLY_REVIEWED');
-    expect(after2?.reviewReasons?.length ?? 0).toBe(0);
-    expect(after2?.reviewedAt).toBeDefined();
+    expect(after1?.reviewType).toBe('MANUALLY_REVIEWED');
+    expect(after1?.reviewReasons?.length ?? 0).toBe(0);
+    expect(after1?.reviewedAt).toBeDefined();
   });
 
   test('Transactions search: filter by reviewType and reviewReason, verify rows drop out after review', async ({
@@ -193,12 +177,12 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     });
     await uploadAndIngest(api, account.id, await reviewFiles('search-stmt'));
 
-    // 1. Search with reviewType = NEEDS_REVIEW -> all 5 rows returned
+    // 1. Search with reviewType = NEEDS_REVIEW -> the 4 duplicate rows (the Uber row is auto-reviewed)
     const needsReviewRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
     ]);
-    expect(needsReviewRows.length).toBe(5);
+    expect(needsReviewRows.length).toBe(4);
 
     // 2. Search with reviewReason = DUPLICATE_SUSPECT -> exactly the 4 duplicate rows returned
     const dupRows = await searchAll(api, [
@@ -207,36 +191,29 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     ]);
     expect(dupRows.length).toBe(4);
 
-    // 3. Search with reviewReason = CATEGORY_UNVERIFIED -> all 5 rows returned
-    const unverifiedRows = await searchAll(api, [
-      { field: 'accountId', operator: 'is', value: account.id },
-      { field: 'reviewReason', operator: 'is', value: 'DATE_CORRECTED' },
-    ]);
-    expect(unverifiedRows.length).toBe(5);
-
-    // 4. Review all duplicate rows for DUPLICATE_SUSPECT and CATEGORY_UNVERIFIED
+    // 3. Review all flagged rows for DUPLICATE_SUSPECT
     const allIds = needsReviewRows.map((r) => r.id);
     await api.POST('/api/v1/transactions/batch-review', {
       body: {
         transactionIds: allIds,
         reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['DUPLICATE_SUSPECT', 'DATE_CORRECTED'],
+        reviewReasons: ['DUPLICATE_SUSPECT'],
       },
     });
 
-    // 5. Search with reviewType = NEEDS_REVIEW -> now 0 rows returned
+    // 4. Search with reviewType = NEEDS_REVIEW -> now 0 rows returned
     const remainingNeedsReview = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
     ]);
     expect(remainingNeedsReview.length).toBe(0);
 
-    // 6. Search with reviewType = MANUALLY_REVIEWED -> all 5 rows returned
+    // 5. Search with reviewType = MANUALLY_REVIEWED -> the 4 reviewed rows returned
     const manualRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewType', operator: 'is', value: 'MANUALLY_REVIEWED' },
     ]);
-    expect(manualRows.length).toBe(5);
+    expect(manualRows.length).toBe(4);
   });
 
   test('Merge duplicate pair: kept row clears DUPLICATE_SUSPECT and delete row is removed', async ({

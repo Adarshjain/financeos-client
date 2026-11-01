@@ -8,6 +8,7 @@ import {
   createTransaction,
   findById,
   searchAll,
+  todayString,
 } from '../fixtures/seed/transactions';
 import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
@@ -29,6 +30,8 @@ test.describe('Transaction Links, Merge & Review API', () => {
       });
       const creditTxn = await createTransaction(api, bankB.id, {
         amount: 5000,
+        // Dated well apart so the background auto-linker (same amount, credit within 1 day before to 2 after) leaves the pair for this test.
+        date: todayString(-10),
         description: 'Transfer In from Bank A',
       });
 
@@ -112,7 +115,6 @@ test.describe('Transaction Links, Merge & Review API', () => {
     }) => {
       const bank = await createBankAccount(api, { name: 'Multi Link Bank' });
       const cc = await createCreditCard(api, { name: 'Multi Link Card' });
-      const cat = await createCategory(api, 'Electronics Purchase');
 
       // 1. CC_PAYMENT: bank DEBIT (anchor) -> credit_card CREDIT
       const ccPayDebit = await createTransaction(api, bank.id, {
@@ -121,6 +123,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       });
       const ccPayCredit = await createTransaction(api, cc.id, {
         amount: 12000,
+        date: todayString(-10), // apart from the debit, so the auto-linker does not pair them first
         description: 'Payment Received',
       });
       const ccLinkRes = await api.POST('/api/v1/transaction-links', {
@@ -139,7 +142,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       const purchaseTxn = await createTransaction(api, cc.id, {
         amount: -2500,
         description: 'Online Store Purchase',
-        tagIds: [cat.id],
+        categoryKey: 'shopping',
       });
       const refundTxn = await createTransaction(api, cc.id, {
         amount: 2500,
@@ -158,9 +161,10 @@ test.describe('Transaction Links, Merge & Review API', () => {
       expectStatus(refundLinkRes, 201);
       expect(refundLinkRes.data?.type).toBe('REFUND');
 
-      // Verify alignRefundCategories copied categories from anchor to counterpart
+      // Verify alignRefundCategories copied the category from anchor to counterpart (source LINK)
       const refundAfter = await findById(api, refundTxn.id);
-      expect(refundAfter?.tags.map((c) => c.id)).toContain(cat.id);
+      expect(refundAfter?.category?.key).toBe('shopping');
+      expect(refundAfter?.categorySource).toBe('LINK');
 
       // 3. REVERSAL: DEBIT and CREDIT on same account
       const revDebit = await createTransaction(api, bank.id, {
@@ -376,7 +380,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
         amount: -800,
       });
 
-      // Call batch-review requesting transition to MANUALLY_REVIEWED for reason CATEGORY_UNVERIFIED
+      // Call batch-review requesting transition to MANUALLY_REVIEWED for reason DATE_CORRECTED
       // Since manual transaction has no reasons, it is skipped (not failed)
       const batchRes = await api.POST('/api/v1/transactions/batch-review', {
         body: {
@@ -388,7 +392,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       expectStatus(batchRes, 200);
       const result = batchRes.data!;
 
-      // txn had no CATEGORY_UNVERIFIED reason -> skipped
+      // txn had no DATE_CORRECTED reason -> skipped
       expect(result.skippedIds).toContain(txn.id);
 
       // foreignTxn is not found for this tenant (Hibernate userFilter) -> NOT_FOUND or NOT_OWNED
