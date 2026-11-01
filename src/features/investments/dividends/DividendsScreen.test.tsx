@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor,within } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,7 +6,7 @@ import { ConcealProvider } from '@/components/ds/Conceal/Conceal';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { awaiting, dividend, receipts, summary, unrecordedCredit } from './dividends.fixtures';
-import { dividendFilters, dividendListRow, dividendsFigures, fyTotals, parseDividendsUrl } from './dividendsModel';
+import { dividendFilters, dividendListRow, dividendsFigures, fyTotals, parseDividendsUrl, receiptTiles } from './dividendsModel';
 import { DividendsScreen, type DividendsScreenProps } from './DividendsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
@@ -53,6 +53,7 @@ function props(dividends = [dividend(), awaiting()]): DividendsScreenProps {
   return {
     state,
     figures: dividendsFigures(2026, fyTotals(summary(), 2026), receipts(), { overdue: ['ITC'] }),
+    tiles: receiptTiles(receipts()),
     dividends,
     rows: dividends.map(dividendListRow),
     totalElements: dividends.length,
@@ -174,5 +175,26 @@ describe('DividendsScreen: the suggestions scan only runs on Rescan', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
     await waitFor(() => expect(actions.scanDividendSuggestions).toHaveBeenCalledTimes(2));
     expect(actions.scanDividendSuggestions).toHaveBeenLastCalledWith('b2');
+  });
+});
+
+describe('DividendsScreen: receipt tiles and the Auto word', () => {
+  it('shows Received, Awaiting and Overdue tiles with counts', () => {
+    renderWithQuery(<DividendsScreen {...props()} />);
+    const tiles = within(screen.getByTestId('receipt-tiles'));
+    expect(tiles.getByText('Awaiting')).toBeInTheDocument();
+    expect(tiles.getByText('Overdue')).toBeInTheDocument();
+    expect(tiles.getByText('₹1,350')).toBeInTheDocument();
+    expect(tiles.getByText('2 payouts')).toBeInTheDocument();
+  });
+
+  it('shows no tiles when the receipts could not be read', () => {
+    renderWithQuery(<DividendsScreen {...props()} tiles={null} />);
+    expect(screen.queryByTestId('receipt-tiles')).toBeNull();
+  });
+
+  it('shows Auto on an auto-detected payout only', () => {
+    renderWithQuery(<DividendsScreen {...props([dividend({ source: 'suggested' }), awaiting()])} />);
+    expect(screen.getAllByText('Auto')).toHaveLength(1);
   });
 });
