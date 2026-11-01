@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
+import { DEFAULT_TABLE_PAGE_SIZE } from '@/lib/pagination';
 import type { InboxResponse } from '@/lib/api/types';
 import { dashboardsApi, inboxApi, reportsApi } from '@/lib/apiClient';
 import {

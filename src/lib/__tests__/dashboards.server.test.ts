@@ -7,7 +7,7 @@ vi.mock('@/lib/apiClient', () => ({
   reportsApi: { runSaved: vi.fn() },
 }));
 
-import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
+import { DEFAULT_TABLE_PAGE_SIZE } from '@/lib/pagination';
 import { dashboardsApi, inboxApi, reportsApi } from '@/lib/apiClient';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';

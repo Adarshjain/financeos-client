@@ -1,13 +1,13 @@
 import { SerwistProvider } from '@serwist/turbopack/react';
 
-import { FaroRouteTracker } from '@/components/FaroRouteTracker';
-import { QueryProvider } from '@/components/QueryProvider';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { FaroRouteTracker } from '@/lib/providers/FaroRouteTracker';
+import { QueryProvider } from '@/lib/providers/QueryProvider';
+import { ThemeProvider } from '@/lib/providers/ThemeProvider';
 import { AppLockWatcher } from '@/features/app-lock/AppLockWatcher';
 
 const isDev = process.env.NODE_ENV === 'development';
 
-/** Non-visual providers shared by both root layouts. Toasters stay in each root (Legacy sonner, Dinero Root). */
+/** Non-visual providers of the root layout; the Toaster lives in Dinero Root. */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
