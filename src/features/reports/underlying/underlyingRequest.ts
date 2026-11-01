@@ -67,7 +67,8 @@ const field = (catalog: DatasourceCatalog, name: string) => catalog.fields.find(
 
 /** An exact-match clause for one stored value of a non-date field; null when the value or the field cannot be pinned. */
 function pinClause(catalog: DatasourceCatalog, name: string, raw: string | null | undefined): FilterClause | null {
-  if (raw === null || raw === undefined || raw === '' || raw === NONE_LABEL) return null;
+  // The server reads "(none)" on a sub-category as its categorised-without-one bucket; on any other dimension it is not a value.
+  if (raw === null || raw === undefined || raw === '' || (raw === NONE_LABEL && name !== 'subcategory')) return null;
   const f = field(catalog, name);
   if (!f) return null;
   switch (f.type) {
