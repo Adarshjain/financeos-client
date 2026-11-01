@@ -19,7 +19,7 @@ import { type LoanFormErrors, LoanFormFields } from './LoanFormFields';
 
 const FORM_ID = 'loan-edit-form';
 
-/** What the banner says while the core terms are locked (Legacy's wording). */
+/** What the banner says while the core terms are locked. */
 export const TERMS_LOCKED_NOTE =
   'Core terms (principal, rate, tenure, dates, EMI) are locked because events or payments exist.';
 

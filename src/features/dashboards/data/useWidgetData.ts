@@ -6,8 +6,7 @@
 // never fetch here.
 //
 // Keys are `keys.dashboards.widget(widget.id, …QueryParams(…))` — the SAME
-// shape Legacy's server prefetch builds (`prefetchWidgetData` in
-// `@/lib/dashboards.server`), so a prefetched widget hydrates with no fetch.
+// shape the server prefetch builds (`@/lib/dashboards.server`), so a prefetched widget hydrates with no fetch.
 // The runtime header sort joins the key (and the `sort` query param) only when
 // set, so the unsorted first page still hydrates from the prefetch.
 // `enabled` is false until the widget is near the viewport (see useInView).

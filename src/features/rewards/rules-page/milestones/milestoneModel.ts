@@ -48,7 +48,7 @@ const WINDOW_SHORT: Record<MilestoneWindow, string> = {
 
 const rupees = (n: number) => formatMoney(n, { decimals: 'auto' });
 
-/** "₹50,000 spend / quarter → ₹1,000 on achievement" (the Legacy summary line). */
+/** "₹50,000 spend / quarter → ₹1,000 on achievement". */
 export function milestoneSummary(m: RewardMilestone): string {
   const target =
     m.basis === 'SPEND'
@@ -79,7 +79,7 @@ export const parseMccList = (text: string): string[] =>
     .map((m) => m.trim())
     .filter(Boolean);
 
-/** Label for a cardholder in the scope dropdown, as Legacy words it. */
+/** Label for a cardholder in the scope dropdown. */
 export function cardholderLabel(c: Cardholder, isBank: boolean): string {
   const name = c.personName || (c.role === 'PRIMARY' ? 'Primary' : isBank ? 'Joint holder' : 'Add-on');
   const last4 = c.currentLast4 || c.cards?.[0]?.last4 || '';

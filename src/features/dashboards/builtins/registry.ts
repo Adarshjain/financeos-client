@@ -1,6 +1,6 @@
 // The Dinero registry of built-in dashboard widgets, keyed by builtinKey: the two group maps in one. A component
 // built-in has a `Body` (it fetches its own data); a template built-in has a `View` the frame feeds with the loaded
-// report data (the server's `view` name only picks the Legacy renderer, so views are looked up by key here).
+// report data (views are looked up by key here, not by the server's `view` name).
 
 import type { ComponentType } from 'react';
 

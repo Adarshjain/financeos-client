@@ -59,9 +59,7 @@ function pickNearestInstallment(
  * unsettled installments, and settle it against the subject transaction.
  *
  * The schedule endpoint returns a grouping map that's normalised into a flat
- * list; that normaliser is duplicated here (rather than imported) from
- * `src/app/(legacy)/legacy/(protected)/loans/[id]/components/useLoanQueries.ts`, which lives
- * outside this feature's ownership.
+ * list by the normaliser in this file.
  */
 export function useLoanPaymentLink({
   transaction,

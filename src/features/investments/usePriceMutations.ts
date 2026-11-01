@@ -42,7 +42,7 @@ export function usePriceMutations(instrumentId: string) {
   return { setPrice, updatePrice, deletePrice };
 }
 
-/** How the refresh reports progress: the Legacy button sends it to the old toaster, Dinero to its own. */
+/** How the refresh reports progress: the caller passes its own notifier. */
 export interface RefreshNotifier {
   info: (message: string) => void;
   success: (message: string) => void;

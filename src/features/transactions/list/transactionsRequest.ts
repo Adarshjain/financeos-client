@@ -19,7 +19,7 @@ function pickClause(field: string, values: string[]): FilterClause | null {
     : { field, operator: 'in', value: values };
 }
 
-/** The server's filter clauses for a query, the same shapes the Legacy filter bar and review page send. */
+/** The server's filter clauses for a query. */
 export function buildFilters(query: TransactionsQuery): FilterClause[] {
   const clauses: (FilterClause | null)[] = [
     periodClause(query.period),

@@ -11,7 +11,7 @@ import type { ReceiptNote } from './dividendsModel';
 
 /**
  * The receipt of a dividend payout: link or unlink the bank credit it landed as, or set the receipt note.
- * Shared by the Dinero form and the Legacy edit dialog. Toasts are the caller's; after a change it calls
+ * Shared by the form and the edit dialog. Toasts are the caller's; after a change it calls
  * `refresh()` to re-read the investment and transaction queries.
  */
 export function useDividendReceiptMutations() {

@@ -1,5 +1,5 @@
 // The Add widget picker's sample content, one small mock-up per built-in, drawn from the Dinero components with
-// hard-coded sample data (nothing is fetched). It follows Legacy's previews, so what the picker promises is what
+// hard-coded sample data (nothing is fetched). What the picker promises is what
 // the widget shows. A key without one gets WidgetPreview's placeholder.
 
 import type { ComponentType, ReactNode } from 'react';

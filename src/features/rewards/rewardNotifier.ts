@@ -5,7 +5,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { errorLog } from '@/lib/diagnostics/errorLog';
 import { toastError } from '@/lib/toastError';
 
-/** How the reward forms and actions tell the user what happened. The default is Legacy's sonner toasts. */
+/** How the reward forms and actions tell the user what happened. The default is sonner toasts. */
 export interface RewardNotifier {
   success: (message: string) => void;
   error: (message: string) => void;

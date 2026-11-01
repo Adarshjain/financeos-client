@@ -20,7 +20,7 @@ import {
 
 /*
  * The transaction detail's reads and writes, as plain promise functions over the server actions: a failure
- * throws an ActionError carrying the server's message. Callers (also Legacy's) keep these names and signatures.
+ * throws an ActionError carrying the server's message.
  */
 
 /** One transaction, for the detail of a transaction that is not on the open page. */

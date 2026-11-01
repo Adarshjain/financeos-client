@@ -1,4 +1,4 @@
-// The wording of the built-ins' subtitles, shared by the Dinero frame and the Legacy one. Pure: the
+// The wording of the built-ins' subtitles. Pure: the
 // lookups that need the account list (a picked card's name, an account's type) are done by the callers.
 
 import type { Account } from '@/lib/account.types';

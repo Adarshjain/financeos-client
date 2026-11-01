@@ -49,7 +49,7 @@ export interface FieldDefinition {
   values?: string[];
   /**
    * True for user-specific enums (e.g. `category`, `account`); these ship no
-   * `values` — fetch options from their own endpoints (`/api/v1/categories`,
+   * `values` — fetch options from their own endpoints (`/api/v1/category-list`,
    * `/api/v1/accounts`) and filter by the option's name.
    */
   dynamic?: boolean;

@@ -15,7 +15,7 @@ import type { ConfirmItem, DividendMatchCandidate, DividendMatchItem } from './r
 
 const MAX_SKIPPED_TOASTS = 3;
 
-/** Where the hook reports a result. Without one it uses the Legacy toaster. */
+/** Where the hook reports a result. Without one it uses sonner toasts. */
 export type Notify = (message: string, tone?: 'danger') => void;
 
 interface UseDividendReconcileProps {

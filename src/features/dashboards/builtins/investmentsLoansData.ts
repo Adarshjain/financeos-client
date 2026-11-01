@@ -1,5 +1,5 @@
 // Pure data helpers shared by the investments & loans dashboard widgets: a wire number as a number, and the
-// ad-hoc KPI requests their drills open. Moved here from the Legacy investmentsLoansKit; Legacy imports them back.
+// ad-hoc KPI requests their drills open.
 
 import type { FilterClause, RunReportRequest } from '@/lib/reports.types';
 

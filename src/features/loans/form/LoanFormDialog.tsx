@@ -22,7 +22,7 @@ import { type LoanFormErrors,LoanFormFields } from './LoanFormFields';
 
 const FORM_ID = 'loan-form';
 
-/** Add loan: the Legacy form's fields and checks, in a Dinero dialog. Saving refreshes the page behind it. */
+/** Add loan: the form's fields and checks in a dialog. Saving refreshes the page behind it. */
 export function LoanFormDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const today = todayInAppZone();

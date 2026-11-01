@@ -9,7 +9,7 @@ import { describeOverriddenFields, isOverridden } from './instrumentEditModel';
 
 // ---- URL state ---------------------------------------------------------------
 
-/** This page's own address (the Dinero page exists, so no Legacy fallback is needed). */
+/** This page's own address. */
 export const INSTRUMENTS_HREF = `${DS_PREFIX}/investments/instruments`;
 export const INSTRUMENTS_SIZE_OPTIONS = [25, 50, 100];
 export const INSTRUMENTS_DEFAULT_SIZE = 25;

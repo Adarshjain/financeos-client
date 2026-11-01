@@ -145,7 +145,7 @@ export function initialBuilderState(
   type: ReportType = 'KPI',
   catalog?: DatasourceCatalog,
   datasource = 'transactions',
-  /** The KPI's comparison on a new draft: on for the Legacy builder, off (Show: None) for the /ds editor. */
+  /** The KPI's comparison on a new draft: on by default, off (Show: None) for the editor. */
   kpiComparison = true,
 ): BuilderState {
   // New reports on transactions default to hiding excluded transactions.

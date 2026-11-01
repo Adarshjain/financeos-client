@@ -272,7 +272,7 @@ export interface TradeFormErrors {
   date?: string;
 }
 
-/** What Legacy refused: no quantity, a negative price, no date. */
+/** What is refused: no quantity, a negative price, no date. */
 export function validateTrade(input: Pick<TradeFormInput, 'quantity' | 'price' | 'date'>): TradeFormErrors {
   const errors: TradeFormErrors = {};
   const qty = Number(input.quantity.replace(/,/g, ''));

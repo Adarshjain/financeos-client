@@ -25,7 +25,7 @@ interface UseRewardMilestoneFormProps {
   defaultRewardType: RewardType;
   milestone?: RewardMilestone;
   onSaved: () => void;
-  /** How validation and save results are shown; default Legacy's toasts. */
+  /** How validation and save results are shown; default sonner toasts. */
   notify?: RewardNotifier;
 }
 

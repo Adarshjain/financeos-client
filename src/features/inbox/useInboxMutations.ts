@@ -12,7 +12,7 @@ import { keys } from '@/lib/query/keys';
 import { dismissEpfSuggestion, dismissInboxItem, linkEpfSuggestion, snoozeInboxItem, undoInboxState } from './inboxActions';
 import { summarise } from './inboxModel';
 
-/** How snooze, dismiss and undo tell the user what happened. The default is today's Legacy toasts. */
+/** How snooze, dismiss and undo tell the user what happened. The default is sonner toasts. */
 export interface InboxNotifier {
   snoozed: (until: string, undo: () => void) => void;
   dismissed: (undo: () => void) => void;

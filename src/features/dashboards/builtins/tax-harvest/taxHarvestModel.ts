@@ -1,4 +1,4 @@
-// Pure helpers behind the tax_harvest widget (moved from the Legacy widget, which imports them back).
+// Pure helpers behind the tax_harvest widget.
 
 import type { TaxHarvestLot, TaxHarvestResponse } from '@/lib/taxHarvest.types';
 

@@ -17,7 +17,7 @@ interface UseRewardRuleFormProps {
   cloneFrom?: RewardRule;
   defaultPriority: number;
   onSaved: () => void;
-  /** How validation and save results are shown; default Legacy's toasts. */
+  /** How validation and save results are shown; default sonner toasts. */
   notify?: RewardNotifier;
 }
 

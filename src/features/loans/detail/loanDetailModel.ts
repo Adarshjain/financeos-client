@@ -154,7 +154,7 @@ export function linkedLine(schedule: InstallmentDto[]): string {
   return `${linked.length} of ${paid.length} paid EMIs`;
 }
 
-/** Core terms lock once the loan has an event or a settled payment (Legacy's rule; the server enforces it too). */
+/** Core terms lock once the loan has an event or a settled payment (the server enforces it too). */
 export function termsLocked(events: LoanEventResponse[], schedule: InstallmentDto[]): boolean {
   return events.length > 0 || schedule.some((i) => i.status === 'settled');
 }

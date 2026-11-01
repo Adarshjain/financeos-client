@@ -63,16 +63,16 @@ interface UseExportLedgerArgs {
   theirName: string;
   /** The signed-in user's display name; prefills "Your name" unless a saved value exists. */
   defaultMyName: string | null;
-  /** Says what Copy did. Defaults to the Legacy toaster; Dinero pages pass their own. */
+  /** Says what Copy did. Defaults to a sonner toast. */
   notify?: (message: string, tone: 'success' | 'danger') => void;
 }
 
-const legacyNotify = (message: string, tone: 'success' | 'danger') =>
+const defaultNotify = (message: string, tone: 'success' | 'danger') =>
   tone === 'success' ? toast.success(message) : toast.error(message);
 
 const noopSubscribe = () => () => {};
 
-export function useExportLedger({ entries, theirName, defaultMyName, notify = legacyNotify }: UseExportLedgerArgs) {
+export function useExportLedger({ entries, theirName, defaultMyName, notify = defaultNotify }: UseExportLedgerArgs) {
   const stored = useMemo(() => readStoredPrefs(), []);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(entries.map((e) => e.id)));

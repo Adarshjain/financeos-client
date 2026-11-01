@@ -15,7 +15,7 @@ import { deleteCounterparty, deleteLendingEntry, updateCounterparty, updateLendi
 import { useCreateLending, useLinkLendingTransaction, useUnlinkLendingTransaction } from './useLendingMutations';
 
 export interface CounterpartyMutationOptions {
-  /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
+  /** Replaces the default error toast. */
   onError?: (e: unknown, fallback: string) => void;
 }
 

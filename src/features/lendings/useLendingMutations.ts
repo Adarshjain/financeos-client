@@ -17,7 +17,7 @@ import {
 } from './lendingActions';
 
 interface Options {
-  /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
+  /** Replaces the default error toast. */
   onError?: (e: unknown) => void;
 }
 
@@ -33,7 +33,7 @@ function useRefresh() {
 /**
  * Records one lending ledger entry (POST /api/v1/lendings) and refreshes everything it moves:
  * lendings, the loans summary, obligations and transactions. `onError` replaces the default
- * Legacy error toast, for pages whose toasts come from another toaster.
+ * error toast.
  */
 export function useCreateLending(options?: Options) {
   const refresh = useRefresh();

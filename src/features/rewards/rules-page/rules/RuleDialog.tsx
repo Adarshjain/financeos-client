@@ -125,7 +125,7 @@ const ROUNDING_OPTIONS = (points: boolean) => [
   { value: 'NEAREST_RUPEE', label: points ? 'Nearest whole point' : 'Nearest rupee' },
 ];
 
-/** New / Edit rule: every field of a reward rule, opened from state, grouped as Legacy's form groups them. */
+/** New / Edit rule: every field of a reward rule, opened from state. */
 export function RuleDialog({
   accountId,
   rule,

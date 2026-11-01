@@ -2,7 +2,7 @@
 
 // spend_heatmap (template CHART over daily spend): the Chart organism's calendar heatmap — weeks as columns,
 // Monday to Sunday down, darker on heavier days, today outlined. A day with spend opens its transactions
-// ("View underlying data"), as in Legacy.
+// ("View underlying data").
 
 import React from 'react';
 

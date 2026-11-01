@@ -23,7 +23,7 @@ import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getU
 import { useImportWizardMutations } from './useImportWizardMutations';
 import { useImportWizardState } from './useImportWizardState';
 
-/** How the wizard tells the user things. Defaults to the Legacy toaster; Dinero pages pass their own. */
+/** How the wizard tells the user things. Defaults to sonner toasts. */
 export interface ImportWizardNotify {
   error: (message: string) => void;
   info: (message: string) => void;
@@ -31,7 +31,7 @@ export interface ImportWizardNotify {
   caught: (error: unknown, fallback: string) => void;
 }
 
-export const legacyImportNotify: ImportWizardNotify = {
+export const defaultImportNotify: ImportWizardNotify = {
   error: (message) => void toast.error(message),
   info: (message) => void toast.info(message),
   caught: (error, fallback) => toastError(error, fallback),
@@ -45,7 +45,7 @@ interface UseImportWizardProps {
   initialMode?: ImportMode;
 }
 
-export function useImportWizard({ brokerAccounts, onSuccess, notify = legacyImportNotify, initialMode }: UseImportWizardProps) {
+export function useImportWizard({ brokerAccounts, onSuccess, notify = defaultImportNotify, initialMode }: UseImportWizardProps) {
   const qc = useQueryClient();
   const {
     open,

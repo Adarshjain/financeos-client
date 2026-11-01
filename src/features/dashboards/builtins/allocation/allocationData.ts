@@ -1,5 +1,4 @@
-// The allocation template's bucket for holdings with no asset class yet (moved from the Legacy allocation
-// model, which imports it back), and the chart data the Dinero view draws.
+// The allocation template's bucket for holdings with no asset class yet and the chart data the Dinero view draws.
 
 import type { ChartData, FilterClause } from '@/lib/reports.types';
 

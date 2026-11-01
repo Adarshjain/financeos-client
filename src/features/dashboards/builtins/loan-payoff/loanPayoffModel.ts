@@ -1,4 +1,4 @@
-// Pure helper behind the loan_payoff widget (moved from the Legacy widget, which imports it back).
+// Pure helper behind the loan_payoff widget.
 
 import type { LoanResponse } from '@/lib/loan.types';
 

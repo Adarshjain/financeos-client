@@ -3,7 +3,7 @@
 // The investments & loans built-ins in Dinero, keyed by builtinKey: each key's body (component built-ins) or
 // view (template built-ins), its loading skeleton in the widget's own shape, and its param-aware subtitle.
 // The page's frame draws the Widget title, subtitle, header link and ⋮ around these; bodies fetch with the
-// same hooks as Legacy and render their own failed state with Retry.
+// existing hooks and render their own failed state with Retry.
 //
 // Investments: portfolio_snapshot, top_movers, allocation (a CHART template rendered by the `allocation` view),
 // tax_harvest. Loans & lending: loan_payoff, lending_balances. Plus shortcuts.

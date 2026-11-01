@@ -7,7 +7,7 @@
 //   report:<uuid>     one saved report
 //   dashboard:<uuid>  one dashboard
 // An id that is malformed, names an unknown page/action, or an account / report / dashboard the user no longer
-// has resolves to null (hidden). The Legacy catalog and actions import all of this and only add their icons.
+// has resolves to null (hidden).
 
 import { useMemo } from 'react';
 
@@ -45,16 +45,14 @@ export interface ShortcutItem {
   id: string;
   kind: ShortcutKind;
   label: string;
-  /** Legacy-shaped path the tile navigates to (the widget passes it through appHref); null for a dialog action. */
+  /** Path the tile navigates to (the widget passes it through appHref); null for a dialog action. */
   href: string | null;
   /** The dialog the tile opens; null when it navigates. */
   actionId: DialogActionId | null;
 }
 
 /**
- * Every page a shortcut can point at, with its label, in navigation order. The one list: the Legacy shortcuts
- * catalog reads it too. Hrefs are Legacy-shaped; the tile passes them through appHref, so a page already built in
- * Dinero opens its /ds page and the rest open their current route.
+ * Every page a shortcut can point at, with its label, in navigation order. The one list. The tile passes hrefs through appHref.
  */
 export const SHORTCUT_PAGES: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/dashboard', label: 'Home' },
@@ -87,7 +85,7 @@ const PAGES = SHORTCUT_PAGES;
 export type PageActionId = 'import-statement' | 'ask-chat' | 'review-queue';
 export type ActionId = DialogActionId | PageActionId;
 
-/** The shortcut actions, UI-agnostic: a dialog the tile opens or a page it links to. The Legacy actions add icons and loaders. */
+/** The shortcut actions, UI-agnostic: a dialog the tile opens or a page it links to. */
 export type ShortcutActionDef = { id: DialogActionId; label: string; dialog: DialogActionId } | { id: PageActionId; label: string; href: string };
 
 export const SHORTCUT_ACTION_DEFS: Readonly<Record<ActionId, ShortcutActionDef>> = {

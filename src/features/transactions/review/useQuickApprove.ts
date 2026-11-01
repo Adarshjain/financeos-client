@@ -16,8 +16,7 @@ export type QuickApproveOutcome = 'approved' | 'needs-dialog' | 'nothing-to-appr
 /**
  * The one-tap approve on a single row (Review button, phone swipe right). One reason clears at once (on screen before the server answers) and
  * the Toast offers Undo, which puts that reason back. Several reasons return `needs-dialog`: the caller
- * opens `ApproveDialog` for that row (owner 15). A row with no reason has nothing to approve, as in
- * Legacy (the Review button is not offered), so it returns `nothing-to-approve` and does nothing.
+ * opens `ApproveDialog` for that row (owner 15). A row with no reason has nothing to approve (the Review button is not offered), so it returns `nothing-to-approve` and does nothing.
  */
 export function useQuickApprove() {
   const batch = useBatchReview();

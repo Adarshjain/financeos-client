@@ -63,7 +63,7 @@ const positiveInt = (text: string): number | null => {
   return Number.isInteger(n) && n > 0 ? n : null;
 };
 
-/** What stops the form from being saved, per field (the messages of the Legacy dialog). */
+/** What stops the form from being saved, per field. */
 export function validateForm(form: CorporateActionForm): FormErrors {
   const errors: FormErrors = {};
   if (!form.instrument) errors.instrument = 'Select an instrument.';

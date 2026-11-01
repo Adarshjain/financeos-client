@@ -69,7 +69,7 @@ export function visibleCategories(builtins: readonly BuiltinWidgetResponse[]): A
   return [{ id: 'all', label: 'All' }, ...PICKER_CATEGORIES.filter((c) => used.has(c.id))];
 }
 
-/** The built-ins shown for a category ('all' = every one; 'reports' = none) and query. The one search: the Legacy picker uses it too. */
+/** The built-ins shown for a category ('all' = every one; 'reports' = none) and query. */
 export function filterBuiltins(builtins: readonly BuiltinWidgetResponse[], category: string, query: string): BuiltinWidgetResponse[] {
   if (category === 'reports') return [];
   return builtins.filter((b) => (category === 'all' || b.category === category) && matchesQuery(query, b.label, b.description));

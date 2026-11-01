@@ -1,4 +1,4 @@
-// The window line on a Top movers row. The one copy: the Legacy widget imports it too.
+// The window line on a Top movers row.
 
 import { formatDate } from '@/lib/format';
 
@@ -6,7 +6,7 @@ import type { Mover } from './topMoversModel';
 
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** YYYY-MM-DD → dd/mm (empty for anything else), as the Legacy date display. */
+/** YYYY-MM-DD → dd/mm (empty for anything else). */
 export const dayMonthNumeric = (iso: string): string => {
   const m = ISO_DAY.exec(iso);
   return m ? `${m[3]}/${m[2]}` : '';
