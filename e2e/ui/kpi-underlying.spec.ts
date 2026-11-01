@@ -27,8 +27,12 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 const widgetCard = (page: Page) => page.getByTestId('dashboard-widget').first();
 
-/** The rows of the dialog's table (the header row left out). */
-const bodyRows = (scope: Locator) => scope.getByRole('row').filter({ has: scope.page().getByRole('cell') });
+/**
+ * The body rows of a DataTable (the header row left out). A tappable row (onRowSelect) exposes
+ * role=button instead of role=row, and only body rows hold cells.
+ */
+const bodyRows = (scope: Locator) =>
+  scope.getByRole('row').or(scope.getByRole('button')).filter({ has: scope.page().getByRole('cell') });
 
 /**
  * The spend of seeded row k (1-based): 100 + ((7k + 5) mod 27) × 10. For 27 rows that is every

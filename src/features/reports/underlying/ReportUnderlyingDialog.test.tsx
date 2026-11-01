@@ -305,6 +305,18 @@ describe('ReportUnderlyingDialog filters and transaction rows', () => {
     expect(screen.queryByRole('list', { name: 'Filters' })).toBeNull();
   });
 
+  it('writes a date chip in sentence case with the app\'s day labels', async () => {
+    vi.mocked(api.POST).mockResolvedValue({
+      data: response({
+        rowAction: 'transaction',
+        filters: [{ field: 'date', fieldLabel: 'Date', operator: 'between', text: 'Between 01/09/2026 and 30/09/2026' }],
+      }),
+    } as never);
+    renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
+    const list = await screen.findByRole('list', { name: 'Filters' });
+    expect(within(list).getAllByRole('listitem').map((i) => i.textContent)).toEqual(['Date between 1–30 Sep']);
+  });
+
   it('pressing a transaction row opens that transaction', async () => {
     vi.mocked(api.POST).mockResolvedValue({ data: filtered() } as never);
     const onOpenTransaction = vi.fn();
