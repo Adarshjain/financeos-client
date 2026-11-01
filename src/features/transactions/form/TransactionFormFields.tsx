@@ -16,7 +16,6 @@ import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsTo
 import type { Account } from '@/lib/account.types';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 import { amountExpressionProps } from '@/lib/amountExpression';
-import type { Tag } from '@/lib/tags.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
 
 import { CategoryField } from './CategoryField';
@@ -74,9 +73,8 @@ export interface TransactionFormFieldsProps {
   /** The accounts to record against: none shows the "no account yet" state in place of the Account field. */
   hasAccounts: boolean;
   cardOptions: { id: string; label: string }[];
-  tags: Tag[];
-  selectedTagIds: string[];
-  creatingTag: boolean;
+  /** The chosen tags' names, joined; none when no tag is chosen. */
+  tagsLabel?: string;
   /** The category on the form as "Food · Delivery"; none when not set. */
   categoryLabel?: string;
   categoryIcon?: IconName;
@@ -89,8 +87,8 @@ export interface TransactionFormFieldsProps {
   onAccountChange: (accountId: string) => void;
   /** The Category field was pressed: the form opens the category picker. */
   onOpenCategory: () => void;
-  onTagsChange: (ids: string[]) => void;
-  onCreateTag: (name: string) => void;
+  /** The Tags field was pressed: the form opens the tag sheet. */
+  onOpenTags: () => void;
   onDescriptionBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   onAddAccount: () => void;
 }
@@ -104,9 +102,7 @@ export function TransactionFormFields({
   accounts,
   hasAccounts,
   cardOptions,
-  tags,
-  selectedTagIds,
-  creatingTag,
+  tagsLabel,
   categoryLabel,
   categoryIcon,
   suggestingCategory,
@@ -115,8 +111,7 @@ export function TransactionFormFields({
   onChange,
   onAccountChange,
   onOpenCategory,
-  onTagsChange,
-  onCreateTag,
+  onOpenTags,
   onDescriptionBlur,
   onAddAccount,
 }: TransactionFormFieldsProps) {
@@ -206,7 +201,7 @@ export function TransactionFormFields({
 
       <CategoryField label={categoryLabel} icon={categoryIcon} onOpen={onOpenCategory} />
 
-      <TagsField tags={tags} selectedTagIds={selectedTagIds} creating={creatingTag} onChange={onTagsChange} onCreate={onCreateTag} />
+      <TagsField label={tagsLabel} onOpen={onOpenTags} />
 
 
       {isUpdate ? (

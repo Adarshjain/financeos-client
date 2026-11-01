@@ -39,7 +39,8 @@ export function useRuleMatches({
     page,
     setPage: (next: number) => setPaging({ key, page: next }),
     matches: query.data?.matches ?? null,
-    /** How many of all the matches the user set by hand. */
+    /** How many transactions match, and how many of those the user set by hand. */
+    matchCount: query.data?.matchCount ?? 0,
     userSetCount: query.data?.userSetCount ?? 0,
     // A new pattern or page shows the loading state, not the old rows, until its answer lands.
     loading: query.isLoading || query.isPlaceholderData,

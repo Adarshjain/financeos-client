@@ -2,8 +2,10 @@
 
 import React from 'react';
 
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import type { IconName } from '@/components/ds/Icon/registry';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Select } from '@/components/ds/Select/Select';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker/CategoryPicker';
@@ -42,7 +44,15 @@ interface Problems {
 /** Add rule and Edit rule: one form. The matches it would give show underneath and follow the pattern. */
 export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
   const { list } = useCategoryList(categoryList ?? undefined);
-  const { create, update } = useRuleMutations({ onSaved: onClose });
+  const [alsoApply, setAlsoApply] = React.useState(false);
+  const { create, update, applyToPast } = useRuleMutations({
+    onSaved: (saved) => {
+      // "Also update past matches": the job starts after the save, so it runs on the rule as saved.
+      const id = saved?.id ?? rule?.id;
+      if (alsoApply && id) applyToPast.mutate(id);
+      onClose();
+    },
+  });
   const [pattern, setPattern] = React.useState(rule?.merchantKey ?? '');
   const [matchType, setMatchType] = React.useState<MatchType>(rule?.matchType ?? 'CONTAINS');
   const [displayName, setDisplayName] = React.useState(rule?.displayName ?? '');
@@ -165,6 +175,13 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
               onChange={(e) => setDisplayName(e.target.value)}
             />
             <RuleMatchesPreview matchType={matchType} pattern={pattern} ruleId={rule?.id} />
+            <ListRow
+              clickable
+              flush
+              onClick={() => setAlsoApply((now) => !now)}
+              leading={<Checkbox checked={alsoApply} tabIndex={-1} aria-hidden="true" />}
+              title="Also update past matches"
+            />
           </form>
         </Dialog.Body>
       </Dialog.Content>

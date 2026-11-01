@@ -37,6 +37,7 @@ function isGone(error: unknown): boolean {
 
 // The panel and its dialogs are not in the page: each loads when the user opens it (see useLazyDialog).
 const loadDetailPanel = () => import('./detail/TransactionDetailPanel').then((m) => m.TransactionDetailPanel);
+const loadTagsSheet = () => import('./tags/TransactionTagsSheet').then((m) => m.TransactionTagsSheet);
 const loadCategoryDialog = () => import('./category/CategoryDialog').then((m) => m.CategoryDialog);
 const loadFormDialog = () => import('./form/TransactionFormDialog').then((m) => m.TransactionFormDialog);
 const loadLinkDialog = () => import('./link/LinkTransactionsDialog').then((m) => m.LinkTransactionsDialog);
@@ -81,6 +82,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   };
   const detail = useLazyDialog(loadDetailPanel);
   const categoryDialog = useLazyDialog(loadCategoryDialog);
+  const tagsSheet = useLazyDialog(loadTagsSheet);
   const formDialog = useLazyDialog(loadFormDialog);
   const linkDialog = useLazyDialog(loadLinkDialog);
   const setDetailId = (id: string | null) => {
@@ -97,6 +99,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const [form, setForm] = React.useState<FormState>(null);
   const [categorising, setCategorising] = React.useState<Transaction | null>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
+  const [tagging, setTagging] = React.useState<Transaction[] | null>(null);
   const router = useRouter();
   const addTransaction = useAddTransaction();
   const byId = React.useMemo(() => new Map(transactions.map((t) => [t.id, t])), [transactions]);
@@ -164,6 +167,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         onLink={() => void linkDialog.run(() => setLinking(selected))}
         onMerge={() => selected.length === 2 && actions.merge([selected[0], selected[1]])}
         onApprove={() => actions.approve(selected.filter(isApprovable))}
+        onTag={() => void tagsSheet.run(() => setTagging(selected))}
         onDelete={() => actions.remove(selected, true)}
       />
       {actions.dialogs}
@@ -191,6 +195,16 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
             selection.clear();
             router.refresh();
           }}
+        />
+      ) : null}
+      {tagging && tagsSheet.Component ? (
+        <tagsSheet.Component
+          key={tagging.map((t) => t.id).join()}
+          transactions={tagging}
+          mode="add"
+          accounts={view.accounts}
+          onClose={() => setTagging(null)}
+          onAdded={selection.clear}
         />
       ) : null}
       {categorising && categoryDialog.Component ? <categoryDialog.Component key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}

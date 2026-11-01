@@ -9,6 +9,7 @@ import { Badge } from '@/components/ds/Badge/Badge';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Button } from '@/components/ds/Button/Button';
 import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { Icon } from '@/components/ds/Icon/Icon';
 import type { IconName } from '@/components/ds/Icon/registry';
 import { ListField } from '@/components/ds/ListField/ListField';
@@ -31,6 +32,8 @@ import type { ObligationRef, Transaction } from '@/lib/transaction.types';
 
 import { isApprovable } from '../bulk/bulkModel';
 import { sourceLine } from '../category/categoryModel';
+import { TransactionTagsSheet } from '../tags/TransactionTagsSheet';
+import { useTransactionTags } from '../tags/useTransactionTags';
 import { deleteTransaction, fetchTransactionLinks } from './transactionDetailApi';
 import {
   balanceAfterWords,
@@ -170,6 +173,13 @@ function DetailContent({
   const title = t.description || t.sourcedDescription || '—';
   const raw = t.description && t.sourcedDescription && t.sourcedDescription !== t.description ? t.sourcedDescription : undefined;
   const tags = t.tags ?? [];
+  const [tagging, setTagging] = React.useState(false);
+  const { setTags } = useTransactionTags(accounts);
+  const removeTag = (id: string) =>
+    setTags(
+      t,
+      tags.filter((x) => x.id !== id),
+    );
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteTransaction(t.id),
@@ -306,17 +316,22 @@ function DetailContent({
           <ListField
             label="Tags"
             value={
-              tags.length > 0 ? (
-                <span className="flex flex-wrap justify-end gap-space-4">
-                  {tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline" shape="rounded">
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </span>
-              ) : (
-                'None'
-              )
+              <span className="flex flex-wrap items-center justify-end gap-space-4">
+                {tags.map((tag) => (
+                  <FilterChip
+                    key={tag.id}
+                    variant="outline"
+                    shape="rounded"
+                    removable
+                    onRemove={() => void removeTag(tag.id)}
+                  >
+                    {tag.name}
+                  </FilterChip>
+                ))}
+                <Button size="sm" variant="secondary" onClick={() => setTagging(true)}>
+                  Add tag
+                </Button>
+              </span>
             }
           />
           {t.mcc ? <ListField label="MCC" value={t.mcc} /> : null}
@@ -368,6 +383,8 @@ function DetailContent({
           if (ref) void unlink.removeSettlement(ref).then(() => setRemoving(null));
         }}
       />
+
+      {tagging ? <TransactionTagsSheet transactions={[t]} accounts={accounts} onClose={() => setTagging(false)} /> : null}
     </>
   );
 }

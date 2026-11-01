@@ -24,7 +24,7 @@ export interface TransactionListRow extends TransactionRowData {
   plastic?: string;
   /** "₹2,95,030"; none on an excluded row. */
   balance?: string;
-  /** The category's name; empty when none is set, and on an excluded row (the row then shows the dashed "Set category" badge). */
+  /** The category's name; empty when none is set (the row then shows the dashed "Set category" badge). An excluded row with a category shows it like any other. */
   categories: string[];
   /** The sub-category's name, when there is one. */
   subCategory?: string;
@@ -123,7 +123,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
   const excluded = Boolean(t.isTransactionExcluded);
   const credit = t.amount > 0;
   const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
-  const shown = excluded ? null : t.category;
+  const shown = t.category;
   const categories = shown ? [shown.name] : [];
   const source = ctx.showSource ? SOURCE_WORDS[t.source] : undefined;
   const provenance = [excluded ? 'Excluded' : undefined, source].filter(Boolean).join(' · ');

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
 import { Pager } from '@/components/ds/Pager/Pager';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { type SelectOption } from '@/components/ds/Select/Select';
 import { RuleCard } from '@/components/organisms/RuleCard/RuleCard';
 import { LoadError } from '@/features/shell/LoadError';
@@ -33,6 +34,7 @@ import {
   rulesUrl,
   type RulesUrlState,
 } from './rulesModel';
+import { type TagsPage,TagsSection } from './TagsSection';
 import { useRuleMutations } from './useRuleMutations';
 
 export interface RulesPage {
@@ -42,6 +44,9 @@ export interface RulesPage {
 }
 
 export interface RulesScreenProps {
+  /** The user's tags; null when they could not be loaded. */
+  tags: TagsPage | null;
+  tagsReference?: string;
   /** The page of rules the address asks for; null when it could not be loaded. */
   rules: RulesPage | null;
   reference?: string;
@@ -52,7 +57,8 @@ export interface RulesScreenProps {
 
 // The rule editor and Find matches are not in the page: each loads when pressed (see useLazyDialog).
 const loadRuleDialog = () => import('./RuleDialog').then((m) => m.RuleDialog);
-const loadFindMatchesDialog = () => import('./FindMatchesDialog').then((m) => m.FindMatchesDialog);
+const loadFindMatchesDialog = () =>
+  import('./FindMatchesDialog').then((m) => m.FindMatchesDialog);
 
 type Dialogs =
   | { kind: 'add' }
@@ -61,15 +67,26 @@ type Dialogs =
   | { kind: 'delete'; rule: CategoryRule }
   | null;
 
-/** /transactions/rules: the Tags tab (the rules still live here until its rebuild). Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
-export function RulesScreen({ rules, reference, state, categoryList }: RulesScreenProps) {
+/** /transactions/rules: the Tags tab, tags then category rules. The top bar's Add is a menu (New tag, New rule); Edit, Find matches and Delete are on a rule's ⋮. */
+export function RulesScreen({
+  tags,
+  tagsReference,
+  rules,
+  reference,
+  state,
+  categoryList,
+}: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
+  const [addingTag, setAddingTag] = React.useState(false);
   const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
-  const { Component: FindMatchesDialog, run: runMatches } = useLazyDialog(loadFindMatchesDialog);
+  const { Component: FindMatchesDialog, run: runMatches } = useLazyDialog(
+    loadFindMatchesDialog
+  );
   // The rule editor and Find matches load when pressed; Delete is a small confirm and opens at once.
   const openDialog = (next: NonNullable<Dialogs>) => {
-    if (next.kind === 'add' || next.kind === 'edit') void runRule(() => setDialog(next));
+    if (next.kind === 'add' || next.kind === 'edit')
+      void runRule(() => setDialog(next));
     else if (next.kind === 'matches') void runMatches(() => setDialog(next));
     else setDialog(next);
   };
@@ -78,42 +95,79 @@ export function RulesScreen({ rules, reference, state, categoryList }: RulesScre
   });
 
   const go = (patch: Partial<RulesUrlState>, resetPage = true) =>
-    router.push(rulesUrl({ ...state, ...(resetPage ? { page: 0 } : {}), ...patch }), { scroll: false });
+    router.push(
+      rulesUrl({ ...state, ...(resetPage ? { page: 0 } : {}), ...patch }),
+      { scroll: false }
+    );
   const { text, setText } = useSearchText(state.q, (q) => go({ q }));
 
   const categoryOptions: SelectOption[] = [
     { value: ANY, label: 'Any category' },
-    ...[...(categoryList ?? [])].sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ value: c.key, label: c.name })),
+    ...[...(categoryList ?? [])]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((c) => ({ value: c.key, label: c.name })),
   ];
-  const categoryName = categoryList?.find((c) => c.key === state.categoryKey)?.name;
+  const categoryName = categoryList?.find(
+    (c) => c.key === state.categoryKey
+  )?.name;
 
   const pager = rules ? (
-      <Pager
-        page={state.page}
-        size={state.size}
-        totalElements={rules.totalElements}
-        totalPages={rules.totalPages}
-        unit="rules"
-        borderPosition="none"
-        sizeOptions={RULES_SIZE_OPTIONS}
-        sizeLabel={(n) => `${n} / page`}
-        onPageChange={(page) => go({ page }, false)}
-        onSizeChange={(size) => go({ size })}
-      />
+    <Pager
+      page={state.page}
+      size={state.size}
+      totalElements={rules.totalElements}
+      totalPages={rules.totalPages}
+      unit="rules"
+      borderPosition="none"
+      sizeOptions={RULES_SIZE_OPTIONS}
+      sizeLabel={(n) => `${n} / page`}
+      onPageChange={(page) => go({ page }, false)}
+      onSizeChange={(size) => go({ size })}
+    />
   ) : null;
 
   const noMatch = hasRuleFilters(state);
 
   return (
-    <ShellPage crumb={subCrumb('transactions')} title="Tags" flushTop onAdd={() => openDialog({ kind: 'add' })} addLabel="Add rule">
+    <ShellPage
+      crumb={subCrumb('transactions')}
+      title="Tags"
+      flushTop
+      addLabel="Add"
+      addMenu={[
+        { id: 'tag', label: 'New tag', onSelect: () => setAddingTag(true) },
+        {
+          id: 'rule',
+          label: 'New rule',
+          onSelect: () => openDialog({ kind: 'add' }),
+        },
+      ]}
+    >
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
-        <FilterBar
-          size="md"
-          search={{ value: text, onValueChange: setText }}
-          changed={state.matchType !== null || state.categoryKey !== null}
-          onReset={() => go({ ...DEFAULT_RULES_STATE, q: state.q, size: state.size })}
-        >
+        <TagsSection
+          tags={tags}
+          reference={tagsReference}
+          adding={addingTag}
+          onAddingChange={setAddingTag}
+        />
+        <section className="flex min-w-0 flex-col gap-space-8 desk:gap-space-12">
+          <SectionHeader
+            as="h2"
+            variant="strong"
+            sticky={false}
+            meta={rules?.totalElements}
+          >
+            Category rules
+          </SectionHeader>
+          <FilterBar
+            size="md"
+            search={{ value: text, onValueChange: setText }}
+            changed={state.matchType !== null || state.categoryKey !== null}
+            onReset={() =>
+              go({ ...DEFAULT_RULES_STATE, q: state.q, size: state.size })
+            }
+          >
             <ChoiceChip
               label={categoryName ?? 'Category'}
               onReset={() => go({ categoryKey: null })}
@@ -124,71 +178,113 @@ export function RulesScreen({ rules, reference, state, categoryList }: RulesScre
               onCommit={(v) => go({ categoryKey: v === ANY ? null : v })}
             />
             <ChoiceChip
-              label={state.matchType ? MATCH_TYPE_LABEL[state.matchType] : 'Match type'}
+              label={
+                state.matchType
+                  ? MATCH_TYPE_LABEL[state.matchType]
+                  : 'Match type'
+              }
               onReset={() => go({ matchType: null })}
               value={state.matchType ?? ANY}
               options={MATCH_FILTER_OPTIONS}
               selected={state.matchType !== null}
-              onCommit={(v) => go({ matchType: v === ANY ? null : (v as RulesUrlState['matchType']) })}
+              onCommit={(v) =>
+                go({
+                  matchType:
+                    v === ANY ? null : (v as RulesUrlState['matchType']),
+                })
+              }
             />
-        </FilterBar>
-        {rules === null ? (
-          <LoadError what="rules" reference={reference} />
-        ) : rules.rows.length === 0 ? (
-          <EmptyState
-            title={noMatch ? 'No rules match' : 'No rules yet'}
-            description={
-              noMatch
-                ? 'Try adjusting your search or filters.'
-                : 'A rule sets the category of transactions whose description matches it. Add one to get started.'
-            }
-            action={
-              hasRuleFilters(state)
-                ? {
-                    label: 'Clear filters',
-                    variant: 'secondary',
-                    onSelect: () => go({ ...DEFAULT_RULES_STATE, size: state.size }),
-                  }
-                : noMatch
-                  ? undefined
-                  : { label: 'Add rule', onSelect: () => openDialog({ kind: 'add' }) }
-            }
-          />
-        ) : (
-          <>
-            {pager}
-            <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-3">
-              {rules.rows.map((rule) => {
-                const line = ruleMatchLine(rule);
-                return (
-                  <RuleCard
-                    key={rule.id}
-                    name={ruleName(rule)}
-                    matchType={line.matchType}
-                    pattern={line.pattern}
-                    usedCount={rule.appliedCount}
-                    tone="success"
-                    mcc={rule.mcc ? `MCC ${rule.mcc}` : undefined}
-                    categories={[ruleCategoryLabel(rule)]}
-                    menuItems={[
-                      { label: 'Edit', onSelect: () => openDialog({ kind: 'edit', rule }) },
-                      { label: 'Find matches', onSelect: () => openDialog({ kind: 'matches', rule }) },
-                      { label: 'Delete', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
-                    ]}
-                    onOpenDetail={() => openDialog({ kind: 'edit', rule })}
-                  />
-                );
-              })}
-            </div>
-            {pager}
-          </>
-        )}
+          </FilterBar>
+          {rules === null ? (
+            <LoadError what="rules" reference={reference} />
+          ) : rules.rows.length === 0 ? (
+            <EmptyState
+              title={noMatch ? 'No rules match' : 'No rules yet'}
+              description={
+                noMatch
+                  ? 'Try adjusting your search or filters.'
+                  : 'A rule sets the category of transactions whose description matches it. Add one to get started.'
+              }
+              action={
+                hasRuleFilters(state)
+                  ? {
+                      label: 'Clear filters',
+                      variant: 'secondary',
+                      onSelect: () =>
+                        go({ ...DEFAULT_RULES_STATE, size: state.size }),
+                    }
+                  : noMatch
+                    ? undefined
+                    : {
+                        label: 'Add rule',
+                        onSelect: () => openDialog({ kind: 'add' }),
+                      }
+              }
+            />
+          ) : (
+            <>
+              {pager}
+              <div className="grid grid-cols-1 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12 desk:grid-cols-3">
+                {rules.rows.map((rule) => {
+                  const line = ruleMatchLine(rule);
+                  return (
+                    <RuleCard
+                      key={rule.id}
+                      name={ruleName(rule)}
+                      matchType={line.matchType}
+                      pattern={line.pattern}
+                      usedCount={rule.appliedCount}
+                      tone="success"
+                      mcc={rule.mcc ? `MCC ${rule.mcc}` : undefined}
+                      categories={[ruleCategoryLabel(rule)]}
+                      menuItems={[
+                        {
+                          label: 'Edit',
+                          onSelect: () => openDialog({ kind: 'edit', rule }),
+                        },
+                        {
+                          label: 'Find matches',
+                          onSelect: () => openDialog({ kind: 'matches', rule }),
+                        },
+                        {
+                          label: 'Delete',
+                          tone: 'danger',
+                          onSelect: () => setDialog({ kind: 'delete', rule }),
+                        },
+                      ]}
+                      onOpenDetail={() => openDialog({ kind: 'edit', rule })}
+                    />
+                  );
+                })}
+              </div>
+              {pager}
+            </>
+          )}
+        </section>
         <RuleJobsCard />
       </div>
 
-      {dialog?.kind === 'add' && RuleDialog ? <RuleDialog categoryList={categoryList} onClose={() => setDialog(null)} /> : null}
-      {dialog?.kind === 'edit' && RuleDialog ? <RuleDialog key={dialog.rule.id} rule={dialog.rule} categoryList={categoryList} onClose={() => setDialog(null)} /> : null}
-      {dialog?.kind === 'matches' && FindMatchesDialog ? <FindMatchesDialog key={dialog.rule.id} rule={dialog.rule} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'add' && RuleDialog ? (
+        <RuleDialog
+          categoryList={categoryList}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
+      {dialog?.kind === 'edit' && RuleDialog ? (
+        <RuleDialog
+          key={dialog.rule.id}
+          rule={dialog.rule}
+          categoryList={categoryList}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
+      {dialog?.kind === 'matches' && FindMatchesDialog ? (
+        <FindMatchesDialog
+          key={dialog.rule.id}
+          rule={dialog.rule}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
       <ConfirmDialog
         open={dialog?.kind === 'delete'}
         onOpenChange={(open) => {

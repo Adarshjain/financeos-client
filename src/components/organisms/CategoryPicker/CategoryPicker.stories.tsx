@@ -76,9 +76,3 @@ export const MoneyIn: Story = {
   globals: phone,
   args: { direction: 'IN', subtitle: 'Northwind Labs · ₹1,20,000.00', recent: [] },
 };
-
-/** The same grid as a centred dialog at 1440, with the current pick marked. */
-export const Desktop: Story = {
-  globals: { viewport: { value: 'desktop', isRotated: false } },
-  args: { value: { categoryKey: 'food', subcategoryKey: 'food.delivery' } },
-};

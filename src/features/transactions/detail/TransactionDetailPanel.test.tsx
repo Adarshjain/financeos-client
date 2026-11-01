@@ -40,6 +40,14 @@ vi.mock('@/features/lendings/useLendingMutations', () => ({
   useUnlinkLendingTransaction: () => ({ mutateAsync: lending.unlink }),
 }));
 
+const http = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
+const allTags = vi.hoisted(() => [
+  { id: 't1', name: 'Work' },
+  { id: 't2', name: 'Goa trip' },
+]);
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: allTags }) }));
+
 const accounts = [{ id: 'a1', name: 'HDFC Regalia Gold', type: 'credit_card' }] as Account[];
 
 const txn = (over: Partial<Transaction> = {}): Transaction =>
@@ -169,11 +177,51 @@ describe('TransactionDetailPanel', () => {
       expect(onSetCategory).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
     });
 
-    it('shows a category with no sub-category alone, and "None" for a transaction with no tags', () => {
+    it('shows a category with no sub-category alone, and only Add tag for a transaction with no tags', () => {
       line({ subcategory: null, tags: [] });
       expect(screen.getByText('Groceries')).toBeInTheDocument();
       expect(screen.queryByText(/·/)).toBeNull();
-      expect(screen.getByText('None')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add tag' })).toBeInTheDocument();
+      expect(screen.queryByText('None')).toBeNull();
+    });
+  });
+
+  describe('the Tags row', () => {
+    const tagBody = () => (http.PUT.mock.calls.at(-1)?.[1] as { body: { tagIds: string[] } }).body;
+
+    it('shows each tag as a chip with a ×, and Add tag', () => {
+      renderWithQuery(<TransactionDetailPanel {...props()} />);
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add tag' })).toBeInTheDocument();
+    });
+
+    it('removes a tag with its × and saves the rest', async () => {
+      http.PUT.mockResolvedValue({ data: txn({ tags: [] }) });
+      renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn({ tags: [{ id: 't1', name: 'Work' }, { id: 't2', name: 'Goa trip' }] })] })} />);
+      const chip = screen.getByText('Work').closest('button')!;
+      fireEvent.click(within(chip.parentElement as HTMLElement).getByRole('button', { name: /remove|clear|dismiss/i }));
+      await waitFor(() => expect(http.PUT).toHaveBeenCalled());
+      expect(http.PUT.mock.calls.at(-1)?.[0]).toBe('/api/v1/transactions/{id}');
+      expect(tagBody().tagIds).toEqual(['t2']);
+    });
+
+    it('opens the tag sheet from Add tag and saves the ticked tags when it closes', async () => {
+      http.PUT.mockResolvedValue({ data: txn() });
+      renderWithQuery(<TransactionDetailPanel {...props()} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Add tag' }));
+      fireEvent.click(await screen.findByText('Goa trip'));
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(http.PUT).toHaveBeenCalled());
+      expect(tagBody().tagIds).toEqual(['t1', 't2']);
+    });
+
+    it('saves nothing when the sheet closes unchanged', async () => {
+      renderWithQuery(<TransactionDetailPanel {...props()} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Add tag' }));
+      await screen.findByText('Goa trip');
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByText('Goa trip')).toBeNull());
+      expect(http.PUT).not.toHaveBeenCalled();
     });
   });
 

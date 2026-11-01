@@ -69,8 +69,14 @@ const matchPage = (rows: ReturnType<typeof match>[], total = rows.length, totalP
   },
 });
 
+const tagRows = [
+  { id: 'g1', name: 'Goa trip', transactionCount: 14 },
+  { id: 'g2', name: 'Tax saving', transactionCount: 0 },
+];
+
 function props(over: Partial<RulesScreenProps> = {}): RulesScreenProps {
   return {
+    tags: { rows: tagRows, totalElements: 2 },
     rules: { rows: rules, totalElements: 2, totalPages: 1 },
     state: DEFAULT_RULES_STATE,
     categoryList,
@@ -188,7 +194,8 @@ describe('RulesScreen', () => {
 
   it('the top bar + opens an empty Add rule form that saves with one category from the picker', async () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    fireEvent.click(screen.getAllByRole('button', { name: /Add/ })[0]);
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: /Add/ })[0], { button: 0, ctrlKey: false });
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'New rule' }));
     expect(await screen.findByRole('dialog', { name: 'Add rule' })).toBeTruthy();
     expect((screen.getByLabelText('Pattern') as HTMLInputElement).value).toBe('');
     fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
@@ -217,11 +224,13 @@ describe('RulesScreen', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     expect(await screen.findByText('Edit rule · Dunzo')).toBeTruthy();
     expect(screen.getByText(/Changing the pattern unlinks the 4 transactions/)).toBeTruthy();
-    expect(await screen.findByText('Matches now · 2', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await screen.findByText('Matches 2 past transactions', {}, { timeout: 3000 })).toBeTruthy();
+    expect(screen.queryByText(/HDFC Regalia ••7741/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'See them' }));
     expect(screen.getByText(/HDFC Regalia ••7741/)).toBeTruthy();
     expect(screen.getByText(/Paytm Wallet/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'DUNZO' } });
-    expect(await screen.findByText('Matches now · 1', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await screen.findByText('Matches 1 past transaction', {}, { timeout: 3000 })).toBeTruthy();
   });
 
   it('Find matches opens with nothing ticked; Select all takes every page and applies to all', async () => {
@@ -324,11 +333,151 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
-    expect(await screen.findByText('Matches now · 1')).toBeTruthy();
+    expect(await screen.findByText('Matches 1 past transaction')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'DUNZO NEW' } });
     expect(await screen.findByText('Finding matches…', {}, { timeout: 3000 })).toBeTruthy();
-    expect(screen.queryByText('Matches now · 1')).toBeNull();
+    expect(screen.queryByText('Matches 1 past transaction')).toBeNull();
     release(matchPage([match('b1'), match('b2')]));
-    expect(await screen.findByText('Matches now · 2', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await screen.findByText('Matches 2 past transactions', {}, { timeout: 3000 })).toBeTruthy();
+  });
+});
+
+describe('RulesScreen: the Tags tab', () => {
+  const openMenu = async (name: string) => {
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: /Add/ })[0], { button: 0, ctrlKey: false });
+    fireEvent.click(await screen.findByRole('menuitem', { name }));
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    http.GET.mockImplementation((url: string) =>
+      Promise.resolve({ data: url === '/api/v1/category-list' ? { categories: categoryList } : { content: [], totalElements: 0, totalPages: 0 } }),
+    );
+    http.POST.mockImplementation((url: string) => Promise.resolve(url === '/api/v1/rules/preview-matches' ? matchPage([]) : { data: {} }));
+  });
+
+  it('shows the tags section, then the category rules section', () => {
+    renderWithQuery(<RulesScreen {...props()} />);
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(headings[0]).toContain('Tags');
+    expect(headings[1]).toContain('Category rules');
+    expect(screen.getByText('Goa trip')).toBeTruthy();
+    expect(screen.getByText('14 transactions')).toBeTruthy();
+    expect(screen.getByText('No transactions')).toBeTruthy();
+    expect(screen.getByText('Dunzo')).toBeTruthy();
+  });
+
+  it('says No tags yet with a New tag action, and shows a load error for the tags alone', () => {
+    const { unmount } = renderWithQuery(<RulesScreen {...props({ tags: { rows: [], totalElements: 0 } })} />);
+    expect(screen.getByText('No tags yet')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New tag' })).toBeTruthy();
+    unmount();
+    renderWithQuery(<RulesScreen {...props({ tags: null, tagsReference: 'r-9' })} />);
+    expect(screen.getByText("Couldn't load tags")).toBeTruthy();
+    expect(screen.getByText('Dunzo')).toBeTruthy();
+  });
+
+  it('the Add menu adds a tag by name', async () => {
+    http.POST.mockResolvedValue({ data: { id: 'g3', name: 'Gifts' } });
+    renderWithQuery(<RulesScreen {...props()} />);
+    await openMenu('New tag');
+    fireEvent.change(await screen.findByLabelText('Name'), { target: { value: 'Gifts' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add tag' }));
+    await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/tags', { body: { name: 'Gifts' } }));
+    await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Tag added'));
+  });
+
+  it('Rename sends the new name', async () => {
+    http.PUT.mockResolvedValue({ data: { id: 'g1', name: 'Goa 2026' } });
+    renderWithQuery(<RulesScreen {...props()} />);
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'More options' })[0], { button: 0, ctrlKey: false });
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
+    const field = await screen.findByLabelText('Name');
+    expect((field as HTMLInputElement).value).toBe('Goa trip');
+    fireEvent.change(field, { target: { value: 'Goa 2026' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
+    await waitFor(() => expect(http.PUT).toHaveBeenCalledWith('/api/v1/tags/{id}', { params: { path: { id: 'g1' } }, body: { name: 'Goa 2026' } }));
+  });
+
+  it('Delete says what goes and what stays, and deletes only after the confirm', async () => {
+    http.DELETE.mockResolvedValue({});
+    renderWithQuery(<RulesScreen {...props()} />);
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'More options' })[0], { button: 0, ctrlKey: false });
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    expect(await screen.findByText('Deleting a tag removes it from its transactions. Nothing else changes.')).toBeTruthy();
+    expect(http.DELETE).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete tag' }));
+    await waitFor(() => expect(http.DELETE).toHaveBeenCalledWith('/api/v1/tags/{id}', { params: { path: { id: 'g1' } } }));
+  });
+
+  describe('the rule form', () => {
+    const openAdd = async () => {
+      renderWithQuery(<RulesScreen {...props()} />);
+      await openMenu('New rule');
+      await screen.findByRole('dialog', { name: 'Add rule' });
+    };
+    const fill = async () => {
+      fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ZOMATO' } });
+      fireEvent.click(screen.getByRole('combobox', { name: /Category/ }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Food' }));
+      fireEvent.click(await screen.findByText('Delivery'));
+    };
+
+    it('has no Merchant key field, and a category alone is allowed', async () => {
+      await openAdd();
+      expect(screen.queryByLabelText(/Merchant key/i)).toBeNull();
+      fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ZOMATO' } });
+      fireEvent.click(screen.getByRole('combobox', { name: /Category/ }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Food' }));
+      fireEvent.click(await screen.findByText('Others'));
+      fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
+      await waitFor(() =>
+        expect(http.POST).toHaveBeenCalledWith('/api/v1/rules', expect.objectContaining({ body: expect.objectContaining({ categoryKey: 'food', subcategoryKey: null }) })),
+      );
+    });
+
+    it('says how many past transactions match and how many set by hand stay, and lists them on See them', async () => {
+      http.POST.mockImplementation((url: string) =>
+        Promise.resolve(
+          url === '/api/v1/rules/preview-matches'
+            ? { data: { matchCount: 47, userSetCount: 3, matches: { content: [match('a1')], totalElements: 47, totalPages: 10, number: 0, size: 5 } } }
+            : { data: {} },
+        ),
+      );
+      await openAdd();
+      fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'SWIGGY' } });
+      expect(await screen.findByText('Matches 47 past transactions · 3 that were set by hand stay as they are', {}, { timeout: 3000 })).toBeTruthy();
+      expect(screen.queryByText('DUNZO DAILY a1')).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'See them' }));
+      expect(screen.getByText(/DUNZO DAILY a1/)).toBeTruthy();
+    });
+
+    it('Also update past matches runs the rule over every match after the save', async () => {
+      http.POST.mockImplementation((url: string) =>
+        Promise.resolve(
+          url === '/api/v1/rules'
+            ? { data: { id: 'new1' } }
+            : url === '/api/v1/rules/{id}/apply'
+              ? { data: { jobId: 'job1' } }
+              : matchPage([]),
+        ),
+      );
+      await openAdd();
+      await fill();
+      fireEvent.click(screen.getByText('Also update past matches'));
+      fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
+      await waitFor(() =>
+        expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/apply', { params: { path: { id: 'new1' } }, body: { all: true } }),
+      );
+    });
+
+    it('does not run the rule over past matches when the box is left alone', async () => {
+      http.POST.mockImplementation((url: string) => Promise.resolve(url === '/api/v1/rules' ? { data: { id: 'new1' } } : matchPage([])));
+      await openAdd();
+      await fill();
+      fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
+      await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Rule created'));
+      expect(http.POST).not.toHaveBeenCalledWith('/api/v1/rules/{id}/apply', expect.anything());
+    });
   });
 });

@@ -265,7 +265,7 @@ describe('Add transaction', () => {
     await user.click(await screen.findByText('Cabs'));
     expect(screen.getByRole('combobox', { name: /^Category/ })).toHaveTextContent('Transport · Cabs');
     await user.click(screen.getByRole('combobox', { name: /^Tags/ }));
-    await user.click(screen.getByRole('option', { name: 'Goa trip' }));
+    await user.click(await screen.findByText('Goa trip'));
     await user.click(screen.getByRole('button', { name: /Done/ }));
     fireEvent.change(screen.getByRole('textbox', { name: /^Instant discount/ }), { target: { value: '12.5' } });
     await user.click(screen.getByLabelText('Monitor transaction'));

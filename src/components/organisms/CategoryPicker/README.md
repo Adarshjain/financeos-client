@@ -30,4 +30,4 @@ The picker that sets a transaction's category (owner-approved "Bloom", 2026-11-0
 Dialog, TextField, Button, ListRow, FilterChip, Highlight, Icon, Text. The round icon tile is a gap in Dinero (no round icon exists): a `span` of tokens inside this organism.
 
 ## Variants
-Grid · Sub list · Search · Money in · Desktop (the stories).
+Grid · Sub list · Search · Money in (the stories; the desktop form is the same story at the 1440 viewport).
