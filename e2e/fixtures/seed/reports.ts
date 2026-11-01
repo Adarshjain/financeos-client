@@ -19,7 +19,6 @@ export type CreateDashboardRequest = components['schemas']['CreateDashboardReque
 export type UpdateDashboardRequest = components['schemas']['UpdateDashboardRequest'];
 export type DashboardResponse = components['schemas']['DashboardResponse'];
 export type DashboardWidget = components['schemas']['DashboardWidget'];
-export type DashboardSummary = components['schemas']['DashboardSummary'];
 
 let seedCounter = 0;
 

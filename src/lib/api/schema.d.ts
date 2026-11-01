@@ -436,22 +436,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/accounts/{id}/tab-counts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getTabCounts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/app-lock/disable": {
         parameters: {
             query?: never;
@@ -836,22 +820,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/chat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["syncChat"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/chat/conversations": {
         parameters: {
             query?: never;
@@ -1092,22 +1060,6 @@ export interface paths {
         put?: never;
         /** @description Records a settlement entry from an unrecorded bank transfer and links the transaction. 404 foreign/missing person or transaction; 409 transaction already referenced; 400 when it would not reduce the balance or exceeds it by more than the match tolerance. */
         post: operations["recordCounterpartySettlement"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/dashboard/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getSummary_2"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1428,38 +1380,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["previewEpfImportBatch"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/epf/import/commit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["commitEpfImport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/epf/import/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["previewEpfImport"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2421,38 +2341,6 @@ export interface paths {
         put?: never;
         post: operations["refreshPrices"];
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/investments/sips": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getSips"];
-        put?: never;
-        post: operations["createSip"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/investments/sips/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getSip"];
-        put: operations["updateSip"];
-        post?: never;
-        delete: operations["deleteSip"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4285,14 +4173,6 @@ export interface components {
             emis: components["schemas"]["Emi"][];
         };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
-        AccountTabCountsResponse: {
-            /** Format: int64 */
-            cards: number;
-            /** Format: int64 */
-            statements: number;
-            /** Format: int64 */
-            transactions: number;
-        };
         AppLockStatusResponse: {
             armed: boolean;
             /** Format: int32 */
@@ -4816,11 +4696,6 @@ export interface components {
             outOrder?: number | null;
             subs: components["schemas"]["Sub"][];
         };
-        CategoryBreakdown: {
-            amount: number;
-            category: string;
-            percentage: number;
-        };
         CategoryCount: {
             categoryKey: string;
             /** Format: int64 */
@@ -4853,13 +4728,6 @@ export interface components {
             content?: string;
             role?: string;
         };
-        ChatResponseDto: {
-            answer?: string | null;
-            blocks?: unknown;
-            clarify?: string | null;
-            clarifyOptions?: (string | null)[] | null;
-            traces: components["schemas"]["ChatTraceEntry"][];
-        };
         ChatStreamRequest: {
             /** Format: uuid */
             conversationId?: string;
@@ -4867,21 +4735,6 @@ export interface components {
             newConversation?: boolean;
             persisted?: boolean;
             retry?: boolean;
-        };
-        ChatTraceEntry: {
-            action: string;
-            detail: string;
-            /** Format: int64 */
-            durationMs: number;
-            error: string;
-            label: string;
-            resultPreview: string;
-            /** Format: int32 */
-            rowCount: number;
-            /** Format: int32 */
-            step: number;
-            success: boolean;
-            summary: string;
         };
         CleanupPreviewResponse: {
             /** Format: date */
@@ -5338,23 +5191,6 @@ export interface components {
             /** Format: uuid */
             transactionId: string;
         };
-        CreateSipRequest: {
-            active?: boolean;
-            amount: number;
-            /** Format: uuid */
-            brokerAccountId: string;
-            /** Format: int32 */
-            dayOfMonth?: number;
-            /** Format: date */
-            endDate?: string;
-            /** @enum {string} */
-            frequency: "weekly" | "monthly";
-            /** Format: uuid */
-            instrumentId: string;
-            notes?: string;
-            /** Format: date */
-            startDate: string;
-        };
         CreateTransactionLinkRequest: {
             alignRefundCategories?: boolean;
             members: components["schemas"]["MemberRef"][];
@@ -5482,15 +5318,6 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             widgets: components["schemas"]["WidgetResponse"][];
-        };
-        DashboardSummary: {
-            categoryBreakdown: components["schemas"]["CategoryBreakdown"][];
-            monthlyExpenses: number;
-            monthlyIncome: number;
-            netWorth: number;
-            status: string;
-            totalAssets: number;
-            totalLiabilities: number;
         };
         DashboardWidget: {
             builtinKey?: string | null;
@@ -8596,44 +8423,6 @@ export interface components {
             label: string;
             name: string;
         };
-        SipProgressDto: {
-            avgCost: number;
-            /** Format: int32 */
-            executedInstallments: number;
-            /** Format: int32 */
-            expectedInstallments: number;
-            investedSoFar: number;
-            /** Format: int32 */
-            missedInstallments: number;
-            /** Format: date */
-            nextDueDate?: string | null;
-            unitsAccumulated: number;
-        };
-        SipResponse: {
-            active: boolean;
-            amount: number;
-            /** Format: uuid */
-            brokerAccountId: string;
-            brokerName: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: int32 */
-            dayOfMonth?: number | null;
-            /** Format: date */
-            endDate?: string | null;
-            /** @enum {string} */
-            frequency: "weekly" | "monthly";
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            instrumentId: string;
-            instrumentName: string;
-            notes?: string | null;
-            progress: components["schemas"]["SipProgressDto"];
-            /** Format: date */
-            startDate: string;
-            symbol?: string | null;
-        };
         SkippedDividendMatch: {
             /** Format: uuid */
             dividendId: string;
@@ -9285,19 +9074,6 @@ export interface components {
             mcc?: string | null;
             merchantKey?: string;
             subcategoryKey?: string | null;
-        };
-        UpdateSipRequest: {
-            active: boolean;
-            amount: number;
-            /** Format: int32 */
-            dayOfMonth?: number;
-            /** Format: date */
-            endDate?: string;
-            /** @enum {string} */
-            frequency: "weekly" | "monthly";
-            notes?: string;
-            /** Format: date */
-            startDate: string;
         };
         UpdateTransactionRequest: {
             /** Format: uuid */
@@ -10450,37 +10226,6 @@ export interface operations {
             };
         };
     };
-    getTabCounts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AccountTabCountsResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     disable: {
         parameters: {
             query?: never;
@@ -11256,39 +11001,6 @@ export interface operations {
             };
         };
     };
-    syncChat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChatStreamRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ChatResponseDto"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     list_2: {
         parameters: {
             query?: never;
@@ -11920,35 +11632,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LendingResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getSummary_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DashboardSummary"];
                 };
             };
             /** @description Error response */
@@ -12878,82 +12561,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EpfImportBatchPreviewResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    commitEpfImport: {
-        parameters: {
-            query?: {
-                employerId?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: Blob;
-                };
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["EpfImportResultResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    previewEpfImport: {
-        parameters: {
-            query?: {
-                employerId?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: Blob;
-                };
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["EpfImportPreviewResponse"];
                 };
             };
             /** @description Error response */
@@ -15359,167 +14966,6 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["EnqueueResponse"];
                 };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getSips: {
-        parameters: {
-            query?: {
-                brokerAccountId?: string;
-                instrumentId?: string;
-                active?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SipResponse"][];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createSip: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateSipRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SipResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getSip: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SipResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    updateSip: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateSipRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SipResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteSip: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Error response */
             default: {

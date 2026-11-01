@@ -13,9 +13,6 @@ export type CreateInvestmentTransactionRequest = components['schemas']['CreateIn
 export type UpdateInvestmentTransactionRequest = components['schemas']['UpdateInvestmentTransactionRequest'];
 export type PositionsResponse = components['schemas']['PositionsResponse'];
 export type SummaryResponse = components['schemas']['SummaryResponse'];
-export type SipResponse = components['schemas']['SipResponse'];
-export type CreateSipRequest = components['schemas']['CreateSipRequest'];
-export type UpdateSipRequest = components['schemas']['UpdateSipRequest'];
 export type DividendResponse = components['schemas']['DividendResponse'];
 export type CreateDividendRequest = components['schemas']['CreateDividendRequest'];
 export type UpdateDividendRequest = components['schemas']['UpdateDividendRequest'];
@@ -144,19 +141,6 @@ export async function setManualPrice(
   if (res.error || !res.data || (res.response.status !== 200 && res.response.status !== 201)) {
     throw new Error(
       `setManualPrice failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
-    );
-  }
-  return res.data;
-}
-
-export async function createSip(
-  api: ApiClient,
-  body: CreateSipRequest
-): Promise<SipResponse> {
-  const res = await api.POST('/api/v1/investments/sips', { body });
-  if (res.error || !res.data || res.response.status !== 201) {
-    throw new Error(
-      `createSip failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
     );
   }
   return res.data;

@@ -317,17 +317,5 @@ test.describe('Dashboards API (@api)', () => {
       expectStatus(res, 404);
     });
 
-    test('GET /dashboard/summary returns skeleton stub (PRODUCT-GAP)', async ({ api }) => {
-      const res = await api.GET('/api/v1/dashboard/summary');
-      expectStatus(res, 200);
-      expect(res.data!.status).toBe('skeleton');
-      expect(res.data!.netWorth).toBe(0);
-      expect(res.data!.totalAssets).toBe(0);
-      expect(res.data!.totalLiabilities).toBe(0);
-      expect(res.data!.monthlyIncome).toBe(0);
-      expect(res.data!.monthlyExpenses).toBe(0);
-      expect(res.data!.categoryBreakdown).toEqual([]);
-    });
-
   });
 });

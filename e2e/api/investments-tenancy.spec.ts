@@ -4,7 +4,6 @@ import { createCreditCard } from '../fixtures/seed/accounts';
 import {
   createBroker,
   createFnoTrade,
-  createSip,
   generateIsin,
   generateYahooSymbol,
   listFnoTrades,
@@ -66,41 +65,6 @@ test.describe('Investment tenancy (@api)', () => {
     expect(mine).toHaveLength(1);
     expect(mine[0]).toMatchObject({ id: tradeA.id, notes: 'mine', brokerAccountId: brokerA.id });
     expect((await listFnoTrades(apiB)).trades).toHaveLength(0);
-  });
-
-  test('SIPs: another user cannot read my SIP or create one on my broker account', async ({ request }) => {
-    const { api } = await freshUser(request, 'tenancy-a');
-    const brokerA = await createBroker(api);
-    const inst = await instrument(api);
-    const sipA = await createSip(api, {
-      brokerAccountId: brokerA.id,
-      instrumentId: inst.id,
-      amount: 2500,
-      frequency: 'monthly',
-      dayOfMonth: 7,
-      startDate: '2026-01-07',
-    });
-    const { api: apiB } = await secondUser(request, 'sip-tenancy-b');
-
-    const read = await apiB.GET('/api/v1/investments/sips/{id}', { params: { path: { id: sipA.id } } });
-    expectStatus(read, 404);
-
-    const onMyAccount = await apiB.POST('/api/v1/investments/sips', {
-      body: {
-        brokerAccountId: brokerA.id,
-        instrumentId: inst.id,
-        amount: 1,
-        frequency: 'monthly',
-        dayOfMonth: 1,
-        startDate: '2026-01-01',
-      },
-    });
-    expectStatus(onMyAccount, 404);
-
-    // The owner still reads it.
-    const own = await api.GET('/api/v1/investments/sips/{id}', { params: { path: { id: sipA.id } } });
-    expectStatus(own, 200);
-    expect(own.data?.amount).toBe(2500);
   });
 
   test('manual trades: another user cannot file a trade on my broker account', async ({ request }) => {
