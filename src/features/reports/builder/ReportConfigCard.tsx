@@ -20,6 +20,8 @@ export interface ReportConfigCardProps {
   allDatasources: ReportCatalog;
   catalog: DatasourceCatalog;
   dynamicOptions: DynamicOptions;
+  /** The field being picked in the Add filter popover (null when closed), so its dynamic values load. */
+  onFilterDraftFieldChange: (field: string | null) => void;
   state: BuilderState;
   dispatch: React.Dispatch<BuilderAction>;
   issues: Issues;
@@ -28,7 +30,7 @@ export interface ReportConfigCardProps {
 }
 
 /** The left column of the editor: name, description and datasource, then a section each for the format, its options and the filters. */
-export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, state, dispatch, issues, nameError }: ReportConfigCardProps) {
+export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, onFilterDraftFieldChange, state, dispatch, issues, nameError }: ReportConfigCardProps) {
   // Format and datasource are fixed once the report is saved.
   const fixed = state.mode === 'edit';
   const section = { catalog, state, dispatch, issues };
@@ -82,6 +84,7 @@ export function ReportConfigCard({ allDatasources, catalog, dynamicOptions, stat
       <FilterChips
         catalog={catalog}
         dynamicOptions={dynamicOptions}
+        onDraftFieldChange={onFilterDraftFieldChange}
         filters={state.filters}
         error={issues.filters}
         onAdd={(value) => dispatch({ type: 'ADD_FILTER', value })}

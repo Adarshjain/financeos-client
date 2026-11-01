@@ -72,6 +72,8 @@ function FilterForm({
 interface FilterChipsProps {
   catalog: DatasourceCatalog;
   dynamicOptions: DynamicOptions;
+  /** Reports the field of the new filter being edited (null when the popover closes). */
+  onDraftFieldChange?: (field: string | null) => void;
   filters: FilterClause[];
   error?: string;
   onAdd: (clause: FilterClause) => void;
@@ -87,9 +89,14 @@ function blankClause(catalog: DatasourceCatalog): FilterClause | null {
 }
 
 /** The filters as chips: each is removable and opens its editor in a dropdown; "Add filter" opens the same editor for a new one. */
-export function FilterChips({ catalog, dynamicOptions, filters, error, onAdd, onUpdate, onRemove }: FilterChipsProps) {
+export function FilterChips({ catalog, dynamicOptions, onDraftFieldChange, filters, error, onAdd, onUpdate, onRemove }: FilterChipsProps) {
   const [adding, setAdding] = React.useState(false);
   const [draft, setDraft] = React.useState<FilterClause | null>(null);
+
+  const draftField = adding ? (draft?.field ?? null) : null;
+  React.useEffect(() => {
+    onDraftFieldChange?.(draftField);
+  }, [draftField, onDraftFieldChange]);
 
   const openAdd = (open: boolean) => {
     setAdding(open);
