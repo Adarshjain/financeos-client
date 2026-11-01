@@ -11,7 +11,7 @@ import type { ReviewSummary } from '@/features/transactions/review/useApproveTra
 import { batchDeleteTransactions, mergeTransactions } from '@/features/transactions/transactionActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import { invalidateMoneyQueries } from '@/lib/query/invalidate';
+import { invalidateMoneyQueries, invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { MergeTransactionsResponse,Transaction } from '@/lib/transaction.types';
 
@@ -36,6 +36,7 @@ export function useDeleteTransactions() {
     mutationFn: (ids: string[]) => unwrapAction(batchDeleteTransactions(ids)),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      void invalidateUncategorizedQueries(queryClient);
       void queryClient.invalidateQueries({ queryKey: keys.transactions.needsReviewCount() });
       void invalidateMoneyQueries(queryClient);
       router.refresh();
@@ -79,6 +80,7 @@ export function useMergeTransactions(onMerged: () => void) {
     onSuccess: (data) => {
       showToast(mergedMessage((data.remainingReasons ?? []).map(reviewReasonLabel)), { tone: 'success' });
       void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      void invalidateUncategorizedQueries(queryClient);
       void invalidateMoneyQueries(queryClient);
       router.refresh();
       onMerged();

@@ -36,7 +36,8 @@ export interface TagSheetProps {
   onCreate?: (name: string) => void;
   creating?: boolean;
   /** Manage shows when rename or delete is given: a list of the tags with Rename and Delete. */
-  onRename?: (tag: TagSheetTag, name: string) => void;
+  /** Renaming. A promise that rejects keeps the rename dialog open and shows the error's message in it; anything else closes it. */
+  onRename?: (tag: TagSheetTag, name: string) => void | Promise<unknown>;
   onDelete?: (tag: TagSheetTag) => void;
   /** A rename or delete is being saved. */
   managing?: boolean;
@@ -78,6 +79,8 @@ export function TagSheet({
   const [query, setQuery] = React.useState(initialQuery);
   const [manage, setManage] = React.useState(initialManaging);
   const [renaming, setRenaming] = React.useState<TagSheetTag | null>(null);
+  const [renameError, setRenameError] = React.useState<string | undefined>();
+  const [renameBusy, setRenameBusy] = React.useState(false);
   const [deleting, setDeleting] = React.useState<TagSheetTag | null>(null);
   const [wasOpen, setWasOpen] = React.useState(open);
   // Each time it opens it starts at the plain list again.
@@ -173,14 +176,28 @@ export function TagSheet({
       </Dialog>
       <TagNameDialog
         open={renaming !== null}
-        onOpenChange={(next) => !next && setRenaming(null)}
+        onOpenChange={(next) => {
+          if (next || renameBusy) return;
+          setRenaming(null);
+          setRenameError(undefined);
+        }}
         title="Rename tag"
         initialName={renaming?.name}
         submitLabel="Save name"
-        loading={managing}
-        onSubmit={(name) => {
-          if (renaming) onRename?.(renaming, name);
-          setRenaming(null);
+        loading={managing || renameBusy}
+        error={renameError}
+        onSubmit={async (name) => {
+          if (!renaming) return;
+          setRenameError(undefined);
+          setRenameBusy(true);
+          try {
+            await onRename?.(renaming, name);
+            setRenaming(null);
+          } catch (e) {
+            setRenameError(e instanceof Error && e.message ? e.message : "Couldn't rename the tag. Try again.");
+          } finally {
+            setRenameBusy(false);
+          }
         }}
       />
       <ConfirmDialog

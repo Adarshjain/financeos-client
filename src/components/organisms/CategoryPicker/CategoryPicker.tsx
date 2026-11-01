@@ -14,7 +14,7 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import {
   categoriesForDirection,
   findCategory,
-  type MoneyDirection,
+  type PickerDirection,
   pickLabel,
   subsForDirection,
 } from '@/lib/categoryList';
@@ -24,10 +24,10 @@ import { type CategorySearchResult, searchCategories } from '@/lib/categorySearc
 export interface CategoryPickerProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** The fixed category list; the picker shows the part that fits `direction`. */
+  /** The fixed category list; the picker shows the part that fits `direction`: money out (default), money in, or `ANY` for the out list then the in-only categories. */
   categories: CategoryDef[];
   /** Money out (a debit) or money in (a credit). */
-  direction?: MoneyDirection;
+  direction?: PickerDirection;
   /** The transaction's current category and sub-category: marked in the grid, ticked in its list. */
   value?: CategoryPick | null;
   /** A pick saves at once: there is no Use button. The picker closes itself after it. */

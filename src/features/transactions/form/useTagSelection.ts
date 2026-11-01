@@ -9,6 +9,7 @@ import { keys } from '@/lib/query/keys';
 import type { Tag } from '@/lib/tags.types';
 import { toastError } from '@/lib/toastError';
 
+import { isTagNameTaken } from '../tags/useTagMutations';
 import { createTag as createTagAction } from './tagActions';
 
 interface UseTagSelectionProps {
@@ -44,7 +45,8 @@ export function useTagSelection({ tags, initialSelectedTags }: UseTagSelectionPr
       setLocalTags((prev) => [...prev, created]);
       setSelectedTags((prev) => [...prev, created]);
     } catch (err) {
-      toastError(err, "Couldn't add the tag. Try again.");
+      if (isTagNameTaken(err)) notify.error('A tag with this name already exists.');
+      else toastError(err, "Couldn't add the tag. Try again.");
     }
   };
 

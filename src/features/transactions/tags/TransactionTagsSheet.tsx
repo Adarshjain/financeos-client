@@ -10,7 +10,7 @@ import type { Tag } from '@/lib/tags.types';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { sameIds, transactionsWord } from './tagsModel';
-import { useTagMutations } from './useTagMutations';
+import { tagErrorMessage, useTagMutations } from './useTagMutations';
 import { useTransactionTags } from './useTransactionTags';
 
 const NO_TAGS: Tag[] = [];
@@ -37,6 +37,7 @@ export function TransactionTagsSheet({ transactions, mode = 'replace', accounts,
   // Tags made in the sheet are ticked before the tag list has been read again.
   const created = React.useRef<Tag[]>([]);
   const mutations = useTagMutations({
+    quietRename: true,
     onCreated: (tag) => {
       created.current.push(tag);
       setTicked((now) => [...now, tag.id]);
@@ -73,7 +74,13 @@ export function TransactionTagsSheet({ transactions, mode = 'replace', accounts,
       subtitle={subtitle}
       onCreate={(name) => mutations.create.mutate(name)}
       creating={mutations.create.isPending}
-      onRename={(tag, name) => mutations.rename.mutate({ tag, name })}
+      onRename={async (tag, name) => {
+        try {
+          await mutations.rename.mutateAsync({ tag, name });
+        } catch (e) {
+          throw new Error(tagErrorMessage(e, "Couldn't rename the tag. Try again."));
+        }
+      }}
       onDelete={(tag) => mutations.remove.mutate(tag)}
       managing={mutations.rename.isPending || mutations.remove.isPending}
     />

@@ -285,15 +285,17 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Old links: `category` used to carry a tag (its id or its name). It now carries a category key, so each value that is
- * not a key of the category list becomes a `tag` id (a value no tag matches is dropped). Everything else is kept.
+ * not a key of the category list becomes a `tag` id (a value no tag matches is dropped). Everything else is kept. When the
+ * category list or the tags are null (could not be loaded) nothing is remapped: a valid key is never dropped.
  */
 export function remapLegacyCategoryParams(
   params: RawSearchParams,
-  categoryKeys: readonly string[],
-  tags: readonly { id: string; name: string }[],
+  categoryKeys: readonly string[] | null,
+  tags: readonly { id: string; name: string }[] | null,
 ): RawSearchParams {
   const values = many(params.category);
-  if (values.length === 0) return params;
+  // A list that failed to load cannot say what is a key and what is a tag: leave the address as it is, never drop a valid key.
+  if (values.length === 0 || categoryKeys === null || tags === null) return params;
   const keep: string[] = [];
   const moved: string[] = [];
   for (const value of values) {

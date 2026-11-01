@@ -19,7 +19,7 @@ The picker that sets a transaction's category (owner-approved "Bloom", 2026-11-0
 ## Props
 - `open`, `onOpenChange`: the Dialog's.
 - `categories: CategoryDef[]`: the fixed list (GET /category-list), whole; the picker picks the part for `direction`.
-- `direction?: 'OUT' | 'IN'`: money out (default) or in.
+- `direction?: 'OUT' | 'IN' | 'ANY'`: money out (default) or in; `ANY` is the money-out list in its order, then the categories only money in has, in theirs (the rule form).
 - `value?: CategoryPick | null`: `{ categoryKey, subcategoryKey | null }`, the current pick.
 - `onPick?: (pick: CategoryPick) => void`: a row was tapped.
 - `recent?: CategoryPick[]`: recent one-tap picks (empty until their data is wired).

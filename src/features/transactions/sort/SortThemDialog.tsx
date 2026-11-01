@@ -30,6 +30,7 @@ import {
 } from '@/lib/query/actions/uncategorizedActions';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
+import { invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { UncategorizedGroup } from '@/lib/uncategorized.types';
 
@@ -118,6 +119,14 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
   const [picking, setPicking] = React.useState(false);
   const [picked, setPicked] = React.useState<CategoryPick | null>(null);
   const [saving, setSaving] = React.useState(false);
+  // Save runs a while: nothing may set state after the dialog is gone.
+  const mounted = React.useRef(true);
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const direction = openGroup?.direction === 'IN' ? 'IN' : 'OUT';
   const recent = useCategoryRecent(direction, picking);
 
@@ -125,11 +134,16 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
     queryKey: keys.transactions.uncategorizedGroups(page, SORT_PAGE_SIZE),
     queryFn: () => unwrapAction(loadUncategorizedGroups(page, SORT_PAGE_SIZE)),
     placeholderData: keepPreviousData,
+    // Reopening after categorising elsewhere shows fresh rows.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   // The card carries no number: the title and the one-offs count come from the summary read when the dialog opens.
   const summary = useQuery({
     queryKey: keys.transactions.uncategorizedSummary(),
     queryFn: () => unwrapAction(loadUncategorizedSummary()),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   const count = summary.data?.count;
   const groupCount = summary.data?.groupCount;
@@ -138,6 +152,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
   const oneOffs = data?.content.filter((g) => g.oneOff) ?? [];
 
   const save = async () => {
+    if (saving) return;
     setSaving(true);
     let updated = 0;
     let skipped = 0;
@@ -162,12 +177,20 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
         showToast(getErrorMessage(e, "Couldn't set the categories. Try again."), { tone: 'danger' });
       }
     }
-    setSaving(false);
     if (updated > 0 || skipped > 0) showToast(savedWords(updated, skipped));
     void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+    void invalidateUncategorizedQueries(queryClient);
     router.refresh();
+    if (!mounted.current) return;
+    setSaving(false);
+    // A group that failed stays staged, and visible on its row, for another try.
     if (Object.keys(failed).length === 0) onClose();
     else setStaged(failed);
+  };
+
+  /** Nothing closes the dialog while Save runs: Later, ×, Escape, the backdrop and a drag down all wait. */
+  const close = () => {
+    if (!saving) onClose();
   };
 
   const pager = data ? (
@@ -184,9 +207,11 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
 
   return (
     <>
-      <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+      <Dialog open onOpenChange={(open) => (open ? undefined : close())}>
         <Dialog.Content
           size="md"
+          dismissible={!saving}
+          showClose={!saving}
           title={count === undefined ? 'Some transactions need a category' : `${formatCount(count)} ${count === 1 ? 'needs' : 'need'} a category`}
           description={
             <>
@@ -196,7 +221,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
               </span>
             </>
           }
-          secondary={{ label: 'Later', onSelect: onClose }}
+          secondary={{ label: 'Later', onSelect: close, disabled: saving }}
           primary={{
             label: saveLabel(stagedGroups.length),
             disabled: stagedGroups.length === 0,
@@ -204,7 +229,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
             onSelect: () => void save(),
           }}
         >
-          <Dialog.Body>
+          <Dialog.Body inert={saving}>
             {pager}
             {isPending || summary.isPending ? (
               <Card>
@@ -223,7 +248,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
             ) : (
               <Card>
                 {groups.map((g) => (
-                  <GroupRow key={g.groupKey} group={g} staged={staged[g.groupKey]} categories={list} onOpen={() => setOpenGroup(g)} />
+                  <GroupRow key={g.groupKey} group={g} staged={staged[g.groupKey]} categories={list} onOpen={() => !saving && setOpenGroup(g)} />
                 ))}
                 {oneOffs.length > 0 ? (
                   <SectionHeader variant="band" sticky={false} meta={groupCount === undefined ? undefined : Math.max(0, data.totalElements - groupCount)}>
@@ -231,7 +256,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
                   </SectionHeader>
                 ) : null}
                 {oneOffs.map((g) => (
-                  <GroupRow key={g.groupKey} group={g} staged={staged[g.groupKey]} categories={list} onOpen={() => setOpenGroup(g)} />
+                  <GroupRow key={g.groupKey} group={g} staged={staged[g.groupKey]} categories={list} onOpen={() => !saving && setOpenGroup(g)} />
                 ))}
               </Card>
             )}

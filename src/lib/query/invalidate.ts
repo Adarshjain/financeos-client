@@ -25,6 +25,20 @@ export function invalidateLendingQueries(qc: QueryClient): Promise<void> {
   ]).then(() => undefined);
 }
 
+/**
+ * Invalidate what a category change (one row, a bulk action, Sort them) can move in Sort them and the picker: the
+ * uncategorized summary, every page of the groups and of their transactions, and the recent picks. Reopening Sort them
+ * after categorising elsewhere then shows fresh counts and rows.
+ */
+export function invalidateUncategorizedQueries(qc: QueryClient): Promise<void> {
+  return Promise.all([
+    qc.invalidateQueries({ queryKey: keys.transactions.uncategorizedSummary() }),
+    qc.invalidateQueries({ queryKey: keys.transactions.uncategorizedGroupsAll() }),
+    qc.invalidateQueries({ queryKey: keys.transactions.uncategorizedGroupAll() }),
+    qc.invalidateQueries({ queryKey: keys.transactions.categoryRecentAll() }),
+  ]).then(() => undefined);
+}
+
 // --- Dashboard widgets (cards & spending group) ---
 /**
  * Invalidate what a change to money movement (a transaction added, edited, deleted,
