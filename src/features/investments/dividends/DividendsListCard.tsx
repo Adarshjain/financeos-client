@@ -47,7 +47,13 @@ const ch = createDataTableColumnHelper<DividendListRow>();
 
 /** The word of a row's receipt status. */
 function ReceiptCell({ row }: { row: DividendListRow }) {
-  return row.receipt ? <StatusWord tone={row.receipt.tone}>{row.receipt.label}</StatusWord> : null;
+  if (!row.receipt && !row.auto) return null;
+  return (
+    <>
+      {row.receipt ? <StatusWord tone={row.receipt.tone}>{row.receipt.label}</StatusWord> : null}
+      {row.auto ? <StatusWord tone="neutral">Auto</StatusWord> : null}
+    </>
+  );
 }
 
 const money = (value: string, tone?: 'ink-3') => (

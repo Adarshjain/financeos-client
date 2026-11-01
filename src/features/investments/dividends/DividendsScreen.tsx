@@ -11,7 +11,7 @@ import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Dividend } from '@/lib/types';
 
 import type { DividendPrefill } from './DividendFormDialog';
-import { DividendsHero } from './DividendsFigures';
+import { DividendsHero, ReceiptTiles } from './DividendsFigures';
 import { DividendsListCard } from './DividendsListCard';
 import {
   type ByInstrumentRow,
@@ -20,6 +20,7 @@ import {
   dividendsUrl,
   type DividendsUrlState,
   type FyOption,
+  type ReceiptTile,
   suggestionNote,
   suggestionRow,
   unrecordedBanner,
@@ -33,6 +34,8 @@ const loadReconcileDialog = () => import('./DividendReconcileDialog').then((m) =
 export interface DividendsScreenProps {
   state: DividendsUrlState;
   figures: FiguresModel;
+  /** Received, Awaiting and Overdue; null or absent when the receipts could not be read. */
+  tiles?: ReceiptTile[] | null;
   /** The page's payouts, and the same rows ready to draw. */
   dividends: Dividend[];
   rows: DividendListRow[];
@@ -53,6 +56,7 @@ export interface DividendsScreenProps {
 export function DividendsScreen({
   state,
   figures,
+  tiles,
   dividends,
   rows,
   totalElements,
@@ -91,6 +95,7 @@ export function DividendsScreen({
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <DividendsHero figures={figures} />
+      {tiles ? <ReceiptTiles tiles={tiles} /> : null}
       {banner ? (
         <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', onSelect: () => void runReconcile(() => setReconciling(true)) }}>
           {banner.detail}

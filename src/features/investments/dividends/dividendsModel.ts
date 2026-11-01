@@ -239,6 +239,36 @@ export function dividendsFigures(
   };
 }
 
+export interface ReceiptTile {
+  label: 'Received' | 'Awaiting' | 'Overdue';
+  /** The amount: received money, or the net still expected. */
+  value: string;
+  /** "2 payouts", plus "incl. 1 untracked" on Received. */
+  context: string;
+}
+
+const payouts = (n: number) => `${n} ${n === 1 ? 'payout' : 'payouts'}`;
+
+/** The Received, Awaiting and Overdue tiles from the receipt buckets (Received counts untracked receipts too); null when the buckets could not be read. */
+export function receiptTiles(receipts: DividendReceiptSummary | null): ReceiptTile[] | null {
+  if (!receipts) return null;
+  const received = bucket(receipts, 'received');
+  const untracked = bucket(receipts, 'received_untracked');
+  const awaiting = bucket(receipts, 'awaiting');
+  const overdue = bucket(receipts, 'overdue');
+  const receivedCount = (received?.count ?? 0) + (untracked?.count ?? 0);
+  const untrackedNote = untrackedLine(untracked?.count ?? 0);
+  return [
+    {
+      label: 'Received',
+      value: formatMoney((received?.receivedAmount ?? 0) + (untracked?.receivedAmount ?? 0)),
+      context: [payouts(receivedCount), untrackedNote].filter(Boolean).join(' · '),
+    },
+    { label: 'Awaiting', value: formatMoney(awaiting?.expectedNet ?? 0), context: payouts(awaiting?.count ?? 0) },
+    { label: 'Overdue', value: formatMoney(overdue?.expectedNet ?? 0), context: payouts(overdue?.count ?? 0) },
+  ];
+}
+
 // ---- The list -------------------------------------------------------------------
 
 /** "₹11", "₹5.50", "₹7.5025": a per-unit figure with the decimals it needs (at least two when not whole). */
@@ -289,6 +319,8 @@ export interface DividendListRow {
   tds: string;
   net: string;
   receipt: ReceiptWord | null;
+  /** True for a payout the server detected from Yahoo (source "suggested"): it carries an "Auto" word. */
+  auto: boolean;
   /** "₹11 × 10", or null when the payout has no per-unit amount. */
   unitsLine: string | null;
   /** "TDS ₹88", or null when none was held. */
@@ -317,6 +349,7 @@ export function dividendListRow(d: Dividend): DividendListRow {
     tds: formatMoney(tds, { decimals: 'exact', symbol: false }),
     net: formatMoney(gross - tds, { decimals: 'exact', symbol: false }),
     receipt: receiptWord(d.receiptStatus),
+    auto: d.source === 'suggested',
     unitsLine: perUnit && units ? `${perUnitText(perUnit)} × ${formatQuantity(units)}` : null,
     tdsLine: tds > 0 ? `TDS ${formatMoney(tds, { decimals: 'exact' })}` : null,
     account: d.transaction?.accountName ?? null,

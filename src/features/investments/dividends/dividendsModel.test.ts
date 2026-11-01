@@ -20,6 +20,7 @@ import {
   parseDividendsUrl,
   perUnitText,
   receiptNoteOf,
+  receiptTiles,
   receiptVariance,
   receiptWord,
   suggestionRow,
@@ -268,5 +269,37 @@ describe('the cards', () => {
     expect(toDecimal('7.50256', 4)).toBe(7.5026);
     expect(toDecimal('', 2)).toBeUndefined();
     expect(toDecimal('abc', 2)).toBeUndefined();
+  });
+});
+
+describe('receiptTiles', () => {
+  it('reads Received, Awaiting and Overdue from the buckets', () => {
+    expect(receiptTiles(receipts())).toEqual([
+      { label: 'Received', value: '₹1,980', context: '2 payouts' },
+      { label: 'Awaiting', value: '₹110', context: '1 payout' },
+      { label: 'Overdue', value: '₹1,350', context: '1 payout' },
+    ]);
+  });
+
+  it('counts untracked receipts into Received and says so', () => {
+    const tiles = receiptTiles(receipts({ buckets: [
+      { status: 'received', count: 1, expectedNet: 100, receivedAmount: 100 },
+      { status: 'received_untracked', count: 2, expectedNet: 50, receivedAmount: 50 },
+    ] }));
+    expect(tiles?.[0]).toEqual({ label: 'Received', value: '₹150', context: '3 payouts · incl. 2 untracked' });
+    expect(tiles?.[1]).toEqual({ label: 'Awaiting', value: '₹0', context: '0 payouts' });
+  });
+
+  it('is null when the receipts could not be read', () => {
+    expect(receiptTiles(null)).toBeNull();
+  });
+});
+
+describe('dividendListRow auto', () => {
+  it('marks only Yahoo-detected (suggested) payouts', () => {
+    expect(dividendListRow(dividend({ source: 'suggested' })).auto).toBe(true);
+    expect(dividendListRow(dividend({ source: 'manual' })).auto).toBe(false);
+    expect(dividendListRow(dividend({ source: 'import' })).auto).toBe(false);
+    expect(dividendListRow(dividend({ source: undefined })).auto).toBe(false);
   });
 });

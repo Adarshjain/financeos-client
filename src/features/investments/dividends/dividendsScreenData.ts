@@ -23,6 +23,7 @@ import {
   listTotals,
   notReceivedCounts,
   type NotReceivedStatus,
+  receiptTiles,
   totalsLine,
 } from './dividendsModel';
 import type { DividendsScreenProps } from './DividendsScreen';
@@ -85,6 +86,7 @@ export async function loadDividendsScreen(state: DividendsUrlState): Promise<Loa
     data: {
       state,
       figures,
+      tiles: receiptTiles(receipts),
       dividends: page.content,
       rows: page.content.map(dividendListRow),
       totalElements: page.totalElements,
