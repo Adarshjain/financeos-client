@@ -285,6 +285,7 @@ export interface SpendMonthsDataset {
 /**
  * Two calendar months of transactions on one bank account (opening balance 10000):
  *
+ * (tags Food/Travel; fixed categories food/transport)
  * current month (fixedMonth): Swiggy −700 Food (03), Zomato −700 Food (08), Uber −300 Travel (12),
  *   Bus −100 Travel (18), Salary +5000 (25)
  * previous month: Cafe −50 Food (04), Tea −50 Food (09), Taxi −400 Travel (21)
@@ -300,8 +301,10 @@ export async function seedSpendMonths(api: ApiClient): Promise<SpendMonthsDatase
   const food = await createCategory(api, `VUD Food ${tag}`);
   const travel = await createCategory(api, `VUD Travel ${tag}`);
   const ids: Record<string, string> = {};
+  // The tag is the user's own label; the fixed category is chosen explicitly so no arrival rule decides it.
   const add = async (description: string, amount: number, date: string, tagIds: string[] = []) => {
-    const t = await createTransaction(api, account.id, { amount, date, description, tagIds });
+    const categoryKey = tagIds[0] === food.id ? 'food' : tagIds[0] === travel.id ? 'transport' : undefined;
+    const t = await createTransaction(api, account.id, { amount, date, description, tagIds, categoryKey });
     ids[description] = t.id;
   };
   await add('Swiggy', -700, dayOf(current, 3), [food.id]);

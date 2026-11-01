@@ -332,8 +332,8 @@ for (const viewport of VIEWPORTS) {
       const report = await createReport(
         api,
         (type === 'bar'
-          ? { name, type: 'CHART', datasource: 'transactions', definition: { chartType: 'bar', dimension: { field: 'category' }, measure, filters } }
-          : { name, type: 'TABLE', datasource: 'transactions', definition: { mode: 'aggregated', rows: [{ field: 'category' }], columns: [], measures: [measure], filters } }) as never,
+          ? { name, type: 'CHART', datasource: 'transactions', definition: { chartType: 'bar', dimension: { field: 'tag' }, measure, filters } }
+          : { name, type: 'TABLE', datasource: 'transactions', definition: { mode: 'aggregated', rows: [{ field: 'tag' }], columns: [], measures: [measure], filters } }) as never,
       );
       const dashboard = await createDashboard(api, { name: `Ds split board ${tag}`, isDefault: false, widgets: [widget(report.id, { x: 0, y: 0, w: 100, h: 24 }, null, 'wr')] });
       return { dashboard, name, categories: [`Split Food ${tag}`, `Split Fuel ${tag}`], rows: { [`Split Food ${tag}`]: `Split food row ${tag}`, [`Split Fuel ${tag}`]: `Split fuel row ${tag}` } as Record<string, string> };

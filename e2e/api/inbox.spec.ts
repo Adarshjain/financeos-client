@@ -227,16 +227,29 @@ test.describe('Inbox API: summary rows (@api)', () => {
     opening: 50000.0,
     rows: [
       { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
-      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
       { date: '2026-04-12', description: 'UBER TRIP MUMBAI AIRPORT', debit: 1250.0 },
+    ],
+  };
+
+  // Rows of one statement are never compared, so an overlapping statement repeats the Blue Tokai row to
+  // make both copies DUPLICATE_SUSPECT (the only reason a statement row waits for review now).
+  const overlapSpec: BankSpec = {
+    ...reviewSpec,
+    periodStart: '2026-04-05',
+    periodEnd: '2026-05-04',
+    rows: [
+      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
+      { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
     ],
   };
 
   test('the review queue is one needs_look summary row: dismissable, never snoozable, counted in the badge', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-review');
     const account = await createBankAccount(api, { name: 'Inbox Review Account' });
-    const pdf = await genBankPdf(reviewSpec);
-    await uploadAndIngest(api, account.id, [{ filename: 'inbox-review.pdf', buffer: pdf }]);
+    await uploadAndIngest(api, account.id, [
+      { filename: 'inbox-review.pdf', buffer: await genBankPdf(reviewSpec) },
+      { filename: 'inbox-review-overlap.pdf', buffer: await genBankPdf(overlapSpec) },
+    ]);
 
     const before = await getInbox(api);
     const row = inboxRow(before, 'review');

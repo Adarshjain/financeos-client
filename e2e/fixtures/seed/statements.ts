@@ -1,6 +1,7 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient, WaitForJobOptions } from '../api';
 import { expectStatus, waitForJob } from '../api';
+import { genBankPdf } from '../gen/statements';
 
 export type StatementDetailResponse =
   components['schemas']['StatementDetailResponse'];
@@ -103,4 +104,27 @@ export async function getAccountStatements(
   });
   expectStatus(res, 200);
   return res.data!;
+}
+
+let slowPdf: Promise<Buffer> | undefined;
+
+/**
+ * A statement big enough that its ingest job stays RUNNING for a few seconds (about 4s for 1000 rows), so a spec can see
+ * the job active, cancel it mid-run, or keep the worker's slots busy. Ingest no longer calls the LLM, so the old scripted
+ * "categorize" delay cannot hold a job any more. Built once per worker.
+ */
+export function genSlowStatementPdf(rows = 1000): Promise<Buffer> {
+  slowPdf ??= genBankPdf({
+    bank: 'HDFC Bank',
+    accountLast10: '1111222233',
+    periodStart: '2026-04-01',
+    periodEnd: '2026-04-30',
+    opening: 1_000_000,
+    rows: Array.from({ length: rows }, (_, i) => ({
+      date: `2026-04-${String((i % 27) + 1).padStart(2, '0')}`,
+      description: `ZXQV SLOW ROW ${i} TRADERS`,
+      debit: 10 + i,
+    })),
+  });
+  return slowPdf;
 }
