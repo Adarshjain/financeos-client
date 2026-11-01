@@ -20,18 +20,14 @@ const publicPaths = [
   // `/handbook` is the static system reference (public/handbook/*), deliberately
   // readable without a session.
   '/handbook',
-  // The Legacy app's own public pages (Dinero's are the plain ones above).
-  '/legacy/login',
-  '/legacy/signup',
-  '/legacy/offline',
 ];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // Temporary redirects, before the auth check. Old Dinero URLs (bookmarks, push links): /ds/<rest> is /<rest>
-  // (/ds itself stays the review index). Legacy paths that moved go to their Dinero page, Legacy-only pages
-  // to /legacy.
+  // Temporary redirects, before the auth check. Old URLs (bookmarks, push links): /ds/<rest> is /<rest>
+  // (/ds itself stays the review index); paths that moved go to the page that replaced them. /legacy/* is
+  // not handled here: it is no page, so it 404s.
   const redirectTo = pathname.startsWith('/ds/') ? `/${pathname.slice(4).replace(/^\/+/, '')}${search}` : rootRedirectFor(pathname, search);
   if (redirectTo) {
     return NextResponse.redirect(new URL(redirectTo, request.url));

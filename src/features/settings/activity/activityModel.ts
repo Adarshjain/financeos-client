@@ -38,7 +38,7 @@ export function activityUrl(
   overrides: { newStatus?: string; newType?: string; newPage?: number; job?: string | null } = {},
 ): string {
   const { job, ...rest } = overrides;
-  const base = buildJobsFilterUrl(current, rest, { base: ACTIVITY_HREF, defaultSize: DEFAULT_PAGE_SIZE, oneBasedPage: true });
+  const base = buildJobsFilterUrl(current, rest, { base: ACTIVITY_HREF, defaultSize: DEFAULT_PAGE_SIZE });
   if (!job) return base;
   return `${base}${base.includes('?') ? '&' : '?'}job=${encodeURIComponent(job)}`;
 }

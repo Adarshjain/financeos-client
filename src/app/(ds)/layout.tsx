@@ -2,32 +2,14 @@ import '../../../design-system/tokens.css';
 import './ds.css';
 
 import type { Metadata, Viewport } from 'next';
-import localFont from 'next/font/local';
 import React from 'react';
 
 import { AppRoot } from '@/features/shell/AppRoot';
 
 import tokens from '../../../design-system/tokens.json';
+import { bricolageGrotesque, figtree } from '../dsFonts';
 import { Providers } from '../providers';
 import { metadata as rootMetadata, viewport as rootViewport } from '../rootMetadata';
-
-// Design system fonts: Figtree for interface text, Bricolage Grotesque for display.
-// Self-hosted variable woff2 covering latin + latin-ext subsets (including ₹ and tabular numbers).
-const figtree = localFont({
-  src: '../fonts/Figtree-latin-ext.woff2',
-  variable: '--ds-font-text',
-  display: 'swap',
-  weight: '500 800',
-});
-
-// Display face trimmed to what the Display type styles use: weights 700–800, opsz pinned at 24,
-// latin + ₹ + common punctuation only (anything else falls back to system-ui).
-const bricolageGrotesque = localFont({
-  src: '../fonts/BricolageGrotesque-display.woff2',
-  variable: '--ds-font-display',
-  display: 'swap',
-  weight: '700 800',
-});
 
 // The TopBar sits on bg-surface; the browser/status bar takes that token's value per theme.
 const surface = tokens.color.tokens.find((t) => t.name === 'bg-surface')!.value;
@@ -58,9 +40,8 @@ export const metadata: Metadata = {
     })),
   },
 };
-/* Dinero: the on-screen keyboard overlays the page without resizing the layout viewport, so a phone
-   sheet keeps its size and position and the keyboard simply covers its footer. Legacy keeps the
-   shared `resizes-content` (its bottom bars rise above the keyboard). */
+/* The on-screen keyboard overlays the page without resizing the layout viewport, so a phone
+   sheet keeps its size and position and the keyboard simply covers its footer. */
 export const viewport: Viewport = {
   ...rootViewport,
   interactiveWidget: 'resizes-visual',

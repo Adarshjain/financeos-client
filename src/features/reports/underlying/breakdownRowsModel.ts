@@ -1,4 +1,4 @@
-// What pressing a row of a breakdown section does, shared by the Legacy and Dinero breakdown views.
+// What pressing a row of a breakdown section does, shared by the breakdown views.
 
 import type { BreakdownFrame, BreakdownSectionData } from '@/features/reports/underlying/underlying.types';
 import type { TableRow } from '@/lib/reports.types';

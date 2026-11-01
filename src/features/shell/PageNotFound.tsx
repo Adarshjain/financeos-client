@@ -13,7 +13,7 @@ export interface PageNotFoundProps {
   what?: string;
   /** One line on why or what to do. */
   description?: string;
-  /** Where the one action goes, as a Legacy path (appHref maps it). Default: Home. */
+  /** Where the one action goes, as an app path (appHref maps it). Default: Home. */
   backPath?: string;
   /** Label of the action. Default: "Go to Home". */
   backLabel?: string;

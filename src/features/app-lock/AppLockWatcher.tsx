@@ -30,7 +30,7 @@ function goToLock(): void {
 
 /**
  * Keeps an app-locked session honest and sends the browser to the lock screen when the server says locked.
- * Non-visual; mounted once in the shared providers so /ds and Legacy both get it. With app lock off it makes one
+ * Non-visual; mounted once in the shared providers. With app lock off it makes one
  * status request per page load or return to the tab and nothing else: no heartbeat.
  * Only the heartbeat counts as activity, and only while the tab is visible and focused.
  */

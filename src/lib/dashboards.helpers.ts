@@ -178,7 +178,7 @@ export function isWidgetAvailable(widget: WidgetResponse): boolean {
 }
 
 /**
- * Where a built-in's header "Open" and "View full page" go (a Legacy-shaped path): its own page (Accounts, Inbox, Upcoming).
+ * Where a built-in's header "Open" and "View full page" go (an app path): its own page (Accounts, Inbox, Upcoming).
  * Null for a saved report (its page is the report editor, offered as "Edit report"), an unavailable widget, or a built-in without one.
  */
 export function widgetHref(widget: WidgetResponse, available: boolean = isWidgetAvailable(widget)): string | null {

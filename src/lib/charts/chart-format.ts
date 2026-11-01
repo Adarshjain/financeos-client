@@ -1,4 +1,4 @@
-// Chart helpers shared by the Legacy and Dinero charts: value formatting (full
+// Chart helpers shared by the charts: value formatting (full
 // for tooltips, compact for axis ticks), label truncation and nice axis ticks.
 // Pure — no React.
 

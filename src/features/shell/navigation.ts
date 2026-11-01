@@ -1,6 +1,6 @@
 import type { IconName } from '@/components/ds/Icon/registry';
 
-import { appHref, normalisePathname } from './routes';
+import { appHref } from './routes';
 
 export interface ShellNavItem {
   id: string;
@@ -145,13 +145,12 @@ export const shellMoreGroups: ShellMoreGroup[] = [
 ];
 
 /**
- * Computes current active navigation item ID from pathname. Item hrefs are Legacy-shaped, so a Dinero
- * pathname is normalised first (/accounts/1 matches Accounts). Returns undefined for the Dinero
- * index, /notifications and unknown routes (no item selected).
+ * Computes current active navigation item ID from pathname (/accounts/1 matches Accounts). Returns
+ * undefined for the review index, /notifications and unknown routes (no item selected).
  */
 export function getActiveNavItem(pathname: string | null | undefined): string | undefined {
   if (!pathname) return undefined;
-  const path = normalisePathname(pathname);
+  const path = pathname;
 
   // Check rail groups
   for (const group of shellRailGroups) {
@@ -176,7 +175,7 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
 /** True on the Ask the data pages (a new chat and one conversation). */
 export function isChatPath(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
-  return /^\/chat(\/|$)/.test(normalisePathname(pathname));
+  return /^\/chat(\/|$)/.test(pathname);
 }
 
 /** Routes with no phone tab bar: the Ask the data pages dock their own composer at the bottom. */

@@ -1,6 +1,6 @@
 'use client';
 
-// A row breakdown on its own (a widget's account balance, a holding…), the Dinero version of the Legacy
+// A row breakdown on its own (a widget's account balance, a holding…), the Dinero version of the old
 // RowBreakdownDialog: how one row's value is made up — header and total, the arithmetic as steps, then each
 // section as a server-paged, server-sorted table. A section's rows open a nested breakdown on top (Back returns
 // a level; the root has no Back) or, with `onOpenTransaction`, a transaction. The dialog is open while it is

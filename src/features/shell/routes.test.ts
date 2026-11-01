@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { appHref, DS_HOME_HREF, isDsPath, legacyHref, loginHrefFor, normalisePathname, rootRedirectFor } from './routes';
+import { appHref, DS_HOME_HREF, loginHrefFor, rootRedirectFor } from './routes';
 
 describe('appHref', () => {
   it.each([
@@ -50,7 +50,9 @@ describe('appHref', () => {
     ['/rules', '/transactions/rules'],
     ['/rules/categories', '/transactions/rules'],
     ['/rewards/recommend', '/rewards/which-card'],
-  ])('maps the Legacy path %s', (from, to) => expect(appHref(from)).toBe(to));
+    ['/settings/ingest', '/transactions/import'],
+    ['/loans/calendar', '/upcoming'],
+  ])('maps the old path %s', (from, to) => expect(appHref(from)).toBe(to));
 
   it('keeps query strings and hashes', () => {
     expect(appHref('/settings/activity?job=j1&type=X')).toBe('/settings/activity?job=j1&type=X');
@@ -66,10 +68,8 @@ describe('appHref', () => {
     expect(appHref('/inbox/?item=k')).toBe('/inbox?item=k');
   });
 
-  it('sends unbuilt paths to their Legacy page, keeping the query and hash', () => {
-    expect(appHref('/loans/calendar')).toBe('/legacy/loans/calendar');
-    expect(appHref('/settings/ingest?x=1#h')).toBe('/legacy/settings/ingest?x=1#h');
-    expect(appHref('/statements')).toBe('/legacy/statements');
+  it('keeps the query and hash of a moved page', () => {
+    expect(appHref('/settings/ingest?x=1#h')).toBe('/transactions/import?x=1#h');
   });
 
   describe('Needs review', () => {
@@ -88,22 +88,8 @@ describe('appHref', () => {
     });
   });
 
-  it('does not map unbuilt children of built routes', () => {
-    expect(appHref('/accounts/a1/other')).toBe('/legacy/accounts/a1/other');
-    expect(appHref('/accounts/a1/cards/x')).toBe('/legacy/accounts/a1/cards/x');
-    expect(appHref('/upcoming/other')).toBe('/legacy/upcoming/other');
-    expect(appHref('/settings/profile')).toBe('/legacy/settings/profile');
-    expect(appHref('/inbox/x')).toBe('/legacy/inbox/x');
-  });
-
-  it('does not match on prefix look-alikes', () => {
-    for (const p of ['/accountsx', '/accountsx/1', '/settingsfoo', '/settings-old', '/inboxes', '/upcomingx', '/debugger', '/loginx']) {
-      expect(appHref(p)).toBe(`/legacy${p}`);
-    }
-  });
-
-  it('passes paths already under /legacy and non-page paths through', () => {
-    for (const p of ['/legacy', '/legacy/accounts', '/api/v1/x', '/auth/google/callback', '/handbook', '/storybook', '/serwist/sw.js', '/icons/a.png', '/brand/g.svg', '/manifest.webmanifest']) {
+  it('passes non-page paths through', () => {
+    for (const p of ['/api/v1/x', '/auth/google/callback', '/handbook', '/storybook', '/serwist/sw.js', '/icons/a.png', '/brand/g.svg', '/manifest.webmanifest']) {
       expect(appHref(p)).toBe(p);
     }
   });
@@ -119,42 +105,6 @@ describe('appHref', () => {
   });
 });
 
-describe('legacyHref', () => {
-  it('puts app paths under /legacy, keeping query and hash', () => {
-    expect(legacyHref('/accounts')).toBe('/legacy/accounts');
-    expect(legacyHref('/accounts/a1?x=1#h')).toBe('/legacy/accounts/a1?x=1#h');
-    expect(legacyHref('/rules')).toBe('/legacy/rules');
-    expect(legacyHref('/accounts/')).toBe('/legacy/accounts/');
-    expect(legacyHref('/')).toBe('/legacy');
-  });
-
-  it('passes through external URLs, //host, non-/ values, /legacy paths and non-page paths', () => {
-    for (const p of [
-      'https://example.com/accounts',
-      '//cdn.x/accounts',
-      'accounts',
-      '',
-      '/legacy',
-      '/legacy/accounts',
-      '/api/v1/accounts',
-      '/auth/google/callback',
-      '/handbook/index.html',
-      '/storybook',
-      '/serwist/sw.js',
-      '/icons/icon-192.png',
-      '/brand/g.svg',
-      '/manifest.webmanifest',
-    ]) {
-      expect(legacyHref(p)).toBe(p);
-    }
-  });
-
-  it('does not treat look-alikes as non-page paths', () => {
-    expect(legacyHref('/apis')).toBe('/legacy/apis');
-    expect(legacyHref('/legacyx')).toBe('/legacy/legacyx');
-  });
-});
-
 describe('rootRedirectFor', () => {
   it('sends an alias to its Dinero page with the query', () => {
     expect(rootRedirectFor('/rules', '')).toBe('/transactions/rules');
@@ -165,48 +115,20 @@ describe('rootRedirectFor', () => {
     expect(rootRedirectFor('/transactions/review', '?account=a1')).toBe('/transactions?review=needs_review&account=a1');
   });
 
-  it('sends a Legacy-only page under /legacy', () => {
-    expect(rootRedirectFor('/settings/ingest', '?x=1')).toBe('/legacy/settings/ingest?x=1');
-    expect(rootRedirectFor('/loans/calendar', '')).toBe('/legacy/loans/calendar');
+  it('sends the old ingest and calendar pages to their replacements', () => {
+    expect(rootRedirectFor('/settings/ingest', '?x=1')).toBe('/transactions/import?x=1');
+    expect(rootRedirectFor('/loans/calendar', '')).toBe('/upcoming');
   });
 
-  it('leaves Dinero pages, /legacy paths and non-pages alone', () => {
-    for (const p of ['/accounts', '/transactions', '/legacy/rules', '/legacy/settings/ingest', '/api/rules', '/nope']) {
+  it('leaves pages and non-pages alone, /legacy included (it is a 404)', () => {
+    for (const p of ['/accounts', '/transactions', '/legacy/rules', '/api/rules', '/nope']) {
       expect(rootRedirectFor(p, '')).toBeNull();
     }
   });
 });
 
-describe('isDsPath', () => {
-  it('is everything that is not under /legacy', () => {
-    expect(isDsPath('/accounts')).toBe(true);
-    expect(isDsPath('/')).toBe(true);
-    expect(isDsPath('/ds')).toBe(true);
-    expect(isDsPath('/legacy')).toBe(false);
-    expect(isDsPath('/legacy/accounts')).toBe(false);
-    expect(isDsPath('/legacyx')).toBe(true);
-  });
-});
-
-describe('normalisePathname', () => {
-  it('drops the Dinero prefix', () => {
-    expect(normalisePathname('/inbox')).toBe('/inbox');
-    expect(normalisePathname('/accounts/a1/rewards')).toBe('/accounts/a1/rewards');
-    expect(normalisePathname('/settings')).toBe('/settings');
-  });
-
-  it('keeps the review index and root as they are', () => {
-    expect(normalisePathname('/ds')).toBe('/ds');
-    expect(normalisePathname('/')).toBe('/');
-  });
-
-  it('drops /legacy and leaves look-alikes alone', () => {
-    expect(normalisePathname('/legacy/inbox')).toBe('/inbox');
-    expect(normalisePathname('/legacy')).toBe('/');
-    expect(normalisePathname('/legacyx/inbox')).toBe('/legacyx/inbox');
-  });
-
-  it('exposes the home href', () => {
+describe('DS_HOME_HREF', () => {
+  it('is the dashboard', () => {
     expect(DS_HOME_HREF).toBe('/dashboard');
   });
 });
@@ -215,11 +137,6 @@ describe('loginHrefFor', () => {
   it('sends a Dinero page to the Dinero login and back to the same page', () => {
     expect(loginHrefFor('/loans')).toBe('/login?from=%2Floans');
     expect(loginHrefFor('/transactions/abc')).toBe('/login?from=%2Ftransactions%2Fabc');
-  });
-
-  it('sends a Legacy path to the Dinero login, with the /legacy path as from', () => {
-    expect(loginHrefFor('/legacy/accounts')).toBe('/login?from=%2Flegacy%2Faccounts');
-    expect(loginHrefFor('/legacy/dashboard')).toBe('/login?from=%2Flegacy%2Fdashboard');
   });
 
   it('keeps none, root and unknowns on the plain login', () => {
@@ -239,6 +156,5 @@ describe('loginHrefFor', () => {
 
   it('does not loop from the login page itself', () => {
     expect(loginHrefFor('/login')).toBe('/login');
-    expect(loginHrefFor('/legacy/login')).toBe('/login');
   });
 });

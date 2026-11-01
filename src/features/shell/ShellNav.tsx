@@ -270,8 +270,6 @@ export function ShellTabBar({
   );
 }
 
-// Shell links to a page not built in Dinero lead to Legacy routes, a different root layout (full page
-// load). They set prefetch={false} so Dinero pages do not preload Legacy CSS and Inter.
 export function ShellRail({
   user,
   initialCollapsed = false,

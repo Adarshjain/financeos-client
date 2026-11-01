@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { appHref } from './routes';
 
 describe('Rules tab route', () => {
-  it('sends the Legacy rules path to its Dinero page, keeping the query', () => {
+  it('sends the old rules path to its Dinero page, keeping the query', () => {
     expect(appHref('/rules')).toBe('/transactions/rules');
     expect(appHref('/rules?status=verified&page=2')).toBe('/transactions/rules?status=verified&page=2');
   });
