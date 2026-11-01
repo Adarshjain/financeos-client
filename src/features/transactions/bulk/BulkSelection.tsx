@@ -35,11 +35,12 @@ export interface BulkBarProps {
   onLink: () => void;
   onMerge: () => void;
   onApprove: () => void;
+  onTag: () => void;
   onDelete: () => void;
 }
 
-/** The bar over the list: how many, how much, and Link · Merge · Approve · Delete. One hint per action. */
-export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onMerge, onApprove, onDelete }: BulkBarProps) {
+/** The bar over the list: how many, how much, and Link · Merge · Approve · Add tag · Delete. One hint per action. */
+export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onMerge, onApprove, onTag, onDelete }: BulkBarProps) {
   const flagged = selected.filter(isApprovable).length;
   return (
     <SelectionBar
@@ -68,6 +69,7 @@ export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onM
           disabled: flagged === 0,
           onSelect: onApprove,
         },
+        { id: 'tag', label: 'Add tag', icon: <Icon name="add" size="lg" />, onSelect: onTag },
         { id: 'delete', label: 'Delete', icon: <Icon name="delete" size="lg" />, tone: 'danger', onSelect: onDelete },
       ]}
     />

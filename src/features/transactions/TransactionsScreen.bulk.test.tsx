@@ -130,6 +130,32 @@ const batch = (succeededIds: string[], extra: Record<string, unknown> = {}) =>
 beforeEach(() => vi.clearAllMocks());
 
 describe('TransactionsScreen selection and bulk actions', () => {
+  it('Add tag opens the tag sheet over the selection and adds the ticked tags to every selected row', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: { tagsAdded: 2, transactionsFound: 2 } } as never);
+    setup();
+    tick('Swiggy');
+    tick('IKEA');
+    fireEvent.click(barButton(/Add tag/));
+    expect(await screen.findByText('2 transactions')).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Tags' })).getByText('Groceries'));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(posts('/api/v1/tags/bulk-add')).toEqual([{ body: { transactionIds: ['t2', 't3'], tagIds: ['c1'] } }]));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Added Groceries to 2 transactions'));
+    await waitFor(() => expect(screen.queryByText(/ selected$/)).toBeNull());
+    expect(router.refresh).toHaveBeenCalled();
+  });
+
+  it('Add tag with nothing ticked closes without a request and keeps the selection', async () => {
+    setup();
+    tick('Swiggy');
+    fireEvent.click(barButton(/Add tag/));
+    await screen.findByText('1 transaction');
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(screen.queryByText('1 transaction')).toBeNull());
+    expect(posts('/api/v1/tags/bulk-add')).toEqual([]);
+    expect(screen.getByText('1 selected')).toBeInTheDocument();
+  });
+
   it('shows no bar until a row is ticked, then the count and the money and review summary', () => {
     setup();
     expect(screen.queryByText(/ selected$/)).toBeNull();

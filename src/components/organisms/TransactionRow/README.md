@@ -16,7 +16,7 @@ The phone transaction row: three lines. Status is told with coloured words, not 
 - Green: credit amounts only (when `isCredit` is true).
 
 ## States
-Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity, not interactive), muted (60% opacity, still opens and selects: an excluded transaction), selection mode (trailing eye icon opens the detail; on phone it slides in and out with Reveal axis x).
+Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-tint` with a 4px `attention` stripe), disabled (60% opacity, not interactive), muted (60% opacity, still opens and selects: an excluded transaction, which still shows its category badge like any other row; only a row with no category shows the dashed Set category), selection mode (trailing eye icon opens the detail; on phone it slides in and out with Reveal axis x).
 
 ## Props
 - `leading?: ReactNode`: Leading avatar or tile

@@ -14,14 +14,14 @@ import { TransactionsTabs } from '../TransactionsTabs';
 
 const noop = () => {};
 
-/** The Rules tab while the rules load. */
+/** The Tags tab while it loads. */
 export function RulesSkeleton() {
   return (
-    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop>
+    <ShellPage crumb={subCrumb('transactions')} title="Tags" flushTop>
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
         <FilterBar size="md" search={{ value: '', onValueChange: noop }}>
-          {['Unverified', 'Category', 'Source', 'Match type'].map((label) => (
+          {['Category', 'Match type'].map((label) => (
             <FilterChip key={label} size="md" className="shrink-0" hasDropdown disabled>
               {label}
             </FilterChip>

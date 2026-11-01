@@ -9,6 +9,8 @@ export * from './JobsHistory/JobsHistory';
 export * from './Logo/Logo';
 export * from './RuleCard/RuleCard';
 export * from './SettingsToggle/SettingsToggle';
+export * from './TagNameDialog/TagNameDialog';
+export * from './TagSheet/TagSheet';
 export * from './TransactionPicker/TransactionPicker';
 export * from './TransactionRow/transactionColumns';
 export * from './TransactionRow/TransactionRow';

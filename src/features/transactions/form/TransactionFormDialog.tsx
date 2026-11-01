@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ds/Dialog/Dialog';
 import type { IconName } from '@/components/ds/Icon/registry';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker/CategoryPicker';
+import { TagSheet } from '@/components/organisms/TagSheet/TagSheet';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Account } from '@/lib/account.types';
@@ -24,6 +25,7 @@ import { AccountType } from '@/lib/types';
 import { categoryPatch, pickOf } from '../category/categoryModel';
 import { mergeOntoLatest, patchChange, patchFromValues } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
+import { useTagMutations } from '../tags/useTagMutations';
 import {
   getCardOptions,
   getDefaultCardIdForAccount,
@@ -112,6 +114,9 @@ export function TransactionFormDialog({
   const opened = React.useMemo(() => (transaction ? pickOf(transaction) : null), [transaction]);
   const [category, setCategory] = React.useState<CategoryPick | null>(opened);
   const [pickingCategory, setPickingCategory] = React.useState(false);
+  const [pickingTags, setPickingTags] = React.useState(false);
+  // A tag deleted in the sheet's Manage leaves the form's choice too.
+  const tagMutations = useTagMutations({ onDeleted: (tag) => setSelectedTags((now) => now.filter((c) => c.id !== tag.id)) });
   const categoryChanged = !samePick(category, opened);
   const pickedCategory = (pick: CategoryPick) => {
     setTouched(true);
@@ -264,9 +269,7 @@ export function TransactionFormDialog({
               accounts={selectableAccounts}
               hasAccounts={selectableAccounts.length > 0}
               cardOptions={supportsCards ? cardOptions : []}
-              tags={localTags}
-              selectedTagIds={selectedTags.map((c) => c.id)}
-              creatingTag={creatingTag}
+              tagsLabel={selectedTags.length > 0 ? selectedTags.map((c) => localTags.find((x) => x.id === c.id)?.name ?? c.name).join(', ') : undefined}
               categoryLabel={categoryText || undefined}
               categoryIcon={categoryDef?.icon as IconName | undefined}
               suggestingCategory={suggesting}
@@ -275,11 +278,7 @@ export function TransactionFormDialog({
               onChange={change}
               onAccountChange={pickAccount}
               onOpenCategory={() => setPickingCategory(true)}
-              onTagsChange={(ids) => {
-                setTouched(true);
-                setSelectedTags(ids.map((id) => localTags.find((c) => c.id === id)).filter((c) => c !== undefined));
-              }}
-              onCreateTag={(name) => void createTag(name)}
+              onOpenTags={() => setPickingTags(true)}
               onDescriptionBlur={onDescriptionBlur}
               onAddAccount={addAccount}
             />
@@ -287,6 +286,25 @@ export function TransactionFormDialog({
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>
+    <TagSheet
+      open={pickingTags}
+      onOpenChange={setPickingTags}
+      tags={localTags}
+      value={selectedTags.map((c) => c.id)}
+      onValueChange={(ids) => {
+        setTouched(true);
+        setSelectedTags(ids.map((id) => localTags.find((c) => c.id === id)).filter((c) => c !== undefined));
+      }}
+      subtitle={values.description.trim() || undefined}
+      onCreate={(name) => {
+        setTouched(true);
+        void createTag(name);
+      }}
+      creating={creatingTag}
+      onRename={(tag, name) => tagMutations.rename.mutate({ tag, name })}
+      onDelete={(tag) => tagMutations.remove.mutate(tag)}
+      managing={tagMutations.rename.isPending || tagMutations.remove.isPending}
+    />
     <CategoryPicker
       open={pickingCategory}
       onOpenChange={setPickingCategory}

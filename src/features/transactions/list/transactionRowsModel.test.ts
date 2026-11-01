@@ -41,9 +41,13 @@ describe('transactionRow', () => {
     expect(transactionRow(t({ description: null }), ctx).description).toBe('—');
   });
 
-  it('keeps an excluded row free of categories and balance, with the Excluded word', () => {
-    const row = transactionRow(t({ isTransactionExcluded: true }), ctx);
-    expect(row).toMatchObject({ excluded: true, categories: [], balance: undefined, provenance: 'Excluded' });
+  it('keeps an excluded row free of balance, with the Excluded word, and shows its category like any other row', () => {
+    const row = transactionRow(t({ isTransactionExcluded: true, category: { key: 'transfers', name: 'Self transfer', icon: 'cat-swap' }, subcategory: null }), ctx);
+    expect(row).toMatchObject({ excluded: true, categories: ['Self transfer'], category: 'Self transfer', balance: undefined, provenance: 'Excluded' });
+  });
+
+  it('gives an excluded row with no category none, so it shows the dashed Set category', () => {
+    expect(transactionRow(t({ isTransactionExcluded: true, category: null }), ctx)).toMatchObject({ excluded: true, categories: [], category: undefined });
   });
 
   it('shows no category when none is set, and the category with its sub-category and icon when it is', () => {
