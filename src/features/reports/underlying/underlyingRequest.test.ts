@@ -130,6 +130,16 @@ describe('categoryRequest', () => {
     expect(categoryRequest(chartReq(chartDef()), chartData(), 2, catalog)).toBeNull();
   });
 
+  it('pins a sub-category chart\'s (none) bucket, which the server reads as categorised without one', () => {
+    const request = categoryRequest(chartReq(chartDef({ dimension: { field: 'subcategory' } })), chartData({ dimension: 'subcategory' }), 2, catalog);
+    expect((request?.definition as { filters: unknown[] }).filters).toEqual([hide, { field: 'subcategory', operator: 'is', value: '(none)' }]);
+  });
+
+  it('pins the Uncategorized label of a category chart as it is', () => {
+    const request = categoryRequest(chartReq(chartDef()), chartData({ categories: ['Uncategorized'] }), 0, catalog);
+    expect((request?.definition as { filters: unknown[] }).filters).toEqual([hide, { field: 'category', operator: 'is', value: 'Uncategorized' }]);
+  });
+
   it('also pins the series value when the chart has a series', () => {
     const request = categoryRequest(chartReq(chartDef({ series: { field: 'type' } })), chartData(), 0, catalog, 'DEBIT');
     expect((request?.definition as { filters: unknown[] }).filters).toEqual([
