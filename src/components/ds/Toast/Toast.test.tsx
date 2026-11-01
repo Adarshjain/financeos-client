@@ -87,6 +87,24 @@ describe('Toast', () => {
     expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
+  it('renders a secondary action left of the action and calls it', () => {
+    const onA = vi.fn();
+    const onB = vi.fn();
+    render(
+      <Toast tone="danger" message="Failed" action={{ label: 'Copy ID', onSelect: onA }} secondaryAction={{ label: 'Debug', onSelect: onB }} />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.map((b) => b.textContent)).toEqual(['Debug', 'Copy ID']);
+    fireEvent.click(buttons[0]);
+    expect(onB).toHaveBeenCalled();
+    expect(onA).not.toHaveBeenCalled();
+  });
+
+  it('ignores secondaryAction without an action', () => {
+    render(<Toast message="x" secondaryAction={{ label: 'Debug', onSelect: vi.fn() }} />);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('renders status role by default and alert role when tone is danger', () => {
     const { rerender } = render(<Toast message="Success" />);
     expect(screen.getByRole('status')).toBeInTheDocument();

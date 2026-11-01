@@ -37,6 +37,10 @@ const meta: Meta<typeof Toast> = {
       control: false,
       description: 'Action object with label and onSelect callback',
     },
+    secondaryAction: {
+      control: false,
+      description: 'Optional second action, left of action',
+    },
   },
   args: {
     tone: 'neutral',
@@ -73,6 +77,16 @@ export const Danger: Story = {
     tone: 'danger',
     message: "Couldn't snooze. The row is back.",
     action: undefined,
+  },
+};
+
+export const TwoActions: Story = {
+  name: 'Danger with two actions',
+  args: {
+    tone: 'danger',
+    message: "Couldn't save the rule (Ref E2EERR01)",
+    action: { label: 'Copy ID', onSelect: fn() },
+    secondaryAction: { label: 'Debug', onSelect: fn() },
   },
 };
 
@@ -114,6 +128,7 @@ export const InteractiveTrigger: Story = {
               showToast(args.message, {
                 tone: args.tone,
                 action: args.action,
+                secondaryAction: args.secondaryAction,
               })
             }
           >

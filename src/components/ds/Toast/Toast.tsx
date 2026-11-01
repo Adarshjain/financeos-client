@@ -18,6 +18,8 @@ export interface ToastProps
   message?: React.ReactNode;
   /** Single action button on the right: action={{ label, onSelect }}, or { label, href } for a link */
   action?: { label: string } & ActionTarget;
+  /** Optional second button, left of `action`, for a toast that offers two next steps (Copy ID and Debug). Only with `action`. */
+  secondaryAction?: { label: string } & ActionTarget;
 }
 
 export const Toast = forwardRef<HTMLDivElement, ToastProps>(
@@ -28,6 +30,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
       tone = 'neutral',
       message,
       action,
+      secondaryAction,
       role,
       ...props
     },
@@ -52,17 +55,21 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
       >
         <span className="flex-1 min-w-0">{concealed && typeof shown === 'string' ? concealText(shown) : shown}</span>
         {action && (
-          <ActionButton
-            variant="link"
-            href={action.href}
-            onSelect={action.onSelect}
-            className={cn(
-              'ml-auto shrink-0',
-              isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit',
+          <div className="ml-auto shrink-0 flex items-center gap-space-14">
+            {[secondaryAction, action].map((a, i) =>
+              a ? (
+                <ActionButton
+                  key={i}
+                  variant="link"
+                  href={a.href}
+                  onSelect={a.onSelect}
+                  className={cn('shrink-0', isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit')}
+                >
+                  {a.label}
+                </ActionButton>
+              ) : null,
             )}
-          >
-            {action.label}
-          </ActionButton>
+          </div>
         )}
       </div>
     );
@@ -109,6 +116,8 @@ export interface ShowToastOptions {
   id?: string;
   tone?: BannerTone;
   action?: { label: string } & ActionTarget;
+  /** Second button left of `action` (see Toast `secondaryAction`); needs `action`. */
+  secondaryAction?: { label: string } & ActionTarget;
   duration?: number;
   onDismiss?: () => void;
 }
@@ -134,6 +143,18 @@ export function showToast(
                 href: options.action.href,
                 onSelect: () => {
                   options.action?.onSelect?.();
+                  sonnerToast.dismiss(id);
+                },
+              }
+            : undefined
+        }
+        secondaryAction={
+          options?.action && options.secondaryAction
+            ? {
+                label: options.secondaryAction.label,
+                href: options.secondaryAction.href,
+                onSelect: () => {
+                  options.secondaryAction?.onSelect?.();
                   sonnerToast.dismiss(id);
                 },
               }

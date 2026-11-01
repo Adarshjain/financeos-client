@@ -6,12 +6,14 @@ import { dineroToasterMounted } from '@/lib/toastTarget';
 type Message = Parameters<typeof toast>[0];
 type Tone = NonNullable<ShowToastOptions['tone']>;
 
-/** Sonner-shaped options; on the Dinero toaster only id, duration, action and description are carried. */
+/** Sonner-shaped options; on the Dinero toaster only id, duration, action, description and cancel (as a second button next to action) are carried. */
 export type NotifyOptions = ExternalToast;
 
 function toDinero(message: Message, tone: Tone, options?: NotifyOptions, forever?: boolean) {
   const action = options?.action;
   const hasAction = action && typeof action === 'object' && 'label' in action && typeof action.label === 'string' && 'onClick' in action;
+  const cancel = options?.cancel;
+  const hasCancel = hasAction && cancel && typeof cancel === 'object' && 'label' in cancel && typeof cancel.label === 'string';
   const text = typeof message === 'function' ? '' : message;
   return showToast(
     options?.description && typeof text === 'string' && typeof options.description === 'string'
@@ -26,6 +28,13 @@ function toDinero(message: Message, tone: Tone, options?: NotifyOptions, forever
             label: String(action.label),
             onSelect: () =>
               action.onClick({ preventDefault() {} } as unknown as React.MouseEvent<HTMLButtonElement>),
+          }
+        : undefined,
+      secondaryAction: hasCancel
+        ? {
+            label: String(cancel.label),
+            onSelect: () =>
+              cancel.onClick?.({ preventDefault() {} } as unknown as React.MouseEvent<HTMLButtonElement>),
           }
         : undefined,
     },
