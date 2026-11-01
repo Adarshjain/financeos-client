@@ -16,13 +16,11 @@ import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
 import { pluralize } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
-import type { Tag } from '@/lib/tags.types';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
   AMOUNT_OP_OPTIONS,
   amountLabel,
-  categoryOptions,
   FILTER_ACCOUNT_TYPES,
   filterAccounts,
   periodLabel,
@@ -79,7 +77,6 @@ export interface FiltersDialogProps {
   today: string;
   /** Null when they could not be loaded: their fields are then off. */
   accounts: Account[] | null;
-  categories: Tag[] | null;
   /** "Show": the query to open. */
   onApply: (query: TransactionsQuery) => void;
   onClose: () => void;
@@ -95,7 +92,6 @@ export function FiltersDialog({
   query,
   today,
   accounts,
-  categories,
   onApply,
   onClose,
 }: FiltersDialogProps) {
@@ -120,10 +116,6 @@ export function FiltersDialog({
       draft.accounts.length === 1
         ? (accountList.find((a) => a.id === draft.accounts[0])?.name ?? '1 account')
         : `${draft.accounts.length} accounts`,
-    categories:
-      draft.categories.length === 1
-        ? draft.categories[0]
-        : `${draft.categories.length} categories`,
     type: TYPE_OPTIONS.find((o) => o.value === draft.type)?.label ?? '',
     amount: draftQuery.amount ? amountLabel(draftQuery.amount) : '',
     review: draftQuery.review ? reviewLabel(draftQuery.review) : '',
@@ -216,19 +208,6 @@ export function FiltersDialog({
                   onValueChange={(type) => set({ type: type as TypeFilter })}
                 />
               </div>
-              <Select
-                multiple
-                searchable
-                searchPlaceholder="Search categories"
-                label="Category"
-                placeholder="Any category"
-                disabled={categories === null}
-                options={categoryOptions(categories ?? [])}
-                value={draft.categories}
-                onValueChange={(names) =>
-                  set({ categories: names as string[] })
-                }
-              />
             </div>
 
             <SectionHeader>{dot('amount', 'Amount')}</SectionHeader>

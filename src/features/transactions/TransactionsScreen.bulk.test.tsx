@@ -259,10 +259,10 @@ describe('TransactionsScreen selection and bulk actions', () => {
 
   it('puts the select row where the tabs were while rows are selected', () => {
     setup();
-    expect(screen.getByText('Tags').closest('.desk\\:hidden')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Tags' }).closest('.desk\\:hidden')).toBeNull();
     tick('Swiggy');
     // Phone keeps the tabs (desk:hidden wrapper); desktop swaps them for the select row.
-    expect(screen.getByText('Tags').closest('.desk\\:hidden')).not.toBeNull();
+    expect(screen.getByRole('tab', { name: 'Tags' }).closest('.desk\\:hidden')).not.toBeNull();
   });
 
   it('Approve is off when nothing selected needs review', () => {

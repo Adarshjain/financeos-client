@@ -6,11 +6,13 @@ import { transactionRows } from '@/features/transactions/list/transactionRowsMod
 import type { TransactionsListResult } from '@/features/transactions/list/TransactionsListPane';
 import {
   fetchAccounts,
+  fetchCategoryCounts,
   fetchNeedsReviewCount,
   fetchTags,
   fetchTransactionsPage,
+  fetchUncategorizedSummary,
 } from '@/features/transactions/list/transactionsServerApi';
-import { parseTransactionsUrl } from '@/features/transactions/list/transactionsUrl';
+import { parseTransactionsUrl, remapLegacyCategoryParams } from '@/features/transactions/list/transactionsUrl';
 import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
 import { fetchCategoryList } from '@/lib/categoryList.server';
 import { todayInAppZone } from '@/lib/date-range';
@@ -22,13 +24,21 @@ export const metadata = { title: 'Transactions' };
  * fetches the page, the accounts and tags the chips need, the category list and the needs-review count together.
  */
 export default async function DsTransactionsPage({ searchParams }: { searchParams: SearchParams }) {
-  const query = parseTransactionsUrl(await searchParams);
-  const [page, accounts, categories, needsReviewCount, categoryList] = await Promise.all([
+  const params = await searchParams;
+  const accountsRequest = orNull(fetchAccounts());
+  const tagsRequest = orNull(fetchTags());
+  const categoryListRequest = orNull(fetchCategoryList());
+  // An old link's `category` carried a tag; it becomes a `tag` before the one fetch. Only a link that has one waits for the two lists.
+  const raw = params.category === undefined ? params : remapLegacyCategoryParams(params, ((await categoryListRequest) ?? []).map((c) => c.key), (await tagsRequest) ?? []);
+  const query = parseTransactionsUrl(raw);
+  const [page, accounts, categories, needsReviewCount, categoryList, uncategorized, categoryCounts] = await Promise.all([
     loaded(fetchTransactionsPage(query)),
-    orNull(fetchAccounts()),
-    orNull(fetchTags()),
+    accountsRequest,
+    tagsRequest,
     orNull(fetchNeedsReviewCount()),
-    orNull(fetchCategoryList()),
+    categoryListRequest,
+    orNull(fetchUncategorizedSummary()),
+    orNull(fetchCategoryCounts()),
   ]);
 
   const list: TransactionsListResult = page.ok
@@ -50,6 +60,8 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
       accounts={accounts}
       categories={categories}
       categoryList={categoryList}
+      categoryCounts={categoryCounts}
+      uncategorized={uncategorized}
       needsReviewCount={needsReviewCount}
     />
   );

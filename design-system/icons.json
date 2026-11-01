@@ -45,6 +45,11 @@
   "use": "The + add button"
  },
  {
+  "name": "tag",
+  "phosphor": "tag",
+  "use": "Add tag on the selection bar"
+ },
+ {
   "name": "more",
   "phosphor": "dots-three-vertical",
   "use": "⋮ menus on rows and cards"

@@ -22,7 +22,7 @@ import { TransactionsListPane, type TransactionsListPaneProps } from './list/Tra
 import { parseTxn, transactionsUrl } from './list/transactionsUrl';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
 
-export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
+export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
   /** The fixed category list, read once on the server; null when it could not be loaded (the picker then fetches it). */
@@ -39,6 +39,7 @@ function isGone(error: unknown): boolean {
 const loadDetailPanel = () => import('./detail/TransactionDetailPanel').then((m) => m.TransactionDetailPanel);
 const loadTagsSheet = () => import('./tags/TransactionTagsSheet').then((m) => m.TransactionTagsSheet);
 const loadCategoryDialog = () => import('./category/CategoryDialog').then((m) => m.CategoryDialog);
+const loadSortDialog = () => import('./sort/SortThemDialog').then((m) => m.SortThemDialog);
 const loadFormDialog = () => import('./form/TransactionFormDialog').then((m) => m.TransactionFormDialog);
 const loadLinkDialog = () => import('./link/LinkTransactionsDialog').then((m) => m.LinkTransactionsDialog);
 
@@ -83,6 +84,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const detail = useLazyDialog(loadDetailPanel);
   const categoryDialog = useLazyDialog(loadCategoryDialog);
   const tagsSheet = useLazyDialog(loadTagsSheet);
+  const sortDialog = useLazyDialog(loadSortDialog);
   const formDialog = useLazyDialog(loadFormDialog);
   const linkDialog = useLazyDialog(loadLinkDialog);
   const setDetailId = (id: string | null) => {
@@ -100,6 +102,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const [categorising, setCategorising] = React.useState<Transaction | null>(null);
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
   const [tagging, setTagging] = React.useState<Transaction[] | null>(null);
+  const [sorting, setSorting] = React.useState(false);
   const router = useRouter();
   const addTransaction = useAddTransaction();
   const byId = React.useMemo(() => new Map(transactions.map((t) => [t.id, t])), [transactions]);
@@ -130,6 +133,8 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         openId={detailId ?? undefined}
         detailOpen={detailId !== null}
         onEditCategories={editCategories}
+        categoryList={categoryList}
+        onSortThem={() => void sortDialog.run(() => setSorting(true))}
         selection={selection.ids}
         onSelectionChange={selection.select}
         selectionHeader={
@@ -207,6 +212,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
           onAdded={selection.clear}
         />
       ) : null}
+      {sorting && sortDialog.Component ? <sortDialog.Component count={view.uncategorized?.count ?? 0} onClose={() => setSorting(false)} /> : null}
       {categorising && categoryDialog.Component ? <categoryDialog.Component key={categorising.id} transaction={categorising} onClose={() => setCategorising(null)} /> : null}
       {form && formDialog.Component ? (
         <formDialog.Component

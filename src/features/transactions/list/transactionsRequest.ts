@@ -25,6 +25,8 @@ export function buildFilters(query: TransactionsQuery): FilterClause[] {
     periodClause(query.period),
     pickClause('accountId', query.accounts),
     query.uncategorized ? { field: 'category', operator: 'is_empty' } : pickClause('category', query.categories),
+    query.uncategorized ? null : pickClause('subcategory', query.subcategories),
+    query.untagged ? { field: 'untagged', operator: 'is', value: true } : pickClause('tag', query.tags),
     query.type === 'all' ? null : { field: 'type', operator: 'is', value: query.type === 'debit' ? 'DEBIT' : 'CREDIT' },
     query.amount ? amountClause(query.amount) : null,
     query.review ? { field: 'reviewType', operator: 'is', value: query.review } : null,

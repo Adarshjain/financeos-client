@@ -69,7 +69,7 @@ export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onM
           disabled: flagged === 0,
           onSelect: onApprove,
         },
-        { id: 'tag', label: 'Add tag', icon: <Icon name="add" size="lg" />, onSelect: onTag },
+        { id: 'tag', label: 'Add tag', icon: <Icon name="tag" size="lg" />, onSelect: onTag },
         { id: 'delete', label: 'Delete', icon: <Icon name="delete" size="lg" />, tone: 'danger', onSelect: onDelete },
       ]}
     />

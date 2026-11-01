@@ -3,9 +3,10 @@
 import React from 'react';
 
 import { CategoryPicker } from '@/components/organisms/CategoryPicker/CategoryPicker';
-import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import { formatMoney } from '@/lib/format';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
+import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { directionOf, pickOf } from './categoryModel';
@@ -16,14 +17,14 @@ export interface CategoryDialogProps {
   transaction: Transaction;
   /** The picker closed: after a pick, or dismissed (nothing changes then). */
   onClose: () => void;
-  /** Recent one-tap picks; none until their data is wired. */
-  recent?: CategoryPick[];
 }
 
 /** Set category on one transaction: the category picker, over the transaction (description and amount). A tap saves and closes. */
-export function CategoryDialog({ transaction, onClose, recent }: CategoryDialogProps) {
+export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
   const { list } = useCategoryList();
   const { setCategory } = useSetCategory(list);
+  const direction = directionOf(transaction);
+  const recent = useCategoryRecent(direction);
   const amount = formatMoney(Math.abs(transaction.amount), { decimals: 'exact' });
   const name = transaction.description || transaction.sourcedDescription || '';
   return (
@@ -33,7 +34,7 @@ export function CategoryDialog({ transaction, onClose, recent }: CategoryDialogP
         if (!open) onClose();
       }}
       categories={list as CategoryDef[]}
-      direction={directionOf(transaction)}
+      direction={direction}
       value={pickOf(transaction)}
       recent={recent}
       subtitle={name ? `${name} · ${amount}` : amount}

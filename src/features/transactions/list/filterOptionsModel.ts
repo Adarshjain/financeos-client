@@ -2,7 +2,6 @@ import type { SelectOption } from '@/components/ds/Select/Select';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
 import { formatCount, formatDate, formatMoney } from '@/lib/format';
-import type { Tag } from '@/lib/tags.types';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -120,21 +119,17 @@ export function filterAccounts(picked: readonly string[], accounts: readonly Acc
   return accounts.filter((a) => a.type !== AccountType.BROKER || picked.includes(a.id));
 }
 
-/** The Category dropdown: the server filters on the category name. */
-export function categoryOptions(categories: readonly Tag[]): SelectOption[] {
-  return categories.map((c) => ({ value: c.name, label: c.name }));
-}
-
 /** The words of every active filter, for "No transactions match": "Last 14 days · manual · excluded only". */
 export function activeFilterWords(query: TransactionsQuery): string {
   const words: string[] = [];
   if (!(query.period.kind === 'preset' && query.period.id === 'all_time')) words.push(periodLabel(query.period));
   if (query.q) words.push(`“${query.q}”`);
   if (query.accounts.length > 0) words.push(formatCount(query.accounts.length, ['account', 'accounts']));
-  if (query.categories.length > 0) {
-    words.push(formatCount(query.categories.length, ['category', 'categories']));
-  }
+  const picked = query.categories.length + query.subcategories.length;
+  if (picked > 0) words.push(formatCount(picked, ['category', 'categories']));
   if (query.uncategorized) words.push('uncategorized');
+  if (query.tags.length > 0) words.push(formatCount(query.tags.length, ['tag', 'tags']));
+  if (query.untagged) words.push('untagged');
   if (query.type !== 'all') words.push(query.type === 'debit' ? 'expense' : 'income');
   if (query.amount) words.push(amountLabel(query.amount).toLowerCase());
   if (query.review) words.push(reviewLabel(query.review).toLowerCase());
@@ -151,8 +146,10 @@ export function activeFilterCount(query: TransactionsQuery): number {
   return [
     !(query.period.kind === 'preset' && query.period.id === 'all_time'),
     query.accounts.length > 0,
-    query.categories.length > 0,
+    query.categories.length > 0 || query.subcategories.length > 0,
     query.uncategorized,
+    query.tags.length > 0,
+    query.untagged,
     query.type !== 'all',
     query.amount !== null,
     query.review !== null,

@@ -20,5 +20,9 @@ export function fetchNeedsReviewCount(): Promise<number> {
 }
 
 export const fetchAccounts = accountsApi.list;
-/** The user's tags: the list's tag filter (the server's `category` filter field matches tag names for now). */
+/** How many transactions need a category, and the biggest groups: the Uncategorized card. */
+export const fetchUncategorizedSummary = transactionsApi.uncategorizedSummary;
+/** Transactions per category and sub-category: the Category filter's counts. */
+export const fetchCategoryCounts = transactionsApi.categoryCounts;
+/** The user's tags with their counts: the list's Tags filter. */
 export const fetchTags = tagsApi.list;

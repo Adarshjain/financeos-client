@@ -14,6 +14,7 @@ import { categoryLabel, findCategory, findSub } from '@/lib/categoryList';
 import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import { formatCount } from '@/lib/format';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
+import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import { MATCH_TYPE_META } from '@/lib/rules.matchTypes';
 import type { CategoryRule, MatchType } from '@/lib/rules.types';
 import { validatePattern } from '@/lib/rules.validate';
@@ -63,6 +64,7 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
     : null;
   const [category, setCategory] = React.useState<CategoryPick | null>(opened);
   const [picking, setPicking] = React.useState(false);
+  const recent = useCategoryRecent('OUT', picking);
   const categoryDef = findCategory(list, category?.categoryKey);
   const categoryText = categoryDef ? categoryLabel(categoryDef.name, findSub(categoryDef, category?.subcategoryKey)?.name) : '';
   const saving = create.isPending || update.isPending;
@@ -191,6 +193,7 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
       onOpenChange={setPicking}
       categories={list as CategoryDef[]}
       direction="OUT"
+      recent={recent}
       value={category}
       subtitle={pattern.trim() || undefined}
       onPick={setCategory}

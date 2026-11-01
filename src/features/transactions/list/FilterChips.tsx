@@ -9,14 +9,17 @@ import { Popover } from '@/components/ds/Popover/Popover';
 import { Select, type SelectGroup, type SelectOption } from '@/components/ds/Select/Select';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import type { Tag } from '@/lib/tags.types';
 import type { AccountType } from '@/lib/types';
+import type { CategoryCounts } from '@/lib/uncategorized.types';
 
+import { CategoryFilterChip, TagsFilterChip } from './CategoryFilterChips';
+import { categoryFilterOf } from './categoryFilterModel';
 import {
   activeFilterCount,
   amountLabel,
   ANY,
-  categoryOptions,
   FILTER_ACCOUNT_TYPES,
   filterAccounts,
   periodLabel,
@@ -241,25 +244,32 @@ export interface FilterChipsProps {
   /** Today, YYYY-MM-DD, for the period's date fields. */
   today: string;
   accounts: Account[] | null;
+  /** The user's tags with their counts (the Tags chip). Named `categories` since tags were categories; null when they could not be loaded. */
   categories: Tag[] | null;
+  /** The fixed category list (the Category chip); null when it could not be loaded. */
+  categoryList?: CategoryDef[] | null;
+  /** Transactions per category; without them the Category chip lists no counts. */
+  categoryCounts?: CategoryCounts | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
   /** The search field: the row's first item, so the search and the chips share one sideways scroller. */
   search?: FilterBarSearch;
 }
 
-// Phone shows only Period, Account and "All filters"; the rest is desktop-only (the dialog holds every filter).
+// Phone shows Period, Category, Tags, Account and "All filters"; the rest is desktop-only (the dialog holds the other filters).
 const DESK_ONLY = 'max-desk:hidden';
 
 /**
  * The row under the tabs: the search, then period, the dropdown filters, the Status chip, "+ More" and the sort. Amount and Reason show as chips only once set ("+ More" opens them), so the row fits with "Reset filters".
- * On phone only Period, Account and "All filters" show; "All filters" carries the number of active filters.
+ * On phone only Period, Category, Tags, Account and "All filters" show; "All filters" carries the number of active filters.
  */
 export function FilterChips({
   query,
   today,
   accounts,
   categories,
+  categoryList = null,
+  categoryCounts,
   onChange,
   onOpenFilters,
   search,
@@ -293,10 +303,6 @@ export function FilterChips({
       ? (accountList.find((a) => a.id === query.accounts[0])?.name ??
         '1 account')
       : `${query.accounts.length} accounts`;
-  const categoriesLabel =
-    query.categories.length === 1
-      ? query.categories[0]
-      : `${query.categories.length} categories`;
   const resetAll = () =>
     onChange({ ...clearedQuery(query), q: query.q, page: 0 });
 
@@ -308,6 +314,17 @@ export function FilterChips({
       onReset={resetAll}
     >
       <PeriodChip query={query} today={today} onChange={onChange} />
+      <CategoryFilterChip
+        value={categoryFilterOf(query)}
+        categories={categoryList}
+        counts={categoryCounts}
+        onCommit={(f) => onChange(f)}
+      />
+      <TagsFilterChip
+        value={{ untagged: query.untagged, tags: query.tags }}
+        tags={categories}
+        onCommit={(f) => onChange(f)}
+      />
       <MultiChip
         label="Account"
         changedLabel={accountsLabel}
@@ -330,33 +347,6 @@ export function FilterChips({
       >
         All filters
       </FilterChip>
-      <MultiChip
-        label="Category"
-        changedLabel={categoriesLabel}
-        value={query.categories}
-        options={categoryOptions(categories ?? [])}
-        searchPlaceholder="Search categories"
-        className={DESK_ONLY}
-        disabled={categories === null}
-        onReset={() => onChange({ categories: [] })}
-        onCommit={(names) =>
-          onChange({
-            categories: names,
-            ...(names.length > 0 ? { uncategorized: false } : {}),
-          })
-        }
-      />
-      {query.uncategorized ? (
-        <FilterChip
-          size="md"
-          className="shrink-0"
-          changed
-          onReset={() => onChange({ uncategorized: false })}
-          onClick={onOpenFilters}
-        >
-          Uncategorized
-        </FilterChip>
-      ) : null}
       <ChoiceChip
         label={query.type === 'all' ? 'Type' : typeLabel}
         value={query.type}

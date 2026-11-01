@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { UncategorizedCard } from '@/components/organisms/UncategorizedCard/UncategorizedCard';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { LoadError } from '@/features/shell/LoadError';
 import { areaCrumb } from '@/features/shell/navigation';
@@ -13,8 +14,10 @@ import { useSearchText } from '@/features/shell/useSearchText';
 import { TransactionsTabs } from '@/features/transactions/TransactionsTabs';
 import { seedNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import type { Account } from '@/lib/account.types';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Tag } from '@/lib/tags.types';
+import type { CategoryCounts, UncategorizedSummary } from '@/lib/uncategorized.types';
 
 import { FilterChips } from './FilterChips';
 import type { TransactionListRow } from './transactionRowsModel';
@@ -41,7 +44,16 @@ export interface TransactionsListPaneProps {
   list: TransactionsListResult;
   /** Null when they could not be loaded: the Account and Category chips are then off. */
   accounts: Account[] | null;
+  /** The user's tags with their counts (the Tags chip); named `categories` from before tags replaced categories. Null when they could not be loaded. */
   categories: Tag[] | null;
+  /** The fixed category list (the Category chip); null when it could not be loaded. */
+  categoryList?: CategoryDef[] | null;
+  /** Transactions per category and sub-category, for the Category chip's counts. */
+  categoryCounts?: CategoryCounts | null;
+  /** The Uncategorized card's numbers; the card shows only while `count` is above zero. */
+  uncategorized?: UncategorizedSummary | null;
+  /** "Sort them" on the Uncategorized card. */
+  onSortThem?: () => void;
   /** Everything that needs review; null when it could not be loaded. */
   needsReviewCount: number | null;
   /** The app bar's +: opens Add transaction (piece 3 wires it). */
@@ -76,6 +88,10 @@ export function TransactionsListPane({
   list,
   accounts,
   categories,
+  categoryList,
+  categoryCounts,
+  uncategorized,
+  onSortThem,
   needsReviewCount,
   onAdd = noop,
   addLoading,
@@ -140,10 +156,20 @@ export function TransactionsListPane({
               today={today}
               accounts={accounts}
               categories={categories}
+              categoryList={categoryList}
+              categoryCounts={categoryCounts}
               onChange={go}
               onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
               search={{ value: text, onValueChange: setText }}
             />
+            {uncategorized && uncategorized.count > 0 ? (
+              <UncategorizedCard
+                count={uncategorized.count}
+                groupCount={uncategorized.groupCount}
+                topGroups={uncategorized.topGroups}
+                onSort={onSortThem}
+              />
+            ) : null}
             {list.ok ? (
               <TransactionsList
                 query={query}
@@ -179,7 +205,6 @@ export function TransactionsListPane({
           query={query}
           today={today}
           accounts={accounts}
-          categories={categories}
           onApply={(next) => {
             setFiltersOpen(false);
             go(next, false);
