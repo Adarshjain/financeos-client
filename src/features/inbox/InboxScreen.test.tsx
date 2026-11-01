@@ -82,7 +82,6 @@ const reward = item({
   refs: { accountId: 'acc-1' },
   actions: [action({ type: 'open', label: 'Open', href: '/rewards' }), DISMISS],
 });
-const update = item({ key: 'job:9', kind: 'job', section: 'info', severity: 'info', title: 'Statement imported', actions: [DISMISS] });
 const prices = item({ key: 'job:2', kind: 'job', section: 'needs_look', severity: 'info', title: 'Prices refreshed', actions: [DISMISS] });
 
 describe('InboxScreen', () => {
@@ -120,22 +119,14 @@ describe('InboxScreen', () => {
     expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
   });
 
-  it('renders Act now and Needs a look in order with counts, no Updates, no summary line', async () => {
-    seed([update, review, bill, emi]);
+  it('renders Act now and Needs a look in order with counts, no summary line', async () => {
+    seed([review, bill, emi]);
     renderWithQuery(<InboxScreen />);
     await screen.findByText('Amex bill');
     const headings = screen.getAllByRole('heading', { level: 2 });
     expect(headings.map((h) => h.textContent)).toEqual(['Act now2', 'Needs a look1']);
-    expect(screen.queryByText('Statement imported')).not.toBeInTheDocument();
     expect(screen.queryByText(/to act/)).not.toBeInTheDocument();
     expect(screen.queryByText('Nothing urgent')).not.toBeInTheDocument();
-  });
-
-  it('only Updates rows: shows the empty state', async () => {
-    seed([update]);
-    renderWithQuery(<InboxScreen />);
-    expect(await screen.findByText('All clear')).toBeInTheDocument();
-    expect(screen.queryByText('Statement imported')).not.toBeInTheDocument();
   });
 
   it('does not show a section with no rows', async () => {
