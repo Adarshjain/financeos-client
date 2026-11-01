@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
+/** @deprecated Dinero code formats through '@/lib/format'. */
 export function formatMoney(amount: string | number | null | undefined): string {
   if (amount === undefined || amount === null) return '₹0.00';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -19,27 +19,6 @@ export function formatMoney(amount: string | number | null | undefined): string 
   });
 
   return formatter.format(num);
-}
-
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
-export function formatCurrency(amount: string | number | null | undefined): string {
-  return formatMoney(amount);
-}
-
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
-export function formatNumber(val: string | number | null | undefined): string {
-  if (val === undefined || val === null) return '0';
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  if (isNaN(num)) return '0';
-  return num.toLocaleString('en-IN');
-}
-
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
-export function formatNullableMoney(amount: string | number | null | undefined): string {
-  if (amount === undefined || amount === null) return '—';
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return '—';
-  return formatMoney(num);
 }
 
 /**
@@ -73,7 +52,7 @@ export function parseCalendarDate(value: string): Date {
   return new Date(year, month - 1, day);
 }
 
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
+/** @deprecated Dinero code formats through '@/lib/format'. */
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '—';
   // Calendar dates are timezone-free and must not round-trip through UTC;
@@ -92,22 +71,6 @@ export function formatDate(date: string | Date | null | undefined): string {
   }).replace(/\u00A0/g, ' ');
 }
 
-export function getAccountTypeLabel(type: string | undefined): string {
-  if (!type) return 'Unknown';
-  const labels: Record<string, string> = {
-    bank_account: 'Bank Account',
-    credit_card: 'Credit Card',
-    broker: 'Broker',
-    generic: 'Generic',
-    checking: 'Checking',
-    savings: 'Savings',
-    investment: 'Investment',
-    loan: 'Loan',
-    other: 'Other',
-  };
-  return labels[type.toLowerCase()] || type;
-}
-
 /**
  * Resolve an account id to its display name.
  *
@@ -122,78 +85,6 @@ export function getAccountName(
   // id at all, 'Unknown' when the id doesn't resolve to a loaded account.
   if (!accountId) return '—';
   return accounts.find((a) => a.id === accountId)?.name || 'Unknown';
-}
-
-/** Largest-first, so the first unit the elapsed time reaches is the one used. */
-const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-  ['year', 365 * 24 * 60 * 60 * 1000],
-  ['month', 30 * 24 * 60 * 60 * 1000],
-  ['day', 24 * 60 * 60 * 1000],
-  ['hour', 60 * 60 * 1000],
-  ['minute', 60 * 1000],
-];
-
-/**
- * A timestamp as elapsed time — "3 days ago", "yesterday", "in 2 hours".
- *
- * Replaces the single `date-fns/formatDistanceToNow` call that was the only use
- * of that dependency in the whole app, while `Intl.RelativeTimeFormat` does the
- * job natively (and every other date helper here is already native).
- *
- * `numeric: 'auto'` is what yields "yesterday" rather than "1 day ago".
- */
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
-export function formatRelativeTime(
-  date: string | Date | null | undefined,
-  locale = 'en-IN',
-): string {
-  if (!date) return 'never';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (Number.isNaN(d.getTime())) return 'never';
-
-  const elapsed = d.getTime() - Date.now();
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-
-  for (const [unit, ms] of RELATIVE_UNITS) {
-    if (Math.abs(elapsed) >= ms) {
-      return formatter.format(Math.round(elapsed / ms), unit);
-    }
-  }
-  // Under a minute: "now" reads better than "in 0 seconds".
-  return formatter.format(Math.round(elapsed / 1000), 'second');
-}
-
-export function getPositionLabel(position: string | undefined): string {
-  if (!position) return 'Asset';
-  return position === 'liability' ? 'Liability' : 'Asset';
-}
-
-/** @deprecated Legacy only. Dinero code formats through '@/lib/format'. */
-export function formatMonthYear(date: Date, locale = 'en-IN') {
-  const month = date.toLocaleString(locale, { month: 'short' });
-  const year = String(date.getFullYear()).slice(-2);
-
-  return `${month.slice(0,3)} ${year}`;
-}
-
-export function isSameDay(d1: Date, d2: Date) {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
-export function isWithinLastNDays(date: Date, days: number) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const target = new Date(date);
-  target.setHours(0, 0, 0, 0);
-
-  const diffInDays = (+today - +target) / (1000 * 60 * 60 * 24);
-
-  return diffInDays >= 0 && diffInDays < days;
 }
 
 /**
