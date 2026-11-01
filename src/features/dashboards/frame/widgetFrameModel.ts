@@ -49,21 +49,22 @@ export function widgetOpensUnderlying(widget: WidgetResponse): boolean {
 }
 
 /**
- * The ⋮ menu's items, in order. A saved report: Edit report, plus View underlying data unless it is a KPI (its value
- * tap opens it). A built-in: Widget settings (when the dashboard can save them), Duplicate as my report (templates
- * only), View full page (a built-in with a page of its own that its body does not already link to). Net worth's
- * underlying data is its value tap only.
+ * The ⋮ menu's items, in order. A saved report: Edit report, View underlying data (a KPI's value tap opens it too).
+ * A built-in: Widget settings (when the dashboard can save them), Duplicate as my report (templates only), View full
+ * page (a built-in with a page of its own that its body does not already link to), and View underlying data for a
+ * KPI built-in (Net worth; its value tap opens it too).
  */
 export function widgetMenuItems(widget: WidgetResponse, { canEditSettings }: { canEditSettings: boolean }): WidgetMenuItemId[] {
   if (!isWidgetAvailable(widget)) return [];
   if (!isBuiltinWidget(widget)) {
     if (!widget.reportId) return [];
-    return widget.report?.type === 'KPI' ? ['edit-report'] : ['edit-report', 'underlying'];
+    return ['edit-report', 'underlying'];
   }
   const items: WidgetMenuItemId[] = [];
   if (canEditSettings) items.push('settings');
   if (isTemplateWidget(widget)) items.push('duplicate');
   const key = widgetBuiltinKey(widget);
   if (widgetHref(widget) && !(key && BODY_LINKED_BUILTIN_KEYS.includes(key))) items.push('full-page');
+  if (isKpiBuiltinWidget(widget)) items.push('underlying');
   return items;
 }

@@ -168,7 +168,7 @@ describe('DashboardWidgetFrame menus', () => {
   it('a report widget: Edit report goes to the report editor', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={report()} />);
     await open();
-    expect(items()).toEqual(['Edit report']);
+    expect(items()).toEqual(['Edit report', 'View underlying data']);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Edit report' }));
     expect(push).toHaveBeenCalledWith('/reports/r1');
   });

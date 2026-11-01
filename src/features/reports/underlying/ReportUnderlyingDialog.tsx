@@ -9,6 +9,7 @@
 
 import React from 'react';
 
+import { Badge } from '@/components/ds/Badge/Badge';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
@@ -72,6 +73,8 @@ interface UnderlyingDialogBaseProps {
   initialEntry?: number;
   /** The dialog's title; without it "Underlying data · <figure>". */
   title?: string;
+  /** A transaction row was pressed: opens that transaction. Without it transaction rows are not pressable (the report editor keeps its draft). */
+  onOpenTransaction?: (id: string) => void;
   onClose: () => void;
 }
 
@@ -91,7 +94,7 @@ export type ReportUnderlyingDialogProps = UnderlyingDialogBaseProps &
   );
 
 /** The dialog is open while it is mounted: the page mounts it for one opening and unmounts it on close. */
-export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries, dimensionLabel, initialEntry, title: customTitle, onClose }: ReportUnderlyingDialogProps) {
+export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries, dimensionLabel, initialEntry, title: customTitle, onOpenTransaction, onClose }: ReportUnderlyingDialogProps) {
   // The rows of the whole figure, or of the one category picked in the dropdown (a number as text).
   const [entry, setEntry] = React.useState(() =>
     initialEntry !== undefined && entries?.[initialEntry] ? String(initialEntry) : ALL_ENTRIES,
@@ -174,7 +177,12 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
         const id = rowId(row);
         if (id !== null) nav.push({ datasource: data.datasource, rowId: id });
       }
-    : undefined;
+    : data?.rowAction === 'transaction' && onOpenTransaction
+      ? (row: Row) => {
+          const id = rowId(row);
+          if (id !== null) onOpenTransaction(id);
+        }
+      : undefined;
   const top = nav.top;
 
   const changePeriod = (next: string) => {
@@ -314,7 +322,19 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
 
           {raw && data ? (
             <>
-              <div className="flex flex-wrap justify-end gap-space-8">
+              <div className="flex flex-wrap items-center justify-between gap-space-8">
+                {data.filters.length > 0 ? (
+                  <ul className="flex flex-wrap gap-space-8" aria-label="Filters">
+                    {data.filters.map((f, i) => (
+                      <li key={`${f.field}-${i}`}>
+                        <Badge variant="outline">
+                          {f.fieldLabel} {f.text}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <div className="ml-auto flex flex-wrap justify-end gap-space-8">
                 {entries && entries.length > 0 ? (
                   <Select
                     value={entry}
@@ -337,6 +357,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                     </FilterChip>
                   }
                 />
+                </div>
               </div>
               {groups && groups.length === 0 ? (
                 <EmptyState compact description="No rows make up this figure." />
