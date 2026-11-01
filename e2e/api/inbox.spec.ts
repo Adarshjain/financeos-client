@@ -164,7 +164,7 @@ test.describe('Inbox API: reads (@api)', () => {
     expect(inboxRow(inbox, `lending:${far.id}`)).toBeUndefined();
   });
 
-  test('a finished job is an info row that does not count towards the badge; a finished statement import is not', async ({ request }) => {
+  test('a succeeded job or statement import makes no inbox row (only failed jobs show)', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-job');
     const card = await createCreditCard(api, { name: 'Job Card', last4: '8105' });
     await ingestCardStatement(api, card.id, '8105');
@@ -176,12 +176,8 @@ test.describe('Inbox API: reads (@api)', () => {
     expect((await waitForJob(api, (applied.data as { jobId: string }).jobId, { timeoutMs: 15000 })).status).toBe('SUCCEEDED');
 
     const inbox = await getInbox(api);
-    const jobs = inbox.items.filter((i) => i.kind === 'job');
-    expect(jobs.length).toBe(1);
-    expect(jobs[0]).toMatchObject({ section: 'info', severity: 'info', rowType: 'item' });
-    expect(jobs[0].key.startsWith('job:')).toBe(true);
-    expect(jobs[0].actions.map((a) => a.type)).toEqual(['open', 'dismiss']);
-    expect(inbox.summary.info).toBe(jobs.length);
+    expect(inbox.items.filter((i) => i.kind === 'job'), 'a succeeded job makes no row').toHaveLength(0);
+    expect(inbox.summary.info).toBe(0);
     expect(inbox.summary.badge).toBe(inbox.summary.actNow + inbox.summary.needsLook);
   });
 
