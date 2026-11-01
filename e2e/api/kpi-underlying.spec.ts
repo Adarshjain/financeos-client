@@ -21,6 +21,7 @@ import {
   NET_WORTH_KIND_LABELS,
   NET_WORTH_SIDE_LABELS,
   PREVIOUS_PERIOD,
+  previousWindowOf,
   seedSpendMonths,
   seedStatementOnlyRows,
   startsWithBom,
@@ -61,7 +62,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       datasource: 'transactions',
       range: { from: ds.current.from, to: ds.current.to },
       previousAvailable: true,
-      previousRange: { from: ds.previous.from, to: ds.previous.to },
+      previousRange: { from: ds.previousWindow.from, to: ds.previousWindow.to },
       measure: 'spend',
       measureLabel: 'Spend',
       aggregation: 'sum',
@@ -106,9 +107,9 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     const previous = await underlyingSaved(api, report.id, { period: 'previous' });
     expect(previous).toMatchObject({
       period: 'previous',
-      range: { from: ds.previous.from, to: ds.previous.to },
+      range: { from: ds.previousWindow.from, to: ds.previousWindow.to },
       previousAvailable: true,
-      previousRange: { from: ds.previous.from, to: ds.previous.to },
+      previousRange: { from: ds.previousWindow.from, to: ds.previousWindow.to },
       value: kpi.comparison.previousValue,
       rowCount: 3,
     });
@@ -116,7 +117,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     // The previous period's chips show the window the date filter was swapped for.
     expect(previous.filters.map((f) => f.text)).toEqual([
       `in ${ds.food.name}, ${ds.travel.name}`,
-      `Between ${ddmmyyyy(ds.previous.from)} and ${ddmmyyyy(ds.previous.to)}`,
+      `Between ${ddmmyyyy(ds.previousWindow.from)} and ${ddmmyyyy(ds.previousWindow.to)}`,
     ]);
   });
 
@@ -465,7 +466,7 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       summaryLines: [],
       notCounted: [],
       range: { from: current.from, to: current.to },
-      previousRange: { from: previous.from, to: previous.to },
+      previousRange: previousWindowOf(current),
     });
     expect(now.filters).toEqual([
       {

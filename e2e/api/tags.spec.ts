@@ -48,7 +48,7 @@ test.describe('Tags API (@api)', () => {
     expect((await api.GET('/api/v1/tags')).data!.filter((t) => t.name === 'Holiday')).toHaveLength(1);
     const other = await createCategory(api, 'Garden');
     const clash = await api.PUT('/api/v1/tags/{id}', { params: { path: { id: other.id } }, body: { name: 'Holiday' } });
-    expectStatus(clash, 400);
+    expectStatus(clash, 409);
     expect((clash.error as { message?: string }).message).toBe('A tag with this name already exists.');
     expectStatus(await api.POST('/api/v1/tags', { body: { name: '   ' } }), 400);
     // Another user may use the same name.

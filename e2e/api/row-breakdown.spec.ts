@@ -100,9 +100,9 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
       ['excluded', 'Excluded'],
     ]);
     expect(tx.rows.rows).toEqual([
-      { id: groceries.id, date: istToday(-3), description: 'Groceries', category: '', amount: -300, excluded: true },
+      { id: groceries.id, date: istToday(-3), description: 'Groceries', category: 'Groceries', amount: -300, excluded: true },
       { id: rent.id, date: istToday(-4), description: 'Rent', category: '', amount: -1200, excluded: false },
-      { id: refund.id, date: istToday(-5), description: 'Refund in', category: '', amount: 2500, excluded: false },
+      { id: refund.id, date: istToday(-5), description: 'Refund in', category: 'Refund', amount: 2500, excluded: false },
     ]);
     expect(tx.rows.page).toEqual({ number: 0, size: 25, totalElements: 3, totalPages: 1 });
 
