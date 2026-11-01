@@ -36,3 +36,5 @@ Radix Popover (Floating UI).
 Fades and slides in; fades and slides out on close (dur-fast).
 
 - Focus return: on close, focus goes back to the trigger only if focus has not already moved to another element outside the content (so opening a Select beside a closing Menu is not dismissed). A consumer `onCloseAutoFocus` runs first and its `preventDefault` still wins.
+
+- Phone (below `desk`): the panel opens as a bottom sheet like the Dialog sheet (handle, optional `title` on `Popover.Content`, drag down to close), by CSS only (`data-ds-sheet`, `ds.css`); no autofocus on open there. Desktop keeps the dropdown.

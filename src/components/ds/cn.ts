@@ -26,6 +26,7 @@ const SPACING_KEYS = {
   'safe-right': true,
   'safe-56': true,
   'sticky-offset': true,
+  'keyboard-inset': true,
   'bottom-clearance': true,
 };
 
@@ -158,6 +159,7 @@ const customTwMerge = extendTailwindMerge({
       size: [{ size: [...CN_SIZE] }],
       z: [{ z: [...CN_Z_INDEX] }],
       duration: [{ duration: [...CN_DURATION] }],
+      'max-h': [{ 'max-h': ['dvh-safe', 'dvh-safe-keyboard'] }],
     },
   },
 });

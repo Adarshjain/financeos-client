@@ -11,6 +11,7 @@ import type { IconName } from '../Icon/registry';
 import { Reveal } from '../Reveal/Reveal';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { useControllableState } from '../useControllableState';
+import { useDsKeyboardInset } from '../useKeyboardInset';
 import { useSheetDrag } from '../useSheetDrag';
 
 /** `full` fills the whole viewport (100dvw x 100dvh), on phone too: no sheet, no handle. */
@@ -290,7 +291,6 @@ export interface DialogPanelProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   secondary?: DialogAction;
   tertiary?: DialogAction;
   dismissible?: boolean;
-  dragProps?: Record<string, unknown>;
   isRadix?: boolean;
 }
 
@@ -311,7 +311,6 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
       secondary,
       tertiary,
       dismissible = true,
-      dragProps,
       isRadix = false,
       ...props
     },
@@ -357,11 +356,10 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
 
         <div
           data-testid="dialog-drag-area"
-          {...(dismissible && !isFull ? dragProps : {})}
-          className="select-none shrink-0 touch-none"
+          className="shrink-0"
         >
           {dismissible && !isFull ? (
-            <div className="desk:hidden cursor-grab active:cursor-grabbing touch-none py-space-8">
+            <div className="desk:hidden cursor-grab active:cursor-grabbing py-space-8">
               <DialogHandle />
             </div>
           ) : null}
@@ -450,7 +448,6 @@ export interface DialogShellProps extends Omit<
 export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
   (
     {
-      style,
       className,
       onDismiss,
       dismissible = true,
@@ -458,26 +455,25 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
     },
     ref
   ) => {
-    const { dragOffset, isDragging, dragProps } = useSheetDrag({
+    const dragRef = useSheetDrag({
       onDismiss,
+      enabled: dismissible && props.size !== 'full',
     });
+    const mergedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        dragRef(node);
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+      },
+      [dragRef, ref],
+    );
 
     return (
       <DialogPanel
-        ref={ref}
+        ref={mergedRef}
         onDismiss={onDismiss}
         dismissible={dismissible}
-        dragProps={dragProps}
-        style={{
-          transform: dismissible && dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-          ...style,
-        }}
-        className={cn(
-          isDragging
-            ? 'transition-none'
-            : 'transition-transform duration-slow ease-out',
-          className
-        )}
+        className={className}
         {...props}
       />
     );
@@ -582,17 +578,14 @@ const DialogContent = forwardRef<
       onDismiss?.();
     };
 
-    const { dragOffset, isDragging, dragProps, reset: resetDrag } = useSheetDrag({
+    useDsKeyboardInset();
+    const backdropRef = useRef<HTMLDivElement>(null);
+    // The whole panel drags; the hook resets its inline styles when the panel unmounts.
+    const panelRef = useSheetDrag({
       onDismiss: handleClose,
+      enabled: dismissible && !isFull,
+      backdropRef,
     });
-
-    // The panel unmounts when the close animation ends: clear any drag offset then.
-    const panelRef = useCallback(
-      (node: HTMLDivElement | null) => {
-        if (!node) resetDrag();
-      },
-      [resetDrag],
-    );
 
     const handlePointerDownOutside: DialogContentProps['onPointerDownOutside'] = (
       e,
@@ -627,13 +620,14 @@ const DialogContent = forwardRef<
       <DialogPortal>
         {variant === 'side-panel' ? (
           <div
+            ref={backdropRef}
             data-testid="dialog-backdrop"
             data-state={open ? 'open' : 'closed'}
             onClick={dismissible ? handleClose : undefined}
-            className="desk:hidden fixed inset-0 z-overlay bg-backdrop animate-in fade-in-0 duration-slow data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow"
+            className="desk:hidden fixed inset-0 z-overlay bg-backdrop [&[data-drag-closing]]:!animate-none animate-in fade-in-0 duration-slow data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow"
           />
         ) : (
-          <DialogPrimitive.Overlay className="fixed inset-0 z-overlay bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
+          <DialogPrimitive.Overlay ref={backdropRef} className="fixed inset-0 z-overlay bg-backdrop [&[data-drag-closing]]:!animate-none animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
         )}
         <DialogPrimitive.Content
           ref={ref}
@@ -642,7 +636,7 @@ const DialogContent = forwardRef<
           onInteractOutside={handleInteractOutside}
           onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(
-            'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
+            'group fixed inset-x-0 bottom-keyboard-inset z-overlay flex flex-col focus:outline-none',
             'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
             isFull
               ? 'inset-0'
@@ -656,11 +650,7 @@ const DialogContent = forwardRef<
         >
           <div
             ref={panelRef}
-            style={{
-              transform:
-                dismissible && dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-              ...style,
-            }}
+            style={style}
             className={cn(
               'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
@@ -670,17 +660,16 @@ const DialogContent = forwardRef<
                     'animate-in fade-in-0 group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
                   )
                 : cn(
-                    'max-h-dvh-safe desk:max-h-dvh w-full rounded-t-ds-2xl shadow-up-2 border-t',
+                    // The sheet sits above the keyboard (--ds-keyboard-inset), so its height shrinks by the same amount.
+                    'max-h-dvh-safe-keyboard desk:max-h-dvh w-full rounded-t-ds-2xl shadow-up-2 border-t',
                     variant === 'side-panel'
                       ? 'desk:rounded-ds-lg desk:shadow-none desk:border desk:border-line desk:flex-1 desk:min-h-0 desk:max-h-full desk:w-full desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
                       : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
                     dialogSizeClasses[size],
                     'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
-                    'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
+                    '[&[data-drag-closing]]:!animate-none group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
                   ),
-              isDragging
-                ? 'transition-none'
-                : 'transition-transform duration-slow ease-out desk:duration-base',
+              'transition-transform duration-slow ease-out desk:duration-base motion-reduce:duration-0',
               (variant !== 'side-panel' || isFull) && className
             )}
           >
@@ -703,7 +692,6 @@ const DialogContent = forwardRef<
               secondary={secondary}
               tertiary={tertiary}
               dismissible={dismissible}
-              dragProps={dragProps}
               isRadix
               className="border-0 rounded-none shadow-none bg-transparent"
             >

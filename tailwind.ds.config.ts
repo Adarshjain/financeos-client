@@ -156,12 +156,16 @@ const config: Config = {
         'safe-56': 'calc(var(--ds-space-56) + var(--ds-safe-top, env(safe-area-inset-top)))',
         // Where in-page sticky content stops: just under the sticky top bar. The page content sets --ds-sticky-top; elsewhere (dialogs) it is 0.
         'sticky-offset': 'var(--ds-sticky-top, 0px)',
+        // Bottom edge of a phone sheet: above the on-screen keyboard (--ds-keyboard-inset, written by useDsKeyboardInset; 0 without one).
+        'keyboard-inset': 'var(--ds-keyboard-inset, 0px)',
         'bottom-clearance': 'calc(var(--ds-space-64) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       maxHeight: {
         // Full dynamic viewport minus the notch / status-bar inset and a gap (a phone sheet never reaches under
         // the notch, and a tall one still leaves the backdrop strip above its handle).
         'dvh-safe': 'calc(100dvh - env(safe-area-inset-top) - var(--ds-space-16))',
+        // dvh-safe less the on-screen keyboard, so a sheet's search field and footer stay above it.
+        'dvh-safe-keyboard': 'calc(100dvh - env(safe-area-inset-top) - var(--ds-space-16) - var(--ds-keyboard-inset, 0px))',
       },
       borderRadius: {
         'ds-2xs': 'var(--ds-radius-2xs)',

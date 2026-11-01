@@ -224,3 +224,67 @@ html.ds-theme-vt::view-transition-new(root) {
 body:has([data-selection-bar]) {
   --ds-docked-bottom: var(--ds-space-64);
 }
+
+/* Dropdown sheets (owner, 2026-11-01): below `desk` (641px) the content of every Popover, Menu, Select and DateField
+   (marked data-ds-sheet) becomes a bottom sheet, drawn by CSS alone. Radix positions the content inside a
+   [data-radix-popper-content-wrapper] with inline transform and min-width, so the wrapper is overridden here to sit
+   over the screen above the on-screen keyboard (--ds-keyboard-inset), the sheet at its bottom, and carry the scrim as its
+   ::before: a tap on it closes the sheet (it is outside the content) and is swallowed. useSheetDrag fades it while dragging
+   through --ds-scrim-opacity / --ds-scrim-ease. The sheet's own look is `max-desk:` classes (dropdownSheet.tsx).
+   Keep 641px in step with `desk` (tailwind.ds.config.ts). */
+@media not all and (min-width: 641px) {
+  [data-radix-popper-content-wrapper]:has(> [data-ds-sheet]) {
+    position: fixed !important;
+    inset: 0 0 var(--ds-keyboard-inset, 0px) 0 !important;
+    min-width: 0 !important;
+    transform: none !important;
+    pointer-events: auto;
+    /* The wrapper itself fills the screen (so a tap anywhere outside the sheet lands on it, never on the page), and the sheet sits at its bottom. */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  [data-radix-popper-content-wrapper]:has(> [data-ds-sheet])::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--ds-backdrop);
+    opacity: var(--ds-scrim-opacity, 1);
+    transition: var(--ds-scrim-ease, none);
+    animation: ds-scrim-in var(--ds-dur-slow) cubic-bezier(.2, .8, .2, 1) backwards;
+  }
+
+  [data-radix-popper-content-wrapper]:has(> [data-ds-sheet][data-state='closed'])::before {
+    animation: ds-scrim-out var(--ds-dur-slow) cubic-bezier(.2, .8, .2, 1) forwards;
+  }
+
+  /* A drag-close already faded the scrim itself. */
+  [data-radix-popper-content-wrapper]:has(> [data-ds-sheet][data-drag-closing])::before {
+    animation: none;
+  }
+
+  /* The page behind an open sheet does not scroll. */
+  html:has([data-ds-sheet][data-state='open']) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-radix-popper-content-wrapper]:has(> [data-ds-sheet])::before {
+      animation-duration: 0s !important;
+    }
+  }
+}
+
+@keyframes ds-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-scrim-out {
+  to {
+    opacity: 0;
+  }
+}

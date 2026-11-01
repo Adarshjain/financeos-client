@@ -80,3 +80,25 @@ export const WithCompactTrigger: Story = {
     ),
   },
 };
+
+export const PhoneSheet: Story = {
+  name: 'Phone sheet',
+  parameters: { docs: { description: { story: 'Below 641px the panel opens as a bottom sheet with a handle and an optional title (contentProps.title); swipe down from anywhere or tap outside to close.' } } },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: {
+    defaultOpen: true,
+    contentProps: { title: 'Cards' },
+    trigger: (
+      <Button variant="secondary" icon={<Icon name="chevron-down" />}>
+        HDFC Regalia Gold
+      </Button>
+    ),
+    children: (
+      <div className="flex flex-col gap-space-4">
+        <Text>HDFC Regalia Gold</Text>
+        <Text tone="ink-3">Amex Platinum</Text>
+        <Text tone="ink-3">SBI SimplyClick</Text>
+      </div>
+    ),
+  },
+};

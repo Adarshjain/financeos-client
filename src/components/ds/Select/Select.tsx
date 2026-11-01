@@ -308,6 +308,8 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           className={cn(
             rowClass,
             isHighlighted && !isDisabled && !isSelected && 'bg-hover',
+            // Phone sheet: the tick marks the pick, the row keeps no tint.
+            isSelected && !multiple && !showRadio && !isDisabled && 'max-desk:bg-transparent max-desk:hover:bg-transparent max-desk:focus:bg-transparent max-desk:active:bg-transparent max-desk:text-ink',
           )}
         >
           {multiple ? (
@@ -329,7 +331,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
                 isDisabled
                   ? 'text-ink-faint'
                   : isSelected && !multiple && !showRadio
-                    ? 'text-brand-strong'
+                    ? 'text-brand-strong max-desk:text-ink'
                     : 'text-ink',
               )}
             >
@@ -378,7 +380,6 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               value={searchQuery}
               placeholder={searchPlaceholder}
               onValueChange={handleSearchChange}
-              autoFocus
               onKeyDown={handleKeyDown}
             />
           </div>
@@ -395,7 +396,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           }
           onWheel={stopScrollLock}
           onTouchMove={stopScrollLock}
-          className="flex flex-col flex-1 min-h-0 overflow-y-auto max-h-72 outline-none touch-pan-y"
+          className="flex flex-col flex-1 min-h-0 overflow-y-auto max-h-72 outline-none touch-pan-y max-desk:max-h-none"
         >
           {totalMatches === 0 && searchQuery.trim() ? (
             <div className="px-space-10 py-space-14 font-text text-label font-medium text-ink-3 text-center">
@@ -875,6 +876,9 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     );
 
     const effectiveTrigger = trigger ?? triggerButton;
+    // The phone sheet's heading: the field's label, else its aria-label.
+    const ariaLabel = restProps['aria-label'];
+    const sheetTitle = typeof label === 'string' ? label : typeof ariaLabel === 'string' ? ariaLabel : undefined;
 
     return (
       <FieldFrame
@@ -901,6 +905,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           trigger={effectiveTrigger}
           // One width rule for every select (owner, 2026-10-26): container-xs wide, grows to its content, capped at the viewport inset; never follows the trigger.
           contentClassName={cn('p-0 overflow-hidden w-max min-w-container-xs max-w-container-viewport-inset desk:max-w-container-viewport-inset', menuClassName)}
+          contentProps={{ title: sheetTitle }}
         >
           <SelectMenu
             id={id}

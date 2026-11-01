@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { Button } from '../Button/Button';
 import {
@@ -9,6 +9,15 @@ import {
   Dialog,
   DialogShell,
 } from './Dialog';
+
+// jsdom has no layout: give panels a height so the sheet drag can measure its 25% close threshold.
+const originalOffsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 400 });
+});
+afterAll(() => {
+  if (originalOffsetHeight) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', originalOffsetHeight);
+});
 
 describe('DialogShell', () => {
   it('renders title, description and content', () => {
@@ -75,7 +84,7 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers onDismiss when swiping down past threshold', () => {
+  it('triggers onDismiss when swiping down past threshold', async () => {
     const handleClose = vi.fn();
     render(
       <DialogShell title="Swipe Test" onDismiss={handleClose}>
@@ -85,10 +94,10 @@ describe('DialogShell', () => {
     const dragArea = screen.getByTestId('dialog-drag-area');
 
     fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
-    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
-    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 250, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 250, pointerId: 1 });
 
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(handleClose).toHaveBeenCalledTimes(1));
   });
 
   it('does not trigger onDismiss when swiping down below threshold', () => {
@@ -417,7 +426,7 @@ describe('Dialog (Radix overlay)', () => {
 
     const content = screen.getByText('Dialog is open').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
-    expect(content).toHaveClass('max-h-dvh-safe');
+    expect(content).toHaveClass('max-h-dvh-safe-keyboard');
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
   });
 
@@ -486,7 +495,7 @@ describe('Dialog (Radix overlay)', () => {
     expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('renders dialog drag area with touch-none for swipe handling', () => {
+  it('does not restrict touch on the drag area, so the whole sheet can be dragged and scrolled', () => {
     render(
       <Dialog open>
         <Dialog.Content title="Drag Test">
@@ -495,10 +504,10 @@ describe('Dialog (Radix overlay)', () => {
       </Dialog>,
     );
     const dragArea = screen.getByTestId('dialog-drag-area');
-    expect(dragArea).toHaveClass('touch-none');
+    expect(dragArea).not.toHaveClass('touch-none');
   });
 
-  it('swipe-down past threshold closes Dialog.Content and calls onOpenChange(false) without onDismiss', () => {
+  it('swipe-down past threshold closes Dialog.Content and calls onOpenChange(false) without onDismiss', async () => {
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
@@ -510,13 +519,13 @@ describe('Dialog (Radix overlay)', () => {
     const dragArea = screen.getByTestId('dialog-drag-area');
 
     fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
-    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
-    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 250, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 250, pointerId: 1 });
 
-    expect(handleOpenChange).toHaveBeenCalledWith(false);
+    await waitFor(() => expect(handleOpenChange).toHaveBeenCalledWith(false));
   });
 
-  it('swipe-down past threshold closes Dialog.Content and calls both onDismiss and onOpenChange(false)', () => {
+  it('swipe-down past threshold closes Dialog.Content and calls both onDismiss and onOpenChange(false)', async () => {
     const handleClose = vi.fn();
     const handleOpenChange = vi.fn();
     render(
@@ -529,14 +538,14 @@ describe('Dialog (Radix overlay)', () => {
     const dragArea = screen.getByTestId('dialog-drag-area');
 
     fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
-    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
-    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 250, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 250, pointerId: 1 });
 
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(handleClose).toHaveBeenCalledTimes(1));
     expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('pointercancel mid-drag does not close Dialog.Content and resets transform', () => {
+  it('pointercancel mid-drag does not close Dialog.Content and resets transform', async () => {
     const handleOpenChange = vi.fn();
     render(
       <Dialog open onOpenChange={handleOpenChange}>
@@ -549,19 +558,20 @@ describe('Dialog (Radix overlay)', () => {
     const panel = dragArea.closest('[role="dialog"] > div') as HTMLElement;
 
     fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
-    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 200, pointerId: 1 });
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
 
-    expect(panel.style.transform).toBe('translateY(100px)');
+    expect(panel.style.transform).toBe('translate3d(0, 142px, 0)');
 
     fireEvent.pointerCancel(dragArea, { pointerId: 1 });
 
     expect(handleOpenChange).not.toHaveBeenCalled();
-    expect(panel.style.transform).toBe('');
+    await waitFor(() => expect(panel.style.transform).toBe(''));
   });
 });
 
 describe('Dialog close button (UAT)', () => {
-  it('does not capture the pointer when the press starts on the × button', () => {
+  it('a press never captures the pointer (a click on × still works); a drag from the sheet does', () => {
     const capture = vi.fn();
     const original = HTMLElement.prototype.setPointerCapture;
     HTMLElement.prototype.setPointerCapture = capture;
@@ -577,8 +587,11 @@ describe('Dialog close button (UAT)', () => {
       .find((b) => !b.classList.contains('sr-only'))!;
     fireEvent.pointerDown(x, { pointerId: 1, clientY: 10 });
     expect(capture).not.toHaveBeenCalled();
-    // A press on the drag handle area still starts a drag.
-    fireEvent.pointerDown(screen.getByTestId('dialog-drag-area'), { pointerId: 2, clientY: 10 });
+    // Capture happens once a drag from the sheet locks, never on press.
+    const area = screen.getByTestId('dialog-drag-area');
+    fireEvent.pointerDown(area, { pointerId: 2, clientY: 10 });
+    expect(capture).not.toHaveBeenCalled();
+    fireEvent.pointerMove(area, { pointerId: 2, clientY: 60 });
     expect(capture).toHaveBeenCalledTimes(1);
     HTMLElement.prototype.setPointerCapture = original;
   });

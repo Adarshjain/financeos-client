@@ -44,3 +44,5 @@ Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showR
 - **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with action rows**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
 - **Small** (`size="sm"`, inline in a list row).
 - Closed field states: value, placeholder, icon, open, chips, overflow, error, disabled, loading.
+
+- Phone (below `desk`): the list opens as a bottom sheet like the Dialog sheet (handle, the label as title, 44px rows, drag down to close); the search is not focused on open there. Desktop keeps the dropdown.

@@ -121,4 +121,10 @@ describe('cn utility', () => {
       expect(cfgDuration).toEqual(expect.arrayContaining([...CN_DURATION]));
     });
   });
+
+  describe('phone sheet tokens', () => {
+    it('lets inset-0 override the keyboard-inset bottom (full-screen dialogs)', () => {
+      expect(cn('fixed inset-x-0 bottom-keyboard-inset', 'inset-0')).toBe('fixed inset-0');
+    });
+  });
 });

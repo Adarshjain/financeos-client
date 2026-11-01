@@ -24,3 +24,5 @@ FieldFrame, Popover, MonthCalendar, Icon, Button.
 
 ## Variants
 - Single date, date range, with min/max (days outside are disabled), error, disabled, open.
+
+- Phone (below `desk`): the calendar opens as a bottom sheet like the Dialog sheet (handle, the label as title); a range shows one month with Today, Clear and Done. Desktop keeps the dropdown.
