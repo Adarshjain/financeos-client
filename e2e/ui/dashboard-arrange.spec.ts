@@ -118,9 +118,7 @@ test.describe('Dashboard arranging UI (@ui)', () => {
     await expect(page.getByText('Unsaved changes')).toBeVisible();
   });
 
-  // BUG (Dinero WidgetGrid): dragging a card DOWN past another one moves its element in the DOM, which drops the
-  // pointer capture, so the drag freezes and the drop never commits. Dragging up works (the others move instead).
-  test.fixme('@mobile a card dragged down past another one drops there and commits', async ({ page, isMobile }) => {
+  test('@mobile a card dragged down past another one drops there and commits', async ({ page, isMobile }) => {
     const dashboard = await seedStack('Arrange down', 2);
     await openEditor(page, dashboard.id);
     const gripAt = await centerOf(page, grip(page, 'w1'));
@@ -151,8 +149,7 @@ test.describe('Dashboard arranging UI (@ui)', () => {
     }).toBe(true);
   });
 
-  // Same bug as above: the card dragged to the bottom edge has to pass the cards below it.
-  test.fixme('@mobile holding a dragged card at the bottom edge scrolls the page down', async ({ page, isMobile }) => {
+  test('@mobile holding a dragged card at the bottom edge scrolls the page down', async ({ page, isMobile }) => {
     const dashboard = await seedStack('Arrange scroll down', 8);
     await openEditor(page, dashboard.id);
     await page.evaluate(() => window.scrollTo(0, 0));
