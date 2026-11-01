@@ -1,7 +1,7 @@
 import { capTone, milestonePace } from '@/features/accounts/detail/rewards/rewardsModel';
 import { accrualSummary } from '@/features/rewards/rules/manager/managerModel';
-import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import { formatDateRangeCompressed } from '@/lib/date-range';
+import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
 import type { RewardCapBucket, RewardReport, RewardRule, RewardType } from '@/lib/rewards.types';
 
 /** One cap's use in the reward year, drawn as a bar on its row. */
