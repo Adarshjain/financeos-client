@@ -7,7 +7,6 @@ const OPTIMIZED_IMPORTS = [
   '@radix-ui/react-dialog',
   '@radix-ui/react-dropdown-menu',
   '@radix-ui/react-popover',
-  '@radix-ui/react-select',
   '@radix-ui/react-slot',
   '@radix-ui/react-tabs',
   '@radix-ui/react-tooltip',
@@ -18,10 +17,10 @@ const OPTIMIZED_IMPORTS = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: false,
-  // Two root layouts ((legacy), (ds)) means no app/layout.tsx; app/global-not-found.tsx serves unmatched URLs.
+  // The one root layout lives in the (ds) group, so there is no app/layout.tsx; app/global-not-found.tsx serves unmatched URLs.
   // viewTransition: React <ViewTransition> for the Dinero page fades and list/row motion (src/lib/viewTransition.tsx).
-  // staleTimes.dynamic: revisiting a page within 30s reuses the client router cache. Legacy stays fresh via
-  // LegacyMutationRefresh (src/lib/LegacyMutationRefresh.tsx); Dinero pages router.refresh() after their mutations.
+  // staleTimes.dynamic: revisiting a page within 30s reuses the client router cache; pages router.refresh() after
+  // their mutations.
   // turbopackFileSystemCacheForDev off: the on-disk dev cache grew to 23 GB in a day and pinned the dev server.
   experimental: {
     optimizePackageImports: OPTIMIZED_IMPORTS,

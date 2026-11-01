@@ -3,9 +3,8 @@ import plugin from 'tailwindcss/plugin';
 
 import shared from './tailwind.shared';
 
-// Dinero (design system) theme. Loaded only by the (ds) root layout via src/app/(ds)/ds.css,
-// Storybook and the check-ui tool. Legacy theme names (background, foreground, border, shadcn
-// colors, font-sans/mono, 2xs, lg/md/sm radius) are not here: see tailwind.legacy.config.ts.
+// Dinero (design system) theme. Loaded by the root layout via src/app/(ds)/ds.css,
+// Storybook and the check-ui tool.
 const config: Config = {
   presets: [shared as Config],
   content: [

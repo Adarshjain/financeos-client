@@ -4,8 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dinero entry stylesheet: loaded only by the (ds) root layout (tokens.css is imported beside it).
-   The legacy theme, chart tokens and .bui-chat live in (legacy)/globals.css. */
+/* Dinero entry stylesheet: loaded by the root layout, global-error and global-not-found (tokens.css is
+   imported beside it). */
 
 @layer base {
   /* No sideways rubber-band; vertical overscroll stays on (browser and installed app) so
