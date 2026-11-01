@@ -384,7 +384,9 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
         )}
         {...props}
       >
-        {orderedIds.map((id) => {
+        {/* DOM order stays the committed order while dragging; CSS `order` shows the drag order. Moving the dragged
+            element in the DOM would drop its pointer capture, so a drop further down the grid never committed. */}
+        {committed.map(({ id }) => {
           const item = byId.get(id);
           if (!item) return null;
           const width = widthOf(id);
@@ -400,6 +402,7 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
               data-widget-grid-item={id}
               data-width={width}
               data-dragging={dragging ? 'true' : undefined}
+              style={drag ? { order: orderedIds.indexOf(id) } : undefined}
               className={cn(
                 // isolate: the item's own grip, handle and actions (z-floating) stack inside it, so they never draw over a dragged item.
                 'relative isolate flex min-w-0 flex-col',
@@ -451,7 +454,9 @@ export const WidgetGrid = forwardRef<HTMLDivElement, WidgetGridProps>(
             </div>
           );
         })}
-        {footer && <div className="col-span-full min-w-0">{footer}</div>}
+        {footer && (
+          <div className="col-span-full min-w-0" style={drag ? { order: orderedIds.length } : undefined}>{footer}</div>
+        )}
       </div>
     );
   },

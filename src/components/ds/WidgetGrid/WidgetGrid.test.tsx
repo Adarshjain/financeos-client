@@ -31,10 +31,12 @@ const items: WidgetGridItem[] = [
   { id: 'c', width: 'full', label: 'Gamma', children: <p>Gamma body</p> },
 ];
 
+// Visual order: while dragging, DOM order stays put and CSS `order` carries the preview.
 const order = (c: HTMLElement) =>
-  Array.from(c.querySelectorAll('[data-widget-grid-item]')).map((e) =>
-    e.getAttribute('data-widget-grid-item'),
-  );
+  (Array.from(c.querySelectorAll('[data-widget-grid-item]')) as HTMLElement[])
+    .map((e, i) => ({ id: e.getAttribute('data-widget-grid-item'), at: e.style.order ? Number(e.style.order) : i }))
+    .sort((x, y) => x.at - y.at)
+    .map((x) => x.id);
 const itemEl = (c: HTMLElement, id: string) =>
   c.querySelector(`[data-widget-grid-item="${id}"]`) as HTMLElement;
 
@@ -233,6 +235,19 @@ describe('WidgetGrid drag to reorder', () => {
       { id: 'c', width: 'full' },
     ]);
     expect(itemEl(container, 'a').style.transform).toBe('');
+  });
+
+  it('keeps the dragged element in place in the DOM while previewing, so pointer capture survives', () => {
+    const { container } = setup();
+    const grip = screen.getByRole('button', { name: 'Drag to reorder Alpha' });
+    fireEvent.pointerDown(grip, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(grip, { clientX: 800, clientY: 50, pointerId: 1 });
+    const domOrder = Array.from(container.querySelectorAll('[data-widget-grid-item]')).map((e) =>
+      e.getAttribute('data-widget-grid-item'),
+    );
+    expect(domOrder).toEqual(['a', 'b', 'c']);
+    expect(itemEl(container, 'a').style.order).toBe('1');
+    fireEvent.pointerUp(grip, { pointerId: 1 });
   });
 
   it('can drag to the front', () => {
