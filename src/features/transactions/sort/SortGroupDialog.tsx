@@ -68,6 +68,8 @@ export function SortGroupDialog({ group, categories, staged, onChoose, picked, o
     queryKey: keys.transactions.uncategorizedGroup(group.groupKey, page, SORT_PAGE_SIZE),
     queryFn: () => unwrapAction(loadGroupTransactions(group.groupKey, page, SORT_PAGE_SIZE)),
     placeholderData: keepPreviousData,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const chips = group.person ? reasonChips(categories, group.direction) : [];

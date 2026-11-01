@@ -48,7 +48,10 @@ export function useRuleMutations(handlers: { onSaved?: (rule: CategoryRule) => v
       handlers.onSaved?.(rule as CategoryRule);
       done();
     },
-    onError: failed("Couldn't update the rule. Try again."),
+    onError: (e) =>
+      showToast(isConflict(e) ? 'A rule for this pattern already exists.' : getErrorMessage(e, "Couldn't update the rule. Try again."), {
+        tone: 'danger',
+      }),
   });
 
   const remove = useMutation({

@@ -28,7 +28,7 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
   const tagsRequest = orNull(fetchTags());
   const categoryListRequest = orNull(fetchCategoryList());
   // An old link's `category` carried a tag; it becomes a `tag` before the one fetch. Only a link that has one waits for the two lists.
-  const raw = params.category === undefined ? params : remapLegacyCategoryParams(params, ((await categoryListRequest) ?? []).map((c) => c.key), (await tagsRequest) ?? []);
+  const raw = params.category === undefined ? params : remapLegacyCategoryParams(params, (await categoryListRequest)?.map((c) => c.key) ?? null, (await tagsRequest) ?? null);
   const query = parseTransactionsUrl(raw);
   const [page, accounts, categories, needsReviewCount, categoryList, uncategorizedExists] = await Promise.all([
     loaded(fetchTransactionsPage(query)),

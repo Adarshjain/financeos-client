@@ -64,7 +64,7 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
     : null;
   const [category, setCategory] = React.useState<CategoryPick | null>(opened);
   const [picking, setPicking] = React.useState(false);
-  const recent = useCategoryRecent('OUT', picking);
+  const recent = useCategoryRecent('ANY', picking);
   const categoryDef = findCategory(list, category?.categoryKey);
   const categoryText = categoryDef ? categoryLabel(categoryDef.name, findSub(categoryDef, category?.subcategoryKey)?.name) : '';
   const saving = create.isPending || update.isPending;
@@ -192,7 +192,7 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
       open={picking}
       onOpenChange={setPicking}
       categories={list as CategoryDef[]}
-      direction="OUT"
+      direction="ANY"
       recent={recent}
       value={category}
       subtitle={pattern.trim() || undefined}

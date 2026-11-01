@@ -29,7 +29,7 @@ const meta: Meta<typeof CategoryPicker> = {
   },
   argTypes: {
     open: { control: 'boolean' },
-    direction: { control: 'inline-radio', options: ['OUT', 'IN'] },
+    direction: { control: 'inline-radio', options: ['OUT', 'IN', 'ANY'] },
     categories: { control: false },
     value: { control: 'object' },
     recent: { control: 'object' },
@@ -75,4 +75,11 @@ export const Search: Story = { globals: phone, args: { initialQuery: 'zom' } };
 export const MoneyIn: Story = {
   globals: phone,
   args: { direction: 'IN', subtitle: 'Northwind Labs · ₹1,20,000.00', recent: [] },
+};
+
+/** Any direction (the rule form): the money-out list, then the categories only money in has, one grid, a both-way category once. */
+export const AnyDirection: Story = {
+  globals: phone,
+  args: { direction: 'ANY', title: 'Category', subtitle: 'SALARY', recent: [] },
+  argTypes: { direction: { control: 'inline-radio', options: ['OUT', 'IN', 'ANY'] } },
 };

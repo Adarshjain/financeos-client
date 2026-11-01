@@ -15,11 +15,17 @@ import { deleteTag, renameTag } from './tagActions';
 /** A second tag with the same name is a conflict the server answers with code CONFLICT. */
 export const isTagNameTaken = (error: unknown) => error instanceof ActionError && error.response.code === 'CONFLICT';
 
+/** The words of a failed tag save, for a toast or an inline error. */
+export const tagErrorMessage = (error: unknown, fallback: string) =>
+  isTagNameTaken(error) ? 'A tag with this name already exists.' : getErrorMessage(error, fallback);
+
 /**
  * Create, rename and delete the user's tags. Each refreshes the tags and, for a rename or delete, the
  * transactions that carry them (their rows show the tag names). `onCreated` gets the new tag.
  */
-export function useTagMutations(handlers: { onCreated?: (tag: Tag) => void; onDeleted?: (tag: Tag) => void } = {}) {
+export function useTagMutations(
+  handlers: { onCreated?: (tag: Tag) => void; onDeleted?: (tag: Tag) => void; /** The caller shows a failed rename itself (inline), so no toast. */ quietRename?: boolean } = {},
+) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const refreshTags = () => void queryClient.invalidateQueries({ queryKey: keys.tags.all });
@@ -28,7 +34,7 @@ export function useTagMutations(handlers: { onCreated?: (tag: Tag) => void; onDe
     router.refresh();
   };
   const failed = (fallback: string) => (e: unknown) =>
-    showToast(isTagNameTaken(e) ? 'A tag with this name already exists.' : getErrorMessage(e, fallback), { tone: 'danger' });
+    showToast(tagErrorMessage(e, fallback), { tone: 'danger' });
 
   const create = useMutation({
     mutationFn: (name: string) => unwrapAction(createTag(name)),
@@ -47,7 +53,9 @@ export function useTagMutations(handlers: { onCreated?: (tag: Tag) => void; onDe
       refreshTags();
       refreshRows();
     },
-    onError: failed("Couldn't rename the tag. Try again."),
+    onError: (e) => {
+      if (!handlers.quietRename) failed("Couldn't rename the tag. Try again.")(e);
+    },
   });
 
   const remove = useMutation({

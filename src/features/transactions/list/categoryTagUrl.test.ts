@@ -46,6 +46,15 @@ describe('the list request', () => {
   });
 });
 
+describe('the filter count', () => {
+  it('counts Uncategorized with categories or sub-categories as one filter, and Untagged with tags as one', () => {
+    expect(activeFilterCount({ ...DEFAULT_QUERY, uncategorized: true, categories: ['food'], subcategories: ['food.dining'] })).toBe(1);
+    expect(activeFilterCount({ ...DEFAULT_QUERY, untagged: true, tags: ['t1', 't2'] })).toBe(1);
+    expect(activeFilterCount({ ...DEFAULT_QUERY, uncategorized: true, categories: ['food'], untagged: true, tags: ['t1'] })).toBe(2);
+    expect(activeFilterCount({ ...DEFAULT_QUERY, categories: ['food', 'groceries'] })).toBe(1);
+  });
+});
+
 describe('old category links', () => {
   const keys = ['food', 'groceries'];
   const tags = [
@@ -64,6 +73,13 @@ describe('old category links', () => {
     expect(remapLegacyCategoryParams({ category: 'Nope' }, keys, tags)).toMatchObject({ category: undefined, tag: undefined });
     const plain = { q: 'swiggy' };
     expect(remapLegacyCategoryParams(plain, keys, tags)).toBe(plain);
+  });
+
+  it('leaves the address alone when the category list or the tags could not be loaded, never dropping a valid key', () => {
+    const params = { category: ['food', 'Goa trip'] };
+    expect(remapLegacyCategoryParams(params, null, tags)).toBe(params);
+    expect(remapLegacyCategoryParams(params, keys, null)).toBe(params);
+    expect(parseTransactionsUrl(remapLegacyCategoryParams(params, null, null)).categories).toEqual(['food', 'Goa trip']);
   });
 
   it('keeps tags already in the address', () => {

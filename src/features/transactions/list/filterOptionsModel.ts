@@ -146,10 +146,9 @@ export function activeFilterCount(query: TransactionsQuery): number {
   return [
     !(query.period.kind === 'preset' && query.period.id === 'all_time'),
     query.accounts.length > 0,
-    query.categories.length > 0 || query.subcategories.length > 0,
-    query.uncategorized,
-    query.tags.length > 0,
-    query.untagged,
+    // Uncategorized with categories is one Category filter, Untagged with tags one Tags filter: one chip each.
+    query.uncategorized || query.categories.length > 0 || query.subcategories.length > 0,
+    query.untagged || query.tags.length > 0,
     query.type !== 'all',
     query.amount !== null,
     query.review !== null,

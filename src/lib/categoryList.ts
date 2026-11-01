@@ -3,18 +3,40 @@ import type { CategoryDef, CategoryPick, CategorySub } from '@/lib/categoryList.
 /** Money out (a debit) or money in (a credit): decides which categories the list offers. */
 export type MoneyDirection = 'OUT' | 'IN';
 
+/** What the picker can offer: money out, money in, or both at once (the rule form, where a rule has no direction). */
+export type PickerDirection = MoneyDirection | 'ANY';
+
 /** The categories offered for a direction, in the list's order for it (BOTH-direction ones included). */
-export function categoriesForDirection(list: readonly CategoryDef[], direction: MoneyDirection): CategoryDef[] {
+export function categoriesForDirection(list: readonly CategoryDef[], direction: PickerDirection): CategoryDef[] {
+  if (direction === 'ANY') {
+    // The money-out list in its order, then the categories only money in has, in theirs; a both-way category shows once.
+    const out = categoriesForDirection(list, 'OUT');
+    const seen = new Set(out.map((c) => c.key));
+    return [...out, ...categoriesForDirection(list, 'IN').filter((c) => !seen.has(c.key))];
+  }
   const order = (c: CategoryDef) => (direction === 'OUT' ? c.outOrder : c.inOrder);
   return list
     .filter((c) => (c.direction === 'BOTH' || c.direction === direction) && order(c) != null)
     .sort((a, b) => (order(a) ?? 0) - (order(b) ?? 0));
 }
 
+/** Recent picks of money out and money in as one line: alternating, each pick once, at most `max`. */
+export function mergeRecentPicks(out: readonly CategoryPick[], inn: readonly CategoryPick[], max = 4): CategoryPick[] {
+  const merged: CategoryPick[] = [];
+  for (let i = 0; i < Math.max(out.length, inn.length); i += 1) {
+    for (const pick of [out[i], inn[i]]) {
+      if (!pick) continue;
+      const same = merged.some((m) => m.categoryKey === pick.categoryKey && (m.subcategoryKey ?? null) === (pick.subcategoryKey ?? null));
+      if (!same) merged.push(pick);
+    }
+  }
+  return merged.slice(0, max);
+}
+
 /** The sub-categories of a category that apply to a direction, in order. */
-export function subsForDirection(category: CategoryDef, direction: MoneyDirection): CategorySub[] {
+export function subsForDirection(category: CategoryDef, direction: PickerDirection): CategorySub[] {
   return category.subs
-    .filter((s) => s.direction === 'BOTH' || s.direction === direction)
+    .filter((s) => direction === 'ANY' || s.direction === 'BOTH' || s.direction === direction)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 

@@ -150,3 +150,7 @@ export function showToast(
   );
 }
 
+/** Closes a toast that `showToast` opened (with its `id`, or the id it returned): a stale Undo must not outlive a newer change. */
+export function dismissToast(id: string | number) {
+  sonnerToast.dismiss(id);
+}

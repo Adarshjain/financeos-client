@@ -1,4 +1,4 @@
-import { categoriesForDirection, categoryLabel, findCategory, findSub, type MoneyDirection, subsForDirection } from '@/lib/categoryList';
+import { categoriesForDirection, categoryLabel, findCategory, findSub, type PickerDirection, subsForDirection } from '@/lib/categoryList';
 import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 
 /** Everyday words and shop names that point at a category (and a sub-category), for the picker's search. Keys come from the fixed list. */
@@ -44,7 +44,7 @@ export interface CategorySearchResult extends CategoryPick {
 const MAX_RESULTS = 7;
 
 /** Finds categories, sub-categories and everyday words for the text typed; nothing for blank text. */
-export function searchCategories(list: readonly CategoryDef[], direction: MoneyDirection, text: string): CategorySearchResult[] {
+export function searchCategories(list: readonly CategoryDef[], direction: PickerDirection, text: string): CategorySearchResult[] {
   const v = text.trim().toLowerCase();
   if (!v) return [];
   const offered = categoriesForDirection(list, direction);

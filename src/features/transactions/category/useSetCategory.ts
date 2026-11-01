@@ -4,10 +4,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { showToast } from '@/components/ds/Toast/Toast';
+import { dismissToast, showToast } from '@/components/ds/Toast/Toast';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
+import { invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { SetCategoryResponse, Transaction } from '@/lib/transaction.types';
 
@@ -15,6 +16,9 @@ import { patchChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import { setTransactionCategory } from '../transactionActions';
 import { categoryPatch, savedMessage } from './categoryModel';
+
+/** The Undo toast of a row's latest set: a new set on the row closes it, so an old Undo can never overwrite a newer pick. */
+const undoToastId = (transactionId: string) => `set-category-undo-${transactionId}`;
 
 /**
  * Sets a transaction's category: the row shows it at once and the save finishes behind it (a failure puts the old one back).
@@ -37,6 +41,7 @@ export function useSetCategory(list: readonly CategoryDef[]) {
         const response = await (handle ? handle.send(request) : request());
         handle?.settle(true);
         void queryClient.invalidateQueries({ queryKey: keys.transactions.byId(transaction.id) });
+        void invalidateUncategorizedQueries(queryClient);
         router.refresh();
         return response;
       } catch (e) {
@@ -51,6 +56,7 @@ export function useSetCategory(list: readonly CategoryDef[]) {
   /** Puts a category on the transaction. */
   const setCategory = React.useCallback(
     async (transaction: Pick<Transaction, 'id'>, pick: CategoryPick) => {
+      dismissToast(undoToastId(transaction.id));
       const response = await send(
         transaction,
         { categoryKey: pick.categoryKey, subcategoryKey: pick.subcategoryKey },
@@ -59,6 +65,7 @@ export function useSetCategory(list: readonly CategoryDef[]) {
       if (!response) return;
       const before = response.previous;
       showToast(savedMessage(list, pick), {
+        id: undoToastId(transaction.id),
         action: {
           label: 'Undo',
           onSelect: () => {
