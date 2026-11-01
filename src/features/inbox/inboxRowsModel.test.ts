@@ -73,11 +73,9 @@ describe('rowButtons', () => {
     expect(rowButtons(row)[0]).toMatchObject({ label: 'Assign', variant: 'link', href: '/settings/connections' });
   });
 
-  it('a failed job reads View and a finished one Details, both to Activity with the job id', () => {
+  it('a job row reads View and goes to Activity with the job id', () => {
     const failed = item({ key: 'j1', kind: 'job', section: 'needs_look', refs: { jobId: 'job-1' }, actions: [nav('open', 'Open', '/settings/activity')] });
-    const done = item({ key: 'j2', kind: 'job', section: 'info', refs: { jobId: 'job-2' }, actions: [nav('open', 'Open', '/settings/activity')] });
     expect(rowButtons(failed)[0]).toMatchObject({ label: 'View', href: '/settings/activity?job=job-1' });
-    expect(rowButtons(done)[0]).toMatchObject({ label: 'Details', href: '/settings/activity?job=job-2' });
   });
 
   it('reward rows read Rewards and go to the account rewards page, else the server href', () => {

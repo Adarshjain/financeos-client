@@ -51,7 +51,7 @@ function destination(item: InboxItemResponse, action: InboxActionResponse): Pick
       return { label: 'Assign', href: appHref('/settings/connections') };
     case 'job':
       return {
-        label: item.section === 'info' ? 'Details' : 'View',
+        label: 'View',
         href: item.refs.jobId ? appHref(`/settings/activity?job=${item.refs.jobId}`) : href,
       };
     case 'reward_milestone':

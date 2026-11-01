@@ -43,8 +43,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const [reviewKind, setReviewKind] = React.useState<LinkSuggestionKind | null>(null);
   const { Component: LinkSuggestionsDialog, run: runSuggestions } = useLazyDialog(loadLinkSuggestionsDialog);
 
-  // Updates live in Notifications; the server still sends them for Legacy.
-  const items = React.useMemo(() => (data?.items ?? []).filter((i) => i.section !== 'info'), [data]);
+  const items = React.useMemo(() => data?.items ?? [], [data]);
   const deepLink = useInboxDeepLink(highlightKey, data ? items : null);
   // Snooze and dismiss hide the row in the cache at once; the deferred rows let it fold away.
   const shownItems = useDeferredRows(items);
@@ -86,7 +85,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
       <>
         <ListTransition>
           <Card>
-            {INBOX_SECTIONS.filter(({ key }) => key !== 'info').map(({ key }) => (
+            {INBOX_SECTIONS.map(({ key }) => (
               <InboxSection
                 key={key}
                 sectionKey={key}
