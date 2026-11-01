@@ -53,6 +53,22 @@ export function matchesQuery(query: string, ...texts: Array<string | null | unde
   return words.every((w) => haystack.includes(w));
 }
 
+/** The picker's built-in categories as the server names them, with their labels. A built-in in a category not listed here shows only under All. */
+export const PICKER_CATEGORIES: ReadonlyArray<{ id: string; label: string }> = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'cards_rewards', label: 'Cards & rewards' },
+  { id: 'spending', label: 'Spending' },
+  { id: 'investments', label: 'Investments' },
+  { id: 'loans_lending', label: 'Loans & lending' },
+  { id: 'shortcuts', label: 'Shortcuts' },
+];
+
+/** The categories to offer: All first, then each built-in category that has entries. */
+export function visibleCategories(builtins: readonly BuiltinWidgetResponse[]): Array<{ id: string; label: string }> {
+  const used = new Set(builtins.map((b) => b.category));
+  return [{ id: 'all', label: 'All' }, ...PICKER_CATEGORIES.filter((c) => used.has(c.id))];
+}
+
 /** The built-ins shown for a category ('all' = every one; 'reports' = none) and query. The one search: the Legacy picker uses it too. */
 export function filterBuiltins(builtins: readonly BuiltinWidgetResponse[], category: string, query: string): BuiltinWidgetResponse[] {
   if (category === 'reports') return [];

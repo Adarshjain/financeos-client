@@ -1,8 +1,10 @@
 'use client';
 
-// "Add widget": built-in widgets (from the server's catalog) or saved reports as selectable cards, a search, the
-// chosen built-in's params, and an optional title in place of its own. Built-ins may be added more than once.
-// One the user can't use yet is greyed with the server's reason. Mounted only while open.
+// "Add widget": built-in widgets (from the server's catalog, narrowed by category chips and a search) or saved
+// reports as selectable cards. Choosing a built-in opens its details step (what it shows, a preview on sample data,
+// its params and an optional title in place of its own) with Back and Add to board; a report is added from the list.
+// Built-ins may be added more than once. One the user can't use yet is greyed with the server's reason. Mounted
+// only while open.
 
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
@@ -10,9 +12,12 @@ import React from 'react';
 import { ChoiceCard } from '@/components/ds/ChoiceCard/ChoiceCard';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
+import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { Tabs } from '@/components/ds/Tabs/Tabs';
+import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import type {
   BuiltinWidgetResponse,
@@ -30,7 +35,9 @@ import {
   filterReports,
   reportDescription,
   reportMeta,
+  visibleCategories,
 } from './pickerModel';
+import { WidgetPreview } from './WidgetPreview';
 
 type Tab = 'builtin' | 'reports';
 
@@ -66,6 +73,7 @@ export function WidgetPicker({
   const { data: builtins = [], isLoading } = useBuiltins();
   const [tab, setTab] = React.useState<Tab>('builtin');
   const [query, setQuery] = React.useState('');
+  const [category, setCategory] = React.useState('all');
   const [selected, setSelected] = React.useState('');
   const [title, setTitle] = React.useState('');
 
@@ -84,10 +92,16 @@ export function WidgetPicker({
     tab === 'reports' ? (reports.find((r) => r.id === selected) ?? null) : null;
   const form = useBuiltinParamsForm(def ?? NO_BUILTIN);
 
-  const shownBuiltins = filterBuiltins(builtins, 'all', query);
+  const categories = React.useMemo(() => visibleCategories(builtins), [builtins]);
+  const activeCategory = categories.some((c) => c.id === category) ? category : 'all';
+  const shownBuiltins = filterBuiltins(builtins, activeCategory, query);
   const shownReports = filterReports(reports, 'all', query);
   const choose = (value: string) => {
     setSelected(value);
+    setTitle('');
+  };
+  const back = () => {
+    setSelected('');
     setTitle('');
   };
   const changeTab = (next: string) => {
@@ -105,19 +119,26 @@ export function WidgetPicker({
   const label = def?.label ?? report?.name;
   const formId = React.useId();
 
+  const details = def != null;
+  const showAdd = details || tab === 'reports';
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content
         size="lg"
-        title="Add widget"
-        description="Built-ins update themselves; report widgets show a saved report."
-        secondary={{ label: 'Cancel', onSelect: onClose }}
-        primary={{
-          label: 'Add to board',
-          type: 'submit',
-          form: formId,
-          disabled: !canAdd,
-        }}
+        title={def ? def.label : 'Add widget'}
+        description={def ? def.description : 'Built-ins update themselves; report widgets show a saved report.'}
+        secondary={details ? { label: 'Back', onSelect: back } : { label: 'Cancel', onSelect: onClose }}
+        primary={
+          showAdd
+            ? {
+                label: 'Add to board',
+                type: 'submit',
+                form: formId,
+                disabled: !canAdd,
+              }
+            : undefined
+        }
       >
         <Dialog.Body>
           <form
@@ -128,83 +149,96 @@ export function WidgetPicker({
               if (canAdd) add();
             }}
           >
-            <Tabs
-              value={tab}
-              onValueChange={changeTab}
-              items={[
-                { value: 'builtin', label: 'Built-in' },
-                { value: 'reports', label: 'My reports' },
-              ]}
-            />
-            <TextField
-              type="search"
-              size="md"
-              prefix={<Icon name="search" size="sm" />}
-              clearable
-              placeholder="Search widgets"
-              value={query}
-              onValueChange={setQuery}
-              // Enter in the search only filters; it must not add the selected widget.
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') e.preventDefault();
-              }}
-            />
-            {tab === 'builtin' ? (
-              isLoading ? (
-                <Skeleton height={96} />
-              ) : builtins.length === 0 ? (
-                <EmptyState
-                  compact
-                  description="No built-in widgets available."
-                />
-              ) : shownBuiltins.length === 0 ? (
-                <EmptyState compact description="No widgets match" />
-              ) : (
-                <ChoiceCard.Group
-                  value={selected}
-                  onValueChange={choose}
-                  className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8"
-                >
-                  {shownBuiltins.map((b) => (
-                    <ChoiceCard
-                      key={b.key}
-                      value={b.key}
-                      title={b.label}
-                      description={b.description}
-                      meta={
-                        b.unavailableReason ??
-                        builtinMeta(b, b.key === selected)
-                      }
-                      disabled={Boolean(b.unavailableReason)}
-                    />
-                  ))}
-                </ChoiceCard.Group>
-              )
-            ) : reports.length === 0 ? (
-              <EmptyState
-                compact
-                description="No saved reports yet. Make one in Reports."
-              />
-            ) : shownReports.length === 0 ? (
-              <EmptyState compact description="No reports match" />
+            {def ? (
+              <>
+                {def.requires ? (
+                  <Text variant="caption" tone="ink-3">
+                    {def.requires}
+                  </Text>
+                ) : null}
+                <WidgetPreview builtinKey={def.key} title={def.label} />
+                <ParamFields form={form} />
+              </>
             ) : (
-              <ChoiceCard.Group
-                value={selected}
-                onValueChange={choose}
-                className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8"
-              >
-                {shownReports.map((r) => (
-                  <ChoiceCard
-                    key={r.id}
-                    value={r.id}
-                    title={r.name}
-                    description={reportDescription(r)}
-                    meta={reportMeta(r.id === selected)}
-                  />
-                ))}
-              </ChoiceCard.Group>
+              <>
+                <Tabs
+                  value={tab}
+                  onValueChange={changeTab}
+                  items={[
+                    { value: 'builtin', label: 'Built-in' },
+                    { value: 'reports', label: 'My reports' },
+                  ]}
+                />
+                <TextField
+                  type="search"
+                  size="md"
+                  prefix={<Icon name="search" size="sm" />}
+                  clearable
+                  placeholder="Search widgets"
+                  value={query}
+                  onValueChange={setQuery}
+                  // Enter in the search only filters; it must not add the selected widget.
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.preventDefault();
+                  }}
+                />
+                {tab === 'builtin' && categories.length > 1 ? (
+                  <FilterBar>
+                    {categories.map((c) => (
+                      <FilterChip key={c.id} selected={c.id === activeCategory} onSelectedChange={() => setCategory(c.id)}>
+                        {c.label}
+                      </FilterChip>
+                    ))}
+                  </FilterBar>
+                ) : null}
+                {tab === 'builtin' ? (
+                  isLoading ? (
+                    <Skeleton height={96} />
+                  ) : builtins.length === 0 ? (
+                    <EmptyState compact description="No built-in widgets available." />
+                  ) : shownBuiltins.length === 0 ? (
+                    <EmptyState compact description="No widgets match" />
+                  ) : (
+                    <ChoiceCard.Group
+                      value={selected}
+                      onValueChange={choose}
+                      className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8"
+                    >
+                      {shownBuiltins.map((b) => (
+                        <ChoiceCard
+                          key={b.key}
+                          value={b.key}
+                          title={b.label}
+                          description={b.description}
+                          meta={b.unavailableReason ?? builtinMeta(b, false)}
+                          disabled={Boolean(b.unavailableReason)}
+                        />
+                      ))}
+                    </ChoiceCard.Group>
+                  )
+                ) : reports.length === 0 ? (
+                  <EmptyState compact description="No saved reports yet. Make one in Reports." />
+                ) : shownReports.length === 0 ? (
+                  <EmptyState compact description="No reports match" />
+                ) : (
+                  <ChoiceCard.Group
+                    value={selected}
+                    onValueChange={choose}
+                    className="grid grid-cols-1 desk:grid-cols-3 gap-space-8 desk:gap-space-8"
+                  >
+                    {shownReports.map((r) => (
+                      <ChoiceCard
+                        key={r.id}
+                        value={r.id}
+                        title={r.name}
+                        description={reportDescription(r)}
+                        meta={reportMeta(r.id === selected)}
+                      />
+                    ))}
+                  </ChoiceCard.Group>
+                )}
+              </>
             )}
-            {def ? <ParamFields form={form} /> : null}
             {def || report ? (
               <TextField
                 label="Title override"

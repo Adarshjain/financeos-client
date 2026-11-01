@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { BuiltinWidgetResponse } from '@/lib/dashboards.types';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
-import { builtinMeta, filterBuiltins, filterReports, newBuiltinStep, reportDescription, reportMeta } from './pickerModel';
+import { builtinMeta, filterBuiltins, filterReports, newBuiltinStep, reportDescription, reportMeta, visibleCategories } from './pickerModel';
 
 const def = (over: Partial<BuiltinWidgetResponse>): BuiltinWidgetResponse => ({ key: 'k', label: 'Label', description: 'Does a thing', category: 'c', kind: 'template', minW: 50, params: [], ...over });
 
@@ -43,5 +43,22 @@ describe('reports and search', () => {
     const reports = [r('Spend by category', null), r('Rewards', 'Points earned')];
     expect(filterReports(reports, 'all', 'rewards').map((x) => x.name)).toEqual(['Rewards']);
     expect(filterReports(reports, 'all', 'zzz')).toEqual([]);
+  });
+});
+
+describe('visibleCategories', () => {
+  const b = (category: string) => ({ category }) as BuiltinWidgetResponse;
+
+  it('is All plus the categories that have built-ins, in the picker\'s order', () => {
+    expect(visibleCategories([b('loans_lending'), b('overview'), b('overview')]).map((c) => c.id)).toEqual(['all', 'overview', 'loans_lending']);
+  });
+
+  it('leaves out a category the server added that the client does not name (it shows under All only), and offers just All when empty', () => {
+    expect(visibleCategories([b('new_thing')]).map((c) => c.id)).toEqual(['all']);
+    expect(visibleCategories([]).map((c) => c.id)).toEqual(['all']);
+  });
+
+  it('labels them as Legacy did', () => {
+    expect(visibleCategories([b('cards_rewards'), b('loans_lending')]).map((c) => c.label)).toEqual(['All', 'Cards & rewards', 'Loans & lending']);
   });
 });

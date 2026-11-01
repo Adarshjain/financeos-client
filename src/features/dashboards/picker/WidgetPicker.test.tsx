@@ -93,15 +93,18 @@ describe('WidgetPicker', () => {
     expect(within(dialog).getByText('Add a loan to use this')).toBeInTheDocument();
   });
 
-  it('selecting a card marks it Selected and shows its params and the title override; Add stays off until the params are valid', async () => {
+  it('choosing a card opens its details step with the preview, params and title override; Add stays off until the params are valid', async () => {
     open();
     const dialog = await screen.findByRole('dialog');
-    const add = within(dialog).getByRole('button', { name: 'Add to board' });
-    expect(add).toBeDisabled();
+    expect(within(dialog).queryByRole('button', { name: 'Add to board' })).toBeNull();
     await user.click(within(dialog).getByRole('radio', { name: /Card utilisation/ }));
-    expect(within(dialog).getByText('Selected · needs: card')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Card utilisation' })).toBeInTheDocument();
+    expect(within(dialog).getByText('Limit used per card')).toBeInTheDocument();
+    expect(within(dialog).getByText('Preview · sample data')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('radio')).toBeNull();
     expect(within(dialog).getByText('Card')).toBeInTheDocument();
     expect(within(dialog).getByText('Title override')).toBeInTheDocument();
+    const add = within(dialog).getByRole('button', { name: 'Add to board' });
     expect(add).toBeDisabled();
     await user.click(within(dialog).getByRole('combobox', { name: /Card/ }));
     await user.click(await screen.findByRole('option', { name: /HDFC Regalia Gold/ }));
@@ -147,8 +150,10 @@ describe('WidgetPicker', () => {
     await user.click(within(dialog).getByRole('radio', { name: /Top movers/ }));
     await user.clear(within(dialog).getByLabelText('How many'));
     await user.type(within(dialog).getByLabelText('How many'), '3');
+    await user.click(within(dialog).getByRole('button', { name: 'Back' }));
     await user.click(within(dialog).getByRole('radio', { name: /Net worth/ }));
     expect(within(dialog).queryByLabelText('How many')).toBeNull();
+    await user.click(within(dialog).getByRole('button', { name: 'Back' }));
     await user.click(within(dialog).getByRole('radio', { name: /Top movers/ }));
     expect(within(dialog).getByLabelText('How many')).toHaveValue(5);
   });
@@ -193,6 +198,63 @@ describe('WidgetPicker', () => {
     open();
     await screen.findByRole('dialog');
     await waitFor(() => expect(api.GET).toHaveBeenCalledWith('/api/v1/dashboards/builtins'));
+  });
+});
+
+describe('WidgetPicker categories and details step', () => {
+  it('offers All and the categories that have built-ins, and narrows the cards to the chosen one', async () => {
+    open();
+    const dialog = await screen.findByRole('dialog');
+    const chips = within(dialog).getAllByRole('button', { name: /^(All|Overview|Cards & rewards|Spending|Investments|Loans & lending|Shortcuts)$/ });
+    expect(chips.map((c) => c.textContent)).toEqual(['All', 'Overview', 'Investments']);
+    await user.click(within(dialog).getByRole('button', { name: 'Investments' }));
+    expect(within(dialog).getByRole('radio', { name: /Top movers/ })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('radio', { name: /Net worth/ })).toBeNull();
+    await user.click(within(dialog).getByRole('button', { name: 'All' }));
+    expect(within(dialog).getByRole('radio', { name: /Net worth/ })).toBeInTheDocument();
+  });
+
+  it('the category and the search narrow together, and the chips are not on My reports', async () => {
+    open();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Overview' }));
+    await user.type(within(dialog).getByPlaceholderText('Search widgets'), 'movers');
+    expect(within(dialog).getByText('No widgets match')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('tab', { name: /My reports/ }));
+    expect(within(dialog).queryByRole('button', { name: 'Overview' })).toBeNull();
+  });
+
+  it('Back returns to the list with the category and search kept, and the widget unchosen', async () => {
+    open();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Investments' }));
+    await user.click(within(dialog).getByRole('radio', { name: /Top movers/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('dialog', { name: 'Add widget' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('radio', { name: /Top movers/ })).not.toBeChecked();
+    expect(within(dialog).queryByRole('radio', { name: /Net worth/ })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Add to board' })).toBeNull();
+  });
+
+  it('shows the built-in\'s requires line in the details step', async () => {
+    const withRequires = builtins.map((b) => (b.key === 'net_worth' ? { ...b, requires: 'Needs at least one account' } : b));
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(keys.dashboards.builtins(), withRequires);
+    api.GET.mockImplementation(async (path: string) => ({ data: path === '/api/v1/dashboards/builtins' ? withRequires : [] }));
+    renderWithQuery(<WidgetPicker reports={reports} onAddBuiltin={vi.fn()} onAddReport={vi.fn()} onClose={vi.fn()} />, { queryClient });
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('radio', { name: /Net worth/ }));
+    expect(within(dialog).getByText('Needs at least one account')).toBeInTheDocument();
+  });
+
+  it('Cancel on the list closes; Back on the details step does not', async () => {
+    const props = open();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('radio', { name: /Net worth/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Back' }));
+    expect(props.onClose).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(props.onClose).toHaveBeenCalled();
   });
 });
 
