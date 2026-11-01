@@ -247,8 +247,6 @@ export interface FilterChipsProps {
   categories: Tag[] | null;
   /** The fixed category list (the Category chip); null when it could not be loaded. */
   categoryList?: CategoryDef[] | null;
-  /** How many transactions have no category: the count beside Uncategorized in the Category chip. */
-  uncategorizedCount?: number | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
   /** The search field: the row's first item, so the search and the chips share one sideways scroller. */
@@ -268,7 +266,6 @@ export function FilterChips({
   accounts,
   categories,
   categoryList = null,
-  uncategorizedCount,
   onChange,
   onOpenFilters,
   search,
@@ -316,7 +313,6 @@ export function FilterChips({
       <CategoryFilterChip
         value={categoryFilterOf(query)}
         categories={categoryList}
-        uncategorizedCount={uncategorizedCount}
         onCommit={(f) => onChange(f)}
       />
       <TagsFilterChip

@@ -17,7 +17,6 @@ import type { Account } from '@/lib/account.types';
 import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Tag } from '@/lib/tags.types';
-import type { UncategorizedSummary } from '@/lib/uncategorized.types';
 
 import { FilterChips } from './FilterChips';
 import type { TransactionListRow } from './transactionRowsModel';
@@ -48,8 +47,8 @@ export interface TransactionsListPaneProps {
   categories: Tag[] | null;
   /** The fixed category list (the Category chip); null when it could not be loaded. */
   categoryList?: CategoryDef[] | null;
-  /** The Uncategorized card's numbers; the card shows only while `count` is above zero. */
-  uncategorized?: UncategorizedSummary | null;
+  /** Whether any transaction has no category: the Uncategorized card shows only then. False when it could not be checked. */
+  hasUncategorized?: boolean;
   /** "Sort them" on the Uncategorized card. */
   onSortThem?: () => void;
   /** Everything that needs review; null when it could not be loaded. */
@@ -87,7 +86,7 @@ export function TransactionsListPane({
   accounts,
   categories,
   categoryList,
-  uncategorized,
+  hasUncategorized,
   onSortThem,
   needsReviewCount,
   onAdd = noop,
@@ -154,19 +153,11 @@ export function TransactionsListPane({
               accounts={accounts}
               categories={categories}
               categoryList={categoryList}
-              uncategorizedCount={uncategorized?.count}
               onChange={go}
               onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
               search={{ value: text, onValueChange: setText }}
             />
-            {uncategorized && uncategorized.count > 0 ? (
-              <UncategorizedCard
-                count={uncategorized.count}
-                groupCount={uncategorized.groupCount}
-                topGroups={uncategorized.topGroups}
-                onSort={onSortThem}
-              />
-            ) : null}
+            {hasUncategorized ? <UncategorizedCard onSort={onSortThem} /> : null}
             {list.ok ? (
               <TransactionsList
                 query={query}

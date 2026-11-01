@@ -14,6 +14,7 @@ export const keys = {
     /** The recent category picks for a direction (OUT or IN). */
     categoryRecent: (direction: 'OUT' | 'IN') => [...keys.transactions.all, 'category-recent', direction] as const,
     /** Sort them: a page of the groups, and a page of one group's transactions. */
+    uncategorizedSummary: () => [...keys.transactions.all, 'uncategorized-summary'] as const,
     uncategorizedGroups: (page: number, size: number) => [...keys.transactions.all, 'uncategorized-groups', page, size] as const,
     uncategorizedGroup: (groupKey: string, page: number, size: number) =>
       [...keys.transactions.all, 'uncategorized-group', groupKey, page, size] as const,

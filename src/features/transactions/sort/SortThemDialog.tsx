@@ -22,7 +22,12 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import { formatCount } from '@/lib/format';
 import { initialsOf } from '@/lib/format/initials';
-import { applyUncategorized, loadGroupTransactions, loadUncategorizedGroups } from '@/lib/query/actions/uncategorizedActions';
+import {
+  applyUncategorized,
+  loadGroupTransactions,
+  loadUncategorizedGroups,
+  loadUncategorizedSummary,
+} from '@/lib/query/actions/uncategorizedActions';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import { keys } from '@/lib/query/keys';
@@ -40,10 +45,6 @@ import {
 } from './sortModel';
 
 export interface SortThemDialogProps {
-  /** How many transactions need a category (the card's number). */
-  count: number;
-  /** How many groups of two or more there are (the card's number): the groups page counts them with the one-offs, so the one-offs are its total less this. */
-  groupCount?: number;
   /** Closed: Later, ×, or after Save. */
   onClose: () => void;
 }
@@ -104,10 +105,10 @@ function GroupRow({
 
 /**
  * Sort them: the uncategorized transactions in groups (a shop or a person, groups of two or more first, then the one-offs).
- * A group opens to pick its category; picks are staged, and Save applies each staged group, then the list, the card and the
- * filter counts refresh. Later drops the staged picks.
+ * A group opens to pick its category; picks are staged, and Save applies each staged group, then the list refreshes and the card re-checks
+ * whether anything is left. Later drops the staged picks.
  */
-export function SortThemDialog({ count, groupCount, onClose }: SortThemDialogProps) {
+export function SortThemDialog({ onClose }: SortThemDialogProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { list } = useCategoryList();
@@ -125,6 +126,13 @@ export function SortThemDialog({ count, groupCount, onClose }: SortThemDialogPro
     queryFn: () => unwrapAction(loadUncategorizedGroups(page, SORT_PAGE_SIZE)),
     placeholderData: keepPreviousData,
   });
+  // The card carries no number: the title and the one-offs count come from the summary read when the dialog opens.
+  const summary = useQuery({
+    queryKey: keys.transactions.uncategorizedSummary(),
+    queryFn: () => unwrapAction(loadUncategorizedSummary()),
+  });
+  const count = summary.data?.count;
+  const groupCount = summary.data?.groupCount;
   const stagedGroups = Object.entries(staged);
   const groups = data?.content.filter((g) => !g.oneOff) ?? [];
   const oneOffs = data?.content.filter((g) => g.oneOff) ?? [];
@@ -179,7 +187,7 @@ export function SortThemDialog({ count, groupCount, onClose }: SortThemDialogPro
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <Dialog.Content
           size="md"
-          title={`${formatCount(count)} ${count === 1 ? 'needs' : 'need'} a category`}
+          title={count === undefined ? 'Some transactions need a category' : `${formatCount(count)} ${count === 1 ? 'needs' : 'need'} a category`}
           description={
             <>
               <span className="desk:hidden">Grouped by who was paid. One choice covers the whole group.</span>
@@ -198,7 +206,7 @@ export function SortThemDialog({ count, groupCount, onClose }: SortThemDialogPro
         >
           <Dialog.Body>
             {pager}
-            {isPending ? (
+            {isPending || summary.isPending ? (
               <Card>
                 {Array.from({ length: 4 }, (_, i) => (
                   <ListRow

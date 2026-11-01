@@ -12,16 +12,16 @@ const row = (title: string) => screen.getByText(title).closest('[role="button"]'
 describe('CategoryFilterChip', () => {
   const setup = (value = NO_CATEGORY_FILTER) => {
     const onCommit = vi.fn();
-    render(<CategoryFilterChip value={value} categories={CATEGORY_LIST_FIXTURE} uncategorizedCount={23} onCommit={onCommit} />);
+    render(<CategoryFilterChip value={value} categories={CATEGORY_LIST_FIXTURE} onCommit={onCommit} />);
     return { onCommit, user: userEvent.setup({ pointerEventsCheck: 0 }) };
   };
 
-  it('lists Uncategorized first with its count, then every category with no count of its own', async () => {
+  it('lists Uncategorized first, then every category, none with a count', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: /Category/ }));
     const titles = screen.getAllByRole('button').map((b) => b.textContent ?? '');
     expect(titles.findIndex((t) => t.startsWith('Uncategorized'))).toBeLessThan(titles.findIndex((t) => t.startsWith('Food')));
-    expect(row('Uncategorized')).toHaveTextContent('23');
+    expect(row('Uncategorized')).not.toHaveTextContent(/\d/);
     expect(row('Food')).not.toHaveTextContent(/\d/);
     expect(screen.getByText('Groceries')).toBeInTheDocument();
   });

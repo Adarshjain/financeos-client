@@ -231,6 +231,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-11-01: **Uncategorized card** (owner): 11-01 owner: card shows no count ('Some transactions need a category'); Sort them data loads on open.
 - 2026-10-28: **Consistency audit answered** (owner; artifact 6L54qWbsezHpjU1fBmiPYJ, 71 findings): all suggestions accepted except: one format function per kind with params, not several helpers (N1, N5); 12-hour time everywhere incl. debug (N4); overdue = danger (N8); "Retry", not "Try again" (W2); look at generic card-header actions (E10); rename file names in one sweep (F6); tidy imports/tests now (F10). Build waits for the owner's go.
 - 2026-10-28: **Report combination guards** (owner: "make the change"): combinations that add up wrong are blocked on save and chat drafts; saved reports already using one keep running with a warning.
 - 2026-10-28: **Running balance drift stays** (owner: drift is how you find a missing entry); the first mismatching row is marked against the bank's printed balance, never corrected.

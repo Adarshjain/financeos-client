@@ -1532,6 +1532,17 @@ export const transactionsApi = {
     const { data } = await serverApi.GET('/api/v1/transactions/category-counts');
     return data!;
   },
+  /**
+   * Whether any transaction has no category: the cheap check the Uncategorized card shows on page load.
+   * Not in schema.d.ts yet (server addition): re-sync the schema once it lands, then drop the cast.
+   */
+  uncategorizedExists: async (): Promise<{ exists: boolean }> => {
+    const { data } = await (serverApi.GET('/api/v1/transactions/uncategorized/exists' as never) as unknown as Promise<{
+      data?: { exists: boolean };
+    }>);
+    return { exists: data?.exists === true };
+  },
+  /** The numbers behind Sort them (count, groups); read when the dialog opens, not on page load. */
   uncategorizedSummary: async (): Promise<UncategorizedSummary> => {
     const { data } = await serverApi.GET('/api/v1/transactions/uncategorized/summary');
     return data!;

@@ -20,7 +20,7 @@ export function fetchNeedsReviewCount(): Promise<number> {
 }
 
 export const fetchAccounts = accountsApi.list;
-/** How many transactions need a category, and the biggest groups: the Uncategorized card. */
-export const fetchUncategorizedSummary = transactionsApi.uncategorizedSummary;
+/** Whether any transaction needs a category: the Uncategorized card shows only then (no count on load). */
+export const fetchUncategorizedExists = transactionsApi.uncategorizedExists;
 /** The user's tags with their counts: the list's Tags filter. */
 export const fetchTags = tagsApi.list;

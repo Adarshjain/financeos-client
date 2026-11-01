@@ -9,7 +9,7 @@ import {
   fetchNeedsReviewCount,
   fetchTags,
   fetchTransactionsPage,
-  fetchUncategorizedSummary,
+  fetchUncategorizedExists,
 } from '@/features/transactions/list/transactionsServerApi';
 import { parseTransactionsUrl, remapLegacyCategoryParams } from '@/features/transactions/list/transactionsUrl';
 import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
@@ -30,13 +30,13 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
   // An old link's `category` carried a tag; it becomes a `tag` before the one fetch. Only a link that has one waits for the two lists.
   const raw = params.category === undefined ? params : remapLegacyCategoryParams(params, ((await categoryListRequest) ?? []).map((c) => c.key), (await tagsRequest) ?? []);
   const query = parseTransactionsUrl(raw);
-  const [page, accounts, categories, needsReviewCount, categoryList, uncategorized] = await Promise.all([
+  const [page, accounts, categories, needsReviewCount, categoryList, uncategorizedExists] = await Promise.all([
     loaded(fetchTransactionsPage(query)),
     accountsRequest,
     tagsRequest,
     orNull(fetchNeedsReviewCount()),
     categoryListRequest,
-    orNull(fetchUncategorizedSummary()),
+    orNull(fetchUncategorizedExists()),
   ]);
 
   const list: TransactionsListResult = page.ok
@@ -58,7 +58,7 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
       accounts={accounts}
       categories={categories}
       categoryList={categoryList}
-      uncategorized={uncategorized}
+      hasUncategorized={uncategorizedExists?.exists === true}
       needsReviewCount={needsReviewCount}
     />
   );

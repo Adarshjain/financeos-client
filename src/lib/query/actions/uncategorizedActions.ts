@@ -8,6 +8,7 @@ import type {
   ApplyUncategorizedRequest,
   ApplyUncategorizedResponse,
   UncategorizedGroup,
+  UncategorizedSummary,
   UncategorizedTransaction,
 } from '@/lib/uncategorized.types';
 
@@ -15,6 +16,12 @@ import type {
 export const loadCategoryRecent = createDomainAction(
   { fallbackError: "Couldn't load recent categories. Try again." },
   async (direction: 'OUT' | 'IN'): Promise<CategoryPick[]> => transactionsApi.categoryRecent(direction),
+);
+
+/** The numbers behind Sort them, read when the dialog opens. */
+export const loadUncategorizedSummary = createDomainAction(
+  { fallbackError: "Couldn't load the count. Try again." },
+  async (): Promise<UncategorizedSummary> => transactionsApi.uncategorizedSummary(),
 );
 
 export const loadUncategorizedGroups = createDomainAction(
