@@ -14,9 +14,7 @@ test.describe('Reward reports UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  // BUG (Dinero report editor): useReportDynamicOptions only fetches once a filter on a dynamic field is applied, but the
-  // Add filter popover edits a draft, so the Rule dropdown stays on "Loading…" and the user cannot pick a rule.
-  test.fixme('the Rule filter on Reward Earnings lists the user\'s rules and filters the preview', async ({ page }) => {
+  test('the Rule filter on Reward Earnings lists the user\'s rules and filters the preview', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'UI Report Card' });

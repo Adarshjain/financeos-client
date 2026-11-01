@@ -62,7 +62,8 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
   const [deleting, setDeleting] = React.useState(false);
 
   const catalog = React.useMemo(() => workingCatalog(allDatasources, state.datasource), [allDatasources, state.datasource]);
-  const dynamicOptions = useReportDynamicOptions(state.datasource, catalog, state.filters);
+  const [draftFilterField, setDraftFilterField] = React.useState<string | null>(null);
+  const dynamicOptions = useReportDynamicOptions(state.datasource, catalog, state.filters, draftFilterField);
 
   const { request, signature } = React.useMemo(() => {
     const req = buildRunRequest(state, catalog);
@@ -208,6 +209,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
               allDatasources={allDatasources}
               catalog={catalog}
               dynamicOptions={dynamicOptions}
+              onFilterDraftFieldChange={setDraftFilterField}
               state={state}
               dispatch={dispatchDraft}
               issues={showIssues ? firstPerKey(issues) : {}}

@@ -14,7 +14,8 @@ import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
  * counterparty, …), served by the API: the values that occur in the user's data. Each
  * option carries the value a filter stores (a stable id where the field has one) and its
  * label. Fetched only once a filter uses a dynamic field, since computed datasources
- * evaluate the user's whole history to answer; refetched whenever the builder remounts
+ * evaluate the user's whole history to answer (a field being picked in the Add filter
+ * popover, `draftField`, counts as used); refetched whenever the builder remounts
  * or the window regains focus, so newly added rules and transactions show up. A field is
  * absent from the result until its values have loaded; a failed request is flagged with
  * DYNAMIC_OPTIONS_FAILED.
@@ -23,10 +24,10 @@ export function useReportDynamicOptions(
   datasource: string,
   catalog: DatasourceCatalog,
   filters: FilterClause[],
+  draftField?: string | null,
 ): DynamicOptions {
-  const needed = filters.some((f) =>
-    catalog.fields.some((field) => field.name === f.field && field.dynamic),
-  );
+  const isDynamic = (name: string) => catalog.fields.some((field) => field.name === name && field.dynamic);
+  const needed = filters.some((f) => isDynamic(f.field)) || (!!draftField && isDynamic(draftField));
 
   const { data, isError } = useQuery({
     queryKey: keys.reports.fieldValues(datasource),
