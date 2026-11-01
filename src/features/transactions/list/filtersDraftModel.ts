@@ -32,7 +32,6 @@ export interface FiltersDraft {
   excluded: boolean;
   sort: SortId;
   accounts: string[];
-  categories: string[];
   type: TypeFilter;
   /** `ANY` or a reason param ("unreconciled"). */
   reason: string;
@@ -56,7 +55,6 @@ export function draftFromQuery(query: TransactionsQuery): FiltersDraft {
     excluded: query.excluded,
     sort: query.sort,
     accounts: query.accounts,
-    categories: query.categories,
     type: query.type,
     reason: query.reason ? (Object.keys(REASON_PARAMS).find((k) => REASON_PARAMS[k] === query.reason) ?? ANY) : ANY,
     monitoring: query.monitoring,
@@ -103,8 +101,6 @@ export function queryFromDraft(base: TransactionsQuery, draft: FiltersDraft): Tr
     excluded: draft.excluded,
     sort: draft.sort,
     accounts: draft.accounts,
-    categories: draft.categories,
-    uncategorized: draft.categories.length > 0 ? false : base.uncategorized,
     type: draft.type,
     reason: draft.reason === ANY ? null : (REASON_PARAMS[draft.reason] ?? null),
     monitoring: draft.monitoring,
@@ -137,7 +133,6 @@ export function changedFilters(
   words: {
     period: string;
     accounts: string;
-    categories: string;
     type: string;
     amount: string;
     review: string;
@@ -152,7 +147,6 @@ export function changedFilters(
     (draft.periodMode === 'range' && draft.from !== '' && draft.to !== '');
   if (periodChanged) out.push({ id: 'period', label: words.period, section: 'date', reset: DEFAULT_DRAFT_PERIOD });
   if (draft.accounts.length > 0) out.push({ id: 'accounts', label: words.accounts, section: 'accountCategory', reset: { accounts: [] } });
-  if (draft.categories.length > 0) out.push({ id: 'categories', label: words.categories, section: 'accountCategory', reset: { categories: [] } });
   if (draft.type !== 'all') out.push({ id: 'type', label: words.type, section: 'accountCategory', reset: { type: 'all' } });
   if (amountFromDraft(draft)) {
     out.push({ id: 'amount', label: words.amount, section: 'amount', reset: { amountOp: 'greater_than', amountFrom: '', amountTo: '' } });

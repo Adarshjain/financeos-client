@@ -14,3 +14,4 @@ export * from './TagSheet/TagSheet';
 export * from './TransactionPicker/TransactionPicker';
 export * from './TransactionRow/transactionColumns';
 export * from './TransactionRow/TransactionRow';
+export * from './UncategorizedCard/UncategorizedCard';

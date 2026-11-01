@@ -32,10 +32,8 @@ describe('Uncategorized and category picks are exclusive', () => {
       { field: 'category', operator: 'is_empty' },
     ]);
   });
-  it('picking categories in the Filters dialog clears uncategorized, and keeping none keeps it', () => {
+  it('the Filters dialog leaves uncategorized and categories alone (the Category chip owns them)', () => {
     const base = { ...DEFAULT_QUERY, uncategorized: true };
-    const draft = draftFromQuery(base);
-    expect(queryFromDraft(base, { ...draft, categories: ['Rent'] }).uncategorized).toBe(false);
-    expect(queryFromDraft(base, draft).uncategorized).toBe(true);
+    expect(queryFromDraft(base, draftFromQuery(base)).uncategorized).toBe(true);
   });
 });

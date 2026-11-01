@@ -18,6 +18,7 @@ import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import { formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
+import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import { useTags } from '@/lib/query/hooks/useTags';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
@@ -114,6 +115,7 @@ export function TransactionFormDialog({
   const opened = React.useMemo(() => (transaction ? pickOf(transaction) : null), [transaction]);
   const [category, setCategory] = React.useState<CategoryPick | null>(opened);
   const [pickingCategory, setPickingCategory] = React.useState(false);
+  const recentCategories = useCategoryRecent(values.direction === 'credit' ? 'IN' : 'OUT', pickingCategory);
   const [pickingTags, setPickingTags] = React.useState(false);
   // A tag deleted in the sheet's Manage leaves the form's choice too.
   const tagMutations = useTagMutations({ onDeleted: (tag) => setSelectedTags((now) => now.filter((c) => c.id !== tag.id)) });
@@ -310,6 +312,7 @@ export function TransactionFormDialog({
       onOpenChange={setPickingCategory}
       categories={categoryList as CategoryDef[]}
       direction={values.direction === 'credit' ? 'IN' : 'OUT'}
+      recent={recentCategories}
       value={category}
       subtitle={pickerSubtitle}
       onPick={pickedCategory}

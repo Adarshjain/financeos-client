@@ -86,10 +86,16 @@ export interface TransactionsQuery {
   period: Period;
   /** Account ids. */
   accounts: string[];
-  /** Category names, as the server filters them. */
+  /** Category keys ("food"): a key includes its sub-categories. */
   categories: string[];
+  /** Sub-category keys ("food.delivery"): narrows to those sub-categories. */
+  subcategories: string[];
   /** Only transactions with no category (`uncategorized=1`). */
   uncategorized: boolean;
+  /** Tag ids: any of them. */
+  tags: string[];
+  /** Only transactions with no tag (`untagged=1`). */
+  untagged: boolean;
   type: TypeFilter;
   amount: AmountCondition | null;
   review: ReviewType | null;
@@ -111,7 +117,10 @@ export const DEFAULT_QUERY: TransactionsQuery = {
   period: DEFAULT_PERIOD,
   accounts: [],
   categories: [],
+  subcategories: [],
   uncategorized: false,
+  tags: [],
+  untagged: false,
   type: 'all',
   amount: null,
   review: null,
@@ -187,14 +196,18 @@ export function parseTransactionsUrl(params: RawSearchParams): TransactionsQuery
   const type = one(params.type);
   const source = one(params.source) as TransactionSource;
   const sort = SORTS.find((s) => s.id === one(params.sort));
-  // The two are exclusive: with no category asked for, picked categories could only give an empty list.
+  // The server ANDs filters: no category and a picked category (or no tag and a picked tag) could only give an empty list.
   const uncategorized = one(params.uncategorized) === '1';
+  const untagged = one(params.untagged) === '1';
   return {
     q: one(params.q).trim(),
     period: parsePeriod(params),
     accounts: many(params.account),
     categories: uncategorized ? [] : many(params.category),
+    subcategories: uncategorized ? [] : many(params.subcategory),
     uncategorized,
+    tags: untagged ? [] : many(params.tag),
+    untagged,
     type: type === 'debit' || type === 'credit' ? type : 'all',
     amount: parseAmount(params),
     review: REVIEW_PARAMS[one(params.review)] ?? null,
@@ -229,8 +242,11 @@ export function transactionsSearch(query: TransactionsQuery): string {
     out.set('to', period.to);
   } else if (!samePeriod(period, DEFAULT_PERIOD)) out.set('period', period.id);
   query.accounts.forEach((id) => out.append('account', id));
-  query.categories.forEach((name) => out.append('category', name));
+  query.categories.forEach((key) => out.append('category', key));
+  query.subcategories.forEach((key) => out.append('subcategory', key));
   if (query.uncategorized) out.set('uncategorized', '1');
+  query.tags.forEach((id) => out.append('tag', id));
+  if (query.untagged) out.set('untagged', '1');
   if (query.type !== 'all') out.set('type', query.type);
   if (query.amount) {
     out.set('amount', keyOf(AMOUNT_PARAMS, query.amount.op) ?? '');
@@ -264,4 +280,33 @@ export function clearedQuery(query: TransactionsQuery): TransactionsQuery {
 export function isUnfiltered(query: TransactionsQuery): boolean {
   const cleared = clearedQuery(query);
   return transactionsSearch({ ...query, page: 0 }) === transactionsSearch({ ...cleared, page: 0 });
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Old links: `category` used to carry a tag (its id or its name). It now carries a category key, so each value that is
+ * not a key of the category list becomes a `tag` id (a value no tag matches is dropped). Everything else is kept.
+ */
+export function remapLegacyCategoryParams(
+  params: RawSearchParams,
+  categoryKeys: readonly string[],
+  tags: readonly { id: string; name: string }[],
+): RawSearchParams {
+  const values = many(params.category);
+  if (values.length === 0) return params;
+  const keep: string[] = [];
+  const moved: string[] = [];
+  for (const value of values) {
+    if (categoryKeys.includes(value)) keep.push(value);
+    else {
+      const tag = tags.find((t) => t.id === value) ?? tags.find((t) => t.name.toLowerCase() === value.toLowerCase());
+      if (tag) moved.push(tag.id);
+      else if (UUID.test(value)) moved.push(value);
+    }
+  }
+  const next: RawSearchParams = { ...params, category: keep.length > 0 ? keep : undefined };
+  const tagValues = [...new Set([...many(params.tag), ...moved])];
+  next.tag = tagValues.length > 0 ? tagValues : undefined;
+  return next;
 }

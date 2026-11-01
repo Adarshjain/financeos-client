@@ -72,15 +72,15 @@ describe('every chip-row filter lives in the draft', () => {
   const full = {
     ...DEFAULT_QUERY,
     accounts: ['a1', 'a2'],
-    categories: ['Groceries'],
+    categories: ['groceries'],
     type: 'debit' as const,
     reason: 'UNRECONCILED' as const,
     monitoring: true,
     upToStatement: true,
   };
 
-  it('round-trips accounts, categories, type, reason, monitoring and up to statement', () => {
-    expect(queryFromDraft(DEFAULT_QUERY, draftFromQuery(full))).toEqual(full);
+  it('round-trips accounts, type, reason, monitoring and up to statement, and leaves the category filter to its chip', () => {
+    expect(queryFromDraft({ ...DEFAULT_QUERY, categories: ['groceries'] }, draftFromQuery(full))).toEqual(full);
   });
 
   it('counts the active filters, not the search', () => {

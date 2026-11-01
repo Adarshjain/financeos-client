@@ -29,7 +29,7 @@ import type {
   Schemas,
   ShellCounts,
 } from '@/lib/api/types';
-import type { CategoryDef } from '@/lib/categoryList.types';
+import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
@@ -199,6 +199,14 @@ import type {
   UpdateInvestmentTransactionRequest,
   UserResponse,
 } from '@/lib/types';
+import type {
+  ApplyUncategorizedRequest,
+  ApplyUncategorizedResponse,
+  CategoryCounts,
+  UncategorizedGroup,
+  UncategorizedSummary,
+  UncategorizedTransaction,
+} from '@/lib/uncategorized.types';
 
 export { ApiError };
 
@@ -1513,6 +1521,39 @@ export const transactionsApi = {
   setCategory: async (id: string, body: SetCategoryRequest): Promise<SetCategoryResponse> => {
     const { data } = await serverApi.PUT('/api/v1/transactions/{id}/category', { params: { path: { id } }, body });
     return data! as unknown as SetCategoryResponse;
+  },
+  /** Up to four category picks the user made lately for this direction, newest first. */
+  categoryRecent: async (direction: 'OUT' | 'IN'): Promise<CategoryPick[]> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/category-recent', { params: { query: { direction } } });
+    return (data ?? []).map((p) => ({ categoryKey: p.categoryKey, subcategoryKey: p.subcategoryKey ?? null }));
+  },
+  /** Transactions per category and sub-category, for the Category filter. */
+  categoryCounts: async (): Promise<CategoryCounts> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/category-counts');
+    return data!;
+  },
+  uncategorizedSummary: async (): Promise<UncategorizedSummary> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/uncategorized/summary');
+    return data!;
+  },
+  /** One page of the groups: groups of two or more first, then the one-offs. */
+  uncategorizedGroups: async (params: { page: number; size: number }): Promise<Page<UncategorizedGroup>> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/uncategorized/groups', { params: { query: params } });
+    return data as unknown as Page<UncategorizedGroup>;
+  },
+  uncategorizedGroupTransactions: async (
+    groupKey: string,
+    params: { page: number; size: number },
+  ): Promise<Page<UncategorizedTransaction>> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/uncategorized/groups/{groupKey}/transactions', {
+      params: { path: { groupKey }, query: params },
+    });
+    return data as unknown as Page<UncategorizedTransaction>;
+  },
+  /** Gives the transactions a category; with `rule`, also saves "do the same next time". */
+  applyUncategorized: async (body: ApplyUncategorizedRequest): Promise<ApplyUncategorizedResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/uncategorized/apply', { body });
+    return data!;
   },
   batchDelete: async (body: BatchDeleteRequest): Promise<BatchDeleteResponse> => {
     const { data } = await serverApi.POST('/api/v1/transactions/batch-delete', { body });

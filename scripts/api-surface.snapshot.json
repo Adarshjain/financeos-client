@@ -336,15 +336,21 @@
       "listByAccount"
     ],
     "transactionsApi": [
+      "applyUncategorized",
       "batchDelete",
       "batchReview",
       "bulkReattributeCard",
+      "categoryCounts",
+      "categoryRecent",
       "count",
       "create",
       "delete",
       "merge",
       "search",
       "setCategory",
+      "uncategorizedGroupTransactions",
+      "uncategorizedGroups",
+      "uncategorizedSummary",
       "update"
     ],
     "transactionLinksApi": [

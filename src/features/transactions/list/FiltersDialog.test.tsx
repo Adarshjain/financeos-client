@@ -12,7 +12,7 @@ function renderDialog() {
   const onApply = vi.fn();
   const onClose = vi.fn();
   renderWithQuery(
-    <FiltersDialog query={DEFAULT_QUERY} today="2026-10-29" accounts={[]} categories={[]} onApply={onApply} onClose={onClose} />,
+    <FiltersDialog query={DEFAULT_QUERY} today="2026-10-29" accounts={[]} onApply={onApply} onClose={onClose} />,
   );
   return { onApply, onClose };
 }
@@ -67,7 +67,6 @@ describe('FiltersDialog reset', () => {
         query={{ ...DEFAULT_QUERY, q: 'coffee', type: 'debit' }}
         today="2026-10-29"
         accounts={[]}
-        categories={[]}
         onApply={onApply}
         onClose={vi.fn()}
       />,

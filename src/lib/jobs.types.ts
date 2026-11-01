@@ -4,7 +4,8 @@ export type JobType =
   | 'PRICE_REFRESH'
   | 'INVESTMENT_IMPORT_COMMIT'
   | 'BROKER_RECONCILE_COMMIT'
-  | 'RULE_APPLY';
+  | 'RULE_APPLY'
+  | 'CATEGORY_BACKFILL';
 
 export type JobStatus =
   | 'PENDING'

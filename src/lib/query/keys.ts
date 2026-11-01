@@ -11,6 +11,12 @@ export const keys = {
     links: (transactionId: string) => [...keys.transactions.all, 'links', transactionId] as const,
     /** How many transactions need review: the list's chip and the nav badge. Under `all`, so any transaction change refreshes it. */
     needsReviewCount: () => [...keys.transactions.all, 'needs-review-count'] as const,
+    /** The recent category picks for a direction (OUT or IN). */
+    categoryRecent: (direction: 'OUT' | 'IN') => [...keys.transactions.all, 'category-recent', direction] as const,
+    /** Sort them: a page of the groups, and a page of one group's transactions. */
+    uncategorizedGroups: (page: number, size: number) => [...keys.transactions.all, 'uncategorized-groups', page, size] as const,
+    uncategorizedGroup: (groupKey: string, page: number, size: number) =>
+      [...keys.transactions.all, 'uncategorized-group', groupKey, page, size] as const,
   },
 
   accounts: {

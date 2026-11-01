@@ -1729,7 +1729,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["summary"];
+        get: operations["summary_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4026,6 +4026,38 @@ export interface paths {
         patch: operations["bulkReattributeCard"];
         trace?: never;
     };
+    "/api/v1/transactions/category-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["categoryCounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/category-recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["categoryRecent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transactions/count": {
         parameters: {
             query?: never;
@@ -4068,6 +4100,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["searchTransactions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/uncategorized/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/uncategorized/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["groups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/uncategorized/groups/{groupKey}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["groupTransactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/uncategorized/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4208,6 +4304,20 @@ export interface components {
         ApplyRuleRequest: {
             all?: boolean;
             transactionIds?: string[];
+        };
+        ApplyUncategorizedRequest: {
+            categoryKey: string;
+            rule?: components["schemas"]["Rule"];
+            subcategoryKey?: string | null;
+            transactionIds: string[];
+        };
+        ApplyUncategorizedResponse: {
+            /** Format: uuid */
+            ruleId?: string | null;
+            /** Format: int32 */
+            skipped: number;
+            /** Format: int32 */
+            updated: number;
         };
         AssignAttentionRequest: {
             /** Format: uuid */
@@ -4669,6 +4779,8 @@ export interface components {
         };
         CategorizeRequest: {
             description: string;
+            /** @enum {string} */
+            type?: "DEBIT" | "CREDIT";
         };
         CategorizeResponse: {
             categoryKey?: string | null;
@@ -4693,8 +4805,23 @@ export interface components {
             category: string;
             percentage: number;
         };
+        CategoryCount: {
+            categoryKey: string;
+            /** Format: int64 */
+            count: number;
+            subs: components["schemas"]["SubcategoryCount"][];
+        };
+        CategoryCountsResponse: {
+            categories: components["schemas"]["CategoryCount"][];
+            /** Format: int64 */
+            uncategorized: number;
+        };
         CategoryListResponse: {
             categories: components["schemas"]["Category"][];
+        };
+        CategoryPick: {
+            categoryKey: string;
+            subcategoryKey?: string | null;
         };
         CategoryRef: {
             icon: string;
@@ -6520,7 +6647,7 @@ export interface components {
             /** @enum {string} */
             triggerSource: "USER" | "CRON";
             /** @enum {string} */
-            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY";
+            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL";
         };
         Keys: {
             auth: string;
@@ -7379,6 +7506,42 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageUncategorizedGroupResponse: {
+            content: components["schemas"]["UncategorizedGroupResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageUncategorizedTransactionResponse: {
+            content: components["schemas"]["UncategorizedTransactionResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageableObject: {
             /** Format: int64 */
             offset: number;
@@ -8187,6 +8350,10 @@ export interface components {
             total: number;
             totalLabel: string;
         };
+        Rule: {
+            matchType?: string | null;
+            pattern: string;
+        };
         RuleBreakdown: {
             /** @enum {string} */
             accrualType: "PERCENT" | "SLAB";
@@ -8593,6 +8760,11 @@ export interface components {
             /** Format: int32 */
             sortOrder: number;
         };
+        SubcategoryCount: {
+            /** Format: int64 */
+            count: number;
+            subcategoryKey: string;
+        };
         SubcategoryRef: {
             key: string;
             name: string;
@@ -8742,6 +8914,11 @@ export interface components {
             source: string;
             stackTrace?: string | null;
         };
+        TopGroup: {
+            /** Format: int64 */
+            count: number;
+            label: string;
+        };
         Totals: {
             closing: number;
             lent: number;
@@ -8841,6 +9018,48 @@ export interface components {
             description?: string | null;
             /** Format: uuid */
             id: string;
+            /** @enum {string} */
+            type: "DEBIT" | "CREDIT";
+        };
+        UncategorizedGroupResponse: {
+            /** Format: int64 */
+            count: number;
+            direction: string;
+            /** Format: date */
+            firstDate: string;
+            groupKey: string;
+            label: string;
+            /** Format: date */
+            lastDate: string;
+            oneOff: boolean;
+            person: boolean;
+            total: number;
+        };
+        UncategorizedSummaryResponse: {
+            /** Format: int64 */
+            count: number;
+            /** Format: int64 */
+            groupCount: number;
+            topGroups: components["schemas"]["TopGroup"][];
+        };
+        UncategorizedTransactionResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountLast4?: string | null;
+            accountName: string;
+            amount: number;
+            cardLabel?: string | null;
+            cardLast4?: string | null;
+            /** @enum {string|null} */
+            channel?: "ONLINE" | "POS" | "UPI" | "CONTACTLESS" | "ATM" | "OTHER" | null;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload";
+            sourcedDescription?: string | null;
             /** @enum {string} */
             type: "DEBIT" | "CREDIT";
         };
@@ -13286,7 +13505,7 @@ export interface operations {
             };
         };
     };
-    summary: {
+    summary_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -19407,6 +19626,66 @@ export interface operations {
             };
         };
     };
+    categoryCounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryCountsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    categoryRecent: {
+        parameters: {
+            query: {
+                direction: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryPick"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     countTransactions: {
         parameters: {
             query?: never;
@@ -19502,6 +19781,142 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageTransactionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyUncategorizedRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplyUncategorizedResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    groups: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageUncategorizedGroupResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    groupTransactions: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path: {
+                groupKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageUncategorizedTransactionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UncategorizedSummaryResponse"];
                 };
             };
             /** @description Error response */
