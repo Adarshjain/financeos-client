@@ -134,7 +134,7 @@ export interface ProblemContext {
   selectableAccounts: readonly Account[];
 }
 
-/** What is wrong with the form, by field; empty when it can be saved. Wording follows the Legacy form's toasts. */
+/** What is wrong with the form, by field; empty when it can be saved. */
 export function formProblems(values: TransactionFormValues, ctx: ProblemContext): FormErrors {
   const errors: FormErrors = {};
   const amount = Number(values.amount);

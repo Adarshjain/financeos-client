@@ -222,7 +222,7 @@ export interface CloseCardRequest {
   closedOn?: string;
 }
 
-// Legacy request types aliases
+// Request type aliases
 export type CreateAccountCardRequest = CreateCardholderRequest;
 export type UpdateAccountCardRequest = UpdateCardholderRequest;
 export type ReplaceCardInstanceRequest = ReplaceCardRequest;

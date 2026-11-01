@@ -1,5 +1,5 @@
-// What the Dinero dashboard frame hands a built-in's body, and what each key exports. The shapes are the
-// Legacy ones (registry.tsx), so the frame fetches with the existing hooks and passes the same inputs.
+// What the Dinero dashboard frame hands a built-in's body, and what each key exports. The frame fetches with the
+// existing hooks and passes these inputs.
 
 import type { ComponentType, ReactElement } from 'react';
 

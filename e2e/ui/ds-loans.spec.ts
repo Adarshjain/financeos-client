@@ -301,7 +301,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Hide', exact: true }).click();
       await expect(page.getByText('Old Bike Loan')).toHaveCount(0);
 
-      // A row opens the loan's (Legacy) page.
+      // A row opens the loan's page.
       await page.getByText('Home Loan').first().click();
       await page.waitForURL(`**/loans/${home.id}`);
     });

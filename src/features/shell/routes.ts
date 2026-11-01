@@ -26,7 +26,7 @@ const PATH_ALIASES: Record<string, string> = {
 /** The old Needs-review page; Transactions has it as a filter (see `reviewQuery`). */
 const REVIEW_PATH = '/transactions/review';
 
-/** Paths that are not pages (API, OAuth callback, static files): never prefixed. */
+/** Paths that are not pages (API, OAuth callback, static files). */
 const NON_PAGE_PATH = /^\/(api|auth|handbook|storybook|serwist|icons|brand|manifest\.webmanifest)(\/|$)/;
 
 /** The Transactions `reason` values (lower case); old review links carry the enum names. */

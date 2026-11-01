@@ -1,7 +1,7 @@
 // The server stores a widget's place as {x, y, w, h} on a 100-column grid; the Dinero grid is an ordered flow with
 // width steps (quarter ... full). These pure functions map one to the other. Reading: order by y then x, width = the
 // nearest step. Writing: the order is the array's, widths come from the steps, and x/y are re-flowed in rows of
-// 100 columns with `h` kept, so Legacy (which lays out by x/y) shows the same order and widths.
+// 100 columns with `h` kept, so a reader that lays out by x/y shows the same order and widths.
 
 import { WIDGET_GRID_WIDTHS, type WidgetGridLayoutItem, widgetGridSpan, type WidgetGridWidth, widgetGridWidthFromColumns } from '@/components/ds/WidgetGrid/WidgetGrid';
 import { DASHBOARD_GRID_COLUMNS, isTextWidget, widgetMinW } from '@/lib/dashboards.helpers';

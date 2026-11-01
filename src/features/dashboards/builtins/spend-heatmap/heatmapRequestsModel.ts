@@ -1,4 +1,4 @@
-// The ad-hoc KPI a heatmap day opens (moved from the Legacy heatmap view, which imports it back).
+// The ad-hoc KPI a heatmap day opens.
 
 import { adhocKpi } from '@/features/dashboards/builtins/builtinModel';
 import { buildFilter } from '@/lib/reports.helpers';

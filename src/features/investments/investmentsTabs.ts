@@ -6,7 +6,7 @@ export type InvestmentsTabId = 'holdings' | 'epf' | 'tradebook' | 'dividends' | 
 export interface InvestmentsTab {
   id: InvestmentsTabId;
   label: string;
-  /** The Legacy-shaped path; `appHref` turns it into the Dinero route. */
+  /** The path; `appHref` turns it into the app route. */
   path: string;
 }
 

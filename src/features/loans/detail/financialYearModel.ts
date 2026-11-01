@@ -5,7 +5,7 @@ export function fyStartYear(iso: string): number {
   return month >= 4 ? year : year - 1;
 }
 
-/** "FY 2026-27": the Legacy schedule's group key. */
+/** "FY 2026-27": the schedule's group key. */
 export function fyGroupKey(iso: string): string {
   const start = fyStartYear(iso);
   return `FY ${start}-${String(start + 1).slice(-2)}`;

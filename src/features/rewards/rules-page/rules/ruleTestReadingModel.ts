@@ -19,7 +19,7 @@ const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
  * Splits the preview's one-line result (`Matches → ₹125.00 cashback`, `No match — below minimum amount ₹500`) into the
- * headline and verdict the dialog shows. The preview hook is shared with Legacy, so the wording is read, not changed.
+ * headline and verdict the dialog shows. The wording is read, not changed.
  */
 export function readRuleTest(preview: { matched: boolean; text: string }, f: Fields): RuleTestReading {
   const nothing = f.rewardType === 'POINTS' ? '0 pts' : '₹0';

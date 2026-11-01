@@ -71,7 +71,7 @@ export interface InstrumentFormErrors {
  */
 export function instrumentFormErrors(err: unknown): InstrumentFormErrors | null {
   if (!isBadRequest(err)) return null;
-  // An ApiError (browser client, Legacy) or an ActionError (server action): both carry the server's ErrorResponse.
+  // An ApiError (browser client) or an ActionError (server action): both carry the server's ErrorResponse.
   const failure = err as Error & { response?: { details?: Record<string, string> | null; message?: string } };
   const details = failure.response?.details ?? null;
   const fields: InstrumentFormErrors['fields'] = {};

@@ -527,7 +527,7 @@ test.describe('Transactions API (@api)', () => {
       const primaryCh = await ensurePrimaryCardholder(user.api, cc.id, '7777');
       const card = primaryCh.cards[0];
 
-      // Pull forward Categories API (POST & GET /api/v1/categories)
+      // Tags API (POST & GET /api/v1/tags); the category list is GET /api/v1/category-list
       const cat = await createCategory(user.api, 'Dining Out');
       const categoriesList = await user.api.GET('/api/v1/tags');
       expect(categoriesList.response.status).toBe(200);

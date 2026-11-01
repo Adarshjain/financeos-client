@@ -1,7 +1,7 @@
 'use client';
 
 // The allocation template view: a donut of open holdings' current value by asset class with its legend (class,
-// share, ₹), drawn by the Chart organism. A slice or its legend row opens that class's holdings, as in Legacy.
+// share, ₹), drawn by the Chart organism. A slice or its legend row opens that class's holdings.
 // Content only; the dashboard frame draws the card.
 
 import React from 'react';

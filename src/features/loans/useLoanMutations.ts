@@ -29,7 +29,7 @@ import {
 } from './loanActions';
 
 export interface LoanMutationOptions {
-  /** Replaces the default Legacy error toast, for pages whose toasts come from another toaster. */
+  /** Replaces the default error toast. */
   onError?: (e: unknown, fallback: string) => void;
 }
 
@@ -129,7 +129,7 @@ export function useLoanMutations(loanId: string, options?: LoanMutationOptions) 
 
 /**
  * Creates a loan (POST /api/v1/loans) and refreshes every loan query. `onError` replaces the default
- * Legacy error toast, for pages whose toasts come from another toaster.
+ * error toast.
  */
 export function useCreateLoan(options?: { onError?: (e: unknown) => void }) {
   const qc = useQueryClient();
@@ -142,7 +142,7 @@ export function useCreateLoan(options?: { onError?: (e: unknown) => void }) {
 
 /**
  * Updates a loan (PUT /api/v1/loans/{id}) and refreshes every loan query. `onError` replaces the default
- * Legacy error toast, for pages whose toasts come from another toaster.
+ * error toast.
  */
 export function useUpdateLoan(options?: { onError?: (e: unknown) => void }) {
   const qc = useQueryClient();

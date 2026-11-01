@@ -259,7 +259,7 @@ function check(lines, all = false, classes = true) {
     if (file !== 'src/components/ds/phoneLayout.ts' && /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
       errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use desk: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
     }
-    // Dinero has one layout switch, `desk` (641px); Legacy's sm/md/lg/xl breakpoints never appear in checked code (RULES §5c.2).
+    // Dinero has one layout switch, `desk` (641px); the sm/md/lg/xl breakpoints never appear in checked code (RULES §5c.2).
     if (/(?:^|[\s"'`:])(?:max-)?(?:sm|md|lg|xl|2xl):[-a-z![]/.test(text)) {
       errors.push({ file, line, rule: 'breakpoint', why: 'a breakpoint other than desk: — Dinero has one switch at 641px (RULES §5c.2)', text: text.trim().slice(0, 160) });
     }
@@ -400,7 +400,7 @@ function selfTest() {
   }
   for (const [file, text, rule, bad] of [
     ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ui/card';", 'old-import', true],
-    ['src/app/(ds)/(app)/transactions/page.tsx', "import { useLoanDetail } from '@/app/(legacy)/legacy/(protected)/loans/[id]/components/useLoanDetail';", 'old-import', true],
+    ['src/app/(ds)/(app)/transactions/page.tsx', "import { useLoanDetail } from '@/app/old-area/loans/[id]/components/useLoanDetail';", 'old-import', true],
     ['src/app/(ds)/(app)/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
     ['src/app/(ds)/(app)/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/app/(ds)/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],

@@ -1,5 +1,4 @@
-// The account tile's 30-day trend: how many days it covers and the values as the headline reads them
-// (moved from the Legacy tile, which imports them back).
+// The account tile's 30-day trend: how many days it covers and the values as the headline reads them.
 
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';

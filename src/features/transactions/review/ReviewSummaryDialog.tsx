@@ -18,7 +18,7 @@ export interface ReviewSummaryDialogProps {
   hideSkipped?: boolean;
 }
 
-/** What an approve run did, shown only when something was skipped or failed (Legacy batch summary). */
+/** What an approve run did, shown only when something was skipped or failed. */
 export function ReviewSummaryDialog({
   summary,
   onClose,

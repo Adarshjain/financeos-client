@@ -4,7 +4,7 @@
 //
 // Component built-ins have a `Body` that fetches its own data: attention, bills_due, card_utilisation,
 // account_tile, emergency_fund. Template built-ins have a `View` the frame feeds with the loaded report data
-// (keyed here by builtin key; the server's `view` name only picks the Legacy renderer): net_worth (KPI),
+// (keyed here by builtin key; the server's `view` name is not used to pick a renderer): net_worth (KPI),
 // upcoming (table), milestone_progress, cap_headroom, rewards_earned, spend_heatmap (the Chart heatmap).
 
 import { createElement } from 'react';

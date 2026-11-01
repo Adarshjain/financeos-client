@@ -179,7 +179,7 @@ export function linkRows(
 
 // ---- Delete ---------------------------------------------------------------
 
-/** What deleting says goes and what stays; imported transactions get Legacy's warning. */
+/** What deleting says goes and what stays; imported transactions get a warning. */
 export function deleteImpact(t: Transaction): string[] {
   const impact: string[] = ['The transaction is deleted.'];
   const records = t.obligationRefs ?? [];
