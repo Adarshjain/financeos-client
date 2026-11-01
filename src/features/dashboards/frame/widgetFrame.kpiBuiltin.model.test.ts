@@ -17,9 +17,9 @@ const builtin = (key: string, kind: 'template' | 'component'): WidgetResponse =>
   }) as unknown as WidgetResponse;
 
 describe('widgetMenuItems for KPI built-ins', () => {
-  it('Net worth has no View underlying data item (its value tap opens it)', () => {
+  it('Net worth has View underlying data last (its value tap opens it too)', () => {
     expect(KPI_BUILTIN_KEYS).toEqual(['net_worth']);
-    expect(widgetMenuItems(builtin('net_worth', 'template'), { canEditSettings: true })).toEqual(['settings', 'duplicate']);
+    expect(widgetMenuItems(builtin('net_worth', 'template'), { canEditSettings: true })).toEqual(['settings', 'duplicate', 'underlying']);
   });
 
   it('other built-ins have none', () => {

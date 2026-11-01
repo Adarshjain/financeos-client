@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const push = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, refresh: vi.fn() }),
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -67,10 +68,20 @@ describe('Net worth built-in underlying data', () => {
     expect(api.POST).not.toHaveBeenCalled();
   });
 
-  it('the ⋮ menu has no View underlying data', async () => {
+  it('the ⋮ menu has View underlying data, which opens the same dialog', async () => {
     renderWithQuery(<DashboardWidgetFrame widget={builtin('net_worth', 'template')} />);
     await userEvent.click(screen.getByRole('button', { name: 'Widget options' }));
-    expect(screen.queryByText('View underlying data')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View underlying data' }));
+    expect(screen.getByTestId('underlying-dialog')).toBeInTheDocument();
+    expect(dialog).toHaveBeenCalledWith(expect.objectContaining({ builtin: expect.objectContaining({ key: 'net_worth' }) }));
+  });
+
+  it('a transaction row opens that transaction on Transactions', async () => {
+    renderWithQuery(<DashboardWidgetFrame widget={builtin('net_worth', 'template')} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Widget options' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View underlying data' }));
+    dialog.mock.calls.at(-1)![0].onOpenTransaction('t1');
+    expect(push).toHaveBeenCalledWith(expect.stringMatching(/^\/transactions\?.*txn=t1/));
   });
 
   it('is not a link while editing', () => {

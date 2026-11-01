@@ -74,4 +74,11 @@ describe('WidgetUnderlying target', () => {
     await screen.findByTestId('underlying-dialog');
     expect(dialog.mock.calls.at(-1)![0].request).toBe(own);
   });
+
+  it('hands the dialog the transaction opener', async () => {
+    const onOpenTransaction = vi.fn();
+    renderWithQuery(<WidgetUnderlying widget={widget} data={chartData as ReportData} onOpenTransaction={onOpenTransaction} onClose={vi.fn()} />);
+    await screen.findByTestId('underlying-dialog');
+    expect(dialog.mock.calls.at(-1)![0].onOpenTransaction).toBe(onOpenTransaction);
+  });
 });

@@ -28,10 +28,12 @@ export interface WidgetUnderlyingProps {
   data: ReportData | null;
   /** A chart entry or row to open on; without it the whole report. */
   target?: UnderlyingTarget | null;
+  /** A transaction row was pressed: opens that transaction. */
+  onOpenTransaction?: (id: string) => void;
   onClose: () => void;
 }
 
-export function WidgetUnderlying({ widget, data, target, onClose }: WidgetUnderlyingProps) {
+export function WidgetUnderlying({ widget, data, target, onOpenTransaction, onClose }: WidgetUnderlyingProps) {
   const saved = useSavedReport(widget.reportId);
   const catalog = useReportCatalog();
   const datasource = React.useMemo(
@@ -73,6 +75,7 @@ export function WidgetUnderlying({ widget, data, target, onClose }: WidgetUnderl
         chart && request ? datasource.fields.find((f) => f.name === (request.definition as ChartDefinition).dimension.field)?.label : undefined
       }
       title={`Underlying data · ${widgetTitle(widget)}`}
+      onOpenTransaction={onOpenTransaction}
       onClose={onClose}
     />
   );

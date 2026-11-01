@@ -282,3 +282,43 @@ describe('ReportUnderlyingDialog', () => {
     expect(within(document.body).getByText('Underlying data')).toBeInTheDocument();
   });
 });
+
+describe('ReportUnderlyingDialog filters and transaction rows', () => {
+  const filtered = () =>
+    response({
+      rowAction: 'transaction',
+      filters: [
+        { field: 'account', fieldLabel: 'Account', operator: 'is', text: 'is HDFC Regalia' },
+        { field: 'category', fieldLabel: 'Category', operator: 'is', text: 'is Food' },
+      ],
+    });
+
+  it('shows the figure\'s filters as one chip each, and none when it has no filters', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: filtered() } as never);
+    const { unmount } = renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
+    const list = await screen.findByRole('list', { name: 'Filters' });
+    expect(within(list).getAllByRole('listitem').map((i) => i.textContent)).toEqual(['Account is HDFC Regalia', 'Category is Food']);
+    unmount();
+    vi.mocked(api.POST).mockResolvedValue({ data: response() } as never);
+    renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
+    await screen.findByText('Underlying data · ₹97,044');
+    expect(screen.queryByRole('list', { name: 'Filters' })).toBeNull();
+  });
+
+  it('pressing a transaction row opens that transaction', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: filtered() } as never);
+    const onOpenTransaction = vi.fn();
+    renderWithQuery(<ReportUnderlyingDialog request={request} onOpenTransaction={onOpenTransaction} onClose={vi.fn()} />);
+    const [row] = await screen.findAllByText('SBI Home Loan EMI');
+    await user.click(row);
+    expect(onOpenTransaction).toHaveBeenCalledWith('t1');
+  });
+
+  it('rows do nothing without the handler', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: filtered() } as never);
+    renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
+    const [row] = await screen.findAllByText('SBI Home Loan EMI');
+    await user.click(row);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});

@@ -18,6 +18,7 @@ import { reportHref } from '@/features/reports/list/reportsListModel';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import type { UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { appHref } from '@/features/shell/routes';
+import { DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
@@ -94,6 +95,9 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
     if (kpiBuiltin) show();
     else void runUnderlying(show);
   };
+
+  // A transaction row opens on Transactions (?txn), as a search result does.
+  const openTransaction = (id: string) => router.push(appHref(transactionsUrl({ ...DEFAULT_QUERY, txn: id })));
 
   const select = (item: WidgetMenuItemId) => {
     if (item === 'edit-report' && widget.reportId) router.push(reportHref(widget.reportId));
@@ -174,10 +178,11 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
         <LazyReportUnderlyingDialog
           builtin={{ kind: 'builtin', key, params: widgetParams(widget) }}
           title={`Underlying data · ${widgetTitle(widget)}`}
+          onOpenTransaction={openTransaction}
           onClose={close}
         />
       ) : null}
-      {overlay === 'underlying' && !kpiBuiltin && WidgetUnderlying ? <WidgetUnderlying widget={widget} data={state.data} target={target} onClose={close} /> : null}
+      {overlay === 'underlying' && !kpiBuiltin && WidgetUnderlying ? <WidgetUnderlying widget={widget} data={state.data} target={target} onOpenTransaction={openTransaction} onClose={close} /> : null}
       {overlay === 'settings' && def && onSaveSettings && WidgetSettingsDialog ? (
         <WidgetSettingsDialog widget={widget} def={def} dashboardName={dashboardName} onSave={onSaveSettings} onClose={close} />
       ) : null}

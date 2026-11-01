@@ -26,8 +26,8 @@ const builtin = (kind: 'template' | 'component', over: Partial<NonNullable<Widge
 });
 
 describe('widgetMenuItems', () => {
-  it('a KPI report widget: Edit report only (the value tap opens the underlying data)', () => {
-    expect(widgetMenuItems(report(), { canEditSettings: false })).toEqual(['edit-report']);
+  it('a KPI report widget: Edit report and View underlying data (the value tap opens it too)', () => {
+    expect(widgetMenuItems(report(), { canEditSettings: false })).toEqual(['edit-report', 'underlying']);
   });
 
   it('a chart, table or breakdown report widget: Edit report and View underlying data, no View full page', () => {
@@ -47,9 +47,9 @@ describe('widgetMenuItems', () => {
     }
   });
 
-  it('Net worth: Widget settings and Duplicate as my report, no View underlying data', () => {
+  it('Net worth: Widget settings, Duplicate as my report, View full page, View underlying data', () => {
     const w = { ...builtin('template', { key: 'net_worth', href: '/accounts' }), builtinKey: 'net_worth' };
-    expect(widgetMenuItems(w, { canEditSettings: true })).toEqual(['settings', 'duplicate', 'full-page']);
+    expect(widgetMenuItems(w, { canEditSettings: true })).toEqual(['settings', 'duplicate', 'full-page', 'underlying']);
   });
 
   it('a component built-in has no Duplicate', () => {
