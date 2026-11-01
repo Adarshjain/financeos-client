@@ -1,24 +1,6 @@
 import type { Locator, Page, Request } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import { E2E_CLIENT_URL } from './config';
-
-/**
- * Navigate to the Accounts page and ensure it has finished loading.
- */
-export async function openAccounts(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/accounts`);
-  await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
-}
-
-/**
- * Navigate to the Transactions page and ensure it has finished loading.
- */
-export async function openTransactions(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/transactions`);
-  await expect(page.getByRole('heading', { name: 'Transactions', level: 1 })).toBeVisible();
-}
-
 /**
  * Click a control whose handler sends an API request, re-clicking until that request goes out.
  * Server-rendered pages show their buttons before React hydrates, and a click that lands in that
@@ -40,50 +22,4 @@ export async function clickUntilRequest(
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
   const toastLocator = page.locator('[data-sonner-toast], [role="status"], [role="alert"]').filter({ hasText: text });
   await expect(toastLocator.first()).toBeVisible({ timeout: 10000 });
-}
-
-export async function openInvestments(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments`);
-  await expect(page.getByRole('heading', { name: /Portfolio Holdings/i, level: 1 })).toBeVisible();
-}
-
-export async function openInstruments(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/instruments`);
-  await expect(page.getByRole('heading', { name: /Instruments/i, level: 1 })).toBeVisible();
-}
-
-export async function openTradebook(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/tradebook`);
-  await expect(page.getByRole('heading', { name: /Tradebook & Actions/i, level: 1 })).toBeVisible();
-}
-
-export async function openDividends(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/dividends`);
-  await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
-}
-
-export async function openCorporateActions(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/corporate-actions`);
-  await expect(page.getByRole('heading', { name: /Corporate Actions/i, level: 1 })).toBeVisible();
-}
-
-export async function openFno(page: Page): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/legacy/investments/fno`);
-  await expect(page.getByRole('heading', { name: /Futures & Options/i, level: 1 })).toBeVisible();
-}
-
-
-/**
- * Open an account's edit dialog from /accounts: the tile body links to the account page, whose Edit
- * button opens the dialog. Leaves the page on /accounts/<id>. The Edit click is retried because the
- * dialog trigger is server-rendered and a click before hydration is dropped.
- */
-export async function openAccountEditor(page: Page, name: string | RegExp): Promise<void> {
-  await page.getByRole('link', { name }).first().click();
-  await expect(page).toHaveURL(/\/legacy\/accounts\/[^/?#]+$/);
-  const trigger = page.getByRole('button', { name: 'Edit', exact: true });
-  await expect(async () => {
-    await trigger.click();
-    await expect(page.getByLabel('Account Name')).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 15000 });
 }

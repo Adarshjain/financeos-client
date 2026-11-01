@@ -4,7 +4,7 @@
 e2e/api/smoke.spec.ts
 e2e/ui/smoke.spec.ts
 e2e/api/auth.spec.ts
-e2e/ui/auth.spec.ts
+e2e/ui/ds-auth.spec.ts
 e2e/api/error-shapes.spec.ts
 e2e/api/accounts.spec.ts
 e2e/api/shared-credit-limit.spec.ts

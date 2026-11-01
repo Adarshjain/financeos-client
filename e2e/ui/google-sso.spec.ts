@@ -25,14 +25,14 @@ test.describe('Google SSO UI (@ui)', () => {
     test.slow();
     identity = await registerIdentity({ browserSso: true });
 
-    await page.goto('/legacy/login');
-    await page.getByRole('button', { name: 'Sign in with Google' }).click();
+    await page.goto('/login');
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
 
     // Consent stub → client callback page → exchange → hard navigation to the dashboard.
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });
     await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
 
-    await page.goto('/legacy/settings');
+    await page.goto('/settings');
     // Shown in the sidebar and in the profile card, hence .first().
     await expect(page.getByText(identity.email).first()).toBeVisible();
     await expect(page.getByText(identity.name).first()).toBeVisible();
@@ -51,14 +51,14 @@ test.describe('Google SSO UI (@ui)', () => {
     test.slow();
     identity = await registerIdentity({ browserSso: true, tokenStatus: 401 });
 
-    await page.goto('/legacy/login');
-    await page.getByRole('button', { name: 'Sign in with Google' }).click();
+    await page.goto('/login');
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
 
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });
     await expect(page.getByRole('heading', { name: 'Authentication Failed' })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('Redirecting to login...')).toBeVisible();
     await page.waitForURL(/\/login\?error=/, { timeout: 15_000 });
-    await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   });
 
   test('a sign-in callback link this browser did not start signs nobody in', async ({ page }) => {
@@ -74,6 +74,10 @@ test.describe('Google SSO UI (@ui)', () => {
     await expect(page.getByText('Google sign-in expired or was not started here. Please try again.')).toBeVisible();
     await page.waitForURL(/\/login\?error=/, { timeout: 15_000 });
     const cookies = await page.context().cookies(E2E_CLIENT_URL);
-    expect(cookies.find((c) => c.name === 'FINANCEOS_SESSION')).toBeUndefined();
+    // The app-lock status poll may hand the browser an anonymous session cookie; it must not be a signed-in one.
+    const session = cookies.find((c) => c.name === 'FINANCEOS_SESSION')?.value;
+    if (session) {
+      expect((await makeApi(session).GET('/api/v1/auth/me')).response.status).toBe(401);
+    }
   });
 });

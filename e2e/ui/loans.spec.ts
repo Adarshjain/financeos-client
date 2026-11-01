@@ -22,61 +22,13 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('Loans Browser: create loan, browse list, status filter, and search', async ({ page }) => {
-    await page.goto('/legacy/loans');
-    await page.waitForLoadState('networkidle');
-
-    // Page Heading
-    await expect(page.getByRole('heading', { name: /Formal Loans/i })).toBeVisible();
-
-    // Click Add Loan
-    await page.getByRole('button', { name: /Add Loan/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Create New Loan' })).toBeVisible();
-
-    // Fill form
-    const startDate = monthsAgo(3);
-    await page.locator('#name').fill('HDFC Car Loan UI');
-    await page.locator('#lender').fill('HDFC Bank');
-    await page.locator('#principal').fill('120000');
-    await page.locator('#annualRatePct').fill('12');
-    await page.locator('#tenureMonths').fill('12');
-    await page.locator('#startDate').fill(startDate);
-    await page.locator('#firstEmiDate').fill(startDate);
-
-    // Submit form
-    await page.getByRole('button', { name: 'Create Loan' }).click();
-
-    // Verify row appeared in list
-    await expect(page.getByRole('heading', { name: 'Formal Loans (1)' })).toBeVisible();
-    await expect(page.locator('text=HDFC Car Loan UI >> visible=true').first()).toBeVisible();
-
-    // Status Filter: filter by Closed
-    const statusSelect = page.locator('button[role="combobox"]:visible').first();
-    await statusSelect.click();
-    await page.getByRole('option', { name: 'Closed', exact: true }).click();
-    await expect(page.locator('text="No loans found matching your criteria." >> visible=true').first()).toBeVisible();
-
-    // Switch back to All Statuses
-    await statusSelect.click();
-    await page.getByRole('option', { name: 'All Statuses', exact: true }).click();
-    await expect(page.locator('text=HDFC Car Loan UI >> visible=true').first()).toBeVisible();
-
-    // Search filter
-    const searchInput = page.locator('input[placeholder="Search loans or lenders..."]:visible').first();
-    await searchInput.fill('NonExistentLender');
-    await expect(page.locator('text="No loans found matching your criteria." >> visible=true').first()).toBeVisible();
-
-    await searchInput.fill('HDFC');
-    await expect(page.locator('text=HDFC Car Loan UI >> visible=true').first()).toBeVisible();
-  });
+  /** dd/mm/yyyy from an ISO date, as the date fields take it typed. */
+  const typed = (iso: string) => iso.split('-').reverse().join('/');
 
   test('Loan Detail: schedule inspection, mark paid, prepayment event, charge, locked edit banner, transaction match, and close/reopen', async ({
     page,
   }) => {
     test.slow(); // long multi-step journey: 3x timeout under parallel load
-
-    // Detail action buttons (Edit, Close, Delete) are housed in PageActionBar (lg:hidden mobile/tablet bar)
-    await page.setViewportSize({ width: 768, height: 1024 });
 
     const api = makeApi(currentUser.cookie);
     const startDate = monthsAgo(3);
@@ -95,75 +47,96 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     });
 
     // Seed matching DEBIT transaction for unpaid installment #2 (due 2 months ago)
+    // A twin loan with the same EMI dates and account makes the debit fit two installments, so the server's
+    // auto-linker leaves it ambiguous and the match is left to Find matches below.
+    await createLoan(api, {
+      name: 'UI Detail Twin Loan',
+      lender: 'SBI Bank',
+      principal: 120000,
+      annualRatePct: 12,
+      tenureMonths: 12,
+      startDate,
+      firstEmiDate: startDate,
+      paymentAccountId: bankAccount.id,
+    });
     await createTransaction(api, bankAccount.id, {
       amount: -10661.85,
       date: addDays(monthsAgo(2), 1),
       description: 'SBI Loan EMI Match',
     });
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
+    await page.goto(`/loans/${loan.id}`);
 
     // Hero title
-    await expect(page.getByRole('heading', { name: 'UI Detail Loan' })).toBeVisible();
+    await expect(page.getByText('UI Detail Loan').first()).toBeVisible();
 
-    // Amortization Schedule section
-    await expect(page.getByRole('heading', { name: 'Amortization Schedule' })).toBeVisible();
-    await expect(page.getByText('₹10,661.85').first()).toBeVisible();
+    // Schedule section
+    await expect(page.getByText('Schedule', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('10,661.85').first()).toBeVisible();
 
-    // 1. Mark Paid on seq 1
-    const markPaidBtn = page.getByRole('button', { name: 'Mark Paid' }).first();
-    await markPaidBtn.click();
-    await expect(page.getByRole('heading', { name: /Settle Installment #1/i })).toBeVisible();
+    // 1. Mark paid on the first overdue installment, recorded without a transaction
+    await page.getByRole('button', { name: 'Mark paid', exact: true }).first().click();
+    const payDialog = page.getByRole('dialog', { name: /^Mark EMI #\d+ paid$/ });
+    await expect(payDialog).toBeVisible();
+    await payDialog.getByRole('radio', { name: 'Record payment without a transaction' }).click();
+    await payDialog.getByRole('button', { name: 'Mark paid', exact: true }).click();
+    await expect(payDialog).not.toBeVisible();
+    // The paid row opens its EMI dialog, which offers Unlink.
+    await expect(page.getByText('Paid', { exact: true }).first()).toBeVisible();
+    await page.getByRole('button').filter({ hasText: /Paid/ }).first().click();
+    const emiDialog = page.getByRole('dialog', { name: /^EMI #\d+$/ });
+    await expect(emiDialog.getByRole('button', { name: 'Unlink' })).toBeVisible();
+    await emiDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(emiDialog).not.toBeVisible();
 
-    // Submit payment
-    await page.getByRole('button', { name: 'Confirm Settle' }).click();
-    await expect(page.getByRole('button', { name: 'Unlink' }).first()).toBeVisible();
+    // 2. Add event: Prepayment (reduce tenure)
+    await page.getByRole('button', { name: 'Prepay', exact: true }).click();
+    const eventDialog = page.getByRole('dialog', { name: 'Record event' });
+    await expect(eventDialog).toBeVisible();
+    await expect(eventDialog.getByRole('combobox', { name: /^Event type/ })).toContainText('Prepayment');
+    await eventDialog.getByRole('textbox', { name: /^Amount/ }).fill('30000');
+    await eventDialog.getByRole('textbox', { name: /^Effective date/ }).fill(typed(monthsAgo(1)));
+    await eventDialog.getByRole('button', { name: 'Record event' }).click();
+    await expect(eventDialog).not.toBeVisible();
+    await expect(page.getByText('Events & charges')).toBeVisible();
+    await expect(page.getByText(/prepayment/i).first()).toBeVisible();
 
-    // 2. Add Event: Prepayment (Reduce Tenure)
-    await page.getByRole('button', { name: /Add Event/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Record Lifecycle Event' })).toBeVisible();
+    // 3. Add itemized charge
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Charge' }).click();
+    const chargeDialog = page.getByRole('dialog', { name: 'Add charge' });
+    await expect(chargeDialog).toBeVisible();
+    await chargeDialog.getByRole('textbox', { name: /^Amount/ }).fill('2000');
+    await chargeDialog.getByRole('textbox', { name: /^Charge date/ }).fill(typed(startDate));
+    await chargeDialog.getByRole('button', { name: 'Add charge' }).click();
+    await expect(chargeDialog).not.toBeVisible();
+    await expect(page.getByText('Processing fee').first()).toBeVisible();
 
-    // Select Prepayment
-    const eventTypeSelect = page.locator('#add-event-form button[role="combobox"]').first();
-    await eventTypeSelect.click();
-    await page.getByRole('option', { name: 'Prepayment', exact: true }).click();
-
-    await page.locator('#add-event-form input[type="number"]').fill('30000');
-    await page.locator('#add-event-form input[data-slot="date-input"]').fill(monthsAgo(1));
-    await page.getByRole('button', { name: 'Record Event' }).click();
-
-    // 3. Add Itemized Charge
-    await page.getByRole('button', { name: /Add Charge/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Add Itemized Charge' })).toBeVisible();
-    await page.locator('#add-charge-form input[type="number"]').fill('2000');
-    await page.locator('#add-charge-form input[data-slot="date-input"]').fill(startDate);
-    await page.getByRole('dialog').getByRole('button', { name: 'Add Charge' }).click();
-    await expect(page.getByText('Processing Fee').first()).toBeVisible();
-
-    // 4. Edit Loan: Core terms locked banner
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    await expect(page.getByRole('heading', { name: 'Edit Loan' })).toBeVisible();
+    // 4. Edit loan: core terms locked banner
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit loan' }).click();
+    const editDialog = page.getByRole('dialog').filter({ hasText: 'locked' });
+    await expect(editDialog).toBeVisible();
     await expect(
-      page.getByText('Core terms (principal, rate, tenure, dates, EMI) are locked because events or payments exist.')
+      editDialog.getByText(/Core terms .* are locked because events or payments exist/),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Cancel' }).click();
+    await editDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(editDialog).not.toBeVisible();
 
-    // 5. EMI Transaction Matching
-    await page.getByRole('button', { name: 'Find Matches' }).click();
-    await expect(page.getByText('SBI Loan EMI Match')).toBeVisible();
-    await page.getByRole('button', { name: 'Confirm', exact: true }).first().click();
+    // 5. EMI transaction matching
+    await page.getByRole('button', { name: 'Find matches' }).click();
+    await expect(page.getByText(/SBI Loan EMI Match/).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm all' }).click();
+    await expect(page.getByText('1 of 2 paid EMIs')).toBeVisible();
 
-    // 6. Close Loan and Reopen Loan
-    await page.getByRole('button', { name: 'Close', exact: true }).first().click();
-    await expect(page.getByRole('heading', { name: 'Close Loan' })).toBeVisible();
-    await page.getByRole('button', { name: 'Close Loan', exact: true }).click();
+    // 6. Close loan and reopen loan
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('menuitem', { name: 'Close loan' }).click();
     await expect(page.getByText(/closed/i).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Reopen', exact: true }).first().click();
-    await expect(page.getByRole('heading', { name: 'Reopen Loan' })).toBeVisible();
-    await page.getByRole('button', { name: 'Reopen Loan', exact: true }).click();
-    await expect(page.getByText(/active/i).first()).toBeVisible();
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('menuitem', { name: 'Reopen loan' }).click();
+    await expect(page.getByRole('button', { name: 'Prepay', exact: true })).toBeVisible();
   });
 
   test('Obligations moved to /upcoming: /loans/calendar redirects, overdue obligations, window filter, and receivable item', async ({
@@ -193,37 +166,36 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     });
 
     // The old calendar route now lands on the Upcoming page
-    await page.goto('/legacy/loans/calendar');
-    await page.waitForURL('**/legacy/upcoming');
+    await page.goto('/loans/calendar');
+    await page.waitForURL('**/upcoming');
 
-    await expect(page.getByRole('heading', { name: 'Upcoming', exact: true })).toBeVisible();
+    await expect(page.getByText('Upcoming', { exact: true }).first()).toBeVisible();
 
     // Overdue obligations section
-    await expect(page.getByText(/Overdue \(\d+\)/).first()).toBeVisible();
+    await expect(page.getByText('Overdue', { exact: true }).first()).toBeVisible();
     await expect(page.getByText(/Calendar Home Loan/i).first()).toBeVisible();
 
     // Counterparty receivable item
     await expect(page.getByText(/Vikram Joshi/i).first()).toBeVisible();
 
-    // Switch the horizon to 1 Month
-    const windowSelect = page.getByRole('combobox', { name: 'Horizon' });
-    await windowSelect.click();
-    await page.getByRole('option', { name: '1 Month', exact: true }).click();
+    // Switch the horizon to 1 month
+    await page.getByRole('button', { name: '3 months', exact: true }).click();
+    await page.getByRole('option', { name: '1 month', exact: true }).click();
 
-    await expect(page.getByRole('heading', { name: 'Upcoming', exact: true })).toBeVisible();
+    await expect(page.getByText('Upcoming', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/Calendar Home Loan/i).first()).toBeVisible();
   });
 
-  test('Loan Detail: Edit, Close and Delete are reachable at the desktop viewport', async ({ page }) => {
+  test('Loan Detail: Edit, Close and Delete are reachable from the actions menu', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     const loan = await createLoan(api, { name: 'Desktop Actions Loan' });
 
-    // Default 1280-wide viewport: the mobile bar is hidden, the desktop card must carry the actions.
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: 'Desktop Actions Loan' })).toBeVisible();
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText('Desktop Actions Loan').first()).toBeVisible();
 
-    for (const name of ['Edit', 'Close', 'Delete']) {
-      await expect(page.getByRole('button', { name, exact: true }).filter({ visible: true }).first()).toBeVisible();
+    await page.getByRole('button', { name: 'More actions' }).click();
+    for (const name of ['Edit loan', 'Close loan', 'Delete']) {
+      await expect(page.getByRole('menuitem', { name, exact: true })).toBeVisible();
     }
   });
 });

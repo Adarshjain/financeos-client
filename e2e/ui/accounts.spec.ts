@@ -1,175 +1,204 @@
+import type { Page } from '@playwright/test';
+
+import { makeApi } from '../fixtures/api';
+import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { createCreditCard } from '../fixtures/seed/accounts';
 import { expect, test } from '../fixtures/test';
-import { expectToast, openAccountEditor, openAccounts } from '../fixtures/ui';
+import { expectToast } from '../fixtures/ui';
+
+/** A list row: the row is one button named by its cells. */
+const accountRow = (page: Page, name: string) => page.getByRole('button', { name: new RegExp(name) });
+const dialogOf = (page: Page, name: string | RegExp) => page.getByRole('dialog', { name });
+
+/** Picks a bank in the account form's searchable Bank select. */
+async function pickBank(page: Page, dialog: ReturnType<typeof dialogOf>, bank: string) {
+  await dialog.getByRole('combobox', { name: /^Bank/ }).click();
+  await page.getByRole('option', { name: bank }).click();
+}
 
 test.describe('Accounts UI (@ui)', () => {
+  let currentUser: CreatedUser;
+
   test.beforeEach(async ({ context, request }) => {
     // Unique user per UI test for isolation
-    const u = await createUser(request, 'ui-accounts');
-    await loginContext(context, u.cookie);
+    currentUser = await createUser(request, 'ui-accounts');
+    await loginContext(context, currentUser.cookie);
   });
 
-  test('create bank account and credit card, verify tiles not blank (@mobile)', async ({ page }) => {
-    await openAccounts(page);
+  test('create bank account and credit card, verify rows not blank (@mobile)', async ({ page }) => {
+    await page.goto('/accounts');
 
-    // 1. Create a Bank Account via dialog
-    await page.getByRole('button', { name: /Add Account|Get Started/i }).first().click();
-    await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible();
+    // 1. Create a Bank Account via the empty state's Add account
+    await page.getByRole('button', { name: 'Add account', exact: true }).first().click();
+    const bankDialog = dialogOf(page, 'Add account');
+    await expect(bankDialog).toBeVisible();
 
-    // Default type is Bank — bank accounts can be fed by Gmail, so the watermark field is offered
-    await expect(page.getByLabel('Ingest From Date')).toBeVisible();
-    await page.getByLabel('Account Name').fill('HDFC Salary Account');
-    await page.getByLabel('Opening Balance').fill('15000');
-    await page.getByLabel('Last 4 Digits').fill('1234');
-    await page.getByRole('button', { name: 'Create Account' }).click();
+    // Default type is Bank: bank accounts can be fed by Gmail, so the watermark field is offered
+    await expect(bankDialog.getByRole('textbox', { name: /^Import emails from/ })).toBeVisible();
+    await bankDialog.getByRole('textbox', { name: /^Account name/ }).fill('HDFC Salary Account');
+    await pickBank(page, bankDialog, 'HDFC Bank');
+    await bankDialog.getByRole('textbox', { name: /^Opening balance/ }).fill('15000');
+    await bankDialog.getByRole('textbox', { name: /^Last 4 digits/ }).fill('1234');
+    await bankDialog.getByRole('button', { name: 'Add account' }).click();
 
-    // Tile renders with name and non-blank content (prevent asChild regression)
-    const bankTile = page.locator('text=HDFC Salary Account').first();
-    await expect(bankTile).toBeVisible();
-    await expect(page.getByText('•••• 1234')).toBeVisible();
+    // Creating opens the new account's page
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    await expect(page.getByRole('banner').getByText('HDFC Salary Account', { exact: true })).toBeVisible();
 
-    // 2. Create a Credit Card via dialog
-    await page.getByRole('button', { name: /Add Account/i }).first().click();
-    await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible();
+    // The list row renders with name and last 4 (prevent asChild regression)
+    await page.goto('/accounts');
+    const bankRow = accountRow(page, 'HDFC Salary Account');
+    await expect(bankRow).toBeVisible();
+    await expect(bankRow.getByText('••1234')).toBeVisible();
 
-    // Select Credit Card type
-    await page.getByRole('button', { name: 'Credit Card' }).click();
-    await page.getByLabel('Account Name').fill('Infinia Visa');
-    await page.getByLabel('Last 4 Digits').fill('9876');
-    await page.getByLabel('Credit Limit').fill('500000');
-    await page.getByLabel('Card Anniversary Date').fill('2024-04-01');
-    await page.getByRole('button', { name: 'Create Account' }).click();
+    // 2. Create a Credit Card from the Credit cards section
+    await page.getByRole('button', { name: 'Add credit card' }).click();
+    const cardDialog = dialogOf(page, 'Add account');
+    await expect(cardDialog).toBeVisible();
+    await expect(cardDialog.getByRole('radio', { name: 'Credit card' })).toBeChecked();
+    await cardDialog.getByRole('textbox', { name: /^Account name/ }).fill('Infinia Visa');
+    await pickBank(page, cardDialog, 'HDFC Bank');
+    await cardDialog.getByRole('textbox', { name: /^Last 4 digits/ }).fill('9876');
+    await cardDialog.getByRole('textbox', { name: /^Card anniversary/ }).fill('01042024');
+    await cardDialog.getByRole('textbox', { name: /^Credit limit/ }).fill('500000');
+    await cardDialog.getByRole('button', { name: 'Add account' }).click();
 
-    // Verify Credit Card tile renders with name and is not blank
-    const ccTile = page.locator('text=Infinia Visa').first();
-    await expect(ccTile).toBeVisible();
-    await expect(page.getByText('•••• 9876')).toBeVisible();
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    await expect(page.getByRole('banner').getByText('Infinia Visa', { exact: true })).toBeVisible();
+
+    await page.goto('/accounts');
+    const cardRow = accountRow(page, 'Infinia Visa');
+    await expect(cardRow).toBeVisible();
+    await expect(cardRow.getByText('••9876')).toBeVisible();
   });
 
-  test('edit account name, cards dialog (add, replace, close), close and reopen account, delete empty account', async ({
+  test('edit account name and identifiers, cards (add, replace, close), close and reopen account, delete empty account', async ({
     page,
   }) => {
-    await openAccounts(page);
+    const api = makeApi(currentUser.cookie);
+    const card = await createCreditCard(api, {
+      name: 'Regalia Gold',
+      last4: '5555',
+      creditLimit: 300000,
+      anniversaryDate: '2024-05-01',
+      bank: 'hdfc',
+    });
 
-    // Create a Credit Card to use for testing cards dialog, editing, closing, reopening
-    await page.getByRole('button', { name: /Add Account|Get Started/i }).first().click();
-    await page.getByRole('button', { name: 'Credit Card' }).click();
-    await page.getByLabel('Account Name').fill('Regalia Gold');
-    await page.getByLabel('Last 4 Digits').fill('5555');
-    await page.getByLabel('Credit Limit').fill('300000');
-    await page.getByLabel('Card Anniversary Date').fill('2024-05-01');
-    await page.getByRole('button', { name: 'Create Account' }).click();
+    // 1. Edit account: from the account page
+    await page.goto(`/accounts/${card.id}`);
+    await expect(page.getByRole('banner').getByText('Regalia Gold', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+    const edit = dialogOf(page, 'Edit account');
+    await expect(edit).toBeVisible();
+    await edit.getByRole('textbox', { name: /^Account name/ }).fill('Regalia Gold Premium');
 
-    await expect(page.getByText('Regalia Gold')).toBeVisible();
+    // 1b. Email identifier aliases live in the edit dialog: add one, remove it (both apply on save)
+    const identifiers = edit.getByRole('combobox', { name: /^Account identifiers/ });
+    await identifiers.click();
+    await page.keyboard.type(' 55 12 ');
+    await page.keyboard.press('Enter');
+    await expect(edit.getByText('5512', { exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await identifiers.click();
+    await page.getByRole('option', { name: '5512' }).click();
+    await page.keyboard.press('Escape');
+    await expect(edit.getByText('5512', { exact: true })).not.toBeVisible();
 
-    // 1. Edit Account: from the account page (the tile body links there)
-    await openAccountEditor(page, 'Regalia Gold');
-    await page.getByLabel('Account Name').fill('Regalia Gold Premium');
+    await edit.getByRole('button', { name: 'Save account' }).click();
+    await expectToast(page, 'Account updated');
+    await expect(edit).not.toBeVisible();
 
-    // 1b. Email identifier aliases live in the edit dialog: add one (saved immediately), remove it.
-    await expect(page.getByText('Email Identifier Aliases')).toBeVisible();
-    await page.getByPlaceholder('e.g. 1234 or CRN').fill(' 55 12 ');
-    await page.getByRole('button', { name: 'Add', exact: true }).click();
-    await expectToast(page, 'Identifier alias added');
-    await expect(page.getByText('5512', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Remove identifier 5512' }).click();
-    await expectToast(page, 'Identifier alias removed');
-    await expect(page.getByText('5512', { exact: true })).not.toBeVisible();
+    // Updated name reflects in the list
+    await page.goto('/accounts');
+    await expect(accountRow(page, 'Regalia Gold Premium')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Save Changes' }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    // 2. Cards tab: add an add-on cardholder, replace its card, close the replaced card
+    await page.goto(`/accounts/${card.id}/cards`);
+    await page.getByRole('button', { name: 'Add add-on cardholder' }).click();
+    const addHolder = dialogOf(page, 'Add add-on cardholder');
+    await addHolder.getByRole('textbox', { name: /^Name/ }).fill('Sam Addon');
+    await addHolder.getByRole('textbox', { name: /^Opened on/ }).fill('01052024');
+    await addHolder.getByRole('textbox', { name: /^Last 4 digits/ }).fill('8888');
+    await addHolder.getByRole('button', { name: 'Add cardholder' }).click();
+    await expect(addHolder).not.toBeVisible();
 
-    // Updated name reflects in tile
-    await openAccounts(page);
-    await expect(page.getByText('Regalia Gold Premium')).toBeVisible();
-
-    // 2. Cards Dialog: open cards dialog
-    await page.getByRole('button', { name: 'Cards' }).click();
-    await expect(page.getByText(/Regalia Gold Premium — Cardholders & Plastics/i)).toBeVisible();
-
-    // Add an Add-on Cardholder
-    await page.getByRole('button', { name: 'Add-on Cardholder' }).click();
-    await page.getByLabel('Cardholder Person Name').fill('Sam Addon');
-    await page.getByLabel('Last 4 Digits').fill('8888');
-    await page.getByRole('button', { name: 'Create Add-on Cardholder' }).click();
-
-    // Verify added cardholder appears in the cards dialog (scope to the dialog: the account tile
-    // behind it re-renders the current last4 too, which made getByText ambiguous ~1 run in 2)
-    const cardsDialog = page.getByRole('dialog');
-    await expect(cardsDialog.getByText('Sam Addon')).toBeVisible();
-    await expect(cardsDialog.getByText('•••• 8888')).toBeVisible();
+    const sam = page.locator('main').getByText('Sam Addon').first();
+    await expect(sam).toBeVisible();
+    await expect(page.getByText('••8888').first()).toBeVisible();
 
     // Replace card on Sam Addon's plastic
     await page.getByRole('button', { name: 'Replace' }).last().click();
-    await expect(page.getByRole('button', { name: 'Confirm Replacement' })).toBeVisible();
-    await page.getByLabel(/New Last 4 Digits/i).fill('8889');
-    await page.getByRole('button', { name: 'Confirm Replacement' }).click();
+    const replace = dialogOf(page, /Replace card/);
+    await replace.getByRole('textbox', { name: /^New last 4 digits/ }).fill('8889');
+    await replace.getByRole('button', { name: /Replace card|Confirm/ }).last().click();
+    await expect(replace).not.toBeVisible();
 
-    // Verify new card appears and old card is moved to historical
-    await expect(cardsDialog.getByText('•••• 8889')).toBeVisible();
-    await expect(cardsDialog.getByText(/Replaced \/ Closed Plastics/i)).toBeVisible();
+    // New card appears and the old one stays as history
+    await expect(page.getByText('••8889').first()).toBeVisible();
+    await expect(page.getByText('Replaced', { exact: true }).first()).toBeVisible();
 
-    // Close the replaced card
+    // Close the new plastic
     await page.getByRole('button', { name: 'Close', exact: true }).last().click();
-    await expect(page.getByRole('button', { name: 'Confirm Close Plastic' })).toBeVisible();
-    await page.getByRole('button', { name: 'Confirm Close Plastic' }).click();
+    const closeCard = dialogOf(page, /Close card/);
+    await closeCard.getByRole('button', { name: 'Close card' }).click();
+    await expect(closeCard).not.toBeVisible();
+    // Sam has no active plastic left: both his cards read as history and only the primary keeps Replace / Close
+    await expect(page.getByText('Replaced', { exact: true })).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'Replace', exact: true })).toHaveCount(1);
 
-    // Verify plastic closed
-    await expect(page.getByText(/No active plastic card assigned/i)).toBeVisible();
+    // 3. Close account: from the edit dialog
+    await page.goto(`/accounts/${card.id}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+    const closing = dialogOf(page, 'Edit account');
+    await closing.getByRole('button', { name: /Close (account|card)/ }).click();
+    await expectToast(page, 'Account closed');
+    await expect(closing).not.toBeVisible();
 
-    // Close cards dialog by pressing Escape
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
+    // Closed account moves behind the section's closed line
+    await page.goto('/accounts');
+    await expect(accountRow(page, 'Regalia Gold Premium')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Show' }).first().click();
+    await expect(accountRow(page, 'Regalia Gold Premium')).toBeVisible();
 
-    // 3. Close Account: open edit dialog, close account
-    await openAccountEditor(page, 'Regalia Gold Premium');
-    await page.getByRole('button', { name: 'Close Account' }).click();
-    await page.getByRole('button', { name: 'Confirm Close' }).click();
+    // 4. Reopen account
+    await page.goto(`/accounts/${card.id}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+    const reopening = dialogOf(page, 'Edit account');
+    await reopening.getByRole('button', { name: /Reopen/ }).click();
+    await expectToast(page, 'Account reopened');
+    await expect(reopening).not.toBeVisible();
+
+    // Account is back in the open rows
+    await page.goto('/accounts');
+    await expect(accountRow(page, 'Regalia Gold Premium')).toBeVisible();
+
+    // 5. Delete empty account: create a fresh wallet to delete
+    await page.getByRole('button', { name: 'Add wallet' }).click();
+    const wallet = dialogOf(page, 'Add account');
+    await expect(wallet.getByRole('radio', { name: 'Wallet / cash' })).toBeChecked();
+    // Wallet / cash accounts are manual: no Gmail watermark field
+    await expect(wallet.getByRole('textbox', { name: /^Import emails from/ })).toHaveCount(0);
+    await wallet.getByRole('textbox', { name: /^Account name/ }).fill('Temp Petty Cash');
+    await wallet.getByRole('button', { name: 'Add account' }).click();
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    await expect(page.getByRole('banner').getByText('Temp Petty Cash', { exact: true })).toBeVisible();
+
+    // A wallet page has no Statements or Cards tab
+    await expect(page.getByRole('tab', { name: 'Statements' })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Cards' })).toHaveCount(0);
+
+    // Open edit dialog and delete it; deleting there returns to the list
+    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+    const del = dialogOf(page, 'Edit account');
+    await del.getByRole('button', { name: 'Delete account' }).click();
+    const confirm = dialogOf(page, 'Delete Temp Petty Cash?');
+    await expect(confirm.getByText(/can't be undone/)).toBeVisible();
+    await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/accounts$/);
     await expect(page.getByRole('dialog')).not.toBeVisible();
-
-    // Closed account moves into collapsed closed section
-    await openAccounts(page);
-    const closedSummary = page.locator('summary').filter({ hasText: /Closed \(\d+\)/ });
-    await expect(closedSummary).toBeVisible();
-
-    // Expand closed section and verify account is inside
-    await closedSummary.click();
-    await expect(page.getByText('Regalia Gold Premium')).toBeVisible();
-
-    // 4. Reopen Account
-    await openAccountEditor(page, 'Regalia Gold Premium');
-    await page.getByRole('button', { name: 'Reopen Account' }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible();
-
-    // Account moves back out of closed section
-    await openAccounts(page);
-    await expect(page.getByText('Regalia Gold Premium')).toBeVisible();
-
-    // 5. Delete empty account: create a fresh generic account to delete
-    await page.getByRole('button', { name: /Add Account/i }).first().click();
-    await page.getByRole('button', { name: 'Wallet/Cash' }).click();
-    // Wallet/Cash accounts are manual: no Gmail watermark field, config card loses "& Sync"
-    await expect(page.getByLabel('Ingest From Date')).toHaveCount(0);
-    await expect(page.getByRole('dialog').getByText('Configuration', { exact: true })).toBeVisible();
-    await page.getByLabel('Account Name').fill('Temp Petty Cash');
-    await page.getByRole('button', { name: 'Create Account' }).click();
-    await expect(page.getByText('Temp Petty Cash')).toBeVisible();
-
-    // ...and its tile has no Statements (or Cards) action row
-    const walletTile = page.getByRole('link', { name: /Temp Petty Cash/i }).locator('..');
-    await expect(walletTile.getByRole('button', { name: 'Statements' })).toHaveCount(0);
-    await expect(walletTile.getByRole('button', { name: 'Cards' })).toHaveCount(0);
-
-    // Open edit dialog (on the account page) and delete it; deleting there returns to the list
-    await openAccountEditor(page, /Temp Petty Cash/i);
-    await page.getByRole('button', { name: 'Delete' }).click();
-    await expect(page.getByRole('dialog').getByText('Are you sure you want to delete')).toBeVisible();
-    await page.getByRole('button', { name: 'Delete Permanently' }).click();
-
-    // Dialog closes, the page goes back to the list, and the account is gone from it
-    await expect(page.getByRole('dialog')).not.toBeVisible();
-    await expect(page).toHaveURL(/\/legacy\/accounts$/);
-    await expect(page.getByRole('link', { name: /Temp Petty Cash/i })).not.toBeVisible();
+    await expect(accountRow(page, 'Temp Petty Cash')).toHaveCount(0);
   });
 });

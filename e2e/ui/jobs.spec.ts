@@ -51,33 +51,36 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'jobs-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/legacy/settings/activity');
+    await page.goto('/settings/activity');
 
-    // 1. Verify Page Heading
-    await expect(
-      page.getByRole('heading', { name: 'Activity', exact: true })
-    ).toBeVisible();
+    // 1. Verify the page: the Status and Type filter chips
+    await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
 
-    // 2. Verify Table contains the job
-    await expect(page.getByText('Statement Ingest').first()).toBeVisible();
-    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
+    // 2. The table contains the job
+    const jobRows = page.locator('[role="table"] [role="button"]');
+    await expect(jobRows.filter({ hasText: 'Statement ingest' }).first()).toBeVisible();
+    await expect(jobRows.filter({ hasText: 'Succeeded' }).first()).toBeVisible();
 
     // 3. Filter by Status: Succeeded
-    await page.getByRole('link', { name: 'Succeeded' }).first().click();
+    await page.getByRole('button', { name: 'Status', exact: true }).click();
+    await page.getByRole('option', { name: 'Succeeded' }).click();
     await expect(page).toHaveURL(/status=SUCCEEDED/);
-    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
+    await expect(jobRows.filter({ hasText: 'Succeeded' }).first()).toBeVisible();
 
-    // 4. Filter by Type: Statement Ingest (the type pill, not the table cell)
-    await page.getByRole('link', { name: 'Statement Ingest' }).first().click();
+    // 4. Filter by Type: Statement ingest
+    await page.getByRole('button', { name: 'Type', exact: true }).click();
+    await page.getByRole('option', { name: 'Statement ingest' }).click();
     await expect(page).toHaveURL(/type=STATEMENT_INGEST/);
-    await expect(page.locator('tbody').getByText('Statement Ingest').first()).toBeVisible();
+    await expect(jobRows.filter({ hasText: 'Statement ingest' }).first()).toBeVisible();
 
-    // 5. A status with no jobs shows the empty state, and "All Statuses" brings them back
-    await page.getByRole('link', { name: 'Failed' }).first().click();
+    // 5. A status with no jobs shows the empty state, and clearing the filters brings them back
+    await page.getByRole('button', { name: /^Succeeded/ }).click();
+    await page.getByRole('option', { name: 'Failed' }).click();
     await expect(page).toHaveURL(/status=FAILED/);
-    await expect(page.locator('tbody').getByText('SUCCEEDED')).toHaveCount(0);
-    await page.getByRole('link', { name: 'All Statuses' }).first().click();
-    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
+    await expect(page.getByText('No jobs match')).toBeVisible();
+    await expect(jobRows.filter({ hasText: 'Succeeded' })).toHaveCount(0);
+    await page.getByRole('link', { name: 'Clear filters' }).click();
+    await expect(jobRows.filter({ hasText: 'Succeeded' }).first()).toBeVisible();
   });
 
   test('/settings/activity: retry a CANCELLED job from row action -> spawns new completing job', async ({
@@ -114,22 +117,26 @@ test.describe('Background Jobs UI (@ui)', () => {
       params: { path: { id: ruleJobId } },
     });
 
-    await page.goto('/legacy/settings/activity');
+    await page.goto('/settings/activity');
 
-    const ruleRows = page.locator('tbody tr').filter({ hasText: 'Rule Apply' });
-    const cancelledRow = ruleRows.filter({ hasText: 'CANCELLED' });
+    const ruleRows = page.locator('[role="table"] [role="button"]').filter({ hasText: 'Rule apply' });
+    const cancelledRow = ruleRows.filter({ hasText: 'Cancelled' });
     await expect(cancelledRow).toBeVisible({ timeout: 20000 });
 
-    // Retry runs through a server action, so the browser posts the job id to the page, not to /api/v1/jobs/<id>/retry.
+    // Opening the job shows its result card, where Retry sits. Retry runs through a server action, so the
+    // browser posts the job id to the page, not to /api/v1/jobs/<id>/retry.
+    await cancelledRow.click();
+    const card = page.getByTestId('job-result-card');
+    await expect(card).toBeVisible();
     await clickUntilRequest(
       page,
-      cancelledRow.getByRole('button', { name: /Retry/i }),
+      card.getByRole('button', { name: 'Retry' }),
       (request) => request.headers()['next-action'] !== undefined && (request.postData() ?? '').includes(ruleJobId)
     );
     await expect(page.getByText(/Job retried/i)).toBeVisible();
 
     // The retried rule job runs once the delayed ingest jobs free their slots
-    await expect(ruleRows.filter({ hasText: 'SUCCEEDED' })).toBeVisible({ timeout: 25000 });
+    await expect(ruleRows.filter({ hasText: 'Succeeded' })).toBeVisible({ timeout: 25000 });
   });
 
   test('/settings/activity: cancel a RUNNING job from row action', async ({
@@ -145,10 +152,10 @@ test.describe('Background Jobs UI (@ui)', () => {
     ]);
     const jobId = (uploadRes.data as { jobId: string }).jobId;
 
-    await page.goto('/legacy/settings/activity');
+    await page.goto(`/settings/activity?job=${jobId}`);
 
-    // Verify RUNNING status or Cancel button is visible
-    const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();
+    // The job's result card shows its Cancel button while it is running
+    const cancelBtn = page.getByTestId('job-result-card').getByRole('button', { name: 'Cancel' });
     await expect(cancelBtn).toBeVisible({ timeout: 15000 });
 
     // Cancel runs through a server action, so the browser posts the job id to the page, not to /api/v1/jobs/<id>/cancel.

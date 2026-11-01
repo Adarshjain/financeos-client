@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -13,6 +15,16 @@ import { expect, test } from '../fixtures/test';
  * this-device card offering to enable push (the E2E server carries VAPID keys; the prompt itself is
  * never clicked).
  */
+// The kind switches carry a generic "Toggle" name, so find each one from its row label.
+const kindSwitch = (page: Page, label: string) =>
+  page
+    .getByText(label, { exact: true })
+    .locator('xpath=ancestor::*[.//*[@role="switch"]][1]')
+    .getByRole('switch');
+
+// Every change saves in the background (the switch moves first), so wait for the save before moving on.
+const saved = (page: Page) => page.waitForResponse((r) => r.request().method() === 'POST' && r.ok());
+
 test.describe('Notification settings UI (@ui)', () => {
   let user: CreatedUser;
   let cardName: string;
@@ -29,48 +41,53 @@ test.describe('Notification settings UI (@ui)', () => {
   });
 
   test('switch groups, a kind toggle, an offset, and card/loan mutes persist across a reload', async ({ page }) => {
-    await page.goto('/legacy/settings/notifications');
-    await expect(page.getByRole('heading', { name: 'Notifications', exact: true })).toBeVisible();
+    await page.goto('/settings/notifications');
+    await expect(page.getByRole('tab', { name: 'Notifications', selected: true })).toBeVisible();
 
-    // Every module has its own group of switches.
-    for (const group of ['Credit cards', 'Transactions', 'Loans and lendings', 'Rewards', 'Gmail', 'Imports and jobs']) {
-      await expect(page.getByTestId(`kind-group-${group}`)).toBeVisible();
+    // Every module has its own card of switches.
+    for (const group of ['Push', 'Bills & EMIs', 'Statements', 'Gmail & jobs', 'Rewards', 'Muted']) {
+      await expect(page.getByText(group, { exact: true }).first()).toBeVisible();
     }
-    await expect(page.getByText('Remind me (bills and EMIs)')).toBeVisible();
+    await expect(page.getByText('Days before due')).toBeVisible();
 
     // This browser can do push and the server is configured: the enable button is offered.
-    await expect(page.getByRole('button', { name: /enable on this device/i })).toBeVisible();
-    await expect(page.getByText('No device is registered yet.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Turn on here' })).toBeVisible();
+    await expect(page.getByText('No devices yet')).toBeVisible();
 
     // A kind switch saves immediately.
-    const emiOverdue = page.getByRole('checkbox', { name: 'EMI overdue' });
-    await expect(emiOverdue).toHaveAttribute('data-state', 'checked');
-    await emiOverdue.click();
-    await expect(emiOverdue).toHaveAttribute('data-state', 'unchecked');
+    const emiOverdue = kindSwitch(page, 'EMI overdue');
+    await expect(emiOverdue).toBeChecked();
+    await Promise.all([saved(page), emiOverdue.click()]);
+    await expect(emiOverdue).not.toBeChecked();
 
     // An extra reminder offset.
-    const offsets = page.getByTestId('reminder-offsets');
-    await offsets.getByRole('button', { name: '14 days before' }).click();
-    await expect(offsets.getByRole('button', { name: '14 days before' })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Days before due' }).click();
+    const fourteen = page.getByRole('option', { name: '14 days before' });
+    await expect(fourteen).toHaveAttribute('aria-selected', 'false');
+    await Promise.all([saved(page), fourteen.click()]);
+    await expect(fourteen).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Escape');
 
     // Per-card and per-loan mutes.
-    const cardMute = page.getByRole('checkbox', { name: `Mute ${cardName}` });
-    await cardMute.click();
-    await expect(cardMute).toHaveAttribute('data-state', 'checked');
-    const loanMute = page.getByRole('checkbox', { name: `Mute ${loanName}` });
-    await loanMute.click();
-    await expect(loanMute).toHaveAttribute('data-state', 'checked');
+    const cardMute = page.getByRole('switch', { name: `Mute ${cardName}` });
+    await Promise.all([saved(page), cardMute.click()]);
+    await expect(cardMute).toBeChecked();
+    const loanMute = page.getByRole('switch', { name: `Mute ${loanName}` });
+    await Promise.all([saved(page), loanMute.click()]);
+    await expect(loanMute).toBeChecked();
 
     // Everything was saved on the server, not just in the page.
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Notifications', exact: true })).toBeVisible();
-    await expect(page.getByRole('checkbox', { name: 'EMI overdue' })).toHaveAttribute('data-state', 'unchecked');
-    await expect(page.getByTestId('reminder-offsets').getByRole('button', { name: '14 days before' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('checkbox', { name: `Mute ${cardName}` })).toHaveAttribute('data-state', 'checked');
-    await expect(page.getByRole('checkbox', { name: `Mute ${loanName}` })).toHaveAttribute('data-state', 'checked');
+    await expect(page.getByRole('tab', { name: 'Notifications', selected: true })).toBeVisible();
+    await expect(kindSwitch(page, 'EMI overdue')).not.toBeChecked();
+    await page.getByRole('button', { name: 'Days before due' }).click();
+    await expect(page.getByRole('option', { name: '14 days before' })).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('switch', { name: `Mute ${cardName}` })).toBeChecked();
+    await expect(page.getByRole('switch', { name: `Mute ${loanName}` })).toBeChecked();
 
     // And unmuting works the same way.
-    await page.getByRole('checkbox', { name: `Mute ${loanName}` }).click();
-    await expect(page.getByRole('checkbox', { name: `Mute ${loanName}` })).toHaveAttribute('data-state', 'unchecked');
+    await page.getByRole('switch', { name: `Mute ${loanName}` }).click();
+    await expect(page.getByRole('switch', { name: `Mute ${loanName}` })).not.toBeChecked();
   });
 });

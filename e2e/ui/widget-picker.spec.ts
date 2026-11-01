@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import type { ApiClient } from '../fixtures/api';
 import { makeApi } from '../fixtures/api';
@@ -13,38 +13,27 @@ import { seedCardBill } from '../fixtures/seed/obligations';
 import { BUILTIN_KEYS } from '../fixtures/seed/widgets';
 import { expect, test } from '../fixtures/test';
 
-const CATEGORY_LABELS = ['All', 'Overview', 'Cards & rewards', 'Spending', 'Investments', 'Loans & lending', 'Shortcuts', 'Your reports'];
-
-const dialog = (page: Page) => page.getByRole('dialog');
-const card = (page: Page, key: string) => dialog(page).getByTestId(`builtin-card-${key}`);
-const builtinCards = (page: Page) => dialog(page).locator('[data-testid^="builtin-card-"]');
+const dialog = (page: Page) => page.getByRole('dialog', { name: /Add widget/ });
+/** A built-in's card, found by its label at the start of its radio's name. */
+const card = (page: Page, label: string) => dialog(page).getByRole('radio', { name: new RegExp(`^${label}`) });
+const builtinCards = (page: Page) => dialog(page).getByRole('radio');
 
 async function openPicker(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Add widget', exact: true }).click();
-  await expect(dialog(page).getByRole('heading', { name: 'Add a widget' })).toBeVisible();
-}
-
-/** A widget card in edit mode, found by its title input's placeholder (the built-in's label). */
-function editCard(page: Page, label: string): Locator {
-  return page.getByTestId('dashboard-widget').filter({ has: page.getByPlaceholder(label, { exact: true }) });
-}
-
-/** A widget card in view mode, found by its title heading. */
-function viewCard(page: Page, title: string): Locator {
-  return page.getByTestId('dashboard-widget').filter({ has: page.getByRole('heading', { name: title, level: 3, exact: true }) });
+  await page.getByRole('button', { name: /^Add widget$|^Add a widget$/ }).first().click();
+  await expect(dialog(page)).toBeVisible();
+  await expect(builtinCards(page).first()).toBeVisible({ timeout: 45_000 });
 }
 
 async function newDashboard(page: Page, name: string): Promise<void> {
-  await page.goto('/legacy/dashboards/new');
-  await page.getByPlaceholder('Dashboard name').fill(name);
+  await page.goto('/dashboards/new');
+  await page.getByLabel('Dashboard name').fill(name);
 }
 
-/** Picks a built-in and confirms its details step as it stands. */
-async function addBuiltin(page: Page, key: string, label: string): Promise<void> {
+/** Picks a built-in and adds it as it stands. */
+async function addBuiltin(page: Page, label: string): Promise<void> {
   await openPicker(page);
-  await card(page, key).click();
-  await expect(dialog(page).getByRole('heading', { name: label })).toBeVisible();
-  await dialog(page).getByRole('button', { name: 'Add widget' }).click();
+  await card(page, label).click();
+  await dialog(page).getByRole('button', { name: 'Add to board' }).click();
   await expect(dialog(page)).toHaveCount(0);
 }
 
@@ -70,114 +59,72 @@ test.describe('Add widget picker (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('@mobile categories, search, descriptions, no width or "Added" badges, and unavailable cards disabled with the reason', async ({ page }) => {
+  test('@mobile search, descriptions, and unavailable cards disabled with the reason', async ({ page }) => {
     // An account but no card: account widgets are usable, card widgets are not.
     await createBankAccount(api, { name: 'Picker Only Bank', openingBalance: 1000 });
     await newDashboard(page, 'Picker board');
     await openPicker(page);
 
-    const nav = dialog(page).getByRole('navigation', { name: 'Widget categories' });
-    await expect(nav.getByRole('button')).toHaveText(CATEGORY_LABELS);
-    await expect(nav.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
-
-    // All: every built-in, each with its full description; reports below under their own heading.
+    // Built-in tab lists every built-in with its description.
     await expect(builtinCards(page)).toHaveCount(BUILTIN_KEYS.length);
-    await expect(dialog(page).getByRole('heading', { name: 'Built-in', exact: true })).toBeVisible();
-    await expect(dialog(page).getByRole('heading', { name: 'Your reports', exact: true })).toBeVisible();
-    await expect(card(page, 'emergency_fund')).toContainText('Emergency fund');
-    await expect(card(page, 'emergency_fund')).toContainText(
+    await expect(card(page, 'Emergency fund')).toContainText(
       'How many months your bank and cash balances would cover at your usual monthly outflow'
     );
-    await expect(dialog(page).getByText(/Added ×|×\s?\d/)).toHaveCount(0);
-    await expect(dialog(page).getByText(/^(Half|Full|Quarter)( width)?$/)).toHaveCount(0);
 
-    // Unavailable: dimmed, says why, cannot be picked. Available ones can.
-    await expect(card(page, 'card_utilisation')).toBeDisabled();
-    await expect(card(page, 'card_utilisation')).toContainText('Add a credit card first');
-    await expect(card(page, 'tax_harvest')).toBeDisabled();
-    await expect(card(page, 'tax_harvest')).toContainText('Add an investment first');
-    await expect(card(page, 'loan_payoff')).toContainText('Add a loan first');
-    await expect(card(page, 'lending_balances')).toContainText('Record a lending first');
-    await expect(card(page, 'spend_heatmap')).toBeEnabled();
-    await expect(card(page, 'account_tile')).toBeEnabled();
-    await expect(card(page, 'shortcuts')).toBeEnabled();
-    await expect(card(page, 'spend_heatmap')).not.toContainText('Add an account first');
-
-    // A category narrows the built-ins and hides reports.
-    await nav.getByRole('button', { name: 'Investments' }).click();
-    await expect(nav.getByRole('button', { name: 'Investments' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(builtinCards(page)).toHaveCount(4);
-    for (const key of ['portfolio_snapshot', 'top_movers', 'allocation', 'tax_harvest']) {
-      await expect(card(page, key)).toBeVisible();
-    }
-    await expect(dialog(page).getByText('No saved reports yet.', { exact: false })).toHaveCount(0);
-    await nav.getByRole('button', { name: 'Cards & rewards' }).click();
-    await expect(builtinCards(page)).toHaveCount(5);
-    await nav.getByRole('button', { name: 'Shortcuts' }).click();
-    await expect(builtinCards(page)).toHaveCount(1);
-    await expect(card(page, 'shortcuts')).toBeVisible();
+    // Unavailable: disabled, says why, cannot be picked. Available ones can.
+    await expect(card(page, 'Card utilisation')).toBeDisabled();
+    await expect(card(page, 'Card utilisation')).toContainText('Add a credit card first');
+    await expect(card(page, 'Tax harvesting')).toBeDisabled();
+    await expect(card(page, 'Tax harvesting')).toContainText('Add an investment first');
+    await expect(card(page, 'Loan payoff')).toContainText('Add a loan first');
+    await expect(card(page, 'Lending balances')).toContainText('Record a lending first');
+    await expect(card(page, 'Spending calendar')).toBeEnabled();
+    await expect(card(page, 'Account')).toBeEnabled();
+    await expect(card(page, 'Shortcuts')).toBeEnabled();
+    await expect(card(page, 'Spending calendar')).not.toContainText('Add an account first');
 
     // Your reports: no built-ins, and the pointer to create one.
-    await nav.getByRole('button', { name: 'Your reports' }).click();
+    await dialog(page).getByRole('tab', { name: /My reports/ }).click();
     await expect(builtinCards(page)).toHaveCount(0);
     await expect(dialog(page).getByText(/No saved reports yet/)).toBeVisible();
 
-    // Search matches labels and descriptions, within the chosen category.
-    await nav.getByRole('button', { name: 'All' }).click();
-    const search = dialog(page).getByRole('searchbox', { name: 'Search widgets' });
+    // Search matches labels and descriptions.
+    await dialog(page).getByRole('tab', { name: /Built-in/ }).click();
+    const search = dialog(page).getByRole('searchbox', { name: 'Search widgets' }).or(dialog(page).getByPlaceholder('Search widgets'));
     await search.fill('calendar');
     await expect(builtinCards(page)).toHaveCount(1);
-    await expect(card(page, 'spend_heatmap')).toBeVisible();
+    await expect(card(page, 'Spending calendar')).toBeVisible();
     await search.fill('settle up');
     await expect(builtinCards(page)).toHaveCount(1);
-    await expect(card(page, 'lending_balances')).toBeVisible();
+    await expect(card(page, 'Lending balances')).toBeVisible();
     await search.fill('zzz no such widget');
-    await expect(dialog(page).getByText('No widgets match.')).toBeVisible();
+    await expect(dialog(page).getByText('No widgets match')).toBeVisible();
     await search.fill('');
     await expect(builtinCards(page)).toHaveCount(BUILTIN_KEYS.length);
   });
 
-  test('@mobile the details step: description, needs line, "Preview · sample data" above the frame, settings, Back', async ({ page }) => {
+  test('@mobile a built-in’s settings: bounded and defaulted from the catalog, Add to board waits for a valid value', async ({ page }) => {
     await createBankAccount(api, { name: 'Details Bank', openingBalance: 1000 });
     await newDashboard(page, 'Details board');
     await openPicker(page);
-    await card(page, 'spend_heatmap').click();
+    const add = dialog(page).getByRole('button', { name: 'Add to board' });
+    await expect(add).toBeDisabled();
+    await card(page, 'Spending calendar').click();
 
     const d = dialog(page);
-    await expect(d.getByRole('heading', { name: 'Spending calendar' })).toBeVisible();
-    await expect(d.getByText('Daily spending as a calendar, darker on heavier days.', { exact: false })).toBeVisible();
-    await expect(d.getByText('Needs an account', { exact: true })).toBeVisible();
-
-    // The caption sits outside, above, the preview's frame.
-    const caption = d.getByText('Preview · sample data', { exact: true });
-    const frame = d.getByTestId('widget-preview-frame');
-    await expect(caption).toBeVisible();
-    await expect(frame).toBeVisible();
-    await expect(frame.getByText('Preview · sample data')).toHaveCount(0);
-    const c = (await caption.boundingBox())!;
-    const f = (await frame.boundingBox())!;
-    expect(c.y + c.height).toBeLessThanOrEqual(f.y + 1);
-
     // Its setting, bounded and defaulted from the catalog.
-    const months = d.getByLabel('Months');
+    const months = d.getByRole('spinbutton', { name: 'Months' });
     await expect(months).toHaveValue('6');
     await expect(d.getByText('Between 1 and 12.')).toBeVisible();
     await months.fill('13');
-    await expect(d.getByText('At most 12')).toBeVisible();
-    await expect(d.getByRole('button', { name: 'Add widget' })).toBeDisabled();
+    await expect(add).toBeDisabled();
     await months.fill('4');
-    await expect(d.getByRole('button', { name: 'Add widget' })).toBeEnabled();
+    await expect(add).toBeEnabled();
 
-    // Back returns to the list without adding anything.
-    await d.getByRole('button', { name: 'Back' }).click();
-    await expect(d.getByRole('heading', { name: 'Add a widget' })).toBeVisible();
-
-    // A built-in without settings still previews before it is added.
-    await card(page, 'emergency_fund').click();
-    await expect(d.getByRole('heading', { name: 'Emergency fund' })).toBeVisible();
-    await expect(d.getByText('Preview · sample data', { exact: true })).toBeVisible();
+    // A built-in without settings has none to fill in.
+    await card(page, 'Emergency fund').click();
     await expect(d.getByRole('spinbutton')).toHaveCount(0);
-    await expect(d.getByRole('button', { name: 'Add widget' })).toBeEnabled();
+    await expect(add).toBeEnabled();
   });
 
   test('adds every component widget to a dashboard; each renders its own body after saving', async ({ page }) => {
@@ -198,33 +145,31 @@ test.describe('Add widget picker (@ui)', () => {
       ['emergency_fund', 'Emergency fund'],
       ['shortcuts', 'Shortcuts'],
     ];
-    for (const [key, label] of components) {
-      await addBuiltin(page, key, label);
+    for (const [, label] of components) {
+      await addBuiltin(page, label);
     }
 
     // The account tile needs its account before it can be added.
     await openPicker(page);
-    await card(page, 'account_tile').click();
-    const add = dialog(page).getByRole('button', { name: 'Add widget' });
+    await card(page, 'Account').click();
+    const add = dialog(page).getByRole('button', { name: 'Add to board' });
     await expect(add).toBeDisabled();
-    await dialog(page).getByLabel('Account', { exact: true }).click();
+    await dialog(page).getByRole('combobox', { name: /^Account/ }).click();
     await expect(page.getByRole('option', { name: 'All accounts' })).toHaveCount(0);
     await page.getByRole('option', { name: 'Picker Bank' }).click();
     await expect(add).toBeEnabled();
     await add.click();
     await expect(dialog(page)).toHaveCount(0);
 
-    await expect(page.getByLabel('Widget title')).toHaveCount(components.length + 1);
-    await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+$/);
-    await expect(page.getByRole('heading', { name: 'Every component', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('dashboard-widget')).toHaveCount(components.length + 1);
+    await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
 
     const bodies: Record<string, string> = {
       Inbox: 'inbox-widget',
       'Bills due': 'bills-due-widget',
       'Card utilisation': 'card-utilisation-widget',
       Portfolio: 'portfolio-snapshot-widget',
-      'Top movers': 'top-movers-widget',
       'Tax harvesting': 'tax-harvest-widget',
       'Loan payoff': 'loan-payoff-widget',
       'Lending balances': 'lending-balances-widget',
@@ -232,17 +177,25 @@ test.describe('Add widget picker (@ui)', () => {
       Shortcuts: 'shortcuts-widget',
       Account: 'account-tile-widget',
     };
+    await expect(page.getByTestId('dashboard-widget')).toHaveCount(components.length + 1, { timeout: 45_000 });
     for (const [title, testId] of Object.entries(bodies)) {
-      const w = viewCard(page, title);
-      await expect(w.getByTestId(testId), title).toBeVisible();
-      await expect(w.getByRole('alert'), title).toHaveCount(0);
+      const body = page.getByTestId(testId);
+      await body.scrollIntoViewIfNeeded();
+      await expect(body, title).toBeVisible({ timeout: 45_000 });
+      await expect(body.getByRole('alert'), title).toHaveCount(0);
     }
+    // Top movers has no body test id: its card is found by title, and it has loaded without an error.
+    const movers = page.getByTestId('dashboard-widget').filter({ hasText: 'Top movers' });
+    await expect(movers).toBeVisible();
+    await expect(movers.getByRole('alert')).toHaveCount(0);
     // Loaded with the seeded data.
-    await expect(viewCard(page, 'Lending balances')).toContainText('Picker Friend');
-    await expect(viewCard(page, 'Loan payoff')).toContainText('Picker Loan');
-    await expect(viewCard(page, 'Card utilisation').getByTestId('utilisation-row')).toContainText('Picker Card');
-    await expect(viewCard(page, 'Account').getByTestId('account-tile')).toContainText('Picker Bank');
-    await expect(viewCard(page, 'Shortcuts').getByRole('list', { name: 'Shortcuts' }).getByRole('listitem')).toHaveCount(4);
+    await expect(page.getByTestId('lending-balances-widget')).toContainText('Picker Friend');
+    await expect(page.getByTestId('loan-payoff-widget')).toContainText('Picker Loan');
+    await expect(page.getByTestId('card-utilisation-widget')).toContainText('Picker Card');
+    await expect(page.getByTestId('account-tile')).toContainText('Picker Bank');
+    const tiles = page.getByTestId('shortcuts-widget');
+    await expect(tiles.getByRole('button', { name: 'Add transaction' })).toBeVisible();
+    await expect(tiles.getByRole('link')).toHaveText(['Needs review', 'Import', 'Upcoming']);
 
     const saved = (await api.GET('/api/v1/dashboards')).data!.find((d) => d.name === 'Every component')!;
     expect(saved.widgets.map((w) => w.builtinKey).sort()).toEqual([...components.map(([k]) => k), 'account_tile'].sort());
@@ -255,54 +208,64 @@ test.describe('Add widget picker (@ui)', () => {
     expect(width('bills_due')).toBe(100);
   });
 
-  test('the width toggle cycles quarter → half → full only for quarter-capable tiles; others toggle half ↔ full', async ({ page }) => {
+  test('resizing by the corner: quarter-capable tiles step quarter → half → full; a half- or full-minimum widget never goes narrower', async ({ page }) => {
     test.slow();
     await seedEverything(api);
     await newDashboard(page, 'Widths');
-    await addBuiltin(page, 'shortcuts', 'Shortcuts');
-    await addBuiltin(page, 'card_utilisation', 'Card utilisation');
-    await addBuiltin(page, 'emergency_fund', 'Emergency fund');
+    await addBuiltin(page, 'Shortcuts');
+    await addBuiltin(page, 'Card utilisation');
+    await addBuiltin(page, 'Emergency fund');
+    await addBuiltin(page, 'Bills due');
 
-    const shortcuts = editCard(page, 'Shortcuts');
-    await expect(shortcuts.getByTitle('Expand to half width')).toBeVisible();
-    await shortcuts.getByTitle('Expand to half width').click();
-    await expect(shortcuts.getByTitle('Expand to full width')).toBeVisible();
-    await shortcuts.getByTitle('Expand to full width').click();
-    await expect(shortcuts.getByTitle('Collapse to quarter width')).toBeVisible();
-    await shortcuts.getByTitle('Collapse to quarter width').click();
-    await expect(shortcuts.getByTitle('Expand to half width')).toBeVisible();
+    const items = page.locator('[data-widget-grid-item]');
+    await expect(items).toHaveCount(4);
+    const gridWidth = async () => (await page.locator('[data-editing="true"]').boundingBox())!.width;
+    const widths = () => items.evaluateAll((els) => els.map((el) => el.getAttribute('data-width')));
+    expect(await widths()).toEqual(['quarter', 'half', 'half', 'full']);
 
-    // A half-minimum widget never offers a quarter.
-    for (const label of ['Card utilisation', 'Emergency fund']) {
-      const w = editCard(page, label);
-      await expect(w.getByTitle('Expand to full width')).toBeVisible();
-      await w.getByTitle('Expand to full width').click();
-      await expect(w.getByTitle('Collapse to half width')).toBeVisible();
-      await expect(w.getByTitle(/quarter/)).toHaveCount(0);
-    }
-    await editCard(page, 'Emergency fund').getByTitle('Collapse to half width').click();
+    /** Drags item `i`'s corner so the item is `fraction` of the grid wide. */
+    const resizeTo = async (i: number, fraction: number) => {
+      const item = items.nth(i);
+      await item.scrollIntoViewIfNeeded();
+      const box = (await item.boundingBox())!;
+      const handle = item.locator('[data-widget-grid-resize]');
+      const h = (await handle.boundingBox())!;
+      const at = { x: h.x + h.width / 2, y: h.y + h.height / 2 };
+      await page.mouse.move(at.x, at.y);
+      await page.mouse.down();
+      await page.mouse.move(at.x + ((await gridWidth()) * fraction - box.width), at.y, { steps: 12 });
+      await page.waitForTimeout(150);
+      await page.mouse.up();
+    };
+
+    // Shortcuts: quarter → half → full → quarter.
+    await resizeTo(0, 0.5);
+    await expect(items.nth(0)).toHaveAttribute('data-width', 'half');
+    await resizeTo(0, 1);
+    await expect(items.nth(0)).toHaveAttribute('data-width', 'full');
+    await resizeTo(0, 0.25);
+    await expect(items.nth(0)).toHaveAttribute('data-width', 'quarter');
+
+    // A half-minimum widget never offers a quarter, and a full-minimum one never gets narrower.
+    await resizeTo(1, 0.25);
+    await expect(items.nth(1)).toHaveAttribute('data-width', 'half');
+    await resizeTo(1, 1);
+    await expect(items.nth(1)).toHaveAttribute('data-width', 'full');
+    await resizeTo(1, 0.5);
+    await expect(items.nth(1)).toHaveAttribute('data-width', 'half');
+    await resizeTo(3, 0.5);
+    await expect(items.nth(3)).toHaveAttribute('data-width', 'full');
 
     // Shortcuts to half, then save: the widths persist.
-    await shortcuts.getByTitle('Expand to half width').click();
-    await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.waitForURL(/\/legacy\/dashboards\/[a-f0-9-]+$/);
+    await resizeTo(0, 0.5);
+    await expect(items.nth(0)).toHaveAttribute('data-width', 'half');
+    await page.getByRole('button', { name: 'Add dashboard', exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboards\/(?!new)[0-9a-f-]+$/, { timeout: 30_000 });
     const saved = (await api.GET('/api/v1/dashboards')).data!.find((d) => d.name === 'Widths')!;
     const width = (key: string) => saved.widgets.find((w) => w.builtinKey === key)!.layout.w;
     expect(width('shortcuts')).toBe(50);
-    expect(width('card_utilisation')).toBe(100);
+    expect(width('card_utilisation')).toBe(50);
     expect(width('emergency_fund')).toBe(50);
-
-    // The account tile cycles the same way in an existing dashboard's editor.
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await openPicker(page);
-    await card(page, 'account_tile').click();
-    await dialog(page).getByLabel('Account', { exact: true }).click();
-    await page.getByRole('option', { name: 'Picker Bank' }).click();
-    await dialog(page).getByRole('button', { name: 'Add widget' }).click();
-    const tile = editCard(page, 'Account');
-    await expect(tile.getByTitle('Expand to half width')).toBeVisible();
-    await tile.getByTitle('Expand to half width').click();
-    await tile.getByTitle('Expand to full width').click();
-    await expect(tile.getByTitle('Collapse to quarter width')).toBeVisible();
+    expect(width('bills_due')).toBe(100);
   });
 });

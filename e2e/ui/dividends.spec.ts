@@ -8,7 +8,7 @@ import {
   trade,
 } from '../fixtures/seed/investments';
 import { expect, test } from '../fixtures/test';
-import { expectToast, openDividends } from '../fixtures/ui';
+import { expectToast } from '../fixtures/ui';
 
 test.describe('Dividends UI (@ui)', () => {
   let currentUser: CreatedUser;
@@ -18,7 +18,7 @@ test.describe('Dividends UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('Record dividend manually, detect and accept suggestions, verify Auto badge and summary strip', async ({
+  test('Record dividend manually, Rescan and record all suggestions, hero figures', async ({
     page,
   }) => {
     const userApi = makeApi(currentUser.cookie);
@@ -42,43 +42,33 @@ test.describe('Dividends UI (@ui)', () => {
       tradeDate: '2024-01-01',
     });
 
-    await openDividends(page);
+    await page.goto('/investments/dividends');
 
-    // 1. Record Dividend / Income manually
-    await page.getByRole('button', { name: /Record Dividend \/ Income/i }).click();
-    await expect(page.getByRole('heading', { name: 'Record Income / Dividend' })).toBeVisible();
+    // 1. Record a payout by hand from the top-bar +.
+    await page.getByRole('button', { name: 'Record dividend', exact: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Record dividend' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('combobox', { name: /^Account/ }).click();
+    await page.getByRole('option', { name: new RegExp(broker.name) }).first().click();
+    await dialog.getByRole('combobox', { name: /^Instrument/ }).click();
+    await page.getByRole('option', { name: /Reliance Industries/i }).first().click();
+    await dialog.getByLabel(/^Amount/).fill('350');
+    await dialog.getByRole('button', { name: 'Record dividend' }).click();
+    await expectToast(page, 'Dividend recorded');
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByText('350').locator('visible=true').first()).toBeVisible();
 
-    // Select held instrument
-    const instSelect = page.getByRole('combobox').nth(1);
-    await instSelect.click();
-    await page.getByRole('option', { name: /Reliance Industries/i }).click();
-
-    // Fill Amount
-    await page.getByPlaceholder('0.00').first().fill('350');
-    await page.getByRole('button', { name: /Record Payout/i }).click();
-
-    await expectToast(page, /Recorded dividend payout/i);
-    await expect(page.getByText('₹350').first()).toBeVisible();
-
-    // 2. Detect Dividends via suggestions dialog
-    await page.getByRole('button', { name: /Detect Dividends/i }).click();
-    await expect(page.getByRole('heading', { name: 'Auto-Detect Dividends' })).toBeVisible();
-
-    // Dialog will scan and display suggestions
-    await expect(page.getByText(/Checked 1 symbol|Found \d+ dividend/i)).toBeVisible({ timeout: 10000 });
-
-    // Accept suggestions
-    const acceptBtn = page.getByRole('button', { name: /Record \d+ Dividend/i });
+    // 2. Rescan finds the stubbed payouts; Record N records them all.
+    const card = page.getByText(/^Suggestions/).first().locator('xpath=ancestor::div[contains(@class,"border")][1]');
+    await card.getByRole('button', { name: 'Rescan' }).click();
+    await expect(card.getByText(/^Checked \d+ symbols?/)).toBeVisible({ timeout: 30_000 });
+    const acceptBtn = card.getByRole('button', { name: /^Record \d+$/ });
     await expect(acceptBtn).toBeVisible();
     await acceptBtn.click();
+    await expectToast(page, /Recorded \d+ dividends?/);
 
-    await expectToast(page, /Recorded \d+ dividend/i);
-
-    // 3. Verify Auto badge appears for the suggested dividends
-    await expect(page.getByText('Auto').and(page.locator(':visible')).first()).toBeVisible();
-
-    // 4. Verify summary strip cards
-    await expect(page.getByText('Gross Income').and(page.locator(':visible')).first()).toBeVisible();
-    await expect(page.getByText('Net Received').and(page.locator(':visible')).first()).toBeVisible();
+    // 3. The hero figures follow the recorded payouts.
+    await expect(page.getByText(/^Received/).locator('visible=true').first()).toBeVisible();
+    await expect(page.getByText('TDS', { exact: true }).locator('visible=true').first()).toBeVisible();
   });
 });

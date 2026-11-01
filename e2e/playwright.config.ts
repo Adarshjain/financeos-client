@@ -49,7 +49,7 @@ export default defineConfig({
     {
       name: 'ui-desktop',
       testMatch: /ui\/.*\.spec\.ts/,
-      testIgnore: /ui\/chat\.spec\.ts/,
+      testIgnore: /ui\/ds-chat\.spec\.ts/,
       // @mobile-only tests exercise phone-only UI (bottom bar, menu sheet, card lists); ui-mobile runs them.
       grepInvert: /@mobile-only/,
       use: {
@@ -60,7 +60,7 @@ export default defineConfig({
     {
       name: 'ui-mobile',
       testMatch: /ui\/.*\.spec\.ts/,
-      testIgnore: /ui\/chat\.spec\.ts/,
+      testIgnore: /ui\/ds-chat\.spec\.ts/,
       use: {
         ...devices['Pixel 7'],
       },
@@ -71,7 +71,7 @@ export default defineConfig({
     // project has finished, one at a time.
     {
       name: 'ui-chat',
-      testMatch: /ui\/chat\.spec\.ts/,
+      testMatch: /ui\/ds-chat\.spec\.ts/,
       dependencies: ['api'],
       fullyParallel: false,
       use: {
@@ -81,7 +81,7 @@ export default defineConfig({
     },
     {
       name: 'ui-chat-mobile',
-      testMatch: /ui\/chat\.spec\.ts/,
+      testMatch: /ui\/ds-chat\.spec\.ts/,
       dependencies: ['api'],
       fullyParallel: false,
       use: {

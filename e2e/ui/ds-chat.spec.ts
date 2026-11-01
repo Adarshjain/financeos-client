@@ -79,6 +79,44 @@ for (const viewport of VIEWPORTS) {
       if (currentUser?.cookie) await resetLlm(makeApi(currentUser.cookie));
     });
 
+    if (!phone) {
+      test('a finished answer notifies when the tab is hidden', async ({ context, page }) => {
+        test.slow();
+        const api = makeApi(currentUser.cookie);
+        await context.grantPermissions(['notifications']);
+        await page.addInitScript(() => {
+          const recorded: Array<{ title: string; options?: unknown }> = [];
+          (window as unknown as { __recordedNotifications: typeof recorded }).__recordedNotifications = recorded;
+          class MockNotification {
+            static permission = 'granted';
+            static requestPermission() {
+              return Promise.resolve('granted');
+            }
+            onclick: (() => void) | null = null;
+            constructor(title: string, options?: unknown) {
+              recorded.push({ title, options });
+            }
+            close() {}
+          }
+          (window as unknown as { Notification: typeof MockNotification }).Notification = MockNotification;
+        });
+        await scriptChat(api, [{ delayMs: 1000, action: 'final_answer', answer: 'Notification test complete answer.' }]);
+        await page.goto('/chat');
+        await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
+        await ask(page, 'Notify me when done');
+        // The page is hidden and unfocused before the stream completes.
+        await page.evaluate(() => {
+          Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+          document.hasFocus = () => false;
+        });
+        await answer(page, 'Notification test complete answer.');
+        const recorded = await page.evaluate(
+          () => (window as unknown as { __recordedNotifications: Array<{ title: string }> }).__recordedNotifications,
+        );
+        expect(recorded.some((n) => n.title === 'Your answer is ready')).toBe(true);
+      });
+    }
+
     test('a question shows live steps, then the answer with KPI and table, the meta line and the steps', async ({ page }) => {
       test.slow();
       const api = makeApi(currentUser.cookie);

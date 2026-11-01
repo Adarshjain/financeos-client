@@ -1,7 +1,13 @@
+import type { Page } from '@playwright/test';
+
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { expect, test } from '../fixtures/test';
+
+// A routing group's row on the AI tab, found from its name (the nearest row holding a Customise button).
+const routingRow = (page: Page, name: string) =>
+  page.getByText(name, { exact: true }).locator('xpath=ancestor::*[.//button[normalize-space()="Customise"]][1]');
 
 test.describe('LLM Settings UI (@ui)', () => {
   let currentUser: CreatedUser;
@@ -11,129 +17,136 @@ test.describe('LLM Settings UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('LLM Keys & Routing journey: add key -> test key -> delete key -> customize routing -> persist reload -> reset routing', async ({
+  test('AI keys & routing journey: add key -> test key -> delete key -> customise routing -> persist reload -> reset routing', async ({
     page,
   }) => {
-    // 1. Navigate to /settings/llm-keys
-    await page.goto('/legacy/settings/llm-keys');
+    // 1. Navigate to /settings/ai
+    await page.goto('/settings/ai');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('heading', { name: 'API Keys', exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'AI Routing Preferences', exact: true })).toBeVisible();
+    await expect(page.getByText('Your keys', { exact: true })).toBeVisible();
+    await expect(page.getByText('Routing', { exact: true })).toBeVisible();
 
-    // 2. Add Gemini Key
-    // Find the Gemini card Add Key button
-    const geminiCard = page.locator('.border', { has: page.getByText('Gemini', { exact: true }) }).first();
-    await geminiCard.getByRole('button', { name: /Add Key/i }).click();
+    // 2. Add a Gemini key (Gemini is the dialog's default provider)
+    await page.getByRole('button', { name: 'Add key', exact: true }).click();
+    const addDialog = page.getByRole('dialog', { name: 'Add key' });
+    await expect(addDialog).toBeVisible();
+    // The key field is read-only until focused (keeps password managers out), so focus it first.
+    await addDialog.getByPlaceholder('Paste API key').focus();
+    await addDialog.getByPlaceholder('Paste API key').fill('e2e-gemini-good');
+    await addDialog.getByPlaceholder('e.g. Project Alpha').fill('My E2E Gemini');
+    await addDialog.getByRole('button', { name: 'Add key', exact: true }).click();
 
-    // Dialog opens
-    await expect(page.getByRole('heading', { name: 'Add Gemini Key' })).toBeVisible();
-    await page.getByPlaceholder('Paste API key').fill('e2e-gemini-good');
-    await page.getByPlaceholder('e.g. Project Alpha').fill('My E2E Gemini');
-    await page.getByRole('button', { name: 'Save Key' }).click();
+    // Dialog closes, row appears with label, masked key and Active status
+    await expect(addDialog).not.toBeVisible();
+    await expect(page.getByText('My E2E Gemini').first()).toBeVisible();
+    await expect(page.getByText('•••• good').first()).toBeVisible();
+    await expect(page.getByText('Active', { exact: true }).first()).toBeVisible();
 
-    // Dialog closes, row appears with label, masked key, and Active badge
-    await expect(page.getByText('My E2E Gemini')).toBeVisible();
-    await expect(page.getByText('•••• good')).toBeVisible();
-    await expect(page.getByText('Active')).toBeVisible();
+    // 3. Test key via the row menu
+    await page.getByRole('button', { name: /Key options for/ }).click();
+    await page.getByRole('menuitem', { name: 'Test key' }).click();
+    await expect(page.getByText('Key verified')).toBeVisible();
 
-    // 3. Test Key via menu
-    await page.getByRole('button', { name: 'Open menu' }).click();
-    await page.getByRole('menuitem', { name: /Test Key/i }).click();
-    await expect(page.getByText('Verified')).toBeVisible();
+    // 4. Delete key via the row menu
+    await page.getByRole('button', { name: /Key options for/ }).click();
+    await page.getByRole('menuitem', { name: 'Delete key' }).click();
 
-    // 4. Delete Key via menu
-    await page.getByRole('button', { name: 'Open menu' }).click();
-    await page.getByRole('menuitem', { name: /Delete Key/i }).click();
-
-    await expect(page.getByRole('heading', { name: 'Delete API Key?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Delete Key', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Delete API Key?' })).not.toBeVisible();
+    const deleteDialog = page.getByRole('dialog', { name: 'Delete API key?' });
+    await expect(deleteDialog).toBeVisible();
+    await deleteDialog.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(deleteDialog).not.toBeVisible();
 
     // Key is removed from the list
-    await expect(page.getByText('•••• good')).not.toBeVisible();
+    await expect(page.getByText('•••• good')).toHaveCount(0);
 
-    // 5. Customise routing order on Chat group
-    const chatRoutingCard = page.locator('.border', { has: page.getByText('Answering your questions about your data') }).first();
-    await expect(chatRoutingCard.getByText('Default')).toBeVisible();
+    // 5. Customise routing order on the Chat group
+    const chatRow = routingRow(page, 'Chat');
+    await expect(chatRow.getByText('Default', { exact: true })).toBeVisible();
+    await chatRow.getByRole('button', { name: 'Customise' }).click();
 
-    // Click Customise
-    await chatRoutingCard.getByRole('button', { name: /Customise/i }).click();
-
-    // Move second item up
-    const upButtons = chatRoutingCard.locator('button:has(svg.lucide-arrow-up)');
-    await upButtons.nth(1).click();
-
-    // Save routing changes
-    await chatRoutingCard.getByRole('button', { name: 'Save' }).click();
+    // Move the second option up, then save
+    const editor = page.getByRole('dialog', { name: 'Chat' });
+    await expect(editor).toBeVisible();
+    await editor.getByRole('button', { name: /^Move up/ }).nth(1).click();
+    await editor.getByRole('button', { name: 'Save routing' }).click();
+    await expect(editor).not.toBeVisible();
 
     // Custom badge appears
-    await expect(chatRoutingCard.getByText('Custom')).toBeVisible();
-    await expect(chatRoutingCard.getByRole('button', { name: /Reset/i })).toBeVisible();
+    await expect(chatRow.getByText('Custom', { exact: true })).toBeVisible();
+    await expect(chatRow.getByRole('button', { name: 'Reset' })).toBeVisible();
 
     // Reload page and verify order persistence
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    const reloadedChatCard = page.locator('.border', { has: page.getByText('Answering your questions about your data') }).first();
-    await expect(reloadedChatCard.getByText('Custom')).toBeVisible();
-    await expect(reloadedChatCard.getByRole('button', { name: /Reset/i })).toBeVisible();
+    const reloadedChatRow = routingRow(page, 'Chat');
+    await expect(reloadedChatRow.getByText('Custom', { exact: true })).toBeVisible();
+    await expect(reloadedChatRow.getByRole('button', { name: 'Reset' })).toBeVisible();
 
     // 6. Reset routing order to default
-    await reloadedChatCard.getByRole('button', { name: /Reset/i }).click();
-    await expect(reloadedChatCard.getByText('Default')).toBeVisible();
-    await expect(reloadedChatCard.getByRole('button', { name: /Reset/i })).not.toBeVisible();
+    await reloadedChatRow.getByRole('button', { name: 'Reset' }).click();
+    await expect(reloadedChatRow.getByText('Default', { exact: true })).toBeVisible();
+    await expect(reloadedChatRow.getByRole('button', { name: 'Reset' })).toHaveCount(0);
   });
 
   test('Custom model row: type a model, Test & add probes it, it persists in the order, and can be removed', async ({
     page,
   }) => {
-    await page.goto('/legacy/settings/llm-keys');
+    await page.goto('/settings/ai');
     await page.waitForLoadState('networkidle');
 
     // Without a key the add row only hints; add a Gemini key first
-    const defaultCard = page.locator('.border', { has: page.getByText('Reading emails, extracting transactions') }).first();
-    await defaultCard.getByRole('button', { name: /Customise/i }).click();
-    await expect(defaultCard.getByText('Add an API key to type in a model of your own.')).toBeVisible();
-    await defaultCard.getByRole('button', { name: 'Cancel' }).click();
+    const defaultRow = routingRow(page, 'Everything else');
+    await defaultRow.getByRole('button', { name: 'Customise' }).click();
+    const editor = page.getByRole('dialog', { name: 'Everything else' });
+    await expect(editor.getByText('Add an API key to type in a model of your own.')).toBeVisible();
+    await editor.getByRole('button', { name: 'Cancel' }).click();
+    await expect(editor).not.toBeVisible();
 
-    const geminiCard = page.locator('.border', { has: page.getByText('Gemini', { exact: true }) }).first();
-    await geminiCard.getByRole('button', { name: /Add Key/i }).click();
-    await page.getByPlaceholder('Paste API key').fill('e2e-gemini-good');
-    await page.getByRole('button', { name: 'Save Key' }).click();
-    await expect(page.getByText('•••• good')).toBeVisible();
+    await page.getByRole('button', { name: 'Add key', exact: true }).click();
+    const addDialog = page.getByRole('dialog', { name: 'Add key' });
+    // The key field is read-only until focused (keeps password managers out), so focus it first.
+    await addDialog.getByPlaceholder('Paste API key').focus();
+    await addDialog.getByPlaceholder('Paste API key').fill('e2e-gemini-good');
+    await addDialog.getByRole('button', { name: 'Add key', exact: true }).click();
+    await expect(addDialog).not.toBeVisible();
+    await expect(page.getByText('•••• good').first()).toBeVisible();
 
     // Type a model id and probe it; the row joins the draft at the bottom
-    await defaultCard.getByRole('button', { name: /Customise/i }).click();
-    await defaultCard.getByLabel('Model id').fill('gemini-e2e-custom');
-    await defaultCard.getByRole('button', { name: /Test & add/i }).click();
-    await expect(defaultCard.getByRole('button', { name: 'Remove gemini-e2e-custom' })).toBeVisible();
-    await expect(defaultCard.getByLabel('Model id')).toHaveValue('');
+    await defaultRow.getByRole('button', { name: 'Customise' }).click();
+    await expect(editor).toBeVisible();
+    await editor.getByLabel('Model id').fill('gemini-e2e-custom');
+    await editor.getByRole('button', { name: /Test & add/i }).click();
+    await expect(editor.getByRole('button', { name: 'Remove gemini-e2e-custom' })).toBeVisible();
+    await expect(editor.getByLabel('Model id')).toHaveValue('');
 
     // The same model again is refused client-side
-    await defaultCard.getByLabel('Model id').fill('gemini-e2e-custom');
-    await defaultCard.getByRole('button', { name: /Test & add/i }).click();
-    await expect(defaultCard.getByText('That model is already in this list.')).toBeVisible();
+    await editor.getByLabel('Model id').fill('gemini-e2e-custom');
+    await editor.getByRole('button', { name: /Test & add/i }).click();
+    await expect(editor.getByText('That model is already in this list.')).toBeVisible();
 
     // Move it to the top and save
-    const upButtons = defaultCard.locator('button:has(svg.lucide-arrow-up)');
+    const upButtons = editor.getByRole('button', { name: /^Move up/ });
     const rows = await upButtons.count();
     for (let i = rows - 1; i > 0; i -= 1) {
       await upButtons.nth(i).click();
     }
-    await defaultCard.getByRole('button', { name: 'Save' }).click();
-    await expect(defaultCard.getByText('Custom')).toBeVisible();
-    await expect(defaultCard.getByText('gemini-e2e-custom')).toBeVisible();
-    await expect(defaultCard.getByText('#1')).toBeVisible();
+    await editor.getByRole('button', { name: 'Save routing' }).click();
+    await expect(editor).not.toBeVisible();
+    await expect(defaultRow.getByText('Custom', { exact: true })).toBeVisible();
+    await expect(defaultRow.getByText('gemini-e2e-custom')).toBeVisible();
+    await expect(defaultRow.getByText('1 gemini-e2e-custom')).toBeVisible();
 
     // Survives a reload, then can be removed from the draft
     await page.reload();
     await page.waitForLoadState('networkidle');
-    const reloaded = page.locator('.border', { has: page.getByText('Reading emails, extracting transactions') }).first();
+    const reloaded = routingRow(page, 'Everything else');
     await expect(reloaded.getByText('gemini-e2e-custom')).toBeVisible();
-    await reloaded.getByRole('button', { name: /Edit/i }).click();
-    await reloaded.getByRole('button', { name: 'Remove gemini-e2e-custom' }).click();
-    await reloaded.getByRole('button', { name: 'Save' }).click();
-    await expect(reloaded.getByText('gemini-e2e-custom')).not.toBeVisible();
+    await reloaded.getByRole('button', { name: 'Customise' }).click();
+    await editor.getByRole('button', { name: 'Remove gemini-e2e-custom' }).click();
+    await editor.getByRole('button', { name: 'Save routing' }).click();
+    await expect(editor).not.toBeVisible();
+    await expect(reloaded.getByText('gemini-e2e-custom')).toHaveCount(0);
   });
 });

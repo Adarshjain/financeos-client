@@ -65,106 +65,56 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
 
     const pdfBuffer = await genBankPdf(validBankSpec);
 
-    await page.goto('/legacy/transactions/import');
+    await page.goto('/transactions/import');
 
-    // 1. Verify Page Heading and Components
-    await expect(
-      page.getByRole('heading', { name: 'Import statements', exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: 'Recent statement ingestion jobs' })
-    ).toBeVisible();
+    // 1. Verify the page and its components
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
+    await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
 
-    // 2. Select Account
-    await page.getByLabel('Select Financial Account').click();
-    await page.getByRole('option', { name: new RegExp(account.name, 'i') }).click();
+    const upload = async (filename: string, buffer: Buffer, files: number) => {
+      // 2. Select the account
+      await page.getByRole('combobox', { name: 'Account' }).click();
+      await page.getByRole('option', { name: new RegExp(account.name, 'i') }).click();
 
-    // 3. Attach file to hidden file input
-    await page.locator('#file-upload').setInputFiles({
-      name: 'hdfc-apr-2026.pdf',
-      mimeType: 'application/pdf',
-      buffer: pdfBuffer,
-    });
+      // 3. Attach the file to the hidden file input; the queue shows it
+      await page.locator('input[type=file]').setInputFiles({ name: filename, mimeType: 'application/pdf', buffer });
+      await expect(page.getByTestId('import-form').getByText(filename)).toBeVisible();
 
-    // File queue shows the added file
-    await expect(page.getByText('hdfc-apr-2026.pdf')).toBeVisible();
+      // 4. Submit upload & process
+      await page.getByRole('button', { name: `Upload & process ${files} file` }).click();
+    };
 
-    // 4. Submit upload & process
-    const submitBtn = page.getByRole('button', {
-      name: /Upload & Process Statements/i,
-    });
-    await submitBtn.click();
+    await upload('hdfc-apr-2026.pdf', pdfBuffer, 1);
 
-    // Ingest summary expands inline once completed
-    await expect(
-      page.getByText('Statement Extraction Summary')
-    ).toBeVisible({ timeout: 25000 });
+    // The import leads Recent imports and finishes
+    await expect(page.getByRole('link', { name: 'View' })).toHaveCount(1, { timeout: 25000 });
+    await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled({ timeout: 25000 });
+    await page.getByRole('link', { name: 'View' }).first().click();
 
-    // Verify Files / Created tiles
-    await expect(page.getByText('Files', { exact: true })).toBeVisible();
-    await expect(page.getByText('Created', { exact: true })).toBeVisible();
+    // Its page shows the extraction summary: lines read and created for the file
+    await expect(page).toHaveURL(/\/transactions\/import\/[0-9a-f-]+/);
+    await expect(page.getByTestId('import-file')).toHaveCount(1);
+    await expect(page.getByTestId('import-file')).toContainText('hdfc-apr-2026.pdf');
+    await expect(page.getByText('Lines read').first()).toBeVisible();
+    await expect(page.getByText('Created').first()).toBeVisible();
 
-    // 5. Upload duplicate statement -> verify "Duplicates Detected" alert
-    const dupPdfBuffer = await genBankPdf(duplicateBankSpec);
+    // 5. Upload an overlapping statement -> the duplicate is found and reported
+    await page.goto('/transactions/import');
+    await upload('hdfc-may-2026.pdf', await genBankPdf(duplicateBankSpec), 1);
+    await expect(page.getByRole('link', { name: 'View' })).toHaveCount(2, { timeout: 25000 });
+    await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled({ timeout: 25000 });
+    await page.getByRole('link', { name: 'View' }).first().click();
+    await expect(page).toHaveURL(/\/transactions\/import\/[0-9a-f-]+/);
+    await expect(page.getByText(/1 duplicate found\./i)).toBeVisible({ timeout: 15000 });
 
-    await page.getByLabel('Select Financial Account').click();
-    await page.getByRole('option', { name: new RegExp(account.name, 'i') }).click();
-
-    await page.locator('#file-upload').setInputFiles({
-      name: 'hdfc-may-2026.pdf',
-      mimeType: 'application/pdf',
-      buffer: dupPdfBuffer,
-    });
-
-    await page.getByRole('button', {
-      name: /Upload & Process Statements/i,
-    }).click();
-
-    // Wait for the new job card to appear and complete
-    const jobCards = page.locator('.space-y-2 > div.border');
-    await expect(jobCards).toHaveCount(2, { timeout: 25000 });
-    const newestCard = jobCards.first();
-    await expect(newestCard.getByText('SUCCEEDED')).toBeVisible({ timeout: 25000 });
-
-    const expandBtn1 = newestCard.locator('button[title="Expand details"]');
-    if (await expandBtn1.isVisible()) {
-      await expandBtn1.click();
-    }
-
-    await expect(
-      newestCard.getByText('Duplicates Detected')
-    ).toBeVisible({ timeout: 15000 });
-
-    // 6. Re-upload identical statement -> verify SKIPPED status in file details
-    await page.getByLabel('Select Financial Account').click();
-    await page.getByRole('option', { name: new RegExp(account.name, 'i') }).click();
-
-    await page.locator('#file-upload').setInputFiles({
-      name: 'hdfc-apr-2026.pdf',
-      mimeType: 'application/pdf',
-      buffer: pdfBuffer,
-    });
-
-    await page.getByRole('button', {
-      name: /Upload & Process Statements/i,
-    }).click();
-
-    // Wait for third job card to appear and complete
-    await expect(jobCards).toHaveCount(3, { timeout: 25000 });
-    const skippedCard = jobCards.first();
-    await expect(skippedCard.getByText('SUCCEEDED')).toBeVisible({ timeout: 25000 });
-
-    const expandBtn2 = skippedCard.locator('button[title="Expand details"]');
-    if (await expandBtn2.isVisible()) {
-      await expandBtn2.click();
-    }
-
-    // Click to expand File Details if present
-    const fileDetailsBtn = skippedCard.getByRole('button', { name: /File Details/i });
-    if (await fileDetailsBtn.isVisible()) {
-      await fileDetailsBtn.click();
-    }
-    await expect(skippedCard.getByRole('cell', { name: 'SKIPPED' })).toBeVisible({ timeout: 15000 });
+    // 6. Re-upload the identical statement -> the file is Skipped
+    await page.goto('/transactions/import');
+    await upload('hdfc-apr-2026.pdf', pdfBuffer, 1);
+    await expect(page.getByRole('link', { name: 'View' })).toHaveCount(3, { timeout: 25000 });
+    await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled({ timeout: 25000 });
+    await page.getByRole('link', { name: 'View' }).first().click();
+    await expect(page).toHaveURL(/\/transactions\/import\/[0-9a-f-]+/);
+    await expect(page.getByTestId('import-file')).toContainText('Skipped', { timeout: 15000 });
   });
 
   test('/transactions/import: client-side rejection for invalid file extension and oversized files with zero requests', async ({
@@ -173,10 +123,8 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await createBankAccount(api, { name: 'Rejection Bank' });
 
-    await page.goto('/legacy/transactions/import');
-    await expect(
-      page.getByRole('heading', { name: 'Import statements', exact: true })
-    ).toBeVisible();
+    await page.goto('/transactions/import');
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
 
     let requestCount = 0;
     page.on('request', (req) => {
@@ -185,33 +133,30 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
       }
     });
 
-    // 1. Invalid file extension (.txt)
-    await page.locator('#file-upload').setInputFiles({
-      name: 'statement.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('dummy statement content'),
-    });
-
-    await expect(
-      page.getByText(/Invalid file format/i)
-    ).toBeVisible();
+    // 1. Invalid file extension (.txt). Retried: a file set before the page hydrated is silently dropped.
+    await expect(async () => {
+      await page.locator('input[type=file]').setInputFiles({
+        name: 'statement.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('dummy statement content'),
+      });
+      await expect(page.getByText(/Invalid file format/i)).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 15000 });
     expect(requestCount).toBe(0);
 
     // 2. Oversized file (26 MB > 25 MB limit)
     const largeBuffer = Buffer.alloc(26 * 1024 * 1024);
-    await page.locator('#file-upload').setInputFiles({
+    await page.locator('input[type=file]').setInputFiles({
       name: 'huge-statement.pdf',
       mimeType: 'application/pdf',
       buffer: largeBuffer,
     });
 
-    await expect(
-      page.getByText(/Too large \(max 25MB per upload\)/i)
-    ).toBeVisible();
+    await expect(page.getByText(/Too large \(max 25MB per upload\)/i)).toBeVisible();
     expect(requestCount).toBe(0);
   });
 
-  test('/accounts -> Statements Archive -> Statement Details drilldown', async ({
+  test('/accounts/[id]/statements: the archive lists the statement and its details show the linked transactions', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -223,30 +168,15 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     const pdfBuffer = await genBankPdf(validBankSpec);
 
     // Ingest the statement first via API
-    await uploadAndIngest(api, account.id, [
-      { filename: 'archive-stmt.pdf', buffer: pdfBuffer },
-    ]);
+    await uploadAndIngest(api, account.id, [{ filename: 'archive-stmt.pdf', buffer: pdfBuffer }]);
 
-    // 1. Visit /accounts
-    await page.goto('/legacy/accounts');
-    await expect(page.getByText('Archive Bank Account')).toBeVisible();
+    // 1. Visit the account's Statements page (financial year of the statement)
+    await page.goto(`/accounts/${account.id}/statements`);
+    await expect(page.getByText('Statements', { exact: true }).first()).toBeVisible({ timeout: 45000 });
 
-    // 2. Click "Statements" button on the account card
-    const card = page.getByText('Archive Bank Account').locator('xpath=ancestor::div[contains(@class, "group")]');
-    await card.getByRole('button', { name: 'Statements' }).first().click();
-
-    // 3. Statements Archive dialog is visible
-    const archiveDialog = page.getByRole('dialog');
-    await expect(archiveDialog).toBeVisible();
-    await expect(archiveDialog.getByText('Statements Archive')).toBeVisible();
-
-    // 4. Click "View details" to open Statement Details drilldown
-    await archiveDialog.getByRole('button', { name: /View details/i }).first().click();
-
-    // 5. Statement Details modal appears
-    await expect(page.getByText('Statement Details', { exact: true })).toBeVisible();
-    await expect(page.getByText('Linked Transactions')).toBeVisible();
-    await expect(page.getByText('Checksum Status')).toBeVisible();
+    // 2. The statement is listed; opening it shows its details
+    await page.getByRole('button', { name: /Apr/ }).first().click();
+    await expect(page.getByText('Checksum OK')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'SALARY CREDIT APR' })).toBeVisible();
   });
 });

@@ -3,36 +3,32 @@ import { loginContext } from '../fixtures/browser';
 import { expect, test } from '../fixtures/test';
 
 test.describe('UI Smokes', () => {
-  test('1. Unauthenticated page.goto("/legacy/accounts") -> URL becomes /login?from=%2Flegacy%2Faccounts', async ({ page }) => {
-    await page.goto('/legacy/accounts');
-    await expect(page).toHaveURL(/\/login\?from=%2Flegacy%2Faccounts/);
+  test('1. Unauthenticated page.goto("/accounts") -> URL becomes /login?from=%2Faccounts', async ({ page }) => {
+    await page.goto('/accounts');
+    await expect(page).toHaveURL(/\/login\?from=%2Faccounts/);
   });
 
   test('2. @mobile Form login: fill Email/Password, click Sign in, lands on /dashboard', async ({ page, user }) => {
-    await page.goto('/legacy/login');
+    await page.goto('/login');
     await page.getByLabel('Email').fill(user.email);
-    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('Password', { exact: true }).fill(user.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await expect(page).toHaveURL(/\/legacy\/dashboard/);
-    // Home is the seeded dashboard; its switcher is the page's first control
-    await expect(page.getByRole('button', { name: /Switch dashboard, current: Home/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/);
+    // Home is the seeded dashboard; its switcher sits in the top bar
+    await expect(page.getByTestId('home-switch')).toBeVisible({ timeout: 45_000 });
   });
 
-  test('4. @mobile Sign out -> lands on /login; goto /dashboard redirects to login', async ({ page, context, user, isMobile }) => {
+  test('4. @mobile Sign out -> lands on /login; goto /dashboard redirects to login', async ({ page, context, user }) => {
     await loginContext(context, user.cookie);
-    await page.goto('/legacy/dashboard');
-    await expect(page.getByRole('button', { name: /Switch dashboard, current: Home/ })).toBeVisible();
+    await page.goto('/dashboard');
+    await expect(page.getByTestId('home-switch')).toBeVisible({ timeout: 45_000 });
 
-    if (isMobile) {
-      // The menu is a bottom sheet (a dialog) with a Sign out button, not a dropdown menuitem
-      await page.getByLabel('Open navigation menu').click();
-      await page.getByRole('dialog').getByRole('button', { name: 'Sign out' }).click();
-    } else {
-      await page.getByRole('button', { name: 'Sign out' }).click();
-    }
+    // Sign out is on the profile card at the top of Settings
+    await page.goto('/settings');
+    await page.getByRole('button', { name: 'Sign out' }).click();
 
     await expect(page).toHaveURL(/\/login/);
-    await page.goto('/legacy/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/);
   });
 

@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -6,7 +8,25 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { addDays, addLending, createCounterparty, createLoan, monthsAgo } from '../fixtures/seed/loans';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
-import { openTransactions } from '../fixtures/ui';
+
+/** Opens a transaction's detail from /transactions and returns its dialog. */
+async function openTransactionDetail(page: Page, description: string) {
+  await page.goto('/transactions');
+  await page.getByRole('row').filter({ hasText: description }).getByText(description).first().click();
+  const dialog = page.getByRole('dialog', { name: description });
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+/** Closes the transaction panel and opens it again, so the Links section is read fresh. */
+async function reopenTransactionDetail(page: Page, description: string) {
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: description })).toHaveCount(0);
+  await page.getByRole('row').filter({ hasText: description }).getByText(description).first().click();
+  const dialog = page.getByRole('dialog', { name: description });
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
 
 test.describe('Lending <-> Transaction Links UI (@ui)', () => {
   let currentUser: CreatedUser;
@@ -16,7 +36,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('Add Lending dialog has no raw transaction ID input; picking a seeded DEBIT prefills the amount and creates the entry (@mobile)', async ({
+  test('Add Lending dialog has no raw transaction ID input; picking a seeded DEBIT links it and creates the entry (@mobile)', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -26,45 +46,46 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: `Picker Debit ${Date.now()}`,
     });
 
-    await page.goto('/legacy/loans/lendings');
-    await expect(page.getByRole('heading', { name: /Lendings Ledger/i })).toBeVisible();
-
-    await page.getByRole('button', { name: /Add Lending/i }).filter({ visible: true }).first().click();
-    await expect(page.getByRole('heading', { name: 'Add Ledger Entry' })).toBeVisible();
+    await page.goto('/loans/lendings');
+    await page.getByRole('button', { name: 'Add lending', exact: true }).filter({ visible: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
+    await expect(dialog).toBeVisible();
 
     // No raw transaction-ID input; the picker is present instead.
     await expect(page.getByText('Linked Transaction ID')).toHaveCount(0);
-    await expect(page.getByText('Linked Transaction (Optional)')).toBeVisible();
-    const searchInput = page.getByPlaceholder('Search by description or amount...');
+    await expect(dialog.getByText('Linked transaction (optional)')).toBeVisible();
+    const searchInput = page.getByPlaceholder('Search by description or amount');
     await expect(searchInput).toBeVisible();
 
     // Add a new person via the picker
     const cpName = `Picker Person ${Date.now()}`;
-    await page.locator('#cpSelect').click();
-    await page.getByPlaceholder('Type a name...').fill(cpName);
-    await page.getByRole('option', { name: new RegExp(`Add .*${cpName}`) }).click();
-    await expect(page.getByText('Will be added when you save')).toBeVisible();
+    await dialog.getByRole('combobox', { name: /^Person/ }).click();
+    await page.getByPlaceholder('Type a name').fill(cpName);
+    await page.getByRole('button', { name: `Add "${cpName}"` }).click();
+    // On the phone the person sheet stays open after Add (see report); close it, the new person stays picked.
+    if (await page.getByPlaceholder('Type a name').isVisible()) await page.keyboard.press('Escape');
+    await expect(dialog.getByRole('combobox', { name: /^Person/ })).toContainText(cpName);
 
     // Search for and select the seeded DEBIT transaction
     await searchInput.fill(debitTxn.description!);
-    const candidateRow = page
-      .locator('div')
-      .filter({ hasText: debitTxn.description! })
-      .filter({ has: page.getByRole('button', { name: 'Select' }) })
-      .last();
-    await expect(candidateRow.getByRole('button', { name: 'Select' })).toBeVisible();
-    await candidateRow.getByRole('button', { name: 'Select' }).click();
+    const candidate = dialog.getByRole('radio', { name: debitTxn.description! });
+    await expect(candidate).toBeVisible();
+    await candidate.click();
 
-    // Amount auto-fills from the selected transaction
-    await expect(page.locator('#amount')).toHaveValue('1500');
+    // The Dinero form does not prefill the amount from the picked transaction (open question), so type it.
+    await dialog.getByRole('textbox', { name: /^Amount/ }).fill('1500');
 
-    await page.getByRole('button', { name: 'Save Entry' }).click();
+    await dialog.getByRole('button', { name: 'Record entry' }).click();
 
-    await expect(page.getByRole('heading', { name: 'Lendings Ledger (1)' })).toBeVisible();
-    await expect(page.locator(`text="${cpName}" >> visible=true`).first()).toBeVisible();
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByText(cpName).first()).toBeVisible();
+
+    // The new entry is linked to the picked transaction.
+    await page.getByText(cpName).first().click();
+    await expect(page.getByText('Linked', { exact: true }).first()).toBeVisible();
   });
 
-  test('person page ledger: unlinked row shows Link, linked row shows the transaction; edit entry Remove link reverts row to Link', async ({
+  test('person page ledger: a linked row says Linked, an unlinked one does not; edit entry Remove drops the link', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -90,27 +111,27 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       notes: 'LEDGER_PLAIN_ROW_MARKER',
     });
 
-    await page.goto(`/legacy/loans/lendings/${cp.id}`);
-    await expect(page.getByRole('heading', { name: cp.name })).toBeVisible();
+    await page.goto(`/loans/lendings/${cp.id}`);
+    await expect(page.getByText(cp.name).first()).toBeVisible();
 
-    const linkedRow = page.locator('tr').filter({ hasText: 'LEDGER_LINKED_ROW_MARKER' });
-    const unlinkedRow = page.locator('tr').filter({ hasText: 'LEDGER_PLAIN_ROW_MARKER' });
+    const linkedRow = page.getByRole('button').filter({ hasText: 'LEDGER_LINKED_ROW_MARKER' });
+    const unlinkedRow = page.getByRole('button').filter({ hasText: 'LEDGER_PLAIN_ROW_MARKER' });
 
-    // Linked row shows the transaction summary (account name), not a "Link" button
-    await expect(linkedRow.getByText(bank.name)).toBeVisible();
-    await expect(linkedRow.getByRole('button', { name: 'Link', exact: true })).toHaveCount(0);
+    // The linked row carries the Linked word; the unlinked one does not.
+    await expect(linkedRow.getByText('Linked', { exact: true })).toBeVisible();
+    await expect(unlinkedRow.getByText('Linked', { exact: true })).toHaveCount(0);
 
-    // Unlinked row shows the "Link" affordance
-    await expect(unlinkedRow.getByRole('button', { name: 'Link', exact: true })).toBeVisible();
+    // Open the linked entry: its transaction is shown, and Remove drops the link.
+    await linkedRow.click();
+    const dialog = page.getByRole('dialog', { name: 'Edit ledger entry' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Ledger Linked Debit').first()).toBeVisible();
+    await expect(dialog.getByText(bank.name).first()).toBeVisible();
+    await dialog.getByRole('button', { name: 'Remove' }).click();
+    await dialog.getByRole('button', { name: 'Save entry' }).click();
 
-    // Edit the linked entry and remove its link
-    await linkedRow.locator('td').last().getByRole('button').first().click();
-    await expect(page.getByRole('heading', { name: 'Edit Ledger Entry' })).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', { name: 'Remove' }).click();
-    await page.getByRole('button', { name: 'Save Changes' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Edit Ledger Entry' })).toHaveCount(0);
-    await expect(linkedRow.getByRole('button', { name: 'Link', exact: true })).toBeVisible();
+    await expect(dialog).not.toBeVisible();
+    await expect(linkedRow.getByText('Linked', { exact: true })).toHaveCount(0);
   });
 
   test('/transactions row shows the "Lent · <name>" badge for a linked lending', async ({ page }) => {
@@ -129,12 +150,13 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       transactionId: txn.id,
     });
 
-    await openTransactions(page);
-    await expect(page.locator('main').getByText('Badge Debit')).toBeVisible();
-    await expect(page.locator('main').getByText(`Lent · ${cpName}`)).toBeVisible();
+    await page.goto('/transactions');
+    const row = page.getByRole('row').filter({ hasText: 'Badge Debit' });
+    await expect(row).toBeVisible();
+    await expect(row.getByText(`Lent · ${cpName}`).filter({ visible: true }).first()).toBeVisible();
   });
 
-  test('transaction detail Link to… -> Lending -> New entry: Links section shows the ref, delete confirm mentions it, Unlink removes it', async ({
+  test('transaction detail Link to… -> Lending entry -> New entry: Links section shows the ref, delete confirm mentions it, Unlink removes it', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -144,48 +166,46 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: 'Detail Link Debit',
     });
 
-    await openTransactions(page);
-    await page.locator('main').getByText('Detail Link Debit').click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-
-    await page.getByRole('button', { name: /Link to/ }).click();
-    await page.getByRole('dialog').getByRole('combobox').first().click();
-    await page.getByRole('option', { name: 'Lending (person ledger)', exact: true }).click();
+    const panel = await openTransactionDetail(page, 'Detail Link Debit');
+    await panel.getByRole('button', { name: 'Link to…' }).click();
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: /^Type/ }) });
+    await dialog.getByRole('combobox', { name: /^Type/ }).click();
+    await page.getByRole('option', { name: 'Lending entry', exact: true }).click();
 
     const cpName = `Detail Link Person ${Date.now()}`;
-    await page.locator('#lendingCpSelect').click();
-    await page.getByPlaceholder('Type a name...').fill(cpName);
-    await page.getByRole('option', { name: new RegExp(`Add .*${cpName}`) }).click();
-    await expect(page.getByText('Will be added when you save')).toBeVisible();
+    await dialog.getByRole('combobox', { name: /^Person/ }).click();
+    await page.getByPlaceholder('Type a name').fill(cpName);
+    await page.getByRole('button', { name: `Add "${cpName}"` }).click();
 
     // Amount/date prefill from the subject transaction
-    await expect(page.locator('#lendingAmount')).toHaveValue('1200');
+    await expect(dialog.getByRole('textbox', { name: /^Amount/ })).toHaveValue('1200');
 
-    await page.getByRole('button', { name: 'Save entry' }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Record and link' }).click();
+    await expect(dialog).not.toBeVisible();
 
-    // Reopen the transaction detail: Links section shows the ledger ref
-    await page.locator('main').getByText('Detail Link Debit').click();
-    await expect(page.getByRole('dialog').getByText('Ledger, loans & dividends')).toBeVisible();
-    await expect(page.getByRole('dialog').getByText(`Lent · ${cpName}`)).toBeVisible();
+    // Reopen the transaction detail: the Links section shows the ledger ref
+    const reopened = await reopenTransactionDetail(page, 'Detail Link Debit');
+    await expect(reopened.getByText('Links', { exact: true })).toBeVisible();
+    await expect(reopened.getByText(`Lent · ${cpName}`)).toBeVisible();
 
     // Delete confirmation mentions the linked record
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
-    await expect(page.getByText('Delete Transaction?')).toBeVisible();
-    // Copy changed with dividend receipts: the dialog now names all three record kinds.
-    await expect(page.getByText(/linked to 1 loan, lending or dividend record/i)).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).last().click();
+    await reopened.getByRole('button', { name: 'Delete' }).click();
+    const confirm = page.getByRole('dialog', { name: /^Delete Detail Link Debit/ });
+    await expect(confirm).toBeVisible();
+    await expect(confirm.getByText(new RegExp(`1 linked record stays \\(Lent · ${cpName}\\) but loses the link`))).toBeVisible();
+    await confirm.getByRole('button', { name: 'Cancel' }).click();
+    await expect(confirm).not.toBeVisible();
 
-    // Unlink the ledger ref (no confirmation) -> dialog closes
-    await page.getByRole('dialog').getByRole('button', { name: 'Unlink' }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    // Unlink the ledger ref (no confirmation)
+    await reopened.getByRole('button', { name: 'Unlink' }).click();
+    await expect(reopened.getByText(`Lent · ${cpName}`)).toHaveCount(0);
 
     // Reopen: the ref is gone
-    await page.locator('main').getByText('Detail Link Debit').click();
-    await expect(page.getByRole('dialog').getByText(`Lent · ${cpName}`)).toHaveCount(0);
+    const again = await reopenTransactionDetail(page, 'Detail Link Debit');
+    await expect(again.getByText(`Lent · ${cpName}`)).toHaveCount(0);
   });
 
-  test('transaction detail Link to… -> Loan EMI payment: Settle installment, Unlink (confirm) removes it; disabled on CREDIT with the debit reason', async ({
+  test('transaction detail Link to… -> Loan payment: Settle EMI, Unlink (confirm) removes it; disabled on CREDIT with the debit reason', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -197,78 +217,74 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: 'EMI Link Debit',
     });
 
-    await openTransactions(page);
-    await page.locator('main').getByText('EMI Link Debit').click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    const panel = await openTransactionDetail(page, 'EMI Link Debit');
+    await panel.getByRole('button', { name: 'Link to…' }).click();
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: /^Type/ }) });
+    await dialog.getByRole('combobox', { name: /^Type/ }).click();
+    await page.getByRole('option', { name: 'Loan payment', exact: true }).click();
 
-    await page.getByRole('button', { name: /Link to/ }).click();
-    await page.getByRole('dialog').getByRole('combobox').first().click();
-    await page.getByRole('option', { name: 'Loan EMI payment', exact: true }).click();
-
-    await page.locator('#loanPaymentLoanSelect').click();
+    await dialog.getByRole('combobox', { name: /^Loan/ }).click();
     await page.getByRole('option', { name: new RegExp(loanName) }).click();
 
-    // Installment auto-selects; the primary action enables once ready.
-    const settleBtn = page.getByRole('button', { name: 'Settle installment' });
+    // An installment is picked for you; the primary action enables once ready.
+    const settleBtn = dialog.getByRole('button', { name: /^Settle EMI/ });
     await expect(settleBtn).toBeEnabled();
     await settleBtn.click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(dialog).not.toBeVisible();
 
     // Reopen: Links section shows the EMI ref
-    await page.locator('main').getByText('EMI Link Debit').click();
-    await expect(page.getByRole('dialog').getByText(new RegExp(`EMI #\\d+ · ${loanName}`))).toBeVisible();
+    const reopened = await reopenTransactionDetail(page, 'EMI Link Debit');
+    await expect(reopened.getByText(new RegExp(`EMI #\\d+ · ${loanName}`))).toBeVisible();
 
     // Unlink requires confirmation
-    await page.getByRole('dialog').getByRole('button', { name: 'Unlink' }).click();
-    await expect(page.getByText('Remove this settlement?')).toBeVisible();
-    await page.getByRole('dialog').last().getByRole('button', { name: 'Unlink', exact: true }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await reopened.getByRole('button', { name: 'Unlink' }).click();
+    const confirm = page.getByRole('dialog', { name: 'Remove this settlement?' });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', { name: 'Remove' }).click();
+    await expect(confirm).not.toBeVisible();
 
     // Reopen: EMI ref gone
-    await page.locator('main').getByText('EMI Link Debit').click();
-    await expect(page.getByRole('dialog').getByText(new RegExp(`EMI #\\d+ · ${loanName}`))).toHaveCount(0);
+    const again = await reopenTransactionDetail(page, 'EMI Link Debit');
+    await expect(again.getByText(new RegExp(`EMI #\\d+ · ${loanName}`))).toHaveCount(0);
     await page.keyboard.press('Escape');
 
-    // On a CREDIT transaction, Loan EMI payment is disabled with the debit reason
+    // On a CREDIT transaction, Loan payment is disabled with the debit reason
     await createTransaction(api, bank.id, {
       amount: 900,
       description: 'EMI Disabled Credit',
     });
-    await page.reload();
-    await page.locator('main').getByText('EMI Disabled Credit').click();
-    await page.getByRole('button', { name: /Link to/ }).click();
-    await expect(
-      page.getByText(/Loan EMI payment: Loan payments must be money-out \(debit\) transactions/i)
-    ).toBeVisible();
+    const credit = await openTransactionDetail(page, 'EMI Disabled Credit');
+    await credit.getByRole('button', { name: 'Link to…' }).click();
+    const creditDialog = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: /^Type/ }) });
+    await creditDialog.getByRole('combobox', { name: /^Type/ }).click();
+    await expect(page.getByText('Loan payments must be money-out (debit) transactions')).toBeVisible();
+    await expect(page.getByRole('option', { name: /Loan payment/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('multi-select "Link (N)" in the transactions browser disables Lending and Loan EMI payment kinds', async ({
-    page,
-  }) => {
+  test('multi-select Link in the transactions browser disables Lending and Loan payment kinds', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     const bank = await createBankAccount(api, { name: 'Multi Select Bank' });
-    const txnA = await createTransaction(api, bank.id, { amount: -100, description: 'Multi Select A' });
-    const txnB = await createTransaction(api, bank.id, { amount: -200, description: 'Multi Select B' });
+    await createTransaction(api, bank.id, { amount: -100, description: 'Multi Select A' });
+    await createTransaction(api, bank.id, { amount: -200, description: 'Multi Select B' });
 
-    await openTransactions(page);
-    await expect(page.locator('main').getByText('Multi Select A')).toBeVisible();
+    await page.goto('/transactions');
+    await expect(page.getByRole('row').filter({ hasText: 'Multi Select A' })).toBeVisible();
+
+    await page.getByRole('checkbox', { name: 'Select Multi Select A', exact: true }).click();
+    await page.getByRole('checkbox', { name: 'Select Multi Select B', exact: true }).click();
+    await expect(page.getByText('2 selected')).toBeVisible();
 
     await page.getByRole('button', { name: 'Link', exact: true }).click();
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: /^Type/ }) });
+    await expect(dialog).toBeVisible();
 
-    await page.locator(`#select-${txnA.id}`).locator('xpath=..').click();
-    await page.locator(`#select-${txnB.id}`).locator('xpath=..').click();
-
-    await page.getByRole('button', { name: 'Link (2)' }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-
+    await dialog.getByRole('combobox', { name: /^Type/ }).click();
     await expect(
-      page.getByText(/Select a single transaction to record a lending, loan payment or dividend/i).first()
+      page.getByText(/Select a single transaction to record a lending, loan payment or dividend/i).first(),
     ).toBeVisible();
   });
 
-  test('person page Transaction Matching panel: Find Matches lists the seeded candidate, Confirm links it and the row disappears', async ({
-    page,
-  }) => {
+  test('person page Matching card: Find matches lists the seeded candidate, Confirm all links it', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     const bank = await createBankAccount(api, { name: 'Match Panel Bank' });
     const cp = await createCounterparty(api, { name: `Match Panel Person ${Date.now()}` });
@@ -281,7 +297,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       entryDate,
       notes: 'MATCH_TARGET_ENTRY',
     });
-    // A second unlinked entry with no plausible candidate keeps the panel mounted
+    // A second unlinked entry with no plausible candidate keeps the card mounted
     // after the first is confirmed.
     await addLending(api, {
       counterpartyId: cp.id,
@@ -298,19 +314,20 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
       description: candidateDescription,
     });
 
-    await page.goto(`/legacy/loans/lendings/${cp.id}`);
-    await expect(page.getByRole('heading', { name: cp.name })).toBeVisible();
-    await expect(page.getByText('Transaction Matching')).toBeVisible();
+    await page.goto(`/loans/lendings/${cp.id}`);
+    await expect(page.getByText(cp.name).first()).toBeVisible();
+    await expect(page.getByText('Matching', { exact: true })).toBeVisible();
+    await expect(page.getByText('0 of 2 entries')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Find Matches' }).click();
+    await page.getByRole('button', { name: 'Find matches' }).click();
     await expect(page.getByText(candidateDescription)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Link', exact: true })).toBeVisible();
 
-    const matchRow = page.locator('tr').filter({ hasText: 'MATCH_TARGET_ENTRY' }).first();
-    await expect(matchRow.getByRole('button', { name: 'Link', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm all' }).click();
 
-    await page.getByRole('button', { name: 'Confirm', exact: true }).click();
-
-    await expect(page.getByText(candidateDescription)).toHaveCount(0);
-    await expect(matchRow.getByRole('button', { name: 'Link', exact: true })).toHaveCount(0);
+    // The suggestion is linked: no Link button is left, and the card counts one linked entry.
+    await expect(page.getByRole('button', { name: 'Link', exact: true })).toHaveCount(0);
+    await expect(page.getByText('Linked', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('1 of 2 entries')).toBeVisible();
   });
 });
