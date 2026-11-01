@@ -126,7 +126,7 @@ export function WidgetPicker({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content
         size="lg"
-        title={def ? def.label : 'Add widget'}
+        title="Add widget"
         description={def ? def.description : 'Built-ins update themselves; report widgets show a saved report.'}
         secondary={details ? { label: 'Back', onSelect: back } : { label: 'Cancel', onSelect: onClose }}
         primary={

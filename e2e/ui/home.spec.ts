@@ -104,7 +104,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
 
     // A template built-in is copied into a saved report of its own.
     await openMenu(page, widgetCard(page, 'Net worth'));
-    await expect(page.getByRole('menuitem')).toHaveText(['Widget settings', 'Duplicate as my report', 'View full page']);
+    await expect(page.getByRole('menuitem')).toHaveText(['Widget settings', 'Duplicate as my report', 'View full page', 'View underlying data']);
     await page.getByRole('menuitem', { name: 'Duplicate as my report' }).click();
     await expect(page.getByText(/Report "Net worth" saved/)).toBeVisible({ timeout: 30_000 });
     await expect

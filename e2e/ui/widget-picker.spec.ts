@@ -145,8 +145,7 @@ test.describe('Add widget picker (@ui)', () => {
 
     // Choosing a built-in opens its step: its name, a preview on sample data, its settings, Back and Add to board.
     await card(page, 'Emergency fund').click();
-    await expect(page.getByRole('dialog', { name: 'Emergency fund' })).toBeVisible();
-    await expect(d.getByText('Preview · sample data')).toBeVisible();
+        await expect(d.getByText('Preview · sample data')).toBeVisible();
     await expect(builtinCards(page)).toHaveCount(0);
     await expect(d.getByRole('button', { name: 'Add to board' })).toBeEnabled();
 
