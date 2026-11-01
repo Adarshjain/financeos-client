@@ -58,8 +58,6 @@ function setup(over: Partial<TransactionsListPaneProps> = {}) {
   return { props, ...renderWithQuery(<TransactionsListPane {...props} />) };
 }
 
-const SUMMARY = { count: 23, groupCount: 7, topGroups: [{ label: 'Ravi Kumar', count: 6 }] };
-
 beforeEach(() => {
   router.push.mockClear();
 });
@@ -67,21 +65,20 @@ beforeEach(() => {
 describe('TransactionsListPane Uncategorized card', () => {
   it('shows the card above the list while something needs a category, and Sort them reports the press', () => {
     const onSortThem = vi.fn();
-    setup({ uncategorized: SUMMARY, onSortThem });
-    expect(screen.getByText('23 need a category')).toBeInTheDocument();
-    expect(screen.getByText('In 7 groups. The biggest is Ravi Kumar, with 6.')).toBeInTheDocument();
+    setup({ hasUncategorized: true, onSortThem });
+    expect(screen.getByText('Some transactions need a category')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Sort them' }));
     expect(onSortThem).toHaveBeenCalledTimes(1);
   });
 
-  it('is gone at zero, and when the summary could not be loaded', () => {
-    setup({ uncategorized: { ...SUMMARY, count: 0, groupCount: 0, topGroups: [] } });
+  it('is gone when nothing is uncategorized', () => {
+    setup({ hasUncategorized: false });
     expect(screen.queryByText(/need a category/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Sort them' })).toBeNull();
   });
 
-  it('is absent without a summary', () => {
-    setup({ uncategorized: null });
+  it('is absent when the check was not made', () => {
+    setup({});
     expect(screen.queryByRole('button', { name: 'Sort them' })).toBeNull();
   });
 });

@@ -8,29 +8,12 @@ const meta: Meta<typeof UncategorizedCard> = {
   component: UncategorizedCard,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
-  args: {
-    count: 23,
-    groupCount: 7,
-    topGroups: [
-      { label: 'Ravi Kumar', count: 6 },
-      { label: 'Sharma Medicals', count: 4 },
-      { label: 'Green Leaf Café', count: 3 },
-    ],
-    onSort: fn(),
-  },
-  argTypes: {
-    count: { control: 'number' },
-    groupCount: { control: 'number' },
-    topGroups: { control: 'object' },
-    onSort: { control: false },
-  },
+  args: { onSort: fn() },
+  argTypes: { onSort: { control: false } },
 };
 
 export default meta;
 type Story = StoryObj<typeof UncategorizedCard>;
 
-/** Phone names the biggest group; desktop lists the top three and "and N more". */
+/** No count and no group line, on phone and desktop: the numbers load when Sort them opens. */
 export const Default: Story = {};
-
-/** Only one-offs: no group line. */
-export const OnlyOneOffs: Story = { args: { count: 5, groupCount: 0, topGroups: [] } };

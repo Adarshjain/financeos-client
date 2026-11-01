@@ -48,14 +48,12 @@ export interface CategoryFilterChipProps {
   value: CategoryFilter;
   /** The fixed category list; null while it could not be loaded (the chip is then off). */
   categories: readonly CategoryDef[] | null;
-  /** How many transactions have no category: shown beside Uncategorized (only that row has a count). */
-  uncategorizedCount?: number | null;
   /** Written once, when the dropdown closes with a change. */
   onCommit: (value: CategoryFilter) => void;
 }
 
-/** The Category chip: Uncategorized first (with its count), then every category; a chevron narrows to sub-categories. */
-export function CategoryFilterChip({ value, categories, uncategorizedCount, onCommit }: CategoryFilterChipProps) {
+/** The Category chip: Uncategorized first, then every category; a chevron narrows to sub-categories. */
+export function CategoryFilterChip({ value, categories, onCommit }: CategoryFilterChipProps) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<CategoryFilter | null>(null);
   const [search, setSearch] = React.useState('');
@@ -114,7 +112,6 @@ export function CategoryFilterChip({ value, categories, uncategorizedCount, onCo
               className="px-space-10"
               leading={<Checkbox checked={shown.uncategorized} {...noCheck} />}
               title="Uncategorized"
-              trailing={<Count n={uncategorizedCount} />}
               onClick={() => setDraft(toggleUncategorized(shown))}
             />
           ) : null}

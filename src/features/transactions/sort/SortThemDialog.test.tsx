@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
+  summary: vi.fn(),
   groups: vi.fn(),
   transactions: vi.fn(),
   apply: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock('@/lib/query/actions/categoryListActions', async () => {
   return { loadCategoryList: vi.fn(async () => ({ success: true, data: CATEGORY_LIST_FIXTURE })) };
 });
 vi.mock('@/lib/query/actions/uncategorizedActions', () => ({
+  loadUncategorizedSummary: mocks.summary,
   loadUncategorizedGroups: mocks.groups,
   loadGroupTransactions: mocks.transactions,
   applyUncategorized: mocks.apply,
@@ -42,6 +44,7 @@ const SHARMA_TXNS = [txn('s1', -820), txn('s2', -460), txn('s3', -600), txn('s4'
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.summary.mockResolvedValue(ok({ count: 23, groupCount: 2, topGroups: [] }));
   mocks.groups.mockResolvedValue(ok(page([RAVI, SHARMA, PAI])));
   mocks.transactions.mockImplementation(async (key: string) =>
     ok(page(key === 'sharma' ? SHARMA_TXNS : [txn('r1', -3000, 'RAVI KUMAR'), txn('r2', -3000, 'RAVI KUMAR'), txn('r3', -3000, 'RAVI KUMAR')])),
@@ -52,7 +55,7 @@ beforeEach(() => {
 
 const setup = () => {
   const onClose = vi.fn();
-  renderWithQuery(<SortThemDialog count={23} groupCount={2} onClose={onClose} />);
+  renderWithQuery(<SortThemDialog onClose={onClose} />);
   return { onClose, user: userEvent.setup({ pointerEventsCheck: 0 }) };
 };
 
@@ -69,6 +72,15 @@ describe('SortThemDialog', () => {
     // The groups page counts groups and one-offs together: 3 items less the 2 groups of two or more.
     expect(oneOffs.parentElement).toHaveTextContent(/One-offs\s*1/i);
     expect(screen.getByRole('button', { name: 'Save 0 groups' })).toBeDisabled();
+  });
+
+  it('reads the summary when it opens, and shows loading rows and the neutral title until it arrives', async () => {
+    mocks.summary.mockReturnValue(new Promise(() => undefined));
+    setup();
+    expect(mocks.summary).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Some transactions need a category')).toBeInTheDocument();
+    await waitFor(() => expect(mocks.groups).toHaveBeenCalled());
+    expect(screen.queryByText('Ravi Kumar')).toBeNull();
   });
 
   it('counts the one-offs from the whole list, not the page: total less the groups of two or more', async () => {
