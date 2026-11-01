@@ -30,6 +30,7 @@ import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { RunReportRequest, SortClause, TableRow } from '@/lib/reports.types';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
+import { filterChipText } from './filterChipText';
 import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
 import {
   asFormat,
@@ -328,7 +329,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                     {data.filters.map((f, i) => (
                       <li key={`${f.field}-${i}`}>
                         <Badge variant="outline">
-                          {f.fieldLabel} {f.text}
+                          {f.fieldLabel} {filterChipText(f.text)}
                         </Badge>
                       </li>
                     ))}
