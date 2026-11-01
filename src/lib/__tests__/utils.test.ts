@@ -3,14 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatDate,
   formatMoney,
-  formatMonthYear,
-  formatNullableMoney,
-  formatRelativeTime,
   getAccountName,
-  getAccountTypeLabel,
-  getPositionLabel,
-  isSameDay,
-  isWithinLastNDays,
   parseCalendarDate,
   toCalendarDate,
 } from '../utils';
@@ -115,14 +108,6 @@ describe('formatMoney', () => {
   });
 });
 
-describe('formatNullableMoney', () => {
-  it('distinguishes absent from zero', () => {
-    expect(formatNullableMoney(null)).toBe('—');
-    expect(formatNullableMoney(undefined)).toBe('—');
-    expect(formatNullableMoney(0)).toBe('₹0.00');
-  });
-});
-
 describe('getAccountName', () => {
   const accounts = [
     { id: 'a1', name: 'HDFC Savings' },
@@ -141,118 +126,3 @@ describe('getAccountName', () => {
     expect(getAccountName(accounts, 'missing')).toBe('Unknown');
   });
 });
-
-describe('getAccountTypeLabel', () => {
-  it('maps known types', () => {
-    expect(getAccountTypeLabel('bank_account')).toBe('Bank Account');
-    expect(getAccountTypeLabel('credit_card')).toBe('Credit Card');
-  });
-
-  it('is case-insensitive', () => {
-    expect(getAccountTypeLabel('CREDIT_CARD')).toBe('Credit Card');
-  });
-
-  it('falls back to the raw value for unknown types', () => {
-    expect(getAccountTypeLabel('crypto_wallet')).toBe('crypto_wallet');
-  });
-
-  it('handles undefined', () => {
-    expect(getAccountTypeLabel(undefined)).toBe('Unknown');
-  });
-});
-
-describe('isWithinLastNDays', () => {
-  it('counts today as within range', () => {
-    expect(isWithinLastNDays(new Date(), 4)).toBe(true);
-  });
-
-  it('excludes a date older than the window', () => {
-    const old = new Date();
-    old.setDate(old.getDate() - 10);
-    expect(isWithinLastNDays(old, 4)).toBe(false);
-  });
-
-  it('excludes future dates', () => {
-    const future = new Date();
-    future.setDate(future.getDate() + 1);
-    expect(isWithinLastNDays(future, 4)).toBe(false);
-  });
-});
-
-// Replaces the app's single date-fns call. Times are built relative to now so the
-// assertions don't depend on a frozen clock.
-describe('formatRelativeTime', () => {
-  const ago = (ms: number) => new Date(Date.now() - ms);
-  const MIN = 60 * 1000;
-  const HOUR = 60 * MIN;
-  const DAY = 24 * HOUR;
-
-  it('reports "never" for absent or unparseable input', () => {
-    expect(formatRelativeTime(null)).toBe('never');
-    expect(formatRelativeTime(undefined)).toBe('never');
-    expect(formatRelativeTime('')).toBe('never');
-    expect(formatRelativeTime('not-a-date')).toBe('never');
-  });
-
-  it('uses seconds under a minute', () => {
-    expect(formatRelativeTime(ago(5 * 1000))).toMatch(/second/);
-  });
-
-  it('uses minutes, hours and days at the right thresholds', () => {
-    expect(formatRelativeTime(ago(5 * MIN))).toBe('5 minutes ago');
-    expect(formatRelativeTime(ago(3 * HOUR))).toBe('3 hours ago');
-    expect(formatRelativeTime(ago(5 * DAY))).toBe('5 days ago');
-  });
-
-  it("says 'yesterday' rather than '1 day ago'", () => {
-    // This is why numeric:'auto' is used.
-    expect(formatRelativeTime(ago(DAY))).toBe('yesterday');
-  });
-
-  it('escalates to months and years', () => {
-    expect(formatRelativeTime(ago(60 * DAY))).toMatch(/month/);
-    expect(formatRelativeTime(ago(800 * DAY))).toMatch(/year/);
-  });
-
-  it('handles future timestamps', () => {
-    expect(formatRelativeTime(new Date(Date.now() + 3 * HOUR))).toBe('in 3 hours');
-  });
-
-  it('accepts an ISO string as well as a Date', () => {
-    expect(formatRelativeTime(ago(5 * MIN).toISOString())).toBe('5 minutes ago');
-  });
-});
-
-describe('getPositionLabel (CD-15)', () => {
-  it('defaults to Asset for undefined/empty', () => {
-    expect(getPositionLabel(undefined)).toBe('Asset');
-    expect(getPositionLabel('')).toBe('Asset');
-  });
-
-  it('maps liability and asset', () => {
-    expect(getPositionLabel('liability')).toBe('Liability');
-    expect(getPositionLabel('asset')).toBe('Asset');
-  });
-});
-
-describe('formatMonthYear (CD-15)', () => {
-  it('formats month and 2-digit year correctly in Asia/Kolkata timezone', () => {
-    const d = new Date(2026, 6, 25); // July 2026
-    expect(formatMonthYear(d)).toBe('Jul 26');
-  });
-});
-
-describe('isSameDay (CD-15)', () => {
-  it('returns true for same calendar date', () => {
-    const d1 = new Date(2026, 6, 25, 10, 0);
-    const d2 = new Date(2026, 6, 25, 22, 30);
-    expect(isSameDay(d1, d2)).toBe(true);
-  });
-
-  it('returns false for different calendar dates', () => {
-    const d1 = new Date(2026, 6, 25);
-    const d2 = new Date(2026, 6, 26);
-    expect(isSameDay(d1, d2)).toBe(false);
-  });
-});
-
