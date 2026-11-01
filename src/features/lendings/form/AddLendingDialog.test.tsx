@@ -211,6 +211,26 @@ describe('AddLendingDialog', () => {
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'tx1' })));
   });
 
+  it('prefills an empty amount from the picked transaction (absolute value)', () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    expect(amount()).toHaveValue('500');
+  });
+
+  it('keeps a typed amount when a transaction is picked', () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    fireEvent.change(amount(), { target: { value: '800' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    expect(amount()).toHaveValue('800');
+  });
+
+  it('leaves the amount alone when the picked transaction is removed', () => {
+    render(<AddLendingDialog onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pick tx1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove tx' }));
+    expect(amount()).toHaveValue('500');
+  });
+
   it('filters the picker by the money direction and forgets a pick when the direction flips', async () => {
     render(<AddLendingDialog onClose={onClose} />);
     expect(screen.getByTestId('tx-picker')).toHaveAttribute('data-direction', 'lent');

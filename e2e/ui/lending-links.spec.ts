@@ -72,8 +72,8 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     await expect(candidate).toBeVisible();
     await candidate.click();
 
-    // The Dinero form does not prefill the amount from the picked transaction (open question), so type it.
-    await dialog.getByRole('textbox', { name: /^Amount/ }).fill('1500');
+    // Picking a transaction fills the still-empty amount with its absolute value.
+    await expect(dialog.getByRole('textbox', { name: /^Amount/ })).toHaveValue('1500');
 
     await dialog.getByRole('button', { name: 'Record entry' }).click();
 
