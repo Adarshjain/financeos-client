@@ -30,6 +30,8 @@ export default defineConfig({
     ['list'],
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
+    // Job logs need a login but annotations are public, so CI names failing tests there.
+    ...(process.env.CI ? [['github'] as ['github']] : []),
   ],
   use: {
     baseURL: E2E_CLIENT_URL,
