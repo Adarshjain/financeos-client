@@ -108,7 +108,8 @@ test.describe('Add widget picker (@ui)', () => {
     await newDashboard(page, 'Details board');
     await openPicker(page);
     const add = dialog(page).getByRole('button', { name: 'Add to board' });
-    await expect(add).toBeDisabled();
+    // The list has nothing to add: choosing a built-in opens its details step, which carries Add to board.
+    await expect(add).toHaveCount(0);
     await card(page, 'Spending calendar').click();
 
     const d = dialog(page);
@@ -121,10 +122,39 @@ test.describe('Add widget picker (@ui)', () => {
     await months.fill('4');
     await expect(add).toBeEnabled();
 
-    // A built-in without settings has none to fill in.
+    // Back to the list; a built-in without settings has none to fill in.
+    await d.getByRole('button', { name: 'Back' }).click();
     await card(page, 'Emergency fund').click();
     await expect(d.getByRole('spinbutton')).toHaveCount(0);
     await expect(add).toBeEnabled();
+  });
+
+  test('@mobile categories narrow the list; a built-in opens a details step with a sample-data preview and Back', async ({ page }) => {
+    await createBankAccount(api, { name: 'Steps Bank', openingBalance: 1000 });
+    await newDashboard(page, 'Steps board');
+    await openPicker(page);
+    const d = dialog(page);
+
+    // Category chips: All plus each category that has built-ins.
+    await expect(d.getByRole('button', { name: 'All', exact: true })).toBeVisible();
+    await d.getByRole('button', { name: 'Shortcuts', exact: true }).click();
+    await expect(builtinCards(page)).toHaveCount(1);
+    await expect(card(page, 'Shortcuts')).toBeVisible();
+    await d.getByRole('button', { name: 'All', exact: true }).click();
+    await expect(builtinCards(page)).toHaveCount(BUILTIN_KEYS.length);
+
+    // Choosing a built-in opens its step: its name, a preview on sample data, its settings, Back and Add to board.
+    await card(page, 'Emergency fund').click();
+    await expect(page.getByRole('dialog', { name: 'Emergency fund' })).toBeVisible();
+    await expect(d.getByText('Preview · sample data')).toBeVisible();
+    await expect(builtinCards(page)).toHaveCount(0);
+    await expect(d.getByRole('button', { name: 'Add to board' })).toBeEnabled();
+
+    // Back returns to the list with nothing chosen.
+    await d.getByRole('button', { name: 'Back' }).click();
+    await expect(page.getByRole('dialog', { name: 'Add widget' })).toBeVisible();
+    await expect(builtinCards(page)).toHaveCount(BUILTIN_KEYS.length);
+    await expect(d.getByRole('button', { name: 'Add to board' })).toHaveCount(0);
   });
 
   test('adds every component widget to a dashboard; each renders its own body after saving', async ({ page }) => {
