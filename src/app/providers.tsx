@@ -1,9 +1,9 @@
 import { SerwistProvider } from '@serwist/turbopack/react';
 
+import { AppLockWatcher } from '@/features/app-lock/AppLockWatcher';
 import { FaroRouteTracker } from '@/lib/providers/FaroRouteTracker';
 import { QueryProvider } from '@/lib/providers/QueryProvider';
 import { ThemeProvider } from '@/lib/providers/ThemeProvider';
-import { AppLockWatcher } from '@/features/app-lock/AppLockWatcher';
 
 const isDev = process.env.NODE_ENV === 'development';
 

@@ -1,9 +1,8 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
 
-// Shared by the Legacy and Dinero Tailwind configs: dark-mode strategy, hover guard and the
-// plugins/variants both UIs use. Theme and content live in tailwind.legacy.config.ts and
-// tailwind.ds.config.ts so each root layout ships only its own CSS.
+// Shared by the Tailwind configs: dark-mode strategy, hover guard and the plugins/variants.
+// Theme and content live in tailwind.ds.config.ts.
 const shared: Partial<Config> = {
   darkMode: ['class'],
   future: {
