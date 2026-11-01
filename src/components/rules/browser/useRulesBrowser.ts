@@ -8,10 +8,10 @@ import { toast } from 'sonner';
 import { isValidMcc } from '@/components/forms/MccInput';
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
-import type { Category } from '@/lib/categories.types';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import { keys } from '@/lib/query/keys';
 import type { CategoryRule, MatchType, PagedRules } from '@/lib/rules.types';
+import type { Tag } from '@/lib/tags.types';
 import { toastError } from '@/lib/toastError';
 
 import { DEFAULT_RULE_FILTERS, type RuleFilters,RULES_PAGE_SIZE } from './constants';
@@ -53,10 +53,10 @@ export function useRulesBrowser() {
 
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
-  const [matchType, setMatchType] = useState<MatchType>('MERCHANT_KEY');
+  const [matchType, setMatchType] = useState<MatchType>('CONTAINS');
   const [displayName, setDisplayName] = useState('');
   const [mcc, setMcc] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Tag[]>([]);
 
   // Debounce, then reset to page 0 — both inside the timeout callback (an
   // async/event context, not the effect's own synchronous body), so this
@@ -98,16 +98,16 @@ export function useRulesBrowser() {
     placeholderData: keepPreviousData,
   });
 
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [] } = useTags();
 
   const rules = rulesQuery.data ?? EMPTY_RULES_PAGE;
 
   const createCategoryMutation = useMutation({
-    mutationFn: (name: string) => api.POST('/api/v1/categories', { body: { name } }).then((r) => r.data!),
+    mutationFn: (name: string) => api.POST('/api/v1/tags', { body: { name } }).then((r) => r.data!),
     onSuccess: (category) => {
       setSelectedCategories((prev) => [...prev, category]);
       toast.success('Category created!');
-      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+      queryClient.invalidateQueries({ queryKey: keys.tags.all });
     },
     onError: (error) => toastError(error, 'Failed to create category'),
   });
@@ -153,7 +153,8 @@ export function useRulesBrowser() {
   });
 
   const verifyRuleMutation = useMutation({
-    mutationFn: (id: string) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } }).then((r) => r.data),
+    // Legacy: rule verification was removed from the server.
+    mutationFn: (id: string) => Promise.reject(new Error(`Rule ${id} verification was removed.`)),
     onSuccess: (_data, id) => {
       toast.success('Rule verified — matching transactions cleared from review');
       selection.deselect(id);
@@ -202,7 +203,7 @@ export function useRulesBrowser() {
 
   const openCreateDialog = () => {
     setMerchantKey('');
-    setMatchType('MERCHANT_KEY');
+    setMatchType('CONTAINS');
     setDisplayName('');
     setMcc('');
     setSelectedCategories([]);
@@ -212,10 +213,11 @@ export function useRulesBrowser() {
   const openEditDialog = (rule: CategoryRule) => {
     setEditingRule(rule);
     setMerchantKey(rule.merchantKey);
-    setMatchType(rule.matchType || 'MERCHANT_KEY');
+    setMatchType(rule.matchType || 'CONTAINS');
     setDisplayName(rule.displayName || '');
     setMcc(rule.mcc || '');
-    setSelectedCategories(rule.categories);
+    // Legacy: a rule has one category now, which this old form cannot pick.
+    setSelectedCategories([]);
   };
 
   function closeDialogs() {
@@ -242,7 +244,8 @@ export function useRulesBrowser() {
       return;
     }
 
-    const categoryIds = selectedCategories.map((c) => c.id);
+    // Legacy: the old multi-category form cannot pick the single category a rule needs now.
+    const categoryKey = editingRule?.category.key ?? '';
 
     if (editingRule) {
       updateRuleMutation.mutate({
@@ -251,7 +254,7 @@ export function useRulesBrowser() {
           merchantKey: merchantKey.trim(),
           matchType,
           displayName: displayName.trim() || undefined,
-          categoryIds,
+          categoryKey,
           mcc: mcc.trim() === '' ? '' : mcc.trim(),
         },
       });
@@ -260,7 +263,7 @@ export function useRulesBrowser() {
         merchantKey: merchantKey.trim(),
         matchType,
         displayName: displayName.trim() || undefined,
-        categoryIds,
+        categoryKey,
         mcc: mcc.trim() || undefined,
       });
     }
@@ -315,7 +318,7 @@ export function useRulesBrowser() {
     handleDeleteRule,
     handleVerifyRule,
     selectedIds: selection.selectedIds,
-    pageSelectableIds: rules.content.filter((r) => !r.verified).map((r) => r.id),
+    pageSelectableIds: [] as string[],
     isBulkVerifying: selection.isBulkVerifying,
     handleToggleSelect: selection.toggleSelect,
     handleSelectPage: selection.selectPage,

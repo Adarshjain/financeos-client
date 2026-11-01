@@ -6,7 +6,6 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import { loadAccount, loadAccounts, loadBalanceSeries } from '@/lib/query/actions/accountActions';
 import { loadBill, loadBills, markBillPaid, unmarkBillPaid, updateBillDetails } from '@/lib/query/actions/billActions';
-import { loadCategories } from '@/lib/query/actions/categoryActions';
 import { loadOutstandingCounterparties, searchCounterparties, suggestCounterparty } from '@/lib/query/actions/counterpartyActions';
 import {
   loadBuiltins,
@@ -30,6 +29,7 @@ import {
 } from '@/lib/query/actions/notificationActions';
 import { loadUpcomingObligations } from '@/lib/query/actions/obligationActions';
 import { loadReportsList } from '@/lib/query/actions/reportActions';
+import { loadTags } from '@/lib/query/actions/tagActions';
 
 beforeEach(() => vi.resetAllMocks());
 
@@ -115,7 +115,7 @@ describe('dashboards', () => {
 describe('small reads', () => {
   it('emergency fund, categories, reports, inbox', async () => {
     api.GET.mockResolvedValue({ data: undefined });
-    expect(await loadCategories()).toEqual(ok([]));
+    expect(await loadTags()).toEqual(ok([]));
     expect(await loadReportsList()).toEqual(ok([]));
     api.GET.mockResolvedValue({ data: { x: 1 } });
     expect(await loadEmergencyFund()).toEqual(ok({ x: 1 }));

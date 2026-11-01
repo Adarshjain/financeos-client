@@ -11,9 +11,9 @@ vi.mock('./useApproveTransactions', () => ({
 import { ApproveDialog } from './ApproveDialog';
 
 const txns = [
-  { id: 'a', reviewReasons: ['CATEGORY_UNVERIFIED' as const, 'UNRECONCILED' as const] },
-  { id: 'b', reviewReasons: ['CATEGORY_UNVERIFIED' as const] },
-  { id: 'c', reviewReasons: ['CATEGORY_UNVERIFIED' as const] },
+  { id: 'a', reviewReasons: ['DATE_CORRECTED' as const, 'UNRECONCILED' as const] },
+  { id: 'b', reviewReasons: ['DATE_CORRECTED' as const] },
+  { id: 'c', reviewReasons: ['DATE_CORRECTED' as const] },
 ];
 
 const box = (name: RegExp) => screen.getByRole('checkbox', { name });
@@ -27,13 +27,12 @@ describe('ApproveDialog', () => {
   it('shows title, a row per reason with n of N, ticks the present ones', () => {
     render(<ApproveDialog transactions={txns} open onOpenChange={() => {}} />);
     expect(screen.getByText('Approve 3 transactions')).toBeTruthy();
-    expect(screen.getByText('keep the category as set · 3 of 3')).toBeTruthy();
+    expect(screen.getByText('accept the statement date · 3 of 3')).toBeTruthy();
     expect(screen.getByText('no statement match needed · 1 of 3')).toBeTruthy();
     expect(screen.getByText('keep both · 0 of 3')).toBeTruthy();
-    expect(box(/Category unverified/).getAttribute('data-state')).toBe('checked');
+    expect(box(/Date corrected/).getAttribute('data-state')).toBe('checked');
     expect(box(/Unreconciled/).getAttribute('data-state')).toBe('checked');
     expect(box(/Duplicate/).getAttribute('data-state')).toBe('unchecked');
-    expect(box(/Date corrected/).getAttribute('data-state')).toBe('unchecked');
   });
 
   it('approves with the ticked reasons, then closes and calls onDone', async () => {
@@ -44,13 +43,13 @@ describe('ApproveDialog', () => {
     fireEvent.click(box(/Unreconciled/));
     fireEvent.click(screen.getByRole('button', { name: 'Approve 3' }));
     await waitFor(() => expect(onDone).toHaveBeenCalled());
-    expect(approve).toHaveBeenCalledWith(txns, ['CATEGORY_UNVERIFIED']);
+    expect(approve).toHaveBeenCalledWith(txns, ['DATE_CORRECTED']);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('disables Approve when nothing is ticked', () => {
     render(<ApproveDialog transactions={txns} open onOpenChange={() => {}} />);
-    fireEvent.click(box(/Category unverified/));
+    fireEvent.click(box(/Date corrected/));
     fireEvent.click(box(/Unreconciled/));
     expect((screen.getByRole('button', { name: 'Approve 3' }) as HTMLButtonElement).disabled).toBe(true);
   });

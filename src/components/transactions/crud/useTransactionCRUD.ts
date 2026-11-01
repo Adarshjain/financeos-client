@@ -13,14 +13,14 @@ import {
   getSelectableAccounts,
   parseNonNegativeAmount,
 } from '@/features/transactions/form/transactionCrudModel';
-import { useCategorySuggestions } from '@/features/transactions/form/useCategorySuggestions';
+import { useTagSelection } from '@/features/transactions/form/useTagSelection';
 import { useTransactionMutations } from '@/features/transactions/form/useTransactionMutations';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
-import type { Category } from '@/lib/categories.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import { keys } from '@/lib/query/keys';
+import type { Tag } from '@/lib/tags.types';
 import { toastError } from '@/lib/toastError';
 import {
   ReviewType,
@@ -31,7 +31,7 @@ import { AccountType } from '@/lib/types';
 import { parseCalendarDate } from '@/lib/utils';
 
 /** Stable fallback while categories load: a fresh `[]` per render re-fires the category sync effect forever. */
-const NO_CATEGORIES: Category[] = [];
+const NO_CATEGORIES: Tag[] = [];
 
 interface UseTransactionCRUDProps {
   transaction?: Transaction;
@@ -44,7 +44,7 @@ export function useTransactionCRUD({
 }: UseTransactionCRUDProps) {
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts();
-  const { data: categories = NO_CATEGORIES } = useCategories();
+  const { data: categories = NO_CATEGORIES } = useTags();
   const isUpdateMode = !!transaction;
 
   const [amount, setAmount] = useState<string>(
@@ -54,20 +54,19 @@ export function useTransactionCRUD({
     transaction ? parseCalendarDate(transaction.date) : new Date()
   );
   const [mcc, setMcc] = useState<string>(transaction?.mcc ?? '');
+  // Legacy form: its Categories field now edits tags, and it no longer suggests a category.
   const {
-    localCategories,
-    selectedCategories,
-    setSelectedCategories,
-    creatingCategory,
-    suggestingCategories,
-    createCategory,
-    handleDescriptionBlur,
-  } = useCategorySuggestions({
-    categories,
-    initialSelectedCategories: transaction?.categories ?? [],
-    isUpdateMode,
-    onMccSuggested: (suggested) => setMcc((prev) => (!prev ? suggested : prev)),
+    localTags: localCategories,
+    selectedTags: selectedCategories,
+    setSelectedTags: setSelectedCategories,
+    creatingTag: creatingCategory,
+    createTag: createCategory,
+  } = useTagSelection({
+    tags: categories,
+    initialSelectedTags: transaction?.tags ?? [],
   });
+  const suggestingCategories = false;
+  const handleDescriptionBlur = () => undefined;
 
   const [accountId, setAccountId] = useState<string>(
     transaction?.accountId ?? ''
@@ -185,7 +184,7 @@ export function useTransactionCRUD({
         supportsCards,
         description: form.description.value,
         amount,
-        categoryIds: selectedCategories.map((c) => c.id),
+        tagIds: selectedCategories.map((c) => c.id),
         date,
         isExcluded,
         isMonitored,

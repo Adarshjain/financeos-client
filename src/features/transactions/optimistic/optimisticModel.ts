@@ -35,7 +35,7 @@ export function patchChange(id: string, patch: Partial<Transaction>): Optimistic
   return { ids: [id], change: (t) => ({ ...t, ...patch }) };
 }
 
-function fullPatch(values: TransactionFormValues, categories: Transaction['categories'], original: Transaction, supportsCards: boolean) {
+function fullPatch(values: TransactionFormValues, tags: Transaction['tags'], original: Transaction, supportsCards: boolean) {
   return {
     amount: signedAmount(values),
     date: values.date === original.date.slice(0, 10) ? original.date : values.date,
@@ -43,7 +43,7 @@ function fullPatch(values: TransactionFormValues, categories: Transaction['categ
     cardId: supportsCards && values.cardId !== NO_CARD ? values.cardId : null,
     description: values.description,
     mcc: values.mcc.trim() || undefined,
-    categories,
+    tags,
     reviewType: values.reviewType,
     reviewReasons: values.reviewType === 'NEEDS_REVIEW' ? values.reviewReasons : [],
     isTransactionExcluded: values.excluded,
@@ -62,16 +62,16 @@ function fullPatch(values: TransactionFormValues, categories: Transaction['categ
  */
 export function patchFromValues(
   values: TransactionFormValues,
-  categories: Transaction['categories'],
+  tags: Transaction['tags'],
   original: Transaction,
   supportsCards: boolean,
 ): Partial<Transaction> {
-  const next = fullPatch(values, categories, original, supportsCards);
-  const was = { ...fullPatch(valuesFromTransaction(original), original.categories ?? [], original, supportsCards), cardId: original.cardId ?? null };
+  const next = fullPatch(values, tags, original, supportsCards);
+  const was = { ...fullPatch(valuesFromTransaction(original), original.tags ?? [], original, supportsCards), cardId: original.cardId ?? null };
   const out: Record<string, unknown> = {};
   for (const k of Object.keys(next) as (keyof typeof next)[]) {
-    const same = k === 'categories'
-      ? (next.categories ?? []).map((c) => c.id).join() === (was.categories ?? []).map((c) => c.id).join()
+    const same = k === 'tags'
+      ? (next.tags ?? []).map((c) => c.id).join() === (was.tags ?? []).map((c) => c.id).join()
       : JSON.stringify(next[k]) === JSON.stringify(was[k]);
     if (!same) out[k] = next[k];
   }

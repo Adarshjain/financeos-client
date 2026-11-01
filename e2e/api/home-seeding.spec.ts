@@ -133,12 +133,12 @@ test.describe('Home dashboard seeding (@api)', () => {
     const food = await createCategory(api, 'Spend Food');
     const fun = await createCategory(api, 'Spend Fun');
 
-    await createTransaction(api, bank.id, { amount: -1200, description: 'Groceries', categoryIds: [food.id] });
-    await createTransaction(api, bank.id, { amount: -300, description: 'Food again', categoryIds: [food.id] });
-    await createTransaction(api, bank.id, { amount: -700, description: 'Movie', categoryIds: [fun.id] });
-    await createTransaction(api, bank.id, { amount: -9999, description: 'Excluded spend', categoryIds: [fun.id], isTransactionExcluded: true });
-    await createTransaction(api, bank.id, { amount: 5000, description: 'Salary', categoryIds: [fun.id] });
-    const payDebit = await createTransaction(api, bank.id, { amount: -4000, description: 'Card bill pay', categoryIds: [fun.id] });
+    await createTransaction(api, bank.id, { amount: -1200, description: 'Groceries', tagIds: [food.id] });
+    await createTransaction(api, bank.id, { amount: -300, description: 'Food again', tagIds: [food.id] });
+    await createTransaction(api, bank.id, { amount: -700, description: 'Movie', tagIds: [fun.id] });
+    await createTransaction(api, bank.id, { amount: -9999, description: 'Excluded spend', tagIds: [fun.id], isTransactionExcluded: true });
+    await createTransaction(api, bank.id, { amount: 5000, description: 'Salary', tagIds: [fun.id] });
+    const payDebit = await createTransaction(api, bank.id, { amount: -4000, description: 'Card bill pay', tagIds: [fun.id] });
     const payCredit = await createTransaction(api, card.id, { amount: 4000, description: 'Payment received' });
     expectStatus(
       await api.POST('/api/v1/transaction-links', {

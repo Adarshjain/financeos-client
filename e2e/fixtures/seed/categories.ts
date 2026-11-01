@@ -2,8 +2,8 @@ import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
 import { expectStatus } from '../api';
 
-export type CategoryResponse = components['schemas']['CategoryResponse'];
-export type CategoryRequest = components['schemas']['CategoryRequest'];
+export type CategoryResponse = components['schemas']['TagResponse'];
+export type CategoryRequest = components['schemas']['TagRequest'];
 export type RuleResponse = components['schemas']['RuleResponse'];
 export type CreateRuleRequest = components['schemas']['CreateRuleRequest'];
 export type UpdateRuleRequest = components['schemas']['UpdateRuleRequest'];
@@ -17,7 +17,7 @@ export async function createCategory(
 ): Promise<CategoryResponse> {
   categoryCounter += 1;
   const catName = name ?? `Category ${categoryCounter}`;
-  const res = await api.POST('/api/v1/categories', {
+  const res = await api.POST('/api/v1/tags', {
     body: { name: catName },
   });
 
@@ -30,7 +30,9 @@ export async function createCategory(
 
 export interface CreateRuleOptions {
   merchantKey: string;
-  categoryIds: string[];
+  /** A key of the fixed category list; food by default. */
+  categoryKey?: string;
+  subcategoryKey?: string;
   matchType?: string;
   displayName?: string;
   mcc?: string;
@@ -43,8 +45,9 @@ export async function createRule(
   ruleCounter += 1;
   const body: CreateRuleRequest = {
     merchantKey: options.merchantKey,
-    categoryIds: options.categoryIds,
-    matchType: options.matchType ?? 'MERCHANT_KEY',
+    categoryKey: options.categoryKey ?? 'food',
+    subcategoryKey: options.subcategoryKey,
+    matchType: options.matchType ?? 'CONTAINS',
     displayName: options.displayName ?? `Rule ${ruleCounter}`,
     mcc: options.mcc,
   };

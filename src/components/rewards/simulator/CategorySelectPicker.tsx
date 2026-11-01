@@ -3,10 +3,10 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Category } from '@/lib/categories.types';
+import { Tag } from '@/lib/tags.types';
 
 interface CategorySelectPickerProps {
-  categories: Category[];
+  categories: Tag[];
   selectedCategoryIds: string[];
   setSelectedCategoryIds: React.Dispatch<React.SetStateAction<string[]>>;
   categorySearchQuery: string;

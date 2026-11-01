@@ -10,7 +10,6 @@ import {
 describe('transactions catalog (CD-1, CD-5)', () => {
   it('defines metadata for review reasons', () => {
     expect(REVIEW_REASON_META.UNRECONCILED.label).toBe('Unreconciled');
-    expect(REVIEW_REASON_META.CATEGORY_UNVERIFIED.label).toBe('Category unverified');
     expect(REVIEW_REASON_META.DUPLICATE_SUSPECT.label).toBe('Possible duplicate');
     expect(reviewReasonLabel('UNRECONCILED')).toBe('Unreconciled');
     expect(reviewReasonLabel('UNKNOWN_REASON' as any)).toBe('UNKNOWN_REASON');

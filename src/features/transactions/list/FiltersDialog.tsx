@@ -14,9 +14,9 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
-import type { Category } from '@/lib/categories.types';
 import { pluralize } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
+import type { Tag } from '@/lib/tags.types';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import {
@@ -79,7 +79,7 @@ export interface FiltersDialogProps {
   today: string;
   /** Null when they could not be loaded: their fields are then off. */
   accounts: Account[] | null;
-  categories: Category[] | null;
+  categories: Tag[] | null;
   /** "Show": the query to open. */
   onApply: (query: TransactionsQuery) => void;
   onClose: () => void;

@@ -274,8 +274,8 @@ export function monthBefore(month: { year: number; month: number }): { from: str
 
 export interface SpendMonthsDataset {
   account: components['schemas']['BankAccountResponse'];
-  food: components['schemas']['CategoryResponse'];
-  travel: components['schemas']['CategoryResponse'];
+  food: components['schemas']['TagResponse'];
+  travel: components['schemas']['TagResponse'];
   current: { from: string; to: string; year: number; month: number };
   previous: { from: string; to: string; year: number; month: number };
   /** Transaction ids by description. */
@@ -300,8 +300,8 @@ export async function seedSpendMonths(api: ApiClient): Promise<SpendMonthsDatase
   const food = await createCategory(api, `VUD Food ${tag}`);
   const travel = await createCategory(api, `VUD Travel ${tag}`);
   const ids: Record<string, string> = {};
-  const add = async (description: string, amount: number, date: string, categoryIds: string[] = []) => {
-    const t = await createTransaction(api, account.id, { amount, date, description, categoryIds });
+  const add = async (description: string, amount: number, date: string, tagIds: string[] = []) => {
+    const t = await createTransaction(api, account.id, { amount, date, description, tagIds });
     ids[description] = t.id;
   };
   await add('Swiggy', -700, dayOf(current, 3), [food.id]);

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/apiClient', () => ({
   accountsApi: { list: vi.fn() },
-  categoriesApi: { list: vi.fn() },
+  tagsApi: { list: vi.fn() },
   rewardsApi: {
     listRules: vi.fn().mockResolvedValue([]),
     listCapBuckets: vi.fn().mockResolvedValue([]),
@@ -12,7 +12,7 @@ vi.mock('@/lib/apiClient', () => ({
 }));
 vi.mock('@/components/rewards/RewardRulesManager', () => ({ default: () => null }));
 
-import { accountsApi, categoriesApi } from '@/lib/apiClient';
+import { accountsApi, tagsApi } from '@/lib/apiClient';
 
 import RewardRulesPage from '../page';
 
@@ -38,7 +38,7 @@ function findManagerId(el: any): string | undefined {
 
 beforeEach(() => {
   vi.mocked(accountsApi.list).mockResolvedValue(accounts as never);
-  vi.mocked(categoriesApi.list).mockResolvedValue([] as never);
+  vi.mocked(tagsApi.list).mockResolvedValue([] as never);
 });
 
 describe('/rewards/rules ?account= preselect', () => {

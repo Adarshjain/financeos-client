@@ -43,7 +43,7 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       [fuel.id, 'Breakdown fuel one', -150],
       [fuel.id, 'Breakdown fuel two', -50],
     ] as const) {
-      await createTransaction(api, account.id, { amount, description, categoryIds: [categoryId] });
+      await createTransaction(api, account.id, { amount, description, tagIds: [categoryId] });
     }
 
     await page.goto('/reports/new');
@@ -275,8 +275,8 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       [`Bar Food ${tag}`, `Bar food row ${tag}`],
       [`Bar Fuel ${tag}`, `Bar fuel row ${tag}`],
     ]);
-    await createTransaction(api, account.id, { amount: -300, description: `Bar food row ${tag}`, categoryIds: [food.id] });
-    await createTransaction(api, account.id, { amount: -100, description: `Bar fuel row ${tag}`, categoryIds: [fuel.id] });
+    await createTransaction(api, account.id, { amount: -300, description: `Bar food row ${tag}`, tagIds: [food.id] });
+    await createTransaction(api, account.id, { amount: -100, description: `Bar fuel row ${tag}`, tagIds: [fuel.id] });
     const report = await createReport(api, {
       name: `Ds bars ${tag}`,
       type: 'CHART',

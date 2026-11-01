@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
+import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -34,13 +35,15 @@ vi.mock('./useTransactionMutations', () => ({
 
 let accountList: Account[] = [];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accountList }) }));
-const categories = vi.hoisted(() => [
-  { id: 'c1', name: 'Groceries' },
-  { id: 'c2', name: 'Transport' },
+const tags = vi.hoisted(() => [
+  { id: 't1', name: 'Work' },
+  { id: 't2', name: 'Goa trip' },
 ]);
-// Stable, like the query's own data: a fresh array per render would re-fire the category sync effect forever.
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
-vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(async () => ({ data: undefined })), PUT: vi.fn(), DELETE: vi.fn() } }));
+// Stable, like the query's own data: a fresh array per render would re-fire the tag sync effect forever.
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: tags }) }));
+vi.mock('@/lib/query/hooks/useCategoryList', () => ({ useCategoryList: () => ({ list: CATEGORY_LIST_FIXTURE }) }));
+const http = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(async () => ({ data: undefined })), PUT: vi.fn(), DELETE: vi.fn() }));
+vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
 const bank = { id: 'b1', type: AccountType.BANK_ACCOUNT, name: 'HDFC Savings', balance: 0, cardholders: [] } as unknown as Account;
 const card = {
@@ -61,7 +64,9 @@ const stored = (over: Partial<Transaction> = {}): Transaction =>
     sourcedDescription: 'UPI/DR/4278/BIGBASKET',
     source: 'gmail_transaction_alert',
     reviewType: 'MANUALLY_REVIEWED',
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
+    subcategory: { key: 'groceries.supermarket', name: 'Supermarket' },
+    tags: [{ id: 't1', name: 'Work' }],
     createdAt: '',
     ...over,
   }) as Transaction;
@@ -89,8 +94,8 @@ describe('Add transaction', () => {
     expect(screen.getByRole('radio', { name: 'Debit' })).toBeChecked();
     expect(amount()).toHaveAttribute('placeholder', '0.00');
     expect(screen.getByLabelText('Date')).toHaveValue('13/10/26');
-    expect(screen.getByText('Rules and the categoriser suggest a category as you type')).toBeInTheDocument();
-    for (const label of ['Account', 'Description', 'Categories', 'MCC code', 'Settlement date', 'Channel', 'Instant discount', 'Convenience fee']) {
+    expect(screen.getByText('Your rules and the built-in engine suggest a category as you type')).toBeInTheDocument();
+    for (const label of ['Account', 'Description', 'Category', 'Tags', 'MCC code', 'Settlement date', 'Channel', 'Instant discount', 'Convenience fee']) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
     expect(screen.getByText('Exclude transaction')).toBeInTheDocument();
@@ -221,11 +226,12 @@ describe('Add transaction', () => {
       amount: -250.5,
       date: '2026-10-13',
       description: 'Chai',
-      categoryIds: [],
+      tagIds: [],
       isTransactionExcluded: false,
       isTransactionUnderMonitoring: false,
     });
     expect(create.mock.calls[0][0]).not.toHaveProperty('reviewType');
+    expect(create.mock.calls[0][0]).not.toHaveProperty('categoryKey');
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Transaction saved');
     expect(router.refresh).toHaveBeenCalled();
@@ -251,11 +257,15 @@ describe('Add transaction', () => {
     expect(create.mock.calls[0][0]).toMatchObject({ accountId: 'cc1', cardId: 'k1' });
   });
 
-  it('sends the picked categories, reward details and flags', async () => {
+  it('sends the picked category and sub-category, the tags, reward details and flags', async () => {
     setup({ defaultAccountId: 'b1' });
     fireEvent.change(amount(), { target: { value: '10' } });
-    await user.click(screen.getByRole('combobox', { name: /^Categories/ }));
-    await user.click(screen.getByRole('option', { name: 'Transport' }));
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    await user.click(await screen.findByRole('button', { name: 'Transport' }));
+    await user.click(await screen.findByText('Cabs'));
+    expect(screen.getByRole('combobox', { name: /^Category/ })).toHaveTextContent('Transport · Cabs');
+    await user.click(screen.getByRole('combobox', { name: /^Tags/ }));
+    await user.click(screen.getByRole('option', { name: 'Goa trip' }));
     await user.click(screen.getByRole('button', { name: /Done/ }));
     fireEvent.change(screen.getByRole('textbox', { name: /^Instant discount/ }), { target: { value: '12.5' } });
     await user.click(screen.getByLabelText('Monitor transaction'));
@@ -263,11 +273,62 @@ describe('Add transaction', () => {
     save();
     await waitFor(() => expect(create).toHaveBeenCalled());
     expect(create.mock.calls[0][0]).toMatchObject({
-      categoryIds: ['c2'],
+      categoryKey: 'transport',
+      subcategoryKey: 'transport.cabs',
+      tagIds: ['t2'],
       isTransactionUnderMonitoring: true,
       monitoringReason: 'refund?',
       rewardDetails: { instantDiscount: 12.5 },
     });
+  });
+
+  it('sends a category alone when Others is picked', async () => {
+    setup({ defaultAccountId: 'b1' });
+    fireEvent.change(amount(), { target: { value: '10' } });
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    await user.click(await screen.findByRole('button', { name: 'Gifts' }));
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toMatchObject({ categoryKey: 'gifts' });
+    expect(create.mock.calls[0][0]).not.toHaveProperty('subcategoryKey');
+  });
+
+  it('offers a credit the money-in categories', async () => {
+    setup({ defaultAccountId: 'b1' });
+    await user.click(screen.getByRole('radio', { name: 'Credit' }));
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    expect(await screen.findByRole('button', { name: 'Salary' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Food' })).toBeNull();
+  });
+
+  it('fills the Category field from the suggestion when the description loses focus, and the user can still change it', async () => {
+    http.POST.mockImplementation((async (url: string) =>
+      url === '/api/v1/categorize'
+        ? { data: { categoryKey: 'food', subcategoryKey: 'food.delivery', source: 'RULE' } }
+        : { data: undefined }) as never);
+    setup({ defaultAccountId: 'b1' });
+    const description = screen.getByRole('textbox', { name: /^Description/ });
+    fireEvent.change(description, { target: { value: 'Swiggy order' } });
+    fireEvent.blur(description);
+    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Category/ })).toHaveTextContent('Food · Delivery'));
+    expect(http.POST).toHaveBeenCalledWith('/api/v1/categorize', { body: { description: 'Swiggy order' } });
+    fireEvent.change(amount(), { target: { value: '10' } });
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0][0]).toMatchObject({ categoryKey: 'food', subcategoryKey: 'food.delivery' });
+  });
+
+  it('does not overwrite a category the user already picked with a suggestion', async () => {
+    http.POST.mockImplementation((async (url: string) =>
+      url === '/api/v1/categorize' ? { data: { categoryKey: 'food', subcategoryKey: null } } : { data: undefined }) as never);
+    setup({ defaultAccountId: 'b1' });
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    await user.click(await screen.findByRole('button', { name: 'Gifts' }));
+    const description = screen.getByRole('textbox', { name: /^Description/ });
+    fireEvent.change(description, { target: { value: 'Swiggy order' } });
+    fireEvent.blur(description);
+    await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/categorize', expect.anything()));
+    expect(screen.getByRole('combobox', { name: /^Category/ })).toHaveTextContent('Gifts');
   });
 
   it('keeps the dialog open and toasts the server message when saving fails', async () => {
@@ -325,7 +386,8 @@ describe('Edit transaction', () => {
     expect(screen.getByText('UPI/DR/4278/BIGBASKET')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^MCC code/ })).toHaveValue('5411');
     expect(screen.getByRole('combobox', { name: /^Account/ })).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: /^Categories/ })).toHaveTextContent('Groceries');
+    expect(screen.getByRole('combobox', { name: /^Category/ })).toHaveTextContent('Groceries · Supermarket');
+    expect(screen.getByRole('combobox', { name: /^Tags/ })).toHaveTextContent('Work');
     expect(screen.getByRole('combobox', { name: /^Review status/ })).toHaveTextContent('Manually reviewed');
     expect(screen.getByRole('button', { name: 'Save transaction' })).toBeInTheDocument();
   });
@@ -351,10 +413,30 @@ describe('Edit transaction', () => {
       date: '2026-10-12',
       source: 'gmail_transaction_alert',
       reviewType: 'MANUALLY_REVIEWED',
-      categoryIds: ['c1'],
+      tagIds: ['t1'],
     });
+    // An edit never re-categorises: the stored category is not sent.
+    expect(update.mock.calls[0][0].body).not.toHaveProperty('categoryKey');
     expect(update.mock.calls[0][0].body).not.toHaveProperty('reviewReasons');
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it('sends the category on an edit only once the user changed it', async () => {
+    setup({ transaction: stored() });
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    await user.click(await screen.findByRole('button', { name: 'Groceries' }));
+    await user.click(await screen.findByText('Dairy'));
+    save('Save transaction');
+    await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    expect(update.mock.calls[0][0].body).toMatchObject({ categoryKey: 'groceries', subcategoryKey: 'groceries.dairy' });
+  });
+
+  it('opens the picker on the stored pick, with its sub-category ticked', async () => {
+    setup({ transaction: stored() });
+    await user.click(screen.getByRole('combobox', { name: /^Category/ }));
+    await user.click(await screen.findByRole('button', { name: 'Groceries' }));
+    const row = (await screen.findByText('Supermarket')).closest('[role="button"]') as HTMLElement;
+    expect(row.querySelector('svg')).toBeInTheDocument();
   });
 
   it('disables "Auto reviewed" with a reason', async () => {
@@ -389,12 +471,12 @@ describe('Edit transaction', () => {
     });
   });
 
-  it('offers the four server reasons, and shows the stored reasons ticked', async () => {
+  it('offers the three server reasons, and shows the stored reasons ticked', async () => {
     setup({ transaction: stored({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED'] }) });
     expect(screen.getByRole('combobox', { name: /^Why it needs review/ })).toHaveTextContent('Unreconciled');
     await user.click(screen.getByRole('combobox', { name: /^Why it needs review/ }));
     expect(screen.queryByRole('option', { name: 'Other' })).toBeNull();
-    expect(screen.getAllByRole('option')).toHaveLength(4);
+    expect(screen.getAllByRole('option')).toHaveLength(3);
   });
 
   it('leaves the reasons out when the review status moves away from Needs review', async () => {

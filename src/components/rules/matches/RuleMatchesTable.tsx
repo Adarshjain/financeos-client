@@ -116,7 +116,7 @@ export function RuleMatchesTable({
                     {formatCurrency(txn.amount)}
                   </td>
                   <td className="p-2 align-top">
-                    <MatchCategoryBadges categories={txn.categories} />
+                    <MatchCategoryBadges categories={txn.category ? [{ id: txn.category.key, name: txn.category.name }] : []} />
                   </td>
                 </tr>
               );

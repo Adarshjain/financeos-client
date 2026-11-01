@@ -19,7 +19,6 @@ import {
 } from '@/features/rewards/rules/form/constants';
 import { useRewardRuleForm } from '@/features/rewards/rules/form/useRewardRuleForm';
 import type { Cardholder } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import { todayInAppZone } from '@/lib/date-range';
 import type {
   AccrualType,
@@ -37,6 +36,7 @@ import type {
   RewardType,
   RuleStacking,
 } from '@/lib/rewards.types';
+import type { Tag } from '@/lib/tags.types';
 import type { TransactionChannel } from '@/lib/transaction.types';
 import { parseCalendarDate, sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
 
@@ -52,7 +52,7 @@ export interface RuleDialogProps {
   rule?: RewardRule;
   /** A new rule prefilled from this one (Clone, End & clone). */
   cloneFrom?: RewardRule;
-  categories: Category[];
+  categories: Tag[];
   capBuckets: RewardCapBucket[];
   /** The buckets are still loading: don't claim there are none yet. */
   capBucketsLoading?: boolean;

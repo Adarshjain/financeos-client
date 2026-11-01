@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Category } from '@/lib/categories.types';
 import { CategoryRule, MatchType } from '@/lib/rules.types';
+import { Tag } from '@/lib/tags.types';
 
 import { MATCH_TYPE_META } from './RuleCard';
 import { RulePatternPreview } from './RulePatternPreview';
@@ -41,9 +41,9 @@ interface RuleFormDialogProps {
   setDisplayName: (n: string) => void;
   mcc: string;
   setMcc: (m: string) => void;
-  categories: Category[];
-  selectedCategories: Category[];
-  setSelectedCategories: (c: Category[]) => void;
+  categories: Tag[];
+  selectedCategories: Tag[];
+  setSelectedCategories: (c: Tag[]) => void;
   onCreateCategory: (name: string) => void;
   creatingCategory: boolean;
   formSubmitting: boolean;

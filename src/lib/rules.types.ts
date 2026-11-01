@@ -1,21 +1,16 @@
-import { Category } from '@/lib/categories.types';
+import type { CategoryRef, CategorySource, SubcategoryRef } from '@/lib/categoryList.types';
 import type { Page } from '@/lib/pagination';
 
-/**
- * How a rule's pattern is matched against a transaction's sourced description.
- * MERCHANT_KEY is the legacy normalized-contains match (the only type the LLM
- * auto-generates); the others match the raw description case-insensitively.
- */
-export type MatchType = 'MERCHANT_KEY' | 'CONTAINS' | 'STARTS_WITH' | 'EXACT' | 'REGEX';
+/** How a rule's pattern is matched against a transaction's sourced description (case-insensitive). */
+export type MatchType = 'CONTAINS' | 'STARTS_WITH' | 'EXACT' | 'REGEX';
 
 export interface CategoryRule {
   id: string;
   merchantKey: string;
   matchType: MatchType;
   displayName: string | null;
-  categories: Category[];
-  verified: boolean;
-  source: 'LLM' | 'USER';
+  category: CategoryRef;
+  subcategory?: SubcategoryRef | null;
   appliedCount: number;
   lastAppliedAt: string | null;
   createdAt: string;
@@ -26,7 +21,8 @@ export interface CreateRuleRequest {
   merchantKey: string;
   matchType?: MatchType;
   displayName?: string;
-  categoryIds: string[];
+  categoryKey: string;
+  subcategoryKey?: string | null;
   mcc?: string | null;
 }
 
@@ -34,7 +30,8 @@ export interface UpdateRuleRequest {
   merchantKey?: string;
   matchType?: MatchType;
   displayName?: string;
-  categoryIds?: string[];
+  categoryKey?: string | null;
+  subcategoryKey?: string | null;
   mcc?: string | null;
 }
 
@@ -49,8 +46,9 @@ export interface RuleMatchTransaction {
   amount: string | number;
   type: 'CREDIT' | 'DEBIT' | null;
   sourcedDescription: string;
-  categories: Category[];
-  reviewType: string | null;
+  category?: CategoryRef | null;
+  subcategory?: SubcategoryRef | null;
+  categorySource?: CategorySource | null;
   appliedRuleId: string | null;
   appliedRuleName: string | null;
   /** The account the transaction sits on; `accountBank` is its bank id. */
@@ -72,3 +70,10 @@ export interface ApplyRuleResult {
 
 export type PagedRules = Page<CategoryRule>;
 export type PagedRuleMatches = Page<RuleMatchTransaction>;
+
+/** POST /rules/preview-matches: one page of matches, plus how many match and how many of those the user set by hand. */
+export interface RuleMatchesPreview {
+  matchCount: number;
+  userSetCount: number;
+  matches: PagedRuleMatches;
+}

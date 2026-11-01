@@ -9,6 +9,8 @@ import { Badge } from '@/components/ds/Badge/Badge';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Button } from '@/components/ds/Button/Button';
 import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
+import { Icon } from '@/components/ds/Icon/Icon';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
@@ -21,12 +23,14 @@ import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { appHref } from '@/features/shell/routes';
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { categoryLabel } from '@/lib/categoryList';
 import { formatMoney } from '@/lib/format';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
 
 import { isApprovable } from '../bulk/bulkModel';
+import { sourceLine } from '../category/categoryModel';
 import { deleteTransaction, fetchTransactionLinks } from './transactionDetailApi';
 import {
   balanceAfterWords,
@@ -59,6 +63,8 @@ export interface TransactionDetailPanelProps {
   /** The transaction could not be loaded; the caller may close the panel (it decides from the error's status). */
   onLoadFailed?: (error: unknown) => void;
   onEdit: (transaction: Transaction) => void;
+  /** The Category row was pressed: the page opens the category picker. */
+  onSetCategory?: (transaction: Transaction) => void;
   /** The transaction was deleted; the panel closes and the page refreshes. */
   onDeleted: () => void;
   /** "Link to…" (piece 4); the button is hidden while there is no handler. */
@@ -136,6 +142,7 @@ function DetailContent({
   onOpenTransaction,
   onClose,
   onEdit,
+  onSetCategory,
   onDeleted,
   onLink,
   onReview,
@@ -162,7 +169,7 @@ function DetailContent({
   const bankBalance = bankBalanceWords(t);
   const title = t.description || t.sourcedDescription || '—';
   const raw = t.description && t.sourcedDescription && t.sourcedDescription !== t.description ? t.sourcedDescription : undefined;
-  const categories = t.categories ?? [];
+  const tags = t.tags ?? [];
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteTransaction(t.id),
@@ -275,14 +282,35 @@ function DetailContent({
           {card ? <ListField label="Card" value={card} /> : null}
           <ListField label="Date" value={longDate(t.date)} />
           <ListField
-           
-            label="Categories"
+            label="Category"
             value={
-              categories.length > 0 ? (
+              <span className="flex flex-col items-end gap-space-4">
+                {t.category ? (
+                  <Badge variant="outline" shape="rounded" onClick={onSetCategory ? () => onSetCategory(t) : undefined}>
+                    <span className="inline-flex items-center gap-space-4">
+                      <Icon name={t.category.icon as IconName} size="xs" />
+                      {categoryLabel(t.category.name, t.subcategory?.name)}
+                    </span>
+                  </Badge>
+                ) : onSetCategory ? (
+                  <Button size="sm" variant="secondary" onClick={() => onSetCategory(t)}>
+                    Set category
+                  </Button>
+                ) : null}
+                <Text variant="label" tone="ink-3" as="span">
+                  {sourceLine(t)}
+                </Text>
+              </span>
+            }
+          />
+          <ListField
+            label="Tags"
+            value={
+              tags.length > 0 ? (
                 <span className="flex flex-wrap justify-end gap-space-4">
-                  {categories.map((c) => (
-                    <Badge key={c.id} variant="outline" shape="rounded">
-                      {c.name}
+                  {tags.map((tag) => (
+                    <Badge key={tag.id} variant="outline" shape="rounded">
+                      {tag.name}
                     </Badge>
                   ))}
                 </span>

@@ -67,11 +67,8 @@ export function DsIndexScreen() {
           <ListRow asChild title="Import" subtitle="/transactions/import" chevron>
             <Link href="/transactions/import" />
           </ListRow>
-          <ListRow asChild title="Rules" subtitle="/transactions/rules" chevron>
+          <ListRow asChild title="Tags" subtitle="/transactions/rules" chevron>
             <Link href="/transactions/rules" />
-          </ListRow>
-          <ListRow asChild title="Categories" subtitle="/transactions/categories" chevron>
-            <Link href="/transactions/categories" />
           </ListRow>
           <ListRow asChild title="Lendings" subtitle="/loans/lendings" chevron>
             <Link href="/loans/lendings" />

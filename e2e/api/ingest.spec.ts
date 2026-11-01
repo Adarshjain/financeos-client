@@ -8,14 +8,12 @@ import {
   genBankXlsx,
   genCardPdf,
 } from '../fixtures/gen/statements';
-import { scriptCategorize } from '../fixtures/llm';
 import {
   createBankAccount,
   createBrokerAccount,
   createCreditCard,
   createGenericAccount,
 } from '../fixtures/seed/accounts';
-import { createCategory, createRule } from '../fixtures/seed/categories';
 import {
   getAccountStatements,
   uploadAndIngest,
@@ -341,60 +339,6 @@ test.describe('Statements Ingestion API', () => {
     const zomatoRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/900002/ZOMATO/HDFC');
     expect(swiggyRow?.reviewReasons).toContain('DUPLICATE_SUSPECT');
     expect(zomatoRow?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
-  });
-
-  test('In-job categorization: rule takes precedence and LLM runs for remaining rows', async ({
-    api,
-  }) => {
-    const account = await createBankAccount(api, {
-      name: 'Categorization Ingest Bank',
-      openingBalance: 50000.0,
-    });
-
-    // 1. Create categories
-    const salaryCat = await createCategory(api, 'Salary Income');
-    const shoppingCat = await createCategory(api, 'Online Shopping');
-
-    // 2. Create rule matching SALARY
-    await createRule(api, {
-      merchantKey: 'SALARY',
-      categoryIds: [salaryCat.id],
-      displayName: 'Salary Rule',
-    });
-
-    // 3. Script LLM for AMAZON
-    await scriptCategorize(api, [
-      {
-        index: 0,
-        merchantKey: 'AMAZON PURCHASE',
-        categoryNames: [shoppingCat.name],
-        displayName: 'Amazon Store',
-      },
-    ]);
-
-    const pdfBuffer = await genBankPdf(standardBankSpec);
-    const { result } = await uploadAndIngest(api, account.id, [
-      { filename: 'categorize-statement.pdf', buffer: pdfBuffer },
-    ]);
-
-    expect(result.fileDetails[0].status).toBe('SUCCESS');
-
-    const txns = await searchAll(api, [
-      { field: 'accountId', operator: 'is', value: account.id },
-    ]);
-
-    const salaryTxn = txns.find((t) => (t.sourcedDescription || t.description)?.includes('SALARY'));
-    expect(salaryTxn).toBeDefined();
-    expect(salaryTxn?.categories?.some((c) => c.name === 'Salary Income')).toBe(true);
-    expect(salaryTxn?.reviewType).toBe('AUTO_REVIEWED');
-
-    const amazonTxn = txns.find((t) => (t.sourcedDescription || t.description)?.includes('AMAZON'));
-    expect(amazonTxn).toBeDefined();
-    expect(amazonTxn?.categories?.some((c) => c.name === 'Online Shopping')).toBe(true);
-    expect(amazonTxn?.reviewType).toBe('NEEDS_REVIEW');
-    expect(amazonTxn?.reviewReasons).toContain('CATEGORY_UNVERIFIED');
-
-    await resetLlm(api);
   });
 
   test('Variants: XLSX string, XLSX numeric, XLSX grouped integers, dd-MMM-yyyy, newest-first, ref-column, no-balance', async ({

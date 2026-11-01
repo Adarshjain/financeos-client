@@ -10,6 +10,7 @@ import { cn } from '@/components/ds/cn';
 import { CONCEAL_PLACEHOLDER, useConcealed } from '@/components/ds/Conceal/Conceal';
 import { Highlight } from '@/components/ds/Highlight/Highlight';
 import { Icon } from '@/components/ds/Icon/Icon';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { Reveal } from '@/components/ds/Reveal/Reveal';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { useControllableState } from '@/components/ds/useControllableState';
@@ -56,6 +57,10 @@ export interface TransactionRowProps
 
   /** Categories list: empty array renders dashed unset category chip, 1 renders chip, 2+ renders chip and +n count */
   categories?: string[];
+  /** The sub-category of the first category: its pill reads "Category · Sub". */
+  subCategory?: string;
+  /** The first category's icon, drawn at the start of its pill. */
+  categoryIcon?: IconName;
   /** Label for unset category (e.g. "Set category") passed from page */
   unsetCategoryLabel?: React.ReactNode;
   /** Callback when unset category chip is clicked */
@@ -121,6 +126,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       provenance,
       contextLine,
       categories,
+      subCategory,
+      categoryIcon,
       unsetCategoryLabel,
       onSetCategory,
       onCategoryClick,
@@ -196,7 +203,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     });
 
     // Assemble context line items in canonical order:
-    // account name first, plastic, amber review words, note, blue link/record words, grey provenance
+    // amber review words, note, blue link/record words, grey provenance
+    // The phone meta line (line 2) never holds the account: that sits on line 3 with the category pill.
     const contextElements: React.ReactNode[] = [];
     const desktopContextElements: React.ReactNode[] = [];
 
@@ -209,20 +217,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       contextElements.push(mark(contextLine));
       desktopContextElements.push(mark(contextLine));
     } else {
-      if (account) {
-        contextElements.push(
-          <span key="account" className={accountLogo ? 'inline-flex items-center gap-space-4' : undefined}>
-            {accountLogo}
-            <span>
-            {mark(account)}
-            {plastic && <> {mark(plastic)}</>}
-            </span>
-          </span>,
-        );
-      } else if (plastic) {
-        contextElements.push(<span key="plastic">{mark(plastic)}</span>);
-      }
-
       if (reviewStatus) {
         const el = (
           <StatusWord key="review" tone="warning">
@@ -274,18 +268,14 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       }
     }
 
+    // One pill at every width: icon, "Category · Sub", neutral tone. Unset is a dashed neutral badge.
     const renderCategories = () => {
       if (!categories) return null;
 
       if (categories.length === 0) {
         if (!unsetCategoryLabel) return null;
         const badge = (
-          <Badge
-            variant="dashed"
-            shape="rounded"
-            tone="warning"
-            onClick={onSetCategory}
-          >
+          <Badge variant="dashed" shape="rounded" tone="neutral" onClick={onSetCategory}>
             {unsetCategoryLabel}
           </Badge>
         );
@@ -296,42 +286,34 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         );
       }
 
+      const first = (
+        <>
+          {categoryIcon && <Icon name={categoryIcon} size="xs" className="mr-space-4" />}
+          {mark(subCategory ? `${categories[0]} · ${subCategory}` : categories[0])}
+        </>
+      );
       return (
         <>
           {onCategoryClick ? (
             <span {...nestedControlProps}>
-              <Badge
-                variant="outline"
-                shape="rounded"
-                onClick={() => onCategoryClick(categories[0])}
-              >
-                {mark(categories[0])}
+              <Badge variant="outline" shape="rounded" onClick={() => onCategoryClick(categories[0])}>
+                {first}
               </Badge>
             </span>
           ) : (
-            <Badge
-              variant="outline"
-              shape="rounded"
-            >
-              {mark(categories[0])}
+            <Badge variant="outline" shape="rounded">
+              {first}
             </Badge>
           )}
           {categories.length > 1 && (
             onMoreCategoriesClick ? (
               <span {...nestedControlProps}>
-                <Badge
-                  variant="outline"
-                  shape="rounded"
-                  onClick={onMoreCategoriesClick}
-                >
+                <Badge variant="outline" shape="rounded" onClick={onMoreCategoriesClick}>
                   +{categories.length - 1}
                 </Badge>
               </span>
             ) : (
-              <Badge
-                variant="outline"
-                shape="rounded"
-              >
+              <Badge variant="outline" shape="rounded">
                 +{categories.length - 1}
               </Badge>
             )
@@ -339,40 +321,17 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         </>
       );
     };
-
-    // Phone: categories ride the grey context line as text (first category, then "+n")
-    const phoneCategory = (): React.ReactNode => {
-      if (!categories) return null;
-      const control = (label: React.ReactNode, onClick?: () => void) =>
-        onClick ? (
-          <span {...nestedControlProps}>
-            <Button variant="link" onClick={onClick}>
-              {label}
-            </Button>
+    const categoryPills = renderCategories();
+    const accountEl =
+      account || plastic ? (
+        <span className={cn('min-w-0', accountLogo && 'inline-flex items-center gap-space-4')}>
+          {accountLogo}
+          <span className="truncate">
+            {account ? mark(account) : null}
+            {plastic && <>{account ? ' ' : null}{mark(plastic)}</>}
           </span>
-        ) : (
-          label
-        );
-      if (categories.length === 0) {
-        if (!unsetCategoryLabel) return null;
-        return (
-          <StatusWord key="category" tone="warning">
-            {control(unsetCategoryLabel, onSetCategory)}
-          </StatusWord>
-        );
-      }
-      return (
-        <span key="category" className="inline-flex items-center gap-x-space-4">
-          {control(mark(categories[0]), onCategoryClick && (() => onCategoryClick(categories[0])))}
-          {categories.length > 1 &&
-            control(`+${categories.length - 1}`, onMoreCategoriesClick)}
         </span>
-      );
-    };
-    const phoneCategoryEl = phoneCategory();
-    const phoneContextElements = phoneCategoryEl
-      ? [...contextElements, phoneCategoryEl]
-      : contextElements;
+      ) : null;
 
     const isInteractive = Boolean(
       props.onClick || isSelectable || selectionMode || onSelectedChange,
@@ -469,17 +428,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               <div className={cn('text-heading font-semibold text-ink break-words', desk('desk:text-body-strong desk:font-semibold'))}>
                 {mark(description) ?? children}
               </div>
-              {/* Phone context line (starts with the account) */}
-              {phoneContextElements.length > 0 && (
-                <div className={cn('flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0', desk('desk:hidden'))}>
-                  {phoneContextElements.map((el, i) => (
-                    <React.Fragment key={i}>
-                      {i > 0 && <span className="text-ink-4 select-none">·</span>}
-                      {el}
-                    </React.Fragment>
-                  ))}
-                </div>
-              )}
               {/* Desktop context line under description */}
               {!compact && desktopContextElements.length > 0 && (
                 <div className="hidden desk:flex flex-wrap items-center gap-x-space-4 text-caption text-ink-3 break-words mt-space-2">
@@ -500,7 +448,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className="hidden desk:flex items-center justify-start gap-space-4 desk:px-space-12 desk:py-space-6 min-w-0 truncate"
             >
-              {renderCategories()}
+              {categoryPills}
             </div>
 
             {/* Desktop Account (Cell 5) */}
@@ -520,18 +468,38 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className={cn(
                 eyeOnly && 'pl-space-10',
-                'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
+                'col-start-2 row-start-1 self-start text-right font-bold text-title tabular-nums whitespace-nowrap',
                 desk('desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-heading desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end'),
                 isCredit && !concealed ? 'text-positive' : 'text-ink',
               )}
             >
               {concealed && amount !== undefined ? CONCEAL_PLACEHOLDER : markAmount(amount)}
-              {balance && !concealed && (
-                <div className={cn('text-caption font-medium text-ink-3', desk('desk:hidden'))}>
-                  {balance}
-                </div>
-              )}
             </div>
+
+            {/* Phone line 2: meta left, balance right */}
+            {(contextElements.length > 0 || (balance && !concealed)) && (
+              <>
+                <div className={cn('col-start-1 row-start-2 flex flex-wrap items-center gap-x-space-4 min-w-0 mt-space-2 text-caption font-medium text-ink-3', desk('desk:hidden'))}>
+                  {contextElements.map((el, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && <span className="text-ink-4 select-none">·</span>}
+                      {el}
+                    </React.Fragment>
+                  ))}
+                </div>
+                <div className={cn('col-start-2 row-start-2 mt-space-2 text-right text-caption font-medium text-ink-3 tabular-nums whitespace-nowrap', desk('desk:hidden'))}>
+                  {concealed ? null : balance}
+                </div>
+              </>
+            )}
+
+            {/* Phone line 3: bank logo and account left, category pill right */}
+            {(accountEl || categoryPills) && (
+              <div className={cn('col-start-1 col-span-2 row-start-3 mt-space-4 flex items-center justify-between gap-space-8 min-w-0 text-caption font-medium text-ink-3', desk('desk:hidden'))}>
+                <div className="min-w-0 flex-1">{accountEl}</div>
+                <div className="flex items-center gap-space-4 shrink-0">{categoryPills}</div>
+              </div>
+            )}
 
             {/* Desktop Balance (Cell 7) */}
             {!compact && (
@@ -545,7 +513,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
             {/* Phone Trailing eye icon in selection mode or chevron */}
             {(hasEye || chevron) && (
-              <div className={cn('col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3', desk('desk:hidden'))}>
+              <div className={cn('col-start-3 row-start-1 row-span-3 flex items-center justify-end text-ink-3', desk('desk:hidden'))}>
                 {hasEye && (
                   <Reveal open={showEye} axis="x">
                     <span {...nestedControlProps} className={cn('block min-w-0', eyeOnly && 'pl-space-10')}>

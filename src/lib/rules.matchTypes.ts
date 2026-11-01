@@ -4,12 +4,6 @@ export const MATCH_TYPE_META: Record<
   MatchType,
   { label: string; chip: string; placeholder: string; help: string }
 > = {
-  MERCHANT_KEY: {
-    label: 'Merchant key (smart contains)',
-    chip: 'Key',
-    placeholder: 'e.g. STARBUCKS',
-    help: 'Matches descriptions containing this text after cleanup — numbers, punctuation, and noise words (UPI, POS…) are ignored. At least 3 letters.',
-  },
   CONTAINS: {
     label: 'Contains text',
     chip: 'Contains',

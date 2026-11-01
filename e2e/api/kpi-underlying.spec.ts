@@ -689,13 +689,13 @@ test.describe('Category-filtered transactions count each transaction once (@api)
       amount: -500,
       date: dayOf(month, 5),
       description: 'CO Combo',
-      categoryIds: [food.id, travel.id],
+      tagIds: [food.id, travel.id],
     });
     const single = await createTransaction(api, bank.id, {
       amount: -200,
       date: dayOf(month, 6),
       description: 'CO Single',
-      categoryIds: [food.id],
+      tagIds: [food.id],
     });
     await createTransaction(api, bank.id, { amount: -900, date: dayOf(month, 7), description: 'CO Other' });
     const filters: Filter[] = [debits, inMonth(month), { field: 'category', operator: 'in', value: [food.name, travel.name] }];

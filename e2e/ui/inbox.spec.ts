@@ -8,7 +8,7 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
-import { createCategory, createRule } from '../fixtures/seed/categories';
+import { createRule } from '../fixtures/seed/categories';
 import { seedCardBill, seedDueSoonLoan } from '../fixtures/seed/obligations';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
@@ -65,8 +65,7 @@ test.describe('Inbox UI (@ui)', () => {
     const bill = await seedCardBill(api, { name: 'Inbox Card', last4: '7101', dueInDays: 2 });
     const bank = await createBankAccount(api, { name: 'Inbox Bank', openingBalance: reviewSeedSpec.opening });
     await uploadAndIngest(api, bank.id, [{ filename: 'inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) }]);
-    const cat = await createCategory(api, 'Inbox UI Job Cat');
-    const rule = await createRule(api, { merchantKey: 'INBOX_UI_JOB_MERCHANT', categoryIds: [cat.id] });
+    const rule = await createRule(api, { merchantKey: 'INBOX_UI_JOB_MERCHANT' });
     const applied = await api.POST('/api/v1/rules/{id}/apply', { params: { path: { id: rule.id } }, body: { all: true } });
     expectStatus(applied, 202);
     await waitForJob(api, (applied.data as { jobId: string }).jobId, { timeoutMs: 15000 });

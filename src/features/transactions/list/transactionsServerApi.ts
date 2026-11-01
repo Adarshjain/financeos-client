@@ -1,4 +1,4 @@
-import { accountsApi, categoriesApi, transactionsApi } from '@/lib/apiClient';
+import { accountsApi, tagsApi, transactionsApi } from '@/lib/apiClient';
 import type { PagedTransaction } from '@/lib/transaction.types';
 
 import { buildSearchBody, NEEDS_REVIEW_BODY, searchPaging } from './transactionsRequest';
@@ -20,4 +20,5 @@ export function fetchNeedsReviewCount(): Promise<number> {
 }
 
 export const fetchAccounts = accountsApi.list;
-export const fetchCategories = categoriesApi.list;
+/** The user's tags: the list's tag filter (the server's `category` filter field matches tag names for now). */
+export const fetchTags = tagsApi.list;

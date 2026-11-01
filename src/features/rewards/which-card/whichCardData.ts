@@ -1,5 +1,5 @@
 import { type Loaded, loaded } from '@/features/shell/loadHelpers';
-import { accountsApi, categoriesApi } from '@/lib/apiClient';
+import { accountsApi, tagsApi } from '@/lib/apiClient';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
@@ -25,7 +25,7 @@ export interface WhichCardData {
  * Not ok when either request failed, so the page shows its error state instead of a form that cannot be filled.
  */
 export async function loadWhichCardData(): Promise<Loaded<WhichCardData>> {
-  const result = await loaded(Promise.all([accountsApi.list(), categoriesApi.list()]));
+  const result = await loaded(Promise.all([accountsApi.list(), tagsApi.list()]));
   if (!result.ok) return result;
   const [accounts, categories] = result.data;
   return {

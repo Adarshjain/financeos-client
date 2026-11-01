@@ -8,7 +8,7 @@ import { useRewardCapBuckets } from '@/features/rewards/queries/useRewardCapBuck
 import { RuleDialog } from '@/features/rewards/rules-page/rules/RuleDialog';
 import { RulesRefreshProvider } from '@/features/rewards/rules-page/rulesRefresh';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import type { RewardRule } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
@@ -32,7 +32,7 @@ export function RuleEditor({
 }) {
   const router = useRouter();
   const refresh = React.useCallback(() => router.refresh(), [router]);
-  const categories = useCategories().data ?? [];
+  const categories = useTags().data ?? [];
   const bucketsQuery = useRewardCapBuckets(accountId);
   const capBuckets = bucketsQuery.data ?? [];
   const account = useAccounts().data?.find((a) => a.id === accountId);

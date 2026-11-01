@@ -7,7 +7,6 @@ export type ClearableReason = ReviewReason;
 
 /** The approve dialog's rows, in board order, with the words the board draws. */
 export const APPROVE_REASONS: { reason: ClearableReason; label: string; hint: string }[] = [
-  { reason: 'CATEGORY_UNVERIFIED', label: 'Category unverified', hint: 'keep the category as set' },
   { reason: 'UNRECONCILED', label: 'Unreconciled', hint: 'no statement match needed' },
   { reason: 'DUPLICATE_SUSPECT', label: 'Duplicate', hint: 'keep both' },
   { reason: 'DATE_CORRECTED', label: 'Date corrected', hint: 'accept the statement date' },

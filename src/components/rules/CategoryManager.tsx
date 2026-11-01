@@ -26,32 +26,32 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { api, ApiError } from '@/lib/api/client';
-import type { Category } from '@/lib/categories.types';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import { keys } from '@/lib/query/keys';
+import type { Tag as TagRecord } from '@/lib/tags.types';
 import { toastError } from '@/lib/toastError';
 
 export function CategoryManager() {
   const queryClient = useQueryClient();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [] } = useTags();
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<TagRecord | null>(null);
   const [renameCategoryName, setRenameCategoryName] = useState('');
-  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<TagRecord | null>(null);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const createCategoryMutation = useMutation({
-    mutationFn: (name: string) => api.POST('/api/v1/categories', { body: { name } }).then((r) => r.data!),
+    mutationFn: (name: string) => api.POST('/api/v1/tags', { body: { name } }).then((r) => r.data!),
     onSuccess: (category) => {
       toast.success(`Category "${category.name}" created!`);
       setNewCategoryName('');
       setIsCreateOpen(false);
-      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+      queryClient.invalidateQueries({ queryKey: keys.tags.all });
     },
     onError: (error) => {
       toastError(error, 'Failed to create category');
@@ -60,7 +60,7 @@ export function CategoryManager() {
 
   const renameCategoryMutation = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
-      api.PUT('/api/v1/categories/{id}', {
+      api.PUT('/api/v1/tags/{id}', {
         params: { path: { id } },
         body: { name },
       }).then((r) => r.data!),
@@ -68,7 +68,7 @@ export function CategoryManager() {
       toast.success(`Category renamed to "${category.name}"`);
       setEditingCategory(null);
       setRenameCategoryName('');
-      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+      queryClient.invalidateQueries({ queryKey: keys.tags.all });
     },
     onError: (error) => {
       toastError(error, 'Failed to rename category');
@@ -77,13 +77,13 @@ export function CategoryManager() {
 
   const deleteCategoryMutation = useMutation({
     mutationFn: (cat: { id: string; name: string }) =>
-      api.DELETE('/api/v1/categories/{id}', {
+      api.DELETE('/api/v1/tags/{id}', {
         params: { path: { id: cat.id } },
       }),
     onSuccess: (_data, cat) => {
       toast.success(`Category "${cat.name}" deleted`);
       setDeletingCategory(null);
-      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+      queryClient.invalidateQueries({ queryKey: keys.tags.all });
     },
     onError: (error) => {
       toastError(error, 'Failed to delete category');

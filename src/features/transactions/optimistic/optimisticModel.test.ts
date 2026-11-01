@@ -11,7 +11,7 @@ const t = (over: Partial<Transaction>): Transaction =>
 
 const server = [
   t({ id: 'one', reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
-  t({ id: 'two', reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'] }),
+  t({ id: 'two', reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'] }),
   t({ id: 'three' }),
 ];
 const rows = transactionRows(server, { accounts: null, showSource: false });
@@ -27,7 +27,7 @@ describe('applyChanges', () => {
     expect(all.transactions[0]).toMatchObject({ reviewType: 'MANUALLY_REVIEWED', reviewReasons: [] });
     expect(all.needsReviewDelta).toBe(-1);
     const some = applyChanges(server, rows, [approveChange(['two'], ['UNRECONCILED'])], ctx)!;
-    expect(some.transactions[1]).toMatchObject({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['CATEGORY_UNVERIFIED'] });
+    expect(some.transactions[1]).toMatchObject({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED'] });
     expect(some.needsReviewDelta).toBe(0);
   });
 
@@ -97,7 +97,7 @@ describe('patchFromValues', () => {
       amount: -50,
       accountId: 'a2',
       description: 'Chai',
-      categories: [{ id: 'c1', name: 'Tea' }],
+      tags: [{ id: 'c1', name: 'Tea' }],
       reviewType: 'NEEDS_REVIEW',
       reviewReasons: ['UNRECONCILED'],
     });

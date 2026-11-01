@@ -33,7 +33,7 @@ const initialCategories = [foodCat, groceriesCat];
 
 function mockApiGet(categoriesResponse = initialCategories) {
   (api.GET as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
-    if (url === '/api/v1/categories') return Promise.resolve({ data: categoriesResponse });
+    if (url === '/api/v1/tags') return Promise.resolve({ data: categoriesResponse });
     return Promise.resolve({ data: null });
   });
 }
@@ -95,7 +95,7 @@ describe('CategoryManager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Category' }));
 
     await waitFor(() => {
-      expect(api.POST).toHaveBeenCalledWith('/api/v1/categories', {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/tags', {
         body: { name: 'Travel' },
       });
     });
@@ -128,7 +128,7 @@ describe('CategoryManager', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(api.PUT).toHaveBeenCalledWith('/api/v1/categories/{id}', {
+      expect(api.PUT).toHaveBeenCalledWith('/api/v1/tags/{id}', {
         params: { path: { id: 'c1' } },
         body: { name: 'Dining Out' },
       });
@@ -212,7 +212,7 @@ describe('CategoryManager', () => {
     fireEvent.click(deleteBtn);
 
     await waitFor(() => {
-      expect(api.DELETE).toHaveBeenCalledWith('/api/v1/categories/{id}', {
+      expect(api.DELETE).toHaveBeenCalledWith('/api/v1/tags/{id}', {
         params: { path: { id: 'c1' } },
       });
     });

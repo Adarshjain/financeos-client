@@ -6,7 +6,9 @@ import React from 'react';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { ContextMenu } from '@/components/ds/Menu/ContextMenu';
 import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import type { Transaction } from '@/lib/transaction.types';
 import { replaceUrl } from '@/lib/urlState';
 
@@ -23,6 +25,8 @@ import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticT
 export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
+  /** The fixed category list, read once on the server; null when it could not be loaded (the picker then fetches it). */
+  categoryList?: CategoryDef[] | null;
 }
 
 /** A link to a transaction that is not there (or not yours): the server answers 404 or 403. Any other failure keeps the panel and its Retry. */
@@ -41,7 +45,7 @@ type FormState = { transaction: Transaction } | null;
 
 /**
  * /transactions: the list with its detail panel and the Edit dialog (Add is the shell's AddTransactionProvider), all opened from state (the address never changes).
- * Approve, Set category, Edit and a swiped Delete show at once and save behind it (see optimistic/); bulk actions wait.
+ * Approve, Set category (the picker), Edit and a swiped Delete show at once and save behind it (see optimistic/); bulk actions wait.
  */
 export function TransactionsScreen(props: TransactionsScreenProps) {
   const layer = useOptimisticLayer(props);
@@ -52,7 +56,9 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
   );
 }
 
-function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
+function TransactionsBody({ transactions, categoryList, ...view }: TransactionsScreenProps) {
+  // Seeds the client cache, so the picker opens with its list at hand.
+  useCategoryList(categoryList ?? undefined);
   // A link with ?txn=<id> opens that transaction at once; the panel fetches it by id when it is not on this page.
   const [detailId, setDetailIdState] = React.useState<string | null>(view.query.txn);
   const [txnInUrl, setTxnInUrl] = React.useState(view.query.txn !== null);
@@ -106,8 +112,8 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
     },
   });
 
-  const editCategories = (id: string) => {
-    const transaction = transactions.find((t) => t.id === id);
+  const editCategories = (id: string, found?: Transaction) => {
+    const transaction = found ?? transactions.find((t) => t.id === id);
     if (transaction) void categoryDialog.run(() => setCategorising(transaction));
   };
 
@@ -170,6 +176,7 @@ function TransactionsBody({ transactions, ...view }: TransactionsScreenProps) {
         onClose={() => setDetailId(null)}
         onLoadFailed={txnInUrl ? (error) => isGone(error) && setDetailId(null) : undefined}
         onEdit={(transaction) => void formDialog.run(() => setForm({ transaction }))}
+        onSetCategory={(transaction) => editCategories(transaction.id, transaction)}
         onDeleted={() => setDetailId(null)}
         onLink={(t) => void linkDialog.run(() => setLinking([t]))}
         onReview={actions.reviewInDialog}

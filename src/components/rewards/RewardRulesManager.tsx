@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { useRewardRulesManager } from '@/features/rewards/rules/manager/useRewardRulesManager';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
@@ -33,7 +33,7 @@ export default function RewardRulesManager({
   initialAccountId,
 }: RewardRulesManagerProps) {
   const { data: rawAccounts = [] } = useAccounts();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [] } = useTags();
   const accounts = useMemo(() => rewardEligibleAccounts(rawAccounts), [rawAccounts]);
   const orderedAccounts = accounts;
   const {

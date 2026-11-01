@@ -9,7 +9,7 @@ const accounts = vi.fn();
 const categories = vi.fn();
 vi.mock('@/lib/apiClient', () => ({
   accountsApi: { list: () => accounts() },
-  categoriesApi: { list: () => categories() },
+  tagsApi: { list: () => categories() },
 }));
 vi.mock('@/features/shell/loadHelpers', async (orig) => ({
   ...(await orig<typeof import('@/features/shell/loadHelpers')>()),

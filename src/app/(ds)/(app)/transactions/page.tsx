@@ -6,27 +6,29 @@ import { transactionRows } from '@/features/transactions/list/transactionRowsMod
 import type { TransactionsListResult } from '@/features/transactions/list/TransactionsListPane';
 import {
   fetchAccounts,
-  fetchCategories,
   fetchNeedsReviewCount,
+  fetchTags,
   fetchTransactionsPage,
 } from '@/features/transactions/list/transactionsServerApi';
 import { parseTransactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { TransactionsScreen } from '@/features/transactions/TransactionsScreen';
+import { fetchCategoryList } from '@/lib/categoryList.server';
 import { todayInAppZone } from '@/lib/date-range';
 
 export const metadata = { title: 'Transactions' };
 
 /**
  * /transactions: the list, filtered and sorted by the address. The server reads the address once and
- * fetches the page, the accounts and categories the chips need, and the needs-review count together.
+ * fetches the page, the accounts and tags the chips need, the category list and the needs-review count together.
  */
 export default async function DsTransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const query = parseTransactionsUrl(await searchParams);
-  const [page, accounts, categories, needsReviewCount] = await Promise.all([
+  const [page, accounts, categories, needsReviewCount, categoryList] = await Promise.all([
     loaded(fetchTransactionsPage(query)),
     orNull(fetchAccounts()),
-    orNull(fetchCategories()),
+    orNull(fetchTags()),
     orNull(fetchNeedsReviewCount()),
+    orNull(fetchCategoryList()),
   ]);
 
   const list: TransactionsListResult = page.ok
@@ -47,6 +49,7 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
       transactions={page.ok ? page.data.content : []}
       accounts={accounts}
       categories={categories}
+      categoryList={categoryList}
       needsReviewCount={needsReviewCount}
     />
   );

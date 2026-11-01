@@ -29,7 +29,7 @@ function makeCandidate(overrides: Partial<TransactionResponse> = {}): Transactio
     id: 'tx-1',
     accountId: 'acc1',
     amount: -500,
-    categories: [],
+    tags: [],
     createdAt: '2026-01-01T00:00:00Z',
     date: '2026-01-01',
     isTransactionExcluded: false,

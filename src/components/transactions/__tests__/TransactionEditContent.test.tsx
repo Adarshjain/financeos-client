@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { TransactionEditContent } from '@/components/transactions/TransactionEditContent';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
+import type { Tag } from '@/lib/tags.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
@@ -19,7 +19,7 @@ const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
-const mockCategories: Category[] = [
+const mockCategories: Tag[] = [
   { id: 'cat1', name: 'Food' },
 ];
 
@@ -40,7 +40,7 @@ describe('TransactionEditContent', () => {
   it('renders TransactionCRUD in edit mode with header title', () => {
     const queryClient = createTestQueryClient();
     queryClient.setQueryData(keys.accounts.list(), mockAccounts);
-    queryClient.setQueryData(keys.categories.list(), mockCategories);
+    queryClient.setQueryData(keys.tags.list(), mockCategories);
 
     renderWithQuery(
       <Dialog open={true}>

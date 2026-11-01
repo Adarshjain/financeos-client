@@ -175,7 +175,7 @@ export function useReviewBrowser(accounts: Account[], initialFilters?: ReviewIni
         body: {
           transactionIds: selectedIds,
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED')[],
+          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED')[],
         },
       });
       return data;

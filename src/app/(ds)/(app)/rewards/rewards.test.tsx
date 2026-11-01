@@ -41,7 +41,7 @@ vi.mock('@/features/rewards/rules-page/rules/RuleDialog', () => ({
     </div>
   ),
 }));
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: [] }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: [] }) }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
 vi.mock('@/features/rewards/queries/useRewardCapBucketsQueries', () => ({ useRewardCapBuckets: () => ({ data: [] }) }));
 vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({

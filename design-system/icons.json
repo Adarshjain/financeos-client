@@ -238,5 +238,180 @@
   "name": "clock-counter-clockwise",
   "phosphor": "clock-counter-clockwise",
   "use": "Price history (holding price chart card)"
+ },
+ {
+  "name": "cat-fork-knife",
+  "phosphor": "fork-knife",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-shopping-cart",
+  "phosphor": "shopping-cart",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-taxi",
+  "phosphor": "taxi",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-airplane-tilt",
+  "phosphor": "airplane-tilt",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-shopping-bag",
+  "phosphor": "shopping-bag",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-receipt",
+  "phosphor": "receipt",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-repeat",
+  "phosphor": "repeat",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-first-aid-kit",
+  "phosphor": "first-aid-kit",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-barbell",
+  "phosphor": "barbell",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-sparkle",
+  "phosphor": "sparkle",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-wrench",
+  "phosphor": "wrench",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-film-slate",
+  "phosphor": "film-slate",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-graduation-cap",
+  "phosphor": "graduation-cap",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-paw-print",
+  "phosphor": "paw-print",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-users-three",
+  "phosphor": "users-three",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-hand-heart",
+  "phosphor": "hand-heart",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-bank",
+  "phosphor": "bank",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-shield-check",
+  "phosphor": "shield-check",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-scales",
+  "phosphor": "scales",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-piggy-bank",
+  "phosphor": "piggy-bank",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-hand-coins",
+  "phosphor": "hand-coins",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-arrow-counter-clockwise",
+  "phosphor": "arrow-counter-clockwise",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-money",
+  "phosphor": "money",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-coins",
+  "phosphor": "coins",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-arrows-left-right",
+  "phosphor": "arrows-left-right",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-credit-card",
+  "phosphor": "credit-card",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-dots-three-outline",
+  "phosphor": "dots-three-outline",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-briefcase",
+  "phosphor": "briefcase",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-storefront",
+  "phosphor": "storefront",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-percent",
+  "phosphor": "percent",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-chart-pie-slice",
+  "phosphor": "chart-pie-slice",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-arrow-circle-down",
+  "phosphor": "arrow-circle-down",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-arrow-u-up-left",
+  "phosphor": "arrow-u-up-left",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-confetti",
+  "phosphor": "confetti",
+  "use": "Category glyph (category picker preview)"
+ },
+ {
+  "name": "cat-hand-arrow-down",
+  "phosphor": "hand-arrow-down",
+  "use": "Category glyph (category picker preview)"
  }
 ]

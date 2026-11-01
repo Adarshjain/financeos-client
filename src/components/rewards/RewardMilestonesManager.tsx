@@ -11,8 +11,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useDeleteRewardMilestone, useRewardMilestones } from '@/features/rewards/queries/useRewardMilestonesQueries';
 import type { AccountCard } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
-import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
+import type { Tag } from '@/lib/tags.types';
 import { toastError } from '@/lib/toastError';
 import { formatMoney } from '@/lib/utils';
 
@@ -38,7 +38,7 @@ function milestoneSummary(m: RewardMilestone): string {
 interface RewardMilestonesManagerProps {
   accountId: string;
   cards?: AccountCard[];
-  categories: Category[];
+  categories: Tag[];
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
   isBank?: boolean;

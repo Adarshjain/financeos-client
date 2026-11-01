@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionFilterBar } from '@/components/transactions/TransactionFilterBar';
 import type { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
-import type { Category } from '@/lib/categories.types';
+import type { Tag } from '@/lib/tags.types';
 import { AccountType } from '@/lib/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -19,7 +19,7 @@ const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
-const mockCategories: Category[] = [
+const mockCategories: Tag[] = [
   { id: 'cat1', name: 'Food' },
 ];
 

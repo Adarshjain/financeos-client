@@ -14,8 +14,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { useRewardMilestoneForm } from '@/features/rewards/milestones/useRewardMilestoneForm';
 import type { AccountCard } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
+import type { Tag } from '@/lib/tags.types';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
 import {
@@ -27,7 +27,7 @@ import { MilestoneCategoryMccSection } from './milestone-form/MilestoneCategoryM
 interface RewardMilestoneFormProps {
   accountId: string;
   cards?: AccountCard[];
-  categories: Category[];
+  categories: Tag[];
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
   milestone?: RewardMilestone;

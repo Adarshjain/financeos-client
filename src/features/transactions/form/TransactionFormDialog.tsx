@@ -4,17 +4,24 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { CategoryPicker } from '@/components/organisms/CategoryPicker/CategoryPicker';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import type { Account } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { categoryLabel, findCategory, findSub } from '@/lib/categoryList';
+import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
+import { formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
+import { useTags } from '@/lib/query/hooks/useTags';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 
+import { categoryPatch, pickOf } from '../category/categoryModel';
 import { mergeOntoLatest, patchChange, patchFromValues } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import {
@@ -34,11 +41,13 @@ import {
   type TransactionFormValues,
   valuesFromTransaction,
 } from './transactionFormModel';
-import { useCategorySuggestions } from './useCategorySuggestions';
+import { useCategorySuggestion } from './useCategorySuggestion';
+import { useTagSelection } from './useTagSelection';
 import { useTransactionMutations } from './useTransactionMutations';
 
 const FORM_ID = 'transaction-form';
-const NO_CATEGORIES: never[] = [];
+const NO_TAGS: never[] = [];
+const samePick = (a: CategoryPick | null, b: CategoryPick | null) => a?.categoryKey === b?.categoryKey && (a?.subcategoryKey ?? null) === (b?.subcategoryKey ?? null);
 
 export interface TransactionFormDialogProps {
   /** Edit this transaction; without it the dialog adds one. */
@@ -65,7 +74,8 @@ export function TransactionFormDialog({
   const accountDialogs = useAccountDialogs();
   const isUpdate = Boolean(transaction);
   const { data: accounts = [] } = useAccounts(initialAccounts ?? undefined);
-  const { data: allCategories = NO_CATEGORIES } = useCategories();
+  const { data: allTags = NO_TAGS } = useTags();
+  const { list: categoryList } = useCategoryList();
   const { createMutation, updateMutation } = useTransactionMutations();
   const optimistic = useOptimisticTransactions();
 
@@ -94,20 +104,24 @@ export function TransactionFormDialog({
     }
   }
 
-  const {
-    localCategories,
-    selectedCategories,
-    setSelectedCategories,
-    creatingCategory,
-    suggestingCategories,
-    createCategory,
-    handleDescriptionBlur,
-  } = useCategorySuggestions({
-    categories: allCategories,
-    initialSelectedCategories: transaction?.categories ?? [],
-    isUpdateMode: isUpdate,
-    onMccSuggested: (suggested) => setValues((v) => (v.mcc ? v : { ...v, mcc: suggested })),
+  const { localTags, selectedTags, setSelectedTags, creatingTag, createTag } = useTagSelection({
+    tags: allTags,
+    initialSelectedTags: transaction?.tags ?? [],
   });
+  // The category on the form. Edit starts on the stored one and sends it only once the user changes it.
+  const opened = React.useMemo(() => (transaction ? pickOf(transaction) : null), [transaction]);
+  const [category, setCategory] = React.useState<CategoryPick | null>(opened);
+  const [pickingCategory, setPickingCategory] = React.useState(false);
+  const categoryChanged = !samePick(category, opened);
+  const pickedCategory = (pick: CategoryPick) => {
+    setTouched(true);
+    setCategory(pick);
+  };
+  // Add: a suggestion fills the field while nothing is picked; the user can accept it or open the picker.
+  const { suggesting, onDescriptionBlur } = useCategorySuggestion(
+    (pick) => setCategory((now) => now ?? pick),
+    !isUpdate,
+  );
 
   const selectableAccounts = getSelectableAccounts(accounts, transaction, today);
   const selectedAccount = accounts.find((a) => a.id === values.accountId);
@@ -147,6 +161,13 @@ export function TransactionFormDialog({
     accountDialogs.open(undefined, { onCreated: () => undefined });
   };
 
+  const categoryDef = findCategory(categoryList, category?.categoryKey);
+  const categoryText = categoryDef ? categoryLabel(categoryDef.name, findSub(categoryDef, category?.subcategoryKey)?.name) : '';
+  const amountValue = Math.abs(Number(values.amount));
+  const pickerSubtitle = [values.description.trim(), Number.isFinite(amountValue) && amountValue > 0 ? formatMoney(amountValue, { decimals: 'exact' }) : '']
+    .filter(Boolean)
+    .join(' · ') || undefined;
+
   const saving = createMutation.isPending || updateMutation.isPending;
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
 
@@ -166,27 +187,32 @@ export function TransactionFormDialog({
       const body = buildRequest(current, {
         isUpdate,
         source: transaction?.source,
-        categoryIds: selectedCategories.map((c) => c.id),
+        tagIds: selectedTags.map((c) => c.id),
+        category: categoryChanged ? category : null,
         supportsCards,
       });
       if (transaction && optimistic) {
         // Edit: the row and the detail show the new values now and the dialog closes; the save finishes behind it.
         const shown = optimistic.begin(
-          patchChange(transaction.id, patchFromValues(current, selectedCategories.map((c) => ({ id: c.id, name: c.name })), transaction, supportsCards)),
+          patchChange(transaction.id, {
+            ...patchFromValues(current, selectedTags, transaction, supportsCards),
+            ...(categoryChanged ? categoryPatch(categoryList, category, 'USER', new Date().toISOString()) : {}),
+          }),
         );
         onClose();
         try {
           // Sent behind any earlier write to this row: what the person changed, on the row as the server then holds it.
           await shown.send(() => {
             const latest = shown.base(transaction.id) ?? transaction;
-            const chosen = selectedCategories.map((c) => c.id).join();
-            const opened = (transaction.categories ?? []).map((c) => c.id).join();
+            const openedTags = (transaction.tags ?? []).map((c) => c.id).join();
+            const chosenTags = selectedTags.map((c) => c.id).join();
             return updateMutation.mutateAsync({
               id: transaction.id,
               body: buildRequest(mergeOntoLatest(current, transaction, latest), {
                 isUpdate,
                 source: transaction.source,
-                categoryIds: chosen === opened ? (latest.categories ?? []).map((c) => c.id) : selectedCategories.map((c) => c.id),
+                tagIds: chosenTags === openedTags ? (latest.tags ?? []).map((c) => c.id) : selectedTags.map((c) => c.id),
+                category: categoryChanged ? category : null,
                 supportsCards,
               }),
             });
@@ -238,26 +264,38 @@ export function TransactionFormDialog({
               accounts={selectableAccounts}
               hasAccounts={selectableAccounts.length > 0}
               cardOptions={supportsCards ? cardOptions : []}
-              categories={localCategories}
-              selectedCategoryIds={selectedCategories.map((c) => c.id)}
-              creatingCategory={creatingCategory}
-              suggestingCategories={suggestingCategories}
+              tags={localTags}
+              selectedTagIds={selectedTags.map((c) => c.id)}
+              creatingTag={creatingTag}
+              categoryLabel={categoryText || undefined}
+              categoryIcon={categoryDef?.icon as IconName | undefined}
+              suggestingCategory={suggesting}
               sourcedDescription={transaction?.sourcedDescription}
               reviewError={reviewError}
               onChange={change}
               onAccountChange={pickAccount}
-              onCategoriesChange={(ids) => {
+              onOpenCategory={() => setPickingCategory(true)}
+              onTagsChange={(ids) => {
                 setTouched(true);
-                setSelectedCategories(ids.map((id) => localCategories.find((c) => c.id === id)).filter((c) => c !== undefined));
+                setSelectedTags(ids.map((id) => localTags.find((c) => c.id === id)).filter((c) => c !== undefined));
               }}
-              onCreateCategory={(name) => void createCategory(name)}
-              onDescriptionBlur={handleDescriptionBlur}
+              onCreateTag={(name) => void createTag(name)}
+              onDescriptionBlur={onDescriptionBlur}
               onAddAccount={addAccount}
             />
           </form>
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>
+    <CategoryPicker
+      open={pickingCategory}
+      onOpenChange={setPickingCategory}
+      categories={categoryList as CategoryDef[]}
+      direction={values.direction === 'credit' ? 'IN' : 'OUT'}
+      value={category}
+      subtitle={pickerSubtitle}
+      onPick={pickedCategory}
+    />
     {guard.node}
     </>
   );

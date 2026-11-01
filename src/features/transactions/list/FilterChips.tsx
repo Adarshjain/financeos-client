@@ -9,7 +9,7 @@ import { Popover } from '@/components/ds/Popover/Popover';
 import { Select, type SelectGroup, type SelectOption } from '@/components/ds/Select/Select';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import type { Tag } from '@/lib/tags.types';
 import type { AccountType } from '@/lib/types';
 
 import {
@@ -241,7 +241,7 @@ export interface FilterChipsProps {
   /** Today, YYYY-MM-DD, for the period's date fields. */
   today: string;
   accounts: Account[] | null;
-  categories: Category[] | null;
+  categories: Tag[] | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
   /** The search field: the row's first item, so the search and the chips share one sideways scroller. */

@@ -31,7 +31,7 @@ const baseTxn: Transaction = {
   sourcedDescription: 'FLAGGED MERCHANT',
   source: 'gmail_transaction_alert',
   reviewType: 'NEEDS_REVIEW',
-  reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'],
+  reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'],
   balance: 10000,
   createdAt: '2026-07-20T00:00:00Z',
 };
@@ -100,7 +100,7 @@ describe('ReviewTransaction', () => {
       await openPicker();
 
       const unreconciled = screen.getByRole('checkbox', { name: 'Unreconciled' });
-      const category = screen.getByRole('checkbox', { name: 'Category unverified' });
+      const category = screen.getByRole('checkbox', { name: 'Date corrected' });
 
       expect(unreconciled).toBeChecked();
       expect(category).toBeChecked();
@@ -130,7 +130,7 @@ describe('ReviewTransaction', () => {
       const approve = await openPicker();
 
       fireEvent.click(screen.getByRole('checkbox', { name: 'Unreconciled' }));
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Category unverified' }));
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Date corrected' }));
 
       expect(approve).toBeDisabled();
       fireEvent.click(approve);
@@ -161,7 +161,7 @@ describe('ReviewTransaction', () => {
       expect(path).toBe('/api/v1/transactions/batch-review');
       expect(options.body.transactionIds).toEqual(['t-1']);
       expect(options.body.reviewType).toBe('MANUALLY_REVIEWED');
-      expect([...options.body.reviewReasons].sort()).toEqual(['CATEGORY_UNVERIFIED', 'UNRECONCILED']);
+      expect([...options.body.reviewReasons].sort()).toEqual(['DATE_CORRECTED', 'UNRECONCILED']);
     });
 
     it('does not call the action when cancelled', async () => {
@@ -190,7 +190,7 @@ describe('ReviewTransaction', () => {
           body: {
             transactionIds: ['t-1'],
             reviewType: 'MANUALLY_REVIEWED',
-            reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'],
+            reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'],
           },
         });
       });
@@ -212,7 +212,7 @@ describe('ReviewTransaction', () => {
           body: {
             transactionIds: ['t-1'],
             reviewType: 'MANUALLY_REVIEWED',
-            reviewReasons: ['CATEGORY_UNVERIFIED'],
+            reviewReasons: ['DATE_CORRECTED'],
           },
         });
       });

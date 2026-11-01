@@ -140,8 +140,8 @@ export async function createDashboard(
 
 export interface SeededTransactionsDataset {
   account: components['schemas']['BankAccountResponse'];
-  foodCat: components['schemas']['CategoryResponse'];
-  travelCat: components['schemas']['CategoryResponse'];
+  foodCat: components['schemas']['TagResponse'];
+  travelCat: components['schemas']['TagResponse'];
   currentMonth: { from: string; to: string; year: number; month: number };
   prevMonth: { from: string; to: string; year: number; month: number };
   currentMonthFoodDebitTotal: number; // e.g. -1500 (-1000 + -500)
@@ -177,19 +177,19 @@ export async function seedTransactionsDataset(
   await createTransaction(api, account.id, {
     amount: -1000,
     date: `${curYm}-05`,
-    categoryIds: [foodCat.id],
+    tagIds: [foodCat.id],
     description: 'Swiggy Food 1',
   });
   await createTransaction(api, account.id, {
     amount: -500,
     date: `${curYm}-10`,
-    categoryIds: [foodCat.id],
+    tagIds: [foodCat.id],
     description: 'Zomato Food 2',
   });
   await createTransaction(api, account.id, {
     amount: -2000,
     date: `${curYm}-15`,
-    categoryIds: [travelCat.id],
+    tagIds: [travelCat.id],
     description: 'Uber Ride',
   });
   await createTransaction(api, account.id, {
@@ -202,7 +202,7 @@ export async function seedTransactionsDataset(
   await createTransaction(api, account.id, {
     amount: -800,
     date: `${prevYm}-12`,
-    categoryIds: [foodCat.id],
+    tagIds: [foodCat.id],
     description: 'Prev Swiggy',
   });
 

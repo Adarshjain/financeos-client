@@ -6,6 +6,7 @@ import { Card } from '@/components/ds/Card/Card';
 import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { Pager } from '@/components/ds/Pager/Pager';
+import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { createTransactionColumns, type TransactionRowData } from '@/components/organisms/TransactionRow/transactionColumns';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { ListTransition, RowTransition } from '@/lib/viewTransition';
@@ -58,7 +59,7 @@ export interface TransactionsListProps {
   onOpenDetail?: (id: string) => void;
   /** The row open in the detail pane, shown highlighted. */
   openId?: string;
-  /** "Set category" or a category chip was pressed (piece 3 opens the edit). */
+  /** "Set category" or the category badge was pressed: the page opens the picker. */
   onEditCategories?: (id: string) => void;
   /** The ticked row ids; the table's checkbox column shows when `onSelectionChange` is given (piece 5). */
   selection?: string[];
@@ -158,15 +159,17 @@ export function TransactionsList({
                 isCredit={r.isCredit}
                 balance={r.balance}
                 account={r.account}
+                accountLogo={r.account ? <BankLogo bankId={r.bankId ?? null} name={r.account} size="sm" /> : undefined}
                 plastic={r.plastic}
                 reviewStatus={r.reviewStatus}
                 link={r.link}
                 provenance={r.provenance}
                 categories={r.categories}
+                subCategory={r.subCategory}
+                categoryIcon={r.categoryIcon}
                 unsetCategoryLabel="Set category"
                 onSetCategory={onEditCategories ? () => onEditCategories(r.id) : undefined}
                 onCategoryClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
-                onMoreCategoriesClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
                 tone={r.watching ? 'warning' : 'default'}
                 muted={r.excluded}
                 highlighted={rowProps.highlighted}

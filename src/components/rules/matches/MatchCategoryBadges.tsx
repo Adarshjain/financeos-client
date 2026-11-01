@@ -1,13 +1,12 @@
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import type { RuleMatchTransaction } from '@/lib/rules.types';
 
 /** A matched transaction's current categories, or "Uncategorized". */
 export function MatchCategoryBadges({
   categories,
 }: {
-  categories: RuleMatchTransaction['categories'];
+  categories: { id: string; name: string }[];
 }) {
   return (
     <div className="flex flex-wrap gap-1">

@@ -53,7 +53,7 @@ export function useApproveTransactions() {
       } else {
         showToast(approvedMessage(data.succeededIds.length), {
           tone: 'success',
-          action: { label: 'Undo', onSelect: () => void undo(data.approvedTransactions ?? [], data.verifiedRules ?? []) },
+          action: { label: 'Undo', onSelect: () => void undo(data.approvedTransactions ?? []) },
         });
       }
       return true;

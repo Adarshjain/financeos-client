@@ -29,7 +29,7 @@ import type {
   Schemas,
   ShellCounts,
 } from '@/lib/api/types';
-import type { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
@@ -127,12 +127,13 @@ import type {
   ApplyRuleRequest,
   CategoryRule,
   CreateRuleRequest,
-  PagedRuleMatches,
   PagedRules,
   PreviewMatchesRequest,
+  RuleMatchesPreview,
   UpdateRuleRequest,
 } from '@/lib/rules.types';
 import type { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
+import type { Tag, TagRequest } from '@/lib/tags.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
 import type {
   BatchDeleteRequest,
@@ -141,10 +142,13 @@ import type {
   BatchReviewResponse,
   BulkReattributeCardRequest,
   BulkReattributeResponse,
+  CategorizeResponse,
   CreateTransactionLinkRequest,
   MergeTransactionsRequest,
   MergeTransactionsResponse,
   PagedTransaction,
+  SetCategoryRequest,
+  SetCategoryResponse,
   Transaction,
   TransactionLinkResponse,
   TransactionRequest,
@@ -576,35 +580,50 @@ export const cardholdersApi = {
 export const accountCardsApi = cardholdersApi;
 
 // ---------------------------------------------------------------------------
-// Categories
+// Tags (the old per-user categories) and the fixed category list
 // ---------------------------------------------------------------------------
 
-export const categoriesApi = {
-  /** One page of categories, by name; `search` matches part of a name. */
-  page: async (params: { search?: string; page?: number; size?: number }): Promise<Page<Category>> => {
-    const { data } = await serverApi.GET('/api/v1/categories/page', { params: { query: params } });
-    return data as unknown as Page<Category>;
+export const tagsApi = {
+  /** One page of tags, by name, with their transaction counts; `search` matches part of a name. */
+  page: async (params: { search?: string; page?: number; size?: number }): Promise<Page<Tag>> => {
+    const { data } = await serverApi.GET('/api/v1/tags/page', { params: { query: params } });
+    return data as unknown as Page<Tag>;
   },
-  list: async (): Promise<Category[]> => {
-    const { data } = await serverApi.GET('/api/v1/categories');
-    return (data as Category[]) || [];
+  list: async (): Promise<Tag[]> => {
+    const { data } = await serverApi.GET('/api/v1/tags');
+    return (data as Tag[]) || [];
   },
-  create: async (body: CategoryRequest): Promise<Category> => {
-    const { data } = await serverApi.POST('/api/v1/categories', { body });
-    return data! as Category;
+  create: async (body: TagRequest): Promise<Tag> => {
+    const { data } = await serverApi.POST('/api/v1/tags', { body });
+    return data! as Tag;
   },
-  update: async (id: string, body: CategoryRequest): Promise<Category> => {
-    const { data } = await serverApi.PUT('/api/v1/categories/{id}', { params: { path: { id } }, body });
-    return data! as Category;
+  rename: async (id: string, body: TagRequest): Promise<Tag> => {
+    const { data } = await serverApi.PUT('/api/v1/tags/{id}', { params: { path: { id } }, body });
+    return data! as Tag;
   },
   delete: async (id: string): Promise<void> => {
-    await serverApi.DELETE('/api/v1/categories/{id}', { params: { path: { id } } });
+    await serverApi.DELETE('/api/v1/tags/{id}', { params: { path: { id } } });
   },
-  categorize: async (body: { description: string; amount?: number }): Promise<CategorizeResponse> => {
-    const { data } = await serverApi.POST('/api/v1/categorize', { body: { description: body.description } });
+  bulkAdd: async (body: { transactionIds: string[]; tagIds: string[] }): Promise<Schemas['BulkAddTagsResponse']> => {
+    const { data } = await serverApi.POST('/api/v1/tags/bulk-add', { body });
+    return data!;
+  },
+};
+
+export const categoryListApi = {
+  /** The fixed category list, in server order. It never changes while the app runs. */
+  list: async (): Promise<CategoryDef[]> => {
+    const { data } = await serverApi.GET('/api/v1/category-list');
+    return (data?.categories ?? []) as unknown as CategoryDef[];
+  },
+};
+
+export const categorizeApi = {
+  /** Suggest a category (and sub-category) for a description; both null when nothing matched. */
+  categorize: async (description: string): Promise<CategorizeResponse> => {
+    const { data } = await serverApi.POST('/api/v1/categorize', { body: { description } });
     return data! as CategorizeResponse;
   },
-  categorizeDescription: async (description: string): Promise<CategorizeResponse> => categoriesApi.categorize({ description }),
 };
 
 // ---------------------------------------------------------------------------
@@ -1395,45 +1414,39 @@ export const rulesApi = {
     size?: number;
     sort?: string;
     search?: string;
-    verified?: boolean;
-    source?: 'LLM' | 'USER';
     matchType?: string;
-    categoryId?: string;
+    categoryKey?: string;
+    applied?: boolean;
   }): Promise<PagedRules> => {
     const { data } = await serverApi.GET('/api/v1/rules', {
       params: {
         query: {
-          verified: params?.verified,
           search: params?.search,
-          source: params?.source,
           matchType: params?.matchType,
-          categoryId: params?.categoryId,
+          categoryKey: params?.categoryKey,
+          applied: params?.applied,
           page: params?.page ?? 0, size: params?.size ?? 20, sort: params?.sort ? [params.sort] : [],
         },
       },
     });
-    return data! as PagedRules;
+    return data as unknown as PagedRules;
   },
   create: async (body: CreateRuleRequest): Promise<CategoryRule> => {
-    const { data } = await serverApi.POST('/api/v1/rules', { body: body as Schemas['CreateRuleRequest'] });
-    return data! as CategoryRule;
+    const { data } = await serverApi.POST('/api/v1/rules', { body });
+    return data as unknown as CategoryRule;
   },
   update: async (id: string, body: UpdateRuleRequest): Promise<CategoryRule> => {
     const { data } = await serverApi.PUT('/api/v1/rules/{id}', {
       params: { path: { id } },
-      body: body as Schemas['UpdateRuleRequest'],
+      body,
     });
-    return data! as CategoryRule;
+    return data as unknown as CategoryRule;
   },
   delete: async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/rules/{id}', { params: { path: { id } } });
   },
   /** Alias for delete — matches the original surface. */
   remove: async (id: string): Promise<void> => rulesApi.delete(id),
-  verify: async (id: string): Promise<CategoryRule> => {
-    const { data } = await serverApi.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } });
-    return data! as CategoryRule;
-  },
   apply: async (id: string, body?: ApplyRuleRequest): Promise<EnqueueResponse> => {
     const { data } = await serverApi.POST('/api/v1/rules/{id}/apply', {
       params: { path: { id } },
@@ -1441,12 +1454,12 @@ export const rulesApi = {
     });
     return data! as EnqueueResponse;
   },
-  previewMatches: async (body: PreviewMatchesRequest, params?: { page?: number; size?: number }): Promise<PagedRuleMatches> => {
+  previewMatches: async (body: PreviewMatchesRequest, params?: { page?: number; size?: number }): Promise<RuleMatchesPreview> => {
     const { data } = await serverApi.POST('/api/v1/rules/preview-matches', {
       params: { query: { page: params?.page ?? 0, size: params?.size ?? 20, sort: [] } },
       body,
     });
-    return data! as PagedRuleMatches;
+    return data as unknown as RuleMatchesPreview;
   },
 };
 
@@ -1495,6 +1508,11 @@ export const transactionsApi = {
   },
   delete: async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/transactions/{id}', { params: { path: { id } } });
+  },
+  /** Set (or clear, with nulls) one transaction's category. `restore` puts back what `previous` reported, for Undo. */
+  setCategory: async (id: string, body: SetCategoryRequest): Promise<SetCategoryResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/transactions/{id}/category', { params: { path: { id } }, body });
+    return data! as unknown as SetCategoryResponse;
   },
   batchDelete: async (body: BatchDeleteRequest): Promise<BatchDeleteResponse> => {
     const { data } = await serverApi.POST('/api/v1/transactions/batch-delete', { body });

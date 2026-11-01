@@ -324,8 +324,8 @@ for (const viewport of VIEWPORTS) {
       const tag = Date.now();
       const food = await createCategory(api, `Split Food ${tag}`);
       const fuel = await createCategory(api, `Split Fuel ${tag}`);
-      await createTransaction(api, account.id, { amount: -300, description: `Split food row ${tag}`, categoryIds: [food.id] });
-      await createTransaction(api, account.id, { amount: -100, description: `Split fuel row ${tag}`, categoryIds: [fuel.id] });
+      await createTransaction(api, account.id, { amount: -300, description: `Split food row ${tag}`, tagIds: [food.id] });
+      await createTransaction(api, account.id, { amount: -100, description: `Split fuel row ${tag}`, tagIds: [fuel.id] });
       const filters = [{ field: 'date', operator: 'this_month' }];
       const measure = { field: 'spend', aggregation: 'sum' };
       const name = `Ds split ${type} ${tag}`;

@@ -72,9 +72,9 @@ test.describe('Spend measure (@api)', () => {
     const { api } = await newUser(request, 'rn-spend');
     const bank = await createBankAccount(api, { name: 'Spend Measure Bank' });
     const cat = await createCategory(api, 'Spend Measure Cat');
-    await createTransaction(api, bank.id, { amount: -1000, categoryIds: [cat.id], description: 'Buy' });
-    await createTransaction(api, bank.id, { amount: -250, categoryIds: [cat.id], description: 'Buy 2' });
-    await createTransaction(api, bank.id, { amount: 400, categoryIds: [cat.id], description: 'Refund' });
+    await createTransaction(api, bank.id, { amount: -1000, tagIds: [cat.id], description: 'Buy' });
+    await createTransaction(api, bank.id, { amount: -250, tagIds: [cat.id], description: 'Buy 2' });
+    await createTransaction(api, bank.id, { amount: 400, tagIds: [cat.id], description: 'Refund' });
 
     expect(await kpi(api, 'transactions', 'spend', [])).toBe(850);
     expect(await kpi(api, 'transactions', 'amount', []), 'the signed amount keeps its sign').toBe(-850);

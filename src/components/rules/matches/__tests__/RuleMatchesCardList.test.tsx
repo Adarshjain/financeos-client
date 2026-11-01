@@ -13,8 +13,7 @@ const debit: RuleMatchTransaction = {
   amount: 250,
   type: 'DEBIT',
   sourcedDescription: 'UPI/SWIGGY/ORDER 123',
-  categories: [{ id: 'c1', name: 'Food' } as RuleMatchTransaction['categories'][number]],
-  reviewType: null,
+  category: { key: 'food', name: 'Food', icon: 'cat-fork-knife' },
   appliedRuleId: 'r1',
   appliedRuleName: 'Swiggy',
 };
@@ -25,7 +24,7 @@ const credit: RuleMatchTransaction = {
   amount: 100,
   type: 'CREDIT',
   sourcedDescription: 'SWIGGY REFUND',
-  categories: [],
+  category: null,
   appliedRuleId: null,
   appliedRuleName: null,
 };

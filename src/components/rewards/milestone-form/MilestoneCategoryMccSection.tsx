@@ -3,18 +3,18 @@
 import { Combobox } from '@/components/Combobox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Category } from '@/lib/categories.types';
+import { Tag } from '@/lib/tags.types';
 
 import { inputClass } from './MilestoneBasicsGrid';
 
 interface MilestoneCategoryMccSectionProps {
-  categories: Category[];
-  includeCategories: Category[];
-  setIncludeCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  categories: Tag[];
+  includeCategories: Tag[];
+  setIncludeCategories: React.Dispatch<React.SetStateAction<Tag[]>>;
   includeMccs: string;
   setIncludeMccs: (m: string) => void;
-  excludeCategories: Category[];
-  setExcludeCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  excludeCategories: Tag[];
+  setExcludeCategories: React.Dispatch<React.SetStateAction<Tag[]>>;
   excludeMccs: string;
   setExcludeMccs: (m: string) => void;
 }

@@ -14,7 +14,7 @@ import { useDeleteRewardMilestone, useRewardMilestones } from '@/features/reward
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import type { RewardMilestone } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
@@ -39,7 +39,7 @@ export function MilestonesSection({
 }) {
   const milestones = useRewardMilestones(accountId).data ?? [];
   const account = useAccounts().data?.find((a) => a.id === accountId);
-  const categories = useCategories().data ?? [];
+  const categories = useTags().data ?? [];
   const defaultRewardType = useRewardAccountConfig(accountId).data?.defaultRewardType ?? 'CASH';
   const remove = useDeleteRewardMilestone();
   const refresh = useRefreshUsage();

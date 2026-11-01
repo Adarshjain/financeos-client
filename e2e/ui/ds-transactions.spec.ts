@@ -15,7 +15,7 @@ import type { TransactionResponse } from '../fixtures/seed/transactions';
 import { createTransaction, searchAll, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
-type Reason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
+type Reason = 'UNRECONCILED' | 'DATE_CORRECTED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
       const salary = await createTransaction(api, bank.id, { amount: 50000, date: todayString(-4), description: 'Salary Credit' });
       const old = await createTransaction(api, bank.id, { amount: -9000, date: todayString(-60), description: 'Old Furniture' });
       await flag(api, uber, ['DUPLICATE_SUSPECT']);
-      await flag(api, swiggy, ['CATEGORY_UNVERIFIED']);
+      await flag(api, swiggy, ['DATE_CORRECTED']);
       return { api, bank, swiggy, uber, rent, salary, old };
     }
 
@@ -790,7 +790,7 @@ test.describe('/ds Transactions Approve Undo is a full revert (@ui)', () => {
     const { job } = await uploadAndIngest(api, account.id, [{ filename: 'undo.pdf', buffer: await genBankPdf(undoSpec) }]);
     expect(job.status).toBe('SUCCEEDED');
     const flagged = async () =>
-      (await searchAll(api)).filter((t) => t.reviewType === 'NEEDS_REVIEW' && t.reviewReasons?.includes('CATEGORY_UNVERIFIED'));
+      (await searchAll(api)).filter((t) => t.reviewType === 'NEEDS_REVIEW' && t.reviewReasons?.includes('DATE_CORRECTED'));
     expect(await flagged()).toHaveLength(2);
 
     await page.goto('/transactions');

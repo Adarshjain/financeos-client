@@ -4,6 +4,7 @@ import React from 'react';
 
 import { DateField } from '@/components/ds/DateField/DateField';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
 import { Select, type SelectOption } from '@/components/ds/Select/Select';
@@ -15,11 +16,12 @@ import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsTo
 import type { Account } from '@/lib/account.types';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 import { amountExpressionProps } from '@/lib/amountExpression';
-import type { Category } from '@/lib/categories.types';
+import type { Tag } from '@/lib/tags.types';
 import type { ReviewType, TransactionChannel } from '@/lib/transaction.types';
 
-import { CategoriesField } from './CategoriesField';
+import { CategoryField } from './CategoryField';
 import { CHANNEL_LABELS } from './constants';
+import { TagsField } from './TagsField';
 import {
   type Direction,
   EDITABLE_REASONS,
@@ -49,7 +51,7 @@ const REVIEW_OPTIONS = (isUpdate: boolean): SelectOption[] => [
 
 const REASON_OPTIONS: SelectOption[] = EDITABLE_REASONS.map((r) => ({
   value: r,
-  label: { UNRECONCILED: 'Unreconciled', CATEGORY_UNVERIFIED: 'Category unverified', DUPLICATE_SUSPECT: 'Duplicate', DATE_CORRECTED: 'Date corrected' }[r],
+  label: { UNRECONCILED: 'Unreconciled', DUPLICATE_SUSPECT: 'Duplicate', DATE_CORRECTED: 'Date corrected' }[r],
 }));
 
 const CHANNEL_OPTIONS: SelectOption[] = [
@@ -72,18 +74,23 @@ export interface TransactionFormFieldsProps {
   /** The accounts to record against: none shows the "no account yet" state in place of the Account field. */
   hasAccounts: boolean;
   cardOptions: { id: string; label: string }[];
-  categories: Category[];
-  selectedCategoryIds: string[];
-  creatingCategory: boolean;
-  suggestingCategories: boolean;
+  tags: Tag[];
+  selectedTagIds: string[];
+  creatingTag: boolean;
+  /** The category on the form as "Food · Delivery"; none when not set. */
+  categoryLabel?: string;
+  categoryIcon?: IconName;
+  suggestingCategory: boolean;
   /** The raw bank text, shown under the description on Edit. */
   sourcedDescription?: string | null;
   /** Shown on the Review status field while Needs review has no reason. */
   reviewError?: string;
   onChange: (patch: Partial<TransactionFormValues>) => void;
   onAccountChange: (accountId: string) => void;
-  onCategoriesChange: (ids: string[]) => void;
-  onCreateCategory: (name: string) => void;
+  /** The Category field was pressed: the form opens the category picker. */
+  onOpenCategory: () => void;
+  onTagsChange: (ids: string[]) => void;
+  onCreateTag: (name: string) => void;
   onDescriptionBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   onAddAccount: () => void;
 }
@@ -97,25 +104,28 @@ export function TransactionFormFields({
   accounts,
   hasAccounts,
   cardOptions,
-  categories,
-  selectedCategoryIds,
-  creatingCategory,
-  suggestingCategories,
+  tags,
+  selectedTagIds,
+  creatingTag,
+  categoryLabel,
+  categoryIcon,
+  suggestingCategory,
   sourcedDescription,
   reviewError,
   onChange,
   onAccountChange,
-  onCategoriesChange,
-  onCreateCategory,
+  onOpenCategory,
+  onTagsChange,
+  onCreateTag,
   onDescriptionBlur,
   onAddAccount,
 }: TransactionFormFieldsProps) {
   const noAccountYet = !isUpdate && !hasAccounts;
   const descriptionHelper = isUpdate
     ? (sourcedDescription ?? undefined)
-    : suggestingCategories
-      ? 'Suggesting categories…'
-      : 'Rules and the categoriser suggest a category as you type';
+    : suggestingCategory
+      ? 'Suggesting a category…'
+      : 'Your rules and the built-in engine suggest a category as you type';
 
   return (
     <>
@@ -194,13 +204,9 @@ export function TransactionFormFields({
         helper={descriptionHelper}
       />
 
-      <CategoriesField
-        categories={categories}
-        selectedCategoryIds={selectedCategoryIds}
-        creating={creatingCategory}
-        onChange={onCategoriesChange}
-        onCreate={onCreateCategory}
-      />
+      <CategoryField label={categoryLabel} icon={categoryIcon} onOpen={onOpenCategory} />
+
+      <TagsField tags={tags} selectedTagIds={selectedTagIds} creating={creatingTag} onChange={onTagsChange} onCreate={onCreateTag} />
 
 
       {isUpdate ? (

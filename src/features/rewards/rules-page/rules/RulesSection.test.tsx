@@ -71,8 +71,8 @@ vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({
 vi.mock('@/features/rewards/queries/useRewardRecommendMutations', () => ({
   useRecommendCards: () => ({ mutate: recommend, isPending: false, data: recommendData }),
 }));
-vi.mock('@/lib/query/hooks/useCategories', () => ({
-  useCategories: () => ({ data: [{ id: 'k1', name: 'Dining' }, { id: 'k2', name: 'Fuel' }] }),
+vi.mock('@/lib/query/hooks/useTags', () => ({
+  useTags: () => ({ data: [{ id: 'k1', name: 'Dining' }, { id: 'k2', name: 'Fuel' }] }),
 }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({
   useAccounts: () => ({

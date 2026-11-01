@@ -120,8 +120,8 @@ export function TransactionMetadataGrid({
             <Tag className="h-4 w-4 text-slate-400" /> Categories
           </span>
           <div className="flex flex-wrap gap-1 flex-end">
-            {(transaction.categories ?? []).length > 0 ? (
-              transaction.categories?.map((category) => (
+            {(transaction.tags ?? []).length > 0 ? (
+              transaction.tags?.map((category) => (
                 <Badge
                   variant="outline"
                   className="rounded-full px-2.5 text-2xs py-0.5 border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 bg-slate-50 dark:bg-slate-900"

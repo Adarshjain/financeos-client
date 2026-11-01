@@ -25,7 +25,7 @@ const txnA: Transaction = {
   description: 'Flagged A',
   source: 'gmail_transaction_alert',
   reviewType: 'NEEDS_REVIEW',
-  reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'],
+  reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'],
   createdAt: '2026-07-20T00:00:00Z',
 };
 

@@ -18,7 +18,7 @@ const t = (over: Partial<Transaction> = {}): Transaction =>
     source: 'manual',
     createdAt: '',
     balance: 295030,
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
     ...over,
   }) as Transaction;
 
@@ -46,10 +46,24 @@ describe('transactionRow', () => {
     expect(row).toMatchObject({ excluded: true, categories: [], balance: undefined, provenance: 'Excluded' });
   });
 
-  it('shows no category chip list entry when none is set, and +n sources from all categories', () => {
-    expect(transactionRow(t({ categories: [] }), ctx).categories).toEqual([]);
-    const two = transactionRow(t({ categories: [{ id: 'a', name: 'Shopping' }, { id: 'b', name: 'Subs' }] as Transaction['categories'] }), ctx);
-    expect(two.categories).toEqual(['Shopping', 'Subs']);
+  it('shows no category when none is set, and the category with its sub-category and icon when it is', () => {
+    expect(transactionRow(t({ category: null }), ctx)).toMatchObject({ categories: [], category: undefined, subCategory: undefined });
+    const row = transactionRow(
+      t({ category: { key: 'food', name: 'Food', icon: 'cat-fork-knife' }, subcategory: { key: 'food.delivery', name: 'Delivery' } }),
+      ctx,
+    );
+    expect(row).toMatchObject({
+      categories: ['Food'],
+      subCategory: 'Delivery',
+      categoryIcon: 'cat-fork-knife',
+      categoryKey: 'food',
+      category: 'Food · Delivery',
+    });
+  });
+
+  it('shows the category alone when there is no sub-category', () => {
+    const row = transactionRow(t({ category: { key: 'gifts', name: 'Gifts', icon: 'gift' }, subcategory: null }), ctx);
+    expect(row).toMatchObject({ categories: ['Gifts'], category: 'Gifts', subCategory: undefined });
   });
 
   it('shows where it came from only when asked; uploads show nothing', () => {
@@ -90,7 +104,7 @@ describe('reviewWords', () => {
   });
   it('writes one word per reason, or Needs review with none', () => {
     expect(reviewWords(t({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DUPLICATE_SUSPECT'] }))).toBe('Unreconciled · Duplicate');
-    expect(reviewWords(t({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED', 'CATEGORY_UNVERIFIED'] }))).toBe('Date corrected · Category unverified');
+    expect(reviewWords(t({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED', 'DUPLICATE_SUSPECT'] }))).toBe('Date corrected · Duplicate');
     expect(reviewWords(t({ reviewType: 'NEEDS_REVIEW', reviewReasons: [] }))).toBe('Needs review');
   });
   it('adds Watching with its reason', () => {

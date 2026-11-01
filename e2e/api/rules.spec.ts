@@ -1,6 +1,6 @@
 import { expectStatus, waitForJob } from '../fixtures/api';
 import { createBankAccount } from '../fixtures/seed/accounts';
-import { createCategory, createRule, RuleResponse } from '../fixtures/seed/categories';
+import { createRule, RuleResponse } from '../fixtures/seed/categories';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, secondUser } from '../fixtures/tenancy';
 import { expect, freshUser, test } from '../fixtures/test';
@@ -11,11 +11,8 @@ test.describe('Rules API', () => {
   test('create rules with each matchType and validate invalid patterns', async ({
     api,
   }) => {
-    const cat = await createCategory(api, 'Rule Test Category');
-
     // 1. Valid match types
     const matchTypes = [
-      { type: 'MERCHANT_KEY', key: 'STARBUCKS' },
       { type: 'CONTAINS', key: 'AUTOPAY' },
       { type: 'STARTS_WITH', key: 'ACH/' },
       { type: 'EXACT', key: 'NEFT SALARY CREDIT' },
@@ -25,20 +22,22 @@ test.describe('Rules API', () => {
     for (const { type, key } of matchTypes) {
       const rule = await createRule(api, {
         merchantKey: key,
-        categoryIds: [cat.id],
+        categoryKey: 'food',
+        subcategoryKey: 'food.delivery',
         matchType: type,
         displayName: `Display ${type}`,
       });
       expect(rule.id).toBeDefined();
       expect(rule.matchType).toBe(type);
-      expect(rule.categories.map((c) => c.id)).toContain(cat.id);
+      expect(rule.category.key).toBe('food');
+      expect(rule.subcategory?.key).toBe('food.delivery');
     }
 
     // 2. Invalid regex pattern -> 400 Bad Request
     const badRegexRes = await api.POST('/api/v1/rules', {
       body: {
         merchantKey: '[unclosed-regex-bracket(',
-        categoryIds: [cat.id],
+        categoryKey: 'food',
         matchType: 'REGEX',
       },
     });
@@ -48,7 +47,7 @@ test.describe('Rules API', () => {
     const shortPatternRes = await api.POST('/api/v1/rules', {
       body: {
         merchantKey: 'ab',
-        categoryIds: [cat.id],
+        categoryKey: 'food',
         matchType: 'CONTAINS',
       },
     });
@@ -57,9 +56,9 @@ test.describe('Rules API', () => {
     // 4. Duplicate rule (same key + matchType) -> 409 Conflict
     const dupRes = await api.POST('/api/v1/rules', {
       body: {
-        merchantKey: 'STARBUCKS',
-        categoryIds: [cat.id],
-        matchType: 'MERCHANT_KEY',
+        merchantKey: 'AUTOPAY',
+        categoryKey: 'food',
+        matchType: 'CONTAINS',
       },
     });
     expectStatus(dupRes, 409);
@@ -86,11 +85,11 @@ test.describe('Rules API', () => {
     const previewRes = await api.POST('/api/v1/rules/preview-matches', {
       body: {
         merchantKey: 'SWIGGY',
-        matchType: 'MERCHANT_KEY',
+        matchType: 'CONTAINS',
       },
     });
     expectStatus(previewRes, 200);
-    const page = previewRes.data!;
+    const page = previewRes.data!.matches;
     expect(page.content).toBeDefined();
     // Confirms sourced-only matching: manual description-only transactions never match
     expect(page.content.find((t: { id: string }) => t.id === manualTxn.id)).toBeUndefined();
@@ -101,10 +100,9 @@ test.describe('Rules API', () => {
     api,
   }) => {
     const account = await createBankAccount(api, { name: 'Apply Rule Account' });
-    const cat = await createCategory(api, 'Dining Category');
     const rule = await createRule(api, {
       merchantKey: 'MCDONALDS',
-      categoryIds: [cat.id],
+      categoryKey: 'food',
       matchType: 'CONTAINS',
     });
 
@@ -145,34 +143,24 @@ test.describe('Rules API', () => {
     expectStatus(badApplyRes, 400);
   });
 
-  test('verify, search, filter, update, and pagination of rules', async ({
+  test('search, filter, update, and pagination of rules', async ({
     api,
   }) => {
-    const cat1 = await createCategory(api, 'Category Alpha');
-    const cat2 = await createCategory(api, 'Category Beta');
-
     const rule = await createRule(api, {
       merchantKey: 'DOMINOS PIZZA',
       displayName: 'Dominos Special',
-      categoryIds: [cat1.id],
+      categoryKey: 'food',
       matchType: 'CONTAINS',
       mcc: '5814',
     });
 
-    // Verify endpoint
-    const verifyRes = await api.POST('/api/v1/rules/{id}/verify', {
-      params: { path: { id: rule.id } },
+    // Filter by category
+    const byCategoryRes = await api.GET('/api/v1/rules', {
+      params: { query: { categoryKey: 'food', page: 0, size: 20, sort: [] } },
     });
-    expectStatus(verifyRes, 200);
-    expect(verifyRes.data?.verified).toBe(true);
-
-    // Filter by verified=true
-    const verifiedListRes = await api.GET('/api/v1/rules', {
-      params: { query: { verified: true, page: 0, size: 20, sort: [] } },
-    });
-    expectStatus(verifiedListRes, 200);
+    expectStatus(byCategoryRes, 200);
     expect(
-      verifiedListRes.data?.content.some((r: RuleResponse) => r.id === rule.id)
+      byCategoryRes.data?.content.some((r: RuleResponse) => r.id === rule.id)
     ).toBe(true);
 
     // Search by merchantKey
@@ -198,14 +186,16 @@ test.describe('Rules API', () => {
       params: { path: { id: rule.id } },
       body: {
         displayName: 'Dominos Delivery',
-        categoryIds: [cat2.id],
+        categoryKey: 'groceries',
+        subcategoryKey: 'groceries.dairy',
         mcc: '5812',
       },
     });
     expectStatus(updateRes, 200);
     expect(updateRes.data?.displayName).toBe('Dominos Delivery');
     expect(updateRes.data?.mcc).toBe('5812');
-    expect(updateRes.data?.categories.map((c) => c.id)).toContain(cat2.id);
+    expect(updateRes.data?.category.key).toBe('groceries');
+    expect(updateRes.data?.subcategory?.key).toBe('groceries.dairy');
 
     // Pagination contract
     const pageRes = await api.GET('/api/v1/rules', {
@@ -220,10 +210,8 @@ test.describe('Rules API', () => {
   });
 
   test('delete rule removes it and updates rule list', async ({ api }) => {
-    const cat = await createCategory(api, 'Temp Cat');
     const rule = await createRule(api, {
       merchantKey: 'TEMP_MERCHANT',
-      categoryIds: [cat.id],
     });
 
     // Delete rule
@@ -246,14 +234,12 @@ test.describe('Rules API', () => {
     expectStatus(delUnknownRes, 404);
   });
 
-  test('tenancy: user B cannot modify, verify, apply, or delete user A rule', async ({
+  test('tenancy: user B cannot modify, apply, or delete user A rule', async ({
     api,
     request,
   }) => {
-    const catA = await createCategory(api, 'Tenant A Category');
     const ruleA = await createRule(api, {
       merchantKey: 'USER_A_MERCHANT',
-      categoryIds: [catA.id],
     });
     const u2 = await secondUser(request);
 
@@ -261,9 +247,6 @@ test.describe('Rules API', () => {
     await expectForeign(u2.api, 'PUT', `/api/v1/rules/${ruleA.id}`, {
       displayName: 'Hacked Rule',
     });
-
-    // User B tries to verify user A's rule -> 400
-    await expectForeign(u2.api, 'POST', `/api/v1/rules/${ruleA.id}/verify`);
 
     // User B tries to apply user A's rule -> 400
     await expectForeign(u2.api, 'POST', `/api/v1/rules/${ruleA.id}/apply`, {

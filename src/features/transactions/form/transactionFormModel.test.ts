@@ -102,7 +102,7 @@ describe('formProblems', () => {
 });
 
 describe('buildRequest', () => {
-  const base = { isUpdate: false, categoryIds: ['c1'], supportsCards: true };
+  const base = { isUpdate: false, tagIds: ['c1'], supportsCards: true };
 
   it('maps an Add: signed amount, no review fields', () => {
     const body = buildRequest(filled({ description: 'Chai', mcc: '5411', cardId: 'card1', instantDiscount: '10', channel: 'UPI' }), base);
@@ -112,12 +112,25 @@ describe('buildRequest', () => {
       amount: -250,
       date: '2026-10-13',
       description: 'Chai',
-      categoryIds: ['c1'],
+      tagIds: ['c1'],
       mcc: '5411',
       rewardDetails: { instantDiscount: 10, channel: 'UPI', settlementDate: null },
     });
     expect(body).not.toHaveProperty('reviewType');
     expect(body).not.toHaveProperty('reviewReasons');
+  });
+
+  it('sends the category and sub-category key it is given, and no sub for Others', () => {
+    const picked = buildRequest(filled(), { ...base, category: { categoryKey: 'food', subcategoryKey: 'food.delivery' } });
+    expect(picked).toMatchObject({ categoryKey: 'food', subcategoryKey: 'food.delivery' });
+    const others = buildRequest(filled(), { ...base, category: { categoryKey: 'food', subcategoryKey: null } });
+    expect(others.categoryKey).toBe('food');
+    expect(others).not.toHaveProperty('subcategoryKey');
+  });
+
+  it('sends no category when none is given: an edit never re-categorises', () => {
+    expect(buildRequest(filled(), { ...base, isUpdate: true })).not.toHaveProperty('categoryKey');
+    expect(buildRequest(filled(), { ...base, isUpdate: true, category: null })).not.toHaveProperty('categoryKey');
   });
 
   it('sends no card for Unattributed or an account that takes none', () => {

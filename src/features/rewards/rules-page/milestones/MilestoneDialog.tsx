@@ -11,7 +11,6 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { useRewardMilestoneForm } from '@/features/rewards/milestones/useRewardMilestoneForm';
 import { dsRewardNotifier } from '@/features/rewards/rewardNotifier';
 import type { Cardholder } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import { todayInAppZone } from '@/lib/date-range';
 import type {
   MilestoneBasis,
@@ -21,6 +20,7 @@ import type {
   RewardMilestone,
   RewardType,
 } from '@/lib/rewards.types';
+import type { Tag } from '@/lib/tags.types';
 import { parseCalendarDate, sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
 
 import { useRefreshUsage } from '../rulesRefresh';
@@ -42,7 +42,7 @@ export interface MilestoneDialogProps {
   milestone?: RewardMilestone;
   cardholders: Cardholder[];
   isBank: boolean;
-  categories: Category[];
+  categories: Tag[];
   /** The card's default reward currency, preselected for new milestones. */
   defaultRewardType: RewardType;
   onClose: () => void;
@@ -86,8 +86,8 @@ export function MilestoneDialog({
     const missing = [...f.includeCategories, ...f.excludeCategories].filter((c) => !known.has(c.id));
     return [...categories, ...missing].map((c) => ({ value: c.id, label: c.name }));
   }, [categories, f.includeCategories, f.excludeCategories]);
-  const toCategories = (ids: string[]): Category[] =>
-    ids.map((id) => [...categories, ...f.includeCategories, ...f.excludeCategories].find((c) => c.id === id) ?? ({ id, name: 'Unknown category' } as Category));
+  const toCategories = (ids: string[]): Tag[] =>
+    ids.map((id) => [...categories, ...f.includeCategories, ...f.excludeCategories].find((c) => c.id === id) ?? ({ id, name: 'Unknown category' } as Tag));
 
   const holderOptions = React.useMemo(
     () => [

@@ -45,7 +45,7 @@ export function RulePatternPreview({ matchType, merchantKey, editingRuleId }: Ru
         params: { query: { page, size: PAGE_SIZE, sort: [] } },
         body: target!,
       });
-      return data as PagedRuleMatches;
+      return (data as unknown as { matches: PagedRuleMatches }).matches;
     },
     enabled: target !== null,
     placeholderData: keepPreviousData,
@@ -118,12 +118,12 @@ export function RulePatternPreview({ matchType, merchantKey, editingRuleId }: Ru
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap text-2xs text-slate-400">
                     <span className="tabular-nums">{formatDate(txn.date)}</span>
-                    {txn.categories.length === 0 ? (
+                    {!txn.category ? (
                       <span className="italic">Uncategorized</span>
                     ) : (
-                      txn.categories.map((c) => (
+                      [txn.category].map((c) => (
                         <Badge
-                          key={c.id}
+                          key={c.key}
                           variant="outline"
                           className="rounded-full px-2 py-0 text-2xs border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
                         >

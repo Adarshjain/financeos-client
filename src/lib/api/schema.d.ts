@@ -804,54 +804,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAllCategories"];
-        put?: never;
-        post: operations["createCategory"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/categories/page": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getCategoriesPage"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/categories/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getCategory"];
-        put: operations["updateCategory"];
-        post?: never;
-        delete: operations["deleteCategory"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/categorize": {
         parameters: {
             query?: never;
@@ -862,6 +814,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["categorize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/category-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCategoryList"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3818,22 +3786,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/rules/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["verifyRules"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/rules/{id}": {
         parameters: {
             query?: never;
@@ -3860,38 +3812,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["applyRule"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/rules/{id}/unverify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["unverifyRule"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/rules/{id}/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["verifyRule"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3941,6 +3861,70 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllTags"];
+        put?: never;
+        post: operations["createTag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/bulk-add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["bulkAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTagsPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTag"];
+        put: operations["updateTag"];
+        post?: never;
+        delete: operations["deleteTag"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4117,6 +4101,22 @@ export interface paths {
         put: operations["updateTransaction"];
         post?: never;
         delete: operations["deleteTransaction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/{id}/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setCategory"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4307,7 +4307,7 @@ export interface components {
             items: components["schemas"]["BatchLoanPaymentItem"][];
         };
         BatchReviewRequest: {
-            reviewReasons?: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string} */
             reviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             transactionIds: string[];
@@ -4317,7 +4317,6 @@ export interface components {
             failures: components["schemas"]["BatchFailure"][];
             skippedIds: string[];
             succeededIds: string[];
-            verifiedRules: components["schemas"]["VerifiedRuleChange"][];
         };
         BillDigestResponse: {
             creditLimit?: number | null;
@@ -4479,6 +4478,16 @@ export interface components {
             unavailableReason?: string | null;
             view?: string | null;
         };
+        BulkAddTagsRequest: {
+            tagIds: string[];
+            transactionIds: string[];
+        };
+        BulkAddTagsResponse: {
+            /** Format: int32 */
+            tagsAdded: number;
+            /** Format: int32 */
+            transactionsFound: number;
+        };
         BulkReattributeCardRequest: {
             /** Format: uuid */
             accountId: string;
@@ -4494,14 +4503,6 @@ export interface components {
         BulkReattributeResponse: {
             /** Format: int32 */
             updatedCount: number;
-        };
-        BulkVerifyRulesRequest: {
-            ruleIds: string[];
-        };
-        BulkVerifyRulesResponse: {
-            /** Format: int32 */
-            verifiedCount: number;
-            verifiedRules: components["schemas"]["RuleVerification"][];
         };
         CapStatus: {
             cap: number;
@@ -4670,24 +4671,40 @@ export interface components {
             description: string;
         };
         CategorizeResponse: {
-            categories: components["schemas"]["CategoryResponse"][];
-            fromRule: boolean;
-            mcc?: string | null;
-            /** Format: uuid */
-            ruleId?: string | null;
+            categoryKey?: string | null;
+            source?: string | null;
+            subcategoryKey?: string | null;
+        };
+        Category: {
+            /** @enum {string} */
+            direction: "OUT" | "IN" | "BOTH";
+            excludedByDefault: boolean;
+            icon: string;
+            /** Format: int32 */
+            inOrder?: number | null;
+            key: string;
+            name: string;
+            /** Format: int32 */
+            outOrder?: number | null;
+            subs: components["schemas"]["Sub"][];
         };
         CategoryBreakdown: {
             amount: number;
             category: string;
             percentage: number;
         };
-        CategoryRequest: {
+        CategoryListResponse: {
+            categories: components["schemas"]["Category"][];
+        };
+        CategoryRef: {
+            icon: string;
+            key: string;
             name: string;
         };
-        CategoryResponse: {
+        CategoryRuleRef: {
             /** Format: uuid */
             id: string;
-            name: string;
+            name?: string | null;
         };
         ChatMessage: {
             content?: string;
@@ -4738,7 +4755,7 @@ export interface components {
             cleared: number;
         };
         ClearedTransaction: {
-            previousReviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            previousReviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string} */
             previousReviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             /** Format: date-time */
@@ -5167,11 +5184,12 @@ export interface components {
             type: "KPI" | "CHART" | "TABLE";
         };
         CreateRuleRequest: {
-            categoryIds: string[];
+            categoryKey: string;
             displayName?: string;
             matchType?: string;
             mcc?: string | null;
             merchantKey: string;
+            subcategoryKey?: string | null;
         };
         CreateSettlementRequest: {
             /** Format: uuid */
@@ -5207,7 +5225,7 @@ export interface components {
             amount: number;
             /** Format: uuid */
             cardId?: string;
-            categoryIds?: string[];
+            categoryKey?: string;
             /** Format: date */
             date: string;
             description?: string;
@@ -5216,6 +5234,8 @@ export interface components {
             mcc?: string;
             monitoringReason?: string;
             rewardDetails?: components["schemas"]["RewardDetailsRequest"];
+            subcategoryKey?: string;
+            tagIds?: string[];
         };
         CreditCardAccountResponse: {
             /** Format: date */
@@ -6887,7 +6907,7 @@ export interface components {
         MergeTransactionsResponse: {
             /** Format: uuid */
             keptId: string;
-            remainingReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            remainingReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
         };
@@ -7055,24 +7075,6 @@ export interface components {
         };
         PageAppNotificationResponse: {
             content: components["schemas"]["AppNotificationResponse"][];
-            empty: boolean;
-            first: boolean;
-            last: boolean;
-            /** Format: int32 */
-            number: number;
-            /** Format: int32 */
-            numberOfElements: number;
-            pageable: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            size: number;
-            sort: components["schemas"]["SortObject"][];
-            /** Format: int64 */
-            totalElements: number;
-            /** Format: int32 */
-            totalPages: number;
-        };
-        PageCategoryResponse: {
-            content: components["schemas"]["CategoryResponse"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -7341,6 +7343,24 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageTagResponse: {
+            content: components["schemas"]["TagResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageTransactionResponse: {
             content: components["schemas"]["TransactionResponse"][];
             empty: boolean;
@@ -7495,6 +7515,23 @@ export interface components {
         PreviewMatchesRequest: {
             matchType?: string;
             merchantKey: string;
+        };
+        PreviewMatchesResponse: {
+            /** Format: int64 */
+            matchCount: number;
+            matches: components["schemas"]["PageRuleMatchTransactionResponse"];
+            /** Format: int64 */
+            userSetCount: number;
+        };
+        Previous: {
+            categoryKey?: string | null;
+            /** Format: uuid */
+            ruleId?: string | null;
+            /** Format: date-time */
+            setAt?: string | null;
+            /** @enum {string|null} */
+            source?: "AUTO" | "LINK" | "RULE" | "USER" | null;
+            subcategoryKey?: string | null;
         };
         PriceHistoryPage: {
             items: components["schemas"]["InstrumentPriceResponse"][];
@@ -7724,6 +7761,14 @@ export interface components {
             /** @enum {string} */
             type: "stock" | "mutual_fund" | "etf";
             yahooSymbol?: string;
+        };
+        Restore: {
+            /** Format: uuid */
+            ruleId?: string | null;
+            /** Format: date-time */
+            setAt?: string | null;
+            /** @enum {string|null} */
+            source?: "AUTO" | "LINK" | "RULE" | "USER" | null;
         };
         RewardAccountConfigRequest: {
             /** Format: uuid */
@@ -7985,7 +8030,7 @@ export interface components {
             capWindow?: "DAY" | "CALENDAR_MONTH" | "STATEMENT_CYCLE" | "QUARTER" | "CALENDAR_YEAR" | "ANNIVERSARY_YEAR" | null;
             /** Format: uuid */
             cardholderId?: string | null;
-            categories: components["schemas"]["CategoryResponse"][];
+            categories: components["schemas"]["TagResponse"][];
             channels: ("ONLINE" | "POS" | "UPI" | "CONTACTLESS" | "ATM" | "OTHER")[];
             /** @enum {string} */
             counterScope: "ACCOUNT" | "PER_CARDHOLDER";
@@ -8170,19 +8215,21 @@ export interface components {
             /** Format: uuid */
             cardId?: string | null;
             cardLast4?: string | null;
-            categories: components["schemas"]["CategoryResponse"][];
+            category?: components["schemas"]["CategoryRef"];
+            /** @enum {string|null} */
+            categorySource?: "AUTO" | "LINK" | "RULE" | "USER" | null;
             /** Format: date */
             date: string;
             /** Format: uuid */
             id: string;
-            reviewType?: string | null;
             sourcedDescription: string;
+            subcategory?: components["schemas"]["SubcategoryRef"];
             type: string;
         };
         RuleResponse: {
             /** Format: int32 */
             appliedCount: number;
-            categories: components["schemas"]["CategoryResponse"][];
+            category: components["schemas"]["CategoryRef"];
             /** Format: date-time */
             createdAt: string;
             displayName?: string | null;
@@ -8193,19 +8240,7 @@ export interface components {
             matchType: string;
             mcc?: string | null;
             merchantKey: string;
-            source: string;
-            verified: boolean;
-        };
-        RuleRestore: {
-            restore?: components["schemas"]["ClearedTransaction"][];
-            /** Format: uuid */
-            ruleId: string;
-        };
-        RuleVerification: {
-            clearedTransactionIds: string[];
-            clearedTransactions: components["schemas"]["ClearedTransaction"][];
-            /** Format: uuid */
-            ruleId: string;
+            subcategory?: components["schemas"]["SubcategoryRef"];
         };
         RunReportRequest: {
             datasource: string;
@@ -8297,6 +8332,25 @@ export interface components {
             stcgRate?: number | null;
             stcgTax?: number | null;
             tax?: number | null;
+        };
+        SetCategoryRequest: {
+            categoryKey?: string | null;
+            restore?: components["schemas"]["Restore"];
+            subcategoryKey?: string | null;
+        };
+        SetCategoryResponse: {
+            category?: components["schemas"]["CategoryRef"];
+            /** Format: uuid */
+            categoryRuleId?: string | null;
+            /** Format: date-time */
+            categorySetAt?: string | null;
+            /** @enum {string|null} */
+            categorySource?: "AUTO" | "LINK" | "RULE" | "USER" | null;
+            isTransactionExcluded: boolean;
+            previous: components["schemas"]["Previous"];
+            subcategory?: components["schemas"]["SubcategoryRef"];
+            /** Format: uuid */
+            transactionId: string;
         };
         SetDividendReceiptStatusRequest: {
             /** @enum {string|null} */
@@ -8531,6 +8585,18 @@ export interface components {
             /** @enum {string|null} */
             verdict?: "AUTO_INGEST" | "NEEDS_REVIEW" | "REJECTED" | null;
         };
+        Sub: {
+            /** @enum {string} */
+            direction: "OUT" | "IN" | "BOTH";
+            key: string;
+            name: string;
+            /** Format: int32 */
+            sortOrder: number;
+        };
+        SubcategoryRef: {
+            key: string;
+            name: string;
+        };
         Suggestion: {
             /** Format: uuid */
             brokerAccountId: string;
@@ -8620,6 +8686,16 @@ export interface components {
             unresolvedInstruments: number;
             /** Format: int32 */
             warningsCount: number;
+        };
+        TagRequest: {
+            name: string;
+        };
+        TagResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: int64 */
+            transactionCount?: number | null;
         };
         TaxHarvestResponse: {
             /** Format: int32 */
@@ -8713,7 +8789,12 @@ export interface components {
             cardId?: string | null;
             cardLabel?: string | null;
             cardLast4?: string | null;
-            categories: components["schemas"]["CategoryResponse"][];
+            category?: components["schemas"]["CategoryRef"];
+            categoryRule?: components["schemas"]["CategoryRuleRef"];
+            /** Format: date-time */
+            categorySetAt?: string | null;
+            /** @enum {string|null} */
+            categorySource?: "AUTO" | "LINK" | "RULE" | "USER" | null;
             /** @enum {string|null} */
             channel?: "ONLINE" | "POS" | "UPI" | "CONTACTLESS" | "ATM" | "OTHER" | null;
             convenienceFee?: number | null;
@@ -8733,7 +8814,7 @@ export interface components {
             mcc?: string | null;
             monitoringReason?: string | null;
             obligationRefs: components["schemas"]["ObligationRef"][];
-            reviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            reviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
             /** Format: date-time */
@@ -8743,6 +8824,8 @@ export interface components {
             /** @enum {string} */
             source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload";
             sourcedDescription?: string | null;
+            subcategory?: components["schemas"]["SubcategoryRef"];
+            tags: components["schemas"]["TagResponse"][];
             /** Format: date-time */
             updatedAt: string;
         };
@@ -8794,7 +8877,6 @@ export interface components {
         };
         UndoApproveRequest: {
             approved?: components["schemas"]["ClearedTransaction"][];
-            rules?: components["schemas"]["RuleRestore"][];
         };
         UndoApproveResponse: {
             restoredTransactionIds: string[];
@@ -8821,14 +8903,6 @@ export interface components {
             /** @enum {string} */
             direction: "lent" | "borrowed";
             transaction: components["schemas"]["TransactionResponse"];
-        };
-        UnverifyRuleRequest: {
-            restore?: components["schemas"]["ClearedTransaction"][];
-            transactionIds: string[];
-        };
-        UnverifyRuleResponse: {
-            restoredTransactionIds: string[];
-            skippedTransactionIds: string[];
         };
         UpdateAppLockSettingsRequest: {
             /** Format: int32 */
@@ -8967,11 +9041,12 @@ export interface components {
             entries: components["schemas"]["RoutingEntryRequest"][];
         };
         UpdateRuleRequest: {
-            categoryIds?: string[];
+            categoryKey?: string | null;
             displayName?: string;
             matchType?: string;
             mcc?: string | null;
             merchantKey?: string;
+            subcategoryKey?: string | null;
         };
         UpdateSipRequest: {
             active: boolean;
@@ -8992,7 +9067,7 @@ export interface components {
             amount: number;
             /** Format: uuid */
             cardId?: string;
-            categoryIds?: string[];
+            categoryKey?: string;
             /** Format: date */
             date: string;
             description?: string;
@@ -9000,10 +9075,12 @@ export interface components {
             isTransactionUnderMonitoring?: boolean;
             mcc?: string;
             monitoringReason?: string;
-            reviewReasons?: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             rewardDetails?: components["schemas"]["RewardDetailsRequest"];
+            subcategoryKey?: string;
+            tagIds?: string[];
         };
         UpsertPriceRequest: {
             /** Format: date */
@@ -9020,30 +9097,6 @@ export interface components {
             /** Format: uuid */
             id: string;
             pictureUrl?: string | null;
-        };
-        VerifiedRuleChange: {
-            clearedTransactionIds: string[];
-            clearedTransactions: components["schemas"]["ClearedTransaction"][];
-            /** Format: uuid */
-            ruleId: string;
-        };
-        VerifyRuleResponse: {
-            /** Format: int32 */
-            appliedCount: number;
-            categories: components["schemas"]["CategoryResponse"][];
-            clearedTransactions: components["schemas"]["ClearedTransaction"][];
-            /** Format: date-time */
-            createdAt: string;
-            displayName?: string | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: date-time */
-            lastAppliedAt?: string | null;
-            matchType: string;
-            mcc?: string | null;
-            merchantKey: string;
-            source: string;
-            verified: boolean;
         };
         WidgetLayout: {
             /** Format: int32 */
@@ -10903,200 +10956,6 @@ export interface operations {
             };
         };
     };
-    getAllCategories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"][];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CategoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getCategoriesPage: {
-        parameters: {
-            query?: {
-                search?: string;
-                /** @description Zero-based page index (0..N) */
-                page?: number;
-                /** @description The size of the page to be returned */
-                size?: number;
-                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
-                sort?: string[];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageCategoryResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    updateCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CategoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     categorize: {
         parameters: {
             query?: never;
@@ -11117,6 +10976,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CategorizeResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCategoryList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryListResponse"];
                 };
             };
             /** @description Error response */
@@ -18700,12 +18588,10 @@ export interface operations {
     getRules: {
         parameters: {
             query?: {
-                verified?: boolean;
                 search?: string;
-                source?: string;
                 matchType?: string;
                 applied?: boolean;
-                categoryId?: string;
+                categoryKey?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -18798,40 +18684,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageRuleMatchTransactionResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    verifyRules: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BulkVerifyRulesRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BulkVerifyRulesResponse"];
+                    "*/*": components["schemas"]["PreviewMatchesResponse"];
                 };
             };
             /** @description Error response */
@@ -18944,72 +18797,6 @@ export interface operations {
             };
         };
     };
-    unverifyRule: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UnverifyRuleRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["UnverifyRuleResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    verifyRule: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["VerifyRuleResponse"];
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     globalSearch: {
         parameters: {
             query?: {
@@ -19089,6 +18876,233 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["StatementDetailResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getAllTags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TagResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    bulkAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkAddTagsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BulkAddTagsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTagsPage: {
+        parameters: {
+            query?: {
+                search?: string;
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageTagResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {
@@ -19617,6 +19631,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SetCategoryResponse"];
+                };
             };
             /** @description Error response */
             default: {

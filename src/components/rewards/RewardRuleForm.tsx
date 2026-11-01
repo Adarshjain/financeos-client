@@ -10,12 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import { useRewardRuleForm } from '@/features/rewards/rules/form/useRewardRuleForm';
 import type { AccountCard } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import type {
   RewardCapBucket,
   RewardRule,
   RewardType,
 } from '@/lib/rewards.types';
+import type { Tag } from '@/lib/tags.types';
 
 import { RuleBasicsSection } from './rule-form/RuleBasicsSection';
 import { RuleEarnSection } from './rule-form/RuleEarnSection';
@@ -26,7 +26,7 @@ import { RuleTesterSection } from './rule-form/RuleTesterSection';
 interface RewardRuleFormProps {
   accountId: string;
   cards?: AccountCard[];
-  categories: Category[];
+  categories: Tag[];
   capBuckets: RewardCapBucket[];
   /** The card's default reward currency — preselected for new rules. */
   defaultRewardType: RewardType;

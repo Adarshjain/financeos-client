@@ -20,7 +20,7 @@ const api = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/apiClient', () => ({
   accountsApi: { list: () => api.accounts() },
-  categoriesApi: { list: () => api.categories() },
+  tagsApi: { list: () => api.categories() },
   rewardsApi: {
     listRules: (id: string) => api.rules(id),
     listCapBuckets: (id: string) => api.caps(id),
@@ -65,7 +65,7 @@ describe('loadRulesPageData', () => {
     expect(data?.accountId).toBe('a');
     for (const key of [
       keys.accounts.list(),
-      keys.categories.list(),
+      keys.tags.list(),
       keys.rewards.rules('a'),
       keys.rewards.capBuckets('a'),
       keys.rewards.milestones('a'),

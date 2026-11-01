@@ -25,7 +25,7 @@ vi.mock('./useTransactionMutations', () => ({
 const accountList = [{ id: 'b1', type: AccountType.BANK_ACCOUNT, name: 'HDFC Savings', balance: 0, cardholders: [] }] as unknown as Account[];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accountList }) }));
 const categories = vi.hoisted(() => [] as { id: string; name: string }[]);
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: categories }) }));
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(async () => ({ data: undefined })), PUT: vi.fn(), DELETE: vi.fn() } }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({

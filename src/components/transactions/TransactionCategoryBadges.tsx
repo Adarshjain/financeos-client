@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
-import type { Category } from '@/lib/categories.types';
+import type { Tag } from '@/lib/tags.types';
 
 interface TransactionCategoryBadgesProps {
-  categories?: Category[];
+  categories?: Tag[];
 }
 
 export function TransactionCategoryBadges({ categories }: TransactionCategoryBadgesProps) {

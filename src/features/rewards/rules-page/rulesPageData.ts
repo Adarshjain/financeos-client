@@ -4,7 +4,7 @@ import { rewardsWindowFor } from '@/features/accounts/detail/overview/rewardsWin
 import { type Loaded, loaded, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { serverApi } from '@/lib/api/server';
-import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';
+import { accountsApi, rewardsApi,tagsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 import { accountAnniversaryDate, pickRewardsAccount, rewardEligibleAccounts } from '@/lib/rewards.types';
 
@@ -34,7 +34,7 @@ export async function loadRulesPageData(
 ): Promise<Loaded<RulesPageData>> {
   const [accountsResult, categories] = await Promise.all([
     loaded(accountsApi.list()),
-    categoriesApi.list().catch(() => []),
+    tagsApi.list().catch(() => []),
   ]);
   if (!accountsResult.ok) return accountsResult;
   const accounts = accountsResult.data;
@@ -43,7 +43,7 @@ export async function loadRulesPageData(
 
   const qc = getQueryClient();
   qc.setQueryData(keys.accounts.list(), accounts);
-  qc.setQueryData(keys.categories.list(), categories);
+  qc.setQueryData(keys.tags.list(), categories);
   if (!account) return { ok: true, data: { accountId, state: dehydrate(qc), usage: null } };
 
   // The card's own reward year (as its rewards page reports it) decides the report's window, so the totals and then the

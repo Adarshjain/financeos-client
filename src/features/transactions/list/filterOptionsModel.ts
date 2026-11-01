@@ -1,8 +1,8 @@
 import type { SelectOption } from '@/components/ds/Select/Select';
 import { REVIEW_REASON_META } from '@/features/transactions/catalog';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import { formatCount, formatDate, formatMoney } from '@/lib/format';
+import type { Tag } from '@/lib/tags.types';
 import { AccountType } from '@/lib/types';
 
 import {
@@ -121,7 +121,7 @@ export function filterAccounts(picked: readonly string[], accounts: readonly Acc
 }
 
 /** The Category dropdown: the server filters on the category name. */
-export function categoryOptions(categories: readonly Category[]): SelectOption[] {
+export function categoryOptions(categories: readonly Tag[]): SelectOption[] {
   return categories.map((c) => ({ value: c.name, label: c.name }));
 }
 

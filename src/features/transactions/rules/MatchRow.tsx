@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { bankById } from '@/features/banks/banks';
@@ -24,7 +25,7 @@ export interface MatchRowProps {
 export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: MatchRowProps) {
   const credit = txn.type === 'CREDIT';
   const amount = formatMoney(Math.abs(Number(txn.amount)), { decimals: 'exact', symbol: false });
-  const names = txn.categories.map((c) => c.name);
+  const names = txn.category ? [txn.category.name] : [];
   const selectable = onCheckedChange !== undefined;
   return (
     <TransactionRow
@@ -54,6 +55,8 @@ export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: Matc
       }
       plastic={matchPlastic(txn) ?? undefined}
       categories={names}
+      subCategory={txn.subcategory?.name}
+      categoryIcon={txn.category?.icon as IconName | undefined}
       unsetCategoryLabel="Uncategorized"
       provenance={`(${ruleLinkLabel(txn, ruleId)})`}
       amount={credit ? `+${amount}` : amount}

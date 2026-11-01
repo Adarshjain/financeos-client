@@ -18,12 +18,12 @@ describe('ReviewReasonBadges (CD-5)', () => {
     render(
       <ReviewReasonBadges
         reviewType="NEEDS_REVIEW"
-        reviewReasons={['UNRECONCILED', 'CATEGORY_UNVERIFIED']}
+        reviewReasons={['UNRECONCILED', 'DATE_CORRECTED']}
       />,
     );
 
     expect(screen.getByText('Unreconciled')).toBeInTheDocument();
-    expect(screen.getByText('Category unverified')).toBeInTheDocument();
+    expect(screen.getByText('Date corrected')).toBeInTheDocument();
   });
 
   it('renders fallback badge when unknown reason is passed', () => {

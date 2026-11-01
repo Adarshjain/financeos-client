@@ -117,7 +117,9 @@ export interface BuildTransactionRequestParams {
   supportsCards: boolean;
   description: string;
   amount: string;
-  categoryIds: string[];
+  tagIds: string[];
+  /** The category to send: on Add the one picked, on Edit only when the user changed it (an edit never re-categorises). */
+  category?: { categoryKey: string; subcategoryKey: string | null } | null;
   date: Date;
   isExcluded: boolean;
   isMonitored: boolean;
@@ -144,7 +146,7 @@ export function buildTransactionRequest(
     cardId: p.supportsCards ? p.cardId || null : null,
     description: p.description ?? undefined,
     amount: Number(p.amount),
-    categoryIds: p.categoryIds,
+    tagIds: p.tagIds,
     date: toCalendarDate(p.date),
     isTransactionExcluded: p.isExcluded,
     isTransactionUnderMonitoring: p.isMonitored,
@@ -161,6 +163,10 @@ export function buildTransactionRequest(
       isInternational: p.isInternational || null,
     },
   };
+  if (p.category) {
+    request.categoryKey = p.category.categoryKey;
+    if (p.category.subcategoryKey) request.subcategoryKey = p.category.subcategoryKey;
+  }
   if (p.isUpdateMode) {
     request.source = p.source ?? 'manual';
     request.reviewType = p.reviewType;

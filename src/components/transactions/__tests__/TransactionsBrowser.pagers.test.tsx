@@ -54,7 +54,7 @@ const txn = (reviewType: Transaction['reviewType']): Transaction => ({
   source: 'manual',
   reviewType,
   reviewReasons:
-    reviewType === 'NEEDS_REVIEW' ? ['CATEGORY_UNVERIFIED'] : undefined,
+    reviewType === 'NEEDS_REVIEW' ? ['DATE_CORRECTED'] : undefined,
   balance: 5000,
   createdAt: '2026-06-15T00:00:00Z',
 });

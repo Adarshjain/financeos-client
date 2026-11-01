@@ -2,15 +2,15 @@
 
 import { useRewardRulePreview } from '@/features/rewards/preview/useRewardRulePreview';
 import type { RewardNotifier } from '@/features/rewards/rewardNotifier';
-import { Category } from '@/lib/categories.types';
 import { RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
+import { Tag } from '@/lib/tags.types';
 
 import { useRewardRuleFormFields } from './useRewardRuleFormFields';
 import { useRewardRuleFormSubmit } from './useRewardRuleFormSubmit';
 
 interface UseRewardRuleFormProps {
   accountId: string;
-  categories: Category[];
+  categories: Tag[];
   capBuckets: RewardCapBucket[];
   defaultRewardType: RewardType;
   rule?: RewardRule;

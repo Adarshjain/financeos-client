@@ -1,7 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import RewardRulesManager from '@/components/rewards/RewardRulesManager';
-import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';
+import { accountsApi, rewardsApi,tagsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 import { pickRewardsAccount, rewardEligibleAccounts } from '@/lib/rewards.types';
 
@@ -13,7 +13,7 @@ export default async function RewardRulesPage({
   const requested = (await searchParams)?.account;
   const [accounts, categories] = await Promise.all([
     accountsApi.list().catch(() => []),
-    categoriesApi.list().catch(() => []),
+    tagsApi.list().catch(() => []),
   ]);
 
   const orderedAccounts = rewardEligibleAccounts(accounts);
@@ -21,7 +21,7 @@ export default async function RewardRulesPage({
 
   const qc = getQueryClient();
   qc.setQueryData(keys.accounts.list(), accounts);
-  qc.setQueryData(keys.categories.list(), categories);
+  qc.setQueryData(keys.tags.list(), categories);
 
   if (initialAccountId) {
     await Promise.all([

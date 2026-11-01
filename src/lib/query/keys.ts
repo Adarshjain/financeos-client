@@ -25,9 +25,14 @@ export const keys = {
     balanceSeries: (id: string, days: number) => [...keys.accounts.all, 'balanceSeries', id, days] as const,
   },
 
-  categories: {
-    all: ['categories'] as const,
-    list: () => [...keys.categories.all, 'list'] as const,
+  tags: {
+    all: ['tags'] as const,
+    list: () => [...keys.tags.all, 'list'] as const,
+  },
+
+  /** The fixed category list (static). */
+  categoryList: {
+    all: ['category-list'] as const,
   },
 
   dashboards: {

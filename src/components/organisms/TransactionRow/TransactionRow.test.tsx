@@ -135,7 +135,7 @@ describe('TransactionRow', () => {
     expect(screen.getAllByText('+1')[0]).toBeInTheDocument();
   });
 
-  it('on phone puts the categories in the context line, not on their own line, and keeps the amount top-right across both rows', () => {
+  it('on phone lays out three lines: description and amount, balance, then account with the category pill', () => {
     render(
       <TransactionRow
         description="BigBasket"
@@ -143,18 +143,30 @@ describe('TransactionRow', () => {
         balance="₹2,95,030"
         account="HDFC Bank Savings"
         categories={['Groceries']}
+        subCategory="Supermarket"
+        categoryIcon="cat-shopping-cart"
       />,
     );
     const cells = screen.getAllByRole('cell');
     const description = cells.find((c) => c.textContent?.startsWith('BigBasket'));
-    const categories = screen.getAllByText('Groceries')[1].closest('[role="cell"]');
     const amount = screen.getByText('.00').closest('[role="cell"]');
+    const balance = screen.getAllByText('₹2,95,030')[0];
+    const account = screen.getAllByText('HDFC Bank Savings')[1];
+    const pills = screen.getAllByText('Groceries · Supermarket');
 
     expect(description).toHaveClass('col-start-1', 'row-start-1');
-    expect(description).toHaveTextContent('HDFC Bank Savings');
-    expect(description).toHaveTextContent('Groceries');
-    expect(categories).toHaveClass('hidden', 'desk:flex');
-    expect(amount).toHaveClass('col-start-2', 'row-start-1', 'row-span-2', 'self-start', 'desk:row-span-1');
+    expect(description).not.toHaveTextContent('HDFC Bank Savings');
+    expect(amount).toHaveClass('col-start-2', 'row-start-1', 'self-start');
+    expect(balance).toHaveClass('col-start-2', 'row-start-2', 'desk:hidden');
+    expect(account.closest('.row-start-3')).toHaveClass('desk:hidden');
+    expect(pills[1].closest('.row-start-3')).toBe(account.closest('.row-start-3'));
+  });
+
+  it('shows an unset category as a neutral dashed badge, not an amber one', () => {
+    render(<TransactionRow description="Swiggy" categories={[]} unsetCategoryLabel="Set category" onSetCategory={() => {}} />);
+    const badge = screen.getAllByText('Set category')[0].closest('button');
+    expect(badge).toHaveClass('border-dashed', 'text-ink-2');
+    expect(badge).not.toHaveClass('text-warning');
   });
 
   it('renders unset category chip when categories array is empty and unsetCategoryLabel provided', () => {
