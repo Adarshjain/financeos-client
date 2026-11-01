@@ -102,30 +102,6 @@ export async function streamChat(
   }
 }
 
-export async function syncChat(
-  api: ApiClient,
-  messages: ChatMessage[],
-  maxRetries = 4
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
-  let attempt = 0;
-  let delay = 300;
-  while (true) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await (api as any).POST('/api/v1/chat', {
-      body: { messages },
-    });
-    const header = res.response?.headers?.get?.('x-chat-error');
-    if (res.response?.status === 429 && header === 'CHAT_BUSY' && attempt < maxRetries) {
-      attempt++;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      delay *= 2;
-      continue;
-    }
-    return res;
-  }
-}
-
 export async function scriptChat(
   api: ApiClient,
   steps: (unknown | ScriptResponseEntry)[]

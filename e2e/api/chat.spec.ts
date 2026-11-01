@@ -1,9 +1,7 @@
-import { expectStatus } from '../fixtures/api';
 import {
   clarifyTranscript,
   scriptChat,
   streamChat,
-  syncChat,
 } from '../fixtures/chat';
 import { llmCalls, resetLlm, setLlmMode } from '../fixtures/control';
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
@@ -32,7 +30,7 @@ test.describe('Chat API & Orchestrator', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('1. One-shot final answer: streamed and sync chat with recorded LLM call', async ({
+  test('1. One-shot final answer: streamed chat with recorded LLM call', async ({
     request,
   }) => {
     const user = await newUser(request, 'chat-final');
@@ -64,20 +62,6 @@ test.describe('Chat API & Orchestrator', () => {
     expect(calls.length).toBe(1);
     expect(calls[0].task).toBe('data-chat');
     expect(calls[0].schemaPresent).toBe(true);
-
-    // Sync Chat
-    await scriptChat(user.api, [
-      {
-        action: 'final_answer',
-        answer: 'You have no expenses recorded today.',
-      },
-    ]);
-    const syncRes = await syncChat(user.api, [
-      { role: 'user', content: 'What are my expenses today?' },
-    ]);
-    expectStatus(syncRes, 200);
-    expect(syncRes.data?.answer).toBe('You have no expenses recorded today.');
-    expect(syncRes.data?.traces).toEqual([]);
   });
 
   test('2. SQL + table block: queries V_CHAT_TRANSACTIONS and returns structured table', async ({
@@ -507,10 +491,6 @@ test.describe('Chat API & Orchestrator', () => {
       expect(res.header).toBeNull();
       expect(res.events.find((e) => e.event === 'final')?.data.answer).toBe(`Answer ${i}`);
     }
-
-    await scriptChat(user.api, [{ action: 'final_answer', answer: 'Sync answer' }]);
-    const syncRes = await syncChat(user.api, [{ role: 'user', content: 'Msg sync' }]);
-    expectStatus(syncRes, 200);
   });
 
   test('11. Concurrency: 2 concurrent streams hold semaphore, 3rd stream returns 429 CHAT_BUSY', async ({
