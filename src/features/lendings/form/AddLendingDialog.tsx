@@ -11,6 +11,7 @@ import { TextArea } from '@/components/ds/TextArea/TextArea';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { buildCreateLendingRequest, lendingEntryProblem } from '@/features/lendings/lendingEntryFormModel';
+import { prefillAmount } from '@/features/loans/detail/loanRequestsModel';
 import { TransactionPickerField } from '@/features/transactions/TransactionPickerField';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -172,7 +173,11 @@ export function AddLendingDialog({
             <TransactionPickerField
               label="Linked transaction (optional)"
               value={transaction}
-              onSelect={setTransaction}
+              onSelect={(picked) => {
+                setTransaction(picked);
+                // Same as the loan dialogs: an empty amount takes the picked transaction's amount.
+                setAmount((current) => prefillAmount(current, picked));
+              }}
               onClear={() => setTransaction(null)}
               direction={directionOf(entryType)}
               suggestAmount={amount && Number(amount) > 0 ? Number(amount) : null}
