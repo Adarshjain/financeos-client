@@ -39,6 +39,7 @@ export const NET_WORTH_KIND_LABELS: Record<string, string> = {
   credit_card: 'Credit card',
   broker: 'Broker',
   generic: 'Wallet/Cash',
+  epf: 'EPF',
   loan: 'Loan',
   lending: 'Lending',
 };
@@ -272,12 +273,23 @@ export function monthBefore(month: { year: number; month: number }): { from: str
   return { from: `${year}-${mm}-01`, to: `${year}-${mm}-${String(last).padStart(2, '0')}`, year, month: m };
 }
 
+/** The server's previous period for a `between` range: the same length, ending the day before the range starts. */
+export function previousWindowOf(range: { from: string; to: string }): { from: string; to: string } {
+  const day = 86_400_000;
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const fromMs = Date.parse(range.from);
+  const lengthDays = (Date.parse(range.to) - fromMs) / day + 1;
+  return { from: iso(fromMs - lengthDays * day), to: iso(fromMs - day) };
+}
+
 export interface SpendMonthsDataset {
   account: components['schemas']['BankAccountResponse'];
   food: components['schemas']['TagResponse'];
   travel: components['schemas']['TagResponse'];
   current: { from: string; to: string; year: number; month: number };
   previous: { from: string; to: string; year: number; month: number };
+  /** The server's previous period for the current month's `between` range: the same length, ending the day before it starts. */
+  previousWindow: { from: string; to: string };
   /** Transaction ids by description. */
   ids: Record<string, string>;
 }
@@ -315,7 +327,8 @@ export async function seedSpendMonths(api: ApiClient): Promise<SpendMonthsDatase
   await add('Cafe', -50, dayOf(previous, 4), [food.id]);
   await add('Tea', -50, dayOf(previous, 9), [food.id]);
   await add('Taxi', -400, dayOf(previous, 21), [travel.id]);
-  return { account, food, travel, current, previous, ids };
+  const previousWindow = previousWindowOf(current);
+  return { account, food, travel, current, previous, previousWindow, ids };
 }
 
 /** A month's date filter: between its first and last day. */
