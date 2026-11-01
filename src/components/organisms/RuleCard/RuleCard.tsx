@@ -196,7 +196,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                     <Icon name="more" size="sm" />
                   </Button>
                 </Menu.Trigger>
-                <Menu.Content align="end">
+                <Menu.Content align="end" title={typeof name === 'string' ? name : undefined}>
                   {menuItems.map((menuItem, idx) => (
                     <Menu.Item key={idx} tone={menuItem.tone} onSelect={menuItem.onSelect}>
                       {menuItem.label}

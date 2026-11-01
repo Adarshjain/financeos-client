@@ -211,3 +211,21 @@ export const ContextMenuOnRow: StoryObj = {
     </ContextMenu>
   ),
 };
+
+export const PhoneSheet: Story = {
+  name: 'Phone sheet',
+  parameters: { docs: { description: { story: 'Below 641px the menu opens as a bottom sheet with a handle and an optional title (contentProps.title), 44px rows; Delete stays in the danger tone.' } } },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: {
+    trigger: defaultTrigger,
+    contentProps: { title: 'Rent, 1 Oct' },
+    children: (
+      <>
+        <Menu.Item>Edit</Menu.Item>
+        <Menu.Item>Duplicate</Menu.Item>
+        <Menu.Separator />
+        <Menu.Item tone="danger">Delete</Menu.Item>
+      </>
+    ),
+  },
+};

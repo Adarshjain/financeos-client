@@ -355,3 +355,26 @@ export const LoadingState: Story = {
     options: standardOptions,
   },
 };
+
+const phoneNote = (text: string) => ({ docs: { description: { story: text } } });
+
+export const PhoneSheetSingle: Story = {
+  name: 'Phone sheet: single',
+  parameters: phoneNote('Below 641px the list opens as a bottom sheet (handle, the field label as title, 44px rows, tick on the pick). A pick saves and closes; swipe down from anywhere or tap outside to close.'),
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: { label: 'Account', options: standardOptions, defaultValue: 'option-a', defaultOpen: true },
+};
+
+export const PhoneSheetSearchable: Story = {
+  name: 'Phone sheet: searchable',
+  parameters: phoneNote('The search stays pinned on top and is not focused on open, so the keyboard stays away until the field is tapped.'),
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: { label: 'Merchant', searchable: true, options: iconOptions, defaultValue: 'item-1', defaultOpen: true },
+};
+
+export const PhoneSheetMulti: Story = {
+  name: 'Phone sheet: multiple',
+  parameters: phoneNote('Checkbox rows with Clear and Done pinned at the bottom of the sheet.'),
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: { label: 'Categories', multiple: true, options: standardOptions, defaultValue: ['option-a', 'option-b'], defaultOpen: true },
+};

@@ -5,6 +5,8 @@ import React, { forwardRef } from 'react';
 
 import { guardCloseAutoFocus } from '../closeAutoFocus';
 import { cn } from '../cn';
+import { SHEET_ATTRS, SHEET_CONTENT_CLASS, SheetHeader, useDropdownSheet } from '../dropdownSheet';
+import { isPhoneLayout } from '../phoneLayout';
 import { useControllableState } from '../useControllableState';
 
 /** Gap kept to the viewport edge on each side. Mirrors the space-20 step (20px) used by container-viewport-inset; there is no JS token export to derive it from. */
@@ -20,6 +22,8 @@ export interface PopoverContentProps
   extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {
   /** The panel is a list of choices (owner, 2026-10-26): container-xs wide, grows to its content, capped at the viewport inset, never tied to the trigger. */
   list?: boolean;
+  /** Heading of the bottom sheet the panel becomes below `desk` (phone only; desktop shows no title). Without one, the sheet shows only its handle. */
+  title?: string;
 }
 
 /** Width rule shared by every dropdown list. */
@@ -39,15 +43,19 @@ const PopoverContent = forwardRef<
       sideOffset = 4,
       collisionPadding = VIEWPORT_GUTTER,
       onCloseAutoFocus,
+      onOpenAutoFocus,
       list = false,
+      title,
       ...props
     },
     ref,
   ) => {
+    const sheetRef = useDropdownSheet(ref);
     return (
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
-          ref={ref}
+          ref={sheetRef}
+          {...SHEET_ATTRS}
           align={align}
           side={side}
           sideOffset={sideOffset}
@@ -56,13 +64,22 @@ const PopoverContent = forwardRef<
             'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-4 flex flex-col outline-none font-text',
             'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
             'data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-fast data-closed:data-side-bottom:slide-out-to-top-1 data-closed:data-side-top:slide-out-to-bottom-1',
+            SHEET_CONTENT_CLASS,
             'min-w-popover-trigger max-w-container-viewport-inset desk:max-w-container-sm w-auto',
             list && LIST_WIDTH_CLASS,
             className,
           )}
           {...props}
           onCloseAutoFocus={guardCloseAutoFocus(onCloseAutoFocus)}
+          onOpenAutoFocus={(e) => {
+            onOpenAutoFocus?.(e);
+            if (e.defaultPrevented || !isPhoneLayout()) return;
+            // Phone: no search field grabbing focus (the keyboard would cover the sheet on open). Focus the panel itself.
+            e.preventDefault();
+            if (e.target instanceof HTMLElement) e.target.focus({ preventScroll: true });
+          }}
         >
+          <SheetHeader title={title} titleClassName={/(^|\s)p-0(\s|$)/.test(className ?? '') ? undefined : 'px-space-12'} />
           {children}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>

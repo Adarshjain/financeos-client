@@ -318,7 +318,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       <div className="flex flex-col bg-surface">
         <div className="flex flex-row divide-x divide-line-soft">
           <MonthCalendar
-            className="shrink-0"
+            className="shrink-0 max-desk:w-full"
             mode="picker"
             range
             month={viewMonthIso}
@@ -372,10 +372,14 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           >
             Clear
           </Button>
+          <Button type="button" variant="primary" size="sm" onClick={() => setOpen(false)} className="desk:hidden ml-space-8">
+            Done
+          </Button>
         </div>
       </div>
     ) : (
       <MonthCalendar
+        className="max-desk:w-full"
         mode="picker"
         month={viewMonthIso}
         onMonthChange={setViewMonthIso}
@@ -430,6 +434,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             trigger={triggerButton}
             align="end"
             sideOffset={4}
+            contentProps={{ title: typeof label === 'string' ? label : undefined }}
             contentClassName={cn(
               'p-0 overflow-hidden',
               range && 'w-max max-w-none',

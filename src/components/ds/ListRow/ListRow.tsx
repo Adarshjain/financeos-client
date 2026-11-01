@@ -121,7 +121,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
                   className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
                 />
               </Menu.Trigger>
-              <Menu.Content align="end">
+              <Menu.Content align="end" title={typeof title === 'string' ? title : undefined}>
                 {actions.map((act) => (
                   <Menu.Item
                     key={act.id}

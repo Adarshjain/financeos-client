@@ -86,7 +86,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                 <Icon name="more" size="sm" />
               </Button>
             </Menu.Trigger>
-            <Menu.Content align="end">
+            <Menu.Content align="end" title={typeof title === 'string' ? title : undefined}>
               {menuItems.map((item, idx) => (
                 <Menu.Item
                   key={idx}

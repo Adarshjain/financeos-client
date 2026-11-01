@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 
 import { guardCloseAutoFocus } from '../closeAutoFocus';
 import { cn } from '../cn';
+import { SHEET_ATTRS, SHEET_CONTENT_CLASS, SheetHeader, useDropdownSheet } from '../dropdownSheet';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 import { useControllableState } from '../useControllableState';
 
@@ -76,26 +77,32 @@ const MenuSubContent = DropdownMenuPrimitive.SubContent;
 export interface MenuContentProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> {
   sideOffset?: number;
+  /** Heading of the bottom sheet the menu becomes below `desk` (phone only; desktop shows no title). Without one, the sheet shows only its handle. */
+  title?: string;
 }
 
 const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   MenuContentProps
->(({ className, sideOffset = 4, children, onCloseAutoFocus, ...props }, ref) => {
+>(({ className, sideOffset = 4, children, onCloseAutoFocus, title, ...props }, ref) => {
+  const sheetRef = useDropdownSheet(ref);
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
-        ref={ref}
+        ref={sheetRef}
+        {...SHEET_ATTRS}
         sideOffset={sideOffset}
         className={cn(
           'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-6 flex flex-col w-max min-w-container-xs max-w-container-viewport-inset desk:max-w-container-viewport-inset outline-none font-text',
           'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
           'data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-fast data-closed:data-side-bottom:slide-out-to-top-1 data-closed:data-side-top:slide-out-to-bottom-1',
+          SHEET_CONTENT_CLASS,
           className,
         )}
         {...props}
         onCloseAutoFocus={guardCloseAutoFocus(onCloseAutoFocus)}
       >
+        <SheetHeader title={title} titleClassName="px-space-10" />
         {children}
       </DropdownMenuPrimitive.Content>
     </DropdownMenuPrimitive.Portal>

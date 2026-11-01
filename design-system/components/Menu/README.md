@@ -52,3 +52,5 @@ Radix DropdownMenu, the shared item row (`itemRow`), Icon. `ContextMenu`: Menu a
 Fades and slides in; fades and slides out on close (dur-fast).
 
 - Focus return: on close, focus goes back to the trigger only if focus has not already moved to another element outside the content (so opening a Select beside a closing Menu is not dismissed). A consumer `onCloseAutoFocus` runs first and its `preventDefault` still wins.
+
+- Phone (below `desk`): the menu opens as a bottom sheet like the Dialog sheet (handle, optional `title` on `Menu.Content`, 44px rows, drag down to close); ContextMenu too. Sub-menus (`Menu.Sub`) stay dropdowns. Desktop keeps the dropdown.

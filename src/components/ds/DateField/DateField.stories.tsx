@@ -116,3 +116,17 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const PhoneSheetSingle: Story = {
+  name: 'Phone sheet: single',
+  parameters: { docs: { description: { story: 'Below 641px the calendar opens as a bottom sheet with the field label as title; a day tap saves and closes.' } } },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: { today: '2026-10-13', label: 'Due date', defaultValue: '2026-10-25', defaultOpen: true },
+};
+
+export const PhoneSheetRange: Story = {
+  name: 'Phone sheet: range',
+  parameters: { docs: { description: { story: 'A range shows one month on phone, with Today, Clear and Done.' } } },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  args: { today: '2026-10-13', range: true, label: 'Period', defaultValue: { start: '2026-10-01', end: '2026-10-13' }, defaultOpen: true },
+};
